@@ -4,7 +4,7 @@ project(skeleton)
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
-file(GLOB SHADERS shaders/*.frag shaders/*.vert)
+file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
 file(GLOB DATA data/*)
 
 # Create IDE groups
@@ -34,7 +34,4 @@ if (WIN32)
 
     copy_base_windows_graphics_dlls()
 endif()
-
-# should probably only contain the skeleton json
-copy_dir_to_bin(data data)
 

@@ -67,9 +67,15 @@ namespace napkin
 		nap::rtti::ResolvedRTTIPath resolve() const;
 
 		/**
-		 * If this refers to an array property, get the element type
+		 * If this path refers to an array property, get the element type
+		 * If this path does not refer to an array property, return type::empty()
 		 */
 		rttr::type getArrayElementType();
+
+		/**
+		 * If this path refers to an array property, return the length of the array.
+		 */
+		size_t getArrayLength()const;
 
 		/**
 		 * @return Wrapped type

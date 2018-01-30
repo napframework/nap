@@ -125,46 +125,77 @@ namespace napkin
 
 		/**
 		 * Add an element to an array
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array property to add the element to
 		 * @param index The index at which to add the new element, provide -1 to add to the end
-		 * @return The index of the newly created element or -1 when the element was not added.
+		 * @return The index of the newly created element
 		 */
-		long arrayAddValue(const PropertyPath& path, long index = -1);
+		size_t arrayAddValue(const PropertyPath& path, size_t index);
+
+		/**
+		 * Add an element to the end of an array
+		 * The propertyValueChanged signal will be emitted.
+		 * @param path The path to the array property to add the element to
+		 * @return The index of the newly created element
+		 */
+		size_t arrayAddValue(const PropertyPath& path);
 
 		/**
 		 * Add an existing pointer to the array
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array
 		 * @param object The object pointer to addd
-		 * @param index The index at which to add the new element, provide -1 to add to the end
+		 * @param index The index at which to add the new element
 		 * @return The index at which the element lives.
 		 */
-		long arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object, long index = -1);
+		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object, size_t index);
+
+		/**
+		 * Add an existing pointer to the end of an array
+		 * The propertyValueChanged signal will be emitted.
+		 * @param path The path to the array
+		 * @param object The object pointer to addd
+		 * @return The index at which the element lives.
+		 */
+		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object);
 
 		/**
 		 * Create an object of the specified type and add it to the array
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array
 		 * @param type The type of object to create
-		 * @param index The index at which to add the new element, provide -1 to add to the end
+		 * @param index The index at which to add the new element
 		 * @return The index of the inserted object
 		 */
-		long arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, long index = -1);
+		size_t arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, size_t index);
+
+		/**
+		 * Create an object of the specified type and add it to the end of the array
+		 * The propertyValueChanged signal will be emitted.
+		 * @param path The path to the array
+		 * @param type The type of object to create
+		 * @return The index of the inserted object
+		 */
+		size_t arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type);
 
 		/**
 		 * Remove an element from an array
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path pointing to the array
 		 * @param index The index of the element to remove
 		 */
-		void arrayRemoveElement(const PropertyPath& path, long index);
+		void arrayRemoveElement(const PropertyPath& path, size_t index);
 
 		/**
 		 * Move an item within an array. If \p fromIndex is greater than \p toIndex,
 		 * \p toIndex is considered to be the destination index <b>before</b> the move happens.
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array property
 		 * @param fromIndex The index of the element to move
 		 * @param toIndex The destination index of the element
 		 * @return The resulting index of the element
 		 */
-		long arrayMoveElement(const PropertyPath& path, long fromIndex, long toIndex);
+		size_t arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex);
 
 		/**
 		 * Get an element from an array
@@ -172,7 +203,7 @@ namespace napkin
 		 * @param index The index of the element to retrieve
 		 * @return The resulting value
 		 */
-		nap::rtti::Variant arrayGetElement(const PropertyPath& path, long index);
+		nap::rtti::Variant arrayGetElement(const PropertyPath& path, size_t index) const;
 
 		/**
 		 * Get an element from an array
@@ -182,7 +213,7 @@ namespace napkin
 		 * @return The resulting value
 		 */
 		template<typename T>
-		T arrayGetElement(const PropertyPath& path, long index) { return arrayGetElement(path, index).convert<T>(); }
+		T arrayGetElement(const PropertyPath& path, size_t index) { return arrayGetElement(path, index).convert<T>(); }
 
 		/**
 		 * Execute the specified command and push the provided command onto the undostack.

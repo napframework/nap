@@ -32,7 +32,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/helloworld/helloworld.json", error))
+		if (!mResourceManager->loadFile("helloworld.json", error))
 			return false;
 
 		// Extract loaded resources

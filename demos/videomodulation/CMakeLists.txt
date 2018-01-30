@@ -4,7 +4,7 @@ project(videomodulation)
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
-file(GLOB SHADERS shaders/*.frag shaders/*.vert)
+file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
 file(GLOB DATA data/*)
 
 # Create IDE groups
@@ -17,7 +17,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napinput mod_napsdlinput mod_napsdlwindow mod_napvideo mod_napapp)
+target_link_libraries(${PROJECT_NAME} mod_videomodulation mod_napapp)
 
 if (WIN32)
     # Copy freeimage DLL
@@ -32,6 +32,4 @@ if (WIN32)
 endif()
 
 # create post build event
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
-export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
+export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)

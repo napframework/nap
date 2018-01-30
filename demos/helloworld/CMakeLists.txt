@@ -4,7 +4,7 @@ project(helloworld)
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
-file(GLOB SHADERS shaders/*.frag shaders/*.vert)
+file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
 file(GLOB DATA data/*)
 
 # Create IDE groups
@@ -30,6 +30,4 @@ if (WIN32)
 endif()
 
 # create post build event
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
-export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
+export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)

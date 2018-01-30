@@ -8,6 +8,7 @@ void MainWindow::bindSignals()
 {
 	connect(&AppContext::get(), &AppContext::documentOpened, [this](const QString& filename) { onDocumentChanged(); });
 	connect(&AppContext::get(), &AppContext::documentChanged, [this]() { onDocumentChanged(); });
+	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, [&](QList<nap::rtti::RTTIObject*>& objects) {
 		mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
