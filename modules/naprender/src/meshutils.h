@@ -17,6 +17,11 @@ namespace nap
 	bool NAPAPI isTriangleMesh(const nap::MeshShape& shape);
 
 	/**
+	 * @return the number of triangles associated with a mesh
+	 */
+	int NAPAPI getTriangleCount(const MeshInstance& mesh);
+
+	/**
 	* Computes the normal that is associated with a triangular face. The normal is weighted (not normalized)
 	* This call asserts when the index is out of bounds.
 	* @param indices the indices of the triangle
