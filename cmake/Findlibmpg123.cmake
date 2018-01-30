@@ -9,10 +9,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
 find_path(LIBMPG123_DIR src/libmpg123/mpg123.h.in
-HINTS
-${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/mpg123
-${CMAKE_CURRENT_LIST_DIR}/../../mpg123
-)
+          HINTS
+          ${THIRDPARTY_DIR}/mpg123
+          ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
+          )
 
 if(WIN32)
     set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/msvc)
@@ -26,10 +26,10 @@ elseif(APPLE)
     set(LIBMPG123_INCLUDE_DIR /usr/local/include/)
 
 else()
-    if (${ARCH} STREQUAL "armv6")
-	set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin/arm)
+    if(${ARCH} STREQUAL "armv6")
+        set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin/arm)
     else()
-	set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin)
+        set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin)
     endif()
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.so)
     set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/linux/include)
@@ -46,18 +46,19 @@ macro(copy_mpg123_lib)
     if(WIN32)
         add_library(mpg123lib SHARED IMPORTED)
         set_target_properties(mpg123lib PROPERTIES
-            IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
-            IMPORTED_LOCATION_RELEASE ${LIBMPG123_LIBS_RELEASE_DLL}
-            IMPORTED_LOCATION_DEBUG ${LIBMPG123_LIBS_RELEASE_DLL}
-            IMPORTED_LOCATION_MINSIZEREL ${LIBMPG123_LIBS_RELEASE_DLL}
-            IMPORTED_LOCATION_RELWITHDEBINFO ${LIBMPG123_LIBS_RELEASE_DLL}
-        )
+                              IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
+                              IMPORTED_LOCATION_RELEASE ${LIBMPG123_LIBS_RELEASE_DLL}
+                              IMPORTED_LOCATION_DEBUG ${LIBMPG123_LIBS_RELEASE_DLL}
+                              IMPORTED_LOCATION_MINSIZEREL ${LIBMPG123_LIBS_RELEASE_DLL}
+                              IMPORTED_LOCATION_RELWITHDEBINFO ${LIBMPG123_LIBS_RELEASE_DLL}
+                              )
 
-        add_custom_command(
-            TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mpg123lib> $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:mpg123lib>
-        )
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E
+                           copy $<TARGET_FILE:mpg123lib>
+                           $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:mpg123lib>
+                           )
     endif()
 endmacro()
 
