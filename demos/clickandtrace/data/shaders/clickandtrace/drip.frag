@@ -7,29 +7,37 @@ in vec3 passPosition;					//< frag world space position
 in mat4 passModelMatrix;				//< modelMatrix
 
 // uniform inputs
-uniform vec3 inCameraPosition;			//< Camera World Space Position
-uniform vec3 inClickPosition;			//< Click position in uv space
-uniform float inTime;					//< Modulation time
+uniform vec3 	inCameraPosition;		//< Camera World Space Position
+uniform vec3 	inBlobPosition;			//< Blob position in uv space
+uniform float 	inTime;					//< Modulation time
+uniform float 	inVelocity;				//< Velocity used for modulating frequency
+uniform vec3 	inMousePosition;		//< Current mouse position in uv space
 
 // output
 out vec4 out_Color;
 
 const vec2		location = vec2(0.5, 0.5);
-const float		maxDistance = 0.35;
+const float		minDistance = 0.4;
+const float		maxDistance = 0.1;
 const float		speed = 0.005;
 const float		fade = 0.75;
-const float		frequency = 500;
-const float		distribution = 3.0;
+const float		minFrequency = 499.8;
+const float		maxFrequency = 500;
+const float		minDistribution = 2.25;
+const float		maxDistribution = 4.0;
 const vec3		lightPos = vec3(0.0, 2.0, 1.0);
 const float 	lightIntensity = 1.0;
 const float 	specularIntensity = 0.5;
 const vec3  	specularColor = vec3(0.545, 0.549, 0.627);
 const float 	shininess = 10;
-const float 	ambientIntensity = 0.45f;
+const float 	ambientIntensity = 0.5f;
 const vec3		colorTwo = vec3(0.066, 0.078, 0.149);
 const vec3		colorOne = vec3(0.784, 0.411, 0.411);
+const vec3		colorThr = vec3(0.176, 0.180, 0.258);
+const vec3		colorFor = vec3(0.321, 0.329, 0.415);
 const float		uvOffset = 0.015;
 
+// Maps a value to a new range
 float fit(float value, float inMin, float inMax, float outMin, float outMax, bool doClamp)
 {
 	float v = value;
@@ -42,13 +50,18 @@ float fit(float value, float inMin, float inMax, float outMin, float outMax, boo
 	return (v - inMin) / (m) * (outMax - outMin) + outMin;
 }
 
+
+// Calculates blob displacement based on the blob position and movement speed
+// This is just a fancy sine mnodulation function
 float calculateDisplacement(vec2 uv)
 {
 	// Distance in uv space from click to frag
-	float uv_dist = distance(inClickPosition.xy, uv);
+	float uv_dist = distance(inBlobPosition.xy, uv);
+	float currentDistance = mix(minDistance, maxDistance, pow(inVelocity,0.75f));
 
 	// Get mapped normalized value
-	float uv_dist_norm = fit(uv_dist, 0.0, maxDistance, 0.0, 1.0, false);
+	float uv_dist_norm = fit(uv_dist, 0.0, currentDistance, 0.0, 1.0, false);
+	float distribution = mix(minDistribution, maxDistribution, inVelocity);
 	uv_dist_norm = pow(uv_dist_norm, distribution);
 
 	// Fit distribution based on distance
@@ -62,53 +75,48 @@ float calculateDisplacement(vec2 uv)
 	weighted_dist += ((inTime * speed) * -1.0);
 
 	// Apply freq
-	weighted_dist *= frequency;
+	weighted_dist *= mix(minFrequency, maxFrequency, inVelocity);
 	
 	// Get sin over distance
 	float displacement_v = (sin(weighted_dist) + 1.0) / 2.0;
 
 	// Get fade distance
-	float min_fade = fade * maxDistance;
-	min_fade = clamp(maxDistance - min_fade, 0, 1);
-	float fade_mult = fit(uv_dist, min_fade, maxDistance, 1, 0, true);
+	float min_fade = fade * currentDistance;
+	min_fade = clamp(currentDistance - min_fade, 0, 1);
+	float fade_mult = fit(uv_dist, min_fade, currentDistance, 1, 0, true);
 
 	// Multiply over displacement
 	displacement_v *= fade_mult;
 
 	return displacement_v;
-
 }
 
 
-void main()
+// Computes the color of the mouse cursor based on distance of the mouse to the blob
+float calculateMouseCursor(vec2 uv)
 {
-	// Cast click position and get distance
-	vec2 uvpos_n = vec2(passUVs.x, passUVs.y);
-	vec2 uvpos_x = vec2(passUVs.x+uvOffset, passUVs.y);
-	vec2 uvpos_y = vec2(passUVs.x, passUVs.y+uvOffset);
+	// Distance in uv space from click to frag
+	float uv_dist = distance(inMousePosition.xy, uv);
 
-	float sin_color = calculateDisplacement(uvpos_n);
-	float sin_color_x = calculateDisplacement(uvpos_x);
-	float sin_color_y = calculateDisplacement(uvpos_y);
+	// Fit to get a nice little ball in uv space where the mouse is
+	float offset = 0.02 * fit(inVelocity, 0.0, 1.0, 1.0, 0.4, true);
+	float mouse_value = fit(uv_dist, offset, offset+0.002, 1.0, 0.0, true);
 
-	// Calculate displacement vector for both
-	vec3 pos_x = vec3(uvpos_x.x, uvpos_x.y, sin_color_x * 0.05);
-	vec3 pos_y = vec3(uvpos_y.x, uvpos_y.y, sin_color_y * 0.05);
-	vec3 pos_n = vec3(uvpos_n.x, uvpos_n.y, sin_color * 0.05);
+	// Scale with distance to blob, when the blob is close to the mouse cursor
+	// the cursor disappears
+	float blob_dist = distance(inMousePosition.xy, inBlobPosition.xy);
+	mouse_value *= fit(blob_dist, 0.075, 0.25, 0, 1, true);
 
-	// Calculate tangents
-	vec3 tangent =   pos_x - pos_n;
-	vec3 bitangent = pos_y - pos_n;
+	return mouse_value;
+}
 
-	// Calculate fake normal
-	vec3 ws_normal = cross(tangent, bitangent);
 
+// Shades a color based on a light
+vec3 applyLight(vec3 color, vec3 normal)
+{
 	// Calculate normal to world
 	mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
-	ws_normal = normalize(ws_normal * normal_matrix);
-
-	// Use texture alpha to blend between two colors
-	vec3 color = mix(colorTwo, colorOne, sin_color);
+	vec3 ws_normal = normalize(normal * normal_matrix);
 
 	//calculate the vector from this pixels surface to the light source
 	vec3 surfaceToLight = normalize(lightPos - passPosition);
@@ -131,18 +139,60 @@ void main()
     vec3 specular = specularCoefficient * specularColor * lightIntensity * spec_intensity;
 
 	//linear color (color before gamma correction)
-    vec3 linearColor = diffuse + specular + ambient;
+    return diffuse + specular + ambient;
+}
 
-	// Dot product gives us the 'angle' between the surface and cam vector
-	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value
-	// Normals pointing towards the camera (directly) get a value of 0
-	float cam_surface_dot = clamp(dot(normalize(ws_normal), surfaceToCamera),0.0,1.0);
-	cam_surface_dot = clamp((1.0-cam_surface_dot) + 0.1, 0, 1);
-	cam_surface_dot = pow(cam_surface_dot, 5.0);
 
-	// Mix in the halo
-	color = mix(color, vec3(0.545, 0.549, 0.627), cam_surface_dot);
+// Computes a blob in uv space together with a mouse cursor
+// Normals are faked because the blob is computed using a function
+// We therefore can approximate the normals by taking multiple samples
+void main()
+{
+	// Get the current position of the fragment in uv space
+	vec2 uvpos_n = vec2(passUVs.x, passUVs.y);
+
+	// Get neighbour fragments in uv space
+	vec2 uvpos_x = vec2(passUVs.x+uvOffset, passUVs.y);
+	vec2 uvpos_y = vec2(passUVs.x, passUVs.y+uvOffset);
+
+	// Calculate displacement for all uv samples
+	float sin_color = calculateDisplacement(uvpos_n);
+	float sin_color_x = calculateDisplacement(uvpos_x);
+	float sin_color_y = calculateDisplacement(uvpos_y);
+
+	// Use the displacement information to compute a normal
+	vec3 pos_x = vec3(uvpos_x.x, uvpos_x.y, sin_color_x * 0.05);
+	vec3 pos_y = vec3(uvpos_y.x, uvpos_y.y, sin_color_y * 0.05);
+	vec3 pos_n = vec3(uvpos_n.x, uvpos_n.y, sin_color * 0.05);
+
+	// Calculate tangents
+	vec3 tangent =   pos_x - pos_n;
+	vec3 bitangent = pos_y - pos_n;
+
+	// Calculate fake normal at frag coordinate
+	vec3 normal = cross(tangent, bitangent);
+
+	// Calculate edge
+	float edge_x = abs((passUVs.x - 0.5) * 2.0);
+	float edge_y = abs((passUVs.y - 0.5) * 2.0);
+	edge_x = fit(edge_x, 0.985, 0.9875, 0.0, 1.0, true);
+	edge_y = fit(edge_y, 0.985, 0.9875, 0.0, 1.0, true);
+	float edge =  clamp(edge_x + edge_y, 0,1 );
+
+	// Blend between two colors based on returned sin value
+	vec3 color = mix(colorTwo, colorOne, sin_color);
+
+	// Mix in cursor
+	float cursor_v = calculateMouseCursor(passUVs.xy);
+	color  = mix(color, colorOne, cursor_v);
+
+	// Mix in border
+	color  = mix(color,colorFor, edge);
+	normal = mix(normal, vec3(0.0,0.0,1.0),edge);
+
+	// Apply lights and specular
+	vec3 lit_color = applyLight(color, normal);
 
 	// Set fragment color output
-	out_Color =  vec4(linearColor,1.0);
+	out_Color =  vec4(lit_color,1.0);
 }

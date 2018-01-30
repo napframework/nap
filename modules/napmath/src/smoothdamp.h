@@ -71,14 +71,24 @@ namespace nap
 			SmoothOperator(const T& currentValue, float smoothTime, float maxSpeed);
 
 			/**
-			 *	@return the current blend value
+			 * @return the current blend value
 			 */
 			const T& getValue() const								{ return mValue; }
 
 			/**
-			 *	@return the current blend value
+			 * @return the current blend value
 			 */
 			T& getValue()											{ return mValue; }
+
+			/**
+			 * @return current velocity
+			 */
+			const T& getVelocity() const							{ return mVelocity; }
+
+			/**
+			 * @return the current velocity
+			 */
+			T& getVelocity()										{ return mVelocity; }
 
 			/**
 			 * Updates the current blend value based on @targetValue
