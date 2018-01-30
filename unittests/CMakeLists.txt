@@ -29,7 +29,7 @@ target_link_libraries(${PROJECT_NAME} ${UNITTEST_LIBS})
 target_link_libraries(${PROJECT_NAME}_autorun ${UNITTEST_LIBS})
 
 # First copy some assets
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
+copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data unit_tests_data)
 
 nap_qt_post(${PROJECT_NAME})
 
