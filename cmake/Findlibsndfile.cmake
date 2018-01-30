@@ -9,28 +9,28 @@ include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
 find_path(LIBSNDFILE_DIR src/sndfile.h
-HINTS
-${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/libsndfile
-${CMAKE_CURRENT_LIST_DIR}/../../libsndfile
-)
+        HINTS
+        ${THIRDPARTY_DIR}/libsndfile
+        ${CMAKE_CURRENT_LIST_DIR}/../../libsndfile
+        )
 
-if(WIN32)
+if (WIN32)
     set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/msvc64)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile-1.lib)
 
-elseif(APPLE)
+elseif (APPLE)
     set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/xcode)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.a)
 
-else()
-    if(${ARCH} STREQUAL "armv6")
+else ()
+    if (${ARCH} STREQUAL "armv6")
         set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux/arm)
         set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.so)
-    else()
+    else ()
         set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux)
         set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.so)
-    endif()
-endif()
+    endif ()
+endif ()
 
 set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/src)
 
