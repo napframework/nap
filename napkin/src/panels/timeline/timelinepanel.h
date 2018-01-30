@@ -93,14 +93,16 @@ namespace napkin {
 	private:
 		void onTimelineViewTransformed(const QTransform& transform);
 
+		TimelineView mView;
+		TimelineScene mScene;
+
+		RulerWidget mRuler;
+		TimelineOutline mOutline;
+
 		QVBoxLayout mLayout;
 		QVBoxLayout mTimelineLayout;
 		QWidget mTimelineWidget;
-		TimelineView mView;
-		TimelineScene mScene;
-		RulerWidget mRuler;
 		QSplitter mSplitter;
-		TimelineOutline mOutline;
 	};
 
 }
