@@ -197,8 +197,9 @@ def archive_to_linux_tar_xz():
 
 # Create build archive to zip on macOS
 def archive_to_macos_zip():
-    # TODO remove unwanted files (eg. .DS_Store)
-    
+    # Remove unwanted files (eg. .DS_Store)
+    call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
+
     package_filename = build_package_filename_and_build_info('macOS')
     shutil.move(PACKAGING_DIR, package_filename)
 
@@ -210,6 +211,16 @@ def archive_to_macos_zip():
     # Cleanup
     shutil.move(package_filename, PACKAGING_DIR)
     print("Packaged to %s" % package_filename_with_ext)  
+
+# Copy our packaged dir to a timestamped dir
+def archive_to_timestamped_dir(platform):
+    # Remove unwanted files (eg. .DS_Store)
+    call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
+    
+    package_filename = build_package_filename_and_build_info(platform)
+    shutil.copytree(PACKAGING_DIR, package_filename)
+
+    print("Packaged to directory %s" % package_filename)
 
 # Create build archive to zip on Win64
 def archive_to_win64_zip():
@@ -282,6 +293,7 @@ if __name__ == '__main__':
     # - managing clean build behaviour
     # - not populating git revision into buildInfo
     # - external build number management?
+    # - don't create a zip, just build to a timestamped folder
 
     # Package our build
     packaging_success = package()

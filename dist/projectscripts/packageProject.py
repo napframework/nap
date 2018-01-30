@@ -35,8 +35,7 @@ def call(cwd, cmd, capture_output=False):
 # TODO share with projectInfoParseToCMake
 def find_project(project_name):
     script_path = os.path.realpath(__file__)
-    # TODO clean up, use absolute path
-    nap_root = os.path.join(os.path.dirname(script_path), '..')
+    nap_root = os.path.abspath(os.path.join(os.path.dirname(script_path), os.pardir))
 
     project_dir_name = project_name.lower()
     projects_root = os.path.join(nap_root, 'projects')
@@ -78,6 +77,8 @@ def package_project(project_name):
     project_name_lower = project_name.lower()
 
     # Build directory names
+    script_path = os.path.realpath(__file__)
+    nap_root = os.path.abspath(os.path.join(os.path.dirname(script_path), os.pardir))
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
     local_bin_dir_name = 'bin_package'
     bin_dir = os.path.join(project_path, local_bin_dir_name)
@@ -105,15 +106,11 @@ def package_project(project_name):
         # Build & install to packaging dir
         call(build_dir_name, ['xcodebuild', '-configuration', 'Release', '-target', 'install'])
 
-        # Fix our dylib paths so fbxconverter will run from released package
-        # TODO Post beta 0.1 investigate further being able to achieve this without Python, using either
-        # 	   - CMake's RPATH controls or
-        # 	   - Achieving similar through install(CODE ...) calls via CMake
-        d = '%s/%s' % (WORKING_DIR, build_dir_name)
-        # call(d, ['python', '../dist/macOS/tempFBXConverterDylibPathFixer.py'])
+        # Temp: Copy our external dylibs and fix lib paths
+        call(bin_dir, ['python', '%s/tools/platform/temp_macos_dylib_copy_and_pathfix.py' % nap_root, '.'])
 
         # Create archive
-        # archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
+        archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
 
     else:
         # Generate project
