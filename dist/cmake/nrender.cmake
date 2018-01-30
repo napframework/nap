@@ -30,8 +30,9 @@ if (NOT NRENDER_LIBS_DIR)
 endif()
 
 add_library(nrender INTERFACE)
-target_link_libraries(nrender INTERFACE optimized ${NRENDER_LIBS_RELEASE})
-target_link_libraries(nrender INTERFACE debug ${NRENDER_LIBS_DEBUG})
+# TODO re-enable once dependency issues are solved
+# target_link_libraries(nrender INTERFACE optimized ${NRENDER_LIBS_RELEASE})
+# target_link_libraries(nrender INTERFACE debug ${NRENDER_LIBS_DEBUG})
 file(GLOB nrender_headers ${CMAKE_CURRENT_LIST_DIR}/../include/nrender/*.h)
 target_sources(nrender INTERFACE ${nrender_headers})
 source_group(NAP\\NRender FILES ${nrender_headers})
