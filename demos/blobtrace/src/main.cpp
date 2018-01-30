@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "clickandtraceapp.h"
+#include "blobtraceapp.h"
 
 // Nap includes
 #include <nap/logger.h>
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner using default event handler
-	nap::AppRunner<nap::ClickAndTraceApp, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::BlobTraceApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;
