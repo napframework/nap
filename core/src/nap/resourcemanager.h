@@ -116,6 +116,7 @@ namespace nap
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		EFileModified isFileModified(const std::string& modifiedFile);
 
+		
 	private:
 
 		/**

@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
         appRunner.getApp().setFilename(argv[1]);
     } else {
         // Default
-        appRunner.getApp().setFilename("data/default.json");
+        appRunner.getApp().setFilename("default.json");
     }
 
 

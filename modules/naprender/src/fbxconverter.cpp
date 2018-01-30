@@ -54,8 +54,7 @@ namespace nap
 			aiProcess_CalcTangentSpace |
 			aiProcess_Triangulate |
 			aiProcess_SortByPType |
-			aiProcess_JoinIdenticalVertices |
-			aiProcess_CalcTangentSpace );
+			aiProcess_JoinIdenticalVertices);
 
 		if (!errorState.check(scene != nullptr, "Unable to read %s", fbxPath.c_str()))
 			return false;

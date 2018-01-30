@@ -32,7 +32,7 @@ namespace nap
 
 		// Get the resource manager and load our scene / resources
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/videomodulation/videomodulation.json", error))
+		if (!mResourceManager->loadFile("videomodulation.json", error))
 			return false;
 		
 		// Get important entities
