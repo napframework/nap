@@ -18,8 +18,8 @@
 		{
 			"Type" : "nap::Shader",
 			"mID": "DripShader",
-			"mVertShader": "shaders/clickandtrace/drip.vert",
-			"mFragShader": "shaders/clickandtrace/drip.frag"
+			"mVertShader": "shaders/blobtrace/blob.vert",
+			"mFragShader": "shaders/blobtrace/blob.frag"
 		},
 
 		{
