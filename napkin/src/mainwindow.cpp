@@ -52,6 +52,7 @@ void MainWindow::addDocks()
 	addDock("AppRunner", &mAppRunnerPanel);
     addDock("Scene", &mScenePanel);
 	addDock("Timeline", &mTimelinePanel);
+	addDock("Curves", &mCurvePanel);
 }
 
 

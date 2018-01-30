@@ -12,6 +12,7 @@
 #include "themeselectionmenu.h"
 #include <panels/scenepanel.h>
 #include <panels/timeline/timelinepanel.h>
+#include <panels/timeline/curveeditorpanel.h>
 
 namespace napkin
 {
@@ -71,5 +72,6 @@ namespace napkin
 		ThemeSelectionMenu mThemeMenu;  // ThemeSelectionMenu
 		ScenePanel mScenePanel;			// ScenePanel
 		TimelinePanel mTimelinePanel;	// TimelinePanel
+		CurveEditorPanel mCurvePanel;	// Curve Editor panel
 	};
 };
