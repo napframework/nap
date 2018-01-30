@@ -3,7 +3,7 @@
 // External Includes
 #include <bitmaputils.h>
 #include <utility/fileutils.h>
-#include <texture2d.h>
+#include <rendertexture2d.h>
 
 // nap::indexmap run time class definition 
 RTTI_BEGIN_CLASS(nap::IndexMap)
@@ -22,7 +22,7 @@ namespace nap
 		mParameters.mMaxFilter = EFilterMode::Nearest;
 		mParameters.mMinFilter = EFilterMode::Nearest;
 
-		if (!Image::init(errorState))
+		if (!Texture2DFromFile::init(errorState))
 			return false;
 
 		// Make sure the amount of channels is > 3

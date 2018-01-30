@@ -1,7 +1,7 @@
 #include "imagesequencelayer.h"
 
 // External includes
-#include "image.h"
+#include "texture2dfromfile.h"
 #include <utility/fileutils.h>
 #include "bitmaputils.h"
 
@@ -67,8 +67,8 @@ namespace nap
 	ImageSequenceLayerInstance::ImageSequenceLayerInstance(ImageSequenceLayer& layer) :
 		mLayer(&layer)
 	{
-		mCurrentFrameTexture = std::make_unique<BaseTexture2D>();
-		mCurrentFrameTexture->init(layer.getTextureSettings());
+		mCurrentFrameTexture = std::make_unique<Texture2D>();
+		mCurrentFrameTexture->initTexture(layer.getTextureSettings());
 	}
 
 	void ImageSequenceLayerInstance::update(double deltaTime)
@@ -77,7 +77,7 @@ namespace nap
 		if (mNextFrameIndex != mCurrentFrameIndex)
 		{
 			Pixmap& pixmap = mLayer->getPixmap(mNextFrameIndex);
-			mCurrentFrameTexture->setData(pixmap);
+			mCurrentFrameTexture->update(pixmap);
 			mCurrentFrameIndex = mNextFrameIndex;
 		}
 

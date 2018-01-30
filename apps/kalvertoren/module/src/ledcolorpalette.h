@@ -2,7 +2,7 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <image.h>
+#include <texture2dfromfile.h>
 #include <color.h>
 #include <pixmap.h>
 #include <unordered_map>
@@ -14,9 +14,9 @@ namespace nap
 	 * The amount of colors extracted from the bitmap need to match
 	 * the amount of declared LED colors
 	 */
-	class NAPAPI LedColorPalette : public Image
+	class NAPAPI LedColorPalette : public Texture2DFromFile
 	{
-		RTTI_ENABLE(Image)
+		RTTI_ENABLE(Texture2DFromFile)
 	public:
 		virtual ~LedColorPalette();
 

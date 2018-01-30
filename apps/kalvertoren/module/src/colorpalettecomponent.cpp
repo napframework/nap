@@ -143,7 +143,7 @@ namespace nap
 	}
 
 
-	Image& ColorPaletteComponentInstance::getDebugPaletteImage()
+	Texture2DFromFile& ColorPaletteComponentInstance::getDebugPaletteImage()
 	{
 		return *getComponent<ColorPaletteComponent>()->mDebugImage;
 	}
@@ -212,6 +212,6 @@ namespace nap
 			}
 		}
 
-		mDebugImage->setData(mDebugImage->getPixmap());
+		mDebugImage->update(mDebugImage->getPixmap());
 	}
 }

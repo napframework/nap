@@ -4,7 +4,7 @@
 #include <bitmaputils.h>
 #include <utility/fileutils.h>
 #include <rtti/typeinfo.h>
-#include <basetexture2d.h>
+#include <texture2d.h>
 
 // External includes
 #include <FreeImage.h>
@@ -157,12 +157,9 @@ namespace nap
 		if (!errorState.check(mWidth > 0 && mHeight > 0, "Invalid size specified for pixmap"))
 			return false;
 
-		updateCaching();
+		updatePixelFormat();
 
 		mData.resize(getSizeInBytes());
-
-		// Store type of color
-		onInit();
 
 		return true;
 	}
@@ -238,15 +235,12 @@ namespace nap
 		mWidth = FreeImage_GetWidth(fi_bitmap);
 		mHeight = FreeImage_GetHeight(fi_bitmap);
 
-		updateCaching();
+		updatePixelFormat();
 
 		mData.resize(getSizeInBytes());
 		setData(FreeImage_GetBits(fi_bitmap), FreeImage_GetPitch(fi_bitmap));
 
 		FreeImage_Unload(fi_bitmap);
-
-		// Store type of color
-		onInit();
 
 		return true;
 	}
@@ -289,10 +283,8 @@ namespace nap
 	}
 
 
-	void Pixmap::initFromTexture(const nap::BaseTexture2D& texture)
+	void Pixmap::initFromTexture(const opengl::Texture2DSettings& settings)
 	{
-		const opengl::Texture2DSettings& settings = texture.getSettings();
-		
 		mWidth = settings.mWidth;
 		mHeight = settings.mHeight;
 
@@ -332,13 +324,10 @@ namespace nap
 			assert(false);
 		}
 
-		updateCaching();
+		updatePixelFormat();
 
 		uint64_t size = getSizeInBytes();
 		mData.resize(size);
-
-		// Store type of color
-		onInit();
 	}
 
 
@@ -429,7 +418,7 @@ namespace nap
 	}
 
 
-	void Pixmap::updateCaching()
+	void Pixmap::updatePixelFormat()
 	{
 		switch (mType)
 		{
@@ -458,16 +447,11 @@ namespace nap
 			mNumChannels = 4;
 			break;
 		}
-	}
 
-
-	void Pixmap::onInit()
-	{
 		std::unique_ptr<BaseColor> temp_clr = makePixel();
 		mColorType = temp_clr->get_type().get_raw_type();
 		mValueType = temp_clr->getValueType();
 	}
-
 }
 
 

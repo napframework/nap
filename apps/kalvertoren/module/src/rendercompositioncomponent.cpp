@@ -50,9 +50,9 @@ namespace nap
 		if (mTransferring)
 		{
 #ifndef _DEBUG 
-			activeTarget->getColorTexture().endGetData(mPixmap);
+			activeTarget->getColorTexture().endGetData();
 #else
-			activeTarget->getColorTexture().getData(mPixmap);
+			activeTarget->getColorTexture().getData();
 #endif // DEBUG
 
 		}
@@ -101,7 +101,7 @@ namespace nap
 		mTransferring = true;
 	}
 
-	nap::BaseTexture2D& RenderCompositionComponentInstance::getTexture()
+	nap::Texture2D& RenderCompositionComponentInstance::getTexture()
 	{
 		return activeTarget->getColorTexture();
 	}
@@ -109,11 +109,11 @@ namespace nap
 
 	nap::Pixmap& RenderCompositionComponentInstance::getPixmap()
 	{
-		return mPixmap;
+		return activeTarget->getColorTexture().getPixmap();
 	}
 
 
-	void RenderCompositionComponentInstance::renderPass(BaseTexture2D& inputA, BaseTexture2D& inputB, RenderTarget& target)
+	void RenderCompositionComponentInstance::renderPass(Texture2D& inputA, Texture2D& inputB, RenderTarget& target)
 	{
 		// Get plane to render
 		RenderableMeshComponentInstance& render_plane = *mRenderableComponent;

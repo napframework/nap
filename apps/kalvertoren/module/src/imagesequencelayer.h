@@ -84,12 +84,12 @@ namespace nap
 		/**
 		 *	@return The texture associated with this layer
 		 */
-		virtual nap::BaseTexture2D&			getTexture() override				{ return *mCurrentFrameTexture; }
+		virtual nap::Texture2D&			getTexture() override				{ return *mCurrentFrameTexture; }
 
 		/**
 		 *	@return Const texture associated with this layer
 		 */
-		virtual const nap::BaseTexture2D&	getTexture() const override			{ return *mCurrentFrameTexture; }
+		virtual const nap::Texture2D&	getTexture() const override			{ return *mCurrentFrameTexture; }
 
 		// Signal that is triggered when the sequence completed
 		nap::Signal<ImageSequenceLayerInstance&> completed;
@@ -99,6 +99,6 @@ namespace nap
 		double							mCurrentTime = 0.0;			///< Current playback time
 		int								mCurrentFrameIndex = -1;	///< Current playing frame index
 		int								mNextFrameIndex = 0;		///< Holds the next frame index
-		std::unique_ptr<BaseTexture2D>	mCurrentFrameTexture;		///< Current GPU texture (updated whenever the frame change)
+		std::unique_ptr<Texture2D>	mCurrentFrameTexture;		///< Current GPU texture (updated whenever the frame change)
 	};
 }

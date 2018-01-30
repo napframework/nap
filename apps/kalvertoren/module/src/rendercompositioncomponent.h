@@ -69,7 +69,7 @@ namespace nap
 		/**
 		 *	@return the output texture
 		 */
-		nap::BaseTexture2D& getTexture();
+		nap::Texture2D& getTexture();
 
 		/**
 		 *	@return the output pixmap
@@ -87,8 +87,8 @@ namespace nap
 		RenderService*	mRenderService = nullptr;
 		bool			mTransferring = false;
 
-		BaseTexture2D*	inputA = nullptr;
-		BaseTexture2D*	inputB = nullptr;
+		Texture2D*	inputA = nullptr;
+		Texture2D*	inputB = nullptr;
 		RenderTarget*	activeTarget = nullptr;
 		RenderTarget*	nextTarget = nullptr;
 
@@ -98,9 +98,6 @@ namespace nap
 		 * @param inputB the top input texture
 		 * @param target the render target to render to
 		 */
-		void renderPass(BaseTexture2D& inputA, BaseTexture2D& inputB, RenderTarget& target);
-
-		// Pixmap used to transfer GPU pixel values to
-		nap::Pixmap mPixmap;
+		void renderPass(Texture2D& inputA, Texture2D& inputB, RenderTarget& target);
 	};
 }

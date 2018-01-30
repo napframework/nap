@@ -2,8 +2,8 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <image.h>
-#include <texture2d.h>
+#include <texture2dfromfile.h>
+#include <rendertexture2d.h>
 
 
 namespace nap
@@ -25,13 +25,13 @@ namespace nap
 		 * @return the texture associated with this layer
 		 * Every derived class should implement it's own method;
 		 */
-		virtual nap::BaseTexture2D& getTexture() = 0;
+		virtual nap::Texture2D& getTexture() = 0;
 
 		/**
 		 * @return the texture associated with this layer
 		 * Every derived class should implement it's own method
 		 */
-		virtual const nap::BaseTexture2D& getTexture() const = 0;
+		virtual const nap::Texture2D& getTexture() const = 0;
 	};
 
 

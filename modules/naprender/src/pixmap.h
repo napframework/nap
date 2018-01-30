@@ -5,9 +5,14 @@
 #include <utility/dllexport.h>
 #include <color.h>
 
+namespace opengl
+{
+	struct Texture2DSettings;
+}
+
 namespace nap
 {
-	class BaseTexture2D;
+	class Texture2D;
 
 	/**
 	 * 2D image resource that is initially empty, there is no GPU data associated with this object
@@ -46,8 +51,14 @@ namespace nap
 
 		virtual ~Pixmap();
 
-
+		/**
+		 * @return The datatype of a pixel in this pixmap
+		 */
 		EDataType getDataType() const { return mType; }
+
+		/**
+		 * @return The channel type of a pixel in this pixmap
+		 */
 		EChannels getChannels() const { return mChannels; }
 
 		/**
@@ -75,7 +86,7 @@ namespace nap
 		 * Memory is allocated but the GPU pixel data is NOT copied over
 		 * @param texture the GPU texture to initialize this pixmap from
 		 */
-		void initFromTexture(const nap::BaseTexture2D& texture);
+		void initFromTexture(const opengl::Texture2DSettings& settings);
 
 		/**
 		 * @return the type of color associated with this pixmap
@@ -98,16 +109,6 @@ namespace nap
 		 */
 		int getHeight() const												{ return mHeight; }
  
-// 		/**
-// 		 * @return the bitmap associated with this resource
-// 		 */
-// 		opengl::Bitmap& getBitmap()											{ return mBitmap; }
-// 
-// 		/**
-// 		 *	@return the bitmap associated with this resource
-// 		 */
-// 		const opengl::Bitmap& getBitmap() const								{ return mBitmap; }
-
 		/**
 		 *	@return number of color channels associated with this pixmap
 		 */
@@ -266,10 +267,20 @@ namespace nap
 		EChannels mChannels			= EChannels::RGB;			///< property Channels: number and ordering of the channels in the bitmap
 
 	private:
-		void updateCaching();
+		/**
+		 * In order to avoid doing lookups from enum to pixel size, channel count in inner loops, we cache this data internally.
+		 * This function updates this information and should be called whenever the pixel format changes (i.e. data type or number of channels)
+		 */
+		void updatePixelFormat();
 
+		/**
+		 * Copy data from source with the specified pitch to the internal buffer. Used to initialize from a FreeImage file.
+		 */
 		void setData(uint8_t* source, unsigned int sourcePitch);
 
+		/**
+		 * Get a pointer to the data of the specified pixel
+		 */
 		template<typename T>
 		T* getPixelData(unsigned int x, unsigned int y) const
 		{
@@ -280,16 +291,11 @@ namespace nap
 			// Get index in to array offset by number of channels (pixel level)
 			unsigned int offset = ((y * mWidth) + x) * mNumChannels * mChannelSize;
 
-			// Update offset (pixel * num_channels * data_size
+			// Update offset (pixel * num_channels * data_size)
 			unsigned char* data_ptr = (unsigned char*)(mData.data()) + offset;
 			return (T*)(data_ptr);
 		}
 			
-		/**
-		 * Figures out this bitmap's type of color and stores it for further use
-		 */
-		void onInit();
-
 		/**
 		* Populates @outColorData with the memory addresses of the RGB pixel values
 		* This call is useful to retrieve the memory location of a pixel's color values in a bitmap
@@ -374,8 +380,8 @@ namespace nap
 
 	private:
 		std::vector<uint8_t> mData;
-		size_t			mChannelSize;			///< Cached size in bytes of a single channel. This is updated when setSettings is called.
-		uint8_t			mNumChannels;			///< Cached number of channels. This is updated when setSettings is called.
+		size_t			mChannelSize;			///< Cached size in bytes of a single channel. This is updated when updatePixelFormat is called.
+		uint8_t			mNumChannels;			///< Cached number of channels. This is updated when updatePixelFormat is called.
 	};
 
 	/**

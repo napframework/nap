@@ -2,7 +2,7 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <basetexture2d.h>
+#include <texture2d.h>
 #include <color.h>
 #include <pixmap.h>
 #include <unordered_map>

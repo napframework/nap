@@ -2,7 +2,7 @@
 
 #include "ledcolorcontainer.h"
 #include "ledcolorpalettegrid.h"
-#include "image.h"
+#include "texture2dfromfile.h"
 
 #include <component.h>
 #include <nap/objectptr.h>
@@ -41,7 +41,7 @@ namespace nap
 		ObjectPtr<IndexMap>				mIndexMap;											///< Property: The index map to use
 		ObjectPtr<LedColorPaletteGrid>	mPaletteGrid;										///< Property: The palette grid to use, containing palettes for each weak
 		ObjectPtr<LedColorContainer>	mColors;											///< Property: Link to all the available colors and the index map
-		ObjectPtr<Image>				mDebugImage;										///< Property: Debug image used to display the currently selected palette
+		ObjectPtr<Texture2DFromFile>				mDebugImage;										///< Property: Debug image used to display the currently selected palette
 		int								mIndex = 0;											///< Property: Current palette selection
 		float							mCycleSpeed = 1.0f;									///< Property: Time it takes to jump to a new color palette
 		ColorPaletteCycleMode			mVariationCycleMode = ColorPaletteCycleMode::Off;	///< Property: Default cycle mode
@@ -115,7 +115,7 @@ namespace nap
 		/**
 		 * @return The debug palette image
 		 */
-		Image& getDebugPaletteImage();
+		Texture2DFromFile& getDebugPaletteImage();
 
 		/**
 		 * @param indexColor the color to get the associated palette color for
@@ -149,7 +149,7 @@ namespace nap
 
 		ObjectPtr<IndexMap>				mIndexMap;									///< The index map to use
 		ObjectPtr<LedColorPaletteGrid>	mPaletteGrid;								///< The palette grid to use, containing palettes for each weak
-		ObjectPtr<Image>				mDebugImage;								///< Debug image used to display the currently selected palette
+		ObjectPtr<Texture2DFromFile>				mDebugImage;								///< Debug image used to display the currently selected palette
 
 		// Map that binds index colors to current color palette colors
 		std::map<IndexMap::IndexColor, LedColorPaletteGrid::PaletteColor> mIndexToPaletteMap;
