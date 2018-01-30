@@ -11,7 +11,7 @@
 		},
 
 		{
-            "Type": "nap::Texture2D",
+            "Type": "nap::RenderTexture2D",
             "mID": "VideoDepthTexture",
             "Parameters": 
             {
@@ -28,7 +28,7 @@
         },
 
         {
-            "Type": "nap::Texture2D",
+            "Type": "nap::RenderTexture2D",
             "mID": "VideoColorTexture",
             "Parameters": 
             {

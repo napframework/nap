@@ -4,7 +4,7 @@
 #include <entity.h>
 #include <mathutils.h>
 #include <renderablemeshcomponent.h>
-#include <texture2d.h>
+#include <rendertexture2d.h>
 
 // nap::selectvideocomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SelectVideoComponent)

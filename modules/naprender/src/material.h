@@ -6,7 +6,7 @@
 
 // Local includes
 #include "shader.h"
-#include "image.h"
+#include "texture2dfromfile.h"
 #include "ngpumesh.h"
 #include "uniformbinding.h"
 

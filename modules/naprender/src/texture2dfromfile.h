@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "basetexture2d.h"
+#include "texture2d.h"
 #include "pixmap.h"
 
 // External Includes
@@ -17,15 +17,15 @@ namespace nap
 	 * The bitmap is loaded automatically and populates the opengl texture
 	 * with the right data on initialization
 	 */
-	class NAPAPI Image : public BaseTexture2D
+	class NAPAPI Texture2DFromFile : public Texture2D
 	{
-		RTTI_ENABLE(BaseTexture2D)
+		RTTI_ENABLE(Texture2D)
 	public:
 		// Constructor
-		Image(const std::string& imgPath);
+		Texture2DFromFile(const std::string& imgPath);
 
 		// Default Constructor
-		Image() = default;
+		Texture2DFromFile() = default;
 
 		/**
 		* Loads the image from mImagePath.
@@ -34,23 +34,11 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * @return the pixmap associated with this image
-		 */
-		const nap::Pixmap& getPixmap() const							{ return mPixmap; }
-
-		/**
-		 *	@return the pixmap associated with this image
-		 */
-		nap::Pixmap& getPixmap()										{ return mPixmap; }
 
 	public:
 		// Path to img on disk
 		std::string				mImagePath;								///< Path to the image on disk to load
 		bool					mCompressed = false;					///< If the image on the GPU is compressed
-
-	private:
-		nap::Pixmap				mPixmap;								///< The CPU image representation
 	};
 
 }

@@ -82,12 +82,5 @@ namespace opengl
 		Texture2DSettings	mSettings;		// Settings object
 		GLuint				mPBO;			// Pixel buffer object used to read/write texture data if usage is DynamicRead or DynamicWrite
 		ETextureUsage		mUsage;			// Usage of the texture
-
-		/**
-		 * Initializes a bitmap based on the settings associated with this texture
-		 * @param bitmap the bitmap to initialize
-		 */
-		//void initBitmap(opengl::Bitmap& bitmap);
-		
 	};
 } // opengl

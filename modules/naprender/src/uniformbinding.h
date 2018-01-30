@@ -5,7 +5,7 @@
 
 // Local Includes
 #include "uniforms.h"
-#include "image.h"
+#include "texture2dfromfile.h"
 
 namespace nap
 {
