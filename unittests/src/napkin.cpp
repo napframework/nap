@@ -320,7 +320,7 @@ TEST_CASE("Commands", TAG_NAPKIN)
 	int sigDocCount = 0;
 	REQUIRE(sigDocChanged.count() == sigDocCount);
 
-	auto loadeddoc = ctx.loadDocument("data/objects.json");
+	auto loadeddoc = ctx.loadDocument("unit_tests_data/objects.json");
 	{
 		REQUIRE(loadeddoc);
 		REQUIRE(sigDocChanged.count() == ++sigDocCount);
