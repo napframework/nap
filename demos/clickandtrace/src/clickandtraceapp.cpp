@@ -13,6 +13,7 @@
 #include <triangleiterator.h>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <iostream>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -82,12 +83,24 @@ namespace nap
 
 		// Set mouse pos in shader
 		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
-		UniformVec3& uv_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformVec3>("inClickPosition");
+		UniformVec3& uv_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformVec3>("inBlobPosition");
 		uv_uniform.setValue(mUVSmoother.update(mMouseUvPosition, deltaTime));
 
+		// Set velocity in shader
+		UniformFloat& vel_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformFloat>("inVelocity");
+		float vel = math::fit(glm::length(mUVSmoother.getVelocity()), 0.0f, 0.66f, 0.0f,1.0f);
+		vel_uniform.setValue(vel);
+
+		// Set mouse position
+		UniformVec3& mou_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformVec3>("inMousePosition");
+		mou_uniform.setValue(mMouseUvPosition);
+
+		// Set time in shader
 		UniformFloat& time_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformFloat>("inTime");
 		time_uniform.setValue(mTime);
-		mTime += deltaTime;
+
+		// Increment time based on velocity
+		mTime += (deltaTime * math::fit<float>(vel, 0.0f, 1.0f, 1.0f, 3.0f));
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");
