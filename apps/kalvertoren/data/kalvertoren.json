@@ -75,7 +75,7 @@
         {
             "Type": "nap::ArtnetMeshFromFile",
             "mID": "HeiligewegMesh",
-            "Path": "data/kalvertoren/heiligeweg_export_heiligeweg.mesh",
+            "Path": "heiligeweg_export_heiligeweg.mesh",
             "OverrideSubnet": false,
             "Subnet": 0,
             "ChannelOffset": 0
@@ -83,7 +83,7 @@
         {
             "Type": "nap::ArtnetMeshFromFile",
             "mID": "KalverMesh",
-            "Path": "data/kalvertoren/kalver_export_kalver.mesh",
+            "Path": "kalver_export_kalver.mesh",
             "OverrideSubnet": false,
             "Subnet": 0,
             "ChannelOffset": 0
@@ -91,7 +91,7 @@
         {
             "Type": "nap::ArtnetMeshFromFile",
             "mID": "SingelMesh",
-            "Path": "data/kalvertoren/singel_export_singel.mesh",
+            "Path": "singel_export_singel.mesh",
             "OverrideSubnet": false,
             "Subnet": 1,
             "ChannelOffset": 0
@@ -1046,118 +1046,118 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "data/kalvertoren/uvmap.jpg",
+            "ImagePath": "uvmap.jpg",
             "Compressed": false
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Background1",
-            "Path": "data/kalvertoren/backgrounds/background_1.png"
+            "Path": "backgrounds/background_1.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Background2",
-            "Path": "data/kalvertoren/backgrounds/background_2.png"
+            "Path": "backgrounds/background_2.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Background3",
-            "Path": "data/kalvertoren/backgrounds/background_3.png"
+            "Path": "backgrounds/background_3.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Background4",
-            "Path": "data/kalvertoren/backgrounds/background_4.png"
+            "Path": "backgrounds/background_4.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Background5",
-            "Path": "data/kalvertoren/backgrounds/background_5.png"
+            "Path": "backgrounds/background_5.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Background6",
-            "Path": "data/kalvertoren/backgrounds/background_6.png"
+            "Path": "backgrounds/background_6.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Background7",
-            "Path": "data/kalvertoren/backgrounds/background_7.png"
+            "Path": "backgrounds/background_7.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Background8",
-            "Path": "data/kalvertoren/backgrounds/background_8.png"
+            "Path": "backgrounds/background_8.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Background9",
-            "Path": "data/kalvertoren/backgrounds/background_9.png"
+            "Path": "backgrounds/background_9.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Shape1",
-            "Path": "data/kalvertoren/shapes/shape_1.png"
+            "Path": "shapes/shape_1.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Shape2",
-            "Path": "data/kalvertoren/shapes/shape_2.png"
+            "Path": "shapes/shape_2.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Shape3",
-            "Path": "data/kalvertoren/shapes/shape_3.png"
+            "Path": "shapes/shape_3.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Shape4",
-            "Path": "data/kalvertoren/shapes/shape_4.png"
+            "Path": "shapes/shape_4.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Shape5",
-            "Path": "data/kalvertoren/shapes/shape_5.png"
+            "Path": "shapes/shape_5.png"
         },
         {
             "Type": "nap::ImageLayer",
             "mID": "Shape6",
-            "Path": "data/kalvertoren/shapes/shape_6.png"
+            "Path": "shapes/shape_6.png"
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence1",
-            "BaseFilename": "data/kalvertoren/sequences/MOVE-1/move_1_%03d.png",
+            "BaseFilename": "sequences/MOVE-1/move_1_%03d.png",
             "FPS": 5.0
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence2",
-            "BaseFilename": "data/kalvertoren/sequences/MOVE-2/move_2_%03d.png",
+            "BaseFilename": "sequences/MOVE-2/move_2_%03d.png",
             "FPS": 5.0
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence3",
-            "BaseFilename": "data/kalvertoren/sequences/MOVE-3/move_3_%03d.png",
+            "BaseFilename": "sequences/MOVE-3/move_3_%03d.png",
             "FPS": 5.0
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence4",
-            "BaseFilename": "data/kalvertoren/sequences/MOVE-4/move_4_%03d.png",
+            "BaseFilename": "sequences/MOVE-4/move_4_%03d.png",
             "FPS": 5.0
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence5",
-            "BaseFilename": "data/kalvertoren/sequences/MOVE-5/move_5_%04d.png",
+            "BaseFilename": "sequences/MOVE-5/move_5_%04d.png",
             "FPS": 5.0
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "TestSequence",
-            "BaseFilename": "data/kalvertoren/sequences/test/%d.png",
+            "BaseFilename": "sequences/test/%d.png",
             "FPS": 1.0
         },
         {
@@ -1171,7 +1171,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "data/kalvertoren/index_map/index_map.png",
+            "ImagePath": "index_map/index_map.png",
             "ColorCount": 13
         },
         {
@@ -1185,7 +1185,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "DynamicWrite",
-            "ImagePath": "data/kalvertoren/index_map/debug_palette.png"
+            "ImagePath": "index_map/debug_palette.png"
         },        
         {
             "Type": "nap::LedColorContainer",
@@ -1211,7 +1211,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "data/kalvertoren/palettes/palette_1.png",
+            "ImagePath": "palettes/palette_1.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1258,7 +1258,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "data/kalvertoren/palettes/palette_2.png",
+            "ImagePath": "palettes/palette_2.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1305,7 +1305,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "data/kalvertoren/palettes/palette_3.png",
+            "ImagePath": "palettes/palette_3.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1352,7 +1352,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "data/kalvertoren/palettes/palette_4.png",
+            "ImagePath": "palettes/palette_4.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1463,7 +1463,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "data/kalvertoren/palettes/palette_5.png",
+            "ImagePath": "palettes/palette_5.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1494,7 +1494,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "data/kalvertoren/palettes/palette_6.png",
+            "ImagePath": "palettes/palette_6.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1518,9 +1518,9 @@
         {
             "Type": "nap::LedColorPaletteGrid",
             "mID": "PaletteGrid",
-            "GridPath": "data/kalvertoren/palettes/palette_grid.png",
+            "GridPath": "palettes/palette_grid.png",
             "GridSize": 20,
-            "GridColorsPath": "data/kalvertoren/palettes/palette_grid_ledcolors.txt",
+            "GridColorsPath": "palettes/palette_grid_ledcolors.txt",
             "WeekColors": [
                 "Week1",
                 "Week2",
@@ -3629,17 +3629,17 @@
         {
             "Type": "nap::MeshFromFile",
             "mID": "HeiligewegFrameMesh",
-            "Path": "data/kalvertoren/heiligeweg_export_heiligeweg_frame.mesh"
+            "Path": "heiligeweg_export_heiligeweg_frame.mesh"
         },
         {
             "Type": "nap::MeshFromFile",
             "mID": "KalverFrameMesh",
-            "Path": "data/kalvertoren/kalver_export_kalver_frame.mesh"
+            "Path": "kalver_export_kalver_frame.mesh"
         },
         {
             "Type": "nap::MeshFromFile",
             "mID": "SingelFrameMesh",
-            "Path": "data/kalvertoren/singel_export_singel_frame.mesh"
+            "Path": "singel_export_singel_frame.mesh"
         },
         {
             "Type": "nap::PlaneMesh",

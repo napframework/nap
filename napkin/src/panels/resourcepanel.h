@@ -41,6 +41,11 @@ namespace napkin
 	public:
 		ResourcePanel();
 
+		/**
+		 * Set the current selection of the treeview to the given objects
+		 */
+		void selectObjects(const std::vector<nap::rtti::RTTIObject*> selection);
+
 	Q_SIGNALS:
 
 		void selectionChanged(QList<nap::rtti::RTTIObject*>& obj);

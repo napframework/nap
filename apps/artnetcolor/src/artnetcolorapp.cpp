@@ -31,7 +31,7 @@ namespace nap
 		
 		// Load scene
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/artnetcolor/artnetcolor.json", error))
+		if (!mResourceManager->loadFile("artnetcolor.json", error))
 			return false; 
 		
 		// Get important entities

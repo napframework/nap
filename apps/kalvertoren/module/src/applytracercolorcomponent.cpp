@@ -4,7 +4,7 @@
 #include <entity.h>
 #include <meshutils.h>
 #include <mathutils.h>
-#include "TriangleIterator.h"
+#include <triangleiterator.h>
 
 // nap::applytracercolorcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyTracerColorComponent)
@@ -52,25 +52,20 @@ namespace nap
 		// same triangle. 
 		mCurrentChannel = selected_channel - ((selected_channel - mesh.mChannelOffset) % 4);
 
-		const std::vector<int>& channel_data = mesh.getChannelAttribute().getData();
-		std::vector<glm::vec4>& color_data = mesh.getColorAttribute().getData();
-		std::vector<glm::vec4>& artn_data = mesh.getArtnetColorAttribute().getData();
+		const VertexAttribute<int>& channel_data = mesh.getChannelAttribute();
+		VertexAttribute<glm::vec4>& color_data = mesh.getColorAttribute();
+		VertexAttribute<glm::vec4>& artn_data = mesh.getArtnetColorAttribute();
 
-		TriangleShapeIterator shape_iterator(mesh.getMeshInstance());
-		while (!shape_iterator.isDone())
+		TriangleIterator triangle_iterator(mesh.getMeshInstance());
+		while (!triangle_iterator.isDone())
 		{
-			glm::ivec3 indices = shape_iterator.next();
+			Triangle triangle = triangle_iterator.next();
 
-			int channel_number = channel_data[indices[0]];
+			int channel_number = channel_data[triangle.firstIndex()];
 
 			glm::vec4 color = channel_number == mCurrentChannel ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-			color_data[indices[0]] = color;
-			color_data[indices[1]] = color;
-			color_data[indices[2]] = color;
-
-			artn_data[indices[0]] = color;
-			artn_data[indices[1]] = color;
-			artn_data[indices[2]] = color;
+			triangle.setVertexData(color_data, color);
+			triangle.setVertexData(artn_data, color);
 		}
 
 		nap::utility::ErrorState error;

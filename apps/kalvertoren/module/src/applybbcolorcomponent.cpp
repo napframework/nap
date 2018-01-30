@@ -4,7 +4,7 @@
 #include <entity.h>
 #include <meshutils.h>
 #include <mathutils.h>
-#include "TriangleIterator.h"
+#include <triangleiterator.h>
 
 // nap::boundscolorcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyBBColorComponent)
@@ -42,20 +42,22 @@ namespace nap
 		const math::Box& box = mesh.getBoundingBox();
 
 		// Get attributes necessary to color based on bounds
-		const std::vector<glm::vec3>& position_data = mesh.getPositionAttribute().getData();
-		std::vector<glm::vec4>& color_data = mesh.getColorAttribute().getData();
-		std::vector<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute().getData();
+		const VertexAttribute<glm::vec3>& position_data = mesh.getPositionAttribute();
+		VertexAttribute<glm::vec4>& color_data = mesh.getColorAttribute();
+		VertexAttribute<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute();
 
-		TriangleShapeIterator shape_iterator(mesh.getMeshInstance());
+		TriangleIterator shape_iterator(mesh.getMeshInstance());
 		while (!shape_iterator.isDone())
 		{
-			glm::ivec3 indices = shape_iterator.next();
+			Triangle triangle = shape_iterator.next();
+
+			TriangleData<glm::vec3> positionTriangleData = triangle.getVertexData(position_data);
 
 			// Get avg position value
 			glm::vec3 avg_pos(0.0f, 0.0f, 0.0f);
-			avg_pos += position_data[indices[0]];
-			avg_pos += position_data[indices[1]];
-			avg_pos += position_data[indices[2]];
+			avg_pos += positionTriangleData.first();
+			avg_pos += positionTriangleData.second();
+			avg_pos += positionTriangleData.third();
 			avg_pos /= 3;
 
 			float r = pow(math::fit<float>(avg_pos.x, box.getMin().x, box.getMax().x, 0.0f, 1.0f), 2.0);
@@ -63,14 +65,11 @@ namespace nap
 			float b = pow(math::fit<float>(avg_pos.z, box.getMin().z, box.getMax().z, 0.0f, 1.0f), 2.0);
 
 			// Set rgb for the mesh
-			color_data[indices[0]] = glm::vec4(r, g, b, color_data[indices[0]].a);
-			color_data[indices[1]] = glm::vec4(r, g, b, color_data[indices[1]].a);
-			color_data[indices[2]] = glm::vec4(r, g, b, color_data[indices[2]].a);
+			TriangleData<glm::vec4> colorTriangleData = triangle.getVertexData(color_data);
+			triangle.setVertexData(color_data, glm::vec4(r, g, b, colorTriangleData.first().a), glm::vec4(r, g, b, colorTriangleData.second().a), glm::vec4(r, g, b, colorTriangleData.third().a));
 
 			// Set rgb for arnet
-			artnet_data[indices[0]] = glm::vec4(r, g, b, 0.0f);
-			artnet_data[indices[1]] = glm::vec4(r, g, b, 0.0f);
-			artnet_data[indices[2]] = glm::vec4(r, g, b, 0.0f);
+			triangle.setVertexData(artnet_data, glm::vec4(r, g, b, 0.0f));
 		}
 
 		nap::utility::ErrorState error;
