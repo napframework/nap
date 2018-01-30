@@ -148,6 +148,9 @@ def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
     package_filename = build_package_filename(project_full_name, project_version, 'macOS', timestamp)
     package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
 
+    # Populate build info into the project
+    populate_build_info_into_project(bin_dir, timestamp)
+
     project_dir = os.path.abspath(os.path.join(bin_dir, os.pardir))
 
     archive_dir = os.path.join(project_dir, package_filename)
@@ -171,6 +174,9 @@ def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
 def archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version):
     package_filename = build_package_filename(project_full_name, project_version, 'Win64', timestamp)
     package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
+
+    # Populate build info into the project
+    populate_build_info_into_project(bin_dir, timestamp)
 
     project_dir = os.path.abspath(os.path.join(bin_dir, os.pardir))
 
@@ -213,6 +219,18 @@ def process_project_info(project_path):
 
     # Return version for population into package name
     return (version, full_project_name)
+
+# Populate build information into our packaged project JSON
+def populate_build_info_into_project(project_package_path, timestamp):
+    # Read our project info
+    project_info_file = os.path.join(project_package_path, PROJECT_INFO_FILE)
+    with open(project_info_file) as json_file:
+        project_info = json.load(json_file)
+
+    # Add project timestamp and write back out
+    project_info['buildTimestamp'] = timestamp
+    with open(project_info_file, 'w') as outfile:
+        json.dump(project_info, outfile, sort_keys=True, indent=2)
     
 # Main
 if __name__ == '__main__':
