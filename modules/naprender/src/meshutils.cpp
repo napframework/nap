@@ -24,7 +24,43 @@ namespace nap
 			return false;
 		}
 	}
+
 	
+	int getTriangleCount(const MeshInstance& mesh)
+	{
+		int count = 0;
+
+		for (int shape_index = 0; shape_index < mesh.getNumShapes(); ++shape_index)
+		{
+			const MeshShape& shape = mesh.getShape(shape_index);
+			switch (shape.getDrawMode())
+			{
+			case opengl::EDrawMode::TRIANGLES:
+			{
+				count += shape.getNumIndices() / 3;
+				break;
+			}
+			case opengl::EDrawMode::TRIANGLE_FAN:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
+			case opengl::EDrawMode::TRIANGLE_STRIP:		// After that every vertex is a triangle
+			{
+				count += math::max<int>(shape.getNumIndices() - 2, 0);
+				break;
+			}
+			case opengl::EDrawMode::LINE_LOOP:
+			case opengl::EDrawMode::LINE_STRIP:
+			case opengl::EDrawMode::LINES:
+			case opengl::EDrawMode::POINTS:
+			case opengl::EDrawMode::UNKNOWN:
+				break;
+			default:
+				assert(false);
+				break;
+			}
+		}
+
+		return count;
+	}
+
 
 	glm::vec3 computeTriangleNormal(const std::array<int, 3>& indices, const VertexAttribute<glm::vec3>& vertices)
 	{
