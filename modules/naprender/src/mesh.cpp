@@ -8,7 +8,6 @@ RTTI_BEGIN_CLASS(nap::MeshShape)
 	RTTI_PROPERTY("Indices",		&nap::MeshShape::mIndices,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-
 RTTI_BEGIN_CLASS(nap::RTTIMeshProperties)
 	RTTI_PROPERTY("NumVertices",	&nap::RTTIMeshProperties::mNumVertices,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attributes",		&nap::RTTIMeshProperties::mAttributes,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
@@ -45,7 +44,8 @@ namespace nap
 		stream << "Color" << colorChannel;
 		return stream.str();
 	}
-
+	
+	//////////////////////////////////////////////////////////////////////////
 
 	MeshInstance::~MeshInstance()
 	{
@@ -141,6 +141,7 @@ namespace nap
 		return true;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 
 	bool Mesh::init(utility::ErrorState& errorState)
 	{

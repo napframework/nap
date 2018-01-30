@@ -128,6 +128,7 @@ namespace nap
 		int mTriangleIndex;
 	};
 
+
 	/**
 	 * Contains the indices of a triangle within a MeshInstance
 	 */

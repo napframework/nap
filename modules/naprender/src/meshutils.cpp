@@ -173,27 +173,13 @@ namespace nap
 		// Resize to number of indices
 		outConnectivityMap.resize(mesh.getNumVertices());
 
-// 		TriangleIterator iterator(mesh);
-// 		while (!iterator.isDone())
-// 		{
-// 			Triangle triangle = iterator.next();
-// 			outConnectivityMap[indices[0]].emplace_back(triangle);
-// 			outConnectivityMap[indices[1]].emplace_back(triangle);
-// 			outConnectivityMap[indices[2]].emplace_back(triangle);
-// 		}
-
-// 		// Get number of triangles
-// 		int triangle_count = getTriangleCount(mesh);
-// 
-// 		// For every triangle, fetch the indices
-// 		// Every index is associated with that triangle, so add the triangle to the right index
-// 		glm::ivec3 triangle_indices;
-// 		for (int t = 0; t < triangle_count; t++)
-// 		{
-// 			getTriangleIndices(mesh, t, triangle_indices);
-// 			outConnectivityMap[triangle_indices[0]].emplace_back(t);
-// 			outConnectivityMap[triangle_indices[1]].emplace_back(t);
-// 			outConnectivityMap[triangle_indices[2]].emplace_back(t);
-// 		}
+		TriangleIterator iterator(mesh);
+		while (!iterator.isDone())
+		{
+			Triangle triangle = iterator.next();
+			outConnectivityMap[triangle.firstIndex()].emplace_back(triangle);
+			outConnectivityMap[triangle.secondIndex()].emplace_back(triangle);
+			outConnectivityMap[triangle.thirdIndex()].emplace_back(triangle);
+		}
 	}
 }
