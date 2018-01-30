@@ -2,8 +2,8 @@
 
 // vertex shader input  
 in vec3 passUVs;						//< frag Uv's
-in vec3 passNormal;						//< frag normal in world space
-in vec3 passPosition;					//< frag world space position 
+in vec3 passNormal;						//< frag normal in object space
+in vec3 passPosition;					//< frag position in object space
 in mat4 passModelMatrix;				//< modelMatrix
 
 // uniform inputs
@@ -16,7 +16,6 @@ uniform vec3 	inMousePosition;		//< Current mouse position in uv space
 // output
 out vec4 out_Color;
 
-const vec2		location = vec2(0.5, 0.5);
 const float		minDistance = 0.4;
 const float		maxDistance = 0.1;
 const float		speed = 0.005;
@@ -112,17 +111,20 @@ float calculateMouseCursor(vec2 uv)
 
 
 // Shades a color based on a light
-vec3 applyLight(vec3 color, vec3 normal)
+vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 {
 	// Calculate normal to world
 	mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
 	vec3 ws_normal = normalize(normal * normal_matrix);
 
+	// Calculate frag to world
+	vec3 ws_position = vec3(passModelMatrix * vec4(position, 1.0));
+
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(lightPos - passPosition);
+	vec3 surfaceToLight = normalize(lightPos - ws_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(inCameraPosition - passPosition);
+	vec3 surfaceToCamera = normalize(inCameraPosition - ws_position);
 
 	// Ambient color
 	vec3 ambient = color * ambientIntensity;
@@ -188,10 +190,11 @@ void main()
 
 	// Mix in border
 	color  = mix(color,colorFor, edge);
-	normal = mix(normal, vec3(0.0,0.0,1.0),edge);
+	normal = mix(normal, passNormal,edge);
 
 	// Apply lights and specular
-	vec3 lit_color = applyLight(color, normal);
+	vec3 displ_pos = passPosition + (passNormal * sin_color * 0.25);
+	vec3 lit_color = applyLight(color, normal, displ_pos);
 
 	// Set fragment color output
 	out_Color =  vec4(lit_color,1.0);

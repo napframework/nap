@@ -11,22 +11,22 @@ in vec3 in_Normal;
 
 // Output to fragment shader
 out vec3 passUVs;					//< vetex uv's
-out vec3 passNormal;				//< vertex normal in world space
-out vec3 passPosition;				//< vertex world space position
-out mat4 passModelMatrix;
+out vec3 passNormal;				//< vertex normal in object space
+out vec3 passPosition;				//< vertex position in object space
+out mat4 passModelMatrix;			//< model matrix
 
 void main(void)
 {
 	// Calculate frag position
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
 
-	//rotate normal based on model matrix and set
-    mat3 normal_matrix = transpose(inverse(mat3(modelMatrix)));
-	passNormal = normalize(normal_matrix * in_Normal);
+    // Pass normal in object space
+	passNormal = in_Normal;
 
-	// calculate vertex world space position and set
-	passPosition = vec3(modelMatrix * vec4(in_Position, 1));
+	// Pass position in object space
+	passPosition = in_Position;
 
+	// Pass model matrix for blob light calculations
 	passModelMatrix = modelMatrix;
 
 	// Forward uvs to fragment shader
