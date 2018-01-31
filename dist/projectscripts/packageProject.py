@@ -56,13 +56,12 @@ def find_project(project_name):
         print("Found demo %s at %s" % (project_name, demo_path))
         return demo_path
     else:
-        print("Couldn't find project or example with name '%s'" % project_name)
+        print("Error: Couldn't find project or example with name '%s'" % project_name)
         return None
 
 def package_project(project_name, show_created_package):
     project_path = find_project(project_name)
     if project_path is None:
-        print("Could not find project %s" % project_name)
         return ERROR_MISSING_PROJECT
 
     (project_version, project_full_name) = process_project_info(project_path)
