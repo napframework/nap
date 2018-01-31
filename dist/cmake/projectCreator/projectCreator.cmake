@@ -29,7 +29,7 @@ set(PROJECT_DIR ${NAP_ROOT}/projects/${PROJECT_NAME_LOWERCASE})
 # TODO potentially look into a generic recursive globbed version of this, but it's probably not worth it
 configure_file(${TEMPLATE_ROOT}/project.json ${PROJECT_DIR}/project.json @ONLY)
 configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${PROJECT_DIR}/CMakeLists.txt @ONLY)
-configure_file(${TEMPLATE_ROOT}/data/template/appStructure.json ${PROJECT_DIR}/data/${PROJECT_NAME_LOWERCASE}/appStructure.json @ONLY)
+configure_file(${TEMPLATE_ROOT}/data/appStructure.json ${PROJECT_DIR}/data/appStructure.json @ONLY)
 
 configure_file(${TEMPLATE_ROOT}/src/main.cpp ${PROJECT_DIR}/src/main.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateapp.cpp ${PROJECT_DIR}/src/${PROJECT_NAME_LOWERCASE}app.cpp @ONLY)
