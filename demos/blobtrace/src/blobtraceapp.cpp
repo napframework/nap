@@ -47,12 +47,13 @@ namespace nap
 		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
 		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
-		// Find the world and camera entities
+		// Find the camera and plane entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
-
 		mPlaneEntity = scene->findEntity("Plane");
 		mCameraEntity = scene->findEntity("Camera");
-		mPlaneMesh = mResourceManager->findObject("PlaneMesh");
+
+		// Find the mesh used for intersection testing
+		mIntersectMesh = mResourceManager->findObject("IntersectMesh");
 
 		return true;
 	}
@@ -227,7 +228,7 @@ namespace nap
 		
 		// Get the attributes we need, the vertices (position data) is used to perform a world space triangle intersection
 		// The uv attribute is to compute the uv coordinates when a triangle is hit
-		MeshInstance& mesh = mPlaneMesh->getMeshInstance();
+		MeshInstance& mesh = mIntersectMesh->getMeshInstance();
 		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		VertexAttribute<glm::vec3>& uvs = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
 

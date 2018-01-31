@@ -82,12 +82,12 @@ float calculateDisplacement(vec2 uv)
 	// Get fade distance
 	float min_fade = fade * currentDistance;
 	min_fade = clamp(currentDistance - min_fade, 0, 1);
-	float fade_mult = fit(uv_dist, min_fade, currentDistance, 1, 0, true);
+	float fade_mult = pow(fit(uv_dist, min_fade, currentDistance, 1, 0, true),1.33);
 
 	// Multiply over displacement
 	displacement_v *= fade_mult;
 
-	return displacement_v;
+	return clamp(displacement_v,0,1);
 }
 
 
@@ -110,7 +110,7 @@ float calculateMouseCursor(vec2 uv)
 }
 
 
-// Shades a color based on a light
+// Shades a color based on a light, incoming normal and position should be in object space
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 {
 	// Calculate normal to world
@@ -163,9 +163,9 @@ void main()
 	float sin_color_y = calculateDisplacement(uvpos_y);
 
 	// Use the displacement information to compute a normal
-	vec3 pos_x = vec3(uvpos_x.x, uvpos_x.y, sin_color_x * 0.05);
-	vec3 pos_y = vec3(uvpos_y.x, uvpos_y.y, sin_color_y * 0.05);
-	vec3 pos_n = vec3(uvpos_n.x, uvpos_n.y, sin_color * 0.05);
+	vec3 pos_x = vec3(uvpos_x.x, uvpos_x.y, sin_color_x * 0.066);
+	vec3 pos_y = vec3(uvpos_y.x, uvpos_y.y, sin_color_y * 0.066);
+	vec3 pos_n = vec3(uvpos_n.x, uvpos_n.y, sin_color * 0.066);
 
 	// Calculate tangents
 	vec3 tangent =   pos_x - pos_n;
@@ -193,8 +193,7 @@ void main()
 	normal = mix(normal, passNormal,edge);
 
 	// Apply lights and specular
-	vec3 displ_pos = passPosition + (passNormal * sin_color * 0.25);
-	vec3 lit_color = applyLight(color, normal, displ_pos);
+	vec3 lit_color = applyLight(color, normal, passPosition);
 
 	// Set fragment color output
 	out_Color =  vec4(lit_color,1.0);

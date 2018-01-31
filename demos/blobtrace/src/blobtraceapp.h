@@ -10,7 +10,7 @@
 #include <inputservice.h>
 #include <imguiservice.h>
 #include <app.h>
-#include <spheremesh.h>
+#include <planemesh.h>
 #include <smoothdamp.h>
 
 namespace nap
@@ -91,7 +91,7 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow;										//< Pointer to the render window		
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;							//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;							//< Pointer to the entity that holds the sphere
-		ObjectPtr<SphereMesh> mPlaneMesh = nullptr;									//< Plane that is rendered to screen
+		ObjectPtr<PlaneMesh> mIntersectMesh = nullptr;								//< Plane that is used for ray intersection
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };				//< GUI text highlight color
 		bool mMouseDown = false;													//< If the mouse button is currently pressed
 		float mTime = 0.0f;															//< Current application running time

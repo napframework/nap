@@ -3,6 +3,9 @@
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
+uniform vec3 	inBlobPosition;			//< Blob position in uv space
+uniform float 	inTime;					//< Modulation time
+uniform float 	inVelocity;				//< Velocity used for modulating frequency
 
 // Input Vertex Attributes
 in vec3	in_Position;
@@ -14,17 +17,90 @@ out vec3 passUVs;					//< vetex uv's
 out vec3 passNormal;				//< vertex normal in object space
 out vec3 passPosition;				//< vertex position in object space
 out mat4 passModelMatrix;			//< model matrix
+out vec2 passColor;
 
+const float		displacement = 0.033;
+const float		minDistance = 0.4;
+const float		maxDistance = 0.1;
+const float		speed = 0.005;
+const float		fade = 0.75;
+const float		minFrequency = 499.8;
+const float		maxFrequency = 500;
+const float		minDistribution = 2.25;
+const float		maxDistribution = 4.0;
+
+// Maps a value to a new range
+float fit(float value, float inMin, float inMax, float outMin, float outMax, bool doClamp)
+{
+	float v = value;
+	if(doClamp)
+		v = clamp(v, inMin, inMax);
+
+	float m = inMax - inMin;
+
+	if(m == 0.0)
+		m = 0.00001;
+	return (v - inMin) / (m) * (outMax - outMin) + outMin;
+}
+
+
+// Calculates blob displacement based on the blob position and movement speed
+// This is just a fancy sine mnodulation function
+float calculateDisplacement(vec2 uv)
+{
+	// Distance in uv space from click to frag
+	float uv_dist = distance(inBlobPosition.xy, uv);
+	float currentDistance = mix(minDistance, maxDistance, pow(inVelocity,0.75f));
+
+	// Get mapped normalized value
+	float uv_dist_norm = fit(uv_dist, 0.0, currentDistance, 0.0, 1.0, false);
+	float distribution = mix(minDistribution, maxDistribution, inVelocity);
+	uv_dist_norm = pow(uv_dist_norm, distribution);
+
+	// Fit distribution based on distance
+	float max_dist_weight = 1.0 / distribution;
+	uv_dist_norm = fit(uv_dist_norm, 0.0, 1.0, 0.125, max_dist_weight, false);
+
+	// Multiply distance with weighted freq scale over distance
+	float weighted_dist = uv_dist * uv_dist_norm;
+
+	// Apply phase
+	weighted_dist += ((inTime * speed) * -1.0);
+
+	// Apply freq
+	weighted_dist *= mix(minFrequency, maxFrequency, inVelocity);
+	
+	// Get sin over distance
+	float displacement_v = (sin(weighted_dist) + 1.0) / 2.0;
+
+	// Get fade distance
+	float min_fade = fade * currentDistance;
+	min_fade = clamp(currentDistance - min_fade, 0, 1);
+	float fade_mult = pow(fit(uv_dist, min_fade, currentDistance, 1, 0, true),1.33);
+
+	// Multiply over displacement
+	displacement_v *= fade_mult;
+
+	return clamp(displacement_v,0,1);
+}
+
+
+// Use the blob function to calculate displacement
+// The same function is used in the fragment shader to calculate the normals for lighting
+// It's important that the const values are similar for both the frag and vertex shader 
 void main(void)
 {
+	float sin_v = calculateDisplacement(in_UV0.xy);
+	vec3 displ_pos = in_Position + (in_Normal * sin_v * displacement);
+
 	// Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(displ_pos, 1.0);
 
     // Pass normal in object space
 	passNormal = in_Normal;
 
 	// Pass position in object space
-	passPosition = in_Position;
+	passPosition = displ_pos;
 
 	// Pass model matrix for blob light calculations
 	passModelMatrix = modelMatrix;
