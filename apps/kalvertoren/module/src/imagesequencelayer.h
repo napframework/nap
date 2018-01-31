@@ -74,12 +74,12 @@ namespace nap
 		/**
 		 *	@return the total amount of images in the sequence of the layer
 		 */
-		int getNumBitmaps() const												{ return mLayer->getNumBitmaps(); }
+		int getNumBitmaps() const											{ return mLayer->getNumBitmaps(); }
 
 		/**
 		 *	@return the length of the image sequence in seconds
 		 */
-		float getLength() const													{ return mLayer->getLength(); }
+		float getLength() const												{ return mLayer->getLength(); }
 
 		/**
 		 *	@return The texture associated with this layer
@@ -99,6 +99,6 @@ namespace nap
 		double							mCurrentTime = 0.0;			///< Current playback time
 		int								mCurrentFrameIndex = -1;	///< Current playing frame index
 		int								mNextFrameIndex = 0;		///< Holds the next frame index
-		std::unique_ptr<Texture2D>	mCurrentFrameTexture;		///< Current GPU texture (updated whenever the frame change)
+		std::unique_ptr<Texture2D>		mCurrentFrameTexture;		///< Current GPU texture (updated whenever the frame change)
 	};
 }

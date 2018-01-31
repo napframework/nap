@@ -29,10 +29,10 @@ namespace nap
 		virtual std::unique_ptr<LayerInstance> createInstance() override;
 
 	public:
-		std::string mImagePath;														///< Path to the image on disk
+		std::string mImagePath;		///< Path to the image on disk
 
 	private:
-		Texture2DFromFile mImage;
+		Texture2DFromFile mImage;	///< Texture
 	};
 
 

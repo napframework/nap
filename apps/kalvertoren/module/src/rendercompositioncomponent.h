@@ -87,8 +87,8 @@ namespace nap
 		RenderService*	mRenderService = nullptr;
 		bool			mTransferring = false;
 
-		Texture2D*	inputA = nullptr;
-		Texture2D*	inputB = nullptr;
+		Texture2D*		inputA = nullptr;
+		Texture2D*		inputB = nullptr;
 		RenderTarget*	activeTarget = nullptr;
 		RenderTarget*	nextTarget = nullptr;
 
