@@ -28,7 +28,7 @@ namespace nap
 	 * A ray is cast from the screen in to the world when the mouse is moved
 	 * When the ray hits a triangle of the intersection plane the returned (barycentric) coordinates are used to compute the uv coordinates at the hit location
 	 * All movement and positioning of the blob happens in uv space!
-	 * The intersection plane only has 2 triangles. The plane that is rendered to screen a lot more because of the blob vertex displacement
+	 * The intersection plane only has 2 triangles. The plane that is rendered to screen has more to create the displacement effect by the blob.vert shader
 	 * All shading and lighting is handled by the blob.fragment shader, including the generation of the normals
 	 * 
 	 * On update a set of shader variables is set, most importantly the accumulated time. 
