@@ -507,13 +507,6 @@
         },
         {
             "Type": "nap::Video",
-            "mID": "FlareVideo",
-            "Path": "flare.mov",
-            "Loop": false,
-            "Speed": 1.0
-        },
-        {
-            "Type": "nap::Video",
             "mID": "PeopleVideo",
             "Path": "people.mp4",
             "Loop": false,
