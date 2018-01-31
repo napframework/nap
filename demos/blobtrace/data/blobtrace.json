@@ -24,7 +24,14 @@
 
 		{
 			"Type" : "nap::PlaneMesh",
-			"mID": "PlaneMesh"
+			"mID": "IntersectMesh"
+		},
+
+		{
+			"Type" : "nap::PlaneMesh",
+			"mID": "RenderMesh",
+			"Rows" : 1024,
+			"Columns" : 1024
 		},
 
 		{
@@ -82,7 +89,7 @@
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "PlaneMesh",
+					"Mesh" : "RenderMesh",
 					"MaterialInstance" : 
 					{
 						"mID": "WorldMaterialInstance",
