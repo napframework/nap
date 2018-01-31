@@ -7,7 +7,7 @@
 #include <nap/logger.h>
 #include <iostream>
 
-RTTI_DEFINE(nap::@MODULE_NAME_CAMELCASE@Service)
+RTTI_DEFINE_CLASS(nap::@MODULE_NAME_CAMELCASE@Service)
 
 namespace nap
 {
