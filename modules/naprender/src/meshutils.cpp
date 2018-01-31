@@ -2,7 +2,6 @@
 #include <mathutils.h>
 #include <glm/gtx/normal.hpp>
 #include <triangleiterator.h>
-#include <glm/gtx/intersect.hpp>
 
 namespace nap
 {
@@ -29,16 +28,49 @@ namespace nap
 		}
 
 
-		glm::vec3 computeTriangleNormal(const glm::ivec3& indices, const VertexAttribute<glm::vec3>& vertices)
+		int getTriangleCount(const MeshInstance& mesh)
 		{
-			assert(indices[0] < vertices.getCount());
-			assert(indices[1] < vertices.getCount());
-			assert(indices[2] < vertices.getCount());
-			return glm::cross((vertices[indices[0]] - vertices[indices[1]]), (vertices[indices[0]] - vertices[indices[2]]));
+			int count = 0;
+
+			for (int shape_index = 0; shape_index < mesh.getNumShapes(); ++shape_index)
+			{
+				const MeshShape& shape = mesh.getShape(shape_index);
+				switch (shape.getDrawMode())
+				{
+				case opengl::EDrawMode::TRIANGLES:
+				{
+					count += shape.getNumIndices() / 3;
+					break;
+				}
+				case opengl::EDrawMode::TRIANGLE_FAN:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
+				case opengl::EDrawMode::TRIANGLE_STRIP:		// After that every vertex is a triangle
+				{
+					count += math::max<int>(shape.getNumIndices() - 2, 0);
+					break;
+				}
+				case opengl::EDrawMode::LINE_LOOP:
+				case opengl::EDrawMode::LINE_STRIP:
+				case opengl::EDrawMode::LINES:
+				case opengl::EDrawMode::POINTS:
+				case opengl::EDrawMode::UNKNOWN:
+					break;
+				default:
+					assert(false);
+					break;
+				}
+			}
+
+			return count;
 		}
 
 
-		void  setTriangleIndices(MeshShape& mesh, int number, glm::ivec3& indices)
+		glm::vec3 computeTriangleNormal(const TriangleData<glm::vec3>& vertices)
+		{
+			return glm::cross((vertices[0] - vertices[1]), (vertices[0] - vertices[2]));
+		}
+
+
+		void  setTriangleIndices(MeshShape& mesh, int number, const std::array<int, 3>& indices)
 		{
 			// Copy triangle index over
 			MeshShape::IndexList& mesh_indices = mesh.getIndices();
@@ -52,27 +84,27 @@ namespace nap
 
 				// Fill the data
 				unsigned int* id = mesh_indices.data() + (number * 3);
-				*(id + 0) = indices.x;
-				*(id + 1) = indices.y;
-				*(id + 2) = indices.z;
+				*(id + 0) = indices[0];
+				*(id + 1) = indices[1];
+				*(id + 2) = indices[2];
 				break;
 			}
 			case opengl::EDrawMode::TRIANGLE_FAN:
 			{
 				assert(number + 2 < mesh_indices.size());
 				unsigned int* id = mesh_indices.data();
-				*id = indices.x;
-				*(id + number + 1) = indices.y;
-				*(id + number + 2) = indices.z;
+				*id = indices[0];
+				*(id + number + 1) = indices[1];
+				*(id + number + 2) = indices[2];
 				break;
 			}
 			case opengl::EDrawMode::TRIANGLE_STRIP:
 			{
 				assert(number + 2 < mesh_indices.size());
 				unsigned int* id = mesh_indices.data() + number;
-				*(id + 0) = indices.x;
-				*(id + 1) = indices.y;
-				*(id + 2) = indices.z;
+				*(id + 0) = indices[0];
+				*(id + 1) = indices[1];
+				*(id + 2) = indices[2];
 				break;
 			}
 			default:
@@ -118,7 +150,6 @@ namespace nap
 			int attr_count = positions.getCount();
 
 			// Normal data
-			const std::vector<glm::vec3>& position_data = positions.getData();
 			std::vector<glm::vec3>& normal_data = outNormals.getData();
 
 			// Reset normal data so we can accumulate data into it. Note that this is a memset
@@ -126,24 +157,20 @@ namespace nap
 			std::memset(normal_data.data(), 0, sizeof(glm::vec3) * normal_data.size());
 
 			// Accumulate all normals into the normals array
-			const glm::vec3* position_data_ptr = position_data.data();
 			glm::vec3* normal_data_ptr = normal_data.data();
 
 			// Go over all triangles in all triangle shapes
-			TriangleShapeIterator iterator(meshInstance);
+			TriangleIterator iterator(meshInstance);
 			while (!iterator.isDone())
 			{
-				glm::ivec3 indices = iterator.next();
+				Triangle triangle = iterator.next();
 
-				const glm::vec3& point0 = position_data_ptr[indices[0]];
-				const glm::vec3& point1 = position_data_ptr[indices[1]];
-				const glm::vec3& point2 = position_data_ptr[indices[2]];
+				const TriangleData<glm::vec3>& triangleData = triangle.getVertexData(positions);
+				glm::vec3 normal = glm::cross((triangleData.first() - triangleData.second()), (triangleData.first() - triangleData.third()));
 
-				glm::vec3 normal = glm::cross((point0 - point1), (point0 - point2));
-
-				normal_data_ptr[indices[0]] += normal;
-				normal_data_ptr[indices[1]] += normal;
-				normal_data_ptr[indices[2]] += normal;
+				normal_data_ptr[triangle.firstIndex()] += normal;
+				normal_data_ptr[triangle.secondIndex()] += normal;
+				normal_data_ptr[triangle.thirdIndex()] += normal;
 			}
 
 			// Normalize to deal with shared vertices
@@ -154,17 +181,15 @@ namespace nap
 
 		void reverseWindingOrder(MeshInstance& mesh)
 		{
-			TriangleShapeIterator iterator(mesh);
+			TriangleIterator iterator(mesh);
 			while (!iterator.isDone())
 			{
-				glm::ivec3 cindices = iterator.next();
-				std::swap(cindices.x, cindices.z);
+				Triangle triangle = iterator.next();
+				Triangle::IndexArray indices = triangle.indices();
+				std::swap(indices[0], indices[2]);
 
-				int shape_index = iterator.getCurrentShapeIndex();
-				int triangle_index = iterator.getCurrentTriangleIndex();
-				MeshShape& shape = mesh.getShape(shape_index);
-
-				setTriangleIndices(shape, triangle_index, cindices);
+				int shapeIndex = triangle.getShapeIndex();
+				setTriangleIndices(mesh.getShape(shapeIndex), triangle.getTriangleIndex(), indices);
 			}
 		}
 
@@ -178,10 +203,26 @@ namespace nap
 		}
 
 
-		bool intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const std::array<glm::vec3, 3>& vertices, glm::vec3& outCoordinates)
+		void computeConnectivity(const MeshInstance& mesh, MeshConnectivityMap& outConnectivityMap)
 		{
-			glm::vec3 e1 = vertices[1] - vertices[0];
-			glm::vec3 e2 = vertices[2] - vertices[0];
+			// Resize to number of indices
+			outConnectivityMap.resize(mesh.getNumVertices());
+
+			TriangleIterator iterator(mesh);
+			while (!iterator.isDone())
+			{
+				Triangle triangle = iterator.next();
+				outConnectivityMap[triangle.firstIndex()].emplace_back(triangle);
+				outConnectivityMap[triangle.secondIndex()].emplace_back(triangle);
+				outConnectivityMap[triangle.thirdIndex()].emplace_back(triangle);
+			}
+		}
+
+
+		bool intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const TriangleData<glm::vec3>& vertices, glm::vec3& outCoordinates)
+		{
+			glm::vec3 e1 = vertices.second() - vertices.first();
+			glm::vec3 e2 = vertices.third()  - vertices.first();
 
 			glm::vec3 tri_normal = glm::cross(e1, e2);
 			if (dot(rayDirection, tri_normal) > 0.0f)
@@ -195,7 +236,7 @@ namespace nap
 				return false;
 
 			float f = 1.0f / a;
-			glm::vec3 s = rayOrigin - vertices[0];
+			glm::vec3 s = rayOrigin - vertices.first();
 			outCoordinates.x = f * glm::dot(s, p);
 			if (outCoordinates.x < 0.0f || outCoordinates.x > 1.0f)
 				return false;
@@ -210,11 +251,11 @@ namespace nap
 		}
 
 
-		glm::vec3 computeBarycentric(const glm::vec3& point, const std::array<glm::vec3, 3>& triangle)
+		glm::vec3 computeBarycentric(const glm::vec3& point, const TriangleData<glm::vec3>& triangle)
 		{
-			glm::vec3 v0 = triangle[1] - triangle[0]; 
-			glm::vec3 v1 = triangle[2] - triangle[0]; 
-			glm::vec3 v2 = point - triangle[0];
+			glm::vec3 v0 = triangle.second() - triangle.first();
+			glm::vec3 v1 = triangle.third()  - triangle.first();
+			glm::vec3 v2 = point - triangle.first();
 			float d00 = glm::dot(v0, v0);
 			float d01 = glm::dot(v0, v1);
 			float d11 = glm::dot(v1, v1);
@@ -227,6 +268,5 @@ namespace nap
 			r[0] = 1.0f - r[1] - r[2];
 			return r;
 		}
-
 	}
 }

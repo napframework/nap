@@ -31,8 +31,8 @@ RTTI_BEGIN_CLASS(nap::Hexagon)
 	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Triangle)
-	RTTI_PROPERTY("Radius",		&nap::Triangle::mRadius,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::TriangleLine)
+	RTTI_PROPERTY("Radius",		&nap::TriangleLine::mRadius,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -306,7 +306,7 @@ namespace nap
 	}
 
 
-	bool Triangle::init(utility::ErrorState& errorState)
+	bool TriangleLine::init(utility::ErrorState& errorState)
 	{
 		if (!PolyLine::init(errorState))
 			return false;

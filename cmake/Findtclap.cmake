@@ -1,9 +1,8 @@
-find_path(
-        TCLAP_INCLUDE_DIRS
-        NAMES tclap/CmdLine.h
-        HINTS
-        ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/tclap-1.2.1/include
-)
+find_path(TCLAP_INCLUDE_DIRS
+          NAMES tclap/CmdLine.h
+          HINTS
+          ${THIRDPARTY_DIR}/tclap-1.2.1/include
+          )
 
 mark_as_advanced(TCLAP_INCLUDE_DIRS)
 
