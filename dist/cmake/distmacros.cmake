@@ -6,45 +6,59 @@ macro(set_default_build_type)
 	endif()
 endmacro()
 
+# Add the project module (if it exists) into the project
+macro(add_project_module)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/module/)
+        message("Found project module in ${CMAKE_SOURCE_DIR}/module/")
+        set(MODULE_INTO_PROJ TRUE)
+        set(IMPORTING_PROJECT_MODULE TRUE)
+        add_subdirectory(${CMAKE_SOURCE_DIR}/module/ project_module_build/)
+        unset(MODULE_INTO_PROJ)
+        unset(IMPORTING_PROJECT_MODULE)
+        target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/module/src)
+        target_link_libraries(${PROJECT_NAME} mod_${PROJECT_NAME})
+    endif()
+endmacro()
 
 # Somewhat temporary generic way to import each module for different configurations.  I think we'll need make proper package files for
 # each module in the long run
 # TODO let's avoid per-module cmake package files for now.. but probably need to re-address later
 macro(find_nap_module MODULE_NAME)
-    # TODO update to use usermodules directory instead
     if (EXISTS ${NAP_ROOT}/usermodules/${NAP_MODULE}/)
         message("Module is user module: ${MODULE_NAME}")
         set(MODULE_INTO_PROJ TRUE)
         add_subdirectory(${NAP_ROOT}/usermodules/${NAP_MODULE} usermodules/${NAP_MODULE})
+        unset(MODULE_INTO_PROJ)
     elseif (EXISTS ${NAP_ROOT}/modules/${NAP_MODULE}/)
+        if(NOT TARGET ${NAP_MODULE})
+            add_library(${MODULE_NAME} INTERFACE)
 
-        add_library(${MODULE_NAME} INTERFACE)
+            message("Adding lib path for ${MODULE_NAME}")
+            if (WIN32)
+                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.lib)
+                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.lib)
+            elseif (APPLE)
+                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.dylib)
+                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.dylib)
+            elseif (UNIX)
+                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.so)
+                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.so)
+            endif()
 
-        message("Adding lib path for ${MODULE_NAME}")
-        if (WIN32)
-            set(MOD_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.lib)
-            set(MOD_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.lib)
-        elseif (APPLE)
-            set(MOD_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.dylib)
-            set(MOD_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.dylib)
-        elseif (UNIX)
-            set(MOD_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.so)
-            set(MOD_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.so)
-        endif()
-
-        target_link_libraries(${MODULE_NAME} INTERFACE debug ${MOD_DEBUG_LIB})
-        target_link_libraries(${MODULE_NAME} INTERFACE optimized ${MOD_RELEASE_LIB})
-        file(GLOB module_headers ${NAP_ROOT}/modules/${NAP_MODULE}/include/*.h)
-        target_sources(${MODULE_NAME} INTERFACE ${module_headers})
-        source_group(Modules\\${MODULE_NAME} FILES ${module_headers})
+            target_link_libraries(${MODULE_NAME} INTERFACE debug ${${MODULE_NAME}_DEBUG_LIB})
+            target_link_libraries(${MODULE_NAME} INTERFACE optimized ${${MODULE_NAME}_RELEASE_LIB})
+            file(GLOB module_headers ${NAP_ROOT}/modules/${NAP_MODULE}/include/*.h)
+            target_sources(${MODULE_NAME} INTERFACE ${module_headers})
+            source_group(Modules\\${MODULE_NAME} FILES ${module_headers})
+        endif(NOT TARGET ${NAP_MODULE})
 
         # Add module includes
-        message("Adding include for ${NAP_MODULE}")
+        message("Adding include for ${NAP_MODULE} to ${PROJECT_NAME} (${NAP_ROOT}/modules/${NAP_MODULE}/include/)")
         target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
 
         # On macOS & Linux install module into packaged project
         if (NOT WIN32)
-            install(FILES ${MOD_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)
+            install(FILES ${${MODULE_NAME}_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)    
         endif()
 
         # Bring in any additional module requirements
@@ -52,18 +66,18 @@ macro(find_nap_module MODULE_NAME)
         set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
         if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
             include (${MODULE_EXTRA_CMAKE_PATH})
+        endif()
+
+        if (WIN32)
+            # Copy over module DLLs post-build
+            add_custom_command(
+                TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+            )
         endif()        
     else()
         message(FATAL_ERROR "Could not locate module '${MODULE_NAME}'")    
-    endif()
-
-    if (WIN32)
-        # Copy over module DLLs post-build
-        add_custom_command(
-            TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-        )
     endif()
 endmacro()
 

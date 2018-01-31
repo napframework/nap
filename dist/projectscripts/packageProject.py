@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
+import argparse
+import datetime
+import json
+from multiprocessing import cpu_count
 import os
 import subprocess
-from multiprocessing import cpu_count
 from sys import platform
 import sys
 import shutil
-import datetime
-import json
 
 WORKING_DIR = '.'
 PACKAGING_DIR = 'packaging'
@@ -58,11 +59,7 @@ def find_project(project_name):
         print("Couldn't find project or example with name '%s'" % project_name)
         return None
 
-def package_project(project_name):
-    # Note: Packaging directly from Python for now.  CPack was investigated but it was looking difficult to make it work when
-    # wanting to build multiple configurations at the same time.  If there was a reasonable CPack solution it feels like that 
-    # would be cleaner than this.
-
+def package_project(project_name, show_created_package):
     project_path = find_project(project_name)
     if project_path is None:
         print("Could not find project %s" % project_name)
@@ -99,6 +96,11 @@ def package_project(project_name):
 
         # Create archive
         # archive_to_linux_tar_xz(timestamp)
+
+        # Show in Nautilus
+        if show_created_package:
+            pass
+            # TODO implement showing created package in Nautilus
     elif platform == 'darwin':
         # Generate project
         call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Xcode'])
@@ -113,7 +115,8 @@ def package_project(project_name):
         packaged_to = archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
 
         # Show in Finder
-        subprocess.call(["open", "-R", packaged_to])
+        if show_created_package:
+            subprocess.call(["open", "-R", packaged_to])
     else:
         # Generate project
         call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5', '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name])
@@ -123,6 +126,11 @@ def package_project(project_name):
 
         # Create archive
         archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version)
+
+        # Show in Explorer
+        if show_created_package:
+            pass
+            # TODO implement showing created package in Explorer
 
     # Cleanup
     shutil.rmtree(build_dir_name, True)
@@ -234,16 +242,12 @@ def populate_build_info_into_project(project_package_path, timestamp):
     
 # Main
 if __name__ == '__main__':
-    # TODO use argparse
-    # TODO make showing created package optional
-
-    if len(sys.argv) < 2:
-        usage_help = "Usage: %s PROJECT_NAME" % sys.argv[0]
-
-        print (usage_help)
-        sys.exit(ERROR_BAD_INPUT)
-
-    project_name = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("PROJECT_NAME", type=str,
+                        help="The project to package")
+    parser.add_argument("-ds", "--dontshow", action="store_true",
+                        help="Don't show the generated package")
+    args = parser.parse_args()
 
     # Package our build
-    sys.exit(package_project(project_name))
+    sys.exit(package_project(args.PROJECT_NAME, not args.dontshow))

@@ -50,3 +50,4 @@ install(DIRECTORY . DESTINATION "demos/${PROJECT_NAME}"
 		PATTERN "CMakeLists.txt" EXCLUDE
 		PATTERN "dist" EXCLUDE)
 install(FILES dist/CMakeLists.txt DESTINATION "demos/${PROJECT_NAME}/")
+install(FILES dist/module/CMakeLists.txt DESTINATION "demos/${PROJECT_NAME}/module/")

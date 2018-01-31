@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import argparse
 import sys
 import os
 import subprocess
@@ -47,7 +48,7 @@ def find_project(project_name):
         print("Couldn't find project or example with name '%s'" % project_name)
         return None
 
-def update_project(project_name, build_type):
+def update_project(project_name, build_type, show_solution):
     # print project_name
     project_path = find_project(project_name)
     if project_path is None:
@@ -55,8 +56,19 @@ def update_project(project_name, build_type):
 
     if sys.platform in ["linux", "linux2"]:
         call(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type])
+
+        # Show in Nautilus
+        if show_solution:
+            # TODO implement showing solution in Nautilus
+            pass
     elif sys.platform == 'darwin':
         call(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
+
+        # Show in Finder
+        if show_solution:
+            xcode_solution_path = os.path.join(project_path, BUILD_DIR, '%s.xcodeproj' % project_name)
+            print ' '.join(["open", "-R", xcode_solution_path])
+            subprocess.call(["open", "-R", xcode_solution_path])
     else:
         # create dir if it doesn't exist
         full_build_dir = os.path.join(project_path, BUILD_DIR)
@@ -66,31 +78,29 @@ def update_project(project_name, build_type):
         # generate prject
         call(project_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
+        # Show in Explorer
+        if show_solution:
+            # TODO implement showing solution in Explorer
+            pass
+
     print("Solution generated in %s" % os.path.relpath(os.path.join(project_path, BUILD_DIR)))
 
 if __name__ == '__main__':
-    # TODO update to use argparse
-
-    if len(sys.argv) < 2:
-        if sys.platform in ["linux", "linux2"]:
-            usage_help = "Usage: %s PROJECT_NAME [BUILD_TYPE]"  % sys.argv[0]
-        else:
-            usage_help = "Usage: %s PROJECT_NAME" % sys.argv[0]
-
-        print (usage_help)
-        sys.exit(1)
-
-    project_name = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("PROJECT_NAME", type=str,
+                        help="The project to regenerate")
+    if sys.platform in ["linux", "linux2"]:
+        parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
+    parser.add_argument("-ds", "--dontshow", action="store_true",
+                        help="Don't show the generated solution")
+    args = parser.parse_args()
 
     # If we're on Linux and we've specified a build type let's grab that, otherwise
     # default to debug
     if sys.platform in ["linux", "linux2"]:
-        if len(sys.argv) == 3:
-            build_type = sys.argv[2]
-        else:
-            build_type = 'Debug'
+        build_type = args.BUILD_TYPE
         print("Using build type '%s'" % build_type)
     else:
         build_type = None
 
-    update_project(project_name, build_type)
+    update_project(args.PROJECT_NAME, build_type, not args.dontshow)

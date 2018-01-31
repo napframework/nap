@@ -8,6 +8,8 @@
         "mod_napsdlwindow",
         "mod_napapp",
         "mod_napcameracontrol",
-        "mod_dynamicgeo"    
+        "mod_dynamicgeo",
+        "mod_napimgui",
+        "mod_napscene"
     ]
 }

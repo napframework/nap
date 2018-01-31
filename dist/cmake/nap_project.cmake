@@ -2,9 +2,14 @@ cmake_minimum_required(VERSION 3.5)
 get_filename_component(project_name_from_dir ${CMAKE_SOURCE_DIR} NAME)
 project(${project_name_from_dir})
 
+# Set our install prefix for project packaging
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin_package)
 
 set(NAP_ROOT ${CMAKE_SOURCE_DIR}/../../)
+message(STATUS "Using NAP root: ${CMAKE_CURRENT_LIST_DIR}")
+get_filename_component(THIRDPARTY_DIR ../thirdparty REALPATH BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
+message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
+
 include(${NAP_ROOT}/cmake/targetarch.cmake)
 include(${NAP_ROOT}/cmake/distmacros.cmake)
 
@@ -93,6 +98,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/napcore.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/naprtti.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/naputility.cmake)
 
+# Pull in any project module
+add_project_module()
+
 # Find each NAP module
 foreach(NAP_MODULE ${NAP_MODULES})
     find_nap_module(${NAP_MODULE})
@@ -100,13 +108,22 @@ endforeach()
 
 target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core naputility ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 
+# Add post-build step to set RTTR RPATH
+# TODO this is a workaround for RPATHs not being added for import libraries
+# TODO Move to naprtti
+if(APPLE)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${NAP_ROOT}/tools/platform/ensureHasRPath.py $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/rttr/bin 
+                       )
+endif()
+
 # Copy data to bin post-build
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
 if (NOT WIN32)
-    set(BUILT_RPATH "@executable_path/lib/")
-    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
     install(TARGETS ${PROJECT_NAME} DESTINATION .)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    
     install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
