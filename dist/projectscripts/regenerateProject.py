@@ -67,7 +67,6 @@ def update_project(project_name, build_type, show_solution):
         # Show in Finder
         if show_solution:
             xcode_solution_path = os.path.join(project_path, BUILD_DIR, '%s.xcodeproj' % project_name)
-            print ' '.join(["open", "-R", xcode_solution_path])
             subprocess.call(["open", "-R", xcode_solution_path])
     else:
         # create dir if it doesn't exist
@@ -80,8 +79,8 @@ def update_project(project_name, build_type, show_solution):
 
         # Show in Explorer
         if show_solution:
-            # TODO implement showing solution in Explorer
-            pass
+            msvc_solution_path = os.path.join(project_path, BUILD_DIR, '%s.sln' % project_name)
+            subprocess.Popen(r'explorer /select,"%s"' % msvc_solution_path)
 
     print("Solution generated in %s" % os.path.relpath(os.path.join(project_path, BUILD_DIR)))
 

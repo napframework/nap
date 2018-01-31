@@ -7,7 +7,7 @@ endif(IMPORTING_PROJECT_MODULE)
 
 # TODO test if we need this at all
 if (MODULE_INTO_PROJ)
-    set(prev_proj_name ${PROJECT_NAME})
+    set(PARENT_PROJECT_NAME ${PROJECT_NAME})
 endif()
 project(${MODULE_NAME})
 
@@ -135,5 +135,5 @@ endif()
 
 # TODO necessary?
 if (MODULE_INTO_PROJ)
-    set(PROJECT_NAME ${prev_proj_name})
+    set(PROJECT_NAME ${PARENT_PROJECT_NAME})
 endif()

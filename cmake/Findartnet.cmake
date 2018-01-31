@@ -32,6 +32,14 @@ set_target_properties(artnet PROPERTIES
                       IMPORTED_LOCATION_DEBUG ${ARTNET_LIBS_RELEASE_DLL}
                       )
 
+if(WIN32)
+    set_target_properties(artnet PROPERTIES
+                          IMPORTED_IMPLIB_RELEASE ${ARTNET_LIBS}
+                          IMPORTED_IMPLIB_DEBUG ${ARTNET_LIBS}
+                          )
+endif()
+
+
 # promote package for find
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(artnetlib REQUIRED_VARS ARTNET_DIR ARTNET_INCLUDE_DIRS ARTNET_LIBS ARTNET_LIBS_DIR)
