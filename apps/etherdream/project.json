@@ -9,6 +9,9 @@
         "mod_napsdlwindow",
         "mod_naposc",
         "mod_napsvg",
-        "mod_napapp"
+        "mod_napapp",
+        "mod_napscene",
+        "mod_napmath",
+        "mod_napimgui"
     ]
 }
