@@ -7,7 +7,7 @@ Rendering {#rendering}
 Introduction {#render_intro}
 =======================
 
-NAP uses the OpenGL 3.3+ [programmable rendering pipeline](https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview) to draw objects. This means NAP uses shaders to manipulate and render items. Using shaders improves overall performance and offers a more flexible method of working compared to the old fixed function render pipeline. The result is a more data driven approach to rendering, similar to what you see in popular game engines such as Unreal4 or Unity, except: NAP doesn't lock down the rendering process. An object that can be rendered isn't rendered by default: you explicetly have to tell the renderer:
+NAP uses the OpenGL 3.3+ <a href="https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview" target="_blank">programmable rendering pipeline</a> to draw objects. This means NAP uses shaders to manipulate and render items. Using shaders improves overall performance and offers a more flexible method of working compared to the old fixed function render pipeline. The result is a more data driven approach to rendering, similar to what you see in popular game engines such as Unreal4 or Unity, except: NAP doesn't lock down the rendering process. An object that can be rendered isn't rendered by default: you explicetly have to tell the renderer:
 
 - That you want to render an object
 - How you want to render an object
