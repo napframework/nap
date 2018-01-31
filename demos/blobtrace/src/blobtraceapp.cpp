@@ -240,11 +240,10 @@ namespace nap
 		glm::vec3 cam_pos = math::extractPosition(camera_xform.getGlobalTransform());
 
 		// Used by intersection call
-		std::array<glm::vec3, 3> tri_vertices;
-		std::array<glm::vec3, 3> tri_uvs;
+		TriangleData<glm::vec3> tri_vertices;
 		
 		// Create the triangle iterator
-		TriangleShapeIterator triangle_it(mesh);
+		TriangleIterator triangle_it(mesh);
 
 		// Perform intersection test, walk over every triangle in the mesh.
 		// In this case only 2, nice and fast. When there is a hit use the returned barycentric coordinates
@@ -252,20 +251,17 @@ namespace nap
 		while (!triangle_it.isDone())
 		{
 			// Use the indices to get the vertex positions
-			glm::ivec3 indices = triangle_it.next();
-			tri_vertices[0] = math::objectToWorld(vertices[indices[0]], world_xform.getGlobalTransform());
-			tri_vertices[1] = math::objectToWorld(vertices[indices[1]], world_xform.getGlobalTransform());
-			tri_vertices[2] = math::objectToWorld(vertices[indices[2]], world_xform.getGlobalTransform());
+			Triangle triangle = triangle_it.next();
+			
+			tri_vertices[0] = (math::objectToWorld(vertices[triangle.firstIndex()],  world_xform.getGlobalTransform()));
+			tri_vertices[1] = (math::objectToWorld(vertices[triangle.secondIndex()], world_xform.getGlobalTransform()));
+			tri_vertices[2] = (math::objectToWorld(vertices[triangle.thirdIndex()],  world_xform.getGlobalTransform()));
 
 			glm::vec3 bary_coord;
 			if (utility::intersect(cam_pos, screen_to_world_ray, tri_vertices, bary_coord))
 			{
-				// Get uvs at location
-				tri_uvs[0] = uvs[indices[0]];
-				tri_uvs[1] = uvs[indices[1]];
-				tri_uvs[2] = uvs[indices[2]];
-
-				mMouseUvPosition = utility::interpolateVertexAttr<glm::vec3>(tri_uvs, bary_coord);
+				TriangleData<glm::vec3> uv_triangle_data = triangle.getVertexData(uvs);
+				mMouseUvPosition = utility::interpolateVertexAttr<glm::vec3>(uv_triangle_data, bary_coord);
 				break;
 			}
 		}

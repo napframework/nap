@@ -22,9 +22,14 @@ namespace nap
 		
 		while (true)
 		{
-			const std::string filename = utility::stringFormat(mBaseFilename, file_index++);
+			const std::string filename = utility::stringFormat(mBaseFilename, file_index);
 			if (!utility::fileExists(filename))
+			{
+				if (!errorState.check(file_index > 0, "first image in sequence: %s does not exist: %s", this->mID.c_str(), filename.c_str()))
+					return false;
 				break;
+			}
+			file_index++;
 
 			std::unique_ptr<Pixmap> pixmap = std::make_unique<Pixmap>();
 			if (!errorState.check(pixmap->initFromFile(filename, errorState), "Failed to read image %s in image sequence %s", filename.c_str(), mID.c_str()))

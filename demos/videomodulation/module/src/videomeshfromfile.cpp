@@ -53,27 +53,24 @@ namespace nap
 		std::vector<glm::vec3> uv_center_data(mUVAttribute->getCount(), {0.0f,0.0f,0.0f});
 		mUVCenterAttribute->setData(uv_center_data);
 
-		TriangleShapeIterator tri_iterator(*mMeshInstance);
+		TriangleIterator tri_iterator(*mMeshInstance);
 		while (!tri_iterator.isDone())
 		{
-			glm::ivec3 indices = tri_iterator.next();
+			Triangle triangle = tri_iterator.next();
 
-			// Calculate average
-			glm::vec3 uv_avg = { 0.0,0.0,0.0 };
-			uv_avg += (*mUVAttribute)[indices[0]];
-			uv_avg += (*mUVAttribute)[indices[1]];
-			uv_avg += (*mUVAttribute)[indices[2]];
+			// Calculate & set average
+			glm::vec3 uv_avg = { 0.0, 0.0, 0.0 };
+			TriangleData<glm::vec3> uvTriangleData = triangle.getVertexData(*mUVAttribute);
+			uv_avg += uvTriangleData.first();
+			uv_avg += uvTriangleData.second();
+			uv_avg += uvTriangleData.third();
 			uv_avg /= 3.0f;
 			
-			// Set average
-			(*mUVCenterAttribute)[indices[0]] = uv_avg;
-			(*mUVCenterAttribute)[indices[1]] = uv_avg;
-			(*mUVCenterAttribute)[indices[2]] = uv_avg;
-
-			glm::vec3 tri_normal = normalize(utility::computeTriangleNormal(indices, *mPositionAttribute));
-			(*mDirectionAttribute)[indices[0]] = tri_normal;
-			(*mDirectionAttribute)[indices[1]] = tri_normal;
-			(*mDirectionAttribute)[indices[2]] = tri_normal;
+			triangle.setVertexData(*mUVCenterAttribute, uv_avg);
+			
+			// Calculate & set normal			
+			glm::vec3 tri_normal = utility::computeTriangleNormal(triangle.getVertexData(*mPositionAttribute));
+			triangle.setVertexData(*mDirectionAttribute, glm::normalize(tri_normal));
 		}
 
 		// Initialize the mesh
