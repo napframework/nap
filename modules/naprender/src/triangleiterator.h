@@ -12,7 +12,8 @@ namespace nap
 	class MeshShape;
 
 	/**
-	 * Contains the data of a triangle, extracted from a VertexAttribute through the Triangle interface
+	 * Contains the data associated with a triangle
+	 * The data is extracted from a VertexAttribute using the Triangle interface
 	 */
 	template<class T>
 	class TriangleData
@@ -47,7 +48,7 @@ namespace nap
 	};
 
 	/**
-	 * Contains the indices of a triangle within a specific MeshShape
+	 * Contains the indices of a triangle associated with a specific MeshShape inside a MeshInstance
 	 */
 	class ShapeTriangle
 	{
@@ -130,7 +131,8 @@ namespace nap
 
 
 	/**
-	 * Contains the indices of a triangle within a MeshInstance
+	 * Contains the indices of a triangle associated with a MeshInstance
+	 * The indices are always bound to a specific shape
 	 */
 	class Triangle : public ShapeTriangle
 	{
@@ -143,11 +145,7 @@ namespace nap
 	private:
 		friend class TriangleIterator;
 
-		Triangle(int shapeIndex, const ShapeTriangle& shapeTriangle) :
-			ShapeTriangle(shapeTriangle),
-			mShapeIndex(shapeIndex)
-		{
-		}
+		Triangle(int shapeIndex, const ShapeTriangle& shapeTriangle);
 
 	private:
 		int mShapeIndex;

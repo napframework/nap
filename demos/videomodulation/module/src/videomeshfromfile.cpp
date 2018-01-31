@@ -69,7 +69,7 @@ namespace nap
 			triangle.setVertexData(*mUVCenterAttribute, uv_avg);
 			
 			// Calculate & set normal			
-			glm::vec3 tri_normal = computeTriangleNormal(triangle.indices(), *mPositionAttribute);
+			glm::vec3 tri_normal = glm::normalize(computeTriangleNormal(triangle.indices(), *mPositionAttribute));
 			triangle.setVertexData(*mDirectionAttribute, tri_normal);
 		}
 
