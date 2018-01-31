@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utility\dllexport.h"
+#include "utility/dllexport.h"
 
 namespace opengl
 {
