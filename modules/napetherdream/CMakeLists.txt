@@ -19,7 +19,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${ETHERDREAM_INCLUDE_DIRS}
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} mod_naprender mod_napscene ${ETHERDREAM_LIBS})
+target_link_libraries(${PROJECT_NAME} mod_naprender mod_napscene etherdreamlib)
 
 if (WIN32)
     set(FILES_TO_COPY
@@ -29,14 +29,41 @@ if (WIN32)
     copy_files_to_bin(${FILES_TO_COPY})
 endif()
 
-# Package into release build
-if (WIN32)
-	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
-                                    LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
-                                    ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
-else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)  
-endif()
+# Package into platform release
+package_module()
 
-install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
-        FILES_MATCHING PATTERN "*.h")
+# Package libartnet into platform release
+if(WIN32)
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/msvc/bin")
+elseif(APPLE)
+    # Ensure our etherdream install name id is set properly, this is really for intall into packaging
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libEtherDream.dylib $<TARGET_FILE:etherdreamlib>
+                       COMMENT "Setting install name for etherdream")
+
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/osx/bin/")
+
+    install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL} -change
+                                          /usr/local/lib/libEtherDream.dylib
+                                          @rpath/libEtherDream.dylib
+                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Release/libmod_napetherdream.dylib 
+                                          )")
+    install(CODE "execute_process(COMMAND /usr/bin/env python 
+                                          ${NAP_ROOT}/dist/projectscripts/platform/ensureHasRPath.py 
+                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Release/libmod_napetherdream.dylib 
+                                          @loader_path/../../../../thirdparty/etherdream/osx/bin
+                                          )")
+    install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL} -change
+                                          /usr/local/lib/libEtherDream.dylib
+                                          @rpath/libEtherDream.dylib
+                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Debug/libmod_napetherdream.dylib 
+                                          )")
+    install(CODE "execute_process(COMMAND /usr/bin/env python 
+                                          ${NAP_ROOT}/dist/projectscripts/platform/ensureHasRPath.py 
+                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Debug/libmod_napetherdream.dylib 
+                                          @loader_path/../../../../thirdparty/etherdream/osx/bin
+                                          )")
+else()
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/linux/bin")    
+endif()

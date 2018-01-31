@@ -22,3 +22,9 @@ target_link_libraries(${PROJECT_NAME} napcore mod_napmath mod_napscene debug ${O
 
 # Package into platform release
 package_module()
+
+# Package oscpack headers into platform release
+install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION thirdparty/oscpack)
+install(FILES ${THIRDPARTY_DIR}/oscpack/README DESTINATION thirdparty/oscpack)
+install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc/ DESTINATION thirdparty/oscpack/osc
+        PATTERN "*.cpp" EXCLUDE)

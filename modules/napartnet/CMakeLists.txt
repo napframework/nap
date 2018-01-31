@@ -43,6 +43,7 @@ endif()
 # Package into platform release
 package_module()
 
+# Package libartnet into platform release
 install(FILES "${THIRDPARTY_DIR}/libartnet/AUTHORS" DESTINATION "thirdparty/libartnet")
 install(FILES "${THIRDPARTY_DIR}/libartnet/COPYING" DESTINATION "thirdparty/libartnet")
 install(FILES "${THIRDPARTY_DIR}/libartnet/README" DESTINATION "thirdparty/libartnet")
@@ -57,6 +58,14 @@ elseif(APPLE)
 
     install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/osx/bin")
 
-    install(CODE "execute_process(COMMAND /usr/bin/env python ${NAP_ROOT}/dist/projectscripts/platform/ensureHasRPath.py ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Release/libmod_napartnet.dylib @loader_path/../../../../thirdparty/libartnet/osx/bin)")
-    install(CODE "execute_process(COMMAND /usr/bin/env python ${NAP_ROOT}/dist/projectscripts/platform/ensureHasRPath.py ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Debug/libmod_napartnet.dylib @loader_path/../../../../thirdparty/libartnet/osx/bin)")
+    install(CODE "execute_process(COMMAND /usr/bin/env python 
+                                  ${NAP_ROOT}/dist/projectscripts/platform/ensureHasRPath.py 
+                                  ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Release/libmod_napartnet.dylib 
+                                  @loader_path/../../../../thirdparty/libartnet/osx/bin
+                                  )")
+    install(CODE "execute_process(COMMAND /usr/bin/env python 
+                                  ${NAP_ROOT}/dist/projectscripts/platform/ensureHasRPath.py 
+                                  ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Debug/libmod_napartnet.dylib 
+                                  @loader_path/../../../../thirdparty/libartnet/osx/bin
+                                  )")
 endif()

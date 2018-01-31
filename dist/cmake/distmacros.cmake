@@ -53,7 +53,7 @@ macro(find_nap_module MODULE_NAME)
         endif(NOT TARGET ${NAP_MODULE})
 
         # Add module includes
-        message("Adding include for ${NAP_MODULE} to ${PROJECT_NAME} (${NAP_ROOT}/modules/${NAP_MODULE}/include/)")
+        message("Adding include for ${NAP_MODULE}")
         target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
 
         # On macOS & Linux install module into packaged project
