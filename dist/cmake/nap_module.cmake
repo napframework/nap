@@ -1,66 +1,76 @@
 cmake_minimum_required(VERSION 3.5)
-get_filename_component(module_name_from_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+if (IMPORTING_PROJECT_MODULE)
+    set(MODULE_NAME "mod_${PROJECT_NAME}")    
+else()
+    get_filename_component(MODULE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+endif(IMPORTING_PROJECT_MODULE) 
+
+# TODO test if we need this at all
 if (MODULE_INTO_PROJ)
     set(prev_proj_name ${PROJECT_NAME})
 endif()
-project(${module_name_from_dir})
+project(${MODULE_NAME})
 
-if (NOT MODULE_INTO_PROJ)
+if(NOT MODULE_INTO_PROJ)
 
-set(NAP_ROOT "${CMAKE_SOURCE_DIR}/../../")
-include(${NAP_ROOT}/cmake/targetarch.cmake)
-include(${NAP_ROOT}/cmake/distmacros.cmake)
+    set(NAP_ROOT "${CMAKE_CURRENT_LIST_DIR}/../")
+    message(STATUS "Using NAP root: ${CMAKE_CURRENT_LIST_DIR}")
+    get_filename_component(THIRDPARTY_DIR ../thirdparty REALPATH BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
+    message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
-# Set our default build type if we haven't specified one (Linux)
-set_default_build_type()
+    include(${NAP_ROOT}/cmake/targetarch.cmake)
+    include(${NAP_ROOT}/cmake/distmacros.cmake)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-if (WIN32)
-    if(MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /wd4251 /MP /bigobj")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
-        set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -Wa,-mbig-obj")
-#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
+    # Set our default build type if we haven't specified one (Linux)
+    set_default_build_type()
+
+    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    if (WIN32)
+        if(MSVC)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /wd4251 /MP /bigobj")
+            set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+            set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+            set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -Wa,-mbig-obj")
+    #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
+        endif()
+    elseif(UNIX)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch")
     endif()
-elseif(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch")
-endif()
 
-if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
-endif()
-
-cmake_policy(SET CMP0020 NEW)
-cmake_policy(SET CMP0043 NEW)
-
-# Restrict to debug and release build types
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
-
-# Allow extra Find{project}.cmake files to be found by projects
-list(APPEND CMAKE_MODULE_PATH "${NAP_ROOT}/cmake")
-
-include(${NAP_ROOT}/cmake/configure.cmake)
-
-if(WIN32)
-    if(MINGW)
-        # Copy required MinGW dll's to bin dir
-        get_filename_component(COMPILER_DIR ${CMAKE_CXX_COMPILER} PATH)
-        set(MODULES gcc_s_dw2-1 stdc++-6 winpthread-1)
-        foreach (MOD ${MODULES})
-            find_library(_LIB NAMES ${MOD} HINTS ${COMPILER_DIR})
-            message(STATUS "Copy ${_LIB} to ${BIN_DIR}")
-            file(COPY ${_LIB} DESTINATION ${BIN_DIR})
-            unset(_LIB CACHE)
-        endforeach ()
+    if(APPLE)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
     endif()
-endif()
 
-endif()
+    cmake_policy(SET CMP0020 NEW)
+    cmake_policy(SET CMP0043 NEW)
+
+    # Restrict to debug and release build types
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+
+    # Allow extra Find{project}.cmake files to be found by projects
+    list(APPEND CMAKE_MODULE_PATH "${NAP_ROOT}/cmake")
+
+    include(${NAP_ROOT}/cmake/configure.cmake)
+
+    if(WIN32)
+        if(MINGW)
+            # Copy required MinGW dll's to bin dir
+            get_filename_component(COMPILER_DIR ${CMAKE_CXX_COMPILER} PATH)
+            set(MODULES gcc_s_dw2-1 stdc++-6 winpthread-1)
+            foreach (MOD ${MODULES})
+                find_library(_LIB NAMES ${MOD} HINTS ${COMPILER_DIR})
+                message(STATUS "Copy ${_LIB} to ${BIN_DIR}")
+                file(COPY ${_LIB} DESTINATION ${BIN_DIR})
+                unset(_LIB CACHE)
+            endforeach ()
+        endif()
+    endif()
+
+endif(NOT MODULE_INTO_PROJ)
 
 include_directories(${NAP_ROOT}/include/)
 
@@ -74,7 +84,12 @@ source_group("Sources" FILES ${SOURCES})
 
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER UserModules)
+if(IMPORTING_PROJECT_MODULE)
+    set(MODULE_FOLDER_NAME ProjectModule)
+else()
+    set(MODULE_FOLDER_NAME UserModules)
+endif()
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${MODULE_FOLDER_NAME})    
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
@@ -85,7 +100,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 if (WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
-    if (${CMAKE_VERSION} VERSION_GREATER "3.6.0")
+    if (NOT MODULE_INTO_PROJ AND ${CMAKE_VERSION} VERSION_GREATER "3.6.0")
         # Set project as startup project in Visual Studio
         set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
     endif()
@@ -95,15 +110,28 @@ endif()
 if (NOT MODULE_INTO_PROJ)
     include(${CMAKE_CURRENT_LIST_DIR}/napcore.cmake)
     include(${CMAKE_CURRENT_LIST_DIR}/naprtti.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/naputility.cmake)
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
+target_link_libraries(${PROJECT_NAME} napcore naprtti naputility RTTR::Core ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 if (MODULE_INTO_PROJ)
     target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
 endif()
 
+# Find each NAP module
+foreach(NAP_MODULE ${DEPENDENT_MODULES})
+    find_nap_module(${NAP_MODULE})
+endforeach()
+target_link_libraries(${PROJECT_NAME} ${DEPENDENT_MODULES})
+unset(DEPENDENT_MODULES)
+
 # Set our module output directory
 set_module_output_directories()
+
+# On macOS & Linux install module into packaged project
+if (NOT WIN32)
+    install(FILES $<TARGET_FILE:${PROJECT_NAME}> DESTINATION lib CONFIGURATIONS Release)
+endif()
 
 # TODO necessary?
 if (MODULE_INTO_PROJ)

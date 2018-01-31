@@ -157,6 +157,7 @@ install(PROGRAMS dist/projectscripts/projectInfoParseToCMake.py DESTINATION tool
 install(PROGRAMS dist/projectscripts/packageProject.py DESTINATION tools/)
 if(APPLE)
     install(PROGRAMS dist/projectscripts/platform/macOSTempDylibCopyAndPathFix.py DESTINATION tools/platform/)
+    install(PROGRAMS dist/projectscripts/platform/ensureHasRPath.py DESTINATION tools/platform/)
 endif()
 install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
 install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
