@@ -18,10 +18,10 @@ namespace nap
 	 * 2D image resource that is initially empty, there is no GPU data associated with this object
 	 * When initialized this object holds a set of 2D mapped pixels where every pixel value can have multiple channels
 	 * This object can be declared as a resource using one of the available data and color types
-	 * Every pixmap needs to have a width and height associated with it
-	 * When no settings are provided the pixmap contains: 512x512, RGB8 bit pixels
+	 * Every bitmap needs to have a width and height associated with it
+	 * When no settings are provided the bitmap contains: 512x512, RGB8 bit pixels
 	 * This object wraps a Bitmap and allocates the bitmap resource on init()
-	 * The properties associated with the pixmap are set when initialized from texture or file
+	 * The properties associated with the bitmap are set when initialized from texture or file
 	 */
 	class NAPAPI Bitmap : public rtti::RTTIObject
 	{
@@ -52,12 +52,12 @@ namespace nap
 		virtual ~Bitmap();
 
 		/**
-		 * @return The datatype of a pixel in this pixmap
+		 * @return The datatype of a pixel in this bitmap
 		 */
 		EDataType getDataType() const { return mType; }
 
 		/**
-		 * @return The channel type of a pixel in this pixmap
+		 * @return The channel type of a pixel in this bitmap
 		 */
 		EChannels getChannels() const { return mChannels; }
 
@@ -84,33 +84,33 @@ namespace nap
 		 * Initializes this bitmap from a 2D texture. 
 		 * The settings associated with this bitmap will match the settings of the 2D texture.
 		 * Memory is allocated but the GPU pixel data is NOT copied over
-		 * @param texture the GPU texture to initialize this pixmap from
+		 * @param texture the GPU texture to initialize this bitmap from
 		 */
 		void initFromTexture(const opengl::Texture2DSettings& settings);
 
 		/**
-		 * @return the type of color associated with this pixmap
+		 * @return the type of color associated with this bitmap
 		 */
 		rtti::TypeInfo getColorType() const									{ return mColorType; }
 
 		/**
-		 * @return if the pixmap is empty
+		 * @return if the bitmap is empty
 		 * This is the case when the bitmap has not been initialized
 		 */
 		bool empty() const													{ return mData.empty(); }
 
 		/**
-		 * @return the width of the pixmap, 0 when not initialized
+		 * @return the width of the bitmap, 0 when not initialized
 		 */
 		int getWidth() const												{ return mWidth; }
 
 		/**
-		 *	@return the height of the pixmap, 0 when not initialized
+		 *	@return the height of the bitmap, 0 when not initialized
 		 */
 		int getHeight() const												{ return mHeight; }
  
 		/**
-		 *	@return number of color channels associated with this pixmap
+		 *	@return number of color channels associated with this bitmap
 		 */
 		int getNumberOfChannels() const										{ return mNumChannels; }
 
@@ -127,17 +127,17 @@ namespace nap
 		size_t getSizeInBytes() const;
 
 		/**
-		* Creates a color that is compatible with the data stored in this pixmap
+		* Creates a color that is compatible with the data stored in this bitmap
 		* This is a utility function that works in conjunction with getPixel() and setPixel().  
 		* Making the pixel once before iterating over all the values in this map avoids unnecessary allocations
-		* @return a new pixel as a color that matches the amount of channels and data type of this pixmap
+		* @return a new pixel as a color that matches the amount of channels and data type of this bitmap
 		*/
 		std::unique_ptr<BaseColor> makePixel() const;
 
 		/**
 		* Retrieves the color of a pixel at the x and y pixel coordinates
 		* The color is a copy of the pixel values in the bitmap. The result is stored in outPixel.
-		* outPixel needs to be created using makePixel(), this ensures the right number of channels and pixmap value type of the color
+		* outPixel needs to be created using makePixel(), this ensures the right number of channels and bitmap value type of the color
 		* outPixel needs to own it's color data and can't point to values in memory
 		* This call does not convert outPixel if the types don't match. In that case this call will assert
 		* To convert the fetched data call .convert() on outPixel
@@ -165,10 +165,10 @@ namespace nap
 		/**
 		 * Sets the color of a pixel at the x and y pixel coordinates
 		 * This call does not convert the color if the value types don't match, best to convert the color client side.
-		 * It's allowed to give an input color can that has less color channels than a pixel in the pixmap.
-		 * This means that an RGB color can be set to a pixel of an RGBA pixmap
-		 * To ensure matching data use makePixel() to create a pixel that is compatible with this pixmap
-		 * You can use the color conversion methods to convert any color into this pixmap's color space
+		 * It's allowed to give an input color can that has less color channels than a pixel in the bitmap.
+		 * This means that an RGB color can be set to a pixel of an RGBA bitmap
+		 * To ensure matching data use makePixel() to create a pixel that is compatible with this bitmap
+		 * You can use the color conversion methods to convert any color into this bitmap's color space
 		 * This call asserts when the color types don't match and when the input color doesn't own it's data: points to values in memory
 		 * @param x the horizontal pixel coordinate
 		 * @param y the vertical pixel coordinate
@@ -182,8 +182,8 @@ namespace nap
 		 * The given color can also point to values in memory, ie: the color doesn't own it's data
 		 * but the data it owns is copied over.
 		 * It's not recommended to use this call in a loop when you know it needs to convert the color
-		 * It's allowed to give an input color can that has less color channels than a pixel in the pixmap.
-		 * This means that an RGB color can be set to a pixel of an RGBA pixmap
+		 * It's allowed to give an input color can that has less color channels than a pixel in the bitmap.
+		 * This means that an RGB color can be set to a pixel of an RGBA bitmap
 		 * @param x the horizontal pixel coordinate
 		 * @param y the horizontal pixel coordinate
 		 * @param color the new pixel color
@@ -258,8 +258,8 @@ namespace nap
 		RColor<Type> getColorValue(int x, int y, nap::EColorChannel channel) const;
 
 		/**
-		 * These properties are read when initializing the pixmap as a resource
-		 * These properties are set  when initializing the pixmap from file or texture
+		 * These properties are read when initializing the bitmap as a resource
+		 * These properties are set  when initializing the bitmap from file or texture
 		 */
 		int mWidth					= 512;						///< property: width of the bitmap in pixels
 		int mHeight					= 512;						///< property: height of the bitmap in pixels
@@ -367,7 +367,7 @@ namespace nap
 		RColor<Type*> getColorValueData(int x, int y, nap::EColorChannel channel) const;
 
 		/**
-		* Sets the data associated with this pixmap at the x and y coordinates to color
+		* Sets the data associated with this bitmap at the x and y coordinates to color
 		* @param x the horizontal pixel coordinate
 		* @param y the vertical pixel coordinate
 		* @param color the new pixel color
@@ -375,7 +375,7 @@ namespace nap
 		template<typename T>
 		void setPixelData(int x, int y, const nap::BaseColor& color);
 
-		rtti::TypeInfo mColorType = rtti::TypeInfo::empty();	///< Type of color associated with this pixmap (RGBA8, R16 etc.)
+		rtti::TypeInfo mColorType = rtti::TypeInfo::empty();	///< Type of color associated with this bitmap (RGBA8, R16 etc.)
 		rtti::TypeInfo mValueType = rtti::TypeInfo::empty();	///< Contained value type of the color (byte, float etc.)
 
 	private:
@@ -385,7 +385,7 @@ namespace nap
 	};
 
 	/**
-	 * A pixmap resource that is loaded from file
+	 * A bitmap resource that is loaded from file
 	 * There is no GPU data associated with this object, only the pixel data extracted from the image on disk.
 	 * After a successful load the bitmap properties will match that of the loaded image.  
 	 */
@@ -395,7 +395,7 @@ namespace nap
 	public:
 		/**
 		 * Loads the image pointed to by the path property
-		 * Calls Pixmap::initFromFile(path, error)
+		 * Calls Bitmap::initFromFile(path, error)
 		 * @param errorState contains the error when loading fails
 		 * @return if loading succeeds
 		 */

@@ -111,13 +111,13 @@ namespace nap
 	}
 
 
-	bool Texture2D::initFromPixmap(bool compressed, utility::ErrorState& errorState)
+	bool Texture2D::initFromBitmap(bool compressed, utility::ErrorState& errorState)
 	{
-		assert(!mPixmap.empty());
+		assert(!mBitmap.empty());
 
 		// Get opengl settings from bitmap
 		opengl::Texture2DSettings settings;
-		if (!errorState.check(getTextureSettingsFromPixmap(mPixmap, compressed, settings, errorState), "Unable to determine texture settings from bitmap"))
+		if (!errorState.check(getTextureSettingsFromBitmap(mBitmap, compressed, settings, errorState), "Unable to determine texture settings from bitmap"))
 			return false;
 		
 		// Initialize texture from bitmap
@@ -129,8 +129,8 @@ namespace nap
 
 	void Texture2D::update()
 	{
-		assert(!mPixmap.empty());
-		update(mPixmap); 
+		assert(!mBitmap.empty());
+		update(mBitmap); 
 	}
 
 	const glm::vec2 Texture2D::getSize() const
@@ -153,11 +153,11 @@ namespace nap
 
 	Bitmap& Texture2D::getData()
 	{
-		if (mPixmap.empty())
-			mPixmap.initFromTexture(mTexture.getSettings());
+		if (mBitmap.empty())
+			mBitmap.initFromTexture(mTexture.getSettings());
 
-		mTexture.getData(mPixmap.getData(), mPixmap.getSizeInBytes());
-		return mPixmap;
+		mTexture.getData(mBitmap.getData(), mBitmap.getSizeInBytes());
+		return mBitmap;
 	}
 
 
@@ -169,11 +169,11 @@ namespace nap
 
 	Bitmap& Texture2D::endGetData()
 	{
-		if (mPixmap.empty())
-			mPixmap.initFromTexture(mTexture.getSettings());
+		if (mBitmap.empty())
+			mBitmap.initFromTexture(mTexture.getSettings());
 
-		mTexture.getData(mPixmap.getData(), mPixmap.getSizeInBytes());
-		return mPixmap;
+		mTexture.getData(mBitmap.getData(), mBitmap.getSizeInBytes());
+		return mBitmap;
 	}
 
 
@@ -188,9 +188,9 @@ namespace nap
 		mTexture.unbind();
 	}
 
-	void Texture2D::update(Bitmap& pixmap)
+	void Texture2D::update(Bitmap& bitmap)
 	{
-		update(pixmap.getData());
+		update(bitmap.getData());
 	}
 
 	void Texture2D::update(void* data, int pitch)

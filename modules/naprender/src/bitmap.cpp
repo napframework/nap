@@ -42,7 +42,7 @@ RTTI_END_CLASS
 
 /**
  * Helper function that creates a color based on the data associated with 
- * @param map the pixmap to get the color values from
+ * @param map the bitmap to get the color values from
  * @param x the x pixel coordinate value
  * @param y the y pixel coordinate value
  */
@@ -114,7 +114,7 @@ static void fill(int x, int y, const nap::Bitmap& map, nap::BaseColor& outColor)
 
 /**
 * Helper function that creates a color that stores the location of the color values
-* @param map the pixmap to get the color values from
+* @param map the bitmap to get the color values from
 * @param x the x pixel coordinate value
 * @param y the y pixel coordinate value
 */
@@ -154,7 +154,7 @@ namespace nap
 
 	bool Bitmap::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mWidth > 0 && mHeight > 0, "Invalid size specified for pixmap"))
+		if (!errorState.check(mWidth > 0 && mHeight > 0, "Invalid size specified for bitmap"))
 			return false;
 
 		updatePixelFormat();
@@ -202,7 +202,7 @@ namespace nap
 			mType = Bitmap::EDataType::FLOAT;
 			break;
 		default:
-			errorState.fail("Can't load pixmap from file; unknown pixel format");
+			errorState.fail("Can't load bitmap from file; unknown pixel format");
 			FreeImage_Unload(fi_bitmap);
 			return false;
 		}
@@ -227,7 +227,7 @@ namespace nap
 			mChannels = swap ? EChannels::BGRA : EChannels::RGBA;
 			break;
 		default:
-			errorState.fail("Can't load pixmap from file; unknown pixel format");
+			errorState.fail("Can't load bitmap from file; unknown pixel format");
 			FreeImage_Unload(fi_bitmap);
 			return false;
 		}
