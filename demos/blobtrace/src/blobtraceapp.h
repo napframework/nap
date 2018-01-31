@@ -26,18 +26,18 @@ namespace nap
 	 * 
 	 * This demo uses ray-casting to resolve the position of the blob on the plane
 	 * A ray is cast from the screen in to the world when the mouse is moved
-	 * When the ray hits a triangle the returned (barycentric) coordinates are used to compute the uv coordinates at the hit location
+	 * When the ray hits a triangle of the intersection plane the returned (barycentric) coordinates are used to compute the uv coordinates at the hit location
 	 * All movement and positioning of the blob happens in uv space!
-	 * The plane only has 2 triangles. All shading and lighting is handled by the blob.vert and fragment shader
+	 * The intersection plane only has 2 triangles. The plane that is rendered to screen a lot more because of the blob vertex displacement
+	 * All shading and lighting is handled by the blob.fragment shader, including the generation of the normals
 	 * 
 	 * On update a set of shader variables is set, most importantly the accumulated time. 
 	 * The blob slowly moves towards it's target. The SmoothOperator is responsible for this effect
 	 * Every frame that operator is fed with the current mouse location and moves the blob target towards it using a cheap dampening model.
 	 * The velocity of that movement is used by the blob shader to change the blob size and frequency.
 	 *
-	 * Except for the ray-casting this demo is rather simple. The only components are a camera and a plane
-	 * The only object that is rendered is the plane. The shader computes the normals based on the algorithm that creates the blob
-	 * These normals are used to perform shading
+	 * Except for the ray-casting this demo is rather simple. 
+	 * The only components are a camera and two planes: one plane is used for intersection the other for rendering
 	 * 
 	 * Mouse and key events are forwarded to the input service, the input service collects input events
 	 * and processes all of them on update. Because NAP does not have a default space (objects can
