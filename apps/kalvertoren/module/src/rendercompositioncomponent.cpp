@@ -107,9 +107,9 @@ namespace nap
 	}
 
 
-	nap::Bitmap& RenderCompositionComponentInstance::getPixmap()
+	nap::Bitmap& RenderCompositionComponentInstance::getBitmap()
 	{
-		return activeTarget->getColorTexture().getPixmap();
+		return activeTarget->getColorTexture().getBitmap();
 	}
 
 

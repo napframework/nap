@@ -17,5 +17,5 @@ namespace nap
 
 	/**
 	 */
-	NAPAPI bool		getTextureSettingsFromPixmap(const Bitmap& pixmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState);
+	NAPAPI bool		getTextureSettingsFromBitmap(const Bitmap& bitmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState);
 }

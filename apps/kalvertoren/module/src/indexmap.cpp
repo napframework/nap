@@ -26,7 +26,7 @@ namespace nap
 			return false;
 
 		// Make sure the amount of channels is > 3
-		if (!errorState.check(getPixmap().getNumberOfChannels() >= 3, "Index map: %s does not have 3 channels", mImagePath.c_str()))
+		if (!errorState.check(getBitmap().getNumberOfChannels() >= 3, "Index map: %s does not have 3 channels", mImagePath.c_str()))
 			return false;
 
 		// Get all unique colors from the map
@@ -58,13 +58,13 @@ namespace nap
 		std::unordered_set<IndexColor> unique_index_colors;
 
 		// Check the amount of available colors
-		std::unique_ptr<BaseColor> source_pixel = getPixmap().makePixel();
+		std::unique_ptr<BaseColor> source_pixel = getBitmap().makePixel();
 		RGBColor8 pixel_color;
 
-		for (int i = 0; i < getPixmap().getWidth(); i++)
+		for (int i = 0; i < getBitmap().getWidth(); i++)
 		{
 			// Get color value at pixel and compare
-			getPixmap().getPixel(i, 0, *source_pixel);
+			getBitmap().getPixel(i, 0, *source_pixel);
 			source_pixel->convert(pixel_color);
 
 			const auto& it = unique_index_colors.find(pixel_color);

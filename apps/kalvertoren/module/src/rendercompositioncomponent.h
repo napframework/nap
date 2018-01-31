@@ -72,9 +72,9 @@ namespace nap
 		nap::Texture2D& getTexture();
 
 		/**
-		 *	@return the output pixmap
+		 *	@return the output bitmap
 		 */
-		nap::Bitmap& getPixmap();
+		nap::Bitmap& getBitmap();
 
 		// Points to the composition component we want to render
 		ComponentInstancePtr<CompositionComponent> mCompositionComponent	=	{ this, &RenderCompositionComponent::mCompositionComponent };

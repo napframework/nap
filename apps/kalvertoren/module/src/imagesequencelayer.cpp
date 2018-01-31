@@ -26,25 +26,25 @@ namespace nap
 			if (!utility::fileExists(filename))
 				break;
 
-			std::unique_ptr<Bitmap> pixmap = std::make_unique<Bitmap>();
-			if (!errorState.check(pixmap->initFromFile(filename, errorState), "Failed to read image %s in image sequence %s", filename.c_str(), mID.c_str()))
+			std::unique_ptr<Bitmap> bitmap = std::make_unique<Bitmap>();
+			if (!errorState.check(bitmap->initFromFile(filename, errorState), "Failed to read image %s in image sequence %s", filename.c_str(), mID.c_str()))
 				return false;
 
-			// Get opengl settings from pixmap
-			opengl::Texture2DSettings cur_pixmap_settings;
-			if (!errorState.check(getTextureSettingsFromPixmap(*pixmap, false,  cur_pixmap_settings, errorState), "Unable to determine texture settings from image %s in sequence %s", filename.c_str(), mID.c_str()))
+			// Get opengl settings from bitmap
+			opengl::Texture2DSettings cur_bitmap_settings;
+			if (!errorState.check(getTextureSettingsFromBitmap(*bitmap, false,  cur_bitmap_settings, errorState), "Unable to determine texture settings from image %s in sequence %s", filename.c_str(), mID.c_str()))
 				return false;
 
-			// Verify the pixmap has the same settings as all other pixmaps
-			if (!errorState.check(!mTextureSettings.isValid() || cur_pixmap_settings == mTextureSettings, "Image %s in image sequence %s has different texture settings than previous images; check dimensions and pixel format (RGB/RGBA)", filename.c_str(), mID.c_str()))
+			// Verify the bitmap has the same settings as all other bitmaps
+			if (!errorState.check(!mTextureSettings.isValid() || cur_bitmap_settings == mTextureSettings, "Image %s in image sequence %s has different texture settings than previous images; check dimensions and pixel format (RGB/RGBA)", filename.c_str(), mID.c_str()))
 				return false;
 
-			mTextureSettings = cur_pixmap_settings;
+			mTextureSettings = cur_bitmap_settings;
 
-			mPixmaps.emplace_back(std::move(pixmap));
+			mBitmaps.emplace_back(std::move(bitmap));
 		}
 
-		if (!errorState.check(!mPixmaps.empty(), "Image sequence %s has no images", mID.c_str()))
+		if (!errorState.check(!mBitmaps.empty(), "Image sequence %s has no images", mID.c_str()))
 			return false;
 
 		return true;
@@ -53,7 +53,7 @@ namespace nap
 
 	float ImageSequenceLayer::getLength() const
 	{
-		return static_cast<float>(getNumPixmaps()) / mFPS;
+		return static_cast<float>(getNumBitmaps()) / mFPS;
 	}
 
 
@@ -76,8 +76,8 @@ namespace nap
 		// Upload current texture data to the GPU if necessary
 		if (mNextFrameIndex != mCurrentFrameIndex)
 		{
-			Bitmap& pixmap = mLayer->getPixmap(mNextFrameIndex);
-			mCurrentFrameTexture->update(pixmap);
+			Bitmap& bitmap = mLayer->getBitmap(mNextFrameIndex);
+			mCurrentFrameTexture->update(bitmap);
 			mCurrentFrameIndex = mNextFrameIndex;
 		}
 
@@ -86,10 +86,10 @@ namespace nap
 		mCurrentTime += deltaTime;
 
 		// Calculate current / next texture index
-		mNextFrameIndex = ((int)(mCurrentTime / frame_time)) % mLayer->getNumPixmaps();
+		mNextFrameIndex = ((int)(mCurrentTime / frame_time)) % mLayer->getNumBitmaps();
 		
 		// Signal completion when the next frame we want to upload is the beginning of the sequence
-		if (mNextFrameIndex != mCurrentFrameIndex && mCurrentFrameIndex == getNumPixmaps() - 1)
+		if (mNextFrameIndex != mCurrentFrameIndex && mCurrentFrameIndex == getNumBitmaps() - 1)
 		{
 			completed(*this);
 		}

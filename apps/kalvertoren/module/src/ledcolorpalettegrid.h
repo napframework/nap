@@ -106,7 +106,7 @@ namespace nap
 		using PaletteRow = std::vector<PaletteColor>;
 		using PaletteGrid = std::vector<PaletteRow>;
 
-		nap::Bitmap				mPixmap;						///< Bitmap associated with this led color palette
+		nap::Bitmap				mBitmap;						///< Bitmap associated with this led color palette
 		PaletteGrid				mPaletteGrid;					///< All the colors extracted from the palette, divided into a grid (RGB 8 bit)
 	};
 }

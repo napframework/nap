@@ -67,18 +67,18 @@ namespace nap
 
 
 	// Populates a Texture2D object with settings matching the bitmap
-	bool getTextureSettingsFromPixmap(const Bitmap& pixmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState)
+	bool getTextureSettingsFromBitmap(const Bitmap& bitmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState)
 	{
 		// Fetch matching values
-		GLint internal_format = getGLInternalFormat(pixmap.getChannels(), compress);
+		GLint internal_format = getGLInternalFormat(bitmap.getChannels(), compress);
 		if (!errorState.check(internal_format != GL_INVALID_VALUE, "Unable to determine internal format from bitmap"))
 			return false;
 
-		GLenum format = getGLFormat(pixmap.getChannels());
+		GLenum format = getGLFormat(bitmap.getChannels());
 		if (!errorState.check(format != GL_INVALID_ENUM, "Unable to determine format from bitmap"))
 			return false;
 
-		GLenum type = getGLType(pixmap.getDataType());
+		GLenum type = getGLType(bitmap.getDataType());
 		if (!errorState.check(type != GL_INVALID_ENUM, "Unable to determine texture type from bitmap"))
 			return false;
 
@@ -86,8 +86,8 @@ namespace nap
 		settings.mInternalFormat = internal_format;
 		settings.mFormat = format;
 		settings.mType = type;
-		settings.mWidth = pixmap.getWidth();
-		settings.mHeight = pixmap.getHeight();
+		settings.mWidth = bitmap.getWidth();
+		settings.mHeight = bitmap.getHeight();
 
 		return true;
 	}

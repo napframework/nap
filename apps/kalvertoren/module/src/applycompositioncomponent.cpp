@@ -46,12 +46,12 @@ namespace nap
 
 	void ApplyCompositionComponentInstance::applyColor(double deltaTime)
 	{
-		// Get the pixmap associated with the final composition
-		nap::Bitmap& mPixmap = mCompositionRenderer->getPixmap();
+		// Get the bitmap associated with the final composition
+		nap::Bitmap& mBitmap = mCompositionRenderer->getBitmap();
 
-		// If the pixmap is empty, ie: hasn't been downloaded yet, we skip this step
+		// If the bitmap is empty, ie: hasn't been downloaded yet, we skip this step
 		// This occurs when the first frame hasn't been rendered yet
-		if (mPixmap.empty())
+		if (mBitmap.empty())
 			return;
 
 		// Get the model we want to color
@@ -73,8 +73,8 @@ namespace nap
 		RGBColor8 rgb_index_color;
 
 		// Make pixel we use to query data from bitmap
-		auto source_pixel = mPixmap.makePixel();
-		assert(mPixmap.mType == Bitmap::EDataType::BYTE);
+		auto source_pixel = mBitmap.makePixel();
+		assert(mBitmap.mType == Bitmap::EDataType::BYTE);
 		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
 
 		TriangleIterator triangle_iterator(mesh.getMeshInstance());
@@ -91,11 +91,11 @@ namespace nap
 			uv_avg /= 3.0f;
 
 			// Convert to pixel coordinates
-			int x_pixel = static_cast<float>(mPixmap.getWidth()  - 1) * uv_avg.x;
-			int y_pixel = static_cast<float>(mPixmap.getHeight() - 1) * uv_avg.y;
+			int x_pixel = static_cast<float>(mBitmap.getWidth()  - 1) * uv_avg.x;
+			int y_pixel = static_cast<float>(mBitmap.getHeight() - 1) * uv_avg.y;
 
 			// retrieve pixel value and convert in to rgb index color
-			mPixmap.getPixel(x_pixel, y_pixel, *source_pixel);
+			mBitmap.getPixel(x_pixel, y_pixel, *source_pixel);
 			source_pixel->convert(rgb_index_color);
 
 			// Get the corresponding color palette value

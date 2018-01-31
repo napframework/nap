@@ -23,9 +23,9 @@ namespace nap
 	bool Texture2DFromFile::init(utility::ErrorState& errorState)
 	{
 		// Load pixel data in to bitmap
-		if (!getPixmap().initFromFile(mImagePath, errorState))
+		if (!getBitmap().initFromFile(mImagePath, errorState))
 			return false;
 
-		return Texture2D::initFromPixmap(mCompressed, errorState);
+		return Texture2D::initFromBitmap(mCompressed, errorState);
 	}
 }

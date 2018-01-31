@@ -27,7 +27,7 @@ namespace nap
 			return false;
 
 		// Make sure the amount of channels is > 3
-		if (!errorState.check(getPixmap().getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mImagePath.c_str()))
+		if (!errorState.check(getBitmap().getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mImagePath.c_str()))
 			return false;
 
 		// Now find all the available palette colors
@@ -74,11 +74,11 @@ namespace nap
 	void LedColorPalette::findPaletteColors()
 	{
 		RGBColor8 current_pixel;
-		std::unique_ptr<BaseColor> source_pixel = getPixmap().makePixel();
+		std::unique_ptr<BaseColor> source_pixel = getBitmap().makePixel();
 
-		for (int i = 0; i < getPixmap().getWidth(); i++)
+		for (int i = 0; i < getBitmap().getWidth(); i++)
 		{
-			getPixmap().getPixel(i, 0, *source_pixel);
+			getBitmap().getPixel(i, 0, *source_pixel);
 			source_pixel->convert(current_pixel);
 
 			if (mPaletteColors.empty() || mPaletteColors.back() != current_pixel)

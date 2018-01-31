@@ -22,7 +22,7 @@ namespace nap
 			return false;
 
 		// Make sure the amount of channels is > 3
-		if (!errorState.check(mImage.getPixmap().getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mImagePath.c_str()))
+		if (!errorState.check(mImage.getBitmap().getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mImagePath.c_str()))
 			return false;
 
 		return true;
