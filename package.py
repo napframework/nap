@@ -164,6 +164,9 @@ def package():
         for build_type in ['Release', 'Debug']:
             call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install', '-jobs', str(cpu_count())])
 
+        # Remove unwanted files (eg. .DS_Store)
+        call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
+
         # Create archive
         archive_to_macos_zip()
     else:
@@ -179,7 +182,8 @@ def package():
             call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
         # Create archive
-        archive_to_win64_zip()
+        # archive_to_win64_zip()
+        archive_to_timestamped_dir('Win64')
 
     return True
 
@@ -198,9 +202,6 @@ def archive_to_linux_tar_xz():
 
 # Create build archive to zip on macOS
 def archive_to_macos_zip():
-    # Remove unwanted files (eg. .DS_Store)
-    call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
-
     package_filename = build_package_filename_and_build_info('macOS')
     shutil.move(PACKAGING_DIR, package_filename)
 
@@ -215,9 +216,6 @@ def archive_to_macos_zip():
 
 # Copy our packaged dir to a timestamped dir
 def archive_to_timestamped_dir(platform):
-    # Remove unwanted files (eg. .DS_Store)
-    call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
-    
     package_filename = build_package_filename_and_build_info(platform)
     shutil.copytree(PACKAGING_DIR, package_filename)
 

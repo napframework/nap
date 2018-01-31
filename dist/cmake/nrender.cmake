@@ -1,11 +1,11 @@
 if (WIN32)
     find_path(
         NRENDER_LIBS_DIR
-        NAMES Release/libnrender.lib
+        NAMES Release/nrender.lib
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NRENDER_LIBS_RELEASE ${NRENDER_LIBS_DIR}/Release/libnrender.lib)
-    set(NRENDER_LIBS_DEBUG ${NRENDER_LIBS_DIR}/Debug/libnrender.lib)
+    set(NRENDER_LIBS_RELEASE ${NRENDER_LIBS_DIR}/Release/nrender.lib)
+    set(NRENDER_LIBS_DEBUG ${NRENDER_LIBS_DIR}/Debug/nrender.lib)
 elseif (APPLE)
     find_path(
         NRENDER_LIBS_DIR

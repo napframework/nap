@@ -24,11 +24,17 @@ endmacro()
 # each module in the long run
 # TODO let's avoid per-module cmake package files for now.. but probably need to re-address later
 macro(find_nap_module MODULE_NAME)
-    if (EXISTS ${NAP_ROOT}/usermodules/${NAP_MODULE}/)
+    if (EXISTS ${NAP_ROOT}/usermodules/${MODULE_NAME}/)
         message("Module is user module: ${MODULE_NAME}")
         set(MODULE_INTO_PROJ TRUE)
-        add_subdirectory(${NAP_ROOT}/usermodules/${NAP_MODULE} usermodules/${NAP_MODULE})
+        add_subdirectory(${NAP_ROOT}/usermodules/${MODULE_NAME} usermodules/${MODULE_NAME})
         unset(MODULE_INTO_PROJ)
+
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${MODULE_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        )       
     elseif (EXISTS ${NAP_ROOT}/modules/${NAP_MODULE}/)
         if(NOT TARGET ${NAP_MODULE})
             add_library(${MODULE_NAME} INTERFACE)
@@ -76,9 +82,9 @@ macro(find_nap_module MODULE_NAME)
                 COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
             )
         endif()        
-    else()
+    elseif(NOT TARGET ${MODULE_NAME})
         message(FATAL_ERROR "Could not locate module '${MODULE_NAME}'")    
-    endif()
+    endif()    
 endmacro()
 
 macro(dist_export_fbx SRCDIR)

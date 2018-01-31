@@ -123,13 +123,17 @@ def package_project(project_name, show_created_package):
         # Build & install to packaging dir
         call(build_dir_name, ['cmake', '--build', '.', '--target', project_name_lower, '--config', 'Release'])
 
+        # Copy project data
+        project_data_path = os.path.join(project_path, 'data')
+        bin_data_path = os.path.join(bin_dir, 'data')
+        shutil.copytree(project_data_path, bin_data_path)
+
         # Create archive
-        archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version)
+        packaged_to = archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version)
 
         # Show in Explorer
         if show_created_package:
-            pass
-            # TODO implement showing created package in Explorer
+            subprocess.Popen(r'explorer /select,"%s"' % packaged_to)
 
     # Cleanup
     shutil.rmtree(build_dir_name, True)
@@ -202,7 +206,9 @@ def archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version)
     # Cleanup
     shutil.rmtree(archiving_parent_path)
 
-    print("Packaged to %s" % os.path.relpath(os.path.join(project_dir, package_filename_with_ext)))
+    packaged_to = os.path.join(project_dir, package_filename_with_ext)
+    print("Packaged to %s" % os.path.relpath(packaged_to))
+    return packaged_to
 
 # Build the name of our package and populate our JSON build info file
 def build_package_filename(project_name, project_version, platform, timestamp):
