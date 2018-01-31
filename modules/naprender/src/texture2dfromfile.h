@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "texture2d.h"
-#include "pixmap.h"
+#include "bitmap.h"
 
 // External Includes
 #include <rtti/rttiobject.h>

@@ -23,7 +23,7 @@ namespace nap
 	 * This object wraps a Bitmap and allocates the bitmap resource on init()
 	 * The properties associated with the pixmap are set when initialized from texture or file
 	 */
-	class NAPAPI Pixmap : public rtti::RTTIObject
+	class NAPAPI Bitmap : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
@@ -49,7 +49,7 @@ namespace nap
 			BGRA		= 5		//< name: BGRA
 		};
 
-		virtual ~Pixmap();
+		virtual ~Bitmap();
 
 		/**
 		 * @return The datatype of a pixel in this pixmap
@@ -389,9 +389,9 @@ namespace nap
 	 * There is no GPU data associated with this object, only the pixel data extracted from the image on disk.
 	 * After a successful load the bitmap properties will match that of the loaded image.  
 	 */
-	class NAPAPI PixmapFromFile : public Pixmap
+	class NAPAPI BitmapFromFile : public Bitmap
 	{
-		RTTI_ENABLE(Pixmap)
+		RTTI_ENABLE(Bitmap)
 	public:
 		/**
 		 * Loads the image pointed to by the path property
@@ -410,7 +410,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename Type>
-	void nap::Pixmap::getRGBAColor(int x, int y, RGBAColor<Type>& outColor) const
+	void nap::Bitmap::getRGBAColor(int x, int y, RGBAColor<Type>& outColor) const
 	{
 		RGBAColor<Type*> color_data;
 		getRGBAColorData<Type>(x, y, color_data);
@@ -423,7 +423,7 @@ namespace nap
 
 
 	template<typename Type>
-	void nap::Pixmap::getRGBColor(int x, int y, RGBColor<Type>& outColor) const
+	void nap::Bitmap::getRGBColor(int x, int y, RGBColor<Type>& outColor) const
 	{
 		RGBColor<Type*> color_data;
 		getRGBColorData<Type>(x, y, color_data);
@@ -435,7 +435,7 @@ namespace nap
 
 
 	template<typename Type>
-	void nap::Pixmap::getColorValue(int x, int y, nap::EColorChannel channel, RColor<Type>& outValue) const
+	void nap::Bitmap::getColorValue(int x, int y, nap::EColorChannel channel, RColor<Type>& outValue) const
 	{
 		RColor<Type*> color_value;
 		getColorValueData<Type>(x, y, channel, color_value);
@@ -444,7 +444,7 @@ namespace nap
 
 
 	template<typename Type>
-	RGBColor<Type> nap::Pixmap::getRGBColor(int x, int y) const
+	RGBColor<Type> nap::Bitmap::getRGBColor(int x, int y) const
 	{
 		RGBColor<Type> color;
 		getRGBColor<Type>(x, y, color);
@@ -453,7 +453,7 @@ namespace nap
 
 
 	template<typename Type>
-	RGBAColor<Type> nap::Pixmap::getRGBAColor(int x, int y) const
+	RGBAColor<Type> nap::Bitmap::getRGBAColor(int x, int y) const
 	{
 		RGBAColor<Type> color;
 		getRGBAColor<Type>(x, y, color);
@@ -462,7 +462,7 @@ namespace nap
 
 
 	template<typename Type>
-	void nap::Pixmap::getRGBAColorData(int x, int y, RGBAColor<Type*>& outColor) const
+	void nap::Bitmap::getRGBAColorData(int x, int y, RGBAColor<Type*>& outColor) const
 	{
 		assert(mNumChannels >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
@@ -492,7 +492,7 @@ namespace nap
 
 
 	template<typename Type>
-	RGBAColor<Type*> nap::Pixmap::getRGBAColorData(int x, int y) const
+	RGBAColor<Type*> nap::Bitmap::getRGBAColorData(int x, int y) const
 	{
 		RGBAColor<Type*> rcolor;
 		getRGBAColorData<Type>(x, y, rcolor);
@@ -501,7 +501,7 @@ namespace nap
 
 
 	template<typename Type>
-	void nap::Pixmap::getRGBColorData(int x, int y, RGBColor<Type*>& outColor) const
+	void nap::Bitmap::getRGBColorData(int x, int y, RGBColor<Type*>& outColor) const
 	{
 		assert(mNumChannels >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
@@ -532,7 +532,7 @@ namespace nap
 
 
 	template<typename Type>
-	RGBColor<Type*> nap::Pixmap::getRGBColorData(int x, int y) const
+	RGBColor<Type*> nap::Bitmap::getRGBColorData(int x, int y) const
 	{
 		RGBColor<Type*> rcolor;
 		getRGBColorData<Type>(x, y, rcolor);
@@ -541,7 +541,7 @@ namespace nap
 
 
 	template<typename Type>
-	void nap::Pixmap::getColorValueData(int x, int y, nap::EColorChannel channel, RColor<Type*>& outValue) const
+	void nap::Bitmap::getColorValueData(int x, int y, nap::EColorChannel channel, RColor<Type*>& outValue) const
 	{
 		assert(outValue.getValueType() == RTTI_OF(Type));
 		assert(static_cast<int>(channel) < mNumChannels);
@@ -565,7 +565,7 @@ namespace nap
 
 
 	template<typename Type> 
-	RColor<Type> nap::Pixmap::getColorValue(int x, int y, nap::EColorChannel channel) const
+	RColor<Type> nap::Bitmap::getColorValue(int x, int y, nap::EColorChannel channel) const
 	{
 		RColor<Type> rvalue;
 		getColorValue<Type>(x, y, channel, rvalue);
@@ -574,7 +574,7 @@ namespace nap
 
 
 	template<typename Type>
-	RColor<Type*> nap::Pixmap::getColorValueData(int x, int y, nap::EColorChannel channel) const
+	RColor<Type*> nap::Bitmap::getColorValueData(int x, int y, nap::EColorChannel channel) const
 	{
 		RColor<Type*> rvalue;
 		getColorValueData(x, y, channel, rvalue);
@@ -583,7 +583,7 @@ namespace nap
 
 
 	template<typename T>
-	T nap::Pixmap::getPixel(int x, int y) const
+	T nap::Bitmap::getPixel(int x, int y) const
 	{
 		// Create a pixel and fill it
 		std::unique_ptr<BaseColor> pixel = makePixel();
@@ -600,7 +600,7 @@ namespace nap
 
 
 	template<typename T>
-	void nap::Pixmap::setPixelColor(int x, int y, const T& color)
+	void nap::Bitmap::setPixelColor(int x, int y, const T& color)
 	{
 		if (color.getValueType() == mValueType && !(color.isPointer()))
 		{
@@ -616,7 +616,7 @@ namespace nap
 
 
 	template<typename T>
-	void nap::Pixmap::setPixelData(int x, int y, const nap::BaseColor& color)
+	void nap::Bitmap::setPixelData(int x, int y, const nap::BaseColor& color)
 	{
 		// We need to make sure that the underlying color value types match
 		// The incoming color can't be a pointer
@@ -660,9 +660,9 @@ namespace nap
 namespace std
 {
 	template <>
-	struct hash<nap::Pixmap::EChannels>
+	struct hash<nap::Bitmap::EChannels>
 	{
-		size_t operator()(const nap::Pixmap::EChannels& v) const
+		size_t operator()(const nap::Bitmap::EChannels& v) const
 		{
 			return hash<int>()(static_cast<int>(v));
 		}
@@ -670,9 +670,9 @@ namespace std
 
 
 	template <>
-	struct hash<nap::Pixmap::EDataType>
+	struct hash<nap::Bitmap::EDataType>
 	{
-		size_t operator()(const nap::Pixmap::EDataType& v) const
+		size_t operator()(const nap::Bitmap::EDataType& v) const
 		{
 			return hash<int>()(static_cast<int>(v));
 		}

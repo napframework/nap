@@ -1,5 +1,5 @@
 #include "texture2d.h"
-#include "pixmap.h"
+#include "bitmap.h"
 #include "bitmaputils.h"
 
 RTTI_BEGIN_ENUM(nap::EFilterMode)
@@ -151,7 +151,7 @@ namespace nap
 	}
 
 
-	Pixmap& Texture2D::getData()
+	Bitmap& Texture2D::getData()
 	{
 		if (mPixmap.empty())
 			mPixmap.initFromTexture(mTexture.getSettings());
@@ -167,7 +167,7 @@ namespace nap
 	}
 
 
-	Pixmap& Texture2D::endGetData()
+	Bitmap& Texture2D::endGetData()
 	{
 		if (mPixmap.empty())
 			mPixmap.initFromTexture(mTexture.getSettings());
@@ -188,7 +188,7 @@ namespace nap
 		mTexture.unbind();
 	}
 
-	void Texture2D::update(Pixmap& pixmap)
+	void Texture2D::update(Bitmap& pixmap)
 	{
 		update(pixmap.getData());
 	}
