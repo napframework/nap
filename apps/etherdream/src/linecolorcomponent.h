@@ -155,7 +155,7 @@ namespace nap
 
 	private:
 		ComponentInstancePtr<LineBlendComponent> mBlendComponent = { this, &LineColorComponent::mBlendComponent };		// Holds the line we want to color
-		Texture2DFromFile* mLookupImage = nullptr;								// Image used for color lookup
+		Texture2DFromFile* mLookupImage = nullptr;					// Image used for color lookup
 		glm::vec2 mStartPosition = { 0.5f, 0.5f };					// Start point lookup in uv space
 		glm::vec2 mEndPosition = { 0.5f, 0.5f };					// End point lookup in uv space
 		float mIntensity = 1.0f;									// Final intensity
