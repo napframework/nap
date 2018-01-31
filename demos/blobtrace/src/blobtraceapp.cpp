@@ -254,9 +254,9 @@ namespace nap
 			// Use the indices to get the vertex positions
 			Triangle triangle = triangle_it.next();
 			
-			tri_vertices[0] = (math::objectToWorld(vertices[triangle.firstIndex()],  world_xform.getGlobalTransform()));
-			tri_vertices[1] = (math::objectToWorld(vertices[triangle.secondIndex()], world_xform.getGlobalTransform()));
-			tri_vertices[2] = (math::objectToWorld(vertices[triangle.thirdIndex()],  world_xform.getGlobalTransform()));
+			tri_vertices[0] = (math::objectToWorld(vertices[triangle[0]], world_xform.getGlobalTransform()));
+			tri_vertices[1] = (math::objectToWorld(vertices[triangle[1]], world_xform.getGlobalTransform()));
+			tri_vertices[2] = (math::objectToWorld(vertices[triangle[2]], world_xform.getGlobalTransform()));
 
 			glm::vec3 bary_coord;
 			if (utility::intersect(cam_pos, screen_to_world_ray, tri_vertices, bary_coord))
