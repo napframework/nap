@@ -1,12 +1,17 @@
 // Local Includes
 #include "mesh.h"
 #include <rtti/rttiutilities.h>
+#include "meshutils.h"
+
+RTTI_BEGIN_CLASS(nap::MeshShape)
+	RTTI_PROPERTY("DrawMode",		&nap::MeshShape::mDrawMode,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Indices",		&nap::MeshShape::mIndices,				nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::RTTIMeshProperties)
 	RTTI_PROPERTY("NumVertices",	&nap::RTTIMeshProperties::mNumVertices,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DrawMode",		&nap::RTTIMeshProperties::mDrawMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attributes",		&nap::RTTIMeshProperties::mAttributes,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Indices",		&nap::RTTIMeshProperties::mIndices,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Shapes",			&nap::RTTIMeshProperties::mShapes,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS	
 
 RTTI_BEGIN_CLASS(nap::Mesh)
@@ -19,10 +24,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	const std::string VertexAttributeIDs::getPositionName()				{ return "Position"; }
-	const std::string VertexAttributeIDs::getNormalName()				{ return "Normal"; }
-	const std::string VertexAttributeIDs::getTangentName()				{ return "Tangent"; }
-	const std::string VertexAttributeIDs::getBitangentName()			{ return "Bitangent"; }
+	const std::string VertexAttributeIDs::getPositionName() { return "Position"; }
+	const std::string VertexAttributeIDs::getNormalName() { return "Normal"; }
+	const std::string VertexAttributeIDs::getTangentName() { return "Tangent"; }
+	const std::string VertexAttributeIDs::getBitangentName() { return "Bitangent"; }
 
 
 	const std::string VertexAttributeIDs::getUVName(int uvChannel)
@@ -39,7 +44,8 @@ namespace nap
 		stream << "Color" << colorChannel;
 		return stream.str();
 	}
-
+	
+	//////////////////////////////////////////////////////////////////////////
 
 	MeshInstance::~MeshInstance()
 	{
@@ -81,10 +87,20 @@ namespace nap
 			mProperties.mAttributes.emplace_back(std::move(owned_mesh_attribute));
 		}
 		mProperties.mNumVertices = meshProperties.mNumVertices;
-		mProperties.mDrawMode = meshProperties.mDrawMode;
-		mProperties.mIndices = meshProperties.mIndices;
+
+		mProperties.mShapes.resize(meshProperties.mShapes.size());
+		for (int index = 0; index < meshProperties.mShapes.size(); ++index)
+		{
+			MeshShape& source_shape = meshProperties.mShapes[index];
+			MeshShape& dest_shape = mProperties.mShapes[index];
+
+			assert(source_shape.getNumIndices() != 0);
+
+			dest_shape.setDrawMode(source_shape.getDrawMode());
+			dest_shape.setIndices(source_shape.getIndices().data(), source_shape.getIndices().size());
+		}
 	}
-	
+
 
 	void MeshInstance::reserveVertices(size_t numVertices)
 	{
@@ -93,24 +109,10 @@ namespace nap
 	}
 
 
-	void MeshInstance::reserveIndices(size_t numIndices) 
-	{ 
-		mProperties.mIndices.reserve(numIndices); 
-	}
-
-
-	void MeshInstance::setIndices(uint32_t* indices, int numIndices)
+	MeshShape& MeshInstance::createShape()
 	{
-		mProperties.mIndices.resize(numIndices);
-		std::memcpy(mProperties.mIndices.data(), indices, numIndices * sizeof(uint32_t));
-	}
-
-
-	void MeshInstance::addIndices(uint32_t* indices, int numIndices)
-	{
-		int cur_num_indices = mProperties.mIndices.size();
-		mProperties.mIndices.resize(cur_num_indices + numIndices);
-		std::memcpy(&mProperties.mIndices[cur_num_indices], indices, numIndices * sizeof(uint32_t));
+		mProperties.mShapes.push_back(MeshShape());
+		return mProperties.mShapes.back();
 	}
 
 
@@ -120,7 +122,7 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			if (!errorState.check(mesh_attribute->getCount() == mProperties.mNumVertices,
-					"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", mesh_attribute->mAttributeID.c_str(), mesh_attribute->getCount(), mProperties.mNumVertices))
+				"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", mesh_attribute->mAttributeID.c_str(), mesh_attribute->getCount(), mProperties.mNumVertices))
 			{
 				return false;
 			}
@@ -132,15 +134,27 @@ namespace nap
 			vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
-		if (!mProperties.mIndices.empty())
-			mGPUMesh->getOrCreateIndexBuffer().setData(mProperties.mIndices);
+
+		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
+			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mProperties.mShapes[shapeIndex].getIndices());
 
 		return true;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 
 	bool Mesh::init(utility::ErrorState& errorState)
 	{
+		if (!errorState.check(!mProperties.mShapes.empty(), "Mesh %s has no sub meshes", mID.c_str()))
+			return false;
+
+		for (int index = 0; index < mProperties.mShapes.size(); ++index)
+		{
+			MeshShape& shape = mProperties.mShapes[index];
+			if (shape.getNumIndices() == 0)
+				generateIndices(shape, mProperties.mNumVertices);
+		}
+
 		mMeshInstance.copyMeshProperties(mProperties);
 		return mMeshInstance.init(errorState);
 	}
