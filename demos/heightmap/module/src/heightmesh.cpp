@@ -47,7 +47,7 @@ namespace nap
 		std::vector<glm::vec3>& nor_data = nor_attr.getData();
 
 		// Get the pixmap we want to get the color value from @uv
-		const nap::Pixmap& pixmap = mHeightmap->getPixmap();
+		const nap::Bitmap& pixmap = mHeightmap->getPixmap();
 		float width = static_cast<float>(pixmap.getWidth() - 1);
 		float heigh = static_cast<float>(pixmap.getHeight() - 1);
 

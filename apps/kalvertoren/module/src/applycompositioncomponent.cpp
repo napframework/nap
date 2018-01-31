@@ -47,7 +47,7 @@ namespace nap
 	void ApplyCompositionComponentInstance::applyColor(double deltaTime)
 	{
 		// Get the pixmap associated with the final composition
-		nap::Pixmap& mPixmap = mCompositionRenderer->getPixmap();
+		nap::Bitmap& mPixmap = mCompositionRenderer->getPixmap();
 
 		// If the pixmap is empty, ie: hasn't been downloaded yet, we skip this step
 		// This occurs when the first frame hasn't been rendered yet
@@ -74,7 +74,7 @@ namespace nap
 
 		// Make pixel we use to query data from bitmap
 		auto source_pixel = mPixmap.makePixel();
-		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
+		assert(mPixmap.mType == Bitmap::EDataType::BYTE);
 		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
 
 		TriangleIterator triangle_iterator(mesh.getMeshInstance());

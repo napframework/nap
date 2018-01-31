@@ -4,7 +4,7 @@
 #include <rtti/rttiobject.h>
 #include <texture2dfromfile.h>
 #include <color.h>
-#include <pixmap.h>
+#include <bitmap.h>
 #include <unordered_map>
 
 namespace nap

@@ -13,9 +13,9 @@ namespace nap
 	{
 		class ErrorState;
 	}
-	class Pixmap;
+	class Bitmap;
 
 	/**
 	 */
-	NAPAPI bool		getTextureSettingsFromPixmap(const Pixmap& pixmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState);
+	NAPAPI bool		getTextureSettingsFromPixmap(const Bitmap& pixmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState);
 }

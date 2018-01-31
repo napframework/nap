@@ -152,7 +152,7 @@ namespace nap
 	void LineColorComponentInstance::getColor(const glm::vec2& uvPos, glm::vec3& outColor)
 	{
 		// Get max width and height in bitmap space
-		const Pixmap& pixmap = mLookupImage->getPixmap();
+		const Bitmap& pixmap = mLookupImage->getPixmap();
 		int x = static_cast<int>(static_cast<float>(pixmap.getWidth()  - 1) * uvPos.x);
 		int y = static_cast<int>(static_cast<float>(pixmap.getHeight() - 1) * uvPos.y);
 

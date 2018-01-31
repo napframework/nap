@@ -54,7 +54,7 @@ namespace nap
 			return false;
 		}
 
-		if (!errorState.check(mDebugImage->getPixmap().mChannels == Pixmap::EChannels::BGRA, "DebugImage (%s) must be a 4-channel BGRA texture", mDebugImage->mID.c_str()))
+		if (!errorState.check(mDebugImage->getPixmap().mChannels == Bitmap::EChannels::BGRA, "DebugImage (%s) must be a 4-channel BGRA texture", mDebugImage->mID.c_str()))
 			return false;
 
 		// Select current week

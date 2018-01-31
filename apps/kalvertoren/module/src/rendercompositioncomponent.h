@@ -74,7 +74,7 @@ namespace nap
 		/**
 		 *	@return the output pixmap
 		 */
-		nap::Pixmap& getPixmap();
+		nap::Bitmap& getPixmap();
 
 		// Points to the composition component we want to render
 		ComponentInstancePtr<CompositionComponent> mCompositionComponent	=	{ this, &RenderCompositionComponent::mCompositionComponent };

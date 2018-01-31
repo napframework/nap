@@ -5,7 +5,7 @@
 #include <texture2dfromfile.h>
 #include <nap/configure.h>
 #include <color.h>
-#include <pixmap.h>
+#include <bitmap.h>
 
 namespace nap
 {

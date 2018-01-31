@@ -3,20 +3,20 @@
 #include <assert.h>
 #include "gl/glew.h"
 #include "ntexture2d.h"
-#include "pixmap.h"
+#include "bitmap.h"
 
 namespace nap
 {
 	// Returns the associated OpenGL system type based on the Bitmap's data type
-	GLenum getGLType(Pixmap::EDataType type)
+	GLenum getGLType(Bitmap::EDataType type)
 	{
 		switch (type)
 		{
-		case Pixmap::EDataType::BYTE:
+		case Bitmap::EDataType::BYTE:
 			return GL_UNSIGNED_BYTE;
-		case Pixmap::EDataType::FLOAT:
+		case Bitmap::EDataType::FLOAT:
 			return GL_FLOAT;
-		case Pixmap::EDataType::USHORT:
+		case Bitmap::EDataType::USHORT:
 			return GL_UNSIGNED_SHORT;
 		}
 
@@ -26,17 +26,17 @@ namespace nap
 
 
 	// the GL associated internal format associated with the BitmapColorType
-	GLint getGLInternalFormat(Pixmap::EChannels type, bool compressed /*= true*/)
+	GLint getGLInternalFormat(Bitmap::EChannels type, bool compressed /*= true*/)
 	{
 		switch (type)
 		{
-		case Pixmap::EChannels::R:
+		case Bitmap::EChannels::R:
 			return compressed ? GL_COMPRESSED_RED_RGTC1_EXT : GL_RED;
-		case Pixmap::EChannels::RGB:
-		case Pixmap::EChannels::BGR:
+		case Bitmap::EChannels::RGB:
+		case Bitmap::EChannels::BGR:
 			return compressed ? GL_COMPRESSED_RGB_S3TC_DXT1_EXT : GL_RGB;
-		case Pixmap::EChannels::RGBA:
-		case Pixmap::EChannels::BGRA:
+		case Bitmap::EChannels::RGBA:
+		case Bitmap::EChannels::BGRA:
 			return compressed ? GL_COMPRESSED_RGBA_S3TC_DXT5_EXT : GL_RGBA;
 		}
 		assert(false);
@@ -45,19 +45,19 @@ namespace nap
 
 
 	// Returns the GL associated format associated with the bitmap's color type
-	GLenum getGLFormat(Pixmap::EChannels type)
+	GLenum getGLFormat(Bitmap::EChannels type)
 	{
 		switch (type)
 		{
-		case Pixmap::EChannels::R:
+		case Bitmap::EChannels::R:
 			return GL_RED;
-		case Pixmap::EChannels::RGB:
+		case Bitmap::EChannels::RGB:
 			return GL_RGB;
-		case Pixmap::EChannels::RGBA:
+		case Bitmap::EChannels::RGBA:
 			return GL_RGBA;
-		case Pixmap::EChannels::BGR:
+		case Bitmap::EChannels::BGR:
 			return GL_BGR;
-		case Pixmap::EChannels::BGRA:
+		case Bitmap::EChannels::BGRA:
 			return GL_BGRA;
 		}
 
@@ -67,7 +67,7 @@ namespace nap
 
 
 	// Populates a Texture2D object with settings matching the bitmap
-	bool getTextureSettingsFromPixmap(const Pixmap& pixmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState)
+	bool getTextureSettingsFromPixmap(const Bitmap& pixmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState)
 	{
 		// Fetch matching values
 		GLint internal_format = getGLInternalFormat(pixmap.getChannels(), compress);

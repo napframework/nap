@@ -20,12 +20,12 @@ namespace nap
 		/**
 		 *	@return The pixmap associated with this layer at the specified index
 		 */
-		nap::Pixmap& getPixmap(int index) { return *mPixmaps[index]; }
+		nap::Bitmap& getPixmap(int index) { return *mPixmaps[index]; }
 
 		/**
 		 *	@return Const pixmap associated with this layer at the specified index
 		 */
-		const nap::Pixmap&	getPixmap(int index) const { return *mPixmaps[index]; }
+		const nap::Bitmap&	getPixmap(int index) const { return *mPixmaps[index]; }
 
 		/**
 		 * @return the length of the sequence in seconds
@@ -53,7 +53,7 @@ namespace nap
 		float									mFPS = 30.0f;		///< Playback framerate for this sequence
 
 	private:
-		std::vector<std::unique_ptr<Pixmap>>	mPixmaps;			///< The images created from the files found on disk
+		std::vector<std::unique_ptr<Bitmap>>	mPixmaps;			///< The images created from the files found on disk
 		opengl::Texture2DSettings				mTextureSettings;	///< The texture settings used create the texture. Inferred from the pixmaps in this sequence
 	};
 

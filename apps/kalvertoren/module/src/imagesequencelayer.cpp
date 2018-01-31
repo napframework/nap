@@ -26,7 +26,7 @@ namespace nap
 			if (!utility::fileExists(filename))
 				break;
 
-			std::unique_ptr<Pixmap> pixmap = std::make_unique<Pixmap>();
+			std::unique_ptr<Bitmap> pixmap = std::make_unique<Bitmap>();
 			if (!errorState.check(pixmap->initFromFile(filename, errorState), "Failed to read image %s in image sequence %s", filename.c_str(), mID.c_str()))
 				return false;
 
@@ -76,7 +76,7 @@ namespace nap
 		// Upload current texture data to the GPU if necessary
 		if (mNextFrameIndex != mCurrentFrameIndex)
 		{
-			Pixmap& pixmap = mLayer->getPixmap(mNextFrameIndex);
+			Bitmap& pixmap = mLayer->getPixmap(mNextFrameIndex);
 			mCurrentFrameTexture->update(pixmap);
 			mCurrentFrameIndex = mNextFrameIndex;
 		}

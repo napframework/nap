@@ -1,4 +1,4 @@
-#include "pixmap.h"
+#include "bitmap.h"
 
 // External includes
 #include <bitmaputils.h>
@@ -9,30 +9,30 @@
 // External includes
 #include <FreeImage.h>
 
-RTTI_BEGIN_ENUM(nap::Pixmap::EChannels)
-	RTTI_ENUM_VALUE(nap::Pixmap::EChannels::R,			"R"),
-	RTTI_ENUM_VALUE(nap::Pixmap::EChannels::RGB,		"RGB"),
-	RTTI_ENUM_VALUE(nap::Pixmap::EChannels::RGBA,		"RGBA"),
-	RTTI_ENUM_VALUE(nap::Pixmap::EChannels::BGR,		"BGR"),
-	RTTI_ENUM_VALUE(nap::Pixmap::EChannels::BGRA,		"BGRA")
+RTTI_BEGIN_ENUM(nap::Bitmap::EChannels)
+	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::R,			"R"),
+	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::RGB,		"RGB"),
+	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::RGBA,		"RGBA"),
+	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::BGR,		"BGR"),
+	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::BGRA,		"BGRA")
 RTTI_END_ENUM
 
-RTTI_BEGIN_ENUM(nap::Pixmap::EDataType)
-	RTTI_ENUM_VALUE(nap::Pixmap::EDataType::BYTE,		"Byte"),
-	RTTI_ENUM_VALUE(nap::Pixmap::EDataType::USHORT,		"Short"),
-	RTTI_ENUM_VALUE(nap::Pixmap::EDataType::FLOAT,		"Float")
+RTTI_BEGIN_ENUM(nap::Bitmap::EDataType)
+	RTTI_ENUM_VALUE(nap::Bitmap::EDataType::BYTE,		"Byte"),
+	RTTI_ENUM_VALUE(nap::Bitmap::EDataType::USHORT,		"Short"),
+	RTTI_ENUM_VALUE(nap::Bitmap::EDataType::FLOAT,		"Float")
 RTTI_END_ENUM
 
 // nap::bitmap run time class definition 
-RTTI_BEGIN_CLASS(nap::Pixmap)
-	RTTI_PROPERTY("Width",		&nap::Pixmap::mWidth,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Height",		&nap::Pixmap::mHeight,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Channels",	&nap::Pixmap::mChannels,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Type",		&nap::Pixmap::mType,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::Bitmap)
+	RTTI_PROPERTY("Width",		&nap::Bitmap::mWidth,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Height",		&nap::Bitmap::mHeight,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Channels",	&nap::Bitmap::mChannels,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Type",		&nap::Bitmap::mType,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::PixmapFromFile)
-	RTTI_PROPERTY("Path",		&nap::PixmapFromFile::mPath,	nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::BitmapFromFile)
+	RTTI_PROPERTY("Path",		&nap::BitmapFromFile::mPath,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 
@@ -47,7 +47,7 @@ RTTI_END_CLASS
  * @param y the y pixel coordinate value
  */
 template<typename T>
-static nap::BaseColor* createColor(const nap::Pixmap& map)
+static nap::BaseColor* createColor(const nap::Bitmap& map)
 {
 	switch (map.getNumberOfChannels())
 	{
@@ -80,7 +80,7 @@ static nap::BaseColor* createColor(const nap::Pixmap& map)
  * @param outColor the associated pixel color values
  */
 template<typename T>
-static void fill(int x, int y, const nap::Pixmap& map, nap::BaseColor& outColor)
+static void fill(int x, int y, const nap::Bitmap& map, nap::BaseColor& outColor)
 {
 	assert(!(outColor.isPointer()));
 	switch (outColor.getNumberOfChannels())
@@ -119,7 +119,7 @@ static void fill(int x, int y, const nap::Pixmap& map, nap::BaseColor& outColor)
 * @param y the y pixel coordinate value
 */
 template<typename T>
-static nap::BaseColor* createColorData(const nap::Pixmap& map, int x, int y)
+static nap::BaseColor* createColorData(const nap::Bitmap& map, int x, int y)
 {
 	switch (map.getBitmap().getNumberOfChannels())
 	{
@@ -150,9 +150,9 @@ static nap::BaseColor* createColorData(const nap::Pixmap& map, int x, int y)
 
 namespace nap
 {
-	Pixmap::~Pixmap()			{ }
+	Bitmap::~Bitmap()			{ }
 
-	bool Pixmap::init(utility::ErrorState& errorState)
+	bool Bitmap::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mWidth > 0 && mHeight > 0, "Invalid size specified for pixmap"))
 			return false;
@@ -165,7 +165,7 @@ namespace nap
 	}
 
 
-	bool Pixmap::initFromFile(const std::string& path, nap::utility::ErrorState& errorState)
+	bool Bitmap::initFromFile(const std::string& path, nap::utility::ErrorState& errorState)
 	{
 		if (!errorState.check(utility::fileExists(path), "unable to load image: %s, file does not exist: %s", path.c_str(), mID.c_str()))
 			return false;
@@ -189,17 +189,17 @@ namespace nap
 		switch (fi_bitmap_type)
 		{
 		case FIT_BITMAP:
-			mType = Pixmap::EDataType::BYTE;
+			mType = Bitmap::EDataType::BYTE;
 			break;
 		case FIT_UINT16:
 		case FIT_RGB16:
 		case FIT_RGBA16:
-			mType = Pixmap::EDataType::USHORT;
+			mType = Bitmap::EDataType::USHORT;
 			break;
 		case FIT_FLOAT:
 		case FIT_RGBF:
 		case FIT_RGBAF:
-			mType = Pixmap::EDataType::FLOAT;
+			mType = Bitmap::EDataType::FLOAT;
 			break;
 		default:
 			errorState.fail("Can't load pixmap from file; unknown pixel format");
@@ -245,7 +245,7 @@ namespace nap
 		return true;
 	}
 
-	void Pixmap::setData(uint8_t* source, unsigned int sourcePitch)
+	void Bitmap::setData(uint8_t* source, unsigned int sourcePitch)
 	{
 		unsigned int target_pitch = mWidth * mChannelSize * mNumChannels;
 		assert(target_pitch <= sourcePitch);
@@ -283,7 +283,7 @@ namespace nap
 	}
 
 
-	void Pixmap::initFromTexture(const opengl::Texture2DSettings& settings)
+	void Bitmap::initFromTexture(const opengl::Texture2DSettings& settings)
 	{
 		mWidth = settings.mWidth;
 		mHeight = settings.mHeight;
@@ -331,13 +331,13 @@ namespace nap
 	}
 
 
-	size_t Pixmap::getSizeInBytes() const
+	size_t Bitmap::getSizeInBytes() const
 	{
 		return mWidth * mHeight * mNumChannels * mChannelSize;
 	}
 
 
-	std::unique_ptr<nap::BaseColor> Pixmap::makePixel() const
+	std::unique_ptr<nap::BaseColor> Bitmap::makePixel() const
 	{
 		BaseColor* rvalue = nullptr;
 		switch (mType)
@@ -366,7 +366,7 @@ namespace nap
 	}
 
 
-	void Pixmap::getPixel(int x, int y, BaseColor& outPixel) const
+	void Bitmap::getPixel(int x, int y, BaseColor& outPixel) const
 	{
 		switch (mType)
 		{
@@ -392,7 +392,7 @@ namespace nap
 	}
 
 
-	void Pixmap::setPixel(int x, int y, const BaseColor& color)
+	void Bitmap::setPixel(int x, int y, const BaseColor& color)
 	{
 		switch (mType)
 		{
@@ -418,7 +418,7 @@ namespace nap
 	}
 
 
-	void Pixmap::updatePixelFormat()
+	void Bitmap::updatePixelFormat()
 	{
 		switch (mType)
 		{
@@ -455,7 +455,7 @@ namespace nap
 }
 
 
-bool nap::PixmapFromFile::init(utility::ErrorState& errorState)
+bool nap::BitmapFromFile::init(utility::ErrorState& errorState)
 {
-	return Pixmap::initFromFile(mPath, errorState);
+	return Bitmap::initFromFile(mPath, errorState);
 }

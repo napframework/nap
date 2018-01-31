@@ -2,7 +2,7 @@
 
 #include <utility/fileutils.h>
 #include <bitmaputils.h>
-#include <pixmap.h>
+#include <bitmap.h>
 
 // nap::ledcolorpalette run time class definition 
 RTTI_BEGIN_CLASS(nap::LedColorPalette)

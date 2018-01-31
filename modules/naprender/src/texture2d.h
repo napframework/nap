@@ -5,11 +5,11 @@
 #include <utility/dllexport.h>
 #include <ntexture2d.h>
 #include <glm/glm.hpp>
-#include "pixmap.h"
+#include "bitmap.h"
 
 namespace nap
 {
-	class Pixmap;
+	class Bitmap;
 
 	/**
 	 *	Texture min filter
@@ -90,7 +90,7 @@ namespace nap
 		/**
 		 *	@return CPU data for this texture in the form of a Pixmap. The Pixmap can be empty if this is a GPU-only texture.
 		 */
-		Pixmap& getPixmap() { return mPixmap; }
+		Bitmap& getPixmap() { return mPixmap; }
 
 		/**
 		 *	Converts the CPU data in the internal Pixmap to the GPU. The pixmap should contain valid data and not be empty.
@@ -102,7 +102,7 @@ namespace nap
 		 * The pixmap should contain valid data and not be empty.
 		 * @param pixmap CPU data to convert to GPU.
 		 */
-		void update(Pixmap& pixmap);
+		void update(Bitmap& pixmap);
 
 		/**
 		 * Converts the CPU data that is passed in to the GPU. The internal Pixmap remains untouched. 
@@ -117,7 +117,7 @@ namespace nap
 		 * This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match.
 		 * @return reference to the internal pixmap that is filled with the GPU data of this texture.
 		 */
-		Pixmap& getData();
+		Bitmap& getData();
 
 		/**
 		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call.
@@ -131,7 +131,7 @@ namespace nap
 		* This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match.
 		* @return reference to the internal pixmap that is filled with the GPU data of this texture.
 		*/
-		Pixmap& endGetData();
+		Bitmap& endGetData();
 
 		/**
 		 * Activates this texture for rendering.
@@ -159,7 +159,7 @@ namespace nap
 	private:
 		friend class RenderTarget;
 		opengl::Texture2D			mTexture;			///< Internal opengl texture
-		Pixmap						mPixmap;			///< The CPU image representation
+		Bitmap						mPixmap;			///< The CPU image representation
 	};
 }
 
