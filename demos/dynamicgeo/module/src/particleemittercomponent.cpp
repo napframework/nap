@@ -66,9 +66,7 @@ namespace nap
 		{
 			// Because the mesh is populated dynamically we set the initial amount of vertices to be 0
 			mMeshInstance.setNumVertices(0);
-
-			// We want to draw the mesh as a set of triangles, 2 triangles per particle
-			mMeshInstance.setDrawMode(opengl::EDrawMode::TRIANGLES);
+			mMeshInstance.reserveVertices(1000);
 
 			// Create the necessary attributes
 			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
@@ -76,9 +74,12 @@ namespace nap
 			Vec4VertexAttribute& color_attribute = mMeshInstance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 			FloatVertexAttribute& id_attribute = mMeshInstance.getOrCreateAttribute<float>("pid");
 			
+			MeshShape& shape = mMeshInstance.createShape();
+
 			// Reserve CPU memory for all the particle geometry necessary to create
-			mMeshInstance.reserveVertices(1000);
-			mMeshInstance.reserveIndices(1000);
+			// We want to draw the mesh as a set of triangles, 2 triangles per particle
+			shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
+			shape.reserveIndices(1000);
 
 			// Initialize our instance
 			return mMeshInstance.init(errorState);
@@ -217,7 +218,9 @@ namespace nap
 		uv_attribute.clear();
 		color_attribute.clear();		
 		id_attribute.clear();
-		mesh_instance.clearIndices();
+		
+		MeshShape& shape = mesh_instance.getShape(0);
+		shape.clearIndices();
 		
 		// Build the mesh based on the amount of particles
 		unsigned int cur_num_vertices = 0;
@@ -279,7 +282,7 @@ namespace nap
 			uv_attribute.addData(plane_uvs, 4);
 			color_attribute.addData(colors, 4);
 			id_attribute.addData(ids, 4);
-			mesh_instance.addIndices(indices, 6);
+			shape.addIndices(indices, 6);
 			cur_num_vertices += 4;
 		}
 

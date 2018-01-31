@@ -88,7 +88,7 @@ namespace nap
 		}
 
 		mMeshInstance->setNumVertices(vertex_count);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::TRIANGLES);
+
 		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
 		nap::Vec3VertexAttribute& uv_attribute			= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
@@ -98,7 +98,10 @@ namespace nap
 		normal_attribute.setData(normals.data(), vertex_count);
 		uv_attribute.setData(texcoords.data(), vertex_count);
 		color_attribute.setData(colors.data(), vertex_count);
-		mMeshInstance->setIndices(indices.data(), index_count);
+		
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);	
+		shape.setIndices(indices.data(), index_count);
 
 		return mMeshInstance->init(errorState);
 	}
