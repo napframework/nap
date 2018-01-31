@@ -40,15 +40,15 @@ namespace nap
 		int vert_count = mHeightMesh->getMeshInstance().getNumVertices();
 
 		// Get the reference vertices and normals
-		std::vector<glm::vec3>& ref_original_vertices  = mHeightMesh->getOriginalPosition().getData();
-		std::vector<glm::vec3>& ref_original_normals   = mHeightMesh->getOriginalNormals().getData();
-		std::vector<glm::vec3>& ref_displaced_vertices = mHeightMesh->getDisplacedPosition().getData();
+		VertexAttribute<glm::vec3>& ref_original_vertices = mHeightMesh->getOriginalPosition();
+		VertexAttribute<glm::vec3>& ref_original_normals = mHeightMesh->getOriginalNormals();
+		VertexAttribute<glm::vec3>& ref_displaced_vertices = mHeightMesh->getDisplacedPosition();
 
 		// Create target buffers, the normals are drawn using lines. Every line has 2 vertices
 		// We therefore create a buffer that contains twice the amount of vertices of the reference mesh
 		// Every vertex 'receives' an associated normal line
-		std::vector<glm::vec3> original_vertices(ref_original_vertices.size()  * 2, { 0.0f, 0.0f, 0.0f });
-		std::vector<glm::vec3> displaced_vertices(ref_original_vertices.size() * 2, { 0.0f, 0.0f, 0.0f });
+		std::vector<glm::vec3> original_vertices(ref_original_vertices.getCount()  * 2, { 0.0f, 0.0f, 0.0f });
+		std::vector<glm::vec3> displaced_vertices(ref_original_vertices.getCount() * 2, { 0.0f, 0.0f, 0.0f });
 
 		// Use those to populate the two new attributes
 		int target_idx = 0;
