@@ -104,7 +104,7 @@ float calculateMouseCursor(vec2 uv)
 	// Scale with distance to blob, when the blob is close to the mouse cursor
 	// the cursor disappears
 	float blob_dist = distance(inMousePosition.xy, inBlobPosition.xy);
-	mouse_value *= fit(blob_dist, 0.075, 0.25, 0, 1, true);
+	mouse_value *= pow(fit(blob_dist, 0.025, 0.1, 0, 1, true),2);
 
 	return mouse_value;
 }
