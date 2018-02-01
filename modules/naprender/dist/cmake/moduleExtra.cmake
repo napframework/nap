@@ -7,7 +7,6 @@ if(NOT TARGET glew)
     find_package(GLEW REQUIRED)
 endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLEW_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} glew)
 
 if(NOT TARGET assimp)
     find_package(assimp REQUIRED)

@@ -147,7 +147,20 @@ add_subdirectory(modules/napsandbox)
 add_subdirectory(apps/kalvertoren/module)
 
 # Packaging
-install(DIRECTORY dist/cmake/ DESTINATION cmake)
+if(WIN32)
+    install(DIRECTORY dist/cmake/ 
+            DESTINATION cmake
+            )   
+else()
+    # TODO Having our own Findglew.cmake is currently messing with things, 
+    # but if we include local glew for macOS and even Linux we'll probably need this.
+    # Or: investigate how we get away with not having one for NAP source compilation.
+    install(DIRECTORY dist/cmake/ 
+            DESTINATION cmake
+            PATTERN Findglew.cmake EXCLUDE)
+endif()
+
+
 # TODO glob and move this somewhere else
 install(PROGRAMS dist/projectscripts/createProject.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/regenerateProject.py DESTINATION tools/)
