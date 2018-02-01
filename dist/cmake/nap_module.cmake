@@ -13,9 +13,9 @@ project(${MODULE_NAME})
 
 if(NOT MODULE_INTO_PROJ)
 
-    set(NAP_ROOT "${CMAKE_CURRENT_LIST_DIR}/../")
-    message(STATUS "Using NAP root: ${CMAKE_CURRENT_LIST_DIR}")
-    get_filename_component(THIRDPARTY_DIR ../thirdparty REALPATH BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
+    get_filename_component(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../ REALPATH)
+    message(STATUS "Using NAP root: ${NAP_ROOT}")
+    get_filename_component(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty REALPATH)
     message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
     include(${NAP_ROOT}/cmake/targetarch.cmake)
@@ -116,6 +116,12 @@ endif()
 target_link_libraries(${PROJECT_NAME} napcore naprtti naputility RTTR::Core ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 if (MODULE_INTO_PROJ)
     target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
+endif()
+
+# Bring in any additional module requirements
+set(MODULE_EXTRA_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/moduleExtra.cmake)
+if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
+    include (${MODULE_EXTRA_CMAKE_PATH})
 endif()
 
 # Find each NAP module

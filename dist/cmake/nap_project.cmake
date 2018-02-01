@@ -5,9 +5,9 @@ project(${project_name_from_dir})
 # Set our install prefix for project packaging
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin_package)
 
-set(NAP_ROOT ${CMAKE_SOURCE_DIR}/../../)
-message(STATUS "Using NAP root: ${CMAKE_CURRENT_LIST_DIR}")
-get_filename_component(THIRDPARTY_DIR ../thirdparty REALPATH BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
+get_filename_component(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../ REALPATH)
+message(STATUS "Using NAP root: ${NAP_ROOT}")
+get_filename_component(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty REALPATH)
 message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
 include(${NAP_ROOT}/cmake/targetarch.cmake)
