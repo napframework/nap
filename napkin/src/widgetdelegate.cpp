@@ -170,8 +170,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					if (variant.canConvert<PropertyPath>())
 					{
 						auto path = variant.value<PropertyPath>();
-						auto selected = FilterPopup::getObject(AppContext::get().getQApplication()->activeWindow(),
-															   wrapped_type);
+						auto selected = FilterPopup::getObject(AppContext::get().getMainWindow(), wrapped_type);
 						if (selected != nullptr)
 							model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
 
@@ -187,9 +186,9 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					QString dir = QFileInfo(file).path();
 
 					auto& ctx = AppContext::get();
-					auto parent = ctx.getQApplication()->topLevelWidgets()[0];
+					auto parent = ctx.getMainWindow();
 					auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
-					auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter);
+					auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter, &filter);
 					if (!filename.isEmpty())
 					{
 						// Make the filename relative
