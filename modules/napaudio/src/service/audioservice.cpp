@@ -33,11 +33,6 @@ namespace nap
         
         AudioService::~AudioService()
         {
-            auto error = Pa_Terminate();
-            if (error != paNoError)
-                Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
-            Logger::info("Portaudio terminated");
-            
             // Uninitialize mpg123 library
             mpg123_exit();
         }
@@ -170,7 +165,14 @@ namespace nap
             return -1;
         }
 
-        
+
+		void AudioService::shutdown()
+		{
+			auto error = Pa_Terminate();
+			if (error != paNoError)
+				Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+			Logger::info("Portaudio terminated");
+		}
     }
 }
 
