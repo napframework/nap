@@ -61,7 +61,7 @@ void serializeDeserializeTest(const std::string& filename)
 	nap::Core core;
 	{
 		ErrorState err;
-		if (!core.initializeEngine(err))
+		if (!core.initializeEngine(err, "unit_tests_data"))
 			FAIL("Failed to initialize engine: " + err.toString());
 	}
 
@@ -95,11 +95,11 @@ void serializeDeserializeTest(const std::string& filename)
 //TEST_CASE("JSON serialization (Tommy)", "[serialization]")
 //{
 //	Logger::setLevel(Logger::infoLevel()); //< Hide some debug data
-//	serializeDeserializeTest("data/objects.json");
+//	serializeDeserializeTest("objects.json");
 //}
 //
 //TEST_CASE("JSON serialization (Kalvertoren)", "[serialization]")
 //{
 //	Logger::setLevel(Logger::infoLevel()); //< Hide some debug data
-//	serializeDeserializeTest("data/kalvertoren.json");
+//	serializeDeserializeTest("kalvertoren.json");
 //}
