@@ -1,0 +1,1 @@
+set(DEPENDENT_MODULES mod_naprender mod_napmath)

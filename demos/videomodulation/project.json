@@ -11,6 +11,7 @@
         "mod_napscene",
         "mod_naprender",
         "mod_napvideo",
-        "mod_napcameracontrol"
+        "mod_napcameracontrol",
+        "mod_napmath"
     ]
 }

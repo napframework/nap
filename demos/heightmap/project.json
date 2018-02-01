@@ -10,6 +10,7 @@
         "mod_napsdlinput",
         "mod_napinput",
         "mod_napimgui",
-        "mod_naprender"
+        "mod_naprender",
+        "mod_napmath"
     ]
 }
