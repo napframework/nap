@@ -17,6 +17,12 @@ macro(add_project_module)
         unset(IMPORTING_PROJECT_MODULE)
         target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/module/src)
         target_link_libraries(${PROJECT_NAME} mod_${PROJECT_NAME})
+
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mod_${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        )       
     endif()
 endmacro()
 
@@ -30,6 +36,7 @@ macro(find_nap_module MODULE_NAME)
         add_subdirectory(${NAP_ROOT}/usermodules/${MODULE_NAME} usermodules/${MODULE_NAME})
         unset(MODULE_INTO_PROJ)
 
+        # On Windows copy over module DLLs post-build
         add_custom_command(
             TARGET ${PROJECT_NAME}
             POST_BUILD

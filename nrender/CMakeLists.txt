@@ -113,29 +113,30 @@ install(DIRECTORY "src/" DESTINATION "include/nrender/"
 # TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
 
 # Assimp
-if (MSVC)
+if (WIN32)
     install(DIRECTORY ../../thirdparty/assimp/msvc64/install/ DESTINATION thirdparty/assimp/)
 endif()
 
 # FreeImage
-if (MSVC)
-    install(FILES "../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.h" DESTINATION "thirdparty/FreeImage/include")
-    install(FILES "../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.lib" DESTINATION "thirdparty/FreeImage/lib")
-    install(FILES "../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "thirdparty/FreeImage/bin")
+if (WIN32)
+    install(FILES "${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.h" DESTINATION "thirdparty/FreeImage/include")
+    install(FILES "${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.lib" DESTINATION "thirdparty/FreeImage/lib")
+    install(FILES "${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "thirdparty/FreeImage/bin")
 elseif(APPLE)
-    install(FILES "../../thirdparty/FreeImage/osx/include/FreeImage.h" DESTINATION "thirdparty/FreeImage/include")
+    install(FILES "${THIRDPARTY_DIR}/FreeImage/osx/include/FreeImage.h" DESTINATION "thirdparty/FreeImage/include")
 endif()
 
 # GLM
-install(DIRECTORY "../../thirdparty/glm/glm/" DESTINATION "thirdparty/glm")
+install(DIRECTORY "${THIRDPARTY_DIR}/glm/glm/" DESTINATION "thirdparty/glm")
 
 # GLEW
-if (MSVC)
-    install(DIRECTORY "../../thirdparty/glew/msvc/" DESTINATION "thirdparty/glew"
+if (WIN32)
+    install(DIRECTORY "${THIRDPARTY_DIR}/glew/msvc/" DESTINATION "thirdparty/glew"
             PATTERN "lib" EXCLUDE
             PATTERN "bin" EXCLUDE)
-    install(DIRECTORY "../../thirdparty/glew/msvc/bin/Release/x64/" DESTINATION "thirdparty/glew/bin")
+    install(DIRECTORY "${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/" DESTINATION "thirdparty/glew/bin")
+    install(FILES ${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64/glew32.lib DESTINATION "thirdparty/glew/lib/")
 elseif(APPLE)
-    install(DIRECTORY "../../thirdparty/glew/osx/include" DESTINATION "thirdparty/glew/include")
+    install(DIRECTORY ${THIRDPARTY_DIR}/glew/osx/include DESTINATION thirdparty/glew/include)
 endif()
 

@@ -2,7 +2,7 @@ find_path(
     GLEW_DIR
     NAMES include/GL/glew.h
     HINTS
-    ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/glew/
+    ${THIRDPARTY_DIR}/glew/
 )
 
 set(GLEW_INCLUDE_DIRS ${GLEW_DIR}/include/)
@@ -20,12 +20,15 @@ if (WIN32)
 
 	add_library(glew SHARED IMPORTED)
 	set_target_properties(glew PROPERTIES
-	    IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
+	    IMPORTED_CONFIGURATIONS "Debug;Release"
 	    IMPORTED_LOCATION_RELEASE ${GLEW_LIBS}
 	    IMPORTED_LOCATION_DEBUG ${GLEW_LIBS}
-	    IMPORTED_LOCATION_MINSIZEREL ${GLEW_LIBS}
-	    IMPORTED_LOCATION_RELWITHDEBINFO ${GLEW_LIBS}
 	)
+
+    set_target_properties(glew PROPERTIES
+                          IMPORTED_IMPLIB_RELEASE ${GLEW_DIR}/lib/glew32.lib
+                          IMPORTED_IMPLIB_DEBUG ${GLEW_DIR}/lib/glew32.lib
+                          )
 
     # Copy over DLL post-build
     add_custom_command(
