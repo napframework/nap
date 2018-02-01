@@ -40,6 +40,11 @@ namespace nap
              */
             bool init(nap::utility::ErrorState& errorState) override;
             
+			/**
+			 *	Shutdown portaudio
+			 */
+			void shutdown() override;
+
             /**
              * @return: the number of available host APIs ont this system
              */
