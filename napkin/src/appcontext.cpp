@@ -164,3 +164,14 @@ void AppContext::connectDocumentSignals()
 	});
 }
 
+QMainWindow* AppContext::getMainWindow() const
+{
+	for (auto window : getQApplication()->topLevelWidgets())
+	{
+		auto mainWin = dynamic_cast<QMainWindow*>(window);
+		if (mainWin != nullptr)
+			return mainWin;
+	}
+	return nullptr;
+}
+
