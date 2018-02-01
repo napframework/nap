@@ -88,7 +88,5 @@ namespace nap
 		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;				//< Pointer to the entity that holds the world
 		ObjectPtr<EntityInstance>	mPlaneOneEntity = nullptr;			//< Pointer to the plane one
 		ObjectPtr<EntityInstance>	mPlaneTwoEntity = nullptr;			//< Pointer to plane two
-
-		void toWorld(PointerEvent& event);
 	};
 }
