@@ -186,8 +186,10 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					QString file = QString::fromStdString(path.getValue().to_string(&ok));
 					QString dir = QFileInfo(file).path();
 
-					auto parent = AppContext::get().getQApplication()->topLevelWidgets()[0];
-					auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir);
+					auto& ctx = AppContext::get();
+					auto parent = ctx.getQApplication()->topLevelWidgets()[0];
+					auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
+					auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter);
 					if (!filename.isEmpty())
 					{
 						// Make the filename relative
