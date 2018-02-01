@@ -142,10 +142,22 @@ namespace nap
 		 */
 		enum class NAPAPI EPropertyMetaData : uint8_t
 		{
-			Default  = 0,				///< Uses the (class) default if the property isn't set
-			Required = 1,				///< Load will fail if the property isn't set
-			FileLink = 2,				///< Defines a relationship with an external file
-			Embedded = 4				///< An embedded pointer
+			Default  	= 0,				///< Uses the (class) default if the property isn't set
+			Required 	= 1,				///< Load will fail if the property isn't set
+			FileLink 	= 2,				///< Defines a relationship with an external file
+			Embedded 	= 4,				///< An embedded pointer
+		};
+
+		/**
+		 * If EPropertyMetaData::FileLink is set, you can provide a file type. Used for tooling.
+		 */
+		enum class NAPAPI EPropertyFileType : uint8_t
+		{
+			Any			= 0,	///< Can point to any file, default.
+			Image		= 1, 	///< Points to an image file, must be used with EPropertyMetaData::FileLink
+			FragShader	= 2, 	///< Points to a .vert file, must be used with EPropertyMetaData::FileLink
+			VertShader	= 4, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
+			Python		= 8,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
 		};
 
 		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)
@@ -176,6 +188,19 @@ namespace nap
 
 			uint8_t current_flags = meta_data.convert<uint8_t>();
 			return (current_flags & (uint8_t)flags) != 0;
+		}
+
+		/**
+		 * Helper function to check whether a property has the specified flag set
+		 */
+		inline bool NAPAPI hasFiletypeFlag(const rtti::Property& property, EPropertyFileType filetypes)
+		{
+			const rtti::Variant& meta_data = property.get_metadata("filetype");
+			if (!meta_data.is_valid())
+				return false;
+
+			uint8_t current_flags = meta_data.convert<uint8_t>();
+			return (current_flags & (uint8_t)filetypes) != 0;
 		}
 
 		/**
@@ -315,18 +340,37 @@ namespace nap
  * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
  */
 #define RTTI_PROPERTY(Name, Member, Flags)																		\
-			rtti_class_type.property(Name, Member)(metadata("flags", (uint8_t)(Flags)));						\
+			rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
 				cls.def_readwrite(Name, Member);																\
 			});		
 
- /**
- * Registers a function of @name
+/**
+ * Registers a property of @name that will refer to a filename
  * Call this after starting your class definition
- * @param Name RTTI name of the function
- * @param Member reference to the member function
+ *
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd.
+ * 		  Note that EPropertyMetaData is added by default.
+ * @param FileType Specify the type of file we're going to refer to (EPropertyFileType)
  */
+#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)													\
+			rtti_class_type.property(Name, Member)( 															\
+								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
+								metadata("filetype", (uint8_t)(FileType)));										\
+			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
+			{																									\
+				cls.def_readwrite(Name, Member);																\
+			});
+
+/**
+* Registers a function of @name
+* Call this after starting your class definition
+* @param Name RTTI name of the function
+* @param Member reference to the member function
+*/
 #define RTTI_FUNCTION(Name, Member)																				\
 			rtti_class_type.method(Name, Member);																\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
