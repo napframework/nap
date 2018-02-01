@@ -118,6 +118,51 @@
         },
         {
             "Type": "nap::Composition",
+            "mID": "Composition-kleurtest1",
+            "Layers": [
+                "KLEURTESTlocatie1"
+            ],
+            "Mode": "Length",
+            "Length": 30.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition-kleurtest2",
+            "Layers": [
+                "KLEURTESTlocatie2"
+            ],
+            "Mode": "Length",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition-kleurtest3",
+            "Layers": [
+                "KLEURTESTlocatie3"
+            ],
+            "Mode": "Length",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition-kleurtest4",
+            "Layers": [
+                "KLEURTESTlocatie4"
+            ],
+            "Mode": "Length",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition-kleurtest5",
+            "Layers": [
+                "KLEURTESTlocatie5"
+            ],
+            "Mode": "Length",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
             "mID": "Composition0",
             "Layers": [
                 "Background9_2"
@@ -338,7 +383,12 @@
             "Type": "nap::CompositionContainer",
             "mID": "Tuesday",
             "Compositions": [
-                "COMPO_cross_test1"
+                "COMPO_cross_test1",
+                "Composition-kleurtest1",
+                "Composition-kleurtest2",
+                "Composition-kleurtest3",
+                "Composition-kleurtest4",
+                "Composition-kleurtest5"
             ]
         },
         {
@@ -1167,6 +1217,31 @@
             "Type": "nap::ImageLayer",
             "mID": "ImageLayer_2",
             "Path": "backgrounds/BACK_cross_test1/move-test_001.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "KLEURTESTlocatie1",
+            "Path": "backgrounds/kleurentest_01.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "KLEURTESTlocatie2",
+            "Path": "backgrounds/kleurentest_02.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "KLEURTESTlocatie3",
+            "Path": "backgrounds/kleurentest_03.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "KLEURTESTlocatie4",
+            "Path": "backgrounds/kleurentest_04.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "KLEURTESTlocatie5",
+            "Path": "backgrounds/kleurentest_05.png"
         },
         {
             "Type": "nap::ImageLayer",
