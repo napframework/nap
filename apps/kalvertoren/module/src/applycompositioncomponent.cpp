@@ -3,6 +3,7 @@
 // External Includes
 #include <entity.h>
 #include <meshutils.h>
+#include <triangleiterator.h>
 
 // nap::applycompositioncomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyCompositionComponent)
@@ -60,17 +61,11 @@ namespace nap
 		nap::MeshInstance& mesh_instance = mesh.getMeshInstance();
 
 		// UV attribute we use to sample
-		nap::VertexAttribute<glm::vec3>& uv_attr = mesh.getUVAttribute();
+		VertexAttribute<glm::vec3>& uv_data = mesh.getUVAttribute();
 
 		// Color attribute we use to sample
-		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
-		nap::VertexAttribute<glm::vec4>& artnet_attr = mesh.getArtnetColorAttribute();
-
-		// Total amount of triangles
-		int tri_count = getTriangleCount(mesh.getMeshInstance());
-		TriangleDataPointer<glm::vec3> tri_uv_data;
-		TriangleDataPointer<glm::vec4> triangle_mesh_color;
-		TriangleDataPointer<glm::vec4> triangle_artn_color;
+		VertexAttribute<glm::vec4>& color_data  = mesh.getColorAttribute();
+		VertexAttribute<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute();
 
 		// Will hold the rgb colors applied to the mesh
 		RGBColorFloat rgb_colorf;
@@ -79,33 +74,30 @@ namespace nap
 
 		// Make pixel we use to query data from bitmap
 		auto source_pixel = mPixmap.makePixel();
-
 		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
 		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
 
-		for (int i = 0; i < tri_count; i++)
+		TriangleIterator triangle_iterator(mesh.getMeshInstance());
+		while (!triangle_iterator.isDone())
 		{
-			// Get uv coordinates for that triangle
-			getTriangleValues<glm::vec3>(mesh_instance, i, uv_attr, tri_uv_data);
+			Triangle triangle = triangle_iterator.next();
 
 			// Average uv values
-			glm::vec2 uv_avg{ 0.0,0.0 };
-			for (const auto& uv_vertex : tri_uv_data)
-			{
-				uv_avg.x += uv_vertex->x;
-				uv_avg.y += uv_vertex->y;
-			}
-			uv_avg.x = uv_avg.x / 3.0f;
-			uv_avg.y = uv_avg.y / 3.0f;
+			glm::vec3 uv_avg{ 0.0f, 0.0f, 0.0f };
+			TriangleData<glm::vec3> uv_vertex_data = triangle.getVertexData(uv_data);
+			uv_avg += uv_vertex_data.first();
+			uv_avg += uv_vertex_data.second();
+			uv_avg += uv_vertex_data.third();
+			uv_avg /= 3.0f;
 
 			// Convert to pixel coordinates
 			int x_pixel = static_cast<float>(mPixmap.getWidth()  - 1) * uv_avg.x;
 			int y_pixel = static_cast<float>(mPixmap.getHeight() - 1) * uv_avg.y;
 
-			// retrieve pixel value
+			// retrieve pixel value and convert in to rgb index color
 			mPixmap.getPixel(x_pixel, y_pixel, *source_pixel);
 			source_pixel->convert(rgb_index_color);
-			
+
 			// Get the corresponding color palette value
 			LedColorPaletteGrid::PaletteColor palette_color = mColorPaletteComponent->getPaletteColor(rgb_index_color);
 
@@ -116,22 +108,23 @@ namespace nap
 			// Get the associated LED color
 			palette_color.mLedColor.convert(led_colorf);
 
-			getTriangleValues<glm::vec4>(mesh_instance, i, color_attr, triangle_mesh_color);
-			getTriangleValues<glm::vec4>(mesh_instance, i, artnet_attr, triangle_artn_color);
+			// Set the color data used to display the mesh in the viewport
+			glm::vec4 mesh_color = glm::vec4(
+				rgb_colorf.getRed()	  * mesh_intensity, 
+				rgb_colorf.getGreen() * mesh_intensity, 
+				rgb_colorf.getBlue()  * mesh_intensity, 
+				1.0f);
+			
+			triangle.setVertexData(color_data, mesh_color);
 
-			// iterate over every vertex in the triangle and set the colors
-			for (int ti = 0; ti < triangle_mesh_color.size(); ti++)
-			{
-				triangle_mesh_color[ti]->r = rgb_colorf.getRed()	* mesh_intensity;
-				triangle_mesh_color[ti]->g = rgb_colorf.getGreen()	* mesh_intensity;
-				triangle_mesh_color[ti]->b = rgb_colorf.getBlue()	* mesh_intensity;
-				triangle_mesh_color[ti]->a = 1.0;
-
-				triangle_artn_color[ti]->r = led_colorf.getRed()	* mIntensity;
-				triangle_artn_color[ti]->g = led_colorf.getGreen()	* mIntensity;
-				triangle_artn_color[ti]->b = led_colorf.getBlue()	* mIntensity;
-				triangle_artn_color[ti]->a = led_colorf.getAlpha()	* mIntensity;
-			}
+			// Set the color data that is used to send over artnet
+			glm::vec4 artnet_color = glm::vec4(
+				led_colorf.getRed()	  * mesh_intensity, 
+				led_colorf.getGreen() * mesh_intensity, 
+				led_colorf.getBlue()  * mesh_intensity, 
+				led_colorf.getAlpha() * mIntensity);
+			
+			triangle.setVertexData(artnet_data, artnet_color);
 		}
 
 		nap::utility::ErrorState error;

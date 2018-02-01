@@ -242,22 +242,20 @@ namespace nap
 
 		// Gather draw info
 		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
-		GLenum draw_mode = getGLMode(mesh_instance.getDrawMode());
-		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
 
-		// Draw with or without using indices
-		if (index_buffer == nullptr)
+		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			glDrawArrays(draw_mode, 0, mesh_instance.getNumVertices());
-		}
-		else
-		{
-			GLsizei num_indices = static_cast<GLsizei>(index_buffer->getCount());
+			MeshShape& shape = mesh_instance.getShape(index);
+			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			
+			GLenum draw_mode = getGLMode(shape.getDrawMode());
+			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 
-			index_buffer->bind();
-			glDrawElements(draw_mode, num_indices, index_buffer->getType(), 0);
-			index_buffer->unbind();
+			index_buffer.bind();
+			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
+			index_buffer.unbind();
 		}
+
 		comp_mat->unbind();
 
 		mRenderableMesh.mVAOHandle.get().unbind();

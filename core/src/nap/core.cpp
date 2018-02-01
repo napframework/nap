@@ -154,7 +154,7 @@ namespace nap
 		uint32 new_tick_time = mTimer.getTicks();
 		
 		// Calculate amount of milliseconds since last time stamp
-		uint32 delta_ticks = std::max<uint32>(new_tick_time - mLastTimeStamp, 1);
+		uint32 delta_ticks = new_tick_time - mLastTimeStamp;
 
 		// Store time stamp
 		mLastTimeStamp = new_tick_time;

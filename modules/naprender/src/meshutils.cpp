@@ -1,12 +1,13 @@
 #include "meshutils.h"
 #include <mathutils.h>
 #include <glm/gtx/normal.hpp>
+#include <triangleiterator.h>
 
 namespace nap
 {
-	bool NAPAPI isTriangleMesh(const MeshInstance& mesh)
+	bool isTriangleMesh(const MeshShape& shape)
 	{
-		switch (mesh.getDrawMode())
+		switch (shape.getDrawMode())
 		{
 		case opengl::EDrawMode::LINE_LOOP:
 		case opengl::EDrawMode::LINE_STRIP:
@@ -24,97 +25,56 @@ namespace nap
 		}
 	}
 
-
-	int NAPAPI getTriangleCount(const MeshInstance& mesh)
+	
+	int getTriangleCount(const MeshInstance& mesh)
 	{
-		switch(mesh.getDrawMode())
+		int count = 0;
+
+		for (int shape_index = 0; shape_index < mesh.getNumShapes(); ++shape_index)
 		{
-		case opengl::EDrawMode::TRIANGLES:
-		{
-			if (mesh.hasIndices())
+			const MeshShape& shape = mesh.getShape(shape_index);
+			switch (shape.getDrawMode())
 			{
-				assert(mesh.getIndices().size() % 3 == 0);
-				return mesh.getIndices().size() / 3;
-			}
-			assert(mesh.getNumVertices() % 3 == 0);
-			return mesh.getNumVertices() / 3;
-		}
-		case opengl::EDrawMode::TRIANGLE_FAN:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
-		case opengl::EDrawMode::TRIANGLE_STRIP:		// After that every vertex is a triangle
-		{
-			if (mesh.hasIndices())
+			case opengl::EDrawMode::TRIANGLES:
 			{
-				return math::max<int>(mesh.getIndices().size() - 2,0);
+				count += shape.getNumIndices() / 3;
+				break;
 			}
-			return math::max<int>(mesh.getNumVertices() -2,0);
+			case opengl::EDrawMode::TRIANGLE_FAN:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
+			case opengl::EDrawMode::TRIANGLE_STRIP:		// After that every vertex is a triangle
+			{
+				count += math::max<int>(shape.getNumIndices() - 2, 0);
+				break;
+			}
+			case opengl::EDrawMode::LINE_LOOP:
+			case opengl::EDrawMode::LINE_STRIP:
+			case opengl::EDrawMode::LINES:
+			case opengl::EDrawMode::POINTS:
+			case opengl::EDrawMode::UNKNOWN:
+				break;
+			default:
+				assert(false);
+				break;
+			}
 		}
-		case opengl::EDrawMode::LINE_LOOP:
-		case opengl::EDrawMode::LINE_STRIP:
-		case opengl::EDrawMode::LINES:
-		case opengl::EDrawMode::POINTS:
-		case opengl::EDrawMode::UNKNOWN:
-			return -1;
-		default:
-			assert(false);
-			return -1;
-		}
+
+		return count;
 	}
 
 
-	void NAPAPI getTriangleIndices(const MeshInstance& mesh, int number, glm::ivec3& indices)
-	{		
-		// Make sure the index is valid
-		assert(mesh.hasIndices());
-
-		// Copy triangle index over
-		const std::vector<uint>& mesh_indices = mesh.getIndices();
-
-		switch (mesh.getDrawMode())
-		{
-		case opengl::EDrawMode::TRIANGLES:
-		{
-			// Make sure our index is in range
-			assert((number * 3) + 2 < mesh_indices.size());
-
-			// Fill the data
-			const unsigned int* id = mesh_indices.data() + (number * 3);
-			indices.x = *(id + 0);
-			indices.y = *(id + 1);
-			indices.z = *(id + 2);
-			break;
-		}
-		case opengl::EDrawMode::TRIANGLE_FAN:
-		{
-			assert(number + 2 < mesh_indices.size());
-			const unsigned int* id = mesh_indices.data();
-			indices.x = *id;
-			indices.y = *(id + number + 1);
-			indices.z = *(id + number + 2);
-			break;
-		}
-		case opengl::EDrawMode::TRIANGLE_STRIP:
-		{
-			assert(number + 2 < mesh_indices.size());
-			const unsigned int* id = mesh_indices.data() + number;
-			indices.x = *(id + 0);
-			indices.y = *(id + 1);
-			indices.z = *(id + 2);
-			break;
-		}
-		default:
-			assert(false);
-			break;
-		}
+	glm::vec3 computeTriangleNormal(const std::array<int, 3>& indices, const VertexAttribute<glm::vec3>& vertices)
+	{
+		assert(indices[0] < vertices.getCount());
+		assert(indices[1] < vertices.getCount());
+		assert(indices[2] < vertices.getCount());
+		return glm::cross((vertices[indices[0]] - vertices[indices[1]]), (vertices[indices[0]] - vertices[indices[2]]));
 	}
 
 
-	void NAPAPI setTriangleIndices(MeshInstance& mesh, int number, glm::ivec3& indices)
-	{		
-		// Make sure the index is valid
-		assert(mesh.hasIndices());
-
+	void  setTriangleIndices(MeshShape& mesh, int number, const std::array<int, 3>& indices)
+	{
 		// Copy triangle index over
-		std::vector<uint>& mesh_indices = mesh.getIndices();
+		MeshShape::IndexList& mesh_indices = mesh.getIndices();
 
 		switch (mesh.getDrawMode())
 		{
@@ -125,27 +85,27 @@ namespace nap
 
 			// Fill the data
 			unsigned int* id = mesh_indices.data() + (number * 3);
-			*(id + 0) = indices.x;
-			*(id + 1) = indices.y;
-			*(id + 2) = indices.z;
+			*(id + 0) = indices[0];
+			*(id + 1) = indices[1];
+			*(id + 2) = indices[2];
 			break;
 		}
 		case opengl::EDrawMode::TRIANGLE_FAN:
 		{
 			assert(number + 2 < mesh_indices.size());
 			unsigned int* id = mesh_indices.data();
-			*id = indices.x;
-			*(id + number + 1) = indices.y;
-			*(id + number + 2) = indices.z;
+			*id = indices[0];
+			*(id + number + 1) = indices[1];
+			*(id + number + 2) = indices[2];
 			break;
 		}
 		case opengl::EDrawMode::TRIANGLE_STRIP:
 		{
 			assert(number + 2 < mesh_indices.size());
 			unsigned int* id = mesh_indices.data() + number;
-			*(id + 0) = indices.x;
-			*(id + 1) = indices.y;
-			*(id + 2) = indices.z;
+			*(id + 0) = indices[0];
+			*(id + 1) = indices[1];
+			*(id + 2) = indices[2];
 			break;
 		}
 		default:
@@ -183,109 +143,79 @@ namespace nap
 	}
 
 
-	glm::vec3 computeTriangleNormal(const nap::MeshInstance& mesh, int number, const nap::VertexAttribute<glm::vec3>& vertices)
+	void computeNormals(const MeshInstance& meshInstance, const VertexAttribute<glm::vec3>& positions, VertexAttribute<glm::vec3>& outNormals)
 	{
-		TriangleData<glm::vec3> triangle_data;
-		getTriangleValues<glm::vec3>(mesh, number, vertices, triangle_data);
-		return glm::cross((triangle_data[0] - triangle_data[1]), (triangle_data[0] - triangle_data[2]));
-	}
-
-
-	glm::vec3 computePointNormal(const MeshInstance& mesh, int index, const nap::VertexAttribute<glm::vec3>& vertices, const MeshConnectivityMap& connectivityMap)
-	{
-		assert(mesh.hasIndices());
-		assert(index < connectivityMap.size());
-		const std::vector<int>& triangles = connectivityMap[index];
-
-		glm::vec3 point_normal(0.0f, 0.0f, 0.0f);
-		for (const auto& triangle : triangles)
-		{
-			point_normal += computeTriangleNormal(mesh, triangle, vertices);
-		}
-		return glm::normalize(point_normal);
-	}
-
-
-	void computeNormals(const MeshInstance& mesh, const VertexAttribute<glm::vec3>& vertices, VertexAttribute<glm::vec3>& outNormals)
-	{
-		assert(outNormals.getCount() == vertices.getCount());
+		assert(outNormals.getCount() == positions.getCount());
 		
 		// Total number of attributes
-		int attr_count = vertices.getCount();
+		int attr_count = positions.getCount();
 
 		// Normal data
 		std::vector<glm::vec3>& normal_data = outNormals.getData();
+		
+		// Reset normal data so we can accumulate data into it. Note that this is a memset
+		// instead of a loop to improve performance
+		std::memset(normal_data.data(), 0, sizeof(glm::vec3) * normal_data.size());
 
-		// Compute normals if the mesh doesn't use indices
-		// Result = triangle normal for all triangle vertices
-		if (!mesh.hasIndices())
+		// Accumulate all normals into the normals array
+		glm::vec3* normal_data_ptr = normal_data.data();
+
+		// Go over all triangles in all triangle shapes
+		TriangleIterator iterator(meshInstance);
+		while (!iterator.isDone())
 		{
-			// Cache current triangle and computed value
-			// Lot faster not having to re-compute face normal
-			int triangle = -1;
-			glm::vec3 current_tri_normal;
-			for (int i = 0; i < attr_count; i++)
-			{
-				if (i/3 != triangle)
-				{
-					triangle = i/3;
-					current_tri_normal = glm::normalize(computeTriangleNormal(mesh, triangle, vertices));
-				}
-				normal_data[i] = current_tri_normal;
-			}
+			Triangle triangle = iterator.next();
+
+			const TriangleData<glm::vec3>& triangleData = triangle.getVertexData(positions);
+			glm::vec3 normal = glm::cross((triangleData.first() - triangleData.second()), (triangleData.first()- triangleData.third()));
+
+			normal_data_ptr[triangle.firstIndex()] += normal;
+			normal_data_ptr[triangle.secondIndex()] += normal;
+			normal_data_ptr[triangle.thirdIndex()] += normal;
 		}
-		else
+
+		// Normalize to deal with shared vertices
+		for (glm::vec3& normal : normal_data)
+			normal = glm::normalize(normal);
+	}
+
+
+	void reverseWindingOrder(MeshInstance& mesh)
+	{
+		TriangleIterator iterator(mesh);
+		while (!iterator.isDone())
 		{
-			// Otherwise use connectivity
-			nap::MeshConnectivityMap map;
-			computeConnectivity(mesh, map);
-			for (int i = 0; i < attr_count; i++)
-			{
-				glm::vec3 normal = computePointNormal(mesh, i, vertices, map);
-				normal_data[i] = normal;
-			}
+			Triangle triangle = iterator.next();
+			Triangle::IndexArray indices = triangle.indices();
+			std::swap(indices[0], indices[2]);
+
+			int shapeIndex = triangle.getShapeIndex();
+			setTriangleIndices(mesh.getShape(shapeIndex), triangle.getTriangleIndex(), indices);
 		}
 	}
 
 
-	void NAPAPI reverseWindingOrder(MeshInstance& mesh)
+	void generateIndices(nap::MeshShape& shape, int vertexCount, int offset)
 	{
-		assert(isTriangleMesh(mesh));
-		assert(mesh.hasIndices());
-		int tri_count = getTriangleCount(mesh);
-		glm::ivec3 cindices;
-		for (int i = 0; i < tri_count; i++)
-		{
-			getTriangleIndices(mesh, i, cindices);
-			int x = cindices.x;
-			cindices.x = cindices.z;
-			cindices.z = x;
-			setTriangleIndices(mesh, i, cindices);
-		}
+		MeshShape::IndexList& indices = shape.getIndices();
+		indices.resize(vertexCount);
+		for (int vertex = 0; vertex < vertexCount; ++vertex)
+			indices[vertex] = vertex + offset;
 	}
 
 
 	void computeConnectivity(const MeshInstance& mesh, MeshConnectivityMap& outConnectivityMap)
 	{
-		// When the mesh doesn't use indices this is simple, every vertex belongs to exactly one face
-		assert(isTriangleMesh(mesh));
-		assert(mesh.hasIndices());
-
 		// Resize to number of indices
 		outConnectivityMap.resize(mesh.getNumVertices());
 
-		// Get number of triangles
-		int triangle_count = getTriangleCount(mesh);
-
-		// For every triangle, fetch the indices
-		// Every index is associated with that triangle, so add the triangle to the right index
-		glm::ivec3 triangle_indices;
-		for (int t = 0; t < triangle_count; t++)
+		TriangleIterator iterator(mesh);
+		while (!iterator.isDone())
 		{
-			getTriangleIndices(mesh, t, triangle_indices);
-			outConnectivityMap[triangle_indices[0]].emplace_back(t);
-			outConnectivityMap[triangle_indices[1]].emplace_back(t);
-			outConnectivityMap[triangle_indices[2]].emplace_back(t);
+			Triangle triangle = iterator.next();
+			outConnectivityMap[triangle.firstIndex()].emplace_back(triangle);
+			outConnectivityMap[triangle.secondIndex()].emplace_back(triangle);
+			outConnectivityMap[triangle.thirdIndex()].emplace_back(triangle);
 		}
 	}
 }

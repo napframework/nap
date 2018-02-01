@@ -4,6 +4,7 @@
 #include <entity.h>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <triangleiterator.h>
 
 // nap::boundscolorcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyBBColorComponent)
@@ -41,51 +42,34 @@ namespace nap
 		const math::Box& box = mesh.getBoundingBox();
 
 		// Get attributes necessary to color based on bounds
-		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
-		nap::VertexAttribute<glm::vec3>& position_attr = mesh.getPositionAttribute();
-		nap::VertexAttribute<glm::vec4>& artnet_attr = mesh.getArtnetColorAttribute();
+		const VertexAttribute<glm::vec3>& position_data = mesh.getPositionAttribute();
+		VertexAttribute<glm::vec4>& color_data = mesh.getColorAttribute();
+		VertexAttribute<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute();
 
-		int triangle_count = getTriangleCount(mesh.getMeshInstance());
-
-		nap::TriangleDataPointer<glm::vec4> tri_color_data;
-		nap::TriangleDataPointer<glm::vec3> tri_posit_data;
-		nap::TriangleDataPointer<glm::vec4> tri_artne_data;
-
-		for (int triangle = 0; triangle < triangle_count; triangle++)
+		TriangleIterator shape_iterator(mesh.getMeshInstance());
+		while (!shape_iterator.isDone())
 		{
-			// Get current cd values
-			getTriangleValues(mesh.getMeshInstance(), triangle, color_attr, tri_color_data);
+			Triangle triangle = shape_iterator.next();
 
-			// Get current artnet values
-			getTriangleValues(mesh.getMeshInstance(), triangle, artnet_attr, tri_artne_data);
-
-			// Get current position values
-			getTriangleValues(mesh.getMeshInstance(), triangle, position_attr, tri_posit_data);
+			TriangleData<glm::vec3> positionTriangleData = triangle.getVertexData(position_data);
 
 			// Get avg position value
 			glm::vec3 avg_pos(0.0f, 0.0f, 0.0f);
-			for (auto& pos : tri_posit_data)
-			{
-				avg_pos += *pos;
-			}
+			avg_pos += positionTriangleData.first();
+			avg_pos += positionTriangleData.second();
+			avg_pos += positionTriangleData.third();
 			avg_pos /= 3;
 
 			float r = pow(math::fit<float>(avg_pos.x, box.getMin().x, box.getMax().x, 0.0f, 1.0f), 2.0);
 			float g = pow(math::fit<float>(avg_pos.y, box.getMin().y, box.getMax().y, 0.0f, 1.0f), 2.0);
 			float b = pow(math::fit<float>(avg_pos.z, box.getMin().z, box.getMax().z, 0.0f, 1.0f), 2.0);
 
-			// Set rgb for both the mesh and artnet colors on the mesh
-			for (int ti = 0; ti < tri_color_data.size(); ti++)
-			{
-				tri_color_data[ti]->r = r;
-				tri_color_data[ti]->g = g;
-				tri_color_data[ti]->b = b;
+			// Set rgb for the mesh
+			TriangleData<glm::vec4> colorTriangleData = triangle.getVertexData(color_data);
+			triangle.setVertexData(color_data, glm::vec4(r, g, b, colorTriangleData.first().a), glm::vec4(r, g, b, colorTriangleData.second().a), glm::vec4(r, g, b, colorTriangleData.third().a));
 
-				tri_artne_data[ti]->r = r;
-				tri_artne_data[ti]->g = g;
-				tri_artne_data[ti]->b = b;
-				tri_artne_data[ti]->a = 0.0f;
-			}
+			// Set rgb for arnet
+			triangle.setVertexData(artnet_data, glm::vec4(r, g, b, 0.0f));
 		}
 
 		nap::utility::ErrorState error;
