@@ -1,7 +1,12 @@
 #include "naputils.h"
 
+#include <QDir>
+
 #include <component.h>
+#include <nap/logger.h>
 #include <entity.h>
+
+#include "appcontext.h"
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -150,5 +155,30 @@ nap::rtti::RTTIObject* napkin::getPointee(const PropertyPath& path)
 bool napkin::setPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path, const std::string& target)
 {
 	return false;
+}
+
+QString napkin::getAbsoluteResourcePath(const QString& relPath, const QString& reference)
+{
+	auto ref = getResourceReferencePath(reference);
+	return QFileInfo(QString("%1/%2").arg(ref, relPath)).canonicalFilePath();
+}
+
+QString napkin::getRelativeResourcePath(const QString& absPath, const QString& reference)
+{
+	auto ref = getResourceReferencePath(reference);
+	return QDir(ref).relativeFilePath(absPath);
+}
+
+QString napkin::getResourceReferencePath(const QString& reference)
+{
+	QString ref = reference;
+	if (reference.isEmpty())
+		ref = AppContext::get().getDocument()->getCurrentFilename();
+
+	QFileInfo refinfo(ref);
+	if (refinfo.isFile())
+		ref = refinfo.path();
+
+	return ref;
 }
 

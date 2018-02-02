@@ -411,3 +411,11 @@ TEST_CASE("Commands", TAG_NAPKIN)
 //	ctx.executeCommand(new AddEntityToSceneCommand())
 //	ctx.executeCommand(new ArrayAddValueCommand());
 }
+
+
+TEST_CASE("Resource Management", TAG_NAPKIN)
+{
+	auto doc = napkin::AppContext::get().loadDocument("kalvertoren.json");
+	REQUIRE(doc != nullptr);
+
+}

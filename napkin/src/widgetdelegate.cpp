@@ -6,6 +6,7 @@
 
 #include <utility/fileutils.h>
 
+#include "generic/naputils.h"
 #include "generic/filterpopup.h"
 #include "typeconversion.h"
 #include "appcontext.h"
@@ -182,8 +183,9 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 						 && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
 				{
 					bool ok;
-					QString file = QString::fromStdString(path.getValue().to_string(&ok));
-					QString dir = QFileInfo(file).path();
+
+					QString currentFilePath = getAbsoluteResourcePath(QString::fromStdString(path.getValue().to_string(&ok)));
+					QString dir = QFileInfo(currentFilePath).path();
 
 					auto& ctx = AppContext::get();
 					auto parent = ctx.getMainWindow();
@@ -192,8 +194,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					if (!filename.isEmpty())
 					{
 						// Make the filename relative
-						QDir appDir(QString::fromStdString(nap::utility::getExecutableDir()));
-						model->setData(index, appDir.relativeFilePath(filename));
+						model->setData(index, getRelativeResourcePath(filename));
 					}
 				}
 			}
