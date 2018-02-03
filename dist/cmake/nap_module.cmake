@@ -137,6 +137,15 @@ set_module_output_directories()
 # On macOS & Linux install module into packaged project
 if (NOT WIN32)
     install(FILES $<TARGET_FILE:${PROJECT_NAME}> DESTINATION lib CONFIGURATIONS Release)
+
+    # On Linux set our user modules tp use their directory for RPATH when installing
+    if(NOT APPLE)
+        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/lib${MODULE_NAME}.so\")
+                      execute_process(COMMAND patchelf 
+                                              --set-rpath 
+                                              $ORIGIN/.
+                                              ${CMAKE_INSTALL_PREFIX}/lib/lib${MODULE_NAME}.so)")
+    endif()
 endif()
 
 # TODO necessary?
