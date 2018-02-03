@@ -72,6 +72,14 @@ macro(find_nap_module MODULE_NAME)
         # On macOS & Linux install module into packaged project
         if (NOT WIN32)
             install(FILES ${${MODULE_NAME}_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)    
+            # On Linux set our modules use their directory for RPATH
+            if(NOT APPLE)
+                install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/lib${MODULE_NAME}.so\")
+                              execute_process(COMMAND patchelf 
+                                                      --set-rpath 
+                                                      $ORIGIN/.
+                                                      ${CMAKE_INSTALL_PREFIX}/lib/lib${MODULE_NAME}.so)")
+            endif()
         endif()
 
         # Bring in any additional module requirements

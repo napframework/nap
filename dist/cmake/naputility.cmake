@@ -35,7 +35,3 @@ target_link_libraries(naputility INTERFACE debug ${NAPUTILITY_LIBS_DEBUG})
 file(GLOB utility_headers ${CMAKE_CURRENT_LIST_DIR}/../include/utility/*.h)
 target_sources(naputility INTERFACE ${utility_headers})
 source_group(NAP\\Utility FILES ${utility_headers})
-
-if (NOT WIN32)
-    install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)
-endif()

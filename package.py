@@ -43,7 +43,8 @@ def install_dependencies_linux():
         'ffmpeg',
         'libavcodec-dev',
         'libavformat-dev',
-        'libavutil-dev'
+        'libavutil-dev',
+        'patchelf'
     ]
 
     # Create a list of packages we need to install
@@ -155,6 +156,7 @@ def package():
 
         # Create archive
         archive_to_linux_tar_xz()
+        # archive_to_timestamped_dir('Linux')
     elif platform == 'darwin':
         # Generate project
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
@@ -169,6 +171,7 @@ def package():
 
         # Create archive
         archive_to_macos_zip()
+        # archive_to_timestamped_dir('macOS')
     else:
         # Create build dir if it doesn't exist
         if not os.path.exists(BUILD_DIR):
@@ -182,8 +185,8 @@ def package():
             call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
         # Create archive
-        # archive_to_win64_zip()
-        archive_to_timestamped_dir('Win64')
+        archive_to_win64_zip()
+        # archive_to_timestamped_dir('Win64')
 
     return True
 
@@ -214,13 +217,6 @@ def archive_to_macos_zip():
     shutil.move(package_filename, PACKAGING_DIR)
     print("Packaged to %s" % package_filename_with_ext)  
 
-# Copy our packaged dir to a timestamped dir
-def archive_to_timestamped_dir(platform):
-    package_filename = build_package_filename_and_build_info(platform)
-    shutil.copytree(PACKAGING_DIR, package_filename)
-
-    print("Packaged to directory %s" % package_filename)
-
 # Create build archive to zip on Win64
 def archive_to_win64_zip():
     package_filename = build_package_filename_and_build_info('Win64')
@@ -245,6 +241,13 @@ def archive_to_win64_zip():
     shutil.rmtree(ARCHIVING_DIR)
 
     print("Packaged to %s" % package_filename_with_ext)  
+
+# Copy our packaged dir to a timestamped dir
+def archive_to_timestamped_dir(platform):
+    package_filename = build_package_filename_and_build_info(platform)
+    shutil.copytree(PACKAGING_DIR, package_filename)
+
+    print("Packaged to directory %s" % package_filename)
 
 # Build the name of our package and populate our JSON build info file
 def build_package_filename_and_build_info(platform):

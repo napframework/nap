@@ -57,10 +57,11 @@ def update_project(project_name, build_type, show_solution):
     if sys.platform in ["linux", "linux2"]:
         call(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type])
 
-        # Show in Nautilus
-        if show_solution:
-            # TODO implement showing solution in Nautilus
-            pass
+        # Show in Nautilus?
+        # Seems a bit pointless if we're not opening it in an IDE
+        # if show_solution:
+        #     subprocess.call(["nautilus -s %s > /dev/null 2>&1 &" % BUILD_DIR], shell=True)
+
     elif sys.platform == 'darwin':
         call(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
 
@@ -90,8 +91,9 @@ if __name__ == '__main__':
                         help="The project to regenerate")
     if sys.platform in ["linux", "linux2"]:
         parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
-    parser.add_argument("-ds", "--dontshow", action="store_true",
-                        help="Don't show the generated solution")
+    if not sys.platform in ["linux", "linux2"]:
+        parser.add_argument("-ds", "--dontshow", action="store_true",
+                            help="Don't show the generated solution")       
     args = parser.parse_args()
 
     # If we're on Linux and we've specified a build type let's grab that, otherwise
@@ -99,7 +101,9 @@ if __name__ == '__main__':
     if sys.platform in ["linux", "linux2"]:
         build_type = args.BUILD_TYPE
         print("Using build type '%s'" % build_type)
+        show_solution = False
     else:
         build_type = None
+        show_solution = not args.dontshow
 
-    update_project(args.PROJECT_NAME, build_type, not args.dontshow)
+    update_project(args.PROJECT_NAME, build_type, show_solution)

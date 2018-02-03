@@ -16,6 +16,7 @@ ARCHIVING_DIR = 'archiving'
 BUILDINFO_FILE = 'cmake/buildInfo.json'
 PACKAGED_BUILDINFO_FILE = '%s/cmake/buildinfo.json' % PACKAGING_DIR
 PROJECT_INFO_FILE = 'project.json'
+PACKAGED_BUILD_TYPE = 'Release'
 
 ERROR_BAD_INPUT = 1
 ERROR_MISSING_PROJECT = 2
@@ -87,25 +88,26 @@ def package_project(project_name, show_created_package):
         shutil.rmtree(build_dir_name, True)
 
     if platform in ["linux", "linux2"]:
-        print("Linux not yet supported... sorry")
-        return 0
-        # call(WORKING_DIR, ['cmake', '-H.', '-B%s' % build_dir_name, '-DCMAKE_BUILD_TYPE=%s' % 'Release', '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name])
+        # Generate makefiles
+        call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-DCMAKE_BUILD_TYPE=%s' % PACKAGED_BUILD_TYPE])
 
-        # call(build_dir_name, ['make', 'all', 'install', '-j%s' % cpu_count()])
+        # Build & install to packaging dir
+        call(build_dir_name, ['make', 'all', 'install', '-j%s' % cpu_count()])
 
         # Create archive
-        # archive_to_linux_tar_xz(timestamp)
+        packaged_to = archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_version)
+        # packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'Linux')
 
         # Show in Nautilus
         if show_created_package:
-            pass
-            # TODO implement showing created package in Nautilus
+            subprocess.call(["nautilus -s %s > /dev/null 2>&1 &" % packaged_to], shell=True)
+
     elif platform == 'darwin':
         # Generate project
         call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Xcode'])
 
         # Build & install to packaging dir
-        call(build_dir_name, ['xcodebuild', '-configuration', 'Release', '-target', 'install'])
+        call(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
 
         # Temp: Copy our external dylibs and fix lib paths
         call(bin_dir, ['python', '%s/tools/platform/macOSTempDylibCopyAndPathFix.py' % nap_root, '.'])
@@ -121,7 +123,7 @@ def package_project(project_name, show_created_package):
         call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5', '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name])
 
         # Build & install to packaging dir
-        call(build_dir_name, ['cmake', '--build', '.', '--target', project_name_lower, '--config', 'Release'])
+        call(build_dir_name, ['cmake', '--build', '.', '--target', project_name_lower, '--config', PACKAGED_BUILD_TYPE])
 
         # Copy project data
         project_data_path = os.path.join(project_path, 'data')
@@ -142,17 +144,29 @@ def package_project(project_name, show_created_package):
     return 0
 
 # Create build archive to xz tarball on Linux
-def archive_to_linux_tar_xz(timestamp, project_name):
-    package_filename = build_package_filename_and_build_info(project_name, 'Linux', timestamp)
-    shutil.move(PACKAGING_DIR, package_filename)
-
+def archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_version): 
+    package_filename = build_package_filename(project_full_name, project_version, 'Linux', timestamp)
     package_filename_with_ext = '%s.%s' % (package_filename, 'tar.xz')
+
+    # Populate build info into the project
+    populate_build_info_into_project(bin_dir, timestamp)
+
+    project_dir = os.path.abspath(os.path.join(bin_dir, os.pardir))
+    archive_dir = os.path.join(project_dir, package_filename)
+
+    shutil.move(bin_dir, archive_dir)
+
+    # Ardhive
     print("Archiving to %s.." % package_filename_with_ext)
-    call(WORKING_DIR, ['tar', '-cJvf', package_filename_with_ext, package_filename])
+    call(project_dir, ['tar', '-cJvf', package_filename_with_ext, package_filename])
 
     # Cleanup
-    shutil.move(package_filename, PACKAGING_DIR)
-    print("Packaged to %s" % package_filename_with_ext)  
+    shutil.rmtree(archive_dir)
+
+    # Cleanup
+    packaged_to_relpath = os.path.relpath(os.path.join(project_dir, package_filename_with_ext))
+    print("Packaged to %s" % packaged_to_relpath)
+    return packaged_to_relpath
 
 # Create build archive to zip on macOS
 def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version): 
@@ -163,8 +177,8 @@ def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
     populate_build_info_into_project(bin_dir, timestamp)
 
     project_dir = os.path.abspath(os.path.join(bin_dir, os.pardir))
-
     archive_dir = os.path.join(project_dir, package_filename)
+
     shutil.move(bin_dir, archive_dir)
 
     # Remove unwanted files (eg. .DS_Store)
@@ -208,6 +222,23 @@ def archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version)
 
     packaged_to = os.path.join(project_dir, package_filename_with_ext)
     print("Packaged to %s" % os.path.relpath(packaged_to))
+    return packaged_to
+
+# Just package to a directory
+def archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, platform): 
+    package_filename = build_package_filename(project_full_name, project_version, platform, timestamp)
+
+    # Populate build info into the project
+    populate_build_info_into_project(bin_dir, timestamp)
+
+    project_dir = os.path.abspath(os.path.join(bin_dir, os.pardir))
+    archive_dir = os.path.join(project_dir, package_filename)
+
+    shutil.move(bin_dir, archive_dir)
+
+    # Cleanup
+    packaged_to = os.path.join(project_dir, package_filename)
+    print("Packaged to directory %s" % os.path.relpath(packaged_to))
     return packaged_to
 
 # Build the name of our package and populate our JSON build info file
