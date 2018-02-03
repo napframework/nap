@@ -6,7 +6,7 @@
 
 using namespace nap;
 using namespace nap::rtti;
-
+koek
 /**
  * Simply get all file extensions registered by FreeImage
  * @return A list of file extensions
