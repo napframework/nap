@@ -5,12 +5,6 @@ from sys import platform
 import sys
 import shutil
 from threading import Thread
-
-if sys.version[0] == '2':
-    import Queue as queue
-else:
-    import queue as queue
-
 import time
 
 WORKING_DIR = '.'
@@ -35,7 +29,7 @@ def isLocalGitRepo(d):
 
 def readpipe(pipe, q):
     for line in iter(pipe.readline, b''):
-        q.put((pipe, line))
+        q.append((pipe, line))
 
 
 def call(cwd, cmd):
@@ -45,7 +39,7 @@ def call(cwd, cmd):
     proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # store process output in queue as (pipe, line) and keep errors list
-    q = queue.Queue()
+    q = []
     errors = []
     # kick off threads to consume process output streams
     tout = Thread(target=readpipe, args=(proc.stdout, q))
@@ -55,8 +49,8 @@ def call(cwd, cmd):
 
     def flushpipes():
         """Grab subprocess output from queue and redirect"""
-        while not q.empty():
-            pipe, line = q.get()
+        while q:
+            pipe, line = q.pop(0)
             line = line.decode('utf-8')
             if pipe == proc.stdout:
                 sys.stdout.write(line)
