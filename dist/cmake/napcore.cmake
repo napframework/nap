@@ -17,7 +17,7 @@ elseif (APPLE)
 elseif (UNIX)
     find_path(
         NAPCORE_LIBS_DIR
-	NAMES Debug/libnapcore.so
+        NAMES Debug/libnapcore.so
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
     set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/libnapcore.so)
@@ -45,6 +45,16 @@ if (WIN32)
 endif()
 
 # Install into packaged project for macOS/Linux
-if (NOT WIN32)
-    install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)
+if(NOT WIN32)
+    install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
+
+    # On Linux set use lib directory for RPATH
+    if(NOT APPLE)
+        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/libnapcore.so\")
+                      execute_process(COMMAND patchelf
+                                              --set-rpath 
+                                              $ORIGIN/.
+                                              ${CMAKE_INSTALL_PREFIX}/lib/libnapcore.so)
+                      ")
+    endif()      
 endif()

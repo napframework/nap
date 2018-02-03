@@ -66,4 +66,14 @@ endif()
 if (NOT WIN32)
     install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
     install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
+
+    # On Linux set use lib directory for RPATH
+    if(NOT APPLE)
+        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/libnaprtti.so\")
+                      execute_process(COMMAND patchelf 
+                                              --set-rpath 
+                                              $ORIGIN/.
+                                              ${CMAKE_INSTALL_PREFIX}/lib/libnaprtti.so)
+                      ")
+    endif()   
 endif()
