@@ -1,9 +1,13 @@
 import os
+import queue
 import subprocess
 from multiprocessing import cpu_count
 from sys import platform
 import sys
 import shutil
+from threading import Thread
+
+import time
 
 WORKING_DIR = '.'
 
@@ -24,11 +28,61 @@ def isLocalGitRepo(d):
         return False
     return True
 
+
+def readpipe(pipe, q):
+    for line in iter(pipe.readline, b''):
+        q.put((pipe, line))
+
+
 def call(cwd, cmd):
     print('dir: %s' % cwd)
     print('cmd: %s' % ' '.join(cmd))
-    proc = subprocess.Popen(cmd, cwd=cwd)
-    proc.communicate()
+
+    proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # store process output in queue as (pipe, line) and keep errors list
+    q = queue.Queue()
+    errors = []
+    # kick off threads to consume process output streams
+    tout = Thread(target=readpipe, args=(proc.stdout, q))
+    terr = Thread(target=readpipe, args=(proc.stderr, q))
+    tout.start()
+    terr.start()
+
+    def flushpipes():
+        """Grab subprocess output from queue and redirect"""
+        while not q.empty():
+            pipe, line = q.get()
+            line = line.decode('utf-8')
+            if pipe == proc.stdout:
+                sys.stdout.write(line)
+            elif pipe == proc.stderr:
+                sys.stderr.write(line)
+                errors.append(line)
+        time.sleep(0.1)
+
+    # gather and output
+    while proc.poll() is None:
+        flushpipes()
+
+    tout.join()
+    terr.join()
+
+    sys.stdout.flush()
+    sys.stderr.flush()
+
+    # subprocess may have dumped lines while our loop was exiting
+    flushpipes()
+
+    # if there were problems, display summary and exit with subprocess' exit code
+    if errors:
+        sys.stderr.write('\n'
+                         'Error Summary:\n'
+                         '==============\n'
+                         '\n'
+                         '%s\n' % (''.join(errors)))
+        sys.exit(proc.returncode)
+
 
 def main(targets):
     # clear build directory when a clean build is required
