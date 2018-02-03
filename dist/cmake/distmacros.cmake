@@ -1,9 +1,9 @@
 # Set a default build type if none was specified (single-configuration generators only, ie. Linux)
 macro(set_default_build_type)
-	if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-	    message(STATUS "Setting build type to 'Debug' as none was specified.")
-	    set(CMAKE_BUILD_TYPE "Debug")
-	endif()
+    if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+        message(STATUS "Setting build type to 'Debug' as none was specified.")
+        set(CMAKE_BUILD_TYPE "Debug")
+    endif()
 endmacro()
 
 # Add the project module (if it exists) into the project
@@ -18,11 +18,14 @@ macro(add_project_module)
         target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/module/src)
         target_link_libraries(${PROJECT_NAME} mod_${PROJECT_NAME})
 
-        add_custom_command(
-            TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mod_${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-        )       
+        # On Windows copy over module DLLs post-build
+        if(WIN32)
+            add_custom_command(
+                TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mod_${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+            )       
+        endif()
     endif()
 endmacro()
 
@@ -37,11 +40,13 @@ macro(find_nap_module MODULE_NAME)
         unset(MODULE_INTO_PROJ)
 
         # On Windows copy over module DLLs post-build
-        add_custom_command(
-            TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${MODULE_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-        )       
+        if(WIN32)
+            add_custom_command(
+                TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${MODULE_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+            )       
+        endif()
     elseif (EXISTS ${NAP_ROOT}/modules/${NAP_MODULE}/)
         if(NOT TARGET ${NAP_MODULE})
             add_library(${MODULE_NAME} INTERFACE)
@@ -89,7 +94,7 @@ macro(find_nap_module MODULE_NAME)
             include (${MODULE_EXTRA_CMAKE_PATH})
         endif()
 
-        if (WIN32)
+        if(WIN32)
             # Copy over module DLLs post-build
             add_custom_command(
                 TARGET ${PROJECT_NAME}
@@ -156,7 +161,7 @@ macro(set_module_output_directories)
         endforeach()
     else()
         # Single built type, for Linux
-        set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib/${CMAKE_BUILD_TYPE}/)
+        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CMAKE_BUILD_TYPE}/)
         set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
     endif()
 endmacro()
