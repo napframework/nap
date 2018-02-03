@@ -1,12 +1,12 @@
+#!/usr/bin/env python3
 import os
-import queue
 import subprocess
 from multiprocessing import cpu_count
 from sys import platform
 import sys
 import shutil
 from threading import Thread
-
+from queue import Queue
 import time
 
 WORKING_DIR = '.'
@@ -41,7 +41,7 @@ def call(cwd, cmd):
     proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # store process output in queue as (pipe, line) and keep errors list
-    q = queue.Queue()
+    q = Queue()
     errors = []
     # kick off threads to consume process output streams
     tout = Thread(target=readpipe, args=(proc.stdout, q))
