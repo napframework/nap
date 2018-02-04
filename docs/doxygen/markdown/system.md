@@ -6,17 +6,18 @@ System {#system}
 *   [Apps](@ref apps)
 *   [Core](@ref core)
 *	[Resources](@ref resources)
-*	[Resourcemanager](@ref resourcemanager)
-*	[Exposing Resources](@ref exposing_resources)
-*	[Exposing Properties](@ref exposing_properties)
-* 	[Pointing to Resources](@ref pointing)
+	*	[The Resourcemanager](@ref resourcemanager)
+	*	[Exposing Resources](@ref exposing_resources)
+	*	[Exposing Properties](@ref exposing_properties)
+	* 	[Pointing to Resources](@ref pointing)
 * 	[Real Time Editing](@ref editing)
 * 	[Linking Media](@ref media)
 * 	[Scene Setup](@ref scene_setup)
-*	[Resources vs Instances](@ref resources_instances)
-*	[Creating Components](@ref creating_components)
-* 	[Embedding Objects](@ref embedding_objects)
-* 	[Embedding Pointers](@ref embedding_pointers)
+	*	[Resources vs Instances](@ref resources_instances)
+	*	[Creating Components](@ref creating_components)
+* 	[Embedding](@ref embedding_objects)
+	* 	[Embedding Objects](@ref embedding_objects)
+	* 	[Embedding Pointers](@ref embedding_pointers)
 
 Overview {#system_overview}
 =======================
@@ -137,8 +138,8 @@ The json format can be used to author your content, but NAP also provides an edi
 
 As you can see in the json example, the file contains a list of various objects. The objects have different types and different properties. These objects in json match with objects that are defined in C++. For instance, there are objects of type nap::RenderWindow, nap::Image, nap::Shader and nap::PlaneMesh in the NAP C++ codebase. When this json file is loaded, an object of that type is created and initialized with the properties that are in the json file. All of these objects are Resources.
 
-Resourcemanager {#resourcemanager}
-=======================
+The Resourcemanager {#resourcemanager}
+-----------------------
 
 The ResourceManager is responsible for loading the file through the [loadFile()](@ref nap::ResourceManager::loadFile()) function. When loading this file, the objects are created and initialized. All of the objects in a json file are Resources. Any resource loaded is owned by the ResourceManager, meaning that the lifetime is fully managed by the ResourceManager (and not managed by the client).
 
@@ -146,7 +147,8 @@ The json example shows that each Resource has an ID. After loading, resources ca
 Any resource must be derived from rtti::RTTIObject. This object contains the ID that is used to identify the objects and it contains a very important function: the init() function. Derived classes can implement this function to initialize the object and return whether this has failed or succeeded. A good example of a Resource is the nap::Image from the json example. The init() function will load the image from disk located at its “ImagePath” property (in this case "data/test/background.jpg") and store it internally. The init() function and how it should be implemented is discussed in more detail in a later section.
 
 Exposing Resources {#exposing_resources}
-=======================
+-----------------------
+
 To make sure that C++ classes and properties can be created and edited in json you need to expose them explicitly through something called RTTI (better known as [RunTime Type Information](https://en.wikipedia.org/wiki/Run-time_type_information)). NAP uses a number of macros to ease the way you can expose classes and properties. To create an object that can be authored in json you need to derive if from [RTTIObject](@ref nap::rtti::RTTIObject) and tell the system what the parent object is. To accomplish this you add, in the class declaration, the RTTI_ENABLE macro:
 
 ~~~~~~~~~~~~~~~{.cpp}
@@ -166,7 +168,8 @@ RTTI_END_CLASS
 This is the basis for setting up an RTTI-enabled class. In the example above we defined a Shader. Without the RTTI_ENABLE macro, the system cannot detect that Shader is derived from RTTIObject. The NAPAPI macro is a convenience macro that is used to make sure we can use classes in modules. It is used to export symbols in to dynamic link libraries. It is recommended to use this macro for all NAP classes and structures in modules. 
 
 Exposing Properties {#exposing_properties}
-=======================
+-----------------------
+
 To extend a class with properties you add a Property field to your class. In this example we add two strings called 'mVertPath' and 'mFragPath'. We use these properties to point to shader files on disk. The two shader files are loaded when creating the Shader object.
 ~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI Shader : public rtti::RTTIObject
@@ -207,7 +210,7 @@ After defining the Shader it be created and edited in json:
 The ID can be chosen as the user wishes. It can be used to retrieve the object from code using [findObject()](@ref nap::ResourceManager::findObject()), but it can also be used to refer to this object by other objects in json, as we will see later. More things are possible with the RTTI system. For instance, it has support for constructors with one or more arguments and it can also expose C++ enums in a way that is still readable in json. See typeinfo.h or the reference documentation for more detailed information how to do this.
 
 Pointing to Resources {#pointing}
-=======================
+-----------------------
 
 It is often useful if a resource can access information from another resource. NAP allows you to create links between objects (in json) to accomplish just that. A resource can point to other resources in json by referring to the name (nap::RTTIObject::mID) of a resource. In C++, we use a specific type of pointer to accomplish this: [ObjectPtr](@ref nap::ObjectPtr). Let'''s assume there is a class called 'Material' that points to a 'Shader'. 'Material' wants to use the information stored in the shader and exposes that in the form of a link to a shader. The material can now access the shader without having to worry about order of initialization. When the Material is initialized the shader has been created and resolved. You only have to implement the logic you want to perform based on the information that is present in the shader. 
 
@@ -370,7 +373,7 @@ In json, such a structure looks like this (the components are omitted for brevit
 ```
 
 Resources vs Instances {#resources_instances}
-=======================
+-----------------------
 
 Resources are completely static objects. They are read-only data containers. An [Entity](@ref nap::Entity) is a Resource but has a [runtime counterpart](@ref nap::EntityInstance) that is updated by NAP every frame. In the 'Bike' example, the position of the bike changes as it moves through the world. The bike's initial position is declared in json but the runtime position changes each frame. When there are multiple bikes in the scene, each bike has its own position. As a programmer you want to change the position of each bike programmatically, ie: set it based on a set of conditions. When you do that you modify the run-time state of a bike, not the resource that was used to create 'an instance of' the bike.
 
@@ -387,7 +390,8 @@ Both the Scene, Entity and Component have a resource and instance counterpart. N
 The resources are defined in json. When a resources is created (instantiated) NAP creates an instance of the resource behind the scenes and adds that to the scene hierarchy. SceneInstances contain EntityInstances which in turn hold ComponentInstances. This structure mirrors the structure in json. Just remember that at run-time, in your application, you work with the instances of Scenes, Entities and Components.
 
 Creating Components {#creating_components}
-=======================
+-----------------------
+
 A scene is a container for entities and an entity is a container for components. Scenes and entities do not execute any behavior by themselves. They allow you to group and organize your objects. Components are used to add functionality to an Entity, ie: define it's behaviour. It’s the component that receives an [init()](@ref nap::ComponentInstance::init) and [update()](@ref nap::ComponentInstance::update) call. Any programmable behavior is therefore executed in the Component.
 
 NAP offers a number of components off the shelve, like the [TransformComponent](@ref nap::TransformComponent) and the [RenderableMeshComponent](@ref nap::RenderableMeshComponent). These can be used to build hierarchies of visual objects. Many other components exist as well, for instance, input, osc, midi and audio components. However, it is very likely that you want to create your own components. When creating your own component, derive from nap::Component and add the properties that need to be edited in json:
