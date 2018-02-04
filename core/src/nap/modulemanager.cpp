@@ -246,8 +246,12 @@ namespace nap
 			std::string napRoot = exeDir + "/../../../../";
 			for (const std::string& module : moduleNames)
 			{
+				// NAP modules
 				outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
+				// User modules
 				outSearchDirectories.push_back(napRoot + "usermodules/" + module + "/lib/" + buildType);
+				// Project module
+				outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
 			}
 		}
 		else
