@@ -20,13 +20,8 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-set(DEPENDENT_NAP_MODULES mod_naprender mod_napsdlinput mod_napsdlwindow mod_napimgui)
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napsdlinput mod_napsdlwindow mod_napimgui mod_napinput mod_napscene mod_napmath)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
-	set_installed_linux_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
-endif()
 
 # Package into platform release
 package_module()

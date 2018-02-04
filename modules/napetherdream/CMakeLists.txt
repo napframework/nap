@@ -19,7 +19,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${ETHERDREAM_INCLUDE_DIRS}
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} mod_naprender mod_napscene etherdreamlib)
+
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
+target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} etherdreamlib)
 
 if (WIN32)
     set(FILES_TO_COPY

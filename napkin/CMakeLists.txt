@@ -33,6 +33,9 @@ target_include_directories(${NAPKIN_LIB} PUBLIC src)
 
 nap_qt_post(${PROJECT_NAME})
 
+# Output to bin/napkin
+set_output_directories()
+
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_LIST_DIR}/resources
