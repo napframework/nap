@@ -376,28 +376,39 @@ macro(package_module)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dist/cmake/ DESTINATION modules/${PROJECT_NAME}/)
     endif()
 
+    # Set packaged RPATH for Linux (done before we install the target due to target property mechanism)
+    if(UNIX AND NOT APPLE)
+        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
+    endif()
+
     if (WIN32)
         install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
     elseif(APPLE)
-        set(BUILT_RPATH "@loader_path/../../../../thirdparty/rttr/bin/")
-        set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
     else()
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
     endif()
+
+    # Set packaged RPATH for macOS (done after we install the target due to direct install_name_tool calling)
+    if(APPLE)
+        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
+    endif()
 endmacro()
 
 # Set the packaged RPATH of a module for its dependent modules.
-# Currently Linux-only
-macro(set_installed_linux_module_rpath_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME)
-    set(NAP_ROOT_LOCATION_TO_ORIGIN "../../../..")
-    set_installed_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_ORIGIN})
+macro(set_installed_module_rpath_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME)
+    set(NAP_ROOT_LOCATION_TO_MODULE "../../../..")
+    if(APPLE)
+        set_installed_rpath_on_macos_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_MODULE})
+    elseif(UNIX)
+        set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_MODULE})        
+    endif()
 endmacro()
 
 # Set the packaged RPATH of a Linux binary object for its dependent modules
-macro(set_installed_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
+macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
     # Add our core lib path first
     set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}")
 
@@ -414,6 +425,30 @@ macro(set_installed_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TAR
     # message("Built rpath: ${BUILT_RPATH}")
     set_target_properties(${TARGET_NAME} PROPERTIES SKIP_BUILD_RPATH FALSE
                                                     INSTALL_RPATH ${BUILT_RPATH})
+endmacro()
+
+# Set the packaged RPATH of a macOS binary object for its dependent modules
+macro(set_installed_rpath_on_macos_object_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE)
+    foreach(MODULECONFIG Release Debug)
+        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/rttr/bin/")
+        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/lib/${MODULECONFIG}")
+        foreach(DEPENDENT_MODULE_NAME ${DEPENDENT_NAP_MODULES})
+            ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/modules/${DEPENDENT_MODULE_NAME}/lib/${MODULECONFIG}")
+        endforeach()
+    endforeach()
+endmacro()
+
+macro(ensure_macos_module_has_rpath_at_install MODULE_NAME CONFIG PATH_TO_ADD)
+    set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/modules/${MODULE_NAME}/lib/${CONFIG}/lib${MODULE_NAME}.dylib)
+    ensure_macos_file_has_rpath_at_install(${MODULE_FILENAME} ${CONFIG} ${PATH_TO_ADD})
+endmacro()
+
+macro(ensure_macos_file_has_rpath_at_install FILENAME CONFIG PATH_TO_ADD)
+    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+                                          -add_rpath
+                                          ${PATH_TO_ADD}
+                                          ${FILENAME} 
+                                  ERROR_QUIET)")
 endmacro()
 
 # Change our project output directories (when building against NAP source)

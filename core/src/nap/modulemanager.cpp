@@ -263,9 +263,9 @@ namespace nap
 			Logger::info("Running Napkin against packaged NAP");
 			
 #ifdef NDEBUG
-			buildType = "Debug";
-#else
 			buildType = "Release";
+#else
+			buildType = "Debug";
 #endif
 			
 			// NAP modules
@@ -275,7 +275,7 @@ namespace nap
 			for (const std::string& module: filesInDirectory)
 			{
 				std::string dirName = napRoot + "modules/" + module + "/lib/" + buildType;
-				if (!utility::dirExists(module))
+				if (!utility::dirExists(dirName))
 					continue;
 				outSearchDirectories.push_back(dirName);
 				Logger::info("Adding module search path %s", dirName.c_str());
