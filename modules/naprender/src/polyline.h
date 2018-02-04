@@ -233,7 +233,7 @@ namespace nap
 	 * Simple equal sided triangle
 	 * The uv's are normalized 0-1, the normals point outwards from the center
 	 */
-	class NAPAPI Triangle : public PolyLine
+	class NAPAPI TriangleLine : public PolyLine
 	{
 		RTTI_ENABLE(PolyLine)
 	public:

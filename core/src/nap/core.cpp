@@ -183,7 +183,7 @@ namespace nap
 	}
 
 
-	void Core::shutdown()
+	void Core::shutdownServices()
 	{
 		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
