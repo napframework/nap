@@ -62,7 +62,7 @@ namespace nap
 	namespace utility
 	{
 		// List all files in a directory
-		bool listDir(const char* directory, std::vector<std::string>& outFilenames)
+		bool listDir(const char* directory, std::vector<std::string>& outFilenames, bool absolute)
 		{
 			DIR* dir;
 			struct dirent* ent;
@@ -72,9 +72,15 @@ namespace nap
 				if (!strcmp(ent->d_name, ".")) continue;
 				if (!strcmp(ent->d_name, "..")) continue;
 
-				char buffer[255];
-				sprintf(buffer, "%s/%s", directory, ent->d_name);
-				outFilenames.push_back(buffer);
+				char buffer[MAX_PATH_SIZE];
+				if (absolute)
+				{
+					sprintf(buffer, "%s/%s", directory, ent->d_name);
+					outFilenames.push_back(buffer);
+				}
+				else {
+					outFilenames.push_back(ent->d_name);
+				}
 			}
 			closedir(dir);
 			return true;
