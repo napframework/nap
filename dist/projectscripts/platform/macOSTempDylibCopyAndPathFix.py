@@ -53,7 +53,7 @@ def copy_local_object_linked_local_dylibs(object_path, dest_path):
 
     copy_count = 0
 
-    for line in output.split("\n")[1:]:
+    for line in output.split("\n")[2:]:
         if any(x in line for x in EXTERNAL_PATHS):
             chunks = line.strip().split()
             filename = os.path.basename(chunks[0])
@@ -96,7 +96,7 @@ def update_external_dylib_paths_for_single_object(filename, new_prefix, replace_
     if replace_rpath:
         paths_to_replace.append('@rpath')
 
-    for line in output.split("\n")[1:]:
+    for line in output.split("\n")[2:]:
         # Skip empty lines
         if line.strip() == '':
             continue
