@@ -45,7 +45,7 @@ namespace nap
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath)
+	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath, bool runningInNonProjectContext)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
@@ -54,8 +54,11 @@ namespace nap
 		
 		// Load our module names from the project info
 		ProjectInfo projectInfo;
-		if (!loadProjectInfoFromJSON(projectInfo, error))
-			return false;
+		if (!runningInNonProjectContext)
+		{
+			if (!loadProjectInfoFromJSON(projectInfo, error))
+				return false;
+		}
 
 		// Find our project data
 		if (!determineAndSetWorkingDirectory(error, forcedDataPath))
@@ -68,8 +71,8 @@ namespace nap
 		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 
 		// Load all modules
-		// TODO: Passing through our temporary modules list for now, this is temporary until we lock down our
-		//		 release behaviour
+		// TODO: Passing through a modules list for now, this is potentially temporary until we lock down our
+		// 		 release behaviour
 		if (!mModuleManager.loadModules(projectInfo.mModules, error))
 			return false;
 		

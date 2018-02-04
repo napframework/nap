@@ -250,12 +250,69 @@ namespace nap
 				outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
 				// User modules
 				outSearchDirectories.push_back(napRoot + "usermodules/" + module + "/lib/" + buildType);
-				// Project module
-				outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
+			}
+			// Project module
+			outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
+		}
+		// TODO Temporary solution until there's a flag via the built system that designates that we're running
+		// 		with packaged NAP
+		else if (dirParts.end()[-1] == "tools") {
+			// Napkin running against packaged NAP
+			std::string napRoot = exeDir + "/../";
+			
+			Logger::info("Running Napkin against packaged NAP");
+			
+#ifdef NDEBUG
+			buildType = "Debug";
+#else
+			buildType = "Release";
+#endif
+			
+			// NAP modules
+			std::string searchDir = napRoot + "modules";
+			std::vector<std::string> filesInDirectory;
+			utility::listDir(searchDir.c_str(), filesInDirectory, false);
+			for (const std::string& module: filesInDirectory)
+			{
+				std::string dirName = napRoot + "modules/" + module + "/lib/" + buildType;
+				if (!utility::dirExists(module))
+					continue;
+				outSearchDirectories.push_back(dirName);
+				Logger::info("Adding module search path %s", dirName.c_str());
+			}
+
+			// User modules
+			searchDir = napRoot + "usermodules";
+			filesInDirectory.clear();
+			utility::listDir(searchDir.c_str(), filesInDirectory, false);
+			for (const std::string& module: filesInDirectory)
+			{
+				std::string dirName = napRoot + "usermodules/" + module + "/lib/" + buildType;
+				if (!utility::dirExists(dirName))
+					continue;
+				outSearchDirectories.push_back(dirName);
+				Logger::info("Adding user module search path %s", dirName.c_str());
+			}
+
+			// Project module
+			std::string projectTypes[] = { "projects", "examples", "demos", "apps" };
+			for (const std::string& projectType: projectTypes)
+			{
+				searchDir = napRoot + projectType;
+				filesInDirectory.clear();
+				utility::listDir(searchDir.c_str(), filesInDirectory, false);
+				for (const std::string& project: filesInDirectory)
+				{
+					std::string dirName = napRoot + projectType + "/" + project + "/module/lib/" + buildType;
+					if (utility::dirExists(dirName))
+					{
+						outSearchDirectories.push_back(dirName);
+						Logger::info("Adding project module search path %s", dirName.c_str());
+					}
+				}
 			}
 		}
-		else
-		{
+		else {
 			// Check if we're running a project against NAP source
 			std::string full_configuration_name = dirParts.end()[-2];
 			if (getBuildTypeFromFolder(full_configuration_name, buildType))
