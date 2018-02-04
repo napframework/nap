@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-import os
-import subprocess
-from multiprocessing import cpu_count
-from sys import platform
-import sys
-import shutil
+import argparse
 import datetime
 import json
+import os
+from multiprocessing import cpu_count
+import shutil
+import subprocess
+import sys
+from sys import platform
 
 WORKING_DIR = '.'
 BUILD_DIR = 'build'
@@ -132,10 +133,10 @@ def install_dependencies():
         # Windows...
         pass
 
-def package():
+def package(zip_release):
     print("Packaging..")
 
-    install_dependencies()
+    # install_dependencies()
 
     # Note: Packaging directly from Python for now.  CPack was investigated but it was looking difficult to make it work when
     # wanting to build multiple configurations at the same time.  If there was a reasonable CPack solution it feels like that 
@@ -155,8 +156,10 @@ def package():
             call(d, ['make', 'all', 'install', '-j%s' % cpu_count()])
 
         # Create archive
-        archive_to_linux_tar_xz()
-        # archive_to_timestamped_dir('Linux')
+        if zip_release:
+            archive_to_linux_tar_xz()
+        else:
+            archive_to_timestamped_dir('Linux')
     elif platform == 'darwin':
         # Generate project
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
@@ -170,8 +173,10 @@ def package():
         call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
 
         # Create archive
-        archive_to_macos_zip()
-        # archive_to_timestamped_dir('macOS')
+        if zip_release:
+            archive_to_macos_zip()
+        else:
+            archive_to_timestamped_dir('macOS')
     else:
         # Create build dir if it doesn't exist
         if not os.path.exists(BUILD_DIR):
@@ -185,8 +190,10 @@ def package():
             call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
         # Create archive
-        archive_to_win64_zip()
-        # archive_to_timestamped_dir('Win64')
+        if zip_release:
+            archive_to_win64_zip()
+        else:
+            archive_to_timestamped_dir('Win64')
 
     return True
 
@@ -291,14 +298,18 @@ def process_build_info(timestamp):
     
 # Main
 if __name__ == '__main__':
-    # TODO use argparse and add options for
+    # TODO add options for
     # - managing clean build behaviour
     # - not populating git revision into buildInfo
     # - external build number management?
-    # - don't create a zip, just build to a timestamped folder
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-dz", "--dontzip", action="store_true",
+                        help="Don't zip the release, package to a directory")
+    args = parser.parse_args()
 
     # Package our build
-    packaging_success = package()
+    packaging_success = package(not args.dontzip)
 
     # TODO improve error propogation behaviour
     sys.exit(0 if packaging_success else 1)
