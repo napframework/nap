@@ -142,6 +142,21 @@ namespace nap
 		 */
 		virtual int getCount() const override					{ return static_cast<int>(mData.size()); }
 
+		/**
+		 * Array subscript overload
+		 * @param index the index of the attribute value
+		 * @return the vertex attribute value at index
+		 */
+		ELEMENTTYPE& operator[](std::size_t index)				{ return mData[index]; }
+		
+		/**
+		 * Const array subscript overload
+		 * @param index the index of the attribute value
+		 * @return the vertex attribute value at index
+		 */
+		const ELEMENTTYPE& operator[](std::size_t index) const	{ return mData[index]; }
+
+
 		std::vector<ELEMENTTYPE>	mData;						///< Actual typed data of the attribute
 
 	protected:

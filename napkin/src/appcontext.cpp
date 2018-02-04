@@ -35,9 +35,7 @@ AppContext::AppContext()
 }
 
 AppContext::~AppContext()
-{
-    mCore.shutdown();
-}
+{}
 
 AppContext& AppContext::get()
 {

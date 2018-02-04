@@ -1,7 +1,7 @@
 #include "polyline.h"
 #include <mathutils.h>
 #include <glm/gtx/rotate_vector.hpp>
-
+#include <meshutils.h>
 
 RTTI_BEGIN_CLASS(nap::PolyLineProperties)
 	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,		nap::rtti::EPropertyMetaData::Default)
@@ -31,8 +31,8 @@ RTTI_BEGIN_CLASS(nap::Hexagon)
 	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Triangle)
-	RTTI_PROPERTY("Radius",		&nap::Triangle::mRadius,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::TriangleLine)
+	RTTI_PROPERTY("Radius",		&nap::TriangleLine::mRadius,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -168,8 +168,9 @@ namespace nap
 		math::resampleLine<glm::vec3>(uv_coords, getUvAttr().getData(), mVertexCount, mClosed);
 		mMeshInstance->setNumVertices(p_count);
 
-		// Set draw mode
-		mMeshInstance->setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		generateIndices(shape, p_count);
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -233,8 +234,9 @@ namespace nap
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(4);
 
-		// Set draw mode
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		generateIndices(shape, 4);
 
 		// Initialize line
 		bool success = mMeshInstance->init(errorState);
@@ -258,7 +260,10 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(mSegments);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);		
+		generateIndices(shape, mSegments);		
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -292,13 +297,16 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(6);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		generateIndices(shape, 6);
 
 		return mMeshInstance->init(errorState);
 	}
 
 
-	bool Triangle::init(utility::ErrorState& errorState)
+	bool TriangleLine::init(utility::ErrorState& errorState)
 	{
 		if (!PolyLine::init(errorState))
 			return false;
@@ -325,7 +333,10 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(3);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		generateIndices(shape, 3);
 
 		return mMeshInstance->init(errorState);
 	}
@@ -381,7 +392,7 @@ namespace nap
 
 	bool PolyLine::isClosed() const
 	{
-		opengl::EDrawMode mode = getMeshInstance().getDrawMode();
+		opengl::EDrawMode mode = getMeshInstance().getShape(0).getDrawMode();
 		assert(mode == opengl::EDrawMode::LINE_LOOP || mode == opengl::EDrawMode::LINE_STRIP);
 		return mode == opengl::EDrawMode::LINE_LOOP;
 	}
