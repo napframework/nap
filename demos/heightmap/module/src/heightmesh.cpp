@@ -85,7 +85,7 @@ namespace nap
 		}
 
 		// Update our mesh normals to ensure light calculations work in the shader
-		computeNormals(mesh, pos_attr, nor_attr);
+		utility::computeNormals(mesh, pos_attr, nor_attr);
 
 		// Store position attribute
 		mDisplacedPosAttr = &pos_attr;

@@ -16,10 +16,10 @@ namespace nap
 	public:
 		enum class EFormat
 		{
-			RGBA8,			// 4 components, 8 bytes per component
-			RGB8,			// 3 components, 8 bytes per component
-			R8,				// 1 components, 8 bytes per component
-			Depth			// Texture used for binding to depth buffer
+			RGBA8,			///< RGBA8 4 components, 8 bytes per component
+			RGB8,			///< RGB8 3 components, 8 bytes per component
+			R8,				///< R8	1 components, 8 bytes per component
+			Depth			///< Depth Texture used for binding to depth buffer
 		};
 
 		/**
@@ -29,8 +29,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		int		mWidth  = 0;					///< Width of the texture, in texels
-		int		mHeight = 0;					///< Height of the texture, in texels
-		EFormat	mFormat = EFormat::RGB8;		///< Format of the texture
+		int		mWidth  = 0;					///< Property: 'Width' width of the texture in texels
+		int		mHeight = 0;					///< Property: 'Height' of the texture, in texels
+		EFormat	mFormat = EFormat::RGB8;		///< Property: 'Format' format of the texture
 	};
 }

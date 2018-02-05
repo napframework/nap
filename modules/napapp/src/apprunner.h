@@ -128,14 +128,13 @@ namespace nap
 		// Initialize engine
 		if (!mCore.initializeEngine(error))
 		{
-			mCore.shutdown();
 			error.fail("unable to initialize engine");
 			return false;
 		}
 		// Initialize the various services
 		if (!mCore.initializeServices(error))
 		{
-			mCore.shutdown();
+			mCore.shutdownServices();
 			error.fail("Failed to initialize services");
 			return false;
 		}
@@ -168,7 +167,7 @@ namespace nap
 		mExitCode = app.shutdown();
 
 		// Shutdown core
-		mCore.shutdown();
+		mCore.shutdownServices();
 
 		// Message successful exit
 		return true;

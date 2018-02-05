@@ -141,4 +141,13 @@ namespace nap
 			}
 		}
 	}
+
+
+	Triangle::Triangle(int shapeIndex, const ShapeTriangle& shapeTriangle) :
+		ShapeTriangle(shapeTriangle),
+		mShapeIndex(shapeIndex)
+	{
+
+	}
+
 }

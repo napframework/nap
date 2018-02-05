@@ -210,8 +210,6 @@ int main(int argc, char* argv[])
 // 			return -1;
 	}
 
-	core.shutdown();
-
 	Logger::info("Serialization test exiting cleanly");
 	
 	return 0;

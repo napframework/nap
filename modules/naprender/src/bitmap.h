@@ -32,9 +32,9 @@ namespace nap
 		 */
 		enum class EDataType : int
 		{
-			BYTE	= 0,		//< name: Byte
-			USHORT	= 2,		//< name: Short
-			FLOAT	= 3			//< name: Float
+			BYTE	= 0,		///< Byte 8 bit
+			USHORT	= 2,		///< Short 16 bit
+			FLOAT	= 3			///< Float 32 bit
 		};
 
 		/**
@@ -42,11 +42,11 @@ namespace nap
 		 */
 		enum class EChannels : int
 		{
-			R			= 1,	//< name: R
-			RGB			= 2,	//< name: RGB
-			RGBA		= 3,	//< name: RGBA
-			BGR			= 4,	//< name: BGR
-			BGRA		= 5		//< name: BGRA
+			R			= 1,	///< R red component
+			RGB			= 2,	///< RGB red, green and blue component
+			RGBA		= 3,	///< RGBA red, green, blue and alpha component
+			BGR			= 4,	///< BGR blue, green and red component
+			BGRA		= 5		///< BGRA blue, green, red and alpha component
 		};
 
 		virtual ~Bitmap();
@@ -401,7 +401,7 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::string mPath;							///< property Path: the path to the image on disk
+		std::string mPath;							///< Property 'Path': the path to the image on disk
 	};
 
 
