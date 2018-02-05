@@ -2,12 +2,18 @@ Rendering {#rendering}
 =======================
 
 *	[Introduction](@ref render_intro)
+*	[Key Features](@ref key_features)
 *	[Example](@ref render_example)
+*	[Meshes](@ref meshes)
+	*	[Creating Meshes](@ref creating_meshes)
+	*	[Mesh Format](@ref mesh_format)
 
 Introduction {#render_intro}
 =======================
 
-NAP uses the OpenGL 3.3+ [programmable rendering pipeline](https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview) to draw objects. This means NAP uses shaders to manipulate and render items. Using shaders improves overall performance and offers a more flexible method of working compared to the old fixed function render pipeline. The result is a more data driven approach to rendering, similar to what you see in popular game engines such as Unreal4 or Unity, except: NAP doesn't lock down the rendering process. An object that can be rendered isn't rendered by default: you explicetly have to tell the renderer:
+The NAP renderer is designed to be open and flexible. All render related functionality is exposed as a set of building blocks instead of a fixed function pipeline. You can use these blocks to set up your own rendering pipeline. Meshes, textures, materials, shaders, rendertargets, cameras and windows form the basis of these tools. They can be authored using json and are exported using your favourite content creation program (Photoshop, Maya etc.)
+
+NAP uses the OpenGL 3.3+ <a href="https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview" target="_blank">programmable rendering pipeline</a> to draw objects. This means NAP uses shaders to manipulate and render items. Using shaders improves overall performance and offers a more flexible method of working compared to the old fixed function render pipeline. The result is a more data driven approach to rendering, similar to what you see in popular game engines such as Unreal4 or Unity, except: NAP doesn't lock down the rendering process. An object that can be rendered isn't rendered by default: you explicetly have to tell the renderer:
 
 - That you want to render an object
 - How you want to render an object
@@ -17,7 +23,17 @@ The destination is always a render target and NAP currently offers two: Directly
 
 Traditionally this is a problem, most renderers tie a drawable object to 1 render context. This context is always associated with 1 screen. This makes sharing objects between multiple screens pretty much impossible. NAP solves this issues by allowing any object to be drawn to any screen, even sharing the same object between two or multiple screens. This is one of NAPs biggest strengths and offers a lot of flexibility in deciding how you want to draw things. You, as a user, don't have to worry about the possibility of rendering one or multiple objects to a particular screen, you know you can.
 
-Let's look at an example before we dive in some of the more technical aspects of rendering
+Key Features {#key_features}
+=======================
+- Build your own render pipeline using easy to understand building blocks.
+
+- Meshes are not limited to a specific set of vertex attributes such as 'color', 'uv' etc. Any attribute, such as ‘wind’ or ‘heat’, can be added to drive procedural effects. 
+
+- Nap supports both static and dynamic meshes. It's easy to bind your own attributes to materials using a safe and easy to understand binding system.
+
+- Rendering the same content to multiple windows is supported natively.
+
+- All render functionality is fully compatible with the real-time editing system. Textures, meshes or shaders can be modified and reloaded instantly without having to restart the application
 
 Example {#render_example}
 =======================
@@ -249,3 +265,193 @@ void ExampleApp::render()
 That's it, you should see a rotating textured sphere in the center of your viewport. This example tried to cover the basics of rendering with NAP but as you might have suspected: modern day rendering is a vast and complex subject. NAPs philosophy is to be open, it doesn't render for you. What NAP does best is getting you set up with the building blocks to render complex scenes. This also applies to many other facets of the framework. But in return you get a very open engine that allows you to render most things without having to write thousands of lines of code. 
 
 To get a better understanding of rendering with NAP continue reading or play around with a render demo that ships swith NAP. This example is included as 'HelloWorld'.
+
+Meshes {#meshes}
+=======================
+
+Creating Meshes {#creating_meshes}
+-----------------------
+
+At the heart of it all is the [IMesh](@ref nap::IMesh). This is the resource the [RenderableMeshComponent](@ref nap::RenderableMeshComponent) (and other components) link to. The IMesh is responsible for only one thing: to supply a [MeshInstance](@ref nap::MeshInstance). The meshinstance contains the actual data that is rendered or manipulated. A mesh instance can be created in various ways:
+
+- The [MeshFromFile](@ref nap::MeshFromFile) loads a mesh from an external file. NAP only supports the fbx file format and automatically converts any .fbx file in to a .mesh file using the fbx converter tool. The result is a heavily compressed binary file. Here is an example:
+
+```
+{
+	"Type" : "nap::MeshFromFile",
+	"mID": "CarMesh",
+	"Path": "car.mesh"
+}
+```
+
+- A few simple shapes (such as a [plane](@ref nap::PlaneMesh) or [sphere](@ref nap::SphereMesh)) can be created directly using configurable parameters:
+
+```
+{
+	"Type" : "nap::SphereMesh",
+	"mID": "SphereMesh",
+	"Radius" : 5,
+	"Rings" : 50,
+	"Sectors" : 50
+},
+{
+	"Type" : "nap::PlaneMesh",
+	"mID": "PlaneMesh",
+	"Rows" : 256,
+	"Columns" : 256
+}
+```
+
+- The [Mesh](@ref nap::Mesh) resource can be used to explicitly define the contents of a mesh in a json file. Below you see an example of a mesh in the shape of a plane. This mesh contains 4 vertices. The plane has a position and uv attribute. The triangles are formed as a TriangleStrip:
+
+```
+{
+	"Type" : "nap::Mesh",
+	"mID" : "CustomPlaneMesh",
+	"Properties" : {
+		"NumVertices" : 4,
+		"Shapes" : [
+			{
+				"DrawMode" : "TriangleStrip"
+			}
+		],
+		"Attributes" : [
+			{
+				"Type" : "nap::Vec3VertexAttribute",
+				"AttributeID" : "Position",
+				"Data" : [
+					{ "x": -0.5, 	"y": -0.5, "z": 0.0 },
+					{ "x":  0.5, 	"y": -0.5,	"z": 0.0 },
+					{ "x": -0.5, 	"y":  0.5,	"z": 0.0 },
+					{ "x":  0.5, 	"y":  0.5,	"z": 0.0 }
+				]
+			},
+			{
+				"Type" : "nap::Vec3VertexAttribute",
+				"AttributeID" : "UV0",
+				"Data" : [
+					{ "x": 0.0, 	"y": 0.0, 	"z": 0.0 },
+					{ "x": 1.0, 	"y": 0.0,	"z": 0.0 },
+					{ "x": 0.0, 	"y": 1.0,	"z": 0.0 },
+					{ "x": 1.0, 	"y": 1.0,	"z": 0.0 }
+				]
+			}
+		],
+		"Indices" : [
+			0,
+			1,
+			3,
+			0,
+			3,
+			2
+		]
+	}
+}
+
+```
+
+- Instead of using predefined resources you can also create meshes at runtime. To do so, derive from IMesh and create your own custom mesh in code. This is extremely useful when building procedural meshes. In the following example we derive from IMesh and create our own mesh instance. For the mesh to behave and render correctly we add a set of attributes. In this case 'Position', 'uv', 'id' and color. The mesh contains no actual (initial) vertex data. The mesh is constructed (over time) by the application.
+
+~~~~~~~~~~~~~~~{.cpp}
+class ParticleMesh : public IMesh
+{
+public:
+	bool init(utility::ErrorState& errorState)
+	{
+		// Because the mesh is populated dynamically we set the initial amount of vertices to be 0
+		mMesh.setNumVertices(0);
+
+		// Reserve 1000 vertices
+		mMesh.reserveVertices(1000);
+
+		// Add position attribute
+		... position_attribute = mMesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		
+		// Add uv attribute
+		... uv_attribute = mMesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+
+		// Add color attribute
+		... color_attribute = mMesh.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+
+		// Add unique identifier attribute
+		... id_attribute = mMesh.getOrCreateAttribute<float>("pid");
+			
+		// Create the shape
+		MeshShape& shape = mMesh.createShape();
+
+		// Reserve CPU memory for all the particle geometry.
+		// We want to draw the mesh as a set of triangles, 2 triangles per particle
+		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
+		shape.reserveIndices(1000);
+
+		// Initialize our instance
+		return mMesh.init(errorState);
+	}
+
+	/**
+	 * @return MeshInstance as created during init().
+	 */
+	virtual MeshInstance& getMeshInstance()	override 					{ return mMesh; }
+
+	/**
+	 * @return MeshInstance as created during init().
+	 */
+	virtual const MeshInstance& getMeshInstance() const	override 		{ return mMesh; }
+
+private:
+	MeshInstance mMesh;
+};
+~~~~~~~~~~~~~~~
+
+The Mesh Format {#mesh_format}
+-----------------------
+
+The mesh instance format is best explained by an example. Consider a mesh that represents the letter ‘P’:
+
+![](@ref content/mesh_shapes.png)
+
+This letter contains a list of 24 points. However, the mesh is split up into two separate pieces: the closed line that forms the outer shape and the closed line that forms the inner shape. The points of both shapes are represented by the blue and orange colors. 
+
+Every mesh instance contains a list of points (vertices). Each vertex can have multipe attributes such as a normal, a uv coordinate and a color. In this example the mesh holds a list of exactly 24 vertices. To add each individual line to the mesh we create a [shape](@ref nap::MeshShape). The shape tells the system two things:
+
+- How the vertices are connected using a list of indices. In this case vertices 0-12 define the outer shape, vertices 13-23 define the inner shape.
+- How the system interprets the indices, ie: how are the points connected? For this example we use LINE_LOOP. A single list of connected lines that loops back to the beginning of the shape.
+
+Within a single mesh you can define multiple shapes that share the same set of vertices (points). It is allowed to share vertices between shapes and it is allowed to define a single mesh with different types of shapes. Take a sphere for example. The vertices can be used to define both the sphere as a triangle mesh and the normals of that sphere as a set of individual lines. The normals are rendered as lines (instead of triangles) but share (part of) the underlying vertex structure. This sphere therefore contains 2 shapes, 1 triangle shape (to draw the sphere) and 1 line shape (to draw the normals).
+
+All common opengl shapes are supported: POINTS, LINES, LINE_STRIP, LINE_LOOP, TRIANGLES, TRIANGLE_STRIP and TRIANGLE_FAN.
+
+As a user you can work on individual vertices or on the vertices associated with a specific shape. Often its necessary to walk over all the shapes that constitute a mesh. On a higher level NAP provides utility functions (such as computeNormals and reverseWindingOrder) to operate on a mesh as a whole. But for custom work NAP provides a very convenient and efficient [iterator](@ref nap::TriangleIterator) that is capable of looping over all the triangles within multiple shapes. This ensures that as a user you don’t need to know about the internal connectivity of the various shapes. Consider this example:
+
+~~~~~~~~~~~~~~~{.cpp}
+// fetch uv attribute
+Vec3VertexAttribute* uv_nattr = mesh.findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+
+// fetch uv center attribute 
+Vec3VertexAttribute* uv_cattr = mesh.findAttribute<glm::vec3>("uvcenter");
+
+// Create triangle iterator
+TriangleShapeIterator shape_iterator(*mMeshInstance);
+
+// Iterate over all the triangles and calculate average uv value for every triangle
+TriangleIterator tri_iterator(*mMeshInstance);
+while (!tri_iterator.isDone())
+{
+	// Get triangle
+	Triangle triangle = tri_iterator.next();
+
+	// Get uv values associated with triangle
+	TriangleData<glm::vec3> uvTriangleData = triangle.getVertexData(*uv_nattr);
+
+	// Calculate uv average
+	glm::vec3 uv_avg = { 0.0, 0.0, 0.0 };
+	uv_avg += uvTriangleData.first();
+	uv_avg += uvTriangleData.second();
+	uv_avg += uvTriangleData.third();
+	uv_avg /= 3.0f;
+	
+	// Set average to all vertices associated with triangle
+	triangle.setVertexData(*uv_cattr, uv_avg);
+}
+~~~~~~~~~~~~~~~
+

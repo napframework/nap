@@ -66,7 +66,10 @@ namespace nap
 
 			// Set rgb for the mesh
 			TriangleData<glm::vec4> colorTriangleData = triangle.getVertexData(color_data);
-			triangle.setVertexData(color_data, glm::vec4(r, g, b, colorTriangleData.first().a), glm::vec4(r, g, b, colorTriangleData.second().a), glm::vec4(r, g, b, colorTriangleData.third().a));
+			triangle.setVertexData(color_data, 
+				glm::vec4(r, g, b, colorTriangleData.first().a), 
+				glm::vec4(r, g, b, colorTriangleData.second().a), 
+				glm::vec4(r, g, b, colorTriangleData.third().a));
 
 			// Set rgb for arnet
 			triangle.setVertexData(artnet_data, glm::vec4(r, g, b, 0.0f));

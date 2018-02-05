@@ -37,8 +37,8 @@ namespace nap
 
 	public:
 		// Path to img on disk
-		std::string				mImagePath;								///< Path to the image on disk to load
-		bool					mCompressed = false;					///< If the image on the GPU is compressed
+		std::string				mImagePath;								///< Property: 'ImagePath' Path to the image on disk to load
+		bool					mCompressed = false;					///< Property: 'Compressed' If the image on the GPU is compressed
 	};
 
 }

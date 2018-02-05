@@ -12,42 +12,73 @@ namespace nap
 	class MeshShape;
 
 	/**
-	 * Contains the data of a triangle, extracted from a VertexAttribute through the Triangle interface
+	 * Contains the data associated with a triangle
+	 * The data is extracted from a VertexAttribute using the Triangle interface or can be constructed manually
 	 */
 	template<class T>
 	class TriangleData
 	{
 	public:
-		TriangleData(const T& first, const T& second, const T& third) :
-			mFirst(first),
-			mSecond(second),
-			mThird(third)
-		{
-		}
+		TriangleData(const T& first, const T& second, const T& third) : 
+			mData( { first, second, third } )
+		{ }
+
+		TriangleData() = default;
 
 		/**
 		 * @return The data belonging to the first vertex of the triangle
 		 */
-		const T& first() const { return mFirst; }
+		inline const T& first() const						{ return mData[0]; }
 		
+		/**
+		 * Set the data belonging to the first vertex of the triangle
+		 * @param data data associated with the first vertex
+		 */
+		inline void setFirst(const T& data)					{ mData[0] = data; }
+
 		/**
 		 * @return The data belonging to the second vertex of the triangle
 		 */
-		const T& second() const { return mSecond; }
+		inline const T& second() const						{ return mData[1]; }
 		
+		/**
+		 * Set the data belonging to the second vertex of the triangle
+		 * @param data data associated with the second vertex
+		 */
+		inline void setSecond(const T& data)				{ mData[1] = data; }
+
 		/**
 		 * @return The data belonging to the third vertex of the triangle
 		 */
-		const T& third() const { return mThird; }
+		inline const T& third() const						{ return mData[2]; }
+
+		/**
+		 * Set the data belonging to the third vertex of the triangle
+		 * @param data data associated with the third vertex
+		 */
+		inline void setThird(const T& data) const			{ mData[2] = data; }
+
+		/**
+		* Array subscript overload
+		* @param index the index of the attribute value
+		* @return the vertex attribute value at index
+		*/
+		T& operator[](std::size_t index)					{ return mData[index]; }
+
+		/**
+		* Const array subscript overload
+		* @param index the index of the attribute value
+		* @return the vertex attribute value at index
+		*/
+		const T& operator[](std::size_t index) const		{ return mData[index]; }
 
 	private:
-		T mFirst;
-		T mSecond;
-		T mThird;
+		std::array<T, 3> mData;
 	};
 
+
 	/**
-	 * Contains the indices of a triangle within a specific MeshShape
+	 * Contains the indices of a triangle associated with a specific MeshShape inside a MeshInstance
 	 */
 	class ShapeTriangle
 	{
@@ -59,35 +90,35 @@ namespace nap
 		/**
 		 * @return The index of the triangle in the shape
 		 */
-		int getTriangleIndex() const { return mTriangleIndex; }
+		int getTriangleIndex() const						{ return mTriangleIndex; }
 
 		/**
 		 * @return The indices of this triangle
 		 */
-		IndexArray indices() const { return mIndices; }
+		IndexArray indices() const							{ return mIndices; }
 
 		/**
 		 * @return The index of the first vertex of this triangle
 		 */
-		int firstIndex() const	{ return mIndices[0]; }
+		int firstIndex() const								{ return mIndices[0]; }
 		
 		/**
 		 * @return The index of the second vertex of this triangle
 		 */
-		int secondIndex() const	{ return mIndices[1]; }
+		int secondIndex() const								{ return mIndices[1]; }
 
 		/**
 		 * @return The index of the third vertex of this triangle
 		 */
-		int thirdIndex() const	{ return mIndices[2]; }	
+		int thirdIndex() const								{ return mIndices[2]; }	
 
 		/**
 		 * @return The index of the vertex at the specified index
 		 */
-		int operator[](std::size_t index) const	{ return mIndices[index]; }
+		int operator[](std::size_t index) const				{ return mIndices[index]; }
 
-		IndexArray::const_iterator begin() { return mIndices.begin(); }
-		IndexArray::const_iterator end() { return mIndices.end(); }
+		IndexArray::const_iterator begin()					{ return mIndices.begin(); }
+		IndexArray::const_iterator end()					{ return mIndices.end(); }
 
 		/**
 		 * @param attribute The VertexAttribute to retrieve data from
@@ -123,6 +154,16 @@ namespace nap
 			setVertexData(attribute, value, value, value);
 		}
 
+		/**
+		 * @param attribute The VertexAttribute to set data to
+		 * @param value the triangle data to set
+		 */
+		template<class T>
+		void setVertexData(VertexAttribute<T>& attribute, const TriangleData<T>& value)
+		{
+			setVertexData(value[0], value[1], value[2]);
+		}
+
 	private:
 		IndexArray mIndices;
 		int mTriangleIndex;
@@ -130,7 +171,8 @@ namespace nap
 
 
 	/**
-	 * Contains the indices of a triangle within a MeshInstance
+	 * Contains the indices of a triangle associated with a MeshInstance
+	 * The indices are always bound to a specific shape
 	 */
 	class Triangle : public ShapeTriangle
 	{
@@ -143,11 +185,7 @@ namespace nap
 	private:
 		friend class TriangleIterator;
 
-		Triangle(int shapeIndex, const ShapeTriangle& shapeTriangle) :
-			ShapeTriangle(shapeTriangle),
-			mShapeIndex(shapeIndex)
-		{
-		}
+		Triangle(int shapeIndex, const ShapeTriangle& shapeTriangle);
 
 	private:
 		int mShapeIndex;

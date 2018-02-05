@@ -1,37 +1,484 @@
 {
-	"Objects" : 
-	[
-		{
-			"Type" : "nap::RenderWindow",
-			"mID" : "Window",
-			"Width" : 1280,
-			"Height" : 720,
-			"Title" : "videomodulation",
-			"Sync" : true
-		},
-
-		{
-            "Type": "nap::RenderTexture2D",
-            "mID": "VideoDepthTexture",
-            "Parameters": 
-            {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "Width":  1920,
-            "Height": 1080,
-            "Format": "Depth"
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "BackgroundEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_2",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Material": "BackgroundMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "ReadOnly"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_4",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
         },
-
+        {
+            "Type": "nap::Entity",
+            "mID": "DisplacementEntity",
+            "Components": [
+                {
+                    "Type": "nap::SelectVideoMeshComponent",
+                    "mID": "nap::SelectVideoMeshComponent",
+                    "Meshes": [
+                        "SphereMesh",
+                        "OctahedronMesh",
+                        "IsocahedronMesh",
+                        "CubeMesh"
+                    ],
+                    "Index": 1
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_3",
+                    "Mesh": "SphereMesh",
+                    "MaterialInstance": {
+                        "Material": "DisplacementMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_5",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "nap::RotateComponent",
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.05000000074505806,
+                        "Offset": 0.20000000298023225
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OrthoCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent",
+                    "Properties": {
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 10000.0
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 1.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PerspCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 45.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 10000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 5.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "nap::OrbitController",
+                    "MovementSpeed": 0.032999999821186069,
+                    "RotateSpeed": 0.0032999999821186067,
+                    "PerspCameraComponent": "PerspCameraComponent",
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "VideoEntity",
+            "Components": [
+                {
+                    "Type": "nap::SelectVideoComponent",
+                    "mID": "nap::SelectVideoComponent",
+                    "Videos": [
+                        "StreakVideo",
+                        "SnowVideo",
+                        "PeopleVideo"
+                    ],
+                    "Index": 2
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "VideoMesh",
+                    "MaterialInstance": {
+                        "Material": "VideoMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "BackgroundMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "nap::UniformTexture2D",
+                    "Name": "videoTexture",
+                    "Texture": "VideoColorTexture"
+                }
+            ],
+            "Shader": "BackgroundShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "DisplacementMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "nap::UniformTexture2D_2",
+                    "Name": "videoTexture",
+                    "Texture": "VideoColorTexture"
+                }
+            ],
+            "Shader": "DisplacementShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normal"
+                },
+                {
+                    "MeshAttributeID": "UVCenter",
+                    "ShaderAttributeID": "in_CenterUV"
+                },
+                {
+                    "MeshAttributeID": "DisplacementDirection",
+                    "ShaderAttributeID": "in_DisplacementDirection"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "VideoMaterial",
+            "Uniforms": [],
+            "Shader": "VideoShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "PlaneMesh",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "VideoMesh",
+            "Size": {
+                "x": 1920.0,
+                "y": 1080.0
+            },
+            "Position": {
+                "x": 960.0,
+                "y": 540.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "VideoRenderTarget",
+            "mColorTexture": "VideoColorTexture",
+            "mDepthTexture": "VideoDepthTexture",
+            "mClearColor": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "videomodulation",
+            "Sync": true,
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "OrthoCameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "PerspCameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "VideoEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "BackgroundEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "DisplacementEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "BackgroundShader",
+            "mVertShader": "shaders/videomodulation/background.vert",
+            "mFragShader": "shaders/videomodulation/background.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "DisplacementShader",
+            "mVertShader": "shaders/videomodulation/displacement.vert",
+            "mFragShader": "shaders/videomodulation/displacement.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "VideoShader",
+            "mVertShader": "shaders/videomodulation/video.vert",
+            "mFragShader": "shaders/videomodulation/video.frag"
+        },
         {
             "Type": "nap::RenderTexture2D",
             "mID": "VideoColorTexture",
-            "Parameters": 
-            {
+            "Parameters": {
                 "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
@@ -43,417 +490,61 @@
             "Height": 1080,
             "Format": "RGB8"
         },
-		
         {
-            "Type": "nap::RenderTarget",
-            "mID": "VideoRenderTarget",
-            "mColorTexture": "VideoColorTexture",
-            "mDepthTexture": "VideoDepthTexture",
-            "mClearColor": 
-            {
-                "x": 1.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            }
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoDepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "Depth"
         },
-
-		{
-			"Type" : "nap::PlaneMesh",
-			"mID": "PlaneMesh"
-		},
-
-		{
-			"Type" : "nap::PlaneMesh",
-			"mID" : "VideoMesh",
-			"Size" :
-			{
-				"x" : 1920,
-				"y" : 1080
-			},
-			"Position" :
-			{
-				"x" : 960,
-				"y" : 540
-			}
-		},
-
-		{
-			"mID" : "OctahedronMesh",
-			"Type" : "nap::VideoMeshFromFile",
-			"Path" : "octahedron.mesh"
-		},
-
-		{
-			"mID" : "IsocahedronMesh",
-			"Type" : "nap::VideoMeshFromFile",
-			"Path" : "isocahedron.mesh"
-		},
-
-		{
-			"mID" : "SphereMesh",
-			"Type" : "nap::VideoMeshFromFile",
-			"Path" : "sphere.mesh"
-		},
-
-		{
-			"mID" : "CubeMesh",
-			"Type" : "nap::VideoMeshFromFile",
-			"Path" : "cube.mesh"
-		},
-		
-		{
-			"Type" : "nap::Shader",
-			"mID": "VideoShader",
-			"mVertShader": "shaders/videomodulation/video.vert",
-			"mFragShader": "shaders/videomodulation/video.frag"
-		},
-
-		{
-			"Type" : "nap::Shader",
-			"mID": "BackgroundShader",
-			"mVertShader": "shaders/videomodulation/background.vert",
-			"mFragShader": "shaders/videomodulation/background.frag"
-		},
-
-		{
-			"Type" : "nap::Shader",
-			"mID": "DisplacementShader",
-			"mVertShader": "shaders/videomodulation/displacement.vert",
-			"mFragShader": "shaders/videomodulation/displacement.frag"
-		},
-		
-		{
-			"Type" : "nap::Video",
-			"mID": "StreakVideo",
-			"Path": "streak.mp4"
-		},
-
-		{
-			"Type" : "nap::Video",
-			"mID": "FlareVideo",
-			"Path": "flare.mov"
-		},
-
-		{
-			"Type" : "nap::Video",
-			"mID": "SnowVideo",
-			"Path": "snow.mp4"
-		},
-		
-		{
-			"Type" : "nap::Material",
-			"mID": "VideoMaterial",
-			"Shader": "VideoShader",
-			"VertexAttributeBindings" : [
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Material",
-			"mID": "BackgroundMaterial",
-			"Shader": "BackgroundShader",
-			"VertexAttributeBindings" : 
-			[
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				}
-			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "videoTexture",
-					"Texture" : "VideoColorTexture"
-				}
-			]	
-		},
-
-		{
-			"Type" : "nap::Material",
-			"mID": "DisplacementMaterial",
-			"Shader": "DisplacementShader",
-			"VertexAttributeBindings" : 
-			[
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				},
-				{
-					"MeshAttributeID": "Normal",
-					"ShaderAttributeID" : "in_Normal"
-				},
-				{
-					"MeshAttributeID" : "UVCenter",
-					"ShaderAttributeID" : "in_CenterUV"
-				},
-				{
-					"MeshAttributeID" : "DisplacementDirection",
-					"ShaderAttributeID" : "in_DisplacementDirection"
-				},
-				{
-					"MeshAttributeID" : "Color0",
-					"ShaderAttributeID" : "in_Color"
-				}
-			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "videoTexture",
-					"Texture" : "VideoColorTexture"
-				}
-			]	
-		},
-		
-		{
-			"Type" : "nap::Scene",
-			"mID": "Scene",		
-			"Entities" : 
-			[
-				{
-					"Entity" : "OrthoCameraEntity"
-				},
-				{
-					"Entity" : "PerspCameraEntity"
-				},
-				{
-					"Entity" : "VideoEntity"
-				},
-				{
-					"Entity" : "BackgroundEntity"
-				},
-				{
-					"Entity" : "DisplacementEntity"
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "OrthoCameraEntity",
-			
-			"Components" : 
-			[
-				{
-					"Type" : "nap::OrthoCameraComponent",
-					"Properties": {
-						"NearClippingPlane" : 0.1,
-						"FarClippingPlane" : 10000.0
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 1.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0						
-					}
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "PerspCameraEntity",
-			
-			"Components" : 
-			[
-				{
-					"Type" : "nap::PerspCameraComponent",
-					"mID" : "PerspCameraComponent",
-					"Properties": 
-					{
-						"NearClippingPlane" : 0.1,
-						"FarClippingPlane" : 10000.0,
-						"FieldOfView" : 45
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 5.0
-						},
-						"Rotate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": 
-						{
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0						
-					}
-				},
-				{
-                    "Type": "nap::KeyInputComponent",
-                    "mID": "nap::KeyInputComponent"
-                },
-                {
-                    "Type": "nap::PointerInputComponent",
-                    "mID": "nap::PointerInputComponent"
-                },
-				{
-                    "Type": "nap::OrbitController",
-                    "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.033,
-                    "RotateSpeed": 0.0033,
-                    "PerspCameraComponent": "PerspCameraComponent"
-                }
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "VideoEntity",
-			
-			"Components" : 
-			[
-				{
-					"Type" : "nap::SelectVideoComponent",
-					"Index" : 1,
-					"Videos" :
-					[
-						"StreakVideo",
-						"SnowVideo",
-						"FlareVideo"
-					]
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "VideoMesh",
-					"MaterialInstance" : 
-					{
-						"Material": "VideoMaterial"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent"
-				}
-			]	
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "BackgroundEntity",
-			
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "PlaneMesh",
-					"MaterialInstance" : 
-					{
-						"Material": "BackgroundMaterial",
-						"DepthMode": "ReadOnly"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent"
-				}
-			]	
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "DisplacementEntity",
-			
-			"Components" : 
-			[
-				{
-					"Type" : "nap::SelectVideoMeshComponent",
-					"Index": 1,
-					"Meshes" :
-					[
-						"SphereMesh",
-						"OctahedronMesh",
-						"IsocahedronMesh",
-						"CubeMesh"
-					]
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "SphereMesh",
-					"MaterialInstance" : 
-					{
-						"Material": "DisplacementMaterial"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0					
-					}
-				},
-				{
-					"Type" : "nap::RotateComponent",
-					"Properties": {
-						"Axis": {
-							"x": 0.0,
-							"y": 1.0,
-							"z": 0.0
-						},
-						"Speed": 0.05,
-						"Offset": 0.2
-					}
-				}
-			]	
-		}
-	]
-} 
+        {
+            "Type": "nap::Video",
+            "mID": "PeopleVideo",
+            "Path": "people.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "SnowVideo",
+            "Path": "snow.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "StreakVideo",
+            "Path": "streak.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::VideoMeshFromFile",
+            "mID": "CubeMesh",
+            "Path": "cube.mesh"
+        },
+        {
+            "Type": "nap::VideoMeshFromFile",
+            "mID": "IsocahedronMesh",
+            "Path": "isocahedron.mesh"
+        },
+        {
+            "Type": "nap::VideoMeshFromFile",
+            "mID": "OctahedronMesh",
+            "Path": "octahedron.mesh"
+        },
+        {
+            "Type": "nap::VideoMeshFromFile",
+            "mID": "SphereMesh",
+            "Path": "sphere.mesh"
+        }
+    ]
+}

@@ -21,12 +21,10 @@ namespace nap
 		OpenGLAttributes() = default;
 		~OpenGLAttributes() = default;
 
-		int  versionMajor = 3;			// Major GL Version
-		int  versionMinor = 2;			// Minor GL Version
-		bool doubleBuffer = true;		// Enables / Disabled double buffering
-		bool debug = false;				// Whether to use the debug version of the OpenGL driver. Provides more debugging output.
-
-										// TODO: FIGURE OUT WHY THERE DON'T SEEM TO HAVE AN EFFECT ON WINDOWS
+		int  versionMajor = 3;		// Major GL Version
+		int  versionMinor = 2;		// Minor GL Version
+		bool doubleBuffer = true;	// Enables / Disabled double buffering
+		bool debug = false;		// Whether to use the debug version of the OpenGL driver. Provides more debugging output.
 		bool enableMultiSampling = 1;	// Enables / Disables multi sampling.
 		int  multiSampleSamples = 4;	// Number of samples per pixel when multi sampling is enabled
 	};
@@ -58,6 +56,7 @@ namespace nap
 		// Set settings
 		opengl::setAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, cur_major);
 		opengl::setAttribute(SDL_GL_CONTEXT_MINOR_VERSION, cur_minor);
+		opengl::setAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
 		// Set double buffering
 		int double_buffer = static_cast<int>(attributes.doubleBuffer);
@@ -90,11 +89,7 @@ namespace nap
 		attrs.doubleBuffer = true;
 		attrs.versionMinor = 3;
 		attrs.versionMajor = 3;
-#ifdef __linux__ 
-		attrs.enableMultiSampling = false;
-#else
 		attrs.enableMultiSampling = true;
-#endif
 		attrs.multiSampleSamples = 8;
 #ifdef _DEBUG
 		attrs.debug = true;

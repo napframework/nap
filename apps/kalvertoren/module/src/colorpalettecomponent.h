@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ledcolorcontainer.h"
+#include "indexmap.h"
 #include "ledcolorpalettegrid.h"
 #include "texture2dfromfile.h"
 
@@ -40,7 +40,6 @@ namespace nap
 
 		ObjectPtr<IndexMap>				mIndexMap;											///< Property: The index map to use
 		ObjectPtr<LedColorPaletteGrid>	mPaletteGrid;										///< Property: The palette grid to use, containing palettes for each weak
-		ObjectPtr<LedColorContainer>	mColors;											///< Property: Link to all the available colors and the index map
 		ObjectPtr<Texture2DFromFile>	mDebugImage;										///< Property: Debug image used to display the currently selected palette
 		int								mIndex = 0;											///< Property: Current palette selection
 		float							mCycleSpeed = 1.0f;									///< Property: Time it takes to jump to a new color palette

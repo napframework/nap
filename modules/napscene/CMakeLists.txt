@@ -19,4 +19,4 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # link with external libs
-target_link_libraries(${PROJECT_NAME} napcore)
+target_link_libraries(${PROJECT_NAME} napcore mod_napmath)

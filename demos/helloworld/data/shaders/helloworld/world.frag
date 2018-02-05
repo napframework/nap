@@ -4,6 +4,7 @@
 in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in world space
 in vec3 passPosition;					//< frag world space position 
+in vec4 passColor;						//< frag color
 
 // uniform inputs
 uniform sampler2D inWorldTexture;		//< World Texture
@@ -16,7 +17,7 @@ void main()
 {
 	// Use texture alpha to blend between two colors
 	float alpha = texture(inWorldTexture, passUVs.xy).a;
-	vec3 world_color = mix(vec3(0.784, 0.411, 0.411), vec3(0.176, 0.180, 0.258), alpha);
+	vec3 world_color = mix(vec3(0.784, 0.411, 0.411), vec3(0.176, 0.180, 0.258), alpha) * passColor.rgb;
 
 	// Calculate mesh to camera angle for halo effect
 	vec3 cam_normal = normalize(inCameraPosition - passPosition);

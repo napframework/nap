@@ -5,6 +5,7 @@
 // External includes
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <mathutils.h>
 
 //////////////////////////////////////////////////////////////////////////
 // RTTI
@@ -43,9 +44,7 @@ namespace nap
 	{
 		TransformComponent* xform_resource = getComponent<TransformComponent>();
 		mTranslate = xform_resource->mProperties.mTranslate;
-		mRotate = glm::quat(glm::vec3(glm::radians(xform_resource->mProperties.mRotate.x), 
-			glm::radians(xform_resource->mProperties.mRotate.y), 
-			glm::radians(xform_resource->mProperties.mRotate.z)));
+		mRotate = math::eulerToQuat(radians(xform_resource->mProperties.mRotate));
 		mScale = xform_resource->mProperties.mScale;
 		mUniformScale = xform_resource->mProperties.mUniformScale;
 		return true;
@@ -56,10 +55,7 @@ namespace nap
 	{
 		if (mLocalDirty)
 		{
-			glm::mat4x4 xform_matrix = glm::translate(glm::mat4x4(), mTranslate);
-			glm::mat4x4 rotat_matrix = glm::toMat4(mRotate);
-			glm::mat4x4 scale_matrix = glm::scale(glm::mat4x4(), mScale * mUniformScale);
-			mLocalMatrix = (xform_matrix * rotat_matrix * scale_matrix);
+			mLocalMatrix = math::composeMatrix(mTranslate, mRotate, mScale * mUniformScale);
 			mLocalDirty = false;
 		}
 		return mLocalMatrix;

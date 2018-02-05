@@ -16,12 +16,12 @@ namespace nap
 	 */
 	enum class NAPAPI EFilterMode : int
 	{
-		Nearest = 0,
-		Linear,
-		NearestMipmapNearest,
-		LinearMipmapNearest,
-		NearestMipmapLinear,
-		LinearMipmapLinear
+		Nearest = 0,				///< Nearest
+		Linear,						///< Linear
+		NearestMipmapNearest,		///< NearestMipmapNearest
+		LinearMipmapNearest,		///< LinearMipmapNearest
+		NearestMipmapLinear,		///< NearestMipmapLinear
+		LinearMipmapLinear			///< LinearMipmapLinear
 	};
 
 	/**
@@ -29,10 +29,10 @@ namespace nap
 	 */
 	enum class NAPAPI EWrapMode : int
 	{
-		Repeat,
-		MirroredRepeat,
-		ClampToEdge,
-		ClampToBorder
+		Repeat = 0,					///< Repeat 
+		MirroredRepeat,				///< MirroredRepeat
+		ClampToEdge,				///< ClampToEdge
+		ClampToBorder				///< ClampToBorder
 	};
 
 	/**
@@ -40,11 +40,11 @@ namespace nap
 	 */
 	struct NAPAPI TextureParameters
 	{
-		EFilterMode mMinFilter = EFilterMode::LinearMipmapLinear;
-		EFilterMode mMaxFilter = EFilterMode::Linear;
-		EWrapMode	mWrapVertical = EWrapMode::ClampToEdge;
-		EWrapMode	mWrapHorizontal = EWrapMode::ClampToEdge;
-		int			mMaxLodLevel = 20;
+		EFilterMode mMinFilter = EFilterMode::LinearMipmapLinear;		///< Property: 'MinFilter' minimizing filter
+		EFilterMode mMaxFilter = EFilterMode::Linear;					///< Property: 'MaxFilter' maximizing filter	
+		EWrapMode	mWrapVertical = EWrapMode::ClampToEdge;				///< Property: 'WrapVertical' vertical wrap mode
+		EWrapMode	mWrapHorizontal = EWrapMode::ClampToEdge;			///< Property: 'WarpHorizontal'	horizontal wrap mode
+		int			mMaxLodLevel = 20;									///< Property: 'MaxLodLevel' max number of supported lods, 0 = only highest lod
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -143,8 +143,8 @@ namespace nap
 		 */
 		void unbind();
 
-		nap::TextureParameters		mParameters;							// RTTI texture parameters
-		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;	// The usage of this texture
+		nap::TextureParameters		mParameters;							// Property: 'Parameters' RTTI texture parameters
+		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;	// Property: 'Usage' The usage of this texture
 
 	protected:
 		/**
