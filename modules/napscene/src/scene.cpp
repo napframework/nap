@@ -422,6 +422,8 @@ namespace nap
 
 	Scene::~Scene()
 	{
+		// During real-time editing, it's possible for the user to remove an entity/component. We need to patch any ObjecPtrs pointing to these removed instances to null
+		ObjectPtrManager::get().resetPointers(mInstancesByID);
 		mCore->getService<SceneService>()->unregisterScene(*this);
 	}
 
@@ -590,6 +592,7 @@ namespace nap
 
 		// Replace entities currently in the resource manager with the new set
 		mEntityInstancesByID = std::move(entityCreationParams.mEntityInstancesByID);
+		mInstancesByID = std::move(entityCreationParams.mAllInstancesByID);
 		mClonedComponentsByEntity = std::move(cloned_components_by_entity);
 		return true;
     }

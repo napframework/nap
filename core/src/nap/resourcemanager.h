@@ -31,6 +31,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		ResourceManager(nap::Core& core);
+		~ResourceManager();
 
 		/**
 		* Helper that calls loadFile without additional modified objects. See loadFile comments for a full description.

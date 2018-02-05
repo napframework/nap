@@ -32,6 +32,7 @@ namespace nap
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
         using RootEntityList = std::vector<RootEntity>;
+		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
 
 		Scene(Core& core);
 		virtual ~Scene() override;
@@ -96,6 +97,7 @@ namespace nap
 		Core*								mCore;
 		std::unique_ptr<EntityInstance>		mRootEntity;					// Root entity, owned and created by this scene
 		EntityByIDMap						mEntityInstancesByID;			// Holds all spawned entities
+		InstanceByIDMap						mInstancesByID;					// Holds all spawned entities & components
 		ClonedComponentByEntityMap			mClonedComponentsByEntity;		// All cloned components, stored by entity. This map owns the cloned resources.
 	};
 
