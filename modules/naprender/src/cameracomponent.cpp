@@ -26,18 +26,6 @@ namespace nap
 	}
 
 
-	glm::vec3 CameraComponentInstance::screenToWorld(const glm::vec2& screenPos, opengl::RenderTarget& target)
-	{
-		glm::vec3 scre_pos = glm::vec3(screenPos.x, screenPos.y, 0.0f);
-		target.bind();
-		scre_pos.z = opengl::getDepth(screenPos.x, screenPos.y);
-		target.unbind();
-		return screenToWorld(scre_pos, {0.0f, 	0.0f, 
-			static_cast<float>(target.getSize().x), 
-			static_cast<float>(target.getSize().y)});
-	}
-
-
 	glm::vec3 CameraComponentInstance::worldToScreen(const glm::vec3& worldPos, const math::Rect& viewport)
 	{
 		setRenderTargetSize({ viewport.getWidth(), viewport.getHeight() });
@@ -46,15 +34,6 @@ namespace nap
 			viewport.mMinPosition.y,
 			viewport.mMaxPosition.x - viewport.mMinPosition.x,
 			viewport.mMaxPosition.y - viewport.mMinPosition.y));
-	}
-
-
-	glm::vec3 CameraComponentInstance::worldToScreen(const glm::vec3& worldPos, const opengl::RenderTarget& target)
-	{
-
-		return worldToScreen(worldPos, { 0.0f, 	0.0f,
-			static_cast<float>(target.getSize().x),
-			static_cast<float>(target.getSize().y) });
 	}
 
 
@@ -72,13 +51,4 @@ namespace nap
 		glm::vec3 ray_wor = glm::vec3(glm::inverse(getViewMatrix()) * ray_eye);
 		return glm::normalize(ray_wor);
 	}
-
-
-	glm::vec3 CameraComponentInstance::rayFromScreen(const glm::vec2& screenPos, const opengl::RenderTarget& target)
-	{
-		return rayFromScreen(screenPos, {0.0f, 0.0f,
-			static_cast<float>(target.getSize().x),
-			static_cast<float>(target.getSize().y) });
-	}
-
 }
