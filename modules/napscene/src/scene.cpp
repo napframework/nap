@@ -130,7 +130,7 @@ namespace nap
 		}
 
 		/**
-		* Helper to find the target entity that a EntityInstance or ComponentInstnace path should be resolved to. 
+		* Helper to find the target entity that a EntityInstance or ComponentInstnace path should be resolved to.
 		* Cannot deal with single-element (i.e. direct target ID) paths; that should be dealt with in the calling code.
 		*
 		* @param sourceComponentInstance The component containing the path. If the path is relative, the path will be interpreted relative to this component
@@ -139,7 +139,7 @@ namespace nap
 		* @param errorState The error state
 		* @return Pointer to the resolved EntityInstance. Null if the path failed to resolve (in which case errorState will contain more information)
 		*/
-		static EntityInstance* sResolveEntityInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetEntityInstancePath,	const RootEntityInstanceMap& rootEntityInstances, 
+		static EntityInstance* sResolveEntityInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetEntityInstancePath, const RootEntityInstanceMap& rootEntityInstances,
 			utility::ErrorState& errorState)
 		{
 			// Split the path into its components
@@ -489,22 +489,17 @@ namespace nap
 		return entity_instance;
 	}
 
-
-    bool Scene::init(utility::ErrorState& errorState)
-    {
-		std::vector<rtti::RTTIObject*> all_objects;
-		rtti::getPointeesRecursive(*this, all_objects);
-		all_objects.push_back(this);
-	
+	bool Scene::spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::RTTIObject*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, utility::ErrorState& errorState)
+	{
 		EntityObjectGraph object_graph;
 		ObjectsByTypeMap objects_by_type;			// Used by EntityObjectGraphItem to find dependencies between types
 		ClonedResourceMap cloned_resource_map;		// Used by EntityObjectGraphItem to add edges to cloned resources
-		
+
 		// Build map of objects per type, this is used for tracking type dependencies while building the graph
-		for (rtti::RTTIObject* object : all_objects)
+		for (rtti::RTTIObject* object : allObjects)
 			SceneInstantiation::sRecursiveAddToObjectsByType(*object, object->get_type(), objects_by_type);
 
-		if (!object_graph.build(all_objects, [&objects_by_type, &cloned_resource_map](rtti::RTTIObject* object) { return EntityObjectGraphItem::create(object, objects_by_type, cloned_resource_map); }, errorState))
+		if (!object_graph.build(allObjects, [&objects_by_type, &cloned_resource_map](rtti::RTTIObject* object) { return EntityObjectGraphItem::create(object, objects_by_type, cloned_resource_map); }, errorState))
 			return false;
 
 		ClonedComponentByEntityMap		cloned_components_by_entity;	// Map owning the cloned component resource, is moved later to mClonedComponentsByEntity on success
@@ -514,7 +509,7 @@ namespace nap
 
 		// Create clones of all Components in all entities that have InstanceProperties set for them.
 		// Note that while InstanceProperties can only be set on the root Entity, they can still target Components in child entities
-		for (const RootEntity& root_entity : mEntities)
+		for (const RootEntity& root_entity : rootEntities)
 		{
 			if (root_entity.mInstanceProperties.empty())
 				continue;
@@ -554,7 +549,7 @@ namespace nap
 			return false;
 
 		// Create all entity instances and component instances
-		for (const RootEntity& root_entity : mEntities)
+		for (const RootEntity& root_entity : rootEntities)
 		{
 			const Entity* root_entity_resource = root_entity.mEntity.get();
 
@@ -578,11 +573,16 @@ namespace nap
 			return false;
 
 		// Start with an empty root and add all entities without a parent to the root
-		mRootEntity->clearChildren();
+		if (clearChildren)
+			mRootEntity->clearChildren();
+
 		for (auto& kvp : entityCreationParams.mEntityInstancesByID)
 		{
 			if (kvp.second->getParent() == nullptr)
+			{
+				spawnedRootEntityInstances.push_back(kvp.second.get());
 				mRootEntity->addChild(*kvp.second);
+			}
 		}
 
 		// In realtime editing scenarios, clients may have pointers to Entity & Component Instances that will have been respawned.
@@ -591,11 +591,52 @@ namespace nap
 		ObjectPtrManager::get().patchPointers(entityCreationParams.mAllInstancesByID);
 
 		// Replace entities currently in the resource manager with the new set
-		mEntityInstancesByID = std::move(entityCreationParams.mEntityInstancesByID);
-		mInstancesByID = std::move(entityCreationParams.mAllInstancesByID);
-		mClonedComponentsByEntity = std::move(cloned_components_by_entity);
+		for (auto& kvp : entityCreationParams.mEntityInstancesByID)
+			mEntityInstancesByID[kvp.first] = std::move(kvp.second);
+
+		for (auto& kvp : entityCreationParams.mAllInstancesByID)
+			mInstancesByID[kvp.first] = kvp.second;
+
+		for (auto& kvp : cloned_components_by_entity)
+		{
+			ClonedComponentResourceList& clonedComponents = mClonedComponentsByEntity[kvp.first];
+			ClonedComponentResourceList& newClonedComponents = kvp.second;
+
+			for (auto& clonedComponent : newClonedComponents)
+				clonedComponents.emplace_back(std::move(clonedComponent));
+		}
+
 		return true;
-    }
+	}
+
+
+	ObjectPtr<EntityInstance> Scene::spawn(const Entity& entity, utility::ErrorState& errorState)
+	{
+		std::vector<rtti::RTTIObject*> all_objects;
+		rtti::getPointeesRecursive(entity, all_objects);
+		all_objects.push_back(const_cast<Entity*>(&entity));
+
+		RootEntity rootEntity;		
+		rootEntity.mEntity = const_cast<Entity*>(&entity);
+
+		std::vector<EntityInstance*> spawnedRootEntities;
+		if (!spawnInternal({ rootEntity }, all_objects, false, spawnedRootEntities, errorState))
+			return nullptr;
+
+		assert(spawnedRootEntities.size() == 1);
+		return spawnedRootEntities[0];
+	}
+
+
+	bool Scene::init(utility::ErrorState& errorState)
+	{
+		std::vector<rtti::RTTIObject*> all_objects;
+		rtti::getPointeesRecursive(*this, all_objects);
+		all_objects.push_back(this);
+
+		std::vector<EntityInstance*> spawnedRootEntities;
+		return spawnInternal(mEntities, all_objects, true, spawnedRootEntities, errorState);
+	}
 
 
 	const ObjectPtr<EntityInstance> Scene::findEntity(const std::string& inID) const
