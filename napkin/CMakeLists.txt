@@ -42,14 +42,33 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
                    COMMENT "Copy Resources")
 
+
 # Package into release build
 set(NAPKIN_PACKAGED_BUILD_TYPE Release)
-install(TARGETS ${PROJECT_NAME} DESTINATION tools
+
+include(${NAP_ROOT}/cmake/packaging_macros.cmake)
+
+# On Windows napkin gets installed into tools/platform as it's a platform tool in the sense
+# of that it doesn't get run from the tools directory, it's copied into bin during project builds
+# where it can find the project modules
+if(WIN32)
+    set(NAPKIN_INSTALL_DEST tools/platform/)
+else()
+    set(NAPKIN_INSTALL_DEST tools/)
+endif()
+install(TARGETS ${PROJECT_NAME} DESTINATION tools/
         CONFIGURATIONS ${NAPKIN_PACKAGED_BUILD_TYPE})
+
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
+        DESTINATION tools/)
 
 # TODO use get_prerequisites or find_package to make this a whole load less terrible?
 
+set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets)
+
 if (WIN32)
+    # TODO don't actually install napkin into tools because it's only useful on WIN32 when sitting amongst 
+    # the compiled modules.  Install somewhere in tree then copy into bin when doing project builds.
     install(FILES "../../../thirdparty/assimp/msvc64/install/bin/assimp-vc140-mt.dll" DESTINATION "tools/")
     install(FILES "../../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "tools/")
     install(FILES "../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll" DESTINATION "tools/")
@@ -62,6 +81,15 @@ elseif(APPLE)
         set(BUILT_RPATH "${BUILT_RPATH};@executable_path/../modules/${MODULE_NAME}/lib/${NAPKIN_PACKAGED_BUILD_TYPE}/")
     endforeach()
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
+
+
+    macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
+                                                  ${PROJECT_NAME}
+                                                  ${CMAKE_INSTALL_PREFIX}/tools/${PROJECT_NAME}
+                                                  "@rpath"
+                                                  )
+
+    macos_replace_single_install_name_link_install_time("Python" ${CMAKE_INSTALL_PREFIX}/tools/${PROJECT_NAME} "@rpath")
 elseif(UNIX)
     set_installed_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "..")
 

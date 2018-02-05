@@ -98,7 +98,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/napcore.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/naprtti.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/naputility.cmake)
 
-# Pull in any project module
+# Pull in a project module if it exists
 add_project_module()
 
 # Find each NAP module
@@ -111,6 +111,7 @@ target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core naputility ${NA
 # Add post-build step to set RTTR RPATH
 # TODO this is a workaround for RPATHs not being added for import libraries
 # TODO Move to naprtti
+# TODO Change to CMAKE_INSTALL_NAME_TOOL with ERROR_QUIET
 if(APPLE)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
@@ -118,11 +119,16 @@ if(APPLE)
                        )
 endif()
 
+# Deploy napkin to our Windows build or packaging dir
+if(WIN32 AND (NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN))
+    # TODO write me
+endif()
+
 # Copy data to bin post-build
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
-if (NOT WIN32)
+if (NOT WIN32)   
     if (APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
     else()
@@ -134,5 +140,10 @@ if (NOT WIN32)
     # TODO move elsewhere
     if (APPLE)
         install(CODE "execute_process(COMMAND install_name_tool -change @loader_path/../../../../thirdparty/rttr/bin/librttr_core.0.9.6.dylib @rpath/librttr_core.0.9.6.dylib ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME})")
-    endif()    
+    endif()   
+
+    # Package napkin if requested
+    if(PACKAGE_NAPKIN)
+        include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_project.cmake)
+    endif()
 endif()

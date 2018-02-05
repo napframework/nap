@@ -347,10 +347,9 @@ namespace nap
 	{
 		std::vector<std::string> configParts;
 		utility::splitString(folderName, '-', configParts);
-		if (configParts.size() != 3) {
-			Logger::warn("Couldn't parse build type from " + folderName);
+		// If we don't have enough parts we're not looking a build folder
+		if (configParts.size() != 3)
 			return false;
-		}
 		
 #ifdef __APPLE__
 		outBuildType = configParts[2];

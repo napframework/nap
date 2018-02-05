@@ -60,7 +60,7 @@ def find_project(project_name):
         print("Error: Couldn't find project or example with name '%s'" % project_name)
         return None
 
-def package_project(project_name, show_created_package):
+def package_project(project_name, show_created_package, include_napkin, zip_package):
     project_path = find_project(project_name)
     if project_path is None:
         return ERROR_MISSING_PROJECT
@@ -89,14 +89,20 @@ def package_project(project_name, show_created_package):
 
     if platform in ["linux", "linux2"]:
         # Generate makefiles
-        call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-DCMAKE_BUILD_TYPE=%s' % PACKAGED_BUILD_TYPE])
+        call(WORKING_DIR, ['cmake', 
+                           '-H%s' % project_path, 
+                           '-B%s' % build_dir_name, 
+                           '-DCMAKE_BUILD_TYPE=%s' % PACKAGED_BUILD_TYPE, 
+                           '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
         call(build_dir_name, ['make', 'all', 'install', '-j%s' % cpu_count()])
 
         # Create archive
-        packaged_to = archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_version)
-        # packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'Linux')
+        if zip_package:
+            packaged_to = archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_version)
+        else:
+            packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'Linux')
 
         # Show in Nautilus
         if show_created_package:
@@ -104,7 +110,7 @@ def package_project(project_name, show_created_package):
 
     elif platform == 'darwin':
         # Generate project
-        call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Xcode'])
+        call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Xcode', '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
         call(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
@@ -113,14 +119,23 @@ def package_project(project_name, show_created_package):
         call(bin_dir, ['python', '%s/tools/platform/macOSTempDylibCopyAndPathFix.py' % nap_root, '.'])
 
         # Create archive
-        packaged_to = archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
+        if zip_package:
+            packaged_to = archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
+        else:
+            packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'macOS')
 
         # Show in Finder
         if show_created_package:
             subprocess.call(["open", "-R", packaged_to])
     else:
         # Generate project
-        call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5', '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name])
+        call(WORKING_DIR, ['cmake', 
+                           '-H%s' % project_path, 
+                           '-B%s' % build_dir_name, 
+                           '-G', 'Visual Studio 14 2015 Win64', 
+                           '-DPYBIND11_PYTHON_VERSION=3.5', 
+                           '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name,
+                           '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
         call(build_dir_name, ['cmake', '--build', '.', '--target', project_name_lower, '--config', PACKAGED_BUILD_TYPE])
@@ -131,7 +146,10 @@ def package_project(project_name, show_created_package):
         shutil.copytree(project_data_path, bin_data_path)
 
         # Create archive
-        packaged_to = archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version)
+        if zip_package:
+            packaged_to = archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version)
+        else:
+            packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'macOS')
 
         # Show in Explorer
         if show_created_package:
@@ -281,9 +299,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str,
                         help="The project to package")
-    parser.add_argument("-ds", "--dontshow", action="store_true",
+    parser.add_argument("-ds", "--dont-show", action="store_true",
                         help="Don't show the generated package")
+    parser.add_argument("-nn", "--no-napkin", action="store_true",
+                        help="Don't include napkin")
+    parser.add_argument("-dz", "--dont-zip", action="store_true",
+                        help="Don't zip package")
     args = parser.parse_args()
 
     # Package our build
-    sys.exit(package_project(args.PROJECT_NAME, not args.dontshow))
+    sys.exit(package_project(args.PROJECT_NAME, not args.dont_show, not args.no_napkin, not args.dont_zip))
