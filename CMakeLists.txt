@@ -113,7 +113,7 @@ add_subdirectory(demos/dynamicgeo/module)
 add_subdirectory(demos/videomodulation)
 add_subdirectory(demos/videomodulation/module)
 
-add_subdirectory(unittests)
+#add_subdirectory(unittests)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
@@ -147,6 +147,7 @@ add_subdirectory(modules/napsandbox)
 add_subdirectory(apps/kalvertoren/module)
 
 # Packaging
+# TODO move elsewhere
 if(WIN32)
     install(DIRECTORY dist/cmake/ 
             DESTINATION cmake
@@ -160,8 +161,7 @@ else()
             PATTERN Findglew.cmake EXCLUDE)
 endif()
 
-
-# TODO glob and move this somewhere else
+# TODO glob
 install(PROGRAMS dist/projectscripts/createProject.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/regenerateProject.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/createModule.py DESTINATION tools/)
@@ -174,3 +174,8 @@ if(APPLE)
 endif()
 install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
 install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
+
+# For now package platform QT and Python for distribution, for discussion
+include(cmake/packaging_macros.cmake)
+package_platform_python()
+package_platform_qt()

@@ -440,10 +440,10 @@ endmacro()
 
 macro(ensure_macos_module_has_rpath_at_install MODULE_NAME CONFIG PATH_TO_ADD)
     set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/modules/${MODULE_NAME}/lib/${CONFIG}/lib${MODULE_NAME}.dylib)
-    ensure_macos_file_has_rpath_at_install(${MODULE_FILENAME} ${CONFIG} ${PATH_TO_ADD})
+    ensure_macos_file_has_rpath_at_install(${MODULE_FILENAME} ${PATH_TO_ADD})
 endmacro()
 
-macro(ensure_macos_file_has_rpath_at_install FILENAME CONFIG PATH_TO_ADD)
+macro(ensure_macos_file_has_rpath_at_install FILENAME PATH_TO_ADD)
     install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
                                           -add_rpath
                                           ${PATH_TO_ADD}

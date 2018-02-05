@@ -71,8 +71,10 @@ macro(find_nap_module MODULE_NAME)
         endif(NOT TARGET ${NAP_MODULE})
 
         # Add module includes
-        message("Adding include for ${NAP_MODULE}")
-        target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
+        if(NOT INSTALLING_MODULE_FOR_NAPKIN)
+            message("Adding include for ${NAP_MODULE}")
+            target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
+        endif()
 
         # On macOS & Linux install module into packaged project
         if (NOT WIN32)
