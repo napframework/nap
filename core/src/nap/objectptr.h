@@ -105,6 +105,27 @@ namespace nap
 					ptr->set(&*(new_target->second));
 			}
 		}
+		
+		/**
+ 		 * Resets ObjectPtrs in the ObjectPtrManager to nullptr. Only the ObjectPtrs in the specified map are reset, and only if both the ID and the pointer value match.
+		 * This function is a template so we can deal with different kinds of values in the map; the key must always be a string, but the value may be a smart pointer or raw pointer.
+		 * @param pointersToReset Map from string ID to RTTIObject pointer (either raw or smart pointer, as long as it can be dereferenced).
+		 */
+		template<class OBJECTSBYIDMAP>
+		void resetPointers(OBJECTSBYIDMAP& pointersToReset)
+		{
+			for (ObjectPtrBase* ptr : mObjectPointers)
+			{
+				rtti::RTTIObject* target = ptr->get();
+				if (target == nullptr)
+					continue;
+
+				std::string& target_id = target->mID;
+				typename OBJECTSBYIDMAP::iterator pointer_to_reset = pointersToReset.find(target_id);
+				if (pointer_to_reset != pointersToReset.end() && (ptr->get() == &*(pointer_to_reset->second)))
+					ptr->set(nullptr);
+			}
+		}
 
 	private:
 		template<class T> friend class ObjectPtr;

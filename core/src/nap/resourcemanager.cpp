@@ -124,6 +124,11 @@ namespace nap
 	{
 	}
 
+	ResourceManager::~ResourceManager()
+	{
+		ObjectPtrManager::get().resetPointers(mObjects);
+	}
+
 
 	/**
 	 * Add all objects from the resource manager into an object graph, overlayed by @param objectsToUpdate.
@@ -302,8 +307,7 @@ namespace nap
 		// in the manager by the new objects. This effectively destroys the old objects as well.
 		for (auto& kvp : objects_to_update)
 		{
-			mObjects.erase(kvp.first);
-			mObjects.emplace(std::make_pair(kvp.first, std::move(kvp.second)));
+			mObjects[kvp.first] = std::move(kvp.second);
 		}
 
 		for (const FileLink& file_link : read_result.mFileLinks)
