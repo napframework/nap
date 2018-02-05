@@ -135,6 +135,15 @@ namespace nap
 		mChildren.clear();
 	}
 
+	
+	void EntityInstance::removeChild(const EntityInstance& entityInstance)
+	{
+		mChildren.erase(std::remove_if(mChildren.begin(), mChildren.end(), [&entityInstance](const EntityInstance* child)
+		{
+			return child == &entityInstance;
+		}));
+	}
+
 
 	const EntityInstance::ChildList& EntityInstance::getChildren() const
 	{

@@ -610,7 +610,7 @@ namespace nap
 	}
 
 
-	ObjectPtr<EntityInstance> Scene::spawn(const Entity& entity, utility::ErrorState& errorState)
+	SpawnedEntityInstance Scene::spawn(const Entity& entity, utility::ErrorState& errorState)
 	{
 		std::vector<rtti::RTTIObject*> all_objects;
 		rtti::getPointeesRecursive(entity, all_objects);
@@ -624,9 +624,57 @@ namespace nap
 			return nullptr;
 
 		assert(spawnedRootEntities.size() == 1);
-		return spawnedRootEntities[0];
+		return SpawnedEntityInstance(spawnedRootEntities[0]);
 	}
 
+	static void sGetInstancesToDestroyRecursive(EntityInstance& entity, std::vector<rtti::RTTIObject*>& instancesToDestroy)
+	{
+		instancesToDestroy.push_back(&entity);
+
+		for (ComponentInstance* instance : entity.getComponents())
+			instancesToDestroy.push_back(instance);
+
+		for (EntityInstance* child : entity.getChildren())
+			sGetInstancesToDestroyRecursive(*child, instancesToDestroy);
+	}
+
+	void Scene::destroy(SpawnedEntityInstance& entity)
+	{
+		// Recursively get all instances to destroy (i.e. Entity and Component instances)
+		std::vector<rtti::RTTIObject*> all_instances;
+		sGetInstancesToDestroyRecursive(*entity.get(), all_instances);
+
+		// First remove the entity from the root
+		mRootEntity->removeChild(*entity.mEntityInstance);
+
+		std::unordered_map<std::string, rtti::RTTIObject*> instances_to_reset;
+		std::vector<std::unique_ptr<EntityInstance>> entity_instances_to_delete;
+
+		// Remove instances from the map, but don't delete them yet
+		for (rtti::RTTIObject* instance : all_instances)
+		{
+			rtti::TypeInfo& type_info = instance->get_type();
+
+			if (type_info.is_derived_from<EntityInstance>())
+			{
+				EntityByIDMap::iterator entity_instance = mEntityInstancesByID.find(instance->mID);
+				assert(entity_instance != mEntityInstancesByID.end());
+				entity_instances_to_delete.emplace_back(std::move(entity_instance->second));
+
+				mEntityInstancesByID.erase(instance->mID);
+				mInstancesByID.erase(instance->mID);
+				instances_to_reset.insert(std::make_pair(instance->mID, nullptr));
+			}
+			else if (type_info.is_derived_from<ComponentInstance>())
+			{
+				mInstancesByID.erase(instance->mID);
+				instances_to_reset.insert(std::make_pair(instance->mID, nullptr));
+			}
+		}
+
+		// Reset all ObjectPtrs to the instances being removed to null
+		ObjectPtrManager::get().patchPointers(instances_to_reset);
+	}
 
 	bool Scene::init(utility::ErrorState& errorState)
 	{
