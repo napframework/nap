@@ -170,7 +170,7 @@ namespace nap
 
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
-		generateIndices(shape, p_count);
+		utility::generateIndices(shape, p_count);
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -236,7 +236,7 @@ namespace nap
 
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
-		generateIndices(shape, 4);
+		utility::generateIndices(shape, 4);
 
 		// Initialize line
 		bool success = mMeshInstance->init(errorState);
@@ -263,7 +263,7 @@ namespace nap
 
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);		
-		generateIndices(shape, mSegments);		
+		utility::generateIndices(shape, mSegments);		
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -300,7 +300,7 @@ namespace nap
 
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
-		generateIndices(shape, 6);
+		utility::generateIndices(shape, 6);
 
 		return mMeshInstance->init(errorState);
 	}
@@ -336,7 +336,7 @@ namespace nap
 
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
-		generateIndices(shape, 3);
+		utility::generateIndices(shape, 3);
 
 		return mMeshInstance->init(errorState);
 	}

@@ -5,6 +5,9 @@
 #include <rtti/rttiobject.h>
 #include <rtti/rttipath.h>
 #include <nap/objectptr.h>
+#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 // External Includes
 
@@ -148,16 +151,22 @@ namespace nap
 	/**
 	 * Instance property types for all the POD types
 	 */
-	using BoolInstancePropertyValue = TypedInstancePropertyValue<bool>;
-	using CharInstancePropertyValue = TypedInstancePropertyValue<char>;
-	using Int8InstancePropertyValue = TypedInstancePropertyValue<int8_t>;
-	using Int16InstancePropertyValue = TypedInstancePropertyValue<int16_t>;
-	using Int32InstancePropertyValue = TypedInstancePropertyValue<int32_t>;
-	using Int64InstancePropertyValue = TypedInstancePropertyValue<int64_t>;
-	using UInt8InstancePropertyValue = TypedInstancePropertyValue<uint8_t>;
-	using UInt16InstancePropertyValue = TypedInstancePropertyValue<uint16_t>;
-	using UInt32InstancePropertyValue = TypedInstancePropertyValue<uint32_t>;
-	using UInt64InstancePropertyValue = TypedInstancePropertyValue<uint64_t>;
-	using FloatInstancePropertyValue = TypedInstancePropertyValue<float>;
-	using DoubleInstancePropertyValue = TypedInstancePropertyValue<double>;
+	using BoolInstancePropertyValue		= TypedInstancePropertyValue<bool>;
+	using CharInstancePropertyValue		= TypedInstancePropertyValue<char>;
+	using Int8InstancePropertyValue		= TypedInstancePropertyValue<int8_t>;
+	using Int16InstancePropertyValue	= TypedInstancePropertyValue<int16_t>;
+	using Int32InstancePropertyValue	= TypedInstancePropertyValue<int32_t>;
+	using Int64InstancePropertyValue	= TypedInstancePropertyValue<int64_t>;
+	using UInt8InstancePropertyValue	= TypedInstancePropertyValue<uint8_t>;
+	using UInt16InstancePropertyValue	= TypedInstancePropertyValue<uint16_t>;
+	using UInt32InstancePropertyValue	= TypedInstancePropertyValue<uint32_t>;
+	using UInt64InstancePropertyValue	= TypedInstancePropertyValue<uint64_t>;
+	using FloatInstancePropertyValue	= TypedInstancePropertyValue<float>;
+	using DoubleInstancePropertyValue	= TypedInstancePropertyValue<double>;
+	using Vec2InstancePropertyValue		= TypedInstancePropertyValue<glm::vec2>;
+	using Vec3InstancePropertyValue		= TypedInstancePropertyValue<glm::vec3>;
+	using Vec4InstancePropertyValue		= TypedInstancePropertyValue<glm::vec4>;
+	using IVec2InstancePropertyValue	= TypedInstancePropertyValue<glm::ivec2>;
+	using IVec3InstancePropertyValue	= TypedInstancePropertyValue<glm::ivec3>;
+	using QuatInstancePropertyValue		= TypedInstancePropertyValue<glm::quat>;
 }

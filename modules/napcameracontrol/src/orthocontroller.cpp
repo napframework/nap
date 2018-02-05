@@ -129,13 +129,13 @@ namespace nap
 			// Translate on current world 'right' and 'up' axes
 			const glm::mat4& camera_transform = mTransformComponent->getGlobalTransform();
 			glm::vec3 right_translate = (float)-pointerMoveEvent.mRelX * aspect_correct_scale.x * camera_transform[0];
-			glm::vec3 up_translate = (float)-pointerMoveEvent.mRelY * aspect_correct_scale.y * camera_transform[1];
+			glm::vec3 up_translate = (float)pointerMoveEvent.mRelY * aspect_correct_scale.y * camera_transform[1];
 			mTransformComponent->setTranslate(mTransformComponent->getTranslate() + right_translate + up_translate);
 		}
 		else if (mMode == EMode::Zoom)
 		{
 			// Zooming works on both axes
-			int pointerMove = pointerMoveEvent.mRelX;
+			int pointerMove = -pointerMoveEvent.mRelX;
 			if (abs(pointerMoveEvent.mRelY) > abs(pointerMoveEvent.mRelX))
 				pointerMove = pointerMoveEvent.mRelY;
 

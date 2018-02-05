@@ -152,7 +152,7 @@ namespace nap
 		{
 			MeshShape& shape = mProperties.mShapes[index];
 			if (shape.getNumIndices() == 0)
-				generateIndices(shape, mProperties.mNumVertices);
+				utility::generateIndices(shape, mProperties.mNumVertices);
 		}
 
 		mMeshInstance.copyMeshProperties(mProperties);
