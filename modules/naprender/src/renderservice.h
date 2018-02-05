@@ -153,14 +153,14 @@ namespace nap
 		 * @param nativeWindow the native window handle (i.e. the SDL_Window pointer)
 		 * @return the render window associated with the native window
 		 */
-		RenderWindow* findWindow(void* nativeWindow) const;
+		ObjectPtr<RenderWindow> findWindow(void* nativeWindow) const;
 
 		/**
 		 * Find a RenderWindow based on a window id
 		 * @param the associated window id
 		 * @return the RenderWindowResource, nullptr if not found
 		 */
-		RenderWindow* getWindow(uint id) const;
+		ObjectPtr<RenderWindow> getWindow(uint id) const;
 
 		/**
 		 * Get the primary window (i.e. the window that was used to init OpenGL against)

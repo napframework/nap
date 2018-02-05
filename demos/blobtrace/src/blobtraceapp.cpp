@@ -235,7 +235,7 @@ namespace nap
 		// Get ray from screen in to scene (world space)
 		// The result is a normal pointing away from the camera in to the scene
 		// The window is used to provide the viewport
-		glm::vec3 screen_to_world_ray = camera.rayFromScreen(screen_loc, mRenderWindow->getBackbuffer());
+		glm::vec3 screen_to_world_ray = camera.rayFromScreen(screen_loc, mRenderWindow->getRect());
 
 		// World space camera position
 		glm::vec3 cam_pos = math::extractPosition(camera_xform.getGlobalTransform());
