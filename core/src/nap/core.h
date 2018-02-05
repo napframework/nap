@@ -65,6 +65,12 @@ namespace nap
 		bool initializeServices(utility::ErrorState& errorState);
 
 		/**
+		* Shuts down all registered services in the right order
+		* Only call this when initializeServices has been called
+		*/
+		void shutdownServices();
+
+		/**
 		 * Initialize python interpreter so we can have components running python scripts
 		 */
 		bool initializePython(utility::ErrorState& error);
@@ -84,11 +90,6 @@ namespace nap
 		 * @return deltaTime between update calls in seconds
 		 */
 		double update(std::function<void(double)>& updateFunction);
-
-		/**
-		 * Shuts down all registered services in the right order
-		 */
-		void shutdown();
 
 		/**
 		* The resource manager holds all the entities and components currently loaded by Core

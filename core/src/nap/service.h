@@ -69,7 +69,7 @@ namespace nap
 		 * Invoked by core after initializing the core engine. 
 		 * When called all modules this service depends on have been initialized
 		 * Override this method to initialize your service.
-		 * @param error
+		 * @param error should contain the error message when initialization fails
 		 */
 		virtual bool init(utility::ErrorState& error)									{ return true; }
 
