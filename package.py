@@ -133,7 +133,7 @@ def install_dependencies():
         # Windows...
         pass
 
-def package(zip_release):
+def package(zip_release, include_apps):
     print("Packaging..")
 
     # install_dependencies()
@@ -150,7 +150,12 @@ def package(zip_release):
     if platform in ["linux", "linux2"]:
         for build_type in ['Release', 'Debug']:
             build_dir_for_type = BUILD_DIR + build_type
-            call(WORKING_DIR, ['cmake', '-H.', '-B%s' % build_dir_for_type, '-DCMAKE_BUILD_TYPE=%s' % build_type])
+            call(WORKING_DIR, ['cmake', 
+                               '-H.', 
+                               '-B%s' % build_dir_for_type, 
+                               '-DCMAKE_BUILD_TYPE=%s' % build_type,
+                               '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps)
+                               ])
 
             d = '%s/%s' % (WORKING_DIR, build_dir_for_type)
             call(d, ['make', 'all', 'install', '-j%s' % cpu_count()])
@@ -162,7 +167,12 @@ def package(zip_release):
             archive_to_timestamped_dir('Linux')
     elif platform == 'darwin':
         # Generate project
-        call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
+        call(WORKING_DIR, ['cmake', 
+                           '-H.', 
+                           '-B%s' % BUILD_DIR, 
+                           '-G', 'Xcode',
+                           '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps)
+                           ])
 
         # Build & install to packaging dir
         d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
@@ -183,7 +193,13 @@ def package(zip_release):
             os.makedirs(BUILD_DIR)
 
         # Generate project
-        call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
+        call(WORKING_DIR, ['cmake', 
+                           '-H.', 
+                           '-B%s' % BUILD_DIR, 
+                           '-G', 'Visual Studio 14 2015 Win64', 
+                           '-DPYBIND11_PYTHON_VERSION=3.5',
+                           '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps)
+                           ])
 
         # Build & install to packaging dir
         for build_type in ['Release', 'Debug']:
@@ -306,10 +322,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-dz", "--dontzip", action="store_true",
                         help="Don't zip the release, package to a directory")
+    parser.add_argument("-a", "--include-apps", action="store_true",
+                        help="Include Naivi apps, packaging them as projects")
     args = parser.parse_args()
 
     # Package our build
-    packaging_success = package(not args.dontzip)
+    packaging_success = package(not args.dontzip, args.include_apps)
 
     # TODO improve error propogation behaviour
     sys.exit(0 if packaging_success else 1)

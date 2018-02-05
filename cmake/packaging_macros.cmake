@@ -27,7 +27,6 @@ macro(package_platform_python)
         # Install dylib
         install(FILES ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/3.6/Python
                 DESTINATION thirdparty/python/
-                RENAME libpython${PYTHON_MAJOR_MINOR_VERSION}.dylib
                 CONFIGURATIONS Release
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
         # Change dylib installed id
@@ -54,7 +53,7 @@ macro(package_platform_python)
         install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
                                               -change 
                                               ${PYTHON_REPLACE_INSTALL_LIBNAME}
-                                              @executable_path/libpython${PYTHON_MAJOR_MINOR_VERSION}.dylib
+                                              @executable_path/Python
                                               ${CMAKE_INSTALL_PREFIX}/thirdparty/python/python${PYTHON_MAJOR_MINOR_VERSION} 
                                       ERROR_QUIET)")
 
@@ -156,22 +155,22 @@ endmacro()
 
 macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEPATH PATH_PREFIX)
     # Change link to dylib
-    install(CODE "execute_process(COMMAND sh -c \"otool -L ${FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'\"
-                                  OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
-                  if(NOT \${REPLACE_INSTALL_NAME} STREQUAL \"\")
-                      message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
-                      # Strip read path
-                      string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)                               
+    install(CODE "if(EXISTS ${FILEPATH})
+                      execute_process(COMMAND sh -c \"otool -L ${FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'\"
+                                      OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
+                      if(NOT \${REPLACE_INSTALL_NAME} STREQUAL \"\")
+                          message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
+                          # Strip read path
+                          string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)                               
 
-                      # Change link to dylib
-                      execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                              -change 
-                                              \${REPLACE_INSTALL_NAME}
-                                              ${PATH_PREFIX}/${REPLACE_LIB_NAME}
-                                              ${FILEPATH}
-                                      ERROR_QUIET)
+                          # Change link to dylib
+                          execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+                                                  -change 
+                                                  \${REPLACE_INSTALL_NAME}
+                                                  ${PATH_PREFIX}/${REPLACE_LIB_NAME}
+                                                  ${FILEPATH}
+                                          ERROR_QUIET)
+                      endif()
                   endif()
                   ")
 endmacro()
-
-# package_platform_python()
