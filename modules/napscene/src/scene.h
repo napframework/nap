@@ -9,6 +9,7 @@
 namespace nap
 {
 	class Entity;
+	class SpawnedEntityInstance;
 	class Core;
 
 	/**
@@ -80,7 +81,9 @@ namespace nap
          */
         RootEntityList getEntityResources() { return mEntities; }
 
-		ObjectPtr<EntityInstance> spawn(const Entity& entity, utility::ErrorState& errorState);
+		SpawnedEntityInstance spawn(const Entity& entity, utility::ErrorState& errorState);
+
+		void destroy(SpawnedEntityInstance& entity);
 
 	private:
 		EntityInstance* createEntityInstance(const Entity& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
@@ -88,7 +91,7 @@ namespace nap
 		/**
 		 * Instantiates an EntityInstance from an Entity.
 		 */
-		EntityInstance* createChildEntityInstance(const Entity& Entity, int childIndex, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		EntityInstance* createChildEntityInstance(const Entity& entity, int childIndex, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		bool spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::RTTIObject*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, utility::ErrorState& errorState);
 

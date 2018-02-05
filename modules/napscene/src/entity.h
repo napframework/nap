@@ -168,6 +168,11 @@ namespace nap
 		void clearChildren();
 
 		/**
+		 * Clear all children from this entity
+		 */
+		void removeChild(const EntityInstance& entityInstance);
+
+		/**
 		 * Get all children of this entity
 		 */
 		const ChildList& getChildren() const;
@@ -207,6 +212,28 @@ namespace nap
 		ChildList		mChildren;				// The children of this entity
 	};
 
+	/**
+	 * A SpawnedEntityInstance is identical in functionality to a regular EntityInstance. It is only used to be able to 
+	 * distinguish between entities that were spawned during init and entities that were spawned at runtime.
+	 */
+	class NAPAPI SpawnedEntityInstance
+	{
+	public:
+		SpawnedEntityInstance() = default;
+
+		ObjectPtr<EntityInstance>& get() { return mEntityInstance; }
+
+	private:
+		friend class Scene;
+
+		SpawnedEntityInstance(EntityInstance* entityInstance) :
+			mEntityInstance(entityInstance)
+		{
+		}
+
+	private:
+		ObjectPtr<EntityInstance> mEntityInstance;
+	};
 
 	//////////////////////////////////////////////////////////////////////////
 	// Entity Resource
