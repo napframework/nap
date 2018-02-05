@@ -10,6 +10,9 @@
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
 #include <imgui/imgui.h>
+#include <triangleiterator.h>
+#include <meshutils.h>
+#include <mathutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -49,6 +52,7 @@ namespace nap
 
 		mWorldEntity = scene->findEntity("World");
 		mCameraEntity = scene->findEntity("Camera");
+		mWorldMesh = mResourceManager->findObject("WorldMesh");
 
 		return true;
 	}
@@ -168,6 +172,7 @@ namespace nap
 				fullscreen = !fullscreen;
 			}
 		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 

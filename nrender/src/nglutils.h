@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <array>
 
 namespace opengl
 {
@@ -99,9 +100,9 @@ namespace opengl
 	 */
 	enum class PolygonMode : std::uint8_t
 	{
-		POINT	= 0,
-		LINE	= 1,
-		FILL	= 2
+		POINT	= 0,			///< Render as points
+		LINE	= 1,			///< Render as lines
+		FILL	= 2				///< Render polygons
 	};
 
 	/**
@@ -121,6 +122,28 @@ namespace opengl
 	 * @param value: if point smoothing should be turned on or off
 	 */
 	void enablePointSmoothing(bool value);
+
+	/**
+	 * Reads the depth value from a depth buffer at the x and y pixel coordinate
+	 * The currently bound depth buffer is used to retrieve the value.
+	 * Uses the opengl pixel mapping where 0,0 is the lower left corner
+	 * Don't use this call to iterate over a set of pixels, only for single lookups
+	 * @param x the horizontal pixel coordinate
+	 * @param y the vertical pixel coordinate
+	 * @return depth value from active depth buffer
+	 */
+	float getDepth(int x, int y);
+
+	/**
+	 * Reads the color value from a color buffer at the x and y pixel coordinate
+	 * The currently active color buffer is used to retrieve the value
+	 * Don't use this call to iterate over a set of pixels, only for single lookups
+	 * The call doesn't convert the pixel data and only works with RGB color buffers (a window)
+	 * @param x the horizontal pixel coordinate
+	 * @param y the vertical pixel coordinate
+	 * @return color value from active color buffer
+	 */
+	void getColor(int x, int y, std::array<std::uint8_t, 3>& color);
 
 	/**
 	 * Simple string formatter

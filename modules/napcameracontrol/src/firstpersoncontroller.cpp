@@ -151,7 +151,7 @@ namespace nap
 			return; 
 
 		float yaw = -(pointerMoveEvent.mRelX  * getComponent<FirstPersonController>()->mRotateSpeed);
-		float pitch = -(pointerMoveEvent.mRelY * getComponent<FirstPersonController>()->mRotateSpeed);
+		float pitch = pointerMoveEvent.mRelY  * getComponent<FirstPersonController>()->mRotateSpeed;
 
 		glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 

@@ -168,6 +168,20 @@ namespace opengl
 	}
 
 
+	float getDepth(int x, int y)
+	{
+		float v;
+		glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &v);
+		return v;
+	}
+
+
+	void getColor(int x, int y, std::array<std::uint8_t, 3>& color)
+	{
+		glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, (void*)(&color[0]));
+	}
+
+
 	bool printErrorMessage(char *file, int line)
 	{
 		GLenum error_code;
