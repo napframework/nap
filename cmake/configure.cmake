@@ -394,6 +394,12 @@ macro(package_module)
     # Set packaged RPATH for macOS (done after we install the target due to direct install_name_tool calling)
     if(APPLE)
         set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
+        foreach(build_conf Release Debug)
+            macos_replace_single_install_name_link_install_time("Python"
+                                                                ${CMAKE_INSTALL_PREFIX}/modules/${PROJECT_NAME}/lib/${build_conf}/lib${PROJECT_NAME}.dylib 
+                                                                "@rpath"
+                                                                )
+        endforeach()
     endif()
 endmacro()
 
@@ -431,6 +437,7 @@ endmacro()
 macro(set_installed_rpath_on_macos_object_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE)
     foreach(MODULECONFIG Release Debug)
         ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/rttr/bin/")
+        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/python/")
         ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/lib/${MODULECONFIG}")
         foreach(DEPENDENT_MODULE_NAME ${DEPENDENT_NAP_MODULES})
             ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/modules/${DEPENDENT_MODULE_NAME}/lib/${MODULECONFIG}")

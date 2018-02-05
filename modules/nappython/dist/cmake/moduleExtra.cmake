@@ -7,16 +7,8 @@ if(WIN32)
 endif()
 if(APPLE)
     # Install our Python dylib from thirdparty
-    file(GLOB python_dylibs "${THIRDPARTY_DIR}/python/*.dylib")
-    list(LENGTH ${python_dylibs} list_length)
-    if(${list_length} GREATER 1)
-        message(FATAL_ERROR "Unexpectedly found more than one dylib in ${THIRDPARTY_DIR}/python")
-    endif()
-    foreach(python_dylib ${python_dylibs})
-        install(FILES ${python_dylib}
-                DESTINATION lib/
-                RENAME Python)
-    endforeach()
+    install(FILES ${THIRDPARTY_DIR}/python/Python
+            DESTINATION lib/)
 
     # Framework library
     install(DIRECTORY ${THIRDPARTY_DIR}/python/lib
