@@ -1,7 +1,7 @@
 #include "imagesequencelayer.h"
 
 // External includes
-#include "texture2dfromfile.h"
+#include "imagefromfile.h"
 #include <utility/fileutils.h>
 #include "bitmaputils.h"
 

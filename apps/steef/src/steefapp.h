@@ -70,8 +70,8 @@ namespace nap
 		void updateBackgroundImage();
 		void updateShader();
 		
-		ObjectPtr<Texture2DFromFile> mVinylLabelImg = nullptr;						//< Vinyl Label Image Resource
-		ObjectPtr<Texture2DFromFile> mVinylCoverImg = nullptr;						//< Vinyl Cover Image Resource
+		ObjectPtr<ImageFromFile> mVinylLabelImg = nullptr;						//< Vinyl Label Image Resource
+		ObjectPtr<ImageFromFile> mVinylCoverImg = nullptr;						//< Vinyl Cover Image Resource
 		
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		ResourceManager*	mResourceManager = nullptr;		//< Manages all the loaded resources

@@ -1,7 +1,7 @@
 #include "bitmaputils.h"
 #include "utility/errorstate.h"
 #include <assert.h>
-#include "gl/glew.h"
+#include "GL/glew.h"
 #include "ntexture2d.h"
 #include "bitmap.h"
 

@@ -81,13 +81,13 @@
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "CanvasImage",
 			"ImagePath" : "laser_canvas.png"
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "ColorLookupImage",
 			"ImagePath" : "kleurencirkel.png"
 		},

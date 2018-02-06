@@ -1121,7 +1121,7 @@
             "Children": []
         },
         {
-            "Type": "nap::Texture2DFromFile",
+            "Type": "nap::ImageFromFile",
             "mID": "PaletteDebugImage",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
@@ -1135,7 +1135,7 @@
             "Compressed": false
         },
         {
-            "Type": "nap::Texture2DFromFile",
+            "Type": "nap::ImageFromFile",
             "mID": "UVMap",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",

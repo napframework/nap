@@ -1,7 +1,7 @@
 #include "imagelayer.h"
 
 // External includes
-#include "texture2dfromfile.h"
+#include "imagefromfile.h"
 #include "bitmaputils.h"
 
 RTTI_BEGIN_CLASS(nap::ImageLayer)

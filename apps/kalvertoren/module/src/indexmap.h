@@ -2,7 +2,7 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <texture2dfromfile.h>
+#include <imagefromfile.h>
 #include <nap/configure.h>
 #include <color.h>
 #include <bitmap.h>
@@ -13,9 +13,9 @@ namespace nap
 	 * Type of image that contains a selection of colors that can be used as a lookup.
 	 * This index map is always of a type RGB and stored uncompressed
 	 */
-	class NAPAPI IndexMap : public Texture2DFromFile
+	class NAPAPI IndexMap : public ImageFromFile
 	{
-		RTTI_ENABLE(Texture2DFromFile)
+		RTTI_ENABLE(ImageFromFile)
 	public:
 		// Color associated with an index
 		using IndexColor = RGBColor8;

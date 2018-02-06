@@ -142,7 +142,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "ParticleOne",
 			"ImagePath" : "texture_one.jpg",
 			"Parameters" : 
@@ -156,7 +156,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "ParticleTwo",
 			"ImagePath" : "texture_two.png",
 			"Parameters" : {

@@ -18,19 +18,19 @@
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "PigTexture",
 			"ImagePath" : "pig_head.jpg"
 		},
 		
 		{
-			"Type" : "nap::Texture2DFromFile",	
+			"Type" : "nap::ImageFromFile",	
 			"mID" : "WorldTexture",
 			"ImagePath" : "world_texture.jpg"
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "TestTexture",
 			"ImagePath" : "test.jpg"
 		},

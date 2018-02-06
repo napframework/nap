@@ -2,7 +2,7 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <texture2dfromfile.h>
+#include <imagefromfile.h>
 #include <rendertexture2d.h>
 
 

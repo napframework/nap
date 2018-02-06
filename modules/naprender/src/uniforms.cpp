@@ -1,6 +1,6 @@
 #include "uniforms.h"
 #include "nglutils.h"
-#include "texture2dfromfile.h"
+#include "imagefromfile.h"
 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Uniform)

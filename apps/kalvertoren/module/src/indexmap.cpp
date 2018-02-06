@@ -22,7 +22,7 @@ namespace nap
 		mParameters.mMaxFilter = EFilterMode::Nearest;
 		mParameters.mMinFilter = EFilterMode::Nearest;
 
-		if (!Texture2DFromFile::init(errorState))
+		if (!ImageFromFile::init(errorState))
 			return false;
 
 		// Make sure the amount of channels is > 3

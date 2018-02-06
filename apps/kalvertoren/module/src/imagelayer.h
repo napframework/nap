@@ -32,7 +32,7 @@ namespace nap
 		std::string mImagePath;		///< Path to the image on disk
 
 	private:
-		Texture2DFromFile mImage;	///< Texture
+		ImageFromFile mImage;	///< Texture
 	};
 
 
