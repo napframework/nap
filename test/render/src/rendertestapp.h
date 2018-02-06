@@ -13,6 +13,7 @@
 #include <inputrouter.h>
 #include <rendertarget.h>
 #include <app.h>
+#include <scene.h>
 
 
 namespace nap
@@ -85,7 +86,8 @@ namespace nap
 		ObjectPtr<EntityInstance> mSplitCameraEntity = nullptr;		//< Split camera entity for world globe moving between windows
 		
 		ObjectPtr<RenderTarget> mTextureRenderTarget;				//< Render target for first window rotating plane
-		ObjectPtr<EntityInstance> mPigEntity = nullptr;				//< Pig entity
+		ObjectPtr<Scene>		mScene;
+		SpawnedEntityInstance	mPigEntity;				//< Pig entity
 		ObjectPtr<EntityInstance> mRotatingPlaneEntity = nullptr;	//< Rotating render target entity
 		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Warping custom line entity
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< World globe entity
