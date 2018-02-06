@@ -3,10 +3,8 @@
 #include <appcontext.h>
 #include <commands.h>
 #include <composition.h>
-#include <ledcolorpalette.h>
 #include <ledcolorpalettegrid.h>
 #include <imagelayer.h>
-
 
 #define TAG_NAPKIN "[napkin]"
 
@@ -66,44 +64,44 @@ TEST_CASE("Document Signals", TAG_NAPKIN)
 TEST_CASE("Array Value Elements", TAG_NAPKIN)
 {
 	auto doc = napkin::AppContext::get().newDocument();
-	auto palette = doc->addObject<nap::LedColorPalette>();
-	REQUIRE(palette != nullptr);
+	auto colors = doc->addObject<nap::WeekColors>();
+	REQUIRE(colors  != nullptr);
 
 	// Check invalid nonexistent path
-	napkin::PropertyPath nonExistent(*palette, "NonExistent_________");
+	napkin::PropertyPath nonExistent(*colors, "NonExistent_________");
 	REQUIRE(!nonExistent.isValid());
 
 	// Grab a valid path
-	napkin::PropertyPath ledColors(*palette, "LedColors");
-	REQUIRE(ledColors.isValid());
+	napkin::PropertyPath variations(*colors, "Variations");
+	REQUIRE(variations.isValid());
 
 	// Ensure empty array
-	REQUIRE(ledColors.getArrayLength() == 0);
+	REQUIRE(variations.getArrayLength() == 0);
 
 	// Add an element
 	{
-		auto index = doc->arrayAddValue(ledColors);
+		auto index = doc->arrayAddValue(variations);
 		REQUIRE(index == 0); // The index at which the new element lives
-		REQUIRE(ledColors.getArrayLength() == 1);
+		REQUIRE(variations.getArrayLength() == 1);
 	}
 
 	// Add another element
 	{
-		auto index = doc->arrayAddValue(ledColors);
+		auto index = doc->arrayAddValue(variations);
 		REQUIRE(index == 1); // Index should be one
-		REQUIRE(ledColors.getArrayLength() == 2);
+		REQUIRE(variations.getArrayLength() == 2);
 	}
 
 	// Remove first element
 	{
-		doc->arrayRemoveElement(ledColors, 0);
-		REQUIRE(ledColors.getArrayLength() == 1);
+		doc->arrayRemoveElement(variations, 0);
+		REQUIRE(variations.getArrayLength() == 1);
 	}
 
 	// Remove the second element
 	{
-		doc->arrayRemoveElement(ledColors, 0);
-		REQUIRE(ledColors.getArrayLength() == 0);
+		doc->arrayRemoveElement(variations, 0);
+		REQUIRE(variations.getArrayLength() == 0);
 	}
 }
 
