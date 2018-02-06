@@ -1311,7 +1311,7 @@
             "Type": "nap::ImageSequenceLayer",
             "mID": "MOVEcrosstest1",
             "BaseFilename": "sequences/MOVE-6/%03d.png",
-            "FPS": 1.0
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
@@ -1359,7 +1359,7 @@
             "Type": "nap::ImageSequenceLayer",
             "mID": "V_1_sequence",
             "BaseFilename": "sequences/final/vertikaal/V1_%03d.png",
-            "FPS": 0.5
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::IndexMap",
@@ -1869,9 +1869,321 @@
             "Format": "RGB8"
         },
         {
-        	"Type": "nap::WeekVariations",
-        	"mID" : "ColorVariations",
-        	"Variations": [
+            "Type": "nap::WeekColors",
+            "mID": "Week1",
+            "Palette": "L10 A2 E23 D35 M7 H34 G20",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week10",
+            "Palette": "M42 C3 D14 H21 J10 B33 B29",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week11",
+            "Palette": "F31 C4 F14 D34 F20 I8 E7",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week12",
+            "Palette": "B32 C5 D16 B12 B17 L14 G34",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week13",
+            "Palette": "A39 D2 B42 E21 F11 H25 G16",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week14",
+            "Palette": "J6 D3 A19 C30 G39 C17 A25",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week15",
+            "Palette": "A8 D4 E36 G25 F40 C34 I16",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week16",
+            "Palette": "A12 D5 B24 D42 F11 D10 E16",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week17",
+            "Palette": "A14 E3 A31 C35 D9 A10 A7",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week18",
+            "Palette": "E6 E2 G42 D21 B9 C15 B31",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week19",
+            "Palette": "C22 E4 B6 B34 E25 H19 E10",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week2",
+            "Palette": "A6 A3 C29 E21 I21 E30 E36",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week20",
+            "Palette": "I30 E5 B14 F7 E15 D36 G19",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week21",
+            "Palette": "L23 F2 D32 H7 B35 B30 I42",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week22",
+            "Palette": "A28 E3 B20 F39 J23 J25 G36",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week23",
+            "Palette": "K30 F4 F12 A42 H31 K23 C6",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week24",
+            "Palette": "G31 F5 F8 A13 I19 F23 A35",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week25",
+            "Palette": "B38 G2 K19 H16 M8 K29 K7",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week26",
+            "Palette": "A41 G3 B26 E17 B13 E40 F29",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week27",
+            "Palette": "G11 G4 D18 B39 C27 F43 J8",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week28",
+            "Palette": "G7 G5 D24 C8 H23 B41 J19",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week29",
+            "Palette": "E12 H2 B40 C31 G10 C7 J12",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week3",
+            "Palette": "D12 A4 I36 I29 A32 A24 L6",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week30",
+            "Palette": "H9 H3 A29 G21 D38 C28 D13",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week31",
+            "Palette": "L12 H4 A22 H42 M10 G29 D39",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week32",
+            "Palette": "A18 H5 A34 K14 F24 A9 E27",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week33",
+            "Palette": "E20 I2 B7 D25 F16 D7 B10",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week34",
+            "Palette": "J21 I3 C25 J42 B43 E22 C38",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week35",
+            "Palette": "A26 I4 L8 D14 H36 J29 H29",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week36",
+            "Palette": "D31 I5 G28 A17 A11 B25 K42",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week37",
+            "Palette": "H30 J2 C36 B37 B15 K8 I23",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week38",
+            "Palette": "D33 J3 C26 G8 B22 A22 I9",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week39",
+            "Palette": "C39 J4 G12 D27 C11 F28 D20",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week4",
+            "Palette": "D6 A5 H12 A30 C13 B18 L7",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week40",
+            "Palette": "A43 J5 A34 D28 D15 E29 C9",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week41",
+            "Palette": "I6 K2 C14 C40 C23 F34 B16",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week42",
+            "Palette": "D43 K3 D29 G30 B38 B36 B23",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week43",
+            "Palette": "E8 K4 A21 F42 J31 M14 F9",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week44",
+            "Palette": "E13 K5 A40 D19 K12 E24 C33",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week45",
+            "Palette": "B19 L2 G23 C32 H6 G14 C10",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week46",
+            "Palette": "E17 L3 H10 H8 D8 E25 D30",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week47",
+            "Palette": "A37 M5 B27 K42 B11 C41 F27",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week48",
+            "Palette": "A27 L5 L42 C12 J30 G9 H39",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week49",
+            "Palette": "E28 L4 C16 B8 D40 E19 C43",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week5",
+            "Palette": "A15 B2 I31 E10 E43 D22 D23",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week50",
+            "Palette": "F30 M3 J7 D17 A36 C18 K21",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week51",
+            "Palette": "A33 M4 E42 E14 C19 K6 F13",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week52",
+            "Palette": "I25 M2 G6 C21 J16 I7 M12",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week6",
+            "Palette": "A16 B3 K10 H14 B28 E6 D41",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week7",
+            "Palette": "K16 B4 F19 I10 J36 I14 M23",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week8",
+            "Palette": "A20 B5 E9 C42 A38 E31 J14",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week9",
+            "Palette": "A23 C2 E39 C20 D26 M6 I12",
+            "Variations": "ColorVariations"
+        },
+        {
+            "Type": "nap::WeekVariations",
+            "mID": "ColorVariations",
+            "Variations": [
                 [
                     0,
                     1,
@@ -2593,318 +2905,6 @@
                     4
                 ]
             ]
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week1",
-            "Palette": "L10 A2 E23 D35 M7 H34 G20",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week10",
-            "Palette": "M42 C3 D14 H21 J10 B33 B29",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week11",
-            "Palette": "F31 C4 F14 D34 F20 I8 E7",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week12",
-            "Palette": "B32 C5 D16 B12 B17 L14 G34",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week13",
-            "Palette": "A39 D2 B42 E21 F11 H25 G16",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week14",
-            "Palette": "J6 D3 A19 C30 G39 C17 A25",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week15",
-            "Palette": "A8 D4 E36 G25 F40 C34 I16",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week16",
-            "Palette": "A12 D5 B24 D42 F11 D10 E16",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week17",
-            "Palette": "A14 E3 A31 C35 D9 A10 A7",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week18",
-            "Palette": "E6 E2 G42 D21 B9 C15 B31",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week19",
-            "Palette": "C22 E4 B6 B34 E25 H19 E10",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week2",
-            "Palette": "A6 A3 C29 E21 I21 E30 E36",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week20",
-            "Palette": "I30 E5 B14 F7 E15 D36 G19",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week21",
-            "Palette": "L23 F2 D32 H7 B35 B30 I42",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week22",
-            "Palette": "A28 E3 B20 F39 J23 J25 G36",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week23",
-            "Palette": "K30 F4 F12 A42 H31 K23 C6",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week24",
-            "Palette": "G31 F5 F8 A13 I19 F23 A35",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week25",
-            "Palette": "B38 G2 K19 H16 M8 K29 K7",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week26",
-            "Palette": "A41 G3 B26 E17 B13 E40 F29",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week27",
-            "Palette": "G11 G4 D18 B39 C27 F43 J8",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week28",
-            "Palette": "G7 G5 D24 C8 H23 B41 J19",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week29",
-            "Palette": "E12 H2 B40 C31 G10 C7 J12",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week3",
-            "Palette": "D12 A4 I36 I29 A32 A24 L6",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week30",
-            "Palette": "H9 H3 A29 G21 D38 C28 D13",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week31",
-            "Palette": "L12 H4 A22 H42 M10 G29 D39",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week32",
-            "Palette": "A18 H5 A34 K14 F24 A9 E27",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week33",
-            "Palette": "E20 I2 B7 D25 F16 D7 B10",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week34",
-            "Palette": "J21 I3 C25 J42 B43 E22 C38",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week35",
-            "Palette": "A26 I4 L8 D14 H36 J29 H29",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week36",
-            "Palette": "D31 I5 G28 A17 A11 B25 K42",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week37",
-            "Palette": "H30 J2 C36 B37 B15 K8 I23",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week38",
-            "Palette": "D33 J3 C26 G8 B22 A22 I9",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week39",
-            "Palette": "C39 J4 G12 D27 C11 F28 D20",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week4",
-            "Palette": "D6 A5 H12 A30 C13 B18 L7",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week40",
-            "Palette": "A43 J5 A34 D28 D15 E29 C9",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week41",
-            "Palette": "I6 K2 C14 C40 C23 F34 B16",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week42",
-            "Palette": "D43 K3 D29 G30 B38 B36 B23",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week43",
-            "Palette": "E8 K4 A21 F42 J31 M14 F9",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week44",
-            "Palette": "E13 K5 A40 D19 K12 E24 C33",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week45",
-            "Palette": "B19 L2 G23 C32 H6 G14 C10",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week46",
-            "Palette": "E17 L3 H10 H8 D8 E25 D30",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week47",
-            "Palette": "A37 M5 B27 K42 B11 C41 F27",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week48",
-            "Palette": "A27 L5 L42 C12 J30 G9 H39",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week49",
-            "Palette": "E28 L4 C16 B8 D40 E19 C43",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week5",
-            "Palette": "A15 B2 I31 E10 E43 D22 D23",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week50",
-            "Palette": "F30 M3 J7 D17 A36 C18 K21",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week51",
-            "Palette": "A33 M4 E42 E14 C19 K6 F13",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week52",
-            "Palette": "I25 M2 G6 C21 J16 I7 M12",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week6",
-            "Palette": "A16 B3 K10 H14 B28 E6 D41",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week7",
-            "Palette": "K16 B4 F19 I10 J36 I14 M23",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week8",
-            "Palette": "A20 B5 E9 C42 A38 E31 J14",
-            "Variations": "ColorVariations"
-        },
-        {
-            "Type": "nap::WeekColors",
-            "mID": "Week9",
-            "Palette": "A23 C2 E39 C20 D26 M6 I12",
-            "Variations": "ColorVariations"
         }
     ]
 }
