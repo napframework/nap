@@ -93,8 +93,8 @@ namespace nap
 		// Updates color of the vinyl record
 		void setRecordColor();
 		
-		ObjectPtr<Texture2DFromFile>	mVinylLabelImg = nullptr;			//< Vinyl Label Image Resource
-		ObjectPtr<Texture2DFromFile>	mVinylCoverImg = nullptr;			//< Vinyl Cover Image Resource
+		ObjectPtr<ImageFromFile>	mVinylLabelImg = nullptr;			//< Vinyl Label Image Resource
+		ObjectPtr<ImageFromFile>	mVinylCoverImg = nullptr;			//< Vinyl Cover Image Resource
 		
 		RenderService*				mRenderService = nullptr;			//< Render Service that handles render calls
 		IMGuiService*				mGuiService = nullptr;				//< Gui Service handles all gui related update / drawing

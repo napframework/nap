@@ -6,7 +6,7 @@
 // External includes
 #include <component.h>
 #include <nap/objectptr.h>
-#include <texture2dfromfile.h>
+#include <imagefromfile.h>
 #include <glm/glm.hpp>
 #include <smoothdamp.h>
 
@@ -29,7 +29,7 @@ namespace nap
 		ComponentPtr<nap::LineBlendComponent> mBlendComponent;
 
 		// property: link to the image component that holds the lookup image
-		ObjectPtr<nap::Texture2DFromFile> mLookupImage;
+		ObjectPtr<nap::ImageFromFile> mLookupImage;
 
 		// property: start lookup color for spline
 		glm::vec2 mStartPos = { 0.5f, 0.5f };
@@ -155,7 +155,7 @@ namespace nap
 
 	private:
 		ComponentInstancePtr<LineBlendComponent> mBlendComponent = { this, &LineColorComponent::mBlendComponent };		// Holds the line we want to color
-		Texture2DFromFile* mLookupImage = nullptr;					// Image used for color lookup
+		ImageFromFile* mLookupImage = nullptr;					// Image used for color lookup
 		glm::vec2 mStartPosition = { 0.5f, 0.5f };					// Start point lookup in uv space
 		glm::vec2 mEndPosition = { 0.5f, 0.5f };					// End point lookup in uv space
 		float mIntensity = 1.0f;									// Final intensity

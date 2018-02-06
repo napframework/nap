@@ -3,7 +3,7 @@
 
 // external includes
 #include <rendertexture2d.h>
-#include <texture2dfromfile.h>
+#include <imagefromfile.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

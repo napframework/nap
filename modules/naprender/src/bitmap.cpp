@@ -121,7 +121,7 @@ static void fill(int x, int y, const nap::Bitmap& map, nap::BaseColor& outColor)
 template<typename T>
 static nap::BaseColor* createColorData(const nap::Bitmap& map, int x, int y)
 {
-	switch (map.getBitmap().getNumberOfChannels())
+	switch (map.getNumberOfChannels())
 	{
 	case 1:
 	{

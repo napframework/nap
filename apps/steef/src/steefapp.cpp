@@ -36,8 +36,8 @@ namespace nap
 		mRenderWindow->mWindowEvent.connect(std::bind(&SteefApp::handleWindowEvent, this, std::placeholders::_1));
 		
 		// Get vintl textures
-		mVinylLabelImg = mResourceManager->findObject<nap::Texture2DFromFile>("LabelImage");
-		mVinylCoverImg = mResourceManager->findObject<nap::Texture2DFromFile>("CoverImage");
+		mVinylLabelImg = mResourceManager->findObject<nap::ImageFromFile>("LabelImage");
+		mVinylCoverImg = mResourceManager->findObject<nap::ImageFromFile>("CoverImage");
 		
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 

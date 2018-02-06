@@ -10,55 +10,55 @@
 		},
 		
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "BackgroundImage",
 			"ImagePath" : "background.jpg"
 		},
 		
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "Looks_01",
 			"ImagePath" : "01.png"
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "Looks_02",
 			"ImagePath" : "02.png"
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "Looks_03",
 			"ImagePath" : "03.png"
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "Looks_04",
 			"ImagePath" : "04.png"
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "ButtonLeft",
 			"ImagePath" : "prev.png"
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "ButtonRight",  
 			"ImagePath" : "next.png"
 		}, 
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "Title",
 			"ImagePath" : "tommyxgigi.png" 
 		},
 
 		{
-			"Type" : "nap::Texture2DFromFile",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "LooksTitle",
 			"ImagePath" : "looks.png"
 		},
