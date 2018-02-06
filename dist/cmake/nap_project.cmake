@@ -11,6 +11,8 @@ get_filename_component(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty REALPATH)
 message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
 include(${NAP_ROOT}/cmake/targetarch.cmake)
+target_architecture(ARCH)
+
 include(${NAP_ROOT}/cmake/distmacros.cmake)
 
 # Parse our project.json and import it
@@ -50,8 +52,6 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${NAP_ROOT}/cmake")
-
-include(${NAP_ROOT}/cmake/configure.cmake)
 
 if(WIN32)
     if(MINGW)

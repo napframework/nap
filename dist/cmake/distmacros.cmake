@@ -226,3 +226,11 @@ macro(macos_replace_single_install_name_link REPLACE_LIB_NAME SRC_FILEPATH FILEP
     endif()
 endmacro()
 
+macro(copy_files_to_bin)
+    foreach(F ${ARGN})
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                           COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
+    endforeach()
+endmacro()

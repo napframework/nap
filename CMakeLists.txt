@@ -22,6 +22,7 @@ message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
 
 include(cmake/targetarch.cmake)
+target_architecture(ARCH)
 
 include(cmake/qtconfig.cmake)
 
@@ -56,7 +57,7 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 
-include(cmake/configure.cmake)
+include(configure.cmake)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging)
 
