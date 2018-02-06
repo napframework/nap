@@ -300,6 +300,10 @@ namespace nap
 	{
 		int window_id = static_cast<int>(sdlEvent.window.windowID);
 
+		SDL_Window* window = SDL_GetWindowFromID(window_id);
+		if (window == nullptr)
+			return nullptr;
+
 		// If it's a key event, create, map and return
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
 		if (key_it != SDLToKeyMapping.end())
@@ -313,14 +317,20 @@ namespace nap
 		auto inp_it = SDLToPointerMapping.find(sdlEvent.type);
 		if (inp_it != SDLToPointerMapping.end())
 		{
+			// Get size and invert y coordinate, NAP is always lower left corner based
+			int sx, sy;
+			SDL_GetWindowSize(window, &sx, &sy);
+			int px = sdlEvent.motion.x;
+			int py = sy - 1 - sdlEvent.motion.y;
+
 			PointerEvent* pointer_event = nullptr;
 			if (inp_it->second == RTTI_OF(nap::PointerMoveEvent))
 			{
-				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.xrel, sdlEvent.motion.yrel, sdlEvent.motion.x, sdlEvent.motion.y, window_id, 0 });
+				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.xrel, -sdlEvent.motion.yrel, px, py, window_id, 0 });
 			}
 			else
 			{
-				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.x, sdlEvent.motion.y, toNapMouseButton(sdlEvent.button.button), window_id, 0 });
+				pointer_event = inp_it->second.create<PointerEvent>({ px, py, toNapMouseButton(sdlEvent.button.button), window_id, 0 });
 			}
 			return InputEventPtr(pointer_event);
 		}

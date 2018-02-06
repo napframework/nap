@@ -322,7 +322,7 @@ namespace nap
 
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setDrawMode(closed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
-		generateIndices(shape, vertex_count, mMeshInstance->getNumVertices());
+		utility::generateIndices(shape, vertex_count, mMeshInstance->getNumVertices());
 
 		mMeshInstance->setNumVertices(mMeshInstance->getNumVertices() + vertex_count);
 	}

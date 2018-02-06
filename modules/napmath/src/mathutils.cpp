@@ -5,6 +5,8 @@
 #include <memory>
 #include <random>
 #include <cmath>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 // Specialization of lerping
 namespace nap
@@ -168,11 +170,51 @@ namespace nap
 		}
 
 
+		glm::mat4 composeMatrix(const glm::vec3& translate, const glm::quat& rotate, const glm::vec3& scale)
+		{
+			return glm::translate(glm::mat4x4(), translate) * glm::toMat4(rotate) * glm::scale(glm::mat4x4(), scale);
+		}
+
+
+		glm::quat eulerToQuat(const glm::vec3& eulerAngle)
+		{
+			return glm::quat(eulerAngle);
+		}
+
+
+		glm::quat eulerToQuat(float roll, float pitch, float yaw)
+		{
+			return eulerToQuat({ roll, pitch, yaw });
+		}
+
+
+		glm::vec3 radians(const glm::vec3& eulerDegrees)
+		{
+			return
+			{
+				glm::radians(eulerDegrees.x),
+				glm::radians(eulerDegrees.y),
+				glm::radians(eulerDegrees.z)
+			};
+		}
+
+
 		glm::vec3 extractPosition(const glm::mat4x4& matrix)
 		{
 			return{ matrix[3][0], matrix[3][1], matrix[3][2] };
 		}
 
+
+		glm::vec3 objectToWorld(const glm::vec3& point, const glm::mat4x4& transform)
+		{
+			return transform * glm::vec4(point, 1.0f);
+		}
+
+
+		glm::vec3 worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix)
+		{
+			return inverse(objectToWorldMatrix) * glm::vec4(point, 1.0f);
+		}
 
 		template<>
 		int random(int min, int max)

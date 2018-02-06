@@ -10,6 +10,7 @@
 #include <inputservice.h>
 #include <imguiservice.h>
 #include <app.h>
+#include <spheremesh.h>
 
 namespace nap
 {
@@ -84,6 +85,7 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
+		ObjectPtr<SphereMesh> mWorldMesh = nullptr;
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }

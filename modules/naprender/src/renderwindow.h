@@ -6,6 +6,7 @@
 // External Includes
 #include <nap/windowresource.h>
 #include <utility/dllexport.h>
+#include <rect.h>
 
 namespace nap
 {
@@ -110,6 +111,11 @@ namespace nap
 		 *	@return the hardware window number
 		 */
 		virtual uint getNumber() const override;
+
+		/**
+		 * @return the window as a rectangle
+		 */
+		math::Rect getRect() const;
 
 		/**
 		* The back buffer for an OpenGL window isn't an actual frame buffer

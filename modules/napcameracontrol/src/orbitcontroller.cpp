@@ -113,7 +113,7 @@ namespace nap
 		{
 			// We are using the relative movement of the mouse to update the camera
 			float yaw = -(pointerMoveEvent.mRelX)  * getComponent<OrbitController>()->mRotateSpeed;
-			float pitch = -(pointerMoveEvent.mRelY) * getComponent<OrbitController>()->mRotateSpeed;
+			float pitch = pointerMoveEvent.mRelY * getComponent<OrbitController>()->mRotateSpeed;
 
 			// We need to rotate around the target point. We always first rotate around the local X axis (pitch), and then
 			// we rotate around the y axis (yaw).
