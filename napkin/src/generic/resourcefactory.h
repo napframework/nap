@@ -6,7 +6,9 @@
 
 namespace napkin {
 
-	class FileType {
+
+	class FileType
+    {
 	public:
 		FileType(const nap::rtti::EPropertyFileType filetype, const QString& desc, const QStringList& ext)
 				: mFileType(filetype), mDescription(desc), mExtensions(ext) {}
@@ -20,25 +22,47 @@ namespace napkin {
     /**
      * Conveniently retrieve icons by object type
      */
-    class ResourceFactory {
-
+    class ResourceFactory
+    {
     public:
         ResourceFactory();
 
-        QIcon getIcon(const nap::rtti::RTTIObject& object) const;
+        const QIcon getIcon(const nap::rtti::RTTIObject& object) const;
 
 		/**
 		 * Get a Qt-compatible file filter for the given property.
 		 * @param prop The property that will point to a filename
 		 * @return A string that may be used for file browse dialogs for example.
 		 */
-		QString getFileFilter(const nap::rtti::Property& prop) const;
+		const QString getFileFilter(const nap::rtti::Property& prop) const;
+
+        /**
+         * Simply get all file extensions registered by FreeImage
+         * @return A list of file extensions (without the dot)
+         */
+        const QStringList getImageExtensions();
+
+        /**
+         * Retrieve all extensions defined by libav.
+         * WARNING: This only lists the input formats
+         * @return A list of file extensions (without the dot)
+         */
+        const QStringList getVideoExtensions();
 
     private:
+        /**
+         * Given a (string) property, return the type of file it points to.
+         * @param prop The property
+         * @return
+         */
 		const FileType& getFiletype(const nap::rtti::Property& prop) const;
+
 
         QList<QPair<rttr::type, QString>> mObjectIconMap;
 		QList<FileType> mFileTypes;
 		FileType mAnyFileType = {nap::rtti::EPropertyFileType::Any, "Any Files", {}};
+
+        QStringList mImageExtensions;
+        QStringList mVideoExtensions;
     };
 }

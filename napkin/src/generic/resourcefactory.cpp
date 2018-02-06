@@ -3,27 +3,13 @@
 #include <scene.h>
 #include <FreeImage.h>
 #include <nap/logger.h>
+extern "C" {
+    #include <libavformat/avformat.h>
+}
 
 using namespace nap;
 using namespace nap::rtti;
-koek
-/**
- * Simply get all file extensions registered by FreeImage
- * @return A list of file extensions
- */
-QStringList getFreeImageExtensions()
-{
-	QStringList extensions;
-	for (int i=0, len=FreeImage_GetFIFCount(); i < len; i++)
-	{
-		const char* exts = FreeImage_GetFIFExtensionList(static_cast<FREE_IMAGE_FORMAT>(i));
-		for (auto ext : QString::fromUtf8(exts).split(","))
-		{
-			extensions << ext;
-		}
-	}
-	return extensions;
-}
+
 
 
 napkin::ResourceFactory::ResourceFactory()
@@ -36,15 +22,17 @@ napkin::ResourceFactory::ResourceFactory()
 	};
 
 	mFileTypes = {
-			{EPropertyFileType::Image,      "Image Files",      getFreeImageExtensions()},
+			{EPropertyFileType::Image,      "Image Files",      getImageExtensions()},
 			{EPropertyFileType::FragShader, "Fragment Shaders", {"frag"}},
 			{EPropertyFileType::VertShader, "Vertex Shaders",   {"vert"}},
 			{EPropertyFileType::Python,     "Python Files",     {"py"}},
+            {EPropertyFileType::Mesh,       "NAP Mesh Files",   {"mesh"}},
+            {EPropertyFileType::Video,      "Video Files",      getVideoExtensions()},
 	};
 }
 
 
-QIcon napkin::ResourceFactory::getIcon(const nap::rtti::RTTIObject& object) const
+const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::RTTIObject& object) const
 {
 	for (auto entry : mObjectIconMap)
 	{
@@ -60,7 +48,7 @@ QIcon napkin::ResourceFactory::getIcon(const nap::rtti::RTTIObject& object) cons
 }
 
 
-QString napkin::ResourceFactory::getFileFilter(const nap::rtti::Property& prop) const
+const QString napkin::ResourceFactory::getFileFilter(const nap::rtti::Property& prop) const
 {
 	QStringList wildcards;
 	FileType type = getFiletype(prop);
@@ -82,8 +70,41 @@ const napkin::FileType& napkin::ResourceFactory::getFiletype(const nap::rtti::Pr
 
 	for (auto& ftype : mFileTypes)
 	{
-		if (nap::rtti::hasFiletypeFlag(prop, ftype.mFileType))
+		if (nap::rtti::isFileType(prop, ftype.mFileType))
 			return ftype;
 	}
 	return mAnyFileType;
+}
+
+const QStringList napkin::ResourceFactory::getImageExtensions()
+{
+    if (mImageExtensions.isEmpty())
+    {
+        for (int i = 0, len = FreeImage_GetFIFCount(); i < len; i++)
+        {
+            const char *exts = FreeImage_GetFIFExtensionList(static_cast<FREE_IMAGE_FORMAT>(i));
+            for (auto ext : QString::fromUtf8(exts).split(","))
+                mImageExtensions << ext;
+        }
+    }
+    return mImageExtensions;
+}
+
+const QStringList napkin::ResourceFactory::getVideoExtensions()
+{
+    if (mVideoExtensions.isEmpty()) {
+        av_register_all();
+
+        AVInputFormat *fmt = av_iformat_next(nullptr); // first format
+        while (fmt != nullptr)
+        {
+            auto exts = QString::fromUtf8(fmt->extensions);
+
+            if (!exts.isEmpty())
+                mVideoExtensions << exts.split(",");
+
+            fmt = av_iformat_next(fmt); // next format
+        }
+    }
+    return mVideoExtensions;
 }

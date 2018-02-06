@@ -412,10 +412,36 @@ TEST_CASE("Commands", TAG_NAPKIN)
 //	ctx.executeCommand(new ArrayAddValueCommand());
 }
 
-
-TEST_CASE("Resource Management", TAG_NAPKIN)
+TEST_CASE("File Extensions", TAG_NAPKIN)
 {
-	auto doc = napkin::AppContext::get().loadDocument("kalvertoren.json");
-	REQUIRE(doc != nullptr);
+    napkin::ResourceFactory fact = napkin::AppContext::get().getResourceFactory();
+    {
+        QStringList imageExtensions;
+        for (const auto& e : fact.getImageExtensions())
+            imageExtensions << e;
+		REQUIRE(imageExtensions.size() > 0);
 
+        auto imageExtString = "Image Extensions: " + imageExtensions.join(", ");
+        REQUIRE(!imageExtString.isEmpty());
+
+		nap::Logger::debug(imageExtString.toStdString());
+    }
+    {
+        QStringList videoExtensions;
+        for (const auto& e : fact.getVideoExtensions())
+            videoExtensions << e;
+		REQUIRE(videoExtensions.size() > 0);
+
+        auto videoExtString = "Video Extensions: " + videoExtensions.join(", ");
+        REQUIRE(!videoExtString.isEmpty());
+
+        nap::Logger::debug(videoExtString.toStdString());
+    }
 }
+
+//TEST_CASE("Resource Management", TAG_NAPKIN)
+//{
+//	auto doc = napkin::AppContext::get().loadDocument("data/kalvertoren.json");
+//	REQUIRE(doc != nullptr);
+//
+//}
