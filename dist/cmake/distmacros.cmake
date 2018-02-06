@@ -113,7 +113,7 @@ macro(dist_export_fbx SRCDIR)
     set(TOOLS_DIR "${NAP_ROOT}/tools/")
 
     # Set the binary name
-    set(FBXCONVERTER_BIN "${TOOLS_DIR}/fbxconverter")
+    set(FBXCONVERTER_BIN "${TOOLS_DIR}/platform/fbxconverter")
 
     # Do the export
     add_custom_command(TARGET ${PROJECT_NAME}
