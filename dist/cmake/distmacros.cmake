@@ -167,3 +167,62 @@ macro(set_module_output_directories)
         set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
     endif()
 endmacro()
+
+macro(macos_replace_qt_framework_links_install_time FRAMEWORKS LIB_NAME FILEPATH PATH_PREFIX)
+    foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
+        if(NOT ${QT_LINK_FRAMEWORK} STREQUAL ${LIB_NAME})
+            macos_replace_single_install_name_link_install_time(${QT_LINK_FRAMEWORK} ${FILEPATH} ${PATH_PREFIX})
+        endif()
+    endforeach()    
+endmacro()
+
+macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEPATH PATH_PREFIX)
+    # Change link to dylib
+    install(CODE "if(EXISTS ${FILEPATH})
+                      execute_process(COMMAND sh -c \"otool -L ${FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'\"
+                                      OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
+                      if(NOT \${REPLACE_INSTALL_NAME} STREQUAL \"\")
+                          message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
+                          # Strip read path
+                          string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)                               
+
+                          # Change link to dylib
+                          execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+                                                  -change 
+                                                  \${REPLACE_INSTALL_NAME}
+                                                  ${PATH_PREFIX}/${REPLACE_LIB_NAME}
+                                                  ${FILEPATH}
+                                          ERROR_QUIET)
+                      endif()
+                  endif()
+                  ")
+endmacro()
+
+macro(macos_replace_qt_framework_links FRAMEWORKS SRC_FILEPATH FILEPATH PATH_PREFIX)
+    foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
+        macos_replace_single_install_name_link(${QT_LINK_FRAMEWORK}
+                                               ${SRC_FILEPATH}
+                                               ${FILEPATH}
+                                               ${PATH_PREFIX})
+    endforeach()    
+endmacro()
+
+
+macro(macos_replace_single_install_name_link REPLACE_LIB_NAME SRC_FILEPATH FILEPATH PATH_PREFIX)
+    execute_process(COMMAND sh -c "otool -L ${SRC_FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'"
+                    OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
+    if(NOT ${REPLACE_INSTALL_NAME} STREQUAL "")
+        # message("Adding install name change in ${QT_INSTALL_FRAMEWORK} for ${QT_LINK_FRAMEWORK}")
+        string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
+
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+                                   -change 
+                                   ${REPLACE_INSTALL_NAME}
+                                   ${PATH_PREFIX}/${REPLACE_LIB_NAME}
+                                   ${FILEPATH}
+                           )
+    endif()
+endmacro()
+

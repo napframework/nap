@@ -1,3 +1,4 @@
+include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 project(napcore)
 
 file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
@@ -56,8 +57,16 @@ if (WIN32)
             CONFIGURATIONS Release)
 elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
+    set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)  
+
+    foreach(build_conf Release Debug)
+        macos_replace_single_install_name_link_install_time("Python"
+                                                            ${CMAKE_INSTALL_PREFIX}/lib/${build_conf}/lib${PROJECT_NAME}.dylib 
+                                                            "@rpath"
+                                                            )
+    endforeach()    
 else()
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})   
 endif()

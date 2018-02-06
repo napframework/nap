@@ -244,73 +244,48 @@ namespace nap
 		{
 			// Non-packaged MacOS & Linux apps against released framework
 			std::string napRoot = exeDir + "/../../../../";
-			for (const std::string& module : moduleNames)
+			if (moduleNames.size() == 0)
 			{
+				// Cater for Napkin running against packaged NAP.  Module names won't be specified.  Let's load everything we can find.
+				
 				// NAP modules
-				outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
+				std::string searchDir = napRoot + "modules";
+				std::vector<std::string> filesInDirectory;
+				utility::listDir(searchDir.c_str(), filesInDirectory, false);
+				for (const std::string& module: filesInDirectory)
+				{
+					std::string dirName = napRoot + "modules/" + module + "/lib/" + buildType;
+					if (!utility::dirExists(dirName))
+						continue;
+					outSearchDirectories.push_back(dirName);
+					//Logger::info("Adding module search path %s for napkin", dirName.c_str());
+				}
+				
 				// User modules
-				outSearchDirectories.push_back(napRoot + "usermodules/" + module + "/lib/" + buildType);
+				searchDir = napRoot + "usermodules";
+				filesInDirectory.clear();
+				utility::listDir(searchDir.c_str(), filesInDirectory, false);
+				for (const std::string& module: filesInDirectory)
+				{
+					std::string dirName = napRoot + "usermodules/" + module + "/lib/" + buildType;
+					if (!utility::dirExists(dirName))
+						continue;
+					outSearchDirectories.push_back(dirName);
+					//Logger::info("Adding user module search path %s for napkin", dirName.c_str());
+				}
+			}
+			else {
+				// Normal project running against packaged NAP
+				for (const std::string& module : moduleNames)
+				{
+					// NAP modules
+					outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
+					// User modules
+					outSearchDirectories.push_back(napRoot + "usermodules/" + module + "/lib/" + buildType);
+				}
 			}
 			// Project module
 			outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
-		}
-		// TODO Temporary solution until there's a flag via the built system that designates that we're running
-		// 		with packaged NAP
-		else if (dirParts.end()[-1] == "tools") {
-			// Napkin running against packaged NAP
-			std::string napRoot = exeDir + "/../";
-			
-			Logger::info("Running Napkin against packaged NAP");
-			
-#ifdef NDEBUG
-			buildType = "Release";
-#else
-			buildType = "Debug";
-#endif
-			
-			// NAP modules
-			std::string searchDir = napRoot + "modules";
-			std::vector<std::string> filesInDirectory;
-			utility::listDir(searchDir.c_str(), filesInDirectory, false);
-			for (const std::string& module: filesInDirectory)
-			{
-				std::string dirName = napRoot + "modules/" + module + "/lib/" + buildType;
-				if (!utility::dirExists(dirName))
-					continue;
-				outSearchDirectories.push_back(dirName);
-				Logger::info("Adding module search path %s", dirName.c_str());
-			}
-
-			// User modules
-			searchDir = napRoot + "usermodules";
-			filesInDirectory.clear();
-			utility::listDir(searchDir.c_str(), filesInDirectory, false);
-			for (const std::string& module: filesInDirectory)
-			{
-				std::string dirName = napRoot + "usermodules/" + module + "/lib/" + buildType;
-				if (!utility::dirExists(dirName))
-					continue;
-				outSearchDirectories.push_back(dirName);
-				Logger::info("Adding user module search path %s", dirName.c_str());
-			}
-
-			// Project module
-			std::string projectTypes[] = { "projects", "examples", "demos", "apps" };
-			for (const std::string& projectType: projectTypes)
-			{
-				searchDir = napRoot + projectType;
-				filesInDirectory.clear();
-				utility::listDir(searchDir.c_str(), filesInDirectory, false);
-				for (const std::string& project: filesInDirectory)
-				{
-					std::string dirName = napRoot + projectType + "/" + project + "/module/lib/" + buildType;
-					if (utility::dirExists(dirName))
-					{
-						outSearchDirectories.push_back(dirName);
-						Logger::info("Adding project module search path %s", dirName.c_str());
-					}
-				}
-			}
 		}
 		else {
 			// Check if we're running a project against NAP source

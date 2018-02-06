@@ -1,3 +1,4 @@
+include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 project(naprtti)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
@@ -93,6 +94,7 @@ if (MSVC)
     install(DIRECTORY "../../thirdparty/rttr/msvc64/install/" DESTINATION "thirdparty/rttr")
 elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
+    set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
     install(DIRECTORY "../../thirdparty/rttr/xcode/install/" DESTINATION "thirdparty/rttr")
     # install(CODE "execute_process(COMMAND install_name_tool 
@@ -101,6 +103,14 @@ elseif(APPLE)
     # install(CODE "execute_process(COMMAND install_name_tool 
     #                                       -id @loader_path/../../../../thirdparty/rttr/bin/librttr_core.0.9.6.dylib 
     #                                       ${CMAKE_INSTALL_PREFIX}/thirdparty/rttr/bin/librttr_core.0.9.6.dylib)")
+
+
+    foreach(build_conf Release Debug)
+        macos_replace_single_install_name_link_install_time("Python"
+                                                            ${CMAKE_INSTALL_PREFIX}/lib/${build_conf}/lib${PROJECT_NAME}.dylib 
+                                                            "@rpath"
+                                                            )
+    endforeach()
 elseif(UNIX)
     install(DIRECTORY "../../thirdparty/rttr/linux/install/" DESTINATION "thirdparty/rttr")
 endif()

@@ -137,13 +137,13 @@ if (NOT WIN32)
     install(TARGETS ${PROJECT_NAME} DESTINATION .)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    
     install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
-    # TODO move elsewhere
+    # TODO move to naprtti
     if (APPLE)
         install(CODE "execute_process(COMMAND install_name_tool -change @loader_path/../../../../thirdparty/rttr/bin/librttr_core.0.9.6.dylib @rpath/librttr_core.0.9.6.dylib ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME})")
     endif()   
 
-    # Package napkin if requested
-    if(PACKAGE_NAPKIN)
+    # Package napkin if we're doing a build from Xcode or we're packaging a project with napkin
+    if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
         include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_project.cmake)
     endif()
 endif()
