@@ -17,9 +17,9 @@ namespace nap
 	 * The bitmap is loaded automatically and populates the opengl texture
 	 * with the right data on initialization
 	 */
-	class NAPAPI Texture2DFromFile : public Texture2D
+	class NAPAPI Texture2DFromFile : public Image
 	{
-		RTTI_ENABLE(Texture2D)
+		RTTI_ENABLE(Image)
 	public:
 		// Constructor
 		Texture2DFromFile(const std::string& imgPath);

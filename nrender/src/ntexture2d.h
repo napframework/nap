@@ -50,7 +50,7 @@ namespace opengl
 		 * @param data Pointer to the appropriately-sized buffer to copy to the texture
 		 * @param pitch The size (in bytes) of each row of pixels. The default of 0 means that it will use the internal opengl format to determine this.
 		 */
-		void setData(void* data, int pitch = 0);
+		void setData(const void* data, int pitch = 0);
 
 		/**
 		 * @return The size of the texture when copied to/from CPU.

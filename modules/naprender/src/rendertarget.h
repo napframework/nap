@@ -64,6 +64,6 @@ namespace nap
 	public:
 		nap::ObjectPtr<Texture2D>	mColorTexture = nullptr;	// Color texture to be used by the render target
 		nap::ObjectPtr<Texture2D>	mDepthTexture = nullptr;	// Depth texture to be used by the render target
-		glm::vec4						mClearColor;				// Color used when clearing the render target
+		glm::vec4					mClearColor;				// Color used when clearing the render target
 	};
 }

@@ -26,6 +26,6 @@ namespace nap
 		if (!getBitmap().initFromFile(mImagePath, errorState))
 			return false;
 
-		return Texture2D::initFromBitmap(mCompressed, errorState);
+		return Texture2D::initFromBitmap(getBitmap(), mCompressed, errorState);
 	}
 }
