@@ -18,7 +18,7 @@ namespace nap
 	class RootEntity final
 	{
 	public:
-		ObjectPtr<Entity>							mEntity;				///< Root entity to spawn
+		rtti::ObjectPtr<Entity>							mEntity;				///< Root entity to spawn
 		std::vector<ComponentInstanceProperties>	mInstanceProperties;	//< The instance properties for this entity (and all of its children)
 	};
 
@@ -79,7 +79,7 @@ namespace nap
 		 *
 		 * @return EntityInstance with the specified identifier from this scene.
 		 */
-		const ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
+		const rtti::ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
 
 		/**
 		 * @return The root EntityInstance of this scene

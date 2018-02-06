@@ -13,7 +13,7 @@ nap::Entity* Document::getParent(const nap::Entity& child)
 
 		nap::Entity* parent = rtti_cast<nap::Entity>(o);
 		auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(),
-							   [&child](nap::ObjectPtr<nap::Entity> e) -> bool { return &child == e.get(); });
+							   [&child](ObjectPtr<nap::Entity> e) -> bool { return &child == e.get(); });
 
 		if (it != parent->mChildren.end())
 			return parent;
@@ -31,7 +31,7 @@ nap::Entity* Document::getOwner(const nap::Component& component)
 		nap::Entity* owner = *rtti_cast<nap::Entity*>(o.get());
 		auto it = std::find_if(
 				owner->mComponents.begin(), owner->mComponents.end(),
-				[&component](nap::ObjectPtr<nap::Component> comp) -> bool { return &component == comp.get(); });
+				[&component](ObjectPtr<nap::Component> comp) -> bool { return &component == comp.get(); });
 
 		if (it != owner->mComponents.end())
 			return owner;

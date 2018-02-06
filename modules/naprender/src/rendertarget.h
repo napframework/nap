@@ -5,7 +5,7 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <glm/glm.hpp>
 #include <ntexturerendertarget2d.h>
 
@@ -62,8 +62,8 @@ namespace nap
 		std::unique_ptr<opengl::TextureRenderTarget2D> mTextureRenderTarget = nullptr;
 
 	public:
-		nap::ObjectPtr<BaseTexture2D>	mColorTexture = nullptr;	// Color texture to be used by the render target
-		nap::ObjectPtr<BaseTexture2D>	mDepthTexture = nullptr;	// Depth texture to be used by the render target
+		rtti::ObjectPtr<BaseTexture2D>	mColorTexture = nullptr;	// Color texture to be used by the render target
+		rtti::ObjectPtr<BaseTexture2D>	mDepthTexture = nullptr;	// Depth texture to be used by the render target
 		glm::vec4						mClearColor;				// Color used when clearing the render target
 	};
 }

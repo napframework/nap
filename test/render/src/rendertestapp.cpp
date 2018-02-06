@@ -56,7 +56,7 @@ namespace nap
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
-		nap::ObjectPtr<RenderWindow> window = mRenderService->getWindow(1);
+		rtti::ObjectPtr<RenderWindow> window = mRenderService->getWindow(1);
 
 		return true;
 	}
@@ -71,7 +71,7 @@ namespace nap
 		{
 			if (mPigEntity == nullptr)
 			{
-				ObjectPtr<Entity> entity = mResourceManager->findObject<Entity>("PigEntity");
+				rtti::ObjectPtr<Entity> entity = mResourceManager->findObject<Entity>("PigEntity");
 				utility::ErrorState error_state;
 				mPigEntity = mScene->spawn(*entity, error_state);
 			}
@@ -199,10 +199,7 @@ namespace nap
 			// Render specific object directly to backbuffer
 			std::vector<RenderableComponentInstance*> components_to_render;
 			if (mPigEntity != nullptr)
-			{
 				components_to_render.push_back(&mPigEntity->getComponent<nap::RenderableMeshComponentInstance>());
-				components_to_render.push_back(&mPigEntity->getChildren()[0]->getComponent<nap::RenderableMeshComponentInstance>());
-			}
 			
 			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
 			mRenderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);

@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility/dllexport.h>
 #include <rtti/rttiobject.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <nap/configure.h>
 
 namespace nap
@@ -164,7 +164,7 @@ namespace nap
 	};
 
 	// ObjectPtr based mesh properties, used in serializable Mesh format (json/binary)
-	using RTTIMeshProperties = MeshProperties<ObjectPtr<BaseVertexAttribute>>;
+	using RTTIMeshProperties = MeshProperties<rtti::ObjectPtr<BaseVertexAttribute>>;
 
 
 	/**

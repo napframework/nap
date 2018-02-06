@@ -45,7 +45,7 @@ namespace nap
 		mVinylCoverImg = mResourceManager->findObject<nap::Image>("CoverImage");
 		
 		// Fetch scene
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
 		// Get entity that holds vinyl
 		mModelEntity = scene->findEntity("ModelEntity");

@@ -5,7 +5,7 @@
 
 // External includes
 #include <component.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <image.h>
 #include <glm/glm.hpp>
 #include <smoothdamp.h>
@@ -29,7 +29,7 @@ namespace nap
 		ComponentPtr<nap::LineBlendComponent> mBlendComponent;
 
 		// property: link to the image component that holds the lookup image
-		ObjectPtr<nap::Image> mLookupImage;
+		rtti::ObjectPtr<nap::Image> mLookupImage;
 
 		// property: start lookup color for spline
 		glm::vec2 mStartPos = { 0.5f, 0.5f };

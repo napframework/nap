@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <rtti/rttiobject.h>
 
 enum class ETestEnum
@@ -45,7 +45,7 @@ public:
 	std::string				mStringProperty;
 	nap::rtti::RTTIObject*	mPointerProperty = nullptr;
 	ETestEnum				mEnumProperty = ETestEnum::One;
-	nap::ObjectPtr<nap::rtti::RTTIObject>	mObjectPtrProperty;
+	nap::rtti::ObjectPtr<nap::rtti::RTTIObject>	mObjectPtrProperty;
 };
 
 class DerivedClass : public BaseClass

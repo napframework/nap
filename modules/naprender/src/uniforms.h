@@ -4,7 +4,7 @@
 #include "nshaderutils.h"
 
 // External Includes
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
 
@@ -231,6 +231,6 @@ namespace nap
 		*/
 		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Tex2D; }
 
-		ObjectPtr<BaseTexture2D> mTexture = nullptr;		///< Texture to use for this uniform
+		rtti::ObjectPtr<BaseTexture2D> mTexture = nullptr;		///< Texture to use for this uniform
 	};
 }

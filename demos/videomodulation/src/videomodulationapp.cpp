@@ -36,7 +36,7 @@ namespace nap
 			return false;
 		
 		// Get important entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
 		mBackgroundEntity = scene->findEntity("BackgroundEntity");
 		mVideoEntity = scene->findEntity("VideoEntity");

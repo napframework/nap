@@ -4,7 +4,7 @@
 #include <vector>
 
 // Nap includes
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 
 // Nap includes
 #include <rtti/rttiobject.h>
@@ -22,7 +22,7 @@ namespace nap
     namespace audio
     {
         
-        using AudioObjectPtr = ObjectPtr<AudioObject>;
+        using AudioObjectPtr = rtti::ObjectPtr<AudioObject>;
         
         
         /**
