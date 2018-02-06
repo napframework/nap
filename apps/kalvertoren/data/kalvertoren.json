@@ -103,7 +103,7 @@
                 "BACKBASIC1",
                 "V_1_sequence"
             ],
-            "Mode": "Length",
+            "Mode": "Sequence",
             "Length": 15.0
         },
         {
@@ -113,7 +113,7 @@
                 "BACK-cross-test1",
                 "MOVEcrosstest1"
             ],
-            "Mode": "Length",
+            "Mode": "Sequence",
             "Length": 10.0
         },
         {
@@ -195,7 +195,7 @@
             "Type": "nap::Composition",
             "mID": "Composition10",
             "Layers": [
-                "Sequence2"
+                "Sequence2_2"
             ],
             "Mode": "Sequence",
             "Length": 3.0
@@ -311,7 +311,7 @@
             "Type": "nap::Composition",
             "mID": "Composition9",
             "Layers": [
-                "Sequence1"
+                "Sequence1_2"
             ],
             "Mode": "Sequence",
             "Length": 1.0
@@ -1317,43 +1317,43 @@
             "Type": "nap::ImageSequenceLayer",
             "mID": "SeC-cross_test1_2",
             "BaseFilename": "sequences/MOVE-1/move_1_%03d.png",
-            "FPS": 10.0
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
-            "mID": "Sequence1",
+            "mID": "Sequence1_2",
             "BaseFilename": "sequences/MOVE-1/move_1_%03d.png",
-            "FPS": 0.016599999740719796
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
-            "mID": "Sequence2",
+            "mID": "Sequence2_2",
             "BaseFilename": "sequences/MOVE-2/move_2_%03d.png",
-            "FPS": 5.0
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence3",
             "BaseFilename": "sequences/MOVE-3/move_3_%03d.png",
-            "FPS": 5.0
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence4",
             "BaseFilename": "sequences/MOVE-4/move_4_%03d.png",
-            "FPS": 5.0
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence5",
             "BaseFilename": "sequences/MOVE-5/move_5_%04d.png",
-            "FPS": 5.0
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "TestSequence",
             "BaseFilename": "sequences/test/%d.png",
-            "FPS": 1.0
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
