@@ -657,7 +657,7 @@ namespace nap
 		// Remove instances from the map, but don't delete them yet
 		for (rtti::RTTIObject* instance : all_instances)
 		{
-			rtti::TypeInfo& type_info = instance->get_type();
+			rtti::TypeInfo type_info = instance->get_type();
 
 			if (type_info.is_derived_from<EntityInstance>())
 			{
