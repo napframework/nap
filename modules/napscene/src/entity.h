@@ -215,6 +215,8 @@ namespace nap
 	/**
 	 * A SpawnedEntityInstance is identical in functionality to a regular EntityInstance. It is only used to be able to 
 	 * distinguish between entities that were spawned during init and entities that were spawned at runtime.
+	 * A SpawnedEntityInstance is created through the Scene::spawn interface and can be destroyed by passing this object 
+	 * to Scene::destroy.
 	 */
 	class NAPAPI SpawnedEntityInstance
 	{
@@ -222,6 +224,72 @@ namespace nap
 		SpawnedEntityInstance() = default;
 
 		ObjectPtr<EntityInstance>& get() { return mEntityInstance; }
+
+		const ObjectPtr<EntityInstance>& get() const { return mEntityInstance; }
+
+		const EntityInstance& operator*() const
+		{
+			assert(mEntityInstance != nullptr);
+			return *mEntityInstance;
+		}
+
+		EntityInstance& operator*()
+		{
+			assert(mEntityInstance != nullptr);
+			return *mEntityInstance;
+		}
+
+		EntityInstance* operator->() const
+		{
+			assert(mEntityInstance != nullptr);
+			return mEntityInstance.get();
+		}
+
+		EntityInstance* operator->()
+		{
+			assert(mEntityInstance != nullptr);
+			return mEntityInstance.get();
+		}
+
+		bool operator==(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance == other.mEntityInstance;
+		}
+
+		bool operator==(const EntityInstance* ptr) const
+		{
+			return mEntityInstance == ptr;
+		}
+
+		bool operator!=(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance != other.mEntityInstance;
+		}
+
+		bool operator!=(const EntityInstance* ptr) const
+		{
+			return mEntityInstance != ptr;
+		}
+
+		bool operator<(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance < other.mEntityInstance;
+		}
+
+		bool operator>(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance > other.mEntityInstance;
+		}
+
+		bool operator<=(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance <= other.mEntityInstance;
+		}
+
+		bool operator>=(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance >= other.mEntityInstance;
+		}
 
 	private:
 		friend class Scene;

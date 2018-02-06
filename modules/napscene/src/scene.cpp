@@ -350,6 +350,8 @@ namespace nap
 					for (auto& link : componentLinkmap)
 					{
 						nap::Component* target_component_resource = link.first;
+						if (target_component_resource == nullptr)
+							continue;
 
 						// It's possible for the same ComponentInstance to link to a particular component multiple times, so we need to resolve all those links individually (the paths might be different)
 						for (ComponentInstance::TargetComponentLink& target_component_link : link.second)
@@ -642,10 +644,10 @@ namespace nap
 	{
 		// Recursively get all instances to destroy (i.e. Entity and Component instances)
 		std::vector<rtti::RTTIObject*> all_instances;
-		sGetInstancesToDestroyRecursive(*entity.get(), all_instances);
+		sGetInstancesToDestroyRecursive(*entity, all_instances);
 
 		// First remove the entity from the root
-		mRootEntity->removeChild(*entity.mEntityInstance);
+		mRootEntity->removeChild(*entity);
 
 		std::unordered_map<std::string, rtti::RTTIObject*> instances_to_reset;
 		std::vector<std::unique_ptr<EntityInstance>> entity_instances_to_delete;
