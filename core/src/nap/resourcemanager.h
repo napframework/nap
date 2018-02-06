@@ -37,6 +37,8 @@ namespace nap
 		*/
 		bool loadFile(const std::string& filename, utility::ErrorState& errorState);
 
+        bool loadFile(const std::string& filename);
+
 		/*
 		* Loads a json file containing objects. When the objects are loaded, a comparison is performed against the objects that are already loaded. Only
 		* the new objects and the objects that are different from the existing objects are loaded into the manager. The set of objects that is new
@@ -110,10 +112,11 @@ namespace nap
 
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
 		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		
+
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		EFileModified isFileModified(const std::string& modifiedFile);
 
+		
 	private:
 
 		/**

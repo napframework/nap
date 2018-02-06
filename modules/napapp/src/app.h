@@ -56,26 +56,25 @@ namespace nap
 		virtual void render()											{ }
 
 		/**
-		 * Clear application specific data. This is called
-		 * before all the services are closed and the app exists
+		 * Called by the event handler when it receives an external event to quit the running application
+		 * By default this calls quit() with the return value of this call, which causes the application to stop running
+		 * You can override it to ignore the event or perform specific logic (such as saving a file) before the app is shutdown()
+		 * @return if the application should quit, true by default
 		 */
-		virtual void shutdown()											{ }
+		virtual bool shutdownRequested()								{ return true; }
 
 		/**
-		 * Call this to quit the running application and
-		 * exit the main loop.
+		 * Called when the app is shutting down after quit() has been called
+		 * Use this to clear application specific data. 
+		 * This is called before all the services are closed and the app exits
+		 * return the application exit code, 0 (success) by default 
 		 */
-		void quit(int errorCode = 0)									{ mQuit = true; }
+		virtual int shutdown()											{ return 0; }
 
 		/**
-		 *	If the application should quit running
+		 * Call this from your app to terminate the application and exit the main loop.
 		 */
-		bool shouldQuit() const											{ return mQuit; }
-
-		/**
-		 *	@return the application exit code when quit
-		 */
-		int getExitCode() const											{ return mExitCode;  }
+		void quit()														{ mQuit = true; }
 
 		/**
 		 *	@return nap Core const
@@ -83,13 +82,17 @@ namespace nap
 		const nap::Core& getCore() const								{ return mCore; }
 
 		/**
-		 *	@return nap Core
+		 * @return nap Core
 		 */
 		nap::Core& getCore()											{ return mCore; }
 
+	   /**
+		* @return if the application received a quit event
+		*/
+		bool shouldQuit() const											{ return mQuit; }
+
 	private:
 		bool mQuit = false;												// When set to true the application will exit
-		int mExitCode = 0;												// Exit code when quit
 		nap::Core& mCore;												// Core
 	};
 

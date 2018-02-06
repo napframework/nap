@@ -29,16 +29,12 @@ namespace nap
 		/**
 		 * Get the types of components on which this component depends
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.push_back(RTTI_OF(TransformComponent));
-			components.push_back(RTTI_OF(KeyInputComponent));
-		}
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		float mMovementSpeed	= 3.0f;		// The speed with which to move
-		float mRotateSpeed		= 1.0f;		// The speed with which to rotate
+		float mMovementSpeed	= 3.0f;		///< Property: "MovementSpeed" The speed with which to move
+		float mRotateSpeed		= 1.0f;		///< Property: "RotateSpeed" The speed with which to rotate
 
-		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;		// Camera that we're controlling
+		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;		///< Property: "PerspCameraComponent" Camera that we're controlling
 	};
 
 

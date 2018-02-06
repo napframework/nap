@@ -164,6 +164,16 @@ namespace nap
 			signal.connect(*this);
 		}
 
+		~Slot()
+		{
+			disconnect();
+		}
+
+		/**
+		 * Disconnects the slot from all signals it is connected to
+		 */
+		void disconnect();
+
 		void setFunction(Function func) 
 		{ 
 			mFunction = func; 
@@ -318,6 +328,13 @@ namespace nap
 		if (mFunctionEffects)
 			for (auto& effect : *mFunctionEffects)
 				effect(std::forward<Args>(args)...);
+	}
+
+	template <typename... Args>
+	void Slot<Args...>::disconnect()
+	{
+		for (int index = mCauses.size() - 1; index >= 0; --index)
+			mCauses[index]->disconnect(*this);
 	}
 
 	template <typename... Args>

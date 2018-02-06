@@ -1,7 +1,7 @@
 #include "polyline.h"
 #include <mathutils.h>
 #include <glm/gtx/rotate_vector.hpp>
-
+#include <meshutils.h>
 
 RTTI_BEGIN_CLASS(nap::PolyLineProperties)
 	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,		nap::rtti::EPropertyMetaData::Default)
@@ -31,8 +31,8 @@ RTTI_BEGIN_CLASS(nap::Hexagon)
 	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Triangle)
-	RTTI_PROPERTY("Radius",		&nap::Triangle::mRadius,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::TriangleLine)
+	RTTI_PROPERTY("Radius",		&nap::TriangleLine::mRadius,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -117,10 +117,10 @@ namespace nap
 	void nap::PolyLine::createVertexAttributes(MeshInstance& instance)
 	{
 		// Create attributes
-		instance.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
-		instance.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
-		instance.GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
-		instance.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		instance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
 	}
 
 
@@ -168,8 +168,9 @@ namespace nap
 		math::resampleLine<glm::vec3>(uv_coords, getUvAttr().getData(), mVertexCount, mClosed);
 		mMeshInstance->setNumVertices(p_count);
 
-		// Set draw mode
-		mMeshInstance->setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		utility::generateIndices(shape, p_count);
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -233,8 +234,9 @@ namespace nap
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(4);
 
-		// Set draw mode
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		utility::generateIndices(shape, 4);
 
 		// Initialize line
 		bool success = mMeshInstance->init(errorState);
@@ -258,7 +260,10 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(mSegments);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);		
+		utility::generateIndices(shape, mSegments);		
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -292,13 +297,16 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(6);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		utility::generateIndices(shape, 6);
 
 		return mMeshInstance->init(errorState);
 	}
 
 
-	bool Triangle::init(utility::ErrorState& errorState)
+	bool TriangleLine::init(utility::ErrorState& errorState)
 	{
 		if (!PolyLine::init(errorState))
 			return false;
@@ -325,7 +333,10 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(3);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		utility::generateIndices(shape, 3);
 
 		return mMeshInstance->init(errorState);
 	}
@@ -333,55 +344,55 @@ namespace nap
 
 	Vec3VertexAttribute& PolyLine::getPositionAttr()
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getPositionAttr() const
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 	}
 
 
 	Vec4VertexAttribute& PolyLine::getColorAttr()
 	{
-		return getMeshInstance().GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		return getMeshInstance().getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 	}
 
 
 	const nap::Vec4VertexAttribute& PolyLine::getColorAttr() const
 	{
-		return getMeshInstance().GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		return getMeshInstance().getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getNormalAttr()
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getNormalAttr() const
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getUvAttr()
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getUvAttr() const
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
 	}
 
 
 	bool PolyLine::isClosed() const
 	{
-		opengl::EDrawMode mode = getMeshInstance().getDrawMode();
+		opengl::EDrawMode mode = getMeshInstance().getShape(0).getDrawMode();
 		assert(mode == opengl::EDrawMode::LINE_LOOP || mode == opengl::EDrawMode::LINE_STRIP);
 		return mode == opengl::EDrawMode::LINE_LOOP;
 	}

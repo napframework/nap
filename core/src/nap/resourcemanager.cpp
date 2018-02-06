@@ -41,7 +41,6 @@ namespace nap
 		virtual RTTIObject* findTarget(const std::string& targetID) override
 		{
 			// Objects in objectsToUpdate have preference over the manager's objects. 
-			RTTIObject* target_object = nullptr;
 			auto object_to_update = mObjectsToUpdate->find(targetID);
 			if (object_to_update == mObjectsToUpdate->end())
 				return mResourceManager->findObject(targetID).get();
@@ -122,7 +121,7 @@ namespace nap
 		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
 		mFactory(std::make_unique<Factory>()),
 		mCore(core)
-	{ 
+	{
 	}
 
 
@@ -396,7 +395,7 @@ namespace nap
 						utility::ErrorState errorState;
 						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, errorState))
 						{
-							nap::Logger::warn("Failed to reload %s:\n %s. \n\n See log for more information.", source_file.c_str(), errorState.toString().c_str());
+							nap::Logger::warn("Failed to reload %s (%s)", source_file.c_str(), errorState.toString().c_str());
 							break;
 						}
 					}

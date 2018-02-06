@@ -76,14 +76,14 @@ namespace nap
 		/**
 		 * @return the application exit code
 		 */
-		int exitCode() const								{ return mApp->getExitCode(); }
+		int exitCode() const								{ return mExitCode; }
 
 	private:
 		nap::Core&					mCore;					// Core
 		std::unique_ptr<APP>		mApp = nullptr;			// App this runner works with
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
 		bool						mStop = false;			// If the runner should stop
-
+		int							mExitCode = 0;			// Application exit code
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -128,10 +128,19 @@ namespace nap
 		// Initialize engine
 		if (!mCore.initializeEngine(error))
 		{
-			mCore.shutdown();
 			error.fail("unable to initialize engine");
 			return false;
 		}
+		// Initialize the various services
+		if (!mCore.initializeServices(error))
+		{
+			mCore.shutdownServices();
+			error.fail("Failed to initialize services");
+			return false;
+		}
+
+		if (!mCore.initializePython(error))
+			return false;
 
 		// Initialize application
 		if(!error.check(app.init(error), "unable to initialize application"))
@@ -155,10 +164,10 @@ namespace nap
 		}
 
 		// Shutdown
-		app.shutdown();
+		mExitCode = app.shutdown();
 
 		// Shutdown core
-		mCore.shutdown();
+		mCore.shutdownServices();
 
 		// Message successful exit
 		return true;

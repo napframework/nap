@@ -40,4 +40,4 @@ namespace nap
 
 }
 
-RTTI_DEFINE(nap::SceneService)
+RTTI_DEFINE_CLASS(nap::SceneService)

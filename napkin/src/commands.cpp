@@ -1,217 +1,280 @@
+#include <nap/logger.h>
+
+#include "generic/naputils.h"
 #include "commands.h"
-#include <nap/coremodule.h>
+#include "appcontext.h"
 
-void PasteCmd::undo()
+using namespace napkin;
+
+SetValueCommand::SetValueCommand(const PropertyPath& propPath, QVariant newValue)
+		: mPath(propPath), mNewValue(newValue), QUndoCommand()
 {
-	nap::Object* pasted = pastedPath.resolve(AppContext::get().core().getRoot());
-	assert(pasted);
-	mClipboardText = AppContext::get().serialize(pasted);
-	pasted->getParentObject()->removeChild(*pasted);
+	setText(QString("Set value of %1 to %2").arg(QString::fromStdString(propPath.toString()),
+												 newValue.toString()));
 }
 
-void PasteCmd::redo()
+void SetValueCommand::undo()
 {
-	nap::Object* parent = parentPath.resolve(AppContext::get().core().getRoot());
-	assert(parent);
-	AppContext::get().deserialize(mClipboardText, parent);
+	// resolve path
+	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
+	assert(resolvedPath.isValid());
+
+	// set new value
+	bool ok;
+	rttr::variant variant = fromQVariant(resolvedPath.getType(), mOldValue, &ok);
+	assert(ok);
+	resolvedPath.setValue(variant);
+
+	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
-void MoveOperatorsCmd::undo()
+void SetValueCommand::redo()
 {
-	nap::Object& root = AppContext::get().core().getRoot();
-	for (int i = 0; i < mOperatorPaths.size(); i++) {
-		nap::Operator* op = mOperatorPaths[i].resolve<nap::Operator>(root);
-		setObjectEditorPosition(*op, mOriginalPositions[i]);
+	// retrieve and store current value
+	auto resolvedPath = mPath.resolve();
+	rttr::variant oldValueVariant = resolvedPath.getValue();
+	assert(toQVariant(resolvedPath.getType(), oldValueVariant, mOldValue));
+
+	if (mPath.getProperty().get_name() == nap::rtti::sIDPropertyName)
+	{
+		// Deal with object names separately
+		AppContext::get().getDocument()->setObjectName(mPath.object(), mNewValue.toString().toStdString());
 	}
-}
-
-void MoveOperatorsCmd::redo()
-{
-	nap::Object& root = AppContext::get().core().getRoot();
-	for (int i = 0; i < mOperatorPaths.size(); i++) {
-		nap::Operator* op = mOperatorPaths[i].resolve<nap::Operator>(root);
-		assert(op);
-		setObjectEditorPosition(*op, mOriginalPositions[i] + mDelta);
-	}
-}
-
-void ConnectPlugsCmd::undo()
-{
-	nap::Entity& root = AppContext::get().core().getRoot();
-	nap::OutputPlugBase* srcPlug = mSrcPlugPath.resolve<nap::OutputPlugBase>(root);
-	nap::InputPlugBase* dstPlug = mDstPlugPath.resolve<nap::InputPlugBase>(root);
-	assert(srcPlug);
-	assert(dstPlug);
-
-	dstPlug->disconnect(*srcPlug);
-}
-
-void ConnectPlugsCmd::redo()
-{
-	nap::Entity& root = AppContext::get().core().getRoot();
-	nap::OutputPlugBase* srcPlug = mSrcPlugPath.resolve<nap::OutputPlugBase>(root);
-	nap::InputPlugBase* dstPlug = mDstPlugPath.resolve<nap::InputPlugBase>(root);
-	assert(srcPlug);
-	assert(dstPlug);
-
-	dstPlug->connect(*srcPlug);
-}
-
-void RemoveObjectCmd::redo()
-{
-	mSerializedObjects.clear();
-	mParentPaths.clear();
-	for (auto path : mObjectPaths) {
-		nap::Object* object = path.resolve(AppContext::get().core().getRoot());
-		assert(object);
-		nap::ObjectPath parentPath = object->getParentObject();
-		mParentPaths << parentPath;
-		mSerializedObjects.append(AppContext::get().serialize(object));
-		object->getParentObject()->removeChild(*object);
-	}
-}
-
-void RemoveObjectCmd::undo()
-{
-
-	for (int i = 0; i < mParentPaths.size(); i++) {
-		nap::Object* parent = mParentPaths[i].resolve(AppContext::get().core().getRoot());
-		assert(parent);
-		AppContext::get().deserialize(mSerializedObjects[i], parent);
-	}
-}
-
-void CreateOperatorCmd::redo()
-{
-	auto patch = (nap::Patch*)mPatchPath.resolve(AppContext::get().core().getRoot());
-	assert(patch);
-
-	RTTI::TypeInfo type = RTTI::TypeInfo::getByName(mOpTypeName);
-	if (!type.isValid()) {
-		nap::Logger::fatal("Operator type not found: '%s'", mOpTypeName.c_str());
-		return;
+	else
+	{
+		// Any other old value
+		bool ok;
+		rttr::variant variant = fromQVariant(resolvedPath.getType(), mNewValue, &ok);
+		assert(ok);
+		resolvedPath.setValue(variant);
+		AppContext::get().getDocument()->propertyValueChanged(mPath);
 	}
 
-	nap::Operator* op = (nap::Operator*)type.createInstance();
-	setObjectEditorPosition(*op, mPos);
-
-	assert(op);
-	op->setName(mOpTypeName);
-
-	op = &patch->addOperator(std::move(std::unique_ptr<nap::Operator>(op)));
-	mOperatorPath = op;
 }
 
-void CreateOperatorCmd::undo()
+SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue)
+		: mPath(path), mNewValue(newValue->mID), mOldValue(getPointee(path)->mID), QUndoCommand()
 {
-	auto op = (nap::Operator*)mOperatorPath.resolve(AppContext::get().core().getRoot());
-	assert(op);
-
-	auto patch = (nap::Patch*)mPatchPath.resolve(AppContext::get().core().getRoot());
-	assert(patch);
-
-	patch->removeOperator(*op);
+	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
+															 QString::fromStdString(newValue->mID)));
 }
 
-void CreateComponentCmd::redo()
+void SetPointerValueCommand::undo()
 {
-	nap::Entity* parent = (nap::Entity*)mParentPath.resolve(AppContext::get().core().getRoot());
+	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
+	assert(resolvedPath.isValid());
 
-	RTTI::TypeInfo componentType = RTTI::TypeInfo::getByName(mComponentType);
-	if (!componentType.isValid()) {
-		nap::Logger::fatal("Component type not found: '%s'", mComponentType.c_str());
-		return;
+	auto old_object = AppContext::get().getDocument()->getObject(mOldValue);
+	bool value_set = resolvedPath.setValue(old_object);
+	assert(value_set);
+	AppContext::get().getDocument()->propertyValueChanged(mPath);
+}
+
+void SetPointerValueCommand::redo()
+{
+	nap::rtti::ResolvedRTTIPath resolved_path = mPath.resolve();
+	assert(resolved_path.isValid());
+
+	auto new_object = AppContext::get().getDocument()->getObject(mNewValue);
+	bool value_set = resolved_path.setValue(new_object);
+	assert(value_set);
+	AppContext::get().getDocument()->propertyValueChanged(mPath);
+}
+
+AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject* parent)
+		: mType(type), QUndoCommand()
+{
+
+	if (parent != nullptr) {
+		setText(QString("Add new %1 to %2").arg(QString::fromUtf8(type.get_name().data()),
+												QString::fromStdString(parent->mID)));
+		mParentName = parent->mID;
+	}
+	else
+	{
+		setText(QString("Add new %1").arg(QString::fromUtf8(type.get_name().data())));
 	}
 
-
-	if (!componentType.canCreateInstance()) {
-		nap::Logger::fatal("Cannot create instance of type: '%s'",componentType.getName().c_str());
-		return;
-	}
-	nap::Component* comp = static_cast<nap::Component*>(componentType.createInstance());
-	assert(comp);
-
-	comp->setName(stripNamespace(mComponentType));
-	mComponentPath = parent->addComponent(std::unique_ptr<nap::Component>(comp));
 }
 
-void CreateComponentCmd::undo()
+
+void AddObjectCommand::redo()
 {
-	nap::Object& refObject = AppContext::get().core().getRoot();
+	// Create object
+	auto parent = AppContext::get().getDocument()->getObject(mParentName);
+	auto object = AppContext::get().getDocument()->addObject(mType, parent);
 
-	nap::Entity* parent = (nap::Entity*)mParentPath.resolve(refObject);
-	assert(parent);
+	// Remember for undo
+	mObjectName = object->mID;
 
-	nap::Component* comp = (nap::Component*)mComponentPath.resolve(refObject);
-	assert(comp);
-
-	parent->removeComponent(*comp);
+	// Notify
+	AppContext::get().getDocument()->objectAdded(*object, true);
+}
+void AddObjectCommand::undo()
+{
+	AppContext::get().getDocument()->removeObject(mObjectName);
 }
 
-void CreateEntityCmd::undo()
+
+DeleteObjectCommand::DeleteObjectCommand(nap::rtti::RTTIObject& object) : mObjectName(object.mID), QUndoCommand()
 {
-	nap::Object& refObject = AppContext::get().core().getRoot();
-
-	nap::Entity* parent = (nap::Entity*)mParentPath.resolve(refObject);
-	assert(parent);
-
-	nap::Entity* e = (nap::Entity*)mEntityPath.resolve(refObject);
-	assert(e);
-
-	parent->removeEntity(*e);
+	setText(QString("Deleting Object '%1'").arg(QString::fromStdString(mObjectName)));
 }
 
-void CreateEntityCmd::redo()
+void DeleteObjectCommand::undo()
 {
-	nap::Entity* parent = (nap::Entity*)mParentPath.resolve(AppContext::get().core().getRoot());
-	assert(parent);
-	nap::ObjectPath p(parent->addEntity("New Entity"));
-	mEntityPath = p;
+	nap::Logger::fatal("Sorry, no undo for you");
 }
 
-void SetNameCmd::undo()
+void DeleteObjectCommand::redo()
 {
-	nap::Object* object = mNewObjectPath.resolve(AppContext::get().core().getRoot());
-	assert(object);
-	object->setName(mOldName);
+	AppContext::get().getDocument()->removeObject(mObjectName);
 }
 
-void SetNameCmd::redo()
+
+AddEntityToSceneCommand::AddEntityToSceneCommand(nap::Scene& scene, nap::Entity& entity)
+		: mSceneID(scene.mID), mEntityID(entity.mID), QUndoCommand()
 {
-	nap::Object* object = mOldObjectPath.resolve(AppContext::get().core().getRoot());
-	mOldName = object->getName();
-	object->setName(mNewName);
-	mNewObjectPath = object;
+	setText(QString("Add Entity '%1' to Scene '%2'").arg(QString::fromStdString(mEntityID),
+														 QString::fromStdString(mSceneID)));
 }
 
-void AddAttributeCmd::undo()
+void AddEntityToSceneCommand::undo()
 {
-	nap::AttributeBase* attrib =
-		(nap::AttributeBase*)mAttributePath.resolve(AppContext::get().core().getRoot());
-	assert(attrib);
-	attrib->getParent()->removeChild(*attrib);
+	nap::Logger::fatal("Sorry, no undo for you");
 }
 
-void AddAttributeCmd::redo()
+void AddEntityToSceneCommand::redo()
 {
-	nap::Entity& root = AppContext::get().core().getRoot();
-	nap::AttributeObject* object = mObjectPath.resolve<nap::AttributeObject>(root);
-	assert(object);
-	mAttributePath = object->addAttribute("NewAttribute", RTTI_OF(nap::Attribute<float>));
+	auto scene = AppContext::get().getDocument()->getObjectT<nap::Scene>(mSceneID);
+	assert(scene != nullptr);
+	auto entity = AppContext::get().getDocument()->getObjectT<nap::Entity>(mEntityID);
+	assert(entity != nullptr);
+
+	nap::RootEntity rootEntity;
+	rootEntity.mEntity = entity;
+
+	// Store index for undo
+	mIndex = scene->mEntities.size();
+
+	scene->mEntities.emplace_back(rootEntity);
+
+	AppContext::get().getDocument()->objectChanged(*scene);
 }
 
-void SetAttributeValueCmd::undo()
+ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop, size_t index)
+		: mPath(prop), mIndex(index), QUndoCommand()
 {
-	nap::AttributeBase* attrib =
-		(nap::AttributeBase*)mAttrPath.resolve(AppContext::get().core().getRoot());
-	assert(attrib);
-	attributeFromString(*attrib, mOldValue);
+	setText("Add element to: " + QString::fromStdString(prop.toString()));
 }
 
-void SetAttributeValueCmd::redo()
+ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop) : mPath(prop), QUndoCommand()
 {
-	nap::AttributeBase* attrib =
-		(nap::AttributeBase*)mAttrPath.resolve(AppContext::get().core().getRoot());
-	assert(attrib);
-	attributeFromString(*attrib, mNewValue);
+	mIndex = prop.getArrayLength();
+	setText("Add element to: " + QString::fromStdString(prop.toString()));
+}
+
+
+
+void ArrayAddValueCommand::redo()
+{
+	AppContext::get().getDocument()->arrayAddValue(mPath);
+}
+
+void ArrayAddValueCommand::undo()
+{
+	nap::Logger::fatal("Sorry, no undo for you");
+}
+
+ArrayAddNewObjectCommand::ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type,
+												   size_t index) : mPath(prop), mType(type), mIndex(index), QUndoCommand()
+{
+	setText(QString("Add %1 to %2").arg(QString::fromUtf8(type.get_name().data()),
+										QString::fromStdString(prop.toString())));
+}
+
+ArrayAddNewObjectCommand::ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type)
+		: mPath(prop), mType(type), QUndoCommand()
+{
+	setText(QString("Add %1 to %2").arg(QString::fromUtf8(type.get_name().data()),
+										QString::fromStdString(prop.toString())));
+	mIndex = prop.getArrayLength();
+}
+
+
+void ArrayAddNewObjectCommand::redo()
+{
+	AppContext::get().getDocument()->arrayAddNewObject(mPath, mType, mIndex);
+}
+
+void ArrayAddNewObjectCommand::undo()
+{
+	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
+}
+
+
+ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object,
+															 size_t index)
+		: mPath(prop), mObjectName(object.mID), mIndex(index), QUndoCommand()
+{
+	setText(QString("Add %1 to %2").arg(QString::fromStdString(object.mID),
+										QString::fromStdString(prop.toString())));
+}
+
+
+ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object)
+		: mPath(prop), mObjectName(object.mID), QUndoCommand()
+{
+	setText(QString("Add %1 to %2").arg(QString::fromStdString(object.mID),
+										QString::fromStdString(prop.toString())));
+	mIndex = prop.getArrayLength();
+}
+
+
+void ArrayAddExistingObjectCommand::redo()
+{
+	nap::rtti::RTTIObject* object = AppContext::get().getDocument()->getObject(mObjectName);
+	assert(object != nullptr);
+	AppContext::get().getDocument()->arrayAddExistingObject(mPath, object, mIndex);
+}
+
+void ArrayAddExistingObjectCommand::undo()
+{
+	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
+}
+
+ArrayRemoveElementCommand::ArrayRemoveElementCommand(const PropertyPath& array_prop, size_t index)
+		: mPath(array_prop), mIndex(index), QUndoCommand()
+{}
+
+void ArrayRemoveElementCommand::redo()
+{
+	mValue = AppContext::get().getDocument()->arrayGetElement(mPath, mIndex);
+	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
+}
+
+void ArrayRemoveElementCommand::undo()
+{
+	// TODO: Need store on redo and be able to reinstate the original value
+	nap::Logger::fatal("No undo supported");
+}
+
+
+ArrayMoveElementCommand::ArrayMoveElementCommand(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex)
+		: mPath(array_prop), mFromIndex(fromIndex), mToIndex(toIndex), QUndoCommand()
+{
+	setText(QString("Reorder '%1' from %2 to %3").arg(QString::fromStdString(array_prop.toString()),
+													  QString::number(fromIndex), QString::number(toIndex)));
+}
+
+void ArrayMoveElementCommand::redo()
+{
+	// Also store indexes that may have shifted due to the operation so we can undo
+	mOldIndex = (mFromIndex > mToIndex) ? mFromIndex + 1 : mFromIndex;
+	mNewIndex = AppContext::get().getDocument()->arrayMoveElement(mPath, mFromIndex, mToIndex);
+}
+
+void ArrayMoveElementCommand::undo()
+{
+	AppContext::get().getDocument()->arrayMoveElement(mPath, mNewIndex, mOldIndex);
 }

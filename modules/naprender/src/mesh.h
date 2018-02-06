@@ -14,6 +14,136 @@
 namespace nap
 {
 	/**
+	* Known vertex attribute IDs in the system
+	* These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
+	*/
+	namespace VertexAttributeIDs
+	{
+		/**
+		* @return Default position vertex attribute name "Position"
+		*/
+		const NAPAPI std::string getPositionName();
+
+		/**
+		* @return Default normal vertex attribute name: "Normal"
+		*/
+		const NAPAPI std::string getNormalName();
+
+		/**
+		* @return Default tangent vertex attribute name: "Tangent"
+		*/
+		const NAPAPI std::string getTangentName();
+
+		/**
+		* @return Default bi-tangent vertex attribute name: "Bitangent"
+		*/
+		const NAPAPI std::string getBitangentName();
+
+		/**
+		* Returns the name of the vertex uv attribute based on the queried uv channel, ie: UV0, UV1 etc.
+		* @param uvChannel: the uv channel index to query
+		* @return the name of the vertex attribute
+		*/
+		const NAPAPI std::string getUVName(int uvChannel);
+
+		/**
+		* Returns the name of the vertex color attribute based on the queried color channel, ie: "Color0", "Color1" etc.
+		* @param colorChannel: the color channel index to query
+		* @return the name of the color vertex attribute
+		*/
+		const NAPAPI std::string GetColorName(int colorChannel);
+	};
+
+	/**
+	 * A MeshShape describes how a particular part of a mesh should be drawn. It contains the DrawMode and an IndexList.
+	 * The indices index into the vertex data contained in the mesh this shape is a part of, while the DrawMode describes how the indices should be interpreted/drawn.
+	 */
+	class MeshShape
+	{
+	public:
+		using IndexList = std::vector<unsigned int>;
+
+		/**
+		 * @return The number of indices in this shape
+		 */
+		int getNumIndices() const { return mIndices.size(); }
+
+		/**
+		* Clears the list of indices.
+		* Call either before init() or call update() to reflect the changes in the GPU buffer.
+		*/
+		void clearIndices() { mIndices.clear(); }
+
+		/**
+		* Reserves CPU memory for index list. GPU memory is reserved after update() is called.
+		* @param numIndices Amount of indices to reserve.
+		*/
+		void reserveIndices(size_t numIndices)
+		{
+			mIndices.reserve(numIndices);
+		}
+
+		/**
+		* Adds a list of indices to the index CPU buffer.
+		* Call either before init() or call update() to reflect the changes in the GPU buffer.
+		* @param indices: array of indices to add.
+		* @param numIndices: number of indices in @indices.
+		*/
+		void setIndices(uint32_t* indices, int numIndices)
+		{
+			mIndices.resize(numIndices);
+			std::memcpy(mIndices.data(), indices, numIndices * sizeof(uint32_t));
+		}
+
+		/**
+		 * @return The index list for this shape
+		 */
+		const IndexList& getIndices() const { return mIndices; }
+
+		/**
+		 * @return The index list for this shape
+		 */
+		IndexList& getIndices() { return mIndices; }
+
+		/**
+		* Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
+		* the current indices with a new set of indices.
+		* Call either before init() or call update() to reflect the changes in the GPU buffer.
+		* @param indices List of indices to update.
+		* @param numIndices Number of indices in the list.
+		*/
+		void addIndices(uint32_t* indices, int numIndices)
+		{
+			int cur_num_indices = mIndices.size();
+			mIndices.resize(cur_num_indices + numIndices);
+			std::memcpy(&mIndices[cur_num_indices], indices, numIndices * sizeof(uint32_t));
+		}
+
+		/**
+		* Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
+		* Call either before init() or call update() to reflect the changes in the GPU buffer.
+		* @param index Index to add.
+		*/
+		void addIndex(int index) { mIndices.push_back(index); }
+
+		/**
+		* Sets Draw mode for this mesh
+		* @param drawMode: OpenGL draw mode.
+		*/
+		void setDrawMode(opengl::EDrawMode drawMode) { mDrawMode = drawMode; }
+
+		/**
+		* @return Draw mode for this mesh.
+		*/
+		opengl::EDrawMode getDrawMode() const { return mDrawMode; }
+
+	public:
+		opengl::EDrawMode	mDrawMode;		///< The draw mode that should be used to draw this shape
+		IndexList			mIndices;		///< Indices into the mesh's vertex data
+	};
+
+
+	/**
 	 * Helper struct for data that is common between MeshInstance and Mesh.
 	 * Templatized as the ownership for vertex attributes is different between a MeshInstance and a Mesh:
 	 *		- MeshInstance has ownership over the attributes through unique_ptrs.
@@ -27,12 +157,10 @@ namespace nap
 	struct MeshProperties
 	{
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
-		using IndexList = std::vector<unsigned int>;
 
-		int								mNumVertices;
-		opengl::EDrawMode				mDrawMode;
-		VertexAttributeList				mAttributes;
-		IndexList						mIndices;
+		int						mNumVertices;
+		VertexAttributeList		mAttributes;
+		std::vector<MeshShape>	mShapes;
 	};
 
 	// ObjectPtr based mesh properties, used in serializable Mesh format (json/binary)
@@ -60,33 +188,6 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
-		using VertexAttributeID = std::string;
-
-		/**
-		 * Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
-		 */
-		struct VertexAttributeIDs
-		{
-			static const NAPAPI VertexAttributeID GetPositionName();	//< Default position vertex attribute name
-			static const NAPAPI VertexAttributeID getNormalName();		//< Default normal vertex attribute name
-			static const NAPAPI VertexAttributeID getTangentName();		//< Default tangent vertex attribute name
-			static const NAPAPI VertexAttributeID getBitangentName();	//< Default bi-tangent vertex attribute name
-
-			/**
-			 * Returns the name of the vertex uv attribute based on the queried uv channel
-			 * @param uvChannel: the uv channel index to query
-			 * @return the name of the vertex attribute
-			 */
-			static const NAPAPI VertexAttributeID GetUVName(int uvChannel);
-
-			/**
-			 *	Returns the name of the vertex color attribute based on the queried uv channel
-			 * @param colorChannel: the color channel index to query
-			 * @return the name of the color vertex attribute
-			 */
-			static const NAPAPI VertexAttributeID GetColorName(int colorChannel);
-		};
-
 		// Default constructor
 		MeshInstance() = default;
 
@@ -120,7 +221,7 @@ namespace nap
 		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		 */
 		template<typename T>
-		VertexAttribute<T>* FindAttribute(const std::string& id);
+		VertexAttribute<T>* findAttribute(const std::string& id);
 
 		/**
 		* Finds vertex attribute.
@@ -128,7 +229,7 @@ namespace nap
 		* @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		*/
 		template<typename T>
-		const VertexAttribute<T>* FindAttribute(const std::string& id) const;
+		const VertexAttribute<T>* findAttribute(const std::string& id) const;
 
 		/**
 		 * Gets vertex attribute.
@@ -136,7 +237,7 @@ namespace nap
 		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		 */
 		template<typename T>
-		VertexAttribute<T>& GetAttribute(const std::string& id);
+		VertexAttribute<T>& getAttribute(const std::string& id);
 
 		/**
 		* Gets vertex attribute.
@@ -144,7 +245,7 @@ namespace nap
 		* @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		*/
 		template<typename T>
-		const VertexAttribute<T>& GetAttribute(const std::string& id) const;
+		const VertexAttribute<T>& getAttribute(const std::string& id) const;
 
 		/**
 		 * Gets a vertex attribute or creates it if it does not exist. In case the attribute did exist, but with a different type, the function asserts.
@@ -152,28 +253,13 @@ namespace nap
 		 * @return Type safe vertex attribute. 
 		 */
 		template<typename T>
-		VertexAttribute<T>& GetOrCreateAttribute(const std::string& id);
+		VertexAttribute<T>& getOrCreateAttribute(const std::string& id);
 
 		/**
-		 * Reserves index CPU memory.
+	 	 * Reserves CPU memory for index list. GPU memory is reserved after update() is called.
 		 * @param numIndices Amount of indices to reserve.
 		 */
-		void ReserveIndices(size_t numIndices)									{ mProperties.mIndices.reserve(numIndices); }
-
-		/**
-		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
-		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
-		 * @param index Index to add.
-		 */
-		void AddIndex(int index)												{ mProperties.mIndices.push_back(index); }
-
-		/**
-		 * Adds a list of indices to the index CPU buffer.
-		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
-		 * @param indices: array of indices to add.
-		 * @param numIndices: number of indices in @indices.
-		 */
-		void setIndices(uint32_t* indices, int numIndices);
+		void reserveVertices(size_t numVertices);
 
 		/**
 		 * Sets number of vertices. The amount of elements for each vertex buffer should be equal to
@@ -188,26 +274,29 @@ namespace nap
 		int getNumVertices() const												{ return mProperties.mNumVertices; }
 
 		/**
-		 * Sets Draw mode for this mesh
-		 * @param drawMode: OpenGL draw mode.
+		 * @return The number of shapes contained in this mesh
 		 */
-		void setDrawMode(opengl::EDrawMode drawMode)							{ mProperties.mDrawMode = drawMode; }
+		int getNumShapes() const												{ return mProperties.mShapes.size(); }
 
 		/**
-		 * @return Draw mode for this mesh.
+		 * Get the shape at the specified index
+		 * @param index The index of the shape to get (between 0 and getNumShapes())
+		 * @return The shape
 		 */
-		opengl::EDrawMode getDrawMode() const									{ return mProperties.mDrawMode; }
+		MeshShape& getShape(int index)											{ return mProperties.mShapes[index]; }
 
 		/**
-		 * @return if the mesh has indices associated with it
+		 * Get the shape at the specified index
+		 * @param index The index of the shape to get (between 0 and getNumShapes())
+		 * @return The shape
 		 */
-		bool hasIndices() const													{ return !(mProperties.mIndices.empty()); }
+		const MeshShape& getShape(int index) const								{ return mProperties.mShapes[index]; }
 
 		/**
-		 * @return the indices associated with this mesh. This array is empty
-		 * if this mesh has no indices
+		 * Create and add a new shape to this mesh. The returned shape is uninitialized; it is up to the client to initialize as needed
+		 * @return The new shape
 		 */
-		const std::vector<uint>& getIndices() const						{ return mProperties.mIndices; }
+		MeshShape& createShape();
 
 		/**
 		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),
@@ -305,7 +394,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	nap::VertexAttribute<T>* nap::MeshInstance::FindAttribute(const std::string& id)
+	nap::VertexAttribute<T>* nap::MeshInstance::findAttribute(const std::string& id)
 	{
 		for (auto& attribute : mProperties.mAttributes)
 			if (attribute->mAttributeID == id)
@@ -314,7 +403,7 @@ namespace nap
 	}
 
 	template<typename T>
-	const VertexAttribute<T>* nap::MeshInstance::FindAttribute(const std::string& id) const
+	const VertexAttribute<T>* nap::MeshInstance::findAttribute(const std::string& id) const
 	{
 		for (auto& attribute : mProperties.mAttributes)
 			if (attribute->mAttributeID == id)
@@ -326,23 +415,23 @@ namespace nap
 	}
 
 	template<typename T>
-	nap::VertexAttribute<T>& nap::MeshInstance::GetAttribute(const std::string& id)
+	nap::VertexAttribute<T>& nap::MeshInstance::getAttribute(const std::string& id)
 	{
-		VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		VertexAttribute<T>* attribute = findAttribute<T>(id);
 		assert(attribute != nullptr);
 		return *attribute;
 	}
 
 	template<typename T>
-	const VertexAttribute<T>& nap::MeshInstance::GetAttribute(const std::string& id) const
+	const VertexAttribute<T>& nap::MeshInstance::getAttribute(const std::string& id) const
 	{
-		const VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		const VertexAttribute<T>* attribute = findAttribute<T>(id);
 		assert(attribute != nullptr);
 		return *attribute;
 	}
 
 	template<typename T>
-	nap::VertexAttribute<T>& nap::MeshInstance::GetOrCreateAttribute(const std::string& id)
+	nap::VertexAttribute<T>& nap::MeshInstance::getOrCreateAttribute(const std::string& id)
 	{
 		for (auto& attribute : mProperties.mAttributes)
 		{

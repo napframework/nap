@@ -12,7 +12,7 @@ extern "C"
 	#include <libavformat/avformat.h>
 }
 
-RTTI_DEFINE(nap::VideoService)
+RTTI_DEFINE_CLASS(nap::VideoService)
 
 namespace nap
 {

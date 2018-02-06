@@ -31,16 +31,13 @@ namespace nap
 		/**
 		 * Get the types of components on which this component depends
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.push_back(RTTI_OF(TransformComponent));
-			components.push_back(RTTI_OF(KeyInputComponent));
-		}
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		float mMovementSpeed = 0.5f;		// The speed with which to move
-		float mRotateSpeed = 0.005f;		// The speed with which to rotate
-
-		ComponentPtr<PerspCameraComponent>	mPerspCameraComponent;	// Perspective camera that we are controlling
+		float		mMovementSpeed = 0.5f;		///< Property: "MovementSpeed" The speed with which to move
+		float		mRotateSpeed = 0.005f;		///< Property: "RotateSpeed" The speed with which to rotate
+		glm::vec3	mLookAtPos;					///< Property: "LookAtPosition" The world space position to look at
+		 
+		ComponentPtr<PerspCameraComponent>	mPerspCameraComponent;	///< Property: "PerspCameraComponent" Link to perspective camera that we are controlling
 	};
 
 
@@ -100,16 +97,16 @@ namespace nap
 		// Camera mode
 		enum class EMode
 		{
-			Idle,
-			Rotating,		// Rotate around target
-			Zooming			// Zoom into/out of target
+			Idle,			///< No action
+			Rotating,		///< Rotate around target
+			Zooming			///< Zoom into/out of target
 		};
 
 		ComponentInstancePtr<PerspCameraComponent>		mPerspCameraComponent = { this, &OrbitController::mPerspCameraComponent };
-		TransformComponentInstance*				mTransformComponent = nullptr;		// The transform component used to move the entity
-		EMode									mMode = EMode::Idle;				// Camera mode
-		glm::vec3								mLookAtPos;							// Target position to orbit around
-		bool									mEnabled = true;					// Enables responding to input
+		TransformComponentInstance*						mTransformComponent = nullptr;		// The transform component used to move the entity
+		EMode											mMode = EMode::Idle;				// Camera mode
+		glm::vec3										mLookAtPos;							// Target position to orbit around
+		bool											mEnabled = false;					// Enables responding to input
 	};
 
 }

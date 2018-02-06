@@ -16,7 +16,8 @@ RTTI_BEGIN_CLASS(nap::OrbitController)
 	RTTI_PROPERTY("MovementSpeed",			&nap::OrbitController::mMovementSpeed,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotateSpeed",			&nap::OrbitController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PerspCameraComponent",	&nap::OrbitController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_END_CLASS
+	RTTI_PROPERTY("LookAtPosition",			&nap::OrbitController::mLookAtPos,				nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbitControllerInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
@@ -44,6 +45,8 @@ namespace nap
 		pointer_component->pressed.connect(std::bind(&OrbitControllerInstance::onMouseDown, this, std::placeholders::_1));
 		pointer_component->moved.connect(std::bind(&OrbitControllerInstance::onMouseMove, this, std::placeholders::_1));
 		pointer_component->released.connect(std::bind(&OrbitControllerInstance::onMouseUp, this, std::placeholders::_1));
+
+		enable(getComponent<OrbitController>()->mLookAtPos);
 
 		return true;
 	}
@@ -110,7 +113,7 @@ namespace nap
 		{
 			// We are using the relative movement of the mouse to update the camera
 			float yaw = -(pointerMoveEvent.mRelX)  * getComponent<OrbitController>()->mRotateSpeed;
-			float pitch = -(pointerMoveEvent.mRelY) * getComponent<OrbitController>()->mRotateSpeed;
+			float pitch = pointerMoveEvent.mRelY * getComponent<OrbitController>()->mRotateSpeed;
 
 			// We need to rotate around the target point. We always first rotate around the local X axis (pitch), and then
 			// we rotate around the y axis (yaw).
@@ -146,4 +149,12 @@ namespace nap
 			mTransformComponent->setTranslate(translate - direction * distance);
 		}
 	}
+
+
+	void OrbitController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.push_back(RTTI_OF(TransformComponent));
+		components.push_back(RTTI_OF(KeyInputComponent));
+	}
+
 }

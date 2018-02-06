@@ -12,7 +12,7 @@
 #include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
-	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponent::mClipRect,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -156,9 +156,14 @@ namespace nap
 		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
 			return false;
 
-		mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
-		if (!errorState.check(mRenderableMesh.isValid(), "Unable to create renderable mesh"))
-			return false;
+		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh
+		// If it is set, we create a renderablemesh from it
+		if (resource->mMesh != nullptr)
+		{
+			mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
+			if (!errorState.check(mRenderableMesh.isValid(), "Unable to create renderable mesh"))
+				return false;
+		}
 
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
  		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
@@ -199,7 +204,7 @@ namespace nap
 	// Draw Mesh
 	void RenderableMeshComponentInstance::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
-		if (!mVisible)
+		if (!mVisible || !mRenderableMesh.isValid())
 			return;
 
 		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
@@ -237,22 +242,20 @@ namespace nap
 
 		// Gather draw info
 		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
-		GLenum draw_mode = getGLMode(mesh_instance.getDrawMode());
-		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
 
-		// Draw with or without using indices
-		if (index_buffer == nullptr)
+		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			glDrawArrays(draw_mode, 0, mesh_instance.getNumVertices());
-		}
-		else
-		{
-			GLsizei num_indices = static_cast<GLsizei>(index_buffer->getCount());
+			MeshShape& shape = mesh_instance.getShape(index);
+			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			
+			GLenum draw_mode = getGLMode(shape.getDrawMode());
+			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 
-			index_buffer->bind();
-			glDrawElements(draw_mode, num_indices, index_buffer->getType(), 0);
-			index_buffer->unbind();
+			index_buffer.bind();
+			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
+			index_buffer.unbind();
 		}
+
 		comp_mat->unbind();
 
 		mRenderableMesh.mVAOHandle.get().unbind();
