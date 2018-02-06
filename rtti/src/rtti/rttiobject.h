@@ -9,6 +9,8 @@ namespace nap
 {
 	namespace rtti
 	{
+		static const char* sIDPropertyName = "mID";
+
 		/**
 		 * The base class for all top-level objects that need to support serialization/deserialization.
 		 * You only need to derive from this if your object should be serialized to the root of the document or needs to be

@@ -6,6 +6,7 @@
 #include <sdlinput.h>
 #include <sdlwindow.h>
 
+
 // Nap includes
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
@@ -63,7 +64,7 @@ namespace nap
 		/**
 		 *	Called when loop finishes
 		 */
-		void shutdown() override;
+		int shutdown() override;
 		
 		
 	private:

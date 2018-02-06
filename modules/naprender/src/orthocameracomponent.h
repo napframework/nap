@@ -18,12 +18,12 @@ namespace nap
 	 */
 	struct NAPAPI OrthoCameraProperties
 	{
-		float mLeftPlane = 0.0f;
-		float mRightPlane = 100.0f;
-		float mTopPlane = 0.0f;
-		float mBottomPlane = 100.0f;
-		float mNearClippingPlane = 1.0f;
-		float mFarClippingPlane = 1000.0f;
+		float mNearClippingPlane = 1.0f;				///< Property: NearClippingPlane
+		float mFarClippingPlane = 1000.0f;				///< Property: FarClippingPlane
+		float mLeftPlane = 0.0f;						///< Property: LeftPlane, used when mode is CorrectAspectRatio or custom
+		float mRightPlane = 100.0f;						///< Property: RightPlane, used when mode is CorrectAspectRatio or custom
+		float mTopPlane = 100.0f;						///< Property: TopPlane, used when mode is CorrectAspectRatio or custom 
+		float mBottomPlane = 0.0f;						///< Property: TopPlane, used when mode is CorrectAspectRatio or custom
 	};
 	
 	/**
@@ -77,7 +77,7 @@ namespace nap
 		* camera acts in pixel coordinates.
 		* @param size The size of the render target in pixel coordinates.
 		*/
-		virtual void setRenderTargetSize(glm::ivec2 size) override;
+		virtual void setRenderTargetSize(const glm::ivec2& size) override;
 
 		/**
 		* @return camera projection matrix

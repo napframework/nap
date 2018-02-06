@@ -342,8 +342,6 @@ namespace nap
 			// We go over all component instances and resolve all Entity & Component instance pointers
 			for (auto& kvp : entityCreationParams.mComponentInstanceMap)
 			{
-				Component* source_component_resource = kvp.first;
-
 				// Resolve the component pointers for all instances of this component resource
 				for (ComponentInstance* source_component_instance : kvp.second)
 				{

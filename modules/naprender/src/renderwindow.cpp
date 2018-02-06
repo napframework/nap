@@ -33,11 +33,48 @@ namespace nap
 			return false;
 
 		// Set color to clear
-		mWindow->getBackbuffer()->setClearColor(mClearColor);
+		mWindow->getBackbuffer().setClearColor(mClearColor);
 
 		// We want to respond to resize events for this window
 		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
 		return true;
+	}
+
+
+	void RenderWindow::setFullscreen(bool value)
+	{
+		mWindow->setFullScreen(value);
+		mFullscreen = value;
+	}
+
+
+	void RenderWindow::toggleFullscreen()
+	{
+		setFullscreen(!mFullscreen);
+	}
+
+
+	void RenderWindow::setWidth(int width)
+	{
+		mWindow->setSize({ width, mWindow->getSize().y });
+	}
+
+
+	void RenderWindow::setHeight(int height)
+	{
+		mWindow->setSize({ mWindow->getSize().x, height });
+	}
+
+
+	void RenderWindow::setPosition(const glm::ivec2& position)
+	{
+		mWindow->setPosition(position);
+	}
+
+
+	const glm::ivec2 RenderWindow::getPosition() const
+	{
+		return mWindow->getPosition();
 	}
 
 
@@ -46,6 +83,23 @@ namespace nap
 		return static_cast<uint>(getWindow()->getNumber());
 	}
 
+
+	math::Rect RenderWindow::getRect() const
+	{
+		return { 0.0f, 0.0f, static_cast<float>(getWidth()), static_cast<float>(getHeight()) };
+	}
+
+
+	const opengl::BackbufferRenderTarget& RenderWindow::getBackbuffer() const
+	{
+		return mWindow->getBackbuffer();
+	}
+
+
+	opengl::BackbufferRenderTarget& RenderWindow::getBackbuffer()
+	{
+		return mWindow->getBackbuffer();
+	}
 
 	void RenderWindow::handleEvent(const Event& event)
 	{

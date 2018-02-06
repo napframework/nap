@@ -2,6 +2,8 @@
 
 // RTTI Includes
 #include <rtti/rtti.h>
+#include <vector>
+#include <unordered_set>
 #include "rttipath.h"
 #include "factory.h"
 #include "unresolvedpointer.h"
@@ -23,8 +25,10 @@ namespace nap
 			rtti::RTTIObject*		mTarget;		// The object being linked to (i.e. target of the pointer)
 		};
 
+        using ObjectList = std::vector<RTTIObject*>;
+        using ObjectSet = std::unordered_set<RTTIObject*>;
 
-		/**
+        /**
 		 * Copies rtti attributes from one object to another.
 		 * @param srcObject: the object to copy attributes from
 		 * @param dstObject: the target object
@@ -91,6 +95,13 @@ namespace nap
 		 * @return The version number
 		 */
 		std::size_t NAPAPI getRTTIVersion(const rtti::TypeInfo& type);
+
+		/**
+		 * Recursively get all types derived from the specified type (including the base type itself)
+		 * @param baseType The type to use as base
+		 * @param types The resulting array of types
+		 */
+		void NAPAPI getDerivedTypesRecursive(const rtti::TypeInfo& baseType, std::vector<rtti::TypeInfo>& types);
 
 	} //< End Namespace RTTI
 

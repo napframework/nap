@@ -5,6 +5,8 @@
 #include <memory>
 #include <random>
 #include <cmath>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 // Specialization of lerping
 namespace nap
@@ -17,7 +19,7 @@ namespace nap
 		}
 
 
-		int random(int min, int max)
+		static std::mt19937& getGenerator()
 		{
 			static std::unique_ptr<std::mt19937> generator = nullptr;
 			if (generator == nullptr)
@@ -25,8 +27,21 @@ namespace nap
 				std::random_device r;
 				generator = std::make_unique<std::mt19937>(r());
 			}
+			return *generator;
+		}
+
+
+		static int randomInt(int min, int max)
+		{
 			std::uniform_int_distribution<int> m_distribution(min, max);
-			return m_distribution(*generator);
+			return m_distribution(getGenerator());
+		}
+
+
+		static float randomFloat(float min, float max)
+		{
+			std::uniform_real_distribution<float> m_distribution(min, max);
+			return m_distribution(getGenerator());
 		}
 
 
@@ -152,6 +167,138 @@ namespace nap
 			currentValue.y = smoothDamp(currentValue.y, targetValue.y, currentVelocity.y, deltaTime, smoothTime, maxSpeed);
 			currentValue.z = smoothDamp(currentValue.z, targetValue.z, currentVelocity.z, deltaTime, smoothTime, maxSpeed);
 			currentValue.w = smoothDamp(currentValue.w, targetValue.w, currentVelocity.w, deltaTime, smoothTime, maxSpeed);
+		}
+
+
+		glm::mat4 composeMatrix(const glm::vec3& translate, const glm::quat& rotate, const glm::vec3& scale)
+		{
+			return glm::translate(glm::mat4x4(), translate) * glm::toMat4(rotate) * glm::scale(glm::mat4x4(), scale);
+		}
+
+
+		glm::quat eulerToQuat(const glm::vec3& eulerAngle)
+		{
+			return glm::quat(eulerAngle);
+		}
+
+
+		glm::quat eulerToQuat(float roll, float pitch, float yaw)
+		{
+			return eulerToQuat({ roll, pitch, yaw });
+		}
+
+
+		glm::vec3 radians(const glm::vec3& eulerDegrees)
+		{
+			return
+			{
+				glm::radians(eulerDegrees.x),
+				glm::radians(eulerDegrees.y),
+				glm::radians(eulerDegrees.z)
+			};
+		}
+
+
+		glm::vec3 extractPosition(const glm::mat4x4& matrix)
+		{
+			return{ matrix[3][0], matrix[3][1], matrix[3][2] };
+		}
+
+
+		glm::vec3 objectToWorld(const glm::vec3& point, const glm::mat4x4& transform)
+		{
+			return transform * glm::vec4(point, 1.0f);
+		}
+
+
+		glm::vec3 worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix)
+		{
+			return inverse(objectToWorldMatrix) * glm::vec4(point, 1.0f);
+		}
+
+		template<>
+		int random(int min, int max)
+		{
+			return randomInt(min, max);
+		}
+
+
+		template<>
+		float random(float min, float max)
+		{
+			return randomFloat(min, max);
+		}
+
+
+		template<>
+		glm::vec3 random(glm::vec3 min, glm::vec3 max)
+		{
+			return
+			{
+				randomFloat(min.x, max.x),
+				randomFloat(min.y, max.y),
+				randomFloat(min.z, max.z)
+			};
+		}
+
+
+		template<>
+		glm::vec4 random(glm::vec4 min, glm::vec4 max)
+		{
+			return
+			{
+				randomFloat(min.x, max.x),
+				randomFloat(min.y, max.y),
+				randomFloat(min.z, max.z),
+				randomFloat(min.w, max.w)
+			};
+		}
+
+
+		template<>
+		glm::vec2 random(glm::vec2 min, glm::vec2 max)
+		{
+			return
+			{
+				randomFloat(min.x, max.x),
+				randomFloat(min.y, max.y)
+			};
+		}
+
+
+		template<>
+		glm::ivec3 random(glm::ivec3 min, glm::ivec3 max)
+		{
+			return
+			{
+				randomInt(min.x, max.x),
+				randomInt(min.y, max.y),
+				randomInt(min.z, max.z)
+			};
+		}
+
+
+		template<>
+		glm::ivec4 random(glm::ivec4 min, glm::ivec4 max)
+		{
+			return
+			{
+				randomInt(min.x, max.x),
+				randomInt(min.y, max.y),
+				randomInt(min.z, max.z),
+				randomInt(min.w, max.w)
+			};
+		}
+
+
+		template<>
+		glm::ivec2 random(glm::ivec2 min, glm::ivec2 max)
+		{
+			return
+			{
+				randomInt(min.x, max.x),
+				randomInt(min.y, max.y)
+			};
 		}
 	}
 }

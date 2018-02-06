@@ -81,7 +81,7 @@ namespace nap
 
 	void FirstPersonControllerInstance::update(double deltaTime)
 	{
-		if (!mEnabled || !mMoving)
+		if (!mEnabled)
 			return;
 
 		FirstPersonController* resource = getComponent<FirstPersonController>();
@@ -151,7 +151,7 @@ namespace nap
 			return; 
 
 		float yaw = -(pointerMoveEvent.mRelX  * getComponent<FirstPersonController>()->mRotateSpeed);
-		float pitch = -(pointerMoveEvent.mRelY * getComponent<FirstPersonController>()->mRotateSpeed);
+		float pitch = pointerMoveEvent.mRelY  * getComponent<FirstPersonController>()->mRotateSpeed;
 
 		glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -236,4 +236,12 @@ namespace nap
 			}
 		}
 	}
+
+
+	void FirstPersonController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.emplace_back(RTTI_OF(TransformComponent));
+		components.emplace_back(RTTI_OF(KeyInputComponent));
+	}
+
 }

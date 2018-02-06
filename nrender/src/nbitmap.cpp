@@ -89,7 +89,7 @@ namespace opengl
 	// Sets data associated with this bitmap, object does not own it!
 	void BitmapBase::setData(const BitmapSettings& settings, void* data)
 	{
-		mSettings = settings;
+		setSettings(settings);
 		mData = data;
 	}
 
@@ -98,6 +98,14 @@ namespace opengl
 	size_t BitmapBase::getSize()
 	{
 		return mSettings.mWidth * mSettings.mHeight * getSizeOf(mSettings.mDataType) * getNumChannels(mSettings.mColorType);
+	}
+
+	
+	void BitmapBase::setSettings(const BitmapSettings& settings)
+	{
+		mSettings = settings;
+		mChannelSize = getSizeOf(mSettings.mDataType);
+		mNumChannels = getNumChannels(mSettings.mColorType);
 	}
 
 
@@ -116,24 +124,12 @@ namespace opengl
 		if (x >= mSettings.mWidth || y >= mSettings.mHeight)
 			return nullptr;
 
-		// Get size in bytes of data type
-		unsigned int data_size = static_cast<unsigned int>(getSizeOf(mSettings.mDataType));
-
-		// Get number of channels associated with this bitmap
-		unsigned int channel_count = static_cast<unsigned int>(getNumChannels(mSettings.mColorType));
-
 		// Get index in to array offset by number of channels (pixel level)
-		unsigned int offset = ((y * mSettings.mWidth) + x) * data_size * channel_count;
+		unsigned int offset = ((y * mSettings.mWidth) + x) * mNumChannels * mChannelSize;
 
 		// Update offset (pixel * num_channels * data_size
 		unsigned char* data_ptr = (unsigned char*)(mData) + offset;
 		return (void*)(data_ptr);
-	}
-
-
-	unsigned int BitmapBase::getNumberOfChannels() const
-	{
-		return static_cast<unsigned int>(getNumChannels(mSettings.mColorType));
 	}
 
 
@@ -145,26 +141,6 @@ namespace opengl
 			mColorType != BitmapColorType::UNKNOWN;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// Template specializations
-	//////////////////////////////////////////////////////////////////////////
-	template<>
-    BitmapDataType TypedBitmap<unsigned char>::getDataType() const
-	{
-		return BitmapDataType::BYTE;
-	}
-
-    template<>
-	BitmapDataType TypedBitmap<uint16_t>::getDataType() const
-	{
-		return BitmapDataType::USHORT;
-	}
-
-    template<>
-	BitmapDataType TypedBitmap<float>::getDataType() const
-	{
-		return BitmapDataType::FLOAT;
-	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Bitmap
@@ -215,7 +191,7 @@ namespace opengl
 	bool Bitmap::allocateMemory()
 	{
 		// Ensure settings are valid
-		if (!mSettings.isValid())
+		if (!getSettings().isValid())
 		{
 			opengl::printMessage(MessageType::ERROR, "unable to allocate memory, bitmap settings are invalid");
 			return false;
@@ -245,7 +221,7 @@ namespace opengl
 		}
 
 		// Copy settings
-		mSettings = new_settings;
+		setSettings(new_settings);
 
 		// Allocate memory
 		return allocateMemory();
@@ -269,7 +245,7 @@ namespace opengl
 	bool Bitmap::copyData(void* source)
 	{
 		// Make sure settings are valid
-		if (!mSettings.isValid())
+		if (!getSettings().isValid())
 		{
 			printMessage(MessageType::ERROR, "can't copy pixel data, invalid bitmap settings");
 			return false;
@@ -299,7 +275,7 @@ namespace opengl
 		}
 		
 		// Copy settings
-		mSettings = new_settings;
+		setSettings(new_settings);
 
 		// Clear associated data
 		if (BitmapBase::hasData())
@@ -309,11 +285,11 @@ namespace opengl
 		allocateMemory();
 
 		// Determine destination pitch
-		unsigned int dest_pitch = width * getSizeOf(dataType) * getNumChannels(colorType);
-		assert(dest_pitch <= sourcePitch);
+		unsigned int target_pitch = width * getSizeOf(dataType) * getNumChannels(colorType);
+		assert(target_pitch <= sourcePitch);
 
 		// If the dest & source pitches are the same, we can do a straight memcpy (most common/efficient case)
-		if (dest_pitch == sourcePitch)
+		if (target_pitch == sourcePitch)
 		{
 			memcpy(mData, source, BitmapBase::getSize());
 			return true;
@@ -321,12 +297,26 @@ namespace opengl
 
 		// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
 		uint8_t* source_line = (uint8_t*)source;
-		uint8_t* dest_line = (uint8_t*)mData;
+		uint8_t* target_line = (uint8_t*)mData;
+
+		// Get the amount of bytes every pixel occupies
+		int source_stride = sourcePitch / width;
+		int target_stride = target_pitch / width;
+
 		for (int y = 0; y < height; ++y)
 		{
-			memcpy(dest_line, source_line, dest_pitch);
+			uint8_t* source_loc = source_line;
+			uint8_t* target_loc = target_line;
+			for (int x = 0; x < width; ++x)
+			{
+				memcpy(target_loc, source_loc, target_stride);
+				target_loc += target_stride;
+				source_loc += source_stride;
+			}
+
+			//memcpy(dest_line, source_line, dest_pitch);
 			source_line += sourcePitch;
-			dest_line += dest_pitch;
+			target_line += target_pitch;
 		}
 		return true;
 	}

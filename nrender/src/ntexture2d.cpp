@@ -131,7 +131,7 @@ namespace opengl
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch);
 
 		// Upload texture data
-		glTexImage2D(GL_TEXTURE_2D, 0, mSettings.internalFormat, mSettings.width, mSettings.height, 0, mSettings.format, mSettings.type, data_ptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, mSettings.mInternalFormat, mSettings.mWidth, mSettings.mHeight, 0, mSettings.mFormat, mSettings.mType, data_ptr);
 		glAssert();
 
 		unbind();
@@ -146,7 +146,7 @@ namespace opengl
 
 	int Texture2D::getDataSize() const
 	{
-		return getNumComponents(mSettings.format) * getComponentSize(mSettings.type) * mSettings.width * mSettings.height;
+		return getNumComponents(mSettings.mFormat) * getComponentSize(mSettings.mType) * mSettings.mWidth * mSettings.mHeight;
 	}
 
 
@@ -155,7 +155,7 @@ namespace opengl
 		data.resize(getDataSize());
 
 		bind();
-		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.format, mSettings.type, data.data());
+		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.mFormat, mSettings.mType, data.data());
 		unbind();
 	}
 
@@ -167,11 +167,11 @@ namespace opengl
 
 		// Make sure settings match
 		assert(bitmap.getSize() == getDataSize());
-		assert(getGLType(bitmap.getDataType()) == mSettings.type);
-		assert(getGLFormat(bitmap.getColorType()) == mSettings.format);
+		assert(getGLType(bitmap.getDataType()) == mSettings.mType);
+		assert(getGLFormat(bitmap.getColorType()) == mSettings.mFormat);
 
 		bind();
-		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.format, mSettings.type, bitmap.getData());
+		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.mFormat, mSettings.mType, bitmap.getData());
 		unbind();
 	}
 
@@ -183,7 +183,7 @@ namespace opengl
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
 		
 		bind();
-		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.format, mSettings.type, 0);
+		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.mFormat, mSettings.mType, 0);
 		unbind();
 
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -217,8 +217,8 @@ namespace opengl
 
 		// Make sure settings match
 		assert(bitmap.getSize() == getDataSize());
-		assert(getGLType(bitmap.getDataType()) == mSettings.type);
-		assert(getGLFormat(bitmap.getColorType()) == mSettings.format);
+		assert(getGLType(bitmap.getDataType()) == mSettings.mType);
+		assert(getGLFormat(bitmap.getColorType()) == mSettings.mFormat);
 
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
 
@@ -237,10 +237,10 @@ namespace opengl
 		assert(!(bitmap.hasData()));
 		opengl::BitmapSettings settings
 		(
-			mSettings.width,
-			mSettings.height,
-			getBitmapType(mSettings.type),
-			getColorType(mSettings.format)
+			mSettings.mWidth,
+			mSettings.mHeight,
+			getBitmapType(mSettings.mType),
+			getColorType(mSettings.mFormat)
 		);
 
 		assert(settings.isValid());

@@ -1,0 +1,12 @@
+{
+  "Objects": [
+    {
+      "Type": "nap::RenderWindow",
+      "mID": "Window",
+      "Width": 1280,
+      "Height": 720,
+      "Title": "Skeleton",
+      "Sync": "false"
+    }
+  ]
+}

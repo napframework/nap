@@ -35,28 +35,7 @@ namespace nap
 		/**
 		 *	Loads the svg file and extracts the line
 		 */
-		virtual bool init(utility::ErrorState& errorState);
-
-		/**
-		 *	@return the line read from file
-		 */
-		virtual MeshInstance& getMeshInstance() override;
-
-		/**
-		 *	@return the line read from file
-		 */
-		virtual const MeshInstance&	getMeshInstance() const override;
-
-		/**
-		 *	@return the total number of lines associated with the svg file
-		 */
-		int getCount() const													{ return mLineInstances.size(); }
-
-		/**
-		 * Set the index of the currently active line, ie: the one that is return when called @getMeshInstance
-		 * @param index the new active line
-		 */
-		void setLineIndex(int index);
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Property: the svg file to read
 		std::string mFile;
@@ -89,13 +68,10 @@ namespace nap
 		using SVGPaths = std::vector<std::unique_ptr<std::vector<glm::vec3>>>;
 		using SVGState = std::vector<bool>;
 
-		// Holds all the extracted line instances
-		std::vector<std::unique_ptr<MeshInstance>> mLineInstances;
-
 		// Utility for extracting lines from all the paths
-		bool extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rectangle, utility::ErrorState& error);
+		bool extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rectangle, utility::ErrorState& errorState);
 
 		// Create a mesh instance out of curve sampled vertices
-		bool initLineFromPath(MeshInstance& line, std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool isClosed, utility::ErrorState& error);
+		void addShape(std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool isClosed);
 	};
 }

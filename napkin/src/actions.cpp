@@ -1,213 +1,146 @@
 #include "actions.h"
+
+#include <QMessageBox>
 #include "commands.h"
-#include <QFileDialog>
-#include <QMenu>
-#include <QSettings>
 
+using namespace napkin;
 
-#define LAST_FILE_DIR "lastFileDir"
+Action::Action() : QAction() { connect(this, &QAction::triggered, this, &Action::perform); }
 
-
-
-void NewAction::perform() const { AppContext::get().newFile(); }
-
-
-
-void OpenAction::perform() const
+NewFileAction::NewFileAction()
 {
-	QSettings settings;
-	auto lastFileDir = settings.value(LAST_FILE_DIR).toString();
-	auto filename = QFileDialog::getOpenFileName(QApplication::activeWindow(), "Select file",
-												 lastFileDir, fileTypesFilter());
-	if (filename.isNull()) return;
+	setText("New");
+	setShortcut(QKeySequence::New);
+}
 
-	settings.setValue(LAST_FILE_DIR, QFileInfo(filename).absolutePath());
-
-	AppContext::get().load(filename);
+void NewFileAction::perform()
+{
+	if (AppContext::get().getDocument()->isDirty()) {
+		auto result = QMessageBox::question(AppContext::get().getQApplication()->topLevelWidgets()[0],
+											"Save before creating new document",
+											"The current document has unsaved changes.\n"
+													"Save the changes before creating a new document?",
+											QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		if (result == QMessageBox::Yes)
+		{
+			SaveFileAction action;
+			action.trigger();
+		}
+		else if (result == QMessageBox::Cancel)
+		{
+			return;
+		}
+	}
+	AppContext::get().newDocument();
 }
 
 
-
-void SaveAsAction::perform() const
+OpenFileAction::OpenFileAction()
 {
-	QSettings settings;
-	QString lastFileDir = settings.value(LAST_FILE_DIR).toString();
-
-	QString filename = QFileDialog::getSaveFileName(
-		QApplication::activeWindow(), "Select output file", lastFileDir, fileTypesFilter());
-	if (filename.isNull()) return;
-
-	settings.setValue(LAST_FILE_DIR, QFileInfo(filename).absolutePath());
-
-	QString correctFilename =
-		ensureExtension(filename, QString::fromStdString(defaultFileType()->extension()));
-
-	AppContext::get().save(correctFilename);
+	setText("Open...");
+	setShortcut(QKeySequence::Open);
 }
 
-
-
-void SaveAction::perform() const
+void OpenFileAction::perform()
 {
-	if (AppContext::get().isSaved()) {
-		AppContext::get().save();
+	auto lastFilename = AppContext::get().getLastOpenedFilename();
+	QString filename = QFileDialog::getOpenFileName(QApplication::topLevelWidgets()[0], "Open NAP Data File",
+													lastFilename, JSON_FILE_FILTER);
+	if (filename.isNull())
+		return;
+
+	AppContext::get().loadDocument(filename);
+}
+
+SaveFileAction::SaveFileAction()
+{
+	setText("Save");
+	setShortcut(QKeySequence::Save);
+}
+
+void SaveFileAction::perform()
+{
+	if (AppContext::get().getDocument()->getCurrentFilename().isNull())
+	{
+		SaveFileAsAction().trigger();
 		return;
 	}
-
-	SaveAsAction action;
-	action.trigger();
+	AppContext::get().saveDocument();
 }
 
-
-
-bool CutAction::isAvailable() { return AppContext::get().selection().size() > 0; }
-
-
-
-void CutAction::perform() const
+SaveFileAsAction::SaveFileAsAction()
 {
-	selectionToClipboard();
-	AppContext::get().execute(new RemoveObjectCmd(AppContext::get().selection()));
+	setText("Save as...");
+	setShortcut(QKeySequence::SaveAs);
 }
 
-
-
-bool CopyAction::isAvailable() { return AppContext::get().selection().size() > 0; }
-
-
-
-void CopyAction::perform() const { selectionToClipboard(); }
-
-
-
-void PasteAction::perform() const
+void SaveFileAsAction::perform()
 {
-	nap::Object* parent = nullptr;
-	QList<nap::Object*> selection = AppContext::get().selection();
-	if (selection.size() > 0) {
-		parent = selection[0];
-	} else {
-		parent = &AppContext::get().core().getRoot();
-	}
+	auto& ctx = AppContext::get();
+	auto prevFilename = ctx.getDocument()->getCurrentFilename();
+	if (prevFilename.isNull())
+		prevFilename = ctx.getLastOpenedFilename();
 
-	AppContext::get().execute(new PasteCmd(QApplication::clipboard()->text(), parent));
+	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Data File",
+													prevFilename, JSON_FILE_FILTER);
+
+	if (filename.isNull())
+		return;
+
+	ctx.saveDocumentAs(filename);
 }
 
-
-
-bool DeleteAction::isAvailable() { return AppContext::get().selection().size() > 0; }
-
-
-
-void DeleteAction::perform() const
+AddObjectAction::AddObjectAction(const rttr::type& type) : Action(), mType(type)
 {
-	auto selection = AppContext::get().selection();
-	AppContext::get().execute(new RemoveObjectCmd(selection));
+    setText(QString(type.get_name().data()));
 }
 
-
-
-void QuitAction::perform() const
+void AddObjectAction::perform()
 {
-	if (!AppContext::get().isSaved()) {
-		SaveAsAction().perform();
-	}
-	QApplication::exit(0);
+	AppContext::get().executeCommand(new AddObjectCommand(mType));
 }
 
-
-
-bool UndoAction::isAvailable() { return AppContext::get().undoIndex() > 1; }
-
-
-
-void UndoAction::perform() const { AppContext::get().undo(); }
-
-
-
-bool RedoAction::isAvailable()
+DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object)
 {
-	return AppContext::get().undoIndex() > AppContext::get().undoStackSize();
+    setText("Delete");
 }
 
-
-
-void RedoAction::perform() const { AppContext::get().redo(); }
-
-
-
-bool AddAttributeAction::isAvailable() { return AppContext::get().selection().size() == 1; }
-
-
-
-void AddAttributeAction::perform() const
+void DeleteObjectAction::perform()
 {
-	nap::AttributeObject* object = (nap::AttributeObject*)AppContext::get().selectedObject();
-	assert(object);
-	AppContext::get().execute(new AddAttributeCmd(*object));
+    AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
 }
 
-
-
-bool CreateEntityAction::isAvailable()
+SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
 {
-	return AppContext::get().selection().size() == 1 &&
-		   AppContext::get().selectedObject()->getTypeInfo().isKindOf<nap::Entity>();
+    setText(themeName.isEmpty() ? napkin::TXT_DEFAULT_THEME : themeName);
+    setCheckable(true);
 }
 
-
-
-void CreateEntityAction::perform() const
+void SetThemeAction::perform()
 {
-	auto object = AppContext::get().selectedObject();
-	assert(object);
-	AppContext::get().execute(new CreateEntityCmd(*(nap::Entity*)object));
+    AppContext::get().getThemeManager().setTheme(mTheme);
 }
 
-
-
-void CreateOperatorAction::perform() const
+void AddComponentAction::perform()
 {
-	QMenu menu;
-
-	auto patch = AppContext::get().activePatch();
-	QPoint mousePos = QCursor::pos();
-	QWidget* widget = QApplication::activeWindow();
-	QPointF dropPos = widget->childAt(widget->mapFromGlobal(mousePos))->mapFromGlobal(mousePos);
-
-	assert(patch);
-
-	for (const auto& opType : AppContext::get().core().getModuleManager().getOperatorTypes()) {
-		auto action = menu.addAction(QString::fromStdString(opType.getName()));
-		connect(action, &QAction::triggered, [=]() {
-			AppContext::get().execute(new CreateOperatorCmd(*patch, opType, dropPos));
-		});
-	}
-
-	if (menu.actions().size() > 0) menu.exec(QCursor::pos());
+    AppContext::get().getDocument()->addComponent(mEntity, mComponentType);
 }
 
-
-
-bool CreateComponentAction::isAvailable()
+AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
+        : Action(), mEntity(entity), mComponentType(type)
 {
-	return AppContext::get().selection().size() == 1 &&
-		   AppContext::get().selectedObject()->getTypeInfo().isKindOf<nap::Entity>();
+    setText(QString(type.get_name().data()));
 }
 
 
-
-void CreateComponentAction::perform() const
+AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
 {
-	QMenu menu;
-	auto entity = (nap::Entity*)AppContext::get().selectedObject();
-	assert(entity);
-
-	for (const auto& compType : AppContext::get().core().getModuleManager().getComponentTypes()) {
-		auto action = menu.addAction(QString::fromStdString(compType.getName()));
-		connect(action, &QAction::triggered,
-				[=]() { AppContext::get().execute(new CreateComponentCmd(*entity, compType)); });
-	}
-
-	if (menu.actions().size() > 0) menu.exec(QCursor::pos());
+    setText("Add Entity");
 }
+
+void AddEntityAction::perform()
+{
+	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), mParent));
+}
+
+

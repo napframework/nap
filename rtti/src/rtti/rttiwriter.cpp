@@ -66,11 +66,8 @@ namespace nap
 			// If this is an array, recurse
 			if (wrapped_type.is_array())
 			{
-				if (!serializeArray(property, value.create_array_view(), allObjects, writer, errorState))
-					return false;
-
-				return true;
-			}
+                return serializeArray(property, value.create_array_view(), allObjects, writer, errorState);
+            }
 			else if (wrapped_type.is_associative_container())
 			{
 				errorState.fail("Associative containers are not supported");
@@ -139,7 +136,8 @@ namespace nap
 			else if (rtti::isPrimitive(wrapped_type))
 			{
 				// Write primitive type (float, string, etc)
-				if (!errorState.check(writer.writePrimitive(wrapped_type, is_wrapper ? value.extract_wrapped_value() : value), "Failed to write primitive"))
+                auto errmsg = utility::stringFormat("Failed to write primitive property '%s'", property.get_name().data());
+				if (!errorState.check(writer.writePrimitive(wrapped_type, is_wrapper ? value.extract_wrapped_value() : value), errmsg.data()))
 					return false;
 
 				return true;
@@ -183,11 +181,6 @@ namespace nap
 			// Write all properties
 			for (const rtti::Property& property : actual_object.get_derived_type().get_properties())
 			{
-				// Don't write the ID for embedded objects (if the writer supports it)
-				bool is_id = RTTIObject::isIDProperty(actual_object, property);
-				if (is_id && isEmbeddedObject && writer.supportsEmbeddedPointers())
-					continue;
-
 				// Get the value of the property
 				rtti::Variant prop_value = property.get_value(actual_object);
 				assert(prop_value.is_valid());
@@ -201,12 +194,19 @@ namespace nap
 		}
 
 		/**
-		 * Given a set of objects, determine which objects need to be written as root objects and potentially expand the set with pointees
+		 * Given a set of objects, determine which objects need to be written as root objects
+		 * and potentially expand the set with pointees
 		 *
-		 * @param objects The hierarchy of objects that should be examined for pointees that should also be serialized. This may be a subset of all the objects that need to be serialized
+		 * @param objects The hierarchy of objects that should be examined for pointees that should also be serialized.
+		 *                  This may be a subset of all the objects that need to be serialized
+		 *
 		 * @param writer The writer to write to
-		 * @param allObjects The expanded set of *all* objects that will be written to the document. Contains both the non-embedded and embedded objects.
-		 * @param objectsToSerialize The set of objects that should actually be serialized at the top level of the document; contains only the non-embedded objects
+		 *
+		 * @param allObjects The expanded set of *all* objects that will be written to the document.
+		 * Contains both the non-embedded and embedded objects.
+		 *
+		 * @param objectsToSerialize The set of objects that should actually be serialized at
+		 * the top level of the document; contains only the non-embedded objects
 		 */
 		void getObjectsToSerialize(const ObjectList& objects, RTTIWriter& writer, ObjectSet& allObjects, ObjectList& objectsToSerialize)
 		{
@@ -292,7 +292,7 @@ namespace nap
 			// Go through the array of objects to write. Note that we keep querying the length of the array because objects can be added during traversal
 			for (RTTIObject* object : objects_to_write)
 			{
-				if (!errorState.check(!object->mID.empty(), "Encountered object without ID. This is not allowed"))
+				if (!errorState.check(!object->mID.empty(), "Encountered object of type: %s without ID. This is not allowed", object->get_type().get_name().data()))
 					return false;
 
 				// Write start of object

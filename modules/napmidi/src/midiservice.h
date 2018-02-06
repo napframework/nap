@@ -34,7 +34,7 @@ namespace nap {
         MidiService() = default;
         
         // Initialization
-        bool init(nap::utility::ErrorState& errorState);
+        bool init(nap::utility::ErrorState& errorState) override;
         
         /**
          * Returns number of available midi input ports on the system.

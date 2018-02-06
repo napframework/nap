@@ -1,50 +1,23 @@
 
-#include "appcontext.h"
-
-#include <rtti/rtti.h>
-
-#ifdef _MSC_VER
-//#include "module_napgui.cpp"
-#include <ofMain.h>
-#include "module_tommy.cpp"
+#include "generic/filtertreeview.h"
 #include "mainwindow.h"
+#include <QApplication>
 
-class ofApp : public ofBaseApp
+using namespace napkin;
+
+/**
+ * Initialize the application and spawn its window
+ */
+int main(int argc, char* argv[])
 {
-public:
-	ofApp() {}
-
-	void setup() 
-	{
-	}
-	void update() {}
-	void draw() {}
-	void exit() {}
-
-};
-
-int main(int argc, char* argv[]) {
-	QApplication app(argc, argv);
-	QApplication::setOrganizationName("NAP");
+	// nap::Core is declared in AppContext
+	QApplication::setOrganizationName("NaiviSoftware");
 	QApplication::setApplicationName("Napkin");
 
-	ofAppGlutWindow window;
-	ofSetupOpenGL(&window, 1024, 768, OF_WINDOW);
-	//ofRunApp(new ofApp());
+	QApplication app(argc, argv);
+
 	MainWindow w;
 	w.show();
 
-
-
-	//AppContext::get().initialize();
 	return app.exec();
 }
-
-
-#else
-
-int main(int argc, char* argv[])
-{
-	AppContext::get().spawnWindow();
-}
-#endif

@@ -1,219 +1,249 @@
 #pragma once
 
-#include "appcontext.h"
-#include "napkin_utilities.h"
-#include "patchpanel/patchscene.h"
-#include <QList>
-#include <nap/object.h>
-#include <nap/objectpath.h>
-#include <nap/serializer.h>
-#include <regex>
+#include <nap/objectptr.h>
+#include <rtti/rttipath.h>
 
+#include <QUndoCommand>
+#include <QtCore/QVariant>
+#include <generic/propertypath.h>
+#include <scene.h>
 
-class PasteCmd : public QUndoCommand
+#include "typeconversion.h"
+
+namespace napkin
 {
-public:
-	PasteCmd(const QString& text, nap::Object* parent = nullptr)
-		: QUndoCommand(), mClipboardText(text)
+    /**
+     * TODO: To be implemented
+     */
+	class AddObjectCommand : public QUndoCommand
 	{
-		if (parent)
-			parentPath = nap::ObjectPath(*parent);
-		setText(QString("Paste clipboard into '%1'")
-					.arg(QString::fromStdString(parentPath.toString())));
-	}
-	virtual void undo() override;
-	virtual void redo() override;
+	public:
+		AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject* parent = nullptr);
+        /**
+         * Redo
+         */
+		void redo() override;
 
+		/**
+		 * Undo
+		 */
+		void undo() override;
+	private:
+		const rttr::type mType;
+		std::string mObjectName;
+		std::string mParentName = "";
+	};
 
-private:
-	QString mClipboardText;
-	nap::ObjectPath parentPath;
-	nap::ObjectPath pastedPath;
-};
-
-
-
-class MoveOperatorsCmd : public QUndoCommand
-{
-public:
-	MoveOperatorsCmd(QList<nap::Operator*> operators, const QPointF& delta) : mDelta(delta)
+    /**
+     * TODO: To be implemented
+     */
+	class DeleteObjectCommand : public QUndoCommand
 	{
-		setText(QString("Moving %1 operators").arg(operators.size()));
-		for (auto op : operators) {
-			std::string path = nap::ObjectPath(op);
-			mOperatorPaths << path;
-			mOriginalPositions << getObjectEditorPosition(*op);
-		}
-	}
-	void undo() override;
-	void redo() override;
+	public:
+		DeleteObjectCommand(nap::rtti::RTTIObject& object);
+        /**
+         * Undo
+         */
+        void undo() override;
 
+        /**
+         * Redo
+         */
+        void redo() override;
+	private:
+		const std::string mObjectName;
 
-private:
-	QList<nap::ObjectPath> mOperatorPaths;
-	QList<QPointF> mOriginalPositions;
-	QPointF mDelta;
-};
+	};
 
-class ConnectPlugsCmd : public QUndoCommand
-{
-public:
-	ConnectPlugsCmd(nap::OutputPlugBase& srcPlug, nap::InputPlugBase& dstPlug)
-		: QUndoCommand(), mSrcPlugPath(srcPlug), mDstPlugPath(dstPlug)
+    /**
+     * This command sets the value of a property
+     * TODO: This will just set the value, undo cannot be currently made to work with nap.
+     */
+	class SetValueCommand : public QUndoCommand
 	{
-		setText(
-			QString("Connect plugs '%1' to '%2'")
-				.arg(QString::fromStdString(mSrcPlugPath), QString::fromStdString(mDstPlugPath)));
-	}
+	public:
+        /**
+         * @param ptr The pointer to the object
+         * @param path The path to the property
+         * @param newValue The new value of the property
+         */
+		SetValueCommand(const PropertyPath& propPath, QVariant newValue);
 
-	void undo() override;
-	void redo() override;
+        /**
+         * Undo
+         */
+        void undo() override;
 
-private:
-	nap::ObjectPath mSrcPlugPath;
-	nap::ObjectPath mDstPlugPath;
-};
+        /**
+         * Redo
+         */
+        void redo() override;
 
+	private:
+		const PropertyPath mPath; // The path to the property
+		QVariant mNewValue; // The new value
+		QVariant mOldValue; // The old value
+	};
 
-class RemoveObjectCmd : public QUndoCommand
-{
-public:
-	//	RemoveObjectCmd(const nap::Object& object) : QUndoCommand() { mObjectPaths.append(object); }
-	RemoveObjectCmd(const QList<nap::Object*>& objects) : QUndoCommand()
+	class SetPointerValueCommand : public QUndoCommand
 	{
-		setText("Delete objects");
-		auto rootObjects = keepRoots(objects);
+	public:
+        /**
+         * @param ptr The pointer to the object
+         * @param path The path to the property
+         * @param newValue The new value of the property
+         */
+		SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue);
 
-		for (const nap::Object* ob : rootObjects)
-			mObjectPaths << ob;
-	}
+        /**
+         * Undo
+         */
+        void undo() override;
+
+        /**
+         * Redo
+         */
+        void redo() override;
+
+	private:
+		const PropertyPath	mPath;		// The path to the property
+		const std::string	mNewValue;	// The new value
+		const std::string	mOldValue;	// The old value
+	};
 
 
-	void redo() override;
-	void undo() override;
-
-private:
-	QList<nap::ObjectPath> mObjectPaths;
-	QList<nap::ObjectPath> mParentPaths;
-	QList<QString> mSerializedObjects;
-};
-
-class CreateOperatorCmd : public QUndoCommand
-{
-public:
-	CreateOperatorCmd(const nap::Patch& patch, RTTI::TypeInfo operatorType, const QPointF& pos)
-		: QUndoCommand(), mPatchPath(patch), mOpTypeName(operatorType.getName()), mPos(pos)
+	/**
+	 * TODO: Can this be an 'AddPointerToVectorCommand'?
+	 * Add an entity to a scene
+	 */
+	class AddEntityToSceneCommand : public QUndoCommand
 	{
-		setText(QString("Create operator of type '%1' in '%2")
-					.arg(QString::fromStdString(mOpTypeName), QString::fromStdString(mPatchPath)));
-	}
+	public:
+		AddEntityToSceneCommand(nap::Scene& scene, nap::Entity& entity);
 
-	void redo() override;
-	void undo() override;
-
-private:
-	const nap::ObjectPath mPatchPath;
-	nap::ObjectPath mOperatorPath;
-	std::string mOpTypeName;
-	QPointF mPos;
-	//    const std::string mOperatorTypeName;
-};
+		void redo() override;
+		void undo() override;
+	private:
+		const std::string mSceneID;
+		const std::string mEntityID;
+		size_t mIndex;
+	};
 
 
-// Create a component based on an parent and the type of component
-class CreateComponentCmd : public QUndoCommand
-{
-public:
-	CreateComponentCmd(const nap::Entity& parent, RTTI::TypeInfo componentType)
-		: QUndoCommand(), mParentPath(parent), mComponentType(componentType.getName())
+	/**
+	 * Add an element to an array
+	 */
+	class ArrayAddValueCommand : public QUndoCommand
 	{
-		setText(
-			QString("Create component of type '%1' on '%2'")
-				.arg(QString::fromStdString(mComponentType), QString::fromStdString(mParentPath)));
-	}
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 * @param index The index at which to insert the value
+		 */
+		ArrayAddValueCommand(const PropertyPath& prop, size_t index);
 
-	void redo() override;
-	void undo() override;
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		ArrayAddValueCommand(const PropertyPath& prop);
 
-private:
-	const nap::ObjectPath mParentPath;
-	nap::ObjectPath mComponentPath;
-	const std::string mComponentType;
-};
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		size_t mIndex; ///< The index of the newly created element
+	};
 
-// Add a child entity to an entity.
-class CreateEntityCmd : public QUndoCommand
-{
-
-public:
-	CreateEntityCmd(nap::Entity& parent) : QUndoCommand(), mParentPath(parent)
+	/**
+	 * Add an element to an array
+	 */
+	class ArrayAddNewObjectCommand : public QUndoCommand
 	{
-		setText(QString("Create new Entity under '%1'").arg(QString::fromStdString(mParentPath)));
-	}
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type, size_t index);
 
-	void undo() override;
-	void redo() override;
+		/**
+		 * @param prop The array property to add the element to
+		 * @param index The index at which to insert the value
+		 */
+		ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type);
 
-private:
-	const nap::ObjectPath mParentPath;
-	nap::ObjectPath mEntityPath;
-};
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		nap::rtti::TypeInfo mType; ///< The type of object to create
+		size_t mIndex; ///< The index of the newly created element
+	};
 
-// Set the name of an object
-class SetNameCmd : public QUndoCommand
-{
-public:
-	SetNameCmd(nap::Object& object, const QString& newName)
-		: QUndoCommand(), mOldObjectPath(object), mNewName(newName.toStdString())
+
+	/**
+	 * Add an existing element to an array
+	 */
+	class ArrayAddExistingObjectCommand : public QUndoCommand
 	{
-		setText(QString("Set name of '%1' to '%2'")
-					.arg(QString::fromStdString(mOldObjectPath), newName));
-	}
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object, size_t index);
 
-	void undo() override;
-	void redo() override;
+		/**
+		 * @param prop The array property to add the element to
+		 * @param index The index at which to insert the element
+		 */
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object);
 
-private:
-	nap::ObjectPath mNewObjectPath;
-	nap::ObjectPath mOldObjectPath;
-	std::string mOldName;
-	std::string mNewName;
-};
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		const std::string mObjectName; ///< The type of object to create
+		size_t mIndex; ///< The index of the newly created element
+	};
 
-
-class AddAttributeCmd : public QUndoCommand
-{
-public:
-	AddAttributeCmd(nap::AttributeObject& obj) : QUndoCommand(), mObjectPath(obj)
+	/**
+	 * Remove an element from an array at the specified index
+	 */
+	class ArrayRemoveElementCommand : public QUndoCommand
 	{
-		setText(QString("Add attribute to '%1'").arg(QString::fromStdString(nap::ObjectPath(obj))));
-	}
+	public:
+		/**
+		 * @param array_prop The property representing the array
+		 * @param index The index of the element to remove
+		 */
+		ArrayRemoveElementCommand(const PropertyPath& array_prop, size_t index);
 
-	void undo() override;
-	void redo() override;
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path representing the array
+		nap::rtti::Variant mValue;
+		size_t mIndex; ///< The element to be removed
+	};
 
-private:
-	nap::ObjectPath mObjectPath;
-	nap::ObjectPath mAttributePath;
-};
-
-class SetAttributeValueCmd : public QUndoCommand
-{
-public:
-	SetAttributeValueCmd(nap::AttributeBase& attrib, const QString& value)
-		: QUndoCommand(), mAttrPath(attrib), mNewValue(value)
+	class ArrayMoveElementCommand : public QUndoCommand
 	{
-		mOldValue = attributeToString(attrib);
-		setText(QString("Set value of '%1' to '%2'")
-					.arg(QString::fromStdString(mAttrPath.toString()), value));
-	}
+	public:
+		/**
+		 * Reorder an element within an array
+		 * @param array_prop The array that contains the element
+		 * @param fromIndex The index of the element to move
+		 * @param toIndex The index at which the element must be after the move
+		 */
+		ArrayMoveElementCommand(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex);
 
-	void undo() override;
-	void redo() override;
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path representing the array
+		size_t mFromIndex; ///< The element index to move
+		size_t mToIndex; ///< The element index to move to
+		size_t mOldIndex; ///< The actual old index (may have been shifted)
+		size_t mNewIndex; ///< The actual new index (may have been shifted)
+	};
 
-
-private:
-	nap::ObjectPath mAttrPath;
-	QString mNewValue;
-	QString mOldValue;
 };

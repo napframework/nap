@@ -18,17 +18,15 @@ namespace opengl
 	class Shader
 	{
 	public:
-		using VertexAttributeID = std::string;
-
 		/**
-		* Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
-		*/
+		 * Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
+		 */
 		struct VertexAttributeIDs
 		{
-			static const VertexAttributeID GetPositionVertexAttr();
-			static const VertexAttributeID GetNormalVertexAttr();
-			static const VertexAttributeID GetUVVertexAttr(int uvChannel);
-			static const VertexAttributeID GetColorVertexAttr(int colorChannel);
+			static const std::string GetPositionVertexAttr();
+			static const std::string GetNormalVertexAttr();
+			static const std::string GetUVVertexAttr(int uvChannel);
+			static const std::string GetColorVertexAttr(int colorChannel);
 		};
 
 

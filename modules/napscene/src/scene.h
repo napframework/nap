@@ -31,12 +31,15 @@ namespace nap
 	public:
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
+        using RootEntityList = std::vector<RootEntity>;
 
 		Scene(Core& core);
 		virtual ~Scene() override;
 
 		/**
 		 * Initialize the scene. Will spawn all entities contained in this scene.
+		 * As soon as this is called, EntityInstances will become available
+		 * and are accessible through #getRootEntity() and #getEntities()
 		 */
         virtual bool init(utility::ErrorState& errorState) override;
 
@@ -51,35 +54,40 @@ namespace nap
 		void updateTransforms(double deltaTime);
 
 		/**
-		* @return Iterator to all entities in this scene.
-		*/
+		 * @return Iterator to all entity instances in this scene.
+		 */
 		EntityIterator getEntities() { return EntityIterator(mEntityInstancesByID); }
 
 		/**
-		* @return EntityInstance in this scene.
-		*/
+		 *
+		 * @return EntityInstance with the specified identifier from this scene.
+		 */
 		const ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
 
 		/**
-		* @return The root entity of this scene
-		*/
+		 * @return The root EntityInstance of this scene
+		 */
 		const EntityInstance& getRootEntity() const		{ return *mRootEntity;}
 
 		/**
-		* @return The root entity of this scene
-		*/
+		 * @return The root EntityInstance of this scene
+		 */
 		EntityInstance& getRootEntity()		{ return *mRootEntity;}
+
+        /**
+         * @return The RootEntity resources in the scene.
+         */
+        RootEntityList getEntityResources() { return mEntities; }
 
 	private:
 		EntityInstance* createEntityInstance(const Entity& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
-		* Instantiates an Entity.
-		*/
+		 * Instantiates an EntityInstance from an Entity.
+		 */
 		EntityInstance* createChildEntityInstance(const Entity& Entity, int childIndex, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 	public:
-		using RootEntityList = std::vector<RootEntity>;
 		RootEntityList mEntities;
 
 	private:

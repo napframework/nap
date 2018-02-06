@@ -67,7 +67,7 @@ namespace nap
 	}
 	
 
-	RenderWindow* RenderService::findWindow(void* nativeWindow) const
+	ObjectPtr<RenderWindow> RenderService::findWindow(void* nativeWindow) const
 	{
 		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getWindow()->getNativeWindow() == nativeWindow; });
 		if (pos != mWindows.end())
@@ -387,4 +387,4 @@ namespace nap
 
 } // Renderservice
 
-RTTI_DEFINE(nap::RenderService)
+RTTI_DEFINE_CLASS(nap::RenderService)

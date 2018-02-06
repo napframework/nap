@@ -105,7 +105,8 @@ namespace nap
 		 * @param min min random number
 		 * @param max max random number
 		 */
-		int NAPAPI random(int min, int max);
+		template<typename T>
+		T random(T min, T max);
 
 		/**
 		 * Interpolates a value over time to a @target using a dampening model
@@ -131,6 +132,66 @@ namespace nap
 		*/
 		template<typename T>
 		void smooth(T& currentValue, const T& targetValue, T& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+		
+		/**
+		 * Composes a 4x4 matrix based on individual transformation, rotation and scale values
+		 * @param translate a vector describing the objects position
+		 * @param rotate quaternion describing the objects rotation
+		 * @param scale a vector describing the objects scale
+		 * @return the composed 4x4 matrix
+		 */
+		glm::mat4 NAPAPI composeMatrix(const glm::vec3& translate, const glm::quat& rotate, const glm::vec3& scale);
+
+		/**
+		 * Converts euler angles in to a quaternion
+		 * The euler angle axis are interpreted as: roll(x), pitch(y), yaw(z), 
+		 * @param eulerAngle the individual euler angles in radians
+		 * @return the composed quaternion
+		 */
+		glm::quat NAPAPI eulerToQuat(const glm::vec3& eulerAngle);
+
+		/**
+		* Converts euler angles in to a quaternion
+		* The euler angle axis are interpreted as: roll(x), pitch(y), yaw(z),
+		* @param roll the x axis rotation value in radians
+		* @param pitch the y axis rotation value in radians
+		* @param yaw the z axis rotation value in radians
+		* @return the composed quaternion
+		*/
+		glm::quat NAPAPI eulerToQuat(float roll, float pitch, float yaw);
+
+		/**
+		 * Converts an euler rotation in degrees to radians
+		 * @param the euler rotation roll(x), pitch(y), yaw(z) in degrees
+		 * @return the euler rotation in radians
+		 */
+		glm::vec3 NAPAPI radians(const glm::vec3& eulerDegrees);
+
+		/**
+		 * Extracts the position component from a 4x4 matrix.
+		 * This call assumes the matrix is column major, ie: the outermost array dimension is a column
+		 * @param matrix column major matrix
+		 * @return the position component from a 4x4 matrix
+		 */
+		glm::vec3 NAPAPI extractPosition(const glm::mat4x4& matrix);
+
+		/**
+		 * Converts a point in object space to world space using the given object to world matrix
+		 * @param point the point in object space
+		 * @param objectToWorldMatrix local to world space transformation matrix
+		 * @return point in world space
+		 */
+		glm::vec3 NAPAPI objectToWorld(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix);
+
+		/**
+		 * Converts a point in world space to a point in object space using the given object to world matrix
+		 * Note that this call internally uses matrix inversion, a rather costly operation
+		 * @param point in world space
+		 * @param objectToWorldMatrix the object to world transformation matrix
+		 * @return point in object space
+		 */
+		glm::vec3 NAPAPI worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix);
+
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
@@ -244,5 +305,29 @@ namespace nap
 
 		template<>
 		NAPAPI void smooth(glm::vec4& currentValue, const glm::vec4& targetValue, glm::vec4& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+
+		template<>
+		NAPAPI int random(int min, int max);
+
+		template<>
+		NAPAPI float random(float min, float max);
+
+		template<>
+		NAPAPI glm::vec3 random(glm::vec3 min, glm::vec3 max);
+
+		template<>
+		NAPAPI glm::vec4 random(glm::vec4 min, glm::vec4 max);
+
+		template<>
+		NAPAPI glm::vec2 random(glm::vec2 min, glm::vec2 max);
+
+		template<>
+		NAPAPI glm::ivec2 random(glm::ivec2 min, glm::ivec2 max);
+
+		template<>
+		NAPAPI glm::ivec3 random(glm::ivec3 min, glm::ivec3 max);
+
+		template<>
+		NAPAPI glm::ivec4 random(glm::ivec4 min, glm::ivec4 max);
 	}
 }

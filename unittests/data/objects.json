@@ -1,0 +1,19 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Material",
+            "mID": "material",
+            "Uniforms": [],
+            "Shader": "shader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "shader",
+            "mVertShader": "",
+            "mFragShader": ""
+        }
+    ]
+}

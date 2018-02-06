@@ -40,10 +40,10 @@ namespace nap
 		bool updateNormals(utility::ErrorState& error, bool push=true);
 
 		// property: pointer to the IMesh that is used as a reference
-		ObjectPtr<IMesh> mReferenceMesh = nullptr;
-
+		ObjectPtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' pointer to the IMesh that is used as a reference
+		
 		// property: length of the normals
-		float mNormalLength = 1.0f;
+		float mNormalLength = 1.0f;											///< Property: 'Length' length of the normals
 
 	protected:
 		std::unique_ptr<MeshInstance> mMeshInstance;
@@ -53,5 +53,14 @@ namespace nap
 
 		// Color Attribute data
 		nap::Vec4VertexAttribute* mColorAttr = nullptr;
+		
+		/**
+		 * Sets up the mesh based on the reference mesh
+		 * This call does not initialize the data on the GPU
+		 * Use this function to create the mesh and initialize it in a derived class
+		 * @param error contains the error when setup fails
+		 * @return if setup succeeded or not
+		 */
+		bool setup(utility::ErrorState& error);
 	};
 }
