@@ -29,6 +29,8 @@ def call(cwd, cmd):
     print('cmd: %s' % ' '.join(cmd))
     proc = subprocess.Popen(cmd, cwd=cwd)
     proc.communicate()
+    if proc.returncode != 0:
+        sys.exit(proc.returncode)
 
 def main(targets):
     # clear build directory when a clean build is required
