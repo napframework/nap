@@ -44,3 +44,11 @@ copy_artnet_dll()
 # Copy project json to project bin dir and export fbx, via post-build events
 copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
 export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+
+# Package into release build if requested
+if(PACKAGE_NAIVI_APPS)   
+    install(DIRECTORY . DESTINATION "projects/${PROJECT_NAME}"
+            PATTERN "CMakeLists.txt" EXCLUDE
+            PATTERN "dist" EXCLUDE)
+    install(FILES dist/CMakeLists.txt DESTINATION "projects/${PROJECT_NAME}/")
+endif()

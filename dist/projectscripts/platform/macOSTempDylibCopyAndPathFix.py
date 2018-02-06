@@ -67,7 +67,8 @@ def copy_local_object_linked_local_dylibs(object_path, dest_path):
 def copy_local_object_linked_local_dylibs_for_all_files_in_dir(path, dest_path):
     copy_count = 0
     for filename in os.listdir(path):
-        copy_count += copy_local_object_linked_local_dylibs("%s/%s" % (path, filename), dest_path)
+        if not os.path.isdir(os.path.join(path, filename)):
+            copy_count += copy_local_object_linked_local_dylibs("%s/%s" % (path, filename), dest_path)
     return copy_count
 
 def update_single_dylib_self_path(dylib_path, dest_prefix):
@@ -82,9 +83,10 @@ def update_all_dylibs_self_paths_in_dir(directory, dest_prefix):
         return
 
     for filename in os.listdir(directory):
-        update_single_dylib_self_path("%s/%s" % (directory, filename), dest_prefix)
+        if not os.path.isdir(os.path.join(directory, filename)):
+            update_single_dylib_self_path("%s/%s" % (directory, filename), dest_prefix)
 
-def update_external_dylib_paths_for_single_object(filename, new_prefix, replace_system_paths, replace_rpath):
+def update_external_dylib_paths_for_single_object(filename, new_prefix, replace_system_paths, replace_rpath, is_executable=False):
     cmd = "otool -L %s" % filename
     # print cmd
     p = Popen([cmd], shell=True, stdout=PIPE, stderr=PIPE)
@@ -96,7 +98,9 @@ def update_external_dylib_paths_for_single_object(filename, new_prefix, replace_
     if replace_rpath:
         paths_to_replace.append('@rpath')
 
-    for line in output.split("\n")[2:]:
+    start_line_index = 1 if is_executable else 2
+
+    for line in output.split("\n")[start_line_index:]:
         # Skip empty lines
         if line.strip() == '':
             continue
@@ -119,7 +123,8 @@ def update_external_dylib_paths_for_all_dylibs_in_dir(directory, new_prefix, rep
         return
 
     for filename in os.listdir(directory):
-        update_external_dylib_paths_for_single_object("%s/%s" % (directory, filename), new_prefix, replace_system_paths, False)
+        if not os.path.isdir(os.path.join(directory, filename)):
+            update_external_dylib_paths_for_single_object("%s/%s" % (directory, filename), new_prefix, replace_system_paths, False)
 
 
 def run(packaging_path):
@@ -154,7 +159,7 @@ def run(packaging_path):
     update_external_dylib_paths_for_all_dylibs_in_dir('lib', '@loader_path', True)
 
     # Update our external links in our binary
-    update_external_dylib_paths_for_single_object(executable_name, '@rpath', True, False)
+    update_external_dylib_paths_for_single_object(executable_name, '@rpath', True, False, True)
 
 if __name__ == '__main__':
     # TODO use argparse

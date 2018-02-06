@@ -8,6 +8,8 @@
         "mod_napsdlinput",
         "mod_napsdlwindow",
         "mod_napapp",
-        "mod_napimgui"
+        "mod_napimgui",
+        "mod_napscene",
+        "mod_napmath"
     ]
 }
