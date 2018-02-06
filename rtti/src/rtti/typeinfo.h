@@ -156,8 +156,10 @@ namespace nap
 			Any			= 0,	///< Can point to any file, default.
 			Image		= 1, 	///< Points to an image file, must be used with EPropertyMetaData::FileLink
 			FragShader	= 2, 	///< Points to a .vert file, must be used with EPropertyMetaData::FileLink
-			VertShader	= 4, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
-			Python		= 8,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
+			VertShader	= 3, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
+			Python		= 4,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
+            Mesh		= 5,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
+			Video		= 6,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
 		};
 
 		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)
@@ -193,14 +195,16 @@ namespace nap
 		/**
 		 * Helper function to check whether a property has the specified flag set
 		 */
-		inline bool NAPAPI hasFiletypeFlag(const rtti::Property& property, EPropertyFileType filetypes)
+		inline bool NAPAPI isFileType(const rtti::Property &property, EPropertyFileType filetype)
 		{
 			const rtti::Variant& meta_data = property.get_metadata("filetype");
 			if (!meta_data.is_valid())
 				return false;
-
-			uint8_t current_flags = meta_data.convert<uint8_t>();
-			return (current_flags & (uint8_t)filetypes) != 0;
+			bool ok;
+			EPropertyFileType ftype = meta_data.convert<EPropertyFileType >(&ok);
+			if (!ok)
+				return false;
+			return ftype == filetype;
 		}
 
 		/**

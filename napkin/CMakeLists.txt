@@ -23,9 +23,29 @@ set(LIBS
     mod_nappython
     mod_napmath
     mod_naprender
-    freeimage
+    mod_napvideo
     Qt5::Widgets Qt5::Core Qt5::Gui
     )
+
+if(MSVC)
+    list(APPEND UNITTEST_LIBS
+         ${FREEIMAGE_LIBRARIES}
+         ${FFMPEG_LIBRARIES}
+         )
+    copy_freeimage_dll()
+    copy_windows_ffmpeg_dlls()
+elseif(APPLE)
+    list(APPEND UNITTEST_LIBS
+         ${FREEIMAGE_LIBRARIES}
+         ${FFMPEG_LIBRARIES}
+         )
+
+elseif(UNIX)
+    list(APPEND UNITTEST_LIBS
+         freeimage
+         ffmpeg
+         )
+endif()
 
 target_link_libraries(${PROJECT_NAME} ${LIBS} ${QT_LIBS})
 
@@ -33,10 +53,6 @@ target_link_libraries(${NAPKIN_LIB} ${LIBS})
 target_include_directories(${NAPKIN_LIB} PUBLIC src ${FREEIMAGE_INCLUDE_DIRS})
 
 nap_qt_post(${PROJECT_NAME})
-
-if (WIN32)
-    copy_freeimage_dll()
-endif()
 
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
