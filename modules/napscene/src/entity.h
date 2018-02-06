@@ -168,7 +168,8 @@ namespace nap
 		void clearChildren();
 
 		/**
-		 * Clear all children from this entity
+		 * Removes a single child from the entity instance
+		 * @param EntityInstance to remove.
 		 */
 		void removeChild(const EntityInstance& entityInstance);
 
