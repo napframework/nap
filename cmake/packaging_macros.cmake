@@ -94,6 +94,8 @@ macro(package_platform_qt)
             macos_replace_qt_framework_links("${QT_FRAMEWORKS}" ${QT_INSTALL_FRAMEWORK} ${QT_FRAMEWORK_SRC} ${FRAMEWORK_INSTALL_LOC} "@loader_path")
         endforeach()
 
+        set(PATH_FROM_QT_PLUGIN_TOLIB "@loader_path/../../../../../../thirdparty/QT/lib")
+
         # Install plugins
         install(FILES ${QT_PREFIX}/plugins/platforms/libqcocoa.dylib
                 DESTINATION thirdparty/QT/plugins/platforms/
@@ -103,7 +105,7 @@ macro(package_platform_qt)
                                          libqcocoa 
                                          ${QT_PREFIX}/plugins/platforms/libqcocoa.dylib 
                                          ${CMAKE_INSTALL_PREFIX}/thirdparty/QT/plugins/platforms/libqcocoa.dylib
-                                         "@rpath"
+                                         ${PATH_FROM_QT_PLUGIN_TOLIB}
                                          )
 
         # Glob each of our imageformat plugins and install them.  Globbing so we can update framework link install paths on them.
@@ -117,7 +119,7 @@ macro(package_platform_qt)
                                              ${imageformat_plugin} 
                                              ${QT_PREFIX}/plugins/imageformats/${imageformat_plugin}
                                              ${CMAKE_INSTALL_PREFIX}/thirdparty/QT/plugins/imageformats/${imageformat_plugin}
-                                             "@rpath"
+                                             ${PATH_FROM_QT_PLUGIN_TOLIB}
                                              )            
         endforeach()
     endif()
