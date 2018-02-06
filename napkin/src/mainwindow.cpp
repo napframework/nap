@@ -27,7 +27,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	{
 		auto result = QMessageBox::question(this, "Save before exit",
 											"The current document has unsaved changes.\n"
-													"Save the changes before exit??",
+													"Save the changes before exit?",
 											QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 		if (result == QMessageBox::Yes)
 		{

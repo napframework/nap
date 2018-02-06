@@ -43,7 +43,7 @@ namespace nap
 	}
 
 
-	void OrthoCameraComponentInstance::setRenderTargetSize(glm::ivec2 size)
+	void OrthoCameraComponentInstance::setRenderTargetSize(const glm::ivec2& size)
 	{
 		if (size != getRenderTargetSize())
 		{

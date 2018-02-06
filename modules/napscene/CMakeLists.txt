@@ -19,7 +19,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # link with external libs
-target_link_libraries(${PROJECT_NAME} napcore)
+set(DEPENDENT_NAP_MODULES mod_napmath)
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
 # Package into platform release
 package_module()

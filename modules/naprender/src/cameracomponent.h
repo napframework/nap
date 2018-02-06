@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <component.h>
 #include <utility/dllexport.h>
+#include <renderwindow.h>
+#include <rect.h>
 
 namespace nap
 {
@@ -37,13 +39,40 @@ namespace nap
 		 * can be used).
 		 * @param size: size of the render target in pixels.
 		 */
-		virtual void setRenderTargetSize(glm::ivec2 size) { mRenderTargetSize = size; }
+		virtual void setRenderTargetSize(const glm::ivec2& size)												{ mRenderTargetSize = size; }
 
+		/**
+		 * Maps a pixel coordinate to a world space coordinate using the camera project and view matrix
+		 * The z component is generally acquired by sampling the window depth buffer
+		 * When screenPos.z has a value of 0 the result is relative to this camera, ie: 
+		 * the return value is the location of this camera in the world.
+		 * @param screenPos window coordinates, where 0,0 is the lower left corner
+		 * @param viewport rectangle that defines the viewport
+		 * @return converted screen to world space pixel coordinate
+		 */
+		glm::vec3 screenToWorld(const glm::vec3& screenPos, const math::Rect& viewport);
+
+		/**
+		 * Maps a world space coordinate to a screen space coordinate using the camera projection and view matrix
+		 * @param worldPos the point position in world space
+		 * @param viewport rectangle that defines the viewport
+		 * @return the converted world to screen space coordinate
+		 */
+		glm::vec3 worldToScreen(const glm::vec3& worldPos, const math::Rect& viewport);
+
+		/**
+		 * Computes a ray directed outwards from the camera based on a screen space position
+		 * The ray is normalized
+		 * @param screenPos, horizontal and vertical screen coordinates, where 0,0 is the lower left corner
+		 * @param viewport rectangle that defines the viewport
+		 * @return a normalized ray pointing outwards from the camera in to the scene
+		 */
+		glm::vec3 rayFromScreen(const glm::vec2& screenPos, const math::Rect& viewport);
 
 		/**
 		 * @return RenderTarget size
 		 */
-		const glm::ivec2& getRenderTargetSize() const { return mRenderTargetSize; }
+		const glm::ivec2& getRenderTargetSize() const					{ return mRenderTargetSize; }
 
 	private:
 		glm::ivec2	mRenderTargetSize;			// The size of the render target we're rendering to

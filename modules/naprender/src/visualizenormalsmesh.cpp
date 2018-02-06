@@ -118,7 +118,7 @@ namespace nap
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setDrawMode(opengl::EDrawMode::LINES);
 
-		generateIndices(shape, vertex_count * 2);
+		utility::generateIndices(shape, vertex_count * 2);
 
 		return true;
 	}
