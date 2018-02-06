@@ -161,7 +161,7 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                       execute_process(COMMAND sh -c \"otool -L ${FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'\"
                                       OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
                       if(NOT \${REPLACE_INSTALL_NAME} STREQUAL \"\")
-                          message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
+                          #message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
                           # Strip read path
                           string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)                               
 

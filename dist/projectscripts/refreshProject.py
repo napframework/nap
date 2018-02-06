@@ -88,7 +88,7 @@ def update_project(project_name, build_type, show_solution):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str,
-                        help="The project to regenerate")
+                        help="The project to refresh")
     if sys.platform in ["linux", "linux2"]:
         parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
     if not sys.platform in ["linux", "linux2"]:

@@ -39,10 +39,10 @@ def find_module(module_name):
             return module_path
         # TODO temporarily? disabled as it seems too restrictive
         # elif module_dir_name.startswith('mod_nap'):
-        #     print("Module %s at %s is a NAP module and can't be regenerated" % (module_name, module_path))
+        #     print("Module %s at %s is a NAP module and can't be refreshed" % (module_name, module_path))
         #     return None
         else:
-            print("Module %s at %s does not contain CMakeLists.txt and can't be regenerated" % (module_name, module_path))
+            print("Module %s at %s does not contain CMakeLists.txt and can't be refreshed" % (module_name, module_path))
             return None
     else:
         print("Couldn't find module with name '%s'" % module_name)

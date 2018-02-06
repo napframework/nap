@@ -36,7 +36,7 @@ def update_project_info_to_cmake(project_name):
         # out_file.write("project(%s)\n" % project_name)
         out_file.write("set(NAP_MODULES %s)\n" % nap_modules)
 
-# TODO share with regenerateProject
+# TODO share with refreshProject
 def find_project(project_name):
     script_path = os.path.realpath(__file__)
     # TODO clean up, use absolute path
