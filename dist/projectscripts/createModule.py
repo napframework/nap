@@ -76,7 +76,7 @@ if __name__ == '__main__':
         sys.exit(ERROR_CMAKE_CREATION_FAILURE)
 
     # Solution generation
-    cmd = ['python', './tools/regenerateModule.py', module_name.lower()]
+    cmd = ['python', './tools/refreshModule.py', module_name.lower()]
     if not call(nap_root, cmd):
         print("Solution generation failed")
         sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)

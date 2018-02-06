@@ -156,7 +156,7 @@ if(WIN32)
             )   
 else()
     # TODO Having our own Findglew.cmake is currently messing with things, 
-    # but if we include local glew for macOS and even Linux we'll probably need this.
+    # but if we include glew locally for macOS and even Linux we'll probably need this.
     # Or: investigate how we get away with not having one for NAP source compilation.
     install(DIRECTORY dist/cmake/ 
             DESTINATION cmake
@@ -165,14 +165,13 @@ endif()
 
 # TODO glob
 install(PROGRAMS dist/projectscripts/createProject.py DESTINATION tools/)
-install(PROGRAMS dist/projectscripts/regenerateProject.py DESTINATION tools/)
+install(PROGRAMS dist/projectscripts/refreshProject.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/createModule.py DESTINATION tools/)
-install(PROGRAMS dist/projectscripts/regenerateModule.py DESTINATION tools/)
+install(PROGRAMS dist/projectscripts/refreshModule.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/projectInfoParseToCMake.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/packageProject.py DESTINATION tools/)
 if(APPLE)
     install(PROGRAMS dist/projectscripts/platform/macOSTempDylibCopyAndPathFix.py DESTINATION tools/platform/)
-    install(PROGRAMS dist/projectscripts/platform/ensureHasRPath.py DESTINATION tools/platform/)
 endif()
 install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
 install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")

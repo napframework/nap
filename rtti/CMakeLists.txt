@@ -67,6 +67,24 @@ elseif(APPLE)
     copy_lib_to_lib_dir("RTTR::Core")
 endif()
 
+if(APPLE)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       PRE_BUILD
+                       COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                               -id 
+                               @rpath/librttr_core.0.9.6.dylib 
+                               ${THIRDPARTY_DIR}/rttr/xcode/install/bin/librttr_core.0.9.6.dylib
+                       COMMENT "Setting install name for rttr_core")
+
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       PRE_BUILD
+                       COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                               -id 
+                               @rpath/librttr_core_d.0.9.6.dylib 
+                               ${THIRDPARTY_DIR}/rttr/xcode/install/bin/librttr_core_d.0.9.6.dylib
+                       COMMENT "Setting install name for rttr_core_d")    
+endif()
+
 # Package into release build
 if (WIN32)
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
@@ -88,22 +106,15 @@ install(DIRECTORY "src/rtti/" DESTINATION "include/rtti/"
 # Package dependent includes 
 # TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
 
-install(DIRECTORY "../../thirdparty/pybind11/install/" DESTINATION "thirdparty/pybind11")
+install(DIRECTORY "${THIRDPARTY_DIR}/pybind11/install/" DESTINATION "thirdparty/pybind11")
 
 if (MSVC)
-    install(DIRECTORY "../../thirdparty/rttr/msvc64/install/" DESTINATION "thirdparty/rttr")
+    install(DIRECTORY "${THIRDPARTY_DIR}/rttr/msvc64/install/" DESTINATION "thirdparty/rttr")
 elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
     set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
-    install(DIRECTORY "../../thirdparty/rttr/xcode/install/" DESTINATION "thirdparty/rttr")
-    # install(CODE "execute_process(COMMAND install_name_tool 
-    #                                       -id @loader_path/../../../../thirdparty/rttr/bin/librttr_core_d.0.9.6.dylib 
-    #                                       ${CMAKE_INSTALL_PREFIX}/thirdparty/rttr/bin/librttr_core_d.0.9.6.dylib)")
-    # install(CODE "execute_process(COMMAND install_name_tool 
-    #                                       -id @loader_path/../../../../thirdparty/rttr/bin/librttr_core.0.9.6.dylib 
-    #                                       ${CMAKE_INSTALL_PREFIX}/thirdparty/rttr/bin/librttr_core.0.9.6.dylib)")
-
+    install(DIRECTORY "${THIRDPARTY_DIR}/rttr/xcode/install/" DESTINATION "thirdparty/rttr")
 
     foreach(build_conf Release Debug)
         macos_replace_single_install_name_link_install_time("Python"
@@ -112,5 +123,5 @@ elseif(APPLE)
                                                             )
     endforeach()
 elseif(UNIX)
-    install(DIRECTORY "../../thirdparty/rttr/linux/install/" DESTINATION "thirdparty/rttr")
+    install(DIRECTORY "${THIRDPARTY_DIR}/rttr/linux/install/" DESTINATION "thirdparty/rttr")
 endif()

@@ -136,7 +136,7 @@ def install_dependencies():
 def package(zip_release, include_apps):
     print("Packaging..")
 
-    # install_dependencies()
+    install_dependencies()
 
     # Note: Packaging directly from Python for now.  CPack was investigated but it was looking difficult to make it work when
     # wanting to build multiple configurations at the same time.  If there was a reasonable CPack solution it feels like that 

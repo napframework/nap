@@ -34,14 +34,9 @@ macro(export_fbx SRCDIR)
     endif()
 
     set(FBXCONV_DIR "${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}")
-    # TODO Output fbxconverter to tools dir at some point? Maybe.. This doesn't impact packaged location.
-    # set(FBXCONV_DIR "${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}/tools")
 
     # Set project data out path
     set(OUTDIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data/${PROJECT_NAME}")
-    # TODO For now output to a project subfolder under the project data.  Left this way for Now
-    # to make transition easier.
-    # set(OUTDIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data")
 
     # Ensure data output directory for project exists
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -132,14 +127,16 @@ macro(copy_windows_ffmpeg_dlls)
     copy_files_to_bin(${FFMPEGDLLS})
 endmacro()
 
-# Copy all of our Windows DLLs that have build in bin into project dir
-# TODO this is NOT a clean solution, but if we're mainly releasing projects build against packaged releases of the
-#      framework maybe this is OK?
+# Copy all of our Windows DLLs that have build in bin into project dir.  See notes in windowsdllcopier.cmake.
 macro(bulk_copy_windows_dlls_to_bin)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -DCOPIER_IN_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>/../*.dll -DCOPIER_OUTPUT_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>/ -P ${CMAKE_SOURCE_DIR}/cmake/windowsdllcopier.cmake
-                       COMMENT "Bulk copying Windows library DLLs -> $<TARGET_FILE_DIR:${PROJECT_NAME}>/")
+                       COMMAND ${CMAKE_COMMAND} 
+                               -DCOPIER_IN_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>/../*.dll 
+                               -DCOPIER_OUTPUT_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>/ 
+                               -P 
+                               ${CMAKE_SOURCE_DIR}/cmake/windowsdllcopier.cmake
+                       COMMENT "Bulk copying Windows library DLLs to ${PROJECT_NAME}'s bin dir")
 endmacro()
 
 # Helper function to filter out platform-specific files

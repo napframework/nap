@@ -52,20 +52,23 @@ if(WIN32)
 elseif(APPLE)
     # Ensure our libArtnet install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
+                       PRE_BUILD
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libArtnet.dylib $<TARGET_FILE:artnet>
                        COMMENT "Setting install name for libartnet")
 
     install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/osx/bin")
 
-    install(CODE "execute_process(COMMAND /usr/bin/env python 
-                                  ${NAP_ROOT}/dist/projectscripts/platform/ensureHasRPath.py 
-                                  ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Release/libmod_napartnet.dylib 
-                                  @loader_path/../../../../thirdparty/libartnet/osx/bin
+    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                                          -add_rpath
+                                          @loader_path/../../../../thirdparty/libartnet/osx/bin
+                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Release/libmod_napartnet.dylib                                           
+                                  ERROR_QUIET
                                   )")
-    install(CODE "execute_process(COMMAND /usr/bin/env python 
-                                  ${NAP_ROOT}/dist/projectscripts/platform/ensureHasRPath.py 
-                                  ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Debug/libmod_napartnet.dylib 
-                                  @loader_path/../../../../thirdparty/libartnet/osx/bin
+
+    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                                          -add_rpath
+                                          @loader_path/../../../../thirdparty/libartnet/osx/bin
+                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Debug/libmod_napartnet.dylib 
+                                  ERROR_QUIET
                                   )")
 endif()
