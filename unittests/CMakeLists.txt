@@ -22,32 +22,29 @@ set(UNITTEST_LIBS
     mod_napsdlinput
     mod_napsandbox
     mod_napvideo
-    #        mod_napmath
-    #        mod_napsdlwindow
-    #        mod_napapp
     )
 
 find_package(FFmpeg REQUIRED)
 
-if(MSVC)
+if (MSVC)
     list(APPEND UNITTEST_LIBS
-         ${FREEIMAGE_LIBRARIES}
-         ${FFMPEG_LIBRARIES}
-         )
+            ${FREEIMAGE_LIBRARIES}
+            ${FFMPEG_LIBRARIES}
+            )
     copy_freeimage_dll()
     copy_windows_ffmpeg_dlls()
-elseif(APPLE)
+elseif (APPLE)
     list(APPEND UNITTEST_LIBS
-         ${FREEIMAGE_LIBRARIES}
-         ${FFMPEG_LIBRARIES}
-         )
+            ${FREEIMAGE_LIBRARIES}
+            ${FFMPEG_LIBRARIES}
+            )
 
-elseif(UNIX)
+elseif (UNIX)
     list(APPEND UNITTEST_LIBS
-         freeimage
-         ffmpeg
-         )
-endif()
+            freeimage
+            ${FFMPEG_LIBRARIES}
+            )
+endif ()
 
 target_link_libraries(${PROJECT_NAME} ${UNITTEST_LIBS})
 target_link_libraries(${PROJECT_NAME}_autorun ${UNITTEST_LIBS})
