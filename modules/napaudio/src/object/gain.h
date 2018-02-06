@@ -1,7 +1,7 @@
 #pragma once
 
 // Nap includes
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 
 // Audio includes
 #include <core/audioobject.h>
@@ -22,7 +22,7 @@ namespace nap
             
             int mChannelCount = 1;
             std::vector<ControllerValue> mGain = { 1.f };
-            std::vector<ObjectPtr<AudioObject>> mInputs;
+            std::vector<rtti::ObjectPtr<AudioObject>> mInputs;
             
         private:
             std::unique_ptr<Node> createNode(int channel, NodeManager& nodeManager) override

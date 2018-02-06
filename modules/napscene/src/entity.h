@@ -5,7 +5,7 @@
 #include "component.h"
 #include "instanceproperty.h"
 #include <utility/uniqueptrvectoriterator.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 
 namespace nap
 {
@@ -224,9 +224,9 @@ namespace nap
 	public:
 		SpawnedEntityInstance() = default;
 
-		ObjectPtr<EntityInstance>& get() { return mEntityInstance; }
+		rtti::ObjectPtr<EntityInstance>& get() { return mEntityInstance; }
 
-		const ObjectPtr<EntityInstance>& get() const { return mEntityInstance; }
+		const rtti::ObjectPtr<EntityInstance>& get() const { return mEntityInstance; }
 
 		const EntityInstance& operator*() const
 		{
@@ -301,7 +301,7 @@ namespace nap
 		}
 
 	private:
-		ObjectPtr<EntityInstance> mEntityInstance;
+		rtti::ObjectPtr<EntityInstance> mEntityInstance;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -315,8 +315,8 @@ namespace nap
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		using ComponentList = std::vector<ObjectPtr<Component>>;
-		using EntityList = std::vector<ObjectPtr<Entity>>;
+		using ComponentList = std::vector<rtti::ObjectPtr<Component>>;
+		using EntityList = std::vector<rtti::ObjectPtr<Entity>>;
 
 		/**
 		 * Find component of the specified type
@@ -324,7 +324,7 @@ namespace nap
 		 * @param type The type of component to find
 		 * @return The found component. Null if not found
 		 */
-		ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
+		rtti::ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		 * Check whether this Entity has a component of the specified type

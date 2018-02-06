@@ -424,11 +424,6 @@ namespace nap
 
 	Scene::~Scene()
 	{
-		// During real-time editing, it's possible for the user to remove an entity/component. During real-time editing, a 
-		// new scene is created. That new Scene cannot deal with removed objects, as it has no knowledge of any previous objects (it is a complete new object).
-		// To make sure that any ObjectPtrs are reset to null, the old Scene will need to do perform this patching, so here we reset ObjectPtrs to null
-		// for objects that are still present in the ObjectManager that have the same ID.
-		ObjectPtrManager::get().resetPointers(mInstancesByID);
 		mCore->getService<SceneService>()->unregisterScene(*this);
 	}
 
@@ -593,7 +588,7 @@ namespace nap
 		// In realtime editing scenarios, clients may have pointers to Entity & Component Instances that will have been respawned.
 		// We need to patch all ObjectPtrs to those instances here so that clients don't have to deal with it themselves.
 		// For example, a camera may have been stored by the app and stored in an ObjectPtr.
-		ObjectPtrManager::get().patchPointers(entityCreationParams.mAllInstancesByID);
+		rtti::ObjectPtrManager::get().patchPointers(entityCreationParams.mAllInstancesByID);
 
 		// Replace entities currently in the resource manager with the new set
 		for (auto& kvp : entityCreationParams.mEntityInstancesByID)
@@ -654,7 +649,9 @@ namespace nap
 		// First remove the entity from the root
 		mRootEntity->removeChild(*entity);
 
-		std::unordered_map<std::string, rtti::RTTIObject*> instances_to_reset;
+		// Note: we simply move all entity instances that need to be deleted into this vector. 
+		// Since they're stored through unique_ptrs, the entities will be deleted once the vector goes out of scope.
+		// This is needed so that we can still access the entity's data during iteration
 		std::vector<std::unique_ptr<EntityInstance>> entity_instances_to_delete;
 
 		// Remove instances from the map, but don't delete them yet
@@ -670,17 +667,12 @@ namespace nap
 
 				mEntityInstancesByID.erase(instance->mID);
 				mInstancesByID.erase(instance->mID);
-				instances_to_reset.insert(std::make_pair(instance->mID, nullptr));
 			}
 			else if (type_info.is_derived_from<ComponentInstance>())
 			{
 				mInstancesByID.erase(instance->mID);
-				instances_to_reset.insert(std::make_pair(instance->mID, nullptr));
 			}
 		}
-
-		// Reset all ObjectPtrs to the instances being removed to null
-		ObjectPtrManager::get().patchPointers(instances_to_reset);
 	}
 
 
@@ -695,7 +687,7 @@ namespace nap
 	}
 
 
-	const ObjectPtr<EntityInstance> Scene::findEntity(const std::string& inID) const
+	const rtti::ObjectPtr<EntityInstance> Scene::findEntity(const std::string& inID) const
 	{
 		EntityByIDMap::const_iterator pos = mEntityInstancesByID.find(SceneInstantiation::sGetInstanceID(inID));
 		if (pos == mEntityInstancesByID.end())

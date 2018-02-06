@@ -45,7 +45,7 @@ namespace nap
 		renderWindow->mWindowEvent.connect(std::bind(&KalvertorenApp::handleWindowEvent, this, std::placeholders::_1));
 
 		// All of our entities
-		ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
 
 		// Entities
 		compositionEntity = scene->findEntity("CompositionEntity");
@@ -103,7 +103,7 @@ namespace nap
 
 	void KalvertorenApp::render()
 	{
-		renderService->destroyGLContextResources(std::vector<nap::ObjectPtr<nap::RenderWindow>>({ renderWindow }));
+		renderService->destroyGLContextResources(std::vector<rtti::ObjectPtr<nap::RenderWindow>>({ renderWindow }));
 
 		// Render offscreen surface(s)
 		{

@@ -13,7 +13,7 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_FUNCTION("findObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManager::*)(const std::string&))&nap::ResourceManager::findObject)
+	RTTI_FUNCTION("findObject", (const nap::rtti::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManager::*)(const std::string&))&nap::ResourceManager::findObject)
 RTTI_END_CLASS
 
 namespace nap
@@ -67,7 +67,7 @@ namespace nap
 	ResourceManager::RollbackHelper::~RollbackHelper()
 	{
 		if (mPatchObjects)
-			ObjectPtrManager::get().patchPointers(mService.mObjects);
+			rtti::ObjectPtrManager::get().patchPointers(mService.mObjects);
 	}
 
 
@@ -122,13 +122,6 @@ namespace nap
 		mFactory(std::make_unique<Factory>()),
 		mCore(core)
 	{
-	}
-
-	ResourceManager::~ResourceManager()
-	{
-		// We reset any pointers that are owned here. This will make sure that any ObjectPtrs that are still pointing
-		// to objects that are owned by the resource manager are set to null
-		ObjectPtrManager::get().resetPointers(mObjects);
 	}
 
 
@@ -264,7 +257,7 @@ namespace nap
 
 		// Patch ObjectPtrs so that they point to the updated object instead of the old object. We need to do this before determining
 		// init order, otherwise a part of the graph may still be pointing to the old objects.
-		ObjectPtrManager::get().patchPointers(objects_to_update);
+		rtti::ObjectPtrManager::get().patchPointers(objects_to_update);
 
 		// Build object graph of all the objects in the manager, overlayed by the objects we want to update. Later, we will
 		// performs queries against this graph to determine init order for both resources and entities.
@@ -299,7 +292,7 @@ namespace nap
 		}
 
 		// Patch again to update pointers to objects that were cloned
-		ObjectPtrManager::get().patchPointers(objects_to_update);
+		rtti::ObjectPtrManager::get().patchPointers(objects_to_update);
 
 		// init all objects in the correct order
 		if (!initObjects(objects_to_init, objects_to_update, errorState))
@@ -415,12 +408,12 @@ namespace nap
 	}
 
 
-	const ObjectPtr<RTTIObject> ResourceManager::findObject(const std::string& id)
+	const rtti::ObjectPtr<RTTIObject> ResourceManager::findObject(const std::string& id)
 	{
 		const auto& it = mObjects.find(id);
 		
 		if (it != mObjects.end())
-			return ObjectPtr<RTTIObject>(it->second.get());
+			return rtti::ObjectPtr<RTTIObject>(it->second.get());
 		
 		return nullptr;
 	}
@@ -460,7 +453,7 @@ namespace nap
 	}
 
 
-	const ObjectPtr<RTTIObject> ResourceManager::createObject(const rtti::TypeInfo& type)
+	const rtti::ObjectPtr<RTTIObject> ResourceManager::createObject(const rtti::TypeInfo& type)
 	{
 		if (!type.is_derived_from(RTTI_OF(RTTIObject)))
 		{
@@ -491,7 +484,7 @@ namespace nap
 		object->mID = reso_unique_path;
 		addObject(reso_unique_path, std::unique_ptr<RTTIObject>(object));
 		
-		return ObjectPtr<RTTIObject>(object);
+		return rtti::ObjectPtr<RTTIObject>(object);
 	}
 
 }

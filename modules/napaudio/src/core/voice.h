@@ -30,7 +30,7 @@ namespace nap
              * Points to an envelope within the graph that controls the amplitude of a single audio event processed by the voice.
              * When the voice is played this envelope will be triggered. When it has finished it emits a signal that will cause the voice to be disconnected and enter idle state again.
              */
-            ObjectPtr<Envelope> mEnvelope;
+            rtti::ObjectPtr<Envelope> mEnvelope;
             
         private:
         };

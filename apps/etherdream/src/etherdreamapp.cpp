@@ -38,7 +38,7 @@ namespace nap
 		if (!mResourceManager->loadFile("etherdream.json", error)) 
 			return false;    
 
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
 		// Store all render windows
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");

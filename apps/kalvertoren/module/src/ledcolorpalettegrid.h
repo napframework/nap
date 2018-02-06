@@ -6,7 +6,7 @@
 #include <color.h>
 #include <pixmap.h>
 #include <unordered_map>
-#include "nap/objectptr.h"
+#include "rtti/objectptr.h"
 
 namespace nap
 {
@@ -100,7 +100,7 @@ namespace nap
 		std::string							mGridImagePath;			///< Path to the palette grid image on disk
 		std::string							mGridLedColorsPath;		///< Path to the palette grid led colors text file on disk
 		int									mGridSize;				///< Size of each square in the grid (in pixels)
-		std::vector<ObjectPtr<WeekColors>>	mWeekColors;			///< The colors for each week
+		std::vector<rtti::ObjectPtr<WeekColors>>	mWeekColors;			///< The colors for each week
 
 	private:
 		using PaletteRow = std::vector<PaletteColor>;

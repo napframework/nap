@@ -76,20 +76,20 @@ namespace nap
 		
 		InputService* mInputService = nullptr;						//< Input service for processing input
 		
-		std::vector<ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
+		std::vector<rtti::ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
 
-		ObjectPtr<EntityInstance> mDefaultInputRouter = nullptr;	//< Default input router entity for processing input
+		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter = nullptr;	//< Default input router entity for processing input
 		
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Entity that holds the camera
-		ObjectPtr<EntityInstance> mCameraEntityLeft = nullptr;		//< Camera entity for first/left window
-		ObjectPtr<EntityInstance> mCameraEntityRight = nullptr;		//< Camera entity for second/right window
-		ObjectPtr<EntityInstance> mSplitCameraEntity = nullptr;		//< Split camera entity for world globe moving between windows
+		rtti::ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Entity that holds the camera
+		rtti::ObjectPtr<EntityInstance> mCameraEntityLeft = nullptr;		//< Camera entity for first/left window
+		rtti::ObjectPtr<EntityInstance> mCameraEntityRight = nullptr;		//< Camera entity for second/right window
+		rtti::ObjectPtr<EntityInstance> mSplitCameraEntity = nullptr;		//< Split camera entity for world globe moving between windows
 		
-		ObjectPtr<RenderTarget> mTextureRenderTarget;				//< Render target for first window rotating plane
-		ObjectPtr<Scene>		mScene;
+		rtti::ObjectPtr<RenderTarget> mTextureRenderTarget;				//< Render target for first window rotating plane
+		rtti::ObjectPtr<Scene>		mScene;
 		SpawnedEntityInstance	mPigEntity;				//< Pig entity
-		ObjectPtr<EntityInstance> mRotatingPlaneEntity = nullptr;	//< Rotating render target entity
-		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Warping custom line entity
-		ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< World globe entity
+		rtti::ObjectPtr<EntityInstance> mRotatingPlaneEntity = nullptr;	//< Rotating render target entity
+		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Warping custom line entity
+		rtti::ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< World globe entity
 	};
 }
