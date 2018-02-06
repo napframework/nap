@@ -52,20 +52,39 @@ if (WIN32)
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${NAPRTTI_LIBS_DIR}/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        COMMAND ${CMAKE_COMMAND} -E copy ${NAPRTTI_LIBS_DIR}/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
     )
 
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:RTTR::Core> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:RTTR::Core> $<TARGET_FILE_DIR:${PROJECT_NAME}>
     )
 endif()
 
 # Install naprtti and RTTR into projects for macOS/Linux
 if (NOT WIN32)
+    # Add post-build step to set RTTR RPATH
+    # TODO? this is a workaround for RPATHs not being added for import libraries
+    if(APPLE)
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/bin $<TARGET_FILE:${PROJECT_NAME}>
+                           )
+    endif()
+
     install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
     install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
+
+    #
+    if(APPLE)
+        install(CODE "execute_process(COMMAND install_name_tool 
+                                              -change 
+                                              @loader_path/../../../../thirdparty/rttr/bin/librttr_core.0.9.6.dylib 
+                                              @rpath/librttr_core.0.9.6.dylib 
+                                              ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}
+                                              )")
+    endif()
 
     # On Linux set use lib directory for RPATH
     if(NOT APPLE)
@@ -73,7 +92,8 @@ if (NOT WIN32)
                       execute_process(COMMAND patchelf 
                                               --set-rpath 
                                               $ORIGIN/.
-                                              ${CMAKE_INSTALL_PREFIX}/lib/libnaprtti.so)
+                                              ${CMAKE_INSTALL_PREFIX}/lib/libnaprtti.so
+                                              )
                       ")
     endif()   
 endif()

@@ -29,9 +29,8 @@ macro(add_project_module)
     endif()
 endmacro()
 
-# Somewhat temporary generic way to import each module for different configurations.  I think we'll need make proper package files for
-# each module in the long run
-# TODO let's avoid per-module cmake package files for now.. but probably need to re-address later
+# Somewhat temporary generic way to import each module for different configurations.  Included is a primitive mechanism for 
+# extra per-module cmake logic.
 macro(find_nap_module MODULE_NAME)
     if (EXISTS ${NAP_ROOT}/usermodules/${MODULE_NAME}/)
         message("Module is user module: ${MODULE_NAME}")
@@ -118,7 +117,6 @@ macro(dist_export_fbx SRCDIR)
     # Do the export
     add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
-        # COMMAND set "PATH=${TOOLS_DIR}/..;%PATH%" # TODO confirm if needed for Win64
         COMMAND "${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
         COMMENT "Export FBX in '${SRCDIR}'")
 endmacro()
@@ -156,7 +154,7 @@ macro(set_module_output_directories)
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
             set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${OUTPUTCONFIG}/)
             string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
-            # TODO set the properties we actually need
+            # TODO Test and set the properties we actually need
             set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
             set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
             set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})

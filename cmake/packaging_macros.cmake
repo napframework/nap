@@ -1,5 +1,5 @@
 # Package installed Python for distribution with NAP release (for use with Napkin, mod_nappython)
-# TODO This is brittle and (very likely) temporary.  
+# TODO This is brittle and (very likely) temporary
 # I believe we should include python in thirdparty so that:
 # - We can control the macOS OS version/s we support
 # - We don't have these brittle connections to a moving (homebrew) target

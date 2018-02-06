@@ -16,7 +16,7 @@ target_architecture(ARCH)
 include(${NAP_ROOT}/cmake/distmacros.cmake)
 
 # Parse our project.json and import it
-# TODO Make changes to project.json automatically trigger CMake
+# TODO Changes to project.json should automatically trigger CMake.. but they don't
 execute_process(COMMAND python ${NAP_ROOT}/tools/projectInfoParseToCMake.py ${PROJECT_NAME})
 include(cached_project_json.cmake)
 
@@ -108,20 +108,9 @@ endforeach()
 
 target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core naputility ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 
-# Add post-build step to set RTTR RPATH
-# TODO this is a workaround for RPATHs not being added for import libraries
-# TODO Move to naprtti
-# TODO Change to CMAKE_INSTALL_NAME_TOOL with ERROR_QUIET
-if(APPLE)
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${NAP_ROOT}/tools/platform/ensureHasRPath.py $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/rttr/bin 
-                       )
-endif()
-
 # Deploy napkin to our Windows build or packaging dir
 if(WIN32 AND (NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN))
-    # TODO write me
+    # TODO Write napkin deployment to bin dir for Windows
 endif()
 
 # Copy data to bin post-build
@@ -137,10 +126,6 @@ if (NOT WIN32)
     install(TARGETS ${PROJECT_NAME} DESTINATION .)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    
     install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
-    # TODO move to naprtti
-    if (APPLE)
-        install(CODE "execute_process(COMMAND install_name_tool -change @loader_path/../../../../thirdparty/rttr/bin/librttr_core.0.9.6.dylib @rpath/librttr_core.0.9.6.dylib ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME})")
-    endif()   
 
     # Package napkin if we're doing a build from Xcode or we're packaging a project with napkin
     if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
