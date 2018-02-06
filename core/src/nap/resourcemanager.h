@@ -25,7 +25,7 @@ namespace nap
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
-	class NAPAPI ResourceManager
+	class NAPAPI ResourceManager final
 	{
 		friend class Core;
 		RTTI_ENABLE()

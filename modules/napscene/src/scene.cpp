@@ -424,7 +424,10 @@ namespace nap
 
 	Scene::~Scene()
 	{
-		// During real-time editing, it's possible for the user to remove an entity/component. We need to patch any ObjecPtrs pointing to these removed instances to null
+		// During real-time editing, it's possible for the user to remove an entity/component. During real-time editing, a 
+		// new scene is created. That new Scene cannot deal with removed objects, as it has no knowledge of any previous objects (it is a complete new object).
+		// To make sure that any ObjectPtrs are reset to null, the old Scene will need to do perform this patching, so here we reset ObjectPtrs to null
+		// for objects that are still present in the ObjectManager that have the same ID.
 		ObjectPtrManager::get().resetPointers(mInstancesByID);
 		mCore->getService<SceneService>()->unregisterScene(*this);
 	}
@@ -629,6 +632,7 @@ namespace nap
 		return SpawnedEntityInstance(spawnedRootEntities[0]);
 	}
 
+
 	static void sGetInstancesToDestroyRecursive(EntityInstance& entity, std::vector<rtti::RTTIObject*>& instancesToDestroy)
 	{
 		instancesToDestroy.push_back(&entity);
@@ -639,6 +643,7 @@ namespace nap
 		for (EntityInstance* child : entity.getChildren())
 			sGetInstancesToDestroyRecursive(*child, instancesToDestroy);
 	}
+
 
 	void Scene::destroy(SpawnedEntityInstance& entity)
 	{
@@ -677,6 +682,7 @@ namespace nap
 		// Reset all ObjectPtrs to the instances being removed to null
 		ObjectPtrManager::get().patchPointers(instances_to_reset);
 	}
+
 
 	bool Scene::init(utility::ErrorState& errorState)
 	{

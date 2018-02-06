@@ -126,6 +126,8 @@ namespace nap
 
 	ResourceManager::~ResourceManager()
 	{
+		// We reset any pointers that are owned here. This will make sure that any ObjectPtrs that are still pointing
+		// to objects that are owned by the resource manager are set to null
 		ObjectPtrManager::get().resetPointers(mObjects);
 	}
 
@@ -306,9 +308,7 @@ namespace nap
 		// In case all init() operations were successful, we can now replace the objects
 		// in the manager by the new objects. This effectively destroys the old objects as well.
 		for (auto& kvp : objects_to_update)
-		{
 			mObjects[kvp.first] = std::move(kvp.second);
-		}
 
 		for (const FileLink& file_link : read_result.mFileLinks)
 			addFileLink(filename, file_link.mTargetFile);
