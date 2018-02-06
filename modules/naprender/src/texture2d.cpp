@@ -111,27 +111,22 @@ namespace nap
 	}
 
 
-	bool Texture2D::initFromBitmap(bool compressed, utility::ErrorState& errorState)
+	bool Texture2D::initFromBitmap(const Bitmap& bitmap, bool compressed, utility::ErrorState& errorState)
 	{
-		assert(!mBitmap.empty());
+		assert(!bitmap.empty());
 
 		// Get opengl settings from bitmap
 		opengl::Texture2DSettings settings;
-		if (!errorState.check(getTextureSettingsFromBitmap(mBitmap, compressed, settings, errorState), "Unable to determine texture settings from bitmap"))
+		if (!errorState.check(getTextureSettingsFromBitmap(bitmap, compressed, settings, errorState), "Unable to determine texture settings from bitmap"))
 			return false;
 		
 		// Initialize texture from bitmap
 		initTexture(settings);
 		
-		update();
+		update(bitmap);
 		return true;
 	}
 
-	void Texture2D::update()
-	{
-		assert(!mBitmap.empty());
-		update(mBitmap); 
-	}
 
 	const glm::vec2 Texture2D::getSize() const
 	{
@@ -151,32 +146,6 @@ namespace nap
 	}
 
 
-	Bitmap& Texture2D::getData()
-	{
-		if (mBitmap.empty())
-			mBitmap.initFromTexture(mTexture.getSettings());
-
-		mTexture.getData(mBitmap.getData(), mBitmap.getSizeInBytes());
-		return mBitmap;
-	}
-
-
-	void Texture2D::startGetData()
-	{
-		mTexture.asyncStartGetData();
-	}
-
-
-	Bitmap& Texture2D::endGetData()
-	{
-		if (mBitmap.empty())
-			mBitmap.initFromTexture(mTexture.getSettings());
-
-		mTexture.getData(mBitmap.getData(), mBitmap.getSizeInBytes());
-		return mBitmap;
-	}
-
-
 	void Texture2D::bind()
 	{
 		mTexture.bind();
@@ -188,13 +157,68 @@ namespace nap
 		mTexture.unbind();
 	}
 
-	void Texture2D::update(Bitmap& bitmap)
+
+	void Texture2D::update(const Bitmap& bitmap)
 	{
 		update(bitmap.getData());
 	}
 
-	void Texture2D::update(void* data, int pitch)
-	{ 
-		mTexture.setData(data, pitch); 
+
+	void Texture2D::update(const void* data, int pitch)
+	{
+		mTexture.setData(data, pitch);
+	}
+
+
+	void Texture2D::getData(Bitmap& bitmap)
+	{
+		if (bitmap.empty())
+			bitmap.initFromTexture(mTexture.getSettings());
+
+		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
+	}
+
+
+	void Texture2D::startGetData()
+	{
+		getTexture().asyncStartGetData();
+	}
+
+
+	void Texture2D::endGetData(Bitmap& bitmap)
+	{
+		if (bitmap.empty())
+			bitmap.initFromTexture(mTexture.getSettings());
+
+		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+
+	void Image::update()
+	{
+		assert(!mBitmap.empty());
+		update(mBitmap); 
+	}
+
+
+	Bitmap& Image::getData()
+	{
+		getData(mBitmap);
+		return mBitmap;
+	}
+
+
+	void Image::startGetData()
+	{
+		getTexture().asyncStartGetData();
+	}
+
+
+	Bitmap& Image::endGetData()
+	{
+		endGetData(mBitmap);
+		return mBitmap;
 	}
 }

@@ -52,7 +52,7 @@ namespace nap
 #ifndef _DEBUG 
 			activeTarget->getColorTexture().endGetData();
 #else
-			activeTarget->getColorTexture().getData();
+			activeTarget->getColorTexture().getData(mBitmap);
 #endif // DEBUG
 
 		}
@@ -94,12 +94,13 @@ namespace nap
 			nextTarget = active_placeholder;
 		}
 
-		// Start pixel data transfer so reading it later is performent
+		// Start pixel data transfer so reading it later is performant
 #ifndef _DEBUG 
 		activeTarget->getColorTexture().startGetData();
 #endif // !DEBUG
 		mTransferring = true;
 	}
+
 
 	nap::Texture2D& RenderCompositionComponentInstance::getTexture()
 	{
@@ -109,7 +110,7 @@ namespace nap
 
 	nap::Bitmap& RenderCompositionComponentInstance::getBitmap()
 	{
-		return activeTarget->getColorTexture().getBitmap();
+		return mBitmap; 
 	}
 
 

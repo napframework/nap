@@ -106,9 +106,9 @@ namespace opengl
 	/**
 	 * Uploads the 2D texture data to the GPU
 	 */
-	void Texture2D::setData(void* data, int pitch)
+	void Texture2D::setData(const void* data, int pitch)
 	{
-		void* data_ptr = data;
+		const void* data_ptr = data;
 
 		// For dynamic write textures, memcpy into FBO and let GPU copy it from there asynchronously
 		if (mUsage == ETextureUsage::DynamicWrite)

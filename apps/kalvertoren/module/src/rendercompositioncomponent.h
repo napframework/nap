@@ -76,6 +76,16 @@ namespace nap
 		 */
 		nap::Bitmap& getBitmap();
 
+	private:
+		/**
+		 *	Renders a single pass 
+		 * @param inputA the base input texture
+		 * @param inputB the top input texture
+		 * @param target the render target to render to
+		 */
+		void renderPass(Texture2D& inputA, Texture2D& inputB, RenderTarget& target);
+
+	public:
 		// Points to the composition component we want to render
 		ComponentInstancePtr<CompositionComponent> mCompositionComponent	=	{ this, &RenderCompositionComponent::mCompositionComponent };
 		ComponentInstancePtr<RenderableMeshComponent> mRenderableComponent	=	{ this, &RenderCompositionComponent::mRenderableComponent };
@@ -92,12 +102,6 @@ namespace nap
 		RenderTarget*	activeTarget = nullptr;
 		RenderTarget*	nextTarget = nullptr;
 
-		/**
-		 *	Renders a single pass 
-		 * @param inputA the base input texture
-		 * @param inputB the top input texture
-		 * @param target the render target to render to
-		 */
-		void renderPass(Texture2D& inputA, Texture2D& inputB, RenderTarget& target);
+		Bitmap			mBitmap;
 	};
 }

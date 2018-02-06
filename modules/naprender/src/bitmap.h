@@ -120,6 +120,11 @@ namespace nap
 		void* getData()														{ return mData.data(); }
 
 		/**
+		 * @return a pointer to the underlying data in memory
+		 */
+		const void* getData() const											{ return mData.data(); }
+
+		/**
 		 * getSize
 		 *
 		 * Returns total number of bytes associated with this image
