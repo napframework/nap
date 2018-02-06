@@ -203,7 +203,8 @@ size_t Document::arrayAddValue(const PropertyPath& path, size_t index)
 	assert(new_value.is_valid());
 	assert(array_view.is_dynamic());
 
-	assert(array_view.insert_value(index, new_value));
+	bool inserted = array_view.insert_value(index, new_value);
+	assert(inserted);
 
 	resolved_path.setValue(array);
 
@@ -230,7 +231,8 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 	assert(array_view.is_dynamic());
 
 	size_t index = array_view.get_size();
-	assert(array_view.insert_value(index, new_value));
+	bool inserted = array_view.insert_value(index, new_value);
+	assert(inserted);
 
 	resolved_path.setValue(array);
 
