@@ -146,9 +146,9 @@ void AddEntityToSceneCommand::undo()
 
 void AddEntityToSceneCommand::redo()
 {
-	auto scene = AppContext::get().getDocument()->getObjectT<nap::Scene>(mSceneID);
+	auto scene = AppContext::get().getDocument()->getObject<nap::Scene>(mSceneID);
 	assert(scene != nullptr);
-	auto entity = AppContext::get().getDocument()->getObjectT<nap::Entity>(mEntityID);
+	auto entity = AppContext::get().getDocument()->getObject<nap::Entity>(mEntityID);
 	assert(entity != nullptr);
 
 	nap::RootEntity rootEntity;

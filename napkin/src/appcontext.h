@@ -168,7 +168,7 @@ namespace napkin
 		 * Qt Signal
 		 * Fired when something in the document has changed
 		 */
-		void documentChanged();
+		void documentChanged(Document* doc);
 
 	Q_SIGNALS:
 		/**
@@ -225,6 +225,11 @@ namespace napkin
 		 * Whenever a new document is created/loaded, register its signals for listeners
 		 */
 		void connectDocumentSignals();
+
+		/**
+		 * When a new document has been set
+		 */
+		void onUndoIndexChanged();
 
 
 		nap::Core mCore;						// The nap::Core

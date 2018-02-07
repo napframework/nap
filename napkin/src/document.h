@@ -64,7 +64,7 @@ namespace napkin
 		 * Get an object by name and type
 		 */
 		template<typename T>
-		T* getObjectT(const std::string& name) { return rtti_cast<T>(getObject(name)); }
+		T* getObject(const std::string& name) { return rtti_cast<T>(getObject(name)); }
 
 		/**
 		 * Retrieve the parent of the specified Entity

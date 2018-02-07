@@ -40,8 +40,9 @@ Document* AppContext::newDocument()
 	mDocument = std::make_unique<Document>(getCore());
 	connectDocumentSignals();
 	newDocumentCreated();
-	documentChanged();
-	return mDocument.get();
+	Document* doc = mDocument.get();
+	documentChanged(doc);
+	return doc;
 }
 
 Document* AppContext::loadDocument(const QString& filename)
@@ -66,12 +67,12 @@ Document* AppContext::loadDocument(const QString& filename)
 		return nullptr;
 	}
 
-	// transfer
 	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
 	connectDocumentSignals();
 	documentOpened(filename);
-	documentChanged();
-	return mDocument.get();
+	Document* doc = mDocument.get();
+	documentChanged(doc); // Stack corruption?
+	return doc;
 }
 
 void AppContext::saveDocument()
@@ -112,7 +113,7 @@ void AppContext::saveDocumentAs(const QString& filename)
 
 	documentSaved(filename);
 	getUndoStack().setClean();
-	documentChanged();
+	documentChanged(mDocument.get());
 }
 
 void AppContext::openRecentDocument()
@@ -151,10 +152,7 @@ void AppContext::connectDocumentSignals()
 	connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
 	connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
 	connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
-	connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, [this](int idx)
-	{
-		documentChanged();
-	});
+	connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
 }
 
 QMainWindow* AppContext::getMainWindow() const
@@ -189,5 +187,10 @@ Document* AppContext::getDocument()
 		newDocument();
 	}
 	return mDocument.get();
+}
+
+void AppContext::onUndoIndexChanged()
+{
+	documentChanged(mDocument.get());
 }
 
