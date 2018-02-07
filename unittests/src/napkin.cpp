@@ -453,6 +453,7 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	// Assume this test file's directory as the base path
 	auto jsonFile = "objects.json";
 	std::string shaderFile = "shaders/debug.frag";
+	std::string dataDir = ".";
 	// Load the json file so we have reference path for resources
 
 	QString res = getResource(jsonFile);
@@ -488,5 +489,12 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	// Check absolute path
 	auto absShaderPath = napkin::getAbsoluteResourcePath(relShaderPath);
 	REQUIRE(absShaderPath == absShaderFilePath);
+
+	// Check if dir contains path
+	REQUIRE(napkin::directoryContains(resourcedir, absShaderPath));
+	REQUIRE(napkin::directoryContains(resourcedir, absJsonFilePath));
+	REQUIRE(napkin::directoryContains(resourcedir + "/shaders", absShaderPath));
+	// or not
+	REQUIRE(!napkin::directoryContains(absShaderPath, resourcedir));
 
 }
