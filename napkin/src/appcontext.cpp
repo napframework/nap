@@ -6,17 +6,17 @@
 
 // qt
 #include <QSettings>
-#include <QtCore/QDir>
-#include <QtWidgets/QMessageBox>
+#include <QDir>
+#include <QTimer>
 
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
 #include <rtti/defaultlinkresolver.h>
+#include <nap/logger.h>
 
 // local
 #include <generic/naputils.h>
-#include <nap/logger.h>
 #include <utility/fileutils.h>
 
 using namespace nap::rtti;
@@ -24,15 +24,7 @@ using namespace nap::utility;
 using namespace napkin;
 
 AppContext::AppContext()
-{
-	ErrorState err;
-	if (!getCore().initializeEngine(err, getExecutableDir()))
-	{
-		nap::Logger::fatal("Failed to initialize engine");
-	}
-
-	newDocument();
-}
+{}
 
 AppContext::~AppContext()
 {}
@@ -143,7 +135,10 @@ void AppContext::restoreUI()
 	const QString& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_DEFAULT_THEME).toString();
 	getThemeManager().setTheme(recentTheme);
 
-	openRecentDocument();
+	// Let the ui come up before loading all the recent file and initializing core
+	QTimer::singleShot(100, [this]() {
+		openRecentDocument();
+	});
 }
 
 void AppContext::connectDocumentSignals()
@@ -171,5 +166,18 @@ QMainWindow* AppContext::getMainWindow() const
 			return mainWin;
 	}
 	return nullptr;
+}
+
+nap::Core& AppContext::getCore() {
+	if (!mCoreInitialized)
+	{
+		ErrorState err;
+		if (!mCore.initializeEngine(err, getExecutableDir()))
+		{
+			nap::Logger::fatal("Failed to initialize engine");
+		}
+		mCoreInitialized = true;
+	}
+	return mCore;
 }
 
