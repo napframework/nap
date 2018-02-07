@@ -98,7 +98,7 @@ namespace napkin
 		/**
 		 * @return The current document
 		 */
-		Document* getDocument() { return mDocument.get(); }
+		Document* getDocument();
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.

@@ -23,6 +23,11 @@ private:
 	int mCount = 0;
 };
 
+const QString getResource(const QString& filename)
+{
+	return "unit_tests_data/" + filename;
+}
+
 TEST_CASE("Document Management", TAG_NAPKIN)
 {
 	auto doc = napkin::AppContext::get().getDocument();
@@ -187,7 +192,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	REQUIRE(layer3 != nullptr);
 	// State: 0, 1, 2, 3
 
-	long new_index = doc->arrayMoveElement(layers, 2, 1);
+	size_t new_index = doc->arrayMoveElement(layers, 2, 1);
 	// State: 0, [2], 1, 3
 
 	REQUIRE(new_index == 1);
@@ -196,6 +201,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	REQUIRE(variant.is_valid());
 	auto vlayer = variant.convert<nap::ImageSequenceLayer*>();
 	REQUIRE(vlayer != nullptr);
+
 
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer0);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer2);
@@ -437,9 +443,8 @@ TEST_CASE("File Extensions", TAG_NAPKIN)
     }
 }
 
-//TEST_CASE("Resource Management", TAG_NAPKIN)
-//{
-//	auto doc = napkin::AppContext::get().loadDocument("data/kalvertoren.json");
-//	REQUIRE(doc != nullptr);
-//
-//}
+TEST_CASE("Resource Management", TAG_NAPKIN)
+{
+	auto doc = napkin::AppContext::get().loadDocument(getResource("objects.json"));
+	REQUIRE(doc != nullptr);
+}

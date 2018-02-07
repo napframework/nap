@@ -37,7 +37,7 @@ AppContext& AppContext::get()
 
 Document* AppContext::newDocument()
 {
-	mDocument = std::make_unique<Document>(mCore);
+	mDocument = std::make_unique<Document>(getCore());
 	connectDocumentSignals();
 	newDocumentCreated();
 	documentChanged();
@@ -168,7 +168,8 @@ QMainWindow* AppContext::getMainWindow() const
 	return nullptr;
 }
 
-nap::Core& AppContext::getCore() {
+nap::Core& AppContext::getCore()
+{
 	if (!mCoreInitialized)
 	{
 		ErrorState err;
@@ -179,5 +180,14 @@ nap::Core& AppContext::getCore() {
 		mCoreInitialized = true;
 	}
 	return mCore;
+}
+
+Document* AppContext::getDocument()
+{
+	if (mDocument == nullptr)
+	{
+		newDocument();
+	}
+	return mDocument.get();
 }
 
