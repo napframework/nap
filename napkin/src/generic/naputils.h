@@ -93,11 +93,6 @@ namespace napkin
 	nap::rtti::RTTIObject* getPointee(const PropertyPath& path);
 
 	/**
-	 * Given a Pointer Property (i like this name), set its pointee using a string.
-	 */
-	bool setPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path, const std::string& target);
-
-	/**
 	 * Get the reference directory for resources.
 	 * @param reference The path to the reference directory or file.
 	 * 	If nothing is provided, this will fall back to the currently opened document

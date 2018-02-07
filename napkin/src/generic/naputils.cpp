@@ -152,11 +152,6 @@ nap::rtti::RTTIObject* napkin::getPointee(const PropertyPath& path)
 	return pointee;
 }
 
-bool napkin::setPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path, const std::string& target)
-{
-	return false;
-}
-
 QString napkin::getAbsoluteResourcePath(const QString& relPath, const QString& reference)
 {
 	auto ref = getResourceReferencePath(reference);
