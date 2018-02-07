@@ -13,6 +13,22 @@ namespace nap
 	class LedColorPaletteGrid;
 
 	/**
+	 *	Defines the variations for every week
+	 */
+	class NAPAPI WeekVariations : public rtti::RTTIObject
+	{
+		RTTI_ENABLE(rtti::RTTIObject)
+	public:
+		std::vector<std::vector<int>>	mVariations;		///< The variations for this week. Each element is an array of indices into the palette for this week.
+		
+		/**
+		 * @return total amount of available variations
+		 */
+		int getCount() const			{ return mVariations.size(); }
+	};
+
+
+	/**
 	 * Defines the palette colors for a particular week
 	 */
 	class NAPAPI WeekColors : public rtti::RTTIObject
@@ -36,7 +52,7 @@ namespace nap
 		/**
 		 * Get the number of variations in this palette
 		 */
-		int getVariationCount() const { return mVariations.size(); }
+		int getVariationCount() const						{	return mVariations->mVariations.size(); }
 	
 		/**
 		 * Get the palette colors for the specified variation
@@ -46,7 +62,7 @@ namespace nap
 
 	public:
 		std::string						mPalette;			///< The palette pattern. Each element (separated by a space) denotes an index in the palette grid
-		std::vector<std::vector<int>>	mVariations;		///< The variations for this week. Each element is an array of indices into the palette for this week.
+		ObjectPtr<WeekVariations>		mVariations;		///< The variations based on the pattern
 
 	private:
 		std::vector<GridColorIndex>	mPaletteColors;
