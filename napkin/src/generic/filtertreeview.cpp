@@ -145,8 +145,18 @@ void napkin::FilterTreeView::selectAndReveal(QStandardItem* item)
 	if (item == nullptr)
 		return;
 
-
 	QModelIndex idx = getFilterModel().mapFromSource(item->index());
+	if (!idx.isValid())
+	{
+		// Probably filtered out, add an exception and try again
+		mSortFilter.exemptSourceIndex(item->index());
+		idx = getFilterModel().mapFromSource(item->index());
+		if (!idx.isValid())
+		{
+			nap::Logger::warn("Nothing to select...");
+			return;
+		}
+	}
 	// We are going to select an entire row
 	auto botRight = getFilterModel().index(idx.row(), getFilterModel().columnCount(idx.parent()) - 1, idx.parent());
     getTreeView().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);
@@ -181,6 +191,7 @@ QList<QModelIndex> napkin::FilterTreeView::getSelectedIndexes() const
 void napkin::FilterTreeView::onFilterChanged(const QString& text)
 {
 	mSortFilter.setFilterRegExp(text);
+	mSortFilter.clearExemptions();
 	mTreeView.expandAll();
 	setTopItemSelected();
 }
