@@ -5,6 +5,8 @@
 #include <composition.h>
 #include <ledcolorpalettegrid.h>
 #include <imagelayer.h>
+#include <shader.h>
+#include <generic/naputils.h>
 
 #define TAG_NAPKIN "[napkin]"
 
@@ -25,7 +27,10 @@ private:
 
 const QString getResource(const QString& filename)
 {
-	return "unit_tests_data/" + filename;
+	const QString resourceDir = "unit_tests_data";
+	if (filename.isEmpty())
+		return resourceDir;
+	return resourceDir + "/" + filename;
 }
 
 TEST_CASE("Document Management", TAG_NAPKIN)
@@ -445,6 +450,43 @@ TEST_CASE("File Extensions", TAG_NAPKIN)
 
 TEST_CASE("Resource Management", TAG_NAPKIN)
 {
-	auto doc = napkin::AppContext::get().loadDocument(getResource("objects.json"));
+	// Assume this test file's directory as the base path
+	auto jsonFile = "objects.json";
+	std::string shaderFile = "shaders/debug.frag";
+	// Load the json file so we have reference path for resources
+
+	QString res = getResource(jsonFile);
+
+	// Something fishy here, shaderFile's QString data pointer changes after this call (if shaderFile is a QString)
+	auto doc = napkin::AppContext::get().loadDocument(res);
 	REQUIRE(doc != nullptr);
+
+	// Ensure shader file exists
+	auto absJsonFilePath = QFileInfo(getResource(jsonFile)).absoluteFilePath();
+	REQUIRE(QFileInfo::exists(absJsonFilePath));
+
+	// Ensure shader file exists
+	auto absShaderFilePath = QFileInfo(getResource(QString::fromStdString(shaderFile))).absoluteFilePath();
+	REQUIRE(QFileInfo::exists(absShaderFilePath));
+
+	// Ensure the resource directory exists
+	auto resourcedir = QFileInfo(getResource("")).absoluteFilePath();
+	REQUIRE(QFileInfo::exists(resourcedir));
+
+	// Test our local resource function with napkin's
+	auto basedir = QFileInfo(napkin::getResourceReferencePath()).absoluteFilePath();
+	REQUIRE(basedir == resourcedir);
+
+	// Check relative path
+	auto relJsonPath = napkin::getRelativeResourcePath(absJsonFilePath);
+	REQUIRE(relJsonPath == jsonFile);
+
+	// Check relative path
+	auto relShaderPath = napkin::getRelativeResourcePath(absShaderFilePath);
+	REQUIRE(relShaderPath == QString::fromStdString(shaderFile));
+
+	// Check absolute path
+	auto absShaderPath = napkin::getAbsoluteResourcePath(relShaderPath);
+	REQUIRE(absShaderPath == absShaderFilePath);
+
 }
