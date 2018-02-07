@@ -50,10 +50,7 @@ namespace napkin
 		/**
 		 * @return The single nap::Core instance held by this AppContext
 		 */
-		nap::Core& getCore()
-		{
-			return mCore;
-		}
+		nap::Core& getCore();
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// File operations
@@ -231,6 +228,7 @@ namespace napkin
 
 
 		nap::Core mCore;						// The nap::Core
+		bool mCoreInitialized = false;			// Keep track of core initialization state
 		ThemeManager mThemeManager;			 	// The theme manager
 		ResourceFactory mResourceFactory;		// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
