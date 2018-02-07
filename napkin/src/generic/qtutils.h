@@ -80,7 +80,13 @@ namespace napkin
 	 */
 	QStandardItem* findItemInModel(const QStandardItemModel& model, ModelItemFilter condition, int column = 0);
 
-
+	/**
+	 * Check wherether the provided filename exists somewhere in the provided directory.
+	 * @param dir The parent directory to check for
+	 * @param filename The filename to 'look' for.
+	 * @return true if the file is a child of dir
+	 */
+	bool directoryContains(const QString& dir, const QString& filename);
 
 	/**
 	 * @tparam QEnum The enum type to use
@@ -92,5 +98,6 @@ namespace napkin
 	{
 		return QMetaEnum::fromType<QEnum>().valueToKey(value);
 	}
+
 }
 

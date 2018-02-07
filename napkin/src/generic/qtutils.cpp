@@ -1,4 +1,5 @@
 #include "qtutils.h"
+#include <QDir>
 #include <mathutils.h>
 
 
@@ -99,5 +100,12 @@ void napkin::expandChildren(QTreeView* view, const QModelIndex& index, bool expa
 
 	for (int i = 0, len = index.model()->rowCount(index); i < len; i++)
 		expandChildren(view, index.child(i, 0), expanded);
+}
+
+bool napkin::directoryContains(const QString& dir, const QString& filename)
+{
+	auto absDir = QDir(dir).canonicalPath();
+	auto absFile = QFileInfo(filename).canonicalFilePath();
+	return absFile.startsWith(absDir);
 }
 
