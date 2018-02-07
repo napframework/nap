@@ -98,7 +98,9 @@ def install_dependencies_osx():
         'assimp',
         # 'tclap', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         'ffmpeg',
-        'mpg123'
+        'mpg123',
+        'qt',
+        'python3'
     ]
 
     if not is_osx_brew_installed():
