@@ -129,18 +129,19 @@ namespace nap
 
 	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
+		// TODO populate ErrorState
+		// TODO look into changing loadModules into one of two behaviours:
+		//      - a standard project mode where it only loads the modules specified in the provided list and fails if
+		//        some of those modules couldn't be loaded
+		//      - a 'load everything' mode for napkin or sandbox NAP use where no modules are specified and everything found
+		//        is loaded
+		
 		// Build a list of directories to search for modules
 		std::vector<std::string> directories;
-		buildModuleSearchDirectories(moduleNames, directories);
-		
+		if (!buildModuleSearchDirectories(moduleNames, directories))
+			return false;
+
 		// Iterate each directory
-		
-		// TODO populate ErrorState
-		
-		// TODO now that we're getting a list of required modules why don't we verify that we've managed to load each one?
-		
-		// TODO iterating module paths like this is very likely temporary behaviour as we work through the
-		// build/release/etc structure
 		for (const auto& directory : directories) {
 			// Skip directory if it doesn't exist
 			if (!utility::dirExists(directory))
@@ -216,9 +217,11 @@ namespace nap
 		return true;
 	}
 	
-	void ModuleManager::buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories)
+	bool ModuleManager::buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories)
 	{
-
+		// TODO This is all fairly temporary; whether NAP is running against NAP source, released NAP or a packaged project
+		//      should probably be determined via a build mechanism, eg. a header file modified via CMake during build.
+		
 #ifdef _WIN32
 		// Windows
 		outSearchDirectories.push_back(utility::getExecutableDir());
@@ -234,8 +237,7 @@ namespace nap
 		{
 			// TODO improve output
 			Logger::warn("Unexpected path configuration found, can't locate modules");
-			// TODO raise exception?
-			return;
+			return false;
 		}
 		
 		std::string buildType;
@@ -308,12 +310,12 @@ namespace nap
 				{
 					// TODO improve output
 					Logger::warn("Unexpected path configuration found, can't locate modules");
-					// TODO raise exception?
+					return false;
 				}
-				return;
 			}
 		}
 #endif // _WIN32
+		return true;
 	}
 	
 	// TODO workaround until we have a step in our packaging process that eg. stores a flag / release

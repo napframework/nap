@@ -48,8 +48,9 @@ namespace nap
 		 * Build directories to search in for specified modules
 		 * @param moduleNames The names of the modules in use in the project
 		 * @param outSearchDirectories The directories to search for the provided modules
+		 * @return whether we were successfully able to determine our configuration and build our search paths
 		 */
-		void buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories);
+		bool buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories);
 
 		/**
 		 * Attempt to parse the build type from a folder name in the build system
