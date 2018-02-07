@@ -13,6 +13,7 @@
 #include <rtti/rttideserializeresult.h>
 #include <rtti/rttiutilities.h>
 #include <vector>
+#include <QtWidgets/QMainWindow>
 
 namespace napkin
 {
@@ -106,7 +107,7 @@ namespace napkin
 		 * Convenience method to retrieve this QApplication's instance.
 		 * @return The QApplication singleton.
 		 */
-		QApplication* getQApplication() { return dynamic_cast<QApplication*>(qGuiApp); }
+		QApplication* getQApplication() const { return dynamic_cast<QApplication*>(qGuiApp); }
 
 		/**
 		 * @return The currently used undostack, @see QUndoStack
@@ -132,6 +133,11 @@ namespace napkin
 		 * The resource factory can be used to grab icons per object type for example
 		 */
 		const ResourceFactory& getResourceFactory() const { return mResourceFactory; }
+
+		/**
+		 * Retrieve the application's main window
+		 */
+		QMainWindow* getMainWindow() const;
 
 	Q_SIGNALS:
 		/**
