@@ -64,7 +64,7 @@ TEST_CASE("Document Signals", TAG_NAPKIN)
 TEST_CASE("Array Value Elements", TAG_NAPKIN)
 {
 	auto doc = napkin::AppContext::get().newDocument();
-	auto colors = doc->addObject<nap::WeekColors>();
+	auto colors = doc->addObject<nap::WeekVariations>();
 	REQUIRE(colors  != nullptr);
 
 	// Check invalid nonexistent path
@@ -108,7 +108,7 @@ TEST_CASE("Array Value Elements", TAG_NAPKIN)
 TEST_CASE("Array add weekcolor", TAG_NAPKIN)
 {
 	auto doc = napkin::AppContext::get().newDocument();
-	auto* col = doc->addObject<nap::WeekColors>();
+	auto* col = doc->addObject<nap::WeekVariations>();
 	REQUIRE(col != nullptr);
 
 	napkin::PropertyPath variations(*col, "Variations");
