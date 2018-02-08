@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 import json
 import os
 from subprocess import call, Popen, PIPE
@@ -15,35 +16,7 @@ PACKAGED_CONFIG = 'Release'
 PROJECT_INFO_FILE = 'project.json'
 EXTERNAL_PATHS = ['/opt', '/usr/local']
 
-ERROR_MISSING_INPUT = 1
-ERROR_BAD_PACKAGING_PATH = 2
-
-# TODO share with projectInfoParseToCMake
-def find_project(project_name):
-    script_path = os.path.realpath(__file__)
-    # TODO clean up, use absolute path
-    nap_root = os.path.join(os.path.dirname(script_path), '..')
-
-    project_dir_name = project_name.lower()
-    projects_root = os.path.join(nap_root, 'projects')
-    project_path = os.path.join(projects_root, project_dir_name)
-    examples_root = os.path.join(nap_root, 'examples')
-    example_path = os.path.join(examples_root, project_dir_name)
-    demos_root = os.path.join(nap_root, 'demos')
-    demo_path = os.path.join(demos_root, project_dir_name)
-
-    if os.path.exists(project_path):
-        print("Found project %s at %s" % (project_name, project_path))
-        return project_path
-    elif os.path.exists(example_path):
-        print("Found example %s at %s" % (project_name, example_path))
-        return example_path
-    elif os.path.exists(demo_path):
-        print("Found demo %s at %s" % (project_name, demo_path))
-        return demo_path
-    else:
-        print("Couldn't find project or example with name '%s'" % project_name)
-        return None
+ERROR_BAD_PACKAGING_PATH = 1
 
 def copy_local_object_linked_local_dylibs(object_path, dest_path):
     cmd = "otool -L %s" % object_path
@@ -162,20 +135,13 @@ def run(packaging_path):
     update_external_dylib_paths_for_single_object(executable_name, '@rpath', True, False, True)
 
 if __name__ == '__main__':
-    # TODO use argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("PROJECT_PACKAGING_PATH", type=str)
+    args = parser.parse_args()    
 
-    if len(sys.argv) != 2:
-        print("Usage: %s PROJECT_NAME PACKAGING_PATH" % sys.argv[0])
-        sys.exit(ERROR_MISSING_INPUT)
-
-    packaging_path = sys.argv[1]
-    if not os.path.exists(packaging_path):
-        print("Error: Packaging path %s does not exist" % packaging_path)
-        sys.exit(ERROR_BAD_PACKAGING_PATH)
-
-    if not os.path.isdir(packaging_path):
+    if not os.path.isdir(args.PROJECT_PACKAGING_PATH):
         print("Error: Packaging path %s is not a directory")
         sys.exit(ERROR_BAD_PACKAGING_PATH)
 
-    print("Packaging project from %s" % packaging_path)
-    run(packaging_path)
+    print("Packaging project from %s" % args.PROJECT_PACKAGING_PATH)
+    run(args.PROJECT_PACKAGING_PATH)
