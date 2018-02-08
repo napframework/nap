@@ -1,7 +1,10 @@
 #!/usr/bin/python
+import argparse
 import os
 import sys
-from subprocess import Popen
+from subprocess import call
+
+from platform.NAPShared import validate_camelcase_name
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -9,46 +12,8 @@ ERROR_EXISTING_MODULE = 2
 ERROR_CMAKE_CREATION_FAILURE = 3
 ERROR_SOLUTION_GENERATION_FAILURE = 4
 
-# Execute process in working directory, returns clean exit value
-def call(cwd, cmd):
-    p = Popen(cmd, cwd=cwd)
-    p.wait()
-    return p.returncode == 0
-
-def validate_camelcase_name(module_name):
-    # Check we're not a single char
-    if len(module_name) < 2:
-        return False
-
-    # Check our first character is uppercase
-    if (not module_name[0].isalpha()) or module_name[0].islower():
-        return False
-
-    # Check we're not all uppercase
-    if module_name.isupper():
-        return False
-
-    return True
-
-if __name__ == '__main__':
-    # Simple input parsing
-    # TODO Switch to argparse?
-    # TODO Add option to not generate solution?
-    if len(sys.argv) == 1:
-        print("Usage: %s CAMEL_CASE_MODULE_NAME" % sys.argv[0])
-        print("\n  eg. %s MyModuleName" % sys.argv[0])
-        sys.exit(ERROR_INVALID_INPUT)
-
-    module_name = sys.argv[1]
-
-    if not validate_camelcase_name(module_name):
-        print("Error: Please specify module name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
-        sys.exit(ERROR_INVALID_INPUT)
-
+def create_module(module_name, generate_solution):
     print("Creating module %s in usermodules/mod_%s" % (module_name, module_name.lower()))
-
-    # TODO validate module name is camelcase, only includes valid characters
-    # TODO validate module list is CSV, no invalid characters
 
     # Set our paths
     script_path = os.path.dirname(os.path.realpath(__file__))
@@ -69,14 +34,37 @@ if __name__ == '__main__':
 
     # Create module from template
     cmd = ['cmake', '-DMODULE_NAME_CAMELCASE=%s' % module_name, '-P', 'moduleCreator.cmake']
-    if call(cmake_template_dir, cmd):
-        print("Module created, generating solution")
-    else:
+    if call(cmd, cwd=cmake_template_dir) != 0:
         print("Module creation failed")
         sys.exit(ERROR_CMAKE_CREATION_FAILURE)
 
     # Solution generation
-    cmd = ['python', './tools/refreshModule.py', module_name.lower()]
-    if not call(nap_root, cmd):
-        print("Solution generation failed")
-        sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)
+    if generate_solution:
+        print("Module created")
+        print("Generating solution")        
+        cmd = ['python', './tools/refreshModule.py', module_name.lower()]
+        if call(cmd, cwd=nap_root) != 0:
+            print("Solution generation failed")
+            sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    
+    else:
+        print("Module created in %s" % os.path.relpath(module_path))
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("CAMEL_CASE_MODULE_NAME", type=str,
+                        help="The module name, in camel case (eg. MyModuleName)")
+    parser.add_argument("-dg", "--dont-generate", action="store_true",
+                        help="Don't generate the solution for the created module")       
+    args = parser.parse_args()
+
+    module_name = args.CAMEL_CASE_MODULE_NAME
+
+    # Validate module name is camelcase, only includes valid characters
+    if not validate_camelcase_name(module_name):
+        print("Error: Please specify module name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
+        sys.exit(ERROR_INVALID_INPUT)
+
+    # TODO validate module name only has includes valid characters
+
+    exit_code = create_module(module_name, not args.dont_generate)
+    sys.exit(exit_code)

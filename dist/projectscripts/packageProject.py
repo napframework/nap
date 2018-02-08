@@ -5,10 +5,12 @@ import datetime
 import json
 from multiprocessing import cpu_count
 import os
-import subprocess
+from subprocess import call
 from sys import platform
 import sys
 import shutil
+
+from platform.NAPShared import find_project, call_except_on_faiure
 
 WORKING_DIR = '.'
 PACKAGING_DIR = 'packaging'
@@ -21,44 +23,6 @@ PACKAGED_BUILD_TYPE = 'Release'
 ERROR_BAD_INPUT = 1
 ERROR_MISSING_PROJECT = 2
 ERROR_INVALID_PROJECT_JSON = 3
-
-def call(cwd, cmd, capture_output=False):
-    # print('dir: %s' % cwd)
-    # print('cmd: %s' % cmd)
-    if capture_output:
-        proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    else:
-        proc = subprocess.Popen(cmd, cwd=cwd)
-    (out, err) = proc.communicate()
-    if proc.returncode != 0:
-        raise Exception(proc.returncode)
-    return (out, err)
-
-# TODO share with projectInfoParseToCMake
-def find_project(project_name):
-    script_path = os.path.realpath(__file__)
-    nap_root = os.path.abspath(os.path.join(os.path.dirname(script_path), os.pardir))
-
-    project_dir_name = project_name.lower()
-    projects_root = os.path.join(nap_root, 'projects')
-    project_path = os.path.join(projects_root, project_dir_name)
-    examples_root = os.path.join(nap_root, 'examples')
-    example_path = os.path.join(examples_root, project_dir_name)
-    demos_root = os.path.join(nap_root, 'demos')
-    demo_path = os.path.join(demos_root, project_dir_name)
-
-    if os.path.exists(project_path):
-        print("Found project %s at %s" % (project_name, project_path))
-        return project_path
-    elif os.path.exists(example_path):
-        print("Found example %s at %s" % (project_name, example_path))
-        return example_path
-    elif os.path.exists(demo_path):
-        print("Found demo %s at %s" % (project_name, demo_path))
-        return demo_path
-    else:
-        print("Error: Couldn't find project or example with name '%s'" % project_name)
-        return None
 
 def package_project(project_name, show_created_package, include_napkin, zip_package):
     project_path = find_project(project_name)
@@ -89,14 +53,14 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
 
     if platform in ["linux", "linux2"]:
         # Generate makefiles
-        call(WORKING_DIR, ['cmake', 
-                           '-H%s' % project_path, 
-                           '-B%s' % build_dir_name, 
-                           '-DCMAKE_BUILD_TYPE=%s' % PACKAGED_BUILD_TYPE, 
-                           '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
+        call_except_on_faiure(WORKING_DIR, ['cmake', 
+                              '-H%s' % project_path, 
+                              '-B%s' % build_dir_name, 
+                              '-DCMAKE_BUILD_TYPE=%s' % PACKAGED_BUILD_TYPE, 
+                              '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
-        call(build_dir_name, ['make', 'all', 'install', '-j%s' % cpu_count()])
+        call_except_on_faiure(build_dir_name, ['make', 'all', 'install', '-j%s' % cpu_count()])
 
         # Create archive
         if zip_package:
@@ -106,17 +70,17 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
 
         # Show in Nautilus
         if show_created_package:
-            subprocess.call(["nautilus -s %s > /dev/null 2>&1 &" % packaged_to], shell=True)
+            call(["nautilus -s %s > /dev/null 2>&1 &" % packaged_to], shell=True)
 
     elif platform == 'darwin':
         # Generate project
-        call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Xcode', '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
+        call_except_on_faiure(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Xcode', '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
-        call(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
+        call_except_on_faiure(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
 
         # Temp: Copy our external dylibs and fix lib paths
-        call(bin_dir, ['python', '%s/tools/platform/macOSTempDylibCopyAndPathFix.py' % nap_root, '.'])
+        call_except_on_faiure(bin_dir, ['python', '%s/tools/platform/macOSTempDylibCopyAndPathFix.py' % nap_root, '.'])
 
         # Create archive
         if zip_package:
@@ -126,10 +90,10 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
 
         # Show in Finder
         if show_created_package:
-            subprocess.call(["open", "-R", packaged_to])
+            call(["open", "-R", packaged_to])
     else:
         # Generate project
-        call(WORKING_DIR, ['cmake', 
+        call_except_on_faiure(WORKING_DIR, ['cmake', 
                            '-H%s' % project_path, 
                            '-B%s' % build_dir_name, 
                            '-G', 'Visual Studio 14 2015 Win64', 
@@ -138,7 +102,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
                            '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
-        call(build_dir_name, ['cmake', '--build', '.', '--target', project_name_lower, '--config', PACKAGED_BUILD_TYPE])
+        call_except_on_faiure(build_dir_name, ['cmake', '--build', '.', '--target', project_name_lower, '--config', PACKAGED_BUILD_TYPE])
 
         # Copy project data
         project_data_path = os.path.join(project_path, 'data')
@@ -153,7 +117,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
 
         # Show in Explorer
         if show_created_package:
-            subprocess.Popen(r'explorer /select,"%s"' % packaged_to)
+            call(r'explorer /select,"%s"' % packaged_to)
 
     # Cleanup
     shutil.rmtree(build_dir_name, True)
@@ -176,7 +140,7 @@ def archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_versi
 
     # Ardhive
     print("Archiving to %s.." % package_filename_with_ext)
-    call(project_dir, ['tar', '-cJvf', package_filename_with_ext, package_filename])
+    call_except_on_faiure(project_dir, ['tar', '-cJvf', package_filename_with_ext, package_filename])
 
     # Cleanup
     shutil.rmtree(archive_dir)
@@ -200,11 +164,11 @@ def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
     shutil.move(bin_dir, archive_dir)
 
     # Remove unwanted files (eg. .DS_Store)
-    call(archive_dir, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
+    call_except_on_faiure(archive_dir, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
 
     # Archive
     print("Archiving to %s.." % package_filename_with_ext)
-    call(project_dir, ['zip', '-yr', package_filename_with_ext, package_filename])
+    call_except_on_faiure(project_dir, ['zip', '-yr', package_filename_with_ext, package_filename])
 
     # Cleanup
     shutil.rmtree(archive_dir)
@@ -308,4 +272,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Package our build
-    sys.exit(package_project(args.PROJECT_NAME, not args.dont_show, not args.no_napkin, not args.dont_zip))
+    exit_code = package_project(args.PROJECT_NAME, not args.dont_show, not args.no_napkin, not args.dont_zip)
+    sys.exit(exit_code)
