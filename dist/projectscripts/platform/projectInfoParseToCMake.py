@@ -40,7 +40,7 @@ def update_project_info_to_cmake(project_name):
 def find_project(project_name):
     script_path = os.path.realpath(__file__)
     # TODO clean up, use absolute path
-    nap_root = os.path.join(os.path.dirname(script_path), '..')
+    nap_root = os.path.join(os.path.dirname(script_path), '../..')
 
     projects_root = os.path.join(nap_root, 'projects')
     project_path = os.path.join(projects_root, project_name)
