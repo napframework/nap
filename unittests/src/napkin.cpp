@@ -25,7 +25,7 @@ private:
 	int mCount = 0;
 };
 
-const QString getResource(const QString& filename)
+QString getResource(const QString& filename)
 {
 	const QString resourceDir = "unit_tests_data";
 	if (filename.isEmpty())
@@ -450,10 +450,15 @@ TEST_CASE("File Extensions", TAG_NAPKIN)
 
 TEST_CASE("Resource Management", TAG_NAPKIN)
 {
+	// Must start QApplication in order to have an event loop for signals?
+	int argc = 1;
+	char* argv[] = {"arg!"};
+	QApplication app(argc, argv);
+
 	// Assume this test file's directory as the base path
-	auto jsonFile = "objects.json";
-	std::string shaderFile = "shaders/debug.frag";
-	std::string dataDir = ".";
+	QString jsonFile = "objects.json";
+	QString shaderFile = "shaders/debug.frag";
+	QString dataDir = ".";
 	// Load the json file so we have reference path for resources
 
 	QString res = getResource(jsonFile);
@@ -467,7 +472,7 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	REQUIRE(QFileInfo::exists(absJsonFilePath));
 
 	// Ensure shader file exists
-	auto absShaderFilePath = QFileInfo(getResource(QString::fromStdString(shaderFile))).absoluteFilePath();
+	auto absShaderFilePath = QFileInfo(getResource(shaderFile)).absoluteFilePath();
 	REQUIRE(QFileInfo::exists(absShaderFilePath));
 
 	// Ensure the resource directory exists
@@ -484,7 +489,7 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 
 	// Check relative path
 	auto relShaderPath = napkin::getRelativeResourcePath(absShaderFilePath);
-	REQUIRE(relShaderPath == QString::fromStdString(shaderFile));
+	REQUIRE(relShaderPath == shaderFile);
 
 	// Check absolute path
 	auto absShaderPath = napkin::getAbsoluteResourcePath(relShaderPath);
