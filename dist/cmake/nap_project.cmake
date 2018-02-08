@@ -17,7 +17,7 @@ include(${NAP_ROOT}/cmake/distmacros.cmake)
 
 # Parse our project.json and import it
 # TODO Changes to project.json should automatically trigger CMake.. but they don't
-execute_process(COMMAND python ${NAP_ROOT}/tools/projectInfoParseToCMake.py ${PROJECT_NAME})
+execute_process(COMMAND python ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${PROJECT_NAME})
 include(cached_project_json.cmake)
 
 # Set our default build type if we haven't specified one (Linux)
