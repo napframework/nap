@@ -468,11 +468,11 @@ A shader is a piece of code that is executed on the GPU. You can use shaders to 
 - stores and updates the uniform shader values
 - stores and updates global render settings such as the blend and depth mode
 
- This schematic shows how to bind a shader to a mesh and render it to screen using the RenderableMeshComponent(@ref nap::RenderableMeshComponent)
+ This schematic shows how to bind a shader to a mesh and render it to screen using the [RenderableMeshComponent](@ref nap::RenderableMeshComponent)
 
 ![](@ref content/shader_material_binding.png)
 
-Multiple materials can reference the same shader. You can change the properties of a material on a global (resource) and instance level. To change the properties of a material on an instance you use a MaterialInstance(@ref nap::MaterialInstance) object. A material instance is used to override  uniform values and change the render state of a material. This makes it possible to create a complex material with default attribute mappings and uniform values but override specific settings for a specific object. Imagine you have twenty buttons on your screen that all look the same, but when you move your mouse over a button you want it to light up. You can do this by making a single material that is configured to show a normal button and change the unifom 'color' for the button you are hovering over. Changing the color uniform is done by altering the material instance attribute 'color'.
+Multiple materials can reference the same shader. You can change the properties of a material on a global (resource) and instance level. To change the properties of a material on an instance you use a [MaterialInstance](@ref nap::MaterialInstance) object. A material instance is used to override  uniform values and change the render state of a material. This makes it possible to create a complex material with default attribute mappings and uniform values but override specific settings for a specific object. Imagine you have twenty buttons on your screen that all look the same, but when you move your mouse over a button you want it to light up. You can do this by making a single material that is configured to show a normal button and change the unifom 'color' for the button you are hovering over. Changing the color uniform is done by altering the material instance attribute 'color'.
 
 Mapping Attributes {#mapping_attrs}
 -----------------------
@@ -593,7 +593,7 @@ VertexAttributeIDs::getColorName(0)
 //etc...
 ~~~~~~~~~~~~~~~
 
-Every material creates a default mapping using the above mentioned attributes when no mapping is provided. The UV and Color attributes are including up to four channels. The default naming on the shader side can be found using a similar construct:
+Every material creates a default mapping using the above mentioned attributes when no mapping is provided. The UV and Color attributes are included up to four channels. The default naming on the shader side can be found using a similar construct:
 
 ~~~~~~~~~~~~~~~{.cpp}
 opengl::Shader::VertexAttributeIDs 
