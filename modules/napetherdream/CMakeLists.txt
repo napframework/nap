@@ -37,6 +37,7 @@ package_module()
 # Package libartnet into platform release
 if(WIN32)
     install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/msvc/bin")
+    install(FILES $<TARGET_FILE_DIR:etherdreamlib>/EtherDream.lib DESTINATION "thirdparty/etherdream/msvc/bin")
 elseif(APPLE)
     # Ensure our etherdream install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}

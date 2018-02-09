@@ -1,11 +1,11 @@
 # Find GLEW
 if(WIN32)
     if(MSVC)
-        set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/msvc)
-        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64")
+        set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew)
+        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/lib/Release/x64")
     else()
-        set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/msvc)
-        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64")
+        set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew)
+        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/lib/Release/x64")
     endif()
 endif()
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
@@ -22,6 +22,8 @@ if(NOT TARGET freeimage)
     endif()
 endif()
 
+set(ENV{SDL2DIR} ${THIRDPARTY_DIR}/SDL2/)
+find_package(SDL2 REQUIRED)
 set(NRENDER_LIBRARIES
     ${SDL2_LIBRARY}
     ${OPENGL_gl_LIBRARY}

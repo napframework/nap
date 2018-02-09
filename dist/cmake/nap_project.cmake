@@ -108,6 +108,11 @@ endforeach()
 
 target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core naputility ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 
+# Include anu extra project CMake logic
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/projectExtra.cmake)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/projectExtra.cmake)
+endif()
+
 # Copy data to bin post-build
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
