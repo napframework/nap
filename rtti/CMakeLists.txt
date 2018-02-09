@@ -92,7 +92,7 @@ if (WIN32)
                                     ARCHIVE DESTINATION lib/$<CONFIG>)
 
     # Install for fbxconverter
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
             CONFIGURATIONS Release)
 elseif(APPLE)
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)  

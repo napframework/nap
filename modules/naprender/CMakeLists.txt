@@ -36,7 +36,7 @@ package_module()
 
 if (WIN32)
     # Install for fbxconverter
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
     		CONFIGURATIONS Release)
 endif()
 
