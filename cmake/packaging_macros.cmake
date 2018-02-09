@@ -1,11 +1,37 @@
 # Package installed Python for distribution with NAP release (for use with Napkin, mod_nappython)
 # TODO This is brittle and (very likely) temporary
 # I believe we should include python in thirdparty so that:
-# - We can control the macOS OS version/s we support
-# - We don't have these brittle connections to a moving (homebrew) target
+# - We can control the OS version/s we support (eg. the homebrew version we're installing for macOS won't be backwards compatible)
+# - We don't have these brittle connections to a moving (eg. homebrew) target
 # - We can control the Python lib version we're deploying
 macro(package_platform_python)
-    if (APPLE)
+    # TODO Install Python license
+
+    if(WIN32)
+        set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
+        find_package(pybind11 REQUIRED) 
+        message(STATUS "Got Python prefix: ${PYTHON_PREFIX}")
+
+        # Ensure we're found Python3
+        if(NOT ${PYTHON_VERSION_MAJOR} EQUAL 3)
+            message(FATAL_ERROR "Python found for packaging in ${PYTHON_PREFIX} is not v3 (it's v${PYTHON_VERSION_MAJOR})")
+        endif()
+
+        # Install DLLs
+        file(GLOB PYTHON_DLLs ${PYTHON_PREFIX}/*.dll)
+        install(FILES ${PYTHON_DLLs}
+                DESTINATION thirdparty/python/
+                CONFIGURATIONS Release
+                )
+
+        # Install main framework
+        install(DIRECTORY ${PYTHON_PREFIX}/Lib
+                DESTINATION thirdparty/python/
+                CONFIGURATIONS Release
+                PATTERN *.pyc EXCLUDE
+                PATTERN *.dll EXCLUDE
+                PATTERN site-packages EXCLUDE)
+    elseif(APPLE)
         # Find Python
         execute_process(COMMAND brew --prefix python3
                         OUTPUT_VARIABLE PYTHON_PREFIX)
@@ -67,7 +93,44 @@ endmacro()
 # Package installed QT for distribution with NAP release (for use with Napkin)
 # TODO A better solution is probably to keep our own packaged QT in thirdparty
 macro(package_platform_qt)
-    if (APPLE)
+    set(QT_FRAMEWORKS Core Gui Widgets)
+
+    # TODO Install Qt license
+
+    if(WIN32)
+        # Install frameworks
+        foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
+            set(QT_FRAMEWORK_SRC ${QT_DIR}/bin/Qt5${QT_INSTALL_FRAMEWORK})
+
+            install(FILES ${QT_FRAMEWORK_SRC}d.dll
+                    DESTINATION thirdparty/Qt/bin/Debug
+                    CONFIGURATIONS Release)
+
+            install(FILES ${QT_FRAMEWORK_SRC}.dll
+                    DESTINATION thirdparty/Qt/bin/Release
+                    CONFIGURATIONS Release)
+        endforeach()
+
+        # Install plugins
+        install(FILES  ${QT_DIR}/plugins/platforms/qwindowsd.dll
+                DESTINATION thirdparty/Qt/plugins/Debug/platforms/
+                CONFIGURATIONS Release)
+
+        install(FILES ${QT_DIR}/plugins/platforms/qwindows.dll
+                DESTINATION thirdparty/Qt/plugins/Release/platforms/
+                CONFIGURATIONS Release)
+        
+        # # Glob each of our imageformat plugins and install them.  Globbing so we can update framework link install paths on them.
+        # file(GLOB imageformat_plugins RELATIVE ${QT_DIR}/plugins/imageformats/ "${QT_DIR}/plugins/imageformats/*dll")
+        # foreach(imageformat_plugin ${imageformat_plugins})
+        #     install(FILES ${QT_DIR}/plugins/imageformats/${imageformat_plugin}
+        #             DESTINATION thirdparty/Qt/plugins/imageformats/
+        #             CONFIGURATIONS Release)         
+        # endforeach()
+    elseif(APPLE)
+        # macOS appears to depend on these extra Qt frameworks
+        list(APPEND QT_FRAMEWORKS PrintSupport Svg)
+
         # Find QT
         execute_process(COMMAND brew --prefix qt
                         OUTPUT_VARIABLE QT_PREFIX)
@@ -75,13 +138,12 @@ macro(package_platform_qt)
         message("Got QT prefix: ${QT_PREFIX}")
 
         # Install frameworks
-        set(QT_FRAMEWORKS QtCore QtGui QtPrintSupport QtSvg QtWidgets)
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
-            set(QT_FRAMEWORK_SRC ${QT_PREFIX}/lib/${QT_INSTALL_FRAMEWORK}.framework/Versions/Current/${QT_INSTALL_FRAMEWORK})
-            set(FRAMEWORK_INSTALL_LOC ${CMAKE_INSTALL_PREFIX}/thirdparty/QT/lib/${QT_INSTALL_FRAMEWORK})
+            set(QT_FRAMEWORK_SRC ${QT_PREFIX}/lib/Qt${QT_INSTALL_FRAMEWORK}.framework/Versions/Current/Qt${QT_INSTALL_FRAMEWORK})
+            set(FRAMEWORK_INSTALL_LOC ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/lib/Qt${QT_INSTALL_FRAMEWORK})
 
             install(FILES ${QT_FRAMEWORK_SRC}
-                    DESTINATION thirdparty/QT/lib/
+                    DESTINATION thirdparty/Qt/lib/
                     CONFIGURATIONS Release)
 
             # Change dylib installed id
@@ -91,20 +153,20 @@ macro(package_platform_qt)
                                           ERROR_QUIET)")
 
 
-            macos_replace_qt_framework_links("${QT_FRAMEWORKS}" ${QT_INSTALL_FRAMEWORK} ${QT_FRAMEWORK_SRC} ${FRAMEWORK_INSTALL_LOC} "@loader_path")
+            macos_replace_qt_framework_links("${QT_FRAMEWORKS}" Qt${QT_INSTALL_FRAMEWORK} ${QT_FRAMEWORK_SRC} ${FRAMEWORK_INSTALL_LOC} "@loader_path")
         endforeach()
 
-        set(PATH_FROM_QT_PLUGIN_TOLIB "@loader_path/../../../../../../thirdparty/QT/lib")
+        set(PATH_FROM_QT_PLUGIN_TOLIB "@loader_path/../../../../../../thirdparty/Qt/lib")
 
         # Install plugins
         install(FILES ${QT_PREFIX}/plugins/platforms/libqcocoa.dylib
-                DESTINATION thirdparty/QT/plugins/platforms/
+                DESTINATION thirdparty/Qt/plugins/platforms/
                 CONFIGURATIONS Release
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
         macos_replace_qt_framework_links("${QT_FRAMEWORKS}" 
                                          libqcocoa 
                                          ${QT_PREFIX}/plugins/platforms/libqcocoa.dylib 
-                                         ${CMAKE_INSTALL_PREFIX}/thirdparty/QT/plugins/platforms/libqcocoa.dylib
+                                         ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqcocoa.dylib
                                          ${PATH_FROM_QT_PLUGIN_TOLIB}
                                          )
 
@@ -112,13 +174,13 @@ macro(package_platform_qt)
         file(GLOB imageformat_plugins RELATIVE ${QT_PREFIX}/plugins/imageformats/ "${QT_PREFIX}/plugins/imageformats/*dylib")
         foreach(imageformat_plugin ${imageformat_plugins})
             install(FILES ${QT_PREFIX}/plugins/imageformats/${imageformat_plugin}
-                    DESTINATION thirdparty/QT/plugins/imageformats/
+                    DESTINATION thirdparty/Qt/plugins/imageformats/
                     CONFIGURATIONS Release)
 
             macos_replace_qt_framework_links("${QT_FRAMEWORKS}" 
                                              ${imageformat_plugin} 
                                              ${QT_PREFIX}/plugins/imageformats/${imageformat_plugin}
-                                             ${CMAKE_INSTALL_PREFIX}/thirdparty/QT/plugins/imageformats/${imageformat_plugin}
+                                             ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/imageformats/${imageformat_plugin}
                                              ${PATH_FROM_QT_PLUGIN_TOLIB}
                                              )            
         endforeach()

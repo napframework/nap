@@ -108,11 +108,6 @@ endforeach()
 
 target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core naputility ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 
-# Deploy napkin to our Windows build or packaging dir
-if(WIN32 AND (NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN))
-    # TODO Write napkin deployment to bin dir for Windows
-endif()
-
 # Copy data to bin post-build
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
@@ -126,9 +121,9 @@ if (NOT WIN32)
     install(TARGETS ${PROJECT_NAME} DESTINATION .)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    
     install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
+endif()
 
-    # Package napkin if we're doing a build from Xcode or we're packaging a project with napkin
-    if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
-        include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_project.cmake)
-    endif()
+# Package napkin if we're doing a build from againat released NAP or we're packaging a project with napkin
+if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
+    include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_project.cmake)
 endif()

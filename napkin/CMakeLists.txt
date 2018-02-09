@@ -65,11 +65,11 @@ set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets)
 if (WIN32)
     # TODO don't actually install napkin into tools because it's only useful on WIN32 when sitting amongst 
     # the compiled modules.  Install somewhere in tree then copy into bin when doing project builds.
-    install(FILES "${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll" DESTINATION "tools/")
-    install(FILES "${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "tools/")
-    install(FILES "${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll" DESTINATION "tools/")
-    install(FILES "${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll" DESTINATION "tools/")
-    install(FILES "${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll" DESTINATION "tools/")
+    # install(FILES "${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll" DESTINATION "tools/")
+    # install(FILES "${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "tools/")
+    # install(FILES "${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll" DESTINATION "tools/")
+    # install(FILES "${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll" DESTINATION "tools/")
+    # install(FILES "${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll" DESTINATION "tools/")
 elseif(APPLE)
     # TODO as we're doing a bunch of RPATH work when deploying napkin during builds in released-NAP space
     #      maybe it's cleaner to move all of that there?

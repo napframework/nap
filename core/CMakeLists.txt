@@ -53,7 +53,7 @@ if (WIN32)
                                     ARCHIVE DESTINATION lib/$<CONFIG>)
 
     # Install for fbxconverter
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
             CONFIGURATIONS Release)
 elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")

@@ -59,13 +59,15 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #        COMMAND ctest -C $<CONFIGURATION> --output-on-failure
 #        DEPENDS always_rebuild)
 
+# ==================================
+
+# Package into NAP release
 set(FBXCONVERTER_PACKAGED_BUILD_TYPE Release)
 set(FBXCONVERTER_INSTALL_LOCATION tools/platform)
 
-# Package into release build
-install(TARGETS ${PROJECT_NAME} DESTINATION ${FBXCONVERTER_INSTALL_LOCATION}
-        CONFIGURATIONS ${FBX_PACKAGED_BUILD_TYPE})
-
+install(TARGETS ${PROJECT_NAME} 
+        DESTINATION ${FBXCONVERTER_INSTALL_LOCATION}
+        CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
 if (WIN32)   
     # TODO use get_prerequisites or find_package to make this a whole load less terrible?

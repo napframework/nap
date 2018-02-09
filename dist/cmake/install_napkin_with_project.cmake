@@ -7,27 +7,47 @@ add_custom_command(TARGET ${PROJECT_NAME}
 # Install resources
 add_custom_command(TARGET ${PROJECT_NAME}
                    POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/tools/platform/napkin//resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
-                   )
-
-
-# # Install main QT libs from thirdparty
-# TODO use for Win32 or remove?
-# add_custom_command(TARGET ${PROJECT_NAME}
-#                    POST_BUILD
-#                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/QT/lib $<TARGET_FILE_DIR:${PROJECT_NAME}>/lib/
-#                    )
-
-# Install QT plugins from thirdparty
-add_custom_command(TARGET ${PROJECT_NAME}
-                   POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/QT/plugins $<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/tools/platform/napkin/resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
                    )
 
 set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath)
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport)
 
-if(APPLE)
+if(WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/bin/$<CONFIG> $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                       )
+
+    # Install Qt plugins from thirdparty.  Unlike macOS Windows won't find the plugins under a plugins folder, the categories need to sit beside the binary.
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/plugins/$<CONFIG>/platforms $<TARGET_FILE_DIR:${PROJECT_NAME}>/platforms
+                       )
+
+
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/python/ $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                       )
+
+    # Copy module
+    foreach(MODULE_NAME ${NAPKIN_DEPENDENT_NAP_MODULES})
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} 
+                                   -E copy
+                                   ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll
+                                   $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                           )
+    endforeach()
+elseif(APPLE)
+    # Install Qt plugins from thirdparty
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/plugins $<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins
+                       )
+
     # ---- Deploy napkin into bin dir when we do project builds ------
     set(PATH_TO_NAP_ROOT "@executable_path/../../../..")
     set(PATH_TO_THIRDPARTY "${PATH_TO_NAP_ROOT}/thirdparty")
@@ -74,10 +94,10 @@ if(APPLE)
     install(DIRECTORY ${NAP_ROOT}/tools/platform/napkin/resources
             DESTINATION .)
     # Install main QT libs from thirdparty
-    install(DIRECTORY ${THIRDPARTY_DIR}/QT/lib/
+    install(DIRECTORY ${THIRDPARTY_DIR}/Qt/lib/
             DESTINATION lib)
     # Install QT plugins from thirdparty
-    install(DIRECTORY ${THIRDPARTY_DIR}/QT/plugins
+    install(DIRECTORY ${THIRDPARTY_DIR}/Qt/plugins
             DESTINATION .)
 
     # Ensure we have our dependent modules
@@ -97,7 +117,7 @@ if(APPLE)
 
     # Update paths to Qt frameworks in libqcocoa plugin.  Using explicit paths in an attempt to avoid loading
     # any installed Qt library.
-    file(GLOB imageformat_plugins RELATIVE ${THIRDPARTY_DIR}/QT/plugins/imageformats "${THIRDPARTY_DIR}/QT/plugins/imageformats/*dylib")
+    file(GLOB imageformat_plugins RELATIVE ${THIRDPARTY_DIR}/Qt/plugins/imageformats "${THIRDPARTY_DIR}/QT/plugins/imageformats/*dylib")
     foreach(imageformat_plugin ${imageformat_plugins})
         macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}"
                                                       ${imageformat_plugin} 
