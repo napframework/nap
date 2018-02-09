@@ -75,7 +75,7 @@ elseif(APPLE)
     macos_replace_qt_framework_links("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
                                      ${NAP_ROOT}/tools/platform/napkin/Release/napkin
                                      $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
-                                     "${PATH_TO_THIRDPARTY}/QT/lib/"
+                                     "${PATH_TO_THIRDPARTY}/Qt/lib/"
                                      )
 
     # Update path to Python

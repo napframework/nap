@@ -36,13 +36,13 @@ macro(package_platform_python)
         execute_process(COMMAND brew --prefix python3
                         OUTPUT_VARIABLE PYTHON_PREFIX)
         string(STRIP ${PYTHON_PREFIX} PYTHON_PREFIX)
-        message("Got Python prefix: ${PYTHON_PREFIX}")
+        message(STATUS "Got Python prefix: ${PYTHON_PREFIX}")
 
         # Get our major/minor version
         execute_process(COMMAND python3 -c "import sys\nprint('%s.%s' % sys.version_info[:2])"
                         OUTPUT_VARIABLE PYTHON_MAJOR_MINOR_VERSION)
         string(STRIP ${PYTHON_MAJOR_MINOR_VERSION} PYTHON_MAJOR_MINOR_VERSION)
-        message("Got Python major.minor version: ${PYTHON_MAJOR_MINOR_VERSION}")
+        message(STATUS "Got Python major.minor version: ${PYTHON_MAJOR_MINOR_VERSION}")
 
         # Get our dylib install name so we can replace it later to have a working command line intrepreter
         set(PYTHON_EXECUTABLE ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/${PYTHON_MAJOR_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python)
@@ -135,7 +135,7 @@ macro(package_platform_qt)
         execute_process(COMMAND brew --prefix qt
                         OUTPUT_VARIABLE QT_PREFIX)
         string(STRIP ${QT_PREFIX} QT_PREFIX)
-        message("Got QT prefix: ${QT_PREFIX}")
+        message(STATUS "Got QT prefix: ${QT_PREFIX}")
 
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
@@ -148,7 +148,7 @@ macro(package_platform_qt)
 
             # Change dylib installed id
             install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                                  -id @rpath/${QT_INSTALL_FRAMEWORK}
+                                                  -id @rpath/Qt${QT_INSTALL_FRAMEWORK}
                                                   ${FRAMEWORK_INSTALL_LOC}
                                           ERROR_QUIET)")
 
@@ -189,18 +189,18 @@ endmacro()
 
 macro(macos_replace_qt_framework_links FRAMEWORKS LIB_NAME LIB_SRC_LOCATION LIB_INSTALL_LOCATION PATH_PREFIX)
     foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
-        if(NOT ${QT_LINK_FRAMEWORK} STREQUAL ${LIB_NAME})
-            execute_process(COMMAND sh -c "otool -L ${LIB_SRC_LOCATION} | grep ${QT_LINK_FRAMEWORK} | awk -F'(' '{print $1}'"
+        if(NOT Qt${QT_LINK_FRAMEWORK} STREQUAL ${LIB_NAME})
+            execute_process(COMMAND sh -c "otool -L ${LIB_SRC_LOCATION} | grep Qt${QT_LINK_FRAMEWORK} | awk -F'(' '{print $1}'"
                             OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
             if(NOT ${REPLACE_INSTALL_NAME} STREQUAL "")
-                # message("Adding install name change in ${QT_INSTALL_FRAMEWORK} for ${QT_LINK_FRAMEWORK}")
+                # message("Adding install name change in ${QT_INSTALL_FRAMEWORK} for Qt${QT_LINK_FRAMEWORK}")
                 string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
 
                 # Change link to dylib
                 install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
                                                       -change 
                                                       ${REPLACE_INSTALL_NAME}
-                                                      ${PATH_PREFIX}/${QT_LINK_FRAMEWORK}
+                                                      ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}
                                                       ${LIB_INSTALL_LOCATION}
                                               ERROR_QUIET)")
             endif()
