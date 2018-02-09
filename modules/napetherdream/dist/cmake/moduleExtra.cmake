@@ -1,7 +1,15 @@
 find_package(etherdream REQUIRED)
 target_link_libraries(${PROJECT_NAME} etherdreamlib)
 
-if(APPLE)
+if(WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} 
+                               -E copy
+                               $<TARGET_FILE:etherdreamlib>
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}> 
+                       )
+elseif(APPLE)
     # Add post-build step to set etherdream RPATH
     # add_custom_command(TARGET ${PROJECT_NAME}
     #                    POST_BUILD

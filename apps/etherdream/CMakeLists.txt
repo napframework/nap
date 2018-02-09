@@ -53,4 +53,5 @@ if(PACKAGE_NAIVI_APPS)
             PATTERN "CMakeLists.txt" EXCLUDE
             PATTERN "dist" EXCLUDE)
     install(FILES dist/CMakeLists.txt DESTINATION "projects/${PROJECT_NAME}/")
+    install(FILES dist/projectExtra.cmake DESTINATION "projects/${PROJECT_NAME}/")
 endif()

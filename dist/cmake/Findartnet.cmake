@@ -2,10 +2,10 @@
 if (WIN32)
     find_path(
         ARTNET_DIR
-        NAMES msvc/install/bin/Release/libartnet.dll
+        NAMES msvc/bin/libartnet.dll
         HINTS ${THIRDPARTY_DIR}/libartnet
     )
-    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/msvc/install/bin/Release)
+    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/msvc/bin)
 	set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.lib)
 	set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS_DIR}/libartnet.dll)
 elseif(APPLE)
@@ -40,6 +40,13 @@ set_target_properties(artnet PROPERTIES
                       IMPORTED_LOCATION_RELEASE ${ARTNET_LIBS_RELEASE_DLL}
                       IMPORTED_LOCATION_DEBUG ${ARTNET_LIBS_RELEASE_DLL}
                       )
+
+if(WIN32)
+    set_target_properties(artnet PROPERTIES
+                          IMPORTED_IMPLIB_RELEASE ${ARTNET_LIBS}
+                          IMPORTED_IMPLIB_DEBUG ${ARTNET_LIBS}
+                          )
+endif()
 
 # Copy the artnet dynamic linked lib into the build directory
 macro(copy_artnet_dll)

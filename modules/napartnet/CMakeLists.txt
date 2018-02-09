@@ -49,6 +49,7 @@ install(FILES "${THIRDPARTY_DIR}/libartnet/COPYING" DESTINATION "thirdparty/liba
 install(FILES "${THIRDPARTY_DIR}/libartnet/README" DESTINATION "thirdparty/libartnet")
 if(WIN32)
     install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/msvc/bin")
+    install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION "thirdparty/libartnet/msvc/bin")
 elseif(APPLE)
     # Ensure our libArtnet install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}

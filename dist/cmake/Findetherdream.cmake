@@ -34,6 +34,13 @@ set_target_properties(etherdreamlib PROPERTIES
                       IMPORTED_LOCATION_DEBUG ${ETHERDREAM_LIBS_RELEASE_DLL}
                       )
 
+if(WIN32)
+    set_target_properties(etherdreamlib PROPERTIES
+                          IMPORTED_IMPLIB_RELEASE ${ETHERDREAM_LIBS}
+                          IMPORTED_IMPLIB_DEBUG ${ETHERDREAM_LIBS}
+                          )
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(etherdream REQUIRED_VARS ETHERDREAM_DIR ETHERDREAM_LIBS ETHERDREAM_LIBS_DIR)
 
