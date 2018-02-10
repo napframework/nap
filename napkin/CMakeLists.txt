@@ -80,10 +80,11 @@ elseif(APPLE)
     set(BUILT_RPATH "${BUILT_RPATH};@executable_path/lib/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
 elseif(UNIX)
-    set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "..")    
+    set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../../../..")    
 
     # Add RTTR
     get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)
-    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../thirdparty/rttr/bin/")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../../../thirdparty/rttr/bin/")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/lib/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
 endif()
