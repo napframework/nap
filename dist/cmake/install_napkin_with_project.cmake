@@ -1,17 +1,32 @@
-# Install executable
-add_custom_command(TARGET ${PROJECT_NAME}
-                   POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/tools/platform/napkin/$<CONFIG>/napkin${CMAKE_EXECUTABLE_SUFFIX} $<TARGET_FILE_DIR:${PROJECT_NAME}>
-                   )
-
-# Install resources
-add_custom_command(TARGET ${PROJECT_NAME}
-                   POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/tools/platform/napkin/resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
-                   )
-
 set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath)
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport)
+
+if(WIN32 OR APPLE)
+    # Install executable
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/tools/platform/napkin/$<CONFIG>/napkin${CMAKE_EXECUTABLE_SUFFIX} $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                       )
+    # Install resources
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/tools/platform/napkin/resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
+                       )
+else()
+    # Install executable
+    get_target_property(PROJ_BUILD_PATH ${PROJECT_NAME} RUNTIME_OUTPUT_DIRECTORY)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/tools/platform/napkin/${CMAKE_BUILD_TYPE}/napkin${CMAKE_EXECUTABLE_SUFFIX} ${PROJ_BUILD_PATH}
+                       )
+
+    # Install resources
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/tools/platform/napkin/resources ${PROJ_BUILD_PATH}/resources
+                       )
+endif()
+
 
 if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -142,4 +157,25 @@ elseif(APPLE)
 
     # Update path to Python
     macos_replace_single_install_name_link_install_time("Python" ${CMAKE_INSTALL_PREFIX}/napkin "@loader_path/lib/")
+else()
+    # Install executable
+    install(PROGRAMS ${NAP_ROOT}/tools/platform/napkin/Release/napkin
+            DESTINATION .)
+    # Install resources
+    install(DIRECTORY ${NAP_ROOT}/tools/platform/napkin/resources
+            DESTINATION .)
+    # # Install main QT libs from thirdparty
+    # install(DIRECTORY ${THIRDPARTY_DIR}/Qt/lib/
+    #         DESTINATION lib)
+    # # Install QT plugins from thirdparty
+    # install(DIRECTORY ${THIRDPARTY_DIR}/Qt/plugins
+    #         DESTINATION .)
+
+    # Ensure we have our dependent modules
+    set(NAPKIN_MODULES mod_nappython mod_napmath mod_napscene)
+    set(INSTALLING_MODULE_FOR_NAPKIN TRUE)
+    foreach(NAP_MODULE ${NAPKIN_MODULES})
+        find_nap_module(${NAP_MODULE})
+    endforeach()
+    unset(INSTALLING_MODULE_FOR_NAPKIN)
 endif()
