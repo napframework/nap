@@ -42,5 +42,5 @@ endif()
 
 # Set packaged Linux RPATH 
 if (UNIX AND NOT APPLE)
-	set_installed_linux_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
+	set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
 endif()
