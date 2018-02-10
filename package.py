@@ -45,7 +45,11 @@ def install_dependencies_linux():
         'libavcodec-dev',
         'libavformat-dev',
         'libavutil-dev',
-        'patchelf'
+        'patchelf',
+        'mpg123',
+        # Needed at NAP source level only
+        'qtdeclarative5-dev',        
+        'doxygen'
     ]
 
     # Create a list of packages we need to install

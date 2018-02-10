@@ -22,7 +22,7 @@ def installDependenciesLinux():
     call('.', ['sudo', 'apt-get', '--assume-yes', 'install',
                'cmake',
                'build-essential',
-	             'python3-dev',
+               'python3-dev',
                'libsdl2-dev',
                'libglew-dev',
                'libassimp-dev',
@@ -33,6 +33,10 @@ def installDependenciesLinux():
                'libavcodec-dev',
                'libavformat-dev',
                'libavutil-dev',
+               'mpg123',
+               'patchelf',
+               # Needed at NAP source level only
+               'qtdeclarative5-dev',
                'doxygen'
                ])
 
@@ -46,7 +50,7 @@ def isBrewInstalled():
 
 def installDependenciesOSX():
     d = WORKING_DIR
-    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg', 'mpg123']:
+    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg', 'mpg123', 'qt', 'python3']:
         try:
             call(d, ['brew', 'install', pack])
         except:

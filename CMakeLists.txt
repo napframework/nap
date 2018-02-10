@@ -174,6 +174,8 @@ install(PROGRAMS dist/projectscripts/platform/projectInfoParseToCMake.py DESTINA
 install(PROGRAMS dist/projectscripts/platform/NAPShared.py DESTINATION tools/platform)
 if(APPLE)
     install(PROGRAMS dist/projectscripts/platform/macOSTempDylibCopyAndPathFix.py DESTINATION tools/platform)
+elseif(UNIX)
+    install(PROGRAMS dist/linux/install_ubuntu_1710_dependencies.sh DESTINATION tools/platform)
 endif()
 install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
 install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
