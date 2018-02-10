@@ -122,6 +122,8 @@ if (NOT WIN32)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
     else()
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib/")
+        install(PROGRAMS ${NAP_ROOT}/tools/platform/install_ubuntu_1710_dependencies.sh
+                DESTINATION .)
     endif()
     install(TARGETS ${PROJECT_NAME} DESTINATION .)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    

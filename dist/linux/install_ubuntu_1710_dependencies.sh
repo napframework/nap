@@ -1,0 +1,2 @@
+#!/bin/sh 
+sudo apt-get install cmake build-essential python3-dev libsdl2-dev libglew-dev libassimp-dev libglm-dev libtclap-dev libfreeimage-dev ffmpeg libavcodec-dev libavformat-dev libavutil-dev mpg123 patchelf

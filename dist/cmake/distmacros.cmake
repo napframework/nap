@@ -50,7 +50,7 @@ macro(find_nap_module MODULE_NAME)
         if(NOT TARGET ${NAP_MODULE})
             add_library(${MODULE_NAME} INTERFACE)
 
-            message("Adding lib path for ${MODULE_NAME}")
+            message(STATUS "Adding library path for ${MODULE_NAME}")
             if (WIN32)
                 set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.lib)
                 set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.lib)
@@ -71,7 +71,7 @@ macro(find_nap_module MODULE_NAME)
 
         # Add module includes
         if(NOT INSTALLING_MODULE_FOR_NAPKIN)
-            message("Adding include for ${NAP_MODULE}")
+            message(STATUS "Adding include for ${NAP_MODULE}")
             target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
         endif()
 
