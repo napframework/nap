@@ -26,7 +26,7 @@ set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
 set(PROJECT_DIR ${NAP_ROOT}/projects/${PROJECT_NAME_LOWERCASE})
 
 # Create our project files, with substitutions
-# TODO potentially look into a generic recursive globbed version of this, but it's probably not worth it
+# TODO potentially look into a generic recursive globbed version of this, but this is probably fine
 configure_file(${TEMPLATE_ROOT}/project.json ${PROJECT_DIR}/project.json @ONLY)
 configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${PROJECT_DIR}/CMakeLists.txt @ONLY)
 configure_file(${TEMPLATE_ROOT}/data/appStructure.json ${PROJECT_DIR}/data/appStructure.json @ONLY)
@@ -34,4 +34,8 @@ configure_file(${TEMPLATE_ROOT}/data/appStructure.json ${PROJECT_DIR}/data/appSt
 configure_file(${TEMPLATE_ROOT}/src/main.cpp ${PROJECT_DIR}/src/main.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateapp.cpp ${PROJECT_DIR}/src/${PROJECT_NAME_LOWERCASE}app.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateapp.h ${PROJECT_DIR}/src/${PROJECT_NAME_LOWERCASE}app.h @ONLY)
-file(MAKE_DIRECTORY ${PROJECT_DIR}/shaders)
+if(UNIX)
+    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/package ${PROJECT_DIR}/package @ONLY)
+    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/refresh ${PROJECT_DIR}/refresh @ONLY)
+endif()
+file(MAKE_DIRECTORY ${PROJECT_DIR}/data/shaders)
