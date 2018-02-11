@@ -15,9 +15,14 @@ target_architecture(ARCH)
 
 include(${NAP_ROOT}/cmake/distmacros.cmake)
 
+# Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
+configure_file(${CMAKE_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
+
 # Parse our project.json and import it
-# TODO Changes to project.json should automatically trigger CMake.. but they don't
-execute_process(COMMAND python ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${PROJECT_NAME})
+add_custom_command(OUTPUT cached_project_json.cmake
+                   COMMAND python ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${PROJECT_NAME}
+                   DEPENDS ${CMAKE_SOURCE_DIR}/project.json
+                   )
 include(cached_project_json.cmake)
 
 # Set our default build type if we haven't specified one (Linux)
@@ -89,6 +94,13 @@ if (WIN32)
     endif()
 endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
+
+# Cleanup dummy JSON file (created for project.json updates triggering reconfigure)
+add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E remove ProjectJsonTriggerDummy.json
+)       
 
 # Set our project output directory
 set_output_directories()
