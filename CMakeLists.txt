@@ -150,17 +150,14 @@ add_subdirectory(apps/kalvertoren/module)
 
 # Packaging
 # TODO move elsewhere
+install(DIRECTORY dist/cmake/ 
+        DESTINATION cmake
+        )   
+
+# Install Windows-only cmake files (as of today this is just Findglew.cmake)
 if(WIN32)
-    install(DIRECTORY dist/cmake/ 
-            DESTINATION cmake
-            )   
-else()
-    # TODO Having our own Findglew.cmake is currently messing with things, 
-    # but if we include glew locally for macOS and even Linux we'll probably need this.
-    # Or: investigate how we get away with not having one for NAP source compilation.
-    install(DIRECTORY dist/cmake/ 
-            DESTINATION cmake
-            PATTERN Findglew.cmake EXCLUDE)
+    install(DIRECTORY dist/win64/cmake
+            DESTINATION cmake)
 endif()
 
 # TODO glob
