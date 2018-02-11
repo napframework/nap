@@ -38,7 +38,7 @@ void SetValueCommand::redo()
 	if (mPath.getProperty().get_name() == nap::rtti::sIDPropertyName)
 	{
 		// Deal with object names separately
-		AppContext::get().getDocument()->setObjectName(mPath.object(), mNewValue.toString().toStdString());
+		AppContext::get().getDocument()->setObjectName(mPath.getObject(), mNewValue.toString().toStdString());
 	}
 	else
 	{

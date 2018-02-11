@@ -40,7 +40,7 @@ void napkin::_FilterTreeView::dragMoveEvent(QDragMoveEvent* event)
 		auto drag_index = currentIndex();
 		auto drag_item = item_model->itemFromIndex(filter_model->mapToSource(drag_index));
 
-		auto pathitem = dynamic_cast<BaseRTTIPathItem*>(item);
+		auto pathitem = dynamic_cast<PropertyPathItem*>(item);
 		if (pathitem != nullptr && drag_item->parent() == pathitem->parent())
 		{
 			setDropIndicatorShown(true);
@@ -76,7 +76,7 @@ void napkin::_FilterTreeView::dropEvent(QDropEvent* event)
 	assert(drop_index.model() == drag_index.model());
 	auto drag_item = item_model->itemFromIndex(filter_model->mapToSource(drag_index));
 
-	auto pathitem = dynamic_cast<BaseRTTIPathItem*>(drop_item);
+	auto pathitem = dynamic_cast<PropertyPathItem*>(drop_item);
 	if (pathitem == nullptr)
 		return;
 
