@@ -10,6 +10,7 @@
 #include <QStandardItemModel>
 
 #include <QTreeView>
+#include "propertypath.h"
 
 namespace napkin
 {
@@ -87,6 +88,15 @@ namespace napkin
 	 * @return true if the file is a child of dir
 	 */
 	bool directoryContains(const QString& dir, const QString& filename);
+
+
+	/**
+	 * Show a dialog box containing the given properties and a custom message.
+	 * @param parent The parent widget to attach the dialog to
+	 * @param props The properties to display in the dialog
+	 * @param message The custom to display alongside the list of properties
+	 */
+	void showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, const QString& title, QString message);
 
 	/**
 	 * @tparam QEnum The enum type to use

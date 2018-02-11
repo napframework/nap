@@ -1,6 +1,9 @@
 #include "actions.h"
 
 #include <QMessageBox>
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QHBoxLayout>
+#include <generic/qtutils.h>
 #include "commands.h"
 
 using namespace napkin;
@@ -107,6 +110,13 @@ DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action()
 
 void DeleteObjectAction::perform()
 {
+	auto pointers = AppContext::get().getDocument()->getPointersTo(mObject);
+	if (!pointers.empty())
+	{
+		QString message = "The following properties are still pointing to this object";
+		showPropertyListDialog(parentWidget(), pointers, "Cannot delete", message);
+		return;
+	}
     AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
 }
 
