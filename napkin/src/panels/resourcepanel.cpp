@@ -254,8 +254,8 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 	if (resolvedPath.getProperty().get_name() != nap::rtti::sIDPropertyName)
 		return;
 
-	auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, path.object());
+	auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, path.getObject());
 	if (objectItem != nullptr)
-		objectItem->setText(QString::fromStdString(path.object().mID));
+		objectItem->setText(QString::fromStdString(path.getObject().mID));
 }
 

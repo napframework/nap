@@ -144,6 +144,13 @@ namespace napkin
 		 */
 		void selectionChanged(const std::vector<nap::rtti::RTTIObject*> obj);
 
+
+		/**
+		 * Qt Signal
+		 * Fired when another property must be selected
+		 */
+		void propertySelectionChanged(const PropertyPath& prop);
+
 		/**
 		 * Qt Signal
 		 * Fired after a file has been opened and its objects made available.

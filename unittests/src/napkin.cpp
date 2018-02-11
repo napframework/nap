@@ -314,7 +314,7 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 	auto doc = napkin::AppContext::get().newDocument();
 	auto entity = doc->addObject<nap::Entity>();
 	napkin::PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
-	REQUIRE(&nameProp.object() == entity);
+	REQUIRE(&nameProp.getObject() == entity);
 	REQUIRE(nameProp.isValid());
 	std::string newName = "NewName";
 	nameProp.setValue(newName);

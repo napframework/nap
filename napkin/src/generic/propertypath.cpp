@@ -97,7 +97,7 @@ std::string napkin::PropertyPath::toString() const
 
 napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) const
 {
-	nap::rtti::RTTIPath child_path = path();
+	nap::rtti::RTTIPath child_path = getPath();
 	child_path.pushAttribute(name);
 	return {*mObject, child_path};
 }
@@ -113,7 +113,16 @@ bool napkin::PropertyPath::isValid() const
 	if (mObject == nullptr)
 		return false;
 	auto resolvedPath = resolve();
-	if (!resolvedPath.isValid())
+
+	return resolvedPath.isValid();
+
+}
+
+bool napkin::PropertyPath::operator==(const napkin::PropertyPath& other) const
+{
+	if (getProperty() != other.getProperty())
+		return false;
+	if (&getObject() != &other.getObject())
 		return false;
 
 	return true;
