@@ -9,7 +9,7 @@ if(WIN32)
                                $<TARGET_FILE:etherdreamlib>
                                $<TARGET_FILE_DIR:${PROJECT_NAME}> 
                        )
-elseif(APPLE)
+elseif(UNIX)
     # Add post-build step to set etherdream RPATH
     # add_custom_command(TARGET ${PROJECT_NAME}
     #                    POST_BUILD

@@ -72,4 +72,6 @@ elseif(APPLE)
                                           ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Debug/libmod_napartnet.dylib 
                                   ERROR_QUIET
                                   )")
+else()
+    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/linux/bin")
 endif()
