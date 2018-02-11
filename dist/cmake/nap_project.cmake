@@ -122,6 +122,17 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/projectExtra.cmake)
     include(${CMAKE_CURRENT_SOURCE_DIR}/projectExtra.cmake)
 endif()
 
+# Add IDE targets for launching napkin
+if(APPLE)
+    add_custom_target("LAUNCH_NAPKIN" 
+                      COMMAND open $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
+                      DEPENDS ${PROJECT_NAME})
+elseif(WIN32)
+    add_custom_target("LAUNCH_NAPKIN" 
+                      COMMAND start /b $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
+                      DEPENDS ${PROJECT_NAME})
+endif()
+
 # Copy data to bin post-build
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
