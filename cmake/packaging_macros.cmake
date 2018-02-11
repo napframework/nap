@@ -23,6 +23,9 @@ macro(package_nap)
         install(PROGRAMS dist/linux/install_ubuntu_1710_dependencies.sh DESTINATION tools/platform)
     endif()
 
+    # Package project directory package & refresh shortcuts
+    package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
+
     # Create empty projects and usermodules directories
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
@@ -263,4 +266,33 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                       endif()
                   endif()
                   ")
+endmacro()
+
+macro(package_project_dir_shortcuts DESTINATION)
+    # Package project directory package & refresh shortcuts
+    if(WIN32)
+        # TODO deploy windows project directory package & refresh shortcuts
+    else()
+        install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
+                         ${NAP_ROOT}/dist/unix/project_dir_shortcuts/refresh
+                DESTINATION ${DESTINATION})
+    endif()
+endmacro()
+
+macro(package_project_into_release DEST_DIR)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+            DESTINATION ${DEST_DIR}
+            PATTERN "CMakeLists.txt" EXCLUDE
+            PATTERN "dist" EXCLUDE)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/CMakeLists.txt DESTINATION ${DEST_DIR})
+
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt DESTINATION ${DEST_DIR})
+    endif()
+
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/projectExtra.cmake)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/projectExtra.cmake DESTINATION ${DEST_DIR})
+    endif()
+
+    package_project_dir_shortcuts(${DEST_DIR})
 endmacro()

@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+import os
+from subprocess import call
+
+project_dir = os.path.dirname(os.path.realpath(__file__))
+nap_root = os.path.abspath(os.path.join(project_dir, os.pardir, os.pardir))
+
+call(["/usr/bin/env python %s/tools/platform/packageProjectByDir.py %s" % (nap_root, project_dir)], shell=True)

@@ -50,8 +50,7 @@ endif()
 # Copy project json to project bin dir and export fbx, via post-build events
 copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
 
-# Package into release build
-install(DIRECTORY . DESTINATION "examples/${PROJECT_NAME}"
-        PATTERN "CMakeLists.txt" EXCLUDE
-        PATTERN "dist" EXCLUDE)
-install(FILES dist/CMakeLists.txt DESTINATION "examples/${PROJECT_NAME}/")
+# Package into release build if requested
+if(PACKAGE_NAIVI_APPS)
+    package_project_into_release("examples/${PROJECT_NAME}")
+endif()

@@ -19,10 +19,7 @@ include(${NAP_ROOT}/cmake/distmacros.cmake)
 configure_file(${CMAKE_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
 
 # Parse our project.json and import it
-add_custom_command(OUTPUT cached_project_json.cmake
-                   COMMAND python ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${PROJECT_NAME}
-                   DEPENDS ${CMAKE_SOURCE_DIR}/project.json
-                   )
+execute_process(COMMAND python ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${PROJECT_NAME})
 include(cached_project_json.cmake)
 
 # Set our default build type if we haven't specified one (Linux)
@@ -129,7 +126,7 @@ endif()
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
-if (NOT WIN32)   
+if(NOT WIN32)
     if (APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
     else()
