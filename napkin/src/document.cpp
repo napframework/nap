@@ -410,6 +410,19 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
+QList<PropertyPath> Document::getPointersTo(const nap::rtti::RTTIObject& obj)
+{
+	QList<PropertyPath> properties;
+	for (const auto& object : mObjects)
+	{
+		std::vector<nap::rtti::ObjectLink> links;
+		findObjectLinks(*object, links);
+		for (const auto& link : links)
+			properties << PropertyPath(*object, link.mSourcePath);
+	}
+	return properties;
+}
+
 
 
 

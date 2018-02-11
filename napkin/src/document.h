@@ -124,6 +124,13 @@ namespace napkin
 		void removeObject(const std::string& name);
 
 		/**
+		 * Retrieve all properties referring to the given object.
+		 * @param obj The object that is being referred to.
+		 * @return A list of properties pointing to the given object.
+		 */
+		QList<PropertyPath> getPointersTo(const nap::rtti::RTTIObject& obj);
+
+		/**
 		 * Add an element to an array
 		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array property to add the element to
