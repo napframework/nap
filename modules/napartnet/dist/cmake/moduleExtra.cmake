@@ -10,7 +10,7 @@ if(WIN32)
                                $<TARGET_FILE:artnet>
                                $<TARGET_FILE_DIR:${PROJECT_NAME}> 
                        )
-elseif(APPLE)
+elseif(UNIX)
     # Add post-build step to set artnet RPATH
     # add_custom_command(TARGET ${PROJECT_NAME}
     #                    POST_BUILD
