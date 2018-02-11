@@ -1,4 +1,38 @@
-# Package installed Python for distribution with NAP release (for use with Napkin, mod_nappython)
+macro(package_nap)
+    # Package shared cmake files
+    install(DIRECTORY ${NAP_ROOT}.dist/cmake/ 
+            DESTINATION cmake
+            )   
+
+    # Package Windows-only cmake files (as of today this is just Findglew.cmake)
+    if(WIN32)
+        install(DIRECTORY ${NAP_ROOT}/dist/win64/cmake
+                DESTINATION cmake)
+    endif()
+
+    # Package user tools
+    file(GLOB USER_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/*py")
+    install(PROGRAMS ${USER_TOOL_SCRIPTS} DESTINATION tools)
+
+    # Package platform tools
+    file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/platform/*py")
+    install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
+    if(APPLE)
+        install(PROGRAMS dist/macOS/macOSTempDylibCopyAndPathFix.py DESTINATION tools/platform)
+    elseif(UNIX)
+        install(PROGRAMS dist/linux/install_ubuntu_1710_dependencies.sh DESTINATION tools/platform)
+    endif()
+
+    # Create empty projects and usermodules directories
+    install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
+    install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
+
+    # For now package platform Qt and Python for distribution, for discussion
+    package_platform_python()
+    package_platform_qt()
+endmacro()
+
+# Package installed Python for distribution with NAP release (for use with mod_nappython & Napkin)
 # TODO This is brittle and (very likely) temporary
 # I believe we should include python in thirdparty so that:
 # - We can control the OS version/s we support (eg. the homebrew version we're installing for macOS won't be backwards compatible)
@@ -91,7 +125,7 @@ macro(package_platform_python)
 endmacro()
 
 # Package installed QT for distribution with NAP release (for use with Napkin)
-# TODO A better solution is probably to keep our own packaged QT in thirdparty
+# TODO A better solution is probably to keep our own packaged Qt in thirdparty
 macro(package_platform_qt)
     set(QT_FRAMEWORKS Core Gui Widgets)
 
@@ -118,15 +152,7 @@ macro(package_platform_qt)
 
         install(FILES ${QT_DIR}/plugins/platforms/qwindows.dll
                 DESTINATION thirdparty/Qt/plugins/Release/platforms/
-                CONFIGURATIONS Release)
-        
-        # # Glob each of our imageformat plugins and install them.  Globbing so we can update framework link install paths on them.
-        # file(GLOB imageformat_plugins RELATIVE ${QT_DIR}/plugins/imageformats/ "${QT_DIR}/plugins/imageformats/*dll")
-        # foreach(imageformat_plugin ${imageformat_plugins})
-        #     install(FILES ${QT_DIR}/plugins/imageformats/${imageformat_plugin}
-        #             DESTINATION thirdparty/Qt/plugins/imageformats/
-        #             CONFIGURATIONS Release)         
-        # endforeach()
+                CONFIGURATIONS Release)        
     elseif(APPLE)
         # macOS appears to depend on these extra Qt frameworks
         list(APPEND QT_FRAMEWORKS PrintSupport Svg)

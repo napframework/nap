@@ -149,35 +149,5 @@ add_subdirectory(modules/napsandbox)
 add_subdirectory(apps/kalvertoren/module)
 
 # Packaging
-# TODO move elsewhere
-install(DIRECTORY dist/cmake/ 
-        DESTINATION cmake
-        )   
-
-# Install Windows-only cmake files (as of today this is just Findglew.cmake)
-if(WIN32)
-    install(DIRECTORY dist/win64/cmake
-            DESTINATION cmake)
-endif()
-
-# TODO glob
-install(PROGRAMS dist/projectscripts/createProject.py DESTINATION tools)
-install(PROGRAMS dist/projectscripts/refreshProject.py DESTINATION tools)
-install(PROGRAMS dist/projectscripts/createModule.py DESTINATION tools)
-install(PROGRAMS dist/projectscripts/refreshModule.py DESTINATION tools)
-install(PROGRAMS dist/projectscripts/packageProject.py DESTINATION tools)
-install(PROGRAMS dist/projectscripts/platform/__init__.py DESTINATION tools/platform)
-install(PROGRAMS dist/projectscripts/platform/projectInfoParseToCMake.py DESTINATION tools/platform)
-install(PROGRAMS dist/projectscripts/platform/NAPShared.py DESTINATION tools/platform)
-if(APPLE)
-    install(PROGRAMS dist/projectscripts/platform/macOSTempDylibCopyAndPathFix.py DESTINATION tools/platform)
-elseif(UNIX)
-    install(PROGRAMS dist/linux/install_ubuntu_1710_dependencies.sh DESTINATION tools/platform)
-endif()
-install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
-install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
-
-# For now package platform QT and Python for distribution, for discussion
 include(cmake/packaging_macros.cmake)
-package_platform_python()
-package_platform_qt()
+package_nap()
