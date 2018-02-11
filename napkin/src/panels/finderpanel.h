@@ -8,6 +8,16 @@
 
 namespace napkin
 {
+	class PropertyDisplayItem : public QStandardItem
+	{
+	public:
+		explicit PropertyDisplayItem(const PropertyPath& prop);
+
+		const PropertyPath& getPath() const { return mProp; }
+
+	private:
+		const PropertyPath mProp;
+	};
 
 
 	class FinderPanel : public QWidget
@@ -16,6 +26,8 @@ namespace napkin
 		FinderPanel();
 
 		void setPropertyList(const QList<PropertyPath>& properties);
+
+		FilterTreeView& getTreeView();
 
 	private:
 		QVBoxLayout mLayout;

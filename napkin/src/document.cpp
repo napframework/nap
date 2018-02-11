@@ -418,7 +418,10 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::RTTIObject& obj)
 		std::vector<nap::rtti::ObjectLink> links;
 		findObjectLinks(*object, links);
 		for (const auto& link : links)
-			properties << PropertyPath(*object, link.mSourcePath);
+		{
+			if (link.mTarget == &obj)
+				properties << PropertyPath(*object, link.mSourcePath);
+		}
 	}
 	return properties;
 }

@@ -2,21 +2,13 @@
 
 using namespace napkin;
 
-class PropertyDisplayItem : public QStandardItem
+PropertyDisplayItem::PropertyDisplayItem(const PropertyPath& prop) : QStandardItem(), mProp(prop)
 {
-public:
-	explicit PropertyDisplayItem(const PropertyPath& prop) : QStandardItem(), mProp(prop)
-	{
-		setText(QString::fromStdString(prop.toString()));
-		setEditable(false);
-	}
+	setText(QString::fromStdString(prop.toString()));
+	setEditable(false);
+}
 
-	const PropertyPath& property() const
-	{ return mProp; }
 
-private:
-	const PropertyPath mProp;
-};
 
 FinderPanel::FinderPanel() : QWidget()
 {
@@ -32,6 +24,11 @@ void napkin::FinderPanel::setPropertyList(const QList<napkin::PropertyPath>& pro
 	mModel.clear();
 	for (const auto& prop : properties)
 		mModel.appendRow(new PropertyDisplayItem(prop));
+}
+
+FilterTreeView& FinderPanel::getTreeView()
+{
+	return mTree;
 }
 
 

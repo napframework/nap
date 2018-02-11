@@ -7,6 +7,9 @@
 #include <QLabel>
 
 #include <mathutils.h>
+#include <standarditemsproperty.h>
+#include <appcontext.h>
+#include <nap/logger.h>
 
 #include "panels/finderpanel.h"
 
@@ -130,6 +133,20 @@ void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, 
 	layout.addWidget(&label);
 
 	FinderPanel finder;
+	FilterTreeView* tree = &finder.getTreeView();
+
+	// On item double-click, close the dialog and reveal the property
+	finder.connect(&tree->getTreeView(), &QTreeView::doubleClicked,
+				   [tree, &dialog](const QModelIndex& idx)
+	{
+		const auto sourceIndex = tree->getFilterModel().mapToSource(idx);
+		auto item = tree->getModel()->itemFromIndex(sourceIndex);
+		auto propitem = dynamic_cast<PropertyDisplayItem*>(item);
+		assert(propitem);
+		AppContext::get().propertySelectionChanged(propitem->getPath());
+		dialog.close();
+	});
+
 	finder.setPropertyList(props);
 	layout.addWidget(&finder);
 
@@ -137,5 +154,7 @@ void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, 
 	layout.addWidget(&buttonBox);
 
 	dialog.exec();
+
+
 }
 

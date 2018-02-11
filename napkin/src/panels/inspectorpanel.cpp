@@ -154,6 +154,11 @@ void napkin::InspectorPanel::rebuild()
 
 void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
+	std::vector<nap::rtti::RTTIObject*> objects = {&prop.getObject()};
+	AppContext::get().selectionChanged(objects);
+
+
+
 	auto pathItem = findItemInModel(mModel, [prop](QStandardItem* item)
 	{
 		auto pitem = dynamic_cast<PropertyPathItem*>(item);
