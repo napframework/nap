@@ -271,7 +271,9 @@ endmacro()
 macro(package_project_dir_shortcuts DESTINATION)
     # Package project directory package & refresh shortcuts
     if(WIN32)
-        # TODO deploy windows project directory package & refresh shortcuts
+        install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.cmd
+                         ${NAP_ROOT}/dist/win64/project_dir_shortcuts/refresh.cmd
+                DESTINATION ${DESTINATION})
     else()
         install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
                          ${NAP_ROOT}/dist/unix/project_dir_shortcuts/refresh
