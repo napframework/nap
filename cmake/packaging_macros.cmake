@@ -1,6 +1,6 @@
 macro(package_nap)
     # Package shared cmake files
-    install(DIRECTORY ${NAP_ROOT}.dist/cmake/ 
+    install(DIRECTORY ${NAP_ROOT}/dist/cmake/ 
             DESTINATION cmake
             )   
 
