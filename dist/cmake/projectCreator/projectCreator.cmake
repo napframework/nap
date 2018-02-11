@@ -37,5 +37,8 @@ configure_file(${TEMPLATE_ROOT}/src/templateapp.h ${PROJECT_DIR}/src/${PROJECT_N
 if(UNIX)
     configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/package ${PROJECT_DIR}/package @ONLY)
     configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/refresh ${PROJECT_DIR}/refresh @ONLY)
+elseif(WIN32)
+    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/package.cmd ${PROJECT_DIR}/package.cmd @ONLY)
+    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/refresh.cmd ${PROJECT_DIR}/refresh.cmd @ONLY)    
 endif()
 file(MAKE_DIRECTORY ${PROJECT_DIR}/data/shaders)
