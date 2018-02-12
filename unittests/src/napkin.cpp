@@ -7,6 +7,7 @@
 #include <imagelayer.h>
 #include <shader.h>
 #include <generic/naputils.h>
+#include <QCoreApplication>
 
 #define TAG_NAPKIN "[napkin]"
 
@@ -453,7 +454,7 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	// Must start QApplication in order to have an event loop for signals?
 	int argc = 1;
 	char* argv[] = {"arg!"};
-	QApplication app(argc, argv);
+	QCoreApplication app(argc, argv);
 
 	// Assume this test file's directory as the base path
 	QString jsonFile = "objects.json";
