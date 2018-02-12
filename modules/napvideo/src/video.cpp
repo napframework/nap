@@ -18,9 +18,9 @@ extern "C"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Video)
 	RTTI_CONSTRUCTOR(nap::VideoService&)
-	RTTI_PROPERTY("Path",	&nap::Video::mPath,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Loop",	&nap::Video::mLoop,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",	&nap::Video::mSpeed,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("Path",	&nap::Video::mPath,		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Video)
+	RTTI_PROPERTY("Loop",	        &nap::Video::mLoop,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",	        &nap::Video::mSpeed,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap

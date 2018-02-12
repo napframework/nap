@@ -13,7 +13,7 @@ napkin::ObjectItem::ObjectItem(nap::rtti::RTTIObject* rttiObject) : mObject(rtti
 {
 	refresh();
 
-    setIcon(AppContext::get().getResourceFactory().iconFor(*rttiObject));
+    setIcon(AppContext::get().getResourceFactory().getIcon(*rttiObject));
 }
 
 void napkin::ObjectItem::refresh()
