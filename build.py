@@ -20,24 +20,21 @@ def isLocalGitRepo(d):
     if not os.path.exists(d): return False
     try:
         call(d, ['git', 'rev-parse'])
-    except:
+    except Exception as e:
         return False
     return True
 
-
 def call(cwd, cmd):
     print('dir: %s' % cwd)
-    print('cmd: %s' % cmd)
+    print('cmd: %s' % ' '.join(cmd))
     proc = subprocess.Popen(cmd, cwd=cwd)
-    out, err = proc.communicate()
+    proc.communicate()
     if proc.returncode != 0:
-        raise Exception(proc.returncode)
-    return out
-
+        sys.exit(proc.returncode)
 
 def main(targets):
     # clear build directory when a clean build is required
-    print(CLEAN_BUILD)
+    print('Clean? %s' % CLEAN_BUILD)
     if CLEAN_BUILD and os.path.exists(BUILD_DIR):
         shutil.rmtree(BUILD_DIR)
 
@@ -52,31 +49,30 @@ def main(targets):
             os.makedirs(BUILD_DIR)
 
         # generate prject
-        call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
-
-    #copy targets
-    build_targets = targets
-
-    # add targets here
-    # build_targets.append("hello")
+        call(WORKING_DIR,
+             ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
     for t in targets:
-        # linux
+
         if platform in ["linux", "linux2"]:
+            # Linux
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['make', t, '-j%s' % cpu_count()])
-        # osx
+
         elif platform == 'darwin':
+            # macOS
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['xcodebuild', '-project', 'Project.xcodeproj', '-target', t, '-configuration', 'Debug'])
-        # windows
+
         else:
+            # Windows
             d = WORKING_DIR
             call(d, ['cmake', '--build', BUILD_DIR, '--target', t])
 
 
-# Extracts all targets from the command line input arguments, syntax is: target:project, ie: target:napcore
-def extractTargets():
+def parseCmdArgs():
+    """Extracts all targets from the command line input arguments
+    syntax is: target:project, ie: target:napcore"""
     targets = []
     for arg in sys.argv:
         # if the argument clean has been given, perform a clean build
@@ -104,9 +100,8 @@ def extractTargets():
 
 # main run
 if __name__ == '__main__':
-
     # extract command line targets
-    targets = extractTargets()
+    targets_ = parseCmdArgs()
 
     # run main
-    main(targets)
+    main(targets_)
