@@ -48,6 +48,10 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * GPU representation of a 2D bitmap. 
+	 * This class does not own any CPU data but offers an interface to up and download texture data from and in to a bitmap
+	 */
 	class NAPAPI Texture2D : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
@@ -129,8 +133,8 @@ namespace nap
 		void unbind();
 
 	public:
-		nap::TextureParameters		mParameters;							// Property: 'Parameters' RTTI texture parameters
-		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;	// Property: 'Usage' The usage of this texture
+		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
+		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;			///< Property: 'Usage' How this texture is used, ie: updated on the GPU
 
 	protected:
 		opengl::Texture2D& getTexture() { return mTexture; }
