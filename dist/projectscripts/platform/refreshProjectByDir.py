@@ -37,9 +37,9 @@ if __name__ == '__main__':
             show_solution = True
 
     if show_solution:
-        call(['python', script_path, project_name,  '--dont-show'], shell=True)        
+        call(['python', script_path, project_name,  '--dont-show'])        
     else:
-        call(['python', script_path, project_name], shell=True)
+        call(['python', script_path, project_name])
 
     print("Press key to close...")
 

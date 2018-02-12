@@ -1,0 +1,10 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=true
+Exec=sh -c "cd $(dirname %k);./package"
+Name=Package
+Comment=Comment
+Icon=
