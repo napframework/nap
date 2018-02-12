@@ -18,25 +18,25 @@
 		},
 
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "PigTexture",
 			"ImagePath" : "pig_head.jpg"
 		},
 		
 		{
-			"Type" : "nap::Image",	
+			"Type" : "nap::ImageFromFile",	
 			"mID" : "WorldTexture",
 			"ImagePath" : "world_texture.jpg"
 		},
 
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "TestTexture",
 			"ImagePath" : "test.jpg"
 		},
 
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "ColorTexture",
 			"Width" : 640,
 			"Height" : 480,
@@ -44,7 +44,7 @@
 		},
 		
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "DepthTexture",
 			"Width" : 640,
 			"Height" : 480,
