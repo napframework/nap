@@ -7,6 +7,10 @@ Rendering {#rendering}
 *	[Meshes](@ref meshes)
 	*	[Creating Meshes](@ref creating_meshes)
 	*	[Mesh Format](@ref mesh_format)
+*	[Materials and Shaders](@ref materials)
+	*	[Mapping Attributes](@ref mapping_attrs)
+	*	[Default Attributes](@ref default_attrs)
+	*	[Uniforms](@ref uniforms)
 
 Introduction {#render_intro}
 =======================
@@ -454,4 +458,202 @@ while (!tri_iterator.isDone())
 	triangle.setVertexData(*uv_cattr, uv_avg);
 }
 ~~~~~~~~~~~~~~~
+
+Materials and Shaders {#materials}
+=======================
+
+A shader is a piece of code that is executed on the GPU. You can use shaders to perform many tasks including rendering a mesh to screen or in to a different buffer. The material tells the shader how to execute that piece of code. A material therefore:
+
+- defines the mapping between the mesh vertex attributes and the shader vertex attributes
+- stores and updates the uniform shader values
+- stores and updates global render settings such as the blend and depth mode
+
+ This schematic shows how to bind a shader to a mesh and render it to screen using the [RenderableMeshComponent](@ref nap::RenderableMeshComponent)
+
+![](@ref content/shader_material_binding.png)
+
+Multiple materials can reference the same shader. You can change the properties of a material on a global (resource) and instance level. To change the properties of a material on an instance you use a [MaterialInstance](@ref nap::MaterialInstance) object. A material instance is used to override  uniform values and change the render state of a material. This makes it possible to create a complex material with default attribute mappings and uniform values but override specific settings for a specific object. Imagine you have twenty buttons on your screen that all look the same, but when you move your mouse over a button you want it to light up. You can do this by making a single material that is configured to show a normal button and change the unifom 'color' for the button you are hovering over. Changing the color uniform is done by altering the material instance attribute 'color'.
+
+Mapping Attributes {#mapping_attrs}
+-----------------------
+Meshes can contain any number of vertex attributes. How those attributes correspond to vertex attributes in the shader is defined in the material. It is simply a mapping from a mesh attribute ID ('position') to a shader attribute ID ('in_Position'). 
+Consider this simple vertex shader:
+
+~~~~~~~~~~~~~~~{.c}
+uniform mat4 projectionMatrix;	//< camera projection matrix
+uniform mat4 viewMatrix;		//< camera view matrix (world space location)
+uniform mat4 modelMatrix;		//< vertex model to world matrix
+
+in vec3	in_Position;			//< in vertex position object space
+in vec4	in_Color;				//< in vertex color
+in vec3	in_UV;					//< in vertex uv channel 0
+
+out vec4 pass_Color;			//< pass color to fragment shader
+out vec3 pass_Uvs;				//< pass uv to fragment shader
+
+void main(void)
+{
+	// Calculate vertex position
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+
+	// Pass color and uv's 
+	pass_Color = in_Color;
+	pass_Uvs = in_UV;
+}
+~~~~~~~~~~~~~~~
+
+This (vertex) shader doesn't do a lot. It transforms the vertex position and passes the vertex color and uv coordinates to the fragment shader. The vertex attributes are called 'in_Position', 'in_Color' and 'in_UV'. To match these settings we create a mesh in json that contains the following vertex attributes: 'Position', 'UV0' and "Color0": 
+```
+{
+	"Type" : "nap::Mesh",
+	"mID" : "MyMesh",
+	"Properties" : 
+	{
+		"NumVertices" : 4,
+		"Shapes" : 
+		[
+			{
+				"DrawMode" : "TriangleStrip"
+			}
+		],
+		"Attributes" : 
+		[
+			{
+				"Type" : "nap::Vec3VertexAttribute",
+				"AttributeID" : "Position",
+				"Data" : [
+					// data here
+				]
+			},
+			{
+				"Type" : "nap::Vec3VertexAttribute",
+				"AttributeID" : "UV0",
+				"Data" : [
+					// data here
+				]
+			},
+			{
+				"Type" : "nap::Vec4VertexAttribute",
+				"AttributeID" : "Color0",
+				"Data" : [
+					// data here
+				]
+			}
+
+		],
+		// indices here..
+	}
+}
+```
+
+The last thing we do is bind the mesh vertex attributes to the shader using a material. To do that we provide the material with a table that binds the two together:
+
+```
+{
+	"Type" : "nap::Material",
+	"mID": "MyMaterial",
+	"Shader": "MyShader",
+	"VertexAttributeBindings" : 
+	[
+		{
+			"MeshAttributeID": "Position",				//< Mesh position vertex attribute
+			"ShaderAttributeID": "in_Position"			//< Binds to the shader 'in_Position' input
+		},
+		{
+			"MeshAttributeID": "UV0",					//< Mesh uv vertex attribute
+			"ShaderAttributeID": "in_UV"				//< Binds the the shader 'in_UV' input
+		},
+		{
+			"MeshAttributeID": "Color0",				//< Mesh color vertex attribute
+			"ShaderAttributeID": "in_Color"				//< Binds to the shader 'in_Color' input 
+		}
+	]		
+}
+```
+
+The shader is always leading when it comes to mapping vertex attributes. This means that all the exposed shader vertex attributes need to be present in the material and on the mesh. It is also required that they are of the same internal type. To make things a bit more manageable and convenient: a mesh can contain more attributes than exposed by a shader. The mapping (as demonstrated above) can also contain more entries than exposed by a shader. This makes it easier to create common mappings and iterate on your shader. It would be inconvenient if the application yields an error when you comment out attributes in your shader. Even worse, if certain code in the shader is optimized out while working on it, certain inputs might not exist anymore. In these cases you don't want the initialization of your material to fail.
+
+Default Attributes {#default_attrs}
+-----------------------
+
+Meshes that are loaded using the mesh from file resource have a fixed set of (partly optional) vertex attributes:
+-	Position (required)
+-	Normal (optional)
+-	Tangent (auto generated when not available)
+- 	Bitangents (auto generated when not available)
+-	Multiple UV channels (optional)
+-	Multiple Color channels (optional)
+
+The names of these default attributes can be retreived using a set of global commands. The color and uv functions require an index:
+
+~~~~~~~~~~~~~~~{.cpp}
+VertexAttributeIDs::getPositionName()
+VertexAttributeIDs::getNormalName()
+VertexAttributeIDs::getColorName(0)
+//etc...
+~~~~~~~~~~~~~~~
+
+Every material creates a default mapping using the above mentioned attributes when no mapping is provided. The UV and Color attributes are included up to four channels. The default naming on the shader side can be found using a similar construct:
+
+~~~~~~~~~~~~~~~{.cpp}
+opengl::Shader::VertexAttributeIDs 
+~~~~~~~~~~~~~~~
+
+The following table shows the default mesh to shader attribute bindings:
+
+Mesh 			| Shader 			|
+:-------------: | :-------------:	|
+Position 		| in_Position		|
+Normal 			| in_Normal			|
+Tangent 		| in_Bitangent 		|
+Bitangent 		| in_Bitangent		|
+UV0 			| in_UV0			|
+UV1 			| in_UV1			|
+UV2 			| in_UV2			|
+UV3 			| in_UV3			|
+Color0 			| in_Color0			|
+Color1 			| in_Color1			|
+Color2 			| in_Color2			|
+Color2 			| in_Color2			|
+
+Uniforms {#uniforms}
+-----------------------
+
+Uniforms are shader input parameters that can be set through the material interface. Every material stores a value for each uniform in the shader. It is allowed to have more uniforms in the material than the shader. This is similar to vertex attributes with one major exception: not every uniform in the shader needs to be present in the material. If there is no matching uniform, a default uniform will be created internally. That uniform can also be accessed by client code and changed at runtime. Consider the following example:
+
+```
+{
+	"Type" : "nap::Material",
+	"mID": "ParticleMaterial",
+	"Shader": "ParticleShader",
+	"BlendMode": "AlphaBlend",
+	"Uniforms" : 
+	[
+		{
+			"Type" : "nap::UniformTexture2D",
+			"Name" : "particleTexture",
+			"Texture" : "Particle"
+		},
+		{
+			"Type" : "nap::UniformVec4",
+			"Name" : "particleColor",
+			"Value" : 
+			{
+				“x” : 1.0,
+				“y” : 0.0,
+				“z” : 0.0,
+				“w” : 1.0
+			}
+		}
+	]
+}
+```
+The material mentioned above binds two uniforms: a texture to “particleTexture” and a color to “particleColor”. Initialization of the material will fail when you try to bind a resource or object to the wrong type of parameter. Every uniform that is created (or present) in the instance of a material takes presedence over the value in the material. It's easy to create (and access) a uniform parameter at runtime:
+
+~~~~~~~~~~~~~~~{.cpp}
+nap::UniformVec3&  color = mMaterial->getOrCreateUniform<nap::UniformVec3>("color");
+color.setValue({1.0,0.0,0.0});
+~~~~~~~~~~~~~~~
+
+The snippet above creates a new uniform 'color' (if it didn't exist already) and changes the value of that parameter to red. This immediately overrides the material's default 'color' value.
 
