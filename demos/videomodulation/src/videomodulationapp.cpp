@@ -5,7 +5,7 @@
 #include <nap/logger.h>
 #include <orthocameracomponent.h>
 #include <perspcameracomponent.h>
-#include <texture2d.h>
+#include <rendertexture2d.h>
 #include <scene.h>
 #include <imgui/imgui.h>
 #include <mathutils.h>

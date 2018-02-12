@@ -30,8 +30,8 @@
 		{
 			"Type" : "nap::PlaneMesh",
 			"mID": "RenderMesh",
-			"Rows" : 512,
-			"Columns" : 512
+			"Rows" : 256,
+			"Columns" : 256
 		},
 
 		{

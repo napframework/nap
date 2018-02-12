@@ -50,9 +50,9 @@ namespace nap
 		if (mTransferring)
 		{
 #ifndef _DEBUG 
-			activeTarget->getColorTexture().endGetData(mPixmap);
+			activeTarget->getColorTexture().endGetData(mBitmap);
 #else
-			activeTarget->getColorTexture().getData(mPixmap);
+			activeTarget->getColorTexture().getData(mBitmap);
 #endif // DEBUG
 
 		}
@@ -94,26 +94,27 @@ namespace nap
 			nextTarget = active_placeholder;
 		}
 
-		// Start pixel data transfer so reading it later is performent
+		// Start pixel data transfer so reading it later is performant
 #ifndef _DEBUG 
 		activeTarget->getColorTexture().startGetData();
 #endif // !DEBUG
 		mTransferring = true;
 	}
 
-	nap::BaseTexture2D& RenderCompositionComponentInstance::getTexture()
+
+	nap::Texture2D& RenderCompositionComponentInstance::getTexture()
 	{
 		return activeTarget->getColorTexture();
 	}
 
 
-	nap::Pixmap& RenderCompositionComponentInstance::getPixmap()
+	nap::Bitmap& RenderCompositionComponentInstance::getBitmap()
 	{
-		return mPixmap;
+		return mBitmap; 
 	}
 
 
-	void RenderCompositionComponentInstance::renderPass(BaseTexture2D& inputA, BaseTexture2D& inputB, RenderTarget& target)
+	void RenderCompositionComponentInstance::renderPass(Texture2D& inputA, Texture2D& inputB, RenderTarget& target)
 	{
 		// Get plane to render
 		RenderableMeshComponentInstance& render_plane = *mRenderableComponent;
