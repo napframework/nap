@@ -19,7 +19,7 @@ namespace nap
 			return false;
 
 		mTextureRenderTarget = std::make_unique<opengl::TextureRenderTarget2D>();
-		if (!errorState.check(mTextureRenderTarget->init(mColorTexture->getTexture(), mDepthTexture->getTexture(), errorState), "Unable to allocate texture render target"))
+		if (!errorState.check(mTextureRenderTarget->init(mColorTexture->mTexture, mDepthTexture->mTexture, errorState), "Unable to allocate texture render target"))
 			return false;
 
 		mTextureRenderTarget->setClearColor(mClearColor);

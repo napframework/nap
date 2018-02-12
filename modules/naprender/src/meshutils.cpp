@@ -146,9 +146,6 @@ namespace nap
 		{
 			assert(outNormals.getCount() == positions.getCount());
 
-			// Total number of attributes
-			int attr_count = positions.getCount();
-
 			// Normal data
 			std::vector<glm::vec3>& normal_data = outNormals.getData();
 

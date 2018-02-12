@@ -476,7 +476,7 @@
             "mFragShader": "shaders/videomodulation/video.frag"
         },
         {
-            "Type": "nap::Texture2D",
+            "Type": "nap::RenderTexture2D",
             "mID": "VideoColorTexture",
             "Parameters": {
                 "MinFilter": "Linear",
@@ -491,7 +491,7 @@
             "Format": "RGB8"
         },
         {
-            "Type": "nap::Texture2D",
+            "Type": "nap::RenderTexture2D",
             "mID": "VideoDepthTexture",
             "Parameters": {
                 "MinFilter": "Linear",
