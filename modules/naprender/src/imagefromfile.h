@@ -1,13 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "texture2d.h"
-#include "bitmap.h"
-
-// External Includes
-#include <rtti/rttiobject.h>
-#include <utility/dllexport.h>
-#include <glm/glm.hpp>
+#include "image.h"
 
 namespace nap
 {
