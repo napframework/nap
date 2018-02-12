@@ -30,11 +30,5 @@ if __name__ == '__main__':
 
     print("Press key to close...")
 
-    # Read a char from console
-    fd = sys.stdin.fileno()
-    old = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+    # Read a char from console    
+    getch()
