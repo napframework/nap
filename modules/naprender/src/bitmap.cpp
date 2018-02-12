@@ -9,6 +9,8 @@
 // External includes
 #include <FreeImage.h>
 
+#undef BYTE
+
 RTTI_BEGIN_ENUM(nap::Bitmap::EChannels)
 	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::R,			"R"),
 	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::RGB,		"RGB"),
