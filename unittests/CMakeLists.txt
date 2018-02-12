@@ -44,7 +44,6 @@ elseif (UNIX)
             freeimage
             ${FFMPEG_LIBRARIES}
             )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-limit-debug-info")
 endif ()
 
 target_link_libraries(${PROJECT_NAME} ${UNITTEST_LIBS})
