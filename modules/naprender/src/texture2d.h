@@ -70,7 +70,7 @@ namespace nap
 		/**
 		 * @return size of the texture, in texels.
 		 */
-		const glm::vec2 getSize() const;
+		const glm::vec2 getSize() const; 
 
 		/**
 		 *	@return width of the texture, in texels
