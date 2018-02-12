@@ -4,8 +4,6 @@ import argparse
 import os
 from subprocess import call
 import sys 
-import termios
-import tty
 
 if sys.platform == 'win32':
     from msvcrt import getch
@@ -25,21 +23,25 @@ if __name__ == '__main__':
     parser.add_argument("PROJECT_PATH", type=str, help="Path to the project")
     args = parser.parse_args()
 
-    project_name = os.path.basename(args.PROJECT_PATH)
+    project_name = os.path.basename(args.PROJECT_PATH.strip('\\'))
     nap_root = os.path.abspath(os.path.join(args.PROJECT_PATH, os.pardir, os.pardir))
+    script_path = os.path.join(nap_root, 'tools', 'refreshProject.py')
 
     # If we're on Windows or macOS and we're generating a solution for the first time show the generated solution
-    refresh_args = ''
+    show_solution = False
     if sys.platform == 'darwin':
         if os.path.exists(os.path.join(args.PROJECT_PATH, 'xcode')):
-            refresh_args = '--dont-show'
+            show_solution = True
     elif sys.platform == 'win32':
         if os.path.exists(os.path.join(args.PROJECT_PATH, 'msvc64')):
-            refresh_args = '--dont-show'
+            show_solution = True
 
-    call(["/usr/bin/env python %s/tools/refreshProject.py %s %s" % (nap_root, project_name, refresh_args)], shell=True)
+    if show_solution:
+        call(['python', script_path, project_name,  '--dont-show'], shell=True)        
+    else:
+        call(['python', script_path, project_name], shell=True)
 
     print("Press key to close...")
 
     # Read a char from console
-    getchr()
+    getch()

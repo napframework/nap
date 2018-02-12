@@ -6,7 +6,7 @@ macro(package_nap)
 
     # Package Windows-only cmake files (as of today this is just Findglew.cmake)
     if(WIN32)
-        install(DIRECTORY ${NAP_ROOT}/dist/win64/cmake
+        install(DIRECTORY ${NAP_ROOT}/dist/win64/cmake/
                 DESTINATION cmake)
     endif()
 

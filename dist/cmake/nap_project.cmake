@@ -128,8 +128,9 @@ if(APPLE)
                       COMMAND open $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
                       DEPENDS ${PROJECT_NAME})
 elseif(WIN32)
+    # TODO Haven't managed to get this to launch without blocking in Visual Studio yet (start /b doesn't work).  Maybe not the right way to go anyway.
     add_custom_target("LAUNCH_NAPKIN" 
-                      COMMAND start /b $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
+                      COMMAND $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
                       DEPENDS ${PROJECT_NAME})
 endif()
 
