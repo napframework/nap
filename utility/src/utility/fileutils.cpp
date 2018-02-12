@@ -60,7 +60,7 @@ namespace nap
 				if (!strcmp(ent->d_name, ".")) continue;
 				if (!strcmp(ent->d_name, "..")) continue;
 
-				char buffer[255];
+				char buffer[512];
 				sprintf(buffer, "%s/%s", directory, ent->d_name);
 				outFilenames.push_back(buffer);
 			}
