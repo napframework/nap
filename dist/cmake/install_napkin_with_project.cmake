@@ -1,4 +1,5 @@
-set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath)
+set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo)
+
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport)
 
 if(WIN32 OR APPLE)
@@ -55,6 +56,11 @@ if(WIN32)
                                    ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll
                                    $<TARGET_FILE_DIR:${PROJECT_NAME}>
                            )
+
+        # Run any moduleExtra to install module dependent DLLs
+        if(EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
+            include(${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
+        endif()
     endforeach()
 elseif(APPLE)
     # Install Qt plugins from thirdparty

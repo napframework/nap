@@ -23,10 +23,11 @@ if __name__ == '__main__':
     parser.add_argument("PROJECT_PATH", type=str, help="Path to the project")
     args = parser.parse_args()
 
-    project_name = os.path.basename(args.PROJECT_PATH)
+    project_name = os.path.basename(args.PROJECT_PATH.strip('\\'))
     nap_root = os.path.abspath(os.path.join(args.PROJECT_PATH, os.pardir, os.pardir))
+    script_path = os.path.join(nap_root, 'tools', 'packageProject.py')
 
-    call(["/usr/bin/env python %s/tools/packageProject.py %s" % (nap_root, project_name)], shell=True)
+    call(['python', script_path, project_name], shell=True)
 
     print("Press key to close...")
 
