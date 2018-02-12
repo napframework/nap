@@ -50,7 +50,7 @@ namespace nap
 		if (mTransferring)
 		{
 #ifndef _DEBUG 
-			activeTarget->getColorTexture().endGetData();
+			activeTarget->getColorTexture().endGetData(mBitmap);
 #else
 			activeTarget->getColorTexture().getData(mBitmap);
 #endif // DEBUG
