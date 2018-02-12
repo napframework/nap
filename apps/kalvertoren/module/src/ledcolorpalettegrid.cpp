@@ -4,26 +4,30 @@
 #include <bitmaputils.h>
 #include <fstream>
 
+RTTI_BEGIN_CLASS(nap::WeekVariations)
+	RTTI_PROPERTY("Variations", &nap::WeekVariations::mVariations, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::WeekColors)
 	RTTI_PROPERTY("Palette",		&nap::WeekColors::mPalette,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Variations",		&nap::WeekColors::mVariations,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Variations",		&nap::WeekColors::mVariations,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::LedColorPaletteGrid run time class definition 
 RTTI_BEGIN_CLASS(nap::LedColorPaletteGrid)
-	RTTI_PROPERTY("GridPath",		&nap::LedColorPaletteGrid::mGridImagePath,		nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
+	RTTI_PROPERTY_FILELINK("GridPath",		&nap::LedColorPaletteGrid::mGridImagePath,		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
 	RTTI_PROPERTY("GridSize",		&nap::LedColorPaletteGrid::mGridSize,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("GridColorsPath", &nap::LedColorPaletteGrid::mGridLedColorsPath,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
+	RTTI_PROPERTY_FILELINK("GridColorsPath", &nap::LedColorPaletteGrid::mGridLedColorsPath,	nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
 	RTTI_PROPERTY("WeekColors",		&nap::LedColorPaletteGrid::mWeekColors,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 
 RTTI_DEFINE_BASE(std::vector<int>)
-RTTI_BEGIN_STRUCT(std::vector<int>)
+	RTTI_BEGIN_STRUCT(std::vector<int>)
 RTTI_END_STRUCT
 
 RTTI_DEFINE_BASE(int)
-RTTI_BEGIN_STRUCT(int)
+	RTTI_BEGIN_STRUCT(int)
 RTTI_END_STRUCT
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,10 +60,10 @@ namespace nap
 		}
 
 		// Verify that all variations are valid. They must have the same size as the palette and each element of a variation must be in range
-		for (int index = 0; index < mVariations.size(); ++index)
+		for (int index = 0; index < mVariations->getCount(); ++index)
 		{			
 			// Verify variation elements are in range
-			const std::vector<int>& variation = mVariations[index];
+			const std::vector<int>& variation = mVariations->mVariations[index];
 			for (int variation_index = 0; variation_index < variation.size(); ++variation_index)
 			{
 				int palette_index = variation[variation_index];
@@ -74,7 +78,7 @@ namespace nap
 
 	std::vector<WeekColors::GridColorIndex> WeekColors::getColors(int variationIndex) const
 	{
-		assert(variationIndex == -1 || (variationIndex >= 0 && variationIndex < mVariations.size()));
+		assert(variationIndex == -1 || (variationIndex >= 0 && variationIndex < mVariations->getCount()));
 
 		// Return base palette if -1 is specified
 		if (variationIndex == -1)
@@ -82,7 +86,7 @@ namespace nap
 
 		// Otherwise shuffle the base palette
 		std::vector<GridColorIndex> result;
-		for (int palette_index : mVariations[variationIndex])
+		for (int palette_index : mVariations->mVariations[variationIndex])
 			result.push_back(mPaletteColors[palette_index]);
 
 		return result;

@@ -3,7 +3,7 @@
 #include "fbxconverter.h"
 
 RTTI_BEGIN_CLASS(nap::MeshFromFile)
-	RTTI_PROPERTY("Path",	&nap::MeshFromFile::mPath,	nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY_FILELINK("Path", &nap::MeshFromFile::mPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh)
 	RTTI_PROPERTY("Usage",	&nap::MeshFromFile::mUsage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

@@ -6,7 +6,7 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::ImageFromFile)
-	RTTI_PROPERTY("ImagePath", 			&nap::ImageFromFile::mImagePath, 		nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY_FILELINK("ImagePath", &nap::ImageFromFile::mImagePath, 		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
 	RTTI_PROPERTY("Compressed",			&nap::ImageFromFile::mCompressed,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

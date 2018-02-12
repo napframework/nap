@@ -64,7 +64,7 @@ TEST_CASE("Document Signals", TAG_NAPKIN)
 TEST_CASE("Array Value Elements", TAG_NAPKIN)
 {
 	auto doc = napkin::AppContext::get().newDocument();
-	auto colors = doc->addObject<nap::WeekColors>();
+	auto colors = doc->addObject<nap::WeekVariations>();
 	REQUIRE(colors  != nullptr);
 
 	// Check invalid nonexistent path
@@ -108,7 +108,7 @@ TEST_CASE("Array Value Elements", TAG_NAPKIN)
 TEST_CASE("Array add weekcolor", TAG_NAPKIN)
 {
 	auto doc = napkin::AppContext::get().newDocument();
-	auto* col = doc->addObject<nap::WeekColors>();
+	auto* col = doc->addObject<nap::WeekVariations>();
 	REQUIRE(col != nullptr);
 
 	napkin::PropertyPath variations(*col, "Variations");
@@ -409,3 +409,37 @@ TEST_CASE("Commands", TAG_NAPKIN)
 //	ctx.executeCommand(new AddEntityToSceneCommand())
 //	ctx.executeCommand(new ArrayAddValueCommand());
 }
+
+TEST_CASE("File Extensions", TAG_NAPKIN)
+{
+    napkin::ResourceFactory fact = napkin::AppContext::get().getResourceFactory();
+    {
+        QStringList imageExtensions;
+        for (const auto& e : fact.getImageExtensions())
+            imageExtensions << e;
+		REQUIRE(imageExtensions.size() > 0);
+
+        auto imageExtString = "Image Extensions: " + imageExtensions.join(", ");
+        REQUIRE(!imageExtString.isEmpty());
+
+		nap::Logger::debug(imageExtString.toStdString());
+    }
+    {
+        QStringList videoExtensions;
+        for (const auto& e : fact.getVideoExtensions())
+            videoExtensions << e;
+		REQUIRE(videoExtensions.size() > 0);
+
+        auto videoExtString = "Video Extensions: " + videoExtensions.join(", ");
+        REQUIRE(!videoExtString.isEmpty());
+
+        nap::Logger::debug(videoExtString.toStdString());
+    }
+}
+
+//TEST_CASE("Resource Management", TAG_NAPKIN)
+//{
+//	auto doc = napkin::AppContext::get().loadDocument("data/kalvertoren.json");
+//	REQUIRE(doc != nullptr);
+//
+//}

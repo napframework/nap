@@ -37,9 +37,8 @@ namespace nap
 		// Copy if we want to show index colors
 		mShowIndexColors = getComponent<ApplyCompositionComponent>()->mShowIndexColors;
 
-		// Copy intensity
+		// Copy colors and intensity
 		mIntensity = getComponent<ApplyCompositionComponent>()->mIntensity;
-
 		return true;
 	}
 
@@ -75,7 +74,6 @@ namespace nap
 		// Make pixel we use to query data from bitmap
 		auto source_pixel = mBitmap.makePixel();
 		assert(mBitmap.mType == Bitmap::EDataType::BYTE);
-		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
 
 		TriangleIterator triangle_iterator(mesh.getMeshInstance());
 		while (!triangle_iterator.isDone())
@@ -110,18 +108,18 @@ namespace nap
 
 			// Set the color data used to display the mesh in the viewport
 			glm::vec4 mesh_color = glm::vec4(
-				rgb_colorf.getRed()	  * mesh_intensity, 
-				rgb_colorf.getGreen() * mesh_intensity, 
-				rgb_colorf.getBlue()  * mesh_intensity, 
+				rgb_colorf.getRed()	  * mIntensity,
+				rgb_colorf.getGreen() * mIntensity,
+				rgb_colorf.getBlue()  * mIntensity,
 				1.0f);
 			
 			triangle.setVertexData(color_data, mesh_color);
 
 			// Set the color data that is used to send over artnet
 			glm::vec4 artnet_color = glm::vec4(
-				led_colorf.getRed()	  * mesh_intensity, 
-				led_colorf.getGreen() * mesh_intensity, 
-				led_colorf.getBlue()  * mesh_intensity, 
+				led_colorf.getRed()	  * mIntensity, 
+				led_colorf.getGreen() * mIntensity,
+				led_colorf.getBlue()  * mIntensity,
 				led_colorf.getAlpha() * mIntensity);
 			
 			triangle.setVertexData(artnet_data, artnet_color);

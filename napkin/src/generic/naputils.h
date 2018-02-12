@@ -1,9 +1,12 @@
 #pragma once
 
 #include <QStandardItem>
+#include <QFileInfo>
+
 #include <rtti/rtti.h>
 #include <rtti/rttideserializeresult.h>
 #include <rtti/rttiutilities.h>
+
 #include "propertypath.h"
 #include "qtutils.h"
 
@@ -93,5 +96,31 @@ namespace napkin
 	 * Given a Pointer Property (i like this name), set its pointee using a string.
 	 */
 	bool setPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path, const std::string& target);
+
+	/**
+	 * Get the reference directory for resources.
+	 * @param reference The path to the reference directory or file.
+	 * 	If nothing is provided, this will fall back to the currently opened document
+	 * @return An absolute path to the reference directory.
+	 */
+	QString getResourceReferencePath(const QString& reference = QString());
+
+	/**
+	 * Resolve a resource path to an absolute path
+	 * @param relPath The file path relative to the JSON Document
+	 * @param anchod The file the given relative path is relative to.
+	 * 	If not provided, assume the anchor is the currently opened document.
+	 * @return An absolute path to the provided filename
+	 */
+	QString getAbsoluteResourcePath(const QString& relPath, const QString& reference = QString());
+
+	/**
+	 * Make a file path relative to the given anchor path.
+	 * @param absPath The absolute path to make relative
+	 * @param reference The file path to make the given path relative to.
+	 * 	If not provided, assume the anchor is the currently opened document.
+	 * @return The file path relative to the given anchor.
+	 */
+	QString getRelativeResourcePath(const QString& absPath, const QString& reference = QString());
 
 }
