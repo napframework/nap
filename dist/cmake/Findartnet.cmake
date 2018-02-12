@@ -20,12 +20,12 @@ elseif(APPLE)
 else()
     find_path(
         ARTNET_DIR
-        NAMES linux/bin/libartnet.so
+        NAMES linux/bin/libartnet.so.1
         HINTS ${THIRDPARTY_DIR}/libartnet
     )   
     set(ARTNET_LIBS_DIR ${ARTNET_DIR}/linux/bin)
-	set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so)
-	set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS_DIR}/libartnet.so)
+	set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so.1)
+	set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS_DIR}/libartnet.so.1)
 endif()
 
 mark_as_advanced(ARTNET_LIBS_DIR)

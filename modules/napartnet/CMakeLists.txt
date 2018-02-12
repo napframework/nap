@@ -73,5 +73,10 @@ elseif(APPLE)
                                   ERROR_QUIET
                                   )")
 else()
+    # Add libartnet to module RPATH
+    get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../../../thirdparty/libartnet/linux/bin")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
+
     install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/linux/bin")
 endif()

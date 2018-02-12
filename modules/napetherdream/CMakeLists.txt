@@ -34,7 +34,7 @@ endif()
 # Package into platform release
 package_module()
 
-# Package libartnet into platform release
+# Package etherdreamlib into platform release
 if(WIN32)
     install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/msvc/bin")
     install(FILES $<TARGET_FILE_DIR:etherdreamlib>/EtherDream.lib DESTINATION "thirdparty/etherdream/msvc/bin")
@@ -72,5 +72,10 @@ elseif(APPLE)
                                   ERROR_QUIET
                                   )")
 else()
-    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/linux/bin")    
+    # Add Etherdream to module RPATH
+    get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../../../thirdparty/etherdream/linux/bin")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
+
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/linux/bin")
 endif()
