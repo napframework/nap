@@ -15,6 +15,12 @@ namespace napkin
 		PropertyPath() {}
 
 		/**
+		 * Copy constructor
+		 * @param other
+		 */
+		PropertyPath(const PropertyPath& other);
+
+		/**
 		 * @param obj The object this property is on
 		 * @param path The path to the property
 		 */
