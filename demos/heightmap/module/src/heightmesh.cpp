@@ -46,15 +46,15 @@ namespace nap
 		std::vector<glm::vec3>& pos_data = pos_attr.getData();
 		std::vector<glm::vec3>& nor_data = nor_attr.getData();
 
-		// Get the pixmap we want to get the color value from @uv
-		const nap::Pixmap& pixmap = mHeightmap->getPixmap();
-		float width = static_cast<float>(pixmap.getWidth() - 1);
-		float heigh = static_cast<float>(pixmap.getHeight() - 1);
+		// Get the bitmap we want to get the color value from @uv
+		const nap::Bitmap& bitmap = mHeightmap->getBitmap();
+		float width = static_cast<float>(bitmap.getWidth() - 1);
+		float heigh = static_cast<float>(bitmap.getHeight() - 1);
 
 		int vert_count = mesh.getNumVertices();
 
-		// Create the pixel that we need for sampling the pixmap data
-		std::unique_ptr<BaseColor> pixel = pixmap.makePixel();
+		// Create the pixel that we need for sampling the bitmap data
+		std::unique_ptr<BaseColor> pixel = bitmap.makePixel();
 
 		// This will hold the pixel data as float values
 		RColorFloat target_pixel;
@@ -75,7 +75,7 @@ namespace nap
 			int pixel_y = static_cast<int>(uvs.y * heigh);
 
 			// Get our color at the x, y coordinates
-			pixmap.getPixel(pixel_x, pixel_y, *pixel);
+			bitmap.getPixel(pixel_x, pixel_y, *pixel);
 
 			// Convert
 			converter(*pixel, target_pixel, 0);

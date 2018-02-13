@@ -1,11 +1,13 @@
 #include "naputils.h"
 
 #include <QDir>
+#include <QUrl>
 
 #include <component.h>
 #include <nap/logger.h>
 #include <entity.h>
 
+#include "napkinglobals.h"
 #include "appcontext.h"
 
 using namespace nap::rtti;
@@ -152,11 +154,6 @@ nap::rtti::RTTIObject* napkin::getPointee(const PropertyPath& path)
 	return pointee;
 }
 
-bool napkin::setPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path, const std::string& target)
-{
-	return false;
-}
-
 QString napkin::getAbsoluteResourcePath(const QString& relPath, const QString& reference)
 {
 	auto ref = getResourceReferencePath(reference);
@@ -173,7 +170,10 @@ QString napkin::getResourceReferencePath(const QString& reference)
 {
 	QString ref = reference;
 	if (reference.isEmpty())
-		ref = AppContext::get().getDocument()->getCurrentFilename();
+	{
+		auto reffile = AppContext::get().getDocument()->getCurrentFilename();
+		ref = QFileInfo(reffile).path();
+	}
 
 	QFileInfo refinfo(ref);
 	if (refinfo.isFile())
@@ -181,4 +181,27 @@ QString napkin::getResourceReferencePath(const QString& reference)
 
 	return ref;
 }
+
+std::string napkin::toLocalURI(const std::string& filename)
+{
+
+	return QUrl::fromLocalFile(QString::fromStdString(filename)).toString().toStdString();
+}
+
+std::string napkin::fromLocalURI(const std::string& fileuri)
+{
+	return QUrl(QString::fromStdString(fileuri)).toLocalFile().toStdString();
+}
+
+
+std::string napkin::toURI(const nap::rtti::RTTIObject& object)
+{
+	return NAP_URI_PREFIX + "://" + object.mID;
+}
+
+std::string napkin::toURI(const napkin::PropertyPath& path)
+{
+	return NAP_URI_PREFIX + "://" + path.toString();
+}
+
 

@@ -59,5 +59,5 @@ add_custom_command(TARGET ${PROJECT_NAME}_autorun
                    COMMENT "Run tests"
                    POST_BUILD
                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                   COMMAND $<TARGET_FILE:${PROJECT_NAME}>
+                   COMMAND "$<TARGET_FILE:${PROJECT_NAME}>"
                    )

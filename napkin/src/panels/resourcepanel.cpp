@@ -28,7 +28,7 @@ void napkin::ResourceModel::refresh()
 	for (nap::rtti::RTTIObject* ob : topLevelObjects(AppContext::get().getDocument()->getObjectPointers()))
 	{
 		auto typeItem = new RTTITypeItem(ob->get_type());
-
+		
 		// All objects are in this flat list, filter here
 		if (ob->get_type().is_derived_from<nap::Entity>())
 		{
@@ -232,7 +232,7 @@ void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selec
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *object_to_select));
 }
 
-void ResourcePanel::selectObjects(const std::vector<nap::rtti::RTTIObject*> obj)
+void ResourcePanel::selectObjects(const QList<nap::rtti::RTTIObject*>& obj)
 {
 	if (obj.size() > 0)
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]));
@@ -254,8 +254,8 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 	if (resolvedPath.getProperty().get_name() != nap::rtti::sIDPropertyName)
 		return;
 
-	auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, path.object());
+	auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, path.getObject());
 	if (objectItem != nullptr)
-		objectItem->setText(QString::fromStdString(path.object().mID));
+		objectItem->setText(QString::fromStdString(path.getObject().mID));
 }
 

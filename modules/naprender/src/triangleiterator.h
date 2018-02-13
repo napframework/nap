@@ -20,7 +20,7 @@ namespace nap
 	{
 	public:
 		TriangleData(const T& first, const T& second, const T& third) : 
-			mData( { first, second, third } )
+        mData({{first, second, third }} )
 		{ }
 
 		TriangleData() = default;

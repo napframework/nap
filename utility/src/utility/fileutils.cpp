@@ -255,7 +255,7 @@ namespace nap
 		std::string getExecutablePath()
 		{
 			std::string out_path;
-			unsigned int bufferSize = 512;
+			unsigned int bufferSize = MAX_PATH_SIZE;
 			std::vector<char> buffer(bufferSize + 1);
 
 #if defined(_WIN32)
