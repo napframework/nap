@@ -22,12 +22,13 @@ napkin::ResourceFactory::ResourceFactory()
 	};
 
 	mFileTypes = {
-			{EPropertyFileType::Image,      "Image Files",      getImageExtensions()},
-			{EPropertyFileType::FragShader, "Fragment Shaders", {"frag"}},
-			{EPropertyFileType::VertShader, "Vertex Shaders",   {"vert"}},
-			{EPropertyFileType::Python,     "Python Files",     {"py"}},
-            {EPropertyFileType::Mesh,       "NAP Mesh Files",   {"mesh"}},
-            {EPropertyFileType::Video,      "Video Files",      getVideoExtensions()},
+			{EPropertyFileType::Image,			"Image Files",      getImageExtensions()},
+			{EPropertyFileType::FragShader,		"Fragment Shaders", {"frag"}},
+			{EPropertyFileType::VertShader,		"Vertex Shaders",   {"vert"}},
+			{EPropertyFileType::Python,			"Python Files",     {"py"}},
+            {EPropertyFileType::Mesh,			"NAP Mesh Files",   {"mesh"}},
+            {EPropertyFileType::Video,			"Video Files",      getVideoExtensions()},
+			{EPropertyFileType::ImageSequence,	"Image Sequence",	getImageExtensions()}
 	};
 }
 
