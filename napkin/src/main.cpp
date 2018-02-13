@@ -1,7 +1,8 @@
 
 #include "generic/filtertreeview.h"
 #include "mainwindow.h"
-#include <QApplication>
+
+#include <QFontDatabase>
 
 using namespace napkin;
 
@@ -19,5 +20,8 @@ int main(int argc, char* argv[])
 	MainWindow w;
 	w.show();
 
-	return app.exec();
+	int re = app.exec();
+	QFontDatabase::removeAllApplicationFonts();
+
+	return re;
 }

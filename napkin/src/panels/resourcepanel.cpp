@@ -28,7 +28,7 @@ void napkin::ResourceModel::refresh()
 	for (nap::rtti::RTTIObject* ob : topLevelObjects(AppContext::get().getDocument()->getObjectPointers()))
 	{
 		auto typeItem = new RTTITypeItem(ob->get_type());
-
+		
 		// All objects are in this flat list, filter here
 		if (ob->get_type().is_derived_from<nap::Entity>())
 		{
