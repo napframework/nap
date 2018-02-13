@@ -106,9 +106,6 @@ void AddObjectCommand::redo()
 
 	// Remember for undo
 	mObjectName = object->mID;
-
-	// Notify
-	AppContext::get().getDocument()->objectAdded(*object, true);
 }
 void AddObjectCommand::undo()
 {
