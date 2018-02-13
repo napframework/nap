@@ -288,13 +288,19 @@ macro(package_project_into_release DEST_DIR)
             PATTERN "dist" EXCLUDE)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/CMakeLists.txt DESTINATION ${DEST_DIR})
 
+    # Package any projectmodule cmake files
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt DESTINATION ${DEST_DIR}/module)
     endif()
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/moduleExtra.cmake)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/moduleExtra.cmake DESTINATION ${DEST_DIR}/module)
+    endif()   
 
+    # Package any project extra cmake
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/projectExtra.cmake)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/projectExtra.cmake DESTINATION ${DEST_DIR})
     endif()
 
+    # Package our refresh & package shortcuts into the project directory
     package_project_dir_shortcuts(${DEST_DIR})
 endmacro()
