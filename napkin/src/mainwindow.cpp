@@ -26,6 +26,10 @@ void MainWindow::showEvent(QShowEvent* event)
 {
 	BaseWindow::showEvent(event);
 	AppContext::get().restoreUI();
+
+	nap::Logger::fine("This is a very fine message indeed");
+	nap::Logger::warn("Hey, watch it, this is a warning!");
+	nap::Logger::fatal("FATAL! You can safely panic now nap://Week48@mID");
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)

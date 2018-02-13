@@ -154,7 +154,11 @@ void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, 
 	layout.addWidget(&buttonBox);
 
 	dialog.exec();
+}
 
-
+void napkin::revealInFileBrowser(const QString& filename)
+{
+	// TODO: Reveal files
+	nap::Logger::fatal("Revealing files not supported yet: %s", filename.toStdString().c_str());
 }
 

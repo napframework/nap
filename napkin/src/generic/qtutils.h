@@ -109,5 +109,11 @@ namespace napkin
 		return QMetaEnum::fromType<QEnum>().valueToKey(value);
 	}
 
+	/**
+	 * Reveal the given file in Explorer, Finder, Files or whatever the OS' file browser is.
+	 * @param filename The file to show (not open)
+	 */
+	void revealInFileBrowser(const QString& filename);
+
 }
 

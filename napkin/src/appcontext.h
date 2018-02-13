@@ -136,6 +136,12 @@ namespace napkin
 		 */
 		QMainWindow* getMainWindow() const;
 
+		/**
+		 * Take an URI for file paths or object/property links and handle accordingly.
+		 * @param uri The URI to handle, can be a string like 'file://something' for example
+		 */
+		void handleURI(const QString& uri);
+
 	Q_SIGNALS:
 		/**
 		 * Qt Signal

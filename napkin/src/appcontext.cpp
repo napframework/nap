@@ -47,8 +47,7 @@ Document* AppContext::newDocument()
 
 Document* AppContext::loadDocument(const QString& filename)
 {
-	auto abspath = getAbsolutePath(filename.toStdString());
-	nap::Logger::info("Loading '%s'", abspath.c_str());
+	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
 
 	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
 
@@ -166,6 +165,40 @@ QMainWindow* AppContext::getMainWindow() const
 	return nullptr;
 }
 
+
+void AppContext::handleURI(const QString& uri)
+{
+	// Match object
+	QRegularExpression objectLink(QString("%1:\\/\\/([^@]+)").arg(QString::fromStdString(NAP_URI_PREFIX)));
+	auto match = objectLink.match(uri);
+	if (match.hasMatch())
+	{
+		auto objname = match.captured(1);
+		auto obj = getDocument()->getObject(objname.toStdString());
+		if (obj == nullptr)
+			return;
+		selectionChanged({obj});
+
+		// Match property
+		QRegularExpression proplink(QString("%1:\\/\\/([^@]+)@(.+)").arg(QString::fromStdString(NAP_URI_PREFIX)));
+		match = proplink.match(uri);
+		if (match.hasMatch())
+		{
+			auto proppath = match.captured(2);
+			PropertyPath path(*obj, proppath.toStdString());
+			propertySelectionChanged(path);
+		}
+		return;
+	}
+
+	// File path
+	QRegularExpression filelink("file:\\/\\/(.+)");
+	match = filelink.match(uri);
+	if (match.hasMatch()) {
+		revealInFileBrowser(QString::fromStdString(fromLocalURI(uri.toStdString())));
+	}
+}
+
 nap::Core& AppContext::getCore()
 {
 	if (!mCoreInitialized)
@@ -193,4 +226,5 @@ void AppContext::onUndoIndexChanged()
 {
 	documentChanged(mDocument.get());
 }
+
 
