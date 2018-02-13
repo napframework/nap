@@ -451,6 +451,8 @@ TEST_CASE("File Extensions", TAG_NAPKIN)
 
 TEST_CASE("Resource Management", TAG_NAPKIN)
 {
+	// NOTE: Some conversion to std::string to let Catch print useful debug info
+
 	// Must start QApplication in order to have an event loop for signals?
 	int argc = 1;
 	char* argv[] = {"arg!"};
@@ -460,13 +462,9 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	QString jsonFile = "objects.json";
 	QString shaderFile = "shaders/debug.frag";
 	QString dataDir = ".";
-	// Load the json file so we have reference path for resources
 
-	QString res = getResource(jsonFile);
-
-	// Something fishy here, shaderFile's QString data pointer changes after this call (if shaderFile is a QString)
-	auto doc = napkin::AppContext::get().loadDocument(res);
-	REQUIRE(doc != nullptr);
+	// Just set the filename for reference purposes
+	napkin::AppContext::get().getDocument()->setFilename(getResource(jsonFile));
 
 	// Ensure shader file exists
 	auto absJsonFilePath = QFileInfo(getResource(jsonFile)).absoluteFilePath();
@@ -482,19 +480,19 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 
 	// Test our local resource function with napkin's
 	auto basedir = QFileInfo(napkin::getResourceReferencePath()).absoluteFilePath();
-	REQUIRE(basedir == resourcedir);
+	REQUIRE(basedir.toStdString() == resourcedir.toStdString());
 
 	// Check relative path
 	auto relJsonPath = napkin::getRelativeResourcePath(absJsonFilePath);
-	REQUIRE(relJsonPath == jsonFile);
+	REQUIRE(relJsonPath.toStdString() == jsonFile.toStdString());
 
 	// Check relative path
 	auto relShaderPath = napkin::getRelativeResourcePath(absShaderFilePath);
-	REQUIRE(relShaderPath == shaderFile);
+	REQUIRE(relShaderPath.toStdString() == shaderFile.toStdString());
 
 	// Check absolute path
 	auto absShaderPath = napkin::getAbsoluteResourcePath(relShaderPath);
-	REQUIRE(absShaderPath == absShaderFilePath);
+	REQUIRE(absShaderPath.toStdString() == absShaderFilePath.toStdString());
 
 	// Check if dir contains path
 	REQUIRE(napkin::directoryContains(resourcedir, absShaderPath));
