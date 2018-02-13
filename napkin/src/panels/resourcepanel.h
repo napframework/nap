@@ -44,11 +44,10 @@ namespace napkin
 		/**
 		 * Set the current selection of the treeview to the given objects
 		 */
-		void selectObjects(const std::vector<nap::rtti::RTTIObject*> selection);
+		void selectObjects(const QList<nap::rtti::RTTIObject*>& selection);
 
 	Q_SIGNALS:
-
-		void selectionChanged(QList<nap::rtti::RTTIObject*>& obj);
+		void selectionChanged(QList<nap::rtti::RTTIObject*> obj);
 
 	private:
 		/**

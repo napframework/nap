@@ -6,19 +6,30 @@ using namespace napkin;
 
 void MainWindow::bindSignals()
 {
-	connect(&AppContext::get(), &AppContext::documentOpened, [this](const QString& filename) { onDocumentChanged(); });
-	connect(&AppContext::get(), &AppContext::documentChanged, [this]() { onDocumentChanged(); });
+	connect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	connect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
-
-	connect(&mResourcePanel, &ResourcePanel::selectionChanged, [&](QList<nap::rtti::RTTIObject*>& objects) {
-		mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
-	});
 }
+
+
+void MainWindow::unbindSignals()
+{
+	disconnect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	disconnect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
+	disconnect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+}
+
 
 void MainWindow::showEvent(QShowEvent* event)
 {
 	BaseWindow::showEvent(event);
 	AppContext::get().restoreUI();
+
+	nap::Logger::fine("This is a very fine message indeed");
+	nap::Logger::warn("Hey, watch it, this is a warning!");
+	nap::Logger::fatal("FATAL! You can safely panic now nap://Week48@mID");
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -40,6 +51,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 			return;
 		}
 	}
+	unbindSignals();
 	BaseWindow::closeEvent(event);
 }
 
@@ -115,5 +127,15 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::onResourceSelectionChanged(QList<nap::rtti::RTTIObject*> objects)
+{
+	mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
+}
+
+void MainWindow::onDocumentOpened(const QString filename)
+{
+	onDocumentChanged();
 }
 
