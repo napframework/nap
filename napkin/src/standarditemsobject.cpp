@@ -36,6 +36,18 @@ void napkin::ObjectItem::setData(const QVariant& value, int role)
 	if (role == Qt::EditRole)
 	{
 		PropertyPath prop_path(*mObject, nap::rtti::sIDPropertyName);
+
+		// Ensure filename exists
+		if (nap::rtti::hasFlag(prop_path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
+		{
+			auto filename = getAbsoluteResourcePath(value.toString());
+			if (!QFileInfo::exists(filename))
+			{
+				nap::Logger::fatal("File not found: %s", filename.toStdString().c_str());
+				return;
+			}
+		}
+
 		AppContext::get().executeCommand(new SetValueCommand(prop_path, value.toString()));
 		return;
 	}

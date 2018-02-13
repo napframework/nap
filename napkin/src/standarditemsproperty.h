@@ -24,9 +24,9 @@ namespace napkin
 													rttr::variant value);
 
 	/**
-	 * The base for items that represent a nap::rtti::RTTIObject
+	 * The base for items that represent a property path
 	 */
-	class BaseRTTIPathItem : public QStandardItem
+	class PropertyPathItem : public QStandardItem
 	{
 	public:
 		/**
@@ -41,7 +41,7 @@ namespace napkin
 		 * @param object The object to keep track of.
 		 * @param path The path to the property on the object
 		 */
-		BaseRTTIPathItem(const QString& name, const PropertyPath& path);
+		PropertyPathItem(const QString& name, const PropertyPath& path);
 
 		/**
 		 * The path held by this item
@@ -55,7 +55,7 @@ namespace napkin
 	/**
 	 * This item shows the name of an object's property
 	 */
-	class PropertyItem : public BaseRTTIPathItem
+	class PropertyItem : public PropertyPathItem
 	{
 	public:
 		/**
@@ -76,7 +76,7 @@ namespace napkin
 	/**
 	 * This property is has child properties
 	 */
-	class CompoundPropertyItem : public BaseRTTIPathItem
+	class CompoundPropertyItem : public PropertyPathItem
 	{
 	public:
 		/**
@@ -103,7 +103,7 @@ namespace napkin
 	/**
 	 * The property is an editable list of child properties
 	 */
-	class ArrayPropertyItem : public BaseRTTIPathItem
+	class ArrayPropertyItem : public PropertyPathItem
 	{
 	public:
 		/**
@@ -138,7 +138,7 @@ namespace napkin
 	/**
 	 * This item shows an object pointer
 	 */
-	class PointerItem : public BaseRTTIPathItem
+	class PointerItem : public PropertyPathItem
 	{
 	public:
 		/**
@@ -194,7 +194,7 @@ namespace napkin
 	/**
 	 * Creates children, data under the embedded pointer
 	 */
-	class EmbeddedPointerItem : public BaseRTTIPathItem
+	class EmbeddedPointerItem : public PropertyPathItem
 	{
 	public:
 		/**
@@ -221,7 +221,7 @@ namespace napkin
 	/**
 	 * This item displays the value of an object property and allows the user to change it
 	 */
-	class PropertyValueItem : public BaseRTTIPathItem
+	class PropertyValueItem : public PropertyPathItem
 	{
 	public:
 		/**

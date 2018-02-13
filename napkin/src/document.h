@@ -64,7 +64,7 @@ namespace napkin
 		 * Get an object by name and type
 		 */
 		template<typename T>
-		T* getObjectT(const std::string& name) { return rtti_cast<T>(getObject(name)); }
+		T* getObject(const std::string& name) { return rtti_cast<T>(getObject(name)); }
 
 		/**
 		 * Retrieve the parent of the specified Entity
@@ -122,6 +122,13 @@ namespace napkin
 		 * If the object with the specified name was found, nuke it from orbit.
 		 */
 		void removeObject(const std::string& name);
+
+		/**
+		 * Retrieve all properties referring to the given object.
+		 * @param obj The object that is being referred to.
+		 * @return A list of properties pointing to the given object.
+		 */
+		QList<PropertyPath> getPointersTo(const nap::rtti::RTTIObject& obj);
 
 		/**
 		 * Add an element to an array

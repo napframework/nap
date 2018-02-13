@@ -16,7 +16,7 @@
 		},
 			
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "LabelImage",
 			"ImagePath" : "label.jpg",
 			"Parameters" : {
@@ -29,7 +29,7 @@
 		},
 
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "CoverImage",
 			"ImagePath" : "cover.png",
 			"Parameters" : {
@@ -42,7 +42,7 @@
 		},
 
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "BackgroundImage",
 			"ImagePath" : "background.jpg",
 			"Parameters" : {
@@ -55,7 +55,7 @@
 		},
 
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "MaskImage",
 			"ImagePath" : "label_mask.jpg",
 			"Parameters" : {
@@ -68,7 +68,7 @@
 		},
 
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "GrooveNormalMap",
 			"ImagePath" : "grooves.png",
 			"Parameters" : {

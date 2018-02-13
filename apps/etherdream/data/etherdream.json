@@ -81,13 +81,13 @@
 		},
 
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "CanvasImage",
 			"ImagePath" : "laser_canvas.png"
 		},
 
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "ColorLookupImage",
 			"ImagePath" : "kleurencirkel.png"
 		},
@@ -348,7 +348,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "ColorTexture1",
 			"Width" : 1024,
 			"Height" : 1024,
@@ -356,7 +356,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "DepthTexture1",
 			"Width" : 1024,
 			"Height" : 1024,
@@ -364,7 +364,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "ColorTexture2",
 			"Width" : 1024,
 			"Height" : 1024,
@@ -372,7 +372,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "DepthTexture2",
 			"Width" : 1024,
 			"Height" : 1024,
@@ -380,7 +380,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "ColorTexture3",
 			"Width" : 1024,
 			"Height" : 1024,
@@ -388,7 +388,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "DepthTexture3",
 			"Width" : 1024,
 			"Height" : 1024,
@@ -396,7 +396,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "ColorTexture4",
 			"Width" : 1024,
 			"Height" : 1024,
@@ -404,7 +404,7 @@
 		},
 
 		{
-			"Type" : "nap::Texture2D",
+			"Type" : "nap::RenderTexture2D",
 			"mID" : "DepthTexture4",
 			"Width" : 1024,
 			"Height" : 1024,

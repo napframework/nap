@@ -35,9 +35,14 @@ namespace napkin
 
 	private:
 		/**
-		 * BInd signals
+		 * Bind signals
 		 */
 		void bindSignals();
+
+		/**
+		 * Disconnect signals
+		 */
+		void unbindSignals();
 
 		/**
 		 * Add all the docks/panels
@@ -55,10 +60,22 @@ namespace napkin
 		void updateWindowTitle();
 
 		/**
+		 * Called when a document is opened
+		 * @param filename The filename of the newly opened document
+		 */
+		void onDocumentOpened(const QString filename);
+
+		/**
 		 * Called when a file has been opened
 		 * @param filename The file that has been opened
 		 */
 		void onDocumentChanged();
+
+		/**
+		 * Called when the selection changes
+		 * @param objects The newly selected objects
+		 */
+		void onResourceSelectionChanged(QList<nap::rtti::RTTIObject*> objects);
 
 	private:
 		ResourcePanel mResourcePanel;	// ResourcePanel

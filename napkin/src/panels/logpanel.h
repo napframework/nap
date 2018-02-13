@@ -35,6 +35,7 @@ namespace napkin
 
 		int mMaxRows = 1000; // The maximum number of rows to show in the log
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &LogModel::napLogged };
+		QMap<nap::LogLevel, QString> mColors;
 	};
 
 	/**
@@ -42,10 +43,13 @@ namespace napkin
 	 */
 	class LogPanel : public QWidget
 	{
+		Q_OBJECT
 	public:
 		explicit LogPanel();
 
 	private:
+		void onDoubleClicked(const QModelIndex& index);
+
 		FilterTreeView mTreeView; // Treeview with log entries
 		LogModel mLogModel;		  // The model containing the log entries
 	};

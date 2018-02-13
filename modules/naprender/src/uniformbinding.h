@@ -5,7 +5,7 @@
 
 // Local Includes
 #include "uniforms.h"
-#include "image.h"
+#include "imagefromfile.h"
 
 namespace nap
 {

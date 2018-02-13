@@ -1125,7 +1125,7 @@
             "Children": []
         },
         {
-            "Type": "nap::Image",
+            "Type": "nap::ImageFromFile",
             "mID": "PaletteDebugImage",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
@@ -1139,7 +1139,7 @@
             "Compressed": false
         },
         {
-            "Type": "nap::Image",
+            "Type": "nap::ImageFromFile",
             "mID": "UVMap",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
@@ -1372,7 +1372,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Path": "index_map/index_map.png",
+            "ImagePath": "index_map/index_map.png",
             "ColorCount": 13
         },
         {
@@ -1809,7 +1809,7 @@
             "mFragShader": "shaders/vertexcolor.frag"
         },
         {
-            "Type": "nap::Texture2D",
+            "Type": "nap::RenderTexture2D",
             "mID": "CompositionDepthTextureA",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
@@ -1824,7 +1824,7 @@
             "Format": "Depth"
         },
         {
-            "Type": "nap::Texture2D",
+            "Type": "nap::RenderTexture2D",
             "mID": "CompositionDepthTextureB",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
@@ -1839,7 +1839,7 @@
             "Format": "Depth"
         },
         {
-            "Type": "nap::Texture2D",
+            "Type": "nap::RenderTexture2D",
             "mID": "CompositionTextureA",
             "Parameters": {
                 "MinFilter": "Linear",
@@ -1854,7 +1854,7 @@
             "Format": "RGB8"
         },
         {
-            "Type": "nap::Texture2D",
+            "Type": "nap::RenderTexture2D",
             "mID": "CompositionTextureB",
             "Parameters": {
                 "MinFilter": "Linear",

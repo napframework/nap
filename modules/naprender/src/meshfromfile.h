@@ -29,6 +29,7 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 		std::string		mPath;
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;
 
 	private:
 		std::unique_ptr<MeshInstance>		mMeshInstance;

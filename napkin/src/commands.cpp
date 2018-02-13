@@ -38,7 +38,7 @@ void SetValueCommand::redo()
 	if (mPath.getProperty().get_name() == nap::rtti::sIDPropertyName)
 	{
 		// Deal with object names separately
-		AppContext::get().getDocument()->setObjectName(mPath.object(), mNewValue.toString().toStdString());
+		AppContext::get().getDocument()->setObjectName(mPath.getObject(), mNewValue.toString().toStdString());
 	}
 	else
 	{
@@ -106,9 +106,6 @@ void AddObjectCommand::redo()
 
 	// Remember for undo
 	mObjectName = object->mID;
-
-	// Notify
-	AppContext::get().getDocument()->objectAdded(*object, true);
 }
 void AddObjectCommand::undo()
 {
@@ -146,9 +143,9 @@ void AddEntityToSceneCommand::undo()
 
 void AddEntityToSceneCommand::redo()
 {
-	auto scene = AppContext::get().getDocument()->getObjectT<nap::Scene>(mSceneID);
+	auto scene = AppContext::get().getDocument()->getObject<nap::Scene>(mSceneID);
 	assert(scene != nullptr);
-	auto entity = AppContext::get().getDocument()->getObjectT<nap::Entity>(mEntityID);
+	auto entity = AppContext::get().getDocument()->getObject<nap::Entity>(mEntityID);
 	assert(entity != nullptr);
 
 	nap::RootEntity rootEntity;
