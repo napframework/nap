@@ -46,7 +46,6 @@ Qt::DropActions napkin::InspectorModel::supportedDropActions() const
 }
 
 
-
 napkin::InspectorPanel::InspectorPanel()
 {
 	setLayout(&mLayout);
@@ -64,6 +63,9 @@ napkin::InspectorPanel::InspectorPanel()
 	connect(&AppContext::get(), &AppContext::propertyValueChanged,
 			this, &InspectorPanel::onPropertyValueChanged);
 
+	connect(&AppContext::get(), &AppContext::propertySelectionChanged,
+			this, &InspectorPanel::onPropertySelectionChanged);
+
 }
 
 void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
@@ -73,9 +75,11 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		return;
 
 	auto parent_item = item->parent();
-	if (parent_item != nullptr) {
+	if (parent_item != nullptr)
+	{
 		auto parent_array_item = dynamic_cast<ArrayPropertyItem*>(parent_item);
-		if (parent_array_item != nullptr) {
+		if (parent_array_item != nullptr)
+		{
 			PropertyPath parent_property = parent_array_item->getPath();
 			long element_index = item->row();
 			menu.addAction("Remove Element", [parent_property, element_index]()
@@ -91,8 +95,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		nap::rtti::RTTIObject* pointee = getPointee(pointer_item->getPath());
 		QAction* action = menu.addAction("Select Resource", [pointer_item, pointee]
 		{
-			std::vector<nap::rtti::RTTIObject*> objects;
-			objects.emplace_back(pointee);
+			QList<nap::rtti::RTTIObject*> objects = {pointee};
 			AppContext::get().selectionChanged(objects);
 		});
 		action->setEnabled(pointee != nullptr);
@@ -116,8 +119,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 			});
 
-		}
-		else
+		} else
 		{
 			auto element_type = array_path.getArrayElementType();
 			menu.addAction(QString("Add %1").arg(QString::fromUtf8(element_type.get_name().data())), [array_path]()
@@ -149,6 +151,23 @@ void napkin::InspectorPanel::rebuild()
 	mTreeView.getTreeView().expandAll();
 }
 
+void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
+{
+	QList<nap::rtti::RTTIObject*> objects = {&prop.getObject()};
+	AppContext::get().selectionChanged(objects);
+
+
+
+	auto pathItem = findItemInModel(mModel, [prop](QStandardItem* item)
+	{
+		auto pitem = dynamic_cast<PropertyPathItem*>(item);
+		if (pitem == nullptr)
+			return false;
+		return pitem->getPath() == prop;
+	});
+
+	mTreeView.selectAndReveal(pathItem);
+}
 
 
 void napkin::InspectorModel::populateItems()
@@ -237,7 +256,7 @@ QMimeData* napkin::InspectorModel::mimeData(const QModelIndexList& indexes) cons
 	// TODO: Handle dragging multiple items
 	for (auto index : indexes)
 	{
-		auto object_item = dynamic_cast<BaseRTTIPathItem*>(itemFromIndex(index));
+		auto object_item = dynamic_cast<PropertyPathItem*>(itemFromIndex(index));
 		if (object_item == nullptr)
 			continue;
 

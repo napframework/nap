@@ -15,6 +15,12 @@ namespace napkin
 		PropertyPath() {}
 
 		/**
+		 * Copy constructor
+		 * @param other
+		 */
+		PropertyPath(const PropertyPath& other);
+
+		/**
 		 * @param obj The object this property is on
 		 * @param path The path to the property
 		 */
@@ -54,12 +60,12 @@ namespace napkin
 		/**
 		 * @return obj The object this property is on
 		 */
-		nap::rtti::RTTIObject& object() const { return *mObject; }
+		nap::rtti::RTTIObject& getObject() const { return *mObject; }
 
 		/**
 		 * @return path The path to the property
 		 */
-		const nap::rtti::RTTIPath& path() const { return mPath; }
+		const nap::rtti::RTTIPath& getPath() const { return mPath; }
 
 		/**
 		 * Resolve a property path
@@ -91,6 +97,12 @@ namespace napkin
 		 * @return If the path is a valid one
 		 */
 		bool isValid() const;
+
+		/**
+		 * @param other The property to compare to
+		 * @return true if the both property paths point to the same property
+		 */
+		bool operator==(const PropertyPath& other) const;
 
 	private:
 		/**
