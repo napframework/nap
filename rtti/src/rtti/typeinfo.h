@@ -153,13 +153,14 @@ namespace nap
 		 */
 		enum class NAPAPI EPropertyFileType : uint8_t
 		{
-			Any			= 0,	///< Can point to any file, default.
-			Image		= 1, 	///< Points to an image file, must be used with EPropertyMetaData::FileLink
-			FragShader	= 2, 	///< Points to a .vert file, must be used with EPropertyMetaData::FileLink
-			VertShader	= 3, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
-			Python		= 4,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
-            Mesh		= 5,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
-			Video		= 6,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
+			Any				= 0,	///< Can point to any file, default.
+			Image			= 1, 	///< Points to an image file, must be used with EPropertyMetaData::FileLink
+			FragShader		= 2, 	///< Points to a .vert file, must be used with EPropertyMetaData::FileLink
+			VertShader		= 3, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
+			Python			= 4,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
+            Mesh			= 5,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
+			Video			= 6,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
+			ImageSequence	= 7		///< Points to a an image sequence, must be used with EPropertyMetaData::FileLink
 		};
 
 		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)
