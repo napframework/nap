@@ -548,6 +548,13 @@
                     "Index": 0,
                     "VariationCycleMode": "Off",
                     "Speed": 1.0
+                },
+                {
+                    "Type": "nap::FacadeLightComponent",
+                    "mID": "nap::FacadeLightComponent",
+                    "Controller": "Universe7",
+                    "MinChannel": 108,
+                    "MaxChannel": 288
                 }
             ],
             "Children": [
@@ -1373,6 +1380,7 @@
             },
             "Usage": "Static",
             "ImagePath": "index_map/index_map.png",
+            "Compressed": false,
             "ColorCount": 13
         },
         {
@@ -1652,17 +1660,20 @@
         {
             "Type": "nap::MeshFromFile",
             "mID": "HeiligewegFrameMesh",
-            "Path": "heiligeweg_export_heiligeweg_frame.mesh"
+            "Path": "heiligeweg_export_heiligeweg_frame.mesh",
+            "Usage": "Static"
         },
         {
             "Type": "nap::MeshFromFile",
             "mID": "KalverFrameMesh",
-            "Path": "kalver_export_kalver_frame.mesh"
+            "Path": "kalver_export_kalver_frame.mesh",
+            "Usage": "Static"
         },
         {
             "Type": "nap::MeshFromFile",
             "mID": "SingelFrameMesh",
-            "Path": "singel_export_singel_frame.mesh"
+            "Path": "singel_export_singel_frame.mesh",
+            "Usage": "Static"
         },
         {
             "Type": "nap::PlaneMesh",
@@ -1729,6 +1740,66 @@
                 "z": 0.0,
                 "w": 1.0
             }
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CompositionDepthTextureA",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CompositionDepthTextureB",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CompositionTextureA",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "Repeat",
+                "WrapHorizontal": "Repeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "DynamicRead",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CompositionTextureB",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "Repeat",
+                "WrapHorizontal": "Repeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "DynamicRead",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
         },
         {
             "Type": "nap::RenderWindow",
@@ -1807,66 +1878,6 @@
             "mID": "VertexColorShader",
             "mVertShader": "shaders/vertexcolor.vert",
             "mFragShader": "shaders/vertexcolor.frag"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CompositionDepthTextureA",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "Depth"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CompositionDepthTextureB",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "Depth"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CompositionTextureA",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "Repeat",
-                "WrapHorizontal": "Repeat",
-                "MaxLodLevel": 0
-            },
-            "Usage": "DynamicRead",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "RGB8"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CompositionTextureB",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "Repeat",
-                "WrapHorizontal": "Repeat",
-                "MaxLodLevel": 0
-            },
-            "Usage": "DynamicRead",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "RGB8"
         },
         {
             "Type": "nap::WeekColors",
