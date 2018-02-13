@@ -232,7 +232,7 @@ void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selec
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *object_to_select));
 }
 
-void ResourcePanel::selectObjects(const std::vector<nap::rtti::RTTIObject*> obj)
+void ResourcePanel::selectObjects(const QList<nap::rtti::RTTIObject*>& obj)
 {
 	if (obj.size() > 0)
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]));

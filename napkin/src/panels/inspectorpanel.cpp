@@ -95,8 +95,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		nap::rtti::RTTIObject* pointee = getPointee(pointer_item->getPath());
 		QAction* action = menu.addAction("Select Resource", [pointer_item, pointee]
 		{
-			std::vector<nap::rtti::RTTIObject*> objects;
-			objects.emplace_back(pointee);
+			QList<nap::rtti::RTTIObject*> objects = {pointee};
 			AppContext::get().selectionChanged(objects);
 		});
 		action->setEnabled(pointee != nullptr);
@@ -154,7 +153,7 @@ void napkin::InspectorPanel::rebuild()
 
 void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
-	std::vector<nap::rtti::RTTIObject*> objects = {&prop.getObject()};
+	QList<nap::rtti::RTTIObject*> objects = {&prop.getObject()};
 	AppContext::get().selectionChanged(objects);
 
 

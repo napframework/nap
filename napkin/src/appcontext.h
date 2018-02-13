@@ -142,28 +142,28 @@ namespace napkin
 		 * Fired when the global selection has changed.
 		 * TODO: This will need to be changed into a multi-level/hierarchical selection context
 		 */
-		void selectionChanged(const std::vector<nap::rtti::RTTIObject*> obj);
+		void selectionChanged(QList<nap::rtti::RTTIObject*> obj);
 
 
 		/**
 		 * Qt Signal
 		 * Fired when another property must be selected
 		 */
-		void propertySelectionChanged(const PropertyPath& prop);
+		void propertySelectionChanged(PropertyPath prop);
 
 		/**
 		 * Qt Signal
 		 * Fired after a file has been opened and its objects made available.
 		 * @param filename Name of the file that was opened
 		 */
-		void documentOpened(const QString& filename);
+		void documentOpened(QString filename);
 
 		/**
 		 * Qt Signal
 		 * Fires after a document has finished saving.
 		 * @param filename The file the data was saved to.
 		 */
-		void documentSaved(const QString& filename);
+		void documentSaved(QString filename);
 
 		/**
 		 * Qt Signal
@@ -223,7 +223,7 @@ namespace napkin
 		 * @param object The object that has the changed property
 		 * @param path The path to the property that has changed
 		 */
-		void propertyValueChanged(const PropertyPath& path);
+		void propertyValueChanged(const PropertyPath path);
 
 	private:
 		AppContext();

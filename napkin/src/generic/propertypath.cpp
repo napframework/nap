@@ -8,6 +8,12 @@
 
 using namespace nap::rtti;
 
+napkin::PropertyPath::PropertyPath(const napkin::PropertyPath& other)
+		: mObject(&other.getObject()), mPath(other.getPath())
+{
+}
+
+
 napkin::PropertyPath::PropertyPath(RTTIObject& obj, const RTTIPath& path)
 		: mObject(&obj), mPath(path)
 {
@@ -127,6 +133,7 @@ bool napkin::PropertyPath::operator==(const napkin::PropertyPath& other) const
 
 	return true;
 }
+
 
 
 
