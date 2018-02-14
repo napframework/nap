@@ -236,6 +236,7 @@ namespace nap
 		{
 			nap::Service* service = node->mItem.mObject;
 			mServices.emplace_back(std::unique_ptr<nap::Service>(service));
+            service->registerObjectCreators(mResourceManager->getFactory());
 		}
 		return true;
 	}
@@ -281,7 +282,6 @@ namespace nap
 		// Add service
 		Service* service = type.create<Service>();
 		service->mCore = this;
-		service->registerObjectCreators(mResourceManager->getFactory());
 
 		// Signal creation
 		service->created();

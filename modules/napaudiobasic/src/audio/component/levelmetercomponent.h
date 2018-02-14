@@ -3,8 +3,9 @@
 // Nap includes
 #include <component.h>
 
+// Audio includes
 #include <audio/node/levelmeternode.h>
-#include <audio/core/audioobject.h>
+#include <audio/component/audiocomponentbase.h>
 
 namespace nap
 {
@@ -23,7 +24,7 @@ namespace nap
         public:
             LevelMeterComponent() : Component() { }
             
-            nap::ObjectPtr<AudioObject> mInput;
+            nap::ComponentPtr<AudioComponentBase> mInput;
             TimeValue mAnalysisWindowSize = 10;
             LevelMeterNode::Type mMeterType = LevelMeterNode::Type::RMS;
             
@@ -45,7 +46,7 @@ namespace nap
             SampleValue getLevel(int channel);
             
         private:
-            AudioObjectInstance* mInput = nullptr;
+            nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &LevelMeterComponent::mInput };
             std::vector<std::unique_ptr<LevelMeterNode>> meters;
         };
         

@@ -6,6 +6,7 @@
 #include <nap/objectptr.h>
 
 // Audio includes
+#include <audio/component/audiocomponentbase.h>
 #include <audio/core/audionode.h>
 #include <audio/core/audioobject.h>
 
@@ -21,13 +22,13 @@ namespace nap
         /**
          * Component that wraps an audio object that generates audio output for one or more channels.
          */
-        class NAPAPI AudioComponent : public Component
+        class NAPAPI AudioComponent : public AudioComponentBase
         {
-            RTTI_ENABLE(nap::Component)
+            RTTI_ENABLE(nap::audio::AudioComponentBase)
             DECLARE_COMPONENT(AudioComponent, AudioComponentInstance)
             
         public:
-            AudioComponent() : nap::Component() { }
+            AudioComponent() : AudioComponentBase() { }
             
             /**
              * The audio object that is wrapped by this component
@@ -41,26 +42,23 @@ namespace nap
         /**
          * Instance of a component that wraps an audio object that generates audio output for one or more channels
          */
-        class NAPAPI AudioComponentInstance : public ComponentInstance
+        class NAPAPI AudioComponentInstance : public AudioComponentBaseInstance
         {
-            RTTI_ENABLE(nap::ComponentInstance)
+            RTTI_ENABLE(nap::audio::AudioComponentBaseInstance)
             
         public:
-            AudioComponentInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource) { }
+            AudioComponentInstance(EntityInstance& entity, Component& resource) : AudioComponentBaseInstance(entity, resource) { }
             
             // Initialize the component
             bool init(utility::ErrorState& errorState) override;
 
+            // Derived from AudioComponentBaseInstance
+            int getChannelCount() const override { return mObject->getChannelCount(); }
+            virtual OutputPin& getOutputForChannel(int channel) override { return mObject->getOutputForChannel(channel); }
             /**
              * Returns the wrapped audio object
              */
             AudioObjectInstance* getObject();
-            
-        protected:
-            /**
-             * Returns the node system's manager that the audio runs on
-             */
-            NodeManager& getNodeManager();
             
         private:
             std::unique_ptr<AudioObjectInstance> mObject = nullptr;
