@@ -34,14 +34,24 @@ void napkin::BaseWindow::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
 	QSettings s;
-	restoreGeometry(s.value(settingsKey::WIN_GEO).toByteArray());
-	restoreState(s.value(settingsKey::WIN_STATE).toByteArray());
+	restoreSettings(s);
 }
 
 void napkin::BaseWindow::closeEvent(QCloseEvent* event)
 {
 	QSettings s;
+	saveSettings(s);
+	QWidget::closeEvent(event);
+}
+
+void napkin::BaseWindow::saveSettings(QSettings& s)
+{
 	s.setValue(settingsKey::WIN_STATE, saveState());
 	s.setValue(settingsKey::WIN_GEO, saveGeometry());
-	QWidget::closeEvent(event);
+}
+
+void napkin::BaseWindow::restoreSettings(QSettings& s)
+{
+	restoreGeometry(s.value(settingsKey::WIN_GEO).toByteArray());
+	restoreState(s.value(settingsKey::WIN_STATE).toByteArray());
 }
