@@ -21,6 +21,8 @@ namespace napkin
 	// The file filter used by file dialogs
 	static const QString JSON_FILE_FILTER = "NAP JSON File (*.nap.json, *.json)";
 
+	static const QString DEFAULT_SETTINGS_FILE = "resources/settings.ini";
+
 	// Constants used by QSettings entries
 	namespace settingsKey
 	{
