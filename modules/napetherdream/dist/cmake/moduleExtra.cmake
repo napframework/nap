@@ -1,4 +1,3 @@
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/thirdparty/etherdream/cmake)
 find_package(etherdream REQUIRED)
 target_link_libraries(${PROJECT_NAME} etherdreamlib)
 

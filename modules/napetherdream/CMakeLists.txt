@@ -34,12 +34,10 @@ endif()
 # Package into platform release
 package_module()
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/thirdparty/Findetherdream.cmake DESTINATION "modules/${PROJECT_NAME}/thirdparty/etherdream/cmake/")
-
 # Package etherdreamlib into platform release
 if(WIN32)
-    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "modules/${PROJECT_NAME}/thirdparty/etherdream/win64/bin")   
-    install(FILES $<TARGET_FILE_DIR:etherdreamlib>/EtherDream.lib DESTINATION "modules/${PROJECT_NAME}/thirdparty/etherdream/win64/bin")    
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/msvc/bin")
+    install(FILES $<TARGET_FILE_DIR:etherdreamlib>/EtherDream.lib DESTINATION "thirdparty/etherdream/msvc/bin")
 elseif(APPLE)
     # Ensure our etherdream install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -47,7 +45,7 @@ elseif(APPLE)
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libEtherDream.dylib $<TARGET_FILE:etherdreamlib>
                        COMMENT "Setting install name for etherdream")
 
-    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "modules/${PROJECT_NAME}/thirdparty/etherdream/macOS/bin")
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/osx/bin")
 
     install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL} 
                                           -change
@@ -57,7 +55,7 @@ elseif(APPLE)
                                           )")
     install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL}
                                           -add_rpath
-                                          @loader_path/../../thirdparty/etherdream/macOS/bin
+                                          @loader_path/../../../../thirdparty/etherdream/osx/bin
                                           ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Release/libmod_napetherdream.dylib 
                                   ERROR_QUIET
                                   )")
@@ -69,15 +67,16 @@ elseif(APPLE)
                                           )")
     install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL}
                                           -add_rpath
-                                          @loader_path/../../thirdparty/etherdream/macOS/bin
+-                                          @loader_path/../../../../thirdparty/etherdream/osx/bin
                                           ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Debug/libmod_napetherdream.dylib                                           
                                   ERROR_QUIET
                                   )")
 else()
     # Add Etherdream to module RPATH
     get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)
-    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../thirdparty/etherdream/linux/bin")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../../../thirdparty/etherdream/linux/bin")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
 
-    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "modules/${PROJECT_NAME}/thirdparty/etherdream/linux/bin")
+
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/linux/bin")
 endif()

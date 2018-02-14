@@ -1,24 +1,24 @@
 if(WIN32)
     find_path(
             ETHERDREAM_DIR
-            NAMES win64/bin/EtherDream.dll
-            HINTS ${CMAKE_CURRENT_LIST_DIR}/../
+            NAMES msvc/bin/EtherDream.dll
+            HINTS ${THIRDPARTY_DIR}/etherdream
     )
-    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/win64/bin)
+    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/msvc/bin)
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/EtherDream.lib)
     set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS_DIR}/EtherDream.dll)
 elseif(APPLE)
     find_path(ETHERDREAM_DIR
-              NAMES macOS/bin/libEtherDream.dylib
-              HINTS ${CMAKE_CURRENT_LIST_DIR}/../
+              NAMES osx/bin/libEtherDream.dylib
+              HINTS ${THIRDPARTY_DIR}/etherdream
               )
-    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/macOS/bin/)
+    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/osx/bin)
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/libEtherDream.dylib)
     set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS_DIR}/libEtherDream.dylib)
 else()
     find_path(ETHERDREAM_DIR
               NAMES linux/bin/libetherdream.so
-              HINTS ${CMAKE_CURRENT_LIST_DIR}/../
+              HINTS ${THIRDPARTY_DIR}/etherdream
               )
     set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/linux/bin)
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/libetherdream.so)
