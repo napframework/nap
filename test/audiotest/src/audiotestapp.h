@@ -10,9 +10,9 @@
 //const std::string appJson = "audiofileplay.json";
 //const std::string appJson = "pythonsequencer.json";
 //const std::string appJson = "ambientdrone.json";
-//const std::string appJson = "midilogging.json"; // Edit the midi input device in this json file!
+const std::string appJson = "midilogging.json";
 //const std::string appJson = "pythonosc.json";
-const std::string appJson = "pythonmidi.json";
+//const std::string appJson = "pythonmidi.json";
 
 
 namespace nap

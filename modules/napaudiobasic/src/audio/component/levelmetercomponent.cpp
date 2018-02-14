@@ -4,6 +4,9 @@
 #include <entity.h>
 #include <nap/core.h>
 
+// Audio includes
+#include <audio/service/audioservice.h>
+
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::LevelMeterComponent)
     RTTI_PROPERTY("Input", &nap::audio::LevelMeterComponent::mInput, nap::rtti::EPropertyMetaData::Required)
@@ -24,10 +27,6 @@ namespace nap
         
         bool LevelMeterComponentInstance::init(utility::ErrorState& errorState)
         {
-            LevelMeterComponent* resource = rtti_cast<LevelMeterComponent>(getComponent());
-            mInput = resource->mInput->getInstance();
-            assert(mInput);
-            
             for (auto channel = 0; channel < mInput->getChannelCount(); ++channel)
             {
                 meters.emplace_back(std::make_unique<LevelMeterNode>(getNodeManager()));

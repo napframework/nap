@@ -6,7 +6,7 @@
 
 // Audio includes
 #include <audio/node/outputnode.h>
-#include <audio/component/audiocomponent.h>
+#include <audio/component/audiocomponentbase.h>
 
 namespace nap
 {
@@ -30,7 +30,7 @@ namespace nap
             
         public:
             // Properties
-            nap::ComponentPtr<AudioComponent> mInput; /**<  The component whose audio output to rout to the interface */
+            nap::ComponentPtr<AudioComponentBase> mInput; /**<  The component whose audio output to rout to the interface */
             
             /**
              * The size of this vector indicates the number of channels this component outputs.
@@ -54,7 +54,7 @@ namespace nap
             
         private:
             std::vector<std::unique_ptr<OutputNode>> mOutputs;
-            nap::ComponentInstancePtr<AudioComponent> mInput = { this, &OutputComponent::mInput };
+            nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &OutputComponent::mInput };
         };
 
     }

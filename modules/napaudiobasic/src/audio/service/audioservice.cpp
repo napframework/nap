@@ -9,8 +9,8 @@
 #include "audioservice.h"
 #include "audiodevice.h"
 
-#include <audio/core/graph.h>
-#include <audio/core/voice.h>
+//#include <audio/core/graph.h>
+//#include <audio/core/voice.h>
 
 // Third party includes
 #include <mpg123.h>
@@ -40,8 +40,8 @@ namespace nap
         
         void AudioService::registerObjectCreators(rtti::Factory& factory)
         {
-            factory.addObjectCreator(std::make_unique<GraphObjectCreator>(getNodeManager()));
-            factory.addObjectCreator(std::make_unique<VoiceObjectCreator>(getNodeManager()));
+//            factory.addObjectCreator(std::make_unique<GraphObjectCreator>(getNodeManager()));
+//            factory.addObjectCreator(std::make_unique<VoiceObjectCreator>(getNodeManager()));
         }
 
         
