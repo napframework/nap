@@ -14,6 +14,7 @@ NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoft
 NAP_BRANCH = 'build'
 BUILD_DIR = 'build'
 CLEAN_BUILD = False
+LINUX_BUILD_TYPE = 'Debug'
 
 
 def isLocalGitRepo(d):
@@ -40,7 +41,7 @@ def main(targets):
 
     # generate solutions
     if platform in ["linux", "linux2"]:
-        call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR])
+        call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % LINUX_BUILD_TYPE])
     elif platform == 'darwin':
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
     else:
