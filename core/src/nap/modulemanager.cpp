@@ -281,7 +281,7 @@ namespace nap
 		if (configParts.size() != 3)
 			return false;
 		
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(_WIN32)
 		const std::string folderBuildType = configParts[2];
 #elif __unix__
 		const std::string folderBuildType = configParts[1];
