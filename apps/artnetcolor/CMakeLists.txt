@@ -39,7 +39,9 @@ endif()
 
 # Copy artnet DLL
 find_package(artnet REQUIRED)
-copy_artnet_dll()
+if(WIN32)
+    copy_artnet_dll()
+endif()
 
 # Copy project json to project bin dir and export fbx, via post-build events
 copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
