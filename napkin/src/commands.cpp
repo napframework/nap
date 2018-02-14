@@ -100,12 +100,16 @@ AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject
 
 void AddObjectCommand::redo()
 {
+	auto& ctx = AppContext::get();
+
 	// Create object
-	auto parent = AppContext::get().getDocument()->getObject(mParentName);
-	auto object = AppContext::get().getDocument()->addObject(mType, parent);
+	auto parent = ctx.getDocument()->getObject(mParentName);
+	auto object = ctx.getDocument()->addObject(mType, parent);
 
 	// Remember for undo
 	mObjectName = object->mID;
+
+	ctx.selectionChanged({object});
 }
 void AddObjectCommand::undo()
 {
