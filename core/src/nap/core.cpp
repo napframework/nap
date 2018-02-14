@@ -11,6 +11,8 @@
 #include <iostream>
 #include <utility/fileutils.h>
 
+#include <packaginginfo.h>
+
 using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Core)
@@ -328,52 +330,32 @@ namespace nap
 			return true;
 		}
 		
-		// Non-packaged macOS & Linux projects - get our configuration name from the directory name that
-		// our project sits in.  Clunky but true.
+		// Split up our executable path to scrape our project name
 		std::string exeDir = utility::getExecutableDir();
 		std::vector<std::string> dirParts;
 		utility::splitString(exeDir, '/', dirParts);
 		
-		// Ensure that our directory structure seems sane
-		if (dirParts.size() < 2)
-		{
-			errorState.fail("Unexpected path configuration found, could not locate project data");
-			return false;
-		}
-
 		// Find NAP root.  Looks cludgey but we have control of this, it doesn't change.
-		
-		// TODO For now as a workaround until we have a step in our packaging process that eg. stores a
-		// 		flag / release information that we can use to determine that we're packaged NAP/project/etc
-		// 		use the build information in the folder structure
 		
 		std::string napRoot;
 		std::string projectName;
-		std::string buildType;
-		// Check if we're running a project against packaged NAP
-		if (getBuildTypeFromFolder(dirParts.end()[-1], buildType))
+#ifdef NAP_PACKAGED_BUILD
+		// We're running from a NAP release
+		if (dirParts.size() >= 3)
 		{
 			// Non-packaged apps against released framework
 			napRoot = utility::getAbsolutePath(exeDir + "/../../../../");
-			// TODO hardening
 			projectName = dirParts.end()[-3];
-			Logger::info("Detecting running against packaged NAP");
 		}
 		else {
-			// Check if we're running a project against NAP source
-			std::string full_configuration_name = dirParts.end()[-2];
-			if (getBuildTypeFromFolder(full_configuration_name, buildType))
-			{
-				// Apps in NAP internal source
-				napRoot = utility::getAbsolutePath(exeDir + "/../../../");
-				projectName = dirParts.end()[-1];
-				Logger::info("Detecting running against NAP source");
-			}
-			else {
-				errorState.fail("Unexpected path configuration found, could not locate project data");
-				return false;
-			}
+			errorState.fail("Unexpected path configuration found, could not locate project data");
+			return false;
 		}
+#else // NAP_PACKAGED_BUILD
+		// We're running from NAP source
+		napRoot = utility::getAbsolutePath(exeDir + "/../../../");
+		projectName = dirParts.end()[-1];
+#endif // NAP_PACKAGED_BUILD
 		
 		// Iterate possible project locations
 		std::string possibleProjectParents[] =
@@ -396,24 +378,5 @@ namespace nap
 		
 		errorState.fail("Couldn't find data for project %s", projectName.c_str());
 		return false;
-	}
-	
-	// TODO workaround until we have a step in our packaging process that eg. stores a flag / release
-	// 		information that we can use to determine that we're packaged NAP/project/etc
-	bool Core::getBuildTypeFromFolder(std::string& folderName, std::string& outBuildType)
-	{
-		std::vector<std::string> configParts;
-		utility::splitString(folderName, '-', configParts);
-		if (configParts.size() != 3) {
-			Logger::warn("Couldn't parse build type from " + folderName);
-			return false;
-		}
-		
-#ifdef __APPLE__
-		outBuildType = configParts[2];
-#elif __unix__
-		outBuildType = configParts[1];
-#endif
-		return true;
-	}
+	}	
 }

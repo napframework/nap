@@ -178,21 +178,6 @@ namespace nap
 		 */
 		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
 		
-		/**
-		 * Attempt to parse the build type from a folder name in the build system
-		 * TODO: Being used temporarily to detect our NAP source / NAP packaged / packaged project environment
-		 *       until we're packaging information during our build to help us determine tbis
-		 *
-		 * A valid full build configuration string in a folder name will be of our format specified in CMake:
-		 * macOS: COMPILER_ID-ARCH-BUILD_TYPE, eg. Clang-x86_64-Debug
-		 * Linux: COMPILER_ID-BUILD_TYPE-ARCH, eg. GNU-ReleaseWithDebInfo-x86_64
-		 *
-		 * @param folderName The folder name to parse
-		 * @param outBuildType The output build type
-		 * @return Whether a build type was parsed from the folder name
-		 */
-		bool getBuildTypeFromFolder(std::string& folderName, std::string& outBuildType);
-		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 

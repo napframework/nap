@@ -2,6 +2,11 @@ include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 project(napcore)
 
 file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
+
+# Add whether we're a NAP release or not.  Maybe useful for versioning later too.
+configure_file(src/nap/packaginginfo.h.in packaginginfo.h @ONLY)
+list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/packaginginfo.h)
+
 if(APPLE)
     add_library(${PROJECT_NAME} SHARED 
         ${SOURCES}
@@ -33,7 +38,7 @@ if(MSVC)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 endif()
 
-target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC src ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(${PROJECT_NAME} naputility naprtti)
 
 if (UNIX AND NOT APPLE)
