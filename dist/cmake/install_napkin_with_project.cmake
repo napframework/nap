@@ -1,5 +1,4 @@
 set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo)
-
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport)
 
 if(WIN32 OR APPLE)
@@ -122,9 +121,8 @@ elseif(APPLE)
             DESTINATION .)
 
     # Ensure we have our dependent modules
-    set(NAPKIN_MODULES mod_nappython mod_napmath mod_napscene)
     set(INSTALLING_MODULE_FOR_NAPKIN TRUE)
-    foreach(NAP_MODULE ${NAPKIN_MODULES})
+    foreach(NAP_MODULE ${NAPKIN_DEPENDENT_NAP_MODULES})
         find_nap_module(${NAP_MODULE})
     endforeach()
     unset(INSTALLING_MODULE_FOR_NAPKIN)
@@ -178,9 +176,8 @@ else()
     #         DESTINATION .)
 
     # Ensure we have our dependent modules
-    set(NAPKIN_MODULES mod_nappython mod_napmath mod_napscene)
     set(INSTALLING_MODULE_FOR_NAPKIN TRUE)
-    foreach(NAP_MODULE ${NAPKIN_MODULES})
+    foreach(NAP_MODULE ${NAPKIN_DEPENDENT_NAP_MODULES})
         find_nap_module(${NAP_MODULE})
     endforeach()
     unset(INSTALLING_MODULE_FOR_NAPKIN)
