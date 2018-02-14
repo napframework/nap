@@ -50,23 +50,36 @@ namespace nap
 		 * @param outSearchDirectories The directories to search for the provided modules
 		 * @return whether we were successfully able to determine our configuration and build our search paths
 		 */
-		bool buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories);
+		bool buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories, utility::ErrorState& errorState);
+
 
 		/**
-		 * Attempt to parse the build type from a folder name in the build system
-		 * TODO: Being used temporarily to detect our NAP source / NAP packaged / packaged project environment
-		 *       until we're packaging information during our build to help us determine tbis
+		 * Build directories to search in for specified modules for a non packaged project running against released NAP
+		 * @param moduleNames The names of the modules in use in the project
+		 * @param outSearchDirectories The directories to search for the provided modules
+		 */
+		void buildPackagedNapProjectModulePaths(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories);
+
+		/**
+		 * Build directories to search in for all modules for non project context (eg. napkin) running against released NAP
+		 * @param outSearchDirectories The directories to search for the provided modules
+		 */
+		void buildPackagedNapNonProjectModulePaths(std::vector<std::string>& outSearchDirectories);
+
+		/**
+		 * Check whether the specified folder name contains a build configuration.
 		 *
 		 * A valid full build configuration string in a folder name will be of our format specified in CMake:
 		 * macOS: COMPILER_ID-ARCH-BUILD_TYPE, eg. Clang-x86_64-Debug
-		 * Linux: COMPILER_ID-BUILD_TYPE-ARCH, eg. GNU-ReleaseWithDebInfo-x86_64
+		 * Linux: COMPILER_ID-BUILD_TYPE-ARCH, eg. GNU-Release-x86_64
+		 *
+		 * The folder name is checked for sufficient parts and a matching build type.
 		 *
 		 * @param folderName The folder name to parse
-		 * @param outBuildType The output build type
-		 * @return Whether a build type was parsed from the folder name
+		 * @return Whether the folder name appears to contain a build configuration
 		 */
-		bool getBuildTypeFromFolder(std::string& folderName, std::string& outBuildType);
-
+		bool folderNameContainsBuildConfiguration(std::string& folderName);
+		
 		using ModuleList = std::vector<Module>;
 		ModuleList mModules;	// The loaded modules
 	};

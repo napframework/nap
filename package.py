@@ -159,6 +159,7 @@ def package(zip_release, include_apps):
             call(WORKING_DIR, ['cmake', 
                                '-H.', 
                                '-B%s' % build_dir_for_type, 
+                               '-DNAP_PACKAGED_BUILD=1',
                                '-DCMAKE_BUILD_TYPE=%s' % build_type,
                                '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps)
                                ])
@@ -177,6 +178,7 @@ def package(zip_release, include_apps):
                            '-H.', 
                            '-B%s' % BUILD_DIR, 
                            '-G', 'Xcode',
+                           '-DNAP_PACKAGED_BUILD=1',                           
                            '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps)
                            ])
 
@@ -202,7 +204,8 @@ def package(zip_release, include_apps):
         call(WORKING_DIR, ['cmake', 
                            '-H.', 
                            '-B%s' % BUILD_DIR, 
-                           '-G', 'Visual Studio 14 2015 Win64', 
+                           '-G', 'Visual Studio 14 2015 Win64',
+                           '-DNAP_PACKAGED_BUILD=1',
                            '-DPYBIND11_PYTHON_VERSION=3.5',
                            '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps)
                            ])

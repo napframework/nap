@@ -164,7 +164,7 @@ macro(package_platform_qt)
         execute_process(COMMAND brew --prefix qt
                         OUTPUT_VARIABLE QT_PREFIX)
         string(STRIP ${QT_PREFIX} QT_PREFIX)
-        message(STATUS "Got QT prefix: ${QT_PREFIX}")
+        message(STATUS "Got Qt prefix: ${QT_PREFIX}")
 
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})

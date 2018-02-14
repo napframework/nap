@@ -12,6 +12,7 @@
 
 // External Includes
 #include <utility/fileutils.h>
+#include <packaginginfo.h>
 
 namespace
 {
@@ -129,7 +130,6 @@ namespace nap
 
 	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
-		// TODO populate ErrorState
 		// TODO look into changing loadModules into one of two behaviours:
 		//      - a standard project mode where it only loads the modules specified in the provided list and fails if
 		//        some of those modules couldn't be loaded
@@ -138,7 +138,7 @@ namespace nap
 		
 		// Build a list of directories to search for modules
 		std::vector<std::string> directories;
-		if (!buildModuleSearchDirectories(moduleNames, directories))
+		if (!buildModuleSearchDirectories(moduleNames, directories, error))
 			return false;
 
 		// Iterate each directory
@@ -217,122 +217,153 @@ namespace nap
 		return true;
 	}
 	
-	bool ModuleManager::buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories)
+
+	bool ModuleManager::buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories, utility::ErrorState& errorState)
 	{
-		// TODO This is all fairly temporary; whether NAP is running against NAP source, released NAP or a packaged project
-		//      should probably be determined via a build mechanism, eg. a header file modified via CMake during build.
-		
 #ifdef _WIN32
 		// Windows
 		outSearchDirectories.push_back(utility::getExecutableDir());
-#else
-		// Non-packaged macOS & Linux projects - get our configuration name from the directory name that
-		// our project sits in.  Clunky but true.
+#elif defined(NAP_PACKAGED_BUILD)
+		// Running against released NAP on macOS & Linux
 		std::string exeDir = utility::getExecutableDir();
-		std::vector<std::string> dirParts;
-		utility::splitString(exeDir, '/', dirParts);
-
-		// Ensure that our directory structure seems sane
-		if (dirParts.size() < 2)
-		{
-			// TODO improve output
-			Logger::warn("Unexpected path configuration found, can't locate modules");
-			return false;
-		}
 		
-		std::string buildType;
-		// Check if we're running a project against packaged NAP
-		if (getBuildTypeFromFolder(dirParts.end()[-1], buildType))
+		// Check if we're running a packaged project (on macOS or Linux)
+		if (utility::dirExists(exeDir + "/lib"))
 		{
-			// Non-packaged MacOS & Linux apps against released framework
-			std::string napRoot = exeDir + "/../../../../";
-			if (moduleNames.size() == 0)
-			{
-				// Cater for Napkin running against packaged NAP.  Module names won't be specified.  Let's load everything we can find.
-				
-				// NAP modules
-				std::string searchDir = napRoot + "modules";
-				std::vector<std::string> filesInDirectory;
-				utility::listDir(searchDir.c_str(), filesInDirectory, false);
-				for (const std::string& module: filesInDirectory)
-				{
-					std::string dirName = napRoot + "modules/" + module + "/lib/" + buildType;
-					if (!utility::dirExists(dirName))
-						continue;
-					outSearchDirectories.push_back(dirName);
-					//Logger::info("Adding module search path %s for napkin", dirName.c_str());
-				}
-				
-				// User modules
-				searchDir = napRoot + "usermodules";
-				filesInDirectory.clear();
-				utility::listDir(searchDir.c_str(), filesInDirectory, false);
-				for (const std::string& module: filesInDirectory)
-				{
-					std::string dirName = napRoot + "usermodules/" + module + "/lib/" + buildType;
-					if (!utility::dirExists(dirName))
-						continue;
-					outSearchDirectories.push_back(dirName);
-					//Logger::info("Adding user module search path %s for napkin", dirName.c_str());
-				}
-			}
-			else {
-				// Normal project running against packaged NAP
-				for (const std::string& module : moduleNames)
-				{
-					// NAP modules
-					outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
-					// User modules
-					outSearchDirectories.push_back(napRoot + "usermodules/" + module + "/lib/" + buildType);
-				}
-			}
-			// Project module
-			outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
+			outSearchDirectories.push_back(exeDir + "/lib");
+		}
+		// If we have no modules requested we're running in a non-project context, eg. napkin
+		else if (moduleNames.size() == 0) {
+			buildPackagedNapNonProjectModulePaths(outSearchDirectories);
 		}
 		else {
-			// Check if we're running a project against NAP source
+			std::vector<std::string> dirParts;
+			utility::splitString(exeDir, '/', dirParts);
+			// Check if we can see our build output folder, otherwise we're in an unexpected configuration
+			if (folderNameContainsBuildConfiguration(dirParts.end()[-1]))
+			{
+				buildPackagedNapProjectModulePaths(moduleNames, outSearchDirectories);
+			}
+			else {
+				errorState.fail("Unexpected path configuration found, can't locate modules");
+				return false;
+			}
+		}
+#else
+		Logger::debug("Running from NAP source");
+	
+		std::string exeDir = utility::getExecutableDir();
+
+		std::vector<std::string> dirParts;
+		utility::splitString(exeDir, '/', dirParts);
+		// Check if we can see our build output folder, otherwise we're in an unexpected configuration
+		if (dirParts.size() > 2 && folderNameContainsBuildConfiguration(dirParts.end()[-2]))
+		{
+			// MacOS & Linux apps in NAP internal source
+			std::string napRoot = exeDir + "/../../../";
 			std::string full_configuration_name = dirParts.end()[-2];
-			if (getBuildTypeFromFolder(full_configuration_name, buildType))
-			{
-				// MacOS & Linux apps in NAP internal source
-				std::string napRoot = exeDir + "/../../../";
-				outSearchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
-			}
-			else
-			{
-				// Check if we're running a packaged project
-				if (utility::dirExists(utility::getExecutableDir() + "/lib"))
-				{
-					// Packaged macOS & Linux projects
-					outSearchDirectories.push_back(utility::getExecutableDir() + "/lib");
-				}
-				else
-				{
-					// TODO improve output
-					Logger::warn("Unexpected path configuration found, can't locate modules");
-					return false;
-				}
-			}
+			outSearchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
+
+		} else {
+			errorState.fail("Unexpected path configuration found, can't locate modules");
+			return false;
 		}
 #endif // _WIN32
 		return true;
 	}
 	
-	// TODO workaround until we have a step in our packaging process that eg. stores a flag / release
-	// 		information that we can use to determine that we're packaged NAP/project/etc
-	bool ModuleManager::getBuildTypeFromFolder(std::string& folderName, std::string& outBuildType)
+
+	bool ModuleManager::folderNameContainsBuildConfiguration(std::string& folderName)
 	{
 		std::vector<std::string> configParts;
 		utility::splitString(folderName, '-', configParts);
-		// If we don't have enough parts we're not looking a build folder
+		// If we don't have enough parts we're not looking at a build folder
 		if (configParts.size() != 3)
 			return false;
 		
 #ifdef __APPLE__
-		outBuildType = configParts[2];
+		const std::string folderBuildType = configParts[2];
 #elif __unix__
-		outBuildType = configParts[1];
+		const std::string folderBuildType = configParts[1];
 #endif
+
+#ifdef NDEBUG
+		const std::string runningBuildType = "Release";
+#else
+		const std::string runningBuildType = "Debug";
+#endif
+	
+		if (runningBuildType != folderBuildType)
+			return false;
+		
 		return true;
+	}
+	
+
+	void ModuleManager::buildPackagedNapNonProjectModulePaths(std::vector<std::string>& outSearchDirectories)
+	{
+		// Cater for Napkin running against packaged NAP.  Module names won't be specified.  Let's load everything we can find.
+		
+#ifdef NDEBUG
+		const std::string buildType = "Release";
+#else
+		const std::string buildType = "Debug";
+#endif
+		
+		std::string exeDir = utility::getExecutableDir();
+		std::string napRoot = exeDir + "/../../../../";
+		
+		// NAP modules
+		std::string searchDir = napRoot + "modules";
+		std::vector<std::string> filesInDirectory;
+		utility::listDir(searchDir.c_str(), filesInDirectory, false);
+		for (const std::string& module: filesInDirectory)
+		{
+			std::string dirName = napRoot + "modules/" + module + "/lib/" + buildType;
+			if (!utility::dirExists(dirName))
+				continue;
+			outSearchDirectories.push_back(dirName);
+			//Logger::info("Adding module search path %s for napkin", dirName.c_str());
+		}
+		
+		// User modules
+		searchDir = napRoot + "usermodules";
+		filesInDirectory.clear();
+		utility::listDir(searchDir.c_str(), filesInDirectory, false);
+		for (const std::string& module: filesInDirectory)
+		{
+			std::string dirName = napRoot + "usermodules/" + module + "/lib/" + buildType;
+			if (!utility::dirExists(dirName))
+				continue;
+			outSearchDirectories.push_back(dirName);
+			//Logger::info("Adding user module search path %s for napkin", dirName.c_str());
+		}
+
+		// Project module
+		outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
+	}
+
+	
+	void ModuleManager::buildPackagedNapProjectModulePaths(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories)
+	{
+#ifdef NDEBUG
+		const std::string buildType = "Release";
+#else
+		const std::string buildType = "Debug";
+#endif
+		
+		std::string exeDir = utility::getExecutableDir();
+		std::string napRoot = exeDir + "/../../../../";
+		// Normal project running against packaged NAP
+		for (const std::string& module : moduleNames)
+		{
+			// NAP modules
+			outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
+			// User modules
+			outSearchDirectories.push_back(napRoot + "usermodules/" + module + "/lib/" + buildType);
+		}
+		
+		// Project module
+		outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
 	}
 }
