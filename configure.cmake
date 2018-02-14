@@ -223,41 +223,7 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
     endif()
 endmacro()
 
-# Package module into platform release
-macro(package_module)
-    install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
-            FILES_MATCHING PATTERN "*.h")
 
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/cmake)
-        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dist/cmake/ DESTINATION modules/${PROJECT_NAME}/)
-    endif()
-
-    # Set packaged RPATH for Linux (done before we install the target due to target property mechanism)
-    if(UNIX AND NOT APPLE)
-        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
-    endif()
-
-    if (WIN32)
-        install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
-                                        LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
-                                        ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
-    elseif(APPLE)
-        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
-    else()
-        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
-    endif()
-
-    # Set packaged RPATH for macOS (done after we install the target due to direct install_name_tool calling)
-    if(APPLE)
-        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
-        foreach(build_conf Release Debug)
-            macos_replace_single_install_name_link_install_time("Python"
-                                                                ${CMAKE_INSTALL_PREFIX}/modules/${PROJECT_NAME}/lib/${build_conf}/lib${PROJECT_NAME}.dylib 
-                                                                "@rpath"
-                                                                )
-        endforeach()
-    endif()
-endmacro()
 
 # Set the packaged RPATH of a module for its dependent modules.
 macro(set_installed_module_rpath_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME)
