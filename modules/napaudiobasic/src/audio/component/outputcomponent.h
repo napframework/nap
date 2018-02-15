@@ -34,7 +34,7 @@ namespace nap
             
             /**
              * The size of this vector indicates the number of channels this component outputs.
-             * Each element of the vector indicates which channel from the input will be routed on the corresponding output channel.  
+             * Each element in the array specifies which channel on the audio interface the corresponding input channel will be routed to.
              */
             std::vector<int> mChannelRouting = { 0 };
         };
