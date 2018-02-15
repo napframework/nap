@@ -13,8 +13,7 @@ WORKING_DIR = '.'
 BUILD_DIR = 'build'
 PACKAGING_DIR = 'packaging'
 ARCHIVING_DIR = 'archiving'
-BUILDINFO_FILE = 'cmake/buildInfo.json'
-PACKAGED_BUILDINFO_FILE = '%s/cmake/buildinfo.json' % PACKAGING_DIR
+BUILDINFO_FILE = 'dist/cmake/buildInfo.json'
 
 def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     # print('dir: %s' % cwd)
@@ -153,6 +152,11 @@ def package(zip_release, include_apps):
         shutil.rmtree(PACKAGING_DIR, True)
     os.makedirs(PACKAGING_DIR)
 
+    # Add timestamp and git revision for build info
+    timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
+    (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
+    git_revision = git_revision.decode('ascii', 'ignore').strip()
+
     if platform in ["linux", "linux2"]:
         for build_type in ['Release', 'Debug']:
             build_dir_for_type = BUILD_DIR + build_type
@@ -161,7 +165,9 @@ def package(zip_release, include_apps):
                                '-B%s' % build_dir_for_type, 
                                '-DNAP_PACKAGED_BUILD=1',
                                '-DCMAKE_BUILD_TYPE=%s' % build_type,
-                               '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps)
+                               '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
+                               '-DBUILD_TIMESTAMP=%s' % timestamp,
+                               '-DBUILD_GIT_REVISION=%s' % git_revision
                                ])
 
             d = '%s/%s' % (WORKING_DIR, build_dir_for_type)
@@ -169,9 +175,9 @@ def package(zip_release, include_apps):
 
         # Create archive
         if zip_release:
-            archive_to_linux_tar_xz()
+            archive_to_linux_tar_xz(timestamp)
         else:
-            archive_to_timestamped_dir('Linux')
+            archive_to_timestamped_dir('Linux', timestamp)
     elif platform == 'darwin':
         # Generate project
         call(WORKING_DIR, ['cmake', 
@@ -179,7 +185,9 @@ def package(zip_release, include_apps):
                            '-B%s' % BUILD_DIR, 
                            '-G', 'Xcode',
                            '-DNAP_PACKAGED_BUILD=1',                           
-                           '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps)
+                           '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
+                           '-DBUILD_TIMESTAMP=%s' % timestamp,
+                           '-DBUILD_GIT_REVISION=%s' % git_revision
                            ])
 
         # Build & install to packaging dir
@@ -192,9 +200,9 @@ def package(zip_release, include_apps):
 
         # Create archive
         if zip_release:
-            archive_to_macos_zip()
+            archive_to_macos_zip(timestamp)
         else:
-            archive_to_timestamped_dir('macOS')
+            archive_to_timestamped_dir('macOS', timestamp)
     else:
         # Create build dir if it doesn't exist
         if not os.path.exists(BUILD_DIR):
@@ -207,7 +215,9 @@ def package(zip_release, include_apps):
                            '-G', 'Visual Studio 14 2015 Win64',
                            '-DNAP_PACKAGED_BUILD=1',
                            '-DPYBIND11_PYTHON_VERSION=3.5',
-                           '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps)
+                           '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
+                           '-DBUILD_TIMESTAMP=%s' % timestamp,
+                           '-DBUILD_GIT_REVISION=%s' % git_revision
                            ])
 
         # Build & install to packaging dir
@@ -216,15 +226,15 @@ def package(zip_release, include_apps):
 
         # Create archive
         if zip_release:
-            archive_to_win64_zip()
+            archive_to_win64_zip(timestamp)
         else:
-            archive_to_timestamped_dir('Win64')
+            archive_to_timestamped_dir('Win64', timestamp)
 
     return True
 
 # Create build archive to xz tarball on Linux
-def archive_to_linux_tar_xz():
-    package_filename = build_package_filename_and_build_info('Linux')
+def archive_to_linux_tar_xz(timetamp):
+    package_filename = build_package_basename('Linux', timestamp)
     shutil.move(PACKAGING_DIR, package_filename)
 
     package_filename_with_ext = '%s.%s' % (package_filename, 'tar.xz')
@@ -236,8 +246,8 @@ def archive_to_linux_tar_xz():
     print("Packaged to %s" % package_filename_with_ext)  
 
 # Create build archive to zip on macOS
-def archive_to_macos_zip():
-    package_filename = build_package_filename_and_build_info('macOS')
+def archive_to_macos_zip(timestamp):
+    package_filename = build_package_basename('macOS', timestamp)
     shutil.move(PACKAGING_DIR, package_filename)
 
     # Archive
@@ -250,8 +260,8 @@ def archive_to_macos_zip():
     print("Packaged to %s" % package_filename_with_ext)  
 
 # Create build archive to zip on Win64
-def archive_to_win64_zip():
-    package_filename = build_package_filename_and_build_info('Win64')
+def archive_to_win64_zip(timestamp):
+    package_filename = build_package_basename('Win64', timestamp)
     package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
 
     # Rename our packaging dir to match the release
@@ -275,51 +285,21 @@ def archive_to_win64_zip():
     print("Packaged to %s" % package_filename_with_ext)  
 
 # Copy our packaged dir to a timestamped dir
-def archive_to_timestamped_dir(platform):
-    package_filename = build_package_filename_and_build_info(platform)
-    shutil.copytree(PACKAGING_DIR, package_filename)
+def archive_to_timestamped_dir(platform, timestamp):
+    package_filename = build_package_basename(platform, timestamp)
+    shutil.move(PACKAGING_DIR, package_filename)
 
     print("Packaged to directory %s" % package_filename)
 
 # Build the name of our package and populate our JSON build info file
-def build_package_filename_and_build_info(platform):
-    timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
-    # Update our JSON build info file and get the current version
-    version = process_build_info(timestamp)
-    package_filename = "NAP-%s-%s-%s" % (version, platform, timestamp)
-    return package_filename
-
-# Process our JSON build info: Fetch our revision, bump our build number and create a build info
-# in the package including source git revision
-def process_build_info(timestamp):
-    # Write build info back out with bumped build number
+def build_package_basename(platform, timestamp):
+    # Fetch version from build info
+    # TODO hardening.  deal with missing build info, exception loading build info file and no version entry.
     with open(BUILDINFO_FILE) as json_file:
         build_info = json.load(json_file)
 
-    # TODO validate loaded JSON
-
-    # Read our version
-    version = build_info['version']
-
-    # Bump build number
-    if not 'buildNumber' in build_info:
-        build_info['buildNumber'] = 0
-    build_info['buildNumber'] += 1
-
-    # Write build info back out with bumped build number
-    with open(BUILDINFO_FILE, 'w') as outfile:
-        json.dump(build_info, outfile, sort_keys=True, indent=2)
-
-    # Add git revision and timestamp to build info and bundle into package
-    # TODO add ability to not have git revision in release build
-    (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
-    build_info['gitRevision'] = git_revision.decode('ascii', 'ignore').strip()
-    build_info['timestamp'] = timestamp
-    with open(PACKAGED_BUILDINFO_FILE, 'w') as outfile:
-        json.dump(build_info, outfile, sort_keys=True, indent=2)
-
-    # Return version for population into package name
-    return version
+    package_filename = "NAP-%s-%s-%s" % (build_info['version'], platform, timestamp)
+    return package_filename
     
 # Main
 if __name__ == '__main__':

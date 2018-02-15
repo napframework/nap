@@ -7,6 +7,12 @@ file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
 configure_file(src/nap/packaginginfo.h.in packaginginfo.h @ONLY)
 list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/packaginginfo.h)
 
+# Populate version info
+include(${NAP_ROOT}/cmake/version.cmake)
+configure_file(src/nap/version.h.in version.h @ONLY)
+
+list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/version.h)
+
 if(APPLE)
     add_library(${PROJECT_NAME} SHARED 
         ${SOURCES}
@@ -82,3 +88,5 @@ install(DIRECTORY "src/nap/" DESTINATION "include/nap/"
         PATTERN "osx" EXCLUDE
         PATTERN "win32" EXCLUDE
 )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h
+        DESTINATION "include/nap/")

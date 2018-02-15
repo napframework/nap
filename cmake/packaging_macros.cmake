@@ -1,4 +1,17 @@
 macro(package_nap)
+    # Populate JSON build info
+    if(DEFINED NAP_PACKAGED_BUILD)
+        if(EXISTS ${NAP_ROOT}/cmake/buildNumber.cmake)
+            include(${NAP_ROOT}/cmake/buildNumber.cmake)
+        else()
+            set(NAP_BUILD_NUMBER 0)
+        endif()
+        math(EXPR NAP_BUILD_NUMBER "${NAP_BUILD_NUMBER}+1")
+        include(${NAP_ROOT}/cmake/version.cmake)        
+        configure_file(${NAP_ROOT}/cmake/buildInfo.json.in ${NAP_ROOT}/dist/cmake/buildInfo.json @ONLY)
+        configure_file(${NAP_ROOT}/cmake/buildNumber.cmake.in ${NAP_ROOT}/cmake/buildNumber.cmake @ONLY)
+    endif()
+
     # Package shared cmake files
     install(DIRECTORY ${NAP_ROOT}/dist/cmake/ 
             DESTINATION cmake
