@@ -31,17 +31,21 @@ namespace nap
             auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
             
             auto channelCount = resource->mChannelRouting.size();
+            if (channelCount > mInput->getChannelCount())
+            {
+                errorState.fail("Trying to rout channel that is out of bounds of input.");
+                return false;
+            }
+            
             for (auto channel = 0; channel < channelCount; ++channel)
             {
-                if (resource->mChannelRouting[channel] >= mInput->getChannelCount())
-                {
-                    errorState.fail("Trying to rout channel that is out of bounds.");
-                    return false;
-                }
-                
-                mOutputs.emplace_back(std::make_unique<OutputNode>(nodeManager));
-                mOutputs[channel]->setOutputChannel(channel);
-                mOutputs[channel]->audioInput.connect(mInput->getOutputForChannel(resource->mChannelRouting[channel]));
+                int destinationChannel = resource->mChannelRouting[channel];
+                if (destinationChannel < 0)
+                    continue;
+                auto node = std::make_unique<OutputNode>(nodeManager);
+                node->audioInput.connect(mInput->getOutputForChannel(channel));
+                node->setOutputChannel(destinationChannel);
+                mOutputs.emplace_back(std::move(node));
             }
             
             return true;
