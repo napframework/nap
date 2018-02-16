@@ -10,10 +10,10 @@ namespace nap
     {
                         
         
-        Node::Node(NodeManager& service)
+        Node::Node(NodeManager& manager)
         {
-            mNodeManager = &service;
-            service.registerNode(*this);
+            mNodeManager = &manager;
+            manager.registerNode(*this);
         }
         
         

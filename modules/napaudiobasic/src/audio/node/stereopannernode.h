@@ -11,10 +11,10 @@ namespace nap
         /**
          * Node to perform equal power panning on a stereo signal
          */
-        class NAPAPI StereoPanner : public Node
+        class NAPAPI StereoPannerNode : public Node
         {
         public:
-            StereoPanner(NodeManager& manager);
+            StereoPannerNode(NodeManager& manager);
             
             /**
              * @param value: 0 is far left, 1 is far right
