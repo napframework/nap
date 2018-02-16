@@ -1,5 +1,5 @@
-#include "stereopanner.h"
-#include <cmath>
+#include "stereopannernode.h"
+#include <audio/utility/audiofunctions.h>
 
 namespace nap
 {
@@ -7,21 +7,20 @@ namespace nap
     namespace audio
     {
         
-        StereoPanner::StereoPanner(NodeManager& manager) : Node(manager)
+        StereoPannerNode::StereoPannerNode(NodeManager& manager) : Node(manager)
         {
             setPanning(mPanning);
         }
         
         
-        void StereoPanner::setPanning(ControllerValue value)
+        void StereoPannerNode::setPanning(ControllerValue value)
         {
             mPanning = value;
-            mLeftGain = cos(mPanning * 0.5 * M_PI);
-            mRightGain = sin(mPanning * 0.5 * M_PI);
+            equalPowerPan<ControllerValue>(mPanning, mLeftGain, mRightGain);
         }
         
         
-        void StereoPanner::process()
+        void StereoPannerNode::process()
         {
             auto& leftInputBuffer = *leftInput.pull();
             auto& rightInputBuffer = *rightInput.pull();

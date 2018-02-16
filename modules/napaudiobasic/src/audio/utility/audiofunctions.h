@@ -1,3 +1,5 @@
+#include <cmath>
+
 namespace nap
 {
     
@@ -19,6 +21,12 @@ namespace nap
         }                                
         
         
+        template <typename T>
+        inline void equalPowerPan(const T& panning, T& left, T& right)
+        {
+            left = cos(panning * 0.5 * M_PI);
+            right = sin(panning * 0.5 * M_PI);
+        }        
         
     }
     

@@ -76,6 +76,7 @@ namespace nap
                 mpg123_delete(mpgHandle);
                 return false;
             }
+            outSampleRate = sampleRate;
             
             // Request the size in bytes of one audio sample
             auto sampleSize = mpg123_encsize(encoding);
