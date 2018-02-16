@@ -31,13 +31,3 @@ target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} napcore)
 
 # Package into platform release
 package_module()
-
-# Package dependent includes 
-# TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
-
-# SDL2
-if (WIN32)
-    install(DIRECTORY "../../../thirdparty/SDL2/msvc/" DESTINATION "thirdparty/SDL2"
-            PATTERN "lib" EXCLUDE)
-    install(DIRECTORY "../../../thirdparty/SDL2/msvc/lib/x64/" DESTINATION "thirdparty/SDL2/lib")
-endif()

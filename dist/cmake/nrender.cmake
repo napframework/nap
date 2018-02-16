@@ -2,12 +2,16 @@
 if(WIN32)
     if(MSVC)
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew)
-        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/lib/Release/x64")
+        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/lib/Release/x64)
     else()
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew)
-        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/lib/Release/x64")
+        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/lib/Release/x64)
     endif()
+elseif(APPLE)
+    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew)
+    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/lib)
 endif()
+
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
 if(NOT TARGET glew)
     find_package(GLEW REQUIRED)
@@ -36,7 +40,7 @@ if(WIN32)
          )
 elseif(APPLE)
     list(APPEND NRENDER_LIBRARIES
-         ${GLEW_LIBRARIES}
+         glew
          ${FREEIMAGE_LIBRARIES}
          )
 

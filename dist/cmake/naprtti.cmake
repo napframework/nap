@@ -65,7 +65,7 @@ endif()
 # Install naprtti and RTTR into projects for macOS/Linux
 if (NOT WIN32)
     # Add post-build step to set RTTR RPATH
-    # TODO? this is a workaround for RPATHs not being added for import libraries
+    # TODO? This is a workaround for RPATHs not being added for import libraries
     if(APPLE)
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD

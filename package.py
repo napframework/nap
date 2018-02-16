@@ -95,13 +95,13 @@ def is_osx_brew_package_installed(package_name):
 def install_dependencies_osx():
     dependencies = [
         'cmake',
-        'sdl2',
-        'glew',
+        # 'sdl2',
+        # 'glew',
         # 'glm', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
-        'assimp',
+        # 'assimp',
         # 'tclap', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
-        'ffmpeg',
-        'mpg123',
+        # 'ffmpeg',
+        # 'mpg123',
         'qt',
         'python3'
     ]

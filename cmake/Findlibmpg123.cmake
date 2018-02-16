@@ -8,13 +8,11 @@
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
-if(NOT APPLE)
-    find_path(LIBMPG123_DIR src/libmpg123/mpg123.h.in
-              HINTS
-              ${THIRDPARTY_DIR}/mpg123
-              ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
-              )
-endif()
+find_path(LIBMPG123_DIR src/libmpg123/mpg123.h.in
+          HINTS
+          ${THIRDPARTY_DIR}/mpg123
+          ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
+          )
 
 if(WIN32)
     set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/msvc)
@@ -22,15 +20,10 @@ if(WIN32)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dll)
     set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/msvc)
 elseif(APPLE)
-    find_path(LIBMPG123_PREFIX lib/libmpg123.dylib
-        HINTS
-        /usr/local
-        /opt/local
-    )
-    if (LIBMPG123_PREFIX)
-        set(LIBMPG123_LIBRARIES ${LIBMPG123_PREFIX}/lib/libmpg123.dylib)
-        set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_PREFIX}/include/)
-    endif()
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/osx/lib)
+    set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.dylib)
+    set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dylib)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/osx/include)
 else()
     if(${ARCH} STREQUAL "armv6")
         set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin/arm)

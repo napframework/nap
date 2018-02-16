@@ -30,4 +30,23 @@ if(NOT TARGET nrender)
     include(${CMAKE_SOURCE_DIR}/../../cmake/nrender.cmake)
 endif(NOT TARGET nrender)
 target_link_libraries(${PROJECT_NAME} nrender ${NRENDER_LIBRARIES})
-target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDES})  
+target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDES})
+
+if(APPLE)
+    # Package glew into packaged project on macOS
+    install(DIRECTORY "${THIRDPARTY_DIR}/glew/lib/" 
+            DESTINATION "lib")
+
+    # Package assimp into packaged project on macOS
+    install(DIRECTORY "${THIRDPARTY_DIR}/assimp/lib/" 
+            DESTINATION "lib"
+            PATTERN "cmake" EXCLUDE
+            PATTERN "pkgconfig" EXCLUDE)       
+
+    # Package SDL2 into packaged project on macOS
+    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/lib/" 
+            DESTINATION "lib"
+            PATTERN "cmake" EXCLUDE
+            PATTERN "pkgconfig" EXCLUDE
+            PATTERN "*.a" EXCLUDE)
+endif()    
