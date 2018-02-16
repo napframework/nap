@@ -9,6 +9,9 @@ if(WIN32)
         set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/SDL2/mingw/x86_64-w64-mingw32")
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/mingw/x86_64-w64-mingw32)
     endif()
+elseif(APPLE)
+    set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/SDL2/osx/install/lib")
+    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/osx/install)
 endif()
 find_package(SDL2 REQUIRED)
 
@@ -20,10 +23,15 @@ if(WIN32)
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/msvc)
         set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64")
     endif()
+elseif(APPLE)
+    set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/osx/install/lib")
+    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/osx/install)
 endif()
 
 if(WIN32)
     set(assimp_DIR "${THIRDPARTY_DIR}/assimp/msvc64/install/lib/cmake/assimp-3.3")
+elseif(APPLE)
+    set(assimp_DIR "${THIRDPARTY_DIR}/assimp/osx/install/lib/cmake/assimp-3.3")   
 endif()
 
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
@@ -115,6 +123,8 @@ install(DIRECTORY "src/" DESTINATION "include/nrender/"
 # Assimp
 if (WIN32)
     install(DIRECTORY ../../thirdparty/assimp/msvc64/install/ DESTINATION thirdparty/assimp/)
+elseif(APPLE)
+    install(DIRECTORY ../../thirdparty/assimp/osx/install/ DESTINATION thirdparty/assimp/)   
 endif()
 
 # FreeImage
@@ -137,6 +147,16 @@ if (WIN32)
     install(DIRECTORY "${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/" DESTINATION "thirdparty/glew/bin")
     install(FILES ${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64/glew32.lib DESTINATION "thirdparty/glew/lib/")
 elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/glew/osx/include DESTINATION thirdparty/glew/include)
+    install(DIRECTORY "${THIRDPARTY_DIR}/glew/osx/install/" DESTINATION "thirdparty/glew"
+            PATTERN "lib" EXCLUDE)
+    install(FILES "${THIRDPARTY_DIR}/glew/osx/install/lib/libGLEW.dylib" DESTINATION "thirdparty/glew/lib")
 endif()
 
+# SDL2
+if (WIN32)
+    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/msvc/" DESTINATION "thirdparty/SDL2"
+            PATTERN "lib" EXCLUDE)
+    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/" DESTINATION "thirdparty/SDL2/lib")
+elseif(APPLE)
+    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/osx/install/" DESTINATION "thirdparty/SDL2")
+endif()

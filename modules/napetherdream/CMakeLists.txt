@@ -47,30 +47,20 @@ elseif(APPLE)
 
     install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/osx/bin")
 
-    install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL} 
-                                          -change
-                                          /usr/local/lib/libEtherDream.dylib
-                                          @rpath/libEtherDream.dylib
-                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Release/libmod_napetherdream.dylib 
-                                          )")
-    install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL}
-                                          -add_rpath
-                                          @loader_path/../../../../thirdparty/etherdream/osx/bin
-                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Release/libmod_napetherdream.dylib 
-                                  ERROR_QUIET
-                                  )")
-    install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL} 
-                                          -change
-                                          /usr/local/lib/libEtherDream.dylib
-                                          @rpath/libEtherDream.dylib
-                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Debug/libmod_napetherdream.dylib 
-                                          )")
-    install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL}
-                                          -add_rpath
--                                          @loader_path/../../../../thirdparty/etherdream/osx/bin
-                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/Debug/libmod_napetherdream.dylib                                           
-                                  ERROR_QUIET
-                                  )")
+    foreach(build_type Release Debug)
+        install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL} 
+                                              -change
+                                              /usr/local/lib/libEtherDream.dylib
+                                              @rpath/libEtherDream.dylib
+                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/${build_type}/libmod_napetherdream.dylib 
+                                              )")
+        install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL}
+                                              -add_rpath
+                                              @loader_path/../../../../thirdparty/etherdream/osx/bin
+                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/${build_type}/libmod_napetherdream.dylib 
+                                      ERROR_QUIET
+                                      )")     
+    endforeach()
 else()
     # Add Etherdream to module RPATH
     get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)

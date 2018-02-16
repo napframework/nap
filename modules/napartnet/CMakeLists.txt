@@ -59,19 +59,14 @@ elseif(APPLE)
 
     install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/osx/bin")
 
-    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                                          -add_rpath
-                                          @loader_path/../../../../thirdparty/libartnet/osx/bin
-                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Release/libmod_napartnet.dylib                                           
-                                  ERROR_QUIET
-                                  )")
-
-    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                                          -add_rpath
-                                          @loader_path/../../../../thirdparty/libartnet/osx/bin
-                                          ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/Debug/libmod_napartnet.dylib 
-                                  ERROR_QUIET
-                                  )")
+    foreach(build_type Release Debug)
+        install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                                              -add_rpath
+                                              @loader_path/../../../../thirdparty/libartnet/osx/bin
+                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/${build_type}/libmod_napartnet.dylib                                           
+                                      ERROR_QUIET
+                                      )")
+    endforeach()
 else()
     # Add libartnet to module RPATH
     get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)

@@ -223,63 +223,6 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
     endif()
 endmacro()
 
-
-
-# Set the packaged RPATH of a module for its dependent modules.
-macro(set_installed_module_rpath_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME)
-    set(NAP_ROOT_LOCATION_TO_MODULE "../../../..")
-    if(APPLE)
-        set_installed_rpath_on_macos_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_MODULE})
-    elseif(UNIX)
-        set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_MODULE})        
-    endif()
-endmacro()
-
-# Set the packaged RPATH of a Linux binary object for its dependent modules
-macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
-    # Add our core lib path first
-    set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}")
-
-    # Iterate over each module and append to path
-    foreach(module ${DEPENDENT_NAP_MODULES})
-        # if (NOT BUILT_RPATH STREQUAL "")
-        #     set(BUILT_RPATH "${BUILT_RPATH}:")
-        # endif()
-
-        set(THIS_MODULE_PATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/modules/${module}/lib/${CMAKE_BUILD_TYPE}")
-        # message("Adding ${module} as ${THIS_MODULE_PATH}")
-        set(BUILT_RPATH "${BUILT_RPATH}:${THIS_MODULE_PATH}")
-    endforeach(module)
-    # message("Built rpath: ${BUILT_RPATH}")
-    set_target_properties(${TARGET_NAME} PROPERTIES SKIP_BUILD_RPATH FALSE
-                                                    INSTALL_RPATH ${BUILT_RPATH})
-endmacro()
-
-# Set the packaged RPATH of a macOS binary object for its dependent modules
-macro(set_installed_rpath_on_macos_object_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE)
-    foreach(MODULECONFIG Release Debug)
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/rttr/bin/")
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/python/")
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/lib/${MODULECONFIG}")
-        foreach(DEPENDENT_MODULE_NAME ${DEPENDENT_NAP_MODULES})
-            ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/modules/${DEPENDENT_MODULE_NAME}/lib/${MODULECONFIG}")
-        endforeach()
-    endforeach()
-endmacro()
-
-macro(ensure_macos_module_has_rpath_at_install MODULE_NAME CONFIG PATH_TO_ADD)
-    set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/modules/${MODULE_NAME}/lib/${CONFIG}/lib${MODULE_NAME}.dylib)
-    ensure_macos_file_has_rpath_at_install(${MODULE_FILENAME} ${PATH_TO_ADD})
-endmacro()
-
-macro(ensure_macos_file_has_rpath_at_install FILENAME PATH_TO_ADD)
-    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                          -add_rpath
-                                          ${PATH_TO_ADD}
-                                          ${FILENAME} 
-                                  ERROR_QUIET)")
-endmacro()
-
 # Change our project output directories (when building against NAP source)
 macro(set_output_directories)
     if (MSVC OR APPLE)

@@ -31,35 +31,34 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
         endif(PKG_CONFIG_FOUND)
     endif(UNIX AND NOT APPLE)
 
-    # Add our homebrew package prefix on macOS
     if(APPLE)
-        EXEC_PROGRAM(/usr/bin/env
-                     ARGS brew --prefix ffmpeg
-                     OUTPUT_VARIABLE MACOS_FFMPEG_PATH)
+        find_path(FFMPEG_AVCODEC_INCLUDE_DIR
+                  NAMES libavcodec/avcodec.h
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/osx/install/include
+                  )
+    else()
+        find_path(FFMPEG_AVCODEC_INCLUDE_DIR
+                  NAMES libavcodec/avcodec.h
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/include
+                  )
     endif()
-
-    find_path(FFMPEG_AVCODEC_INCLUDE_DIR
-              NAMES libavcodec/avcodec.h
-              HINTS ${THIRDPARTY_DIR}/ffmpeg/include
-                    ${MACOS_FFMPEG_PATH}/include
-              )
 
     find_library(FFMPEG_LIBAVCODEC
                  NAMES avcodec
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
-                       ${MACOS_FFMPEG_PATH}/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                  )
 
     find_library(FFMPEG_LIBAVFORMAT
                  NAMES avformat
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
-                       ${MACOS_FFMPEG_PATH}/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                  )
 
     find_library(FFMPEG_LIBAVUTIL
                  NAMES avutil
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
-                       ${MACOS_FFMPEG_PATH}/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                  )
 
     if(FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)

@@ -23,7 +23,21 @@ package_module()
 # Package dependent includes 
 # TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
 
-# FFMPEG
-if (WIN32)
-    install(DIRECTORY "../../../thirdparty/ffmpeg/" DESTINATION "thirdparty/ffmpeg")
+# FFmpeg
+if(WIN32)
+    install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/" DESTINATION "thirdparty/FFmpeg"
+            PATTERN "osx" EXCLUDE)
+elseif(APPLE)
+    # Install FFmpeg into release
+    install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/osx/install/" DESTINATION "thirdparty/FFmpeg")    
+
+    # Add RPATH for FFmpeg to packaged module on macOS
+    foreach(build_type Release Debug)
+        install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                                              -add_rpath
+                                              @loader_path/../../../../thirdparty/FFmpeg/lib
+                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napvideo/lib/${build_type}/libmod_napvideo.dylib                                           
+                                      ERROR_QUIET
+                                      )")
+      endforeach()
 endif()

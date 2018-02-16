@@ -15,7 +15,16 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(glew REQUIRED_VARS GLEW_DIR GLEW_INCLUDE_DIRS)
 
 
-if (WIN32)
+if (APPLE)
+    set(GLEW_LIBS ${GLEW_DIR}/lib/libGLEW.dylib)
+
+    add_library(glew SHARED IMPORTED)
+    set_target_properties(glew PROPERTIES
+        IMPORTED_CONFIGURATIONS "Debug;Release"
+        IMPORTED_LOCATION_RELEASE ${GLEW_LIBS}
+        IMPORTED_LOCATION_DEBUG ${GLEW_LIBS}
+    )
+elseif (WIN32)
     set(GLEW_LIBS ${GLEW_DIR}/bin/glew32.dll)
 
 	add_library(glew SHARED IMPORTED)
