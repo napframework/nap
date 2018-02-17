@@ -11,17 +11,15 @@ using namespace napkin;
 
 ThemeManager::ThemeManager() : mCurrentTheme(TXT_DEFAULT_THEME)
 {
-	loadFonts();
-
 	connect(&mFileWatcher, &QFileSystemWatcher::directoryChanged, this, &ThemeManager::onFileChanged);
 	connect(&mFileWatcher, &QFileSystemWatcher::fileChanged, this, &ThemeManager::onFileChanged);
-
-	mFileWatcher.addPath(getThemeDir());
 }
 
 
 void ThemeManager::setTheme(const QString& themeName)
 {
+	loadFonts();
+
 	if (themeName.isEmpty())
 	{
 		mCurrentTheme = napkin::TXT_DEFAULT_THEME;
@@ -117,6 +115,9 @@ void ThemeManager::onFileChanged(const QString& path)
 
 void ThemeManager::loadFonts()
 {
+	if (mFontsLoaded)
+		return;
+
 	QStringList fonts;
 	fonts << ":/fonts/Montserrat-ExtraBold.ttf";
 	fonts << ":/fonts/Montserrat-Light.ttf";
@@ -134,4 +135,10 @@ void ThemeManager::loadFonts()
 		}
 	}
 
+	mFontsLoaded = true;
+}
+
+void ThemeManager::watchThemeDir()
+{
+	mFileWatcher.addPath(getThemeDir());
 }
