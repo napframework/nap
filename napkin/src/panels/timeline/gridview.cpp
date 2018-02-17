@@ -2,14 +2,18 @@
 #include <QMouseEvent>
 #include <QtGui/QtGui>
 #include <nap/logger.h>
+#include <QtDebug>
+#include <generic/qtutils.h>
 
 using namespace napkin;
 
-QPointF mul(const QPointF& a, const QPointF& b) {
+QPointF mul(const QPointF& a, const QPointF& b)
+{
 	return QPointF(a.x() * b.x(), a.y() * b.y());
 }
 
-QString secondsToSMPTE(qreal seconds, int framerate) {
+QString secondsToSMPTE(qreal seconds, int framerate)
+{
 	int f = qFloor(fmod(seconds, 1.0) * framerate);
 	int s = qFloor(seconds);
 	int m = qFloor(s / 60.0);
@@ -23,7 +27,8 @@ QString secondsToSMPTE(qreal seconds, int framerate) {
 									  QString::asprintf("%02d", f));
 }
 
-GridView::GridView() : QGraphicsView() {
+GridView::GridView() : QGraphicsView()
+{
 	setTransformationAnchor(QGraphicsView::NoAnchor);
 	setMouseTracking(true);
 	viewport()->setMouseTracking(true);
@@ -32,12 +37,14 @@ GridView::GridView() : QGraphicsView() {
 }
 
 
-void GridView::mousePressEvent(QMouseEvent* event) {
+void GridView::mousePressEvent(QMouseEvent* event)
+{
 	mMousePressPos = event->pos();
 	mMouseLastPos = event->pos();
 }
 
-void GridView::mouseMoveEvent(QMouseEvent* event) {
+void GridView::mouseMoveEvent(QMouseEvent* event)
+{
 	QGraphicsView::mouseMoveEvent(event);
 	auto mousePos = event->pos();
 	mMouseDelta = mousePos - mMouseLastPos;
@@ -47,10 +54,12 @@ void GridView::mouseMoveEvent(QMouseEvent* event) {
 	bool rmb = event->buttons() == Qt::RightButton;
 	bool altKey = event->modifiers() == Qt::AltModifier;
 
-	if (altKey && (lmb || mmb)) {
+	if (altKey && (lmb || mmb))
+	{
 		pan(QPointF(mMouseDelta));
 		event->accept();
-	} else if (altKey && rmb) {
+	} else if (altKey && rmb)
+	{
 		zoom(QPointF(1, 1) + QPointF(mMouseDelta) * 0.01, mapToScene(mMousePressPos));
 		event->accept();
 	}
@@ -59,37 +68,56 @@ void GridView::mouseMoveEvent(QMouseEvent* event) {
 	event->ignore();
 }
 
-void GridView::mouseReleaseEvent(QMouseEvent* event) {
+void GridView::mouseReleaseEvent(QMouseEvent* event)
+{
 	QGraphicsView::mouseReleaseEvent(event);
 }
 
-void GridView::keyPressEvent(QKeyEvent* event) {
+void GridView::keyPressEvent(QKeyEvent* event)
+{
 	QGraphicsView::keyPressEvent(event);
-	if (event->key() == Qt::Key_F) {
-		centerView();
+	switch (event->key()) {
+		case Qt::Key_Home:
+			centerView();
+			break;
+		case Qt::Key_A:
+			frameAll(true, false);
+			break;
+		case Qt::Key_F:
+			frameSelected(true, false);
+			break;
+		default:
+			break;
 	}
 }
 
-void GridView::keyReleaseEvent(QKeyEvent* event) {
+void GridView::keyReleaseEvent(QKeyEvent* event)
+{
 	QGraphicsView::keyReleaseEvent(event);
 }
 
-void GridView::zoom(const QPointF& delta, const QPointF& pivot) {
+void GridView::zoom(const QPointF& delta, const QPointF& pivot)
+{
 
 	auto& xf = mViewTransform;
 
 	// Translate to zoom around pivot
 	xf.translate(pivot.x(), pivot.y());
 
-	if (mZoomMode == IgnoreAspectRatio) {
+	if (mZoomMode == IgnoreAspectRatio)
+	{
 		xf.scale(delta.x(), delta.y());
-	} else {
+	} else
+	{
 		qreal avg = (delta.x() + delta.y()) / 2;
-		if (mZoomMode == KeepAspectRatio) {
+		if (mZoomMode == KeepAspectRatio)
+		{
 			xf.scale(avg, avg);
-		} else if (mZoomMode == Horizontal) {
+		} else if (mZoomMode == Horizontal)
+		{
 			xf.scale(avg, 1);
-		} else if (mZoomMode == Vertical) {
+		} else if (mZoomMode == Vertical)
+		{
 			xf.scale(1, avg);
 		}
 	}
@@ -100,7 +128,8 @@ void GridView::zoom(const QPointF& delta, const QPointF& pivot) {
 	applyViewTransform();
 }
 
-void GridView::pan(const QPointF& delta) {
+void GridView::pan(const QPointF& delta)
+{
 	auto scale = viewScale();
 	qreal dx = delta.x() / scale.x();
 	qreal dy = delta.y() / scale.y();
@@ -108,8 +137,15 @@ void GridView::pan(const QPointF& delta) {
 	applyViewTransform();
 }
 
-void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
+void GridView::drawBackground(QPainter* painter, const QRectF& rect)
+{
 	painter->fillRect(rect, Qt::darkGray);
+
+	QPen pen(Qt::red);
+	pen.setCosmetic(true);
+	painter->setPen(pen);
+	painter->drawRect(selectedItemsBoundingRect());
+
 
 	auto viewRect = viewport()->rect();
 	auto sceneRect = mapToScene(viewRect).boundingRect();
@@ -132,7 +168,8 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 
 
 		painter->setPen(QPen(Qt::gray, 0, Qt::DotLine));
-		for (int x = xmin; x < xmax; x++) {
+		for (int x = xmin; x < xmax; x++)
+		{
 			qreal tx = x * stepSizeX;
 			QPointF p1(tx, sceneRect.top() + 22);
 			QPointF p2(tx, sceneRect.bottom());
@@ -152,16 +189,20 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 		int ymax = qCeil(sceneRect.bottom() / stepSizeY);
 
 		painter->setPen(QPen(Qt::gray, 0));
-		if (stepSizeX > 0) {
-			for (int x = xmin; x < xmax; x++) {
+		if (stepSizeX > 0)
+		{
+			for (int x = xmin; x < xmax; x++)
+			{
 				qreal tx = x * stepSizeX;
 				QPointF p1(tx, sceneRect.top());
 				QPointF p2(tx, sceneRect.bottom());
 				painter->drawLine(p1, p2);
 			}
 		}
-		if (stepSizeY > 0) {
-			for (int y = ymin; y < ymax; y++) {
+		if (stepSizeY > 0)
+		{
+			for (int y = ymin; y < ymax; y++)
+			{
 				qreal ty = y * stepSizeY;
 				QPointF p1(sceneRect.left(), ty);
 				QPointF p2(sceneRect.right(), ty);
@@ -174,11 +215,14 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 
 		painter->save();
 		painter->resetMatrix();
-		if (stepSizeX > 0) {
-			for (int x = xmin; x < xmax; x++) {
+		if (stepSizeX > 0)
+		{
+			for (int x = xmin; x < xmax; x++)
+			{
 				qreal tx = x * stepSizeX;
 				auto pt = mapFromScene(tx, sceneRect.top()) + QPointF(5, 15);
-				if (pt.x() > 20) {
+				if (pt.x() > 20)
+				{
 					if (mRulerFormat == Float)
 						painter->drawText(pt, QString::number(tx) + suffix);
 					else if (mRulerFormat == SMPTE)
@@ -186,11 +230,14 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 				}
 			}
 		}
-		if (stepSizeY > 0) {
-			for (int y = ymin; y < ymax; y++) {
+		if (stepSizeY > 0)
+		{
+			for (int y = ymin; y < ymax; y++)
+			{
 				qreal ty = y * stepSizeY + 5;
 				auto pt = mapFromScene(sceneRect.left(), ty) + QPointF(5, 15);
-				if (pt.y() > 20) {
+				if (pt.y() > 20)
+				{
 					painter->drawText(pt, QString::number(ty) + suffix);
 				}
 			}
@@ -207,9 +254,12 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 	const qreal hour = minute * 60;
 	const qreal day = hour * 24;
 
+
+
 }
 
-qreal GridView::calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const {
+qreal GridView::calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const
+{
 	qreal targetSteps = viewWidth / desiredSpacing;
 	qreal estStep = sceneRectWidth / targetSteps;
 	qreal magPow = qPow(10, qFloor(log(estStep) / log(10)));
@@ -227,7 +277,8 @@ qreal GridView::calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneR
 }
 
 qreal GridView::calcGridStepTime(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth,
-								 qreal minStepSize) const {
+								 qreal minStepSize) const
+{
 	const qreal intervals[] = {
 			1.0 / mFramerate, // frame
 			1.0, // second
@@ -249,7 +300,8 @@ qreal GridView::calcGridStepTime(qreal desiredSpacing, qreal viewWidth, qreal sc
 	};
 	int len = sizeof(intervals) / sizeof(intervals[0]);
 
-	for (int i = 0; i < len; i++) {
+	for (int i = 0; i < len; i++)
+	{
 		qreal ival = intervals[i];
 		qreal steps = sceneRectWidth / ival;
 		qreal stepSize = viewWidth / steps;
@@ -259,46 +311,99 @@ qreal GridView::calcGridStepTime(qreal desiredSpacing, qreal viewWidth, qreal sc
 	return -1;
 }
 
-void GridView::wheelEvent(QWheelEvent* event) {
+void GridView::wheelEvent(QWheelEvent* event)
+{
 	qreal delta = 1 + event->delta() * 0.001;
 	zoom(QPointF(delta, delta), mapToScene(event->pos()));
 }
 
-void GridView::centerView() {
+void GridView::centerView()
+{
 	mViewTransform.reset();
-	mViewTransform.translate(rect().x() / 2, rect().y() / 2);
+	mViewTransform.translate(rect().width() / 2, rect().height() / 2);
 	applyViewTransform();
 }
 
-void GridView::applyViewTransform() {
+
+void GridView::frameAll(bool horizontal, bool vertical)
+{
+	frameView(this->scene()->itemsBoundingRect(), horizontal, vertical);
+}
+
+void GridView::frameSelected(bool horizontal, bool vertical)
+{
+	frameView(selectedItemsBoundingRect(), horizontal, vertical);
+}
+
+
+void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical)
+{
+	auto viewRect = viewport()->rect();
+
+	auto origTranslate = napkin::getTranslation(mViewTransform);
+	auto origScale = napkin::getScale(mViewTransform);
+
+	mViewTransform.reset();
+
+	qreal sx = horizontal ? viewRect.width() / rec.width() : origScale.width();
+	qreal sy = vertical ? viewRect.height() / rec.height() : origScale.height();
+	qreal tx = horizontal ? -rec.x() : origTranslate.x();
+	qreal ty = vertical ? -rec.y() : origTranslate.y();
+
+	mViewTransform.scale(sx, sy);
+	mViewTransform.translate(tx, ty);
+	applyViewTransform();
+}
+
+
+void GridView::applyViewTransform()
+{
 	qreal margin = 100;
 
 
-	qreal pos = mViewTransform.m31();
-	qreal scale = mViewTransform.m21();
-	qreal realMargin = margin * scale;
-
-
-	nap::Logger::info("==============");
-	nap::Logger::info(QString::number(pos).toStdString());
-	nap::Logger::info(QString::number(realMargin).toStdString());
-
-	qreal offset = realMargin - pos;
-	nap::Logger::info("Correct");
-	nap::Logger::info(QString::number(offset).toStdString());
-
-	if (pos > realMargin)
-		mViewTransform.translate(offset,0);
+//	qreal pos = mViewTransform.m31();
+//	qreal scale = mViewTransform.m21();
+//	qreal realMargin = margin * scale;
+//
+//
+//	nap::Logger::info("==============");
+//	nap::Logger::info(QString::number(pos).toStdString());
+//	nap::Logger::info(QString::number(realMargin).toStdString());
+//
+//	qreal offset = realMargin - pos;
+//	nap::Logger::info("Correct");
+//	nap::Logger::info(QString::number(offset).toStdString());
+//
+//	if (pos > realMargin)
+//		mViewTransform.translate(offset,0);
 
 	setTransform(mViewTransform);
 	viewTransformed(mViewTransform);
 }
 
-const QPointF GridView::viewScale() const {
+const QPointF GridView::viewScale() const
+{
 	return QPointF(mViewTransform.m11(), mViewTransform.m22());
 }
 
-const QPointF GridView::viewPos() const {
+const QPointF GridView::viewPos() const
+{
 	return QPointF(mViewTransform.m31(), mViewTransform.m32());
+}
+
+QRectF GridView::selectedItemsBoundingRect() const
+{
+	auto selection = scene()->selectedItems();
+	if (selection.isEmpty())
+		return scene()->itemsBoundingRect();
+
+	auto rect = selection[0]->sceneBoundingRect();
+	if (selection.size() == 1)
+		return rect;
+
+	for (int i=1, len=selection.size(); i<len; i++)
+		rect = rect.united(selection[i]->sceneBoundingRect());
+
+	return rect;
 }
 

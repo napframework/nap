@@ -554,7 +554,8 @@
                     "mID": "nap::FacadeLightComponent",
                     "Controller": "Universe7",
                     "MinChannel": 108,
-                    "MaxChannel": 288
+                    "MaxChannel": 288,
+                    "Send": true
                 }
             ],
             "Children": [

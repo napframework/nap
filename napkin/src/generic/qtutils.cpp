@@ -162,3 +162,23 @@ void napkin::revealInFileBrowser(const QString& filename)
 	nap::Logger::fatal("Revealing files not supported yet: %s", filename.toStdString().c_str());
 }
 
+QPointF napkin::getTranslation(const QTransform& xf)
+{
+	return {xf.m31(), xf.m32()};
+}
+
+QSizeF napkin::getScale(const QTransform& xf)
+{
+	return {xf.m11(), xf.m22()};
+}
+
+void napkin::setTranslation(QTransform& xf, qreal x, qreal y)
+{
+	xf.setMatrix(xf.m11(), xf.m12(), xf.m13(), xf.m21(), xf.m22(), xf.m23(), x, y, xf.m33());
+}
+
+void napkin::setScale(QTransform& xf, qreal x, qreal y)
+{
+	xf.setMatrix(x, xf.m12(), xf.m13(), xf.m21(), y, xf.m23(), xf.m31(), xf.m32(), xf.m33());
+}
+
