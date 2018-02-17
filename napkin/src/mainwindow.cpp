@@ -24,6 +24,12 @@ void MainWindow::unbindSignals()
 
 void MainWindow::showEvent(QShowEvent* event)
 {
+	QSettings defaultSettings(DEFAULT_SETTINGS_FILE, QSettings::IniFormat);
+	if (!QFileInfo::exists(DEFAULT_SETTINGS_FILE))
+		nap::Logger::warn("Settings file not found: %1", DEFAULT_SETTINGS_FILE.toStdString().c_str());
+
+	restoreSettings(defaultSettings);
+
 	BaseWindow::showEvent(event);
 	AppContext::get().restoreUI();
 }
@@ -88,6 +94,13 @@ void MainWindow::addMenu()
 	auto optionsMenu = new QMenu("Options", menuBar());
 	{
 		optionsMenu->addMenu(&mThemeMenu);
+		optionsMenu->addAction("Save settings as...", [this]() {
+			auto filename = QFileDialog::getSaveFileName(this, "Save Settings", QString(), "Settings file (*.ini)");
+			if (filename.isEmpty())
+				return;
+			QSettings s(filename, QSettings::IniFormat);
+			saveSettings(s);
+		});
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), optionsMenu);
 }
