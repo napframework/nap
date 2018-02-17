@@ -21,6 +21,9 @@ namespace napkin {
 		void pan(const QPointF& delta);
 		void zoom(const QPointF& delta, const QPointF& pivot);
 		void centerView();
+		void frameAll(bool horizontal=true, bool vertical=true);
+		void frameSelected(bool horizontal=true, bool vertical=true);
+		void frameView(const QRectF& rect, bool horizontal=true, bool vertical=true);
 
 		const QPoint& mousePressedPos() const { return mMousePressPos; }
 		const QPoint& mouseLastPos() const { return mMouseLastPos; }
@@ -41,7 +44,7 @@ namespace napkin {
 
 		QPoint mMousePressPos;
 	private:
-
+		QRectF selectedItemsBoundingRect() const;
 		void applyViewTransform();
 		const QPointF viewScale() const;
 		const QPointF viewPos() const;

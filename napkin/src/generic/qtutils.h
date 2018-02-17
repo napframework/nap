@@ -115,5 +115,25 @@ namespace napkin
 	 */
 	void revealInFileBrowser(const QString& filename);
 
+	/**
+	 * Get the translation component from a QTransform
+	 */
+	QPointF getTranslation(const QTransform& xf);
+
+	/**
+	 * Set the translation component from a QTransform
+	 */
+	void setTranslation(QTransform& xf, qreal x, qreal y);
+
+	/**
+	 * Get the scale component from a QTransform
+	 */
+	QSizeF getScale(const QTransform& xf);
+
+	/**
+	 * Set the scale component from a QTransform
+	 */
+	void setScale(QTransform& xf, qreal x, qreal y);
+
 }
 
