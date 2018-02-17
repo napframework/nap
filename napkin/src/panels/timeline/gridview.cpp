@@ -325,20 +325,21 @@ void GridView::centerView()
 }
 
 
-void GridView::frameAll(bool horizontal, bool vertical)
+void GridView::frameAll(bool horizontal, bool vertical, QMargins margins)
 {
-	frameView(this->scene()->itemsBoundingRect(), horizontal, vertical);
+	frameView(this->scene()->itemsBoundingRect(), horizontal, vertical, margins);
 }
 
-void GridView::frameSelected(bool horizontal, bool vertical)
+void GridView::frameSelected(bool horizontal, bool vertical, QMargins margins)
 {
-	frameView(selectedItemsBoundingRect(), horizontal, vertical);
+	frameView(selectedItemsBoundingRect(), horizontal, vertical, margins);
 }
 
 
-void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical)
+void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMargins margins)
 {
-	auto viewRect = viewport()->rect();
+	qInfo() << margins;
+	auto viewRect = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
 
 	auto origTranslate = napkin::getTranslation(mViewTransform);
 	auto origScale = napkin::getScale(mViewTransform);
@@ -347,8 +348,8 @@ void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical)
 
 	qreal sx = horizontal ? viewRect.width() / rec.width() : origScale.width();
 	qreal sy = vertical ? viewRect.height() / rec.height() : origScale.height();
-	qreal tx = horizontal ? -rec.x() : origTranslate.x();
-	qreal ty = vertical ? -rec.y() : origTranslate.y();
+	qreal tx = horizontal ? -rec.x() + margins.left() / sx : origTranslate.x();
+	qreal ty = vertical ? -rec.y() + margins.top() / sy : origTranslate.y();
 
 	mViewTransform.scale(sx, sy);
 	mViewTransform.translate(tx, ty);

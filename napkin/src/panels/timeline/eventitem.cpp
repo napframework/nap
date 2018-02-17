@@ -57,3 +57,9 @@ void napkin::EventItem::onEventChanged(Event& event) {
 	setRect(0, 0, event.length(), event.track().height());
 }
 
+QRectF napkin::EventItem::boundingRect() const
+{
+	qreal penWidth = pen().width();
+	return rect();
+}
+
