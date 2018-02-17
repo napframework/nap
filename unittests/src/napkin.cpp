@@ -451,8 +451,6 @@ TEST_CASE("File Extensions", TAG_NAPKIN)
 
 TEST_CASE("Resource Management", TAG_NAPKIN)
 {
-	// NOTE: Some conversion to std::string to let Catch print useful debug info
-
 	// Must start QApplication in order to have an event loop for signals?
 	int argc = 1;
 	char* argv[] = {"arg!"};
@@ -486,6 +484,7 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	auto relJsonPath = napkin::getRelativeResourcePath(absJsonFilePath);
 	REQUIRE(relJsonPath.toStdString() == jsonFile.toStdString());
 
+
 	// Check relative path
 	auto relShaderPath = napkin::getRelativeResourcePath(absShaderFilePath);
 	REQUIRE(relShaderPath.toStdString() == shaderFile.toStdString());
@@ -501,4 +500,10 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	// or not
 	REQUIRE(!napkin::directoryContains(absShaderPath, resourcedir));
 
+}
+
+
+TEST_CASE("Load Document", TAG_NAPKIN)
+{
+	napkin::AppContext::get().loadDocument(getResource("kalvertoren.json"));
 }

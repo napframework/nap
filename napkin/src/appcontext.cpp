@@ -131,6 +131,8 @@ const QString AppContext::getLastOpenedFilename()
 
 void AppContext::restoreUI()
 {
+	getThemeManager().watchThemeDir();
+
 	// Restore theme
 	const QString& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_DEFAULT_THEME).toString();
 	getThemeManager().setTheme(recentTheme);
