@@ -21,9 +21,9 @@ namespace napkin {
 		void pan(const QPointF& delta);
 		void zoom(const QPointF& delta, const QPointF& pivot);
 		void centerView();
-		void frameAll(bool horizontal=true, bool vertical=true);
-		void frameSelected(bool horizontal=true, bool vertical=true);
-		void frameView(const QRectF& rect, bool horizontal=true, bool vertical=true);
+		void frameAll(bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
+		void frameSelected(bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
+		void frameView(const QRectF& rect, bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
 
 		const QPoint& mousePressedPos() const { return mMousePressPos; }
 		const QPoint& mouseLastPos() const { return mMouseLastPos; }
