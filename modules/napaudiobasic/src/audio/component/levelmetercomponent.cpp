@@ -39,7 +39,7 @@ namespace nap
         
         NodeManager& LevelMeterComponentInstance::getNodeManager()
         {
-            return getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
+            return getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH)->getNodeManager();
         }
         
         

@@ -16,6 +16,9 @@ namespace nap
         class LevelMeterComponentInstance;
         
         
+        /**
+         * Component to measure the amplitude level of the audio signal from an @AudioComponentBase
+         */
         class NAPAPI LevelMeterComponent : public Component
         {
             RTTI_ENABLE(Component)
@@ -24,9 +27,9 @@ namespace nap
         public:
             LevelMeterComponent() : Component() { }
             
-            nap::ComponentPtr<AudioComponentBase> mInput;
-            TimeValue mAnalysisWindowSize = 10;
-            LevelMeterNode::Type mMeterType = LevelMeterNode::Type::RMS;
+            nap::ComponentPtr<AudioComponentBase> mInput; /**< The component whose audio output will be measured. */
+            TimeValue mAnalysisWindowSize = 10; /**< Size of an analysis window in milliseconds */
+            LevelMeterNode::Type mMeterType = LevelMeterNode::Type::RMS; /**< Type of analysis to be used: RMS for root mean square, PEAK for the peak of the analysis window */
             
         private:
         };
@@ -43,7 +46,10 @@ namespace nap
             
             NodeManager& getNodeManager();
             
-            SampleValue getLevel(int channel);
+            /**
+             * Returns the current level for a certain channel
+             */
+            ControllerValue getLevel(int channel);
             
         private:
             nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &LevelMeterComponent::mInput };
