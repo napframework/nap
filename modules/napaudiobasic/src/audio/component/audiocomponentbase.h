@@ -42,7 +42,14 @@ namespace nap
         public:
             AudioComponentBaseInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource) { }
             
+            /**
+             * Override this method to specify the number of audio channels output by this component
+             */
             virtual int getChannelCount() const = 0;
+            
+            /**
+             * Returns the output pin that outputs audio data for the specified channel
+             */
             virtual OutputPin& getOutputForChannel(int channel) = 0;
             
         protected:
