@@ -28,24 +28,29 @@ namespace nap
         {
             OutputComponent* resource = getComponent<OutputComponent>();
             
-            auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
+            auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH)->getNodeManager();
             
             auto channelCount = resource->mChannelRouting.size();
-            if (channelCount > mInput->getChannelCount())
+            if (channelCount > nodeManager.getOutputChannelCount())
             {
-                errorState.fail("Trying to rout channel that is out of bounds of input.");
+                errorState.fail("Trying to rout to output channel that is out of bounds.");
                 return false;
             }
             
             for (auto channel = 0; channel < channelCount; ++channel)
             {
-                int destinationChannel = resource->mChannelRouting[channel];
-                if (destinationChannel < 0)
+                if (resource->mChannelRouting[channel] < 0)
                     continue;
-                auto node = std::make_unique<OutputNode>(nodeManager);
-                node->audioInput.connect(mInput->getOutputForChannel(channel));
-                node->setOutputChannel(destinationChannel);
-                mOutputs.emplace_back(std::move(node));
+                
+                if (resource->mChannelRouting[channel] >= mInput->getChannelCount())
+                {
+                    errorState.fail("Trying to rout input channel that is out of bounds.");
+                    return false;
+                }
+                
+                mOutputs.emplace_back(std::make_unique<OutputNode>(nodeManager));
+                mOutputs.back()->setOutputChannel(channel);
+                mOutputs.back()->audioInput.connect(mInput->getOutputForChannel(resource->mChannelRouting[channel]));
             }
             
             return true;

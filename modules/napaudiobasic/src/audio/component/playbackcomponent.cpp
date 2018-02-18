@@ -16,13 +16,26 @@ RTTI_BEGIN_CLASS(nap::audio::PlaybackComponent)
     RTTI_PROPERTY("StereoPanning", &nap::audio::PlaybackComponent::mStereoPanning, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("AutoPlay", &nap::audio::PlaybackComponent::mAutoPlay, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("StartPosition", &nap::audio::PlaybackComponent::mStartPosition, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("FadeIn", &nap::audio::PlaybackComponent::mFadeIn, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Duration", &nap::audio::PlaybackComponent::mDuration, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("FadeInTime", &nap::audio::PlaybackComponent::mFadeInTime, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("FadeOutTime", &nap::audio::PlaybackComponent::mFadeOutTime, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Pitch", &nap::audio::PlaybackComponent::mPitch, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::PlaybackComponentInstance)
     RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+    RTTI_FUNCTION("start", &nap::audio::PlaybackComponentInstance::start)
+    RTTI_FUNCTION("stop", &nap::audio::PlaybackComponentInstance::stop)
+    RTTI_FUNCTION("setGain", &nap::audio::PlaybackComponentInstance::setGain)
+    RTTI_FUNCTION("setStereoPanning", &nap::audio::PlaybackComponentInstance::setStereoPanning)
+    RTTI_FUNCTION("setFadeInTime", &nap::audio::PlaybackComponentInstance::setFadeInTime)
+    RTTI_FUNCTION("setFadeOutTime", &nap::audio::PlaybackComponentInstance::setFadeOutTime)
     RTTI_FUNCTION("isStereo", &nap::audio::PlaybackComponentInstance::isStereo)
+    RTTI_FUNCTION("isPlaying", &nap::audio::PlaybackComponentInstance::isPlaying)
+    RTTI_FUNCTION("getGain", &nap::audio::PlaybackComponentInstance::getGain)
+    RTTI_FUNCTION("getStereoPanning", &nap::audio::PlaybackComponentInstance::getStereoPanning)
+    RTTI_FUNCTION("getFadeInTime", &nap::audio::PlaybackComponentInstance::getFadeInTime)
+    RTTI_FUNCTION("getFadeOutTime", &nap::audio::PlaybackComponentInstance::getFadeOutTime)
 RTTI_END_CLASS
 
 namespace nap
@@ -35,10 +48,9 @@ namespace nap
         {
             resource = getComponent<PlaybackComponent>();
             mGain = resource->mGain;
-            mPanning = resource->mStereoPanning;
-            mStartPosition = resource->mStartPosition;
-            mFadeIn = resource->mFadeIn;
-            mFadeOut = resource->mFadeOut;
+            mStereoPanning = resource->mStereoPanning;
+            mFadeInTime = resource->mFadeInTime;
+            mFadeOutTime = resource->mFadeOutTime;
             mPitch = resource->mPitch;
             
             nodeManager = &getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH)->getNodeManager();
@@ -61,7 +73,7 @@ namespace nap
                 BufferPlayerNode* bufferPlayerPtr = bufferPlayer.get();
                 gainControl->rampFinishedSignal.connect([&, bufferPlayerPtr](ControlNode& gainControl){
                     if (gainControl.getValue() <= 0)
-                        if (mStopping)
+                        if (!mPlaying)
                             bufferPlayerPtr->stop();
                 });
                 
@@ -72,45 +84,100 @@ namespace nap
             
             
             if (resource->mAutoPlay)
-                start();
+                start(resource->mStartPosition, resource->mDuration);
             
             return true;
         }
         
         
-        void PlaybackComponentInstance::start()
+        void PlaybackComponentInstance::update(double deltaTime)
         {
-            mStopping = false;
-            ControllerValue actualSpeed = mPitch * resource->mBuffer->getSampleRate() / nodeManager->getSampleRate();
-            for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
+            if (mPlaying)
             {
-                mBufferPlayers[channel]->play(resource->mBuffer->getBuffer()[resource->mChannelRouting[channel]], resource->mStartPosition * nodeManager->getSamplesPerMillisecond(), actualSpeed);
+                mCurrentPlayingTime += deltaTime * 1000.f;
+                if (mCurrentPlayingTime > mDuration - mFadeOutTime)
+                    stop();
             }
-            applyGain();
+        }
+        
+        
+        void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
+        {
+            ControllerValue actualSpeed = mPitch * resource->mBuffer->getSampleRate() / nodeManager->getSampleRate();
+            nodeManager->execute([&, actualSpeed, startPosition, duration](){
+                mPlaying = true;
+                if (duration == 0)
+                    mDuration = resource->mBuffer->getSize();
+                else
+                    mDuration = duration;
+                mCurrentPlayingTime = 0;
+                for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
+                {
+                    mBufferPlayers[channel]->play(resource->mBuffer->getBuffer()[resource->mChannelRouting[channel]], startPosition * nodeManager->getSamplesPerMillisecond(), actualSpeed);
+                }
+                applyGain(mFadeInTime);
+            });
         }
         
         
         void PlaybackComponentInstance::stop()
         {
-            mStopping = true;
-            for (auto& gainControl : mGainControls)
-                gainControl->ramp(0, mFadeOut);
+            if (!mPlaying)
+                return;
+            
+            nodeManager->execute([&](){
+                mPlaying = false;
+                for (auto& gainControl : mGainControls)
+                    gainControl->ramp(0, mFadeOutTime, ControlNode::RampMode::EXPONENTIAL);
+            });
         }
-
         
-        void PlaybackComponentInstance::applyGain()
+        
+        void PlaybackComponentInstance::setGain(ControllerValue gain)
+        {
+            nodeManager->execute([&](){
+                mGain = gain;
+                if (mPlaying)
+                    applyGain(5);
+            });
+        }
+        
+        
+        void PlaybackComponentInstance::setStereoPanning(ControllerValue panning)
+        {
+            nodeManager->execute([&](){
+                mStereoPanning = panning;
+                if (mPlaying)
+                    applyGain(5);
+            });
+        }
+        
+        
+        void PlaybackComponentInstance::setFadeInTime(TimeValue time)
+        {
+            mFadeInTime = time;
+        }
+        
+        
+        void PlaybackComponentInstance::setFadeOutTime(TimeValue time)
+        {
+            mFadeOutTime = time;
+        }
+        
+        
+        void PlaybackComponentInstance::applyGain(TimeValue rampTime)
         {
             if (resource->isStereo())
             {
                 ControllerValue left = 0;
                 ControllerValue right = 0;
-                equalPowerPan(mPanning, left, right);
-                mGainControls[0]->ramp(left * mGain, mFadeIn);
-                mGainControls[1]->ramp(right * mGain, mFadeIn);
+                equalPowerPan(mStereoPanning, left, right);
+                mGainControls[0]->ramp(left * mGain, rampTime);
+                mGainControls[1]->ramp(right * mGain, rampTime);
             }
             else {
                 for (auto& gainControl : mGainControls)
-                    gainControl->ramp(mGain, mFadeIn);
+                    gainControl->ramp(mGain, rampTime);
             }
         }
 
