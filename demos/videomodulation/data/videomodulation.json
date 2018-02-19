@@ -241,7 +241,9 @@
                     "Videos": [
                         "StreakVideo",
                         "SnowVideo",
-                        "PeopleVideo"
+                        "PeopleVideo",
+						"StevieWonderVideo",
+						"SyncTestVideo"
                     ],
                     "Index": 2
                 },
@@ -516,6 +518,20 @@
             "Type": "nap::Video",
             "mID": "SnowVideo",
             "Path": "snow.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+      	{
+            "Type": "nap::Video",
+            "mID": "StevieWonderVideo",
+            "Path": "superstition.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "SyncTestVideo",
+            "Path": "sound_in_sync_test.avi",
             "Loop": false,
             "Speed": 1.0
         },

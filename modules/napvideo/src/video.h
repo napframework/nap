@@ -223,16 +223,15 @@ namespace nap
 		*/
 		double getDuration() const				{ return mDuration; }
 
-		void OnAudioCallback(uint8_t* stream, int len, const AudioParams& audioHwParams);
+		bool hasAudio() const					{ return mAudioState.getStream() != -1; }
+
+		bool OnAudioCallback(uint8_t* stream, int len, const AudioParams& audioHwParams);
 
 		std::string mPath;				///< Path to the video to playback
 		bool		mLoop = false;		///< If the video needs to loop
 		float		mSpeed = 1.0f;		///< Video playback speed
 
 	private:
-		bool SDLInit(nap::utility::ErrorState& errorState);
-
-		static int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, AudioParams& audio_hw_params);
 		static bool sInitCodec(AVState& destState, const AVCodecContext& sourceCodecContext, AVDictionary*& options, utility::ErrorState& errorState);
 
 		void onFinishedProducingPackets();
@@ -262,7 +261,7 @@ namespace nap
 
 		bool decodeVideoFrame(AVFrame& frame);
 		bool decodeAudioFrame(AVFrame& frame);
-		void getNextAudioFrame(const AudioParams& audioHwParams);
+		bool getNextAudioFrame(const AudioParams& audioHwParams);
 
 		void clearPacketQueue();
 		void clearVideoFrameQueue();
