@@ -10,8 +10,6 @@
 #include <iostream>
 #include <limits>
 
-#include <SDL_audio.h>
-
 extern "C"
 {
 	#include <libavcodec/avcodec.h>
@@ -659,7 +657,7 @@ namespace nap
 	}
 
 
-	void Video::getNextAudioFrame(const AudioParams& audioHwParams)
+	bool Video::getNextAudioFrame(const AudioParams& audioHwParams)
 	{
 		if (mCurrentAudioFrame.mFrame != nullptr)
 		{
@@ -668,6 +666,8 @@ namespace nap
 		}
 
 		mCurrentAudioFrame = mAudioState.popFrame();
+		if (!mCurrentAudioFrame.isValid())
+			return false;
 
 		int buffer_size = av_samples_get_buffer_size(NULL, mCurrentAudioFrame.mFrame->channels, mCurrentAudioFrame.mFrame->nb_samples, (AVSampleFormat)mCurrentAudioFrame.mFrame->format, 1);
 
@@ -711,16 +711,19 @@ namespace nap
 
 		mAudioFrameSize = buffer_size;
 		mAudioFrameReadPtr = 0;
+
+		return true;
 	}
 	
-	void Video::OnAudioCallback(uint8_t* stream, int len, const AudioParams& audioHwParams)
+	bool Video::OnAudioCallback(uint8_t* stream, int len, const AudioParams& audioHwParams)
 	{
 		uint8_t* dest = stream;
 		int data_remaining = len;
 		while (data_remaining > 0)
 		{
 			if (mAudioFrameReadPtr >= mAudioFrameSize)
-				getNextAudioFrame(audioHwParams);
+				if (!getNextAudioFrame(audioHwParams))
+					return false;
 
 			int num_bytes_to_read = mAudioFrameSize - mAudioFrameReadPtr;
 			num_bytes_to_read = std::min(num_bytes_to_read, data_remaining);
@@ -732,6 +735,8 @@ namespace nap
 			dest += num_bytes_to_read;
 			mAudioFrameReadPtr += num_bytes_to_read;
 		}
+
+		return true;
 	}
 
 	bool Video::update(double deltaTime, utility::ErrorState& errorState)

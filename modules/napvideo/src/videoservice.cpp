@@ -95,15 +95,19 @@ namespace nap
 		Video* playing_video = nullptr;
 		for (Video* video : video_service->mVideoPlayers)
 		{
-			if (video->isPlaying())
+			if (video->isPlaying() && video->hasAudio())
 			{
 				playing_video = video;
 				break;
 			}
 		}
 
+		bool hasAudio = false;
 		if (playing_video != nullptr)
-			playing_video->OnAudioCallback(stream, len, video_service->mAudioHwParams);
+			hasAudio = playing_video->OnAudioCallback(stream, len, video_service->mAudioHwParams);
+				
+		if (!hasAudio)
+			memset(stream, 0, len);
 	}
 
 
