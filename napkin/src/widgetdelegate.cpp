@@ -193,8 +193,11 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter, &filter);
 					if (!filename.isEmpty())
 					{
-						// Make the filename relative
-						model->setData(index, getRelativeResourcePath(filename));
+						// Make relative if inside resource dir
+						if (directoryContains(getResourceReferencePath(), filename))
+							filename = getRelativeResourcePath(filename);
+
+						model->setData(index, filename);
 					}
 				}
 			}

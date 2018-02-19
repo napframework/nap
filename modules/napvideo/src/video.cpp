@@ -2,8 +2,8 @@
 #include "videoservice.h"
 
 // external includes
-#include <texture2d.h>
-#include <image.h>
+#include <rendertexture2d.h>
+#include <imagefromfile.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -433,35 +433,35 @@ namespace nap
 		parameters.mMinFilter = EFilterMode::Linear;
 		parameters.mMaxFilter = EFilterMode::Linear;
 
-		mYTexture = std::make_unique<Texture2D>();
+		mYTexture = std::make_unique<RenderTexture2D>();
 		mYTexture->mWidth = yWidth;
 		mYTexture->mHeight = yHeight;
-		mYTexture->mFormat = Texture2D::EFormat::R8;
+		mYTexture->mFormat = RenderTexture2D::EFormat::R8;
 		mYTexture->mParameters = parameters;
 		if (!mYTexture->init(errorState))
 			return false;
 
-		mYTexture->getTexture().setData(y_default_data.data());
+		mYTexture->update(y_default_data.data());
 
-		mUTexture = std::make_unique<Texture2D>();
+		mUTexture = std::make_unique<RenderTexture2D>();
 		mUTexture->mWidth = uvWidth;
 		mUTexture->mHeight = uvHeight;
-		mUTexture->mFormat = Texture2D::EFormat::R8;
+		mUTexture->mFormat = RenderTexture2D::EFormat::R8;
 		mUTexture->mParameters = parameters;
 		if (!mUTexture->init(errorState))
 			return false;
 				
-		mUTexture->getTexture().setData(uv_default_data.data());
+		mUTexture->update(uv_default_data.data());
 
-		mVTexture = std::make_unique<Texture2D>();
+		mVTexture = std::make_unique<RenderTexture2D>();
 		mVTexture->mWidth = uvWidth;
 		mVTexture->mHeight = uvHeight;
-		mVTexture->mFormat = Texture2D::EFormat::R8;
+		mVTexture->mFormat = RenderTexture2D::EFormat::R8;
 		mVTexture->mParameters = parameters;
 		if (!mVTexture->init(errorState))
 			return false;
 
-		mVTexture->getTexture().setData(uv_default_data.data());
+		mVTexture->update(uv_default_data.data());
 
 		// Register with service
 		mService.registerVideoPlayer(*this);
@@ -777,9 +777,9 @@ namespace nap
 		}
 
 		// Copy data into texture
-		mYTexture->getTexture().setData(cur_frame.mFrame->data[0], cur_frame.mFrame->linesize[0]);
-		mUTexture->getTexture().setData(cur_frame.mFrame->data[1], cur_frame.mFrame->linesize[1]);
-		mVTexture->getTexture().setData(cur_frame.mFrame->data[2], cur_frame.mFrame->linesize[2]);
+		mYTexture->update(cur_frame.mFrame->data[0], cur_frame.mFrame->linesize[0]);
+		mUTexture->update(cur_frame.mFrame->data[1], cur_frame.mFrame->linesize[1]);
+		mVTexture->update(cur_frame.mFrame->data[2], cur_frame.mFrame->linesize[2]);
 
 		// Destroy frame that was allocated in the decode thread, after it has been processed
 		av_frame_unref(cur_frame.mFrame);

@@ -2,10 +2,10 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <basetexture2d.h>
+#include <imagefromfile.h>
 #include <nap/configure.h>
 #include <color.h>
-#include <pixmap.h>
+#include <bitmap.h>
 
 namespace nap
 {
@@ -13,9 +13,9 @@ namespace nap
 	 * Type of image that contains a selection of colors that can be used as a lookup.
 	 * This index map is always of a type RGB and stored uncompressed
 	 */
-	class NAPAPI IndexMap : public BaseTexture2D
+	class NAPAPI IndexMap : public ImageFromFile
 	{
-		RTTI_ENABLE(BaseTexture2D)
+		RTTI_ENABLE(ImageFromFile)
 	public:
 		// Color associated with an index
 		using IndexColor = RGBColor8;
@@ -40,10 +40,6 @@ namespace nap
 		 */
 		const IndexColor& getColor(int index) const;
 
-		/**
-		 *	@return the pixmap containing the index map
-		 */
-		const Pixmap& getPixmap() const								{ return mPixmap; }
 
 		/**
 		 *	@return all the index colors
@@ -54,17 +50,11 @@ namespace nap
 		 *	@return the total number of unique index colors
 		 */
 		int getCount() const;
-
-		// Path to img on disk
-		std::string				mImagePath;
-
+		
 		// Number of indexed colors inside the image
 		int						mColorCount = 0;
 
 	private:
-		// Bitmap associated with this index map
-		nap::Pixmap				mPixmap;
-
 		// All the available indexed colors
 		std::vector<IndexColor> mIndexColors;
 

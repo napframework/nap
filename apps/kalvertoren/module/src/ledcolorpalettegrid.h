@@ -2,9 +2,9 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <basetexture2d.h>
+#include <texture2d.h>
 #include <color.h>
-#include <pixmap.h>
+#include <bitmap.h>
 #include <unordered_map>
 #include "nap/objectptr.h"
 
@@ -122,7 +122,7 @@ namespace nap
 		using PaletteRow = std::vector<PaletteColor>;
 		using PaletteGrid = std::vector<PaletteRow>;
 
-		nap::Pixmap				mPixmap;						///< Bitmap associated with this led color palette
+		nap::Bitmap				mBitmap;						///< Bitmap associated with this led color palette
 		PaletteGrid				mPaletteGrid;					///< All the colors extracted from the palette, divided into a grid (RGB 8 bit)
 	};
 }

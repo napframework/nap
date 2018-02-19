@@ -137,7 +137,7 @@ namespace nap
 			RenderableMeshComponentInstance& renderable_comp = entity->getComponent<RenderableMeshComponentInstance>();
 
 			// Get texture from previously rendered backbuffer
-			nap::BaseTexture2D& tex = mLaserConfigurationMap[it.first].mTarget->getColorTexture();
+			nap::Texture2D& tex = mLaserConfigurationMap[it.first].mTarget->getColorTexture();
 
 			// Set it to frame uniform
 			nap::UniformTexture2D& frame_tex = renderable_comp.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("mFrame");
