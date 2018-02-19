@@ -12,6 +12,9 @@ RTTI_BEGIN_CLASS(nap::audio::LevelMeterComponent)
     RTTI_PROPERTY("Input", &nap::audio::LevelMeterComponent::mInput, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("AnalysisWindowSize", &nap::audio::LevelMeterComponent::mAnalysisWindowSize, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("MeterType", &nap::audio::LevelMeterComponent::mMeterType, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("MeasureBand", &nap::audio::LevelMeterComponent::mMeasureBand, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("CenterFrequency", &nap::audio::LevelMeterComponent::mCenterFrequency, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("BandWidth", &nap::audio::LevelMeterComponent::mBandWidth, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterComponentInstance)
@@ -27,10 +30,24 @@ namespace nap
         
         bool LevelMeterComponentInstance::init(utility::ErrorState& errorState)
         {
+            auto resource = getComponent<LevelMeterComponent>();
             for (auto channel = 0; channel < mInput->getChannelCount(); ++channel)
             {
-                meters.emplace_back(std::make_unique<LevelMeterNode>(getNodeManager()));
-                meters.back()->input.connect(mInput->getOutputForChannel(channel));
+                mMeters.emplace_back(std::make_unique<LevelMeterNode>(getNodeManager()));
+                
+                if (resource->mMeasureBand)
+                {
+                    auto filter = std::make_unique<FilterNode>(getNodeManager());
+                    filter->setMode(FilterNode::Mode::BANDPASS);
+                    filter->setFrequency(resource->mCenterFrequency);
+                    filter->setGain(resource->mFilterGain);
+                    filter->audioInput.connect(mInput->getOutputForChannel(channel));
+                    mMeters.back()->input.connect(filter->audioOutput);
+                    mFilters.emplace_back(std::move(filter));
+                }
+                else {
+                    mMeters.back()->input.connect(mInput->getOutputForChannel(channel));
+                }
             }
             
             return true;
@@ -43,12 +60,60 @@ namespace nap
         }
         
         
-        SampleValue LevelMeterComponentInstance::getLevel(int channel)
+        ControllerValue LevelMeterComponentInstance::getLevel(int channel)
         {
-            assert(channel < meters.size());
-            return meters[channel]->getLevel();
+            assert(channel < mMeters.size());
+            return mMeters[channel]->getLevel();
         }
         
+        
+        void LevelMeterComponentInstance::setCenterFrequency(ControllerValue centerFrequency)
+        {
+            for (auto& filter : mFilters)
+                filter->setFrequency(centerFrequency);
+        }
+        
+        
+        void LevelMeterComponentInstance::setBandWidth(ControllerValue bandWidth)
+        {
+            for (auto& filter : mFilters)
+                filter->setBand(bandWidth);
+        }
+        
+        
+        void LevelMeterComponentInstance::setFilterGain(ControllerValue gain)
+        {
+            for (auto& filter : mFilters)
+                filter->setGain(gain);
+        }
+        
+        
+        ControllerValue LevelMeterComponentInstance::getCenterFrequency() const
+        {
+            if (mFilters.size() > 0)
+                return (*mFilters.begin())->getFrequency();
+            else
+                return 0;
+        }
+        
+        
+        ControllerValue LevelMeterComponentInstance::getBandWidth() const
+        {
+            if (mFilters.size() > 0)
+                return (*mFilters.begin())->getBand();
+            else
+                return 0;
+        }
+        
+        
+        ControllerValue LevelMeterComponentInstance::getFilterGain() const
+        {
+            if (mFilters.size() > 0)
+                return (*mFilters.begin())->getGain();
+            else
+                return 0;
+        }
+
         
     }
     
