@@ -1,4 +1,4 @@
-project(mod_napaudiobasic)
+project(mod_napaudio)
 
 find_package(portaudio REQUIRED)
 find_package(libsndfile REQUIRED)
