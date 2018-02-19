@@ -34,6 +34,8 @@ namespace napkin {
 
 		Track& track() const;
 
+		void setTrack(Track& track);
+
 	Q_SIGNALS:
 
 		void changed(Event& event);
@@ -96,8 +98,9 @@ namespace napkin {
 	Q_SIGNALS:
 
 		void trackAdded(Track& track);
-
 		void trackRemoved(Track& track);
+		void eventAdded(Event& event);
+		void eventRemoved(Event& event);
 
 	private:
 		QList<Track*> mTracks;

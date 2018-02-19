@@ -15,7 +15,7 @@ TimelineScene::TimelineScene() {
 	addItem(&mEventGroup);
 }
 
-void TimelineScene::setModel(Timeline* timeline) {
+void TimelineScene::setTimeline(Timeline* timeline) {
 	if (mTimeline) {
 		disconnect(mTimeline, &Timeline::trackAdded, this, &TimelineScene::onTrackAdded);
 		disconnect(mTimeline, &Timeline::trackRemoved, this, &TimelineScene::onTrackRemoved);

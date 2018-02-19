@@ -29,6 +29,12 @@ void Event::setColor(const QColor& col) {
 
 Track& Event::track() const { return *(Track*) parent(); }
 
+void Event::setTrack(Track& track)
+{
+	setParent(&track);
+}
+
+
 qreal Event::length() const {
 	return mEnd - mStart;
 }

@@ -4,6 +4,7 @@
 #include "timelineview.h"
 #include "timelinescene.h"
 #include "gridview.h"
+#include "timelineoutline.h"
 
 #include <cassert>
 
@@ -20,74 +21,22 @@
 #include <QWidget>
 #include <QGraphicsItem>
 
-namespace napkin {
+namespace napkin
+{
 
 
 
-	class RulerWidget : public QWidget {
-	public:
-		RulerWidget();
-
-
-	};
-
-
-	class OutlineHeader : public QWidget {
-	public:
-		OutlineHeader() : QWidget() {}
-
-	protected:
-		void paintEvent(QPaintEvent* event) override;
-
-	};
-
-
-	class TLOutlineItem : public QWidget {
-	public:
-		TLOutlineItem(Track& track, QWidget* parent);
-
-		Track& track() const { return mTrack; }
-		void setHeight(int height);
-
-	protected:
-		void paintEvent(QPaintEvent* event) override;
-
-	private:
-		QHBoxLayout mLayout;
-		QLabel mLabel;
-		Track& mTrack;
-	};
-
-	class TimelineOutline : public QWidget {
-	public:
-		TimelineOutline();
-
-		void setModel(Timeline* timeline);
-		void setHeaderHeight(int height);
-
-	protected:
-		void paintEvent(QPaintEvent* event) override;
-
-	private:
-		void onTrackAdded(Track& track);
-		void onTrackRemoved(Track& track);
-		TLOutlineItem* widget(Track& track);
-
-		QWidget mHolder;
-		QVBoxLayout mLayout;
-		OutlineHeader mHeader;
-		QList<TLOutlineItem*> mTracks;
-		Timeline* mTimeline = nullptr;
-	};
-
-
-	class TimelinePanel : public QWidget {
+	class TimelinePanel : public QWidget
+	{
 	public:
 		TimelinePanel();
-		~TimelinePanel();
+
+		~TimelinePanel() override;
 
 		void setTimeline(Timeline* timeline);
+
 		void setHeaderHeight(int height);
+
 		void demo();
 
 	private:
@@ -96,7 +45,6 @@ namespace napkin {
 		TimelineView mView;
 		TimelineScene mScene;
 
-		RulerWidget mRuler;
 		TimelineOutline mOutline;
 
 		QVBoxLayout mLayout;
