@@ -232,3 +232,14 @@ macro(copy_files_to_bin)
                            COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
     endforeach()
 endmacro()
+
+# Let find_python find our prepackaged Python in thirdparty
+macro(find_python_in_thirdparty)   
+    if(APPLE)
+        # Set our pre built Python location for macOS        
+        set(PYTHONLIBS_FOUND 1)
+        set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python)
+        set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/libpython3.6m.dylib)
+        set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/python3.6m)
+    endif()
+endmacro()

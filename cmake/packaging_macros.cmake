@@ -45,7 +45,7 @@ macro(package_nap)
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
 
     # For now package platform Qt and Python for distribution, for discussion
-    package_platform_python()
+    package_python()
     package_platform_qt()
 endmacro()
 
@@ -55,15 +55,16 @@ endmacro()
 # - We can control the OS version/s we support (eg. the homebrew version we're installing for macOS won't be backwards compatible)
 # - We don't have these brittle connections to a moving (eg. homebrew) target
 # - We can control the Python lib version we're deploying
-macro(package_platform_python)
-    # TODO Install Python license
+macro(package_python)
 
     if(WIN32)
+        # TODO Install Python license
+
         set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
         find_package(pybind11 REQUIRED) 
         message(STATUS "Got Python prefix: ${PYTHON_PREFIX}")
 
-        # Ensure we're found Python3
+        # Ensure we've found Python3
         if(NOT ${PYTHON_VERSION_MAJOR} EQUAL 3)
             message(FATAL_ERROR "Python found for packaging in ${PYTHON_PREFIX} is not v3 (it's v${PYTHON_VERSION_MAJOR})")
         endif()
@@ -83,37 +84,16 @@ macro(package_platform_python)
                 PATTERN *.dll EXCLUDE
                 PATTERN site-packages EXCLUDE)
     elseif(APPLE)
-        # Find Python
-        execute_process(COMMAND brew --prefix python3
-                        OUTPUT_VARIABLE PYTHON_PREFIX)
-        string(STRIP ${PYTHON_PREFIX} PYTHON_PREFIX)
-        message(STATUS "Got Python prefix: ${PYTHON_PREFIX}")
+        set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
 
-        # Get our major/minor version
-        execute_process(COMMAND python3 -c "import sys\nprint('%s.%s' % sys.version_info[:2])"
-                        OUTPUT_VARIABLE PYTHON_MAJOR_MINOR_VERSION)
-        string(STRIP ${PYTHON_MAJOR_MINOR_VERSION} PYTHON_MAJOR_MINOR_VERSION)
-        message(STATUS "Got Python major.minor version: ${PYTHON_MAJOR_MINOR_VERSION}")
-
-        # Get our dylib install name so we can replace it later to have a working command line intrepreter
-        set(PYTHON_EXECUTABLE ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/${PYTHON_MAJOR_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python)
-        execute_process(COMMAND sh -c "otool -L ${PYTHON_EXECUTABLE} | grep Python | awk -F'(' '{if(NR>1)print $1}'"
-                        OUTPUT_VARIABLE PYTHON_REPLACE_INSTALL_LIBNAME)
-        string(STRIP ${PYTHON_REPLACE_INSTALL_LIBNAME} PYTHON_REPLACE_INSTALL_LIBNAME)
-
-        # Install dylib
-        install(FILES ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/3.6/Python
+        # Install dylib        
+        install(FILES ${PYTHON_PREFIX}/lib/libpython3.6m.dylib
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-        # Change dylib installed id
-        install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                              -id @rpath/Python
-                                              ${CMAKE_INSTALL_PREFIX}/thirdparty/python/libpython${PYTHON_MAJOR_MINOR_VERSION}.dylib
-                                      ERROR_QUIET)")
+                )
 
         # Install main framework
-        install(DIRECTORY ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/${PYTHON_MAJOR_MINOR_VERSION}/lib/python${PYTHON_MAJOR_MINOR_VERSION} 
+        install(DIRECTORY ${PYTHON_PREFIX}/lib/python3.6
                 DESTINATION thirdparty/python/lib/
                 CONFIGURATIONS Release
                 PATTERN *.pyc EXCLUDE
@@ -122,22 +102,85 @@ macro(package_platform_python)
                 PATTERN site-packages EXCLUDE)
 
         # Install command line intrepreter
-        install(PROGRAMS ${PYTHON_EXECUTABLE}
+        install(PROGRAMS ${PYTHON_PREFIX}/bin/python3.6
                 DESTINATION thirdparty/python/
-                RENAME python3.6
                 CONFIGURATIONS Release)
+
+        # Install includes
+        install(DIRECTORY ${PYTHON_PREFIX}/include
+                DESTINATION thirdparty/python/
+                CONFIGURATIONS Release)
+
         # Change link to dylib
         install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
                                               -change 
-                                              ${PYTHON_REPLACE_INSTALL_LIBNAME}
-                                              @executable_path/Python
-                                              ${CMAKE_INSTALL_PREFIX}/thirdparty/python/python${PYTHON_MAJOR_MINOR_VERSION} 
+                                              @loader_path/../lib/libpython3.6m.dylib
+                                              @executable_path/libpython3.6m.dylib
+                                              ${CMAKE_INSTALL_PREFIX}/thirdparty/python/python3.6
                                       ERROR_QUIET)")
 
         # Install license
         install(FILES ${PYTHON_PREFIX}/LICENSE
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
+
+    # elseif(APPLE)
+    #     # Older logic installing Python from homebrew on macOS
+    #     # Find Python
+    #     execute_process(COMMAND brew --prefix python3
+    #                     OUTPUT_VARIABLE PYTHON_PREFIX)
+    #     string(STRIP ${PYTHON_PREFIX} PYTHON_PREFIX)
+    #     message(STATUS "Got Python prefix: ${PYTHON_PREFIX}")
+
+    #     # Get our major/minor version
+    #     execute_process(COMMAND python3 -c "import sys\nprint('%s.%s' % sys.version_info[:2])"
+    #                     OUTPUT_VARIABLE PYTHON_MAJOR_MINOR_VERSION)
+    #     string(STRIP ${PYTHON_MAJOR_MINOR_VERSION} PYTHON_MAJOR_MINOR_VERSION)
+    #     message(STATUS "Got Python major.minor version: ${PYTHON_MAJOR_MINOR_VERSION}")
+
+    #     # Get our dylib install name so we can replace it later to have a working command line intrepreter
+    #     set(PYTHON_EXECUTABLE ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/${PYTHON_MAJOR_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python)
+    #     execute_process(COMMAND sh -c "otool -L ${PYTHON_EXECUTABLE} | grep Python | awk -F'(' '{if(NR>1)print $1}'"
+    #                     OUTPUT_VARIABLE PYTHON_REPLACE_INSTALL_LIBNAME)
+    #     string(STRIP ${PYTHON_REPLACE_INSTALL_LIBNAME} PYTHON_REPLACE_INSTALL_LIBNAME)
+
+    #     # Install dylib
+    #     install(FILES ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/3.6/Python
+    #             DESTINATION thirdparty/python/
+    #             CONFIGURATIONS Release
+    #             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    #     # Change dylib installed id
+    #     install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+    #                                           -id @rpath/Python
+    #                                           ${CMAKE_INSTALL_PREFIX}/thirdparty/python/libpython${PYTHON_MAJOR_MINOR_VERSION}.dylib
+    #                                   ERROR_QUIET)")
+
+    #     # Install main framework
+    #     install(DIRECTORY ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/${PYTHON_MAJOR_MINOR_VERSION}/lib/python${PYTHON_MAJOR_MINOR_VERSION} 
+    #             DESTINATION thirdparty/python/lib/
+    #             CONFIGURATIONS Release
+    #             PATTERN *.pyc EXCLUDE
+    #             PATTERN *.dylib EXCLUDE
+    #             PATTERN *.a EXCLUDE
+    #             PATTERN site-packages EXCLUDE)
+
+    #     # Install command line intrepreter
+    #     install(PROGRAMS ${PYTHON_EXECUTABLE}
+    #             DESTINATION thirdparty/python/
+    #             RENAME python3.6
+    #             CONFIGURATIONS Release)
+    #     # Change link to dylib
+    #     install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+    #                                           -change 
+    #                                           ${PYTHON_REPLACE_INSTALL_LIBNAME}
+    #                                           @executable_path/Python
+    #                                           ${CMAKE_INSTALL_PREFIX}/thirdparty/python/python${PYTHON_MAJOR_MINOR_VERSION} 
+    #                                   ERROR_QUIET)")
+
+    #     # Install license
+    #     install(FILES ${PYTHON_PREFIX}/LICENSE
+    #             DESTINATION thirdparty/python/
+    #             CONFIGURATIONS Release)
     endif()
 endmacro()
 

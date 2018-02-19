@@ -103,7 +103,7 @@ def install_dependencies_osx():
         # 'ffmpeg',
         # 'mpg123',
         'qt',
-        'python3'
+        # 'python3'
     ]
 
     if not is_osx_brew_installed():

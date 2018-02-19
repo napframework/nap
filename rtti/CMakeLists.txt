@@ -32,8 +32,14 @@ find_package(RTTR CONFIG REQUIRED Core)
 find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 
+# Let find_python find our prepackaged Python in thirdparty
+find_python_in_thirdparty()
 set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
 find_package(pybind11 REQUIRED) 
+# Ensure we've found Python3
+if(NOT ${PYTHON_VERSION_MAJOR} EQUAL 3)
+    message(FATAL_ERROR "Python found in ${PYTHON_PREFIX} is not v3")
+endif()
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
@@ -64,6 +70,7 @@ if (WIN32)
     copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
 elseif(APPLE)
     # Copy over RTTR for macOS
+    # TODO Update this to be an RPATH change?
     copy_lib_to_lib_dir("RTTR::Core")
 endif()
 

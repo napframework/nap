@@ -12,6 +12,8 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
+# Let find_python find our prepackaged Python in thirdparty
+find_python_in_thirdparty()
 set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
 find_package(pybind11)
 
