@@ -77,7 +77,7 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 
     if(FFMPEG_FOUND)
         if(NOT FFMPEG_FIND_QUIETLY)
-            message(STATUS "Found FFMPEG or Libav: ${FFMPEG_LIBRARIES}, ${FFMPEG_INCLUDE_DIR}")
+            message(STATUS "Found FFmpeg or Libav: ${FFMPEG_LIBRARIES}, ${FFMPEG_INCLUDE_DIR}")
         endif(NOT FFMPEG_FIND_QUIETLY)
     else(FFMPEG_FOUND)
         if(FFMPEG_FIND_REQUIRED)

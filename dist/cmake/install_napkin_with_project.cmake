@@ -98,12 +98,14 @@ elseif(APPLE)
                                      "${PATH_TO_THIRDPARTY}/Qt/lib/"
                                      )
 
-    # Update path to Python
-    macos_replace_single_install_name_link("Python" 
-                                           ${NAP_ROOT}/tools/platform/napkin/Release/napkin
-                                           $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
-                                           "@rpath")
-
+    # Create symlink to Python libs in build dir
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND}
+                               -E create_symlink
+                               ${THIRDPARTY_DIR}/python/lib
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/lib
+                       )
 
     # ---- Install napkin with packaged project ------
 
@@ -160,7 +162,7 @@ elseif(APPLE)
                                                   )
 
     # Update path to Python
-    macos_replace_single_install_name_link_install_time("Python" ${CMAKE_INSTALL_PREFIX}/napkin "@loader_path/lib/")
+    # macos_replace_single_install_name_link_install_time("Python" ${CMAKE_INSTALL_PREFIX}/napkin "@loader_path/lib/")
 else()
     # Install executable
     install(PROGRAMS ${NAP_ROOT}/tools/platform/napkin/Release/napkin

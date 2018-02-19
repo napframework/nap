@@ -3,6 +3,8 @@ set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
 find_package(RTTR CONFIG REQUIRED Core)
 
 # Find Python
+# Let find_python find our prepackaged Python in thirdparty
+find_python_in_thirdparty()
 set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
 find_package(pybind11 REQUIRED)
 target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})

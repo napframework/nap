@@ -18,11 +18,11 @@ namespace
 {
 	// Extension for shared libraries (dependent on platform)
 #ifdef _WIN32
-	static std::string moduleExtension = "dll";
+	static std::string sharedLibExtension = "dll";
 #elif __APPLE__
-	static std::string moduleExtension = "dylib";
+	static std::string sharedLibExtension = "dylib";
 #else
-	static std::string moduleExtension = "so";
+	static std::string sharedLibExtension = "so";
 #endif
 
 
@@ -160,7 +160,7 @@ namespace nap
 					continue;
 
 				// Ignore non-shared libraries
-				if (utility::getFileExtension(filename) != moduleExtension)
+				if (utility::getFileExtension(filename) != sharedLibExtension)
 					continue;
 
 				std::string module_path = utility::getAbsolutePath(filename);
@@ -228,7 +228,7 @@ namespace nap
 		std::string exeDir = utility::getExecutableDir();
 		
 		// Check if we're running a packaged project (on macOS or Linux)
-		if (utility::dirExists(exeDir + "/lib"))
+		if (utility::fileExists(exeDir + "/lib/libnapcore." + sharedLibExtension))
 		{
 			outSearchDirectories.push_back(exeDir + "/lib");
 		}
