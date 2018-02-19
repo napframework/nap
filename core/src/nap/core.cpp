@@ -35,8 +35,6 @@ namespace nap
 
 	Core::~Core()
 	{
-		mResourceManager->mFileLoadedSignal.disconnect(mFileLoadedSlot);
-
 		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
 		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
 		// Erase it
@@ -195,6 +193,8 @@ namespace nap
 
 	void Core::shutdownServices()
 	{
+		mResourceManager.reset();
+
 		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
 			Service& service = **it;

@@ -36,6 +36,8 @@ namespace nap
 		*/
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
+		virtual void shutdown();
+
 		/**
 		 * Updates all registered video resources
 		 */
@@ -57,6 +59,12 @@ namespace nap
 		*/
 		void removeVideoPlayer(Video& receiver);
 
+		int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, AudioParams& audio_hw_params);
+
+		static void sdlAudioCallback(void* userData, uint8_t* stream, int len);
+
+	private:
 		std::vector<Video*> mVideoPlayers;			///< All registered video players
+		AudioParams mAudioHwParams;
 	};
 }
