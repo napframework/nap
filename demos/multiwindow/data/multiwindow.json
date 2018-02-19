@@ -48,19 +48,19 @@
 		},
 
 		{
-			"Type" : "nap::Image",	
+			"Type" : "nap::ImageFromFile",	
 			"mID" : "WorldTexture",
 			"ImagePath" : "world_texture.png"
 		},
 
 		{
-			"Type" : "nap::Image",	
+			"Type" : "nap::ImageFromFile",	
 			"mID" : "TextureOne",
 			"ImagePath" : "texture_one.jpg"
 		},
 
 		{
-			"Type" : "nap::Image",	
+			"Type" : "nap::ImageFromFile",	
 			"mID" : "TextureTwo",
 			"ImagePath" : "texture_two.png"
 		},

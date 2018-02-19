@@ -22,9 +22,9 @@
 	{																							\
 		instance().log(LogMessage(NAME##Level(), msg));											\
 	}																							\
-	\
+																								\
 static void																						\
-	NAME(const rtti::RTTIObject& obj, const std::string& msg)												\
+	NAME(const rtti::RTTIObject& obj, const std::string& msg)									\
 	{																							\
 		instance().log(LogMessage(NAME##Level(), msg, &obj));									\
 	}																							\
@@ -34,7 +34,7 @@ static void																						\
 		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg, args...)));			\
 	}																							\
 	template <typename... Args>																	\
-	static void NAME(rtti::RTTIObject& obj, const std::string& msg, Args... args)					\
+	static void NAME(rtti::RTTIObject& obj, const std::string& msg, Args... args)				\
 	{																							\
 		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg, args...), &obj));	\
 	}

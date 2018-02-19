@@ -17,7 +17,6 @@ nap::SceneService::SceneSet getScenes()
 
 napkin::SceneModel::SceneModel() : QStandardItemModel()
 {
-    refresh();
     setHorizontalHeaderLabels({"Name"});
 
     connect(&AppContext::get(), &AppContext::documentOpened, this, &SceneModel::onFileOpened);

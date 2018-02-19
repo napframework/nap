@@ -24,7 +24,7 @@ namespace opengl
 
 namespace nap
 {
-	class Texture2D;
+	class RenderTexture2D;
 	class VideoService;
 	class Video;
 
@@ -194,19 +194,19 @@ namespace nap
 		 * @return The Y texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is width * height.
 		 */
-		Texture2D& getYTexture()			{ return *mYTexture; }
+		RenderTexture2D& getYTexture()			{ return *mYTexture; }
 
 		/**
 		 * @return The U texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is HALF the width * height.
 		 */
-		Texture2D& getUTexture()			{ return *mUTexture; }
+		RenderTexture2D& getUTexture()			{ return *mUTexture; }
 
 		/**
 		 * @return The V texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the V texture is HALF the width * height.
 		 */
-		Texture2D& getVTexture()			{ return *mVTexture; }
+		RenderTexture2D& getVTexture()			{ return *mVTexture; }
 
 		/**
 		 * @return Width of the video, in pixels.
@@ -276,9 +276,9 @@ namespace nap
 	private:
 		static const double		sVideoMax;
 
-		std::unique_ptr<Texture2D> mYTexture;
-		std::unique_ptr<Texture2D> mUTexture;
-		std::unique_ptr<Texture2D> mVTexture;
+		std::unique_ptr<RenderTexture2D> mYTexture;
+		std::unique_ptr<RenderTexture2D> mUTexture;
+		std::unique_ptr<RenderTexture2D> mVTexture;
 
 		AVFormatContext*		mFormatContext = nullptr;
 		bool					mPlaying = false;				///< Set if playing. Should only be controlled from main thread

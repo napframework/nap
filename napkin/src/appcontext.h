@@ -50,10 +50,7 @@ namespace napkin
 		/**
 		 * @return The single nap::Core instance held by this AppContext
 		 */
-		nap::Core& getCore()
-		{
-			return mCore;
-		}
+		nap::Core& getCore();
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// File operations
@@ -101,7 +98,7 @@ namespace napkin
 		/**
 		 * @return The current document
 		 */
-		Document* getDocument() { return mDocument.get(); }
+		Document* getDocument();
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.
@@ -139,27 +136,40 @@ namespace napkin
 		 */
 		QMainWindow* getMainWindow() const;
 
+		/**
+		 * Take an URI for file paths or object/property links and handle accordingly.
+		 * @param uri The URI to handle, can be a string like 'file://something' for example
+		 */
+		void handleURI(const QString& uri);
+
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
 		 * Fired when the global selection has changed.
 		 * TODO: This will need to be changed into a multi-level/hierarchical selection context
 		 */
-		void selectionChanged(const std::vector<nap::rtti::RTTIObject*> obj);
+		void selectionChanged(QList<nap::rtti::RTTIObject*> obj);
+
+
+		/**
+		 * Qt Signal
+		 * Fired when another property must be selected
+		 */
+		void propertySelectionChanged(PropertyPath prop);
 
 		/**
 		 * Qt Signal
 		 * Fired after a file has been opened and its objects made available.
 		 * @param filename Name of the file that was opened
 		 */
-		void documentOpened(const QString& filename);
+		void documentOpened(QString filename);
 
 		/**
 		 * Qt Signal
 		 * Fires after a document has finished saving.
 		 * @param filename The file the data was saved to.
 		 */
-		void documentSaved(const QString& filename);
+		void documentSaved(QString filename);
 
 		/**
 		 * Qt Signal
@@ -171,7 +181,7 @@ namespace napkin
 		 * Qt Signal
 		 * Fired when something in the document has changed
 		 */
-		void documentChanged();
+		void documentChanged(Document* doc);
 
 	Q_SIGNALS:
 		/**
@@ -219,7 +229,7 @@ namespace napkin
 		 * @param object The object that has the changed property
 		 * @param path The path to the property that has changed
 		 */
-		void propertyValueChanged(const PropertyPath& path);
+		void propertyValueChanged(const PropertyPath path);
 
 	private:
 		AppContext();
@@ -229,8 +239,14 @@ namespace napkin
 		 */
 		void connectDocumentSignals();
 
+		/**
+		 * When a new document has been set
+		 */
+		void onUndoIndexChanged();
+
 
 		nap::Core mCore;						// The nap::Core
+		bool mCoreInitialized = false;			// Keep track of core initialization state
 		ThemeManager mThemeManager;			 	// The theme manager
 		ResourceFactory mResourceFactory;		// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here

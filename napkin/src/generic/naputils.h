@@ -93,11 +93,6 @@ namespace napkin
 	nap::rtti::RTTIObject* getPointee(const PropertyPath& path);
 
 	/**
-	 * Given a Pointer Property (i like this name), set its pointee using a string.
-	 */
-	bool setPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path, const std::string& target);
-
-	/**
 	 * Get the reference directory for resources.
 	 * @param reference The path to the reference directory or file.
 	 * 	If nothing is provided, this will fall back to the currently opened document
@@ -122,5 +117,33 @@ namespace napkin
 	 * @return The file path relative to the given anchor.
 	 */
 	QString getRelativeResourcePath(const QString& absPath, const QString& reference = QString());
+
+
+	/**
+	 * Convert a filename to a file URI.
+	 * @param filename The filename to convert
+	 * @return A valid URI
+	 */
+	std::string toLocalURI(const std::string& filename);
+
+	/**
+	 * Convert a local file URI into an absolute path
+	 *
+	 */
+	std::string fromLocalURI(const std::string& fileuri);
+
+	/**
+	 * Create an URI to an object
+	 * @param object The object the URI should point to
+	 * @return An URI
+	 */
+	std::string toURI(const nap::rtti::RTTIObject& object);
+
+	/**
+	 * Create an URI to a property
+	 * @param path The property the URI should point to
+	 * @return An URI
+	 */
+	std::string toURI(const PropertyPath& path);
 
 }
