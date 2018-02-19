@@ -33,6 +33,8 @@ namespace napkin
 	static const std::string PROP_CHILDREN   = "Children";
 	static const std::string PROP_COMPONENTS = "Components";
 
+	static const std::string NAP_URI_PREFIX	 = "nap";
+
     /**
      * Needed for Qt style QStandardItem casting
      */

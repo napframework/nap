@@ -56,7 +56,7 @@ QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QStri
 
 
 
-napkin::BaseRTTIPathItem::BaseRTTIPathItem(const QString& name, const PropertyPath& path)
+napkin::PropertyPathItem::PropertyPathItem(const QString& name, const PropertyPath& path)
 	: QStandardItem(name), mPath(path)
 {
 //	auto txt = text();
@@ -64,13 +64,13 @@ napkin::BaseRTTIPathItem::BaseRTTIPathItem(const QString& name, const PropertyPa
 //	setText(txt);
 }
 
-int napkin::BaseRTTIPathItem::type() const
+int napkin::PropertyPathItem::type() const
 {
 	return UserType + StandardItemTypeID::RTTIPathID;
 }
 
 napkin::PropertyItem::PropertyItem(const QString& name, const PropertyPath& path)
-	: BaseRTTIPathItem(name, path)
+	: PropertyPathItem(name, path)
 {
 	setEditable(false);
 	setForeground(napkin::getSoftForeground());
@@ -99,7 +99,7 @@ void napkin::CompoundPropertyItem::populateChildren()
 }
 
 napkin::CompoundPropertyItem::CompoundPropertyItem(const QString& name, const PropertyPath& path)
-	: BaseRTTIPathItem(name, path)
+	: PropertyPathItem(name, path)
 {
 	setForeground(napkin::getSoftForeground());
 	populateChildren();
@@ -119,7 +119,7 @@ void napkin::ArrayPropertyItem::populateChildren()
 
 		auto name = QString("%1").arg(i);
 
-		nap::rtti::RTTIPath path = mPath.path();
+		nap::rtti::RTTIPath path = mPath.getPath();
 		path.pushArrayElement(i);
 
         auto property = mPath.resolve().getProperty();
@@ -127,16 +127,16 @@ void napkin::ArrayPropertyItem::populateChildren()
 		auto type = array.get_rank_type(array.get_rank());
 		auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : value.get_type();
 
-		appendRow(createPropertyItemRow(wrappedType, name, {mPath.object(), path}, property,
+		appendRow(createPropertyItemRow(wrappedType, name, {mPath.getObject(), path}, property,
 										value));
 	}
 }
 
 napkin::ArrayPropertyItem::ArrayPropertyItem(const QString& name, const PropertyPath& path, rttr::property prop,
 											 rttr::variant_array_view array)
-	: BaseRTTIPathItem(name, path), mProperty(prop), mArray(array)
+	: PropertyPathItem(name, path), mProperty(prop), mArray(array)
 {
-	std::string pathStr = path.path().toString();
+	std::string pathStr = path.getPath().toString();
 	populateChildren();
 	setForeground(napkin::getSoftForeground());
 }
@@ -147,7 +147,7 @@ int napkin::ArrayPropertyItem::type() const
 }
 
 napkin::PointerItem::PointerItem(const QString& name, const PropertyPath& path)
-	: BaseRTTIPathItem(name, path)
+	: PropertyPathItem(name, path)
 {
 	setForeground(napkin::getSoftForeground());
 }
@@ -242,7 +242,7 @@ void napkin::EmbeddedPointerItem::populateChildren()
 }
 
 napkin::EmbeddedPointerItem::EmbeddedPointerItem(const QString& name, const PropertyPath& path)
-	: BaseRTTIPathItem(name, path)
+	: PropertyPathItem(name, path)
 {
 	populateChildren();
 }
@@ -293,7 +293,7 @@ void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 }
 
 napkin::PropertyValueItem::PropertyValueItem(const QString& name, const PropertyPath& path, rttr::type valueType)
-	: BaseRTTIPathItem(name, path), mValueType(valueType)
+	: PropertyPathItem(name, path), mValueType(valueType)
 {
 }
 

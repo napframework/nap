@@ -6,6 +6,7 @@
 
 #include <utility/fileutils.h>
 
+#include "generic/naputils.h"
 #include "generic/filterpopup.h"
 #include "typeconversion.h"
 #include "appcontext.h"
@@ -170,8 +171,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					if (variant.canConvert<PropertyPath>())
 					{
 						auto path = variant.value<PropertyPath>();
-						auto selected = FilterPopup::getObject(AppContext::get().getQApplication()->activeWindow(),
-															   wrapped_type);
+						auto selected = FilterPopup::getObject(AppContext::get().getMainWindow(), wrapped_type);
 						if (selected != nullptr)
 							model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
 
@@ -183,16 +183,21 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 						 && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
 				{
 					bool ok;
-					QString file = QString::fromStdString(path.getValue().to_string(&ok));
-					QString dir = QFileInfo(file).path();
 
-					auto parent = AppContext::get().getQApplication()->topLevelWidgets()[0];
-					auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir);
+					QString currentFilePath = getAbsoluteResourcePath(QString::fromStdString(path.getValue().to_string(&ok)));
+					QString dir = QFileInfo(currentFilePath).path();
+
+					auto& ctx = AppContext::get();
+					auto parent = ctx.getMainWindow();
+					auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
+					auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter, &filter);
 					if (!filename.isEmpty())
 					{
-						// Make the filename relative
-						QDir appDir(QString::fromStdString(nap::utility::getExecutableDir()));
-						model->setData(index, appDir.relativeFilePath(filename));
+						// Make relative if inside resource dir
+						if (directoryContains(getResourceReferencePath(), filename))
+							filename = getRelativeResourcePath(filename);
+
+						model->setData(index, filename);
 					}
 				}
 			}

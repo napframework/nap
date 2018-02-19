@@ -218,19 +218,21 @@ namespace nap
 	}
 
 
-	std::vector<Material::VertexAttributeBinding>& Material::getDefaultVertexAttributeBindings()
+	const std::vector<Material::VertexAttributeBinding>& Material::sGetDefaultVertexAttributeBindings()
 	{
 		static std::vector<Material::VertexAttributeBinding> bindings;
 		if (bindings.empty())
 		{
-			bindings.push_back({ VertexAttributeIDs::getPositionName(), opengl::Shader::VertexAttributeIDs::GetPositionVertexAttr() });
-			bindings.push_back({ VertexAttributeIDs::getNormalName(), opengl::Shader::VertexAttributeIDs::GetNormalVertexAttr() });
+			bindings.push_back({ VertexAttributeIDs::getPositionName(),		opengl::Shader::VertexAttributeIDs::getPositionVertexAttr() });
+			bindings.push_back({ VertexAttributeIDs::getNormalName(),		opengl::Shader::VertexAttributeIDs::getNormalVertexAttr() });
+			bindings.push_back({ VertexAttributeIDs::getTangentName(),		opengl::Shader::VertexAttributeIDs::getTangentVertexAttr() });
+			bindings.push_back({ VertexAttributeIDs::getBitangentName(),	opengl::Shader::VertexAttributeIDs::getBitangentVertexAttr() });
 
 			const int numChannels = 4;
 			for (int channel = 0; channel != numChannels; ++channel)
 			{
-				bindings.push_back({ VertexAttributeIDs::GetColorName(channel), opengl::Shader::VertexAttributeIDs::GetColorVertexAttr(channel) });
-				bindings.push_back({ VertexAttributeIDs::getUVName(channel), opengl::Shader::VertexAttributeIDs::GetUVVertexAttr(channel) });
+				bindings.push_back({ VertexAttributeIDs::GetColorName(channel), opengl::Shader::VertexAttributeIDs::getColorVertexAttr(channel) });
+				bindings.push_back({ VertexAttributeIDs::getUVName(channel),	opengl::Shader::VertexAttributeIDs::getUVVertexAttr(channel) });
 			}
 		}
 		return bindings;
@@ -252,7 +254,10 @@ namespace nap
 
 	const Material::VertexAttributeBinding* Material::findVertexAttributeBinding(const std::string& shaderAttributeID) const
 	{
-		for (const VertexAttributeBinding& binding : mVertexAttributeBindings)
+		// If no bindings are specified at all, use the default bindings. Note that we don't just initialize mVertexAttributeBindings to the default in init(),
+		// because that would modify this object, which would cause the object diff during real-time editing to flag this object as 'modified', even though it's not.
+		const std::vector<VertexAttributeBinding>& bindings = !mVertexAttributeBindings.empty() ? mVertexAttributeBindings : sGetDefaultVertexAttributeBindings();
+		for (const VertexAttributeBinding& binding : bindings)
 		{
 			if (binding.mShaderAttributeID == shaderAttributeID)
 			{

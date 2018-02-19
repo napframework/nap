@@ -1,9 +1,12 @@
 #pragma once
 
 #include <QStandardItem>
+#include <QFileInfo>
+
 #include <rtti/rtti.h>
 #include <rtti/rttideserializeresult.h>
 #include <rtti/rttiutilities.h>
+
 #include "propertypath.h"
 #include "qtutils.h"
 
@@ -90,8 +93,57 @@ namespace napkin
 	nap::rtti::RTTIObject* getPointee(const PropertyPath& path);
 
 	/**
-	 * Given a Pointer Property (i like this name), set its pointee using a string.
+	 * Get the reference directory for resources.
+	 * @param reference The path to the reference directory or file.
+	 * 	If nothing is provided, this will fall back to the currently opened document
+	 * @return An absolute path to the reference directory.
 	 */
-	bool setPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path, const std::string& target);
+	QString getResourceReferencePath(const QString& reference = QString());
+
+	/**
+	 * Resolve a resource path to an absolute path
+	 * @param relPath The file path relative to the JSON Document
+	 * @param anchod The file the given relative path is relative to.
+	 * 	If not provided, assume the anchor is the currently opened document.
+	 * @return An absolute path to the provided filename
+	 */
+	QString getAbsoluteResourcePath(const QString& relPath, const QString& reference = QString());
+
+	/**
+	 * Make a file path relative to the given anchor path.
+	 * @param absPath The absolute path to make relative
+	 * @param reference The file path to make the given path relative to.
+	 * 	If not provided, assume the anchor is the currently opened document.
+	 * @return The file path relative to the given anchor.
+	 */
+	QString getRelativeResourcePath(const QString& absPath, const QString& reference = QString());
+
+
+	/**
+	 * Convert a filename to a file URI.
+	 * @param filename The filename to convert
+	 * @return A valid URI
+	 */
+	std::string toLocalURI(const std::string& filename);
+
+	/**
+	 * Convert a local file URI into an absolute path
+	 *
+	 */
+	std::string fromLocalURI(const std::string& fileuri);
+
+	/**
+	 * Create an URI to an object
+	 * @param object The object the URI should point to
+	 * @return An URI
+	 */
+	std::string toURI(const nap::rtti::RTTIObject& object);
+
+	/**
+	 * Create an URI to a property
+	 * @param path The property the URI should point to
+	 * @return An URI
+	 */
+	std::string toURI(const PropertyPath& path);
 
 }

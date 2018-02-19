@@ -9,8 +9,8 @@
 
 // External Includes
 #include <mathutils.h>
-#include <basetexture2d.h>
 #include <texture2d.h>
+#include <rendertexture2d.h>
 #include <meshutils.h>
 #include <imgui/imgui.h>
 #include <imguiservice.h>

@@ -32,7 +32,7 @@ Let's start reading the graph left to right. Starting from the left we see an ap
 - Receive messages
 - Etc.
 
-Core is the heart of every NAP application and manages (among other things) modules. Core is also the gateway to the ResourceManager. Every NAP application requires a Core object. That's the reason you explicitly create one and give it to the object that runs your application. When creating Core you also create a ResourceManager. The resource manager does a lot of things but most importantly: it makes your life easy. It creates all the objects that are associated with your application, initializes them in the right order and keeps track of any content changes. When a change is detected, the resource manager automatically patches the system without having to re-compile your application. The initialzation call of your application is the perfect place to load the file and check for content errors.
+Core is the heart of every NAP application and manages (among other things) modules. Core is also the gateway to the ResourceManager. Every NAP application requires a Core object. That's the reason you explicitly create one and give it to the getObject that runs your application. When creating Core you also create a ResourceManager. The resource manager does a lot of things but most importantly: it makes your life easy. It creates all the objects that are associated with your application, initializes them in the right order and keeps track of any content changes. When a change is detected, the resource manager automatically patches the system without having to re-compile your application. The initialzation call of your application is the perfect place to load the file and check for content errors.
 
 Modules are libraries that expose building blocks. You can use these building blocks to construct your application. Most modules expose specific building blocks, for example. The OSC module exposes osc receiving and sending objects, a generic interface to create and extract osc events and a service that deals with the osc library and network. Core loads all available modules automatically and initializes them in the right order. After a module is loaded all the building blocks are registered and the module can be initialized. You, as a user, don't have to do anything.
 
@@ -66,7 +66,7 @@ In a more abstract sense, a [Service](@ref nap::Service) can be used to perform 
 Apps {#apps}
 =======================
 
-The main entrypoint for applications is the [AppRunner](@ref nap::AppRunner) object. The AppRunner object requires two things: an [Application](@ref nap::App) to run and an [object](@ref nap::BaseAppEventHandler) that knows how to forward events that happen in the system, such as mouse and keyboard events. The application object should be derived from [BaseApp](@ref nap::BaseApp) and the event handler should be derived from [BaseAppEventHandler](@ref nap::BaseAppEventHandler).
+The main entrypoint for applications is the [AppRunner](@ref nap::AppRunner) getObject. The AppRunner object requires two things: an [Application](@ref nap::App) to run and an [getObject](@ref nap::BaseAppEventHandler) that knows how to forward events that happen in the system, such as mouse and keyboard events. The application getObject should be derived from [BaseApp](@ref nap::BaseApp) and the event handler should be derived from [BaseAppEventHandler](@ref nap::BaseAppEventHandler).
 
 A good default to start with is to derive your application from [App](@ref nap::App) and use the default class [AppEventHandler](@ref nap::AppEventHandler). This will make sure you have input handling set up in your application. This is how such a default setup would look like in main.cpp:
 
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 Core {#core}
 =======================
 
-Most of the functionality in NAP is split up into modules. There is one exception, which is functionality that is present in the [Core](@ref nap::Core) library. This library is a static library and therefore always loaded and can be used everywhere. For each application, a single nap::Core object instance is passed around throughout the system. It manages Services (and the order of initialization and updating of the Services as discussed earlier) and it manages the [ResourceManager](@ref resourcemanager) object. The ResourceManager is an important object that we will discuss separately. 
+Most of the functionality in NAP is split up into modules. There is one exception, which is functionality that is present in the [Core](@ref nap::Core) library. This library is a static library and therefore always loaded and can be used everywhere. For each application, a single nap::Core getObject instance is passed around throughout the system. It manages Services (and the order of initialization and updating of the Services as discussed earlier) and it manages the [ResourceManager](@ref resourcemanager) getObject. The ResourceManager is an important object that we will discuss separately. 
 
 The Core object is the primary entry point into the system and it is generally used to get to the Services you need and to find objects that you need in the ResourceManager.
 
@@ -144,12 +144,12 @@ The Resourcemanager {#resourcemanager}
 The ResourceManager is responsible for loading the file through the [loadFile()](@ref nap::ResourceManager::loadFile()) function. When loading this file, the objects are created and initialized. All of the objects in a json file are Resources. Any resource loaded is owned by the ResourceManager, meaning that the lifetime is fully managed by the ResourceManager (and not managed by the client).
 
 The json example shows that each Resource has an ID. After loading, resources can be found through their ID by using ResourceManager::findObject().
-Any resource must be derived from rtti::RTTIObject. This object contains the ID that is used to identify the objects and it contains a very important function: the init() function. Derived classes can implement this function to initialize the object and return whether this has failed or succeeded. A good example of a Resource is the nap::Image from the json example. The init() function will load the image from disk located at its “ImagePath” property (in this case "data/test/background.jpg") and store it internally. The init() function and how it should be implemented is discussed in more detail in a later section.
+Any resource must be derived from rtti::RTTIObject. This object contains the ID that is used to identify the objects and it contains a very important function: the init() function. Derived classes can implement this function to initialize the getObject and return whether this has failed or succeeded. A good example of a Resource is the nap::Image from the json example. The init() function will load the image from disk located at its “ImagePath” property (in this case "data/test/background.jpg") and store it internally. The init() function and how it should be implemented is discussed in more detail in a later section.
 
 Exposing Resources {#exposing_resources}
 -----------------------
 
-To make sure that C++ classes and properties can be created and edited in json you need to expose them explicitly through something called RTTI (better known as [RunTime Type Information](https://en.wikipedia.org/wiki/Run-time_type_information)). NAP uses a number of macros to ease the way you can expose classes and properties. To create an object that can be authored in json you need to derive if from [RTTIObject](@ref nap::rtti::RTTIObject) and tell the system what the parent object is. To accomplish this you add, in the class declaration, the RTTI_ENABLE macro:
+To make sure that C++ classes and properties can be created and edited in json you need to expose them explicitly through something called RTTI (better known as [RunTime Type Information](https://en.wikipedia.org/wiki/Run-time_type_information)). NAP uses a number of macros to ease the way you can expose classes and properties. To create an getObject that can be authored in json you need to derive if from [RTTIObject](@ref nap::rtti::RTTIObject) and tell the system what the parent object is. To accomplish this you add, in the class declaration, the RTTI_ENABLE macro:
 
 ~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI Shader : public rtti::RTTIObject
@@ -207,7 +207,7 @@ After defining the Shader it be created and edited in json:
 }
 ```
 
-The ID can be chosen as the user wishes. It can be used to retrieve the object from code using [findObject()](@ref nap::ResourceManager::findObject()), but it can also be used to refer to this object by other objects in json, as we will see later. More things are possible with the RTTI system. For instance, it has support for constructors with one or more arguments and it can also expose C++ enums in a way that is still readable in json. See typeinfo.h or the reference documentation for more detailed information how to do this.
+The ID can be chosen as the user wishes. It can be used to retrieve the getObject from code using [findObject()](@ref nap::ResourceManager::findObject()), but it can also be used to refer to this object by other objects in json, as we will see later. More things are possible with the RTTI system. For instance, it has support for constructors with one or more arguments and it can also expose C++ enums in a way that is still readable in json. See typeinfo.h or the reference documentation for more detailed information how to do this.
 
 Pointing to Resources {#pointing}
 -----------------------
@@ -253,7 +253,7 @@ RTTI_BEGIN_CLASS(nap::Material)
 RTTI_END_CLASS
 ~~~~~~~~~~~~~~~
 
-The material is now registered and (exposes as as property) the link to a shader. After calling nap::ResourceManager::loadFile(), these two objects will be created and the pointers will be ‘resolved’, meaning that they will be set to the correct object. In this case, Material::mShader points to a 'FogShader'. ResourceManager also makes sure that any object you are pointing to will be initialized prior to its own initialization. So, it is safe to assume that any object you are pointing to already has its init() called successfully. One thing to be careful with is that cyclic dependencies are not supported. It is not possible to point to objects that eventually point back at the original object. The system cannot determine correct initialization orders in these situations.
+The material is now registered and (exposes as as property) the link to a shader. After calling nap::ResourceManager::loadFile(), these two objects will be created and the pointers will be ‘resolved’, meaning that they will be set to the correct object. In this case, Material::mShader points to a 'FogShader'. ResourceManager also makes sure that any getObject you are pointing to will be initialized prior to its own initialization. So, it is safe to assume that any getObject you are pointing to already has its init() called successfully. One thing to be careful with is that cyclic dependencies are not supported. It is not possible to point to objects that eventually point back at the original getObject. The system cannot determine correct initialization orders in these situations.
 
 Real Time Editing {#editing}
 =======================
@@ -278,7 +278,7 @@ if (!errorState.check(loadImage(),
   return false;
 ~~~~~~~~~~~~~~~
 
-The pattern is somewhat similar to the way asserts work: the first parameter is evaluated and if it evaluated to false, the error message in the parameters that follow is stored in the errorState object. Notice that multiple messages can be stacked in the errorState object. This is convenient in many situations where a very low-level message is generated, but the context where the error occurred is missing. By nesting nap::utility::ErrorState::check() calls in various functions, the context can still be provided.
+The pattern is somewhat similar to the way asserts work: the first parameter is evaluated and if it evaluated to false, the error message in the parameters that follow is stored in the errorState object. Notice that multiple messages can be stacked in the errorState getObject. This is convenient in many situations where a very low-level message is generated, but the context where the error occurred is missing. By nesting nap::utility::ErrorState::check() calls in various functions, the context can still be provided.
 
 Linking Media {#media}
 =======================
@@ -482,7 +482,7 @@ public:
 };
 ~~~~~~~~~~~~~~~
 
-The RTTI needs to be setup in a similar way (although registering properties is not required as this object is not read from json). The init pattern and the error handling is exactly the same as with regular resources. A small difference is the fact that this object does not contain a default constructor. The constructor receives the entity this component belongs to and the resource counterpart of this instance. To make sure the object can be created (without a default constructor) we have to tell RTTI what constructor to use. You explicitly tell RTTI that there is no default constructor and for each custom constructor, we have to add one seperately:
+The RTTI needs to be setup in a similar way (although registering properties is not required as this getObject is not read from json). The init pattern and the error handling is exactly the same as with regular resources. A small difference is the fact that this getObject does not contain a default constructor. The constructor receives the entity this component belongs to and the resource counterpart of this instance. To make sure the object can be created (without a default constructor) we have to tell RTTI what constructor to use. You explicitly tell RTTI that there is no default constructor and for each custom constructor, we have to add one seperately:
 
 ~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PerspCameraComponentInstance)
@@ -525,7 +525,7 @@ public:
 };
 ~~~~~~~~~~~~~~~
 
-Here we see a Palette object, derived from nap::rtti::RTTIObject, intended to be authored in json. It contains an embedded object (a compound) of type Color. Both classes Palette and Color have their properties set up in the cpp file as required:
+Here we see a Palette object, derived from nap::rtti::RTTIObject, intended to be authored in json. It contains an embedded getObject (a compound) of type Color. Both classes Palette and Color have their properties set up in the cpp file as required:
 
 ~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(Color)
@@ -565,7 +565,7 @@ In json this can now be authored as follows:
 }
  ```
 
-Notice that Color is not derived from RTTIObject. It does not need to as it does not require an ID, nor is it an object that lives by itself. Therefore it also does not need the RTTI_ENABLE macro: the system does not need to know what it is derived from, it is embedded in another object. The system does need to know the properties that it is using. It does not do any harm either to derive from [RTTIObject](@ref nap::rtti::RTTIObject), so if you have existing objects that you want to embed, you can.
+Notice that Color is not derived from RTTIObject. It does not need to as it does not require an ID, nor is it an getObject that lives by itself. Therefore it also does not need the RTTI_ENABLE macro: the system does not need to know what it is derived from, it is embedded in another object. The system does need to know the properties that it is using. It does not do any harm either to derive from [RTTIObject](@ref nap::rtti::RTTIObject), so if you have existing objects that you want to embed, you can.
 
 Embedding Pointers {#embedding_pointers}
 =======================
@@ -582,7 +582,7 @@ public:
 };
 ~~~~~~~~~~~~~~~
 
-In this example, PaletteContainer points to a color palette. Both PaletteContainer and the ColorPalette object will become root objects in the json file, which is sometimes messy and harder to read. For this reason, NAP supports ‘embedded pointers’. If an object logically belongs to another object, you can mark the pointer ‘embedded’, and the syntax will become similar to the way that compound objects are written. The RTTI definition in the cpp needs to change slightly:
+In this example, PaletteContainer points to a color palette. Both PaletteContainer and the ColorPalette getObject will become root objects in the json file, which is sometimes messy and harder to read. For this reason, NAP supports ‘embedded pointers’. If an object logically belongs to another object, you can mark the pointer ‘embedded’, and the syntax will become similar to the way that compound objects are written. The RTTI definition in the cpp needs to change slightly:
 
 ~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(Foo)

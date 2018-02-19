@@ -5,6 +5,9 @@
 #include <composition.h>
 #include <ledcolorpalettegrid.h>
 #include <imagelayer.h>
+#include <shader.h>
+#include <generic/naputils.h>
+#include <QCoreApplication>
 
 #define TAG_NAPKIN "[napkin]"
 
@@ -22,6 +25,14 @@ public:
 private:
 	int mCount = 0;
 };
+
+QString getResource(const QString& filename)
+{
+	const QString resourceDir = "unit_tests_data";
+	if (filename.isEmpty())
+		return resourceDir;
+	return resourceDir + "/" + filename;
+}
 
 TEST_CASE("Document Management", TAG_NAPKIN)
 {
@@ -187,7 +198,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	REQUIRE(layer3 != nullptr);
 	// State: 0, 1, 2, 3
 
-	long new_index = doc->arrayMoveElement(layers, 2, 1);
+	size_t new_index = doc->arrayMoveElement(layers, 2, 1);
 	// State: 0, [2], 1, 3
 
 	REQUIRE(new_index == 1);
@@ -196,6 +207,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	REQUIRE(variant.is_valid());
 	auto vlayer = variant.convert<nap::ImageSequenceLayer*>();
 	REQUIRE(vlayer != nullptr);
+
 
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer0);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer2);
@@ -303,7 +315,7 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 	auto doc = napkin::AppContext::get().newDocument();
 	auto entity = doc->addObject<nap::Entity>();
 	napkin::PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
-	REQUIRE(&nameProp.object() == entity);
+	REQUIRE(&nameProp.getObject() == entity);
 	REQUIRE(nameProp.isValid());
 	std::string newName = "NewName";
 	nameProp.setValue(newName);
@@ -408,4 +420,85 @@ TEST_CASE("Commands", TAG_NAPKIN)
 //	ctx.executeCommand(new SetPointerValueCommand())
 //	ctx.executeCommand(new AddEntityToSceneCommand())
 //	ctx.executeCommand(new ArrayAddValueCommand());
+}
+
+TEST_CASE("File Extensions", TAG_NAPKIN)
+{
+    napkin::ResourceFactory fact = napkin::AppContext::get().getResourceFactory();
+    {
+        QStringList imageExtensions;
+        for (const auto& e : fact.getImageExtensions())
+            imageExtensions << e;
+		REQUIRE(imageExtensions.size() > 0);
+
+        auto imageExtString = "Image Extensions: " + imageExtensions.join(", ");
+        REQUIRE(!imageExtString.isEmpty());
+
+		nap::Logger::debug(imageExtString.toStdString());
+    }
+    {
+        QStringList videoExtensions;
+        for (const auto& e : fact.getVideoExtensions())
+            videoExtensions << e;
+		REQUIRE(videoExtensions.size() > 0);
+
+        auto videoExtString = "Video Extensions: " + videoExtensions.join(", ");
+        REQUIRE(!videoExtString.isEmpty());
+
+        nap::Logger::debug(videoExtString.toStdString());
+    }
+}
+
+TEST_CASE("Resource Management", TAG_NAPKIN)
+{
+	// NOTE: Some conversion to std::string to let Catch print useful debug info
+
+	// Must start QApplication in order to have an event loop for signals?
+	int argc = 1;
+	char* argv[] = {"arg!"};
+	QCoreApplication app(argc, argv);
+
+	// Assume this test file's directory as the base path
+	QString jsonFile = "objects.json";
+	QString shaderFile = "shaders/debug.frag";
+	QString dataDir = ".";
+
+	// Just set the filename for reference purposes
+	napkin::AppContext::get().getDocument()->setFilename(getResource(jsonFile));
+
+	// Ensure shader file exists
+	auto absJsonFilePath = QFileInfo(getResource(jsonFile)).absoluteFilePath();
+	REQUIRE(QFileInfo::exists(absJsonFilePath));
+
+	// Ensure shader file exists
+	auto absShaderFilePath = QFileInfo(getResource(shaderFile)).absoluteFilePath();
+	REQUIRE(QFileInfo::exists(absShaderFilePath));
+
+	// Ensure the resource directory exists
+	auto resourcedir = QFileInfo(getResource("")).absoluteFilePath();
+	REQUIRE(QFileInfo::exists(resourcedir));
+
+	// Test our local resource function with napkin's
+	auto basedir = QFileInfo(napkin::getResourceReferencePath()).absoluteFilePath();
+	REQUIRE(basedir.toStdString() == resourcedir.toStdString());
+
+	// Check relative path
+	auto relJsonPath = napkin::getRelativeResourcePath(absJsonFilePath);
+	REQUIRE(relJsonPath.toStdString() == jsonFile.toStdString());
+
+	// Check relative path
+	auto relShaderPath = napkin::getRelativeResourcePath(absShaderFilePath);
+	REQUIRE(relShaderPath.toStdString() == shaderFile.toStdString());
+
+	// Check absolute path
+	auto absShaderPath = napkin::getAbsoluteResourcePath(relShaderPath);
+	REQUIRE(absShaderPath.toStdString() == absShaderFilePath.toStdString());
+
+	// Check if dir contains path
+	REQUIRE(napkin::directoryContains(resourcedir, absShaderPath));
+	REQUIRE(napkin::directoryContains(resourcedir, absJsonFilePath));
+	REQUIRE(napkin::directoryContains(resourcedir + "/shaders", absShaderPath));
+	// or not
+	REQUIRE(!napkin::directoryContains(absShaderPath, resourcedir));
+
 }

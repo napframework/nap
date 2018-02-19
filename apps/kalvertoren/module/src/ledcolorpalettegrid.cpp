@@ -1,8 +1,7 @@
 #include "ledcolorpalettegrid.h"
 
 #include <utility/fileutils.h>
-#include <nbitmaputils.h>
-#include <ntextureutils.h>
+#include <bitmaputils.h>
 #include <fstream>
 
 RTTI_BEGIN_CLASS(nap::WeekVariations)
@@ -16,9 +15,9 @@ RTTI_END_CLASS
 
 // nap::LedColorPaletteGrid run time class definition 
 RTTI_BEGIN_CLASS(nap::LedColorPaletteGrid)
-	RTTI_PROPERTY("GridPath",		&nap::LedColorPaletteGrid::mGridImagePath,		nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
+	RTTI_PROPERTY_FILELINK("GridPath",		&nap::LedColorPaletteGrid::mGridImagePath,		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
 	RTTI_PROPERTY("GridSize",		&nap::LedColorPaletteGrid::mGridSize,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("GridColorsPath", &nap::LedColorPaletteGrid::mGridLedColorsPath,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
+	RTTI_PROPERTY_FILELINK("GridColorsPath", &nap::LedColorPaletteGrid::mGridLedColorsPath,	nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
 	RTTI_PROPERTY("WeekColors",		&nap::LedColorPaletteGrid::mWeekColors,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -100,11 +99,11 @@ namespace nap
 			return false;
 
 		// Load pixel data in to bitmap
-		if (!mPixmap.initFromFile(mGridImagePath, errorState))
+		if (!mBitmap.initFromFile(mGridImagePath, errorState))
 			return false;
 
 		// Make sure the amount of channels is > 3
-		if (!errorState.check(mPixmap.getBitmap().getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mGridImagePath.c_str()))
+		if (!errorState.check(mBitmap.getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mGridImagePath.c_str()))
 			return false;
 
 		if (!errorState.check(getWeekCount() == 52, "There must be 52 weeks defined in palette %s", mID.c_str()))
@@ -121,14 +120,14 @@ namespace nap
 
 	bool LedColorPaletteGrid::initPaletteGrid(utility::ErrorState& errorState)
 	{
-		float numColumns = (int)((float)mPixmap.mWidth / (float)mGridSize);
-		float numRows = (int)((float)mPixmap.mHeight / (float)mGridSize);
+		float numColumns = (int)((float)mBitmap.mWidth / (float)mGridSize);
+		float numRows = (int)((float)mBitmap.mHeight / (float)mGridSize);
 
 		mPaletteGrid.resize(numRows);
 
 		RGBAColor8 target_pixel_alpha;
 		RGBColor8 target_pixel_clr;
-		std::unique_ptr<BaseColor> source_pixel = mPixmap.makePixel();
+		std::unique_ptr<BaseColor> source_pixel = mBitmap.makePixel();
 		
 		for (int row = 0; row < numRows; ++row)
 		{
@@ -138,10 +137,10 @@ namespace nap
 				int x = column * mGridSize + (int)(0.5f * mGridSize);
 				int y = row * mGridSize + (int)(0.5f * mGridSize);
 
-				mPixmap.getPixel(x, mPixmap.mHeight - y - 1, *source_pixel);
+				mBitmap.getPixel(x, mBitmap.mHeight - y - 1, *source_pixel);
 				source_pixel->convert(target_pixel_alpha);
 
-				//RGBAColor8 current_color = mPixmap.getPixel<RGBAColor8>(x, mPixmap.mHeight - y - 1);
+				//RGBAColor8 current_color = mBitmap.getPixel<RGBAColor8>(x, mBitmap.mHeight - y - 1);
 				if (target_pixel_alpha.getAlpha() == 0)
 					break;
 

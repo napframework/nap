@@ -11,6 +11,7 @@ file(GLOB SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 add_executable(${PROJECT_NAME}_autorun ${SOURCES})
 
+
 set(UNITTEST_LIBS
     napcore
     mod_napkalvertoren
@@ -20,10 +21,30 @@ set(UNITTEST_LIBS
     mod_napinput
     mod_napsdlinput
     mod_napsandbox
-    #        mod_napmath
-    #        mod_napsdlwindow
-    #        mod_napapp
+    mod_napvideo
     )
+
+find_package(FFmpeg REQUIRED)
+
+if (MSVC)
+    list(APPEND UNITTEST_LIBS
+            ${FREEIMAGE_LIBRARIES}
+            ${FFMPEG_LIBRARIES}
+            )
+    copy_freeimage_dll()
+    copy_windows_ffmpeg_dlls()
+elseif (APPLE)
+    list(APPEND UNITTEST_LIBS
+            ${FREEIMAGE_LIBRARIES}
+            ${FFMPEG_LIBRARIES}
+            )
+
+elseif (UNIX)
+    list(APPEND UNITTEST_LIBS
+            freeimage
+            ${FFMPEG_LIBRARIES}
+            )
+endif ()
 
 target_link_libraries(${PROJECT_NAME} ${UNITTEST_LIBS})
 target_link_libraries(${PROJECT_NAME}_autorun ${UNITTEST_LIBS})
@@ -38,5 +59,5 @@ add_custom_command(TARGET ${PROJECT_NAME}_autorun
                    COMMENT "Run tests"
                    POST_BUILD
                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                   COMMAND $<TARGET_FILE:${PROJECT_NAME}>
+                   COMMAND "$<TARGET_FILE:${PROJECT_NAME}>"
                    )
