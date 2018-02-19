@@ -30,6 +30,8 @@ QString secondsToSMPTE(qreal seconds, int framerate)
 GridView::GridView() : QGraphicsView()
 {
 	setTransformationAnchor(QGraphicsView::NoAnchor);
+	setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+	setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
 	setMouseTracking(true);
 	viewport()->setMouseTracking(true);
 	mRulerFont.setFamily("monospace");
@@ -141,20 +143,12 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect)
 {
 	painter->fillRect(rect, Qt::darkGray);
 
-	QPen pen(Qt::red);
-	pen.setCosmetic(true);
-	painter->setPen(pen);
-	painter->drawRect(selectedItemsBoundingRect());
-
-
 	auto viewRect = viewport()->rect();
 	auto sceneRect = mapToScene(viewRect).boundingRect();
 	qreal desiredSpacing = 300;
 
 
-//	std::cout << stepSizeX << std::endl;
 	QString suffix;
-
 
 	// Draw minor lines
 	{
@@ -338,7 +332,6 @@ void GridView::frameSelected(bool horizontal, bool vertical, QMargins margins)
 
 void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMargins margins)
 {
-	qInfo() << margins;
 	auto viewRect = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
 
 	auto origTranslate = napkin::getTranslation(mViewTransform);
@@ -359,24 +352,7 @@ void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMar
 
 void GridView::applyViewTransform()
 {
-	qreal margin = 100;
 
-
-//	qreal pos = mViewTransform.m31();
-//	qreal scale = mViewTransform.m21();
-//	qreal realMargin = margin * scale;
-//
-//
-//	nap::Logger::info("==============");
-//	nap::Logger::info(QString::number(pos).toStdString());
-//	nap::Logger::info(QString::number(realMargin).toStdString());
-//
-//	qreal offset = realMargin - pos;
-//	nap::Logger::info("Correct");
-//	nap::Logger::info(QString::number(offset).toStdString());
-//
-//	if (pos > realMargin)
-//		mViewTransform.translate(offset,0);
 
 	setTransform(mViewTransform);
 	viewTransformed(mViewTransform);

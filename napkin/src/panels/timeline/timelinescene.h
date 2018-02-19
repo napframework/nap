@@ -15,7 +15,7 @@ namespace napkin {
 	class TimelineScene : public QGraphicsScene {
 	public:
 		TimelineScene();
-		void setModel(Timeline* timeline);
+		void setTimeline(Timeline* timeline);
 		Timeline* timeline() const { return mTimeline; }
 	private:
 		void onTrackAdded(Track& track);
