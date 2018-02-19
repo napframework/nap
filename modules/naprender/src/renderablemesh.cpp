@@ -4,8 +4,8 @@
 namespace nap
 {
 	RenderableMesh::RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, const VAOHandle& vaoHandle) :
-        mMesh(&mesh),
 		mMaterialInstance(&materialInstance),
+        mMesh(&mesh),
         mVAOHandle(vaoHandle) { }
 }
 

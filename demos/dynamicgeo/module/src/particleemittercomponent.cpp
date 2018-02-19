@@ -66,6 +66,7 @@ namespace nap
 		{
 			// Because the mesh is populated dynamically we set the initial amount of vertices to be 0
 			mMeshInstance.setNumVertices(0);
+			mMeshInstance.setUsage(EMeshDataUsage::DynamicWrite);
 			mMeshInstance.reserveVertices(1000);
 
 			// Create the necessary attributes

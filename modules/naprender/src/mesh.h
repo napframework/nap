@@ -55,6 +55,17 @@ namespace nap
 	};
 
 	/**
+	 * Flag that determines how the mesh data is used at runtime. Note that these are only potential performance improvements; they do not actually restrict the way 
+	 * you can use the mesh (i.e. you can still read data from a static mesh).
+	 */
+	enum class EMeshDataUsage
+	{
+		Static,				///< Data of the mesh does not change
+		DynamicRead,		///< Data of the mesh is frequently read from GPU to CPU
+		DynamicWrite		///< Data of the mesh is frequently updated from CPU to GPU
+	};
+
+	/**
 	 * A MeshShape describes how a particular part of a mesh should be drawn. It contains the DrawMode and an IndexList.
 	 * The indices index into the vertex data contained in the mesh this shape is a part of, while the DrawMode describes how the indices should be interpreted/drawn.
 	 */
@@ -159,6 +170,7 @@ namespace nap
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
 
 		int						mNumVertices;
+		EMeshDataUsage			mUsage = EMeshDataUsage::Static;
 		VertexAttributeList		mAttributes;
 		std::vector<MeshShape>	mShapes;
 	};
@@ -297,6 +309,16 @@ namespace nap
 		 * @return The new shape
 		 */
 		MeshShape& createShape();
+
+		/**
+		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called; changing it after init will not have any effect.
+		 */
+		void setUsage(EMeshDataUsage inUsage)									{ mProperties.mUsage = inUsage; }
+
+		/**
+		 * Get the usage for this mesh
+		 */
+		EMeshDataUsage getUsage(EMeshDataUsage inUsage) const					{ return mProperties.mUsage; }
 
 		/**
 		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),

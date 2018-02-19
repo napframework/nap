@@ -64,12 +64,13 @@ void napkin::FilterPopup::showEvent(QShowEvent* event)
 
 nap::rtti::RTTIObject* napkin::FilterPopup::getObject(QWidget* parent, const rttr::type& typeConstraint)
 {
-	auto dialog = new FilterPopup(parent);
-	dialog->mTreeView.setModel(new FlatObjectModel(typeConstraint));
+	FilterPopup dialog(parent);
+	FlatObjectModel model(typeConstraint);
+	dialog.mTreeView.setModel(&model);
 
-	dialog->exec(QCursor::pos());
+	dialog.exec(QCursor::pos());
 
-	auto item = dynamic_cast<ObjectItem*>(dialog->mTreeView.getSelectedItem());
+	auto item = dynamic_cast<ObjectItem*>(dialog.mTreeView.getSelectedItem());
 	if (item != nullptr)
 		return item->getObject();
 

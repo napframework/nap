@@ -12,8 +12,8 @@
         {
             "Type": "nap::Shader",
             "mID": "shader",
-            "mVertShader": "",
-            "mFragShader": ""
+            "mVertShader": "shaders/debug.vert",
+            "mFragShader": "shaders/debug.frag"
         }
     ]
 }
