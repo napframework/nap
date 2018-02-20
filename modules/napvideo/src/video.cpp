@@ -9,12 +9,12 @@
 #include <string.h>
 #include <iostream>
 #include <limits>
-//#include <windows.h>
 
 extern "C"
 {
 	#include <libavcodec/avcodec.h>
 	#include <libavformat/avformat.h>
+	#include <libavutil/pixfmt.h>
 	#include "libswresample/swresample.h"
 }
 
@@ -31,11 +31,74 @@ namespace nap
 	const double Video::sVideoMax = std::numeric_limits<double>::max();
 
 
-	const std::string error_to_string(int err)
+	const std::string sErrorToString(int err)
 	{
 		char error_buf[256];
 		av_make_error_string(error_buf, sizeof(error_buf), err);
 		return std::string(error_buf);
+	}
+
+	// Debug function to write a frame to jpeg
+	void sWriteJPEG (AVCodecContext* videoCodecContext, AVFrame* videoFrame, int frameIndex, double framePTSSecs)
+	{
+		// Set up jpeg codec context
+		AVCodecContext* jpeg_codec_context = avcodec_alloc_context3(NULL);
+		assert(jpeg_codec_context != nullptr);
+		jpeg_codec_context->bit_rate = videoCodecContext->bit_rate;
+		jpeg_codec_context->width = videoCodecContext->width;
+		jpeg_codec_context->height = videoCodecContext->height;
+		jpeg_codec_context->pix_fmt = AV_PIX_FMT_YUVJ420P;
+		jpeg_codec_context->codec_id = AV_CODEC_ID_MJPEG;
+		jpeg_codec_context->codec_type = AVMEDIA_TYPE_VIDEO;
+		jpeg_codec_context->time_base.num = videoCodecContext->time_base.num;
+		jpeg_codec_context->time_base.den = videoCodecContext->time_base.den;
+
+		// Find jpeg encoder
+		AVCodec* jpeg_codec = avcodec_find_encoder(jpeg_codec_context->codec_id);
+		if (!jpeg_codec)
+			return;
+
+		// Open the encoder
+		if (avcodec_open2(jpeg_codec_context, jpeg_codec, nullptr) < 0)
+			return;
+
+		jpeg_codec_context->mb_lmin = jpeg_codec_context->lmin = jpeg_codec_context->qmin * FF_QP2LAMBDA;
+		jpeg_codec_context->mb_lmax = jpeg_codec_context->lmax = jpeg_codec_context->qmax * FF_QP2LAMBDA;
+		jpeg_codec_context->flags = CODEC_FLAG_QSCALE;
+		jpeg_codec_context->global_quality = jpeg_codec_context->qmin * FF_QP2LAMBDA;
+
+		videoFrame->pts = 1;
+		videoFrame->quality = jpeg_codec_context->global_quality;
+
+		// Determine frame size and allocate appropriate buffer
+		int jpeg_size = avpicture_get_size(AV_PIX_FMT_YUVJ420P, videoCodecContext->width, videoCodecContext->height);
+		std::vector<uint8_t> jpeg_buffer(jpeg_size, 0);
+
+		// Construct packet pointing to jpeg buffer
+		AVPacket packet;
+		packet.data = jpeg_buffer.data();
+		packet.size = jpeg_buffer.size();
+
+		// Encode video frame to jpeg buffer (through packet)
+		int got_packet = 0;
+		if (avcodec_encode_video2(jpeg_codec_context, &packet, videoFrame, &got_packet) < 0)
+		{
+			avcodec_close (jpeg_codec_context);
+			return;
+		}
+
+		// Determine filename & write to disk
+		char jpeg_name[512] = { 0 };
+		sprintf (jpeg_name, "screenshots\\%06d_%f.jpg", frameIndex, framePTSSecs);
+
+		FILE* jpeg_file = fopen(jpeg_name, "wb");
+		if (jpeg_file != nullptr)
+		{
+			fwrite (jpeg_buffer.data(), sizeof(uint8_t), jpeg_buffer.size(), jpeg_file);
+			fclose (jpeg_file);
+		}
+
+		avcodec_close(jpeg_codec_context);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -77,7 +140,6 @@ namespace nap
 			av_frame_unref(frame.mFrame);
 			av_frame_free(&frame.mFrame);
 		}
-		mPrevPTSSecs = Video::sVideoMax;
 	}
 
 
@@ -171,19 +233,14 @@ namespace nap
 			// when there is no PTS available, we need to account for these cases.
 			Frame new_frame;
 			new_frame.mPTSSecs = Video::sVideoMax;
-			if (frame->pts == AV_NOPTS_VALUE)
-			{
-				// In case there is no PTS we use the previous PTS time plus the frame time as a best prediction. However, if there is 
-				// no previous frame, we assume zero.
-				new_frame.mPTSSecs = mPrevPTSSecs == Video::sVideoMax ? 0.0 : mPrevPTSSecs + frame_duration;
-			}
-			else
-			{
-				// Use the PTS in the timespace of the video stream, starting from the videostream start
-				new_frame.mPTSSecs = (frame->pts * av_q2d(mVideo->mFormatContext->streams[mStream]->time_base)) - stream_start_time;
-			}
 
-			mPrevPTSSecs = new_frame.mPTSSecs;
+			// Note: we use the best_effort_timestamp (which is provided/calculated by the decoder), because it seems to deal with some video files/formats
+			// where the pts of the frame is not actually correct.
+			int64_t pts = frame->best_effort_timestamp;
+			assert(pts != AV_NOPTS_VALUE);
+
+			// Use the PTS in the timespace of the video stream, starting from the videostream start
+			new_frame.mPTSSecs = (pts * av_q2d(mVideo->mFormatContext->streams[mStream]->time_base)) - stream_start_time;
 
 			// We MOVE the decoded frame to this new frame. It is freed when processed
 			new_frame.mFrame = av_frame_alloc();
@@ -257,7 +314,7 @@ namespace nap
 
 				if (result < 0)
 				{
-					mVideo->setErrorOccurred(error_to_string(result));
+					mVideo->setErrorOccurred(sErrorToString(result));
 					return false;
 				}
 			}
@@ -345,11 +402,11 @@ namespace nap
 		// Copy context
 		AVCodecContext* codec_context = avcodec_alloc_context3(codec);
 		int error = avcodec_copy_context(codec_context, &sourceCodecContext);
-		if (!errorState.check(error == 0, "Unable to copy codec context: %s", error_to_string(error).c_str()))
+		if (!errorState.check(error == 0, "Unable to copy codec context: %s", sErrorToString(error).c_str()))
 			return false;
 
 		error = avcodec_open2(codec_context, codec, &options);
-		if (!errorState.check(error == 0, "Unable to open codec: %s", error_to_string(error).c_str()))
+		if (!errorState.check(error == 0, "Unable to open codec: %s", sErrorToString(error).c_str()))
 			return false;
 
 		destState.setCodec(codec, codec_context);
@@ -365,11 +422,11 @@ namespace nap
 			return false;
 
 		int error = avformat_open_input(&mFormatContext, mPath.c_str(), nullptr, nullptr);
-		if (!errorState.check(error >= 0, "Error opening file '%s': %s\n", mPath.c_str(), error_to_string(error).c_str()))
+		if (!errorState.check(error >= 0, "Error opening file '%s': %s\n", mPath.c_str(), sErrorToString(error).c_str()))
 			return false;
 
 		error = avformat_find_stream_info(mFormatContext, nullptr);
-		if (!errorState.check(error >= 0, "Error finding stream: %s", error_to_string(error).c_str()))
+		if (!errorState.check(error >= 0, "Error finding stream: %s", sErrorToString(error).c_str()))
 			return false;
 
 		// Enable this to dump information about file onto standard error
@@ -389,7 +446,7 @@ namespace nap
 			else if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
 			{
 				source_audio_codec_context = mFormatContext->streams[i]->codec;
-				//mAudioState.setStream(i);
+				mAudioState.setStream(i);
 			}
 		}
 
@@ -591,7 +648,7 @@ namespace nap
 				int seek_result = av_seek_frame(mFormatContext, mVideoState.getStream(), seek_target, 0);
 				if (seek_result < 0)
 				{
-					setErrorOccurred(error_to_string(seek_result));
+					setErrorOccurred(sErrorToString(seek_result));
 					return;
 				}
 
@@ -629,7 +686,7 @@ namespace nap
 			}
 			else if (result < 0)
 			{
-				setErrorOccurred(error_to_string(result));
+				setErrorOccurred(sErrorToString(result));
 				return;
 			}
 
@@ -785,10 +842,6 @@ namespace nap
 				if (frame.isValid())
 					mVideoClockSecs = frame.mPTSSecs;
 			}
-
-//			char buf[256];
-//			sprintf(buf, "PTS: %f, clock: %f, deltatime: %f\n", frame.isValid() ? frame.mPTSSecs : -1.0f, mVideoClockSecs, deltaTime);
-//			OutputDebugStringA(buf);
 
 			// Try to get next frame to display (based on video clock)
 			cur_frame = mVideoState.tryPopFrame(mVideoClockSecs);

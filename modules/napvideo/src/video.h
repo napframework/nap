@@ -104,7 +104,6 @@ namespace nap
 		DecodeFunction			mDecodeFunction;
 		ClearFrameQueueFunction	mClearFrameQueueFunction;
 		bool					mExitDecodeThreadSignalled = false;		///< If this boolean is set, the decode thread will exit ASAP. This is used internally by exitDecodeThread and should not be used separately
-		double					mPrevPTSSecs = 0.0;						///< Stored timing information for the previous frame
 
 		std::queue<Frame>		mFrameQueue;							///< The frame queue as produced by the decodeThread and consumed by the main thread
 		mutable std::mutex		mFrameQueueMutex;						///< Mutex protection for the frame queue
