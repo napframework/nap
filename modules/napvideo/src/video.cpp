@@ -9,6 +9,7 @@
 #include <string.h>
 #include <iostream>
 #include <limits>
+//#include <windows.h>
 
 extern "C"
 {
@@ -76,6 +77,7 @@ namespace nap
 			av_frame_unref(frame.mFrame);
 			av_frame_free(&frame.mFrame);
 		}
+		mPrevPTSSecs = Video::sVideoMax;
 	}
 
 
@@ -85,12 +87,12 @@ namespace nap
 	}
 
 
-	bool AVState::addPacket(AVPacket* packet, const bool& exitIOThreadSignalled)
+	bool AVState::addPacket(AVPacket* packet, int maxPackets, const bool& exitIOThreadSignalled)
 	{
 		assert(packet == nullptr || matchesStream(*packet));
 
 		std::unique_lock<std::mutex> lock(mPacketQueueMutex);
-		mPacketQueueRoomAvailableCondition.wait(lock, [this, &exitIOThreadSignalled]() { return mPacketQueue.size() < 3 || exitIOThreadSignalled; });
+		mPacketQueueRoomAvailableCondition.wait(lock, [this, &exitIOThreadSignalled, maxPackets]() { return mPacketQueue.size() < maxPackets || exitIOThreadSignalled; });
 		if (exitIOThreadSignalled)
 			return false;
 
@@ -113,8 +115,11 @@ namespace nap
 		mCodecContext = codecContext;
 	}
 
+
 	void AVState::startDecodeThread(const DecodeFunction& decodeFunction)
 	{
+		exitDecodeThread(true);
+
 		mExitDecodeThreadSignalled = false;
 		mFinishedProducingFrames = false;
 		mIOFinishedProducingPackets = false;
@@ -130,7 +135,7 @@ namespace nap
 		mPacketAvailableCondition.notify_one();
 		mFrameQueueRoomAvailableCondition.notify_one();
 		mFrameDataAvailableCondition.notify_one();
-		if (join)
+		if (mDecodeThread.joinable() && join)
 			mDecodeThread.join();
 	}
 
@@ -318,7 +323,8 @@ namespace nap
 	{
 		if (mFormatContext != nullptr)
 			mService.removeVideoPlayer(*this);
-		stop();
+		
+		stop(true);
 		
 		mAudioState.close();
 		mVideoState.close();
@@ -382,7 +388,7 @@ namespace nap
 			else if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
 			{
 				source_audio_codec_context = mFormatContext->streams[i]->codec;
-				mAudioState.setStream(i);
+				//mAudioState.setStream(i);
 			}
 		}
 
@@ -487,17 +493,17 @@ namespace nap
 	}
 
 
-	void Video::stop()
+	void Video::stop(bool blocking)
 	{
 		if (!mPlaying)
 			return;
 
-		mVideoState.exitDecodeThread(true);
+		mVideoState.exitDecodeThread(blocking);
 
 		if (mAudioState.isValid())
-			mAudioState.exitDecodeThread(true);
+			mAudioState.exitDecodeThread(blocking);
 
-		exitIOThread(true);
+		exitIOThread(blocking);
 
 		mPlaying = false;
 
@@ -541,20 +547,14 @@ namespace nap
 
 	bool Video::hasErrorOccurred() const
 	{
-		return mErrorOccurred;
+		return !mErrorMessage.empty();
 	}
 
 
 	void Video::setErrorOccurred(const std::string& errorMessage)
 	{
-		mErrorOccurred = true;
 		mErrorMessage = errorMessage;
-		exitIOThread(false);
-
-		if (mAudioState.isValid())
-			mAudioState.exitDecodeThread(false);
-
-		mVideoState.exitDecodeThread(false);
+		stop(false);
 	}
 
 
@@ -579,10 +579,16 @@ namespace nap
 			// If a seek target is set, seek to that position
 			if (mSeekTarget != -1)
 			{
-				int result = av_seek_frame(mFormatContext, mVideoState.getStream(), mSeekTarget, 0);
-				if (result < 0)
+				// Some file formats do not allow seeking directly to zero (ffmpeg seeks to the DTS time).
+				// To deal with this specific case, we seek to the dts of the first frame when seeking to zero, but really we should revise the entire seeking operation
+				int64_t seek_target = mSeekTarget;
+				if (seek_target == 0)
+					seek_target = mFormatContext->streams[mVideoState.getStream()]->first_dts;
+				
+				int seek_result = av_seek_frame(mFormatContext, mVideoState.getStream(), seek_target, 0);
+				if (seek_result < 0)
 				{
-					setErrorOccurred(error_to_string(result));
+					setErrorOccurred(error_to_string(seek_result));
 					return;
 				}
 
@@ -590,10 +596,10 @@ namespace nap
 				clearPacketQueue();
 
 				// Add a 'null' packet to the queue, to signal the decoder thread that it should flush its queues and decoder buffer
-				mVideoState.addPacket(nullptr, mExitIOThreadSignalled);
+				mVideoState.addPacket(nullptr, 3, mExitIOThreadSignalled);
 
 				if (mAudioState.isValid())
-					mAudioState.addPacket(nullptr, mExitIOThreadSignalled);
+					mAudioState.addPacket(nullptr, 100, mExitIOThreadSignalled);
 
 				mSeekTarget = -1;
 			}
@@ -626,12 +632,12 @@ namespace nap
 
 			if (mVideoState.matchesStream(*packet.mPacket))
 			{
-				if (mVideoState.addPacket(packet.mPacket, mExitIOThreadSignalled))
+				if (mVideoState.addPacket(packet.mPacket, 3, mExitIOThreadSignalled))
 					packet.mPacket = nullptr;
 			}
 			else if (mAudioState.matchesStream(*packet.mPacket))
 			{
-				if (mAudioState.addPacket(packet.mPacket, mExitIOThreadSignalled))
+				if (mAudioState.addPacket(packet.mPacket, 100, mExitIOThreadSignalled))
 					packet.mPacket = nullptr;
 			}
 		}
@@ -639,6 +645,8 @@ namespace nap
 
 	void Video::startIOThread()
 	{
+		exitIOThread(true);
+
 		mExitIOThreadSignalled = false;
 		mIOThread = std::thread(std::bind(&Video::ioThread, this));
 	}
@@ -652,7 +660,7 @@ namespace nap
 		mVideoState.notifyPacketQueueRoomAvailable();
 		mAudioState.notifyPacketQueueRoomAvailable();
 
-		if (join)
+		if (mIOThread.joinable() && join)
 			mIOThread.join();
 	}
 
@@ -774,6 +782,10 @@ namespace nap
 				if (frame.isValid())
 					mVideoClockSecs = frame.mPTSSecs;
 			}
+
+//			char buf[256];
+//			sprintf(buf, "PTS: %f, clock: %f, deltatime: %f\n", frame.isValid() ? frame.mPTSSecs : -1.0f, mVideoClockSecs, deltaTime);
+//			OutputDebugStringA(buf);
 
 			// Try to get next frame to display (based on video clock)
 			cur_frame = mVideoState.tryPopFrame(mVideoClockSecs);

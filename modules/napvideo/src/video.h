@@ -81,7 +81,7 @@ namespace nap
 		void clearFrameQueue();
 
 		bool matchesStream(const AVPacket& packet) const;
-		bool addPacket(AVPacket* packet, const bool& exitIOThreadSignalled);
+		bool addPacket(AVPacket* packet, int maxPackets, const bool& exitIOThreadSignalled);
 
 		Frame popFrame();
 		Frame tryPopFrame(double pts);
@@ -102,9 +102,8 @@ namespace nap
 		std::thread				mDecodeThread;							///< Video decode thread
 		DecodeFunction			mDecodeFunction;
 		bool					mExitDecodeThreadSignalled = false;		///< If this boolean is set, the decode thread will exit ASAP. This is used internally by exitDecodeThread and should not be used separately
-		double					mPrevPTSSecs = 0.0;				///< Stored timing information for the previous frame
+		double					mPrevPTSSecs = 0.0;						///< Stored timing information for the previous frame
 
-																// Producer/consumer variables for frame queue:
 		std::queue<Frame>		mFrameQueue;							///< The frame queue as produced by the decodeThread and consumed by the main thread
 		mutable std::mutex		mFrameQueueMutex;						///< Mutex protection for the frame queue
 		std::condition_variable mFrameDataAvailableCondition;			///< Condition describing whether there is data in the frame queue to process
@@ -177,7 +176,7 @@ namespace nap
 		/**
 		 * Stops playback of the video.
 		 */
-		void stop();
+		void stop(bool blocking);
 
 		/**
 		 * Seeks within the video to the time provided. This can be called while playing.
@@ -286,7 +285,6 @@ namespace nap
 		float					mDuration = 0.0f;				///< Duration of the video in seconds
 		double					mVideoClockSecs = sVideoMax;	///< Clock that we use to synchronize the video to
 		std::string				mErrorMessage;					///< If an error occurs, this is the string containing error information. If empty, no error occured.
-		bool					mErrorOccurred = false;
 		
 		AVState					mVideoState;
 		AVState					mAudioState;
