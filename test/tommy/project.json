@@ -10,6 +10,7 @@
         "mod_napapp",
         "mod_napscene",
         "mod_napsandbox",
-        "mod_napimgui"
+        "mod_napimgui",
+        "mod_nappython"
     ]
 }

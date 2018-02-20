@@ -239,7 +239,7 @@ macro(find_python_in_thirdparty)
         # Set our pre built Python location for macOS        
         set(PYTHONLIBS_FOUND 1)
         set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python)
-        set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/libpython3.6m.dylib)
+        set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/lib/libpython3.6m.dylib)
         set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/python3.6m)
     endif()
 endmacro()

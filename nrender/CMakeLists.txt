@@ -158,5 +158,8 @@ if (WIN32)
             PATTERN "lib" EXCLUDE)
     install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/" DESTINATION "thirdparty/SDL2/lib")
 elseif(APPLE)
-    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/osx/install/" DESTINATION "thirdparty/SDL2")
+    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/osx/install/include" DESTINATION "thirdparty/SDL2")
+    install(FILES "${THIRDPARTY_DIR}/SDL2/osx/install/lib/libSDL2-2.0.0.dylib" 
+                  "${THIRDPARTY_DIR}/SDL2/osx/install/lib/libSDL2.dylib" 
+            DESTINATION "thirdparty/SDL2/lib")
 endif()

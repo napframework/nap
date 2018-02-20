@@ -64,6 +64,14 @@ if (WIN32)
     )
 endif()
 
+# Populate our Python virtual environment configuration 
+if(APPLE)
+    set(THIRDPARTY_PYTHON_PREFIX ${THIRDPARTY_DIR}/python/)
+    configure_file(${THIRDPARTY_DIR}/python/pyvenv.cfg.in
+                   ${THIRDPARTY_DIR}/python/pyvenv.cfg
+                   @ONLY)
+endif()
+
 # Install naprtti and RTTR into projects for macOS/Linux
 if (NOT WIN32)
     # Add post-build step to set RTTR RPATH
