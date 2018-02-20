@@ -9,7 +9,7 @@ if(WIN32)
 endif()
 if(APPLE)
     # Install our Python dylib from thirdparty
-    install(FILES ${THIRDPARTY_DIR}/python/libpython3.6m.dylib
+    install(FILES ${THIRDPARTY_DIR}/python/lib/libpython3.6m.dylib
             DESTINATION lib/)
 
     # Framework library

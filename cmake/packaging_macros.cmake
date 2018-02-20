@@ -88,7 +88,7 @@ macro(package_python)
 
         # Install dylib        
         install(FILES ${PYTHON_PREFIX}/lib/libpython3.6m.dylib
-                DESTINATION thirdparty/python/
+                DESTINATION thirdparty/python/lib
                 CONFIGURATIONS Release
                 )
 
@@ -103,7 +103,7 @@ macro(package_python)
 
         # Install command line intrepreter
         install(PROGRAMS ${PYTHON_PREFIX}/bin/python3.6
-                DESTINATION thirdparty/python/
+                DESTINATION thirdparty/python/bin/
                 CONFIGURATIONS Release)
 
         # Install includes
@@ -111,18 +111,15 @@ macro(package_python)
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
 
-        # Change link to dylib
-        install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                              -change 
-                                              @loader_path/../lib/libpython3.6m.dylib
-                                              @executable_path/libpython3.6m.dylib
-                                              ${CMAKE_INSTALL_PREFIX}/thirdparty/python/python3.6
-                                      ERROR_QUIET)")
-
         # Install license
         install(FILES ${PYTHON_PREFIX}/LICENSE
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
+
+        # Install virtualenv template
+        install(FILES ${PYTHON_PREFIX}/../pyvenv.cfg.in
+                DESTINATION thirdparty/python/
+                CONFIGURATIONS Release)        
 
     # elseif(APPLE)
     #     # Older logic installing Python from homebrew on macOS
