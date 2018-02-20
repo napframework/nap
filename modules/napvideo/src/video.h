@@ -52,6 +52,7 @@ namespace nap
 	{
 	public:
 		using DecodeFunction = std::function<int(AVCodecContext* /*avctx*/, AVFrame* /*frame*/, int* /*got_frame_ptr*/, const AVPacket* /*avpkt*/)>;
+		using ClearFrameQueueFunction = std::function<void()>;
 
 		AVState(Video& video) :
 			mVideo(&video)
@@ -68,7 +69,7 @@ namespace nap
 
 		void setCodec(AVCodec* codec, AVCodecContext* codecContext);
 
-		void startDecodeThread(const DecodeFunction& decodeFunction);
+		void startDecodeThread(const DecodeFunction& decodeFunction, const ClearFrameQueueFunction& clearFrameQueueFunction);
 		void exitDecodeThread(bool join);
 		void decodeThread();
 		bool decodeFrame(AVFrame& frame);
@@ -101,6 +102,7 @@ namespace nap
 
 		std::thread				mDecodeThread;							///< Video decode thread
 		DecodeFunction			mDecodeFunction;
+		ClearFrameQueueFunction	mClearFrameQueueFunction;
 		bool					mExitDecodeThreadSignalled = false;		///< If this boolean is set, the decode thread will exit ASAP. This is used internally by exitDecodeThread and should not be used separately
 		double					mPrevPTSSecs = 0.0;						///< Stored timing information for the previous frame
 
