@@ -39,7 +39,7 @@ namespace nap
 	}
 
 	// Debug function to write a frame to jpeg
-	void sWriteJPEG (AVCodecContext* videoCodecContext, AVFrame* videoFrame, int frameIndex, double framePTSSecs)
+	void sWriteJPEG(AVCodecContext* videoCodecContext, AVFrame* videoFrame, int frameIndex, double framePTSSecs)
 	{
 		// Set up jpeg codec context
 		AVCodecContext* jpeg_codec_context = avcodec_alloc_context3(NULL);
@@ -94,14 +94,20 @@ namespace nap
 		FILE* jpeg_file = fopen(jpeg_name, "wb");
 		if (jpeg_file != nullptr)
 		{
-			fwrite (jpeg_buffer.data(), sizeof(uint8_t), jpeg_buffer.size(), jpeg_file);
-			fclose (jpeg_file);
+			fwrite(jpeg_buffer.data(), sizeof(uint8_t), jpeg_buffer.size(), jpeg_file);
+			fclose(jpeg_file);
 		}
 
 		avcodec_close(jpeg_codec_context);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
+
+	AVState::AVState(Video& video, int inMaxPacketQueueSize) :
+		mVideo(&video),
+		mMaxPacketQueueSize(inMaxPacketQueueSize)
+	{
+	}
 
 	AVState::~AVState()
 	{
@@ -149,12 +155,12 @@ namespace nap
 	}
 
 
-	bool AVState::addPacket(AVPacket* packet, int maxPackets, const bool& exitIOThreadSignalled)
+	bool AVState::addPacket(AVPacket* packet, const bool& exitIOThreadSignalled)
 	{
 		assert(packet == nullptr || matchesStream(*packet));
 
 		std::unique_lock<std::mutex> lock(mPacketQueueMutex);
-		mPacketQueueRoomAvailableCondition.wait(lock, [this, &exitIOThreadSignalled, maxPackets]() { return mPacketQueue.size() < maxPackets || exitIOThreadSignalled; });
+		mPacketQueueRoomAvailableCondition.wait(lock, [this, &exitIOThreadSignalled]() { return mMaxPacketQueueSize == -1 || mPacketQueue.size() < mMaxPacketQueueSize || exitIOThreadSignalled; });
 		if (exitIOThreadSignalled)
 			return false;
 
@@ -368,11 +374,13 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
+	static int sMaxAudioPacketQueueSize = 100;
+	static int sMaxVideoPacketQueueSize = 3;
 
 	Video::Video(VideoService& service) : 
 		mService(service),
-		mAudioState(*this),
-		mVideoState(*this)
+		mAudioState(*this, sMaxAudioPacketQueueSize),
+		mVideoState(*this, sMaxVideoPacketQueueSize)
 	{
 	}
 
@@ -656,10 +664,10 @@ namespace nap
 				clearPacketQueue();
 
 				// Add a 'null' packet to the queue, to signal the decoder thread that it should flush its queues and decoder buffer
-				mVideoState.addPacket(nullptr, 3, mExitIOThreadSignalled);
+				mVideoState.addPacket(nullptr, mExitIOThreadSignalled);
 
 				if (mAudioState.isValid())
-					mAudioState.addPacket(nullptr, 100, mExitIOThreadSignalled);
+					mAudioState.addPacket(nullptr, mExitIOThreadSignalled);
 
 				mSeekTarget = -1;
 			}
@@ -692,12 +700,12 @@ namespace nap
 
 			if (mVideoState.matchesStream(*packet.mPacket))
 			{
-				if (mVideoState.addPacket(packet.mPacket, 3, mExitIOThreadSignalled))
+				if (mVideoState.addPacket(packet.mPacket, mExitIOThreadSignalled))
 					packet.mPacket = nullptr;
 			}
 			else if (mAudioState.matchesStream(*packet.mPacket))
 			{
-				if (mAudioState.addPacket(packet.mPacket, 100, mExitIOThreadSignalled))
+				if (mAudioState.addPacket(packet.mPacket, mExitIOThreadSignalled))
 					packet.mPacket = nullptr;
 			}
 		}
