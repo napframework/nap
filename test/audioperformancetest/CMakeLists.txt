@@ -24,3 +24,7 @@ target_link_libraries(${PROJECT_NAME} napcore mod_napaudio)
 
 # create post build event
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
+
+
+# Install virtual env config file so our Python exec lib can find the modules in thirdparty
+install_python_virtualenv_config()

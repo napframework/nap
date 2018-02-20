@@ -31,3 +31,6 @@ endif()
 
 # create post build event
 export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+
+# Install virtual env config file so our Python exec lib can find the modules in thirdparty
+install_python_virtualenv_config()

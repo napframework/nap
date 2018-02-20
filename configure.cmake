@@ -316,3 +316,16 @@ macro(find_python_in_thirdparty)
         set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/python3.6m)
     endif()
 endmacro()
+
+# Install virtual env config file so our Python exec lib can find the modules in thirdparty
+macro(install_python_virtualenv_config)
+    if(APPLE)
+        add_custom_command(TARGET ${PROJECT_NAME} 
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} 
+                                   -E copy
+                                   ${THIRDPARTY_DIR}/python/osx/pyvenv.cfg
+                                   $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                           )
+    endif()    
+endmacro()
