@@ -12,7 +12,7 @@ RTTI_BEGIN_CLASS(nap::audio::LevelMeterComponent)
     RTTI_PROPERTY("Input", &nap::audio::LevelMeterComponent::mInput, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("AnalysisWindowSize", &nap::audio::LevelMeterComponent::mAnalysisWindowSize, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("MeterType", &nap::audio::LevelMeterComponent::mMeterType, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("MeasureBand", &nap::audio::LevelMeterComponent::mMeasureBand, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("FilterInput", &nap::audio::LevelMeterComponent::mFilterInput, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("CenterFrequency", &nap::audio::LevelMeterComponent::mCenterFrequency, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("BandWidth", &nap::audio::LevelMeterComponent::mBandWidth, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -35,7 +35,7 @@ namespace nap
             {
                 mMeters.emplace_back(std::make_unique<LevelMeterNode>(getNodeManager()));
                 
-                if (resource->mMeasureBand)
+                if (resource->mFilterInput)
                 {
                     auto filter = std::make_unique<FilterNode>(getNodeManager());
                     filter->setMode(FilterNode::Mode::BANDPASS);
