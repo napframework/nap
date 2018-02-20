@@ -44,6 +44,7 @@ namespace nap
 		mVideoMesh = &getEntityInstance()->getComponent<RenderableMeshComponentInstance>();
 
 		// Select one
+//		selectVideo(4);
 		selectVideo(resource->mIndex);
 		return true;
 	}
@@ -66,7 +67,7 @@ namespace nap
 	void SelectVideoComponentInstance::selectVideo(int index)
 	{
 		if (mCurrentVideo != nullptr)
-			mCurrentVideo->stop();
+			mCurrentVideo->stop(true);
 
 		mCurrentIndex = math::clamp<int>(index, 0, mVideos.size() - 1);
 		mCurrentVideo = mVideos[mCurrentIndex];
