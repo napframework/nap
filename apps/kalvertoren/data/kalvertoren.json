@@ -554,7 +554,8 @@
                     "mID": "nap::FacadeLightComponent",
                     "Controller": "Universe7",
                     "MinChannel": 108,
-                    "MaxChannel": 288
+                    "MaxChannel": 288,
+                    "Send": true
                 }
             ],
             "Children": [
@@ -2916,6 +2917,23 @@
                     4
                 ]
             ]
+        },
+        {
+            "Type": "nap::YoctoEthernetHub",
+            "mID": "LightHub1",
+            "Address": "lethernet_hub_1",
+            "Username": "admin",
+            "Pass": "givemelight",
+            "Port": 80,
+            "Connect": true,
+            "Sensors": [
+                "LuxSensor1"
+            ]
+        },
+        {
+            "Type": "nap::YoctoLuxSensor",
+            "mID": "LuxSensor1",
+            "Name": "LIGHTMK3-B65A4"
         }
     ]
 }

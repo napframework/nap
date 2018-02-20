@@ -1,0 +1,45 @@
+LIBRARY YAPI
+
+EXPORTS
+  vb6_yapiStartStopDeviceLogCallback    @1
+  vb6_yapiInitAPI   @2
+  vb6_yapiFreeAPI   @3
+  vb6_yapiRegisterLogFunction   @4
+  vb6_yapiRegisterDeviceLogCallback   @5
+  vb6_yapiRegisterDeviceArrivalCallback   @6
+  vb6_yapiRegisterDeviceRemovalCallback   @7
+  vb6_yapiRegisterDeviceChangeCallback    @8
+  vb6_yapiRegisterFunctionUpdateCallback    @9
+  vb6_yapiRegisterTimedReportCallback   @10
+  vb6_yapiLockFunctionCallBack    @11
+  vb6_yapiUnlockFunctionCallBack    @12
+  vb6_yapiLockDeviceCallBack    @13
+  vb6_yapiUnlockDeviceCallBack    @14
+  vb6_yapiRegisterHub   @15
+  vb6_yapiPreregisterHub    @16
+  vb6_yapiUnregisterHub   @17
+  vb6_yapiUpdateDeviceList    @18
+  vb6_yapiHandleEvents    @19
+  vb6_yapiSleep   @20
+  vb6_yapiGetTickCount    @21
+  vb6_yapiCheckLogicalName    @22
+  vb6_yapiGetAPIVersion   @23
+  vb6_yapiSetTraceFile    @24
+  vb6_yapiGetDevice   @25
+  vb6_yapiGetAllDevices   @26
+  vb6_yapiGetDeviceInfo   @27
+  vb6_yapiGetDevicePath   @28
+  vb6_yapiGetFunction   @29
+  vb6_yapiGetFunctionsByClass   @30
+  vb6_yapiGetFunctionsByDevice    @31
+  vb6_yapiGetFunctionInfo   @32
+  vb6_yapiHTTPRequestSyncStartEx    @33
+  vb6_yapiHTTPRequestSyncStart    @34
+  vb6_yapiHTTPRequestSyncDone   @35
+  vb6_yapiHTTPRequestAsync    @36
+  vb6_yapiHTTPRequestAsyncEx    @37
+  vb6_yapiHTTPRequest   @38
+  vb6_yapiRegisterHubDiscoveryCallback    @39
+  vb6_yapiTriggerHubDiscovery   @40
+  vb6_yapiGetAPIVersionEx   @41
+

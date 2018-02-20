@@ -3,17 +3,19 @@ project(mod_napkalvertoren)
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
+file(GLOB_RECURSE YOCTO_SRC src/yoctopuce/*.h src/yoctopuce/*.cpp src/yoctopuce/*.c)
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
+source_group("yoctopuce" FILES ${YOCTO_SRC})
 
 # LIBRARY
 
 # compile shared lib as target
-add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS} ${YOCTO_SRC})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC src src/yoctopuce)
 
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
