@@ -98,6 +98,11 @@ namespace nap
              * Sets the fade out time used in milliseconds when stopping playback.
              */
             void setFadeOutTime(TimeValue time);
+            
+            /**
+             * Sets the pitch as a fraction of the original pitch of the audio material in the buffer.
+             */
+            void setPitch(ControllerValue pitch);
 
             /**
              * Tells wether the playback is stereo and consists of two channels of audio.
@@ -128,6 +133,11 @@ namespace nap
              * Returns the fade out time in milliseconds used when stopping playback
              */
             ControllerValue getFadeOutTime() const { return mFadeOutTime; }
+            
+            /**
+             * Returns the pitch as a fraction of the original pitch of the audio material in the buffer.
+             */
+            ControllerValue getPitch() const { return mPitch; }
 
         private:            
             void applyGain(TimeValue rampTime);

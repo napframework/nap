@@ -38,6 +38,10 @@ namespace nap
              */
             void stop();
             
+            void setSpeed(ControllerValue speed);
+            
+            ControllerValue getSpeed() const { return mSpeed; }
+            
         private:
             void process() override;
   
