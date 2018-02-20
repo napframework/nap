@@ -54,11 +54,7 @@ namespace nap
 		using DecodeFunction = std::function<int(AVCodecContext* /*avctx*/, AVFrame* /*frame*/, int* /*got_frame_ptr*/, const AVPacket* /*avpkt*/)>;
 		using ClearFrameQueueFunction = std::function<void()>;
 
-		AVState(Video& video) :
-			mVideo(&video)
-		{
-		}
-
+		AVState(Video& video, int inMaxPacketQueueSize);
 		~AVState();
 
 		void close();
@@ -82,7 +78,7 @@ namespace nap
 		void clearFrameQueue();
 
 		bool matchesStream(const AVPacket& packet) const;
-		bool addPacket(AVPacket* packet, int maxPackets, const bool& exitIOThreadSignalled);
+		bool addPacket(AVPacket* packet, const bool& exitIOThreadSignalled);
 
 		Frame popFrame();
 		Frame tryPopFrame(double pts);
@@ -114,6 +110,7 @@ namespace nap
 		std::mutex				mPacketQueueMutex;						///< Mutex protection for the packet queue
 		std::condition_variable mPacketAvailableCondition;				///< Condition describing whether there is data in the packet queue to process
 		std::condition_variable mPacketQueueRoomAvailableCondition;		///< Condition describing whether there is still room in the packet queue to add new packets
+		int						mMaxPacketQueueSize;
 
 		bool					mIOFinishedProducingPackets = false;	///< IO thread has finished producing packets
 		bool					mFinishedProducingFrames = false;		///< If this boolean is set, the decode thread has no more frames to decode, either due to an error or due to an end of stream.
