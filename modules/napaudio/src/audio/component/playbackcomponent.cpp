@@ -135,7 +135,9 @@ namespace nap
         
         void PlaybackComponentInstance::setGain(ControllerValue gain)
         {
-            nodeManager->execute([&](){
+            if (gain == mGain)
+                return;
+            nodeManager->execute([&, gain](){
                 mGain = gain;
                 if (mPlaying)
                     applyGain(5);
@@ -145,7 +147,9 @@ namespace nap
         
         void PlaybackComponentInstance::setStereoPanning(ControllerValue panning)
         {
-            nodeManager->execute([&](){
+            if (panning == mStereoPanning)
+                return;
+            nodeManager->execute([&, panning](){
                 mStereoPanning = panning;
                 if (mPlaying)
                     applyGain(5);
@@ -162,6 +166,20 @@ namespace nap
         void PlaybackComponentInstance::setFadeOutTime(TimeValue time)
         {
             mFadeOutTime = time;
+        }
+        
+        
+        void PlaybackComponentInstance::setPitch(ControllerValue pitch)
+        {
+            if (pitch == mPitch)
+                return;
+            
+            nodeManager->execute([&, pitch](){
+                mPitch = pitch;
+                ControllerValue actualSpeed = mPitch * resource->mBuffer->getSampleRate() / nodeManager->getSampleRate();
+                for (auto& bufferPlayer : mBufferPlayers)
+                    bufferPlayer->setSpeed(actualSpeed);
+            });
         }
         
         

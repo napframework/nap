@@ -24,6 +24,12 @@ namespace nap
         }
         
         
+        void BufferPlayerNode::setSpeed(ControllerValue speed)
+        {
+            mSpeed = speed;
+        }
+        
+        
         void BufferPlayerNode::process()
         {
             auto& outputBuffer = getOutputBuffer(audioOutput);
