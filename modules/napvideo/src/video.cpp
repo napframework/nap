@@ -116,7 +116,7 @@ namespace nap
 	}
 
 
-	void AVState::startDecodeThread(const DecodeFunction& decodeFunction)
+	void AVState::startDecodeThread(const DecodeFunction& decodeFunction, const ClearFrameQueueFunction& clearFrameQueueFunction)
 	{
 		exitDecodeThread(true);
 
@@ -125,6 +125,7 @@ namespace nap
 		mIOFinishedProducingPackets = false;
 
 		mDecodeFunction = decodeFunction;
+		mClearFrameQueueFunction = clearFrameQueueFunction;
 		mDecodeThread = std::thread(std::bind(&AVState::decodeThread, this));
 	}
 
@@ -244,7 +245,7 @@ namespace nap
 			if (packet == nullptr)
 			{
 				avcodec_flush_buffers(mCodecContext);
-				clearFrameQueue();
+				mClearFrameQueueFunction();
 			}
 			else
 			{
@@ -484,10 +485,12 @@ namespace nap
 
 		seek(startTimeSecs);
 
-		mVideoState.startDecodeThread(std::bind(&avcodec_decode_video2, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+		mVideoState.startDecodeThread(std::bind(&avcodec_decode_video2, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+									  std::bind(&Video::clearVideoFrameQueue, this));
 		
 		if (mAudioState.isValid())
-			mAudioState.startDecodeThread(std::bind(&avcodec_decode_audio4, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+			mAudioState.startDecodeThread(std::bind(&avcodec_decode_audio4, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+										  std::bind(&Video::clearAudioFrameQueue, this));
 
 		startIOThread();
 	}
