@@ -54,12 +54,8 @@ elseif(APPLE)
                                               @rpath/libEtherDream.dylib
                                               ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/${build_type}/libmod_napetherdream.dylib 
                                               )")
-        install(CODE "execute_process(COMMAND ${CMAKE_NAME_INSTALL_TOOL}
-                                              -add_rpath
-                                              @loader_path/../../../../thirdparty/etherdream/bin
-                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/${build_type}/libmod_napetherdream.dylib 
-                                      ERROR_QUIET
-                                      )")     
+        ensure_macos_file_has_rpath_at_install("${CMAKE_INSTALL_PREFIX}/modules/mod_napetherdream/lib/${build_type}/libmod_napetherdream.dylib"
+                                               "@loader_path/../../../../thirdparty/etherdream/bin")
     endforeach()
 else()
     # Add Etherdream to module RPATH

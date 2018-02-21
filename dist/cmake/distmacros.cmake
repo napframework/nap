@@ -243,3 +243,11 @@ macro(find_python_in_thirdparty)
         set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/python3.6m)
     endif()
 endmacro()
+
+# Ensure our specified file has provided RPATH in post-build
+macro(macos_add_rpath_to_module_post_build TARGET_NAME FILENAME PATH_TO_ADD)
+    add_custom_command(TARGET ${TARGET_NAME}
+                       POST_BUILD
+                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${PATH_TO_ADD} ${FILENAME} 2>/dev/null\;exit 0\"
+                       )
+endmacro()

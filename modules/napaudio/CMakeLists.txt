@@ -44,3 +44,22 @@ endif()
 
 # Package into platform release
 package_module()
+
+# Package mpg123 into platform release
+install(FILES ${THIRDPARTY_DIR}/mpg123/doc/LICENSE DESTINATION "thirdparty/mpg123")
+if(APPLE)
+    # Ensure our mpg123 install name id is set properly, this is really for intall into packaging
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       PRE_BUILD
+                       COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libmpg123.dylib ${LIBMPG123_LIB_DIR}/libmpg123.0.dylib
+                       )
+
+    install(FILES ${LIBMPG123_LIB_DIR}/libmpg123.0.dylib 
+                  ${LIBMPG123_LIB_DIR}/libmpg123.dylib 
+            DESTINATION "thirdparty/mpg123/bin")
+
+    foreach(build_type Release Debug)
+        ensure_macos_file_has_rpath_at_install("${CMAKE_INSTALL_PREFIX}/modules/mod_napaudio/lib/${build_type}/libmod_napaudio.dylib"
+                                               "@loader_path/../../../../thirdparty/mpg123/bin")
+    endforeach()
+endif()

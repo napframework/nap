@@ -2,7 +2,7 @@ find_package(artnet REQUIRED)
 target_link_libraries(${PROJECT_NAME} artnet)
 
 if(WIN32)
-    # Add post-build step to set artnet RPATH
+    # Add post-build step to set copy artnet to bin
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} 
