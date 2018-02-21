@@ -212,22 +212,18 @@ macro(package_platform_qt)
                 CONFIGURATIONS Release)        
     elseif(APPLE)
         # macOS appears to depend on these extra Qt frameworks
-        list(APPEND QT_FRAMEWORKS PrintSupport Svg)
-
-        # Find QT
-        execute_process(COMMAND brew --prefix qt
-                        OUTPUT_VARIABLE QT_PREFIX)
-        string(STRIP ${QT_PREFIX} QT_PREFIX)
-        message(STATUS "Got Qt prefix: ${QT_PREFIX}")
+        list(APPEND QT_FRAMEWORKS PrintSupport)
 
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
-            set(QT_FRAMEWORK_SRC ${QT_PREFIX}/lib/Qt${QT_INSTALL_FRAMEWORK}.framework/Versions/Current/Qt${QT_INSTALL_FRAMEWORK})
+            set(QT_FRAMEWORK_SRC ${QT_DIR}/lib/Qt${QT_INSTALL_FRAMEWORK}.framework/Versions/Current/Qt${QT_INSTALL_FRAMEWORK})
             set(FRAMEWORK_INSTALL_LOC ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/lib/Qt${QT_INSTALL_FRAMEWORK})
 
             install(FILES ${QT_FRAMEWORK_SRC}
                     DESTINATION thirdparty/Qt/lib/
-                    CONFIGURATIONS Release)
+                    CONFIGURATIONS Release
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                    )
 
             # Change dylib installed id
             install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
@@ -242,31 +238,17 @@ macro(package_platform_qt)
         set(PATH_FROM_QT_PLUGIN_TOLIB "@loader_path/../../../../../../thirdparty/Qt/lib")
 
         # Install plugins
-        install(FILES ${QT_PREFIX}/plugins/platforms/libqcocoa.dylib
+        install(FILES ${QT_DIR}/plugins/platforms/libqcocoa.dylib
                 DESTINATION thirdparty/Qt/plugins/platforms/
                 CONFIGURATIONS Release
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
         macos_replace_qt_framework_links("${QT_FRAMEWORKS}" 
                                          libqcocoa 
-                                         ${QT_PREFIX}/plugins/platforms/libqcocoa.dylib 
+                                         ${QT_DIR}/plugins/platforms/libqcocoa.dylib 
                                          ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqcocoa.dylib
                                          ${PATH_FROM_QT_PLUGIN_TOLIB}
                                          )
 
-        # Glob each of our imageformat plugins and install them.  Globbing so we can update framework link install paths on them.
-        file(GLOB imageformat_plugins RELATIVE ${QT_PREFIX}/plugins/imageformats/ "${QT_PREFIX}/plugins/imageformats/*dylib")
-        foreach(imageformat_plugin ${imageformat_plugins})
-            install(FILES ${QT_PREFIX}/plugins/imageformats/${imageformat_plugin}
-                    DESTINATION thirdparty/Qt/plugins/imageformats/
-                    CONFIGURATIONS Release)
-
-            macos_replace_qt_framework_links("${QT_FRAMEWORKS}" 
-                                             ${imageformat_plugin} 
-                                             ${QT_PREFIX}/plugins/imageformats/${imageformat_plugin}
-                                             ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/imageformats/${imageformat_plugin}
-                                             ${PATH_FROM_QT_PLUGIN_TOLIB}
-                                             )            
-        endforeach()
     endif()
 endmacro()
 

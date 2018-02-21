@@ -9,13 +9,6 @@ macro(nap_qt_pre)
             message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
         endif()
 
-        # Get QT prefix from homebrew on macOS
-        if (APPLE)
-            EXEC_PROGRAM(/usr/bin/env
-                         ARGS brew --prefix qt5
-                         OUTPUT_VARIABLE MACOS_QT_PATH)
-        endif()
-
         # Add possible Qt installation paths to the HINTS section
         # The version probably doesn't have to match exactly (5.8.? is probably fine)
         find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
@@ -25,7 +18,6 @@ macro(nap_qt_pre)
                   ${NAP_ROOT}/../Qt/5.9.2/msvc2015_64
                   ${NAP_ROOT}/../Qt/5.10.0/msvc2015_64
                   ~/Qt/5.8/clang_64
-                  ${MACOS_QT_PATH}
                   )
         # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})

@@ -98,15 +98,6 @@ elseif(APPLE)
                                      "${PATH_TO_THIRDPARTY}/Qt/lib/"
                                      )
 
-    # Create symlink to Python libs in build dir
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND}
-                               -E create_symlink
-                               ${THIRDPARTY_DIR}/python/lib
-                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/lib
-                       )
-
     # ---- Install napkin with packaged project ------
 
     # Install executable
@@ -136,17 +127,6 @@ elseif(APPLE)
                                           ${CMAKE_INSTALL_PREFIX}/napkin
                                   ERROR_QUIET)")
 
-    # Update paths to Qt frameworks in libqcocoa plugin.  Using explicit paths in an attempt to avoid loading
-    # any installed Qt library.
-    file(GLOB imageformat_plugins RELATIVE ${THIRDPARTY_DIR}/Qt/plugins/imageformats "${THIRDPARTY_DIR}/QT/plugins/imageformats/*dylib")
-    foreach(imageformat_plugin ${imageformat_plugins})
-        macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}"
-                                                      ${imageformat_plugin} 
-                                                      ${CMAKE_INSTALL_PREFIX}/plugins/imageformats/${imageformat_plugin}
-                                                      "@loader_path/../../lib/"
-                                                      )
-    endforeach()
-
     # Update paths to Qt frameworks in libqcocoa plugin
     macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
                                                   "libqcocoa"
@@ -160,9 +140,6 @@ elseif(APPLE)
                                                   ${CMAKE_INSTALL_PREFIX}/napkin
                                                   "@loader_path/lib/"
                                                   )
-
-    # Update path to Python
-    # macos_replace_single_install_name_link_install_time("Python" ${CMAKE_INSTALL_PREFIX}/napkin "@loader_path/lib/")
 else()
     # Install executable
     install(PROGRAMS ${NAP_ROOT}/tools/platform/napkin/Release/napkin

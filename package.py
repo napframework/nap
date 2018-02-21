@@ -102,7 +102,7 @@ def install_dependencies_osx():
         # 'tclap', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         # 'ffmpeg',
         # 'mpg123',
-        'qt',
+        # 'qt',
         # 'python3'
     ]
 
