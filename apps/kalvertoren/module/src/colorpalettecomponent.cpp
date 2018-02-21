@@ -48,13 +48,13 @@ namespace nap
 		mCycleSpeed = getComponent<ColorPaletteComponent>()->mCycleSpeed;
 		mVariationCycleMode = getComponent<ColorPaletteComponent>()->mVariationCycleMode;
 
-		if (!errorState.check(mIndexMap->getPixmap().getWidth() == mDebugImage->getPixmap().getWidth() && mIndexMap->getPixmap().getHeight() == mDebugImage->getPixmap().getHeight(),
+		if (!errorState.check(mIndexMap->getBitmap().getWidth() == mDebugImage->getBitmap().getWidth() && mIndexMap->getBitmap().getHeight() == mDebugImage->getBitmap().getHeight(),
 			"The dimensions of the IndexMap (%s) and DebugImage (%s) must match", mIndexMap->mID.c_str(), mDebugImage->mID.c_str()))
 		{
 			return false;
 		}
 
-		if (!errorState.check(mDebugImage->getPixmap().mChannels == Pixmap::EChannels::BGRA, "DebugImage (%s) must be a 4-channel BGRA texture", mDebugImage->mID.c_str()))
+		if (!errorState.check(mDebugImage->getBitmap().mChannels == Bitmap::EChannels::BGRA, "DebugImage (%s) must be a 4-channel BGRA texture", mDebugImage->mID.c_str()))
 			return false;
 
 		// Select current week
@@ -143,7 +143,7 @@ namespace nap
 	}
 
 
-	Image& ColorPaletteComponentInstance::getDebugPaletteImage()
+	ImageFromFile& ColorPaletteComponentInstance::getDebugPaletteImage()
 	{
 		return *getComponent<ColorPaletteComponent>()->mDebugImage;
 	}
@@ -189,8 +189,8 @@ namespace nap
 
 		// Update the debug texture
 		int indexColorCount = mIndexMap->getColors().size();
-		int imageWidth = mDebugImage->getPixmap().getWidth();
-		int imageHeight = mDebugImage->getPixmap().getHeight();
+		int imageWidth = mDebugImage->getBitmap().getWidth();
+		int imageHeight = mDebugImage->getBitmap().getHeight();
 		int squareWidth = imageWidth / indexColorCount;
 
 		for (int y = 0; y < imageHeight; ++y)
@@ -208,10 +208,10 @@ namespace nap
 					color.setAlpha(255);
 				}
 
-				mDebugImage->getPixmap().setPixelColor<RGBAColor8>(x, y, color);
+				mDebugImage->getBitmap().setPixelColor<RGBAColor8>(x, y, color);
 			}
 		}
 
-		mDebugImage->getTexture().setData(mDebugImage->getPixmap().getData());
+		mDebugImage->update(mDebugImage->getBitmap());
 	}
 }

@@ -6,7 +6,7 @@
 
 // Local includes
 #include "shader.h"
-#include "image.h"
+#include "imagefromfile.h"
 #include "ngpumesh.h"
 #include "uniformbinding.h"
 
@@ -188,7 +188,7 @@ namespace nap
 		/**
 		* @return Returns a mapping with default values for mesh attribute IDs an shader attribute IDs.
 		*/
-		static std::vector<VertexAttributeBinding>& getDefaultVertexAttributeBindings();
+		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
 	public:
 		std::vector<rtti::ObjectPtr<Uniform>>			mUniforms;											///< Static uniforms (as read from file, or as set in code before calling init())

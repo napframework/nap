@@ -38,7 +38,7 @@ void SetValueCommand::redo()
 	if (mPath.getProperty().get_name() == nap::rtti::sIDPropertyName)
 	{
 		// Deal with object names separately
-		AppContext::get().getDocument()->setObjectName(mPath.object(), mNewValue.toString().toStdString());
+		AppContext::get().getDocument()->setObjectName(mPath.getObject(), mNewValue.toString().toStdString());
 	}
 	else
 	{
@@ -53,10 +53,15 @@ void SetValueCommand::redo()
 }
 
 SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue)
-		: mPath(path), mNewValue(newValue->mID), mOldValue(getPointee(path)->mID), QUndoCommand()
+		: mPath(path), mNewValue(newValue->mID), QUndoCommand()
 {
 	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
 															 QString::fromStdString(newValue->mID)));
+	auto pointee = getPointee(path);
+	if (pointee != nullptr)
+		mOldValue = pointee->mID;
+	else
+		mOldValue.clear();
 }
 
 void SetPointerValueCommand::undo()
@@ -64,9 +69,19 @@ void SetPointerValueCommand::undo()
 	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
 	assert(resolvedPath.isValid());
 
+
 	auto old_object = AppContext::get().getDocument()->getObject(mOldValue);
-	bool value_set = resolvedPath.setValue(old_object);
-	assert(value_set);
+	if (old_object == nullptr)
+	{
+		bool value_set = resolvedPath.setValue(nullptr);
+		nap::Logger::fatal("Sorry, can't clear pointer properties");
+	}
+	else
+	{
+		bool value_set = resolvedPath.setValue(old_object);
+		assert(value_set);
+	}
+
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
@@ -100,15 +115,16 @@ AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject
 
 void AddObjectCommand::redo()
 {
+	auto& ctx = AppContext::get();
+
 	// Create object
-	auto parent = AppContext::get().getDocument()->getObject(mParentName);
-	auto object = AppContext::get().getDocument()->addObject(mType, parent);
+	auto parent = ctx.getDocument()->getObject(mParentName);
+	auto object = ctx.getDocument()->addObject(mType, parent);
 
 	// Remember for undo
 	mObjectName = object->mID;
 
-	// Notify
-	AppContext::get().getDocument()->objectAdded(*object, true);
+	ctx.selectionChanged({object});
 }
 void AddObjectCommand::undo()
 {
@@ -146,9 +162,9 @@ void AddEntityToSceneCommand::undo()
 
 void AddEntityToSceneCommand::redo()
 {
-	auto scene = AppContext::get().getDocument()->getObjectT<nap::Scene>(mSceneID);
+	auto scene = AppContext::get().getDocument()->getObject<nap::Scene>(mSceneID);
 	assert(scene != nullptr);
-	auto entity = AppContext::get().getDocument()->getObjectT<nap::Entity>(mEntityID);
+	auto entity = AppContext::get().getDocument()->getObject<nap::Entity>(mEntityID);
 	assert(entity != nullptr);
 
 	nap::RootEntity rootEntity;

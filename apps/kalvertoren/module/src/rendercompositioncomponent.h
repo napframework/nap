@@ -69,13 +69,23 @@ namespace nap
 		/**
 		 *	@return the output texture
 		 */
-		nap::BaseTexture2D& getTexture();
+		nap::Texture2D& getTexture();
 
 		/**
-		 *	@return the output pixmap
+		 *	@return the output bitmap
 		 */
-		nap::Pixmap& getPixmap();
+		nap::Bitmap& getBitmap();
 
+	private:
+		/**
+		 *	Renders a single pass 
+		 * @param inputA the base input texture
+		 * @param inputB the top input texture
+		 * @param target the render target to render to
+		 */
+		void renderPass(Texture2D& inputA, Texture2D& inputB, RenderTarget& target);
+
+	public:
 		// Points to the composition component we want to render
 		ComponentInstancePtr<CompositionComponent> mCompositionComponent	=	{ this, &RenderCompositionComponent::mCompositionComponent };
 		ComponentInstancePtr<RenderableMeshComponent> mRenderableComponent	=	{ this, &RenderCompositionComponent::mRenderableComponent };
@@ -87,20 +97,11 @@ namespace nap
 		RenderService*	mRenderService = nullptr;
 		bool			mTransferring = false;
 
-		BaseTexture2D*	inputA = nullptr;
-		BaseTexture2D*	inputB = nullptr;
+		Texture2D*		inputA = nullptr;
+		Texture2D*		inputB = nullptr;
 		RenderTarget*	activeTarget = nullptr;
 		RenderTarget*	nextTarget = nullptr;
 
-		/**
-		 *	Renders a single pass 
-		 * @param inputA the base input texture
-		 * @param inputB the top input texture
-		 * @param target the render target to render to
-		 */
-		void renderPass(BaseTexture2D& inputA, BaseTexture2D& inputB, RenderTarget& target);
-
-		// Pixmap used to transfer GPU pixel values to
-		nap::Pixmap mPixmap;
+		Bitmap			mBitmap;
 	};
 }

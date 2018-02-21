@@ -75,7 +75,7 @@ namespace nap
 		ComponentInstancePtr<ColorPaletteComponent> mColorPaletteComponent		=		{ this, &ApplyCompositionComponent::mColorPaletteComponent };
 
 	private:
-		bool mShowIndexColors = false;
+		bool  mShowIndexColors = false;
 		float mIntensity = 1.0f;
 	};
 }

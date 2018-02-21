@@ -203,7 +203,8 @@ size_t Document::arrayAddValue(const PropertyPath& path, size_t index)
 	assert(new_value.is_valid());
 	assert(array_view.is_dynamic());
 
-	assert(array_view.insert_value(index, new_value));
+	bool inserted = array_view.insert_value(index, new_value);
+	assert(inserted);
 
 	resolved_path.setValue(array);
 
@@ -230,7 +231,8 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 	assert(array_view.is_dynamic());
 
 	size_t index = array_view.get_size();
-	assert(array_view.insert_value(index, new_value));
+	bool inserted = array_view.insert_value(index, new_value);
+	assert(inserted);
 
 	resolved_path.setValue(array);
 
@@ -406,6 +408,22 @@ nap::rtti::Variant Document::arrayGetElement(const PropertyPath& path, size_t in
 void Document::executeCommand(QUndoCommand* cmd)
 {
 	mUndoStack.push(cmd);
+}
+
+QList<PropertyPath> Document::getPointersTo(const nap::rtti::RTTIObject& obj)
+{
+	QList<PropertyPath> properties;
+	for (const auto& object : mObjects)
+	{
+		std::vector<nap::rtti::ObjectLink> links;
+		findObjectLinks(*object, links);
+		for (const auto& link : links)
+		{
+			if (link.mTarget == &obj)
+				properties << PropertyPath(*object, link.mSourcePath);
+		}
+	}
+	return properties;
 }
 
 

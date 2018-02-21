@@ -18,14 +18,14 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 *	@return The pixmap associated with this layer at the specified index
+		 *	@return The bitmap associated with this layer at the specified index
 		 */
-		nap::Pixmap& getPixmap(int index) { return *mPixmaps[index]; }
+		nap::Bitmap& getBitmap(int index) { return *mBitmaps[index]; }
 
 		/**
-		 *	@return Const pixmap associated with this layer at the specified index
+		 *	@return Const bitmap associated with this layer at the specified index
 		 */
-		const nap::Pixmap&	getPixmap(int index) const { return *mPixmaps[index]; }
+		const nap::Bitmap&	getBitmap(int index) const { return *mBitmaps[index]; }
 
 		/**
 		 * @return the length of the sequence in seconds
@@ -33,9 +33,9 @@ namespace nap
 		float getLength() const;
 
 		/**
-		* @return Number of pixmaps in this sequence
+		* @return Number of bitmaps in this sequence
 		*/
-		int getNumPixmaps() const { return (int)mPixmaps.size(); }
+		int getNumBitmaps() const { return (int)mBitmaps.size(); }
 
 		/**
 		* @return The settings that should be used to create the texture used to display the images in this sequence
@@ -53,8 +53,8 @@ namespace nap
 		float									mFPS = 30.0f;		///< Playback framerate for this sequence
 
 	private:
-		std::vector<std::unique_ptr<Pixmap>>	mPixmaps;			///< The images created from the files found on disk
-		opengl::Texture2DSettings				mTextureSettings;	///< The texture settings used create the texture. Inferred from the pixmaps in this sequence
+		std::vector<std::unique_ptr<Bitmap>>	mBitmaps;			///< The images created from the files found on disk
+		opengl::Texture2DSettings				mTextureSettings;	///< The texture settings used create the texture. Inferred from the bitmaps in this sequence
 	};
 
 	/**
@@ -74,22 +74,22 @@ namespace nap
 		/**
 		 *	@return the total amount of images in the sequence of the layer
 		 */
-		int getNumPixmaps() const												{ return mLayer->getNumPixmaps(); }
+		int getNumBitmaps() const											{ return mLayer->getNumBitmaps(); }
 
 		/**
 		 *	@return the length of the image sequence in seconds
 		 */
-		float getLength() const													{ return mLayer->getLength(); }
+		float getLength() const												{ return mLayer->getLength(); }
 
 		/**
 		 *	@return The texture associated with this layer
 		 */
-		virtual nap::BaseTexture2D&			getTexture() override				{ return *mCurrentFrameTexture; }
+		virtual nap::Texture2D&			getTexture() override				{ return *mCurrentFrameTexture; }
 
 		/**
 		 *	@return Const texture associated with this layer
 		 */
-		virtual const nap::BaseTexture2D&	getTexture() const override			{ return *mCurrentFrameTexture; }
+		virtual const nap::Texture2D&	getTexture() const override			{ return *mCurrentFrameTexture; }
 
 		// Signal that is triggered when the sequence completed
 		nap::Signal<ImageSequenceLayerInstance&> completed;
@@ -99,6 +99,6 @@ namespace nap
 		double							mCurrentTime = 0.0;			///< Current playback time
 		int								mCurrentFrameIndex = -1;	///< Current playing frame index
 		int								mNextFrameIndex = 0;		///< Holds the next frame index
-		std::unique_ptr<BaseTexture2D>	mCurrentFrameTexture;		///< Current GPU texture (updated whenever the frame change)
+		std::unique_ptr<Texture2D>		mCurrentFrameTexture;		///< Current GPU texture (updated whenever the frame change)
 	};
 }

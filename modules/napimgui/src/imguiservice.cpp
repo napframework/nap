@@ -1380,7 +1380,7 @@ namespace nap
 		font_config.OversampleH = 8;
 		font_config.OversampleV = 1;
 		ImGuiIO& io = ImGui::GetIO();
-		ImFont* font = io.Fonts->AddFontFromMemoryCompressedTTF(NunitoSansSemiBold_compressed_data, NunitoSansSemiBold_compressed_size, 17.0f, &font_config);
+		io.Fonts->AddFontFromMemoryCompressedTTF(NunitoSansSemiBold_compressed_data, NunitoSansSemiBold_compressed_size, 17.0f, &font_config);
 
 		// Create all objects when main context is valid
 		if (!error.check(ImGui_ImplSdlGL3_CreateDeviceObjects(), "Unable to create ImGui devices"))

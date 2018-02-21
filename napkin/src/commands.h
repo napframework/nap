@@ -108,7 +108,7 @@ namespace napkin
 	private:
 		const PropertyPath	mPath;		// The path to the property
 		const std::string	mNewValue;	// The new value
-		const std::string	mOldValue;	// The old value
+		std::string	mOldValue;	// The old value
 	};
 
 

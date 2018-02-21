@@ -37,21 +37,20 @@ namespace nap
 		// Copy if we want to show index colors
 		mShowIndexColors = getComponent<ApplyCompositionComponent>()->mShowIndexColors;
 
-		// Copy intensity
+		// Copy colors and intensity
 		mIntensity = getComponent<ApplyCompositionComponent>()->mIntensity;
-
 		return true;
 	}
 
 
 	void ApplyCompositionComponentInstance::applyColor(double deltaTime)
 	{
-		// Get the pixmap associated with the final composition
-		nap::Pixmap& mPixmap = mCompositionRenderer->getPixmap();
+		// Get the bitmap associated with the final composition
+		nap::Bitmap& mBitmap = mCompositionRenderer->getBitmap();
 
-		// If the pixmap is empty, ie: hasn't been downloaded yet, we skip this step
+		// If the bitmap is empty, ie: hasn't been downloaded yet, we skip this step
 		// This occurs when the first frame hasn't been rendered yet
-		if (mPixmap.empty())
+		if (mBitmap.empty())
 			return;
 
 		// Get the model we want to color
@@ -73,9 +72,8 @@ namespace nap
 		RGBColor8 rgb_index_color;
 
 		// Make pixel we use to query data from bitmap
-		auto source_pixel = mPixmap.makePixel();
-		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
-		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
+		auto source_pixel = mBitmap.makePixel();
+		assert(mBitmap.mType == Bitmap::EDataType::BYTE);
 
 		TriangleIterator triangle_iterator(mesh.getMeshInstance());
 		while (!triangle_iterator.isDone())
@@ -91,11 +89,11 @@ namespace nap
 			uv_avg /= 3.0f;
 
 			// Convert to pixel coordinates
-			int x_pixel = static_cast<float>(mPixmap.getWidth()  - 1) * uv_avg.x;
-			int y_pixel = static_cast<float>(mPixmap.getHeight() - 1) * uv_avg.y;
+			int x_pixel = static_cast<float>(mBitmap.getWidth()  - 1) * uv_avg.x;
+			int y_pixel = static_cast<float>(mBitmap.getHeight() - 1) * uv_avg.y;
 
 			// retrieve pixel value and convert in to rgb index color
-			mPixmap.getPixel(x_pixel, y_pixel, *source_pixel);
+			mBitmap.getPixel(x_pixel, y_pixel, *source_pixel);
 			source_pixel->convert(rgb_index_color);
 
 			// Get the corresponding color palette value
@@ -110,18 +108,18 @@ namespace nap
 
 			// Set the color data used to display the mesh in the viewport
 			glm::vec4 mesh_color = glm::vec4(
-				rgb_colorf.getRed()	  * mesh_intensity, 
-				rgb_colorf.getGreen() * mesh_intensity, 
-				rgb_colorf.getBlue()  * mesh_intensity, 
+				rgb_colorf.getRed()	  * mIntensity,
+				rgb_colorf.getGreen() * mIntensity,
+				rgb_colorf.getBlue()  * mIntensity,
 				1.0f);
 			
 			triangle.setVertexData(color_data, mesh_color);
 
 			// Set the color data that is used to send over artnet
 			glm::vec4 artnet_color = glm::vec4(
-				led_colorf.getRed()	  * mesh_intensity, 
-				led_colorf.getGreen() * mesh_intensity, 
-				led_colorf.getBlue()  * mesh_intensity, 
+				led_colorf.getRed()	  * mIntensity, 
+				led_colorf.getGreen() * mIntensity,
+				led_colorf.getBlue()  * mIntensity,
 				led_colorf.getAlpha() * mIntensity);
 			
 			triangle.setVertexData(artnet_data, artnet_color);

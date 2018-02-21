@@ -93,8 +93,8 @@ namespace nap
 		// Updates color of the vinyl record
 		void setRecordColor();
 		
-		rtti::ObjectPtr<Image>			mVinylLabelImg = nullptr;			//< Vinyl Label Image Resource
-		rtti::ObjectPtr<Image>			mVinylCoverImg = nullptr;			//< Vinyl Cover Image Resource
+		rtti::ObjectPtr<ImageFromFile>	mVinylLabelImg = nullptr;			//< Vinyl Label Image Resource
+		rtti::ObjectPtr<ImageFromFile>	mVinylCoverImg = nullptr;			//< Vinyl Cover Image Resource
 		
 		RenderService*				mRenderService = nullptr;			//< Render Service that handles render calls
 		IMGuiService*				mGuiService = nullptr;				//< Gui Service handles all gui related update / drawing
