@@ -4,7 +4,7 @@
 #include <FreeImage.h>
 #include <nap/logger.h>
 extern "C" {
-    #include <libavformat/avformat.h>
+	#include <libavformat/avformat.h>
 }
 
 using namespace nap;
@@ -22,12 +22,13 @@ napkin::ResourceFactory::ResourceFactory()
 	};
 
 	mFileTypes = {
-			{EPropertyFileType::Image,      "Image Files",      getImageExtensions()},
-			{EPropertyFileType::FragShader, "Fragment Shaders", {"frag"}},
-			{EPropertyFileType::VertShader, "Vertex Shaders",   {"vert"}},
-			{EPropertyFileType::Python,     "Python Files",     {"py"}},
-            {EPropertyFileType::Mesh,       "NAP Mesh Files",   {"mesh"}},
-            {EPropertyFileType::Video,      "Video Files",      getVideoExtensions()},
+			{EPropertyFileType::Image,			"Image Files",      getImageExtensions()},
+			{EPropertyFileType::FragShader,		"Fragment Shaders", {"frag"}},
+			{EPropertyFileType::VertShader,		"Vertex Shaders",   {"vert"}},
+			{EPropertyFileType::Python,			"Python Files",     {"py"}},
+			{EPropertyFileType::Mesh,			"NAP Mesh Files",   {"mesh"}},
+			{EPropertyFileType::Video,			"Video Files",      getVideoExtensions()},
+			{EPropertyFileType::ImageSequence,	"Image Sequence",	getImageExtensions()}
 	};
 }
 
@@ -78,33 +79,33 @@ const napkin::FileType& napkin::ResourceFactory::getFiletype(const nap::rtti::Pr
 
 const QStringList napkin::ResourceFactory::getImageExtensions()
 {
-    if (mImageExtensions.isEmpty())
-    {
-        for (int i = 0, len = FreeImage_GetFIFCount(); i < len; i++)
-        {
-            const char *exts = FreeImage_GetFIFExtensionList(static_cast<FREE_IMAGE_FORMAT>(i));
-            for (auto ext : QString::fromUtf8(exts).split(","))
-                mImageExtensions << ext;
-        }
-    }
-    return mImageExtensions;
+	if (mImageExtensions.isEmpty())
+	{
+		for (int i = 0, len = FreeImage_GetFIFCount(); i < len; i++)
+		{
+			const char *exts = FreeImage_GetFIFExtensionList(static_cast<FREE_IMAGE_FORMAT>(i));
+			for (auto ext : QString::fromUtf8(exts).split(","))
+				mImageExtensions << ext;
+		}
+	}
+	return mImageExtensions;
 }
 
 const QStringList napkin::ResourceFactory::getVideoExtensions()
 {
-    if (mVideoExtensions.isEmpty()) {
-        av_register_all();
+	if (mVideoExtensions.isEmpty()) {
+		av_register_all();
 
-        AVInputFormat *fmt = av_iformat_next(nullptr); // first format
-        while (fmt != nullptr)
-        {
-            auto exts = QString::fromUtf8(fmt->extensions);
+		AVInputFormat *fmt = av_iformat_next(nullptr); // first format
+		while (fmt != nullptr)
+		{
+			auto exts = QString::fromUtf8(fmt->extensions);
 
-            if (!exts.isEmpty())
-                mVideoExtensions << exts.split(",");
+			if (!exts.isEmpty())
+				mVideoExtensions << exts.split(",");
 
-            fmt = av_iformat_next(fmt); // next format
-        }
-    }
-    return mVideoExtensions;
+			fmt = av_iformat_next(fmt); // next format
+		}
+	}
+	return mVideoExtensions;
 }
