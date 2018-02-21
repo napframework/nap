@@ -121,6 +121,11 @@ namespace napkin
 		void onPropertyValueChanged(const PropertyPath& path);
 
 		/**
+		 * Called when another property needs to be selected
+		 */
+		void onPropertySelectionChanged(const PropertyPath& prop);
+
+		/**
 		 * Rebuild view and model
 		 */
 		void rebuild();

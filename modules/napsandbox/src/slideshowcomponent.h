@@ -2,7 +2,7 @@
 
 #include <component.h>
 #include <entity.h>
-#include "image.h"
+#include "imagefromfile.h"
 #include <glm/glm.hpp>
 
 namespace nap
@@ -18,7 +18,7 @@ namespace nap
 		DECLARE_COMPONENT(SlideShowComponent, SlideShowComponentInstance)
 
 	public:
- 		std::vector<rtti::ObjectPtr<nap::Image>>		mImages;			///< Array of images to display in the slidesho2
+ 		std::vector<rtti::ObjectPtr<nap::ImageFromFile>>		mImages;			///< Array of images to display in the slidesho2
 	};
 
 	/**

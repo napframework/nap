@@ -10,7 +10,7 @@
 
 namespace nap
 {
-	class BaseTexture2D;
+	class Texture2D;
 
 	/**
 	 * Base class for all types of uniforms, whether texture or value.
@@ -90,7 +90,7 @@ namespace nap
 		*/
 		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Int; }
 
-		int mValue;			///< Data storage
+		int mValue = 0;			///< Data storage
 	};
 
 
@@ -118,7 +118,7 @@ namespace nap
 		*/
 		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Float; }
 
-		float mValue;			///< Data storage
+		float mValue = 0.0f;			///< Data storage
 	};
 
 
@@ -217,7 +217,7 @@ namespace nap
 		/**
 		* @param texture The texture resource to set for this uniform.
 		*/
-		void setTexture(BaseTexture2D& texture) { mTexture = &texture; }
+		void setTexture(Texture2D& texture) { mTexture = &texture; }
 
 		/**
 		* Updates the uniform in the shader.
@@ -231,6 +231,6 @@ namespace nap
 		*/
 		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Tex2D; }
 
-		rtti::ObjectPtr<BaseTexture2D> mTexture = nullptr;		///< Texture to use for this uniform
+		rtti::ObjectPtr<Texture2D> mTexture = nullptr;		///< Texture to use for this uniform
 	};
 }

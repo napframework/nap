@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "basetexture2d.h"
+#include "texture2d.h"
 
 // External Includes
 #include <rtti/rttiobject.h>
@@ -33,22 +33,22 @@ namespace nap
 		/**
 		* Sets color texture resource.
 		*/
-		void setColorTexture(BaseTexture2D& colorTexture)				{ mColorTexture = &colorTexture; }
+		void setColorTexture(Texture2D& colorTexture)				{ mColorTexture = &colorTexture; }
 
 		/**
 		* Sets depth texture resource
 		*/
-		void setDepthTexture(BaseTexture2D& depthTexture)				{ mDepthTexture = &depthTexture; }
+		void setDepthTexture(Texture2D& depthTexture)				{ mDepthTexture = &depthTexture; }
 
 		/**
 		* Returns color texture resource
 		*/
-		BaseTexture2D& getColorTexture()								{ return *mColorTexture; }
+		Texture2D& getColorTexture()								{ return *mColorTexture; }
 
 		/**
 		* Returns depth texture resource
 		*/
-		BaseTexture2D& getDepthTexture()								{ return *mDepthTexture; }
+		Texture2D& getDepthTexture()								{ return *mDepthTexture; }
 
 		/**
 		* @return opengl base frame buffer object
@@ -62,8 +62,8 @@ namespace nap
 		std::unique_ptr<opengl::TextureRenderTarget2D> mTextureRenderTarget = nullptr;
 
 	public:
-		rtti::ObjectPtr<BaseTexture2D>	mColorTexture = nullptr;	// Color texture to be used by the render target
-		rtti::ObjectPtr<BaseTexture2D>	mDepthTexture = nullptr;	// Depth texture to be used by the render target
+		rtti::ObjectPtr<Texture2D>	mColorTexture = nullptr;	// Color texture to be used by the render target
+		rtti::ObjectPtr<Texture2D>	mDepthTexture = nullptr;	// Depth texture to be used by the render target
 		glm::vec4						mClearColor;				// Color used when clearing the render target
 	};
 }

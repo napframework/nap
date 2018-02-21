@@ -6,17 +6,17 @@
 
 // qt
 #include <QSettings>
-#include <QtCore/QDir>
-#include <QtWidgets/QMessageBox>
+#include <QDir>
+#include <QTimer>
 
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
 #include <rtti/defaultlinkresolver.h>
+#include <nap/logger.h>
 
 // local
 #include <generic/naputils.h>
-#include <nap/logger.h>
 #include <utility/fileutils.h>
 
 using namespace nap::rtti;
@@ -24,15 +24,7 @@ using namespace nap::utility;
 using namespace napkin;
 
 AppContext::AppContext()
-{
-	ErrorState err;
-	if (!getCore().initializeEngine(err, getExecutableDir()))
-	{
-		nap::Logger::fatal("Failed to initialize engine");
-	}
-
-	newDocument();
-}
+{}
 
 AppContext::~AppContext()
 {}
@@ -45,17 +37,17 @@ AppContext& AppContext::get()
 
 Document* AppContext::newDocument()
 {
-	mDocument = std::make_unique<Document>(mCore);
+	mDocument = std::make_unique<Document>(getCore());
 	connectDocumentSignals();
 	newDocumentCreated();
-	documentChanged();
-	return mDocument.get();
+	Document* doc = mDocument.get();
+	documentChanged(doc);
+	return doc;
 }
 
 Document* AppContext::loadDocument(const QString& filename)
 {
-	auto abspath = getAbsolutePath(filename.toStdString());
-	nap::Logger::info("Loading '%s'", abspath.c_str());
+	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
 
 	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
 
@@ -74,12 +66,12 @@ Document* AppContext::loadDocument(const QString& filename)
 		return nullptr;
 	}
 
-	// transfer
 	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
 	connectDocumentSignals();
 	documentOpened(filename);
-	documentChanged();
-	return mDocument.get();
+	Document* doc = mDocument.get();
+	documentChanged(doc); // Stack corruption?
+	return doc;
 }
 
 void AppContext::saveDocument()
@@ -120,7 +112,7 @@ void AppContext::saveDocumentAs(const QString& filename)
 
 	documentSaved(filename);
 	getUndoStack().setClean();
-	documentChanged();
+	documentChanged(mDocument.get());
 }
 
 void AppContext::openRecentDocument()
@@ -143,7 +135,10 @@ void AppContext::restoreUI()
 	const QString& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_DEFAULT_THEME).toString();
 	getThemeManager().setTheme(recentTheme);
 
-	openRecentDocument();
+	// Let the ui come up before loading all the recent file and initializing core
+	QTimer::singleShot(100, [this]() {
+		openRecentDocument();
+	});
 }
 
 void AppContext::connectDocumentSignals()
@@ -156,9 +151,80 @@ void AppContext::connectDocumentSignals()
 	connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
 	connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
 	connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
-	connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, [this](int idx)
-	{
-		documentChanged();
-	});
+	connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
 }
+
+QMainWindow* AppContext::getMainWindow() const
+{
+	for (auto window : getQApplication()->topLevelWidgets())
+	{
+		auto mainWin = dynamic_cast<QMainWindow*>(window);
+		if (mainWin != nullptr)
+			return mainWin;
+	}
+	return nullptr;
+}
+
+
+void AppContext::handleURI(const QString& uri)
+{
+	// Match object
+	QRegularExpression objectLink(QString("%1:\\/\\/([^@]+)").arg(QString::fromStdString(NAP_URI_PREFIX)));
+	auto match = objectLink.match(uri);
+	if (match.hasMatch())
+	{
+		auto objname = match.captured(1);
+		auto obj = getDocument()->getObject(objname.toStdString());
+		if (obj == nullptr)
+			return;
+		selectionChanged({obj});
+
+		// Match property
+		QRegularExpression proplink(QString("%1:\\/\\/([^@]+)@(.+)").arg(QString::fromStdString(NAP_URI_PREFIX)));
+		match = proplink.match(uri);
+		if (match.hasMatch())
+		{
+			auto proppath = match.captured(2);
+			PropertyPath path(*obj, proppath.toStdString());
+			propertySelectionChanged(path);
+		}
+		return;
+	}
+
+	// File path
+	QRegularExpression filelink("file:\\/\\/(.+)");
+	match = filelink.match(uri);
+	if (match.hasMatch()) {
+		revealInFileBrowser(QString::fromStdString(fromLocalURI(uri.toStdString())));
+	}
+}
+
+nap::Core& AppContext::getCore()
+{
+	if (!mCoreInitialized)
+	{
+		ErrorState err;
+		if (!mCore.initializeEngine(err, getExecutableDir()))
+		{
+			nap::Logger::fatal("Failed to initialize engine");
+		}
+		mCoreInitialized = true;
+	}
+	return mCore;
+}
+
+Document* AppContext::getDocument()
+{
+	if (mDocument == nullptr)
+	{
+		newDocument();
+	}
+	return mDocument.get();
+}
+
+void AppContext::onUndoIndexChanged()
+{
+	documentChanged(mDocument.get());
+}
+
 

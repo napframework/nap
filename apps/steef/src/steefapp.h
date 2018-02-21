@@ -70,8 +70,8 @@ namespace nap
 		void updateBackgroundImage();
 		void updateShader();
 		
-		rtti::ObjectPtr<Image> mVinylLabelImg = nullptr;						//< Vinyl Label Image Resource
-		rtti::ObjectPtr<Image> mVinylCoverImg = nullptr;						//< Vinyl Cover Image Resource
+		rtti::ObjectPtr<ImageFromFile> mVinylLabelImg = nullptr;		//< Vinyl Label Image Resource
+		rtti::ObjectPtr<ImageFromFile> mVinylCoverImg = nullptr;		//< Vinyl Cover Image Resource
 		
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		ResourceManager*	mResourceManager = nullptr;		//< Manages all the loaded resources

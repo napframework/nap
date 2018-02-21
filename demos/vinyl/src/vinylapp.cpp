@@ -41,8 +41,8 @@ namespace nap
 		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
 		// Fetch vinyl textures
-		mVinylLabelImg = mResourceManager->findObject<nap::Image>("LabelImage");
-		mVinylCoverImg = mResourceManager->findObject<nap::Image>("CoverImage");
+		mVinylLabelImg = mResourceManager->findObject<nap::ImageFromFile>("LabelImage");
+		mVinylCoverImg = mResourceManager->findObject<nap::ImageFromFile>("CoverImage");
 		
 		// Fetch scene
 		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");

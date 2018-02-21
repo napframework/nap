@@ -1,5 +1,17 @@
 #include "qtutils.h"
+
+#include <QDir>
+#include <QHBoxLayout>
+#include <QDialogButtonBox>
+#include <QMessageBox>
+#include <QLabel>
+
 #include <mathutils.h>
+#include <standarditemsproperty.h>
+#include <appcontext.h>
+#include <nap/logger.h>
+
+#include "panels/finderpanel.h"
 
 
 QColor napkin::lerpCol(const QColor& a, const QColor& b, qreal p)
@@ -99,5 +111,54 @@ void napkin::expandChildren(QTreeView* view, const QModelIndex& index, bool expa
 
 	for (int i = 0, len = index.model()->rowCount(index); i < len; i++)
 		expandChildren(view, index.child(i, 0), expanded);
+}
+
+bool napkin::directoryContains(const QString& dir, const QString& filename)
+{
+	auto absDir = QDir(dir).canonicalPath();
+	auto absFile = QFileInfo(filename).canonicalFilePath();
+	return absFile.startsWith(absDir);
+}
+
+void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, const QString& title, QString message)
+{
+	QDialog dialog(parent);
+	dialog.setWindowTitle(title);
+
+	QVBoxLayout layout;
+	dialog.setLayout(&layout);
+
+	QLabel label;
+	label.setText(message);
+	layout.addWidget(&label);
+
+	FinderPanel finder;
+	FilterTreeView* tree = &finder.getTreeView();
+
+	// On item double-click, close the dialog and reveal the property
+	finder.connect(&tree->getTreeView(), &QTreeView::doubleClicked,
+				   [tree, &dialog](const QModelIndex& idx)
+	{
+		const auto sourceIndex = tree->getFilterModel().mapToSource(idx);
+		auto item = tree->getModel()->itemFromIndex(sourceIndex);
+		auto propitem = dynamic_cast<PropertyDisplayItem*>(item);
+		assert(propitem);
+		AppContext::get().propertySelectionChanged(propitem->getPath());
+		dialog.close();
+	});
+
+	finder.setPropertyList(props);
+	layout.addWidget(&finder);
+
+	QDialogButtonBox buttonBox(QDialogButtonBox::Close);
+	layout.addWidget(&buttonBox);
+
+	dialog.exec();
+}
+
+void napkin::revealInFileBrowser(const QString& filename)
+{
+	// TODO: Reveal files
+	nap::Logger::fatal("Revealing files not supported yet: %s", filename.toStdString().c_str());
 }
 

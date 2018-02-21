@@ -11,7 +11,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PythonScriptComponentInstance)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::PythonScriptComponent)
-	RTTI_PROPERTY("Path", &nap::PythonScriptComponent::mPath, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
+	RTTI_PROPERTY_FILELINK("Path", &nap::PythonScriptComponent::mPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Python)
 RTTI_END_CLASS
 
 namespace nap
