@@ -14,10 +14,7 @@ if(WIN32)
 	endforeach()
 elseif(APPLE)
     # Add FFmpeg RPATH to built app
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/FFmpeg/lib $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
-                       )
+    macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/FFmpeg/lib) 
 
     # Install FFmpeg into packaged app
     install(DIRECTORY "${THIRDPARTY_DIR}/FFmpeg/lib/" DESTINATION "lib")
