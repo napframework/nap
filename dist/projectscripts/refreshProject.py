@@ -5,7 +5,7 @@ import sys
 import os
 from subprocess import Popen, call
 
-from platform.NAPShared import find_project, call_except_on_faiure
+from platform.NAPShared import find_project, call_except_on_failure
 
 
 ERROR_MISSING_MODULE = 1
@@ -23,7 +23,7 @@ def update_project(project_name, build_type, show_solution):
         return ERROR_MISSING_MODULE
 
     if sys.platform in ["linux", "linux2"]:
-        call_except_on_faiure(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type])
+        call_except_on_failure(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type])
 
         # Show in Nautilus?
         # Seems a bit pointless if we're not opening it in an IDE
@@ -31,7 +31,7 @@ def update_project(project_name, build_type, show_solution):
         #     call(["nautilus -s %s > /dev/null 2>&1 &" % BUILD_DIR], shell=True)
 
     elif sys.platform == 'darwin':
-        call_except_on_faiure(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
+        call_except_on_failure(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
 
         # Show in Finder
         if show_solution:
@@ -44,7 +44,7 @@ def update_project(project_name, build_type, show_solution):
             os.makedirs(full_build_dir)
 
         # generate prject
-        call_except_on_faiure(project_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
+        call_except_on_failure(project_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
         # Show in Explorer
         if show_solution:

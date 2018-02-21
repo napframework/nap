@@ -10,7 +10,7 @@ from sys import platform
 import sys
 import shutil
 
-from platform.NAPShared import find_project, call_except_on_faiure
+from platform.NAPShared import find_project, call_except_on_failure
 
 WORKING_DIR = '.'
 PACKAGING_DIR = 'packaging'
@@ -53,14 +53,14 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
 
     if platform in ["linux", "linux2"]:
         # Generate makefiles
-        call_except_on_faiure(WORKING_DIR, ['cmake', 
+        call_except_on_failure(WORKING_DIR, ['cmake', 
                               '-H%s' % project_path, 
                               '-B%s' % build_dir_name, 
                               '-DCMAKE_BUILD_TYPE=%s' % PACKAGED_BUILD_TYPE, 
                               '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
-        call_except_on_faiure(build_dir_name, ['make', 'all', 'install', '-j%s' % cpu_count()])
+        call_except_on_failure(build_dir_name, ['make', 'all', 'install', '-j%s' % cpu_count()])
 
         # Create archive
         if zip_package:
@@ -74,13 +74,10 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
 
     elif platform == 'darwin':
         # Generate project
-        call_except_on_faiure(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Xcode', '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
+        call_except_on_failure(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Xcode', '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
-        call_except_on_faiure(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
-
-        # Temp: Copy our external dylibs and fix lib paths
-        call_except_on_faiure(bin_dir, ['python', '%s/tools/platform/macOSTempDylibCopyAndPathFix.py' % nap_root, '.'])
+        call_except_on_failure(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
 
         # Create archive
         if zip_package:
@@ -93,7 +90,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
             call(["open", "-R", packaged_to])
     else:
         # Generate project
-        call_except_on_faiure(WORKING_DIR, ['cmake', 
+        call_except_on_failure(WORKING_DIR, ['cmake', 
                            '-H%s' % project_path, 
                            '-B%s' % build_dir_name, 
                            '-G', 'Visual Studio 14 2015 Win64', 
@@ -102,7 +99,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
                            '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
-        call_except_on_faiure(build_dir_name, ['cmake', '--build', '.', '--target', project_name_lower, '--config', PACKAGED_BUILD_TYPE])
+        call_except_on_failure(build_dir_name, ['cmake', '--build', '.', '--target', project_name_lower, '--config', PACKAGED_BUILD_TYPE])
 
         # Copy project data
         project_data_path = os.path.join(project_path, 'data')
@@ -140,7 +137,7 @@ def archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_versi
 
     # Ardhive
     print("Archiving to %s.." % package_filename_with_ext)
-    call_except_on_faiure(project_dir, ['tar', '-cJvf', package_filename_with_ext, package_filename])
+    call_except_on_failure(project_dir, ['tar', '-cJvf', package_filename_with_ext, package_filename])
 
     # Cleanup
     shutil.rmtree(archive_dir)
@@ -164,11 +161,11 @@ def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
     shutil.move(bin_dir, archive_dir)
 
     # Remove unwanted files (eg. .DS_Store)
-    call_except_on_faiure(archive_dir, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
+    call_except_on_failure(archive_dir, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
 
     # Archive
     print("Archiving to %s.." % package_filename_with_ext)
-    call_except_on_faiure(project_dir, ['zip', '-yr', package_filename_with_ext, package_filename])
+    call_except_on_failure(project_dir, ['zip', '-yr', package_filename_with_ext, package_filename])
 
     # Cleanup
     shutil.rmtree(archive_dir)
