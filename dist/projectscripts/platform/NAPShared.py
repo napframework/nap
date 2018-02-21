@@ -1,7 +1,7 @@
 import os
 from subprocess import Popen
 
-def call_except_on_faiure(cwd, cmd):
+def call_except_on_failure(cwd, cmd):
     print('dir: %s' % cwd)
     print('cmd: %s' % cmd)
     proc = Popen(cmd, cwd=cwd)

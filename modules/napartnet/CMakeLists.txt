@@ -48,8 +48,8 @@ install(FILES "${THIRDPARTY_DIR}/libartnet/AUTHORS" DESTINATION "thirdparty/liba
 install(FILES "${THIRDPARTY_DIR}/libartnet/COPYING" DESTINATION "thirdparty/libartnet")
 install(FILES "${THIRDPARTY_DIR}/libartnet/README" DESTINATION "thirdparty/libartnet")
 if(WIN32)
-    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/msvc/bin")
-    install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION "thirdparty/libartnet/msvc/bin")
+    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/bin")
+    install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION "thirdparty/libartnet/bin")
 elseif(APPLE)
     # Ensure our libArtnet install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -57,21 +57,21 @@ elseif(APPLE)
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libArtnet.dylib $<TARGET_FILE:artnet>
                        COMMENT "Setting install name for libartnet")
 
-    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/osx/bin")
+    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/bin")
 
     foreach(build_type Release Debug)
         install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                               -add_rpath
-                                              @loader_path/../../../../thirdparty/libartnet/osx/bin
-                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/${build_type}/libmod_napartnet.dylib                                           
+                                              @loader_path/../../../../thirdparty/libartnet/bin
+                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/${build_type}/libmod_napartnet.dylib
                                       ERROR_QUIET
                                       )")
     endforeach()
 else()
     # Add libartnet to module RPATH
     get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)
-    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../../../thirdparty/libartnet/linux/bin")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../../../thirdparty/libartnet/bin")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
 
-    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/linux/bin")
+    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/bin")
 endif()

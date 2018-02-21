@@ -2,28 +2,28 @@
 if (WIN32)
     find_path(
         ARTNET_DIR
-        NAMES msvc/bin/libartnet.dll
+        NAMES bin/libartnet.dll
         HINTS ${THIRDPARTY_DIR}/libartnet
     )
-    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/msvc/bin)
+    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin)
 	set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.lib)
 	set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS_DIR}/libartnet.dll)
 elseif(APPLE)
     find_path(
         ARTNET_DIR
-        NAMES osx/bin/libArtnet.dylib
+        NAMES bin/libArtnet.dylib
         HINTS ${THIRDPARTY_DIR}/libartnet
     )   
-    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/osx/bin)
+    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin)
 	set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libArtnet.dylib)
 	set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS_DIR}/libArtnet.dylib)
 else()
     find_path(
         ARTNET_DIR
-        NAMES linux/bin/libartnet.so.1
+        NAMES bin/libartnet.so.1
         HINTS ${THIRDPARTY_DIR}/libartnet
     )   
-    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/linux/bin)
+    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin)
 	set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so.1)
 	set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS_DIR}/libartnet.so.1)
 endif()
