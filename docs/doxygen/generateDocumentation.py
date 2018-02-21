@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import subprocess
 from sys import platform
