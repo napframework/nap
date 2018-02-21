@@ -31,9 +31,7 @@ macro(package_nap)
     # Package platform tools
     file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/platform/*py")
     install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
-    if(APPLE)
-        install(PROGRAMS dist/macOS/macOSTempDylibCopyAndPathFix.py DESTINATION tools/platform)
-    elseif(UNIX)
+    if(UNIX AND NOT APPLE)
         install(PROGRAMS dist/linux/install_ubuntu_1710_dependencies.sh DESTINATION tools/platform)
     endif()
 

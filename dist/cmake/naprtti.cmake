@@ -86,16 +86,6 @@ if (NOT WIN32)
     install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
     install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
 
-    #
-    if(APPLE)
-        install(CODE "execute_process(COMMAND install_name_tool 
-                                              -change 
-                                              @loader_path/../../../../thirdparty/rttr/bin/librttr_core.0.9.6.dylib 
-                                              @rpath/librttr_core.0.9.6.dylib 
-                                              ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}
-                                              )")
-    endif()
-
     # On Linux set use lib directory for RPATH
     if(NOT APPLE)
         install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/libnaprtti.so\")
