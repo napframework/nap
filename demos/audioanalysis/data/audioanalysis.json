@@ -203,7 +203,7 @@
 					"Type": "nap::audio::LevelMeterComponent",
 					"mID": "levelMeter",
 					"Input": "playbackComponent",
-					"MeasureBand": "True",
+					"FilterInput": "True",
 					"CenterFrequency": 400,
 					"BandWidth": 100
 				}
