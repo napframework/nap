@@ -96,5 +96,6 @@ namespace nap
         audio::ControllerValue mAnalysisFrequency = 500.f;
         audio::ControllerValue mAnalysisBand = 100.f;
         audio::ControllerValue mAnalysisGain = 5.0f;
+        std::vector<audio::ControllerValue> mAnalysisPlotValues = { };
 	};
 }

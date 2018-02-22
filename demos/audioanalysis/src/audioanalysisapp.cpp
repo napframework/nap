@@ -61,6 +61,8 @@ namespace nap
         mLevelMeter->setCenterFrequency(mAnalysisFrequency);
         mLevelMeter->setBandWidth(mAnalysisBand);
         mLevelMeter->setFilterGain(mAnalysisGain);
+        
+        mAnalysisPlotValues.resize(100, 0);
 
 		return true;
 	}
@@ -88,6 +90,10 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processEvents(*mRenderWindow, input_router, entities);
         
+        for (auto i = mAnalysisPlotValues.size() - 1; i > 0; i--)
+            mAnalysisPlotValues[i] = mAnalysisPlotValues[i - 1];
+        mAnalysisPlotValues[0] = mLevelMeter->getLevel(0);
+        
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
@@ -96,6 +102,7 @@ namespace nap
 			"left mouse button to world, right mouse button to zoom");
         if (ImGui::CollapsingHeader("Audio analysis"))
         {
+            ImGui::PlotLines("", mAnalysisPlotValues.data(), mAnalysisPlotValues.size() - 1);
             ImGui::SliderFloat("Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
             ImGui::SliderFloat("Band", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
             ImGui::SliderFloat("Gain", &mAnalysisGain, 0.f, 10.0f, "%.3f", 1.0f);
