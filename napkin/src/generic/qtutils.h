@@ -10,6 +10,7 @@
 #include <QStandardItemModel>
 
 #include <QTreeView>
+#include <QtWidgets/QGraphicsItem>
 #include "propertypath.h"
 
 namespace napkin
@@ -126,6 +127,11 @@ namespace napkin
 	void setTranslation(QTransform& xf, qreal x, qreal y);
 
 	/**
+	 * Set the translation component from a QTransform
+	 */
+	void setTranslation(QTransform& xf, const QPointF& p);
+
+	/**
 	 * Get the scale component from a QTransform
 	 */
 	QSizeF getScale(const QTransform& xf);
@@ -134,6 +140,12 @@ namespace napkin
 	 * Set the scale component from a QTransform
 	 */
 	void setScale(QTransform& xf, qreal x, qreal y);
+
+	/**
+	 * Move a QGraphicsItem to the front
+	 */
+	void moveItemToFront(QGraphicsItem& item);
+
 
 }
 

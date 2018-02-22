@@ -74,6 +74,11 @@ namespace napkin
 		QTreeView& getTreeView() { return mTreeView; }
 
 		/**
+		 * @return The actual QTreeView used by this widget.
+		 */
+		const QTreeView& getTreeView() const { return mTreeView; }
+
+		/**
 		 * @return The filter line edit at the top
 		 */
 		QLineEdit& getLineEdit() { return mLineEditFilter; }

@@ -9,14 +9,12 @@ namespace napkin {
 	class TrackItem;
 	class EventItem;
 
-
-
-
 	class TimelineScene : public QGraphicsScene {
 	public:
 		TimelineScene();
 		void setTimeline(Timeline* timeline);
 		Timeline* timeline() const { return mTimeline; }
+		void setTrackHeight(int height);
 	private:
 		void onTrackAdded(Track& track);
 		void onTrackRemoved(Track& track);
@@ -27,12 +25,9 @@ namespace napkin {
 
 		EventItem* eventItem(Event& event);
 
-
 		Timeline* mTimeline = nullptr;
 
 		QGraphicsItemGroup mTrackGroup;
 		QGraphicsItemGroup mEventGroup;
-
-
 	};
 }

@@ -1,128 +1,112 @@
-#include <QtWidgets/QTreeView>
-#include <QtGui/QStandardItem>
 #include "timelineoutline.h"
+
+#include <QScrollBar>
+
 
 using namespace napkin;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OutlineTrackItem
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-OutlineTrackItem::OutlineTrackItem(Track& track) : QGraphicsProxyWidget(), mTrack(track)
+OutlineTrackItem::OutlineTrackItem(Track& track) : QStandardItem(), mTrack(track)
 {
-	setWidget(&mWidget);
-	mWidget.setLayout(&mLayout);
-	mLayout.setContentsMargins(0, 0, 0, 0);
-	mLayout.addWidget(new QPushButton("I am a track"));
+	setText(track.name());
+}
+
+QVariant OutlineTrackItem::data(int role) const
+{
+	if (role == Qt::SizeHintRole) {
+		auto size = QStandardItem::data(role).toSize();
+		size.setHeight(track().height());
+		return size;
+	}
+	return QStandardItem::data(role);
+}
+
+OutlineModel::OutlineModel() : QStandardItemModel()
+{
 
 }
 
-void OutlineTrackItem::setWidth(int width)
-{
-	mWidget.resize(mWidget.height(), width);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OutlineScene
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-OutlineScene::OutlineScene()
-{
-}
-
-void OutlineScene::setTimeline(Timeline* timeline)
+void OutlineModel::setTimeline(Timeline* timeline)
 {
 	if (mTimeline != nullptr)
 	{
-		disconnect(mTimeline, &Timeline::trackAdded, this, &OutlineScene::onTrackAdded);
-		disconnect(mTimeline, &Timeline::trackRemoved, this, &OutlineScene::onTrackRemoved);
+		disconnect(mTimeline, &Timeline::trackAdded, this, &OutlineModel::onTrackAdded);
+		disconnect(mTimeline, &Timeline::trackRemoved, this, &OutlineModel::onTrackRemoved);
 	}
 	mTimeline = timeline;
 	if (mTimeline != nullptr)
 	{
-		connect(mTimeline, &Timeline::trackAdded, this, &OutlineScene::onTrackAdded);
-		connect(mTimeline, &Timeline::trackRemoved, this, &OutlineScene::onTrackRemoved);
+		connect(mTimeline, &Timeline::trackAdded, this, &OutlineModel::onTrackAdded);
+		connect(mTimeline, &Timeline::trackRemoved, this, &OutlineModel::onTrackRemoved);
 	}
 
-	for (auto track : timeline->tracks())
-	{
+	for (auto track : mTimeline->tracks()) {
 		onTrackAdded(*track);
 	}
-
-
 }
 
-void OutlineScene::onTrackAdded(Track& track)
+OutlineTrackItem* OutlineModel::trackItem(const Track& track) const
 {
-	auto trackitem = new OutlineTrackItem(track);
-	addItem(trackitem);
+	return dynamic_cast<OutlineTrackItem*>(napkin::findItemInModel(*this, [&track](const QStandardItem* item)
+	{
+		auto trackItem = dynamic_cast<const OutlineTrackItem*>(item);
+		if (trackItem == nullptr)
+			return false;
+		return &trackItem->track() == &track;
+	}));
 }
 
-void OutlineScene::onTrackRemoved(Track& track)
+void OutlineModel::onTrackAdded(Track& track)
 {
-	removeItem(trackItem(track));
+	appendRow(new OutlineTrackItem(track));
 }
-OutlineTrackItem* OutlineScene::trackItem(Track& track)
+
+void OutlineModel::onTrackRemoved(Track& track)
 {
-	for (auto trackitem : trackItems()) {
-		if (&trackitem->track() == &track)
-			return trackitem;
-	}
-	return nullptr;
+
 }
 
-QList<OutlineTrackItem*> OutlineScene::trackItems()
-{
-	QList<OutlineTrackItem*> ret;
-	for (auto item : items()) {
-		auto trackitem = dynamic_cast<OutlineTrackItem*>(item);
-		if (trackitem != nullptr)
-			ret << trackitem;
-	}
-	return ret;
-}
-
-void OutlineScene::resize(const QSize& size)
-{
-	setSceneRect(0, 0, size.width(), 10000);
-	for (auto trackitem : trackItems()) {
-		trackitem->setWidth(size.width());
-	}
-}
-
-
-void OutlineView::resizeEvent(QResizeEvent* event)
-{
-	QGraphicsView::resizeEvent(event);
-	resized(event->size());
-}
-
-OutlineView::OutlineView()
-{
-	setAlignment(Qt::AlignTop | Qt::AlignLeft);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// TimelineOutline
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 TimelineOutline::TimelineOutline() : QWidget()
 {
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
-	mLayout.addWidget(&mView);
-	mView.setScene(&mScene);
+	mLayout.addWidget(&mFilterTree);
 
-	connect(&mView, &OutlineView::resized, this, &TimelineOutline::onViewResized);
+	auto& tree = mFilterTree.getTreeView();
+	tree.setHeaderHidden(true);
+	tree.setAlternatingRowColors(true);
+	tree.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+	tree.setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+
+//	connect(tree.verticalScrollBar(), &QScrollBar::valueChanged, this, &TimelineOutline::verticalScrollChanged);
+
+	mFilterTree.setModel(&mModel);
+
 }
 
 void TimelineOutline::setModel(Timeline* timeline)
 {
-	mScene.setTimeline(timeline);
+	mModel.setTimeline(timeline);
 }
 
 void TimelineOutline::onViewResized(const QSize& size)
 {
-	mScene.resize(size);
+
 }
+
+int TimelineOutline::getTrackTop() const
+{
+
+	return mFilterTree.getTreeView().mapTo(this, QPoint(0, 0)).y();
+}
+
+int TimelineOutline::getTrackHeight(const Track& track) const
+{
+	return 0;
+}
+
+void TimelineOutline::setVerticalScroll(int value)
+{
+	mFilterTree.getTreeView().verticalScrollBar()->setValue(value);
+}
+

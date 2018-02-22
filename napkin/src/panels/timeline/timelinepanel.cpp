@@ -27,15 +27,23 @@ TimelinePanel::TimelinePanel() : QWidget()
 	mSplitter.setStretchFactor(1, 1);
 	mLayout.addWidget(&mSplitter);
 
-
 	// Data
 	mView.setScene(&mScene);
 	connect(&mView, &GridView::viewTransformed, this, &TimelinePanel::onTimelineViewTransformed);
 
-	setHeaderHeight(20);
+	connect(&mOutline, &TimelineOutline::verticalScrollChanged, [this](int value) {
+		mView.setVerticalScroll(value);
+	});
 
 	demo();
 }
+
+void TimelinePanel::showEvent(QShowEvent* event)
+{
+	mView.setTopMargin(mOutline.getTrackTop());
+
+}
+
 
 TimelinePanel::~TimelinePanel()
 {
@@ -51,7 +59,9 @@ void TimelinePanel::setTimeline(Timeline* timeline)
 
 void TimelinePanel::onTimelineViewTransformed(const QTransform& transform)
 {
-
+	auto scroll = getTranslation(transform);
+	int s = qRound(-scroll.y());
+	mOutline.setVerticalScroll(s);
 }
 
 
@@ -59,7 +69,7 @@ void TimelinePanel::demo()
 {
 	namegen::NameGen gen;
 
-	int trackCount = 6;
+	int trackCount = 30;
 	int eventCount = 10;
 
 	auto timeline = new Timeline(this);
@@ -85,9 +95,6 @@ void TimelinePanel::demo()
 
 }
 
-void TimelinePanel::setHeaderHeight(int height)
-{
-}
 
 
 

@@ -78,7 +78,8 @@ void GridView::mouseReleaseEvent(QMouseEvent* event)
 void GridView::keyPressEvent(QKeyEvent* event)
 {
 	QGraphicsView::keyPressEvent(event);
-	switch (event->key()) {
+	switch (event->key())
+	{
 		case Qt::Key_Home:
 			centerView();
 			break;
@@ -249,7 +250,6 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect)
 	const qreal day = hour * 24;
 
 
-
 }
 
 qreal GridView::calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const
@@ -352,7 +352,12 @@ void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMar
 
 void GridView::applyViewTransform()
 {
+	auto pos = getTranslation(mViewTransform);
 
+	pos.setY(qMin(pos.y(), -sceneRect().top()));
+
+
+	setTranslation(mViewTransform, pos);
 
 	setTransform(mViewTransform);
 	viewTransformed(mViewTransform);
@@ -375,12 +380,43 @@ QRectF GridView::selectedItemsBoundingRect() const
 		return scene()->itemsBoundingRect();
 
 	auto rect = selection[0]->sceneBoundingRect();
+
 	if (selection.size() == 1)
 		return rect;
 
-	for (int i=1, len=selection.size(); i<len; i++)
+	for (int i = 1, len = selection.size(); i < len; i++)
 		rect = rect.united(selection[i]->sceneBoundingRect());
 
 	return rect;
+}
+
+void GridView::setVerticalScroll(int value)
+{
+	auto scroll = getTranslation(mViewTransform);
+	scroll.setY(-value - scene()->sceneRect().top());
+	setTranslation(mViewTransform, scroll);
+	applyViewTransform();
+}
+
+void GridView::fitInViewNoMargins(const QRectF& rect, Qt::AspectRatioMode aspectRadioMode)
+{
+	if (!scene() or rect.isNull())
+		return;
+
+
+
+			self.last_scene_roi = rect
+	unity = self.transform().mapRect(QRectF(0, 0, 1, 1))
+	self.scale(1/unity.width(), 1/unity.height())
+	viewRect = self.viewport().rect()
+	sceneRect = self.transform().mapRect(rect)
+	xratio = viewRect.width() / sceneRect.width()
+	yratio = viewRect.height() / sceneRect.height()
+	if flags == Qt.KeepAspectRatio:
+	xratio = yratio = min(xratio, yratio)
+	elif flags == Qt.KeepAspectRatioByExpanding:
+	xratio = yratio = max(xratio, yratio)
+	self.scale(xratio, yratio)
+	self.centerOn(rect.center())
 }
 

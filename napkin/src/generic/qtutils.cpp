@@ -177,8 +177,22 @@ void napkin::setTranslation(QTransform& xf, qreal x, qreal y)
 	xf.setMatrix(xf.m11(), xf.m12(), xf.m13(), xf.m21(), xf.m22(), xf.m23(), x, y, xf.m33());
 }
 
+void napkin::setTranslation(QTransform& xf, const QPointF& p)
+{
+	setTranslation(xf, p.x(), p.y());
+}
+
 void napkin::setScale(QTransform& xf, qreal x, qreal y)
 {
 	xf.setMatrix(x, xf.m12(), xf.m13(), xf.m21(), y, xf.m23(), xf.m31(), xf.m32(), xf.m33());
+}
+
+void napkin::moveItemToFront(QGraphicsItem& item)
+{
+	qreal maxZ = 0;
+	for (auto item : item.collidingItems(Qt::IntersectsItemBoundingRect))
+		maxZ = qMax(maxZ, item->zValue());
+
+	item.setZValue(maxZ + 0.001);
 }
 

@@ -3,21 +3,22 @@
 
 #include <QtGui/QKeyEvent>
 #include <QtDebug>
+#include <generic/qtutils.h>
 
 using namespace napkin;
 
-void moveItemToFront(QGraphicsItem& item) {
-	qreal maxZ = 0;
-	for (auto item : item.collidingItems(Qt::IntersectsItemBoundingRect))
-		maxZ = qMax(maxZ, item->zValue());
-
-	item.setZValue(maxZ + 0.001);
-}
 
 TimelineView::TimelineView()
 		: GridView() {
 	setMouseTracking(true);
 }
+
+
+void TimelineView::setTopMargin(int margin)
+{
+	scene()->setSceneRect(-30, -margin, 100000, 100000);
+}
+
 
 void TimelineView::mousePressEvent(QMouseEvent* event) {
 	if (!scene())
@@ -114,3 +115,4 @@ const QList<EventItem*> TimelineView::selectedEventItems() const {
 Timeline* TimelineView::timeline() const {
 	return dynamic_cast<TimelineScene*>(scene())->timeline();
 }
+
