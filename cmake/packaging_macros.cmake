@@ -45,6 +45,13 @@ macro(package_nap)
     # For now package platform Qt and Python for distribution, for discussion
     package_python()
     package_platform_qt()
+
+    # Package documentation
+    if(INCLUDE_DOCS)
+        find_package(Doxygen REQUIRED)
+        install(CODE "execute_process(COMMAND python ${NAP_ROOT}/docs/doxygen/generateDocumentation.py)
+                      execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/docs/html/ ${CMAKE_INSTALL_PREFIX}/doc)")
+    endif()
 endmacro()
 
 # Package installed Python for distribution with NAP release (for use with mod_nappython & Napkin)
