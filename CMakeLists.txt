@@ -109,6 +109,7 @@ add_subdirectory(demos/videomodulation)
 add_subdirectory(demos/videomodulation/module)
 add_subdirectory(demos/blobtrace)
 add_subdirectory(demos/audioanalysis)
+add_subdirectory(demos/audioplayback)
 
 add_subdirectory(unittests)
 

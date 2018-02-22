@@ -29,13 +29,13 @@ namespace nap
         public:
             LevelMeterComponent() : Component() { }
             
-            nap::ComponentPtr<AudioComponentBase> mInput; /**< The component whose audio output will be measured. */
-            TimeValue mAnalysisWindowSize = 10; /**< Size of an analysis window in milliseconds */
-            LevelMeterNode::Type mMeterType = LevelMeterNode::Type::RMS; /**< Type of analysis to be used: RMS for root mean square, PEAK for the peak of the analysis window */
-            bool mFilterInput = false; /**< If set to true the input signal will be filtered before being measured. */
-            ControllerValue mCenterFrequency = 10000.f; /**< Center frequency of the frequency band that will be analyzed. Only has effect when mFilterInput = true. */
-            ControllerValue mBandWidth = 10000.f; /**< Width in Hz of the frequency band that will be analyzed. Only has effect when mFilterInput = true.*/
-            ControllerValue mFilterGain = 1.0f; /**< Gain factor of the filtered input signal. Only has effect when mFilterInput = true. */
+            nap::ComponentPtr<AudioComponentBase> mInput; ///< property: 'Input' The component whose audio output will be measured.
+            TimeValue mAnalysisWindowSize = 10; ///< property: 'AnalysisWindowSize' Size of an analysis window in milliseconds.
+            LevelMeterNode::Type mMeterType = LevelMeterNode::Type::RMS; ///< property: 'MeterType' Type of analysis to be used: RMS for root mean square, PEAK for the peak of the analysis window.
+            bool mFilterInput = false; ///< If set to true the input signal will be filtered before being measured.
+            ControllerValue mCenterFrequency = 10000.f; ///< property: 'CenterFrequency' Center frequency of the frequency band that will be analyzed. Only has effect when mFilterInput = true.
+            ControllerValue mBandWidth = 10000.f; ///< property: 'BandWidth' Width in Hz of the frequency band that will be analyzed. Only has effect when mFilterInput = true.
+            ControllerValue mFilterGain = 1.0f; ///< property: 'FilterGain' Gain factor of the filtered input signal. Only has effect when mFilterInput = true.
             
         private:
         };
@@ -96,11 +96,14 @@ namespace nap
             ControllerValue getFilterGain() const;
             
         private:
+            /**
+             * Returns the node manager the level meter nodes are registered to.
+             */
             NodeManager& getNodeManager();
             
-            nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &LevelMeterComponent::mInput };
-            std::vector<std::unique_ptr<FilterNode>> mFilters;
-            std::vector<std::unique_ptr<LevelMeterNode>> mMeters;
+            nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &LevelMeterComponent::mInput }; // Pointer to component that outputs this components audio input
+            std::vector<std::unique_ptr<LevelMeterNode>> mMeters; // Nodes doing the actual analysis
+            std::vector<std::unique_ptr<FilterNode>> mFilters; // Filters filtering the audio signal for each channel before analysis
         };
         
     }

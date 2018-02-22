@@ -153,13 +153,15 @@ namespace nap
 		 */
 		enum class NAPAPI EPropertyFileType : uint8_t
 		{
-			Any			= 0,	///< Can point to any file, default.
-			Image		= 1, 	///< Points to an image file, must be used with EPropertyMetaData::FileLink
-			FragShader	= 2, 	///< Points to a .vert file, must be used with EPropertyMetaData::FileLink
-			VertShader	= 3, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
-			Python		= 4,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
-            Mesh		= 5,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
-			Video		= 6,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
+			Any				= 0,	///< Can point to any file, default.
+			Image			= 1, 	///< Points to an image file, must be used with EPropertyMetaData::FileLink
+			FragShader		= 2, 	///< Points to a .vert file, must be used with EPropertyMetaData::FileLink
+			VertShader		= 3, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
+			Python			= 4,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
+			Mesh			= 5,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
+			Video			= 6,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
+			ImageSequence	= 7,	///< Points to a an image sequence, must be used with EPropertyMetaData::FileLink
+            Audio           = 8,    ///< Points to an audio file, must be used with EPropertyMetaData::FileLink
 		};
 
 		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)
@@ -331,7 +333,7 @@ namespace nap
 		{																										\
 			using namespace rttr;																				\
 			namespace py = pybind11;																			\
-            using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
+			using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
 			PythonClassType python_class(#Type);
@@ -379,7 +381,7 @@ namespace nap
 			rtti_class_type.method(Name, Member);																\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
- 				cls.def(Name, Member, nap::detail::isReturnTypeLValueReference(Member) ? py::return_value_policy::reference : py::return_value_policy::automatic_reference);	\
+				cls.def(Name, Member, nap::detail::isReturnTypeLValueReference(Member) ? py::return_value_policy::reference : py::return_value_policy::automatic_reference);	\
 			});		
 
 /**
@@ -496,8 +498,8 @@ namespace nap
 				value(String, Value)
 
    /**
-    * Ends the RTTI definition
-    */
+	* Ends the RTTI definition
+	*/
 #define RTTI_END_ENUM																							\
 			);																									\
 		}																										\

@@ -45,8 +45,8 @@ namespace nap
             void process() override;
             
             ControllerValue mPanning = 0.5f;
-            ControllerValue mLeftGain = 0;
-            ControllerValue mRightGain = 0;
+            ControllerValue mLeftGain = 0; // Gain factor of the left channel
+            ControllerValue mRightGain = 0; // Gain factor of the right channel
         };
     
     }

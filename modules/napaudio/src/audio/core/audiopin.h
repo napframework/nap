@@ -20,6 +20,9 @@ namespace nap
         class OutputPin;
         
         
+        /**
+         * Interface for @InputPin and @MultiInputPin classes
+         */
         class NAPAPI InputPinBase
         {
         public:
