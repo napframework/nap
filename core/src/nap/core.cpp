@@ -234,8 +234,16 @@ namespace nap
 		// Add services in right order
 		for (auto& node : graph.getSortedNodes())
 		{
+            // Add the service to core
 			nap::Service* service = node->mItem.mObject;
-			mServices.emplace_back(std::unique_ptr<nap::Service>(service));
+            mServices.emplace_back(std::unique_ptr<nap::Service>(service));
+            
+            // This happens within this loop so services are able to query their dependencies while registering object creators
+            service->registerObjectCreators(mResourceManager->getFactory());
+            
+            // Notify the service that is has been created and its core pointer is available
+            // We put this call here so the service's dependencies are present and can already be queried if necessary
+            service->created();
 		}
 		return true;
 	}
@@ -281,13 +289,8 @@ namespace nap
 		// Add service
 		Service* service = type.create<Service>();
 		service->mCore = this;
-		service->registerObjectCreators(mResourceManager->getFactory());
-
-		// Signal creation
-		service->created();
-
-		// Add
 		outServices.emplace_back(service);
+        
 		return true;
 	}
 
