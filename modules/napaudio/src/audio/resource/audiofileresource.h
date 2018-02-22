@@ -19,7 +19,7 @@ namespace nap
             bool init(utility::ErrorState& errorState) override;
             
         public:
-            std::string mAudioFilePath = ""; /**< The path to the audio file on disk */
+            std::string mAudioFilePath = ""; ///< property: 'AudioFilePath' The path to the audio file on disk
         };
         
     }

@@ -27,9 +27,9 @@ namespace nap
         public:
             LevelMeterComponent() : Component() { }
             
-            nap::ComponentPtr<AudioComponentBase> mInput; /**< The component whose audio output will be measured. */
-            TimeValue mAnalysisWindowSize = 10; /**< Size of an analysis window in milliseconds */
-            LevelMeterNode::Type mMeterType = LevelMeterNode::Type::RMS; /**< Type of analysis to be used: RMS for root mean square, PEAK for the peak of the analysis window */
+            nap::ComponentPtr<AudioComponentBase> mInput; ///< property: 'Input' The component whose audio output will be measured.
+            TimeValue mAnalysisWindowSize = 10; ///< property: 'AnalysisWindowSize' Size of an analysis window in milliseconds.
+            LevelMeterNode::Type mMeterType = LevelMeterNode::Type::RMS; ///< property: 'MeterType' Type of analysis to be used: RMS for root mean square, PEAK for the peak of the analysis window.
             
         private:
         };
@@ -44,16 +44,19 @@ namespace nap
             // Initialize the component
             bool init(utility::ErrorState& errorState) override;
             
-            NodeManager& getNodeManager();
-            
             /**
              * Returns the current level for a certain channel
              */
             ControllerValue getLevel(int channel);
             
         private:
-            nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &LevelMeterComponent::mInput };
-            std::vector<std::unique_ptr<LevelMeterNode>> meters;
+            /**
+             * Returns the node manager the level meter nodes are registered to.
+             */
+            NodeManager& getNodeManager();
+            
+            nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &LevelMeterComponent::mInput }; // Pointer to component that outputs this components audio input
+            std::vector<std::unique_ptr<LevelMeterNode>> mMeters; // Nodes doing the actual analysis
         };
         
     }

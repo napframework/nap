@@ -29,8 +29,8 @@ namespace nap
         {
             for (auto channel = 0; channel < mInput->getChannelCount(); ++channel)
             {
-                meters.emplace_back(std::make_unique<LevelMeterNode>(getNodeManager()));
-                meters.back()->input.connect(mInput->getOutputForChannel(channel));
+                mMeters.emplace_back(std::make_unique<LevelMeterNode>(getNodeManager()));
+                mMeters.back()->input.connect(mInput->getOutputForChannel(channel));
             }
             
             return true;
@@ -45,8 +45,8 @@ namespace nap
         
         SampleValue LevelMeterComponentInstance::getLevel(int channel)
         {
-            assert(channel < meters.size());
-            return meters[channel]->getLevel();
+            assert(channel < mMeters.size());
+            return mMeters[channel]->getLevel();
         }
         
         

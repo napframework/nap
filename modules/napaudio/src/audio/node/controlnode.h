@@ -84,13 +84,14 @@ namespace nap
         private:
             void process() override;
             
+            // Slot called internally when the destination of a ramp has been reached.
             nap::Slot<ControllerValue> mDestinationReachedSlot = { this, &ControlNode::destinationReached };
             void destinationReached(ControllerValue value) { rampFinishedSignal(*this); }
             
-            ControllerValue mValue = 0;
-            LinearRamper<ControllerValue> mLinearRamper = { mValue };
-            ExponentialRamper<ControllerValue> mExponentialRamper = { mValue };
-            Translator<ControllerValue>* mTranslator = nullptr;
+            ControllerValue mValue = 0; // Current output value of the node.
+            LinearRamper<ControllerValue> mLinearRamper = { mValue }; // Helper object to ramp output values linearly from a start to a destination value.
+            ExponentialRamper<ControllerValue> mExponentialRamper = { mValue }; // Helper object to ramp output values from a start to a destination value with an exponantial curve.
+            Translator<ControllerValue>* mTranslator = nullptr; // Helper object to apply a translation to the output value.
         };
         
     }

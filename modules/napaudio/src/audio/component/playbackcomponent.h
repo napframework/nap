@@ -31,16 +31,16 @@ namespace nap
             PlaybackComponent() : AudioComponentBase() { }
             
             // Properties
-            ObjectPtr<AudioBufferResource> mBuffer = nullptr;   /**< The buffer containing the audio to be played back */
-            std::vector<int> mChannelRouting = { 0 };           /**< The size of this array indicates the number of channels to be played back. Each element indicates a channel number of the buffer to be played. */
-            bool mAutoPlay = true;                              /**< If set to true, the component will start playing on initialization. */
-            TimeValue mStartPosition = 0;                       /**< Start position of playback in milliseconds */
-            TimeValue mDuration = 0;                            /**< Duration of playback in milliseconds */
-            TimeValue mFadeInTime = 0;                          /**< Fade in time of playback in milliseconds, to prevent clicks */
-            TimeValue mFadeOutTime = 0;                         /**< Fade out time of playback in milliseconds, te prevent clicks */
-            ControllerValue mPitch = 1.0;                       /**< Pitch as a fraction of the original: 2.0 means double speed, 0.5 means halve speed. */
-            ControllerValue mGain = 1.0;                        /**< Overall gain */
-            ControllerValue mStereoPanning = 0.5;               /**< Panning in the stereo field: 0 means far left, 0.5 means center, 1.0  means far right. This property only applies when two channels are being played back. */
+            ObjectPtr<AudioBufferResource> mBuffer = nullptr;   ///< property: 'Buffer' The buffer containing the audio to be played back
+            std::vector<int> mChannelRouting = { 0 };           ///< property: 'ChannelRouting' The size of this array indicates the number of channels to be played back. Each element indicates a channel number of the buffer to be played.
+            bool mAutoPlay = true;                              ///< property: 'AutoPlay' If set to true, the component will start playing on initialization.
+            TimeValue mStartPosition = 0;                       ///< property: 'StartPosition' Start position of playback in milliseconds.
+            TimeValue mDuration = 0;                            ///< property: 'Duration' Duration of playback in milliseconds.
+            TimeValue mFadeInTime = 0;                          ///< property: 'FadeInTime' Fade in time of playback in milliseconds, to prevent clicks.
+            TimeValue mFadeOutTime = 0;                         ///< property: 'FadeOutTime' Fade out time of playback in milliseconds, te prevent clicks
+            ControllerValue mPitch = 1.0;                       ///< property: 'Pitch' Pitch as a fraction of the original: 2.0 means double speed, 0.5 means halve speed.
+            ControllerValue mGain = 1.0;                        ///< property: 'Gain' Overall gain/
+            ControllerValue mStereoPanning = 0.5;               ///< property: 'StereoPanning' Panning in the stereo field: 0 means far left, 0.5 means center, 1.0  means far right. This property only applies when two channels are being played back.
             
             /**
              * Returns if the playback consists of 2 audio channels
@@ -142,9 +142,9 @@ namespace nap
         private:            
             void applyGain(TimeValue rampTime);
             
-            std::vector<std::unique_ptr<BufferPlayerNode>> mBufferPlayers;
-            std::vector<std::unique_ptr<GainNode>> mGainNodes;
-            std::vector<std::unique_ptr<ControlNode>> mGainControls;
+            std::vector<std::unique_ptr<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
+            std::vector<std::unique_ptr<GainNode>> mGainNodes; // Nodes for each channel to gain the signal.
+            std::vector<std::unique_ptr<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
             
             ControllerValue mGain = 0;
             ControllerValue mStereoPanning = 0.5;
@@ -154,10 +154,10 @@ namespace nap
             TimeValue mDuration = 0;
             TimeValue mCurrentPlayingTime = 0;
             
-            bool mPlaying = false;
+            bool mPlaying = false;  // Indicates wether the component is currently playing
 
-            PlaybackComponent* resource = nullptr;
-            NodeManager* nodeManager = nullptr;
+            PlaybackComponent* resource = nullptr; // The component's resource
+            NodeManager* nodeManager = nullptr; // The audio node manager this component's audio nodes are managed by
         };
         
     }

@@ -44,7 +44,7 @@ namespace nap
              */
             void process() override;
             
-            ControllerValue mGain  = 1;
+            ControllerValue mGain  = 1; // Current multiplication factor of the output signal.
         };
         
     }

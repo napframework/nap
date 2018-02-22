@@ -100,12 +100,12 @@ namespace nap
             nap::Signal<T> destinationReachedSignal;
 
         private:
-            T& mValue;
-            T mFactor = 0;
-            T mDestination = 0;
-            int mStepCounter = 0;
-            int mStepCount = 0;
-            bool mDestinationZero = false;
+            T& mValue; // Value that is being controlled by this object.
+            T mFactor = 0; // Multiplication factor per step of the current ramp
+            T mDestination = 0; // Destination value of the current ramp
+            int mStepCounter = 0; // Index of the current step in the ramp
+            int mStepCount = 0; // Number of steps in the current ramp
+            bool mDestinationZero = false; // Indicates wether the destination of the current ramp will be rounded to zero
         };
         
         
