@@ -78,11 +78,11 @@ namespace nap
             nap::Signal<T> destinationReachedSignal;
             
         private:
-            T& mValue;
-            T mIncrement = 0;
-            T mDestination = 0;
-            int mStepCounter = 0;
-            int mStepCount = 0;
+            T& mValue; // Value that is being controlled by this object.
+            T mIncrement = 0; // Increment value per step of the current ramp.
+            T mDestination = 0; // Destination value of the current ramp.
+            int mStepCounter = 0; // Current step index
+            int mStepCount = 0; // Number of steps in the current ramp.
         };
         
         

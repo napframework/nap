@@ -5,7 +5,7 @@
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::AudioFileResource)
-    RTTI_PROPERTY("AudioFilePath", &nap::audio::AudioFileResource::mAudioFilePath, nap::rtti::EPropertyMetaData::FileLink)
+    RTTI_PROPERTY_FILELINK("AudioFilePath", &nap::audio::AudioFileResource::mAudioFilePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Audio)
 RTTI_END_CLASS
 
 namespace nap

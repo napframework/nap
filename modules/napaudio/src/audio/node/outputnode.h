@@ -55,7 +55,7 @@ namespace nap
         private:
             void process() override;
             
-            int mOutputChannel = 0;
+            int mOutputChannel = 0; // The audio channel that this node's input will be played on by the node manager.
             
             bool mActive = true;
         };
