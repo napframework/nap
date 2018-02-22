@@ -8,11 +8,7 @@ if(WIN32)
     endif()
 endif()
 if(APPLE)
-    # Install our Python dylib from thirdparty
-    install(FILES ${THIRDPARTY_DIR}/python/lib/libpython3.6m.dylib
-            DESTINATION lib/)
-
-    # Framework library
+    # Python modules library installation
     install(DIRECTORY ${THIRDPARTY_DIR}/python/lib/python3.6
             DESTINATION lib/)
 endif()

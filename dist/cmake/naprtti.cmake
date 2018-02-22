@@ -86,8 +86,13 @@ if (NOT WIN32)
     install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
     install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
 
-    # On Linux set use lib directory for RPATH
-    if(NOT APPLE)
+    if(APPLE)
+        # Install our Python dylib from thirdparty.  Doing this here instead of in mod_nappython as RTTI (and as a result Core)
+        # depend on Python. Python modules are only installed if we're using mod_nappython as they're not required for RTTI/Core.
+        install(FILES ${THIRDPARTY_DIR}/python/lib/libpython3.6m.dylib
+                DESTINATION lib/)
+    else()
+        # On Linux set use lib directory for RPATH
         install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/libnaprtti.so\")
                       execute_process(COMMAND patchelf 
                                               --set-rpath 
