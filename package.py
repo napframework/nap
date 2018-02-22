@@ -95,6 +95,8 @@ def is_osx_brew_package_installed(package_name):
 def install_dependencies_osx():
     dependencies = [
         'cmake',
+        'doxygen',
+        'graphviz'
         # 'sdl2',
         # 'glew',
         # 'glm', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
@@ -138,7 +140,7 @@ def install_dependencies():
         # Windows...
         pass
 
-def package(zip_release, include_apps):
+def package(zip_release, include_docs, include_apps):
     print("Packaging..")
 
     install_dependencies()
@@ -165,6 +167,7 @@ def package(zip_release, include_apps):
                                '-B%s' % build_dir_for_type, 
                                '-DNAP_PACKAGED_BUILD=1',
                                '-DCMAKE_BUILD_TYPE=%s' % build_type,
+                               '-DINCLUDE_DOCS=%s' % int(include_docs),
                                '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                                '-DBUILD_TIMESTAMP=%s' % timestamp,
                                '-DBUILD_GIT_REVISION=%s' % git_revision
@@ -184,7 +187,8 @@ def package(zip_release, include_apps):
                            '-H.', 
                            '-B%s' % BUILD_DIR, 
                            '-G', 'Xcode',
-                           '-DNAP_PACKAGED_BUILD=1',                           
+                           '-DNAP_PACKAGED_BUILD=1',                 
+                           '-DINCLUDE_DOCS=%s' % int(include_docs),
                            '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                            '-DBUILD_TIMESTAMP=%s' % timestamp,
                            '-DBUILD_GIT_REVISION=%s' % git_revision
@@ -215,6 +219,7 @@ def package(zip_release, include_apps):
                            '-G', 'Visual Studio 14 2015 Win64',
                            '-DNAP_PACKAGED_BUILD=1',
                            '-DPYBIND11_PYTHON_VERSION=3.5',
+                           '-DINCLUDE_DOCS=%s' % int(include_docs),
                            '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                            '-DBUILD_TIMESTAMP=%s' % timestamp,
                            '-DBUILD_GIT_REVISION=%s' % git_revision
@@ -311,12 +316,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-dz", "--dont-zip", action="store_true",
                         help="Don't zip the release, package to a directory")
+    parser.add_argument("-nd", "--no-docs", action="store_true",
+                        help="Don't include documentation")   
     parser.add_argument("-a", "--include-apps", action="store_true",
                         help="Include Naivi apps, packaging them as projects")
     args = parser.parse_args()
 
     # Package our build
-    packaging_success = package(not args.dont_zip, args.include_apps)
+    packaging_success = package(not args.dont_zip, not args.no_docs, args.include_apps)
 
     # TODO improve error propogation behaviour
     sys.exit(0 if packaging_success else 1)
