@@ -12,9 +12,11 @@ namespace napkin {
 
 	class TimelineView : public GridView {
 	Q_OBJECT
+
 	public:
 		TimelineView();
 
+		void setTopMargin(int margin);
 	protected:
 		void mousePressEvent(QMouseEvent* event) override;
 
@@ -22,10 +24,12 @@ namespace napkin {
 
 		void mouseReleaseEvent(QMouseEvent* event) override;
 
+
 	private:
 		Timeline* timeline() const;
 		const QList<EventItem*> selectedEventItems() const;
 		QMap<EventItem*, QPointF> mSelectedPositions;
+
 	};
 
 }

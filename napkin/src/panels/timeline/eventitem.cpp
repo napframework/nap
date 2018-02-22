@@ -4,7 +4,8 @@
 #include <QtGui/QtGui>
 
 napkin::EventItem::EventItem(QGraphicsItem* parent, napkin::Event& event)
-		: mEvent(event), QObject(), QGraphicsRectItem(parent) {
+		: mEvent(event), QObject(), QGraphicsRectItem(parent)
+{
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemIsMovable, true);
 	mBrush = QBrush(QColor("#89A"));
@@ -21,16 +22,9 @@ napkin::EventItem::EventItem(QGraphicsItem* parent, napkin::Event& event)
 
 }
 
-void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
-
-	painter->setPen(isSelected() ? mPenBorderSelected : mPenBorder);
-	painter->setBrush(isSelected() ? mBrushSelected : mBrush);
-	painter->drawRect(rect());
-
-
-	painter->save();
-
-	// Inverse scale to 'unscale' text
+void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+	// Inverse scale
 	auto mtx = painter->matrix();
 	qreal sx = mtx.m11();
 	qreal sy = mtx.m22();
@@ -39,6 +33,14 @@ void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 	qreal pw = rect().width() * sx;
 	qreal ph = rect().height() * sy;
 	QRectF viewRect(px, py, pw, ph);
+
+	painter->setPen(isSelected() ? mPenBorderSelected : mPenBorder);
+	painter->setBrush(isSelected() ? mBrushSelected : mBrush);
+
+
+	painter->save();
+
+	painter->drawRect(rect().adjusted(0, 0, -1 / sx, -1 / sy));
 
 	painter->resetTransform();
 
@@ -53,7 +55,8 @@ void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 	painter->restore();
 }
 
-void napkin::EventItem::onEventChanged(Event& event) {
+void napkin::EventItem::onEventChanged(Event& event)
+{
 	setRect(0, 0, event.length(), event.track().height());
 }
 

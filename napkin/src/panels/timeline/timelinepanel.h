@@ -25,7 +25,9 @@ namespace napkin
 {
 
 
-
+	/**
+	 * Widget with treeview showing tracks and timeline divided by splitter
+	 */
 	class TimelinePanel : public QWidget
 	{
 	public:
@@ -35,9 +37,10 @@ namespace napkin
 
 		void setTimeline(Timeline* timeline);
 
-		void setHeaderHeight(int height);
-
 		void demo();
+
+	protected:
+		void showEvent(QShowEvent* event) override;
 
 	private:
 		void onTimelineViewTransformed(const QTransform& transform);
