@@ -30,6 +30,12 @@ namespace nap
         }
         
         
+        void BufferPlayerNode::setPosition(DiscreteTimeValue position)
+        {
+            mPosition = position;
+        }
+        
+        
         void BufferPlayerNode::process()
         {
             auto& outputBuffer = getOutputBuffer(audioOutput);

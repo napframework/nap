@@ -73,6 +73,7 @@ namespace nap
              * Returns the buffer size the node system is running on.
              * Beware: this can be smaller than the buffersize the audio device is running on.
              * The latter is specified by the framesPerBuffer parameter in the process() function.
+             * This number indicates the size of each buffer that the nodes' process() functions have to present.
              */
             int getInternalBufferSize() const { return mInternalBufferSize; }
             
@@ -138,24 +139,24 @@ namespace nap
              */
             const SampleValue& getInputSample(int channel, int index) const { return mInputBuffer[channel][mInternalBufferOffset + index]; }
             
-            int mInputChannelCount = 0;
-            int mOutputChannelCount = 0;
-            float mSampleRate = 0;
+            int mInputChannelCount = 0; // Number of input channels this node manager processes
+            int mOutputChannelCount = 0; // Number of channel this node manager outputs
+            float mSampleRate = 0; // Current sample rate the node manager runs on.
             float mSamplesPerMillisecond = 0; // cached here for optimization purpose
-            int mInternalBufferSize = 64;
+            int mInternalBufferSize = 64; // The internal buffersize that the node manager runs on.
             
-            DiscreteTimeValue mSampleTime = 0;
-            unsigned int mInternalBufferOffset = 0;
+            DiscreteTimeValue mSampleTime = 0; // the actual sample time clock of the audio system
+            unsigned int mInternalBufferOffset = 0; // helper variable for the process method
             
             // for each output channel a vector of buffers that need to be played back on the corresponding channel
             OutputMapping mOutputMapping;
             
-            float** mInputBuffer = nullptr;
+            float** mInputBuffer = nullptr; //  Pointing to the audio input that this node manager has to process. The format is a non-interleaved array containing a float array for each channel.
             
-            std::set<Node*> mNodes;
-            std::set<Node*> mRootNodes;
+            std::set<Node*> mNodes; // all the audio nodes managed by this node manager
+            std::set<Node*> mRootNodes; // the nodes that will be processed directly by the manager on every audio callback
             
-            nap::TaskQueue mAudioCallbackTaskQueue;
+            nap::TaskQueue mAudioCallbackTaskQueue; // Queue with lambda functions to be executed on the next audio callback
         };
         
     }

@@ -47,13 +47,13 @@ namespace nap {
             
             void process() override;
             
-            float calculateRms();
-            float calculatePeak();
+            float calculateRms(); // Calculates output value out of one buffer of data using root mean square algorithm
+            float calculatePeak(); // Calculates output value out of one buffer of data by determining the maximum amplitude of the buffer.
             
-            SampleBuffer mBuffer;
-            std::atomic<float> mValue = { 0 };
-            int mIndex = 0;
-            Type mType = Type::RMS;
+            SampleBuffer mBuffer; // Buffer being analyzed
+            std::atomic<float> mValue = { 0 }; // Output level value stored atomically so it can be queried safely from different threads.
+            int mIndex = 0; // Current write index of the buffer being analyzed.
+            Type mType = Type::RMS; // Algorithm currently being used to calculate the output level value from one buffer.
             
         };
         

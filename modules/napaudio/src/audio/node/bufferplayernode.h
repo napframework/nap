@@ -38,17 +38,34 @@ namespace nap
              */
             void stop();
             
+            /**
+             * Set the playback speed as a fraction of the original speed of the audio material in the buffer.
+             */
             void setSpeed(ControllerValue speed);
             
+            /**
+             * Sets the current position of playback while playing.
+             */
+            void setPosition(DiscreteTimeValue position);
+            
+            /**
+             * @return: the playback speed as a fraction of the original speed of the audio material in the buffer.
+             */
             ControllerValue getSpeed() const { return mSpeed; }
             
+            /**
+             * @return: the current playback position within the source buffer.
+             */
+            DiscreteTimeValue getPosition() const { return mPosition; }
+            
         private:
+            // Inherited from Node
             void process() override;
   
-            bool mPlaying = false;
-            long double mPosition = 0;
-            ControllerValue mSpeed = 1.f;
-            SampleBufferPtr mBuffer = nullptr;
+            bool mPlaying = false; // Indicates wether the node is currently playing.
+            long double mPosition = 0; // Current position of playback in samples within the source buffer.
+            ControllerValue mSpeed = 1.f; // Playback speed as a fraction of the original speed.
+            SampleBufferPtr mBuffer = nullptr; // Pointer to the buffer with audio material being played back.
         };
         
     }

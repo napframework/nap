@@ -42,7 +42,7 @@ namespace nap
         private:
             void process() override;
             
-            int mInputChannel = 0;
+            int mInputChannel = 0; // Input channel of the audio interface to receive input data from.
         };
         
         
