@@ -38,7 +38,5 @@ export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
 # Install virtual env config file so our Python exec lib can find the modules in thirdparty
 install_python_virtualenv_config()
 
-# Package into release build if requested
-if(PACKAGE_NAIVI_APPS)
-    package_project_into_release("demos/${PROJECT_NAME}")
-endif()
+# Package into release build
+package_project_into_release("demos/${PROJECT_NAME}")
