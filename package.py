@@ -95,8 +95,8 @@ def is_osx_brew_package_installed(package_name):
 def install_dependencies_osx():
     dependencies = [
         'cmake',
-        'doxygen',
-        'graphviz'
+        # 'doxygen',
+        # 'graphviz'
         # 'sdl2',
         # 'glew',
         # 'glm', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
@@ -316,14 +316,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-dz", "--dont-zip", action="store_true",
                         help="Don't zip the release, package to a directory")
-    parser.add_argument("-nd", "--no-docs", action="store_true",
-                        help="Don't include documentation")   
     parser.add_argument("-a", "--include-apps", action="store_true",
                         help="Include Naivi apps, packaging them as projects")
+    parser.add_argument("--include-docs", action="store_true",
+                        help="Include documentation")      
     args = parser.parse_args()
 
     # Package our build
-    packaging_success = package(not args.dont_zip, not args.no_docs, args.include_apps)
+    packaging_success = package(not args.dont_zip, args.include_docs, args.include_apps)
 
     # TODO improve error propogation behaviour
     sys.exit(0 if packaging_success else 1)

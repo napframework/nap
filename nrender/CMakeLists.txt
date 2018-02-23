@@ -121,22 +121,31 @@ install(DIRECTORY "src/" DESTINATION "include/nrender/"
 # TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
 
 # Assimp
+install(FILES ${THIRDPARTY_DIR}/assimp/LICENSE DESTINATION thirdparty/assimp)
 if (WIN32)
-    install(DIRECTORY ../../thirdparty/assimp/msvc64/install/ DESTINATION thirdparty/assimp/)
+    install(DIRECTORY ${THIRDPARTY_DIR}/assimp/msvc64/install/ DESTINATION thirdparty/assimp)
 elseif(APPLE)
-    install(DIRECTORY ../../thirdparty/assimp/osx/install/ DESTINATION thirdparty/assimp/)   
+    install(DIRECTORY ${THIRDPARTY_DIR}/assimp/osx/install/ DESTINATION thirdparty/assimp)
 endif()
 
 # FreeImage
 if (WIN32)
-    install(FILES "${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.h" DESTINATION "thirdparty/FreeImage/include")
-    install(FILES "${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.lib" DESTINATION "thirdparty/FreeImage/lib")
-    install(FILES "${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "thirdparty/FreeImage/bin")
+    install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/msvc
+            DESTIONATION thirdparty/FreeImage/license
+            FILES_MATCHING PATTERN "license*.txt"
+            )
+    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.h DESTINATION thirdparty/FreeImage/include)
+    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.lib DESTINATION thirdparty/FreeImage/lib)
+    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll DESTINATION thirdparty/FreeImage/bin)
 elseif(APPLE)
-    install(FILES "${THIRDPARTY_DIR}/FreeImage/osx/include/FreeImage.h" DESTINATION "thirdparty/FreeImage/include")
+    install(FILES ${THIRDPARTY_DIR}/FreeImage/osx/include/FreeImage.h DESTINATION thirdparty/FreeImage/include)
+    install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/osx/license/
+            DESTINATION thirdparty/FreeImage/license
+            )
 endif()
 
 # GLM
+install(FILES "${THIRDPARTY_DIR}/glm/copying.txt" DESTINATION "thirdparty/glm")
 install(DIRECTORY "${THIRDPARTY_DIR}/glm/glm/" DESTINATION "thirdparty/glm")
 
 # GLEW
@@ -153,6 +162,8 @@ elseif(APPLE)
 endif()
 
 # SDL2
+install(FILES ${THIRDPARTY_DIR}/SDL2/msvc/COPYING.txt
+        DESTINATION thirdparty/SDL2)
 if (WIN32)
     install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/msvc/" DESTINATION "thirdparty/SDL2"
             PATTERN "lib" EXCLUDE)
