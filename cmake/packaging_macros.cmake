@@ -65,8 +65,6 @@ endmacro()
 macro(package_python)
 
     if(WIN32)
-        # TODO Install Python license for Windows
-
         set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
         find_package(pybind11 REQUIRED) 
         message(STATUS "Got Python prefix: ${PYTHON_PREFIX}")
@@ -90,6 +88,11 @@ macro(package_python)
                 PATTERN *.pyc EXCLUDE
                 PATTERN *.dll EXCLUDE
                 PATTERN site-packages EXCLUDE)
+
+        # Install license
+        install(FILES ${PYTHON_PREFIX}/LICENSE.txt
+                DESTINATION thirdparty/python/
+                CONFIGURATIONS Release)
     elseif(APPLE)
         set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
 
@@ -127,72 +130,12 @@ macro(package_python)
         install(FILES ${PYTHON_PREFIX}/../pyvenv.cfg.in
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)        
-
-    # elseif(APPLE)
-    #     # Older logic installing Python from homebrew on macOS
-    #     # Find Python
-    #     execute_process(COMMAND brew --prefix python3
-    #                     OUTPUT_VARIABLE PYTHON_PREFIX)
-    #     string(STRIP ${PYTHON_PREFIX} PYTHON_PREFIX)
-    #     message(STATUS "Got Python prefix: ${PYTHON_PREFIX}")
-
-    #     # Get our major/minor version
-    #     execute_process(COMMAND python3 -c "import sys\nprint('%s.%s' % sys.version_info[:2])"
-    #                     OUTPUT_VARIABLE PYTHON_MAJOR_MINOR_VERSION)
-    #     string(STRIP ${PYTHON_MAJOR_MINOR_VERSION} PYTHON_MAJOR_MINOR_VERSION)
-    #     message(STATUS "Got Python major.minor version: ${PYTHON_MAJOR_MINOR_VERSION}")
-
-    #     # Get our dylib install name so we can replace it later to have a working command line intrepreter
-    #     set(PYTHON_EXECUTABLE ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/${PYTHON_MAJOR_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python)
-    #     execute_process(COMMAND sh -c "otool -L ${PYTHON_EXECUTABLE} | grep Python | awk -F'(' '{if(NR>1)print $1}'"
-    #                     OUTPUT_VARIABLE PYTHON_REPLACE_INSTALL_LIBNAME)
-    #     string(STRIP ${PYTHON_REPLACE_INSTALL_LIBNAME} PYTHON_REPLACE_INSTALL_LIBNAME)
-
-    #     # Install dylib
-    #     install(FILES ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/3.6/Python
-    #             DESTINATION thirdparty/python/
-    #             CONFIGURATIONS Release
-    #             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-    #     # Change dylib installed id
-    #     install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-    #                                           -id @rpath/Python
-    #                                           ${CMAKE_INSTALL_PREFIX}/thirdparty/python/libpython${PYTHON_MAJOR_MINOR_VERSION}.dylib
-    #                                   ERROR_QUIET)")
-
-    #     # Install main framework
-    #     install(DIRECTORY ${PYTHON_PREFIX}/Frameworks/Python.framework/Versions/${PYTHON_MAJOR_MINOR_VERSION}/lib/python${PYTHON_MAJOR_MINOR_VERSION} 
-    #             DESTINATION thirdparty/python/lib/
-    #             CONFIGURATIONS Release
-    #             PATTERN *.pyc EXCLUDE
-    #             PATTERN *.dylib EXCLUDE
-    #             PATTERN *.a EXCLUDE
-    #             PATTERN site-packages EXCLUDE)
-
-    #     # Install command line intrepreter
-    #     install(PROGRAMS ${PYTHON_EXECUTABLE}
-    #             DESTINATION thirdparty/python/
-    #             RENAME python3.6
-    #             CONFIGURATIONS Release)
-    #     # Change link to dylib
-    #     install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-    #                                           -change 
-    #                                           ${PYTHON_REPLACE_INSTALL_LIBNAME}
-    #                                           @executable_path/Python
-    #                                           ${CMAKE_INSTALL_PREFIX}/thirdparty/python/python${PYTHON_MAJOR_MINOR_VERSION} 
-    #                                   ERROR_QUIET)")
-
-    #     # Install license
-    #     install(FILES ${PYTHON_PREFIX}/LICENSE
-    #             DESTINATION thirdparty/python/
-    #             CONFIGURATIONS Release)
     endif()
 endmacro()
 
 # Package installed QT for distribution with NAP release (for use with Napkin)
 macro(package_qt)
     set(QT_FRAMEWORKS Core Gui Widgets)
-
-    # TODO Install Qt license
 
     if(WIN32)
         # Install frameworks
@@ -215,7 +158,9 @@ macro(package_qt)
 
         install(FILES ${QT_DIR}/plugins/platforms/qwindows.dll
                 DESTINATION thirdparty/Qt/plugins/Release/platforms/
-                CONFIGURATIONS Release)        
+                CONFIGURATIONS Release)
+
+        # TODO Install Qt license for Windows
     elseif(APPLE)
         # macOS appears to depend on these extra Qt frameworks
         list(APPEND QT_FRAMEWORKS PrintSupport)
