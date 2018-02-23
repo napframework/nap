@@ -19,18 +19,29 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 target_link_libraries(${PROJECT_NAME} mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napapp mod_napcameracontrol)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-if (WIN32)
-	# Copy freeimage DLL
-	find_package(freeimage REQUIRED)
-	copy_freeimage_dll()
+# Build into a project directory under bin
+set_output_directories()
 
-    	# Copy over some crap window dlls
-	copy_base_windows_graphics_dlls()
-	copy_windows_ffmpeg_dlls()
+if (WIN32)
+    # Copy freeimage DLL
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
+
+    # Copy over some crap window dlls
+    copy_base_windows_graphics_dlls()
+
+    # Copy all of our Windows DLLs that have build in bin into project dir
+    # TODO this is NOT a clean solution, but if we're mainly releasing projects build against packaged releases of the
+    #      framework maybe this is OK?
+    bulk_copy_windows_dlls_to_bin()    
 endif()
 
-# create post build event
+# Copy project json to project bin dir and export fbx, via post-build events
+copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
 export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
 
 # Install virtual env config file so our Python exec lib can find the modules in thirdparty
 install_python_virtualenv_config()
+
+# Package into release build
+package_project_into_release("demos/${PROJECT_NAME}")
