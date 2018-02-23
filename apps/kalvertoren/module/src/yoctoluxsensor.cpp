@@ -29,21 +29,25 @@ namespace nap
 	}
 
 
-	bool YoctoLuxSensor::start(utility::ErrorState& error)
+	void YoctoLuxSensor::start()
 	{
 		// Stop active sensor read
 		stop();
 
+		// Find sensor and try to locate it
+		// Note that it's allowed for the sensor not to be found immediately
+		// The loop that reads the value will try to connect 10 times before bumming out
 		YLightSensor* sensor = yFindLightSensor(mName.c_str());
-		if (!error.check(sensor->isOnline(), "%s: sensor: %s isn't online", this->mID.c_str(), mName.c_str()))
-			return false;
+		if (!sensor->isOnline())
+		{
+			nap::Logger::warn("%s: sensor: %s appears to be offline", this->mID.c_str(), mName.c_str());
+		}
 
 		// Set the sensor
 		mSensor = sensor;
 
 		// Start reading in a separate thread
 		mReadThread = std::thread(std::bind(&YoctoLuxSensor::read, this));
-		return true;
 	}
 
 
@@ -78,9 +82,7 @@ namespace nap
 		{
 			// Signal that we want to reconnect
 			if (mCurrentRetries > 0)
-			{
 				nap::Logger::warn("retry: %d", mCurrentRetries);
-			}
 
 			// Sleep
 			YRETCODE sleep = ySleep(1000, errorMsg);
@@ -99,10 +101,17 @@ namespace nap
 				continue;
 			}
 
-			// Read the value
+			// Read current value
 			mValue = static_cast<float>(curr_sensor->get_currentValue());
-			std::cout << "Current ambient light: " << mValue << " lx\n";
+
+			// Note that we're online and have a valid value in stock
+			mReading = true;
+
+			// Reset retries
 			mCurrentRetries = 0;
 		}
+
+		// When exiting this loop we're no longer reading any values
+		mReading = false;
 	}
 }

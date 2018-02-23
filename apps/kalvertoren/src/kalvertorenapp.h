@@ -119,6 +119,11 @@ namespace nap
 		int													mPaletteSelection = 0;
 		int													mCompositionSelection = 0;
 		float												mIntensity = 1.0f;
+		float												mSensorInfluence = 1.0f;
+		float												mLightSmoothTime = 1.0f;
+		glm::vec2											mLightRange = { 0.1f, 1.0f };
+		glm::vec2											mLuxRange = { 10.0f, 25000.0f };
+		float												mLuxCurve = 1.0f;
 		bool												mShowIndexColors = false;
 		float												mDurationScale = 1.0f;
 		bool												mCycleColors = false;

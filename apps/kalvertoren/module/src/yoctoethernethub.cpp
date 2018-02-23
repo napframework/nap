@@ -44,11 +44,7 @@ namespace nap
 
 		// Now start reading from all the connected light sensors
 		for (auto& sensor : mSensors)
-		{
-			if (!sensor->start(errorState))
-				return false;
-			nap::Logger::info("found lux sensor: %s", sensor->mName.c_str());
-		}
+			sensor->start();
 
 		return true;
 	}

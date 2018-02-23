@@ -56,16 +56,24 @@ namespace nap
 		VertexAttribute<glm::vec4>& color_data = mesh.getColorAttribute();
 		VertexAttribute<glm::vec4>& artn_data = mesh.getArtnetColorAttribute();
 
+		float brightness = mLightRegulator->getBrightness();
+
 		TriangleIterator triangle_iterator(mesh.getMeshInstance());
 		while (!triangle_iterator.isDone())
 		{
 			Triangle triangle = triangle_iterator.next();
-
 			int channel_number = channel_data[triangle.firstIndex()];
 
-			glm::vec4 color = channel_number == mCurrentChannel ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-			triangle.setVertexData(color_data, color);
-			triangle.setVertexData(artn_data, color);
+			glm::vec4 mesh_color = channel_number == mCurrentChannel ? 
+				glm::vec4(brightness, brightness, brightness, 1.0f) : 
+				glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+			
+			glm::vec4 artn_color = channel_number == mCurrentChannel ?
+				glm::vec4(brightness, brightness, brightness, brightness) :
+				glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+			triangle.setVertexData(color_data, mesh_color);
+			triangle.setVertexData(artn_data, artn_color);
 		}
 
 		nap::utility::ErrorState error;

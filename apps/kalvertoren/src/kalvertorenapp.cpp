@@ -6,6 +6,7 @@
 #include "applybbcolorcomponent.h"
 #include "applycompositioncomponent.h"
 #include "rendercompositioncomponent.h"
+#include "lightintensitycomponent.h"
 
 // External Includes
 #include <mathutils.h>
@@ -362,20 +363,33 @@ namespace nap
 				selectPaletteCycleMode();
 			}
 
-			// Changes the intensity
-			if (ImGui::SliderFloat("Intensity", &mIntensity, 0.0f, 1.0f))
-			{
-				for (auto& comp_painter : composition_painters)
-				{
-					comp_painter->setIntensity(mIntensity);
-				}
-			}
-
 			// Changes the time at which a new color palette is selected
 			if (ImGui::SliderFloat("Cycle Time (minutes)", &mColorCycleTime, 0.0f, 60.0f, "%.3f", 3.0f))
 			{
 				setColorPaletteCycleSpeed(mColorCycleTime);
 			}
+		}
+
+		if (ImGui::CollapsingHeader("Brightness"))
+		{
+			LightIntensityComponentInstance& light_comp = compositionEntity->getComponent<LightIntensityComponentInstance>();
+			if (ImGui::InputFloat2("Lux Range", &(mLuxRange.x)))
+				light_comp.setLuxRange(mLuxRange);
+
+			if (ImGui::InputFloat2("Light Range", &(mLightRange.x)))
+				light_comp.setLightRange(mLightRange);
+
+			if (ImGui::SliderFloat("Sensor Influence", &mSensorInfluence, 0.0f, 1.0f))
+				light_comp.setSensorInfluence(mSensorInfluence);
+
+			if (ImGui::SliderFloat("Lux Curve", &mLuxCurve, 0.0f, 2.0f, "%.3f", 2.0f))
+				light_comp.setLuxPower(mLuxCurve);
+
+			if (ImGui::SliderFloat("Smooth Time", &mLightSmoothTime, 0.0f, 20.0f, "%.3f", 2.0f))
+				light_comp.setSmoothTime(mLightSmoothTime);
+
+			if (ImGui::SliderFloat("Master", &mIntensity, 0.0f, 1.0f))
+				light_comp.setMasterBrightness(mIntensity);
 		}
 
 		if (ImGui::CollapsingHeader("Walker Settings"))
@@ -406,15 +420,16 @@ namespace nap
 			}
 		}
 
-		if (ImGui::CollapsingHeader("Artnet Information"))
+		if (ImGui::CollapsingHeader("Information"))
 		{
 			RGBColorFloat float_clr = mTextColor.convert<RGBColorFloat>();
+			ImVec4 float_clr_gui = { float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f };
 			for (int i = 0; i < mesh_selector.getLedMeshes().size(); i++)
 			{
 				std::vector<std::string> parts;
 				utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
 
-				ImGui::TextColored(ImVec4(float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f), parts.back().c_str());
+				ImGui::TextColored(float_clr_gui, parts.back().c_str());
 				ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
 				const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
 
@@ -428,7 +443,17 @@ namespace nap
 
 				ImGui::Text(universes.c_str());
 			}
-			ImGui::TextColored(ImVec4(float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f), "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+			// Fps
+			ImGui::TextColored(float_clr_gui, "Framerate");
+			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+			// Light
+			LightIntensityComponentInstance& light_comp = compositionEntity->getComponent<LightIntensityComponentInstance>();
+			ImGui::TextColored(float_clr_gui, "Lux Sensor Average");
+			ImGui::Text(utility::stringFormat("%f", light_comp.getLuxAverage()).c_str());
+			ImGui::TextColored(float_clr_gui, "Output Brightness");
+			ImGui::Text(utility::stringFormat("%f", light_comp.getBrightness()).c_str());
 		}
 		ImGui::End();
 	}

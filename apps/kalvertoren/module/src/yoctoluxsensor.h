@@ -4,6 +4,7 @@
 #include <rtti/rttiobject.h>
 #include <nap/objectptr.h>
 #include <thread>
+#include <atomic>
 
 namespace nap
 {
@@ -29,26 +30,31 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * @return if the sensor is online and able to read lux values
+		 */
+		bool isOnline() const							{ return mReading; }
+
+		/**
 		 * @return the currently active value, when read-out fails this value is -1.0f
 		 */
 		float getValue()								{ return mValue; }
 
-		std::string		mName;							///< Property: 'Name' name of the lux sensor
-		int				mRetries = 10;				///< Number of times connection is retried before exiting the loop
+		std::string			mName;						///< Property: 'Name' name of the lux sensor
+		int					mRetries = 10;				///< Number of times connection is retried before exiting the loop
 
 	private:
-		void* mSensor = nullptr;						///< Light sensor
-		float mValue  = -1.0f;							///< Current light value
-		bool  mStopReading = false;						///< Stops the thread from reading sensor values
-		int	  mCurrentRetries = 0;						///< Number of retries associated with read out failure
+		void*				mSensor = nullptr;			///< Light sensor
+		std::atomic<float>	mValue  = -1.0f;			///< Current light value
+		bool				mStopReading = false;		///< Stops the thread from reading sensor values
+		int					mCurrentRetries = 0;		///< Number of retries associated with read out failure
+		std::atomic<bool>	mReading = false;			///< If the sensor is currently online
 
 		/**
 		 * Starts reading sensor input on a background thread
 		 * @param error if the sensor can't be localized or isn't online
-		 * @return if the sensor was found and value read-out commenced
 		 * 
 		 */
-		bool start(utility::ErrorState& error);
+		void start();
 
 		/**
 		 * Stops a possible thread from reading sensor values
@@ -63,5 +69,10 @@ namespace nap
 
 		// The thread that receives and converts the messages
 		std::thread mReadThread;
+
+		/**
+		 *	Sets the current sensor value
+		 */
+		void setValue(float value)					{ mValue = value; }
 	};
 }

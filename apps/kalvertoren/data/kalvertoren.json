@@ -556,6 +556,24 @@
                     "MinChannel": 108,
                     "MaxChannel": 288,
                     "Send": true
+                },
+                {
+                    "Type": "nap::LightIntensityComponent",
+                    "mID": "nap::LightIntensityComponent",
+                    "Sensors": [
+                        "LuxSensor1"
+                    ],
+                    "SensorInfluence": 1.0,
+                    "MasterIntensity": 1.0,
+                    "LuxInput": {
+                        "x": 10.0,
+                        "y": 25000.0
+                    },
+                    "LightOutput": {
+                        "x": 0.10000000149011612,
+                        "y": 1.0
+                    },
+                    "LuxCurve": 0.5
                 }
             ],
             "Children": [
@@ -711,13 +729,15 @@
                     "Type": "nap::ApplyBBColorComponent",
                     "mID": "nap::ApplyBBColorComponent_2",
                     "Mesh": "HeiligewegMesh",
-                    "Selector": "./ColorMethodSelectorHeiligeweg"
+                    "Selector": "./ColorMethodSelectorHeiligeweg",
+                   	"LightRegulator" : "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyTracerColorComponent",
                     "mID": "nap::ApplyTracerColorComponent_2",
                     "Mesh": "HeiligewegMesh",
-                    "Selector": "./ColorMethodSelectorHeiligeweg"
+                    "Selector": "./ColorMethodSelectorHeiligeweg",
+                    "LightRegulator" : "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyCompositionComponent",
@@ -727,7 +747,7 @@
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
                     "ShowIndexColors": false,
-                    "Intensity": 1.0
+                    "LightRegulator" : "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -811,13 +831,15 @@
                     "Type": "nap::ApplyBBColorComponent",
                     "mID": "nap::ApplyBBColorComponent",
                     "Mesh": "KalverMesh",
-                    "Selector": "./ColorMethodSelectorKalver"
+                    "Selector": "./ColorMethodSelectorKalver",
+                    "LightRegulator" : "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyTracerColorComponent",
                     "mID": "nap::ApplyTracerColorComponent",
                     "Mesh": "KalverMesh",
-                    "Selector": "./ColorMethodSelectorKalver"
+                    "Selector": "./ColorMethodSelectorKalver",
+                    "LightRegulator" : "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyCompositionComponent",
@@ -827,7 +849,7 @@
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
                     "ShowIndexColors": false,
-                    "Intensity": 1.0
+                    "LightRegulator" : "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1103,13 +1125,15 @@
                     "Type": "nap::ApplyBBColorComponent",
                     "mID": "nap::ApplyBBColorComponent_3",
                     "Mesh": "SingelMesh",
-                    "Selector": "./ColorMethodSelectorSingel"
+                    "Selector": "./ColorMethodSelectorSingel",
+                    "LightRegulator" : "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyTracerColorComponent",
                     "mID": "nap::ApplyTracerColorComponent_3",
                     "Mesh": "SingelMesh",
-                    "Selector": "./ColorMethodSelectorSingel"
+                    "Selector": "./ColorMethodSelectorSingel",
+                    "LightRegulator" : "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyCompositionComponent",
@@ -1119,7 +1143,7 @@
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
                     "ShowIndexColors": false,
-                    "Intensity": 1.0
+                    "LightRegulator" : "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -2933,7 +2957,8 @@
         {
             "Type": "nap::YoctoLuxSensor",
             "mID": "LuxSensor1",
-            "Name": "LIGHTMK3-B65A4"
+            "Name": "LIGHTMK3-B65A4",
+            "Retries": 10
         }
     ]
 }
