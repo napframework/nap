@@ -130,10 +130,8 @@ endif()
 
 # FreeImage
 if (WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/msvc
-            DESTINATION thirdparty/FreeImage/license
-            FILES_MATCHING PATTERN "license*.txt"
-            )
+    file(GLOB FREEIMAGE_LICENSE_FILES ${THIRDPARTY_DIR}/FreeImage/msvc/license*.txt)
+    install(FILES ${FREEIMAGE_LICENSE_FILES} DESTINATION thirdparty/FreeImage/license)
     install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.h DESTINATION thirdparty/FreeImage/include)
     install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.lib DESTINATION thirdparty/FreeImage/lib)
     install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll DESTINATION thirdparty/FreeImage/bin)
