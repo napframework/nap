@@ -42,9 +42,11 @@ macro(package_nap)
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
 
-    # For now package platform Qt and Python for distribution, for discussion
+    # Package thirdparty Python into release
     package_python()
-    package_platform_qt()
+
+    # Package Qt into release
+    package_qt()
 
     # Package documentation
     if(INCLUDE_DOCS)
@@ -63,7 +65,7 @@ endmacro()
 macro(package_python)
 
     if(WIN32)
-        # TODO Install Python license
+        # TODO Install Python license for Windows
 
         set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
         find_package(pybind11 REQUIRED) 
@@ -187,8 +189,7 @@ macro(package_python)
 endmacro()
 
 # Package installed QT for distribution with NAP release (for use with Napkin)
-# TODO A better solution is probably to keep our own packaged Qt in thirdparty
-macro(package_platform_qt)
+macro(package_qt)
     set(QT_FRAMEWORKS Core Gui Widgets)
 
     # TODO Install Qt license
@@ -246,7 +247,8 @@ macro(package_platform_qt)
         install(FILES ${QT_DIR}/plugins/platforms/libqcocoa.dylib
                 DESTINATION thirdparty/Qt/plugins/platforms/
                 CONFIGURATIONS Release
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                )
         macos_replace_qt_framework_links("${QT_FRAMEWORKS}" 
                                          libqcocoa 
                                          ${QT_DIR}/plugins/platforms/libqcocoa.dylib 
@@ -254,6 +256,11 @@ macro(package_platform_qt)
                                          ${PATH_FROM_QT_PLUGIN_TOLIB}
                                          )
 
+        # Install licenses.  This link is a little tenuous but seems to work for macOS
+        install(DIRECTORY ${QT_DIR}/../../Licenses/
+                DESTINATION thirdparty/Qt/licenses
+                CONFIGURATIONS Release
+                )
     endif()
 endmacro()
 

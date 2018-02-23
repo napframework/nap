@@ -120,8 +120,11 @@ install(DIRECTORY "src/rtti/" DESTINATION "include/rtti/"
 # Package dependent includes 
 # TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
 
-install(DIRECTORY "${THIRDPARTY_DIR}/pybind11/install/" DESTINATION "thirdparty/pybind11")
+# Package pybind into platform release
+install(DIRECTORY ${THIRDPARTY_DIR}/pybind11/install/ DESTINATION thirdparty/pybind11)
+install(FILES ${THIRDPARTY_DIR}/pybind11/LICENSE DESTINATION thirdparty/pybind11)
 
+# Package RTTR into platform release
 if (MSVC)
     install(DIRECTORY "${THIRDPARTY_DIR}/rttr/msvc64/install/" DESTINATION "thirdparty/rttr")
 elseif(APPLE)

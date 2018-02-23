@@ -28,6 +28,8 @@ if(WIN32)
     install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/" DESTINATION "thirdparty/FFmpeg"
             PATTERN "osx" EXCLUDE)
 elseif(APPLE)
+    # TODO Package FFmpeg license files
+
     # Install FFmpeg into release
     install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/osx/install/" DESTINATION "thirdparty/FFmpeg")    
 
