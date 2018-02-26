@@ -690,20 +690,20 @@ Rendering Meshes {#renderwithmaterials}
 
 The [RenderableMeshComponent](@ref nap::RenderableMeshComponent) is responsible for rendering a mesh with a material.
 
-In order to render an object a mesh needs to be combined with a material instance. This combination is called a [RenderableMesh](@ref nap::RenderableMesh) and is created by the renderable mesh component. Every mesh / material combination is validated by the system. An error is generated when the mesh does not contain the attributes that are required by the shader. In most cases the renderable mesh is created by the system for you. This happens when you link to a mesh and material from a renderable mesh component. The renderable mesh is automatically created when the component is initialized. When initialization succeeds the component is able to render all the shapes in the mesh instance. The [example](@ref render_example) at the top of this page shows you how to set this up.
+To render an object you need to combine a mesh with a material instance. This combination is called a [RenderableMesh](@ref nap::RenderableMesh) and is created by the renderable mesh component. Every mesh / material combination is validated by the system. An error is generated when the mesh does not contain the attributes that are required by the shader. In most cases the renderable mesh is created by the system for you. This happens when you link to a mesh and material from a renderable mesh component. The renderable mesh is automatically created when the component is initialized. When initialization succeeds the component is able to render all the shapes in the mesh instance. The [example](@ref render_example) at the top of this page shows you how to set this up.
 
 You can switch between materials and meshes by providing the renderable mesh component with a different renderable mesh. When you want to switch only the material you can create new renderable mesh by calling [createRenderableMesh()](@ref nap::RenderableMeshComponentInstance::createRenderableMesh) using the existing mesh and a different material. Using this construct you can change a material, mesh or both. The mesh / material combination will be validated when creating a new renderable mesh. It is strongly recommended to create all selectable mesh / material combinations on initialization. This ensures that you can safely swap them at run time. The video modulation demo shows you how to create and switch between a selection of meshes at run-time.
 
 Textures {#textures}
 =======================
 
-There are a lot of similarities between working with meshes and [textures](@ref nap::Texture2D). Both can be loaded from file and created (or updated) using the CPU. There are (however) some operations that only apply to textures:
+There are a lot of similarities between meshes and [textures](@ref nap::Texture2D). Both can be loaded from file and created (or updated) using the CPU. There are (however) some operations that only apply to textures:
 
 - Textures can be read back from the GPU into CPU memory. Synchronous and asynchronously.
 - Textures don't require a CPU data representation. For example: the [render texture](@ref nap::RenderTexture2D) only exists on the GPU.
 - Some textures are continuously updated. This occurs when working with video or image sequences.
 
-NAP offers a small set of classes to handle the various ways textures are (or could be) used.
+NAP offers a small set of classes to handle the various ways textures are used.
 
 ![](@ref content/nap_textures.png)
 
@@ -712,17 +712,17 @@ The base class for all textures in NAP is [Texture2D](@ref nap::Texture2D). This
 - Pixel data needs to be read from the GPU to a CPU buffer.
 
 CPU storage is provided in the form of a [Bitmap](@ref nap::Bitmap). The bitmap offers a high level CPU interface to work with pixel data. It allows you to:
-- retrieve individual pixels from the underlying data buffer.
-- set individual pixels in the buffer.
-- perform pixel color conversion operations.
-- retrieve information such as the amount of color channels, ordering of the pixel data etc.
+- Retrieve individual pixels from the underlying data buffer.
+- Set individual pixels in the buffer.
+- Perform pixel color conversion operations.
+- Retrieve information such as the amount of color channels, ordering of the pixel data etc.
 
 You can also use a lower level interface to upload data directly into your texture. This interface works with pointers and can be used to stream in large quantities of external data.
 
 GPU Textures {#gpu_textures}
 -----------------------
 
-The [RenderTexture](@ref nap::RenderTexture) can be used to declare a texture on the GPU in json. Every render texture can be attached to a [render target](@ref nap::RenderTarget). The render target renders the scene directly into the attached texture. This type of texture exposes a set of attributes that can be changed / authored in json. The following example creates a depth and color texture on the GPU and attaches them both to a render target:
+The [RenderTexture](@ref nap::RenderTexture) can be used to declare a texture on the GPU in json. Every GPU texture can be attached to a [render target](@ref nap::RenderTarget). The render target is used by the render service to draw a set of objects directly into the attached texture. This type of texture exposes a set of attributes that can be changed / authored in json. The following example creates a depth and color texture on the GPU and attaches them both to a render target:
 
 ```
 {
