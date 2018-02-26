@@ -15,8 +15,12 @@ Rendering {#rendering}
 	*	[Depth](@ref depth)
 	*	[Rendering Meshes](@ref renderwithmaterials)
 *	[Textures](@ref textures)
-	*	[GPU Textures](@ref gpu_textures)
-	*	[Images](@ref images)
+	*	[Creating Textures](@ref creating_textures)
+		*	[GPU Textures](@ref gpu_textures)
+		*	[Images](@ref images)
+		*	[Image From File](@ref image_from_file)
+	* 	[Reading Textures From The GPU](@ref reading_textures)
+	*	[Parameters](@ref texture_parameters)
 
 Introduction {#render_intro}
 =======================
@@ -677,11 +681,11 @@ Depth {#depth}
 
 The [depth](@ref nap::EDepthMode) state controls how the z-buffer is treated. These modes are available:
 
-- ReadWrite. The z output value is tested against the z-buffer. If the test fails, the pixel is not written. If the test succeeds, the new z-value is written back into the z-buffer.
-- ReadOnly. The z output value is tested against the z-buffer. If the test fails, the pixel is not written. The current z-value is never written back to the z-buffer.
-- WriteOnly. The z buffer always overwrites the current z value with the new z value.
-- NoReadWrite. The z buffer is never tested and therefore not updated. 
-- InheritFromBlendMode. This is a special mode that determines how the z-buffer is treated based on the blend mode. For Opaque blend modes ReadWrite is used. For the other (transparent) modes ReadOnly is used. Transparent objects generally want to use the z-buffer but not use it.
+- ReadWrite: The z output value is tested against the z-buffer. If the test fails, the pixel is not written. If the test succeeds, the new z-value is written back into the z-buffer.
+- ReadOnly: The z output value is tested against the z-buffer. If the test fails, the pixel is not written. The current z-value is never written back to the z-buffer.
+- WriteOnly: The z buffer always overwrites the current z value with the new z value.
+- NoReadWrite: The z buffer is never tested and therefore not updated. 
+- InheritFromBlendMode: This is a special mode that determines how the z-buffer is treated based on the blend mode. For Opaque blend modes ReadWrite is used. For the other (transparent) modes ReadOnly is used. Transparent objects generally want to use the z-buffer but not use it.
 
 You can specify the GPU state for material resources and material instances.
 
@@ -703,11 +707,14 @@ There are a lot of similarities between meshes and [textures](@ref nap::Texture2
 - Textures don't require a CPU data representation. For example: the [render texture](@ref nap::RenderTexture2D) only exists on the GPU.
 - Some textures are continuously updated. This occurs when working with video or image sequences.
 
-NAP offers a small set of classes to handle the various ways textures are used.
+Creating Textures {#creating_textures}
+-----------------------
+
+NAP offers a small set of classes to work with textures.
 
 ![](@ref content/nap_textures.png)
 
-The base class for all textures in NAP is [Texture2D](@ref nap::Texture2D). This object holds GPU texture data only. External CPU storage is required when:
+The base class for all textures in NAP is [Texture2D](@ref nap::Texture2D). This object only holds the GPU data. External CPU storage is required when:
 - Pixel data needs to be uploaded to the GPU.
 - Pixel data needs to be read from the GPU to a CPU buffer.
 
@@ -717,10 +724,9 @@ CPU storage is provided in the form of a [Bitmap](@ref nap::Bitmap). The bitmap 
 - Perform pixel color conversion operations.
 - Retrieve information such as the amount of color channels, ordering of the pixel data etc.
 
-You can also use a lower level interface to upload data directly into your texture. This interface works with pointers and can be used to stream in large quantities of external data.
+You can also use a more low level interface to upload data directly into your texture. This interface works with pointers and can be used to stream in large quantities of external data.
 
-GPU Textures {#gpu_textures}
------------------------
+###GPU Textures {#gpu_textures}###
 
 The [RenderTexture](@ref nap::RenderTexture) can be used to declare a texture on the GPU in json. Every GPU texture can be attached to a [render target](@ref nap::RenderTarget). The render target is used by the render service to draw a set of objects directly into the attached texture. This type of texture exposes a set of attributes that can be changed / authored in json. The following example creates a depth and color texture on the GPU and attaches them both to a render target:
 
@@ -754,10 +760,95 @@ The [RenderTexture](@ref nap::RenderTexture) can be used to declare a texture on
 },
 ```
 
-Images {#images}
+###Images {#images}###
+
+An [Image](@ref nap::Image) is a 2 dimensional texture that manages the data associated with a texture on the CPU and GPU. The CPU data is stored internally as a [bitmap](@ref nap::Bitmap). This makes it easy to: 
+- Quicky upload pixel data from the CPU to the GPU
+- Transfer pixel data from the GPU to the CPU
+
+It is easy to change the contents of an image at runtime:
+
+~~~~~~~~~~~~~~~{.cpp}
+void App::update()
+{	
+	// Get the CPU image data as a bitmap
+	Bitmap& bitmap = mImage.getBitmap();
+
+	// Adjust the pixel data here....
+
+	// Upload changes to the GPU
+	mImage.update();
+}
+~~~~~~~~~~~~~~~
+
+###Image From File {#image_from_file}###
+
+[ImageFromFile](@ref nap::ImageFromFile) allows you to load an image from disk. This object offers the exact same functionality as a native image. You can update your content or read data from the GPU using the same interface. To create an image in json:
+
+```
+{
+	"Type" : "nap::Image",
+	"mID" : "background",
+	"ImagePath" : "background.jpg"
+}
+```
+
+Reading Textures From The GPU {#reading_textures}
 -----------------------
 
-An [Image](@ref nap::Image) is a 2D texture that combines the CPU and GPU data in one class. The CPU data is stored internally as a [bitmap](@ref nap::Bitmap). This makes it easy to: 
-- Upload CPU pixel data to the GPU
-- Retrieve pixel data from GPU
+Textures contain the output of a GPU rendering step when they are assigned to a render target. You can read back the result from a texture on the GPU to the CPU using the 2D texture or image interface. The following functions allow you to transfer the rendered texture back from the GPU to the CPU:
+
+- nap::Texture2D::getData(Bitmap& bitmap);
+- nap::Texture2D::startGetData() / nap::Texture2D::endGetData(Bitmap& bitmap);
+- nap::Image::getData();
+- nap::Image::startGetData() / nap::Image::endGetData();
+
+You can see that the 2D texture interface requires you to pass in external storage in the form of a bitmap. The image interface will transfer the image back into its internal bitmap. The getData functions will block until the GPU is fully done rendering the texture. Note that this is very costly: the GPU needs to complete everything in its queue before it can start the copy operation. The copy itself (from the GPU to the CPU) is another costly operation. It is therefore recommended to use the startGetData and endGetData function calls for high performance scenarios. The startGetData call will queue the copy operation on the GPU. Once the copy can be executed by the GPU it will first transfer the data to an internal buffer. When endGetData is called, it will block and copy the contents from the internal buffer to the destination bitmap. If the GPU isn't ready yet it will stall. It is therefore recommended to issue the startGetData call as quickly as possible and wait for endGetData until the very last moment: preferably the next frame.
+
+Another thing that will affect performance is the [ETextureUsage](@ref opengl::ETextureUsage) flag. This flag allows you to specify how the texture is going to be used:
+
+- Static: The texture never, or rarely changes and is never read back to CPU memory.
+- DynamicRead: The texture is frequently read back from GPU to CPU memory.
+- DynamicWrite: The texture is frequently updated from CPU to CPU memory.
+
+This flag allows the video card driver to choose the most optimal memory on the GPU for your use case scenario. For instance: when DynamicWrite is set the texture will (most likely) be placed into WriteCombined memory.
+
+
+Texture Parameters {#texture_parameters}
+-----------------------
+
+Texture [parameters](@ref nap::TextureParameters) are used to specify how a texture is sampled and how mip-mapping levels can be controlled. These are the parameters that can be specified:
+- Filter mode: Controls how blending between texels is managed when the texture is either minified or magnified. You can specify filter modes for minification and magnification.
+- Wrap mode: Controls how the UV mapping is interpreted. It can repeat, mirror or clamp the UV mapping. Wrap mode can be specified both for the horizontal and vertical direction.
+- Max LOD level: Controls the max mipmap level.
+
+The default filter mode when a texture is scaled down (minified) is: LinearMipmapLinear
+The default filter mode when a texture is scaled up (magnified) is: Linear
+The default vertical wrap mode is: ClampToEdge
+The default horizontal wrap mode is: ClampToEdge
+The default max lod level is: 20
+
+A lod level of 0 prevents the texture from mipmapping, ie: the renderer only chooses the highest (native) texture resolution. This setting has no influence when mip mapping is turned off. You can change the parameters of every 2D texture (image, render texture etc.) in json:
+
+```
+{
+ 	"Type": "nap::RenderTexture2D",
+    "mID": "VideoColorTexture",
+    "Parameters": 
+    {
+    	"MinFilter": "Linear",
+    	"MaxFilter": "Linear",
+    	"WrapVertical": "ClampToEdge",
+    	"WrapHorizontal": "ClampToEdge",
+        "MaxLodLevel": 10
+    },
+    "Usage": "DynamicRead",
+    "Width": 1920,
+    "Height": 1080,
+	"Format": "RGB8"
+}
+```
+
+
+
 
