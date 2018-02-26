@@ -11,6 +11,7 @@ Rendering {#rendering}
 	*	[Mapping Attributes](@ref mapping_attrs)
 	*	[Default Attributes](@ref default_attrs)
 	*	[Uniforms](@ref uniforms)
+	*	[GPU State](@ref gpustate)
 
 Introduction {#render_intro}
 =======================
@@ -656,4 +657,9 @@ color.setValue({1.0,0.0,0.0});
 ~~~~~~~~~~~~~~~
 
 The snippet above creates a new uniform 'color' (if it didn't exist already) and changes the value of that parameter to red. This immediately overrides the material's default 'color' value.
+
+GPU State {#gpustate}
+-----------------------
+
+
 
