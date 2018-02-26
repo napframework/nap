@@ -13,7 +13,7 @@ namespace nap
 	/**
 	 *	Texture min filter
 	 */
-	enum class NAPAPI EFilterMode : int
+	enum class EFilterMode : int
 	{
 		Nearest = 0,				///< Nearest
 		Linear,						///< Linear
@@ -26,7 +26,7 @@ namespace nap
 	/**
 	 *	Texture wrap mode
 	 */
-	enum class NAPAPI EWrapMode : int
+	enum class EWrapMode : int
 	{
 		Repeat = 0,					///< Repeat 
 		MirroredRepeat,				///< MirroredRepeat
