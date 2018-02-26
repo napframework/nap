@@ -23,7 +23,7 @@ namespace nap
 		/**
 		* @return the type that this uniform can handle. This should map to the shader's type.
 		*/
-		virtual opengl::GLSLType getGLSLType() const = 0;
+		virtual opengl::EGLSLType getGLSLType() const = 0;
 
 		std::string mName;		///< Name of uniform as in shader
 	};
@@ -88,7 +88,7 @@ namespace nap
 		/**
 		* @return integer GLSL type.
 		*/
-		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Int; }
+		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Int; }
 
 		int mValue = 0;			///< Data storage
 	};
@@ -116,7 +116,7 @@ namespace nap
 		/**
 		* @return integer GLSL type.
 		*/
-		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Float; }
+		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Float; }
 
 		float mValue = 0.0f;			///< Data storage
 	};
@@ -144,7 +144,7 @@ namespace nap
 		/**
 		* @return vec4 GLSL type.
 		*/
-		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Vec3; }
+		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Vec3; }
 
 		glm::vec3 mValue;		///< Data storage
 	};
@@ -172,7 +172,7 @@ namespace nap
 		/**
 		* @return vec4 GLSL type.
 		*/
-		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Vec4; }
+		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Vec4; }
 
 		glm::vec4 mValue;		///< Data storage
 	};
@@ -200,7 +200,7 @@ namespace nap
 		/**
 		* @return mat4 GLSL type.
 		*/
-		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Mat4; }
+		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Mat4; }
 
 		glm::mat4 mValue;		///< Data storage
 	};
@@ -229,7 +229,7 @@ namespace nap
 		/**
 		* @return texture GLSL type.
 		*/
-		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Tex2D; }
+		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Tex2D; }
 
 		ObjectPtr<Texture2D> mTexture = nullptr;		///< Texture to use for this uniform
 	};
