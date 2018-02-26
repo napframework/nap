@@ -126,7 +126,7 @@ namespace nap
 		texb.setTexture(inputB);
 
 		// Clear target we want to render in to
-		mRenderService->clearRenderTarget(target.getTarget(), opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+		mRenderService->clearRenderTarget(target.getTarget(), opengl::EClearFlags::Color | opengl::EClearFlags::Depth);
 
 		// Render off screen surface
 		std::vector<nap::RenderableComponentInstance*> obj_to_render = { &render_plane };

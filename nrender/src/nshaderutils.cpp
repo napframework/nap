@@ -10,30 +10,30 @@
 namespace opengl
 {
 	// Holds all the opengl uniform to GL renderer uniform types
-	using GLToGLSLMap = std::unordered_map<GLenum, GLSLType>;
+	using GLToGLSLMap = std::unordered_map<GLenum, EGLSLType>;
 	const static GLToGLSLMap glToGLSLMap =
 	{
-		{ GL_FLOAT,			GLSLType::Float	},
-		{ GL_INT,			GLSLType::Int	},
-		{ GL_UNSIGNED_INT,	GLSLType::UInt	},
-		{ GL_FLOAT_VEC2,	GLSLType::Vec2	},
-		{ GL_FLOAT_VEC3,	GLSLType::Vec3	},
-		{ GL_FLOAT_VEC4,	GLSLType::Vec4	},
-		{ GL_FLOAT_MAT2,	GLSLType::Mat2	},
-		{ GL_FLOAT_MAT3,	GLSLType::Mat3	},
-		{ GL_FLOAT_MAT4,	GLSLType::Mat4	},
-		{ GL_SAMPLER_2D,	GLSLType::Tex2D	}
+		{ GL_FLOAT,			EGLSLType::Float	},
+		{ GL_INT,			EGLSLType::Int	},
+		{ GL_UNSIGNED_INT,	EGLSLType::UInt	},
+		{ GL_FLOAT_VEC2,	EGLSLType::Vec2	},
+		{ GL_FLOAT_VEC3,	EGLSLType::Vec3	},
+		{ GL_FLOAT_VEC4,	EGLSLType::Vec4	},
+		{ GL_FLOAT_MAT2,	EGLSLType::Mat2	},
+		{ GL_FLOAT_MAT3,	EGLSLType::Mat3	},
+		{ GL_FLOAT_MAT4,	EGLSLType::Mat4	},
+		{ GL_SAMPLER_2D,	EGLSLType::Tex2D	}
 	};
 
 
 	// Returns supported uniform type for associated gl type
-	opengl::GLSLType getGLSLType(GLenum glType)
+	opengl::EGLSLType getGLSLType(GLenum glType)
 	{
 		auto it = glToGLSLMap.find(glType);
 		if (it == glToGLSLMap.end())
 		{
-			printMessage(MessageType::ERROR, "unable to find supported uniform for gl type: %d", glType);
-			return GLSLType::Unknown;
+			printMessage(EGLSLMessageType::Error, "unable to find supported uniform for gl type: %d", glType);
+			return EGLSLType::Unknown;
 		}
 		return it->second;
 	}
@@ -68,11 +68,11 @@ namespace opengl
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
 
 		if (compile_status == GL_FALSE)
-			return EShaderValidationResult::ERROR;			// Compilation failed
+			return EShaderValidationResult::Error;			// Compilation failed
 		else if (message_length > 0)
-			return EShaderValidationResult::WARNING;		// Compilation succeeded, but there were messages
+			return EShaderValidationResult::Warning;		// Compilation succeeded, but there were messages
 		else
-			return EShaderValidationResult::SUCCESS;		// Compilation succeeded
+			return EShaderValidationResult::Success;		// Compilation succeeded
 	}
 
 
@@ -96,11 +96,11 @@ namespace opengl
 		glGetProgramiv(program, GL_VALIDATE_STATUS, &validation_status);
 		
 		if (validation_status == GL_FALSE)
-			return EShaderValidationResult::ERROR;			// Validation failed
+			return EShaderValidationResult::Error;			// Validation failed
 		else if (message_length > 0)
-			return EShaderValidationResult::WARNING;		// Validation succeeded, but there were messages
+			return EShaderValidationResult::Warning;		// Validation succeeded, but there were messages
 		else
-			return EShaderValidationResult::SUCCESS;		// Validation succeeded
+			return EShaderValidationResult::Success;		// Validation succeeded
 	}
 
 
@@ -125,21 +125,21 @@ namespace opengl
 			int location = glGetUniformLocation(program, name);
 			if (location < 0)
 			{
-				printMessage(MessageType::ERROR, "unable to query uniform location: %s", name);
+				printMessage(EGLSLMessageType::Error, "unable to query uniform location: %s", name);
 				continue;
 			}
 
 			// Check if the uniform is supported, ie: has a setter associated with it
-			if (getGLSLType(type) == GLSLType::Unknown)
+			if (getGLSLType(type) == EGLSLType::Unknown)
 			{
-				printMessage(MessageType::WARNING, "unsupported uniform of type: %d", type);
+				printMessage(EGLSLMessageType::Warning, "unsupported uniform of type: %d", type);
 			}
 
 			// Remove possible brackets
 			std::string unique_name = std::regex_replace(std::string(name), std::regex("\\[.*\\]"), "");
 
 			// Add
-			printMessage(MessageType::INFO, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
+			printMessage(EGLSLMessageType::Info, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
 			outUniforms.emplace(std::make_pair(unique_name, std::make_unique<UniformDeclaration>(program, std::string(name), type, location, size)));
 		}
 	}
@@ -167,12 +167,12 @@ namespace opengl
 			int location = glGetAttribLocation(program, name);
 			if (location < 0)
 			{
-				printMessage(MessageType::ERROR, "unable to query attribute location: %s", name);
+				printMessage(EGLSLMessageType::Error, "unable to query attribute location: %s", name);
 				continue;
 			}
 
 			// Add
-			printMessage(MessageType::INFO, "Attribute: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
+			printMessage(EGLSLMessageType::Info, "Attribute: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
 			outAttributes.emplace(name, std::make_unique<ShaderVertexAttribute>(program, std::string(name), type, location, size));
 		}
 	}

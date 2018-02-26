@@ -54,7 +54,7 @@ namespace nap
 		RenderState& render_state = mRenderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
-		render_state.mPolygonMode = opengl::PolygonMode::FILL;
+		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 		
 		return true;
 	}
@@ -118,7 +118,7 @@ namespace nap
 		// Set target
 		opengl::RenderTarget& render_target = render_window->getBackbuffer();
 		render_target.setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-		mRenderService->clearRenderTarget(render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+		mRenderService->clearRenderTarget(render_target, opengl::EClearFlags::Color | opengl::EClearFlags::Depth);
 
 		// Render objects
 		mRenderService->renderObjects(render_target, mCameraEntity->getComponent<OrthoCameraComponentInstance>());

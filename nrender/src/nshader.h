@@ -123,7 +123,7 @@ namespace opengl
 		 * @param data:  pointer to data in memory
 		 * @param count: number of elements to set
 		 */
-		void setUniform(GLSLType type, const std::string& name, const void* data);
+		void setUniform(EGLSLType type, const std::string& name, const void* data);
 
 		/**
 		 * Sets a uniform variable based on it's name, note that you need
