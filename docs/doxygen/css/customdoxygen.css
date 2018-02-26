@@ -13,10 +13,7 @@ color: #8B8CA0;
 font-size: 1rem;
 }
 
-#top
-{
-	padding-top: 8em;
-	border-bottom: 6px solid #525369;
+border-bottom: 6px solid #525369;
 }
 .arrow,
 .navpath li.navelem a,
