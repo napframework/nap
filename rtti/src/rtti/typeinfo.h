@@ -140,7 +140,7 @@ namespace nap
 		/**
 		 * Controls how an RTTI property is interpreted
 		 */
-		enum class NAPAPI EPropertyMetaData : uint8_t
+		enum class EPropertyMetaData : uint8_t
 		{
 			Default  	= 0,				///< Uses the (class) default if the property isn't set
 			Required 	= 1,				///< Load will fail if the property isn't set
@@ -151,7 +151,7 @@ namespace nap
 		/**
 		 * If EPropertyMetaData::FileLink is set, you can provide a file type. Used for tooling.
 		 */
-		enum class NAPAPI EPropertyFileType : uint8_t
+		enum class EPropertyFileType : uint8_t
 		{
 			Any				= 0,	///< Can point to any file, default.
 			Image			= 1, 	///< Points to an image file, must be used with EPropertyMetaData::FileLink
@@ -228,10 +228,10 @@ namespace nap
 		* Selects whether the type check should be an exact type match or whether
 		* the type should be derived from the given type.
 		*/
-		enum class NAPAPI ETypeCheck : uint8_t
+		enum class ETypeCheck : uint8_t
 		{
-			EXACT_MATCH,
-			IS_DERIVED_FROM
+			EXACT_MATCH,				///< The type needs to be of the exact same kind
+			IS_DERIVED_FROM				///< The type is derived from the specified type
 		};
 
 

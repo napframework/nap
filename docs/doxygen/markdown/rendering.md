@@ -12,6 +12,7 @@ Rendering {#rendering}
 	*	[Default Attributes](@ref default_attrs)
 	*	[Uniforms](@ref uniforms)
 	*	[GPU State](@ref gpustate)
+	*	[Render With Materials](@ref renderwithmaterials)
 
 Introduction {#render_intro}
 =======================
@@ -660,6 +661,29 @@ The snippet above creates a new uniform 'color' (if it didn't exist already) and
 
 GPU State {#gpustate}
 -----------------------
+
+Materials also set the global GPU state, specifically the [blend](@ref nap::EBlendMode) and [depth](@ref nap::EDepthMode) state of a material before rendering an object to a target. The blend state specifies how a color that is rendered using a shader is combined into the target buffer. Thee modes are available:
+
+- Opaque: The shader overwrites the target value
+- AlphaBlend: The alpha value is used to blend between the current and target value
+- Additive: The shader output is added to the target value
+
+The depth state controls how the z-buffer is treated. These modes are available:
+
+- ReadWrite. The z output value is tested against the z-buffer. If the test fails, the pixel is not written. If the test succeeds, the new z-value is written back into the z-buffer.
+- ReadOnly. The z output value is tested against the z-buffer. If the test fails, the pixel is not written. The current z-value is never written back to the z-buffer.
+- WriteOnly. The z buffer always overwrites the current z value with the new z value.
+- NoReadWrite. The z buffer is never tested and therefore not updated. 
+- InheritFromBlendMode. This is a special mode that determines how the z-buffer is treated based on the blend mode. For Opaque blend modes ReadWrite is used. For the other (transparent) modes ReadOnly is used. Transparent objects generally want to use the z-buffer but not use it.
+
+You can specify the GPU state for both materials and material instances.
+
+Rendering Meshes {#renderwithmaterials}
+-----------------------
+
+The [RenderableMeshComponent](@ref nap::RenderableMeshComponent) is responsible for rendering a mesh with a material.
+
+In order to render an object a mesh needs to be combined with a material instance. This combination is called a [RenderableMesh](@ref nap::RenderableMesh) and is created by the renderable mesh component. Every mesh / material combination is validated by the system. An error is generated when the mesh does not contain the attributes that are required by the shader. By default you simply create a renderable mesh component and link it to a mesh and a material. The renderable mesh will be created when the component is initialized. When initialization succeeds the component is able to render all the shapes in the mesh instance. The [example](@ref render_example) at the top of this page shows you how to set this up.
 
 
 

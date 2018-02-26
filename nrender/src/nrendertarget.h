@@ -11,9 +11,9 @@ namespace opengl
 	*/
 	enum class EClearFlags : uint8_t
 	{
-		COLOR = 1,						///< Clears color buffer
-		DEPTH = 2,						///< Clears depth buffer
-		STENCIL = 4						///< Clears stencil buffer
+		Color	= 1,					///< Clears color buffer
+		Depth	= 2,					///< Clears depth buffer
+		Stencil = 4						///< Clears stencil buffer
 	};
 
 	inline EClearFlags operator&(EClearFlags a, EClearFlags b)
