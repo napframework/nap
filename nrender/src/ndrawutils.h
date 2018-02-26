@@ -28,7 +28,7 @@ namespace opengl
 	 * @param mode the internal DrawMode
 	 * @return the OpenGL draw mode enum, GL_INVALID_ENUM if mode is unknown
 	 */
-	GLenum getGgLMode(EDrawMode mode);
+	GLenum getGLMode(EDrawMode mode);
 
 
 	/**
