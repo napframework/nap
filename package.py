@@ -40,10 +40,10 @@ def install_dependencies_linux():
         # 'libglm-dev', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         # 'libtclap-dev',  # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         # 'libfreeimage-dev',
-        'ffmpeg',
-        'libavcodec-dev',
-        'libavformat-dev',
-        'libavutil-dev',
+        #'ffmpeg',
+        #'libavcodec-dev',
+        #'libavformat-dev',
+        #'libavutil-dev',
         'patchelf',
         'mpg123',
         # Needed at NAP source level only
