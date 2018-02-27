@@ -39,7 +39,7 @@ def install_dependencies_linux():
         # 'libassimp-dev',
         # 'libglm-dev', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         # 'libtclap-dev',  # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
-        'libfreeimage-dev',
+        # 'libfreeimage-dev',
         'ffmpeg',
         'libavcodec-dev',
         'libavformat-dev',
