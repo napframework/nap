@@ -5,12 +5,21 @@
 #include <sceneservice.h>
 #include <renderservice.h>
 #include <nap/logger.h>
+#include "utility/datetimeutils.h"
 
 extern "C"
 {
 	#include <libavcodec/avcodec.h>
 	#include <libavformat/avformat.h>
 }
+
+#define DEBUG_LOG_TO_FILE	0
+
+#if DEBUG_LOG_TO_FILE
+	static FILE* debugFile = nullptr;
+	static nap::utility::HighResolutionTimer debugFileTimer;
+	static const char* debugFilename = "d:\\test.raw";
+#endif
 
 RTTI_DEFINE_CLASS(nap::VideoService)
 
@@ -108,6 +117,19 @@ namespace nap
 				
 		if (!hasAudio)
 			memset(stream, 0, len);
+
+#if DEBUG_LOG_TO_FILE
+		if (debugFile != nullptr)
+		{
+			fwrite(stream, len, 1, debugFile);
+
+			if (debugFileTimer.getElapsedTime() > 30.0)
+			{
+				fclose(debugFile);
+				debugFile = nullptr;
+			}
+		}
+#endif // DEBUG_LOG_TO_FILE
 	}
 
 
@@ -115,6 +137,11 @@ namespace nap
 	{
 		av_register_all();
 		avcodec_register_all();
+
+#if DEBUG_LOG_TO_FILE
+		debugFile = fopen(debugFilename, "wb");
+		debugFileTimer.start();
+#endif // DEBUG_LOG_TO_FILE
 
 		audio_open(this, 0, 2, 48000, mAudioHwParams);
 		SDL_PauseAudio(0);

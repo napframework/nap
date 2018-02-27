@@ -51,8 +51,14 @@ namespace nap
 	class AVState final
 	{
 	public:
-		using DecodeFunction = std::function<int(AVCodecContext* /*avctx*/, AVFrame* /*frame*/, int* /*got_frame_ptr*/, const AVPacket* /*avpkt*/)>;
 		using ClearFrameQueueFunction = std::function<void()>;
+
+		enum class EDecodeFrameResult
+		{
+			GotFrame,
+			EndOfFile,
+			Exit
+		};
 
 		AVState(Video& video, int inMaxPacketQueueSize);
 		~AVState();
@@ -65,10 +71,10 @@ namespace nap
 
 		void setCodec(AVCodec* codec, AVCodecContext* codecContext);
 
-		void startDecodeThread(const DecodeFunction& decodeFunction, const ClearFrameQueueFunction& clearFrameQueueFunction);
+		void startDecodeThread(const ClearFrameQueueFunction& clearFrameQueueFunction);
 		void exitDecodeThread(bool join);
 		void decodeThread();
-		bool decodeFrame(AVFrame& frame);
+		EDecodeFrameResult decodeFrame(AVFrame& frame);
 		bool isFinishedProducing() const { return mFinishedProducingFrames; }
 		bool isFinishedConsuming() const;
 		bool isFinished() const { return isFinishedProducing() && isFinishedConsuming(); }
@@ -97,7 +103,6 @@ namespace nap
 		int						mStream = -1;							///< Specifies what stream in the file is the one containing video packets
 
 		std::thread				mDecodeThread;							///< Video decode thread
-		DecodeFunction			mDecodeFunction;
 		ClearFrameQueueFunction	mClearFrameQueueFunction;
 		bool					mExitDecodeThreadSignalled = false;		///< If this boolean is set, the decode thread will exit ASAP. This is used internally by exitDecodeThread and should not be used separately
 

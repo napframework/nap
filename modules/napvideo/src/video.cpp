@@ -184,7 +184,7 @@ namespace nap
 	}
 
 
-	void AVState::startDecodeThread(const DecodeFunction& decodeFunction, const ClearFrameQueueFunction& clearFrameQueueFunction)
+	void AVState::startDecodeThread(const ClearFrameQueueFunction& clearFrameQueueFunction)
 	{
 		exitDecodeThread(true);
 
@@ -192,7 +192,6 @@ namespace nap
 		mFinishedProducingFrames = false;
 		mIOFinishedProducingPackets = false;
 
-		mDecodeFunction = decodeFunction;
 		mClearFrameQueueFunction = clearFrameQueueFunction;
 		mDecodeThread = std::thread(std::bind(&AVState::decodeThread, this));
 	}
@@ -232,8 +231,12 @@ namespace nap
 
 		while (!mExitDecodeThreadSignalled)
 		{
-			if (!decodeFrame(*frame))
+			AVState::EDecodeFrameResult decode_result = decodeFrame(*frame);
+			if (decode_result == AVState::EDecodeFrameResult::Exit)
 				break;
+
+			if (decode_result == AVState::EDecodeFrameResult::EndOfFile)
+				continue;
 
 			// We calculate when the next frame needs to be displayed. The videostream contains PTS information, but there are cases
 			// when there is no PTS available, we need to account for these cases.
@@ -276,12 +279,29 @@ namespace nap
 	}
 
 
-	bool AVState::decodeFrame(AVFrame& frame)
+	AVState::EDecodeFrameResult AVState::decodeFrame(AVFrame& frame)
 	{
 		// Here we pull packets from the queue and decode them until all data for this frame is processed
-		int frame_finished = 0;
-		while (!frame_finished)
+		while (true)
 		{
+			int ret = AVERROR(EAGAIN);
+			do 
+			{
+				ret = avcodec_receive_frame(mCodecContext, &frame);			
+				if (ret >= 0)
+					return EDecodeFrameResult::GotFrame;
+
+				if (ret == AVERROR_EOF) 
+				{
+					avcodec_flush_buffers(mCodecContext);
+					return EDecodeFrameResult::EndOfFile;
+				}
+
+				// Note: we keep spinning as long as EAGAIN is not returned, even in the case of errors. 
+				// We're not 100% sure why this is (this logic came from ffplay), but perhaps there are certain 
+				// kinds of decoding errors that are non-fatal and will 'resolve' themselves?
+			} while (ret != AVERROR(EAGAIN));
+
 			AVPacket* packet;
 			{
 				std::unique_lock<std::mutex> lock(mPacketQueueMutex);
@@ -291,12 +311,12 @@ namespace nap
 				});
 
 				if (mExitDecodeThreadSignalled)
-					return false;
+					return EDecodeFrameResult::Exit;
 
 				if (mPacketQueue.empty() && mIOFinishedProducingPackets)
 				{
 					mFinishedProducingFrames = true;
-					return false;
+					return EDecodeFrameResult::Exit;
 				}
 
 				packet = mPacketQueue.front();
@@ -312,21 +332,13 @@ namespace nap
 			}
 			else
 			{
-				// Decode the frame
-				int result = mDecodeFunction(mCodecContext, &frame, &frame_finished, packet);
-
-				// Free the packet that was allocated by av_read_frame in the IO thread
-				av_free_packet(packet);
-
-				if (result < 0)
-				{
-					mVideo->setErrorOccurred(sErrorToString(result));
-					return false;
-				}
+				ret = avcodec_send_packet(mCodecContext, packet);
+				assert(ret != AVERROR(EAGAIN));
+				av_packet_unref(packet);
 			}
 		}
 
-		return true;
+		return EDecodeFrameResult::GotFrame;
 	}
 
 	Frame AVState::popFrame()
@@ -550,12 +562,10 @@ namespace nap
 
 		seek(startTimeSecs);
 
-		mVideoState.startDecodeThread(std::bind(&avcodec_decode_video2, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-									  std::bind(&Video::clearVideoFrameQueue, this));
+		mVideoState.startDecodeThread(std::bind(&Video::clearVideoFrameQueue, this));
 		
 		if (mAudioState.isValid())
-			mAudioState.startDecodeThread(std::bind(&avcodec_decode_audio4, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-										  std::bind(&Video::clearAudioFrameQueue, this));
+			mAudioState.startDecodeThread(std::bind(&Video::clearAudioFrameQueue, this));
 
 		startIOThread();
 	}
