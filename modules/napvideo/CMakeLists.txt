@@ -37,7 +37,7 @@ elseif(APPLE)
     # TODO Package FFmpeg license files
 
     # Install FFmpeg into release
-    install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/osx/install/" DESTINATION "thirdparty/FFmpeg")    
+    install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/osx/install/" DESTINATION "thirdparty/FFmpeg")
 
     # Add RPATH for FFmpeg to packaged module on macOS
     foreach(build_type Release Debug)
@@ -47,5 +47,10 @@ elseif(APPLE)
                                               ${CMAKE_INSTALL_PREFIX}/modules/mod_napvideo/lib/${build_type}/libmod_napvideo.dylib                                           
                                       ERROR_QUIET
                                       )")
-      endforeach()
+    endforeach()
+elseif(UNIX)
+    # TODO Package FFmpeg license files
+    
+    # Install FFmpeg into release
+    install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/linux/install/" DESTINATION "thirdparty/FFmpeg")
 endif()

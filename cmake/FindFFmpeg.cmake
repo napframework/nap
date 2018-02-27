@@ -47,18 +47,21 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
                  NAMES avcodec
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
                  )
 
     find_library(FFMPEG_LIBAVFORMAT
                  NAMES avformat
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
                  )
 
     find_library(FFMPEG_LIBAVUTIL
                  NAMES avutil
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
                  )
 
     if(FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
