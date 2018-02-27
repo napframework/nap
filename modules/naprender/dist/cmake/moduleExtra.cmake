@@ -38,14 +38,17 @@ if(UNIX)
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)    
 
-    # Package FreeImage into packaged project on *nix
-    install(DIRECTORY "${THIRDPARTY_DIR}/FreeImage/lib/" 
-            DESTINATION "lib"
-            PATTERN "cmake" EXCLUDE
-            PATTERN "pkgconfig" EXCLUDE
-            PATTERN "*.a" EXCLUDE)        
-
     # Package glew into packaged project on *nix
     install(DIRECTORY "${THIRDPARTY_DIR}/glew/lib/" 
             DESTINATION "lib")   
 endif()    
+
+if(UNIX AND NOT APPLE)
+    # Package FreeImage into packaged project on *nix
+    # TODO move into above block once we've gotten rid of the static lib
+    install(DIRECTORY "${THIRDPARTY_DIR}/FreeImage/lib/" 
+            DESTINATION "lib"
+            PATTERN "cmake" EXCLUDE
+            PATTERN "pkgconfig" EXCLUDE
+            PATTERN "*.a" EXCLUDE)    
+endif()
