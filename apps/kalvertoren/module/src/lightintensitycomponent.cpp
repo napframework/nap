@@ -36,10 +36,10 @@ namespace nap
 		LightIntensityComponent* resource = getComponent<LightIntensityComponent>();
 
 		// Make sure the light range is valid
-		if (!errorState.check(resource->mLightRange.x < resource->mLightRange.y, "min output light exceeds max output light in range: %s", this->mID))
+		if (!errorState.check(resource->mLightRange.x < resource->mLightRange.y, "min output light exceeds max output light in range: %s", this->mID.c_str()))
 			return false;
 
-		if (!errorState.check(resource->mLightRange.x >= 0.0f && resource->mLightRange.y <= 1.0f, "light output is not within normalized range: %s", this->mID))
+		if (!errorState.check(resource->mLightRange.x >= 0.0f && resource->mLightRange.y <= 1.0f, "light output is not within normalized range: %s", this->mID.c_str()))
 			return false;
 
 		for (auto& sensor : resource->mLuxSensors)

@@ -17,6 +17,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
+    YoctoLuxSensor::YoctoLuxSensor()
+    {
+        mReading = false;
+        mValue = -1.0f;
+    }
+    
 	YoctoLuxSensor::~YoctoLuxSensor()			
 	{
 		stop();

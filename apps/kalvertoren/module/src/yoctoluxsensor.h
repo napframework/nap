@@ -20,7 +20,7 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 		friend class YoctoEthernetHub;
 	public:
-		YoctoLuxSensor() = default;
+		YoctoLuxSensor();
 		virtual ~YoctoLuxSensor();
 
 		/**
@@ -44,10 +44,10 @@ namespace nap
 
 	private:
 		void*				mSensor = nullptr;			///< Light sensor
-		std::atomic<float>	mValue  = -1.0f;			///< Current light value
+		std::atomic<float>	mValue;                     ///< Current light value
 		bool				mStopReading = false;		///< Stops the thread from reading sensor values
 		int					mCurrentRetries = 0;		///< Number of retries associated with read out failure
-		std::atomic<bool>	mReading = false;			///< If the sensor is currently online
+		std::atomic<bool>	mReading;                   ///< If the sensor is currently online
 
 		/**
 		 * Starts reading sensor input on a background thread
