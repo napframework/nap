@@ -35,7 +35,7 @@ def install_dependencies_linux():
         'build-essential',
         'python3-dev',
         # 'libsdl2-dev',
-        'libglew-dev',
+        # 'libglew-dev',
         # 'libassimp-dev',
         # 'libglm-dev', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         # 'libtclap-dev',  # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'

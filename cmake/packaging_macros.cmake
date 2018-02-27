@@ -17,13 +17,6 @@ macro(package_nap)
             DESTINATION cmake
             )   
 
-    # Package Findglew.cmake for Win64 and macOS - using built GLEW in thirdparty
-    # TODO Move this into a better named directory (or once we package local glew for Linux this won't matter)
-    if(WIN32 OR APPLE)
-        install(FILES ${NAP_ROOT}/dist/win64/cmake/Findglew.cmake
-                DESTINATION cmake)
-    endif()
-
     # Package user tools
     file(GLOB USER_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/*py")
     install(PROGRAMS ${USER_TOOL_SCRIPTS} DESTINATION tools)
@@ -349,6 +342,10 @@ endmacro()
 macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
     # Add our core lib path first
     set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/glew/lib")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/SDL2/lib")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/assimp/lib")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/FreeImage/lib")
 
     # Iterate over each module and append to path
     foreach(module ${DEPENDENT_NAP_MODULES})
