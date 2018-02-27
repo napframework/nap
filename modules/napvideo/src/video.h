@@ -63,11 +63,13 @@ namespace nap
 		AVState(Video& video, int inMaxPacketQueueSize);
 		~AVState();
 
+		void init(int stream);
+
 		void close();
 
+		void waitEOF(const bool& exitIOThreadSignalled);
 		bool isValid() const { return mStream != -1; }
 		int getStream() const { return mStream; }
-		void setStream(int stream) { mStream = stream; }
 
 		void setCodec(AVCodec* codec, AVCodecContext* codecContext);
 
@@ -79,46 +81,56 @@ namespace nap
 		bool isFinishedConsuming() const;
 		bool isFinished() const { return isFinishedProducing() && isFinishedConsuming(); }
 
-		void notifyFinishedProducingPackets();
 		void clearPacketQueue();
 		void clearFrameQueue();
 
 		bool matchesStream(const AVPacket& packet) const;
-		bool addPacket(AVPacket* packet, const bool& exitIOThreadSignalled);
+		bool addFlushPacket(const bool& exitIOThreadSignalled);
+		bool addEndOfFilePacket(const bool& exitIOThreadSignalled);
+		bool addIOFinishedPacket(const bool& exitIOThreadSignalled);
+		bool addPacket(AVPacket& packet, const bool& exitIOThreadSignalled);
 
 		Frame popFrame();
 		Frame tryPopFrame(double pts);
 		Frame peekFrame();
 
-		void notifyPacketQueueRoomAvailable();
+		void notifyExitIOThread();
 
 		AVCodec& getCodec() { return *mCodec; }
 		AVCodecContext& getCodecContext() { return *mCodecContext; }
 
 	private:
-		Video*					mVideo;
-		AVCodec*				mCodec = nullptr;
-		AVCodecContext*			mCodecContext = nullptr;
+		Video*						mVideo;
+		AVCodec*					mCodec = nullptr;
+		AVCodecContext*				mCodecContext = nullptr;
 
-		int						mStream = -1;							///< Specifies what stream in the file is the one containing video packets
+		int							mStream = -1;							///< Specifies what stream in the file is the one containing video packets
 
-		std::thread				mDecodeThread;							///< Video decode thread
-		ClearFrameQueueFunction	mClearFrameQueueFunction;
-		bool					mExitDecodeThreadSignalled = false;		///< If this boolean is set, the decode thread will exit ASAP. This is used internally by exitDecodeThread and should not be used separately
+		std::thread					mDecodeThread;							///< Video decode thread
+		ClearFrameQueueFunction		mClearFrameQueueFunction;
+		bool						mExitDecodeThreadSignalled = false;		///< If this boolean is set, the decode thread will exit ASAP. This is used internally by exitDecodeThread and should not be used separately
 
-		std::queue<Frame>		mFrameQueue;							///< The frame queue as produced by the decodeThread and consumed by the main thread
-		mutable std::mutex		mFrameQueueMutex;						///< Mutex protection for the frame queue
-		std::condition_variable mFrameDataAvailableCondition;			///< Condition describing whether there is data in the frame queue to process
-		std::condition_variable mFrameQueueRoomAvailableCondition;		///< Condition describing whether there is still room in the frame queue to add new frames
-																		// Producer/consumer variables for packet queue:
-		std::queue<AVPacket*>	mPacketQueue;							///< The packet queue as produced by the ioThread and consumed by the decodeThread thread
-		std::mutex				mPacketQueueMutex;						///< Mutex protection for the packet queue
-		std::condition_variable mPacketAvailableCondition;				///< Condition describing whether there is data in the packet queue to process
-		std::condition_variable mPacketQueueRoomAvailableCondition;		///< Condition describing whether there is still room in the packet queue to add new packets
-		int						mMaxPacketQueueSize;
+		std::queue<Frame>			mFrameQueue;							///< The frame queue as produced by the decodeThread and consumed by the main thread
+		mutable std::mutex			mFrameQueueMutex;						///< Mutex protection for the frame queue
+		std::condition_variable		mFrameDataAvailableCondition;			///< Condition describing whether there is data in the frame queue to process
+		std::condition_variable		mFrameQueueRoomAvailableCondition;		///< Condition describing whether there is still room in the frame queue to add new frames
+																			// Producer/consumer variables for packet queue:
+		std::queue<AVPacket*>		mPacketQueue;							///< The packet queue as produced by the ioThread and consumed by the decodeThread thread
+		std::mutex					mPacketQueueMutex;						///< Mutex protection for the packet queue
+		std::condition_variable		mPacketAvailableCondition;				///< Condition describing whether there is data in the packet queue to process
+		std::condition_variable		mPacketQueueRoomAvailableCondition;		///< Condition describing whether there is still room in the packet queue to add new packets
+		int							mMaxPacketQueueSize;
 
-		bool					mIOFinishedProducingPackets = false;	///< IO thread has finished producing packets
-		bool					mFinishedProducingFrames = false;		///< If this boolean is set, the decode thread has no more frames to decode, either due to an error or due to an end of stream.
+		bool						mFinishedProducingFrames = false;		///< If this boolean is set, the decode thread has no more frames to decode, either due to an error or due to an end of stream.
+
+		std::unique_ptr<AVPacket>	mFlushPacket;
+		std::unique_ptr<AVPacket>	mEndOfFilePacket;
+		std::unique_ptr<AVPacket>	mIOFinishedPacket;
+
+		std::condition_variable		mEOFCondition;							///< 
+		std::mutex					mEOFMutex;								///< 
+		bool						mEOFReached = false;
+
 	};
 
 
@@ -236,7 +248,6 @@ namespace nap
 	private:
 		static bool sInitCodec(AVState& destState, const AVCodecContext& sourceCodecContext, AVDictionary*& options, utility::ErrorState& errorState);
 
-		void onFinishedProducingPackets();
 
 		/**
 		 * Thread that grabs packets as they are queued by the ioThread, decodes them and pushes them into the frame queue.

@@ -38,6 +38,7 @@ namespace nap
 		return std::string(error_buf);
 	}
 
+
 	// Debug function to write a frame to jpeg
 	void sWriteJPEG(AVCodecContext* videoCodecContext, AVFrame* videoFrame, int frameIndex, double framePTSSecs)
 	{
@@ -109,9 +110,34 @@ namespace nap
 	{
 	}
 
+
 	AVState::~AVState()
 	{
 		close();
+	}
+
+
+	void AVState::init(int stream)
+	{
+		mFlushPacket = std::make_unique<AVPacket>();
+		av_init_packet(mFlushPacket.get());
+		mFlushPacket->data = (uint8_t*)mFlushPacket.get();
+		mFlushPacket->size = 0;
+		mFlushPacket->stream_index = stream;
+
+		mIOFinishedPacket = std::make_unique<AVPacket>();
+		av_init_packet(mIOFinishedPacket.get());
+		mIOFinishedPacket->data = (uint8_t*)mIOFinishedPacket.get();
+		mIOFinishedPacket->size = 0;
+		mIOFinishedPacket->stream_index = stream;
+
+		mEndOfFilePacket = std::make_unique<AVPacket>();
+		av_init_packet(mEndOfFilePacket.get());
+		mEndOfFilePacket->data = nullptr;
+		mEndOfFilePacket->size = 0;
+		mEndOfFilePacket->stream_index = stream;
+
+		mStream = stream;
 	}
 
 
@@ -125,6 +151,15 @@ namespace nap
 		}
 	}
 
+
+	void AVState::waitEOF(const bool& exitIOThreadSignalled)
+	{
+		std::unique_lock<std::mutex> lock(mEOFMutex);
+		mEOFCondition.wait(lock, [this, &exitIOThreadSignalled]() { return mEOFReached || exitIOThreadSignalled; });
+		mEOFReached = false;
+	}
+
+
 	void AVState::clearPacketQueue()
 	{
 		std::unique_lock<std::mutex> lock(mPacketQueueMutex);
@@ -135,6 +170,7 @@ namespace nap
 			av_free_packet(packet);
 		}
 	}
+
 
 	void AVState::clearFrameQueue()
 	{
@@ -155,25 +191,44 @@ namespace nap
 	}
 
 
-	bool AVState::addPacket(AVPacket* packet, const bool& exitIOThreadSignalled)
+	bool AVState::addFlushPacket(const bool& exitIOThreadSignalled)
 	{
-		assert(packet == nullptr || matchesStream(*packet));
+		return addPacket(*mFlushPacket, exitIOThreadSignalled);
+	}
+
+
+	bool AVState::addEndOfFilePacket(const bool& exitIOThreadSignalled)
+	{
+		return addPacket(*mEndOfFilePacket, exitIOThreadSignalled);
+	}
+
+
+	bool AVState::addIOFinishedPacket(const bool& exitIOThreadSignalled)
+	{
+		return addPacket(*mIOFinishedPacket, exitIOThreadSignalled);
+	}
+
+	
+	bool AVState::addPacket(AVPacket& packet, const bool& exitIOThreadSignalled)
+	{
+		assert(matchesStream(packet));
 
 		std::unique_lock<std::mutex> lock(mPacketQueueMutex);
 		mPacketQueueRoomAvailableCondition.wait(lock, [this, &exitIOThreadSignalled]() { return mMaxPacketQueueSize == -1 || mPacketQueue.size() < mMaxPacketQueueSize || exitIOThreadSignalled; });
 		if (exitIOThreadSignalled)
 			return false;
 
-		mPacketQueue.push(packet);
+		mPacketQueue.push(&packet);
 		mPacketAvailableCondition.notify_one();
 
 		return true;
 	}
 
 	
-	void AVState::notifyPacketQueueRoomAvailable()
+	void AVState::notifyExitIOThread()
 	{
 		mPacketQueueRoomAvailableCondition.notify_one();
+		mEOFCondition.notify_one();
 	}
 	
 
@@ -190,7 +245,6 @@ namespace nap
 
 		mExitDecodeThreadSignalled = false;
 		mFinishedProducingFrames = false;
-		mIOFinishedProducingPackets = false;
 
 		mClearFrameQueueFunction = clearFrameQueueFunction;
 		mDecodeThread = std::thread(std::bind(&AVState::decodeThread, this));
@@ -272,13 +326,6 @@ namespace nap
 	}
 
 
-	void AVState::notifyFinishedProducingPackets()
-	{
-		mIOFinishedProducingPackets = true;
-		mPacketAvailableCondition.notify_one();
-	}
-
-
 	AVState::EDecodeFrameResult AVState::decodeFrame(AVFrame& frame)
 	{
 		// Here we pull packets from the queue and decode them until all data for this frame is processed
@@ -294,6 +341,10 @@ namespace nap
 				if (ret == AVERROR_EOF) 
 				{
 					avcodec_flush_buffers(mCodecContext);
+
+					mEOFReached = true;
+					mEOFCondition.notify_one();
+
 					return EDecodeFrameResult::EndOfFile;
 				}
 
@@ -307,17 +358,11 @@ namespace nap
 				std::unique_lock<std::mutex> lock(mPacketQueueMutex);
 				mPacketAvailableCondition.wait(lock, [this]()
 				{
-					return !mPacketQueue.empty() || mExitDecodeThreadSignalled || mIOFinishedProducingPackets;
+					return !mPacketQueue.empty() || mExitDecodeThreadSignalled;
 				});
 
 				if (mExitDecodeThreadSignalled)
 					return EDecodeFrameResult::Exit;
-
-				if (mPacketQueue.empty() && mIOFinishedProducingPackets)
-				{
-					mFinishedProducingFrames = true;
-					return EDecodeFrameResult::Exit;
-				}
 
 				packet = mPacketQueue.front();
 				mPacketQueue.pop();
@@ -325,10 +370,15 @@ namespace nap
 			}
 
 			// If we dequeued a flush packet, flush all buffers for the video codec and clear the frame queue
-			if (packet == nullptr)
+			if (packet == mFlushPacket.get())
 			{
 				avcodec_flush_buffers(mCodecContext);
 				mClearFrameQueueFunction();
+			}
+			else if (packet == mIOFinishedPacket.get())
+			{
+				mFinishedProducingFrames = true;
+				return EDecodeFrameResult::Exit;
 			}
 			else
 			{
@@ -360,6 +410,7 @@ namespace nap
 		return frame;
 	}
 
+
 	Frame AVState::tryPopFrame(double pts)
 	{
 		std::unique_lock<std::mutex> lock(mFrameQueueMutex);
@@ -373,6 +424,7 @@ namespace nap
 
 		return cur_frame;
 	}
+
 
 	Frame AVState::peekFrame()
 	{
@@ -461,12 +513,12 @@ namespace nap
 			if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
 				source_video_codec_context = mFormatContext->streams[i]->codec;
-				mVideoState.setStream(i);
+				mVideoState.init(i);
 			}
 			else if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
 			{
 				source_audio_codec_context = mFormatContext->streams[i]->codec;
-				mAudioState.setStream(i);
+				mAudioState.init(i);
 			}
 		}
 
@@ -608,6 +660,7 @@ namespace nap
 		mAudioState.clearPacketQueue();
 	}
 
+
 	void Video::clearVideoFrameQueue()
 	{
 		mVideoState.clearFrameQueue();
@@ -633,13 +686,6 @@ namespace nap
 	{
 		mErrorMessage = errorMessage;
 		stop(false);
-	}
-
-
-	void Video::onFinishedProducingPackets()
-	{
-		mVideoState.notifyFinishedProducingPackets();
-		mAudioState.notifyFinishedProducingPackets();
 	}
 
 
@@ -674,10 +720,10 @@ namespace nap
 				clearPacketQueue();
 
 				// Add a 'null' packet to the queue, to signal the decoder thread that it should flush its queues and decoder buffer
-				mVideoState.addPacket(nullptr, mExitIOThreadSignalled);
+				mVideoState.addFlushPacket(mExitIOThreadSignalled);
 
 				if (mAudioState.isValid())
-					mAudioState.addPacket(nullptr, mExitIOThreadSignalled);
+					mVideoState.addFlushPacket(mExitIOThreadSignalled);
 
 				mSeekTarget = -1;
 			}
@@ -689,16 +735,25 @@ namespace nap
 			// If we ended playback we either exit the loop or start from the beginning
 			if (result == AVERROR_EOF)
 			{
+				mVideoState.addEndOfFilePacket(mExitIOThreadSignalled);
+				if (mAudioState.isValid())
+					mAudioState.addEndOfFilePacket(mExitIOThreadSignalled);
+
+				mVideoState.waitEOF(mExitIOThreadSignalled);
+				if (mAudioState.isValid())
+					mAudioState.waitEOF(mExitIOThreadSignalled);
+
 				if (mLoop)
 				{
-					// Signal a reset of the video stream
-					seek(0.0f);
+					seek(0.0);
 					continue;
 				}
 				else
 				{
-					// Exit loop
-					onFinishedProducingPackets();
+					mVideoState.addIOFinishedPacket(mExitIOThreadSignalled);
+					if (mAudioState.isValid())
+						mAudioState.addIOFinishedPacket(mExitIOThreadSignalled);
+
 					return;
 				}
 			}
@@ -710,16 +765,17 @@ namespace nap
 
 			if (mVideoState.matchesStream(*packet.mPacket))
 			{
-				if (mVideoState.addPacket(packet.mPacket, mExitIOThreadSignalled))
+				if (mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
 					packet.mPacket = nullptr;
 			}
 			else if (mAudioState.matchesStream(*packet.mPacket))
 			{
-				if (mAudioState.addPacket(packet.mPacket, mExitIOThreadSignalled))
+				if (mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
 					packet.mPacket = nullptr;
 			}
 		}
 	}
+
 
 	void Video::startIOThread()
 	{
@@ -735,8 +791,8 @@ namespace nap
 		mExitIOThreadSignalled = true;
 		
 		// Unlock I/O thread, it might be waiting for room to become available in the packet queue through AVState::addPacket
-		mVideoState.notifyPacketQueueRoomAvailable();
-		mAudioState.notifyPacketQueueRoomAvailable();
+		mVideoState.notifyExitIOThread();
+		mAudioState.notifyExitIOThread();
 
 		if (mIOThread.joinable() && join)
 			mIOThread.join();
@@ -801,6 +857,7 @@ namespace nap
 		return true;
 	}
 	
+
 	bool Video::OnAudioCallback(uint8_t* stream, int len, const AudioParams& audioHwParams)
 	{
 		uint8_t* dest = stream;
@@ -824,6 +881,7 @@ namespace nap
 
 		return true;
 	}
+
 
 	bool Video::update(double deltaTime, utility::ErrorState& errorState)
 	{
