@@ -29,17 +29,18 @@ endif()
 set(ENV{SDL2DIR} ${THIRDPARTY_DIR}/SDL2/)
 find_package(SDL2 REQUIRED)
 set(NRENDER_LIBRARIES
-    ${SDL2_LIBRARY}
     ${OPENGL_gl_LIBRARY}
     )
 
 if(WIN32)
     list(APPEND NRENDER_LIBRARIES
+         ${SDL2_LIBRARY}
          glew
          freeimage
          )
 elseif(APPLE)
     list(APPEND NRENDER_LIBRARIES
+         ${SDL2_LIBRARY}
          glew
          ${FREEIMAGE_LIBRARIES}
          )
@@ -48,7 +49,9 @@ elseif(UNIX)
     list(APPEND NRENDER_LIBRARIES
          freeimage
          GLEW
+         ${SDL2_LIBRARIES}
          )
+    message("Adding ${SDL2_LIBRARIES} for SDL ")
 endif()
 
 if (WIN32)
@@ -84,8 +87,8 @@ if (NOT NRENDER_LIBS_DIR)
 endif()
 
 add_library(nrender INTERFACE)
-target_link_libraries(nrender INTERFACE optimized ${NRENDER_LIBS_RELEASE})
-target_link_libraries(nrender INTERFACE debug ${NRENDER_LIBS_DEBUG})
+target_link_libraries(nrender INTERFACE optimized ${NRENDER_LIBS_RELEASE} ${NRENDER_LIBRARIES})
+target_link_libraries(nrender INTERFACE debug ${NRENDER_LIBS_DEBUG} ${NRENDER_LIBRARIES})
 file(GLOB nrender_headers ${CMAKE_CURRENT_LIST_DIR}/../include/nrender/*.h)
 target_sources(nrender INTERFACE ${nrender_headers})
 source_group(NAP\\NRender FILES ${nrender_headers})
