@@ -18,4 +18,7 @@ elseif(APPLE)
 
     # Install FFmpeg into packaged app
     install(DIRECTORY "${THIRDPARTY_DIR}/FFmpeg/lib/" DESTINATION "lib")
+elseif(UNIX)
+    # Install FFmpeg into packaged app
+    install(DIRECTORY "${THIRDPARTY_DIR}/FFmpeg/lib/" DESTINATION "lib")
 endif()
