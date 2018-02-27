@@ -33,17 +33,17 @@ def install_dependencies_linux():
     dependencies = [
         'cmake',
         'build-essential',
-        'python3-dev',
+        # 'python3-dev',
         # 'libsdl2-dev',
         # 'libglew-dev',
         # 'libassimp-dev',
         # 'libglm-dev', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         # 'libtclap-dev',  # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         # 'libfreeimage-dev',
-        #'ffmpeg',
-        #'libavcodec-dev',
-        #'libavformat-dev',
-        #'libavutil-dev',
+        # 'ffmpeg',
+        # 'libavcodec-dev',
+        # 'libavformat-dev',
+        # 'libavutil-dev',
         'patchelf',
         'mpg123',
         # Needed at NAP source level only

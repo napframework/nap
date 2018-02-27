@@ -86,11 +86,16 @@ macro(package_python)
         install(FILES ${PYTHON_PREFIX}/LICENSE.txt
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
-    elseif(APPLE)
-        set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
+    elseif(UNIX)
+        if(APPLE)
+            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
+        else()
+            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/install)
+        endif()
 
         # Install dylib        
-        install(FILES ${PYTHON_PREFIX}/lib/libpython3.6m.dylib
+        file(GLOB PYTHON_DYLIBs ${PYTHON_PREFIX}/lib/*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+        install(FILES ${PYTHON_DYLIBs}
                 DESTINATION thirdparty/python/lib
                 CONFIGURATIONS Release
                 )
@@ -100,7 +105,7 @@ macro(package_python)
                 DESTINATION thirdparty/python/lib/
                 CONFIGURATIONS Release
                 PATTERN *.pyc EXCLUDE
-                PATTERN *.dylib EXCLUDE
+                PATTERN *${CMAKE_SHARED_LIBRARY_SUFFIX} EXCLUDE
                 PATTERN *.a EXCLUDE
                 PATTERN site-packages EXCLUDE)
 
@@ -120,7 +125,7 @@ macro(package_python)
                 CONFIGURATIONS Release)
 
         # Install virtualenv template
-        install(FILES ${PYTHON_PREFIX}/../pyvenv.cfg.in
+        install(FILES ${PYTHON_PREFIX}/../../pyvenv.cfg.in
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)        
     endif()
