@@ -22,7 +22,13 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-target_link_libraries(${PROJECT_NAME} mod_naprender)
+set(DEPENDENT_NAP_MODULES mod_naprender)
+target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})
 
 # Package into platform release
 package_module()
+
+# Set packaged Linux RPATH 
+if (UNIX AND NOT APPLE)
+    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
+endif()
