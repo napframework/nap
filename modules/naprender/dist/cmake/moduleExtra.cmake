@@ -19,11 +19,8 @@ if (WIN32 OR APPLE)
     endif()
     target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
 else()
-    # On Linux use system freeimage and pull in SDL2
-    # TODO Review why we're adding SDL2 here for Linux and not other platforms
-    find_package(SDL2 REQUIRED)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} freeimage ${SDL2_LIBRARIES})
+    # On Linux use system freeimage
+    target_link_libraries(${PROJECT_NAME} freeimage)
 endif()
 
 if(NOT TARGET nrender)
@@ -36,13 +33,6 @@ if(APPLE)
     # Package glew into packaged project on macOS
     install(DIRECTORY "${THIRDPARTY_DIR}/glew/lib/" 
             DESTINATION "lib")
-
-    # Package SDL2 into packaged project on macOS
-    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/lib/" 
-            DESTINATION "lib"
-            PATTERN "cmake" EXCLUDE
-            PATTERN "pkgconfig" EXCLUDE
-            PATTERN "*.a" EXCLUDE)
 endif()
 
 if(UNIX)
@@ -51,4 +41,11 @@ if(UNIX)
             DESTINATION "lib"
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE)    
+
+    # Package SDL2 into packaged project on *nix
+    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/lib/" 
+            DESTINATION "lib"
+            PATTERN "cmake" EXCLUDE
+            PATTERN "pkgconfig" EXCLUDE
+            PATTERN "*.a" EXCLUDE)    
 endif()    

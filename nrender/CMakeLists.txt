@@ -12,6 +12,9 @@ if(WIN32)
 elseif(APPLE)
     set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/SDL2/osx/install/lib")
     set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/osx/install)
+elseif(UNIX)
+    set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/SDL2/linux/install/lib")
+    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/linux/install)    
 endif()
 find_package(SDL2 REQUIRED)
 
@@ -172,7 +175,15 @@ if (WIN32)
     install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/" DESTINATION "thirdparty/SDL2/lib")
 elseif(APPLE)
     install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/osx/install/include" DESTINATION "thirdparty/SDL2")
+    # TODO glob SDL dylibs    
     install(FILES "${THIRDPARTY_DIR}/SDL2/osx/install/lib/libSDL2-2.0.0.dylib" 
                   "${THIRDPARTY_DIR}/SDL2/osx/install/lib/libSDL2.dylib" 
             DESTINATION "thirdparty/SDL2/lib")
+elseif(UNIX)
+    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/linux/install/include" DESTINATION "thirdparty/SDL2")
+    # TODO glob SDL shared libs .so
+    install(FILES "${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2-2.0.so.0.7.0"
+                  "${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2-2.0.so.0"
+                  "${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2.so" 
+            DESTINATION "thirdparty/SDL2/lib")    
 endif()

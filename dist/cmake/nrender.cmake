@@ -29,18 +29,17 @@ endif()
 set(ENV{SDL2DIR} ${THIRDPARTY_DIR}/SDL2/)
 find_package(SDL2 REQUIRED)
 set(NRENDER_LIBRARIES
+    ${SDL2_LIBRARY}
     ${OPENGL_gl_LIBRARY}
     )
 
 if(WIN32)
     list(APPEND NRENDER_LIBRARIES
-         ${SDL2_LIBRARY}
          glew
          freeimage
          )
 elseif(APPLE)
     list(APPEND NRENDER_LIBRARIES
-         ${SDL2_LIBRARY}
          glew
          ${FREEIMAGE_LIBRARIES}
          )
@@ -49,9 +48,7 @@ elseif(UNIX)
     list(APPEND NRENDER_LIBRARIES
          freeimage
          GLEW
-         ${SDL2_LIBRARIES}
          )
-    message("Adding ${SDL2_LIBRARIES} for SDL ")
 endif()
 
 if (WIN32)

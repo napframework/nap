@@ -34,7 +34,7 @@ def install_dependencies_linux():
         'cmake',
         'build-essential',
         'python3-dev',
-        'libsdl2-dev',
+        # 'libsdl2-dev',
         'libglew-dev',
         # 'libassimp-dev',
         # 'libglm-dev', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
