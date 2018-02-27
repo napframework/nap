@@ -351,6 +351,7 @@ macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MO
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/SDL2/lib")
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/assimp/lib")
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/FreeImage/lib")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/python/lib")
 
     # Iterate over each module and append to path
     foreach(module ${DEPENDENT_NAP_MODULES})
