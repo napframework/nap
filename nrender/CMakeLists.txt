@@ -31,7 +31,9 @@ endif()
 if(WIN32)
     set(assimp_DIR "${THIRDPARTY_DIR}/assimp/msvc64/install/lib/cmake/assimp-3.3")
 elseif(APPLE)
-    set(assimp_DIR "${THIRDPARTY_DIR}/assimp/osx/install/lib/cmake/assimp-3.3")   
+    set(assimp_DIR "${THIRDPARTY_DIR}/assimp/osx/install/lib/cmake/assimp-3.3")      
+elseif(UNIX)
+    set(assimp_DIR "${THIRDPARTY_DIR}/assimp/linux/install/lib/cmake/assimp-3.3")   
 endif()
 
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
@@ -84,7 +86,7 @@ elseif(UNIX)
     list(APPEND LIBRARIES
          freeimage
          GLEW
-         assimp
+         ${ASSIMP_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}${ASSIMP_LIBRARIES}${CMAKE_SHARED_LIBRARY_SUFFIX}
          )
 endif()
 
@@ -126,6 +128,8 @@ if (WIN32)
     install(DIRECTORY ${THIRDPARTY_DIR}/assimp/msvc64/install/ DESTINATION thirdparty/assimp)
 elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/assimp/osx/install/ DESTINATION thirdparty/assimp)
+elseif(UNIX)
+    install(DIRECTORY ${THIRDPARTY_DIR}/assimp/linux/install/ DESTINATION thirdparty/assimp)   
 endif()
 
 # FreeImage

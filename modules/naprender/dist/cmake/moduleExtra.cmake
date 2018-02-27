@@ -37,12 +37,6 @@ if(APPLE)
     install(DIRECTORY "${THIRDPARTY_DIR}/glew/lib/" 
             DESTINATION "lib")
 
-    # Package assimp into packaged project on macOS
-    install(DIRECTORY "${THIRDPARTY_DIR}/assimp/lib/" 
-            DESTINATION "lib"
-            PATTERN "cmake" EXCLUDE
-            PATTERN "pkgconfig" EXCLUDE)       
-
     # Package SDL2 into packaged project on macOS
     install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/lib/" 
             DESTINATION "lib"
@@ -50,3 +44,11 @@ if(APPLE)
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)
 endif()
+
+if(UNIX)
+    # Package assimp into packaged project on *nix
+    install(DIRECTORY "${THIRDPARTY_DIR}/assimp/lib/" 
+            DESTINATION "lib"
+            PATTERN "cmake" EXCLUDE
+            PATTERN "pkgconfig" EXCLUDE)    
+endif()    
