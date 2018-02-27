@@ -29,7 +29,7 @@ endif()
 if(NOT TARGET nrender)
     include(${CMAKE_SOURCE_DIR}/../../cmake/nrender.cmake)
 endif(NOT TARGET nrender)
-target_link_libraries(${PROJECT_NAME} nrender ${NRENDER_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} nrender)
 target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDES})
 
 if(APPLE)
@@ -49,4 +49,4 @@ if(APPLE)
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)
-endif()    
+endif()
