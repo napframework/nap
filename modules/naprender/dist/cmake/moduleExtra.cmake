@@ -3,7 +3,7 @@ if(NOT TARGET glm)
 endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS})
 
-if(NOT TARGET glew)
+if(NOT TARGET GLEW)
     find_package(GLEW REQUIRED)
 endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLEW_INCLUDE_DIRS})
@@ -23,12 +23,6 @@ if(NOT TARGET nrender)
 endif(NOT TARGET nrender)
 target_link_libraries(${PROJECT_NAME} nrender)
 target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDES})
-
-if(APPLE)
-    # Package glew into packaged project on macOS
-    install(DIRECTORY "${THIRDPARTY_DIR}/glew/lib/" 
-            DESTINATION "lib")
-endif()
 
 if(UNIX)
     # Package assimp into packaged project on *nix
@@ -50,4 +44,8 @@ if(UNIX)
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)        
+
+    # Package glew into packaged project on *nix
+    install(DIRECTORY "${THIRDPARTY_DIR}/glew/lib/" 
+            DESTINATION "lib")   
 endif()    

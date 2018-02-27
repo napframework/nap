@@ -7,13 +7,13 @@ if(WIN32)
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew)
         set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/lib/Release/x64)
     endif()
-elseif(APPLE)
+elseif(UNIX)
     set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew)
-    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/lib)
+    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/lib)    
 endif()
 
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
-if(NOT TARGET glew)
+if(NOT TARGET GLEW)
     find_package(GLEW REQUIRED)
 endif()
 
@@ -33,19 +33,19 @@ set(NRENDER_LIBRARIES
 
 if(WIN32)
     list(APPEND NRENDER_LIBRARIES
-         glew
+         GLEW
          FreeImage
          )
 elseif(APPLE)
     list(APPEND NRENDER_LIBRARIES
-         glew
+         GLEW
          ${FREEIMAGE_LIBRARIES}
          )
 
 elseif(UNIX)
     list(APPEND NRENDER_LIBRARIES
-         GLEW     
-         FreeImage
+         GLEW
+         FreeImage         
          )
 endif()
 
@@ -82,8 +82,9 @@ if (NOT NRENDER_LIBS_DIR)
 endif()
 
 add_library(nrender INTERFACE)
-target_link_libraries(nrender INTERFACE optimized ${NRENDER_LIBS_RELEASE} ${NRENDER_LIBRARIES})
-target_link_libraries(nrender INTERFACE debug ${NRENDER_LIBS_DEBUG} ${NRENDER_LIBRARIES})
+target_link_libraries(nrender INTERFACE optimized ${NRENDER_LIBS_RELEASE})
+target_link_libraries(nrender INTERFACE debug ${NRENDER_LIBS_DEBUG})
+target_link_libraries(nrender INTERFACE ${NRENDER_LIBRARIES})
 file(GLOB nrender_headers ${CMAKE_CURRENT_LIST_DIR}/../include/nrender/*.h)
 target_sources(nrender INTERFACE ${nrender_headers})
 source_group(NAP\\NRender FILES ${nrender_headers})

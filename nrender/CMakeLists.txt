@@ -29,7 +29,12 @@ if(WIN32)
 elseif(APPLE)
     set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/osx/install/lib")
     set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/osx/install)
+elseif(UNIX)
+    set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/linux/install/lib")
+    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/linux/install)
 endif()
+find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
+find_package(GLEW REQUIRED)
 
 if(WIN32)
     set(assimp_DIR "${THIRDPARTY_DIR}/assimp/msvc64/install/lib/cmake/assimp-3.3")
@@ -38,13 +43,10 @@ elseif(APPLE)
 elseif(UNIX)
     set(assimp_DIR "${THIRDPARTY_DIR}/assimp/linux/install/lib/cmake/assimp-3.3")   
 endif()
+find_package(assimp REQUIRED)
 
-find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
-
-find_package(GLEW REQUIRED)
 find_package(OpenGL)
 find_package(glm REQUIRED)
-find_package(assimp REQUIRED)
 find_package(freeimage REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
@@ -67,23 +69,17 @@ set(LIBRARIES
     ${OPENGL_gl_LIBRARY}
     )
 
+list(APPEND LIBRARIES
+     ${GLEW_LIBRARIES}
+     ${FREEIMAGE_LIBRARIES}
+     )
+
 if(MSVC)
     list(APPEND LIBRARIES
-         ${GLEW_LIBRARIES}
-         ${FREEIMAGE_LIBRARIES}
          ${ASSIMP_LIBRARY_DIRS}/${ASSIMP_LIBRARIES}${CMAKE_STATIC_LIBRARY_SUFFIX}
          )
-elseif(APPLE)
-    list(APPEND LIBRARIES
-         ${GLEW_LIBRARIES}
-         ${FREEIMAGE_LIBRARIES}
-         ${ASSIMP_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}${ASSIMP_LIBRARIES}${CMAKE_SHARED_LIBRARY_SUFFIX}
-         )
-
 elseif(UNIX)
     list(APPEND LIBRARIES
-         GLEW
-         ${FREEIMAGE_LIBRARIES}
          ${ASSIMP_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}${ASSIMP_LIBRARIES}${CMAKE_SHARED_LIBRARY_SUFFIX}
          )
 endif()
@@ -165,6 +161,11 @@ elseif(APPLE)
     install(DIRECTORY "${THIRDPARTY_DIR}/glew/osx/install/" DESTINATION "thirdparty/glew"
             PATTERN "lib" EXCLUDE)
     install(FILES "${THIRDPARTY_DIR}/glew/osx/install/lib/libGLEW.dylib" DESTINATION "thirdparty/glew/lib")
+elseif(UNIX)
+    install(DIRECTORY "${THIRDPARTY_DIR}/glew/linux/install/" DESTINATION "thirdparty/glew"
+            PATTERN "lib" EXCLUDE)
+    file(GLOB GLEW_DYLIBS ${THIRDPARTY_DIR}/glew/linux/install/lib/*.so*)
+    install(FILES ${GLEW_DYLIBS} DESTINATION thirdparty/glew/lib)
 endif()
 
 # SDL2
@@ -176,15 +177,10 @@ if (WIN32)
     install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/" DESTINATION "thirdparty/SDL2/lib")
 elseif(APPLE)
     install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/osx/install/include" DESTINATION "thirdparty/SDL2")
-    # TODO glob SDL dylibs    
-    install(FILES "${THIRDPARTY_DIR}/SDL2/osx/install/lib/libSDL2-2.0.0.dylib" 
-                  "${THIRDPARTY_DIR}/SDL2/osx/install/lib/libSDL2.dylib" 
-            DESTINATION "thirdparty/SDL2/lib")
+    file(GLOB SDL_DYLIBS ${THIRDPARTY_DIR}/SDL2/osx/install/lib/*.dylib)
+    install(FILES ${SDL_DYLIBS} DESTINATION thirdparty/SDL2/lib)    
 elseif(UNIX)
     install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/linux/install/include" DESTINATION "thirdparty/SDL2")
-    # TODO glob SDL shared libs .so
-    install(FILES "${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2-2.0.so.0.7.0"
-                  "${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2-2.0.so.0"
-                  "${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2.so" 
-            DESTINATION "thirdparty/SDL2/lib")    
+    file(GLOB SDL_DYLIBS ${THIRDPARTY_DIR}/SDL2/linux/install/lib/*.so*)
+    install(FILES ${SDL_DYLIBS} DESTINATION thirdparty/SDL2/lib)    
 endif()
