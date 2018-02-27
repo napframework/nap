@@ -7,7 +7,7 @@ if(WIN32)
                            )
     endif()
 endif()
-if(APPLE)
+if(UNIX)
     # Python modules library installation
     install(DIRECTORY ${THIRDPARTY_DIR}/python/lib/python3.6
             DESTINATION lib/)

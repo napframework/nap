@@ -65,7 +65,7 @@ if (WIN32)
 endif()
 
 # Populate our Python virtual environment configuration 
-if(APPLE)
+if(UNIX)
     set(THIRDPARTY_PYTHON_PREFIX ${THIRDPARTY_DIR}/python/)
     configure_file(${THIRDPARTY_DIR}/python/pyvenv.cfg.in
                    ${THIRDPARTY_DIR}/python/pyvenv.cfg
@@ -86,10 +86,10 @@ if (NOT WIN32)
     install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
     install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
 
-    if(APPLE)
+    if(UNIX)
         # Install our Python dylib from thirdparty.  Doing this here instead of in mod_nappython as RTTI (and as a result Core)
         # depend on Python. Python modules are only installed if we're using mod_nappython as they're not required for RTTI/Core.
-        install(FILES ${THIRDPARTY_DIR}/python/lib/libpython3.6m.dylib
+        install(FILES ${THIRDPARTY_DIR}/python/lib/libpython3.6m${CMAKE_SHARED_LIBRARY_SUFFIX}
                 DESTINATION lib/)
     else()
         # On Linux set use lib directory for RPATH

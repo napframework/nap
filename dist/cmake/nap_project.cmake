@@ -139,7 +139,7 @@ copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
 # Copy our Python virtual environment configuration for non-packaged builds
-if(APPLE)
+if(UNIX)
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
