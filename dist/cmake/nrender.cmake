@@ -20,10 +20,8 @@ endif()
 find_package(OpenGL)
 find_package(glm REQUIRED)
 
-if(NOT TARGET freeimage)
-    if(APPLE OR WIN32)
-        find_package(freeimage REQUIRED)
-    endif()
+if(NOT TARGET FreeImage)
+    find_package(FreeImage REQUIRED)
 endif()
 
 set(ENV{SDL2DIR} ${THIRDPARTY_DIR}/SDL2/)
@@ -36,7 +34,7 @@ set(NRENDER_LIBRARIES
 if(WIN32)
     list(APPEND NRENDER_LIBRARIES
          glew
-         freeimage
+         FreeImage
          )
 elseif(APPLE)
     list(APPEND NRENDER_LIBRARIES
@@ -46,8 +44,8 @@ elseif(APPLE)
 
 elseif(UNIX)
     list(APPEND NRENDER_LIBRARIES
-         freeimage
-         GLEW
+         GLEW     
+         FreeImage
          )
 endif()
 

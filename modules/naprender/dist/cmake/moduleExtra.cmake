@@ -12,16 +12,11 @@ if(NOT TARGET assimp)
     find_package(assimp REQUIRED)
 endif()
 
-if (WIN32 OR APPLE)
-    # On Windows and macOS find our local FreeImage
-    if(NOT TARGET freeimage)
-        find_package(freeimage REQUIRED)
-    endif()
-    target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
-else()
-    # On Linux use system freeimage
-    target_link_libraries(${PROJECT_NAME} freeimage)
+# FreeImage
+if(NOT TARGET FreeImage)
+    find_package(FreeImage REQUIRED)
 endif()
+target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
 
 if(NOT TARGET nrender)
     include(${CMAKE_SOURCE_DIR}/../../cmake/nrender.cmake)
@@ -48,4 +43,11 @@ if(UNIX)
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)    
+
+    # Package FreeImage into packaged project on *nix
+    install(DIRECTORY "${THIRDPARTY_DIR}/FreeImage/lib/" 
+            DESTINATION "lib"
+            PATTERN "cmake" EXCLUDE
+            PATTERN "pkgconfig" EXCLUDE
+            PATTERN "*.a" EXCLUDE)        
 endif()    

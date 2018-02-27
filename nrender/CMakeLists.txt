@@ -45,12 +45,7 @@ find_package(GLEW REQUIRED)
 find_package(OpenGL)
 find_package(glm REQUIRED)
 find_package(assimp REQUIRED)
-if(APPLE)
-    find_package(freeimage REQUIRED)
-endif()
-if(WIN32)
-    find_package(freeimage REQUIRED)
-endif()
+find_package(freeimage REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
@@ -87,8 +82,8 @@ elseif(APPLE)
 
 elseif(UNIX)
     list(APPEND LIBRARIES
-         freeimage
          GLEW
+         ${FREEIMAGE_LIBRARIES}
          ${ASSIMP_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}${ASSIMP_LIBRARIES}${CMAKE_SHARED_LIBRARY_SUFFIX}
          )
 endif()
@@ -147,6 +142,12 @@ elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/osx/license/
             DESTINATION thirdparty/FreeImage/license
             )
+elseif(UNIX)
+    file(GLOB FREEIMAGE_LICENSE_FILES ${THIRDPARTY_DIR}/FreeImage/linux/install/license*.txt)
+    install(FILES ${FREEIMAGE_LICENSE_FILES} DESTINATION thirdparty/FreeImage/license)
+    install(FILES ${THIRDPARTY_DIR}/FreeImage/linux/install/include/FreeImage.h DESTINATION thirdparty/FreeImage/include)
+    file(GLOB FREEIMAGE_DYLIBS ${THIRDPARTY_DIR}/FreeImage/linux/install/lib/*.so*)
+    install(FILES ${FREEIMAGE_DYLIBS} DESTINATION thirdparty/FreeImage/lib)
 endif()
 
 # GLM
