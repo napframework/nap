@@ -22,7 +22,8 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore mod_napmath mod_napscene artnet)
+set(DEPENDENT_NAP_MODULES napcore mod_napmath mod_napscene)
+target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} artnet)
 
 if (WIN32)
     set(FILES_TO_COPY
@@ -74,4 +75,9 @@ else()
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
 
     install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/bin")
+endif()
+
+# Set packaged Linux RPATH 
+if (UNIX AND NOT APPLE)
+    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
 endif()
