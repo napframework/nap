@@ -424,7 +424,7 @@ namespace nap
 #else
 		// set PYTHONHOME for thirdparty location beside NAP source
 		std::string napRoot = exeDir + "/../../../";
-		const std::string pythonHome = napRoot + "/thirdparty/python/" + platformPrefix + "/install";
+		const std::string pythonHome = napRoot + "/../thirdparty/python/" + platformPrefix + "/install";
 		Logger::info("Setting PYTHONHOME to %s\n", pythonHome.c_str());
 		setenv("PYTHONHOME", pythonHome.c_str(), 1);
 #endif
