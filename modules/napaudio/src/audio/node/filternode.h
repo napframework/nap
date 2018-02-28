@@ -96,8 +96,8 @@ namespace nap {
             // Filter coefficients
             ControllerValue a0, a1, a2, b1, b2;
             
-            Delay mOutput;
-            Delay mInput;
+            Delay mOutput; // Delay line storing the input signal.
+            Delay mInput; // Delay line storing the output signal.
         };
         
     }

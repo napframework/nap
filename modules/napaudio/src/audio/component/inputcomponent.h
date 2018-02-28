@@ -29,7 +29,7 @@ namespace nap
             InputComponent() : AudioComponentBase() { }
             
             // Properties
-            std::vector<int> mChannels; /**< Defines what audio input channels to receive data from. The size of this array determines the number of channels that this component will output. */
+            std::vector<int> mChannels; ///< property: 'Channels' Defines what audio input channels to receive data from. The size of this array determines the number of channels that this component will output.
             
         private:
         };
@@ -53,7 +53,7 @@ namespace nap
             OutputPin& getOutputForChannel(int channel) override { return mInputNodes[channel]->audioOutput; }
             
         private:
-            std::vector<std::unique_ptr<InputNode>> mInputNodes;
+            std::vector<std::unique_ptr<InputNode>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
         };
         
     }
