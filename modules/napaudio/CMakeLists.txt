@@ -6,12 +6,12 @@ find_package(libmpg123 REQUIRED)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.h)
 
-source_group("core" src/core/*.*)
-source_group("node" src/node/*.*)
-source_group("object" src/object/*.*)
-source_group("resource" src/resource/*.*)
-source_group("service" src/service/*.*)
-source_group("utility" src/utility/*.*)
+source_group("core" src/audio/core/*.*)
+source_group("node" src/audio/node/*.*)
+source_group("component" src/audio/component/*.*)
+source_group("resource" src/audio/resource/*.*)
+source_group("service" src/audio/service/*.*)
+source_group("utility" src/audio/utility/*.*)
 
 set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 

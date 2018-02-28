@@ -9,46 +9,32 @@ namespace nap
 	/**
 	 * Helper class that can sort a list of components back to front or front to back.
 	 */
-	class DepthSorter
+	class NAPAPI DepthSorter
 	{
 	public:
 		enum class EMode
 		{
-			FrontToBack,
-			BackToFront
+			FrontToBack = 0,			///< Sort front to back
+			BackToFront					///< Sort back to front
 		};
 
-		DepthSorter(EMode mode, const glm::mat4x4& viewMatrix) :
-			mViewMatrix(viewMatrix),
-			mMode(mode)
-		{
-		}
+		/**
+		 * Default constructor
+		 * @param mode the sort mode to use
+		 * @param viewMatrix the camera location in world space
+		 */
+		DepthSorter(EMode mode, const glm::mat4x4& viewMatrix);
 
-		bool operator()(const nap::ComponentInstance* objectA, const nap::ComponentInstance* objectB)
-		{
-			// Get the transform of objectA in view space
-			const nap::EntityInstance& entityA			= *objectA->getEntityInstance();
-			const nap::TransformComponentInstance& transformA	= entityA.getComponent<nap::TransformComponentInstance>();
-			const glm::mat4 view_space_a				= mViewMatrix * transformA.getGlobalTransform();
-
-			// Get the transform of objectB in view space
-			const nap::EntityInstance& entityB			= *objectB->getEntityInstance();
-			const nap::TransformComponentInstance& transformB	= entityB.getComponent<nap::TransformComponentInstance>();
-			const glm::mat4 view_space_b				= mViewMatrix * transformB.getGlobalTransform();
-
-			// Get the z-component (i.e. depth) of both entities
-			float a_z = view_space_a[3].z;
-			float b_z = view_space_b[3].z;
-			
-			// Compare
-			if (mMode == EMode::BackToFront)
-				return a_z < b_z;
-			else
-				return a_z > b_z;
-		}
+		/**
+		 * Compares location of objectA to objectB based on the current sort mode
+		 * @param objectA the first object to compare against
+		 * @param objectB the second object to compare against
+		 * @return if objectA is closer or further away than objectB based on the current sort mode
+		 */
+		bool operator()(const nap::ComponentInstance* objectA, const nap::ComponentInstance* objectB);
 
 	private:
 		const glm::mat4x4& mViewMatrix;
-		EMode mMode;
+		EMode mMode = EMode::FrontToBack;
 	};
 }

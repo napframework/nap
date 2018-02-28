@@ -40,7 +40,7 @@ namespace opengl
 		auto it = map.find(type);
 		if (it == map.end())
 		{
-			printMessage(MessageType::ERROR, "unable to find GL type with id: %d", type);
+			printMessage(EGLSLMessageType::Error, "unable to find GL type with id: %d", type);
 			return 0;
 		}
 		return it->second;
