@@ -43,7 +43,7 @@ endif()
 # Set up our Python virtual environment configuration so that we can find our Python libs later
 if(APPLE)
     set(THIRDPARTY_PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
-    configure_file(${THIRDPARTY_DIR}/python/osx/pyvenv.cfg.in
+    configure_file(${THIRDPARTY_DIR}/python/pyvenv.cfg.in
                    ${THIRDPARTY_DIR}/python/osx/pyvenv.cfg
                    @ONLY)
 endif()
