@@ -91,6 +91,11 @@ namespace nap
 		void setLuxRange(const glm::vec2 range);
 
 		/**
+		 *	@return the lux range
+		 */
+		glm::vec2 getLuxRange() const					{ return mLuxRange; }
+
+		/**
 		 * Sets the light output range
 		 * @param range the min and max (normalized) light output values
 		 */

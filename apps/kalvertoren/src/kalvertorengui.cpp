@@ -15,12 +15,129 @@
 
 namespace nap
 {
+	/**
+	 *	Imgui statics
+	 */
+	static bool showControls	= false;
+	static bool showInfo		= false;
+
 	KalvertorenGui::KalvertorenGui(KalvertorenApp& app) : mApp(app)
-	{	}
-
-
-	void KalvertorenGui::update()
 	{
+		mLuxValues.fill(0.0f);
+		mBrightnessValues.fill(0.0f);
+	}
+
+
+	void KalvertorenGui::update(double deltaTime)
+	{
+		// Update buffers
+		updateLuxHistogram(deltaTime);
+
+		// Menu
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("Display"))
+			{
+				ImGui::MenuItem("Controls", NULL, &showControls);
+				ImGui::MenuItem("Information", NULL, &showInfo);
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
+
+		// Show control menu
+		if (showControls)
+			showControlWindow();
+
+		if (showInfo)
+			showInfoWindow();
+	}
+
+
+	void KalvertorenGui::draw()
+	{
+		mApp.getCore().getService<IMGuiService>()->draw();
+	}
+
+
+	void KalvertorenGui::selectCompositionCycleMode()
+	{
+		CompositionComponentInstance& comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
+		comp.setCycleMode(static_cast<nap::CompositionCycleMode>(mCompositionCycleMode));
+	}
+
+
+	void KalvertorenGui::selectPaletteWeek()
+	{
+		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		comp.selectWeek(mSelectedWeek - 1);
+	}
+
+
+	void KalvertorenGui::selectPaletteCycleMode()
+	{
+		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		comp.setCycleMode(static_cast<nap::ColorPaletteCycleMode>(mColorPaletteCycleMode));
+	}
+
+
+	void KalvertorenGui::setColorPaletteCycleSpeed(float minutes)
+	{
+		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		comp.setCycleSpeed(minutes * 60.0f);
+	}
+
+
+	void KalvertorenGui::selectPaintMethod()
+	{
+		// Get all the color selection components
+		std::vector<SelectColorMethodComponentInstance*> color_methods;
+
+		for (auto& entity : mApp.compositionEntity->getChildren())
+		{
+			SelectColorMethodComponentInstance* color_method = &(entity->getComponent<SelectColorMethodComponentInstance>());
+			color_methods.emplace_back(color_method);
+		}
+
+		for (auto& color_method : color_methods)
+		{
+			switch (mPaintMode)
+			{
+			case 0:
+				color_method->select(RTTI_OF(nap::ApplyTracerColorComponentInstance));
+				break;
+			case 1:
+				color_method->select(RTTI_OF(nap::ApplyBBColorComponentInstance));
+				break;
+			case 2:
+				color_method->select(RTTI_OF(nap::ApplyCompositionComponentInstance));
+				break;
+			default:
+				assert(false);
+				break;
+			}
+		}
+	}
+
+
+	void KalvertorenGui::init()
+	{
+		SelectLedMeshComponentInstance& selector = mApp.displayEntity->getComponent<SelectLedMeshComponentInstance>();
+		mMeshSelection = selector.getIndex();
+
+		// Force paint method
+		selectPaintMethod();
+
+		// Force cycle modes
+		selectCompositionCycleMode();
+		selectPaletteCycleMode();
+		setColorPaletteCycleSpeed(mColorCycleTime);
+	}
+
+
+	void KalvertorenGui::showControlWindow()
+	{
+
 		// Get all the color selection components
 		std::vector<SelectColorMethodComponentInstance*> color_methods;
 		std::vector<ApplyTracerColorComponentInstance*>  tracer_painters;
@@ -44,13 +161,7 @@ namespace nap
 		CompositionComponentInstance& composition_selector = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
 
 		// Resets all the tracers
-		ImGui::Begin("Kalvertoren");
-
-		ImGui::Spacing();
-		utility::getCurrentDateTime(mDateTime);
-		ImGui::Text(mDateTime.toString().c_str());
-		ImGui::Text("Week %02d", mDateTime.getWeek());
-		ImGui::Spacing();
+		ImGui::Begin("Controls");
 
 		if (ImGui::CollapsingHeader("DisplaySettings"))
 		{
@@ -194,11 +305,29 @@ namespace nap
 				}
 			}
 		}
+		ImGui::End();
+	}
 
-		if (ImGui::CollapsingHeader("Information"))
+
+	void KalvertorenGui::showInfoWindow()
+	{
+
+		// GUI Colors
+		RGBColorFloat float_clr = mTextColor.convert<RGBColorFloat>();
+		ImVec4 float_clr_gui = { float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f };
+
+		ImGui::Begin("Information");
+		ImGui::Spacing();
+		utility::getCurrentDateTime(mDateTime);
+		ImGui::Text(mDateTime.toString().c_str());
+		ImGui::Text("Week %02d", mDateTime.getWeek());
+		ImGui::TextColored(float_clr_gui, "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Spacing();
+
+		// Artnet information
+		if (ImGui::CollapsingHeader("Artnet"))
 		{
-			RGBColorFloat float_clr = mTextColor.convert<RGBColorFloat>();
-			ImVec4 float_clr_gui = { float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f };
+			SelectLedMeshComponentInstance& mesh_selector = mApp.displayEntity->getComponent<SelectLedMeshComponentInstance>();
 			for (int i = 0; i < mesh_selector.getLedMeshes().size(); i++)
 			{
 				std::vector<std::string> parts;
@@ -218,102 +347,52 @@ namespace nap
 
 				ImGui::Text(universes.c_str());
 			}
+		}
 
-			// Fps
-			ImGui::TextColored(float_clr_gui, "Framerate");
-			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
+		// Lux
+		if (ImGui::CollapsingHeader("Lux"))
+		{
 			// Light
 			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
 			ImGui::TextColored(float_clr_gui, "Lux Sensor Average");
 			ImGui::Text(utility::stringFormat("%f", light_comp.getLuxAverage()).c_str());
+			glm::vec2 lux_range = light_comp.getLuxRange();
+			ImGui::InputFloat2("Display Bounds", &(mLuxDisplayBounds.x));
+			ImGui::PlotHistogram("Sensor History", mLuxValues.data(), mLuxValues.size(), mLuxIdx, NULL, mLuxDisplayBounds.x, mLuxDisplayBounds.y, ImVec2(0, 80));
+
+
 			ImGui::TextColored(float_clr_gui, "Output Brightness");
 			ImGui::Text(utility::stringFormat("%f", light_comp.getBrightness()).c_str());
+			ImGui::PlotHistogram("Brightness History", mBrightnessValues.data(), mBrightnessValues.size(), mBrightnessIdx, NULL, 0.0f, 1.0f, ImVec2(0, 80));
 		}
+
 		ImGui::End();
 	}
 
 
-	void KalvertorenGui::draw()
+	void KalvertorenGui::updateLuxHistogram(double deltaTime)
 	{
-		mApp.getCore().getService<IMGuiService>()->draw();
+		// Update time, when 1 second has passed update lux value buffer
+		mLuxTime += deltaTime;
+		if (mLuxTime < mLuxSampleTime)
+			return;
+		mLuxTime = 0.0f;
+
+		// Fill lux buffer
+		LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+		mLuxValues[mLuxIdx] = light_comp.getLuxAverage();
+
+		// Reset index if necessary
+		if (++mLuxIdx == mLuxValues.size())
+			mLuxIdx = 0;
+
+		// Fill brightness buffer
+		mBrightnessValues[mBrightnessIdx] = light_comp.getBrightness();
+
+		// Reset index
+		if (++mBrightnessIdx == mBrightnessValues.size())
+			mBrightnessIdx = 0;
 	}
-
-
-	void KalvertorenGui::selectCompositionCycleMode()
-	{
-		CompositionComponentInstance& comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
-		comp.setCycleMode(static_cast<nap::CompositionCycleMode>(mCompositionCycleMode));
-	}
-
-
-	void KalvertorenGui::selectPaletteWeek()
-	{
-		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.selectWeek(mSelectedWeek - 1);
-	}
-
-
-	void KalvertorenGui::selectPaletteCycleMode()
-	{
-		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.setCycleMode(static_cast<nap::ColorPaletteCycleMode>(mColorPaletteCycleMode));
-	}
-
-
-	void KalvertorenGui::setColorPaletteCycleSpeed(float minutes)
-	{
-		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.setCycleSpeed(minutes * 60.0f);
-	}
-
-
-	void KalvertorenGui::selectPaintMethod()
-	{
-		// Get all the color selection components
-		std::vector<SelectColorMethodComponentInstance*> color_methods;
-
-		for (auto& entity : mApp.compositionEntity->getChildren())
-		{
-			SelectColorMethodComponentInstance* color_method = &(entity->getComponent<SelectColorMethodComponentInstance>());
-			color_methods.emplace_back(color_method);
-		}
-
-		for (auto& color_method : color_methods)
-		{
-			switch (mPaintMode)
-			{
-			case 0:
-				color_method->select(RTTI_OF(nap::ApplyTracerColorComponentInstance));
-				break;
-			case 1:
-				color_method->select(RTTI_OF(nap::ApplyBBColorComponentInstance));
-				break;
-			case 2:
-				color_method->select(RTTI_OF(nap::ApplyCompositionComponentInstance));
-				break;
-			default:
-				assert(false);
-				break;
-			}
-		}
-	}
-
-
-	void KalvertorenGui::init()
-	{
-		SelectLedMeshComponentInstance& selector = mApp.displayEntity->getComponent<SelectLedMeshComponentInstance>();
-		mMeshSelection = selector.getIndex();
-
-		// Force paint method
-		selectPaintMethod();
-
-		// Force cycle modes
-		selectCompositionCycleMode();
-		selectPaletteCycleMode();
-		setColorPaletteCycleSpeed(mColorCycleTime);
-	}
-
 }
 
 

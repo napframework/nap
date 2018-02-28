@@ -3,6 +3,7 @@
 #include <color.h>
 #include <glm/glm.hpp>
 #include <utility/datetimeutils.h>
+#include <queue>
 
 namespace nap
 {
@@ -31,7 +32,7 @@ namespace nap
 		/**
 		 *	Updates the gui
 		 */
-		void update();
+		void update(double deltaTime);
 
 		/**
 		 *	Render the gui
@@ -65,8 +66,29 @@ namespace nap
 		utility::DateTime									mDateTime;
 		RGBColor8											mTextColor = { 0xC8, 0x69, 0x69 };
 
+		// Information
+		std::array<float, 400>								mLuxValues;
+		std::array<float, 400>								mBrightnessValues;
+		float												mLuxSampleTime = 0.5f;
+		int													mLuxIdx		= 0;
+		int													mBrightnessIdx = 0;
+		float												mLuxTime	= 0.0f;
+		glm::vec2											mLuxDisplayBounds = { 0, 2000.0f };
+		float												mDisplayRange = 0.1f;
+		float												mDisplayOffset = 0.25f;
+
 		/**
-		*	Sets the current paint method
+		 *	Shows the controls menu
+		 */
+		void showControlWindow();
+
+		/**
+		 *	Shows the information window
+		 */
+		void showInfoWindow();
+
+		/**
+		* Sets the current paint method
 		*/
 		void selectPaintMethod();
 
@@ -89,5 +111,13 @@ namespace nap
 		*	Sets the current color palette cycle speed
 		*/
 		void setColorPaletteCycleSpeed(float seconds);
+
+		/**
+		 *	Update lux historgram
+		 */
+		void updateLuxHistogram(double deltaTime);
+
+	private:
+		double mElapsedTime = 0.0f;
 	};
 }

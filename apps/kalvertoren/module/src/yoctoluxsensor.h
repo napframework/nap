@@ -42,7 +42,7 @@ namespace nap
 		std::string			mName;						///< Property: 'Name' name of the lux sensor
 		int					mRetries = 10;				///< Number of times connection is retried before exiting the loop
 		int					mBufferSize = 10;			///< Size of the lux sensor read-out buffer
-		int					mDelayTime = 1000;			///< Time in between sensor reads
+		int					mDelayTime = 250;			///< Time in between sensor reads
 
 	private:
 		void*				mSensor = nullptr;			///< Light sensor

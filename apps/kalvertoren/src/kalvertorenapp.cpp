@@ -90,7 +90,7 @@ namespace nap
 		positionDebugViews();
 
 		// Update our gui
-		mGui->update();
+		mGui->update(deltaTime);
 	}
 
 
