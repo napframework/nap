@@ -1,25 +1,35 @@
-if (WIN32)
+if(WIN32)
     find_path(
         ASSIMP_LIBS_DIR
         NAMES assimp-vc140-mt.dll
         HINTS
-        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/assimp/bin/
+        ${THIRDPARTY_DIR}/assimp/bin/
     )
-
     set(ASSIMP_LIBS ${ASSIMP_LIBS_DIR}/assimp-vc140-mt.dll)
+elseif(APPLE)
+else()
+    find_path(
+        ASSIMP_LIBS_DIR
+        NAMES libassimp.so
+        HINTS
+        ${THIRDPARTY_DIR}/assimp/lib/
+    )
+    set(ASSIMP_LIBS ${ASSIMP_LIBS_DIR}/libassimp.so)
+endif()
 
-    # TODO later: Fix CMake approach and use config-style package files
+# TODO later: Fix CMake approach and use config-style package files
 
-    include(FindPackageHandleStandardArgs)
-    find_package_handle_standard_args(assimp REQUIRED_VARS ASSIMP_LIBS_DIR)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(assimp REQUIRED_VARS ASSIMP_LIBS_DIR)
 
-	add_library(assimp SHARED IMPORTED)
-	set_target_properties(assimp PROPERTIES
-	    IMPORTED_CONFIGURATIONS "Debug;Release"
-	    IMPORTED_LOCATION_RELEASE ${ASSIMP_LIBS}
-	    IMPORTED_LOCATION_DEBUG ${ASSIMP_LIBS}
-	)
+add_library(assimp SHARED IMPORTED)
+set_target_properties(assimp PROPERTIES
+    IMPORTED_CONFIGURATIONS "Debug;Release"
+    IMPORTED_LOCATION_RELEASE ${ASSIMP_LIBS}
+    IMPORTED_LOCATION_DEBUG ${ASSIMP_LIBS}
+)
 
+if(WIN32)
     # Copy over DLL post-build
     add_custom_command(
         TARGET ${PROJECT_NAME}
