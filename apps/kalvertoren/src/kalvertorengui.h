@@ -67,15 +67,13 @@ namespace nap
 		RGBColor8											mTextColor = { 0xC8, 0x69, 0x69 };
 
 		// Information
-		std::array<float, 400>								mLuxValues;
-		std::array<float, 400>								mBrightnessValues;
-		float												mLuxSampleTime = 0.5f;
+		std::array<float, 180>								mLuxValues;
+		std::array<float, 180>								mBrightnessValues;
+		float												mLuxSampleTime = 1.0f;
 		int													mLuxIdx		= 0;
 		int													mBrightnessIdx = 0;
 		float												mLuxTime	= 0.0f;
 		glm::vec2											mLuxDisplayBounds = { 0, 2000.0f };
-		float												mDisplayRange = 0.1f;
-		float												mDisplayOffset = 0.25f;
 
 		/**
 		 *	Shows the controls menu

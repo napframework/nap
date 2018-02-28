@@ -324,6 +324,24 @@ namespace nap
 		ImGui::TextColored(float_clr_gui, "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Spacing();
 
+		// Lux
+		if (ImGui::CollapsingHeader("Lux"))
+		{
+			// plot lux history
+			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+			ImGui::TextColored(float_clr_gui, "Lux Sensor Average");
+			ImGui::Text(utility::stringFormat("%f", light_comp.getLuxAverage()).c_str());
+			ImGui::SliderFloat("Sample Interval (sec)", &mLuxSampleTime, 0.0f, 10.0f, "%.3f", 2.0f);
+			glm::vec2 lux_range = light_comp.getLuxRange();
+			ImGui::InputFloat2("Display Bounds", &(mLuxDisplayBounds.x));
+			ImGui::PlotHistogram("Sensor History", mLuxValues.data(), mLuxValues.size(), mLuxIdx, NULL, mLuxDisplayBounds.x, mLuxDisplayBounds.y, ImVec2(0, 80));
+
+			// plot brightness history
+			ImGui::TextColored(float_clr_gui, "Output Brightness");
+			ImGui::Text(utility::stringFormat("%f", light_comp.getBrightness()).c_str());
+			ImGui::PlotHistogram("Brightness History", mBrightnessValues.data(), mBrightnessValues.size(), mBrightnessIdx, NULL, 0.0f, 1.0f, ImVec2(0, 80));
+		}
+
 		// Artnet information
 		if (ImGui::CollapsingHeader("Artnet"))
 		{
@@ -347,23 +365,6 @@ namespace nap
 
 				ImGui::Text(universes.c_str());
 			}
-		}
-
-		// Lux
-		if (ImGui::CollapsingHeader("Lux"))
-		{
-			// Light
-			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
-			ImGui::TextColored(float_clr_gui, "Lux Sensor Average");
-			ImGui::Text(utility::stringFormat("%f", light_comp.getLuxAverage()).c_str());
-			glm::vec2 lux_range = light_comp.getLuxRange();
-			ImGui::InputFloat2("Display Bounds", &(mLuxDisplayBounds.x));
-			ImGui::PlotHistogram("Sensor History", mLuxValues.data(), mLuxValues.size(), mLuxIdx, NULL, mLuxDisplayBounds.x, mLuxDisplayBounds.y, ImVec2(0, 80));
-
-
-			ImGui::TextColored(float_clr_gui, "Output Brightness");
-			ImGui::Text(utility::stringFormat("%f", light_comp.getBrightness()).c_str());
-			ImGui::PlotHistogram("Brightness History", mBrightnessValues.data(), mBrightnessValues.size(), mBrightnessIdx, NULL, 0.0f, 1.0f, ImVec2(0, 80));
 		}
 
 		ImGui::End();
