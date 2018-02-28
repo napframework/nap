@@ -178,6 +178,10 @@ namespace nap
 		 */
 		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
 		
+		// Temporarily set our Python home location until we have the ability to do this via CMake
+		// into runtime module configuration
+		bool tempSettingOfPythonHome(utility::ErrorState& errorState);
+		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 

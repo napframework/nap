@@ -13,6 +13,11 @@
 
 #include <packaginginfo.h>
 
+// Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
+#if defined(__APPLE__) || defined(__unix__)
+	#include <stdlib.h>
+#endif
+
 using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Core)
@@ -53,6 +58,11 @@ namespace nap
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
+		
+		// Temporarily set our Python home location until we have the ability to do this via CMake
+		// into runtime module configuration
+		if (!tempSettingOfPythonHome(error))
+			return false;
 		
 		// Load our module names from the project info
 		ProjectInfo projectInfo;
@@ -378,5 +388,46 @@ namespace nap
 		
 		errorState.fail("Couldn't find data for project %s", projectName.c_str());
 		return false;
-	}	
+	}
+
+	// Temporarily set our Python home location until we have the ability to do this via CMake
+	// into runtime module configuration
+	bool Core::tempSettingOfPythonHome(utility::ErrorState& errorState)
+	{
+#if _WIN32
+		// Don't do anything for now on Windows as we haven't got Python in thirparty yet
+		return true;
+#endif
+	
+		const std::string exeDir = utility::getExecutableDir();
+		
+#ifdef __APPLE__
+		const std::string platformPrefix = "osx";
+#else // __unix__
+		const std::string platformPrefix = "linux";
+#endif
+		
+#if defined(NAP_PACKAGED_BUILD)
+		const std::string packagedAppPythonPath = exeDir + "/lib/python3.6";
+		if (utility::dirExists(packagedAppPythonPath)){
+			// set PYTHONHOME for that
+			Logger::info("Setting PYTHONHOME to %s\n", exeDir.c_str());
+			setenv("PYTHONHOME", exeDir.c_str(), 1);
+		}
+		else {
+			// set PYTHONHOME to thirdparty location within packaged NAP release
+			const std::string napRoot = exeDir + "/../../../../";
+			const std::string pythonHome = napRoot + "/thirdparty/python/";
+			Logger::info("Setting PYTHONHOME to %s\n", pythonHome.c_str());
+			setenv("PYTHONHOME", pythonHome.c_str(), 1);
+		}
+#else
+		// set PYTHONHOME for thirdparty location beside NAP source
+		std::string napRoot = exeDir + "/../../../";
+		const std::string pythonHome = napRoot + "/thirdparty/python/" + platformPrefix + "/install";
+		Logger::info("Setting PYTHONHOME to %s\n", pythonHome.c_str());
+		setenv("PYTHONHOME", pythonHome.c_str(), 1);
+#endif
+		return true;
+	}
 }
