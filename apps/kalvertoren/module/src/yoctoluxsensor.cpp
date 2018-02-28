@@ -4,12 +4,14 @@
 #include <nap/logger.h>
 #include <yocto_lightsensor.h>
 #include <iostream>
-
+#include <nap/configure.h>
 
 // nap::yoctoluxsensor run time class definition 
 RTTI_BEGIN_CLASS(nap::YoctoLuxSensor)
 	RTTI_PROPERTY("Name",		&nap::YoctoLuxSensor::mName,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Retries",	&nap::YoctoLuxSensor::mRetries,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Retries",	&nap::YoctoLuxSensor::mRetries,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BufferSize", &nap::YoctoLuxSensor::mBufferSize,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DelayTime",	&nap::YoctoLuxSensor::mDelayTime,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -83,6 +85,12 @@ namespace nap
 		// Number of retries when read-out fails
 		mCurrentRetries = 0;
 
+		// Create buffer that holds x amount of lux read-out values
+		std::vector<float> lux_buffer(mBufferSize, 0.0f);
+		int lux_idx = 0;
+		float accum_value = 0.0f;
+		bool first = true;
+
 		// Keep running until a 
 		while (!mStopReading && mCurrentRetries <= mRetries)
 		{
@@ -91,7 +99,7 @@ namespace nap
 				nap::Logger::warn("retry: %d", mCurrentRetries);
 
 			// Sleep
-			YRETCODE sleep = ySleep(1000, errorMsg);
+			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), errorMsg);
 			if (sleep != YAPI_SUCCESS)
 			{
 				mCurrentRetries++;
@@ -108,7 +116,20 @@ namespace nap
 			}
 
 			// Read current value
-			mValue = static_cast<float>(curr_sensor->get_currentValue());
+			float sensor_value = static_cast<float>(curr_sensor->get_currentValue());
+
+			// Calculate accumulated value sensor vale
+			accum_value -= lux_buffer[lux_idx];
+			accum_value += sensor_value;
+			lux_buffer[lux_idx] = sensor_value;
+			if (++lux_idx == lux_buffer.size())
+			{
+				lux_idx = 0;
+				first = false;
+			}
+
+			// Calculate average
+			mValue = first ? accum_value / static_cast<float>(lux_idx) : accum_value / static_cast<float>(lux_buffer.size());
 
 			// Note that we're online and have a valid value in stock
 			mReading = true;
