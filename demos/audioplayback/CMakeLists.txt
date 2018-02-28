@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(audioplayback)
 
 #add all cpp files to SOURCES
@@ -15,17 +15,25 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 
 target_link_libraries(${PROJECT_NAME} mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napapp mod_napcameracontrol mod_napaudio)
-add_dependencies(${PROJECT_NAME} fbxconverter)
+
+# Build into a project directory under bin
+set_output_directories()
 
 if (WIN32)
-	# Copy freeimage DLL
-	find_package(freeimage REQUIRED)
-	copy_freeimage_dll()
+    # Copy freeimage DLL
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
 
-    	# Copy over some crap window dlls
-	copy_base_windows_graphics_dlls()
-	copy_windows_ffmpeg_dlls()
+    # Copy over some crap window dlls
+    copy_base_windows_graphics_dlls()
+    copy_windows_ffmpeg_dlls()
 endif()
 
-# create post build event
-export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+# Copy project json to project bin dir and export fbx, via post-build events
+copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
+
+# Install virtual env config file so our Python exec lib can find the modules in thirdparty
+install_python_virtualenv_config()
+
+# Package into release build
+package_project_into_release("demos/${PROJECT_NAME}")
