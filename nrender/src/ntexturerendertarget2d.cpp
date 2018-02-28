@@ -91,7 +91,7 @@ namespace opengl
 	{
 		if (!isAllocated())
 		{
-			printMessage(MessageType::ERROR, "unable to bind render target, buffer is not allocated");
+			printMessage(EGLSLMessageType::Error, "unable to bind render target, buffer is not allocated");
 			return false;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
@@ -105,7 +105,7 @@ namespace opengl
 	{
 		if (!isAllocated())
 		{
-			printMessage(MessageType::ERROR, "unable to unbind render target, buffer is not allocated");
+			printMessage(EGLSLMessageType::Error, "unable to unbind render target, buffer is not allocated");
 			return false;
 		}
 
