@@ -7,7 +7,7 @@ macro(nap_qt_pre)
     if(DEFINED ENV{QT_DIR})
         set(QTDIR $ENV{QT_DIR})
         message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
-    else()
+    elseif(APPLE OR MSVC)
         message("No QT_DIR env var found")
     endif()
 
