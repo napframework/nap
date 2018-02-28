@@ -7,6 +7,7 @@
 #include "cameracomponent.h"
 #include "cameracontroller.h"
 #include "artnetmeshfromfile.h"
+#include "kalvertorengui.h"
 
 // External Includes
 #include <app.h>
@@ -26,9 +27,12 @@
 
 namespace nap
 {
+	class KalvertorenGui;
+
 	class KalvertorenApp : public App
 	{
 		RTTI_ENABLE(App)
+		friend class KalvertorenGui;
 	public:
 		KalvertorenApp(Core& core) : App(core)	{ }
 
@@ -62,36 +66,6 @@ namespace nap
 		 */
 		virtual void inputMessageReceived(InputEventPtr inputEvent) override;
 
-		/**
-		 *	Updates the gui
-		 */
-		void updateGui();
-
-		/**
-		 *	Sets the current paint method
-		 */
-		void selectPaintMethod();
-
-		/**
-		 *	Sets the current composition cycle mode
-		 */
-		void selectCompositionCycleMode();
-
-		/**
-		 *	Sets the current palette week
-		 */
-		void selectPaletteWeek();
-
-		/**
-		 *	Sets the current palette cycle mode
-		 */
-		void selectPaletteCycleMode();
-
-		/**
-		 *	Sets the current color palette cycle speed
-		 */
-		void setColorPaletteCycleSpeed(float seconds);
-
 	private:
 		// Nap Objects
 		nap::RenderService*									renderService = nullptr;
@@ -111,29 +85,7 @@ namespace nap
 		nap::ObjectPtr<nap::Material>						vertexMaterial = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>					displayEntity = nullptr;
 
-		// GUI
-		int													mMeshSelection = 0;
-		int													mPaintMode = 2;
-		int													mSelectChannel = 0;
-		float												mChannelSpeed = 1.0f;
-		int													mPaletteSelection = 0;
-		int													mCompositionSelection = 0;
-		float												mIntensity = 1.0f;
-		float												mSensorInfluence = 1.0f;
-		float												mLightSmoothTime = 1.0f;
-		glm::vec2											mLightRange = { 0.1f, 1.0f };
-		glm::vec2											mLuxRange = { 10.0f, 25000.0f };
-		float												mLuxCurve = 1.0f;
-		bool												mShowIndexColors = false;
-		float												mDurationScale = 1.0f;
-		bool												mCycleColors = false;
-		float												mColorCycleTime = 1.0f;
-		int													mCompositionCycleMode = 0;
-		int													mSelectedWeek = 1;
-		int													mColorPaletteCycleMode = 0;
-		int													mDay = 0;
-		utility::DateTime									mDateTime;
-		RGBColor8											mTextColor = { 0xC8, 0x69, 0x69 };
+		std::unique_ptr<KalvertorenGui>						mGui;
 
 		/**
 		 *	Renders debug views to screen
