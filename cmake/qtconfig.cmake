@@ -21,8 +21,6 @@ macro(nap_qt_pre)
               ${NAP_ROOT}/../Qt/5.10.0/msvc2015_64
               ~/Qt/5.8/clang_64
               )
-    # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
 
     if(DEFINED QT_DIR)
         if(APPLE)
@@ -34,6 +32,9 @@ macro(nap_qt_pre)
 
               # TODO Ideally add stronger verification that ensures we're finding Qt's own package, or at least don't allow macports' Qt
         endif()
+
+        # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
+        set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})        
     elseif(APPLE OR MSVC)
         message(WARNING
                 "The QT5 Directory could not be found, "
