@@ -13,11 +13,9 @@ source_group("resource" src/audio/resource/*.*)
 source_group("service" src/audio/service/*.*)
 source_group("utility" src/audio/utility/*.*)
 
-
-if (APPLE)
-    set(LIBRARIES napcore ${PORTAUDIO_LIBRARIES} ${LIBSNDFILE_LIBRARIES} ${LIBMPG123_LIBRARIES} "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
-else()
-    set(LIBRARIES napcore ${PORTAUDIO_LIBRARIES} ${LIBSNDFILE_LIBRARIES} ${LIBMPG123_LIBRARIES})
+set(LIBRARIES napcore portaudio libsndfile libmpg123)
+if(APPLE)
+    list(APPEND LIBRARIES "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
 endif()
 
 set(INCLUDES src ${PORTAUDIO_INCLUDE_DIR} ${LIBSNDFILE_INCLUDE_DIR} ${LIBMPG123_INCLUDE_DIR})
@@ -62,12 +60,33 @@ if(APPLE)
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libmpg123.dylib ${LIBMPG123_LIB_DIR}/libmpg123.0.dylib
                        )
 
-    install(FILES ${LIBMPG123_LIB_DIR}/libmpg123.0.dylib 
-                  ${LIBMPG123_LIB_DIR}/libmpg123.dylib 
+    file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+
+    install(FILES ${MPG123_DYLIBS}
             DESTINATION "thirdparty/mpg123/bin")
 
     foreach(build_type Release Debug)
         ensure_macos_file_has_rpath_at_install("${CMAKE_INSTALL_PREFIX}/modules/mod_napaudio/lib/${build_type}/libmod_napaudio.dylib"
                                                "@loader_path/../../../../thirdparty/mpg123/bin")
     endforeach()
+elseif(UNIX)
+    file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${MPG123_DYLIBS}
+            DESTINATION "thirdparty/mpg123/lib")
+endif()
+
+# Package libsndfile into platform release
+install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/install/COPYING DESTINATION "thirdparty/libsndfile")
+if(UNIX AND NOT APPLE)
+    file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${LIBSNDFILE_DYLIBS}
+            DESTINATION "thirdparty/libsndfile/lib")
+endif()
+
+# Package portaudio into platform release
+install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION "thirdparty/portaudio")
+if(UNIX AND NOT APPLE)
+    file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${PORTAUDIO_DYLIBS}
+            DESTINATION "thirdparty/portaudio/lib")
 endif()
