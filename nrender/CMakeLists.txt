@@ -123,7 +123,9 @@ if (WIN32)
 elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/assimp/osx/install/ DESTINATION thirdparty/assimp)
 elseif(UNIX)
-    install(DIRECTORY ${THIRDPARTY_DIR}/assimp/linux/install/ DESTINATION thirdparty/assimp)   
+    install(DIRECTORY ${THIRDPARTY_DIR}/assimp/linux/install/ 
+            DESTINATION thirdparty/assimp
+            PATTERN "*.a" EXCLUDE)   
 endif()
 
 # FreeImage
