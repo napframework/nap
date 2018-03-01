@@ -24,3 +24,11 @@ if (UNIX AND NOT APPLE)
     set(EXTRA_RPATH "../../../../thirdparty/rtmidi/lib")
     set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
 endif()
+
+# Package rtmidi into platform release
+install(FILES ${THIRDPARTY_DIR}/rtmidi/linux/install/README.md DESTINATION "thirdparty/rtmidi")
+if(UNIX AND NOT APPLE)
+    file(GLOB RTMIDI_DYLIBS ${RTMIDI_DIR}/linux/install/lib/librtmidi${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${RTMIDI_DYLIBS}
+            DESTINATION "thirdparty/rtmidi/lib")
+endif()

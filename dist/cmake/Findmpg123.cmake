@@ -14,17 +14,17 @@ elseif(APPLE)
         HINTS ${THIRDPARTY_DIR}/mpg123
         )   
     set(MPG123_LIBS_DIR ${LIBMPG123_DIR}/bin)
-  	set(MPG123_LIBS ${MPG123_LIBS_DIR}/libmpg123.0.dylib)
-  	set(MPG123_LIBS_RELEASE_DLL ${MPG123_LIBS_DIR}/libmpg123.0.dylib)
+    set(MPG123_LIBS_RELEASE_DLL ${MPG123_LIBS_DIR}/libmpg123.0.dylib)
+  	set(MPG123_LIBS ${MPG123_LIBS_RELEASE_DLL})
 else()
     find_path(
         LIBMPG123_DIR
-        NAMES bin/libmpg123.so
+        NAMES lib/libmpg123.so
         HINTS ${THIRDPARTY_DIR}/mpg123
         )   
-    set(MPG123_LIBS_DIR ${LIBMPG123_DIR}/bin)
-  	set(MPG123_LIBS ${MPG123_LIBS_DIR}/libmpg123.so)
-  	set(MPG123_LIBS_RELEASE_DLL ${MPG123_LIBS_DIR}/libmpg123.so)
+    set(MPG123_LIBS_DIR ${LIBMPG123_DIR}/lib)
+    set(MPG123_LIBS_RELEASE_DLL ${MPG123_LIBS_DIR}/libmpg123.so)
+  	set(MPG123_LIBS ${MPG123_LIBS_RELEASE_DLL})
 endif()
 
 mark_as_advanced(MPG123_LIBS_DIR)
