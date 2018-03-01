@@ -173,7 +173,7 @@ The pattern is somewhat similar to the way asserts work: the first parameter is 
 
 Linking Media {#media}
 =======================
-In the [real time editing](@ref editing) section we briefly touched upon linking to external files. Some objects read information from other files. Examples include a texture resource that reads (among others) .png files or an audio player that reads .wav or .mp3 files. The real-time editing system will reload any of these external files when a modification to them is made. For these situations we need to explicitly define the relationship to the external file in RTTI. You do this by marking a property as a file link in the RTTI properties:
+In the [real time editing](@ref editing) section we briefly touched upon linking to external files. Some objects read information from other files. Examples include a texture resource that reads (among others) .png files or an audio player that reads .wav or .mp3 files. The real-time editing system will reload any of these external files when a modification to them is made. For these situations we need to explicitly define the relationship to the external file in RTTI. You do this by marking a property to be a file link:
 
 ~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(Texture)
