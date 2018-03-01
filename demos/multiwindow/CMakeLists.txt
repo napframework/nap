@@ -27,9 +27,13 @@ if (WIN32)
 	find_package(freeimage REQUIRED)
 	copy_freeimage_dll()
 
-    	# Copy over some crap window dlls
+   	# Copy over some crap window dlls
 	copy_base_windows_graphics_dlls()
-	copy_windows_ffmpeg_dlls()
+
+    # Copy all of our Windows DLLs that have build in bin into project dir
+    # TODO this is NOT a clean solution, but if we're mainly releasing projects build against packaged releases of the
+    #      framework maybe this is OK?
+    bulk_copy_windows_dlls_to_bin()    
 endif()
 
 # Copy project json to project bin dir and export fbx, via post-build events
