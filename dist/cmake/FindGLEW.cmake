@@ -36,6 +36,6 @@ if (WIN32)
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:glew> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:GLEW> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
     )
 endif()
