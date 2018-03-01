@@ -28,6 +28,9 @@ QWidget
     /*outline: 0;*/
 
 }
+QMenuBar {
+    color: #8B8CA0;
+}
 
 QMenu, QDialog, QLabel {
     background-color: #2D2E42;
@@ -59,7 +62,7 @@ QGroupBox:title {
 }
 
 QDockWidget {
-    color: #8B8CA0;
+    color: #b0b2cb;
     border: 1px solid #444;
     font-size: 12px;
     font-family: "Montserrat";
