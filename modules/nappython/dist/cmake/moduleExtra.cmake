@@ -10,5 +10,7 @@ endif()
 if(UNIX)
     # Python modules library installation
     install(DIRECTORY ${THIRDPARTY_DIR}/python/lib/python3.6
-            DESTINATION lib/)
+            DESTINATION lib/
+            PATTERN __pycache__ EXCLUDE
+            PATTERN *.pyc EXCLUDE)
 endif()
