@@ -37,3 +37,10 @@ target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} napcore mod_napinput)
 
 # Package into platform release
 package_module()
+
+# Set packaged Linux RPATH 
+if (UNIX AND NOT APPLE)
+    set(EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
+    set(DEPENDENT_NAP_MODULES "mod_napsdlwindow") # TODO this is a hack for not having dependent modules but wanting to set EXTRA_PATH.  Fix interface.
+    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
+endif()

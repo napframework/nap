@@ -42,5 +42,9 @@ endif()
 
 # Set packaged Linux RPATH 
 if (UNIX AND NOT APPLE)
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
+    set(EXTRA_RPATH "../../../../thirdparty/glew/lib")
+    list(APPEND EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
+    list(APPEND EXTRA_RPATH "../../../../thirdparty/assimp/lib")
+    list(APPEND EXTRA_RPATH "../../../../thirdparty/FreeImage/lib")
+    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
 endif()

@@ -34,6 +34,12 @@ endif()
 # Package into platform release
 package_module()
 
+# Set packaged Linux RPATH 
+if (UNIX AND NOT APPLE)
+    set(EXTRA_RPATH "../../../../thirdparty/etherdream/bin")
+    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
+endif()
+
 # Package etherdreamlib into platform release
 if(WIN32)
     install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION "thirdparty/etherdream/bin")

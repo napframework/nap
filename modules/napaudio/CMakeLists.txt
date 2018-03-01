@@ -13,7 +13,6 @@ source_group("resource" src/audio/resource/*.*)
 source_group("service" src/audio/service/*.*)
 source_group("utility" src/audio/utility/*.*)
 
-set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 
 if (APPLE)
     set(LIBRARIES napcore ${PORTAUDIO_LIBRARIES} ${LIBSNDFILE_LIBRARIES} ${LIBMPG123_LIBRARIES} "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
@@ -27,6 +26,7 @@ add_library(${PROJECT_NAME} SHARED ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
+set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
@@ -44,6 +44,14 @@ endif()
 
 # Package into platform release
 package_module()
+
+# Set packaged Linux RPATH 
+if (UNIX AND NOT APPLE)
+    set(EXTRA_RPATH "../../../../thirdparty/mpg123/lib")
+    list(APPEND EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
+    list(APPEND EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
+    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
+endif()
 
 # Package mpg123 into platform release
 install(FILES ${THIRDPARTY_DIR}/mpg123/doc/LICENSE DESTINATION "thirdparty/mpg123")

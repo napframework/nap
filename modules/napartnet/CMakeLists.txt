@@ -69,15 +69,11 @@ elseif(APPLE)
                                       )")
     endforeach()
 else()
-    # Add libartnet to module RPATH
-    get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)
-    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../../../thirdparty/libartnet/bin")
-    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
-
     install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/bin")
 endif()
 
 # Set packaged Linux RPATH 
 if (UNIX AND NOT APPLE)
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
+    set(EXTRA_RPATH "../../../../thirdparty/libartnet/bin")
+    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
 endif()
