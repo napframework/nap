@@ -180,7 +180,7 @@ namespace nap
 		
 		// Temporarily set our Python home location until we have the ability to do this via CMake
 		// into runtime module configuration
-		bool tempSettingOfPythonHome(utility::ErrorState& errorState);
+		void tempSettingOfPythonHome();
 		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
