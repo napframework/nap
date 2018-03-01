@@ -6,7 +6,9 @@ using namespace napkin;
 class LogTextItem : public QStandardItem
 {
 public:
-	LogTextItem(const QString& text) : QStandardItem(text) {}
+	LogTextItem(const QString& text) : QStandardItem(text)
+	{
+	}
 
 	void setLink(const QString& link)
 	{
@@ -43,11 +45,9 @@ void LogModel::onLog(nap::LogMessage log)
 	QRegularExpression re("([a-z]+:(\\/\\/)[^\\s&^'&^\"]+)");
 	auto color = QColor(mColors[log.level()]);
 	auto levelitem = new QStandardItem(levelname);
-	levelitem->setForeground(color);
 	levelitem->setEditable(false);
 	auto textitem = new LogTextItem(logtext);
 	textitem->setToolTip(logtext);
-	textitem->setForeground(color);
 	textitem->setEditable(false);
 
 	auto match = re.match(QString::fromStdString(log.text()));

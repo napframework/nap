@@ -16,7 +16,7 @@ napkin::ResourceFactory::ResourceFactory()
 {
 	mObjectIconMap = {
 			{RTTI_OF(Entity),     ":/icons/entity.svg"},
-			{RTTI_OF(Scene),      ":/icons/bricks.png"},
+			{RTTI_OF(Scene),      ":/icons/scene.svg"},
 			{RTTI_OF(Component),  ":/icons/component.svg"},
 			{RTTI_OF(RTTIObject), ":/icons/bullet_white.png"},
 	};

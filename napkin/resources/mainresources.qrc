@@ -1,13 +1,11 @@
 <RCC>
     <qresource>
         <file>icons/link.svg</file>
-        <file>icons/folder.png</file>
-        <file>icons/bullet_white.png</file>
-        <file>icons/cube-blue.png</file>
-        <file>icons/diamond-orange.png</file>
         <file>icons/bricks.png</file>
         <file>icons/entity.svg</file>
         <file>icons/component.svg</file>
+        <file>icons/scene.svg</file>
+        <file>icons/file.svg</file>
 
         <file>fonts/Montserrat-ExtraBold.ttf</file>
         <file>fonts/Montserrat-Light.ttf</file>
