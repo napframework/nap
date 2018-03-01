@@ -106,7 +106,7 @@ The resource identifier ('mID') can be anything you like. The identifier is used
 Pointing to Resources {#pointing}
 =======================
 
-It is often useful if a resource can access information from another resource. NAP allows you to create links between objects (in json) to accomplish just that. A resource can point to other resources in json by referring to the name (identifier) of a resource. In C++, we use a specific type of pointer to accomplish this: [object pointer](@ref nap::ObjectPtr). Let's assume there is a resource called 'Material' that points to a 'Shader'. 'Material' wants to use the information stored in the shader and exposes that in the form of a link to a shader. The material can now access the shader without having to worry about order of initialization. When the material is initialized the shader has been created and validated. You only have to implement the logic you want to perform based on the information that is present in the shader:
+It is often useful if a resource can access information from another resource. NAP allows you to create links between objects (in json) to accomplish just that. A resource can point to other resources in json by referring to the name (identifier) of a resource. In C++, we use a specific type of pointer to accomplish this: [object pointer](@ref nap::ObjectPtr). Let's assume there is a resource called 'Material' that points to a 'Shader'. The material wants to use the information stored in the shader and exposes that in the form of a link to a shader. The material can now access the shader without having to worry about order of initialization. When the material is initialized the shader has been created and validated. You only have to implement the logic you want to perform based on the information that is present in the shader:
 
 ~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI Material : public rtti::RTTIObject
@@ -147,7 +147,7 @@ In the cpp file we register the material as a resource and add the link to a sha
 }
 ```
 
-The material is now registered and (exposes as as property) the link to a shader. After calling [loadfile()](@ref nap::ResourceManager::loadFile, these two objects will be created and the pointers will be ‘resolved’. This means that they will point to the right resource. In this case the material points to a 'FogShader'. The resource manager also makes sure that any resource you (as an object) point to is initialized before being initialized yourself. Cyclic dependencies are unfortunately (not yet) supported. It is not possible to point to a resource that eventually points back at the original resource. The system cannot determine the correct order of initialization in these situations.
+The material is now registered and (exposes as as property) the link to a shader. After calling [loadfile()](@ref nap::ResourceManager::loadFile), these two objects will be created and the pointers will be ‘resolved’. This means that they will point to the right resource. In this case the material points to a 'FogShader'. The resource manager also makes sure that any resource you (as an object) point to is initialized before being initialized yourself. Cyclic dependencies are unfortunately (not yet) supported. It is not possible to point to a resource that eventually points back at the original resource. The system cannot determine the correct order of initialization in these situations.
 
 Real Time Editing {#editing}
 =======================
