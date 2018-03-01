@@ -111,6 +111,11 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     background: none;
 }
 
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
 QPushButton, QToolButton {
     font-family: "Nunito Sans ExtraBold";
     color: #2D2E42;
