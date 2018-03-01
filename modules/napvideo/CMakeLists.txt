@@ -53,4 +53,11 @@ elseif(UNIX)
     
     # Install FFmpeg into release
     install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/linux/install/" DESTINATION "thirdparty/FFmpeg")
+
+    # Let our installed FFmpeg libs find each other
+    install(CODE "file(GLOB FFMPEG_DYLIBS ${CMAKE_INSTALL_PREFIX}/thirdparty/FFmpeg/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+                  foreach(FFMPEG_DYLIB \${FFMPEG_DYLIBS})
+                      execute_process(COMMAND patchelf --set-rpath \$ORIGIN/. \${FFMPEG_DYLIB})
+                  endforeach()
+                  ")
 endif()

@@ -111,6 +111,7 @@ elseif(UNIX)
     # Add RTTR
     get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../../../thirdparty/rttr/bin/")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../../../../thirdparty/FFmpeg/lib/")
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/lib/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
 endif()
