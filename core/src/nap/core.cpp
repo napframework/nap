@@ -414,21 +414,21 @@ namespace nap
 		const std::string packagedAppPythonPath = exeDir + "/lib/python3.6";
 		if (utility::dirExists(packagedAppPythonPath)){
 			// set PYTHONHOME for that
-			Logger::info("Setting PYTHONHOME to %s\n", exeDir.c_str());
+			// Logger::info("Setting PYTHONHOME to %s\n", exeDir.c_str());
 			setenv("PYTHONHOME", exeDir.c_str(), 1);
 		}
 		else {
 			// set PYTHONHOME to thirdparty location within packaged NAP release
 			const std::string napRoot = exeDir + "/../../../../";
 			const std::string pythonHome = napRoot + "/thirdparty/python/";
-			Logger::info("Setting PYTHONHOME to %s\n", pythonHome.c_str());
+			// Logger::info("Setting PYTHONHOME to %s\n", pythonHome.c_str());
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #else
 		// set PYTHONHOME for thirdparty location beside NAP source
 		std::string napRoot = exeDir + "/../../../";
 		const std::string pythonHome = napRoot + "/../thirdparty/python/" + platformPrefix + "/install";
-		Logger::info("Setting PYTHONHOME to %s\n", pythonHome.c_str());
+		// Logger::info("Setting PYTHONHOME to %s\n", pythonHome.c_str());
 		setenv("PYTHONHOME", pythonHome.c_str(), 1);
 #endif
 		return true;

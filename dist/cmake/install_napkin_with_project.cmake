@@ -141,18 +141,42 @@ elseif(APPLE)
                                                   "@loader_path/lib/"
                                                   )
 else()
-    # Install executable
+    # Linux
+
+    # Deploy Qt plugins from thirdparty for napkin running against released NAP
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/plugins/platforms/ $<TARGET_FILE_DIR:${PROJECT_NAME}>/platforms
+                       )
+
+    # Allow Qt platform plugin to find Qt frameworks in thirdparty (against released NAP)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND patchelf --set-rpath 
+                               [=[\$$ORIGIN/../../../../../thirdparty/Qt/lib]=]
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/platforms/libqxcb.so
+                       )
+
+
+    # Install executable into packaged project
     install(PROGRAMS ${NAP_ROOT}/tools/platform/napkin/Release/napkin
             DESTINATION .)
-    # Install resources
+    # Install resources into packaged project
     install(DIRECTORY ${NAP_ROOT}/tools/platform/napkin/resources
             DESTINATION .)
-    # # Install main QT libs from thirdparty
-    # install(DIRECTORY ${THIRDPARTY_DIR}/Qt/lib/
-    #         DESTINATION lib)
-    # # Install QT plugins from thirdparty
-    # install(DIRECTORY ${THIRDPARTY_DIR}/Qt/plugins
-    #         DESTINATION .)
+    # Install main Qt libs from thirdparty into packaged project
+    install(DIRECTORY ${THIRDPARTY_DIR}/Qt/lib/
+            DESTINATION lib)
+    # Install Qt plugins from thirdparty into packaged project
+    install(DIRECTORY ${THIRDPARTY_DIR}/Qt/plugins/platforms
+            DESTINATION .)
+
+    # Allow Qt platform plugin to find Qt frameworks in thirdparty (packaged project)
+    install(CODE "execute_process(COMMAND patchelf
+                                          --set-rpath
+                                          \$ORIGIN/../lib
+                                          ${CMAKE_INSTALL_PREFIX}/platforms/libqxcb.so
+                                  ERROR_QUIET)")   
 
     # Ensure we have our dependent modules
     set(INSTALLING_MODULE_FOR_NAPKIN TRUE)

@@ -204,6 +204,46 @@ macro(package_qt)
                 DESTINATION thirdparty/Qt/licenses
                 CONFIGURATIONS Release
                 )
+    elseif(UNIX)
+        list(APPEND QT_FRAMEWORKS DBus XcbQpa)
+
+        # Install frameworks
+        foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
+            file(GLOB QT_FRAMEWORK_SRC ${QT_DIR}/lib/libQt5${QT_INSTALL_FRAMEWORK}.so*)
+
+            install(FILES ${QT_FRAMEWORK_SRC}
+                    DESTINATION thirdparty/Qt/lib
+                    CONFIGURATIONS Release
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                    )
+        endforeach()
+
+        # Install plugins
+        install(FILES ${QT_DIR}/plugins/platforms/libqxcb.so
+                DESTINATION thirdparty/Qt/plugins/platforms
+                CONFIGURATIONS Release
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                )
+
+
+        # Install Qt dependent libs on Linux
+        set(QT_DEPENDENT_LIBS_LINUX icudata icui18n icuuc)
+        foreach(QT_DEPENDENT_LIB ${QT_DEPENDENT_LIBS_LINUX})
+            file(GLOB QT_FRAMEWORK_SRC ${QT_DIR}/lib/lib${QT_DEPENDENT_LIB}.so*)
+
+            install(FILES ${QT_FRAMEWORK_SRC}
+                    DESTINATION thirdparty/Qt/lib
+                    CONFIGURATIONS Release
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                    )            
+        endforeach()
+
+        # Install licenses.  This link is a little tenuous but seems to work for Linux
+        install(DIRECTORY ${QT_DIR}/../../Licenses/
+                DESTINATION thirdparty/Qt/licenses
+                CONFIGURATIONS Release
+                )
+
     endif()
 endmacro()
 
