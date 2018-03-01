@@ -1,26 +1,28 @@
 if(WIN32)
     find_path(
-        ASSIMP_LIBS_DIR
-        NAMES assimp-vc140-mt.dll
+        ASSIMP_DIR
+        NAMES bin/assimp-vc140-mt.dll
         HINTS
-        ${THIRDPARTY_DIR}/assimp/bin/
+        ${THIRDPARTY_DIR}/assimp
     )
+    set(ASSIMP_LIBS_DIR ${ASSIMP_DIR}/bin)
     set(ASSIMP_LIBS ${ASSIMP_LIBS_DIR}/assimp-vc140-mt.dll)
 elseif(APPLE)
 else()
     find_path(
         ASSIMP_LIBS_DIR
-        NAMES libassimp.so
+        NAMES lib/libassimp.so
         HINTS
-        ${THIRDPARTY_DIR}/assimp/lib/
+        ${THIRDPARTY_DIR}/assimp
     )
+    set(ASSIMP_LIBS_DIR ${ASSIMP_DIR}/lib)
     set(ASSIMP_LIBS ${ASSIMP_LIBS_DIR}/libassimp.so)
 endif()
 
 # TODO later: Fix CMake approach and use config-style package files
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(assimp REQUIRED_VARS ASSIMP_LIBS_DIR)
+find_package_handle_standard_args(assimp REQUIRED_VARS ASSIMP_LIBS_DIR ASSIMP_DIR)
 
 add_library(assimp SHARED IMPORTED)
 set_target_properties(assimp PROPERTIES
@@ -30,6 +32,10 @@ set_target_properties(assimp PROPERTIES
 )
 
 if(WIN32)
+    set_target_properties(assimp PROPERTIES
+                          IMPORTED_IMPLIB ${ASSIMP_DIR}/lib/assimp-vc140-mt.lib
+                          )
+
     # Copy over DLL post-build
     add_custom_command(
         TARGET ${PROJECT_NAME}
