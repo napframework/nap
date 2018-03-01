@@ -90,7 +90,6 @@ if (NOT WIN32)
     # depend on Python. Python modules are only installed if we're using mod_nappython as they're not required for RTTI/Core.
 
     file(GLOB PYTHON_DYLIBS ${THIRDPARTY_DIR}/python/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-    message("Globbed python shared libs from ${THIRDPARTY_DIR}/python/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*: ${PYTHON_DYLIBS}")
     install(FILES ${PYTHON_DYLIBS} DESTINATION lib/)
 
     if(UNIX)
