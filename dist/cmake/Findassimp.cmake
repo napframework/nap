@@ -10,7 +10,7 @@ if(WIN32)
 elseif(APPLE)
 else()
     find_path(
-        ASSIMP_LIBS_DIR
+        ASSIMP_DIR
         NAMES lib/libassimp.so
         HINTS
         ${THIRDPARTY_DIR}/assimp
