@@ -147,7 +147,7 @@ In the cpp file we register the material as a resource and add the link to a sha
 }
 ```
 
-The material is now registered and (exposes as as property) the link to a shader. After calling [loadfile()](@ref nap::ResourceManager::loadFile), these two objects will be created and the pointers will be ‘resolved’. This means that they will point to the right resource. In this case the material points to a 'FogShader'. The resource manager also makes sure that any resource you (as an object) point to is initialized before being initialized yourself. Cyclic dependencies are unfortunately (not yet) supported. It is not possible to point to a resource that eventually points back at the original resource. The system cannot determine the correct order of initialization in these situations.
+The material is now registered and exposes (as as property) the link to a shader. After calling [loadfile()](@ref nap::ResourceManager::loadFile), these two objects will be created and the pointers will be ‘resolved’. This means that they will point to the right resource. In this case the material points to a 'FogShader'. The resource manager also makes sure that the shader is initialized before the material. Cyclic dependencies are unfortunately (not yet) supported. It is not possible to point to a resource that eventually points back at the original resource. The system cannot determine the correct order of initialization in these situations.
 
 Real Time Editing {#editing}
 =======================
