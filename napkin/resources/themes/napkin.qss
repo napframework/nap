@@ -19,7 +19,7 @@ QWidget
     color: #000;
     background-color: #3c3d4d;
 
-    selection-background-color:#5D5E73;
+    selection-background-color:#8B8CA0;
     selection-color: #111426;
     /*selection-color: #eff0f1;*/
     /*background-clip: border;*/
@@ -32,7 +32,12 @@ QMenuBar {
     color: #8B8CA0;
 }
 
-QMenu, QDialog, QLabel {
+QMenu {
+    background-color: #343544;
+    color: #8B8CA0;
+}
+
+QDialog, QLabel {
     background-color: #2D2E42;
     color: #8B8CA0;
 }
@@ -100,7 +105,7 @@ QScrollBar:vertical {
 
 QScrollBar::handle:horizontal,
 QScrollBar::handle:vertical {
-    background: #3c3d4d;
+    background: #343544;
     border-radius: 2px;
 }
 QScrollBar::handle:horizontal:hover,
@@ -144,14 +149,14 @@ QPushButton:!enabled {
 
 QTabBar:tab {
     padding: 2px 6px 2px 6px;
-    color: #8B8CA0;
+    color: #b0b2cb;
     background: #5D5E73;
     border: 0;
 }
 
 QTabBar:tab::!selected {
-    color: #222;
-    background: #3c3d4d;
+    color: #8B8CA0;
+    background: #45465a;
 }
 
 QStatusBar {
