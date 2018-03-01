@@ -75,8 +75,10 @@ void ThemeManager::reloadTheme()
 	if (mCurrentTheme == TXT_THEME_NATIVE)
 	{
 		app->setStyleSheet(nullptr);
-		app->setStyle(nullptr);
+//		app->setStyle(nullptr);
+		app->setStyle(QStyleFactory::create("Fusion"));
 		return;
+
 	}
 
 	if (mCurrentTheme.isEmpty())

@@ -14,7 +14,7 @@
 
 QWidget
 {
-    font-family: "Nunito Sans";
+    font-family: "Nunito Sans", sans-serif;
     font-size: 13px;
     color: #000;
     background-color: #3c3d4d;
@@ -37,6 +37,7 @@ QMenu, QDialog, QLabel {
 QAbstractScrollArea {
     color: #8B8CA0;
     background: #2D2E42;
+    alternate-background-color: #303144;
     border: 0;
 }
 
