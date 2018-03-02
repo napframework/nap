@@ -9,13 +9,14 @@
 #include "generic/filterpopup.h"
 #include "typeconversion.h"
 #include "appcontext.h"
+#include "napkinresources.h"
 
 using namespace napkin;
 
 PropertyValueItemDelegate::PropertyValueItemDelegate()
 {
-	mLinkIcon = QIcon(":/icons/link.svg");
-	mFileIcon = QIcon(":/icons/file.svg");
+	mLinkIcon = QIcon(QRC_ICONS_LINK);
+	mFileIcon = QIcon(QRC_ICONS_FILE);
 }
 
 
@@ -36,6 +37,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
 		wrapped_array_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 	}
+
 
 	if (type.is_enumeration())
 	{

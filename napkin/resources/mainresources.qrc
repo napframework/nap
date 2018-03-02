@@ -1,48 +1,36 @@
+<?xml version="1.0" ?>
 <RCC>
-    <qresource>
-        <file>icons/link.svg</file>
-        <file>icons/bricks.png</file>
-        <file>icons/entity.svg</file>
-        <file>icons/component.svg</file>
-        <file>icons/scene.svg</file>
-        <file>icons/file.svg</file>
-
-        <file>fonts/Montserrat-ExtraBold.ttf</file>
-        <file>fonts/Montserrat-Light.ttf</file>
-        <file>fonts/Montserrat-Medium.ttf</file>
-
-        <file>fonts/NunitoSans-ExtraBold.ttf</file>
-        <file>fonts/NunitoSans-Regular.ttf</file>
-        <file>fonts/NunitoSans-SemiBold.ttf</file>
-
-        <!--<file>fonts/Montserrat-Black.ttf</file>-->
-        <!--<file>fonts/Montserrat-BlackItalic.ttf</file>-->
-        <!--<file>fonts/Montserrat-Bold.ttf</file>-->
-        <!--<file>fonts/Montserrat-BoldItalic.ttf</file>-->
-        <!--<file>fonts/Montserrat-ExtraBoldItalic.ttf</file>-->
-        <!--<file>fonts/Montserrat-ExtraLight.ttf</file>-->
-        <!--<file>fonts/Montserrat-ExtraLightItalic.ttf</file>-->
-        <!--<file>fonts/Montserrat-Italic.ttf</file>-->
-        <!--<file>fonts/Montserrat-LightItalic.ttf</file>-->
-        <!--<file>fonts/Montserrat-MediumItalic.ttf</file>-->
-        <!--<file>fonts/Montserrat-Regular.ttf</file>-->
-        <!--<file>fonts/Montserrat-SemiBold.ttf</file>-->
-        <!--<file>fonts/Montserrat-SemiBoldItalic.ttf</file>-->
-        <!--<file>fonts/Montserrat-Thin.ttf</file>-->
-        <!--<file>fonts/Montserrat-ThinItalic.ttf</file>-->
-
-        <!--<file>fonts/NunitoSans-Black.ttf</file>-->
-        <!--<file>fonts/NunitoSans-BlackItalic.ttf</file>-->
-        <!--<file>fonts/NunitoSans-Bold.ttf</file>-->
-        <!--<file>fonts/NunitoSans-BoldItalic.ttf</file>-->
-        <!--<file>fonts/NunitoSans-ExtraBoldItalic.ttf</file>-->
-        <!--<file>fonts/NunitoSans-ExtraLight.ttf</file>-->
-        <!--<file>fonts/NunitoSans-ExtraLightItalic.ttf</file>-->
-        <!--<file>fonts/NunitoSans-Italic.ttf</file>-->
-        <!--<file>fonts/NunitoSans-Light.ttf</file>-->
-        <!--<file>fonts/NunitoSans-LightItalic.ttf</file>-->
-        <!--<file>fonts/NunitoSans-SemiBoldItalic.ttf</file>-->
-
-
-    </qresource>
+	<qresource>
+		<file>icons/application_view_list.png</file>
+		<file>icons/application_view_tile.png</file>
+		<file>icons/arrow_redo.png</file>
+		<file>icons/arrow_undo.png</file>
+		<file>icons/box.png</file>
+		<file>icons/bricks.png</file>
+		<file>icons/bug.png</file>
+		<file>icons/bullet_green.png</file>
+		<file>icons/bullet_white.png</file>
+		<file>icons/component.png</file>
+		<file>icons/convert.png</file>
+		<file>icons/cube-blue.png</file>
+		<file>icons/cut_red.png</file>
+		<file>icons/delete.png</file>
+		<file>icons/diamond-orange.png</file>
+		<file>icons/disk.png</file>
+		<file>icons/entity.png</file>
+		<file>icons/error.png</file>
+		<file>icons/exclamation.png</file>
+		<file>icons/file.png</file>
+		<file>icons/folder.png</file>
+		<file>icons/folder_page.png</file>
+		<file>icons/information.png</file>
+		<file>icons/link.png</file>
+		<file>icons/node-select-all.png</file>
+		<file>icons/package.png</file>
+		<file>icons/page_copy.png</file>
+		<file>icons/page_paste.png</file>
+		<file>icons/page_white.png</file>
+		<file>icons/rttiobject.png</file>
+		<file>icons/scene.png</file>
+	</qresource>
 </RCC>
