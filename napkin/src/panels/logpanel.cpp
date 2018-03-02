@@ -1,5 +1,8 @@
-#include <appcontext.h>
 #include "logpanel.h"
+
+#include <appcontext.h>
+#include <QScrollBar>
+#include <QTimer>
 
 using namespace napkin;
 
@@ -75,6 +78,8 @@ LogPanel::LogPanel() : QWidget()
 	mTreeView.setModel(&mLogModel);
 
 	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &LogPanel::onDoubleClicked);
+	connect(mTreeView.getModel(), &QAbstractItemModel::rowsInserted, this, &LogPanel::onRowInserted);
+	connect(mTreeView.getModel(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogPanel::onRowsAboutToBeInserted);
 }
 
 void LogPanel::onDoubleClicked(const QModelIndex& index)
@@ -86,3 +91,23 @@ void LogPanel::onDoubleClicked(const QModelIndex& index)
 
 	AppContext::get().handleURI(textitem->link());
 }
+
+
+void LogPanel::onRowsAboutToBeInserted(const QModelIndex& parent, int first, int last)
+{
+	auto scrollBar = mTreeView.getTreeView().verticalScrollBar();
+	wasMaxScroll = scrollBar->value() == scrollBar->maximum();
+}
+
+void LogPanel::onRowInserted(const QModelIndex &parent, int first, int last)
+{
+	auto scrollBar = mTreeView.getTreeView().verticalScrollBar();
+	if (wasMaxScroll)
+	{
+		QTimer::singleShot(0, [scrollBar]()
+		{
+			scrollBar->setValue(scrollBar->maximum());
+		});
+	}
+}
+
