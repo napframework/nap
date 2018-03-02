@@ -3,8 +3,10 @@ Scene Management {#scene}
 *	[Overview](@ref scene_overview)
 *	[Setup](@ref scene_setup)
 *	[Resources vs Instances](@ref resources_instances)
-*	[Components](@ref components)
-*	[Creating Components](@ref creating_components)
+*	[Components](@ref component_ov)	
+	*	[Creating Components](@ref creating_components)
+		*	[The Resource](@ref component_resource)
+		*	[The Instance](@ref component_instance)
 
 Overview {#scene_overview}
 =======================
@@ -104,7 +106,7 @@ Both the Entity and Component have a resource and instance counterpart. NAP omit
 
 The resources are defined in json. When a resources is created (instantiated) NAP creates an instance of the resource behind the scenes and adds that to the scene hierarchy. In your application scenes contain entity instances which in turn hold component instances. This structure mirrors the structure in json. Just remember that at run-time, in your application, you work with instances of entities and components.
 
-Components {#components}
+Components {#component_ov}
 =======================
 
 A scene is a container for entities and an entity is a container for components. Scenes and entities do not execute any behavior by themselves. They allow you to group and organize your objects. Components are used to add functionality to an entity, ie: define it's behaviour. It is the component that receives an [init()](@ref nap::ComponentInstance::init) and [update()](@ref nap::ComponentInstance::update) call. Any programmable behavior is therefore executed in the component.
@@ -114,9 +116,13 @@ NAP offers a number of components off the shelve such as the [TransformComponent
 You probably want to create new components for specific tasks. The video modulation demo uses two custom components. Both components are only available to the videomodulation application. One of these components allows the user to select a shape from a selection of 3 dimensional shapes. The component makes sure that every shape in the list can be rendered to screen and offers an interface to select the one to draw.
 
 Creating Components {#creating_components}
-=======================
+-----------------------
 
-A component is a resource. Everything you know about [resources](@ref resources) also applies to components. To create a new component derive it from [Component](@ref nap::Component):
+Every component is a resource. Everything you know about [resources](@ref resources) also applies to components. But the component has, as mentioned before, a run time counter part in the form of an instance. To make a new component you have to create (and register) both sides: the resource and instance.
+
+### The Resource {#component_resource} ###
+
+To create a new component resource derive it from [Component](@ref nap::Component):
 
 ~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI PerspCameraComponent : public Component
@@ -179,7 +185,9 @@ If your component needs another component you can hint at it. In the example abo
 }
 ```
 
- When calling [loadFile()](@ref nap::ResourceManager::loadFile()) the perspective camera component is created as part of the 'CameraEntity'. On [init()](@ref nap::ComponentInstance::init()) the camera component is able to access the transform because the dependency to the transform was setup correctly. NAP will now attempt to to create the run time counterpart (instance) of the PerspCameraComponent: a PerspCameraComponentInstance. But we haven't created that object yet:
+### The Instance {#component_instance} ###
+
+When calling [loadFile()](@ref nap::ResourceManager::loadFile()) the perspective camera component is created as part of the 'CameraEntity'. On [init()](@ref nap::ComponentInstance::init()) the camera component is able to access the transform because the dependency to the transform was setup correctly. NAP will now attempt to to create the run time counterpart (instance) of the PerspCameraComponent: a PerspCameraComponentInstance. But we haven't created that object yet:
 
 ~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI PerspCameraComponentInstance : public ComponentInstance
