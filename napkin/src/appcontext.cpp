@@ -24,7 +24,9 @@ using namespace nap::utility;
 using namespace napkin;
 
 AppContext::AppContext()
-{}
+{
+	nap::Logger::instance().log.connect(mLogHandler);
+}
 
 AppContext::~AppContext()
 {}

@@ -34,8 +34,7 @@ LogModel::LogModel() : QStandardItemModel()
 	mColors[nap::Logger::fatalLevel()] = "#F00";
 
 	// Register with nap::Logger, call the Qt signal in order to let the signal arrive on the Qt UI thread
-	nap::Logger::instance().log.connect(mLogHandler);
-	connect(this, &LogModel::napLogged, this, &LogModel::onLog);
+	connect(&AppContext::get(), &AppContext::logMessage, this, &LogModel::onLog);
 
 	setHorizontalHeaderLabels({"Level", "Message"});
 }
