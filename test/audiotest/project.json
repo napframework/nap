@@ -1,11 +1,13 @@
 {
-    "title": "AudioTest",
+    "title": "TempMidiTest",
     "version": "0.1",
     "modules": [
         "mod_napaudio",
         "mod_napapp",
         "mod_nappython",
         "mod_naposc",
-        "mod_napmidi"
+        "mod_napmidi",
+        "mod_napinput",
+        "mod_napsdlinput"   
     ]
 }
