@@ -10,8 +10,8 @@ import sys
 from sys import platform
 
 WORKING_DIR = '.'
-BUILD_DIR = 'build'
-PACKAGING_DIR = 'packaging'
+BUILD_DIR = 'packagingBuild'
+PACKAGING_DIR = 'packagingStaging'
 ARCHIVING_DIR = 'archiving'
 BUILDINFO_FILE = 'dist/cmake/buildInfo.json'
 
