@@ -18,14 +18,6 @@ namespace napkin
 	public:
 		LogModel();
 
-	Q_SIGNALS:
-
-		/**
-		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread
-		 * @param msg The log message being handled
-		 */
-		void napLogged(nap::LogMessage msg);
-
 	private:
 		/**
 		 * Signals from napLogged() will arrive on this handler.
@@ -34,7 +26,6 @@ namespace napkin
 		void onLog(nap::LogMessage log);
 
 		int mMaxRows = 1000; // The maximum number of rows to show in the log
-		nap::Slot<nap::LogMessage> mLogHandler = { this, &LogModel::napLogged };
 		QMap<nap::LogLevel, QString> mColors;
 	};
 

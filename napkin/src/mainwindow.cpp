@@ -134,6 +134,12 @@ MainWindow::MainWindow()
 	addDocks();
 	addMenu();
 	bindSignals();
+
+	// Show something interesting in the status bar
+	connect(&AppContext::get(), &AppContext::logMessage, [this](nap::LogMessage msg){
+		statusBar()->showMessage(QString::fromStdString(msg.text()));
+	});
+
 }
 
 MainWindow::~MainWindow()
