@@ -1,8 +1,13 @@
 #include "resourcefactory.h"
+
+#include <FreeImage.h>
+
+#include <nap/logger.h>
 #include <entity.h>
 #include <scene.h>
-#include <FreeImage.h>
-#include <nap/logger.h>
+
+#include "napkinresources.h"
+
 extern "C" {
     #include <libavformat/avformat.h>
 }
@@ -15,10 +20,10 @@ using namespace nap::rtti;
 napkin::ResourceFactory::ResourceFactory()
 {
 	mObjectIconMap = {
-			{RTTI_OF(Entity),     ":/icons/entity.svg"},
-			{RTTI_OF(Scene),      ":/icons/scene.svg"},
-			{RTTI_OF(Component),  ":/icons/component.svg"},
-			{RTTI_OF(RTTIObject), ":/icons/bullet_white.png"},
+			{RTTI_OF(Entity),     QRC_ICONS_ENTITY},
+			{RTTI_OF(Scene),      QRC_ICONS_SCENE},
+			{RTTI_OF(Component),  QRC_ICONS_COMPONENT},
+			{RTTI_OF(RTTIObject), QRC_ICONS_RTTIOBJECT},
 	};
 
 	mFileTypes = {
@@ -40,6 +45,7 @@ const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::RTTIObject& object
 		if (obj_type.is_derived_from(entry.first))
 		{
 			QIcon icon(entry.second);
+			assert(!icon.isNull());
 			return icon;
 		}
 	}
