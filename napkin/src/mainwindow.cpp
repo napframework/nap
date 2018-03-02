@@ -129,6 +129,8 @@ void MainWindow::updateWindowTitle()
 
 MainWindow::MainWindow()
 {
+	setStatusBar(&mStatusBar);
+
 	addDocks();
 	addMenu();
 	bindSignals();
