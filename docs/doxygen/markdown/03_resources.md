@@ -8,6 +8,7 @@ Resources {#resources}
 * 	[Real Time Editing](@ref editing)
 * 	[Linking Media](@ref media)
 *	[Working With Arrays](@ref arrays)
+*	[Structs, Classes and Resources](@ref structs_classes_resources)
 * 	[Embedding Objects](@ref embedding_objects)
 * 	[Embedding Pointers](@ref embedding_pointers)
 
@@ -54,7 +55,7 @@ RTTI_BEGIN_CLASS(nap::Shader)
 RTTI_END_CLASS
 ~~~~~~~~~~~~~~~
 
-This is the basis for setting up an rtti enabled class. In the example above we defined a shader. The RTTI_ENABLE macro makes sure that the system knows this class is derived from RTTIObject. The code in the cpp file exposes this class as a resource to NAP. The shader is now available as an object that can be authored in json.
+This is the basis for setting up an rtti enabled class. In the example above we defined a shader. The RTTI_ENABLE macro makes sure that the system knows this class is derived from RTTIObject. The input for the RTTI_ENABLE macro is always the parent object. The code in the cpp file exposes this class as a resource to NAP. The shader is now available as an object that can be authored in json.
 
 The NAPAPI macro makes sure that the class can be read and accessed (from the outside world) by the NAP system. The compiler (on windows) won't expose the class to the outside world when you forget to put in the NAPAPI macro. Remember that on startup a NAP application (automatically) loads all modules. NAP tries to find all the exposed resources that are compatible with the NAP system when loading a module. When it encounters a resource in a json file that is not available to the system the resource manager will raise a warning and stop execution. It is therefore important to always expose a class to the outside world using the NAPAPI macro.
 
@@ -111,7 +112,7 @@ It is often useful if a resource can access information from another resource. N
 ~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI Material : public rtti::RTTIObject
 {
-	...
+	RTTI_ENABLE(rtti::RTTIObject)
 public:
 	ObjectPtr<nap::Shader> mShader;	// Property: Link to a 'Shader' resource
 };
@@ -185,7 +186,109 @@ RTTI_END_CLASS
 Working With Arrays {#arrays}
 =======================
 
-TODO
+You can group items together into an array in json. This works for both links to objects as for simple compounds (structs) such as a [color](@ref nap::RGBColor). The video modulation demo uses two arrays: one to create a group of videos and another one to create a group of meshes. In the application the user can select a video or mesh based on an index. 
+
+Creating an array is easy. In C++ an array is a regular vector. This vector becomes a property of the resource, similar to how you normally expose a property. In the example below we add a member called 'mVideoFiles'. This is an array of video files that the user can choose from. Every video in the array is a link to an existing [video](@ref nap::Video) resource:
+
+~~~~~~~~~~~~~~~{.cpp}
+class NAPAPI VideoContainer : public rtti::RTTIObject
+{
+	RTTI_ENABLE(rtti::RTTIObject)
+public:
+	std::vector<ObjectPtr<Video>> mVideoFiles;		///< Property: "Videos" link to videos
+}
+~~~~~~~~~~~~~~~
+
+and in the cpp file we register the vector as a regular property:
+
+~~~~~~~~~~~~~~~{.cpp}
+// nap::VideoContainer 
+RTTI_BEGIN_CLASS(nap::VideoContainer)
+	RTTI_PROPERTY("Videos", 	&nap::VideoContainer::mVideoFiles,	nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+~~~~~~~~~~~~~~~
+
+The system recognizes that the property is an array of video links. You can now author the array in json:
+
+```
+{
+	"Type": "nap::Video",
+    "mID": "SnowVideo",
+    "Path": "snow.mp4"
+},
+{
+	"Type": "nap::Video",
+	"mID": "StreakVideo",
+	"Path": "streak.mp4"
+},
+{
+	"Type": "nap::VideoContainer",
+	"mID": "VideoContainer",
+	"Videos": 
+	[
+		"StreakVideo",
+        "SnowVideo"
+	]
+}
+```
+
+The example above is a simplification of the classes used in the video modulation demo.
+
+Structs, Classes and Resources {#structs_classes_resources}
+=======================
+Up to this point we only worked with resources. Resources are classes. But sometimes you want to use a simple struct to define (for example) a color or date. NAP supports structs in json but they have to be declared in a different way. Let's create a simple RGB color in C++:
+
+~~~~~~~~~~~~~~~{.cpp}
+ // RGB Color
+class NAPAPI Color
+{
+	float r = 0.0f;
+	float g = 0.0f;
+	float b = 0.0f;
+};
+~~~~~~~~~~~~~~~
+
+As you can see the color isn't a native C++ struct but a class. This is because the RTTI system does not support C++ structs. What we do instead is label it as a struct in the cpp file:
+
+~~~~~~~~~~~~~~~{.cpp}
+RTTI_BEGIN_STRUCT(Color)
+	RTTI_PROPERTY("r", &Color::r, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("g", &Color::g, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("b", &Color::b, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+~~~~~~~~~~~~~~~
+
+So what are the advantages of using a struct? A struct is a light weight object that can be copied by value. When the system encounters a struct it is created using copy construction instead of being new'd. This is faster when the object is small and allows the editor to add and remove simple structures from an array. So in short: when you have a simple object that is used to: 
+
+- group some data under a common name.
+- is easy to copy.
+- is not a resource.
+- but needs to be available in json.
+
+Define it as a struct. In all other cases: define it as a class. But what is the difference between a class and resource? A resource is a class that can live by itself in json. As you know every resource carries an identifier and is initialized by NAP after construction. A resource is always derived from RTTIObject. On the other hand, structs and classes that are not derived from RTTIObject can't be declared in json as a resource because they don't have a name and can't be initialized. You can only use those objects in json as an [embedded object](@ref embedding_objects). Only when a class is derived from RTTIObject is it considered as a resource to the system.
+
+This might sound confusing but try to follow these rules: Do I need to author (edit) my class in json?
+- Yes
+	-  Is it a resource?
+		- Yes
+			- Derive your class from RTTIObject (.h)
+			- Or any object that is derived from RTTIObject (.h)
+			- Always implement the RTTI_ENABLE macro (.h)
+			- Define it as a class (.cpp)
+		- No
+			- Is it a simple structure?
+				- Yes
+					- Don't implement the RTTI_ENABLE macro (.h)
+					- Define it as a struct (.cpp)
+				- No
+					- Implement the RTTI_ENABLE macro (.h)
+					- Leave the RTTI_ENABLE macro empty if there is no parent class (.h)
+					- Define it as a class (.cpp)
+- No
+	- Don't expose it to the system
+	- Declare it as a regular C++ class
+
+This diagram doesn't take [components](@ref nap::Component) into account. You can read more about components in a later [section](@ref creating_components). 
 
 Embedding Objects {#embedding_objects}
 =======================
@@ -196,9 +299,7 @@ C++ objects are often embedded into each other. For example:
  // RGB Color
 class NAPAPI Color
 {
-	float r;
-	float g;
-	float b;
+	...
 };
 
 // Palette that contains two colors
@@ -211,19 +312,19 @@ public:
 };
 ~~~~~~~~~~~~~~~
 
-Here we see a Palette object derived from RTTIObject this is intended to be authored in json. It contains an embedded object (a compound) of type Color. Both Palette and Color have their properties setup (in the cpp file) as required:
+Here we see a 'Palette' that contains 2 colors. Wouldn't it be nice to assign both colors to the palette directly in json? As we saw [before](@ref structs_classes_resources), a 'Color' is a struct, not a a resource. We can't create a single color in json. But NAP can create and assign registered structs (and classes) on the fly when it encounters them in the file. We call these objects 'embedded objects', or 'compounds'. For this to work it's important that both objects have their properties registered in the cpp file:
 
 ~~~~~~~~~~~~~~~{.cpp}
-RTTI_BEGIN_CLASS(Color)
+RTTI_BEGIN_STRUCT(Color)
 	RTTI_PROPERTY("r", &Color::r, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("g", &Color::g, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("b", &Color::b, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
+RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(Palette)
 	RTTI_PROPERTY("ColorOne", &Palette::mColorOne, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ColorTwo", &Palette::mColorTwo, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
+RTTI_END_STRUCT
 ~~~~~~~~~~~~~~~
 
 In json this selection can now be authored as follows:
@@ -252,7 +353,8 @@ In json this selection can now be authored as follows:
 }
  ```
 
-Notice that Color isn't derived from RTTIObject. It doesn't need to be because it doesn't have an identifier! It's also not a resource that can (or needs to) live by itself. That strippes away the need for the RTTI_ENABLE macro. The system doesn't need to know what it is derived from because it's always embedded into another object as a property. The system does (however) need to know the properties it uses, in this case the 3 channels of the color. You can (however) embed any object, including objects derived from RTTIObject. It's perfectly valid to embed an image into another resource directly.
+
+When creating the palette the system finds the two colors and assigns them on the spot. Notice that Color isn't derived from RTTIObject. It doesn't need to because it's not intended to be a resource. The system does (however) need to know the properties of a color: in this case the 3 color channels. You can (however) embed any object, including objects derived from RTTIObject. It's perfectly valid to embed an image into another resource directly.
 
 Embedding Pointers {#embedding_pointers}
 =======================
