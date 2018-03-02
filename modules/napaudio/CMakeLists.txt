@@ -60,14 +60,13 @@ if(APPLE)
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libmpg123.dylib ${LIBMPG123_LIB_DIR}/libmpg123.0.dylib
                        )
 
-    file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-
+    file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${MPG123_DYLIBS}
-            DESTINATION "thirdparty/mpg123/bin")
+            DESTINATION "thirdparty/mpg123/lib")
 
     foreach(build_type Release Debug)
         ensure_macos_file_has_rpath_at_install("${CMAKE_INSTALL_PREFIX}/modules/mod_napaudio/lib/${build_type}/libmod_napaudio.dylib"
-                                               "@loader_path/../../../../thirdparty/mpg123/bin")
+                                               "@loader_path/../../../../thirdparty/mpg123/lib")
     endforeach()
 elseif(UNIX)
     file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)

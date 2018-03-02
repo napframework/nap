@@ -7,16 +7,15 @@ if(WIN32)
     )
     set(ASSIMP_LIBS_DIR ${ASSIMP_DIR}/bin)
     set(ASSIMP_LIBS ${ASSIMP_LIBS_DIR}/assimp-vc140-mt.dll)
-elseif(APPLE)
-else()
+elseif(UNIX)
     find_path(
         ASSIMP_DIR
-        NAMES lib/libassimp.so
+        NAMES lib/libassimp${CMAKE_SHARED_LIBRARY_SUFFIX}
         HINTS
         ${THIRDPARTY_DIR}/assimp
     )
     set(ASSIMP_LIBS_DIR ${ASSIMP_DIR}/lib)
-    set(ASSIMP_LIBS ${ASSIMP_LIBS_DIR}/libassimp.so)
+    set(ASSIMP_LIBS ${ASSIMP_LIBS_DIR}/libassimp${CMAKE_SHARED_LIBRARY_SUFFIX})
 endif()
 
 # TODO later: Fix CMake approach and use config-style package files
