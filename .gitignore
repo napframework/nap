@@ -57,6 +57,9 @@ docs/html
 docs/latex
 !/docs/doxygen/bin
 imgui.ini
-packaging
+packagingStaging
+packagingBuildDebug
+packagingBuildRelease
+packagingLib
 buildInfo.json
 buildNumber.cmake
