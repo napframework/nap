@@ -12,7 +12,8 @@ if(WIN32)
                        )
 elseif(UNIX)
     # Install mpg123 lib into packaged app
-    install(FILES $<TARGET_FILE:mpg123> DESTINATION lib)
+    file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/lib/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${MPG123_DYLIBS} DESTINATION lib)
 
     if(APPLE)
         # Add mpg123 RPATH to built app
