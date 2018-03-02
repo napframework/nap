@@ -426,6 +426,11 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::RTTIObject& obj)
 	return properties;
 }
 
+Document::~Document()
+{
+	
+}
+
 
 
 
