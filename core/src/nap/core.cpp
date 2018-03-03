@@ -198,7 +198,7 @@ namespace nap
 		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
 			Service& service = **it;
-			nap::Logger::info("shutting down service: %s", service.getTypeName().c_str());
+			nap::Logger::debug("shutting down service: %s", service.getTypeName().c_str());
 			service.shutdown();
 		}
 	}

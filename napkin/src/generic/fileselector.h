@@ -5,6 +5,8 @@
 #include <QWidget>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QPushButton>
+
 namespace napkin
 {
 	/**
@@ -48,7 +50,7 @@ namespace napkin
 
 		QHBoxLayout mLayout; // Layout
 		QLineEdit mLineEdit; // Shows the filename
-		QToolButton mBrowseButton; // Click and browse
+		QPushButton mBrowseButton; // Click and browse
 		QString mFileFilter; // File filter used by the dialog
 	};
 };
