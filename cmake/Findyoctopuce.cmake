@@ -27,8 +27,13 @@ mark_as_advanced(YOCTO_LIBS_RELEASE)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(yoctopuce REQUIRED_VARS YOCTO_INCLUDE_DIRS YOCTO_LIBS_DEBUG YOCTO_LIBS_RELEASE YOCTO_LIBS_DIR)
 
-set(YOCTO_DEBUG_DLL ${YOCTO_DIR}/Binaries/windows/x64/Debug/yocto.dll)
-set(YOCTO_RELEASE_DLL ${YOCTO_DIR}/Binaries/windows/x64/Release/yocto.dll)
+if (WIN32)
+    set(YOCTO_DEBUG_DLL ${YOCTO_LIBS_DEBUG}/Binaries/windows/x64/Debug/yocto.dll)
+    set(YOCTO_RELEASE_DLL ${YOCTO_LIBS_RELEASE}/Binaries/windows/x64/Release/yocto.dll)
+else()
+    set(YOCTO_DEBUG_DLL ${YOCTO_LIBS_DEBUG})
+    set(YOCTO_RELEASE_DLL ${YOCTO_LIBS_RELEASE})
+endif()
 
 # Copy the etherdream dynamic linked lib into the build directory
 macro(copy_yoctopuce_dll)
