@@ -1,15 +1,19 @@
 #include "thememanager.h"
-#include "appcontext.h"
-#include "napkinglobals.h"
-#include <QtCore/QDir>
-#include <QtCore/QSettings>
-#include <QtCore/QTextStream>
-#include <nap/logger.h>
+
+#include <QDir>
+#include <QSettings>
+#include <QTextStream>
 #include <QFontDatabase>
+#include <QStyleFactory>
+
+#include <nap/logger.h>
+
+#include "napkinglobals.h"
+#include "appcontext.h"
 
 using namespace napkin;
 
-ThemeManager::ThemeManager() : mCurrentTheme(TXT_DEFAULT_THEME)
+ThemeManager::ThemeManager() : mCurrentTheme(TXT_THEME_NATIVE)
 {
 	connect(&mFileWatcher, &QFileSystemWatcher::directoryChanged, this, &ThemeManager::onFileChanged);
 	connect(&mFileWatcher, &QFileSystemWatcher::fileChanged, this, &ThemeManager::onFileChanged);
@@ -22,7 +26,7 @@ void ThemeManager::setTheme(const QString& themeName)
 
 	if (themeName.isEmpty())
 	{
-		mCurrentTheme = napkin::TXT_DEFAULT_THEME;
+		mCurrentTheme = napkin::TXT_THEME_NATIVE;
 	}
 	else
 	{
@@ -66,10 +70,15 @@ const QString ThemeManager::getThemeDir() const
 
 void ThemeManager::reloadTheme()
 {
-	if (mCurrentTheme == TXT_DEFAULT_THEME)
+	auto app = AppContext::get().getQApplication();
+
+	if (mCurrentTheme == TXT_THEME_NATIVE)
 	{
-		AppContext::get().getQApplication()->setStyleSheet(nullptr);
+		app->setStyleSheet(nullptr);
+//		app->setStyle(nullptr);
+		app->setStyle(QStyleFactory::create("Fusion"));
 		return;
+
 	}
 
 	if (mCurrentTheme.isEmpty())
@@ -92,7 +101,8 @@ void ThemeManager::reloadTheme()
 
 	mFileWatcher.addPath(theme_filename);
 
-	AppContext::get().getQApplication()->setStyleSheet(styleSheet);
+	app->setStyle(QStyleFactory::create("Fusion"));
+	app->setStyleSheet(styleSheet);
 
 }
 

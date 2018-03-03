@@ -23,7 +23,7 @@ namespace nap
 		bool				mEnableMultiSampling = true;
 		float				mLineWidth = 1.0f;
 		float				mPointSize = 1.0;
-		opengl::PolygonMode mPolygonMode = opengl::PolygonMode::FILL;
+		opengl::EPolygonMode mPolygonMode = opengl::EPolygonMode::Fill;
 
 	private:
 		friend class RenderService;

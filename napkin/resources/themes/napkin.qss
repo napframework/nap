@@ -14,12 +14,12 @@
 
 QWidget
 {
-    font-family: "Nunito Sans";
+    font-family: "Nunito Sans", sans-serif;
     font-size: 13px;
     color: #000;
     background-color: #3c3d4d;
 
-    selection-background-color:#5D5E73;
+    selection-background-color:#8B8CA0;
     selection-color: #111426;
     /*selection-color: #eff0f1;*/
     /*background-clip: border;*/
@@ -28,8 +28,16 @@ QWidget
     /*outline: 0;*/
 
 }
+QMenuBar {
+    color: #8B8CA0;
+}
 
-QMenu, QDialog, QLabel {
+QMenu {
+    background-color: #343544;
+    color: #8B8CA0;
+}
+
+QDialog, QLabel {
     background-color: #2D2E42;
     color: #8B8CA0;
 }
@@ -37,6 +45,7 @@ QMenu, QDialog, QLabel {
 QAbstractScrollArea {
     color: #8B8CA0;
     background: #2D2E42;
+    alternate-background-color: #303144;
     border: 0;
 }
 
@@ -58,7 +67,7 @@ QGroupBox:title {
 }
 
 QDockWidget {
-    color: #8B8CA0;
+    color: #b0b2cb;
     border: 1px solid #444;
     font-size: 12px;
     font-family: "Montserrat";
@@ -96,7 +105,7 @@ QScrollBar:vertical {
 
 QScrollBar::handle:horizontal,
 QScrollBar::handle:vertical {
-    background: #3c3d4d;
+    background: #343544;
     border-radius: 2px;
 }
 QScrollBar::handle:horizontal:hover,
@@ -108,6 +117,11 @@ QScrollBar::handle:vertical:hover {
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     border: none;
+    background: none;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
     background: none;
 }
 
@@ -135,14 +149,14 @@ QPushButton:!enabled {
 
 QTabBar:tab {
     padding: 2px 6px 2px 6px;
-    color: #8B8CA0;
+    color: #b0b2cb;
     background: #5D5E73;
     border: 0;
 }
 
 QTabBar:tab::!selected {
-    color: #222;
-    background: #3c3d4d;
+    color: #8B8CA0;
+    background: #45465a;
 }
 
 QStatusBar {

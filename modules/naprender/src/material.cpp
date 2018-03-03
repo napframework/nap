@@ -59,22 +59,22 @@ namespace nap
 
 		switch (declaration.mGLSLType)
 		{
-		case opengl::GLSLType::Int:
+		case opengl::EGLSLType::Int:
 			result = std::make_unique<UniformInt>();
 			break;
-		case opengl::GLSLType::Float:
+		case opengl::EGLSLType::Float:
 			result = std::make_unique<UniformFloat>();
 			break;
-		case opengl::GLSLType::Vec4:
+		case opengl::EGLSLType::Vec4:
 			result = std::make_unique<UniformVec4>();
 			break;
-		case opengl::GLSLType::Mat4:
+		case opengl::EGLSLType::Mat4:
 			result = std::make_unique<UniformMat4>();
 			break;
-		case opengl::GLSLType::Tex2D:
+		case opengl::EGLSLType::Tex2D:
 			result = std::make_unique<UniformTexture2D>();
 			break;
-		case opengl::GLSLType::Vec3:
+		case opengl::EGLSLType::Vec3:
 			result = std::make_unique<UniformVec3>();
 			break;
 		}

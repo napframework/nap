@@ -3,16 +3,21 @@
 #include <QComboBox>
 #include <QMouseEvent>
 #include <QFileDialog>
-
-#include <utility/fileutils.h>
+#include <QPainter>
 
 #include "generic/naputils.h"
 #include "generic/filterpopup.h"
 #include "typeconversion.h"
 #include "appcontext.h"
+#include "napkinresources.h"
 
 using namespace napkin;
 
+PropertyValueItemDelegate::PropertyValueItemDelegate()
+{
+	mLinkIcon = QIcon(QRC_ICONS_LINK);
+	mFileIcon = QIcon(QRC_ICONS_FILE);
+}
 
 
 void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
@@ -32,6 +37,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
 		wrapped_array_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 	}
+
 
 	if (type.is_enumeration())
 	{
@@ -58,13 +64,10 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		viewop.rect = rect_txt;
 		QStyledItemDelegate::paint(painter, viewop, index);
 
-		// Add pointer button
-		QStyleOptionButton op;
-		op.state = option.state;
-		op.rect = rect_btn;
-		op.text = "*";
 
-		QApplication::style()->drawControl(QStyle::CE_PushButton, &op, painter);
+		// Add pointer button
+		auto pixmap = mLinkIcon.pixmap(rect_btn.size());
+		painter->drawPixmap(rect_btn, pixmap, pixmap.rect());
 	}
 	else if (type == rttr::type::get<bool>())
 	{
@@ -99,12 +102,8 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		QStyledItemDelegate::paint(painter, viewop, index);
 
 		// Add pointer button
-		QStyleOptionButton op;
-		op.state = option.state;
-		op.rect = rect_btn;
-		op.text = "*";
-
-		QApplication::style()->drawControl(QStyle::CE_PushButton, &op, painter);
+		auto pixmap = mFileIcon.pixmap(rect_btn.size());
+		painter->drawPixmap(rect_btn, pixmap, pixmap.rect());
 	}
 	else
 	{
@@ -274,6 +273,7 @@ void PropertyValueItemDelegate::setModelData(QWidget* editor, QAbstractItemModel
 		QStyledItemDelegate::setModelData(editor, model, index);
 	}
 }
+
 
 
 
