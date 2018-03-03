@@ -45,12 +45,6 @@ void TimelinePanel::showEvent(QShowEvent* event)
 }
 
 
-TimelinePanel::~TimelinePanel()
-{
-
-}
-
-
 void TimelinePanel::setTimeline(Timeline* timeline)
 {
 	mScene.setTimeline(timeline);

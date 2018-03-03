@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QGraphicsScene>
-#include <QtWidgets/QGraphicsItemGroup>
+#include <QGraphicsItemGroup>
 #include "timelinemodel.h"
 
 namespace napkin {
