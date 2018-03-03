@@ -123,11 +123,6 @@ macro(package_python)
         install(FILES ${PYTHON_PREFIX}/LICENSE
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
-
-        # Install virtualenv template
-        install(FILES ${PYTHON_PREFIX}/../../pyvenv.cfg.in
-                DESTINATION thirdparty/python/
-                CONFIGURATIONS Release)        
     endif()
 endmacro()
 

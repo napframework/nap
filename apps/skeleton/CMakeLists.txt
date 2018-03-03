@@ -50,6 +50,3 @@ endif()
 # Copy project json to project bin dir via post-build events
 # should probably only contain the skeleton json
 copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
-
-# Install virtual env config file so our Python exec lib can find the modules in thirdparty
-install_python_virtualenv_config()

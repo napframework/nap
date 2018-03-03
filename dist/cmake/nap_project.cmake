@@ -138,18 +138,6 @@ endif()
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
-# Copy our Python virtual environment configuration for non-packaged builds
-if(UNIX)
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} 
-                -E copy 
-                ${THIRDPARTY_DIR}/python/pyvenv.cfg
-                $<TARGET_FILE_DIR:${PROJECT_NAME}>
-        )
-endif()
-
 if(NOT WIN32)
     if (APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")

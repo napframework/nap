@@ -62,9 +62,6 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
                    COMMENT "Copy Resources")
 
-# Install virtual env config file so our Python exec lib can find the modules in thirdparty
-install_python_virtualenv_config()
-
 # Package into release build
 set(NAPKIN_PACKAGED_BUILD_TYPE Release)
 
