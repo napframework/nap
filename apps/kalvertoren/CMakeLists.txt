@@ -36,6 +36,7 @@ if (WIN32)
     copy_artnet_dll()
 
     find_package(yoctopuce REQUIRED)
+    copy_yoctopuce_dll()
 endif()
 
 # create post build event
