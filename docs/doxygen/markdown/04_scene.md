@@ -118,11 +118,11 @@ You probably want to create new components for specific tasks. The video modulat
 Creating Components {#creating_components}
 -----------------------
 
-Every component is a resource. Everything you know about [resources](@ref resources) also applies to components. But the component has, as mentioned before, a run time counter part in the form of an instance. To make a new component you have to create (and register) both sides: the resource and instance.
+Every component is a resource. Everything you know about [resources](@ref resources) also applies to components. But the component has, as mentioned before, a run time counter part in the form of an instance. To make a new component you have to create (and register) both sides: the resource and instance. The video modulation demo makes use of custom components. Refer to that code for a good working example. 
 
 ### The Resource {#component_resource} ###
 
-To create a new component resource derive it from [Component](@ref nap::Component):
+To create the resource part of a new component derive your class from [Component](@ref nap::Component):
 
 ~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI PerspCameraComponent : public Component
@@ -187,7 +187,7 @@ If your component needs another component you can hint at it. In the example abo
 
 ### The Instance {#component_instance} ###
 
-When calling [loadFile()](@ref nap::ResourceManager::loadFile()) the perspective camera component is created as part of the 'CameraEntity'. On [init()](@ref nap::ComponentInstance::init()) the camera component is able to access the transform because the dependency to the transform was setup correctly. NAP will now attempt to to create the run time counterpart (instance) of the PerspCameraComponent: a PerspCameraComponentInstance. But we haven't created that object yet:
+When calling [loadFile()](@ref nap::ResourceManager::loadFile()) the perspective camera component is created as part of the 'CameraEntity'. NAP will now attempt to to create the run time counterpart (instance) of the PerspCameraComponent: a PerspCameraComponentInstance. To create the instance part of a new component derive your class from [ComponentInstance](@ref nap::ComponentInstance):
 
 ~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI PerspCameraComponentInstance : public ComponentInstance
@@ -204,12 +204,12 @@ public:
 };
 ~~~~~~~~~~~~~~~
 
-The instance part of the camera needs to be registered in the cpp as well. Because every instance is create at run-time and never read from file you don't have to register any properties. The init pattern and the error handling is exactly the same as with regular resources. A small difference is the fact that this object does not contain a default constructor. The constructor of a component instance receives:
+This part of the new component needs to be registered in the cpp as well. Because every instance is created at run-time and never read from file you don't have to register any properties. You only register the class. The init pattern and the error handling is exactly the same as with regular resources. A small difference is the fact that this object does not contain a default constructor. The constructor of a component instance receives:
 
 - the entity this component belongs to.
 - the resource that created this instance. 
 
-To make sure this object can be created we have to tell the system what constructor to use. When registering the instance you explicitly tell the system that there is no default constructor available and add one explicitly:
+To make sure this object can be created by NAP we have to tell the system what constructor to use. When registering the instance part you explicitly tell the system that there is no default constructor available and add one explicitly:
 
 ~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PerspCameraComponentInstance)
@@ -217,6 +217,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PerspCameraComponentInstance)
 RTTI_END_CLASS
 ~~~~~~~~~~~~~~~
 
-The instance is created when the file is loaded and the system encounters a 'PerspCameraComponent' resource. The instance is constructed using the registered constructor and is given the resource that created it and the entity it belongs to. When the instance is initialized you know that the transform is available and everything up to that point went well. You can now safely locate the transform component and use it to compute the camera position in world space. 
+The instance part of the component is created when the file is loaded and the system encounters a 'PerspCameraComponent' resource. The instance is constructed using the registered constructor and is given the component (resource) that created it and the entity (instance) it belongs to. When the instance is initialized you know that the transform is available and everything up to that point went well. You can now safely locate the transform component and use it to (for example) compute the camera position in world space. 
 
 The [update()](@ref nap::ComponentInstance::update) function can be overridden to add per-frame functionality to your instance. The system calls the update function together with a time stamp for you. The camera instance in the example above doesn't need it but other components do, for example: a component that blends two lines over time.
