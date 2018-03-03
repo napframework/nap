@@ -337,40 +337,31 @@ void GridView::frameSelected(bool horizontal, bool vertical, QMargins margins)
 
 void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMargins margins)
 {
-//	fitInView(rec, margins, horizontal, vertical);
-
 	auto viewRect = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
+	auto viewRectScene = mapToScene(viewRect).boundingRect();
 	auto xf = transform();
 	auto origScale = napkin::getScale(xf);
 	qreal sx = origScale.width();
 	qreal sy = origScale.height();
-	auto origTranslate = napkin::getTranslation(xf);
-	qreal tx = origTranslate.x();
-	qreal ty = origTranslate.y();
-
+	qreal tx = viewRectScene.center().x();
+	qreal ty = viewRectScene.center().y();
 
 	if (horizontal)
 	{
 		sx = viewRect.width() / rec.width();
-		tx = -rec.x() * sx ;
+		tx = rec.center().x();
 	}
 	if (vertical)
 	{
 		sy = viewRect.height() / rec.height();
-		ty = -rec.y() * sy + margins.top() / sy;
+		ty = rec.center().y();
 	}
-
-//	tx -= sceneRect().left() * sx;
-//	ty -= sceneRect().top() * sy;
 
 	xf.reset();
 	setScale(xf, sx, sy);
-	setTranslation(xf, tx, ty);
-//	xf.scale(sx, sy);
-//	xf.translate(tx, ty);
-	qInfo() << scene()->sceneRect();
-	resetMatrix();
 	setTransform(xf);
+	// Use
+	centerOn(tx, ty);
 	viewTransformed();
 }
 
