@@ -1,2 +1,2 @@
 @echo off
-python ..\..\tools\platform\packageProjectByDir.py %~dp0
+..\..\thirdparty\python\python ..\..\tools\platform\packageProjectByDir.py %~dp0

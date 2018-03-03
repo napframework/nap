@@ -313,15 +313,19 @@ endmacro()
 
 # Let find_python find our prepackaged Python in thirdparty
 macro(find_python_in_thirdparty)
-    # Set our pre built Python location for *nix
+    # Set our pre built Python location
+    set(PYTHONLIBS_FOUND 1)
     if(UNIX)
-        set(PYTHONLIBS_FOUND 1)
         if(APPLE)
             set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
-        elseif(UNIX)
+        else()
             set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/install)
         endif()
         set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/lib/libpython3.6m${CMAKE_SHARED_LIBRARY_SUFFIX})
         set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/python3.6m)
+    else()
+        set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64)
+        set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/libs/python36.lib)
+        set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include)
     endif()
 endmacro()

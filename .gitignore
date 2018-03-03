@@ -58,6 +58,7 @@ docs/latex
 !/docs/doxygen/bin
 imgui.ini
 packagingStaging
+packagingBuild
 packagingBuildDebug
 packagingBuildRelease
 packagingLib

@@ -110,7 +110,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
         if zip_package:
             packaged_to = archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version)
         else:
-            packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'macOS')
+            packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'Win64')
 
         # Show in Explorer
         if show_created_package:

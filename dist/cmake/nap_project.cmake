@@ -19,7 +19,14 @@ include(${NAP_ROOT}/cmake/distmacros.cmake)
 configure_file(${CMAKE_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
 
 # Parse our project.json and import it
-execute_process(COMMAND python ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${PROJECT_NAME})
+if(WIN32)
+    # set(ENV{PYTHONPATH} ${THIRDPARTY_DIR}/tools/platform) # TODO verify and remove
+    set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python)
+else()
+    # TODO investigate using Python from thirdparty here later for *nix
+    set(PYTHON_BIN python)
+endif()
+execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${PROJECT_NAME})
 include(cached_project_json.cmake)
 
 # Set our default build type if we haven't specified one (Linux)

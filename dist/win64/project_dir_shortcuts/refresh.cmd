@@ -1,2 +1,2 @@
 @echo off
-python ..\..\tools\platform\refreshProjectByDir.py %~dp0
+..\..\thirdparty\python\python ..\..\tools\platform\refreshProjectByDir.py %~dp0
