@@ -245,7 +245,7 @@ namespace nap
 	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget)
 	{
 		renderTarget.bind();
-		renderTarget.clear(opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
+		renderTarget.clear(opengl::EClearFlags::Color | opengl::EClearFlags::Depth | opengl::EClearFlags::Stencil);
 		renderTarget.unbind();
 	}
 

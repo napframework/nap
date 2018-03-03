@@ -18,9 +18,9 @@ namespace nap
 	/**
 	* Blend mode for Materials.
 	*/
-	enum class NAPAPI EBlendMode
+	enum class EBlendMode : int
 	{
-		NotSet,					///< Default value for MaterialInstances, means that the Material's blend mode is used instead
+		NotSet = 0,				///< Default value for MaterialInstances, means that the Material's blend mode is used instead
 		Opaque,					///< Regular opaque, similar to (One, Zero) blend
 		AlphaBlend,				///< Transparant object (SrcAlpha, InvSrcAlpha) blend
 		Additive				///< Additive, (One, One) blend
@@ -30,9 +30,9 @@ namespace nap
 	* Determines how to z-buffer is used for reading and writing.
 	* When inheriting from blend mode
 	*/
-	enum class NAPAPI EDepthMode
+	enum class EDepthMode : int
 	{
-		NotSet,					///< Default value for MaterialInstances, means that the Material's blend is used instead
+		NotSet = 0,				///< Default value for MaterialInstances, means that the Material's blend is used instead
 		InheritFromBlendMode,	///< Transparent objects do not write depth, but do read depth. Opaque objects read and write depth.
 		ReadWrite,				///< Read and write depth
 		ReadOnly,				///< Only read depth

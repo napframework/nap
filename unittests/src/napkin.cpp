@@ -501,9 +501,9 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	REQUIRE(!napkin::directoryContains(absShaderPath, resourcedir));
 
 }
-
-
-TEST_CASE("Load Document", TAG_NAPKIN)
-{
-	napkin::AppContext::get().loadDocument(getResource("kalvertoren.json"));
-}
+//
+//
+//TEST_CASE("Load Document", TAG_NAPKIN)
+//{
+//	napkin::AppContext::get().loadDocument(getResource("kalvertoren.json"));
+//}

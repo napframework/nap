@@ -13,7 +13,7 @@ namespace nap
 	/**
 	 *	Texture min filter
 	 */
-	enum class NAPAPI EFilterMode : int
+	enum class EFilterMode : int
 	{
 		Nearest = 0,				///< Nearest
 		Linear,						///< Linear
@@ -26,7 +26,7 @@ namespace nap
 	/**
 	 *	Texture wrap mode
 	 */
-	enum class NAPAPI EWrapMode : int
+	enum class EWrapMode : int
 	{
 		Repeat = 0,					///< Repeat 
 		MirroredRepeat,				///< MirroredRepeat
@@ -57,16 +57,16 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 		/**
-		 * Initializes opengl texture using the associated parameters and @settings.
+		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
 		void initTexture(const opengl::Texture2DSettings& settings);
 
 		/**
-		 * Initializes the GPU texture from the internal bitmap. The bitmap must be filled in by derived classes before
-		 * calling this function.
-		 * @compressed Whether a compressed GPU texture should be created.
-		 * @errorState Contains error information if the function returns false;
+		 * Initializes the GPU texture using the settings associated with the incoming bitmap
+		 * @param bitmap the cpu pixel data used to initialize this texture with
+		 * @param compressed Whether a compressed GPU texture should be created.
+		 * @param errorState Contains error information if the function returns false;
 		 * @return True on success, false on failure.
 		 */
 		bool initFromBitmap(const Bitmap& bitmap, bool compressed, utility::ErrorState& errorState);

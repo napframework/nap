@@ -66,8 +66,6 @@ void MainWindow::addDocks()
 	addDock("Log", &mLogPanel);
 	addDock("AppRunner", &mAppRunnerPanel);
     addDock("Scene", &mScenePanel);
-	addDock("Timeline", &mTimelinePanel);
-	addDock("Curves", &mCurvePanel);
 }
 
 
@@ -131,9 +129,17 @@ void MainWindow::updateWindowTitle()
 
 MainWindow::MainWindow()
 {
+	setStatusBar(&mStatusBar);
+
 	addDocks();
 	addMenu();
 	bindSignals();
+
+	// Show something interesting in the status bar
+	connect(&AppContext::get(), &AppContext::logMessage, [this](nap::LogMessage msg){
+		statusBar()->showMessage(QString::fromStdString(msg.text()));
+	});
+
 }
 
 MainWindow::~MainWindow()
