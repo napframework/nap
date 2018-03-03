@@ -33,8 +33,6 @@ namespace napkin
 	public:
 		TimelinePanel();
 
-		~TimelinePanel() override;
-
 		void setTimeline(Timeline* timeline);
 
 		void demo();

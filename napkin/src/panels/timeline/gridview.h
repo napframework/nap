@@ -24,6 +24,7 @@ namespace napkin {
 		void frameAll(bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
 		void frameSelected(bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
 		void frameView(const QRectF& rect, bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
+		void fitInView(const QRectF& rect, const QMargins& margins, bool horizontal, bool vertical);
 		void setVerticalScroll(int value);
 
 		const QPoint& mousePressedPos() const { return mMousePressPos; }
@@ -42,8 +43,6 @@ namespace napkin {
 		void wheelEvent(QWheelEvent* event) override;
 		void keyPressEvent(QKeyEvent* event) override;
 		void keyReleaseEvent(QKeyEvent* event) override;
-		void fitInView(const QRectF& rect, Qt::AspectRatioMode aspectRadioMode,
-					   const QMargins& margins = QMargins(0, 0, 0, 0));
 		QPoint mMousePressPos;
 	private:
 		QRectF selectedItemsBoundingRect() const;

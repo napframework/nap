@@ -127,6 +127,7 @@ void GridView::zoom(const QPointF& delta, const QPointF& pivot)
 
 	// Restore after pivot zoom
 	xf.translate(-pivot.x(), -pivot.y());
+	setTransform(xf);
 
 	viewTransformed();
 }
@@ -336,23 +337,41 @@ void GridView::frameSelected(bool horizontal, bool vertical, QMargins margins)
 
 void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMargins margins)
 {
-	fitInView(rec, Qt::IgnoreAspectRatio, margins);
-//	auto viewRect = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
-//	auto xf = transform();
-//	auto origTranslate = napkin::getTranslation(xf);
-//	auto origScale = napkin::getScale(xf);
-//
-//	xf.reset();
-//
-//	qreal sx = horizontal ? viewRect.width() / rec.width() : origScale.width();
-//	qreal sy = vertical ? viewRect.height() / rec.height() : origScale.height();
-//	qreal tx = horizontal ? -rec.x() + margins.left() / sx : origTranslate.x();
-//	qreal ty = vertical ? -rec.y() + margins.top() / sy : origTranslate.y();
-//
+//	fitInView(rec, margins, horizontal, vertical);
+
+	auto viewRect = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
+	auto xf = transform();
+	auto origScale = napkin::getScale(xf);
+	qreal sx = origScale.width();
+	qreal sy = origScale.height();
+	auto origTranslate = napkin::getTranslation(xf);
+	qreal tx = origTranslate.x();
+	qreal ty = origTranslate.y();
+
+
+	if (horizontal)
+	{
+		sx = viewRect.width() / rec.width();
+		tx = -rec.x() * sx ;
+	}
+	if (vertical)
+	{
+		sy = viewRect.height() / rec.height();
+		ty = -rec.y() * sy + margins.top() / sy;
+	}
+
+//	tx -= sceneRect().left() * sx;
+//	ty -= sceneRect().top() * sy;
+
+	xf.reset();
+	setScale(xf, sx, sy);
+	setTranslation(xf, tx, ty);
 //	xf.scale(sx, sy);
 //	xf.translate(tx, ty);
-//	setTransform(xf);
-//	viewTransformed();
+	qInfo() << scene()->sceneRect();
+	resetMatrix();
+	setTransform(xf);
+	viewTransformed();
 }
 
 
@@ -394,13 +413,14 @@ void GridView::setVerticalScroll(int value)
 	viewTransformed();
 }
 
-void GridView::fitInView(const QRectF& rect, Qt::AspectRatioMode flags, const QMargins& margins)
+void GridView::fitInView(const QRectF& rect, const QMargins& margins,
+						 bool horizontal, bool vertical)
 {
 	if (!scene() or rect.isNull())
 		return;
 
 //	auto last_scene_roi = rect;
-
+	auto flags = Qt::KeepAspectRatio;
 
 	auto unity = transform().mapRect(QRectF(0, 0, 1, 1));
 
@@ -415,6 +435,11 @@ void GridView::fitInView(const QRectF& rect, Qt::AspectRatioMode flags, const QM
 	{
 		xratio = yratio = qMax(xratio, yratio);
 	}
+	if (!horizontal)
+		xratio = 1;
+	if (!vertical)
+		yratio = 1;
+
 	scale(xratio, yratio);
 	centerOn(rect.center());
 }
