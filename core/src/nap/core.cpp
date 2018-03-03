@@ -396,7 +396,9 @@ namespace nap
 	// into runtime module configuration
 	void Core::tempSettingOfPythonHome()
 	{
-#ifdef __APPLE__
+#ifdef _WIN32
+		const std::string platformPrefix = "msvc";
+#elif defined(__APPLE__)
 		const std::string platformPrefix = "osx";
 #else // __unix__
 		const std::string platformPrefix = "linux";
@@ -408,10 +410,24 @@ namespace nap
 		const bool packagedBuild = false;
 #endif
 
+		std::string exeDir = utility::getExecutableDir();
+
 #if _WIN32
-		// Don't do anything for now on Windows as we haven't got Python in thirparty yet
+		if (packagedBuild)
+		{
+			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
+			const std::string packagedAppPythonPath = exeDir + "/python36.zip";
+			// Logger::info("Setting PYTHONPATH for packaged project to %s\n", packagedAppPythonPath.c_str());
+			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
+		}
+		else {
+			// set PYTHONPATH for thirdparty location beside NAP source
+			std::string napRoot = exeDir + "/../../..";
+			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
+			// Logger::info("Setting PYTHONPATH for project against NAP source to %s\n", pythonHome.c_str());
+			_putenv_s("PYTHONPATH", pythonHome.c_str());
+		}
 #else	
-		const std::string exeDir = utility::getExecutableDir();
 
 		if (packagedBuild)
 		{

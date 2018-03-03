@@ -40,10 +40,18 @@ if(WIN32)
                        COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/plugins/$<CONFIG>/platforms $<TARGET_FILE_DIR:${PROJECT_NAME}>/platforms
                        )
 
-
+    # Copy Python framework libs, during post-build or install, depending on our platform
+    # TODO Share with mod_nappython moduleExtra post-build
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/*.dll)
+    foreach(PYTHON_DLL ${PYTHON_DLLS})
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_DLL} $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                           )
+    endforeach()
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/python/ $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                       COMMAND ${CMAKE_COMMAND} -E copy ${THIRDPARTY_DIR}/python/python36.zip $<TARGET_FILE_DIR:${PROJECT_NAME}>
                        )
 
     # Copy module

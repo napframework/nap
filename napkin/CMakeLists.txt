@@ -62,11 +62,17 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
                    COMMENT "Copy Resources")
 
+if(WIN32)
+    # Copy all of our Windows DLLs that have build in bin into project dir
+    # TODO this is NOT a clean solution, but if we're mainly releasing projects build against packaged releases of the
+    #      framework maybe this is OK?
+    bulk_copy_windows_dlls_to_bin()
+endif()
+
 # Package into release build
 set(NAPKIN_PACKAGED_BUILD_TYPE Release)
 
 include(${NAP_ROOT}/cmake/packaging_macros.cmake)
-
 
 install(TARGETS ${PROJECT_NAME}
         DESTINATION tools/platform/napkin/Release

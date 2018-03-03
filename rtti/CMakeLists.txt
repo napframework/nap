@@ -75,6 +75,8 @@ endif ()
 if (WIN32)
     # Copy over dlls
     copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    copy_files_to_bin(${PYTHON_DLLS})    
 elseif(APPLE)
     # Copy over RTTR for macOS
     # TODO Update this to be an RPATH change?

@@ -70,14 +70,13 @@ install(TARGETS ${PROJECT_NAME}
         CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
 if (WIN32)   
-    # TODO use get_prerequisites or find_package to make this a whole load less terrible?
-    #install(CODE "include(../cmake/configure.cmake)\ninstall_binary_requisites(${CMAKE_SOURCE_DIR}/packaging/tools/fbxconverter.exe ${CMAKE_SOURCE_DIR}/packaging/tools)")
-
-    install(FILES "${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll"
-                  "${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll"
-                  "${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll"
-                  "${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll"
-                  "${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll" 
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    install(FILES ${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll
+                  ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll
+                  ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
+                  ${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll
+                  ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll
+                  ${PYTHON_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
 elseif(APPLE)
     set(path_to_nap_root "@executable_path/../..")
