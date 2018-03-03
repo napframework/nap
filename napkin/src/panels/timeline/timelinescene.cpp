@@ -22,6 +22,7 @@ void TimelineScene::setTimeline(Timeline* timeline) {
 	}
 
 	mTimeline = timeline;
+	mTimeline->setParent(this);
 
 	for (auto track : mTimeline->tracks())
 		onTrackAdded(*track);

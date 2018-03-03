@@ -48,6 +48,7 @@ namespace napkin
 
 	public:
 		TimelineOutline();
+		~TimelineOutline() {}
 
 		void setModel(Timeline* timeline);
 

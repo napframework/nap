@@ -15,6 +15,7 @@ namespace napkin {
 
 	public:
 		TimelineView();
+		~TimelineView() {}
 
 		void setTopMargin(int margin);
 	protected:

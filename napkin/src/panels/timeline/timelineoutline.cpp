@@ -8,6 +8,9 @@ using namespace napkin;
 OutlineTrackItem::OutlineTrackItem(Track& track) : QStandardItem(), mTrack(track)
 {
 	setText(track.name());
+
+	for (auto child : track.childTracks())
+		appendRow(new OutlineTrackItem(*child));
 }
 
 QVariant OutlineTrackItem::data(int role) const
@@ -57,7 +60,8 @@ OutlineTrackItem* OutlineModel::trackItem(const Track& track) const
 
 void OutlineModel::onTrackAdded(Track& track)
 {
-	appendRow(new OutlineTrackItem(track));
+	auto trackItem = new OutlineTrackItem(track);
+	appendRow(trackItem);
 }
 
 void OutlineModel::onTrackRemoved(Track& track)

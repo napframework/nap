@@ -67,23 +67,40 @@ void TimelinePanel::demo()
 	int eventCount = 10;
 
 	auto timeline = new Timeline(this);
-	auto framestep = 1.0 / timeline->framerate();
 
-	for (int i = 0; i < trackCount; i++)
+
 	{
-		auto trackname = QString::fromStdString(gen.multiple());
-		auto track = timeline->addTrack(trackname);
-
-		qreal t = 0;
-		for (int e = 0; e < eventCount; e++)
-		{
-			t += namegen::randint(0, 40) * framestep;
-			qreal len = namegen::randint(20, 300) * framestep;
-			auto eventname = QString::fromStdString(gen.multiple());
-			track->addEvent(eventname, t, t + len);
-			t += len;
-		}
+		auto track = timeline->addTrack("Event Track One", nullptr);
+		track->addEvent("FirstEvent", 0, 100);
+		track->addEvent("Event Zwei", 100, 150);
+		track->addEvent("Derde Event", 160, 250);
 	}
+	{
+		auto track = timeline->addTrack("Second Event Track", nullptr);
+		auto child1 = track->addTrack("A Child Track");
+		auto child2 = track->addTrack("Another Child Track");
+	}
+	{
+		auto track = timeline->addTrack("Track number Three", nullptr);
+	}
+
+//	auto framestep = 1.0 / timeline->framerate();
+//
+//	for (int i = 0; i < trackCount; i++)
+//	{
+//		auto trackname = QString::fromStdString(gen.multiple());
+//		auto track = timeline->addTrack(trackname);
+//
+//		qreal t = 0;
+//		for (int e = 0; e < eventCount; e++)
+//		{
+//			t += namegen::randint(0, 40) * framestep;
+//			qreal len = namegen::randint(20, 300) * framestep;
+//			auto eventname = QString::fromStdString(gen.multiple());
+//			track->addEvent(eventname, t, t + len);
+//			t += len;
+//		}
+//	}
 
 	setTimeline(timeline);
 

@@ -32,6 +32,7 @@ namespace napkin
 	{
 	public:
 		TimelinePanel();
+		~TimelinePanel() {}
 
 		void setTimeline(Timeline* timeline);
 
