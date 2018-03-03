@@ -50,8 +50,5 @@ endif()
 # Copy project json to project bin dir and export fbx, via post-build events
 copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
 
-# Install virtual env config file so our Python exec lib can find the modules in thirdparty
-install_python_virtualenv_config()
-
 # Package into release build.. for now
 package_project_into_release("examples/${PROJECT_NAME}")
