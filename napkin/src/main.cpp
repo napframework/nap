@@ -1,6 +1,7 @@
 
 #include "generic/filtertreeview.h"
 #include "mainwindow.h"
+#include "napkinresources.h"
 
 #include <QFontDatabase>
 
@@ -16,6 +17,7 @@ int main(int argc, char* argv[])
 	QApplication::setApplicationName("Napkin");
 
 	QApplication app(argc, argv);
+	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));
 
 	MainWindow w;
 	w.show();
