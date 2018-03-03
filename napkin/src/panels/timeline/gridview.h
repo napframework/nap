@@ -18,6 +18,8 @@ namespace napkin {
 
 	public:
 		GridView();
+		~GridView() {}
+
 		void pan(const QPointF& delta);
 		void zoom(const QPointF& delta, const QPointF& pivot);
 		void centerView();

@@ -3,31 +3,37 @@
 using namespace napkin;
 
 Event::Event(Track& parent, const QString& name, const qreal start, const qreal end)
-		: mName(name), mStart(start), mEnd(end), QObject(&parent) {
+		: mName(name), mStart(start), mEnd(end), QObject(&parent)
+{
 	mColor = QColor(Qt::cyan);
 }
 
-void Event::setName(const QString& name) {
+void Event::setName(const QString& name)
+{
 	mName = name;
 	changed(*this);
 }
 
-void Event::setStart(const qreal start) {
+void Event::setStart(const qreal start)
+{
 	mStart = start;
 	changed(*this);
 }
 
-void Event::setEnd(const qreal end) {
+void Event::setEnd(const qreal end)
+{
 	mEnd = end;
 	changed(*this);
 }
 
-void Event::setColor(const QColor& col) {
+void Event::setColor(const QColor& col)
+{
 	mColor = col;
 	changed(*this);
 }
 
-Track& Event::track() const { return *(Track*) parent(); }
+Track& Event::track() const
+{ return *(Track*) parent(); }
 
 void Event::setTrack(Track& track)
 {
@@ -35,37 +41,64 @@ void Event::setTrack(Track& track)
 }
 
 
-qreal Event::length() const {
+qreal Event::length() const
+{
 	return mEnd - mStart;
 }
 
-Track::Track(Timeline& parent, const QString& name) : mName(name), QObject(&parent) {}
+Track::Track(QObject& parent, const QString& name) : mName(name), QObject(&parent)
+{}
 
-void Track::setName(const QString& name) {
+void Track::setName(const QString& name)
+{
 	mName = name;
 	changed(*this);
 }
 
-Event* Track::addEvent(const QString& name, qreal start, qreal end) {
+Event* Track::addEvent(const QString& name, qreal start, qreal end)
+{
 	auto event = new Event(*this, name, start, end);
 	mEvents << event;
 	eventAdded(*event);
 	return event;
 }
 
-Timeline& Track::timeline() const { return *(Timeline*) parent(); }
+Timeline& Track::timeline() const
+{
+	Track* parentTrack = (Track*) parent();
+	if (parentTrack != nullptr)
+		return parentTrack->timeline();
 
-int Track::index() { return timeline().children().indexOf(this); }
+	return *(Timeline*) parent();
+}
+
+int Track::index()
+{
+	return parent()->children().indexOf(this);
+}
+
+Track* Track::addTrack(const QString& name)
+{
+	auto track = new Track(*this, name);
+	mChildren << track;
+	trackAdded(*track);
+	return track;
+}
 
 
-Track* Timeline::addTrack(const QString& name) {
+Track* Timeline::addTrack(const QString& name, Track* parent)
+{
+	if (parent != nullptr)
+		return parent->addTrack(name);
+
 	auto track = new Track(*this, name);
 	mTracks << track;
 	trackAdded(*track);
 	return track;
 }
 
-void Timeline::removeTrack(Track& track) {
+void Timeline::removeTrack(Track& track)
+{
 	trackRemoved(track);
 	mTracks.removeOne(&track);
 }
