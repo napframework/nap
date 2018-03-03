@@ -31,7 +31,7 @@ namespace napkin {
 		const QPoint& mouseDelta() const { return mMouseDelta; }
 
 	Q_SIGNALS:
-		void viewTransformed(const QTransform& transform);
+		void viewTransformed();
 
 	protected:
 		void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -42,17 +42,16 @@ namespace napkin {
 		void wheelEvent(QWheelEvent* event) override;
 		void keyPressEvent(QKeyEvent* event) override;
 		void keyReleaseEvent(QKeyEvent* event) override;
-		void fitInViewNoMargins(const QRectF &rect, Qt::AspectRatioMode aspectRadioMode = Qt::IgnoreAspectRatio);
+		void fitInView(const QRectF& rect, Qt::AspectRatioMode aspectRadioMode,
+					   const QMargins& margins = QMargins(0, 0, 0, 0));
 		QPoint mMousePressPos;
 	private:
 		QRectF selectedItemsBoundingRect() const;
-		void applyViewTransform();
 		const QPointF viewScale() const;
 		const QPointF viewPos() const;
 
 		QPoint mMouseLastPos;
 		QPoint mMouseDelta;
-		QTransform mViewTransform;
 		QSize mViewSize;
 		QFont mRulerFont;
 

@@ -1,6 +1,6 @@
 #include "timelinescene.h"
-#include "trackitem.h"
 #include "eventitem.h"
+#include "trackitem.h"
 
 using namespace napkin;
 

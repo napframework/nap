@@ -57,9 +57,9 @@ void TimelinePanel::setTimeline(Timeline* timeline)
 	mOutline.setModel(timeline);
 }
 
-void TimelinePanel::onTimelineViewTransformed(const QTransform& transform)
+void TimelinePanel::onTimelineViewTransformed()
 {
-	auto scroll = getTranslation(transform);
+	auto scroll = getTranslation(mView.transform());
 	int s = qRound(-scroll.y());
 	mOutline.setVerticalScroll(s);
 }

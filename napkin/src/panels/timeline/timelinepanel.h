@@ -43,7 +43,7 @@ namespace napkin
 		void showEvent(QShowEvent* event) override;
 
 	private:
-		void onTimelineViewTransformed(const QTransform& transform);
+		void onTimelineViewTransformed();
 
 		TimelineView mView;
 		TimelineScene mScene;

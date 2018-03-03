@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QCloseEvent>
+
 using namespace napkin;
 
 void MainWindow::bindSignals()
@@ -66,6 +67,7 @@ void MainWindow::addDocks()
 	addDock("Log", &mLogPanel);
 	addDock("AppRunner", &mAppRunnerPanel);
     addDock("Scene", &mScenePanel);
+	addDock("Timeline", &mTimelinePanel);
 }
 
 

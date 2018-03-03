@@ -5,7 +5,6 @@
 #include "generic/filtertreeview.h"
 #include "generic/qtutils.h"
 #include "timelinemodel.h"
-#include "trackitem.h"
 
 namespace napkin
 {
