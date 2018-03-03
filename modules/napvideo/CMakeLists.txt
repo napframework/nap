@@ -33,7 +33,8 @@ endif()
 # FFmpeg
 if(WIN32)
     install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/" DESTINATION "thirdparty/FFmpeg"
-            PATTERN "osx" EXCLUDE)
+            PATTERN "osx" EXCLUDE
+            PATTERN "linux" EXCLUDE)
 elseif(APPLE)
     # TODO Package FFmpeg license files
 
