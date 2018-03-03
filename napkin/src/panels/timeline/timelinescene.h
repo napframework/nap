@@ -14,7 +14,7 @@ namespace napkin {
 		TimelineScene();
 		void setTimeline(Timeline* timeline);
 		Timeline* timeline() const { return mTimeline; }
-		void setTrackHeight(int height);
+
 	private:
 		void onTrackAdded(Track& track);
 		void onTrackRemoved(Track& track);

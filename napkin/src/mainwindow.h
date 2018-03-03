@@ -12,6 +12,7 @@
 #include "panels/logpanel.h"
 #include "panels/resourcepanel.h"
 #include "panels/scenepanel.h"
+#include "panels/timeline/timelinepanel.h"
 #include "themeselectionmenu.h"
 
 namespace napkin
@@ -88,6 +89,7 @@ namespace napkin
 		AppRunnerPanel mAppRunnerPanel; // AppRunnerPanel
 		ThemeSelectionMenu mThemeMenu;  // ThemeSelectionMenu
 		ScenePanel mScenePanel;			// ScenePanel
+		TimelinePanel mTimelinePanel; 	// Timeline Panel
 
 		QStatusBar mStatusBar;			// Status bar
 	};
