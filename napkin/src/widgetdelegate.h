@@ -14,6 +14,8 @@ namespace napkin
 	class PropertyValueItemDelegate : public QStyledItemDelegate
 	{
 	public:
+		PropertyValueItemDelegate();
+
 		/**
 		 * Get the type this modelindex represents
 		 * @param idx The model index that 'points' to an object with that type
@@ -60,5 +62,9 @@ namespace napkin
 		 */
 		bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
 						 const QModelIndex& index) override;
+
+	private:
+		QIcon mLinkIcon;
+		QIcon mFileIcon;
 	};
 };
