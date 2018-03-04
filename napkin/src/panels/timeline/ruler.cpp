@@ -6,9 +6,9 @@
 
 napkin::Ruler::Ruler(QWidget* parent) : QWidget(parent)
 {
-	mTimeConfig = new SMPTETimeDisplay();
+//	mTimeConfig = new SMPTETimeDisplay();
 //	mTimeConfig = new FloatTimeDisplay();
-//	mTimeConfig = new GeneralTimeDisplay();
+	mTimeConfig = new GeneralTimeDisplay();
 
 	mFont.setFamily("Monospace");
 	mFont.setStyleHint(QFont::TypeWriter);
@@ -53,23 +53,24 @@ void napkin::Ruler::drawHatches(QPainter& painter, int hatchLength, qreal minSte
 		start = mRange.end();
 		end = mRange.start();
 	}
-	qreal length = end - start;
+	qreal windowSize = end - start; // How much time we're seeing in the view
 
-	qreal viewScale = width() / length;
-	qreal stepInterval = mTimeConfig->calcStepInterval(length, width(), minStepSize);
+	qreal viewScale = width() / windowSize;
+	qreal stepInterval = mTimeConfig->calcStepInterval(windowSize, width(), minStepSize);
 
 	qreal stepSize = viewScale * stepInterval;
 	qreal startOffset = -start * viewScale;
 	qreal localOffset = fmod(startOffset, stepSize);
-	int timeOffset = qFloor(start / stepInterval);
 
-	if (timeOffset < 0)
+	int timeOffset = qFloor(start / stepInterval);
+	if (timeOffset < 0) // Correct for negative values
 		timeOffset++;
 
-	int stepCount = qCeil(length / stepInterval) + 1;
 
 	int y = height() - hatchLength;
 	int textY = mTextHeight;
+
+	int stepCount = qCeil(windowSize / stepInterval) + 1;
 	for (int i = 0; i < stepCount; i++)
 	{
 		// floor instead of round, matches QGraphicsView aliasing

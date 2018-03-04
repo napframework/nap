@@ -94,7 +94,7 @@ namespace napkin
 			MINUTE * 10,
 			MINUTE * 15,
 			MINUTE * 20,
-			MINUTE * 60,
+			MINUTE * 30,
 			HOUR,
 			HOUR * 2,
 			HOUR * 3,
@@ -194,10 +194,16 @@ qreal napkin::GeneralTimeDisplay::calcStepInterval(qreal windowSize,
 
 const QString napkin::GeneralTimeDisplay::timeToString(qreal interval, qreal time) const
 {
+	if (time == 0)
+		return "0";
+
 	QMapIterator<qreal, QString> iter(TIME_SUFFIXES);
 	iter.toBack();
 	while (iter.hasPrevious()) {
 		iter.previous();
+		if (fmod(time, iter.key()) == 0)
+			return QString::number(time / iter.key()) + iter.value();
+
 		if (interval >= iter.key())
 			return QString("%1%2").arg(QString::number(time / (qreal)iter.key()), iter.value());
 	}
