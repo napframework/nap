@@ -73,7 +73,7 @@ void AutoSettings::storeRecursive(QWidget& w, QSettings& s) const
 	if (storer)
 	{
 		auto key = uniqeObjectName(w);
-		nap::Logger::debug("Storing '%s'", key.toStdString().c_str());
+//		nap::Logger::debug("Storing '%s'", key.toStdString().c_str());
 		storer->storeWidget(w, key, s);
 	}
 
@@ -90,7 +90,7 @@ void AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
 	auto storer = findStorer(w);
 	if (storer) {
 		auto key = uniqeObjectName(w);
-		nap::Logger::debug("Restoring '%s'", key.toStdString().c_str());
+//		nap::Logger::debug("Restoring '%s'", key.toStdString().c_str());
 		storer->restoreWidget(w, key, s);
 	}
 
