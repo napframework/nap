@@ -8,11 +8,19 @@ namespace napkin
 	class TimeDisplay
 	{
 	public:
-		virtual qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const = 0;
+		virtual qreal
+		calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const = 0;
+
 		virtual const QString timeToString(qreal interval, qreal time) const = 0;
+
 		void setHatchSpacing(qreal minor, qreal major);
-		qreal minorHatchSpacing() const { return mMinorHatchSpacing; }
-		qreal majorHatchSpacing() const { return mMajorHatchSpacing; }
+
+		qreal minorHatchSpacing() const
+		{ return mMinorHatchSpacing; }
+
+		qreal majorHatchSpacing() const
+		{ return mMajorHatchSpacing; }
+
 	private:
 		qreal mMinorHatchSpacing = 10;
 		qreal mMajorHatchSpacing = 100;
@@ -21,7 +29,7 @@ namespace napkin
 	class SMPTETimeDisplay : public TimeDisplay
 	{
 	public:
-		SMPTETimeDisplay(int framerate=30);
+		SMPTETimeDisplay(int framerate = 30);
 
 		void setFramerate(int fps);
 
@@ -42,11 +50,12 @@ namespace napkin
 
 	};
 
-	class FloatTimeDisplay: public TimeDisplay
+	class FloatTimeDisplay : public TimeDisplay
 	{
 	public:
 		qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const override;
 
 		const QString timeToString(qreal interval, qreal time) const override;
 	};
+
 } // namespace napkin
