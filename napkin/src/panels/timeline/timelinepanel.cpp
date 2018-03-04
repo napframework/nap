@@ -39,6 +39,7 @@ TimelinePanel::TimelinePanel() : QWidget()
 	int rulerHeight = 30;
 	mRuler.setHeight(rulerHeight);
 	mOutline.setHeaderHeight(rulerHeight);
+	mView.setGridEnabled(false);
 
 	setTimeScale(10);
 

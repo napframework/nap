@@ -28,6 +28,7 @@ namespace napkin {
 		void frameView(const QRectF& rect, bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
 		void fitInView(const QRectF& rect, const QMargins& margins, bool horizontal, bool vertical);
 		void setVerticalScroll(int value);
+		void setGridEnabled(bool enabled);
 
 		const QPoint& mousePressedPos() const { return mMousePressPos; }
 		const QPoint& mouseLastPos() const { return mMouseLastPos; }
@@ -55,6 +56,7 @@ namespace napkin {
 		QPoint mMouseDelta;
 		QSize mViewSize;
 		QFont mRulerFont;
+		bool mGridEnabled = true;
 
 		ZoomMode mZoomMode = Horizontal;
 		RulerFormat mRulerFormat = SMPTE;

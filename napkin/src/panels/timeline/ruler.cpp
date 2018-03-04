@@ -56,16 +56,21 @@ void napkin::Ruler::drawHatches(QPainter& painter, int hatchLength, qreal minSte
 	qreal windowSize = end - start; // How much time we're seeing in the view
 
 	qreal viewScale = width() / windowSize;
+
+	// Step distance in time-space
 	qreal stepInterval = mTimeConfig->calcStepInterval(windowSize, width(), minStepSize);
 
+	// Step distance in view-space (pixels)
 	qreal stepSize = viewScale * stepInterval;
+	// Start offset in view-space (pixels)
 	qreal startOffset = -start * viewScale;
+	// How much to offset (sub-step) to match scroll
 	qreal localOffset = fmod(startOffset, stepSize);
 
+	// Offset in time-space
 	int timeOffset = qFloor(start / stepInterval);
 	if (timeOffset < 0) // Correct for negative values
 		timeOffset++;
-
 
 	int y = height() - hatchLength;
 	int textY = mTextHeight;

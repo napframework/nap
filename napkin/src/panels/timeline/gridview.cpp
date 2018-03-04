@@ -145,7 +145,9 @@ void GridView::pan(const QPointF& delta)
 
 void GridView::drawBackground(QPainter* painter, const QRectF& rect)
 {
-	painter->fillRect(rect, Qt::darkGray);
+	painter->fillRect(rect, palette().background().color());
+	if (!mGridEnabled)
+		return;
 
 	auto viewRect = viewport()->rect();
 	auto sceneRect = mapToScene(viewRect).boundingRect();
@@ -433,5 +435,10 @@ void GridView::fitInView(const QRectF& rect, const QMargins& margins,
 
 	scale(xratio, yratio);
 	centerOn(rect.center());
+}
+
+void GridView::setGridEnabled(bool enabled)
+{
+	mGridEnabled = enabled;
 }
 
