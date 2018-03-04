@@ -17,7 +17,10 @@ namespace napkin {
 		TimelineView();
 		~TimelineView() {}
 
-		void setTopMargin(int margin);
+		void setTimeScale(qreal scale);
+
+		const Range getViewRange() const;
+
 	protected:
 		void mousePressEvent(QMouseEvent* event) override;
 

@@ -98,10 +98,10 @@ void TimelineOutline::onViewResized(const QSize& size)
 
 }
 
-int TimelineOutline::getTrackTop() const
+void TimelineOutline::setHeaderHeight(int height)
 {
-
-	return mFilterTree.getTreeView().mapTo(this, QPoint(0, 0)).y();
+	mFilterTree.getLineEdit().setMinimumHeight(height);
+	mFilterTree.getLineEdit().setMaximumHeight(height);
 }
 
 int TimelineOutline::getTrackHeight(const Track& track) const

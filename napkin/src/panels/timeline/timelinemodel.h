@@ -6,6 +6,29 @@
 
 namespace napkin {
 
+
+
+
+	class Range
+	{
+	public:
+		Range() : mStart(0), mEnd(0) {}
+		Range(qreal start, qreal end) : mStart(start), mEnd(end) {}
+		Range(const Range& other) : mStart(other.start()), mEnd(other.end()) {}
+		qreal start() const { return mStart; }
+		void setStart(qreal start) { mStart = start; }
+		qreal end() const { return mEnd; }
+		void setEnd(qreal end) { mEnd = end; }
+		qreal length() const { return mEnd - mStart; }
+		void set(qreal start, qreal end) { mStart = start; mEnd = end; }
+		void set(const Range& range) { mStart = range.start(); mEnd = range.end(); }
+		bool operator==(const Range& other) const { return mStart == other.start() && mEnd == other.end(); }
+		operator const QString() const { return QString("Range(%1, %2)").arg(QString::number(mStart), QString::number(mEnd)); }
+	private:
+		qreal mStart;
+		qreal mEnd;
+	};
+
 	class Timeline;
 	class Track;
 
@@ -18,11 +41,11 @@ namespace napkin {
 
 		void setName(const QString& name);
 
-		qreal start() const { return mStart; }
+		qreal start() const { return mRange.start(); }
 
 		void setStart(qreal start);
 
-		qreal end() const { return mEnd; }
+		qreal end() const { return mRange.end(); }
 
 		void setEnd(qreal end);
 
@@ -41,8 +64,7 @@ namespace napkin {
 		void changed(Event& event);
 
 	private:
-		qreal mStart;
-		qreal mEnd;
+		Range mRange;
 		QString mName;
 		QColor mColor;
 	};

@@ -5,6 +5,7 @@
 #include "timelinescene.h"
 #include "gridview.h"
 #include "timelineoutline.h"
+#include "ruler.h"
 
 #include <cassert>
 
@@ -34,6 +35,8 @@ namespace napkin
 		TimelinePanel();
 		~TimelinePanel() {}
 
+		void setTimeScale(qreal scale);
+
 		void setTimeline(Timeline* timeline);
 
 		void demo();
@@ -53,6 +56,7 @@ namespace napkin
 		QVBoxLayout mTimelineLayout;
 		QWidget mTimelineWidget;
 		QSplitter mSplitter;
+		Ruler mRuler;
 	};
 
 }
