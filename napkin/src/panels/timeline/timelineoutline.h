@@ -56,7 +56,7 @@ namespace napkin
 		 * Top of treeview in pixels, relative to this widget (the outline)
 		 * @return
 		 */
-		int getTrackTop() const;
+		void setHeaderHeight(int height);
 
 		int getTrackHeight(const Track& track) const;
 

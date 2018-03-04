@@ -3,7 +3,7 @@
 using namespace napkin;
 
 Event::Event(Track& parent, const QString& name, const qreal start, const qreal end)
-		: mName(name), mStart(start), mEnd(end), QObject(&parent)
+		: mName(name), mRange(start, end), QObject(&parent)
 {
 	mColor = QColor(Qt::cyan);
 }
@@ -16,13 +16,13 @@ void Event::setName(const QString& name)
 
 void Event::setStart(const qreal start)
 {
-	mStart = start;
+	mRange.setStart(start);
 	changed(*this);
 }
 
 void Event::setEnd(const qreal end)
 {
-	mEnd = end;
+	mRange.setEnd(end);
 	changed(*this);
 }
 
@@ -43,7 +43,7 @@ void Event::setTrack(Track& track)
 
 qreal Event::length() const
 {
-	return mEnd - mStart;
+	return mRange.length();
 }
 
 Track::Track(QObject& parent, const QString& name) : mName(name), QObject(&parent)

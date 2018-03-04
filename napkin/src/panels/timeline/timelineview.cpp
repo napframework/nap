@@ -9,18 +9,25 @@ using namespace napkin;
 
 
 TimelineView::TimelineView()
-		: GridView() {
+		: GridView()
+{
 	setMouseTracking(true);
 }
 
-
-void TimelineView::setTopMargin(int margin)
+void TimelineView::setTimeScale(qreal scale)
 {
-	scene()->setSceneRect(-30, -margin, 100000, 100000);
+	zoom(QPointF(scale, 1), QPointF());
+}
+
+const Range TimelineView::getViewRange() const
+{
+	return {mapToScene(0, 0).x(),
+			mapToScene(viewport()->rect().width(), 0).x()};
 }
 
 
-void TimelineView::mousePressEvent(QMouseEvent* event) {
+void TimelineView::mousePressEvent(QMouseEvent* event)
+{
 	if (!scene())
 		return;
 
@@ -35,27 +42,36 @@ void TimelineView::mousePressEvent(QMouseEvent* event) {
 	auto clickedEvent = dynamic_cast<EventItem*>(item);
 
 	// Handle selection
-	if (lmb && !alt) {
-		if (clickedEvent) {
-			if (shift) {
+	if (lmb && !alt)
+	{
+		if (clickedEvent)
+		{
+			if (shift)
+			{
 				clickedEvent->setSelected(true);
-			} else if (ctrl) {
+			} else if (ctrl)
+			{
 				clickedEvent->setSelected(!clickedEvent->isSelected());
-			} else {
-				if (!clickedEvent->isSelected()) {
+			} else
+			{
+				if (!clickedEvent->isSelected())
+				{
 					for (auto m : selectedEventItems())
 						m->setSelected(false);
 					clickedEvent->setSelected(true);
 				}
 			}
-		} else {
-			if (!shift && !ctrl) {
+		} else
+		{
+			if (!shift && !ctrl)
+			{
 				for (auto m : selectedEventItems())
 					m->setSelected(false);
 			}
 		}
 		mSelectedPositions.clear();
-		for (auto m : selectedEventItems()) {
+		for (auto m : selectedEventItems())
+		{
 			moveItemToFront(*m);
 			mSelectedPositions.insert(m, m->scenePos());
 		}
@@ -65,7 +81,8 @@ void TimelineView::mousePressEvent(QMouseEvent* event) {
 	GridView::mousePressEvent(event);
 }
 
-void TimelineView::mouseMoveEvent(QMouseEvent* event) {
+void TimelineView::mouseMoveEvent(QMouseEvent* event)
+{
 	GridView::mouseMoveEvent(event);
 
 	bool ctrl = event->modifiers() == Qt::ControlModifier;
@@ -76,8 +93,10 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event) {
 
 	auto framestep = 1.0 / timeline()->framerate();
 
-	if (lmb && !alt) {
-		for (auto item : selectedEventItems()) {
+	if (lmb && !alt)
+	{
+		for (auto item : selectedEventItems())
+		{
 			auto oldPos = mSelectedPositions[item];
 			auto newPos = oldPos + dragDelta;
 
@@ -98,13 +117,16 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event) {
 
 }
 
-void TimelineView::mouseReleaseEvent(QMouseEvent* event) {
+void TimelineView::mouseReleaseEvent(QMouseEvent* event)
+{
 	GridView::mouseReleaseEvent(event);
 }
 
-const QList<EventItem*> TimelineView::selectedEventItems() const {
+const QList<EventItem*> TimelineView::selectedEventItems() const
+{
 	QList<EventItem*> items;
-	for (auto m : scene()->selectedItems()) {
+	for (auto m : scene()->selectedItems())
+	{
 		auto eventItem = dynamic_cast<EventItem*>(m);
 		if (eventItem)
 			items << eventItem;
@@ -112,7 +134,10 @@ const QList<EventItem*> TimelineView::selectedEventItems() const {
 	return items;
 }
 
-Timeline* TimelineView::timeline() const {
+Timeline* TimelineView::timeline() const
+{
 	return dynamic_cast<TimelineScene*>(scene())->timeline();
 }
+
+
 
