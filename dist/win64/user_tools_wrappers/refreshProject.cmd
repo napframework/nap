@@ -1,2 +1,2 @@
 @echo off
-%~dp0\..\thirdparty\python\python %~dp0\refreshProject.py %*
+%~dp0\..\thirdparty\python\python %~dp0\refreshProjectByName.py %*

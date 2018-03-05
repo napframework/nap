@@ -4,7 +4,7 @@ import os
 import sys
 from subprocess import call
 
-from platform.NAPShared import find_project, validate_camelcase_name
+from NAPShared import find_project, validate_camelcase_name
 
 # Default modules if none are specified
 DEFAULT_MODULE_LIST = "mod_naprender,mod_napmath,mod_napinput,mod_napsdlinput,mod_napsdlwindow,mod_napapp,mod_napscene,mod_napimgui"
@@ -46,7 +46,7 @@ def create_project(project_name, module_list, generate_solution):
         if sys.platform == 'win32':
             python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
         elif sys.platform == 'darwin':
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
+            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3.6')
         else:
             python = 'python'
                 

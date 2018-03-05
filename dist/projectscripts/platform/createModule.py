@@ -4,7 +4,7 @@ import os
 import sys
 from subprocess import call
 
-from platform.NAPShared import validate_camelcase_name
+from NAPShared import validate_camelcase_name
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -47,7 +47,7 @@ def create_module(module_name, generate_solution):
         if sys.platform == 'win32':
             python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
         elif sys.platform == 'darwin':
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
+            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3.6')
         else:
             python = 'python'
 

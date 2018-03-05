@@ -17,14 +17,13 @@ macro(package_nap)
             DESTINATION cmake
             )   
 
-    # Package user tools
-    file(GLOB USER_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/*py")
-    install(PROGRAMS ${USER_TOOL_SCRIPTS} DESTINATION tools)
+    # Install wrapper batch scripts for user tools
     if(WIN32)
-        # Install wrapper batch scripts for user tools
-        file(GLOB WIN32_USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/win64/user_tools_wrappers/*.*")
-        install(PROGRAMS ${WIN32_USER_TOOL_WRAPPERS} DESTINATION tools)
+        file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/win64/user_tools_wrappers/*.*")
+    else()
+        file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/unix/user_tools_wrappers/*")
     endif()
+    install(PROGRAMS ${USER_TOOL_WRAPPERS} DESTINATION tools)
 
     # Package platform tools
     file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/platform/*py")
@@ -88,7 +87,8 @@ macro(package_python)
                 PATTERN site-packages EXCLUDE)
 
         # Install command line intrepreter
-        install(PROGRAMS ${PYTHON_PREFIX}/bin/python3.6
+        file(GLOB PYTHON_INTERPRETER ${PYTHON_PREFIX}/bin/python*)
+        install(PROGRAMS ${PYTHON_INTERPRETER}
                 DESTINATION thirdparty/python/bin/
                 CONFIGURATIONS Release)
 
