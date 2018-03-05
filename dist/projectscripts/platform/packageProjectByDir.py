@@ -27,7 +27,13 @@ if __name__ == '__main__':
     nap_root = os.path.abspath(os.path.join(args.PROJECT_PATH, os.pardir, os.pardir))
     script_path = os.path.join(nap_root, 'tools', 'packageProject.py')
 
-    call(['python', script_path, project_name])
+    # Determine our Python interpreter location
+    if sys.platform == 'win32':
+        python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
+    else:
+        python = 'python'
+
+    call([python, script_path, project_name])
 
     print("Press key to close...")
 

@@ -1,1 +1,1 @@
-python build.py %*
+..\thirdparty\python\msvc\python-embed-amd64\python build.py %*
