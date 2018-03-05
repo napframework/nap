@@ -28,13 +28,15 @@ if __name__ == '__main__':
     script_path = os.path.join(nap_root, 'tools', 'refreshProject.py')
 
     # If we're on Windows or macOS and we're generating a solution for the first time show the generated solution
-    show_solution = False
-    if sys.platform == 'darwin':
-        if os.path.exists(os.path.join(args.PROJECT_PATH, 'xcode')):
-            show_solution = True
-    elif sys.platform == 'win32':
-        if os.path.exists(os.path.join(args.PROJECT_PATH, 'msvc64')):
-            show_solution = True
+    show_solution = sys.platform in ('win32', 'darwin')
+
+    # TODO Discuss re-enabling logic which only shows the generated solution if it appears to be being generated for the first time.  Remove if not keeping.
+    # if sys.platform == 'darwin':
+    #     if os.path.exists(os.path.join(args.PROJECT_PATH, 'xcode')):
+    #         show_solution = True
+    # elif sys.platform == 'win32':
+    #     if os.path.exists(os.path.join(args.PROJECT_PATH, 'msvc64')):
+    #         show_solution = True
 
     # Determine our Python interpreter location
     if sys.platform == 'win32':
