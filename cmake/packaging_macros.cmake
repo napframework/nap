@@ -82,7 +82,6 @@ macro(package_python)
                 DESTINATION thirdparty/python/lib/
                 CONFIGURATIONS Release
                 PATTERN *.pyc EXCLUDE
-                PATTERN *${CMAKE_SHARED_LIBRARY_SUFFIX} EXCLUDE
                 PATTERN *.a EXCLUDE
                 PATTERN site-packages EXCLUDE)
 

@@ -71,6 +71,8 @@ def install_dependencies_linux():
 # Check if we have a package installed with apt
 def is_linux_apt_package_installed(package_name):
     (out, err) = call(WORKING_DIR, ['dpkg', '--get-selections', package_name], True)
+    if type(err) is bytes:
+        err = err.decode("utf-8")    
     installed = not 'no packages' in err
     print("Package '%s' installed? %s" % (package_name, installed))
     return installed

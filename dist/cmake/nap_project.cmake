@@ -22,11 +22,8 @@ configure_file(${CMAKE_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
 if(WIN32)
     # set(ENV{PYTHONPATH} ${THIRDPARTY_DIR}/tools/platform) # TODO verify and remove
     set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python)
-elseif(APPLE)
+elseif(UNIX)
     set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
-else()
-    # TODO investigate using Python from thirdparty here later for *nix
-    set(PYTHON_BIN python)
 endif()
 execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${PROJECT_NAME})
 include(cached_project_json.cmake)
