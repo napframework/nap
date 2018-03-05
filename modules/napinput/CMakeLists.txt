@@ -19,8 +19,3 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
 # Package into platform release
 package_module()
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
-endif()

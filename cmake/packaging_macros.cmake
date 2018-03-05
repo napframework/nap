@@ -290,7 +290,7 @@ macro(package_project_into_release DEST_DIR)
             DESTINATION ${DEST_DIR}
             PATTERN "CMakeLists.txt" EXCLUDE
             PATTERN "dist" EXCLUDE
-            PATTERN "*.fbx" EXCLUDE)
+            PATTERN "*.mesh" EXCLUDE)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/CMakeLists.txt DESTINATION ${DEST_DIR})
 
     # Package any projectmodule cmake files
@@ -312,18 +312,16 @@ endmacro()
 
 # Package module into platform release
 macro(package_module)
+    # Package headers
     install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
             FILES_MATCHING PATTERN "*.h")
 
+    # If the module has some extra cmake logic package it
     if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/cmake)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dist/cmake/ DESTINATION modules/${PROJECT_NAME}/)
     endif()
 
-    # Set packaged RPATH for Linux (done before we install the target due to target property mechanism)
-    if(UNIX AND NOT APPLE)
-        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
-    endif()
-
+    # Package library
     if (WIN32)
         install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
@@ -334,16 +332,25 @@ macro(package_module)
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
     endif()
 
-    # Set packaged RPATH for macOS (done after we install the target due to direct install_name_tool calling)
-    if(APPLE)
-        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
-        foreach(build_conf Release Debug)
-            # TODO confirm that we still need this
-            macos_replace_single_install_name_link_install_time("Python"
-                                                                ${CMAKE_INSTALL_PREFIX}/modules/${PROJECT_NAME}/lib/${build_conf}/lib${PROJECT_NAME}.dylib 
-                                                                "@rpath"
-                                                                )
-        endforeach()
+    # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done done after we 
+    # install the target above due to ordering of install_name_tool calling)
+    if(UNIX)
+        if(DEFINED UNIX_EXTRA_RPATH)
+            set(EXTRA_RPATH "${UNIX_EXTRA_RPATH}")    
+        else()
+            set(EXTRA_RPATH "")
+        endif()
+        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${EXTRA_RPATH})        
+
+        # if(APPLE)
+        #     foreach(build_conf Release Debug)
+        #         # TODO confirm that we still need this
+        #         macos_replace_single_install_name_link_install_time("Python"
+        #                                                             ${CMAKE_INSTALL_PREFIX}/modules/${PROJECT_NAME}/lib/${build_conf}/lib${PROJECT_NAME}.dylib 
+        #                                                             "@rpath"
+        #                                                             )
+        #     endforeach()
+        # endif()        
     endif()
 endmacro()
 
@@ -351,7 +358,7 @@ endmacro()
 macro(set_installed_module_rpath_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME)
     set(NAP_ROOT_LOCATION_TO_MODULE "../../../..")
     if(APPLE)
-        set_installed_rpath_on_macos_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} "${ARGN}")
+        set_installed_rpath_on_macos_module_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} "${ARGN}")
     elseif(UNIX)
         set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} "${ARGN}")
     endif()
@@ -385,18 +392,29 @@ macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MO
 endmacro()
 
 
+macro(set_single_config_installed_rpath_on_macos_object_for_dependent_modules CONFIG DEPENDENT_NAP_MODULES OBJECT_FILENAME NAP_ROOT_LOCATION_TO_OBJECT)
+    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/python/lib")
+    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/rttr/bin")
+    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/lib/${CONFIG}")
+    foreach(DEPENDENT_MODULE_NAME ${DEPENDENT_NAP_MODULES})
+        ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/modules/${DEPENDENT_MODULE_NAME}/lib/${CONFIG}")
+    endforeach()
+    set(EXTRA_PATHS ${ARGN})
+    foreach(EXTRA_PATH ${EXTRA_PATHS})
+        ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${EXTRA_PATH}")
+    endforeach()       
+endmacro()
+
 # Set the packaged RPATH of a macOS binary object for its dependent modules
-macro(set_installed_rpath_on_macos_object_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE)
+macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE)
     foreach(MODULECONFIG Release Debug)
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/rttr/bin/")
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/python/")
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/glew/lib/")
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/SDL2/lib/")
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/assimp/lib/")
+        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/python/lib")
+        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/rttr/bin")
         ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/lib/${MODULECONFIG}")
         foreach(DEPENDENT_MODULE_NAME ${DEPENDENT_NAP_MODULES})
             ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/modules/${DEPENDENT_MODULE_NAME}/lib/${MODULECONFIG}")
         endforeach()
+        set(EXTRA_PATHS ${ARGN})
         foreach(EXTRA_PATH ${EXTRA_PATHS})
             ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${EXTRA_PATH}")
         endforeach()       

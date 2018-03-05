@@ -24,11 +24,8 @@ set(DEPENDENT_NAP_MODULES mod_naprender mod_napinput mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})
 
 # Package into platform release
+if(UNIX)
+    set(UNIX_EXTRA_RPATH "../../../../thirdparty/glew/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
+endif()    
 package_module()
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
-    set(EXTRA_RPATH "../../../../thirdparty/glew/lib")
-    list(APPEND EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
-endif()

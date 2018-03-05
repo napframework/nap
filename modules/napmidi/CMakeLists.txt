@@ -17,13 +17,10 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${R
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # Package into platform release
-package_module()
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
+if(UNIX)
     set(EXTRA_RPATH "../../../../thirdparty/rtmidi/lib")
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
 endif()
+package_module()
 
 # Package rtmidi into platform release
 install(FILES ${THIRDPARTY_DIR}/rtmidi/linux/install/README.md DESTINATION "thirdparty/rtmidi")

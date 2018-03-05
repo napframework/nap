@@ -18,7 +18,7 @@ if (MSVC)
 	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "setargv.obj")
 endif()
 
-set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath)
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
 if (WIN32)
@@ -79,17 +79,17 @@ if (WIN32)
                   ${PYTHON_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
 elseif(APPLE)
-    set(path_to_nap_root "@executable_path/../..")
-    set(BUILT_RPATH "${path_to_nap_root}/thirdparty/rttr/bin/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/SDL2/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/glew/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/assimp/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/python/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE}/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/modules/mod_naprender/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE}/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/modules/mod_napmath/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE}/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/modules/mod_napscene/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE}/")
-    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
+    set(PATH_TO_NAP_ROOT "../..")
+    set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/glew/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
+
+    set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 
+                                                                            "${DEPENDENT_NAP_MODULES}" 
+                                                                            ${CMAKE_INSTALL_PREFIX}/tools/platform/fbxconverter
+                                                                            "../.."
+                                                                            "${EXTRA_RPATH}")
 elseif(UNIX)
     set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../..")
 endif()
