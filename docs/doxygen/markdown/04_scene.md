@@ -7,6 +7,10 @@ Scene Management {#scene}
 	*	[Creating Components](@ref creating_components)
 		*	[The Resource](@ref component_resource)
 		*	[The Instance](@ref component_instance)
+*	[Links](@ref scene_linking)
+	*	[To Components](@ref component_link)
+	*	[To Entities](@ref entity_link)
+
 
 Overview {#scene_overview}
 =======================
@@ -220,3 +224,152 @@ RTTI_END_CLASS
 The instance part of the component is created when the file is loaded and the system encounters a 'PerspCameraComponent' resource. The instance is constructed using the registered constructor and is given the component (resource) that created it and the entity (instance) it belongs to. When the instance is initialized you know that the transform is available and everything up to that point went well. You can now safely locate the transform component and use it to (for example) compute the camera position in world space. 
 
 The [update()](@ref nap::ComponentInstance::update) function can be overridden to add per-frame functionality to your instance. The system calls the update function together with a time stamp for you. The camera instance in the example above doesn't need it but other components do, for example: a component that blends two lines over time.
+
+Creating Links {#scene_linking}
+=======================
+
+You already know how to [create a link](@ref pointing) to a resource. But you can't use this type of link to point to components and entities. After all: there could be multiple instances of the same entity or component in your scene. When you want to point to a component you use the [ComponentPtr](@ref nap::ComponentPtr). When you want to point to an entity you use the [EntityPtr](@ref nap::EntityPtr). Pointing to components and entities in json is almost the same as pointing to stand-alone resources with one exception: you can use absolute or relative paths to another component or entity in the scene. It is recommended to use our editor (Napkin) to create links between objects in the scene for you. 
+
+To Components {#component_link}
+-----------------------
+
+The [ComponentPtr](@ref nap::ComponentPtr) allows you to point (create a link) to another component in the scene. It works almost the same as the ObjectPtr but needs a bit of extra information to work. Let's look at the resource part of a component first:
+
+~~~~~~~~~~~~~~~{.cpp}
+class LineBlendComponent : public Component
+{
+	RTTI_ENABLE(Component)
+	DECLARE_COMPONENT(LineBlendComponent, LineBlendComponentInstance)
+
+public:
+	// property: Link to selection component one
+	ComponentPtr<LineSelectionComponent> mSelectionComponentOne;
+
+	// property: Link to selection component two
+	ComponentPtr<LineSelectionComponent> mSelectionComponentTwo;
+
+	// property: link to the mesh to store the blend result
+	ObjectPtr<nap::PolyLine> mTarget;
+};
+~~~~~~~~~~~~~~~
+
+This component blends two lines based on a blend value. The end result is stored in 'mTarget'. The blend target is a link to a regular resource ([ObjectPtr](@ref nap::ObjectPtr)). Both input lines are extracted from a different component that lives under the same entity, in this case a line selection component. Input 1 and 2 are therefore links to a different component and are required by the blend component to perform the blend operation.
+
+The registration of this part of the component in the cpp file should look familiar. Links to components are registered as regular properties:
+
+~~~~~~~~~~~~~~~{.cpp}
+RTTI_BEGIN_CLASS(nap::LineBlendComponent)
+	RTTI_PROPERTY("Target",		&nap::LineBlendComponent::mTarget,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BlendValue",	&nap::LineBlendComponent::mBlendValue,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BlendSpeed",	&nap::LineBlendComponent::mBlendSpeed,	nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+~~~~~~~~~~~~~~~  
+
+When NAP encounters this component in json it tries to resolve both links for you. Both selection components are created before the blend component is created and set as links on the instance part of the blend component. But the system needs to know where to store the result of this operation. The instance part of the component exposes two members that (after serialization) link to the correct runtime version of the newly created selection components:
+
+~~~~~~~~~~~~~~~{.cpp}
+class LineBlendComponentInstance : public ComponentInstance
+{
+	RTTI_ENABLE(ComponentInstance)
+public:
+	LineBlendComponentInstance(EntityInstance& entity, Component& resource) :
+		ComponentInstance(entity, resource)			{}
+
+	ComponentInstancePtr<LineSelectionComponent>  	mSelectorOne = { this, &LineBlendComponent::mSelectionComponentOne };		// First line selection component
+	ComponentInstancePtr<LineSelectionComponent>	mSelectorTwo = { this, &LineBlendComponent::mSelectionComponentTwo };		// Second line selection component
+}
+~~~~~~~~~~~~~~~
+
+The [ComponentInstancePtr](@ref nap::ComponentInstancePtr) is the runtime counterpart of the [ComponentPtr](@ref nap::ComponentPtr). Both links are set before init() is called. If the system can't resolve the link NAP will cancel the load operation and return an error message. The template argument is the resource part of the component this member links to. The construction arguments are always 'itself' and a reference to the original link. You don't have to specify anything else. The system will populate both members for you after construction! You don't have to register anything special in the cpp file for the instance part of the blend component:
+
+~~~~~~~~~~~~~~~{.cpp}
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineBlendComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+RTTI_END_CLASS
+~~~~~~~~~~~~~~~
+
+You can now author the links in json:
+
+```
+{
+	"Type" : "nap::Entity",
+	"mID": "LaserEntity",
+	"Components" : 
+	[
+		{
+			"Type" : "nap::LineSelectionComponent",
+			"mID" : "LineSelectorOne",
+			"Lines" :
+			[
+				"LineFromFile1",
+				"LineFromFile2"
+			]
+		},
+		{
+			"Type" : "nap::LineSelectionComponent",
+			"mID" : "LineSelectorTwo",
+			"Lines" :
+			[
+				"LineFromFile4",
+				"LineFromFile5"
+			]
+		},
+		{
+			"Type" : "nap::LineBlendComponent",
+			"mID" : "LineBlender",
+			"SelectionComponentOne" : "./LineSelectorOne",
+			"SelectionComponentTwo" : "./LineSelectorTwo",
+			"Target" : "LaserLineMesh1"
+		}
+	]
+}
+```
+
+Notice how we use a relative path? We tell the system to look for the selection component on the same entity. You can also walk further up or or down the tree to create links to other components. More on that in a later section. If there is only one component called 'LineSelectionOne' you can also link to it directly by name without specifying a relative path. In this case that would be "LineSelectorOne". Always give your component an identifier if you want to link to them.
+
+To Entities {#entity_link}
+-----------------------
+
+The [EntityPtr](@ref nap::EntityPtr) allows you to point (create a link) to another entity in the scene. They work exactly the same as a [component pointer](@ref component_link) and are created in a similar way. Notice that the template argument is not necessary because there is only one type of entity:
+
+~~~~~~~~~~~~~~~{.cpp}
+class NAPAPI CameraController : public Component
+{
+	RTTI_ENABLE(Component)
+	DECLARE_COMPONENT(CameraController, CameraControllerInstance)
+public:
+	nap::EntityPtr	mLookAtTarget;			///< Entity to look at
+}
+~~~~~~~~~~~~~~~
+
+Links to entities are also a property of the component. The registration of the resource part of this component is therefore rather straight forward:
+
+~~~~~~~~~~~~~~~{.cpp}
+RTTI_BEGIN_CLASS(nap::CameraController)
+	RTTI_PROPERTY("LookAtTarget",	&nap::CameraController::mLookAtTarget,	nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+~~~~~~~~~~~~~~~
+
+The instance also has a link to the lookat target that is resolved after load. For more information take a look at [creating component links](@ref component_link):
+
+~~~~~~~~~~~~~~~{.cpp}
+class NAPAPI CameraControllerInstance : public ComponentInstance
+{
+	RTTI_ENABLE(ComponentInstance)
+public:
+	CameraControllerInstance(EntityInstance& entity, Component& resource);
+	...
+	EntityInstancePtr mLookAtTarget = { this, &CameraController::mLookAtTarget };	// The resolved runtime lookat target
+}
+~~~~~~~~~~~~~~~
+
+You don't have to register any properties in the cpp file regarding the instance part of the component:
+
+~~~~~~~~~~~~~~~{.cpp}
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CameraControllerInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+RTTI_END_CLASS
+~~~~~~~~~~~~~~~
+
+You can now edit the link in json. This works the same as authoring links to components. See example above.
+
