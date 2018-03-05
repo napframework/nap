@@ -27,12 +27,12 @@ def update_module(module_name, build_type):
     elif sys.platform == 'darwin':
         call_except_on_failure(module_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
     else:
-        # create dir if it doesn't exist
+        # Create dir if it doesn't exist
         full_build_dir = os.path.join(module_path, BUILD_DIR)
         if not os.path.exists(full_build_dir):
             os.makedirs(full_build_dir)
 
-        # generate prject
+        # Generate project
         call_except_on_failure(module_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
     print("Solution generated in %s" % os.path.relpath(os.path.join(module_path, BUILD_DIR)))
