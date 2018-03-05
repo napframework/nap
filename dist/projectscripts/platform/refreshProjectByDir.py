@@ -21,6 +21,11 @@ else:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_PATH", type=str, help="Path to the project")
+    if not sys.platform in ["linux", "linux2"]:
+        parser.add_argument("-ns", "--no-show", action="store_true",
+                            help="Don't show the generated solution")       
+        parser.add_argument("-np", "--no-pause", action="store_true",
+                            help="Don't pause afterwards")
     args = parser.parse_args()
 
     project_name = os.path.basename(args.PROJECT_PATH.strip('\\'))
@@ -28,7 +33,7 @@ if __name__ == '__main__':
     script_path = os.path.join(nap_root, 'tools', 'refreshProject.py')
 
     # If we're on Windows or macOS and we're generating a solution for the first time show the generated solution
-    show_solution = sys.platform in ('win32', 'darwin')
+    show_solution = sys.platform in ('win32', 'darwin') and not args.no_show
 
     # TODO Discuss re-enabling logic which only shows the generated solution if it appears to be being generated for the first time.  Remove if not keeping.
     # if sys.platform == 'darwin':
@@ -45,7 +50,7 @@ if __name__ == '__main__':
         python = 'python'
 
     cmd = [python, script_path, project_name] 
-    if show_solution:
+    if not show_solution:
         cmd.append('--no-show')
     call(cmd)
 
@@ -53,7 +58,7 @@ if __name__ == '__main__':
     # TODO Ideally work out if we're running from a terminal and don't ever pause if we are
     # TODO Discuss the possibility to only pause for input if we've hit an issue
     # TODO If we think it's a common use case that people are running this from a file manager in Linux do it for all
-    if not sys.platform.startswith('linux'):
+    if not sys.platform.startswith('linux') and not args.no_pause:
         print("Press key to close...")
 
         # Read a char from console
