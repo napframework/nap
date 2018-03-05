@@ -87,6 +87,8 @@ def is_osx_brew_installed():
 def is_osx_brew_package_installed(package_name):
     # TODO Running brew list once without the packagename and searching the results would be faster
     (out, err) = call(WORKING_DIR, ['brew', 'list', package_name], True, False)
+    if type(err) is bytes:
+        err = err.decode("utf-8")
     installed = not 'Error: No such keg' in err
     print("Package '%s' installed? %s" % (package_name, installed))
     return installed
