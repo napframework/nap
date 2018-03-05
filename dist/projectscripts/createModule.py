@@ -60,7 +60,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("CAMEL_CASE_MODULE_NAME", type=str,
                         help="The module name, in camel case (eg. MyModuleName)")
-    parser.add_argument("-dg", "--dont-generate", action="store_true",
+    parser.add_argument("-ng", "--no-generate", action="store_true",
                         help="Don't generate the solution for the created module")       
     args = parser.parse_args()
 
@@ -73,5 +73,5 @@ if __name__ == '__main__':
 
     # TODO validate module name only has includes valid characters
 
-    exit_code = create_module(module_name, not args.dont_generate)
+    exit_code = create_module(module_name, not args.no_generate)
     sys.exit(exit_code)

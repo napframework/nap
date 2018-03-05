@@ -314,7 +314,7 @@ if __name__ == '__main__':
     # - external build number management?
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-dz", "--dont-zip", action="store_true",
+    parser.add_argument("-nz", "--no-zip", action="store_true",
                         help="Don't zip the release, package to a directory")
     parser.add_argument("-a", "--include-apps", action="store_true",
                         help="Include Naivi apps, packaging them as projects")
@@ -323,7 +323,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Package our build
-    packaging_success = package(not args.dont_zip, args.include_docs, args.include_apps)
+    packaging_success = package(not args.no_zip, args.include_docs, args.include_apps)
 
     # TODO improve error propogation behaviour
     sys.exit(0 if packaging_success else 1)

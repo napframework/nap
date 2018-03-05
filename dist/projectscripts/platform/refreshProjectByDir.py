@@ -43,7 +43,7 @@ if __name__ == '__main__':
         python = 'python'
 
     if show_solution:
-        call([python, script_path, project_name,  '--dont-show'])        
+        call([python, script_path, project_name,  '--no-show'])        
     else:
         call([python, script_path, project_name])
 
