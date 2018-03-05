@@ -561,7 +561,9 @@
                     "Type": "nap::LightIntensityComponent",
                     "mID": "nap::LightIntensityComponent",
                     "Sensors": [
-                        "LuxSensor1"
+                        "LuxSensor1",
+                        "LuxSensor2",
+                        "LuxSensor3"
                     ],
                     "SensorInfluence": 1.0,
                     "MasterIntensity": 1.0,
@@ -573,46 +575,14 @@
                         "x": 0.10000000149011612,
                         "y": 1.0
                     },
-                    "LuxCurve": 0.5
+                    "LuxCurve": 0.5,
+                    "SmoothTime": 1.0
                 }
             ],
             "Children": [
                 "KalvertorenEntity",
                 "SingelEntity",
                 "HeiligewegEntity"
-            ]
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "DebugDisplayEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_4",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": [
-                "CompositionDebugDisplayEntity",
-                "IndexDebugDisplayEntity",
-                "PaletteDebugDisplayEntity"
             ]
         },
         {
@@ -730,24 +700,24 @@
                     "mID": "nap::ApplyBBColorComponent_2",
                     "Mesh": "HeiligewegMesh",
                     "Selector": "./ColorMethodSelectorHeiligeweg",
-                   	"LightRegulator" : "nap::LightIntensityComponent"
+                    "LightRegulator": "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyTracerColorComponent",
                     "mID": "nap::ApplyTracerColorComponent_2",
                     "Mesh": "HeiligewegMesh",
                     "Selector": "./ColorMethodSelectorHeiligeweg",
-                    "LightRegulator" : "nap::LightIntensityComponent"
+                    "LightRegulator": "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyCompositionComponent",
                     "mID": "nap::ApplyCompositionComponent_2",
                     "Mesh": "HeiligewegMesh",
                     "Selector": "./ColorMethodSelectorHeiligeweg",
+                    "LightRegulator": "nap::LightIntensityComponent",
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
-                    "ShowIndexColors": false,
-                    "LightRegulator" : "nap::LightIntensityComponent"
+                    "ShowIndexColors": false
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -832,24 +802,24 @@
                     "mID": "nap::ApplyBBColorComponent",
                     "Mesh": "KalverMesh",
                     "Selector": "./ColorMethodSelectorKalver",
-                    "LightRegulator" : "nap::LightIntensityComponent"
+                    "LightRegulator": "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyTracerColorComponent",
                     "mID": "nap::ApplyTracerColorComponent",
                     "Mesh": "KalverMesh",
                     "Selector": "./ColorMethodSelectorKalver",
-                    "LightRegulator" : "nap::LightIntensityComponent"
+                    "LightRegulator": "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyCompositionComponent",
                     "mID": "nap::ApplyCompositionComponent",
                     "Mesh": "KalverMesh",
                     "Selector": "./ColorMethodSelectorKalver",
+                    "LightRegulator": "nap::LightIntensityComponent",
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
-                    "ShowIndexColors": false,
-                    "LightRegulator" : "nap::LightIntensityComponent"
+                    "ShowIndexColors": false
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1126,24 +1096,24 @@
                     "mID": "nap::ApplyBBColorComponent_3",
                     "Mesh": "SingelMesh",
                     "Selector": "./ColorMethodSelectorSingel",
-                    "LightRegulator" : "nap::LightIntensityComponent"
+                    "LightRegulator": "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyTracerColorComponent",
                     "mID": "nap::ApplyTracerColorComponent_3",
                     "Mesh": "SingelMesh",
                     "Selector": "./ColorMethodSelectorSingel",
-                    "LightRegulator" : "nap::LightIntensityComponent"
+                    "LightRegulator": "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::ApplyCompositionComponent",
                     "mID": "nap::ApplyCompositionComponent_3",
                     "Mesh": "SingelMesh",
                     "Selector": "./ColorMethodSelectorSingel",
+                    "LightRegulator": "nap::LightIntensityComponent",
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
-                    "ShowIndexColors": false,
-                    "LightRegulator" : "nap::LightIntensityComponent"
+                    "ShowIndexColors": false
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1155,6 +1125,34 @@
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "LedOffImage",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "led_off.png",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "LedOnImage",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "led_on.png",
+            "Compressed": false
         },
         {
             "Type": "nap::ImageFromFile",
@@ -1873,10 +1871,6 @@
                 {
                     "Entity": "LightEntity",
                     "InstanceProperties": []
-                },
-                {
-                    "Entity": "DebugDisplayEntity",
-                    "InstanceProperties": []
                 }
             ]
         },
@@ -1903,6 +1897,28 @@
             "mID": "VertexColorShader",
             "mVertShader": "shaders/vertexcolor.vert",
             "mFragShader": "shaders/vertexcolor.frag"
+        },
+        {
+            "Type": "nap::TransformComponent",
+            "mID": "nap::TransformComponent_4",
+            "Properties": {
+                "Translate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "Rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "Scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "UniformScale": 1.0
+            }
         },
         {
             "Type": "nap::WeekColors",
@@ -2955,10 +2971,52 @@
             ]
         },
         {
+            "Type": "nap::YoctoEthernetHub",
+            "mID": "LightHub2",
+            "Address": "lethernet_hub_2",
+            "Username": "admin",
+            "Pass": "givemelight",
+            "Port": 80,
+            "Connect": true,
+            "Sensors": [
+                "LuxSensor2"
+            ]
+        },
+        {
+            "Type": "nap::YoctoEthernetHub",
+            "mID": "LightHub3",
+            "Address": "lethernet_hub_3",
+            "Username": "admin",
+            "Pass": "givemelight",
+            "Port": 80,
+            "Connect": true,
+            "Sensors": [
+                "LuxSensor3"
+            ]
+        },
+        {
             "Type": "nap::YoctoLuxSensor",
             "mID": "LuxSensor1",
             "Name": "LIGHTMK3-B65A4",
-            "Retries": 10
+            "Retries": 10,
+            "BufferSize": 30,
+            "DelayTime": 250
+        },
+        {
+            "Type": "nap::YoctoLuxSensor",
+            "mID": "LuxSensor2",
+            "Name": "LIGHTMK3-BA5E3",
+            "Retries": 10,
+            "BufferSize": 30,
+            "DelayTime": 250
+        },
+        {
+            "Type": "nap::YoctoLuxSensor",
+            "mID": "LuxSensor3",
+            "Name": "LIGHTMK3-BAC3D",
+            "Retries": 10,
+            "BufferSize": 30,
+            "DelayTime": 250
         }
     ]
 }

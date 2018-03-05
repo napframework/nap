@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <utility/datetimeutils.h>
 #include <queue>
+#include <nap/objectptr.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
@@ -42,6 +44,10 @@ namespace nap
 	private:
 		KalvertorenApp& mApp;
 
+		// Resources
+		nap::ObjectPtr<ImageFromFile>						mLedOn  = nullptr;
+		nap::ObjectPtr<ImageFromFile>						mLedOff = nullptr;
+
 		// GUI
 		int													mMeshSelection = 0;
 		int													mPaintMode = 2;
@@ -65,6 +71,7 @@ namespace nap
 		int													mDay = 0;
 		utility::DateTime									mDateTime;
 		RGBColor8											mTextColor = { 0xC8, 0x69, 0x69 };
+		float												mDisplaySize = 0.5f;
 
 		// Information
 		std::array<float, 180>								mLuxValues;

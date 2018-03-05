@@ -5,6 +5,7 @@
 #include <utility/dllexport.h>
 #include <ntexture2d.h>
 #include <glm/glm.hpp>
+#include <nap/configure.h>
 
 namespace nap
 {
@@ -109,6 +110,11 @@ namespace nap
 		void getData(Bitmap& bitmap);
 
 		/**
+		 * @return the OpenGL texture hardware handle.
+		 */
+		nap::uint getHandle() const;
+
+		/**
 		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call.
 		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered.
 		 */
@@ -137,7 +143,15 @@ namespace nap
 		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;			///< Property: 'Usage' How this texture is used, ie: updated on the GPU
 
 	protected:
-		opengl::Texture2D& getTexture() { return mTexture; }
+		/**
+		 *	@return the opengl texture
+		 */
+		opengl::Texture2D& getTexture()												{ return mTexture; }
+
+		/**
+		 *	@return the opengl texture
+		 */
+		const opengl::Texture2D& getTexture() const									{ return mTexture; }
 
 	private:
 		friend class RenderTarget;

@@ -126,4 +126,10 @@ namespace nap
 		mIntensitySmoother.mSmoothTime = math::max<float>(value, 0.0f);
 	}
 
+
+	const std::vector<YoctoLuxSensor*>& LightIntensityComponentInstance::getSensors()
+	{
+		return mSensors;
+	}
+
 }

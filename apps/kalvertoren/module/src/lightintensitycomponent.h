@@ -84,7 +84,7 @@ namespace nap
 		 */
 		void setLuxPower(float value)					{ mLuxPower = value; }
 
-		/**
+		/**	
 		 * Sets the lux range
 		 * @param range the min and max lux read-out values
 		 */
@@ -112,6 +112,11 @@ namespace nap
 		 * @param value smooth time in seconds
 		 */
 		void setSmoothTime(float value);
+
+		/**
+		 *	@return all the sensors registered to the intensity component
+		 */
+		const std::vector<YoctoLuxSensor*>& getSensors();
 
 	private:
 		// All lux sensors

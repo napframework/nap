@@ -55,7 +55,6 @@ namespace nap
 		compositionCameraEntity = scene->findEntity("CompositionCameraEntity");
 		defaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
 		lightEntity = scene->findEntity("LightEntity");
-		debugDisplayEntity = scene->findEntity("DebugDisplayEntity");
 
 		// Materials
 		vertexMaterial = resourceManager->findObject<nap::Material>("VertexColorMaterial");
@@ -66,9 +65,6 @@ namespace nap
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
-
-		// Position our debug windows
-		positionDebugViews();
 
 		// Create gui
 		mGui = std::make_unique<KalvertorenGui>(*this);
@@ -85,9 +81,6 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities;
 		entities.push_back(sceneCameraEntity.get());
 		inputService->processEvents(*renderWindow, input_router, entities);
-
-		// Position the debug views
-		positionDebugViews();
 
 		// Update our gui
 		mGui->update(deltaTime);
@@ -114,16 +107,12 @@ namespace nap
 			opengl::RenderTarget& backbuffer = renderWindow->getBackbuffer();
 			renderService->clearRenderTarget(backbuffer);
 
-			// Render debug views to screen
-			renderDebugViews();
-
 			// Get camera
 			nap::CameraComponentInstance& sceneCamera = sceneCameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();
 
 			// Render meshes
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
-
 			renderService->renderObjects(backbuffer, sceneCamera, components_to_render);
 
 			// Render our gui
@@ -135,67 +124,8 @@ namespace nap
 	}
 
 
-	void KalvertorenApp::renderDebugViews()
-	{
-		for (auto& child : debugDisplayEntity->getChildren())
-		{
-			// Render our composition previs
-			RenderableMeshComponentInstance& render_plane = child->getComponent<RenderableMeshComponentInstance>();
-			OrthoCameraComponentInstance& ortho_cam = compositionCameraEntity->getComponent<OrthoCameraComponentInstance>();
-			std::vector<nap::RenderableComponentInstance*> debug_objects = { &render_plane };
-
-			// Get uniform to set
-			UniformTexture2D& uniform = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("debugImage");
-
-			// Set active texture
-			if (utility::startsWith(child->mID, "CompositionDebugDisplayEntity"))
-			{
-				RenderCompositionComponentInstance& render_comp = renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
-				uniform.setTexture(render_comp.getTexture());
-			}
-			else if (utility::startsWith(child->mID, "PaletteDebugDisplayEntity"))
-			{
-				ColorPaletteComponentInstance& palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
-				uniform.setTexture(palette_comp.getDebugPaletteImage());
-			}
-
-			renderService->renderObjects(renderWindow->getBackbuffer(), ortho_cam, debug_objects);
-		}
-	}
-
-
 	void KalvertorenApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
-		nap::rtti::TypeInfo e_type = windowEvent.get_type();
-		if (e_type.is_derived_from(RTTI_OF(nap::WindowResizedEvent)) ||
-			e_type.is_derived_from(RTTI_OF(nap::WindowShownEvent)))
-		{
-			positionDebugViews();
-		}
-	}
-
-
-	// TODO: Possibly move these calls to seperate components
-	void KalvertorenApp::positionDebugViews()
-	{
-		int y_loc = renderWindow->getHeight();
-		for (auto& child : debugDisplayEntity->getChildren())
-		{
-			RenderableMeshComponentInstance& render_plane = child->getComponent<RenderableMeshComponentInstance>();
-			assert(render_plane.getMesh().get_type().is_derived_from(RTTI_OF(nap::PlaneMesh)));
-			nap::PlaneMesh& plane = static_cast<nap::PlaneMesh&>(render_plane.getMesh());
-
-			nap::TransformComponentInstance& xform = render_plane.getEntityInstance()->getComponent<nap::TransformComponentInstance>();
-			
-			// We scale the palette based on the relative difference between the amount of available colors
-			// in the index map
-			int posy = y_loc - (plane.getRect().getHeight() / 2.0f);
-			int posx = renderWindow->getWidth() - (plane.getRect().getWidth() / 2.0f);
-
-			// Set transform
-			xform.setTranslate({ posx, posy, 0.0f });
-			y_loc -= (plane.getRect().getHeight() + 10);
-		}
 	}
 
 

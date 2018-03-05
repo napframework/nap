@@ -12,6 +12,7 @@
 #include <imguiservice.h>
 #include <nap/core.h>
 #include <imgui/imgui.h>
+#include <imguiutils.h>
 
 namespace nap
 {
@@ -25,6 +26,8 @@ namespace nap
 	{
 		mLuxValues.fill(0.0f);
 		mBrightnessValues.fill(0.0f);
+		mLedOn  = app.getCore().getResourceManager()->findObject<nap::ImageFromFile>("LedOnImage");
+		mLedOff = app.getCore().getResourceManager()->findObject<nap::ImageFromFile>("LedOffImage");
 	}
 
 
@@ -324,11 +327,25 @@ namespace nap
 		ImGui::TextColored(float_clr_gui, "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Spacing();
 
+		if (ImGui::CollapsingHeader("Sensor Status"))
+		{
+			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+
+			// Sensors (online / offline)
+			for (const auto& sensor : light_comp.getSensors())
+			{
+				ImGui::Image(sensor->isOnline() ? *mLedOn : *mLedOff, { 32, 32 });
+				ImGui::SameLine();
+				ImGui::Text(utility::stringFormat("%s: %s", sensor->mID.c_str(), sensor->isOnline() ? "online" : "offline").c_str());
+			}
+		}
+
 		// Lux
 		if (ImGui::CollapsingHeader("Lux"))
 		{
-			// plot lux history
 			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+
+			// plot lux history
 			ImGui::TextColored(float_clr_gui, "Lux Sensor Average");
 			ImGui::Text(utility::stringFormat("%f", light_comp.getLuxAverage()).c_str());
 			ImGui::SliderFloat("Sample Interval (sec)", &mLuxSampleTime, 0.0f, 10.0f, "%.3f", 2.0f);
@@ -340,6 +357,21 @@ namespace nap
 			ImGui::TextColored(float_clr_gui, "Output Brightness");
 			ImGui::Text(utility::stringFormat("%f", light_comp.getBrightness()).c_str());
 			ImGui::PlotHistogram("Brightness History", mBrightnessValues.data(), mBrightnessValues.size(), mBrightnessIdx, NULL, 0.0f, 1.0f, ImVec2(0, 80));
+		}
+
+		if (ImGui::CollapsingHeader("Composition"))
+		{
+			RenderCompositionComponentInstance& render_comp = mApp.renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
+			float col_width = ImGui::GetContentRegionAvailWidth() * mDisplaySize;
+			ImGui::Image(render_comp.getTexture(), { col_width, col_width });
+
+			ColorPaletteComponentInstance& palette_comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
+			float ratio = 1.0f / 12.0f;
+			ImGui::Image(palette_comp.getIndexMap(), { col_width, col_width * ratio });
+			ImGui::Image(palette_comp.getDebugPaletteImage(), { col_width, col_width * ratio });
+			
+			// Draw slider regarding display size
+			ImGui::SliderFloat("Display Size", &mDisplaySize, 0.0f, 1.0f);
 		}
 
 		// Artnet information

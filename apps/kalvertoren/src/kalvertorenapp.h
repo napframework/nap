@@ -78,7 +78,6 @@ namespace nap
 		nap::ObjectPtr<nap::EntityInstance>					sceneCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>					compositionCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>					renderCompositionEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>					debugDisplayEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>					defaultInputRouter = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>					lightEntity = nullptr;
 		nap::ObjectPtr<nap::Material>						frameMaterial = nullptr;
@@ -88,18 +87,8 @@ namespace nap
 		std::unique_ptr<KalvertorenGui>						mGui;
 
 		/**
-		 *	Renders debug views to screen
-		 */
-		void renderDebugViews();
-
-		/**
 		 * Called when a window event is received
 		 */
 		void handleWindowEvent(const WindowEvent& windowEvent);
-
-		/**
-		 *	Updates the position of the debug views
-		 */
-		void positionDebugViews();
 	};                                                                               
 }
