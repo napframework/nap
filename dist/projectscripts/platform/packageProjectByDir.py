@@ -34,13 +34,13 @@ if __name__ == '__main__':
 
     project_name = os.path.basename(args.PROJECT_PATH.strip('\\'))
     nap_root = os.path.abspath(os.path.join(args.PROJECT_PATH, os.pardir, os.pardir))
-    script_path = os.path.join(nap_root, 'tools', 'packageProject.py')
+    script_path = os.path.join(nap_root, 'tools', 'platform', 'packageProjectByName.py')
 
     # Determine our Python interpreter location
     if sys.platform == 'win32':
         python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
     else:
-        python = 'python'
+        python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
     # Build our command
     cmd = [python, script_path, project_name]

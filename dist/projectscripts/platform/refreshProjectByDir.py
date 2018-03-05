@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     project_name = os.path.basename(args.PROJECT_PATH.strip('\\'))
     nap_root = os.path.abspath(os.path.join(args.PROJECT_PATH, os.pardir, os.pardir))
-    script_path = os.path.join(nap_root, 'tools', 'refreshProject.py')
+    script_path = os.path.join(nap_root, 'tools', 'platform', 'refreshProjectByName.py')
 
     # If we're on Windows or macOS and we're generating a solution for the first time show the generated solution
     show_solution = sys.platform in ('win32', 'darwin') and not args.no_show
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     if sys.platform == 'win32':
         python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
     else:
-        python = 'python'
+        python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
     cmd = [python, script_path, project_name] 
     if not show_solution and not sys.platform.startswith('linux'):

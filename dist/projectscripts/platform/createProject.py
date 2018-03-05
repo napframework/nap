@@ -45,10 +45,8 @@ def create_project(project_name, module_list, generate_solution):
         # Determine our Python interpreter location
         if sys.platform == 'win32':
             python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
-        elif sys.platform == 'darwin':
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3.6')
         else:
-            python = 'python'
+            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
                 
         cmd = [python, './tools/refreshProject.py', project_name]
         if call(cmd, cwd=nap_root) != 0:
