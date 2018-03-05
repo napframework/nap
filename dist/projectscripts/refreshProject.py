@@ -38,12 +38,12 @@ def update_project(project_name, build_type, show_solution):
             xcode_solution_path = os.path.join(project_path, BUILD_DIR, '%s.xcodeproj' % project_name)
             call(["open", "-R", xcode_solution_path])
     else:
-        # create dir if it doesn't exist
+        # Create dir if it doesn't exist
         full_build_dir = os.path.join(project_path, BUILD_DIR)
         if not os.path.exists(full_build_dir):
             os.makedirs(full_build_dir)
 
-        # generate prject
+        # Generate project
         call_except_on_failure(project_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
         # Show in Explorer

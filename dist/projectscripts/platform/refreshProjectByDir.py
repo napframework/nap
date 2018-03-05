@@ -42,12 +42,17 @@ if __name__ == '__main__':
     else:
         python = 'python'
 
+    cmd = [python, script_path, project_name] 
     if show_solution:
-        call([python, script_path, project_name,  '--no-show'])        
-    else:
-        call([python, script_path, project_name])
+        cmd.append('--no-show')
+    call(cmd)
 
-    print("Press key to close...")
+    # Pause to display output in case we're running from a file manager on Explorer / Finder
+    # TODO Ideally work out if we're running from a terminal and don't ever pause if we are
+    # TODO Discuss the possibility to only pause for input if we've hit an issue
+    # TODO If we think it's a common use case that people are running this from a file manager in Linux do it for all
+    if not sys.platform.startswith('linux'):
+        print("Press key to close...")
 
-    # Read a char from console
-    getch()
+        # Read a char from console
+        getch()
