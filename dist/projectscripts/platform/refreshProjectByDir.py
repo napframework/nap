@@ -50,7 +50,7 @@ if __name__ == '__main__':
         python = 'python'
 
     cmd = [python, script_path, project_name] 
-    if not show_solution:
+    if not show_solution and not sys.platform.startswith('linux'):
         cmd.append('--no-show')
     call(cmd)
 
