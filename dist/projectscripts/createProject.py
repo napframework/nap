@@ -63,7 +63,7 @@ if __name__ == '__main__':
                         help="The project name, in camel case (eg. MyProjectName)")
     parser.add_argument('MODULE_LIST_CSV', nargs='?', default=DEFAULT_MODULE_LIST,
                         help="List of modules to user, otherwise default list used: %s" % DEFAULT_MODULE_LIST)    
-    parser.add_argument("-dg", "--dont-generate", action="store_true",
+    parser.add_argument("-ng", "--no-generate", action="store_true",
                         help="Don't generate the solution for the created project")       
     args = parser.parse_args()
 
@@ -82,5 +82,5 @@ if __name__ == '__main__':
 
     # TODO validate module list is CSV, no invalid characters
 
-    exit_code = create_project(project_name, module_list, not args.dont_generate)
+    exit_code = create_project(project_name, module_list, not args.no_generate)
     sys.exit(exit_code)

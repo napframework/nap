@@ -61,7 +61,7 @@ if __name__ == '__main__':
     if sys.platform in ["linux", "linux2"]:
         parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
     if not sys.platform in ["linux", "linux2"]:
-        parser.add_argument("-ds", "--dont-show", action="store_true",
+        parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the generated solution")       
     args = parser.parse_args()
 
@@ -73,7 +73,7 @@ if __name__ == '__main__':
         show_solution = False
     else:
         build_type = None
-        show_solution = not args.dont_show
+        show_solution = not args.no_show
 
     exit_code = update_project(args.PROJECT_NAME, build_type, show_solution)
     sys.exit(exit_code)

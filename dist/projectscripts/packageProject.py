@@ -260,14 +260,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str,
                         help="The project to package")
-    parser.add_argument("-ds", "--dont-show", action="store_true",
+    parser.add_argument("-ns", "--no-show", action="store_true",
                         help="Don't show the generated package")
     parser.add_argument("-nn", "--no-napkin", action="store_true",
                         help="Don't include napkin")
-    parser.add_argument("-dz", "--dont-zip", action="store_true",
+    parser.add_argument("-nz", "--no-zip", action="store_true",
                         help="Don't zip package")
     args = parser.parse_args()
 
     # Package our build
-    exit_code = package_project(args.PROJECT_NAME, not args.dont_show, not args.no_napkin, not args.dont_zip)
+    exit_code = package_project(args.PROJECT_NAME, not args.no_show, not args.no_napkin, not args.no_zip)
     sys.exit(exit_code)
