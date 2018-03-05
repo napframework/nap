@@ -85,23 +85,29 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
 
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets)
 
+set(PATH_TO_THIRDPARTY "../../../../thirdparty")
 if(APPLE)
-    # TODO Update this to the newer cleaner RPATH setting style like we're using on Linux
-    set(path_to_nap_root "@executable_path/../../../..")
-    set(BUILT_RPATH "${path_to_nap_root}/thirdparty/rttr/bin/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/glew/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/assimp/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/SDL2/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/python/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/Qt/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};${path_to_nap_root}/thirdparty/FFmpeg/lib/")
-    set(BUILT_RPATH "${BUILT_RPATH};@executable_path/lib/")
-    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
+    set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
+    list(APPEND EXTRA_RPATH lib)
+
+    foreach(MODULECONFIG Release Debug)
+        set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
+                                                                                "${DEPENDENT_NAP_MODULES}" 
+                                                                                ${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/${MODULECONFIG}/napkin
+                                                                                "../../../.."
+                                                                                "${EXTRA_RPATH}")
+    endforeach()
+
 elseif(UNIX)
-    set(EXTRA_RPATH "../../../../thirdparty/assimp/lib")
-    list(APPEND EXTRA_RPATH "../../../../thirdparty/FreeImage/lib")
-    list(APPEND EXTRA_RPATH "../../../../thirdparty/FFmpeg/lib")
-    list(APPEND EXTRA_RPATH "../../../../thirdparty/Qt/lib")
-    list(APPEND EXTRA_RPATH "lib")
+    set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FreeImage/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
+    list(APPEND EXTRA_RPATH lib)
+
     set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
 endif()

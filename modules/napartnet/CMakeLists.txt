@@ -42,6 +42,9 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # Package into platform release
+if(UNIX)
+    set(UNIX_EXTRA_RPATH "../../../../thirdparty/libartnet/bin")
+endif()
 package_module()
 
 # Package libartnet into platform release
@@ -70,10 +73,4 @@ elseif(APPLE)
     endforeach()
 else()
     install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/bin")
-endif()
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
-    set(EXTRA_RPATH "../../../../thirdparty/libartnet/bin")
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
 endif()

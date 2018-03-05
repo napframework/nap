@@ -41,15 +41,14 @@ if (WIN32)
 endif()
 
 # Package into platform release
+if(UNIX)
+    set(UNIX_EXTRA_RPATH "../../../../thirdparty/mpg123/lib")
+    if(NOT APPLE)
+        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
+        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
+    endif()
+endif()    
 package_module()
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
-    set(EXTRA_RPATH "../../../../thirdparty/mpg123/lib")
-    list(APPEND EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
-    list(APPEND EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
-endif()
 
 # Package mpg123 into platform release
 install(FILES ${THIRDPARTY_DIR}/mpg123/doc/LICENSE DESTINATION "thirdparty/mpg123")

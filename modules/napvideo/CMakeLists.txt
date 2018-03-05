@@ -19,13 +19,10 @@ set(DEPENDENT_NAP_MODULES mod_naprender)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${FFMPEG_LIBRARIES})
 
 # Package into platform release
-package_module()
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
-    set(EXTRA_RPATH "../../../../thirdparty/FFmpeg/lib")
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
+if(UNIX)
+    set(UNIX_EXTRA_RPATH "../../../../thirdparty/FFmpeg/lib")
 endif()
+package_module()
 
 # Package dependent includes 
 # TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them

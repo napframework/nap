@@ -32,19 +32,16 @@ if (WIN32)
 endif()
 
 # Package into platform release
+if (UNIX)
+    set(UNIX_EXTRA_RPATH "../../../../thirdparty/glew/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/assimp/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/FreeImage/lib")
+endif()
 package_module()
 
 if (WIN32)
     # Install for fbxconverter
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
             CONFIGURATIONS Release)
-endif()
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
-    set(EXTRA_RPATH "../../../../thirdparty/glew/lib")
-    list(APPEND EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
-    list(APPEND EXTRA_RPATH "../../../../thirdparty/assimp/lib")
-    list(APPEND EXTRA_RPATH "../../../../thirdparty/FreeImage/lib")
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "${EXTRA_RPATH}")
 endif()

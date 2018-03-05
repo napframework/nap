@@ -29,8 +29,3 @@ install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION thirdparty/oscpack)
 install(FILES ${THIRDPARTY_DIR}/oscpack/README DESTINATION thirdparty/oscpack)
 install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc/ DESTINATION thirdparty/oscpack/osc
         PATTERN "*.cpp" EXCLUDE)
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
-endif()
