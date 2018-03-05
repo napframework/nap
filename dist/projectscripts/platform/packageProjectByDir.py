@@ -44,12 +44,15 @@ if __name__ == '__main__':
 
     # Build our command
     cmd = [python, script_path, project_name]
-    if args.no_show:
-        cmd.append('--no-show')
     if args.no_napkin:
         cmd.append('--no-napkin')
     if args.no_zip:
         cmd.append('--no-zip')
+    if not sys.platform.startswith('linux'):
+        if args.no_pause:
+            cmd.append('--no-pause')
+        if args.no_show:
+            cmd.append('--no-show')
     call(cmd)
 
     # Pause to display output in case we're running from a file manager on Explorer / Finder
