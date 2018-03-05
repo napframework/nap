@@ -29,9 +29,6 @@ macro(package_nap)
     # Package platform tools
     file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/platform/*py")
     install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
-    if(UNIX AND NOT APPLE)
-        install(PROGRAMS dist/linux/install_ubuntu_1710_dependencies.sh DESTINATION tools/platform)
-    endif()
 
     # Package project directory package & refresh shortcuts
     package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
