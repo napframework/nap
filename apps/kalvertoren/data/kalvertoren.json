@@ -2989,7 +2989,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": true,
+            "Connect": false,
             "Sensors": [
                 "LuxSensor3"
             ]
