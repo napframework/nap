@@ -5,7 +5,7 @@ import sys
 import os
 from subprocess import Popen, call
 
-from platform.NAPShared import find_project, call_except_on_failure
+from NAPShared import find_project, call_except_on_failure
 
 
 ERROR_MISSING_MODULE = 1

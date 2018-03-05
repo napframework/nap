@@ -22,6 +22,8 @@ configure_file(${CMAKE_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
 if(WIN32)
     # set(ENV{PYTHONPATH} ${THIRDPARTY_DIR}/tools/platform) # TODO verify and remove
     set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python)
+elseif(APPLE)
+    set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
 else()
     # TODO investigate using Python from thirdparty here later for *nix
     set(PYTHON_BIN python)

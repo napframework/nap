@@ -5,7 +5,7 @@ import sys
 import os
 from subprocess import Popen
 
-from platform.NAPShared import find_module, call_except_on_failure
+from NAPShared import find_module, call_except_on_failure
 
 ERROR_MISSING_PROJECT = 1
 ERROR_INVALID_PROJECT_JSON = 2

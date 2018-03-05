@@ -10,7 +10,7 @@ from sys import platform
 import sys
 import shutil
 
-from platform.NAPShared import find_project, call_except_on_failure
+from NAPShared import find_project, call_except_on_failure
 
 WORKING_DIR = '.'
 PACKAGING_DIR = 'packaging'
