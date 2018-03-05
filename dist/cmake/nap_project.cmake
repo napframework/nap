@@ -130,16 +130,17 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/projectExtra.cmake)
 endif()
 
 # Add IDE targets for launching napkin
-if(APPLE)
-    add_custom_target("LAUNCH_NAPKIN" 
-                      COMMAND open $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
-                      DEPENDS ${PROJECT_NAME})
-elseif(WIN32)
-    # TODO Haven't managed to get this to launch without blocking in Visual Studio yet (start /b doesn't work).  Maybe not the right way to go anyway.
-    add_custom_target("LAUNCH_NAPKIN" 
-                      COMMAND $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
-                      DEPENDS ${PROJECT_NAME})
-endif()
+# TODO Fix or remove IDE targets for launching napkin before 0.1 release
+# if(APPLE)
+#     add_custom_target("LAUNCH_NAPKIN" 
+#                       COMMAND open $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
+#                       DEPENDS ${PROJECT_NAME})
+# elseif(WIN32)
+#     # TODO Haven't managed to get this to launch without blocking in Visual Studio yet (start /b doesn't work).  Maybe not the right way to go anyway.
+#     add_custom_target("LAUNCH_NAPKIN" 
+#                       COMMAND $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
+#                       DEPENDS ${PROJECT_NAME})
+# endif()
 
 # Copy data to bin post-build
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
