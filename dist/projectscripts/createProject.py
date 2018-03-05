@@ -41,7 +41,14 @@ def create_project(project_name, module_list, generate_solution):
     if generate_solution:
         print("Project created")
         print("Generating solution")
-        cmd = ['python', './tools/refreshProject.py', project_name]
+
+        # Determine our Python interpreter location
+        if sys.platform == 'win32':
+            python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
+        else:
+            python = 'python'
+                
+        cmd = [python, './tools/refreshProject.py', project_name]
         if call(cmd, cwd=nap_root) != 0:
             print("Solution generation failed")
             return ERROR_SOLUTION_GENERATION_FAILURE

@@ -42,7 +42,14 @@ def create_module(module_name, generate_solution):
     if generate_solution:
         print("Module created")
         print("Generating solution")        
-        cmd = ['python', './tools/refreshModule.py', module_name.lower()]
+
+        # Determine our Python interpreter location
+        if sys.platform == 'win32':
+            python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
+        else:
+            python = 'python'
+
+        cmd = [python, './tools/refreshModule.py', module_name.lower()]
         if call(cmd, cwd=nap_root) != 0:
             print("Solution generation failed")
             sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    

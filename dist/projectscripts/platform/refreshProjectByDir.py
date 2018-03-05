@@ -16,7 +16,7 @@ else:
             tty.setraw(fd)
             return sys.stdin.read(1)
         finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)            
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -36,10 +36,16 @@ if __name__ == '__main__':
         if os.path.exists(os.path.join(args.PROJECT_PATH, 'msvc64')):
             show_solution = True
 
-    if show_solution:
-        call(['python', script_path, project_name,  '--dont-show'])        
+    # Determine our Python interpreter location
+    if sys.platform == 'win32':
+        python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
     else:
-        call(['python', script_path, project_name])
+        python = 'python'
+
+    if show_solution:
+        call([python, script_path, project_name,  '--dont-show'])        
+    else:
+        call([python, script_path, project_name])
 
     print("Press key to close...")
 

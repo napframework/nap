@@ -1,0 +1,1 @@
+..\thirdparty\python\msvc\python-embed-amd64\python package.py %*

@@ -20,6 +20,11 @@ macro(package_nap)
     # Package user tools
     file(GLOB USER_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/*py")
     install(PROGRAMS ${USER_TOOL_SCRIPTS} DESTINATION tools)
+    if(WIN32)
+        # Install wrapper batch scripts for user tools
+        file(GLOB WIN32_USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/win64/user_tools_wrappers/*.*")
+        install(PROGRAMS ${WIN32_USER_TOOL_WRAPPERS} DESTINATION tools)
+    endif()
 
     # Package platform tools
     file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/platform/*py")
