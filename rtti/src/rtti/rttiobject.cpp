@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include "rttiobject.h"
 #include "pythonmodule.h"
+#include "objectptr.h"
 
 
 
@@ -21,6 +22,11 @@ namespace nap
 		// This is because otherwise this CPP is empty, causing the RTTI registration code above to be optimized away, causing the ID property to not be registered in RTTI.
 		RTTIObject::RTTIObject()
 		{
+		}
+
+		RTTIObject::~RTTIObject()
+		{
+			ObjectPtrManager::get().resetPointers(*this);
 		}
 	}
 }

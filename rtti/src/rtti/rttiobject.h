@@ -23,7 +23,7 @@ namespace nap
 		public:
 			// Construction / Destruction
 			RTTIObject();
-			virtual ~RTTIObject() = default;
+			virtual ~RTTIObject();
 
 			/**
 			* Init this object after deserialization

@@ -31,7 +31,7 @@ namespace nap
             PlaybackComponent() : AudioComponentBase() { }
             
             // Properties
-            ObjectPtr<AudioBufferResource> mBuffer = nullptr;   ///< property: 'Buffer' The buffer containing the audio to be played back
+            rtti::ObjectPtr<AudioBufferResource> mBuffer = nullptr;   ///< property: 'Buffer' The buffer containing the audio to be played back
             std::vector<int> mChannelRouting = { 0 };           ///< property: 'ChannelRouting' The size of this array indicates the number of channels to be played back. Each element indicates a channel number of the buffer to be played.
             bool mAutoPlay = true;                              ///< property: 'AutoPlay' If set to true, the component will start playing on initialization.
             TimeValue mStartPosition = 0;                       ///< property: 'StartPosition' Start position of playback in milliseconds.

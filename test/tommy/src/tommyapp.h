@@ -86,14 +86,14 @@ namespace nap
 		
 		InputService* mInputService = nullptr;						//< Input service for processing input
 		
-		std::vector<ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
+		std::vector<rtti::ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
 		
-		ObjectPtr<EntityInstance> mCameraEntity;					//< The entity that holds the camera
+		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< The entity that holds the camera
 		
-		ObjectPtr<EntityInstance> mRootLayoutEntity;				//< Entity at the root of the layout
-		ObjectPtr<EntityInstance> mSlideShowEntity;					//< The slideshow entity
-		ObjectPtr<EntityInstance> mUiInputRouter;					//< Our UI input router entity
+		rtti::ObjectPtr<EntityInstance> mRootLayoutEntity;				//< Entity at the root of the layout
+		rtti::ObjectPtr<EntityInstance> mSlideShowEntity;					//< The slideshow entity
+		rtti::ObjectPtr<EntityInstance> mUiInputRouter;					//< Our UI input router entity
 
-		ObjectPtr<Scene>		mScene;								//< Scene in json file
+		rtti::ObjectPtr<Scene>		mScene;								//< Scene in json file
 	};
 }

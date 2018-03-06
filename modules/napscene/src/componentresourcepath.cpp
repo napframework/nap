@@ -119,7 +119,7 @@ namespace nap
 		}
 
 		// Now that we've gone through the path, we know the current entity must contain a component with an ID equal to the last element on the path. We look for it here.
-		for (const ObjectPtr<Component>& component : current_entity->mComponents)
+		for (const rtti::ObjectPtr<Component>& component : current_entity->mComponents)
 		{
 			if (component->mID == path_components.back())
 			{
