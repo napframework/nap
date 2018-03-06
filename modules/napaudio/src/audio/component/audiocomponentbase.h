@@ -3,7 +3,7 @@
 // Nap includes
 #include <component.h>
 #include <componentptr.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 
 // Audio includes
 #include <audio/core/audionode.h>

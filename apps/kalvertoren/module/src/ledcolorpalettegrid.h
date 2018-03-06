@@ -62,7 +62,7 @@ namespace nap
 
 	public:
 		std::string						mPalette;			///< The palette pattern. Each element (separated by a space) denotes an index in the palette grid
-		ObjectPtr<WeekVariations>		mVariations;		///< The variations based on the pattern
+		rtti::ObjectPtr<WeekVariations>	mVariations;		///< The variations based on the pattern
 
 	private:
 		std::vector<GridColorIndex>	mPaletteColors;
