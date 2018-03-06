@@ -7,6 +7,7 @@
 #include <limits>
 #include <rtti/rttiobject.h>
 #include <rtti/factory.h>
+#include <utility/autoresetevent.h>
 
 struct AVPacket;
 struct AVCodec;
@@ -46,6 +47,7 @@ namespace nap
 		bool isValid() const { return mFrame != nullptr; }
 		AVFrame*	mFrame = nullptr;	///< Frame as decoded by the decode thread
 		double		mPTSSecs;			///< When the frame needs to be displayed (absolute clock time)
+		int			mFirstPacketDTS;	///< First dts that was used to create this frame
 	};
 
 	class AVState final
@@ -67,7 +69,6 @@ namespace nap
 
 		void close();
 
-		void waitEOF(const bool& exitIOThreadSignalled);
 		bool isValid() const { return mStream != -1; }
 		int getStream() const { return mStream; }
 
@@ -76,7 +77,7 @@ namespace nap
 		void startDecodeThread(const ClearFrameQueueFunction& clearFrameQueueFunction);
 		void exitDecodeThread(bool join);
 		void decodeThread();
-		EDecodeFrameResult decodeFrame(AVFrame& frame);
+		EDecodeFrameResult decodeFrame(AVFrame& frame, int& frameFirstPacketDTS);
 		bool isFinishedProducing() const { return mFinishedProducingFrames; }
 		bool isFinishedConsuming() const;
 		bool isFinished() const { return isFinishedProducing() && isFinishedConsuming(); }
@@ -85,19 +86,30 @@ namespace nap
 		void clearFrameQueue();
 
 		bool matchesStream(const AVPacket& packet) const;
-		bool addFlushPacket(const bool& exitIOThreadSignalled);
+
+		bool addSeekStartPacket(const bool& exitIOThreadSignalled);
+		bool addSeekEndPacket(const bool& exitIOThreadSignalled);
 		bool addEndOfFilePacket(const bool& exitIOThreadSignalled);
 		bool addIOFinishedPacket(const bool& exitIOThreadSignalled);
 		bool addPacket(AVPacket& packet, const bool& exitIOThreadSignalled);
 
+		void waitForEndOfFileProcessed();
+		void waitSeekStartPacketProcessed();		
+		bool waitForReceiveFrame();		
+
 		Frame popFrame();
 		Frame tryPopFrame(double pts);
 		Frame peekFrame();
+		Frame popSeekFrame();
 
+		void notifyStartIOThread();
 		void notifyExitIOThread();
 
 		AVCodec& getCodec() { return *mCodec; }
 		AVCodecContext& getCodecContext() { return *mCodecContext; }
+
+	private:
+		void clearFrameQueue(std::queue<Frame>& frameQueue);
 
 	private:
 		Video*						mVideo;
@@ -111,10 +123,13 @@ namespace nap
 		bool						mExitDecodeThreadSignalled = false;		///< If this boolean is set, the decode thread will exit ASAP. This is used internally by exitDecodeThread and should not be used separately
 
 		std::queue<Frame>			mFrameQueue;							///< The frame queue as produced by the decodeThread and consumed by the main thread
+		std::queue<Frame>			mSeekFrameQueue;						///< The frame queue as produced by the decodeThread and consumed by the main thread
+		std::queue<Frame>*			mActiveFrameQueue = &mFrameQueue;		
 		mutable std::mutex			mFrameQueueMutex;						///< Mutex protection for the frame queue
 		std::condition_variable		mFrameDataAvailableCondition;			///< Condition describing whether there is data in the frame queue to process
 		std::condition_variable		mFrameQueueRoomAvailableCondition;		///< Condition describing whether there is still room in the frame queue to add new frames
-																			// Producer/consumer variables for packet queue:
+		
+		// Producer/consumer variables for packet queue:
 		std::queue<AVPacket*>		mPacketQueue;							///< The packet queue as produced by the ioThread and consumed by the decodeThread thread
 		std::mutex					mPacketQueueMutex;						///< Mutex protection for the packet queue
 		std::condition_variable		mPacketAvailableCondition;				///< Condition describing whether there is data in the packet queue to process
@@ -123,14 +138,17 @@ namespace nap
 
 		bool						mFinishedProducingFrames = false;		///< If this boolean is set, the decode thread has no more frames to decode, either due to an error or due to an end of stream.
 
-		std::unique_ptr<AVPacket>	mFlushPacket;
+		std::unique_ptr<AVPacket>	mSeekStartPacket;
+		std::unique_ptr<AVPacket>	mSeekEndPacket;
 		std::unique_ptr<AVPacket>	mEndOfFilePacket;
 		std::unique_ptr<AVPacket>	mIOFinishedPacket;
 
-		std::condition_variable		mEOFCondition;							///< 
-		std::mutex					mEOFMutex;								///< 
-		bool						mEOFReached = false;
+		utility::AutoResetEvent		mEndOfFileProcessedEvent;
+		utility::AutoResetEvent		mSeekStartProcessedEvent;
+		utility::AutoResetEvent		mReceiveFrameEvent;
+		bool						mReceiveFrameNeedsPacket;
 
+		int							mFrameFirstPacketDTS = -INT_MAX;
 	};
 
 
@@ -246,18 +264,16 @@ namespace nap
 		float		mSpeed = 1.0f;		///< Video playback speed
 
 	private:
+		enum class EProducePacketResult : uint8_t
+		{
+			GotAudioPacket		= 1,
+			GotVideoPacket		= 2,
+			GotPacket			= GotAudioPacket | GotVideoPacket,
+			EndOfFile			= 4,
+			Error				= 8
+		};
+
 		static bool sInitCodec(AVState& destState, const AVCodecContext& sourceCodecContext, AVDictionary*& options, utility::ErrorState& errorState);
-
-
-		/**
-		 * Thread that grabs packets as they are queued by the ioThread, decodes them and pushes them into the frame queue.
-		 */
-		void decodeVideoThread();
-
-		/**
-		* Thread that grabs packets as they are queued by the ioThread, decodes them and pushes them into the frame queue.
-		*/
-		void decodeAudioThread();
 
 		/**
 		 * Thread reads packets from the stream and pushes them onto the packet queue.
@@ -266,14 +282,14 @@ namespace nap
 
 		void startIOThread();
 
+		EProducePacketResult ProducePacket(bool inAddAudioPackets);
+
 		/**
 		 * Calling this ensures that the thread is waked properly if in a wait state, and then exited. This function only
 		 * causes the function to exit, it does not join the thread, so it is non-blocking.
 		 */
 		void exitIOThread(bool join);
 
-		bool decodeVideoFrame(AVFrame& frame);
-		bool decodeAudioFrame(AVFrame& frame);
 		bool getNextAudioFrame(const AudioParams& audioHwParams);
 
 		void clearPacketQueue();
@@ -286,6 +302,14 @@ namespace nap
 
 
 	private:
+		enum class IOThreadState
+		{
+			Normal,
+			SeekRequest,
+			SeekingStartFrame,
+			SeekingTargetFrame
+		};
+
 		static const double		sVideoMax;
 
 		std::unique_ptr<RenderTexture2D> mYTexture;
@@ -306,7 +330,8 @@ namespace nap
 
 		bool					mExitIOThreadSignalled = false;				///< If this boolean is set, the IO thread will exit ASAP. This is used internally by exitIOThread and should not be used separately
 		
-		int64_t					mSeekTarget = -1;							///< Seek target, in internal stream units (not secs)
+		int64_t					mSeekKeyframeTarget = -1;							///< Seek target, in internal stream units (not secs)
+		int64_t					mSeekTarget = -1;
 
 		VideoService&			mService;									///< Video service that this object is registered with
 
@@ -316,6 +341,9 @@ namespace nap
 		std::vector<uint8_t>	mAudioResampleBuffer;
 		uint64_t				mAudioFrameReadPtr = 0;
 		uint64_t				mAudioFrameSize = 0;
+
+		IOThreadState			mIOThreadState = IOThreadState::Normal;
+
 	};
 
 	// Object creator used for constructing the the OSC receiver
