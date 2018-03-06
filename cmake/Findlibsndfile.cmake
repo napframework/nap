@@ -19,7 +19,7 @@ if (WIN32)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile-1.lib)
     set(LIBSNDFILE_LIBS_RELEASE_DLL ${LIBSNDFILE_LIB_DIR}/libsndfile-1.dll)
 elseif (APPLE)
-    # TODO why is libsndfile static on OSX and shared on others?
+    # TODO Discussed with Stijn, there's no reason this is statically linked for macOS only, will fix
     set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/xcode)
     set(LIBSNDFILE_LIBS_RELEASE_DLL ${LIBSNDFILE_LIB_DIR}/libsndfile.a)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.a)

@@ -63,9 +63,8 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMENT "Copy Resources")
 
 if(WIN32)
-    # Copy all of our Windows DLLs that have build in bin into project dir
-    # TODO this is NOT a clean solution, but if we're mainly releasing projects build against packaged releases of the
-    #      framework maybe this is OK?
+    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
+    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
     bulk_copy_windows_dlls_to_bin()
 endif()
 

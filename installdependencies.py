@@ -68,7 +68,8 @@ def is_osx_brew_installed():
 
 # Check if we have a package installed with homebrew
 def is_osx_brew_package_installed(package_name):
-    # TODO Running brew list once without the packagename and searching the results would be faster
+    # This is a bit slow, running brew list once and parsing would be faster.. but we're not going to
+    # depend on homebrew anyway.
     (out, err) = call(WORKING_DIR, ['brew', 'list', package_name], True, False)
     if type(err) is bytes:
         err = err.decode('utf-8')
@@ -84,7 +85,7 @@ def install_dependencies_osx():
 
     if not is_osx_brew_installed():
         print("Not installing macOS dependencies as homebrew was not found")
-        # TODO potentially fail here in future if we have a hard homebrew dependency
+        # Would fail hard here..  but we're not going to depend on homebrew anyway
         return
 
     print("Checking dependencies")

@@ -121,8 +121,6 @@ def package(zip_release, include_docs, include_apps):
         else:
             archive_to_timestamped_dir('Win64', timestamp)
 
-    return True
-
 # Create build archive to xz tarball on Linux
 def archive_to_linux_tar_xz(timestamp):
     package_filename = build_package_basename('Linux', timestamp)
@@ -208,7 +206,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Package our build
-    packaging_success = package(not args.no_zip, args.include_docs, args.include_apps)
-
-    # TODO improve error propogation behaviour
-    sys.exit(0 if packaging_success else 1)
+    package(not args.no_zip, args.include_docs, args.include_apps)

@@ -65,9 +65,11 @@ if (WIN32)
 endif()
 
 # Install naprtti and RTTR into projects for macOS/Linux
-if (NOT WIN32)
+if(NOT WIN32)
+    install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
+    install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
+
     # Add post-build step to set RTTR RPATH
-    # TODO? This is a workaround for RPATHs not being added for import libraries
     if(APPLE)
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
@@ -75,17 +77,8 @@ if (NOT WIN32)
                            )
     endif()
 
-    install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
-    install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
-
-    # Install our Python dylib from thirdparty.  Doing this here instead of in mod_nappython as RTTI (and as a result Core)
-    # depend on Python. Python modules are only installed if we're using mod_nappython as they're not required for RTTI/Core.
-
-    file(GLOB PYTHON_DYLIBS ${THIRDPARTY_DIR}/python/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-    install(FILES ${PYTHON_DYLIBS} DESTINATION lib/)
-
-    if(UNIX)
-        # On Linux set use lib directory for RPATH
+    # On Linux use lib directory for RPATH   
+    if(UNIX AND NOT APPLE)
         install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/libnaprtti.so\")
                       execute_process(COMMAND patchelf 
                                               --set-rpath 
@@ -94,4 +87,9 @@ if (NOT WIN32)
                                               )
                       ")
     endif()   
+
+    # Install our Python dylib from thirdparty.  Doing this here instead of in mod_nappython as RTTI (and as a result Core)
+    # depend on Python. Python modules are only installed if we're using mod_nappython as they're not required for RTTI/Core.
+    file(GLOB PYTHON_DYLIBS ${THIRDPARTY_DIR}/python/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${PYTHON_DYLIBS} DESTINATION lib/)
 endif()

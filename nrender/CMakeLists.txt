@@ -101,9 +101,7 @@ endif()
 
 # Package into release build
 if (WIN32)
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>
-                                    ARCHIVE DESTINATION lib/$<CONFIG>)
-    # TODO test and remove our archive destination?
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)
 elseif(APPLE)
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)  
 else()
@@ -113,8 +111,7 @@ endif()
 install(DIRECTORY "src/" DESTINATION "include/nrender/"
         FILES_MATCHING PATTERN "*.h")
 
-# Package dependent includes 
-# TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
+# Package dependent into release --
 
 # Assimp
 install(FILES ${THIRDPARTY_DIR}/assimp/LICENSE DESTINATION thirdparty/assimp)

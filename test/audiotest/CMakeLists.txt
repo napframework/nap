@@ -28,9 +28,8 @@ if (WIN32)
     # Copy over some crap window dlls
     copy_base_windows_graphics_dlls()
 
-    # Copy all of our Windows DLLs that have build in bin into project dir
-    # TODO this is NOT a clean solution, but if we're mainly releasing projects built against packaged releases of the
-    #      framework maybe this is OK?
+    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
+    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
     bulk_copy_windows_dlls_to_bin()
 endif()
 
