@@ -33,22 +33,7 @@ def install_dependencies_linux():
     dependencies = [
         'cmake',
         'build-essential',
-        # 'python3-dev',
-        # 'libsdl2-dev',
-        # 'libglew-dev',
-        # 'libassimp-dev',
-        # 'libglm-dev', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
-        # 'libtclap-dev',  # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
-        # 'libfreeimage-dev',
-        # 'ffmpeg',
-        # 'libavcodec-dev',
-        # 'libavformat-dev',
-        # 'libavutil-dev',
-        'patchelf',
-        'mpg123',
-        # Needed at NAP source level only
-        'qtdeclarative5-dev',        
-        'doxygen'
+        'patchelf'
     ]
 
     # Create a list of packages we need to install
@@ -98,18 +83,7 @@ def is_osx_brew_package_installed(package_name):
 # Install dependencies for macOS via homebrew, checking if we have them first
 def install_dependencies_osx():
     dependencies = [
-        'cmake',
-        # 'doxygen',
-        # 'graphviz'
-        # 'sdl2',
-        # 'glew',
-        # 'glm', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
-        # 'assimp',
-        # 'tclap', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
-        # 'ffmpeg',
-        # 'mpg123',
-        # 'qt',
-        # 'python3'
+        'cmake'
     ]
 
     if not is_osx_brew_installed():
@@ -242,7 +216,7 @@ def package(zip_release, include_docs, include_apps):
     return True
 
 # Create build archive to xz tarball on Linux
-def archive_to_linux_tar_xz(timetamp):
+def archive_to_linux_tar_xz(timestamp):
     package_filename = build_package_basename('Linux', timestamp)
     shutil.move(PACKAGING_DIR, package_filename)
 
