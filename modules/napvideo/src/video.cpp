@@ -772,6 +772,16 @@ namespace nap
 		mSeekTarget = std::round((seconds - stream_start_time) / av_q2d(mFormatContext->streams[mVideoState.getStream()]->time_base));
 		mSeekKeyframeTarget = mSeekTarget;
 		mIOThreadState = IOThreadState::SeekRequest;
+		mSeekTargetSecs = seconds;
+	}
+
+	
+	double Video::getCurrentTime() const
+	{
+		if (mIOThreadState != IOThreadState::Normal)
+			return mSeekTargetSecs;
+		else
+			return mVideoClockSecs;
 	}
 
 
