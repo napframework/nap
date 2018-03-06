@@ -29,7 +29,6 @@ macro(nap_qt_pre)
               if(EXISTS ${QT_DIR}/INSTALL_RECEIPT.json)
                   message(FATAL_ERROR "Homebrew's Qt packages aren't allowed due largely to a legal unknown.  Install Qt's own opensource release and point environment variable QT_DIR there.")
               endif()
-
         endif()
 
         # TODO Ensure we're not packaging system Qt on Linux, we only want to use a download from qt.io
