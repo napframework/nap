@@ -1,13 +1,4 @@
-#!/usr/bin/env python
-
-import os
-from subprocess import call
-import sys
-
-project_dir = os.path.dirname(os.path.realpath(__file__))
-nap_root = os.path.abspath(os.path.join(project_dir, os.pardir, os.pardir))
-
-cmd = "%s/thirdparty/python/bin/python3 %s/tools/platform/packageProjectByDir.py %s" % (nap_root, nap_root, project_dir)
-if len(sys.argv) > 1:
-    cmd += ' %s' % ' '.join(sys.argv[1:])
-call([cmd], shell=True)
+#!/usr/bin/env bash
+project_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+nap_root=$project_dir/../..
+$nap_root/thirdparty/python/bin/python3 $nap_root/tools/platform/packageProjectByDir.py $project_dir "$@"
