@@ -21,7 +21,7 @@ else:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_PATH", type=str, help="Path to the project")
-    if not sys.platform in ["linux", "linux2"]:
+    if not sys.platform.startswith('linux'):    
         parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the generated solution")       
         parser.add_argument("-np", "--no-pause", action="store_true",

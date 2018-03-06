@@ -40,7 +40,7 @@ def main(targets):
         shutil.rmtree(BUILD_DIR)
 
     # generate solutions
-    if platform in ["linux", "linux2"]:
+    if platform.startswith('linux'):    
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % LINUX_BUILD_TYPE])
     elif platform == 'darwin':
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
@@ -55,7 +55,7 @@ def main(targets):
 
     for t in targets:
 
-        if platform in ["linux", "linux2"]:
+        if platform.startswith('linux'):
             # Linux
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['make', t, '-j%s' % cpu_count()])
