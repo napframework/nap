@@ -222,7 +222,7 @@ namespace nap
 		/**
 		 * @return The current playback position, in seconds.
 		 */
-		double getCurrentTime() const			{ return mVideoClockSecs; }
+		double getCurrentTime() const;
 
 		/**
 		 * @return The Y texture as it is updated by update(). Initially, the texture is not initialized
@@ -334,6 +334,7 @@ namespace nap
 		
 		int64_t					mSeekKeyframeTarget = -1;							///< Seek target, in internal stream units (not secs)
 		int64_t					mSeekTarget = -1;
+		double					mSeekTargetSecs = 0.0f;
 
 		VideoService&			mService;									///< Video service that this object is registered with
 
