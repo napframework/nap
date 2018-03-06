@@ -154,10 +154,8 @@ macro(set_module_output_directories)
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
             set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${OUTPUTCONFIG}/)
             string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
-            # TODO Test and set the properties we actually need
             set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
             set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
-            set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
         endforeach()
     else()
         # Single built type, for Linux
