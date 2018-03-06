@@ -228,7 +228,7 @@ The [update()](@ref nap::ComponentInstance::update) function can be overridden t
 Creating Links {#scene_linking}
 =======================
 
-You already know how to [create a link](@ref pointing) to a resource. But you can't use this type of link to point to components and entities. After all: there could be multiple instances of the same entity or component in your scene. When you want to point to a component you use the [ComponentPtr](@ref nap::ComponentPtr). When you want to point to an entity you use the [EntityPtr](@ref nap::EntityPtr). Pointing to components and entities in json is almost the same as pointing to stand-alone resources with one exception: you can use absolute or relative paths to another component or entity in the scene. It is recommended to use our editor (Napkin) to create links between objects in the scene for you. 
+You already know how to [create a link](@ref pointing) to a resource. But you can't use this type of link to point to components and entities. After all: there could be multiple instances of the same entity or component in your scene. When you want to point to a component you use the [ComponentPtr](@ref nap::ComponentPtr). When you want to point to an entity you use the [EntityPtr](@ref nap::EntityPtr). Pointing to components and entities in json is almost the same as pointing to stand-alone resources with one exception: you can use absolute or relative paths. It is recommended to use our editor (Napkin) to create links between objects in the scene for you. 
 
 To Components {#component_link}
 -----------------------
@@ -253,7 +253,7 @@ public:
 };
 ~~~~~~~~~~~~~~~
 
-This component blends two lines based on a blend value. The end result is stored in 'mTarget'. The blend target is a link to a regular resource ([ObjectPtr](@ref nap::ObjectPtr)). Both input lines are extracted from a different component that lives under the same entity, in this case a line selection component. Input 1 and 2 are therefore links to a different component and are required by the blend component to perform the blend operation.
+This component blends two lines based on a blend value. The end result is stored in 'mTarget'. The blend target is a link to a regular resource ([ObjectPtr](@ref nap::ObjectPtr)). Both input lines are extracted from a different component that live under the same entity, in this case a line selection component. Input 1 and 2 are therefore links to a different component and are required by the blend component to perform the blend operation.
 
 The registration of this part of the component in the cpp file should look familiar. Links to components are registered as regular properties:
 
