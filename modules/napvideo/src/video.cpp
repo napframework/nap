@@ -26,7 +26,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Video)
 	RTTI_PROPERTY("Speed",	        &nap::Video::mSpeed,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-#define VIDEO_DEBUG 1
+#define VIDEO_DEBUG 0
 #if VIDEO_DEBUG
 	#define VIDEO_DEBUG_LOG(...) nap::Logger::info(__VA_ARGS__)
 #else

@@ -55,13 +55,6 @@ namespace nap
 	public:
 		using ClearFrameQueueFunction = std::function<void()>;
 
-		enum class EDecodeFrameResult
-		{
-			GotFrame,
-			EndOfFile,
-			Exit
-		};
-
 		AVState(Video& video, int inMaxPacketQueueSize);
 		~AVState();
 
@@ -76,14 +69,13 @@ namespace nap
 
 		void startDecodeThread(const ClearFrameQueueFunction& clearFrameQueueFunction);
 		void exitDecodeThread(bool join);
-		void decodeThread();
-		EDecodeFrameResult decodeFrame(AVFrame& frame, int& frameFirstPacketDTS);
+
 		bool isFinishedProducing() const { return mFinishedProducingFrames; }
 		bool isFinishedConsuming() const;
 		bool isFinished() const { return isFinishedProducing() && isFinishedConsuming(); }
 
-		void clearPacketQueue();
 		void clearFrameQueue();
+		void clearPacketQueue();
 
 		bool matchesStream(const AVPacket& packet) const;
 
@@ -109,6 +101,16 @@ namespace nap
 		AVCodecContext& getCodecContext() { return *mCodecContext; }
 
 	private:
+		enum class EDecodeFrameResult
+		{
+			GotFrame,
+			EndOfFile,
+			Exit
+		};
+
+		void decodeThread();
+		EDecodeFrameResult decodeFrame(AVFrame& frame, int& frameFirstPacketDTS);
+
 		void clearFrameQueue(std::queue<Frame>& frameQueue);
 
 	private:
