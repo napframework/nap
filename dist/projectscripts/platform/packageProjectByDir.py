@@ -58,7 +58,7 @@ if __name__ == '__main__':
     # Pause to display output in case we're running from a file manager on Explorer / Finder
     # TODO Ideally work out if we're running from a terminal and don't ever pause if we are
     # TODO Discuss the possibility to only pause for input if we've hit an issue
-    # TODO If we think it's a common use case that people are running this from a file manager in Linux do it for all
+    # TODO If we think it's a common use case that people are running this from a file manager in Linux remove the Linux criteria
     if not sys.platform.startswith('linux') and not args.no_pause:
         print("Press key to close...")
 

@@ -9,8 +9,6 @@ set(GLEW_INCLUDE_DIRS ${GLEW_DIR}/include/)
 
 mark_as_advanced(GLEW_INCLUDE_DIRS)
 
-# TODO later: Fix CMake approach and use config-style package files
-
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(glew REQUIRED_VARS GLEW_DIR GLEW_INCLUDE_DIRS)
 

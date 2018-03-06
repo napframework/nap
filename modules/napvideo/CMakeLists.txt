@@ -24,17 +24,17 @@ if(UNIX)
 endif()
 package_module()
 
-# Package dependent includes 
-# TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
+# Package dependent into release --
 
 # FFmpeg
+
+# TODO Package FFmpeg license files
+
 if(WIN32)
     install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/" DESTINATION "thirdparty/FFmpeg"
             PATTERN "osx" EXCLUDE
             PATTERN "linux" EXCLUDE)
 elseif(APPLE)
-    # TODO Package FFmpeg license files
-
     # Install FFmpeg into release
     install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/osx/install/" DESTINATION "thirdparty/FFmpeg")
 
@@ -48,8 +48,6 @@ elseif(APPLE)
                                       )")
     endforeach()
 elseif(UNIX)
-    # TODO Package FFmpeg license files
-    
     # Install FFmpeg into release
     install(DIRECTORY "${THIRDPARTY_DIR}/ffmpeg/linux/install/" DESTINATION "thirdparty/FFmpeg")
 

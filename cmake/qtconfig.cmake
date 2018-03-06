@@ -30,8 +30,9 @@ macro(nap_qt_pre)
                   message(FATAL_ERROR "Homebrew's Qt packages aren't allowed due largely to a legal unknown.  Install Qt's own opensource release and point environment variable QT_DIR there.")
               endif()
 
-              # TODO Ideally add stronger verification that ensures we're finding Qt's own package, or at least don't allow macports' Qt
         endif()
+
+        # TODO Ensure we're not packaging system Qt on Linux, we only want to use a download from qt.io
 
         # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})        

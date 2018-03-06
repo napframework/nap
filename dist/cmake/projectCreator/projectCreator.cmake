@@ -26,7 +26,6 @@ set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
 set(PROJECT_DIR ${NAP_ROOT}/projects/${PROJECT_NAME_LOWERCASE})
 
 # Create our project files, with substitutions
-# TODO potentially look into a generic recursive globbed version of this, but this is probably fine
 configure_file(${TEMPLATE_ROOT}/project.json ${PROJECT_DIR}/project.json @ONLY)
 configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${PROJECT_DIR}/CMakeLists.txt @ONLY)
 configure_file(${TEMPLATE_ROOT}/data/appStructure.json ${PROJECT_DIR}/data/appStructure.json @ONLY)

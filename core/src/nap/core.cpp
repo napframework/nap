@@ -81,9 +81,7 @@ namespace nap
 		mResourceManager = std::make_unique<ResourceManager>(*this);
 		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 
-		// Load all modules
-		// TODO: Passing through a modules list for now, this is potentially temporary until we lock down our
-		// 		 release behaviour
+		// Load modules
 		if (!mModuleManager.loadModules(projectInfo.mModules, error))
 			return false;
 		

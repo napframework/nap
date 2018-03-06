@@ -72,7 +72,7 @@ if (WIN32)
     copy_files_to_bin(${PYTHON_DLLS})    
 elseif(APPLE)
     # Copy over RTTR for macOS
-    # TODO Update this to be an RPATH change?
+    # TODO Don't copy the lib, work via RPATH changes
     copy_lib_to_lib_dir("RTTR::Core")
 endif()
 
@@ -112,8 +112,7 @@ endif()
 install(DIRECTORY "src/rtti/" DESTINATION "include/rtti/"
         FILES_MATCHING PATTERN "*.h")
 
-# Package dependent includes 
-# TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
+# Package dependent into release --
 
 # Package pybind into platform release
 install(DIRECTORY ${THIRDPARTY_DIR}/pybind11/install/ DESTINATION thirdparty/pybind11)
