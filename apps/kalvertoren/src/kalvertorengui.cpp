@@ -13,6 +13,7 @@
 #include <nap/core.h>
 #include <imgui/imgui.h>
 #include <imguiutils.h>
+#include <composition.h>
 
 namespace nap
 {
@@ -359,7 +360,7 @@ namespace nap
 			ImGui::PlotHistogram("Brightness History", mBrightnessValues.data(), mBrightnessValues.size(), mBrightnessIdx, NULL, 0.0f, 1.0f, ImVec2(0, 80));
 		}
 
-		if (ImGui::CollapsingHeader("Composition"))
+		if (ImGui::CollapsingHeader("Index Map"))
 		{
 			RenderCompositionComponentInstance& render_comp = mApp.renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
 			float col_width = ImGui::GetContentRegionAvailWidth() * mDisplaySize;
@@ -372,6 +373,33 @@ namespace nap
 			
 			// Draw slider regarding display size
 			ImGui::SliderFloat("Display Size", &mDisplaySize, 0.0f, 1.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Composition"))
+		{
+			CompositionComponentInstance& composition_comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
+			
+			ImGui::TextColored(float_clr_gui, "Current: ");
+			ImGui::SameLine();
+			ImGui::Text(composition_comp.getSelection().getName().c_str());
+			ImGui::TextColored(float_clr_gui, "Status: ");
+			ImGui::SameLine();
+			switch (composition_comp.getSelection().getStatus())
+			{
+			case CompositionInstance::EStatus::Active :
+				ImGui::Text("Active");
+				break;
+			case CompositionInstance::EStatus::Completed:
+				ImGui::Text("Completed");
+				break;
+			case CompositionInstance::EStatus::WaitingForSequence:
+				ImGui::Text("Waiting for sequence to finish");
+				break;
+			}
+			ImGui::TextColored(float_clr_gui, "Mode: ");
+			ImGui::SameLine();
+			ImGui::Text(composition_comp.getSelection().getMode() == CompositionPlayMode::Length ? "Length" : "Sequence");
+			ImGui::ProgressBar(composition_comp.getSelection().getProgress());
 		}
 
 		// Artnet information

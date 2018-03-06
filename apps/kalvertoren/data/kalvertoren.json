@@ -1341,7 +1341,7 @@
             "Type": "nap::ImageSequenceLayer",
             "mID": "MOVEcrosstest1",
             "BaseFilename": "sequences/MOVE-6/%03d.png",
-            "FPS": 0.05000000074505806
+            "FPS": 0.5
         },
         {
             "Type": "nap::ImageSequenceLayer",
@@ -2989,7 +2989,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": false,
+            "Connect": true,
             "Sensors": [
                 "LuxSensor3"
             ]
