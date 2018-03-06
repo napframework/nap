@@ -99,17 +99,17 @@ namespace nap
 		nap::SceneService*									sceneService = nullptr;
 		nap::InputService*									inputService = nullptr;
 
-		nap::ObjectPtr<nap::RenderWindow>					renderWindow;
-		nap::ObjectPtr<nap::EntityInstance>					compositionEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>					sceneCameraEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>					compositionCameraEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>					renderCompositionEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>					debugDisplayEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>					defaultInputRouter = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>					lightEntity = nullptr;
-		nap::ObjectPtr<nap::Material>						frameMaterial = nullptr;
-		nap::ObjectPtr<nap::Material>						vertexMaterial = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>					displayEntity = nullptr;
+		rtti::ObjectPtr<nap::RenderWindow>					renderWindow;
+		rtti::ObjectPtr<nap::EntityInstance>				compositionEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				compositionCameraEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				renderCompositionEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				debugDisplayEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
+		rtti::ObjectPtr<nap::Material>						frameMaterial = nullptr;
+		rtti::ObjectPtr<nap::Material>						vertexMaterial = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				displayEntity = nullptr;
 
 		// GUI
 		int													mMeshSelection = 0;

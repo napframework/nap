@@ -26,7 +26,7 @@ namespace nap
             /**
              * Pointer to the graph resource that this object uses.
              */
-            ObjectPtr<Graph> mGraph;
+            rtti::ObjectPtr<Graph> mGraph;
             
         private:
             std::unique_ptr<AudioObjectInstance> createInstance() override;

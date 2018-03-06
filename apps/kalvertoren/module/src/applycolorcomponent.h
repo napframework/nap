@@ -19,7 +19,7 @@ namespace nap
 		/**
 		 *	The mesh it should color
 		 */
-		ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;
+		rtti::ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;
 		ComponentPtr<SelectColorMethodComponent> mSelector = nullptr;
 	};
 

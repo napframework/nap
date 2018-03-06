@@ -70,11 +70,11 @@ namespace nap
 		InputService*		mInputService = nullptr;				//< Input service for processing input
 		ArtNetService*		mArtnetService = nullptr;				//< Manages ArtNET communication
 
-		ObjectPtr<RenderWindow> mRenderWindow;						//< Vector holding pointers to the spawned render windows
+		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Vector holding pointers to the spawned render windows
 		
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Pointer to the entity that holds the plane
-		ObjectPtr<ArtNetController> mArtnetController = nullptr;	//< The art-net controller
+		rtti::ObjectPtr<EntityInstance> mCameraEntity = nullptr;		//< Pointer to the entity that holds the camera
+		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Pointer to the entity that holds the plane
+		rtti::ObjectPtr<ArtNetController> mArtnetController = nullptr;	//< The art-net controller
 
 		std::vector<glm::vec3> mColor;								//< Current Color for every selection component
 		std::vector<int> mWhite;									//< Current white level for every selection component

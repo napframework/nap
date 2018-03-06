@@ -117,7 +117,7 @@ namespace nap
 		const opengl::UniformDeclarations& uniform_declarations = resource.mMaterial->getShader()->getShader().getUniformDeclarations();
 
 		// Create new uniforms for all the uniforms in mUniforms
-		for (ObjectPtr<Uniform>& uniform : resource.mUniforms)
+		for (rtti::ObjectPtr<Uniform>& uniform : resource.mUniforms)
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
 			if (declaration == uniform_declarations.end())
@@ -190,7 +190,7 @@ namespace nap
 
 			// See if we have a matching uniform in our input data
 			Uniform* matching_uniform = nullptr;
-			for (ObjectPtr<Uniform>& uniform : mUniforms)
+			for (rtti::ObjectPtr<Uniform>& uniform : mUniforms)
 			{
 				if (uniform->mName == name)
 				{
