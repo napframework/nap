@@ -5,10 +5,6 @@ else()
     get_filename_component(MODULE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 endif(IMPORTING_PROJECT_MODULE) 
 
-# TODO Test if necessary, remove if not
-if (MODULE_INTO_PROJ)
-    set(PARENT_PROJECT_NAME ${PROJECT_NAME})
-endif()
 project(${MODULE_NAME})
 
 if(NOT MODULE_INTO_PROJ)
@@ -146,9 +142,4 @@ if (NOT WIN32)
                                               $ORIGIN/.
                                               ${CMAKE_INSTALL_PREFIX}/lib/lib${MODULE_NAME}.so)")
     endif()
-endif()
-
-# TODO Test if necessary, remove if not
-if (MODULE_INTO_PROJ)
-    set(PROJECT_NAME ${PARENT_PROJECT_NAME})
 endif()
