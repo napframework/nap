@@ -280,7 +280,7 @@ public:
 }
 ~~~~~~~~~~~~~~~
 
-The [ComponentInstancePtr](@ref nap::ComponentInstancePtr) is the runtime counterpart of the [ComponentPtr](@ref nap::ComponentPtr). Both links are set before init() is called. If the system can't resolve the link NAP will cancel the load operation and return an error message. The template argument is the resource part of the component this member links to. The construction arguments are always 'itself' and a reference to the original link. You don't have to specify anything else. The system will populate both members for you after construction! You don't have to register anything special in the cpp file for the instance part of the blend component:
+The [ComponentInstancePtr](@ref nap::ComponentInstancePtr) is the runtime counterpart of the [ComponentPtr](@ref nap::ComponentPtr). Both links are set before init() is called. If the system can't resolve the link NAP will cancel the load operation and return an error message. The template argument is the resource part of the component this member links to. The construction arguments are always 'itself' and a reference to the original link. You don't have to specify anything else. The system will populate both members for you after construction! The registration of the instace part of the component in the cpp is always the same:
 
 ~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineBlendComponentInstance)
