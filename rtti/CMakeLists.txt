@@ -40,13 +40,6 @@ find_package(pybind11 REQUIRED)
 if(NOT ${PYTHON_VERSION_MAJOR} EQUAL 3)
     message(FATAL_ERROR "Python found in ${PYTHON_PREFIX} is not v3")
 endif()
-# Set up our Python virtual environment configuration so that we can find our Python libs later
-if(APPLE)
-    set(THIRDPARTY_PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
-    configure_file(${THIRDPARTY_DIR}/python/pyvenv.cfg.in
-                   ${THIRDPARTY_DIR}/python/osx/pyvenv.cfg
-                   @ONLY)
-endif()
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
