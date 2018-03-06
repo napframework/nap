@@ -17,7 +17,7 @@ def create_module(module_name, generate_solution):
 
     # Set our paths
     script_path = os.path.dirname(os.path.realpath(__file__))
-    nap_root = os.path.abspath(os.path.join(script_path, os.pardir))
+    nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir))
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/moduleCreator'))
     module_path = os.path.abspath(os.path.join(nap_root, 'usermodules/mod_%s' % module_name.lower()))
     duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'modules/mod_%s' % module_name.lower()))
@@ -49,7 +49,7 @@ def create_module(module_name, generate_solution):
         else:
             python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
-        cmd = [python, './tools/refreshModule.py', module_name.lower()]
+        cmd = [python, './tools/platform/refreshModule.py', module_name.lower()]
         if call(cmd, cwd=nap_root) != 0:
             print("Solution generation failed")
             sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    

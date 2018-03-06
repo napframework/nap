@@ -51,7 +51,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
     if os.path.exists(build_dir_name):
         shutil.rmtree(build_dir_name, True)
 
-    if platform in ["linux", "linux2"]:
+    if platform.startswith('linux'):
         # Generate makefiles
         call_except_on_failure(WORKING_DIR, ['cmake', 
                               '-H%s' % project_path, 

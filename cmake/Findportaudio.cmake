@@ -20,7 +20,7 @@ if(WIN32)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/portaudio_x64.lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll)
 elseif(APPLE)
-    # TODO Why are we using statically linked portaudio on OSX and shared elsewhere?
+    # TODO Discussed with Stijn, there's no reason this is statically linked for macOS only, will fix
     set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/xcode)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.a)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})

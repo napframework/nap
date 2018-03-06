@@ -20,7 +20,7 @@ def create_project(project_name, module_list, generate_solution):
 
     # Set our paths
     script_path = os.path.dirname(os.path.realpath(__file__))
-    nap_root = os.path.join(script_path, os.pardir)
+    nap_root = os.path.join(script_path, os.pardir, os.pardir)
 
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/projectCreator'))
     project_path = os.path.abspath(os.path.join(nap_root, 'projects/%s' % project_name.lower()))
@@ -48,7 +48,7 @@ def create_project(project_name, module_list, generate_solution):
         else:
             python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
                 
-        cmd = [python, './tools/refreshProject.py', project_name]
+        cmd = [python, './tools/platform/refreshProjectByName.py', project_name]
         if call(cmd, cwd=nap_root) != 0:
             print("Solution generation failed")
             return ERROR_SOLUTION_GENERATION_FAILURE
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         print("Error: Please specify project name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
         sys.exit(ERROR_INVALID_INPUT)
 
-    # TODO validate project name only has includes valid characters
+    # TODO validate project name only includes valid characters
 
     module_list = args.MODULE_LIST_CSV
     if module_list == DEFAULT_MODULE_LIST:

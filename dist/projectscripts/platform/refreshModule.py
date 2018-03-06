@@ -22,7 +22,7 @@ def update_module(module_name, build_type):
     if module_path is None:
         return ERROR_MISSING_PROJECT
 
-    if sys.platform in ["linux", "linux2"]:
+    if sys.platform.startswith('linux'):
         call_except_on_failure(module_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type])
     elif sys.platform == 'darwin':
         call_except_on_failure(module_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
@@ -42,11 +42,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("MODULE_NAME", type=str, help="The module to refresh")
     # Linux: if we've specified a build type let's grab that, otherwise default to debug
-    if sys.platform in ["linux", "linux2"]:
+    if sys.platform.startswith('linux'):
         parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
     args = parser.parse_args()
 
-    if sys.platform in ["linux", "linux2"]:
+    if sys.platform.startswith('linux'):
         build_type = args.BUILD_TYPE
         print("Using build type '%s'" % build_type)
     else:

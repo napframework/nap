@@ -22,7 +22,7 @@ def update_project(project_name, build_type, show_solution):
     if project_path is None:
         return ERROR_MISSING_MODULE
 
-    if sys.platform in ["linux", "linux2"]:
+    if sys.platform.startswith('linux'):    
         call_except_on_failure(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type])
 
         # Show in Nautilus?
@@ -58,16 +58,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str,
                         help="The project to refresh")
-    if sys.platform in ["linux", "linux2"]:
+    if sys.platform.startswith('linux'):    
         parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
-    if not sys.platform in ["linux", "linux2"]:
+    else:
         parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the generated solution")       
     args = parser.parse_args()
 
     # If we're on Linux and we've specified a build type let's grab that, otherwise
     # default to debug
-    if sys.platform in ["linux", "linux2"]:
+    if sys.platform.startswith('linux'):    
         build_type = args.BUILD_TYPE
         print("Using build type '%s'" % build_type)
         show_solution = False

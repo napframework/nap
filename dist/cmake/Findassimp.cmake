@@ -18,8 +18,6 @@ elseif(UNIX)
     set(ASSIMP_LIBS ${ASSIMP_LIBS_DIR}/libassimp${CMAKE_SHARED_LIBRARY_SUFFIX})
 endif()
 
-# TODO later: Fix CMake approach and use config-style package files
-
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(assimp REQUIRED_VARS ASSIMP_LIBS_DIR ASSIMP_DIR)
 
