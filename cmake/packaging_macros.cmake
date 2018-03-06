@@ -343,17 +343,7 @@ macro(package_module)
         else()
             set(EXTRA_RPATH "")
         endif()
-        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${EXTRA_RPATH})        
-
-        # if(APPLE)
-        #     foreach(build_conf Release Debug)
-        #         # TODO confirm that we still need this
-        #         macos_replace_single_install_name_link_install_time("Python"
-        #                                                             ${CMAKE_INSTALL_PREFIX}/modules/${PROJECT_NAME}/lib/${build_conf}/lib${PROJECT_NAME}.dylib 
-        #                                                             "@rpath"
-        #                                                             )
-        #     endforeach()
-        # endif()        
+        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${EXTRA_RPATH})
     endif()
 endmacro()
 
