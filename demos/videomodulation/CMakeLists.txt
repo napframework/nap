@@ -17,8 +17,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-# TODO update, was this pre-merge
-# target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napinput mod_napsdlinput mod_napsdlwindow mod_napvideo mod_napapp mod_napimgui)
 target_link_libraries(${PROJECT_NAME} mod_videomodulation mod_napapp)
 
 # Build into a project directory under bin
