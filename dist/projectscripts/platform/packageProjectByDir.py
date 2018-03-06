@@ -27,7 +27,7 @@ if __name__ == '__main__':
                         help="Don't include napkin")
     parser.add_argument("-nz", "--no-zip", action="store_true",
                         help="Don't zip package")  
-    if not sys.platform in ["linux", "linux2"]:
+    if not sys.platform.startswith('linux'):    
         parser.add_argument("-np", "--no-pause", action="store_true",
                             help="Don't pause afterwards")
     args = parser.parse_args()
