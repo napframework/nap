@@ -360,6 +360,42 @@ namespace nap
 			ImGui::PlotHistogram("Brightness History", mBrightnessValues.data(), mBrightnessValues.size(), mBrightnessIdx, NULL, 0.0f, 1.0f, ImVec2(0, 80));
 		}
 
+		if (ImGui::CollapsingHeader("Composition"))
+		{
+			CompositionComponentInstance& composition_comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
+
+			ImGui::TextColored(float_clr_gui, "Current: ");
+			ImGui::SameLine();
+			ImGui::Text(composition_comp.getSelection().getName().c_str());
+			ImGui::TextColored(float_clr_gui, "Type: ");
+			ImGui::SameLine();
+			ImGui::Text(composition_comp.getSelection().getMode() == CompositionPlayMode::Length ? "Length" : "Sequence");
+			ImGui::TextColored(float_clr_gui, "Status: ");
+			ImGui::SameLine();
+			switch (composition_comp.getSelection().getStatus())
+			{
+			case CompositionInstance::EStatus::Active:
+				ImGui::Text("Active");
+				break;
+			case CompositionInstance::EStatus::Completed:
+				ImGui::Text("Completed");
+				break;
+			case CompositionInstance::EStatus::WaitingForSequence:
+				ImGui::Text("Waiting for sequence to finish");
+				break;
+			}
+			ImGui::ProgressBar(composition_comp.getSelection().getProgress());
+		}
+
+		if (ImGui::CollapsingHeader("Colors"))
+		{
+			ColorPaletteComponentInstance& palette_comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
+			ImGui::TextColored(float_clr_gui, "Status: ");
+			ImGui::SameLine();
+			ImGui::Text(palette_comp.getStatus() == ColorPaletteComponentInstance::EStatus::Active ? "Active" : "Completed");
+			ImGui::ProgressBar(palette_comp.getProgress());
+		}
+
 		if (ImGui::CollapsingHeader("Index Map"))
 		{
 			RenderCompositionComponentInstance& render_comp = mApp.renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
@@ -373,33 +409,6 @@ namespace nap
 			
 			// Draw slider regarding display size
 			ImGui::SliderFloat("Display Size", &mDisplaySize, 0.0f, 1.0f);
-		}
-
-		if (ImGui::CollapsingHeader("Composition"))
-		{
-			CompositionComponentInstance& composition_comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
-			
-			ImGui::TextColored(float_clr_gui, "Current: ");
-			ImGui::SameLine();
-			ImGui::Text(composition_comp.getSelection().getName().c_str());
-			ImGui::TextColored(float_clr_gui, "Status: ");
-			ImGui::SameLine();
-			switch (composition_comp.getSelection().getStatus())
-			{
-			case CompositionInstance::EStatus::Active :
-				ImGui::Text("Active");
-				break;
-			case CompositionInstance::EStatus::Completed:
-				ImGui::Text("Completed");
-				break;
-			case CompositionInstance::EStatus::WaitingForSequence:
-				ImGui::Text("Waiting for sequence to finish");
-				break;
-			}
-			ImGui::TextColored(float_clr_gui, "Mode: ");
-			ImGui::SameLine();
-			ImGui::Text(composition_comp.getSelection().getMode() == CompositionPlayMode::Length ? "Length" : "Sequence");
-			ImGui::ProgressBar(composition_comp.getSelection().getProgress());
 		}
 
 		// Artnet information

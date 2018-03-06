@@ -54,6 +54,12 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
+		enum class EStatus : int
+		{
+			Active = 0,
+			Completed
+		};
+
 		ColorPaletteComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
@@ -138,6 +144,16 @@ namespace nap
 		 * @param speed cycle speed in seconds
 		 */
 		void setCycleSpeed(float speed)												{ mCycleSpeed = speed; }
+
+		/**
+		 * @return progress in 0-1 range
+		 */
+		float getProgress() const;
+
+		/**
+		 *	@return current color cycle status
+		 */
+		EStatus getStatus() const;
 
 	private:
 		/**
