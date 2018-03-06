@@ -14,7 +14,6 @@ set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
 set(MODULE_DIR ${NAP_ROOT}/usermodules/mod_${MODULE_NAME_LOWERCASE})
 
 # Create our module files, with substitutions
-# TODO potentially look into a generic recursive globbed version of this, but it's probably not worth it
 configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${MODULE_DIR}/CMakeLists.txt @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/mod_template.cpp ${MODULE_DIR}/src/mod_${MODULE_NAME_LOWERCASE}.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateservice.cpp ${MODULE_DIR}/src/${MODULE_NAME_LOWERCASE}service.cpp @ONLY)

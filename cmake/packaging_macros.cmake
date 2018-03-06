@@ -130,7 +130,11 @@ macro(package_qt)
                 DESTINATION thirdparty/Qt/plugins/Release/platforms/
                 CONFIGURATIONS Release)
 
-        # TODO Install Qt license for Windows
+        # Install licenses.  This link is a little tenuous but seems to work for Win64
+        install(DIRECTORY ${QT_DIR}/../../Licenses/
+                DESTINATION thirdparty/Qt/licenses
+                CONFIGURATIONS Release
+                )
     elseif(APPLE)
         # macOS appears to depend on these extra Qt frameworks
         list(APPEND QT_FRAMEWORKS PrintSupport)

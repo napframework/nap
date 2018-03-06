@@ -45,7 +45,7 @@ endif()
 
 if(UNIX AND NOT APPLE)
     # Package FreeImage into packaged project on *nix
-    # TODO move into above block once we've gotten rid of the static lib
+    # TODO move into above block once we've resolved the macOS-only static lib, Jira NAP-71
     install(DIRECTORY "${THIRDPARTY_DIR}/FreeImage/lib/" 
             DESTINATION "lib"
             PATTERN "cmake" EXCLUDE

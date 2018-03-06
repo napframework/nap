@@ -8,9 +8,6 @@
 #include <nap/logger.h>
 #include <apprunner.h>
 
-// TODO temp, for module paths
-#include <utility/fileutils.h>
-
 // Main loop
 int main(int argc, char *argv[])
 {

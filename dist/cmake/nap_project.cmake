@@ -20,7 +20,6 @@ configure_file(${CMAKE_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
 
 # Parse our project.json and import it
 if(WIN32)
-    # set(ENV{PYTHONPATH} ${THIRDPARTY_DIR}/tools/platform) # TODO verify and remove
     set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python)
 elseif(UNIX)
     set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
@@ -127,19 +126,6 @@ target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core naputility ${NA
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/projectExtra.cmake)
     include(${CMAKE_CURRENT_SOURCE_DIR}/projectExtra.cmake)
 endif()
-
-# Add IDE targets for launching napkin
-# TODO Fix or remove IDE targets for launching napkin before 0.1 release
-# if(APPLE)
-#     add_custom_target("LAUNCH_NAPKIN" 
-#                       COMMAND open $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
-#                       DEPENDS ${PROJECT_NAME})
-# elseif(WIN32)
-#     # TODO Haven't managed to get this to launch without blocking in Visual Studio yet (start /b doesn't work).  Maybe not the right way to go anyway.
-#     add_custom_target("LAUNCH_NAPKIN" 
-#                       COMMAND $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
-#                       DEPENDS ${PROJECT_NAME})
-# endif()
 
 # Copy data to bin post-build
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
