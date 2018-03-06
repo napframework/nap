@@ -68,7 +68,7 @@ namespace nap
 		nap::RenderState& render_state = renderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
-		render_state.mPolygonMode = opengl::PolygonMode::FILL;
+		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 
 		// Force paint method
 		selectPaintMethod();

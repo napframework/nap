@@ -38,6 +38,11 @@ namespace napkin
          */
 		const QString getThemeDir() const;
 
+		/**
+		 * Start watching the theme dir for changes and update when necessary.
+		 */
+		void watchThemeDir();
+
 	Q_SIGNALS:
         /**
          * Will be fired when the theme has changed
@@ -65,5 +70,6 @@ namespace napkin
 
 		QString mCurrentTheme; // The currently set theme
 		QFileSystemWatcher mFileWatcher; // Watch the theme file and reload if it has changed
+		bool mFontsLoaded = false;
 	};
 };

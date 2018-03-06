@@ -105,7 +105,7 @@ namespace opengl
 		// If either the vertex or fragment shader wouldn't load
 		if (vsText.empty() || fsText.empty())
 		{
-			printMessage(MessageType::ERROR, "either vertex shader or fragment shader file not found");
+			printMessage(EGLSLMessageType::Error, "either vertex shader or fragment shader file not found");
 			mState = State::FileError;
 			return;
 		}
@@ -122,15 +122,15 @@ namespace opengl
 		// Validate the vertex shader
 		std::string vertex_compile_message;
 		EShaderValidationResult vertex_compile_result = validateShader(mShaderVp, vertex_compile_message);
-		if (vertex_compile_result == EShaderValidationResult::ERROR)
+		if (vertex_compile_result == EShaderValidationResult::Error)
 		{
-			printMessage(MessageType::ERROR, "Unable to compile vertex shader (%s): %s \r\n%s", vsFile.c_str(), vertex_compile_message.c_str(), vertexText);
+			printMessage(EGLSLMessageType::Error, "Unable to compile vertex shader (%s): %s \r\n%s", vsFile.c_str(), vertex_compile_message.c_str(), vertexText);
 			mState = State::VertexError;
 			return;
 		}
-		else if (vertex_compile_result == EShaderValidationResult::WARNING)
+		else if (vertex_compile_result == EShaderValidationResult::Warning)
 		{
-			printMessage(MessageType::WARNING, "Compilation of vertex shader (%s) succeeded, but with warnings: %s", vsFile.c_str(), vertex_compile_message.c_str());
+			printMessage(EGLSLMessageType::Warning, "Compilation of vertex shader (%s) succeeded, but with warnings: %s", vsFile.c_str(), vertex_compile_message.c_str());
 		}
 		
 		// Load fragment shader
@@ -142,15 +142,15 @@ namespace opengl
 		// Validate the fragment shader
 		std::string fragment_compile_message;
 		EShaderValidationResult fragment_compile_result = validateShader(mShaderFp, fragment_compile_message);
-		if (fragment_compile_result == EShaderValidationResult::ERROR)
+		if (fragment_compile_result == EShaderValidationResult::Error)
 		{
-			printMessage(MessageType::ERROR, "Unable to compile fragment shader (%s): %s \r\n%s", fsFile.c_str(), fragment_compile_message.c_str(), fragmentText);
+			printMessage(EGLSLMessageType::Error, "Unable to compile fragment shader (%s): %s \r\n%s", fsFile.c_str(), fragment_compile_message.c_str(), fragmentText);
 			mState = State::FragmentError;
 			return;
 		}													
-		else if (fragment_compile_result == EShaderValidationResult::WARNING)
+		else if (fragment_compile_result == EShaderValidationResult::Warning)
 		{
-			printMessage(MessageType::WARNING, "Compilation of fragment shader (%s) succeeded, but with warnings: %s", fsFile.c_str(), fragment_compile_message.c_str());
+			printMessage(EGLSLMessageType::Warning, "Compilation of fragment shader (%s) succeeded, but with warnings: %s", fsFile.c_str(), fragment_compile_message.c_str());
 		}
 
 		// Link the vertex and fragment shaders in the program
@@ -158,11 +158,11 @@ namespace opengl
 		std::string program_validation_message;
 
 		// Extract all program vertex attributes
-		printMessage(MessageType::INFO, "sampling shader program attributes: %s", vsFile.c_str());
+		printMessage(EGLSLMessageType::Info, "sampling shader program attributes: %s", vsFile.c_str());
 		extractShaderAttributes(mShaderId, mShaderAttributes);
 
 		// Extract all program uniform attributes
-		printMessage(MessageType::INFO, "sampling shader program uniforms: %s", vsFile.c_str());
+		printMessage(EGLSLMessageType::Info, "sampling shader program uniforms: %s", vsFile.c_str());
 		extractShaderUniforms(mShaderId, mUniformDeclarations);
 		
 		// Successfully loaded shader
@@ -200,7 +200,7 @@ namespace opengl
 		auto it = mUniformDeclarations.find(name);
 		if (it == mUniformDeclarations.end())
 		{
-			printMessage(MessageType::WARNING, "shader has no active uniform with name: %s", name.c_str());
+			printMessage(EGLSLMessageType::Warning, "shader has no active uniform with name: %s", name.c_str());
 			return nullptr;
 		}
 
@@ -215,7 +215,7 @@ namespace opengl
 		auto it = mShaderAttributes.find(name);
 		if (it == mShaderAttributes.end())
 		{
-			printMessage(MessageType::WARNING, "shader has no active vertex attribute with name: %s", name.c_str());
+			printMessage(EGLSLMessageType::Warning, "shader has no active vertex attribute with name: %s", name.c_str());
 			return nullptr;
 		}
 		return it->second.get();
@@ -227,7 +227,7 @@ namespace opengl
 	{
 		if (!isLinked())
 		{
-			printMessage(MessageType::ERROR, "attempting to bind unresolved shader");
+			printMessage(EGLSLMessageType::Error, "attempting to bind unresolved shader");
 			return false;
 		}
 
@@ -241,7 +241,7 @@ namespace opengl
 	{
 		if (!isAllocated())
 		{
-			printMessage(MessageType::ERROR, "unable to unbind shader, shader not allocated");
+			printMessage(EGLSLMessageType::Error, "unable to unbind shader, shader not allocated");
 			return false;
 		}
 
