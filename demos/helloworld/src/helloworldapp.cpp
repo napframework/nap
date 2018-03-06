@@ -167,9 +167,7 @@ namespace nap
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
-				static bool fullscreen = true;
-				setWindowFullscreen("Window0", fullscreen);
-				fullscreen = !fullscreen;
+				mRenderWindow->toggleFullscreen();
 			}
 		}
 

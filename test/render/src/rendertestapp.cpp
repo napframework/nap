@@ -54,7 +54,7 @@ namespace nap
 		nap::RenderState& render_state = mRenderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
-		render_state.mPolygonMode = opengl::PolygonMode::FILL;
+		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 
 		rtti::ObjectPtr<RenderWindow> window = mRenderService->getWindow(1);
 
@@ -202,7 +202,7 @@ namespace nap
 				components_to_render.push_back(&mPigEntity->getComponent<nap::RenderableMeshComponentInstance>());
 			
 			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
-			mRenderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
+			mRenderService->clearRenderTarget(backbuffer, opengl::EClearFlags::Color | opengl::EClearFlags::Depth | opengl::EClearFlags::Stencil);
 			mRenderService->renderObjects(backbuffer, mCameraEntityRight->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 			
 			// Render sphere using split camera with custom projection matrix
