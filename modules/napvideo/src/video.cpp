@@ -1,3 +1,89 @@
+/*
+
+----------------------------------------------------
+Basic Threading structure and data flow
+----------------------------------------------------
+In the videoplayer, there are up to 5 threads in play:
+- I/O thread				Reads 'packets' from file and pushes them onto the packet queue until it is full
+- Decode thread (2)			There is a thread for decoding video packets and one for decoding audio packets. Packets are popped from the packet queue, 
+							decoded into frames and then pushed onto the frame queue until it is full.
+- Audio consume thread		This thread is not managed by the videoplayer, but it is the thread that will emit a callback at a certain fixed frequency to fill in the audio data. 
+							This thread will pop frames from the queue, perform any resampling to the target format, and eventually copy the data to the target buffer.
+- Video consume thread		This thread is not managed by the videoplayer, it is the thread that needs to call Video::update(). This call will pop frames from the frame queue
+							and update the internal textures.
+
+If there is no audio in the stream, the audio decode thread is not started. To summarize the regular playing data flow: 
+ =>	Push packets into packet queue (I/O thread) => Pop packets from queue (a/v decode thread) => Push frames into frame queue (a/v decode thread) => pop frames (a/v consume threads)
+
+ Internally, the decoders spawned multiple threads to decode frames as efficiently as possible. This is enabled by using av_dict_set(..., "threads", ...).
+
+----------------------------------------------------
+Threading communication
+----------------------------------------------------
+The threads communicate mainly using queues. Sometimes the threads need to give 'commands' to the other threads. To simplify the inter-thread communication, some of this
+communication is performed by pushing specific packets onto the queue (seek start/seek end/end of file/io finished). When a thread wants to wait until a certain packet 
+is consumed, AutoResetEvents are used. The threads act like traditional producer/consumers, so the queues are protected with condition variables to accomplish this: both
+producers and consumers can wait on each other: producers can wait for room to be available, consumers can wait until data is available.
+
+----------------------------------------------------
+Fundamentals of the video format
+----------------------------------------------------
+A video file has multiple streams in it. We are using the audio and video streams, but there may also be subtitle or other streams in it.
+The video stream contains frames of the following compression types:
+- I-frame (intra-coded picture). These are keyframes that contain a full image.
+- P-frame (predicated picture). These contain only the difference from the previous picture.
+- B-frame (bi-directional frames). These contain information that not only relies on the previous picture, but also from the next picture.
+See also: https://en.wikipedia.org/wiki/Video_compression_picture_types
+
+Although it seems like we need to deal with these different types of frames manually, we actually don't. We feed one or more packets into avcodec_receive_frame,
+and internally the codec will produce a frame for us. It is important to understand that I-frames (keyframes) are stored only once in a number of frames. This is 
+important when we look at seeking (see description on seeking below).
+
+Furthermore, for the structure of the code it is important to understand the following things:
+	1) A single packet can result in multiple frames.
+	2) Multiple packets can result in a single frame.
+Specifically when looking at decodeFrame, you can see how the loop is setup to support both these cases.
+
+----------------------------------------------------
+Timing
+----------------------------------------------------
+Packets contain both a Decode TimeStamp (DTS) and a Presentation TimeStamp (PTS). Again, we don't really need to deal with the decoding timestamp, as av_receive_frame
+deals with this for us. The presentation timestamp is what we need to see if the next frame should be displayed. Often the PTS is missing, so some logic is required
+to guess when the next frame should be displayed. We have seen code that tries to calculate this manually, but these days we can use 'best_effort_timestamp' to give
+the most accurate prediction of when the frame should be displayed, so we use this instead. 
+Although we don't need to deal with the DTS, it is still relevant for us, as seeking uses the DTS instead of the PTS (see below).
+
+Streams operate in a certain 'time base'. This is just the frequency in hz, and internally it is stored as a fraction (nominator/denominator) and it can be converted to
+a proper faction by using av_q2d. Each stream also has a start_time. We use the start time and frequency to convert from seconds to the streams' timebase.
+
+----------------------------------------------------
+Seeking
+----------------------------------------------------
+Seeking is challenging for the following reasons:
+- We can only seek by DTS, not PTS. So when seeking, you need to seek to some unknown number that is smaller or equal to the PTS value.
+- We can only seek to keyframes. If we'd seek to direct frames, we will see corrupted data as the data relies on previous frames.
+- As we need to read packets and produce frames and still have the same proper error handling for all these things like we have in the regular playing pipeline, 
+  we actually need all the logic from the regular playing pipeline that is spread across threads to find our target frame. The entire playing pipeline is used 
+  for this reason, but there are some important things to notice:
+	* The output frames that are produced by the decode thread are temporary and should not be put into the regular target frame queue. Instead, the I/O should
+	  somehow consume the 'temporary' frames.
+	* We should only read packets up until the target frame and not read more packets 'ahead', otherwise, any excess packets will not end up in the target frame queue.
+
+Because of these reasons, we need to perform the following steps:
+1) When starting the seeking operation, the I/O thread will tell the decode thread that a seek operation started. The decode thread will flip the regular 
+   frame queue to a 'seeking' frame queue. The I/O thread will wait until the decode thread has issued this command.
+2) The I/O thread will first search iteratively for the correct starting keyframe that is smaller or equal to our target PTS. This operation is iteratively
+   because we can only guess the target DTS. We cache DTS of the first packet that was used to produce the frame, so for any subsequent searches, we
+   subtract one for the frames' first DTS. We do this until we find a keyframe that is smaller or equal to the target PTS. We can detect if we are at the 
+   beginning of the stream, as the stream contains the very first DTS that is present in the stream. If we hit the first DTS, we do not continue the iteration.
+3) From the correct starting keyframe, continue decoding until we find a frame that is equal to or greater than our target PTS.
+4) When the target frame is found, the I/O thread will tell the decode thread the seek operation ended. The decode thread will flip back to the regular frame queue.
+
+Steps 2 and 3 are performed in a lock-step fashion between the I/O thread and the video decode thread, to make sure that we do not seek any packets ahead. This lock-step
+behavior is accomplished by pushing a single packet on the queue, and then waiting until the decode thread calls avcodec_receive_frame. When avcoded_receive requires 
+another packet, we push another packet on the queue. This way we never push more packets onto the queue than necessary to produce the next frame that we can inspect.
+*/
+
 #include "video.h"
 #include "videoservice.h"
 
@@ -122,9 +208,9 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	AVState::AVState(Video& video, int inMaxPacketQueueSize) :
+	AVState::AVState(Video& video, int maxPacketQueueSize) :
 		mVideo(&video),
-		mMaxPacketQueueSize(inMaxPacketQueueSize)
+		mMaxPacketQueueSize(maxPacketQueueSize)
 	{
 	}
 
@@ -135,7 +221,7 @@ namespace nap
 	}
 
 
-	void AVState::init(int stream)
+	void AVState::init(int stream, AVCodec* codec, AVCodecContext* codecContext)
 	{
 		mSeekStartPacket = std::make_unique<AVPacket>();
 		av_init_packet(mSeekStartPacket.get());
@@ -162,6 +248,8 @@ namespace nap
 		mEndOfFilePacket->stream_index = stream;
 
 		mStream = stream;
+		mCodec = codec;
+		mCodecContext = codecContext;
 	}
 
 
@@ -215,11 +303,11 @@ namespace nap
 
 	void AVState::clearFrameQueue()
 	{
-		clearFrameQueue(mFrameQueue);
+		clearFrameQueue(mFrameQueue, true);
 	}
 
 
-	void AVState::clearFrameQueue(std::queue<Frame>& frameQueue)
+	void AVState::clearFrameQueue(std::queue<Frame>& frameQueue, bool emitCallback)
 	{
 		std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 		while (!frameQueue.empty())
@@ -229,6 +317,9 @@ namespace nap
 			av_frame_unref(frame.mFrame);
 			av_frame_free(&frame.mFrame);
 		}
+
+		if (emitCallback && mOnClearFrameQueueFunction)
+			mOnClearFrameQueueFunction();
 	}
 
 
@@ -294,21 +385,14 @@ namespace nap
 	}
 	
 
-	void AVState::setCodec(AVCodec* codec, AVCodecContext* codecContext)
-	{
-		mCodec = codec;
-		mCodecContext = codecContext;
-	}
-
-
-	void AVState::startDecodeThread(const ClearFrameQueueFunction& clearFrameQueueFunction)
+	void AVState::startDecodeThread(const OnClearFrameQueueFunction& onClearFrameQueueFunction)
 	{
 		exitDecodeThread(true);
 
 		mExitDecodeThreadSignalled = false;
 		mFinishedProducingFrames = false;
 
-		mClearFrameQueueFunction = clearFrameQueueFunction;
+		mOnClearFrameQueueFunction = onClearFrameQueueFunction;
 		mDecodeThread = std::thread(std::bind(&AVState::decodeThread, this));
 	}
 
@@ -324,8 +408,11 @@ namespace nap
 	}
 
 
-	bool AVState::isFinishedConsuming() const
+	bool AVState::isFinished() const
 	{
+		if (!mFinishedProducingFrames)
+			return false;
+
 		std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 		return mFrameQueue.empty();
 	}
@@ -450,9 +537,9 @@ namespace nap
 				VIDEO_DEBUG_LOG("seek start received");
 
 				avcodec_flush_buffers(mCodecContext);
-				mClearFrameQueueFunction();
 
-				clearFrameQueue(mSeekFrameQueue);
+				clearFrameQueue(mFrameQueue, true);
+				clearFrameQueue(mSeekFrameQueue, false);
 
 				{
 					std::unique_lock<std::mutex> frame_lock(mFrameQueueMutex);
@@ -463,7 +550,7 @@ namespace nap
 			}
 			else if (packet == mSeekEndPacket.get())
 			{
-				clearFrameQueue(mSeekFrameQueue);
+				clearFrameQueue(mSeekFrameQueue, false);
 
 				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 				mActiveFrameQueue = &mFrameQueue;
@@ -583,7 +670,7 @@ namespace nap
 	}
 
 
-	bool Video::sInitCodec(AVState& destState, const AVCodecContext& sourceCodecContext, AVDictionary*& options, utility::ErrorState& errorState)
+	bool Video::sInitAVState(AVState& destState, int streamIndex, const AVCodecContext& sourceCodecContext, AVDictionary*& options, utility::ErrorState& errorState)
 	{
 		// Find the decoder for the video stream
 		AVCodec* codec = avcodec_find_decoder(sourceCodecContext.codec_id);
@@ -600,7 +687,7 @@ namespace nap
 		if (!errorState.check(error == 0, "Unable to open codec: %s", sErrorToString(error).c_str()))
 			return false;
 
-		destState.setCodec(codec, codec_context);
+		destState.init(streamIndex, codec, codec_context);
 
 		return true;
 	}
@@ -627,17 +714,19 @@ namespace nap
 		// as it needs to be copied later
 		AVCodecContext* source_video_codec_context = nullptr;
 		AVCodecContext* source_audio_codec_context = nullptr;
+		int video_stream = -1;
+		int audio_stream = -1;
 		for (int i = 0; i < mFormatContext->nb_streams; ++i)
 		{
 			if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
 				source_video_codec_context = mFormatContext->streams[i]->codec;
-				mVideoState.init(i);
+				video_stream = i;
 			}
 			else if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
 			{
 				source_audio_codec_context = mFormatContext->streams[i]->codec;
-				mAudioState.init(i);
+				audio_stream = i;
 			}
 		}
 
@@ -652,11 +741,11 @@ namespace nap
 		// when we decode frames. Otherwise, the decoder will reuse buffers, which will then overwrite data already in our queue.
 		av_dict_set(&options, "refcounted_frames", "1", 0);
 
-		if (!sInitCodec(mVideoState, *source_video_codec_context, options, errorState))
+		if (!sInitAVState(mVideoState, video_stream, *source_video_codec_context, options, errorState))
 			return false;
 
 		if (source_audio_codec_context != nullptr)
-			if (!sInitCodec(mAudioState, *source_audio_codec_context, options, errorState))
+			if (!sInitAVState(mAudioState, audio_stream, *source_audio_codec_context, options, errorState))
 				return false;
 
 		AVCodecContext& video_codec_context = mVideoState.getCodecContext();
@@ -733,10 +822,10 @@ namespace nap
 
 		seek(startTimeSecs);
 
-		mVideoState.startDecodeThread(std::bind(&Video::clearVideoFrameQueue, this));
+		mVideoState.startDecodeThread(std::bind(&Video::onClearVideoFrameQueue, this));
 		
 		if (mAudioState.isValid())
-			mAudioState.startDecodeThread(std::bind(&Video::clearAudioFrameQueue, this));
+			mAudioState.startDecodeThread();
 
 		startIOThread();
 	}
@@ -757,8 +846,7 @@ namespace nap
 		mPlaying = false;
 
 		clearPacketQueue();
-		clearVideoFrameQueue();
-		clearAudioFrameQueue();
+		clearFrameQueue();
 	}
 
 
@@ -792,24 +880,17 @@ namespace nap
 	}
 
 
-	void Video::clearVideoFrameQueue()
+	void Video::clearFrameQueue()
 	{
 		mVideoState.clearFrameQueue();
-
-		// After clearing the frame queue, we also need to reset the video clock in order for playback to re-sync to possible new frames
-		mVideoClockSecs = sVideoMax;
-	}
-
-
-	void Video::clearAudioFrameQueue()
-	{
 		mAudioState.clearFrameQueue();
 	}
 
 
-	bool Video::hasErrorOccurred() const
+	void Video::onClearVideoFrameQueue()
 	{
-		return !mErrorMessage.empty();
+		// After clearing the frame queue, we also need to reset the video clock in order for playback to re-sync to possible new frames
+		mVideoClockSecs = sVideoMax;
 	}
 
 
@@ -1028,7 +1109,7 @@ namespace nap
 	}
 
 
-	bool Video::getNextAudioFrame(const AudioParams& audioHwParams)
+	bool Video::getNextAudioFrame(const AudioFormat& targetAudioFormat)
 	{
 		if (mCurrentAudioFrame.mFrame != nullptr)
 		{
@@ -1047,12 +1128,12 @@ namespace nap
 			frame->channel_layout : av_get_default_channel_layout(frame->channels);
 
 
-		if ((frame->format != (AVSampleFormat)audioHwParams.fmt ||
-			dec_channel_layout != audioHwParams.channel_layout ||
-			frame->sample_rate != audioHwParams.freq) &&
+		if ((frame->format != (AVSampleFormat)targetAudioFormat.mFormat ||
+			dec_channel_layout != targetAudioFormat.mChannelLayout ||
+			frame->sample_rate != targetAudioFormat.mFrequency) &&
 			mAudioResampleContext == nullptr) 
 		{
-			mAudioResampleContext = swr_alloc_set_opts(NULL, audioHwParams.channel_layout, (AVSampleFormat)audioHwParams.fmt, audioHwParams.freq, dec_channel_layout, (AVSampleFormat)frame->format, frame->sample_rate, 0, NULL);
+			mAudioResampleContext = swr_alloc_set_opts(NULL, targetAudioFormat.mChannelLayout, (AVSampleFormat)targetAudioFormat.mFormat, targetAudioFormat.mFrequency, dec_channel_layout, (AVSampleFormat)frame->format, frame->sample_rate, 0, NULL);
 			int result = swr_init(mAudioResampleContext);
 			assert(result >= 0);
 		}
@@ -1060,8 +1141,8 @@ namespace nap
 		if (mAudioResampleContext != nullptr)
 		{
 			const uint8_t **in = (const uint8_t **)frame->extended_data;
-			int out_count = (int64_t)frame->nb_samples * audioHwParams.freq / frame->sample_rate + 256;
-			int out_size = av_samples_get_buffer_size(NULL, audioHwParams.channels, out_count, (AVSampleFormat)audioHwParams.fmt, 0);
+			int out_count = (int64_t)frame->nb_samples * targetAudioFormat.mFrequency / frame->sample_rate + 256;
+			int out_size = av_samples_get_buffer_size(NULL, targetAudioFormat.mNumChannels, out_count, (AVSampleFormat)targetAudioFormat.mFormat, 0);
 			assert(out_size >= 0);
 			int len2;
 
@@ -1073,7 +1154,7 @@ namespace nap
 			assert(len2 != out_count);
 
 			mCurrentAudioBuffer = mAudioResampleBuffer.data();
-			buffer_size = len2 * audioHwParams.channels * av_get_bytes_per_sample((AVSampleFormat)audioHwParams.fmt);
+			buffer_size = len2 * targetAudioFormat.mNumChannels * av_get_bytes_per_sample((AVSampleFormat)targetAudioFormat.mFormat);
 		}
 		else 
 		{
@@ -1081,31 +1162,31 @@ namespace nap
 		}
 
 		mAudioFrameSize = buffer_size;
-		mAudioFrameReadPtr = 0;
+		mAudioFrameReadOffset = 0;
 
 		return true;
 	}
 	
 
-	bool Video::OnAudioCallback(uint8_t* stream, int len, const AudioParams& audioHwParams)
+	bool Video::OnAudioCallback(uint8_t* stream, int len, const AudioFormat& audioHwParams)
 	{
 		uint8_t* dest = stream;
 		int data_remaining = len;
 		while (data_remaining > 0)
 		{
-			if (mAudioFrameReadPtr >= mAudioFrameSize)
+			if (mAudioFrameReadOffset >= mAudioFrameSize)
 				if (!getNextAudioFrame(audioHwParams))
 					return false;
 
-			int num_bytes_to_read = mAudioFrameSize - mAudioFrameReadPtr;
+			int num_bytes_to_read = mAudioFrameSize - mAudioFrameReadOffset;
 			num_bytes_to_read = std::min(num_bytes_to_read, data_remaining);
 
-			uint8_t* source = mCurrentAudioBuffer + mAudioFrameReadPtr;
+			uint8_t* source = mCurrentAudioBuffer + mAudioFrameReadOffset;
 			memcpy(dest, source, num_bytes_to_read);
 
 			data_remaining -= num_bytes_to_read;
 			dest += num_bytes_to_read;
-			mAudioFrameReadPtr += num_bytes_to_read;
+			mAudioFrameReadOffset += num_bytes_to_read;
 		}
 
 		return true;

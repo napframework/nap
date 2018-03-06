@@ -29,75 +29,190 @@ namespace nap
 	class VideoService;
 	class Video;
 
-	struct AudioParams
+	/**
+	 * Description of an audio format for resampling of data to a certain format.
+	 */
+	struct AudioFormat
 	{
-		int freq;
-		int channels;
-		int64_t channel_layout;
-		int fmt;
-		int frame_size;
-		int bytes_per_sec;
+		int			mFrequency;				///< Frequency, or samplerate, in hz. For instance, 48000
+		int			mNumChannels;			///< Number of channels
+		int64_t		mChannelLayout;
+		int			mFormat;
+		int			mFrameSize;
+		int			mBytesPerSec;
 	};
 
 	/**
-	* Frame as pushed in the frame queue.
-	*/
+	 * Frame as pushed in the frame queue.
+	 */
 	struct Frame
 	{
 		bool isValid() const { return mFrame != nullptr; }
+
 		AVFrame*	mFrame = nullptr;	///< Frame as decoded by the decode thread
 		double		mPTSSecs;			///< When the frame needs to be displayed (absolute clock time)
 		int			mFirstPacketDTS;	///< First dts that was used to create this frame
 	};
 
+	/**
+	 * Full state for either audio or video. Responsible for pulling packets from the packet queue and decoding them into frames.
+	 */
 	class AVState final
 	{
 	public:
-		using ClearFrameQueueFunction = std::function<void()>;
+		using OnClearFrameQueueFunction = std::function<void()>;
 
-		AVState(Video& video, int inMaxPacketQueueSize);
+		/**
+		 * Constructor
+		 * @param video: video to play
+		 * @param maxPacketQueueSize
+		 */
+		AVState(Video& video, int maxPacketQueueSize);
+
+		/**
+		 * Destructor
+		 */
 		~AVState();
+		 
+		/**
+		 * Initializes stream and codec.
+		 * @param stream Video or audio stream index.
+		 */
+		void init(int stream, AVCodec* codec, AVCodecContext* codecContext);
 
-		void init(int stream);
-
+		/**
+		 * Destroys codec.
+		 */
 		void close();
 
+		/**
+ 		 * @return whether object is initialized.
+		 */
 		bool isValid() const { return mStream != -1; }
+
+		/**
+		 * @return Index of this stream.
+		 */
 		int getStream() const { return mStream; }
 
-		void setCodec(AVCodec* codec, AVCodecContext* codecContext);
+		/**
+		 * Spawns the decode thread.
+		 * @param clearFrameQueueFunction An optional function that can be used to perform additional work when the frame queue is cleared.
+		 */
+		void startDecodeThread(const OnClearFrameQueueFunction& onClearFrameQueueFunction = OnClearFrameQueueFunction());
 
-		void startDecodeThread(const ClearFrameQueueFunction& clearFrameQueueFunction);
+		/**
+		 * Stops the decode thread and blocks waiting for it to exit if @join is true.
+		 * @param join If true, the function blocks until the thread is exited, otherwise false.
+		 */
 		void exitDecodeThread(bool join);
 
-		bool isFinishedProducing() const { return mFinishedProducingFrames; }
-		bool isFinishedConsuming() const;
-		bool isFinished() const { return isFinishedProducing() && isFinishedConsuming(); }
+		/**
+		 * @return True when there are no more frames to produce (there are no more packets to decode) and all frames have been
+		 * consumed by the client.
+		 */
+		bool isFinished() const;
 
+		/**
+		 * Clears frame queue.
+		 */
 		void clearFrameQueue();
+
+		/**
+		 * Clears packet queue.
+		 */
 		void clearPacketQueue();
 
+		/**
+		 * @return true when the packet belongs to the stream for this AVState.
+		 */
 		bool matchesStream(const AVPacket& packet) const;
 
+		/**
+		 * Adds the 'seek start' packet to the packet queue. This functions as a command to the decode thread.
+		 */
 		bool addSeekStartPacket(const bool& exitIOThreadSignalled);
+
+		/**
+		 * Adds the 'seek end' packet to the packet queue. This functions as a command to the decode thread.
+		 */
 		bool addSeekEndPacket(const bool& exitIOThreadSignalled);
+
+		/**
+		 * Adds the 'end of file' packet to the packet queue. The end of file packet is a special packet
+		 * with a nullptr for data.
+		 */
 		bool addEndOfFilePacket(const bool& exitIOThreadSignalled);
+
+		/**
+		 * Adds the 'I/O finished' packet to the packet queue. This functions as a command to the decode thread.
+		 */
 		bool addIOFinishedPacket(const bool& exitIOThreadSignalled);
+
+		/**
+		 * Adds a packet to the packet queue.
+		 * @param packet The packet to add.
+		 * @param exitIOThreadsignalled When I/O thread is in exit mode, this must be true.
+		 */
 		bool addPacket(AVPacket& packet, const bool& exitIOThreadSignalled);
 
+		/**
+		 * Blocks until the EOF packet that was added by addEndOfFilePacket is consumed by the decode thread.
+		 */
 		void waitForEndOfFileProcessed();
-		void waitSeekStartPacketProcessed();		
-		bool waitForReceiveFrame();		
 
+		/**
+		 * Blocks until the 'seek start' packet that was added by addSeekStartPacket is consumed by the decode thread.
+		 */
+		void waitSeekStartPacketProcessed();
+		
+		/**
+		 * Blocks until the decode thread has called avcoded_receive. This is used to perform lock-step production of packets and frames.
+		 * @return Wether avcoded_receive requires a new packet to be pushed onto the packet queue.
+		 */
+		bool waitForReceiveFrame();
+
+		/**
+		 * Block until a frame can be popped from the queue.
+		 * @return The next frame on the queue. If the thread was exited during this operation, an empty frame is returned.
+		 */
 		Frame popFrame();
+
+		/**
+		 * Non-blocking popping of the next frame. The pts is checked to see if the next frame is equal or greater than the pts passed. If so,
+		 * the frame is popped. Otherwise, an empty frame is returned.
+		 * @param pts The 'current time' that is tested against the frames' PTS.
+		 */
 		Frame tryPopFrame(double pts);
+
+		/**
+		 * @return If there was a frame on the queue, returns it without removing it from the queue.
+		 */
 		Frame peekFrame();
+
+		/**
+		 * @return If there was a frame on the 'seek' frame queue, returns it without removing it from the queue.
+		 */
 		Frame popSeekFrame();
 
+		/**
+		 * Prepares for start of I/O thread, reset synchronization primitives.
+		 */
 		void notifyStartIOThread();
+
+		/**
+		 * Unblocks synchronization primitives for succesful exit of I/O thread.
+		 */
 		void notifyExitIOThread();
 
+		/**
+		 * @return audio or video codec used to decode packets into frames.
+		 */
 		AVCodec& getCodec() { return *mCodec; }
+
+		/**
+		 * @return audio or video codec context used to decode packets into frames.
+		 */
 		AVCodecContext& getCodecContext() { return *mCodecContext; }
 
 	private:
@@ -111,7 +226,7 @@ namespace nap
 		void decodeThread();
 		EDecodeFrameResult decodeFrame(AVFrame& frame, int& frameFirstPacketDTS);
 
-		void clearFrameQueue(std::queue<Frame>& frameQueue);
+		void clearFrameQueue(std::queue<Frame>& frameQueue, bool emitCallback);
 
 	private:
 		Video*						mVideo;
@@ -121,7 +236,7 @@ namespace nap
 		int							mStream = -1;							///< Specifies what stream in the file is the one containing video packets
 
 		std::thread					mDecodeThread;							///< Video decode thread
-		ClearFrameQueueFunction		mClearFrameQueueFunction;
+		OnClearFrameQueueFunction	mOnClearFrameQueueFunction;				///< Callback that is called when the frame queue is cleared
 		bool						mExitDecodeThreadSignalled = false;		///< If this boolean is set, the decode thread will exit ASAP. This is used internally by exitDecodeThread and should not be used separately
 
 		std::queue<Frame>			mFrameQueue;							///< The frame queue as produced by the decodeThread and consumed by the main thread
@@ -140,17 +255,17 @@ namespace nap
 
 		bool						mFinishedProducingFrames = false;		///< If this boolean is set, the decode thread has no more frames to decode, either due to an error or due to an end of stream.
 
-		std::unique_ptr<AVPacket>	mSeekStartPacket;
-		std::unique_ptr<AVPacket>	mSeekEndPacket;
-		std::unique_ptr<AVPacket>	mEndOfFilePacket;
-		std::unique_ptr<AVPacket>	mIOFinishedPacket;
+		std::unique_ptr<AVPacket>	mSeekStartPacket;						///< Specific 'command' packet to communicate 'seek start' to decode thread
+		std::unique_ptr<AVPacket>	mSeekEndPacket;							///< Specific 'command' packet to communicate 'seek end' to decode thread
+		std::unique_ptr<AVPacket>	mEndOfFilePacket;						///< Specific 'command' packet to communicate 'EndOfFile' to decode thread
+		std::unique_ptr<AVPacket>	mIOFinishedPacket;						///< Specific 'command' packet to communicate 'I/O finished' to decode thread
 
-		utility::AutoResetEvent		mEndOfFileProcessedEvent;
-		utility::AutoResetEvent		mSeekStartProcessedEvent;
-		utility::AutoResetEvent		mReceiveFrameEvent;
-		bool						mReceiveFrameNeedsPacket;
+		utility::AutoResetEvent		mEndOfFileProcessedEvent;				///< Event that is signaled when EndOfFile packet is consumed by decode thread
+		utility::AutoResetEvent		mSeekStartProcessedEvent;				///< Event that is signaled when seek start packet is consumed by decode thread
+		utility::AutoResetEvent		mReceiveFrameEvent;						///< Event that is signaled when avcodec_receive is called by decode thread
+		bool						mReceiveFrameNeedsPacket;				///< Value set when avcoded_receive requires more packet to produce a frame
 
-		int							mFrameFirstPacketDTS = -INT_MAX;
+		int							mFrameFirstPacketDTS = -INT_MAX;		///< Cached value for the first DTS that was used to produce the current frame
 	};
 
 
@@ -159,11 +274,6 @@ namespace nap
 	 * Internally contains textures that have the contents for each frame. After calling update(), the texture is filled with
 	 * the latest frame. update() is not blocking, internally the textures will only be updated when needed. The textures that
 	 * are output are in the YUV format. Conversion to RGB can be done in a shader.
-	 * 
-	 * Internally, the producer/consumer pattern is used for the reading of packets and the decoding of packets:
-	 * The ioThread (the producer) will read packets from the stream and push them onto a frame queue. The frame queue is consumed by the decode
-	 * thread (which is both a consumer (=> packets) and a producer (=> frames)). The frame thread decodes the frame (which internally will spawn more 
-	 * thread to decode the package) and pushes the frame onto the frame queue. 
 	 * The main thread will consume the frames when they are present in the frame queue and their timestamp has 'passed'.
 	 */
 	class NAPAPI Video final : public rtti::RTTIObject
@@ -225,6 +335,11 @@ namespace nap
 		double getCurrentTime() const;
 
 		/**
+		 * @return The duration of the video in seconds.
+		 */
+		double getDuration() const { return mDuration; }
+
+		/**
 		 * @return The Y texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is width * height.
 		 */
@@ -253,13 +368,18 @@ namespace nap
 		int getHeight() const					{ return mHeight; }
 
 		/**
-		* @return The duration of the video in seconds.
-		*/
-		double getDuration() const				{ return mDuration; }
-
+		 * @return Whether this video has an audio stream.
+		 */
 		bool hasAudio() const					{ return mAudioState.getStream() != -1; }
 
-		bool OnAudioCallback(uint8_t* stream, int len, const AudioParams& audioHwParams);
+		/**
+		 * Function that needs to be called by the audio system on a fixed frequency to copy the audio data from the audio
+		 * stream into the target buffer.
+		 * @param dataBuffer The data buffer to fill.
+		 * @param sizeInBytes Length of the data buffer, in bytes.
+		 * @param targetAudioFormat The expected format of the audio data to put in dataBuffer.
+		 */
+		bool OnAudioCallback(uint8_t* dataBuffer, int sizeInBytes, const AudioFormat& targetAudioFormat);
 
 		std::string mPath;				///< Path to the video to playback
 		bool		mLoop = false;		///< If the video needs to loop
@@ -268,48 +388,77 @@ namespace nap
 	private:
 		enum class EProducePacketResult : uint8_t
 		{
-			GotAudioPacket		= 1,
-			GotVideoPacket		= 2,
-			GotPacket			= GotAudioPacket | GotVideoPacket,
-			EndOfFile			= 4,
-			Error				= 8
+			GotAudioPacket		= 1,								///< Received an audio packet
+			GotVideoPacket		= 2,								///< Received a video packet
+			GotPacket			= GotAudioPacket | GotVideoPacket,	///< Received either an audio or video packet
+			EndOfFile			= 4,								///< EndOfFile was reached, no packet was pushed
+			Error				= 8									///< An error occurred during stream reading
 		};
 
-		static bool sInitCodec(AVState& destState, const AVCodecContext& sourceCodecContext, AVDictionary*& options, utility::ErrorState& errorState);
+		/**
+		 * Constructs AVState object and initializes codec and stream.
+		 */
+		static bool sInitAVState(AVState& destState, int streamIndex, const AVCodecContext& sourceCodecContext, AVDictionary*& options, utility::ErrorState& errorState);
 
 		/**
 		 * Thread reads packets from the stream and pushes them onto the packet queue.
 		 */
 		void ioThread();
-
+		
+		/**
+		 * Starts the I/O thread;
+		 */
 		void startIOThread();
 
+		/**
+		 * Reads packet from the stream and pushes packets onto the packet queue.
+		 * @inAddAudioPackets Set to true to push audio packets on the queue. Note that if this is false, the packets
+		 *                    are still read from the stream, but just not pushed onto the queue.
+		 * @return The result from reading packets from the stream. See @EProducePacketResult.
+		 */
 		EProducePacketResult ProducePacket(bool inAddAudioPackets);
 
 		/**
-		 * Calling this ensures that the thread is waked properly if in a wait state, and then exited. This function only
-		 * causes the function to exit, it does not join the thread, so it is non-blocking.
+		 * Calling this ensures that the thread is waked properly if in a wait state, and then exited. 
+		 * @param join Select whether this function blocks until the thread is exited. If false, the function is non-blocking.
 		 */
 		void exitIOThread(bool join);
 
-		bool getNextAudioFrame(const AudioParams& audioHwParams);
+		/**
+		 * Pops frame from the frame queue and performs samplerate conversion to the target format.
+		 * @param targetAudioFormat audio format to convert to.
+		 */
+		bool getNextAudioFrame(const AudioFormat& targetAudioFormat);
 
+		/**
+		 * Clears packet queue for both audio and video state.
+		 */
 		void clearPacketQueue();
-		void clearVideoFrameQueue();
-		void clearAudioFrameQueue();
+
+		/**
+		 * Clears frame queue for both audio and video state.
+		 */
+		void clearFrameQueue();
+		
+		/**
+		 * Callback that is called when the frame queue is cleared.
+		 */
+		void onClearVideoFrameQueue();
 
 		friend class AVState;
-		bool hasErrorOccurred() const;
-		void setErrorOccurred(const std::string& errorMessage);
 
+		/**
+		 * Called by functions on critical error. Stops execution of video.
+		 */
+		void setErrorOccurred(const std::string& errorMessage);
 
 	private:
 		enum class IOThreadState
 		{
-			Normal,
-			SeekRequest,
-			SeekingStartFrame,
-			SeekingTargetFrame
+			Normal,						///< Regular playing state
+			SeekRequest,				///< First stage of seeking, handling the request, finding target to seek to
+			SeekingStartFrame,			///< Second stage of seeking, iterative seeking of start keyframe
+			SeekingTargetFrame			///< Third stage of seeking, decoding up until the target PTS
 		};
 
 		static const double		sVideoMax;
@@ -319,33 +468,33 @@ namespace nap
 		std::unique_ptr<RenderTexture2D> mVTexture;
 
 		AVFormatContext*		mFormatContext = nullptr;
-		bool					mPlaying = false;				///< Set if playing. Should only be controlled from main thread
-		int						mWidth = 0;						///< Width of the video, in pixels
-		int						mHeight = 0;					///< Height of the video, in pixels
-		float					mDuration = 0.0f;				///< Duration of the video in seconds
-		double					mVideoClockSecs = sVideoMax;	///< Clock that we use to synchronize the video to
-		std::string				mErrorMessage;					///< If an error occurs, this is the string containing error information. If empty, no error occured.
+		bool					mPlaying = false;							///< Set if playing. Should only be controlled from main thread
+		int						mWidth = 0;									///< Width of the video, in pixels
+		int						mHeight = 0;								///< Height of the video, in pixels
+		float					mDuration = 0.0f;							///< Duration of the video in seconds
+		double					mVideoClockSecs = sVideoMax;				///< Clock that we use to synchronize the video to
+		std::string				mErrorMessage;								///< If an error occurs, this is the string containing error information. If empty, no error occured.
 		
-		AVState					mVideoState;
-		AVState					mAudioState;
-		std::thread				mIOThread;									///< IO thread, reads packets
+		AVState					mVideoState;								///< State containing all video decoding
+		AVState					mAudioState;								///< State containing all audio decoding
+		std::thread				mIOThread;									///< IO thread, reads packets and pushed onto frame queue
 
 		bool					mExitIOThreadSignalled = false;				///< If this boolean is set, the IO thread will exit ASAP. This is used internally by exitIOThread and should not be used separately
 		
-		int64_t					mSeekKeyframeTarget = -1;							///< Seek target, in internal stream units (not secs)
-		int64_t					mSeekTarget = -1;
-		double					mSeekTargetSecs = 0.0f;
+		int64_t					mSeekKeyframeTarget = -1;					///< Seek target, in internal stream units (not secs). This value is used iteratively and can be different from the original seek target
+		int64_t					mSeekTarget = -1;							///< Seek target as set by the user, in internal steram units (not secs)
+		double					mSeekTargetSecs = 0.0f;						///< Seek target as set by the user, in secs.
 
 		VideoService&			mService;									///< Video service that this object is registered with
 
-		SwrContext*				mAudioResampleContext = nullptr;
-		Frame					mCurrentAudioFrame;
-		uint8_t*				mCurrentAudioBuffer = nullptr;
-		std::vector<uint8_t>	mAudioResampleBuffer;
-		uint64_t				mAudioFrameReadPtr = 0;
-		uint64_t				mAudioFrameSize = 0;
+		SwrContext*				mAudioResampleContext = nullptr;			///< Context used for resampling to the target audio format
+		Frame					mCurrentAudioFrame;							///< Audio frame currently being decoded. A single audio frame can cross the boundaries of a single audio callback, so it is cached
+		std::vector<uint8_t>	mAudioResampleBuffer;						///< Current resampled audio buffer. Can cross the boundaries of a single audio callback, so it is cached.
+		uint8_t*				mCurrentAudioBuffer = nullptr;				///< Pointer to either the buffer in the current audio frame itself, or the resampled audio buffer.
+		uint64_t				mAudioFrameReadOffset = 0;					///< Offset (cursor) into the current audio buffer that is decoded
+		uint64_t				mAudioFrameSize = 0;						///< Size of the current decoded (and possible resampled) audio buffer, in bytes
 
-		IOThreadState			mIOThreadState = IOThreadState::Normal;
+		IOThreadState			mIOThreadState = IOThreadState::Normal;		///< FSM state of the I/O thread
 
 	};
 
