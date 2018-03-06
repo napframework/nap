@@ -9,6 +9,7 @@
 #include <string.h>
 #include <iostream>
 #include <limits>
+#include "nap/logger.h"
 
 extern "C"
 {
@@ -24,6 +25,13 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Video)
 	RTTI_PROPERTY("Loop",	        &nap::Video::mLoop,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Speed",	        &nap::Video::mSpeed,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
+
+#define VIDEO_DEBUG 1
+#if VIDEO_DEBUG
+	#define VIDEO_DEBUG_LOG(...) nap::Logger::info(__VA_ARGS__)
+#else
+	#define VIDEO_DEBUG_LOG(...)
+#endif
 
 namespace nap
 {
@@ -104,6 +112,16 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
+	// Helper to free packet when it goes out of scope
+	struct PacketWrapper
+	{
+		~PacketWrapper() { av_free_packet(mPacket); }
+		AVPacket* mPacket = av_packet_alloc();
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+
 	AVState::AVState(Video& video, int inMaxPacketQueueSize) :
 		mVideo(&video),
 		mMaxPacketQueueSize(inMaxPacketQueueSize)
@@ -119,11 +137,17 @@ namespace nap
 
 	void AVState::init(int stream)
 	{
-		mFlushPacket = std::make_unique<AVPacket>();
-		av_init_packet(mFlushPacket.get());
-		mFlushPacket->data = (uint8_t*)mFlushPacket.get();
-		mFlushPacket->size = 0;
-		mFlushPacket->stream_index = stream;
+		mSeekStartPacket = std::make_unique<AVPacket>();
+		av_init_packet(mSeekStartPacket.get());
+		mSeekStartPacket->data = (uint8_t*)mSeekStartPacket.get();
+		mSeekStartPacket->size = 0;
+		mSeekStartPacket->stream_index = stream;
+
+		mSeekEndPacket = std::make_unique<AVPacket>();
+		av_init_packet(mSeekEndPacket.get());
+		mSeekEndPacket->data = (uint8_t*)mSeekEndPacket.get();
+		mSeekEndPacket->size = 0;
+		mSeekEndPacket->stream_index = stream;
 
 		mIOFinishedPacket = std::make_unique<AVPacket>();
 		av_init_packet(mIOFinishedPacket.get());
@@ -152,11 +176,28 @@ namespace nap
 	}
 
 
-	void AVState::waitEOF(const bool& exitIOThreadSignalled)
+	void AVState::waitForEndOfFileProcessed()
 	{
-		std::unique_lock<std::mutex> lock(mEOFMutex);
-		mEOFCondition.wait(lock, [this, &exitIOThreadSignalled]() { return mEOFReached || exitIOThreadSignalled; });
-		mEOFReached = false;
+		mEndOfFileProcessedEvent.wait();
+	}
+
+
+	void AVState::waitSeekStartPacketProcessed()
+	{
+		mSeekStartProcessedEvent.wait();
+	}
+
+
+	bool AVState::waitForReceiveFrame()
+	{
+		VIDEO_DEBUG_LOG("waitForPacketProcessed - wait");
+
+		bool result;
+		mReceiveFrameEvent.wait([this, &result](utility::AutoResetEvent::EWaitResult) { result = mReceiveFrameNeedsPacket; });
+
+		VIDEO_DEBUG_LOG("waitForPacketProcessed - wait done");
+
+		return result;
 	}
 
 
@@ -174,11 +215,17 @@ namespace nap
 
 	void AVState::clearFrameQueue()
 	{
+		clearFrameQueue(mFrameQueue);
+	}
+
+
+	void AVState::clearFrameQueue(std::queue<Frame>& frameQueue)
+	{
 		std::unique_lock<std::mutex> lock(mFrameQueueMutex);
-		while (!mFrameQueue.empty())
+		while (!frameQueue.empty())
 		{
-			Frame frame = mFrameQueue.front();
-			mFrameQueue.pop();
+			Frame frame = frameQueue.front();
+			frameQueue.pop();
 			av_frame_unref(frame.mFrame);
 			av_frame_free(&frame.mFrame);
 		}
@@ -191,9 +238,15 @@ namespace nap
 	}
 
 
-	bool AVState::addFlushPacket(const bool& exitIOThreadSignalled)
+	bool AVState::addSeekStartPacket(const bool& exitIOThreadSignalled)
 	{
-		return addPacket(*mFlushPacket, exitIOThreadSignalled);
+		return addPacket(*mSeekStartPacket, exitIOThreadSignalled);
+	}
+
+
+	bool AVState::addSeekEndPacket(const bool& exitIOThreadSignalled)
+	{
+		return addPacket(*mSeekEndPacket, exitIOThreadSignalled);
 	}
 
 
@@ -224,11 +277,20 @@ namespace nap
 		return true;
 	}
 
+	void AVState::notifyStartIOThread()
+	{
+		mEndOfFileProcessedEvent.reset();
+		mSeekStartProcessedEvent.reset();
+		mReceiveFrameEvent.reset();
+	}
+
 	
 	void AVState::notifyExitIOThread()
 	{
 		mPacketQueueRoomAvailableCondition.notify_one();
-		mEOFCondition.notify_one();
+		mEndOfFileProcessedEvent.cancelWait();
+		mSeekStartProcessedEvent.cancelWait();
+		mReceiveFrameEvent.cancelWait();
 	}
 	
 
@@ -279,13 +341,14 @@ namespace nap
 		// All timing information is relative to the stream start. If the stream start has no PTS value, we assume zero to be the start
 		double stream_start_time = 0.0;
 		if (mVideo->mFormatContext->streams[mStream]->start_time != AV_NOPTS_VALUE)
-			stream_start_time = mVideo->mFormatContext->streams[mStream]->start_time *av_q2d(mVideo->mFormatContext->streams[mStream]->time_base);
+			stream_start_time = mVideo->mFormatContext->streams[mStream]->start_time * av_q2d(mVideo->mFormatContext->streams[mStream]->time_base);
 
 		AVFrame* frame = av_frame_alloc();
 
 		while (!mExitDecodeThreadSignalled)
 		{
-			AVState::EDecodeFrameResult decode_result = decodeFrame(*frame);
+			int frameFirstPacketDTS;
+			AVState::EDecodeFrameResult decode_result = decodeFrame(*frame, frameFirstPacketDTS);
 			if (decode_result == AVState::EDecodeFrameResult::Exit)
 				break;
 
@@ -296,6 +359,7 @@ namespace nap
 			// when there is no PTS available, we need to account for these cases.
 			Frame new_frame;
 			new_frame.mPTSSecs = Video::sVideoMax;
+			new_frame.mFirstPacketDTS = frameFirstPacketDTS;
 
 			// Note: we use the best_effort_timestamp (which is provided/calculated by the decoder), because it seems to deal with some video files/formats
 			// where the pts of the frame is not actually correct.
@@ -313,12 +377,13 @@ namespace nap
 			// Push the frame onto the frame queue
 			{
 				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
-				mFrameQueueRoomAvailableCondition.wait(lock, [this]() { return mFrameQueue.size() < 3 || mExitDecodeThreadSignalled; });
+				mFrameQueueRoomAvailableCondition.wait(lock, [this]() { return mActiveFrameQueue->size() < 3 || mExitDecodeThreadSignalled; });
 				if (mExitDecodeThreadSignalled)
 					break;
 
-				mFrameQueue.push(new_frame);
+				mActiveFrameQueue->push(new_frame);
 				mFrameDataAvailableCondition.notify_one();
+				VIDEO_DEBUG_LOG("push frame: pkt_pos: %d, dts: %d, pts: %d", new_frame.mFrame->pkt_pos, new_frame.mFrame->pkt_dts, new_frame.mFrame->pkt_pts);
 			}
 		}
 
@@ -326,32 +391,40 @@ namespace nap
 	}
 
 
-	AVState::EDecodeFrameResult AVState::decodeFrame(AVFrame& frame)
+	AVState::EDecodeFrameResult AVState::decodeFrame(AVFrame& frame, int& frameFirstPacketDTS)
 	{
 		// Here we pull packets from the queue and decode them until all data for this frame is processed
 		while (true)
 		{
-			int ret = AVERROR(EAGAIN);
+			int result = AVERROR(EAGAIN);
 			do 
 			{
-				ret = avcodec_receive_frame(mCodecContext, &frame);			
-				if (ret >= 0)
-					return EDecodeFrameResult::GotFrame;
+				VIDEO_DEBUG_LOG("receive_frame: stream %s", getStream() == 0 ? "video" : "audio");
 
-				if (ret == AVERROR_EOF) 
+				result = avcodec_receive_frame(mCodecContext, &frame);
+
+				VIDEO_DEBUG_LOG("receive_frame - notify %s", getStream() == 0 ? "video" : "audio");
+				mReceiveFrameEvent.set([this, result]() { mReceiveFrameNeedsPacket = (result == AVERROR(EAGAIN)); });
+
+				if (result >= 0)
+				{
+					frameFirstPacketDTS = mFrameFirstPacketDTS;
+					mFrameFirstPacketDTS = -INT_MAX;
+					VIDEO_DEBUG_LOG("receive_frame: pkt_pos: %d, dts: %d, pts: %d", frame.pkt_pos, frame.pkt_dts, frame.pkt_pts);					
+					return EDecodeFrameResult::GotFrame;
+				}
+
+				if (result == AVERROR_EOF)
 				{
 					avcodec_flush_buffers(mCodecContext);
-
-					mEOFReached = true;
-					mEOFCondition.notify_one();
-
+					mEndOfFileProcessedEvent.set();
 					return EDecodeFrameResult::EndOfFile;
 				}
 
 				// Note: we keep spinning as long as EAGAIN is not returned, even in the case of errors. 
 				// We're not 100% sure why this is (this logic came from ffplay), but perhaps there are certain 
 				// kinds of decoding errors that are non-fatal and will 'resolve' themselves?
-			} while (ret != AVERROR(EAGAIN));
+			} while (result != AVERROR(EAGAIN));
 
 			AVPacket* packet;
 			{
@@ -367,13 +440,33 @@ namespace nap
 				packet = mPacketQueue.front();
 				mPacketQueue.pop();
 				mPacketQueueRoomAvailableCondition.notify_one();
+
+				VIDEO_DEBUG_LOG("pop packet: pkt_pos: %d, dts: %d, pts: %d, %s", packet->pos, packet->dts, packet->pts, getStream() == 0 ? "video" : "audio");
 			}
 
 			// If we dequeued a flush packet, flush all buffers for the video codec and clear the frame queue
-			if (packet == mFlushPacket.get())
+			if (packet == mSeekStartPacket.get())
 			{
+				VIDEO_DEBUG_LOG("seek start received");
+
 				avcodec_flush_buffers(mCodecContext);
 				mClearFrameQueueFunction();
+
+				clearFrameQueue(mSeekFrameQueue);
+
+				{
+					std::unique_lock<std::mutex> frame_lock(mFrameQueueMutex);
+					mActiveFrameQueue = &mSeekFrameQueue;
+				}
+
+				mSeekStartProcessedEvent.set();				
+			}
+			else if (packet == mSeekEndPacket.get())
+			{
+				clearFrameQueue(mSeekFrameQueue);
+
+				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+				mActiveFrameQueue = &mFrameQueue;
 			}
 			else if (packet == mIOFinishedPacket.get())
 			{
@@ -382,8 +475,13 @@ namespace nap
 			}
 			else
 			{
-				ret = avcodec_send_packet(mCodecContext, packet);
-				assert(ret != AVERROR(EAGAIN));
+				VIDEO_DEBUG_LOG("avcodec_send_packet: pkt_pos: %d, dts: %d, pts: %d", packet->pos, packet->dts, packet->pts);
+
+				if (mFrameFirstPacketDTS == -INT_MAX)
+					mFrameFirstPacketDTS = packet->dts;
+
+				result = avcodec_send_packet(mCodecContext, packet);
+				assert(result != AVERROR(EAGAIN));
 				av_packet_unref(packet);
 			}
 		}
@@ -391,11 +489,12 @@ namespace nap
 		return EDecodeFrameResult::GotFrame;
 	}
 
+
 	Frame AVState::popFrame()
 	{
 		std::unique_lock<std::mutex> lock(mFrameQueueMutex);
-		mFrameDataAvailableCondition.wait(lock, [this]() {
-
+		mFrameDataAvailableCondition.wait(lock, [this]()
+		{
 			return mExitDecodeThreadSignalled || !mFrameQueue.empty();
 		});
 
@@ -409,7 +508,7 @@ namespace nap
 
 		return frame;
 	}
-
+	
 
 	Frame AVState::tryPopFrame(double pts)
 	{
@@ -423,6 +522,26 @@ namespace nap
 		mFrameQueueRoomAvailableCondition.notify_one();
 
 		return cur_frame;
+	}
+
+
+	Frame AVState::popSeekFrame()
+	{
+		std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+		mFrameDataAvailableCondition.wait(lock, [this]()
+		{
+			return mExitDecodeThreadSignalled || !mSeekFrameQueue.empty();
+		});
+
+		if (mExitDecodeThreadSignalled)
+			return Frame();
+
+		Frame frame = mSeekFrameQueue.front();
+		mSeekFrameQueue.pop();
+
+		mFrameQueueRoomAvailableCondition.notify_one();
+
+		return frame;
 	}
 
 
@@ -651,6 +770,8 @@ namespace nap
 			stream_start_time = mFormatContext->streams[mVideoState.getStream()]->start_time *av_q2d(mFormatContext->streams[mVideoState.getStream()]->time_base);
 
 		mSeekTarget = std::round((seconds - stream_start_time) / av_q2d(mFormatContext->streams[mVideoState.getStream()]->time_base));
+		mSeekKeyframeTarget = mSeekTarget;
+		mIOThreadState = IOThreadState::SeekRequest;
 	}
 
 
@@ -689,89 +810,184 @@ namespace nap
 	}
 
 
+	Video::EProducePacketResult Video::ProducePacket(bool inAddAudioPackets)
+	{
+		// Read packets from the stream and push them onto the packet queue
+		PacketWrapper packet;
+		int result = av_read_frame(mFormatContext, packet.mPacket);
+
+		VIDEO_DEBUG_LOG("read packet: pkt_pos: %d, dts: %d, pts: %d", packet.mPacket->pos, packet.mPacket->dts, packet.mPacket->pts);
+
+		// If we ended playback we either exit the loop or start from the beginning
+		if (result == AVERROR_EOF)
+		{
+			mVideoState.addEndOfFilePacket(mExitIOThreadSignalled);
+			if (mAudioState.isValid())
+				mAudioState.addEndOfFilePacket(mExitIOThreadSignalled);
+
+			mVideoState.waitForEndOfFileProcessed();
+			if (mAudioState.isValid())
+				mAudioState.waitForEndOfFileProcessed();
+
+			return EProducePacketResult::EndOfFile;
+		}
+		else if (result < 0)
+		{
+			setErrorOccurred(sErrorToString(result));
+			return EProducePacketResult::Error;
+		}
+
+		EProducePacketResult packet_result;
+		if (mVideoState.matchesStream(*packet.mPacket))
+		{
+			packet_result = EProducePacketResult::GotVideoPacket;
+			if (mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
+				packet.mPacket = nullptr;
+		}
+		else if (mAudioState.matchesStream(*packet.mPacket))
+		{
+			packet_result = EProducePacketResult::GotAudioPacket;
+			if (inAddAudioPackets && mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
+				packet.mPacket = nullptr;
+		}
+
+		return packet_result;
+	}
+
+
 	void Video::ioThread()
 	{
-		// Helper to free packet when it goes out of scope
-		struct PacketWrapper
-		{
-			~PacketWrapper() { av_free_packet(mPacket); }
-			AVPacket* mPacket = av_packet_alloc();
-		};
-
 		while (!mExitIOThreadSignalled)
 		{
 			// If a seek target is set, seek to that position
-			if (mSeekTarget != -1)
+			switch (mIOThreadState)
 			{
-				// Some file formats do not allow seeking directly to zero (ffmpeg seeks to the DTS time).
-				// To deal with this specific case, we seek to the dts of the first frame when seeking to zero, but really we should revise the entire seeking operation
-				int64_t seek_target = mSeekTarget;
-				if (seek_target == 0)
-					seek_target = mFormatContext->streams[mVideoState.getStream()]->first_dts;
-				
-				int seek_result = av_seek_frame(mFormatContext, mVideoState.getStream(), seek_target, 0);
-				if (seek_result < 0)
+			case IOThreadState::Normal:
 				{
-					setErrorOccurred(sErrorToString(seek_result));
-					return;
+					EProducePacketResult produce_packet_result = ProducePacket(true);
+					if (produce_packet_result == EProducePacketResult::EndOfFile)
+					{
+						if (mLoop)
+						{
+							seek(0.0);
+							continue;
+						}
+						else
+						{
+							mVideoState.addIOFinishedPacket(mExitIOThreadSignalled);
+							if (mAudioState.isValid())
+								mAudioState.addIOFinishedPacket(mExitIOThreadSignalled);
+
+							return;
+						}
+					}
+					else if (produce_packet_result == EProducePacketResult::Error)
+					{
+						return;
+					}
+					break;
 				}
 
-				// After seeking we should clear any queues. We will clear the packet queue here, the frame queue can only be cleared by the decode thread.
-				clearPacketQueue();
-
-				// Add a 'null' packet to the queue, to signal the decoder thread that it should flush its queues and decoder buffer
-				mVideoState.addFlushPacket(mExitIOThreadSignalled);
-
-				if (mAudioState.isValid())
-					mVideoState.addFlushPacket(mExitIOThreadSignalled);
-
-				mSeekTarget = -1;
-			}
-
-			// Read packets from the stream and push them onto the packet queue
-			PacketWrapper packet;
-			int result = av_read_frame(mFormatContext, packet.mPacket);
-
-			// If we ended playback we either exit the loop or start from the beginning
-			if (result == AVERROR_EOF)
-			{
-				mVideoState.addEndOfFilePacket(mExitIOThreadSignalled);
-				if (mAudioState.isValid())
-					mAudioState.addEndOfFilePacket(mExitIOThreadSignalled);
-
-				mVideoState.waitEOF(mExitIOThreadSignalled);
-				if (mAudioState.isValid())
-					mAudioState.waitEOF(mExitIOThreadSignalled);
-
-				if (mLoop)
+			case IOThreadState::SeekRequest:
 				{
-					seek(0.0);
-					continue;
-				}
-				else
-				{
-					mVideoState.addIOFinishedPacket(mExitIOThreadSignalled);
+					// After seeking we should clear any queues. We will clear the packet queue here, the frame queue can only be cleared by the decode thread.
+					clearPacketQueue();
+					VIDEO_DEBUG_LOG("ioThread seek start, clear packet queue");
+
+					// Add seek start packet to the queue to signal the decoder threads that they should switch their output to the seek queue, which will be consumed by this thread.
+					mVideoState.addSeekStartPacket(mExitIOThreadSignalled);
+
 					if (mAudioState.isValid())
-						mAudioState.addIOFinishedPacket(mExitIOThreadSignalled);
+						mAudioState.addSeekStartPacket(mExitIOThreadSignalled);
 
-					return;
+					mVideoState.waitSeekStartPacketProcessed();
+					
+					if (mAudioState.isValid())
+						mAudioState.waitSeekStartPacketProcessed();
+
+					VIDEO_DEBUG_LOG("ioThread seek to %d", mSeekKeyframeTarget);
+
+					int seek_result = av_seek_frame(mFormatContext, mVideoState.getStream(), mSeekKeyframeTarget, AVSEEK_FLAG_BACKWARD);
+					if (seek_result < 0)
+					{
+						setErrorOccurred(sErrorToString(seek_result));
+						return;
+					}
+
+					mIOThreadState = IOThreadState::SeekingStartFrame;
+					break;
 				}
-			}
-			else if (result < 0)
-			{
-				setErrorOccurred(sErrorToString(result));
-				return;
-			}
 
-			if (mVideoState.matchesStream(*packet.mPacket))
-			{
-				if (mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
-					packet.mPacket = nullptr;
-			}
-			else if (mAudioState.matchesStream(*packet.mPacket))
-			{
-				if (mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
-					packet.mPacket = nullptr;
+			case IOThreadState::SeekingStartFrame:
+				{
+					EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
+					while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile)
+					{
+						assert(((uint8_t)produce_packet_result & (uint8_t)EProducePacketResult::GotPacket) != 0);
+						do
+						{
+							produce_packet_result = ProducePacket(false);
+						} while (produce_packet_result == EProducePacketResult::GotAudioPacket);
+
+						if (produce_packet_result == EProducePacketResult::Error)
+							return;
+					}
+
+					Frame seek_frame = mVideoState.popSeekFrame();
+					VIDEO_DEBUG_LOG("seek start frame, pop frame: pkt_pos: %d, dts: %d, pts: %d", seek_frame.mFrame->pkt_pos, seek_frame.mFrame->pkt_dts, seek_frame.mFrame->pkt_pts);
+
+					if (seek_frame.mFrame->best_effort_timestamp > mSeekTarget && seek_frame.mFirstPacketDTS != mFormatContext->streams[mVideoState.getStream()]->first_dts)
+					{
+						mIOThreadState = IOThreadState::SeekRequest;
+						mSeekKeyframeTarget = seek_frame.mFirstPacketDTS - 1;
+					}
+					else if (seek_frame.mFrame->best_effort_timestamp < mSeekTarget && produce_packet_result != EProducePacketResult::EndOfFile)
+					{
+						mIOThreadState = IOThreadState::SeekingTargetFrame;
+					}
+					else
+					{
+						mIOThreadState = IOThreadState::Normal;
+
+						mVideoState.addSeekEndPacket(mExitIOThreadSignalled);
+
+						if (mAudioState.isValid())
+							mAudioState.addSeekEndPacket(mExitIOThreadSignalled);
+					}
+				}
+				break;
+
+			case IOThreadState::SeekingTargetFrame:
+				{
+					while (true)
+					{
+						EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
+						while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile)
+						{
+							assert(((uint8_t)produce_packet_result & (uint8_t)EProducePacketResult::GotPacket) != 0);
+							do
+							{
+								produce_packet_result = ProducePacket(false);
+							} while (produce_packet_result == EProducePacketResult::GotAudioPacket);
+
+							if (produce_packet_result == EProducePacketResult::Error)
+								return;
+						}
+
+						Frame seek_frame = mVideoState.popSeekFrame();
+						if (seek_frame.mFrame->best_effort_timestamp >= mSeekTarget || produce_packet_result == EProducePacketResult::EndOfFile)
+						{
+							mIOThreadState = IOThreadState::Normal;
+
+							mVideoState.addSeekEndPacket(mExitIOThreadSignalled);
+							if (mAudioState.isValid())
+								mAudioState.addSeekEndPacket(mExitIOThreadSignalled);
+
+							break;
+						}
+					}
+					break;
+				}
 			}
 		}
 	}
@@ -782,6 +998,9 @@ namespace nap
 		exitIOThread(true);
 
 		mExitIOThreadSignalled = false;
+		mVideoState.notifyStartIOThread();
+		mAudioState.notifyStartIOThread();
+
 		mIOThread = std::thread(std::bind(&Video::ioThread, this));
 	}
 
