@@ -28,17 +28,34 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
         raise Exception(proc.returncode)
     return (out, err)
 
-def package(zip_release, include_docs, include_apps):
+def package(zip_release, include_docs, include_apps, clean):
     print("Packaging..")
-
-    # Note: Packaging directly from Python for now.  CPack was investigated but it was looking difficult to make it work when
-    # wanting to build multiple configurations at the same time.  If there was a reasonable CPack solution it feels like that 
-    # would be cleaner than this.
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     # Remove old packaging path if it exists
     if os.path.exists(PACKAGING_DIR):
         shutil.rmtree(PACKAGING_DIR, True)
     os.makedirs(PACKAGING_DIR)
+
+    # Clean build if requested
+    if clean:
+        print("Cleaning..")
+        if platform.startswith('linux'):    
+            for build_type in ['Release', 'Debug']:
+                if os.path.exists(BUILD_DIR + build_type):
+                    print("Clean removing %s" % (BUILD_DIR + build_type))
+                    shutil.rmtree(BUILD_DIR + build_type, True)
+        else:
+            if os.path.exists(BUILD_DIR):
+                print("Clean removing %s" % BUILD_DIR)
+                shutil.rmtree(BUILD_DIR, True)
+
+        if os.path.exists('packagingLib'):
+            print("Clean removing %s" % 'packagingLib')
+            shutil.rmtree('packagingLib', True)
+        if os.path.exists('packagingBin'):
+            print("Clean removing %s" % 'packagingLib')
+            shutil.rmtree('packagingBin', True)                
 
     # Add timestamp and git revision for build info
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
@@ -193,12 +210,13 @@ def build_package_basename(platform, timestamp):
 # Main
 if __name__ == '__main__':
     # TODO add options for
-    # - managing clean build behaviour
     # - not populating git revision into buildInfo
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-nz", "--no-zip", action="store_true",
                         help="Don't zip the release, package to a directory")
+    parser.add_argument("-c", "--clean", action="store_true",
+                        help="Clean build")
     parser.add_argument("-a", "--include-apps", action="store_true",
                         help="Include Naivi apps, packaging them as projects")
     parser.add_argument("--include-docs", action="store_true",
@@ -206,4 +224,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Package our build
-    package(not args.no_zip, args.include_docs, args.include_apps)
+    package(not args.no_zip, args.include_docs, args.include_apps, args.clean)

@@ -62,6 +62,8 @@ packagingBuild
 packagingBuildDebug
 packagingBuildRelease
 packagingLib
+packagingBin
 buildInfo.json
 buildNumber.cmake
 cached_project_json.cmake
+NAP-*-*T*
