@@ -119,8 +119,8 @@ namespace nap
 		debugFileTimer.start();
 #endif // DEBUG_LOG_TO_FILE
 
-		mTargetAudioFormat = audio_open(this, 2, 48000);
-		SDL_PauseAudio(0);
+//        mTargetAudioFormat = audio_open(this, 2, 48000);
+//        SDL_PauseAudio(0);
 
 		return true;
 	}
@@ -128,7 +128,7 @@ namespace nap
 
 	void VideoService::shutdown()
 	{
-		SDL_CloseAudio();
+//        SDL_CloseAudio();
 	}
 
 

@@ -26,4 +26,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${FFMPEG_INCLUDE_DIR})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender ${FFMPEG_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} napcore mod_naprender mod_napaudio ${FFMPEG_LIBRARIES})
