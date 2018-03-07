@@ -17,7 +17,7 @@ if(NOT MODULE_INTO_PROJ)
     include(${NAP_ROOT}/cmake/targetarch.cmake)
     target_architecture(ARCH)
 
-    include(${NAP_ROOT}/cmake/distmacros.cmake)
+    include(${NAP_ROOT}/cmake/dist_shared.cmake)
 
     # Set our default build type if we haven't specified one (Linux)
     set_default_build_type()
