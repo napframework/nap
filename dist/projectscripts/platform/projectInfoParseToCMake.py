@@ -10,9 +10,8 @@ from NAPShared import find_project
 PROJECT_INFO_FILENAME = 'project.json'
 PROJECT_INFO_CMAKE_CACHE_FILENAME = 'cached_project_json.cmake'
 
-def update_project_info_to_cmake(project_name):
-    project_path = find_project(project_name)
-    if project_path is None:
+def update_project_info_to_cmake(project_path):
+    if not os.path.exists(project_path):
         return False
 
     output_filename = os.path.join(project_path, PROJECT_INFO_CMAKE_CACHE_FILENAME)

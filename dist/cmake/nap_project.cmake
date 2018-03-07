@@ -13,7 +13,7 @@ message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 include(${NAP_ROOT}/cmake/targetarch.cmake)
 target_architecture(ARCH)
 
-include(${NAP_ROOT}/cmake/distmacros.cmake)
+include(${NAP_ROOT}/cmake/dist_shared.cmake)
 
 # Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
 configure_file(${CMAKE_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
@@ -24,7 +24,7 @@ if(WIN32)
 elseif(UNIX)
     set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
 endif()
-execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${PROJECT_NAME})
+execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR})
 include(cached_project_json.cmake)
 
 # Set our default build type if we haven't specified one (Linux)
