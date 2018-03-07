@@ -27,10 +27,10 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		//property: Object pointer to the mesh that holds the values we want to convert and send
-		ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;
+		rtti::ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;
 
 		//property: Holds all universes that we want to use
-		std::vector<ObjectPtr<nap::ArtNetController>> mArtnetControllers;
+		std::vector<rtti::ObjectPtr<nap::ArtNetController>> mArtnetControllers;
 	};
 
 

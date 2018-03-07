@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <rtti/rttipath.h>
 
 #include <QUndoCommand>

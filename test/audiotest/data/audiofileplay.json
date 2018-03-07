@@ -25,21 +25,24 @@
 			"Components":
 			[
 				{					
-					"Type": "nap::audio::AudioComponent",
+					"Type": "nap::audio::PlaybackComponent",
 					"mID": "audioComponent",
-					"Object":
-					{
-						"Type": "nap::audio::BufferPlayer",
-						"ChannelCount": 2,
-						"Buffer": "audioFile",
-						"autoPlay": "True"
-					}
+					"ChannelRouting": [ 0 ],
+					"Buffer": "audioFile",
+					"AutoPlay": "True",
+					"StartPosition": 0,
+					"Duration": 0,					
+					"FadeInTime": 500,
+					"FadeOutTime": 500,
+					"Pitch": 1.0,
+					"Gain": 1.0,
+					"StereoPanning": 0.5
 				},
 
 				{
 					"Type": "nap::audio::OutputComponent",
 					"mID": "output",
-					"Routing": [ 0, 1 ],
+					"Routing": [ 0, 0 ],
 					"Input": "audioComponent"
 				}
 

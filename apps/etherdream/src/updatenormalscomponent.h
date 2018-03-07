@@ -24,7 +24,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// property: link to the mesh that contains the normals
-		nap::ObjectPtr<nap::VisualizeNormalsMesh> mNormalMesh = nullptr;
+		rtti::ObjectPtr<nap::VisualizeNormalsMesh> mNormalMesh = nullptr;
 	};
 
 

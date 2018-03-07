@@ -11,12 +11,12 @@ namespace nap
 	 */
 	enum class ESVGUnits : int
 	{
-		PX = 0,				// Pixels
-		PT,					// Points
-		PC,					// Points Centimeter
-		MM,					// Millimeter
-		CM,					// Centimeter
-		DPI					// Dots per inch
+		PX = 0,				///< 'px'  Pixels
+		PT,					///< 'pt'  Points
+		PC,					///< 'pc'  Points Centimeter
+		MM,					///< 'mm'  Millimeter
+		CM,					///< 'cm'  Centimeter
+		DPI					///< 'dpi' Dots per inch
 	};
 
 	/**

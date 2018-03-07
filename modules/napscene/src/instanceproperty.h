@@ -4,7 +4,7 @@
 #include "componentptr.h"
 #include <rtti/rttiobject.h>
 #include <rtti/rttipath.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -65,7 +65,7 @@ namespace nap
 		virtual bool setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const override;
 
 	public:
-		ObjectPtr<RTTIObject>		mValue;		// Pointer override value
+		rtti::ObjectPtr<RTTIObject>		mValue;		// Pointer override value
 	};
 
 	/**
@@ -134,7 +134,7 @@ namespace nap
 		bool apply(rtti::RTTIObject& target, utility::ErrorState& errorState) const;
 
 		std::string							mPath;			///< RTTI path to the property
-		ObjectPtr<InstancePropertyValue>	mValue;			///< Value to override
+		rtti::ObjectPtr<InstancePropertyValue>	mValue;			///< Value to override
 	};
 
 	/**

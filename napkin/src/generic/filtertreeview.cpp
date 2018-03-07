@@ -114,6 +114,8 @@ napkin::FilterTreeView::FilterTreeView()
 	mLayout.setSpacing(0);
 	setLayout(&mLayout);
 
+	mTreeView.setAlternatingRowColors(true);
+
 	mSortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
 	mSortFilter.setFilterKeyColumn(-1); // Filter all columns
 

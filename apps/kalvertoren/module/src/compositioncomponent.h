@@ -4,7 +4,7 @@
 #include "compositioncontainer.h"
 
 #include <component.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <utility/datetimeutils.h>
 #include <unordered_map>
 
@@ -38,13 +38,13 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ObjectPtr<CompositionContainer>			mMonday = nullptr;							///< Compositions associated with monday
-		ObjectPtr<CompositionContainer>			mTuesday = nullptr;							///< Compositions associated with tuesday
-		ObjectPtr<CompositionContainer>			mWednesday = nullptr;						///< Compositions associated with wednesday
-		ObjectPtr<CompositionContainer>			mThursday = nullptr;						///< Compositions associated with thursday
-		ObjectPtr<CompositionContainer>			mFriday = nullptr;							///< Compositions associated with friday
-		ObjectPtr<CompositionContainer>			mSaturday = nullptr;						///< Compositions associated with saturday
-		ObjectPtr<CompositionContainer>			mSunday = nullptr;							///< Compositions associated with sunday
+		rtti::ObjectPtr<CompositionContainer>			mMonday = nullptr;							///< Compositions associated with monday
+		rtti::ObjectPtr<CompositionContainer>			mTuesday = nullptr;							///< Compositions associated with tuesday
+		rtti::ObjectPtr<CompositionContainer>			mWednesday = nullptr;						///< Compositions associated with wednesday
+		rtti::ObjectPtr<CompositionContainer>			mThursday = nullptr;						///< Compositions associated with thursday
+		rtti::ObjectPtr<CompositionContainer>			mFriday = nullptr;							///< Compositions associated with friday
+		rtti::ObjectPtr<CompositionContainer>			mSaturday = nullptr;						///< Compositions associated with saturday
+		rtti::ObjectPtr<CompositionContainer>			mSunday = nullptr;							///< Compositions associated with sunday
 		int										mIndex = 0;									///< Property: The currently selected composition
 		float									mDurationScale = 1.0f;						///< Property: Acts as a scale on the duration of the composition
 		CompositionCycleMode					mCycleMode = CompositionCycleMode::Off;		///< Property: How the component cycles through all the available sequences

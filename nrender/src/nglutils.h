@@ -98,18 +98,18 @@ namespace opengl
 	/**
 	 * Enum used for specifying polygon mode
 	 */
-	enum class PolygonMode : std::uint8_t
+	enum class EPolygonMode : std::uint8_t
 	{
-		POINT	= 0,			///< Render as points
-		LINE	= 1,			///< Render as lines
-		FILL	= 2				///< Render polygons
+		Point	= 0,			///< Render as points
+		Line	= 1,			///< Render as lines
+		Fill	= 2				///< Render polygons
 	};
 
 	/**
 	 * Select the polygon rasterization mode
 	 * @param mode: the rasterization mode to use
 	 */
-	void setPolygonMode(PolygonMode mode);
+	void setPolygonMode(EPolygonMode mode);
 
 	/**
 	 * Set rasterization point size
@@ -159,31 +159,31 @@ namespace opengl
 
 
 	/**
-	 * Prints a message
+	 * GLSL message identifier
 	 */
-	enum class MessageType : uint8_t
+	enum class EGLSLMessageType : uint8_t
 	{
-		INFO = 0,
-		WARNING = 1,
-		ERROR = 2
+		Info = 0,				///< Information
+		Warning = 1,			///< Warning
+		Error = 2				///< Error
 	};
 
 	/**
 	 * Print opengl related message with x amount of arguments
 	 */
 	template <typename... Args>
-	void printMessage(MessageType type, const std::string& msg, Args&&... args)
+	void printMessage(EGLSLMessageType type, const std::string& msg, Args&&... args)
 	{
 		std::string output_msg = "OpenGL ";
 		switch (type)
 		{
-		case MessageType::INFO:
+		case EGLSLMessageType::Info:
 			output_msg += "INFO: ";
 			break;
-		case MessageType::WARNING:
+		case EGLSLMessageType::Warning:
 			output_msg += "WARNING: ";
 			break;
-		case MessageType::ERROR:
+		case EGLSLMessageType::Error:
 			output_msg += "ERROR: ";
 			break;
 		}
