@@ -130,11 +130,13 @@ namespace nap
 
 	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
-		// TODO look into changing loadModules into one of two behaviours:
-		//      - a standard project mode where it only loads the modules specified in the provided list and fails if
-		//        some of those modules couldn't be loaded
-		//      - a 'load everything' mode for napkin or sandbox NAP use where no modules are specified and everything found
-		//        is loaded
+		/** 
+		 * TODO Discuss changing loadModules to provide these two modes of operation:
+		 *   - A standard/project mode where it only loads the modules specified in the provided list and fails if
+		 *     any of those modules couldn't be loaded
+		 *   - A 'load everything' mode for Napkin or sandbox NAP use where no modules are specified and we load 
+		 *     everything we encounter
+		 */
 		
 		// Build a list of directories to search for modules
 		std::vector<std::string> directories;
