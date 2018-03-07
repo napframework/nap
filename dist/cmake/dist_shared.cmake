@@ -266,3 +266,20 @@ macro(macos_add_rpath_to_module_post_build TARGET_NAME FILENAME PATH_TO_ADD)
                        COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${PATH_TO_ADD} ${FILENAME} 2>/dev/null\;exit 0\"
                        )
 endmacro()
+
+# Populate modules list from project.json into var NAP_MODULES
+macro(project_json_to_cmake)
+    # Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
+    configure_file(${CMAKE_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ProjectJsonTriggerDummy.json
+                    ERROR_QUIET)
+
+    # Parse our project.json and import it
+    if(WIN32)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python)
+    elseif(UNIX)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
+    endif()
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR})
+    include(cached_project_json.cmake)    
+endmacro()
