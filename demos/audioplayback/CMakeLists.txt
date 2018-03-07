@@ -14,7 +14,10 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 
-target_link_libraries(${PROJECT_NAME} mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napapp mod_napcameracontrol mod_napaudio)
+# Get our modules list from project.json
+project_json_to_cmake()
+
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 
 # Build into a project directory under bin
 set_output_directories()

@@ -15,9 +15,13 @@ source_group("shaders" FILES ${SHADERS})
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
+
+# Get our modules list from project.json
+project_json_to_cmake()
+
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-target_link_libraries(${PROJECT_NAME} mod_napsdlinput mod_napsdlwindow mod_napcameracontrol mod_napapp mod_dynamicgeo)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # Build into a project directory under bin

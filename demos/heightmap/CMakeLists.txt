@@ -16,7 +16,10 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 
-target_link_libraries(${PROJECT_NAME} mod_heightmap mod_napapp mod_napcameracontrol)
+# Get our modules list from project.json
+project_json_to_cmake()
+
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
 # Build into a project directory under bin
