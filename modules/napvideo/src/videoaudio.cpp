@@ -13,6 +13,7 @@ namespace nap {
             for (auto channel = 0; channel < channelCount; ++channel)
                 mOutputs.emplace_back(std::make_unique<OutputPin>(this));
             
+            // Initialize the buffer to be filled by the video object
             mDataBuffer.resize(getBufferSize() * getChannelCount());
         }
         
@@ -21,6 +22,7 @@ namespace nap {
         {
             if (!mVideo->hasAudio())
             {
+                // If the video has no audio channels we fill the output pins with zeros
                 for (auto channel = 0; channel < getChannelCount(); ++channel)
                 {
                     auto& channelBuffer = getOutputBuffer(*mOutputs[channel]);
@@ -30,8 +32,10 @@ namespace nap {
                 return;
             }
             
+            // We tell the Video object to fill our buffer with audio data
             mVideo->OnAudioCallback((uint8_t*)(mDataBuffer.data()), mDataBuffer.size() * sizeof(float), mAudioFormat);
             
+            // Deinterleaving the data for our output pins
             float* samplePtr = mDataBuffer.data();
             for (auto i = 0; i < getBufferSize(); ++i)
                 for (auto channel = 0; channel < getChannelCount(); ++channel)
