@@ -205,6 +205,147 @@ namespace nap
 		AVPacket* mPacket = av_packet_alloc();
 	};
 
+	//////////////////////////////////////////////////////////////////////////
+
+	static int64_t toFFMpegChannelLayout(AudioFormat::EChannelLayout channelLayout)
+	{
+		int64_t result;
+
+		switch (channelLayout)
+		{
+		case AudioFormat::EChannelLayout::Mono:
+			result = AV_CH_LAYOUT_MONO;
+			break;
+		case AudioFormat::EChannelLayout::Stereo:
+			result = AV_CH_LAYOUT_STEREO;
+			break;
+		case AudioFormat::EChannelLayout::_2Point1:
+			result = AV_CH_LAYOUT_2POINT1;
+			break;
+		case AudioFormat::EChannelLayout::_2_1:
+			result = AV_CH_LAYOUT_2_1;
+			break;
+		case AudioFormat::EChannelLayout::Surround:
+			result = AV_CH_LAYOUT_SURROUND;
+			break;
+		case AudioFormat::EChannelLayout::_3Point1:
+			result = AV_CH_LAYOUT_3POINT1;
+			break;
+		case AudioFormat::EChannelLayout::_4Point0:
+			result = AV_CH_LAYOUT_4POINT0;
+			break;
+		case AudioFormat::EChannelLayout::_4Point1:
+			result = AV_CH_LAYOUT_4POINT1;
+			break;
+		case AudioFormat::EChannelLayout::_2_2:
+			result = AV_CH_LAYOUT_2_2;
+			break;
+		case AudioFormat::EChannelLayout::Quad:
+			result = AV_CH_LAYOUT_QUAD;
+			break;
+		case AudioFormat::EChannelLayout::_5Point0:
+			result = AV_CH_LAYOUT_5POINT0;
+			break;
+		case AudioFormat::EChannelLayout::_5Point1:
+			result = AV_CH_LAYOUT_5POINT1;
+			break;
+		case AudioFormat::EChannelLayout::_5Point0_Back:
+			result = AV_CH_LAYOUT_5POINT0_BACK;
+			break;
+		case AudioFormat::EChannelLayout::_5Point1_Back:
+			result = AV_CH_LAYOUT_5POINT1_BACK;
+			break;
+		case AudioFormat::EChannelLayout::_6Point0:
+			result = AV_CH_LAYOUT_6POINT0;
+			break;
+		case AudioFormat::EChannelLayout::_6Point0_Front:
+			result = AV_CH_LAYOUT_6POINT0_FRONT;
+			break;
+		case AudioFormat::EChannelLayout::Hexagonal:
+			result = AV_CH_LAYOUT_HEXAGONAL;
+			break;
+		case AudioFormat::EChannelLayout::_6Point1:
+			result = AV_CH_LAYOUT_6POINT1;
+			break;
+		case AudioFormat::EChannelLayout::_6Point1_Back:
+			result = AV_CH_LAYOUT_6POINT1_BACK;
+			break;
+		case AudioFormat::EChannelLayout::_6Point1_Front:
+			result = AV_CH_LAYOUT_6POINT1_FRONT;
+			break;
+		case AudioFormat::EChannelLayout::_7Point0:
+			result = AV_CH_LAYOUT_7POINT0;
+			break;
+		case AudioFormat::EChannelLayout::_7Point0_Front:
+			result = AV_CH_LAYOUT_7POINT0_FRONT;
+			break;
+		case AudioFormat::EChannelLayout::_7Point1:
+			result = AV_CH_LAYOUT_7POINT1;
+			break;
+		case AudioFormat::EChannelLayout::_7Point1_Wide:
+			result = AV_CH_LAYOUT_7POINT1_WIDE;
+			break;
+		case AudioFormat::EChannelLayout::_7Point1_Wide_Back:
+			result = AV_CH_LAYOUT_7POINT1_WIDE_BACK;
+			break;
+		case AudioFormat::EChannelLayout::Octagonal:
+			result = AV_CH_LAYOUT_OCTAGONAL;
+			break;
+		case AudioFormat::EChannelLayout::Hexadecagonal:
+			result = AV_CH_LAYOUT_HEXAGONAL;
+			break;
+		case AudioFormat::EChannelLayout::Stereo_Downmix:
+			result = AV_CH_LAYOUT_STEREO_DOWNMIX;
+			break;
+		}
+		return result;
+	}
+
+
+	static int toFFMpegSampleFormat(AudioFormat::ESampleFormat sampleFormat)
+	{
+		int result;
+
+		switch (sampleFormat)
+		{
+		case AudioFormat::ESampleFormat::U8:
+			result = AV_SAMPLE_FMT_U8;
+			break;
+		case AudioFormat::ESampleFormat::S16:
+			result = AV_SAMPLE_FMT_S16;
+			break;
+		case AudioFormat::ESampleFormat::S32:
+			result = AV_SAMPLE_FMT_S32;
+			break;
+		case AudioFormat::ESampleFormat::FLT:
+			result = AV_SAMPLE_FMT_FLT;
+			break;
+		case AudioFormat::ESampleFormat::DBL:
+			result = AV_SAMPLE_FMT_DBL;
+			break;
+		case AudioFormat::ESampleFormat::S64:
+			result = AV_SAMPLE_FMT_S64;
+			break;
+		}
+
+		return result;
+	}
+
+
+	AudioFormat::AudioFormat(EChannelLayout channelLayout, ESampleFormat sampleFormat, int sampleRate) :
+		mSampleRate(sampleRate),
+		mChannelLayout(toFFMpegChannelLayout(channelLayout)),
+		mSampleFormat(toFFMpegSampleFormat(sampleFormat))
+	{
+	}
+
+
+	AudioFormat::AudioFormat(int numChannels, ESampleFormat sampleFormat, int sampleRate) :
+		mSampleRate(sampleRate),
+		mChannelLayout(av_get_default_channel_layout(numChannels)),
+		mSampleFormat(toFFMpegSampleFormat(sampleFormat))
+	{
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -1178,12 +1319,12 @@ namespace nap
 			frame->channel_layout : av_get_default_channel_layout(frame->channels);
 
 		// If the format of the audio frame does not match the target audio format, we need to allocate a resample context (once)
-		if ((frame->format != (AVSampleFormat)targetAudioFormat.mFormat ||
-			dec_channel_layout != targetAudioFormat.mChannelLayout ||
-			frame->sample_rate != targetAudioFormat.mFrequency) &&
+		if ((frame->format != (AVSampleFormat)targetAudioFormat.getSampleFormat() ||
+			dec_channel_layout != targetAudioFormat.getChannelLayout() ||
+			frame->sample_rate != targetAudioFormat.getSampleRate()) &&
 			mAudioResampleContext == nullptr) 
 		{
-			mAudioResampleContext = swr_alloc_set_opts(NULL, targetAudioFormat.mChannelLayout, (AVSampleFormat)targetAudioFormat.mFormat, targetAudioFormat.mFrequency, dec_channel_layout, (AVSampleFormat)frame->format, frame->sample_rate, 0, NULL);
+			mAudioResampleContext = swr_alloc_set_opts(NULL, targetAudioFormat.getChannelLayout(), (AVSampleFormat)targetAudioFormat.getSampleFormat(), targetAudioFormat.getSampleRate(), dec_channel_layout, (AVSampleFormat)frame->format, frame->sample_rate, 0, NULL);
 			int result = swr_init(mAudioResampleContext);
 			assert(result >= 0);
 		}
@@ -1191,9 +1332,11 @@ namespace nap
 		// Resample if the source and target formats do not match
 		if (mAudioResampleContext != nullptr)
 		{
+			int target_num_channels = av_get_channel_layout_nb_channels(targetAudioFormat.getChannelLayout());
+
 			const uint8_t **in = (const uint8_t **)frame->extended_data;
-			int out_count = (int64_t)frame->nb_samples * targetAudioFormat.mFrequency / frame->sample_rate + 256;
-			int out_size = av_samples_get_buffer_size(NULL, targetAudioFormat.mNumChannels, out_count, (AVSampleFormat)targetAudioFormat.mFormat, 0);
+			int out_count = (int64_t)frame->nb_samples * targetAudioFormat.getSampleRate() / frame->sample_rate + 256;
+			int out_size = av_samples_get_buffer_size(NULL, target_num_channels, out_count, (AVSampleFormat)targetAudioFormat.getSampleFormat(), 0);
 			assert(out_size >= 0);
 			int len2;
 
@@ -1206,7 +1349,7 @@ namespace nap
 
 			// Let 'current' audio buffer point to the resampled data
 			mCurrentAudioBuffer = mAudioResampleBuffer.data();
-			buffer_size = len2 * targetAudioFormat.mNumChannels * av_get_bytes_per_sample((AVSampleFormat)targetAudioFormat.mFormat);
+			buffer_size = len2 * target_num_channels * av_get_bytes_per_sample((AVSampleFormat)targetAudioFormat.getSampleFormat());
 		}
 		else 
 		{
