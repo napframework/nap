@@ -26,7 +26,7 @@ namespace nap
 	 * @param sdlEvent the SDL event to verify
 	 * @return if the event is a mouse input event
 	 */
-	bool NAPAPI isPointerEvent(SDL_Event& sdlEvent);
+	bool NAPAPI isMouseEvent(SDL_Event& sdlEvent);
 
 	/**
 	 * Utility function that checks if this is an input event (key, mouse)
