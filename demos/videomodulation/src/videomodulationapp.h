@@ -133,6 +133,7 @@ namespace nap
 		// Displacement
 		float mDisplacement = 0.22f;									//< Total amount of displacement
 		float mRandomness = 0.25f;										//< Total amount of displacement deviation
+        float mSoundInfluence = 1.f;                                    //< Influence of the sound amplitude on displacement and randomness
 
 		/**
 		 * Sets up the GUI every frame	

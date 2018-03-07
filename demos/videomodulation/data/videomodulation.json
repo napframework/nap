@@ -248,6 +248,20 @@
                     "Index": 2
                 },
                 {
+                    "Type": "nap::audio::VideoAudioComponent",
+                    "Video": "StevieWonderVideo",
+                    "mID": "audioComponent"
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "Input": "audioComponent",
+                    "Routing": [ 0 , 1 ]
+                },
+                {
+                    "Type": "nap::audio::LevelMeterComponent",
+                    "Input": "audioComponent"
+                },
+                {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
                     "Mesh": "VideoMesh",
