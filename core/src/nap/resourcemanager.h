@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "rtti/rtti.h"
-#include "objectptr.h"
+#include "rtti/objectptr.h"
 #include "utility/dllexport.h"
 #include "directorywatcher.h"
 #include "configure.h"
@@ -25,7 +25,7 @@ namespace nap
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
-	class NAPAPI ResourceManager
+	class NAPAPI ResourceManager final
 	{
 		friend class Core;
 		RTTI_ENABLE()
@@ -62,24 +62,24 @@ namespace nap
 		/**
 		* Find an object by object ID. Returns null if not found.
 		*/
-		const ObjectPtr<rtti::RTTIObject> findObject(const std::string& id);
+		const rtti::ObjectPtr<rtti::RTTIObject> findObject(const std::string& id);
 
 		/**
 		* Find an object by object ID. Returns null if not found.
 		*/
 		template<class T>
-		const ObjectPtr<T> findObject(const std::string& id) { return ObjectPtr<T>(findObject(id)); }
+		const rtti::ObjectPtr<T> findObject(const std::string& id) { return rtti::ObjectPtr<T>(findObject(id)); }
 
 		/**
 		* Creates an object and adds it to the manager.
 		*/
-		const ObjectPtr<rtti::RTTIObject> createObject(const rtti::TypeInfo& type);
+		const rtti::ObjectPtr<rtti::RTTIObject> createObject(const rtti::TypeInfo& type);
 
 		/**
 		* Creates an object and adds it to the manager.
 		*/
 		template<typename T>
-		const ObjectPtr<T> createObject() { return ObjectPtr<T>(createObject(RTTI_OF(T))); }
+		const rtti::ObjectPtr<T> createObject() { return rtti::ObjectPtr<T>(createObject(RTTI_OF(T))); }
 
 		/**
 		* Function that runs the file monitor to check for changes. If changes are found in files that were loaded by the manager,

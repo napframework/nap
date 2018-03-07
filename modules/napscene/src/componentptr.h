@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nap/objectptr.h"
+#include "rtti/objectptr.h"
 #include "component.h"
 
 namespace nap
@@ -191,7 +191,7 @@ namespace nap
 		}
 
 	private:
-		ObjectPtr<ComponentType>	mResource;		///< Pointer to the target resource
+		rtti::ObjectPtr<ComponentType>	mResource;		///< Pointer to the target resource
 		std::string					mPath;			///< Path in the entity hierarchy, either relative or absolute
 	};
 

@@ -51,7 +51,7 @@ namespace nap
 		mRenderWindowThree->setPosition({ offset_x + 1024, offset_y });
 
 		// Find the world and camera entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
 		mWorldEntity = scene->findEntity("World");
 		mPerspectiveCameraOne = scene->findEntity("PerpectiveCameraOne");
@@ -239,7 +239,7 @@ namespace nap
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
-				nap::ObjectPtr<nap::RenderWindow> window = mRenderService->getWindow(press_event->mWindow);
+				rtti::ObjectPtr<nap::RenderWindow> window = mRenderService->getWindow(press_event->mWindow);
 				window->toggleFullscreen();
 			}
 		}

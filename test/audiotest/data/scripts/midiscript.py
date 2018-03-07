@@ -1,8 +1,10 @@
 import nap
 import math
 
+global audioComponent
 
-def handleNoteOn(event):
+def handleNoteOn(event):	
+	global audioComponent
 	if event.getVelocity() == 0:
 		return
 
@@ -16,11 +18,13 @@ def handleNoteOn(event):
 	print(f)
 
 def handleNoteOff(event):
+	global audioComponent
 	graph = audioComponent.getObject()
 	oscB = graph.getObject("oscB")
 	oscB.getChannel(0).setAmplitude(0, 10)
 
 def handleCC(event): 
+	global audioComponent
 	graph = audioComponent.getObject()
 	oscA = graph.getObject("oscA")
 	oscB = graph.getObject("oscB")
@@ -29,6 +33,7 @@ def handleCC(event):
 	oscB.getChannel(0).setAmplitude(a * 0.25, 10)
 
 def init(e):
+	global audioComponent
 	print("init")
 	e.findComponentByID("controlChange").getMessageReceived().connect(handleCC)
 	e.findComponentByID("noteOn").getMessageReceived().connect(handleNoteOn)

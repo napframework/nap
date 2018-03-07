@@ -45,8 +45,8 @@ namespace nap
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window"));
 
 		// Bind button clicks
-		ObjectPtr<EntityInstance> buttonRightEntity = mScene->findEntity("ButtonRightEntity");
-		ObjectPtr<EntityInstance> buttonLeftEntity = mScene->findEntity("ButtonLeftEntity");
+		rtti::ObjectPtr<EntityInstance> buttonRightEntity = mScene->findEntity("ButtonRightEntity");
+		rtti::ObjectPtr<EntityInstance> buttonLeftEntity = mScene->findEntity("ButtonLeftEntity");
 		buttonRightEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&TommyApp::rightButtonClicked, this, std::placeholders::_1));
 		buttonLeftEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&TommyApp::leftButtonClicked, this, std::placeholders::_1));
 
@@ -54,7 +54,7 @@ namespace nap
 		RenderState& render_state = mRenderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
-		render_state.mPolygonMode = opengl::PolygonMode::FILL;
+		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 		
 		return true;
 	}
@@ -118,7 +118,7 @@ namespace nap
 		// Set target
 		opengl::RenderTarget& render_target = render_window->getBackbuffer();
 		render_target.setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-		mRenderService->clearRenderTarget(render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+		mRenderService->clearRenderTarget(render_target, opengl::EClearFlags::Color | opengl::EClearFlags::Depth);
 
 		// Render objects
 		mRenderService->renderObjects(render_target, mCameraEntity->getComponent<OrthoCameraComponentInstance>());

@@ -48,7 +48,7 @@ namespace nap
 		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
 		// Find the camera and plane entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mPlaneEntity = scene->findEntity("Plane");
 		mCameraEntity = scene->findEntity("Camera");
 

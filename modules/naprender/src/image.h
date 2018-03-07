@@ -26,7 +26,7 @@ namespace nap
 		using Texture2D::endGetData;
 
 		/**
-		 *	@return CPU data for this texture in the form of a Bitmap. The Bitmap can be empty if this is a GPU-only texture.
+		 * @return CPU data for this texture in the form of a Bitmap. The Bitmap can be empty if this is a GPU-only texture.
 		 */
 		Bitmap& getBitmap() { return mBitmap; }
 

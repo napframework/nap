@@ -15,7 +15,7 @@ namespace opengl
 	 * All uniform types need to have a set factory
 	 * function associated with it
 	 */
-	enum class GLSLType : uint8_t
+	enum class EGLSLType : uint8_t
 	{
 		Unknown = 0,			///< unknown or invalid shader uniform
 		Float   = 1,			///< float
@@ -35,16 +35,16 @@ namespace opengl
 	 */
 	enum class EShaderValidationResult : uint8_t
 	{
-		SUCCESS,				///< Shader validation succeeded
-		WARNING,				///< Shader validation succeeded with a warning
-		ERROR					///< Shader validation failed
+		Success,				///< Shader validation succeeded
+		Warning,				///< Shader validation succeeded with a warning
+		Error					///< Shader validation failed
 	};
 
 	/**
 	 * @return the uniform type based on the opengl uniform type
 	 * @param glType: opengl internal type that describes a uniform
 	 */
-	GLSLType getGLSLType(GLenum glType);
+	EGLSLType getGLSLType(GLenum glType);
 
 	/**
 	* Represents an opengl shader attribute
@@ -58,7 +58,7 @@ namespace opengl
 
 		std::string		mName;							///< Name of the shader attribute
 		GLenum			mType =	GL_INVALID_ENUM;		///< OpenGL Type of the shader attribute
-		GLSLType		mGLSLType = GLSLType::Unknown;	///< System GLSL type
+		EGLSLType		mGLSLType = EGLSLType::Unknown;	///< System GLSL type
 		GLint			mLocation = -1;					///< Location of the shader attribute
 		GLuint			mShaderProgram = 0;				///< Shader this uniform is associated with
 		GLint			mSize = 0;						///< Number of elements in array
@@ -127,9 +127,9 @@ namespace std
 	};
 
 	template <>
-	struct hash<opengl::GLSLType>
+	struct hash<opengl::EGLSLType>
 	{
-		size_t operator()(const opengl::GLSLType& v) const
+		size_t operator()(const opengl::EGLSLType& v) const
 		{
 			return hash<uint8_t>()(static_cast<uint8_t>(v));
 		}
