@@ -93,7 +93,6 @@ namespace nap
 
 		Signal<const PointerPressEvent&>	pressed;		//< If the input component was clicked
 		Signal<const PointerReleaseEvent&>	released;		//< If the input component click has been released
-		Signal<const PointerDragEvent&>		dragged;		//< If the component received a drag (mousedrag)
 		Signal<const PointerMoveEvent&>		moved;			//< If the component received a move (mousemove)
 
 	protected:
