@@ -3,7 +3,7 @@
 // Nap includes
 #include <component.h>
 #include <componentptr.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
@@ -33,7 +33,7 @@ namespace nap
             /**
              * The audio object that is wrapped by this component
              */
-            ObjectPtr<AudioObject> mObject;
+            rtti::ObjectPtr<AudioObject> mObject;
             
         private:
         };

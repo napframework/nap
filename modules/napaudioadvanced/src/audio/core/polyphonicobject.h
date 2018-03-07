@@ -33,7 +33,7 @@ namespace nap
             /**
              * This points to the voice graph resource defining the patch for a single voice in the polyphonic system.
              */
-            ObjectPtr<Voice> mVoice;
+            rtti::ObjectPtr<Voice> mVoice;
             
             /**
              * Number of voices in the voice pool. This indicates the maximum number of voices playing at the same time.

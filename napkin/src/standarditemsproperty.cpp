@@ -73,7 +73,6 @@ napkin::PropertyItem::PropertyItem(const QString& name, const PropertyPath& path
 	: PropertyPathItem(name, path)
 {
 	setEditable(false);
-	setForeground(napkin::getSoftForeground());
 }
 
 int napkin::PropertyItem::type() const
@@ -101,7 +100,6 @@ void napkin::CompoundPropertyItem::populateChildren()
 napkin::CompoundPropertyItem::CompoundPropertyItem(const QString& name, const PropertyPath& path)
 	: PropertyPathItem(name, path)
 {
-	setForeground(napkin::getSoftForeground());
 	populateChildren();
 }
 
@@ -138,7 +136,6 @@ napkin::ArrayPropertyItem::ArrayPropertyItem(const QString& name, const Property
 {
 	std::string pathStr = path.getPath().toString();
 	populateChildren();
-	setForeground(napkin::getSoftForeground());
 }
 
 int napkin::ArrayPropertyItem::type() const
@@ -149,7 +146,6 @@ int napkin::ArrayPropertyItem::type() const
 napkin::PointerItem::PointerItem(const QString& name, const PropertyPath& path)
 	: PropertyPathItem(name, path)
 {
-	setForeground(napkin::getSoftForeground());
 }
 
 int napkin::PointerItem::type() const
@@ -194,7 +190,6 @@ void napkin::PointerValueItem::setData(const QVariant& value, int role)
 napkin::PointerValueItem::PointerValueItem(const PropertyPath& path, rttr::type valueType)
 	: QStandardItem(), mPath(path), mValueType(valueType)
 {
-	setForeground(Qt::darkCyan);
 }
 
 int napkin::PointerValueItem::type() const

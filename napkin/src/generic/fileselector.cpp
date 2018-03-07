@@ -1,3 +1,4 @@
+#include <QtWidgets/QAbstractButton>
 #include "fileselector.h"
 
 
@@ -14,7 +15,7 @@ napkin::FileSelector::FileSelector() : QWidget()
 	mBrowseButton.setText("...");
 
 	connect(&mLineEdit, &QLineEdit::editingFinished, this, &FileSelector::onEditingFinished);
-	connect(&mBrowseButton, &QToolButton::clicked, this, &FileSelector::onBrowseButtonClicked);
+	connect(&mBrowseButton, &QPushButton::clicked, this, &FileSelector::onBrowseButtonClicked);
 }
 
 void napkin::FileSelector::setFileFilter(const QString& filter)

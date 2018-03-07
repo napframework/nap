@@ -21,6 +21,8 @@ namespace napkin
 		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
 				: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects)) {}
 		
+		~Document();
+		
 		/**
 		 * @return The name of the currently opened file
 		 * or an empty string if no file is open or the data hasn't been saved yet.

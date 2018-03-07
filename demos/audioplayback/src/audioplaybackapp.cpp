@@ -49,7 +49,7 @@ namespace nap
 		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
 		// Find the audio entity
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
         auto audioEntity = scene->findEntity("audioEntity");
         
         // Find the audio playback component and initialize parameters
