@@ -135,6 +135,15 @@ namespace nap
 		mChildren.clear();
 	}
 
+	
+	void EntityInstance::removeChild(const EntityInstance& entityInstance)
+	{
+		mChildren.erase(std::remove_if(mChildren.begin(), mChildren.end(), [&entityInstance](const EntityInstance* child)
+		{
+			return child == &entityInstance;
+		}));
+	}
+
 
 	const EntityInstance::ChildList& EntityInstance::getChildren() const
 	{
@@ -161,7 +170,7 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	ObjectPtr<Component> Entity::findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
+	rtti::ObjectPtr<Component> Entity::findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
 	{
 		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return isTypeMatch(element->get_type(), type, typeCheck); });
 		if (pos == mComponents.end())

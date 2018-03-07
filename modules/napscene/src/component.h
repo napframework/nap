@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rtti/rttiobject.h"
-#include "nap/objectptr.h"
+#include "rtti/objectptr.h"
 #include "utility/dllexport.h"
 
 namespace nap

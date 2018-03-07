@@ -111,15 +111,15 @@ namespace nap
 		VideoService*		mVideoService = nullptr;					//< Service for video playback
 		IMGuiService*		mGuiService = nullptr;						//< Service used for updating / drawing guis
 		
-		ObjectPtr<EntityInstance> mOrthoCameraEntity = nullptr;			//< The entity that holds the camera
-		ObjectPtr<EntityInstance> mVideoEntity = nullptr;				//< Used to render the video in to a render target
-		ObjectPtr<EntityInstance> mBackgroundEntity = nullptr;			//< Renders the video render target to screen in the background
-		ObjectPtr<EntityInstance> mDisplacementEntity = nullptr;		//< The entity that holds the displacement mesh
-		ObjectPtr<EntityInstance> mPerspCameraEntity = nullptr;			//< Perspective camera
+		rtti::ObjectPtr<EntityInstance> mOrthoCameraEntity = nullptr;			//< The entity that holds the camera
+		rtti::ObjectPtr<EntityInstance> mVideoEntity = nullptr;				//< Used to render the video in to a render target
+		rtti::ObjectPtr<EntityInstance> mBackgroundEntity = nullptr;			//< Renders the video render target to screen in the background
+		rtti::ObjectPtr<EntityInstance> mDisplacementEntity = nullptr;		//< The entity that holds the displacement mesh
+		rtti::ObjectPtr<EntityInstance> mPerspCameraEntity = nullptr;			//< Perspective camera
 
 		// The video render target
-		ObjectPtr<RenderTarget>	mVideoRenderTarget = nullptr;			//< Video render target
-		ObjectPtr<RenderWindow> mRenderWindow;							//< Render window
+		rtti::ObjectPtr<RenderTarget>	mVideoRenderTarget = nullptr;			//< Video render target
+		rtti::ObjectPtr<RenderWindow> mRenderWindow;							//< Render window
 
 		// Background colors
 		RGBColorFloat mBackgroundColorOne =	{ 0.066f, 0.078f, 0.149f };	//< Color of the valley

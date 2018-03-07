@@ -11536,7 +11536,7 @@ int main (int argc, char * const argv[]) {
 #define REQUIRE_THAT( arg, matcher ) INTERNAL_CHECK_THAT( "REQUIRE_THAT", matcher, Catch::ResultDisposition::Normal, arg )
 #endif
 
-#define INFO( msg ) INTERNAL_CATCH_INFO( "INFO", msg )
+#define Info( msg ) INTERNAL_CATCH_INFO( "INFO", msg )
 #define WARN( msg ) INTERNAL_CATCH_MSG( "WARN", Catch::ResultWas::Warning, Catch::ResultDisposition::ContinueOnFailure, msg )
 #define SCOPED_INFO( msg ) INTERNAL_CATCH_INFO( "INFO", msg )
 #define CAPTURE( msg ) INTERNAL_CATCH_INFO( "CAPTURE", #msg " := " << Catch::toString(msg) )

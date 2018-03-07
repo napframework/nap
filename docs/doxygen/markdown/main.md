@@ -27,4 +27,4 @@ Creative fields such as advertisement, film and the performing arts are starting
 
 ## Want to know more?
 
-Take a look at our high level [documentation](@ref system) or [downoad](http://www.naivi.nl) the latest version of NAP right now!
+Take a look at our high level [documentation](@ref system) or [downoad](http://www.naivi.nl) the latest version of NAP right now!	

@@ -4,7 +4,7 @@
 #include "mesh.h"
 
 // External Includes
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 
 namespace nap
 {
@@ -40,7 +40,7 @@ namespace nap
 		bool updateNormals(utility::ErrorState& error, bool push=true);
 
 		// property: pointer to the IMesh that is used as a reference
-		ObjectPtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' pointer to the IMesh that is used as a reference
+		rtti::ObjectPtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' pointer to the IMesh that is used as a reference
 		
 		// property: length of the normals
 		float mNormalLength = 1.0f;											///< Property: 'Length' length of the normals

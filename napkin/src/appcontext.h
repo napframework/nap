@@ -1,19 +1,21 @@
 #pragma once
 
+#include <vector>
 
-#include <entity.h>
-#include <nap/core.h>
-
-#include "thememanager.h"
-#include "document.h"
 #include <QApplication>
 #include <QObject>
 #include <QUndoCommand>
-#include <generic/resourcefactory.h>
+#include <QMainWindow>
+
 #include <rtti/rttideserializeresult.h>
 #include <rtti/rttiutilities.h>
-#include <vector>
-#include <QtWidgets/QMainWindow>
+#include <nap/core.h>
+#include <nap/logger.h>
+#include <entity.h>
+
+#include "thememanager.h"
+#include "document.h"
+#include "generic/resourcefactory.h"
 
 namespace napkin
 {
@@ -183,7 +185,6 @@ namespace napkin
 		 */
 		void documentChanged(Document* doc);
 
-	Q_SIGNALS:
 		/**
 		 * Qt Signal
 		 * Invoked when an Entity has been added to the system
@@ -231,6 +232,12 @@ namespace napkin
 		 */
 		void propertyValueChanged(const PropertyPath path);
 
+		/**
+		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread
+		 * @param msg The log message being handled
+		 */
+		void logMessage(nap::LogMessage msg);
+
 	private:
 		AppContext();
 
@@ -244,6 +251,8 @@ namespace napkin
 		 */
 		void onUndoIndexChanged();
 
+		// Slot to relay nap log messages into a Qt Signal (for thread safety)
+		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
 		nap::Core mCore;						// The nap::Core
 		bool mCoreInitialized = false;			// Keep track of core initialization state
