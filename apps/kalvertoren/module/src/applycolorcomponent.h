@@ -22,7 +22,7 @@ namespace nap
 		/**
 		 *	The mesh it should color
 		 */
-		ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;							///< Property: The mesh this component applies the information to
+		rtti::ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;							///< Property: The mesh this component applies the information to
 		ComponentPtr<SelectColorMethodComponent> mSelector = nullptr;			///< Property: The component that selects the current color method
 		ComponentPtr<LightIntensityComponent> mLightRegulator = nullptr;		///< Property: The component that regulates the final light intensity
 	};

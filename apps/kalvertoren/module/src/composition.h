@@ -6,7 +6,7 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <vector>
 #include <nap/signalslot.h>
 
@@ -37,7 +37,7 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<nap::ObjectPtr<Layer>>	mLayers;									///< All the layers this composition works with
+		std::vector<rtti::ObjectPtr<Layer>>	mLayers;									///< All the layers this composition works with
 		CompositionPlayMode					mMode = CompositionPlayMode::Length;		///< Property: controls the composition playback mode
 		float								mLength = 1.0f;								///< Length of the sequence
 	};

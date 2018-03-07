@@ -59,22 +59,22 @@ namespace nap
 
 		switch (declaration.mGLSLType)
 		{
-		case opengl::GLSLType::Int:
+		case opengl::EGLSLType::Int:
 			result = std::make_unique<UniformInt>();
 			break;
-		case opengl::GLSLType::Float:
+		case opengl::EGLSLType::Float:
 			result = std::make_unique<UniformFloat>();
 			break;
-		case opengl::GLSLType::Vec4:
+		case opengl::EGLSLType::Vec4:
 			result = std::make_unique<UniformVec4>();
 			break;
-		case opengl::GLSLType::Mat4:
+		case opengl::EGLSLType::Mat4:
 			result = std::make_unique<UniformMat4>();
 			break;
-		case opengl::GLSLType::Tex2D:
+		case opengl::EGLSLType::Tex2D:
 			result = std::make_unique<UniformTexture2D>();
 			break;
-		case opengl::GLSLType::Vec3:
+		case opengl::EGLSLType::Vec3:
 			result = std::make_unique<UniformVec3>();
 			break;
 		}
@@ -117,7 +117,7 @@ namespace nap
 		const opengl::UniformDeclarations& uniform_declarations = resource.mMaterial->getShader()->getShader().getUniformDeclarations();
 
 		// Create new uniforms for all the uniforms in mUniforms
-		for (ObjectPtr<Uniform>& uniform : resource.mUniforms)
+		for (rtti::ObjectPtr<Uniform>& uniform : resource.mUniforms)
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
 			if (declaration == uniform_declarations.end())
@@ -190,7 +190,7 @@ namespace nap
 
 			// See if we have a matching uniform in our input data
 			Uniform* matching_uniform = nullptr;
-			for (ObjectPtr<Uniform>& uniform : mUniforms)
+			for (rtti::ObjectPtr<Uniform>& uniform : mUniforms)
 			{
 				if (uniform->mName == name)
 				{

@@ -1,12 +1,17 @@
-#include <appcontext.h>
 #include "logpanel.h"
+
+#include <appcontext.h>
+#include <QScrollBar>
+#include <QTimer>
 
 using namespace napkin;
 
 class LogTextItem : public QStandardItem
 {
 public:
-	LogTextItem(const QString& text) : QStandardItem(text) {}
+	LogTextItem(const QString& text) : QStandardItem(text)
+	{
+	}
 
 	void setLink(const QString& link)
 	{
@@ -29,8 +34,7 @@ LogModel::LogModel() : QStandardItemModel()
 	mColors[nap::Logger::fatalLevel()] = "#F00";
 
 	// Register with nap::Logger, call the Qt signal in order to let the signal arrive on the Qt UI thread
-	nap::Logger::instance().log.connect(mLogHandler);
-	connect(this, &LogModel::napLogged, this, &LogModel::onLog);
+	connect(&AppContext::get(), &AppContext::logMessage, this, &LogModel::onLog);
 
 	setHorizontalHeaderLabels({"Level", "Message"});
 }
@@ -43,11 +47,9 @@ void LogModel::onLog(nap::LogMessage log)
 	QRegularExpression re("([a-z]+:(\\/\\/)[^\\s&^'&^\"]+)");
 	auto color = QColor(mColors[log.level()]);
 	auto levelitem = new QStandardItem(levelname);
-	levelitem->setForeground(color);
 	levelitem->setEditable(false);
 	auto textitem = new LogTextItem(logtext);
 	textitem->setToolTip(logtext);
-	textitem->setForeground(color);
 	textitem->setEditable(false);
 
 	auto match = re.match(QString::fromStdString(log.text()));
@@ -75,6 +77,8 @@ LogPanel::LogPanel() : QWidget()
 	mTreeView.setModel(&mLogModel);
 
 	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &LogPanel::onDoubleClicked);
+	connect(mTreeView.getModel(), &QAbstractItemModel::rowsInserted, this, &LogPanel::onRowInserted);
+	connect(mTreeView.getModel(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogPanel::onRowsAboutToBeInserted);
 }
 
 void LogPanel::onDoubleClicked(const QModelIndex& index)
@@ -86,3 +90,23 @@ void LogPanel::onDoubleClicked(const QModelIndex& index)
 
 	AppContext::get().handleURI(textitem->link());
 }
+
+
+void LogPanel::onRowsAboutToBeInserted(const QModelIndex& parent, int first, int last)
+{
+	auto scrollBar = mTreeView.getTreeView().verticalScrollBar();
+	wasMaxScroll = scrollBar->value() == scrollBar->maximum();
+}
+
+void LogPanel::onRowInserted(const QModelIndex &parent, int first, int last)
+{
+	auto scrollBar = mTreeView.getTreeView().verticalScrollBar();
+	if (wasMaxScroll)
+	{
+		QTimer::singleShot(0, [scrollBar]()
+		{
+			scrollBar->setValue(scrollBar->maximum());
+		});
+	}
+}
+

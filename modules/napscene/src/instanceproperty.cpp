@@ -43,7 +43,7 @@ namespace nap
 	{
 		// Check if target attribute is of correct type
  		rtti::TypeInfo target_type = resolvedTargetPath.getType();
- 		if (!errorState.check(target_type.is_derived_from(RTTI_OF(ObjectPtrBase)), "Target pointer is not an ObjectPtr"))
+ 		if (!errorState.check(target_type.is_derived_from(RTTI_OF(rtti::ObjectPtrBase)), "Target pointer is not an ObjectPtr"))
  			return false;
 
 		// Check if the internal (wrapped) type is of the correct type

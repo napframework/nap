@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <utility/datetimeutils.h>
 #include <queue>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <imagefromfile.h>
 
 namespace nap
@@ -45,8 +45,8 @@ namespace nap
 		KalvertorenApp& mApp;
 
 		// Resources
-		nap::ObjectPtr<ImageFromFile>						mLedOn  = nullptr;
-		nap::ObjectPtr<ImageFromFile>						mLedOff = nullptr;
+		rtti::ObjectPtr<ImageFromFile>						mLedOn  = nullptr;
+		rtti::ObjectPtr<ImageFromFile>						mLedOff = nullptr;
 
 		// GUI
 		int													mMeshSelection = 0;

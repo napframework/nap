@@ -129,17 +129,17 @@ namespace opengl
 
 
 	// Mode to use when drawing polygons
-	void setPolygonMode(PolygonMode mode)
+	void setPolygonMode(EPolygonMode mode)
 	{
 		switch (mode)
 		{
-		case PolygonMode::FILL:
+		case EPolygonMode::Fill:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			break;
-		case PolygonMode::LINE:
+		case EPolygonMode::Line:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			break;
-		case PolygonMode::POINT:
+		case EPolygonMode::Point:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 			break;
 		default:
@@ -190,7 +190,7 @@ namespace opengl
 		error_code = glGetError();
 		if (error_code != GL_NO_ERROR)
 		{
-			printMessage(MessageType::ERROR, "file: %s, line: %d, %s (OpenGL error code: 0x%0x)", file, line, glewGetErrorString(error_code), error_code);
+			printMessage(EGLSLMessageType::Error, "file: %s, line: %d, %s (OpenGL error code: 0x%0x)", file, line, glewGetErrorString(error_code), error_code);
 #ifdef __APPLE__
             return false;
 #else

@@ -26,7 +26,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// Get all the meshes to select from
-		std::vector<ObjectPtr<LedMesh>> mMeshes;
+		std::vector<rtti::ObjectPtr<LedMesh>> mMeshes;
 
 		// Renderable mesh component used for rendering one of the selected meshes
 		ComponentPtr<RenderableMeshComponent> mTriangleRenderableMeshComponent;

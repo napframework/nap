@@ -45,7 +45,7 @@ namespace nap
 		renderWindow->mWindowEvent.connect(std::bind(&KalvertorenApp::handleWindowEvent, this, std::placeholders::_1));
 
 		// All of our entities
-		ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
 
 		// Entities
 		compositionEntity = scene->findEntity("CompositionEntity");
@@ -64,7 +64,7 @@ namespace nap
 		nap::RenderState& render_state = renderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
-		render_state.mPolygonMode = opengl::PolygonMode::FILL;
+		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 
 		// Create gui
 		mGui = std::make_unique<KalvertorenGui>(*this);
@@ -89,7 +89,7 @@ namespace nap
 
 	void KalvertorenApp::render()
 	{
-		renderService->destroyGLContextResources(std::vector<nap::ObjectPtr<nap::RenderWindow>>({ renderWindow }));
+		renderService->destroyGLContextResources(std::vector<rtti::ObjectPtr<nap::RenderWindow>>({ renderWindow }));
 
 		// Render offscreen surface(s)
 		{

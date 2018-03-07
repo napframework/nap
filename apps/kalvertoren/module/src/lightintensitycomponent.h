@@ -28,7 +28,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// Properties
-		std::vector<ObjectPtr<YoctoLuxSensor>> mLuxSensors;				///< Property: 'Sensors' all the available lux sensors
+		std::vector<rtti::ObjectPtr<YoctoLuxSensor>> mLuxSensors;		///< Property: 'Sensors' all the available lux sensors
 		float mSensorInfluence = 1.0f;									///< Property: 'SensorInfluence' the amount of influence the sensor has on the final light output
 		float mMasterIntensity = 1.0f;									///< Property: 'MasterIntensity' the maximum number of allowed brightness
 		glm::vec2 mLuxRange = { 10.0f, 25000.0f };						///< Property: "input lux range"

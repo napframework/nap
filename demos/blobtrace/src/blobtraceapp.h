@@ -88,10 +88,10 @@ namespace nap
 		SceneService* mSceneService = nullptr;										//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;										//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;										//< Manages gui related update / draw calls
-		ObjectPtr<RenderWindow> mRenderWindow;										//< Pointer to the render window		
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;							//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;							//< Pointer to the entity that holds the sphere
-		ObjectPtr<PlaneMesh> mIntersectMesh = nullptr;								//< Plane that is used for ray intersection
+		rtti::ObjectPtr<RenderWindow> mRenderWindow;										//< Pointer to the render window		
+		rtti::ObjectPtr<EntityInstance> mCameraEntity = nullptr;							//< Pointer to the entity that holds the camera
+		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;							//< Pointer to the entity that holds the sphere
+		rtti::ObjectPtr<PlaneMesh> mIntersectMesh = nullptr;								//< Plane that is used for ray intersection
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };				//< GUI text highlight color
 		bool mMouseDown = false;													//< If the mouse button is currently pressed
 		float mTime = 0.0f;															//< Current application running time

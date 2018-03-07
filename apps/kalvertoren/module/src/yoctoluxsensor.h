@@ -2,7 +2,7 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <thread>
 #include <atomic>
 

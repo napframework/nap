@@ -35,7 +35,7 @@ namespace nap
 			return false; 
 		
 		// Get important entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mCameraEntity = scene->findEntity("CameraEntity");
 		assert(mCameraEntity != nullptr);
 		
@@ -53,7 +53,7 @@ namespace nap
 		RenderState& render_state = mRenderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
-		render_state.mPolygonMode = opengl::PolygonMode::FILL;
+		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 		
 		// Initialize colors
 		std::vector<nap::SelectColorComponentInstance*> comps;

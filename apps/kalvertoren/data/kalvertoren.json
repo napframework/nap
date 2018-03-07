@@ -1195,7 +1195,7 @@
         {
             "Type": "nap::ImageLayer",
             "mID": "BACKBASIC1",
-            "Path": "backgrounds/final/BACKGROUND_000_basis.png"
+            "Path": "backgrounds/FINAL/BACKGROUND_000_basis.png"
         },
         {
             "Type": "nap::ImageLayer",
@@ -1388,7 +1388,7 @@
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "V_1_sequence",
-            "BaseFilename": "sequences/final/vertikaal/V1_%03d.png",
+            "BaseFilename": "sequences/FINAL/vertikaal/V1_%03d.png",
             "FPS": 0.05000000074505806
         },
         {
@@ -2965,7 +2965,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": true,
+            "Connect": false,
             "Sensors": [
                 "LuxSensor1"
             ]
@@ -2977,7 +2977,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": true,
+            "Connect": false,
             "Sensors": [
                 "LuxSensor2"
             ]
@@ -2989,7 +2989,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": false,
+            "Connect": true,
             "Sensors": [
                 "LuxSensor3"
             ]
