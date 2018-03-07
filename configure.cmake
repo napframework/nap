@@ -347,7 +347,7 @@ macro(project_json_to_cmake)
 
     # Parse our project.json and import it
     if(WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python)
     elseif(APPLE)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
     else()
