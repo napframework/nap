@@ -40,10 +40,10 @@ namespace nap
 
 	public:
 		// Link to the DAC
-		ObjectPtr<EtherDreamDac> mDac;
+		rtti::ObjectPtr<EtherDreamDac> mDac;
 
 		// Link to component that holds the line to send to the laser
-		ObjectPtr<PolyLine> mLine;
+		rtti::ObjectPtr<PolyLine> mLine;
 
 		ComponentPtr<TransformComponent> mLineTransform;
 

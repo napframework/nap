@@ -78,15 +78,15 @@ namespace nap
 		SceneService*				mSceneService = nullptr;			//< Manages all the objects in the scene
 		InputService*				mInputService = nullptr;			//< Input service for processing input
 
-		ObjectPtr<RenderWindow>		mRenderWindowOne;					//< First window
-		ObjectPtr<RenderWindow>		mRenderWindowTwo;					//< Second window
-		ObjectPtr<RenderWindow>		mRenderWindowThree;					//< Third window
+		rtti::ObjectPtr<RenderWindow>		mRenderWindowOne;					//< First window
+		rtti::ObjectPtr<RenderWindow>		mRenderWindowTwo;					//< Second window
+		rtti::ObjectPtr<RenderWindow>		mRenderWindowThree;					//< Third window
 
-		ObjectPtr<EntityInstance>	mPerspectiveCameraOne = nullptr;	//< Pointer to the entity that holds the cam for window 1
-		ObjectPtr<EntityInstance>	mPerspectiveCameraTwo = nullptr;	//< Pointer to the entity that holds the cam for window 3
-		ObjectPtr<EntityInstance>	mOrthoCamera = nullptr;				//< Pointer to the entity that holds the orthographic camera for window 2
-		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;				//< Pointer to the entity that holds the world
-		ObjectPtr<EntityInstance>	mPlaneOneEntity = nullptr;			//< Pointer to the plane one
-		ObjectPtr<EntityInstance>	mPlaneTwoEntity = nullptr;			//< Pointer to plane two
+		rtti::ObjectPtr<EntityInstance>	mPerspectiveCameraOne = nullptr;	//< Pointer to the entity that holds the cam for window 1
+		rtti::ObjectPtr<EntityInstance>	mPerspectiveCameraTwo = nullptr;	//< Pointer to the entity that holds the cam for window 3
+		rtti::ObjectPtr<EntityInstance>	mOrthoCamera = nullptr;				//< Pointer to the entity that holds the orthographic camera for window 2
+		rtti::ObjectPtr<EntityInstance>	mWorldEntity = nullptr;				//< Pointer to the entity that holds the world
+		rtti::ObjectPtr<EntityInstance>	mPlaneOneEntity = nullptr;			//< Pointer to the plane one
+		rtti::ObjectPtr<EntityInstance>	mPlaneTwoEntity = nullptr;			//< Pointer to plane two
 	};
 }

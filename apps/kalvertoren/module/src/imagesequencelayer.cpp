@@ -6,8 +6,8 @@
 #include "bitmaputils.h"
 
 RTTI_BEGIN_CLASS(nap::ImageSequenceLayer)
-	RTTI_PROPERTY("BaseFilename",	&nap::ImageSequenceLayer::mBaseFilename,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FPS",			&nap::ImageSequenceLayer::mFPS,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY_FILELINK("BaseFilename",	&nap::ImageSequenceLayer::mBaseFilename,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded, nap::rtti::EPropertyFileType::ImageSequence)
+	RTTI_PROPERTY("FPS",					&nap::ImageSequenceLayer::mFPS,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ImageSequenceLayerInstance)

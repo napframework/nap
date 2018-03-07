@@ -24,7 +24,7 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		ObjectPtr<ArtnetMeshFromFile>	mTriangleMesh;		//< Holds the led addressable triangles
-		ObjectPtr<MeshFromFile>			mFrameMesh;			//< Holds the mesh that is the frame
+		rtti::ObjectPtr<ArtnetMeshFromFile>	mTriangleMesh;		//< Holds the led addressable triangles
+		rtti::ObjectPtr<MeshFromFile>			mFrameMesh;			//< Holds the mesh that is the frame
 	};
 }

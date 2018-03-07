@@ -5,7 +5,7 @@
 #include "renderablemesh.h"
 
 // External Includes
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <transformcomponent.h>
 #include <rect.h>
 
@@ -35,7 +35,7 @@ namespace nap
 		IMesh& getMeshResource()			{ return *mMesh; }
 
 	public:
-		ObjectPtr<IMesh>					mMesh;								///< Resource to render
+		rtti::ObjectPtr<IMesh>					mMesh;								///< Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
 		math::Rect							mClipRect;							///< Clipping rectangle, in pixel coordinates
 	};

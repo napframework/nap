@@ -1,7 +1,7 @@
 #pragma once
 
 #include <component.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <artnetcontroller.h>
 #include <nap/configure.h>
 #include <componentptr.h>
@@ -27,7 +27,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// property: link to the artnet controller
-		ObjectPtr<ArtNetController> mController;
+		rtti::ObjectPtr<ArtNetController> mController;
 		ComponentPtr<RenderableMeshComponent> mMesh;
 
 		// property: channel to send data to
