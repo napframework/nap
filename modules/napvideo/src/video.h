@@ -455,7 +455,7 @@ namespace nap
 	private:
 		enum class IOThreadState
 		{
-			Normal,						///< Regular playing state
+			Playing,					///< Regular playing state
 			SeekRequest,				///< First stage of seeking, handling the request, finding target to seek to
 			SeekingStartFrame,			///< Second stage of seeking, iterative seeking of start keyframe
 			SeekingTargetFrame			///< Third stage of seeking, decoding up until the target PTS
@@ -494,7 +494,7 @@ namespace nap
 		uint64_t				mAudioFrameReadOffset = 0;					///< Offset (cursor) into the current audio buffer that is decoded
 		uint64_t				mAudioFrameSize = 0;						///< Size of the current decoded (and possible resampled) audio buffer, in bytes
 
-		IOThreadState			mIOThreadState = IOThreadState::Normal;		///< FSM state of the I/O thread
+		IOThreadState			mIOThreadState = IOThreadState::Playing;		///< FSM state of the I/O thread
 
 	};
 
