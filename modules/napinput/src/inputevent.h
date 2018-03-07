@@ -10,10 +10,8 @@
 namespace nap
 {
 	/**
-	@brief InputEvent
-
-	Defines an input event that is passed along the system
-	**/
+	 * Defines an input event that is passed along the system
+	 */
 	class NAPAPI InputEvent : public Event
 	{
 		RTTI_ENABLE(Event)
@@ -25,10 +23,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	@brief KeyEvent
-
-	Key input event, tied to pressed and released
-	**/
+	 * Keyboard input event
+	 * 
+	 * Contains all the information regarding keyboard interaction
+	 */
 	class NAPAPI KeyEvent : public InputEvent
 	{
 		RTTI_ENABLE(InputEvent)
@@ -42,7 +40,7 @@ namespace nap
 	};
 
 	/**
-	 *	Key has been pressed
+	 *	Key pressed event
 	 */
 	class NAPAPI KeyPressEvent : public KeyEvent
 	{
@@ -55,7 +53,7 @@ namespace nap
 	};
 
 	/**
-	 *	Key has been released
+	 *	Key released event
 	 */
 	class NAPAPI KeyReleaseEvent : public KeyEvent
 	{
@@ -70,11 +68,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	@brief Pointer Events
-
-	Contains all relevant information for pointer specific interaction
-	Can also be used to signal multi touch gestures (therefore the id)
-	**/
+	 * Contains all relevant information for pointer specific interaction
+	 * Can also be used to signal multi touch gestures (therefore the id)
+	*/
 	class NAPAPI PointerEvent : public InputEvent
 	{
 		RTTI_ENABLE(InputEvent)
@@ -92,7 +88,6 @@ namespace nap
 	};
 	
 	/**
-	 *	@brief PointerClickEvent
 	 *  Base class for all click related pointer events
 	 */
 	class NAPAPI PointerClickEvent : public PointerEvent
@@ -135,19 +130,6 @@ namespace nap
 	};
 
 	/**
-	 *	Pointer drag occurred
-	 */
-	class NAPAPI PointerDragEvent : public PointerClickEvent
-	{
-		RTTI_ENABLE(PointerClickEvent)
-	public:
-		PointerDragEvent (int inX, int inY, EMouseButton inButton, int window=0, int inId = 0) : 
-			PointerClickEvent(inX, inY, inButton, window, inId)
-		{
-		}
-	};
-
-	/**
 	 *	Pointer movement occurred
 	 */
 	class NAPAPI PointerMoveEvent : public PointerEvent
@@ -163,6 +145,24 @@ namespace nap
 
 		int mRelX;
 		int mRelY;
+	};
+
+	/**
+	 * Mouse wheel event
+	 */
+	class NAPAPI MouseWheelEvent : public InputEvent
+	{
+		RTTI_ENABLE(InputEvent)
+	public:
+		MouseWheelEvent(int x, int y, int window=0) : 
+			InputEvent(window),
+			mX(x),
+			mY(y)
+		{
+		}
+
+		int mX;
+		int mY;
 	};
 
 	using InputEventPtr = std::unique_ptr<nap::InputEvent>;
