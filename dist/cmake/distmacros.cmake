@@ -244,6 +244,21 @@ macro(find_python_in_thirdparty)
     endif()
 endmacro()
 
+# Copy Python DLLs and modules post-build on Windows
+macro(copy_python_dlls_and_modules_postbuild_win64)
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/*.dll)
+    foreach(PYTHON_DLL ${PYTHON_DLLS})
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_DLL} $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                           )
+    endforeach()
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy ${THIRDPARTY_DIR}/python/python36.zip $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                       )
+endmacro()
+
 # Ensure our specified file has provided RPATH in post-build
 macro(macos_add_rpath_to_module_post_build TARGET_NAME FILENAME PATH_TO_ADD)
     add_custom_command(TARGET ${TARGET_NAME}
