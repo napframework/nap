@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QStatusBar>
+
 #include "actions.h"
 #include "appcontext.h"
 #include "generic/basewindow.h"
@@ -9,8 +11,8 @@
 #include "panels/inspectorpanel.h"
 #include "panels/logpanel.h"
 #include "panels/resourcepanel.h"
+#include "panels/scenepanel.h"
 #include "themeselectionmenu.h"
-#include <panels/scenepanel.h>
 
 namespace napkin
 {
@@ -86,5 +88,7 @@ namespace napkin
 		AppRunnerPanel mAppRunnerPanel; // AppRunnerPanel
 		ThemeSelectionMenu mThemeMenu;  // ThemeSelectionMenu
 		ScenePanel mScenePanel;			// ScenePanel
+
+		QStatusBar mStatusBar;			// Status bar
 	};
 };

@@ -35,10 +35,13 @@ void SetValueCommand::redo()
 	rttr::variant oldValueVariant = resolvedPath.getValue();
 	assert(toQVariant(resolvedPath.getType(), oldValueVariant, mOldValue));
 
+	auto& ctx = AppContext::get();
+
 	if (mPath.getProperty().get_name() == nap::rtti::sIDPropertyName)
 	{
 		// Deal with object names separately
-		AppContext::get().getDocument()->setObjectName(mPath.getObject(), mNewValue.toString().toStdString());
+		ctx.getDocument()->setObjectName(mPath.getObject(), mNewValue.toString().toStdString());
+		ctx.selectionChanged({&mPath.getObject()});
 	}
 	else
 	{
@@ -47,7 +50,7 @@ void SetValueCommand::redo()
 		rttr::variant variant = fromQVariant(resolvedPath.getType(), mNewValue, &ok);
 		assert(ok);
 		resolvedPath.setValue(variant);
-		AppContext::get().getDocument()->propertyValueChanged(mPath);
+		ctx.getDocument()->propertyValueChanged(mPath);
 	}
 
 }

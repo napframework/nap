@@ -54,14 +54,14 @@ BaseClass* createTestHierarchy()
 template<typename T>
 rtti::Variant createVariant(T value)
 {
-	return ObjectPtr<T>(value);
+	return rtti::ObjectPtr<T>(value);
 }
 
 void testObjectPtr()
 {
-	typedef ObjectPtr<BaseClass> BaseClassPtr;
-	typedef ObjectPtr<DerivedClass> DerivedClassPtr;
-	typedef ObjectPtr<DerivedClass2> DerivedClass2Ptr;
+	typedef rtti::ObjectPtr<BaseClass> BaseClassPtr;
+	typedef rtti::ObjectPtr<DerivedClass> DerivedClassPtr;
+	typedef rtti::ObjectPtr<DerivedClass2> DerivedClass2Ptr;
 	
 	DerivedClassPtr derived = new DerivedClass();
 	BaseClassPtr base = derived;

@@ -6,7 +6,6 @@
 #include <perspcameracomponent.h>
 #include <imguiservice.h>
 #include <imgui/imgui.h>
-#include <scene.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -42,15 +41,14 @@ namespace nap
 		
 		mTextureRenderTarget		= mResourceManager->findObject<RenderTarget>("PlaneRenderTarget");
 		
-		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
-		mPigEntity					= scene->findEntity("PigEntity");
-		mRotatingPlaneEntity		= scene->findEntity("RotatingPlaneEntity");
-		mPlaneEntity				= scene->findEntity("PlaneEntity");
-		mWorldEntity				= scene->findEntity("WorldEntity");
-		mCameraEntityLeft			= scene->findEntity("CameraEntityLeft");
-		mCameraEntityRight			= scene->findEntity("CameraEntityRight");
-		mSplitCameraEntity			= scene->findEntity("SplitCameraEntity");
-		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
+		mScene						= mResourceManager->findObject<Scene>("Scene");
+		mRotatingPlaneEntity		= mScene->findEntity("RotatingPlaneEntity");
+		mPlaneEntity				= mScene->findEntity("PlaneEntity");
+		mWorldEntity				= mScene->findEntity("WorldEntity");
+		mCameraEntityLeft			= mScene->findEntity("CameraEntityLeft");
+		mCameraEntityRight			= mScene->findEntity("CameraEntityRight");
+		mSplitCameraEntity			= mScene->findEntity("SplitCameraEntity");
+		mDefaultInputRouter			= mScene->findEntity("DefaultInputRouterEntity");
 		
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -58,7 +56,7 @@ namespace nap
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 
-		nap::ObjectPtr<RenderWindow> window = mRenderService->getWindow(1);
+		rtti::ObjectPtr<RenderWindow> window = mRenderService->getWindow(1);
 
 		return true;
 	}
@@ -67,6 +65,23 @@ namespace nap
 	// Called when the window is updating
 	void RenderTestApp::update(double deltaTime)
 	{
+		static double timer = 0.0;
+		timer += deltaTime;
+		if (timer >= 2.5)
+		{
+			if (mPigEntity == nullptr)
+			{
+				rtti::ObjectPtr<Entity> entity = mResourceManager->findObject<Entity>("PigEntity");
+				utility::ErrorState error_state;
+				mPigEntity = mScene->spawn(*entity, error_state);
+			}
+			else
+			{
+				mScene->destroy(mPigEntity);
+			}
+			timer = 0.0;
+		}
+
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
 		{
 			// Update input for first window
@@ -183,7 +198,8 @@ namespace nap
 			
 			// Render specific object directly to backbuffer
 			std::vector<RenderableComponentInstance*> components_to_render;
-			components_to_render.push_back(&mPigEntity->getComponent<nap::RenderableMeshComponentInstance>());
+			if (mPigEntity != nullptr)
+				components_to_render.push_back(&mPigEntity->getComponent<nap::RenderableMeshComponentInstance>());
 			
 			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
 			mRenderService->clearRenderTarget(backbuffer, opengl::EClearFlags::Color | opengl::EClearFlags::Depth | opengl::EClearFlags::Stencil);
