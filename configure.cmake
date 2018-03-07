@@ -329,3 +329,23 @@ macro(find_python_in_thirdparty)
         set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include)
     endif()
 endmacro()
+
+# Populate modules list from project.json into var NAP_MODULES
+macro(project_json_to_cmake)
+    # Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ProjectJsonTriggerDummy.json
+                    ERROR_QUIET)
+
+    # Parse our project.json and import it
+    if(WIN32)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python)
+    elseif(APPLE)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
+    else()
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+    endif()
+
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/projectscripts/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR})    
+    include(cached_project_json.cmake)
+endmacro()
