@@ -1,0 +1,69 @@
+{
+	"Objects":
+	[
+		{		
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window0",
+			"Width" : 1280,
+			"Height" : 720,
+			"Title" : "Window 1",
+			"ClearColor": {
+                "x": 0.0666,
+                "y": 0.0784,
+                "z": 0.1490,
+                "w": 1.0
+            }
+		},
+
+		{
+			"Type": "nap::audio::AudioFileResource",
+			"mID": "audioFile",
+			"AudioFilePath": "hang.mp3"
+		},
+
+
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "audioEntity"
+				}				
+			]
+		},
+
+		{
+			"Type": "nap::Entity",
+			"mID": "audioEntity",
+			"Components":
+			[
+				{					
+					"Type": "nap::audio::PlaybackComponent",
+					"mID": "audioComponent",
+					"ChannelRouting": [ 0, 1 ],
+					"Buffer": "audioFile",
+					"AutoPlay": "False",
+					"StartPosition": 0,
+					"Duration": 0,					
+					"FadeInTime": 50,
+					"FadeOutTime": 50,
+					"Pitch": 1.0,
+					"Gain": 1.0,
+					"StereoPanning": 0.5
+				},
+
+				{
+					"Type": "nap::audio::OutputComponent",
+					"mID": "output",
+					"Routing": [ 0, 1 ],
+					"Input": "audioComponent"
+				}
+
+
+			]
+		}
+
+
+	]
+}

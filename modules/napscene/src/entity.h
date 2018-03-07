@@ -5,7 +5,7 @@
 #include "component.h"
 #include "instanceproperty.h"
 #include <utility/uniqueptrvectoriterator.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 
 namespace nap
 {
@@ -168,6 +168,12 @@ namespace nap
 		void clearChildren();
 
 		/**
+		 * Removes a single child from the entity instance
+		 * @param EntityInstance to remove.
+		 */
+		void removeChild(const EntityInstance& entityInstance);
+
+		/**
 		 * Get all children of this entity
 		 */
 		const ChildList& getChildren() const;
@@ -207,6 +213,96 @@ namespace nap
 		ChildList		mChildren;				// The children of this entity
 	};
 
+	/**
+	 * A SpawnedEntityInstance is identical in functionality to a regular EntityInstance. It is only used to be able to 
+	 * distinguish between entities that were spawned during init and entities that were spawned at runtime.
+	 * A SpawnedEntityInstance is created through the Scene::spawn interface and can be destroyed by passing this object 
+	 * to Scene::destroy.
+	 */
+	class NAPAPI SpawnedEntityInstance
+	{
+	public:
+		SpawnedEntityInstance() = default;
+
+		rtti::ObjectPtr<EntityInstance>& get() { return mEntityInstance; }
+
+		const rtti::ObjectPtr<EntityInstance>& get() const { return mEntityInstance; }
+
+		const EntityInstance& operator*() const
+		{
+			assert(mEntityInstance != nullptr);
+			return *mEntityInstance;
+		}
+
+		EntityInstance& operator*()
+		{
+			assert(mEntityInstance != nullptr);
+			return *mEntityInstance;
+		}
+
+		EntityInstance* operator->() const
+		{
+			assert(mEntityInstance != nullptr);
+			return mEntityInstance.get();
+		}
+
+		EntityInstance* operator->()
+		{
+			assert(mEntityInstance != nullptr);
+			return mEntityInstance.get();
+		}
+
+		bool operator==(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance == other.mEntityInstance;
+		}
+
+		bool operator==(const EntityInstance* ptr) const
+		{
+			return mEntityInstance == ptr;
+		}
+
+		bool operator!=(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance != other.mEntityInstance;
+		}
+
+		bool operator!=(const EntityInstance* ptr) const
+		{
+			return mEntityInstance != ptr;
+		}
+
+		bool operator<(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance < other.mEntityInstance;
+		}
+
+		bool operator>(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance > other.mEntityInstance;
+		}
+
+		bool operator<=(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance <= other.mEntityInstance;
+		}
+
+		bool operator>=(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance >= other.mEntityInstance;
+		}
+
+	private:
+		friend class Scene;
+
+		SpawnedEntityInstance(EntityInstance* entityInstance) :
+			mEntityInstance(entityInstance)
+		{
+		}
+
+	private:
+		rtti::ObjectPtr<EntityInstance> mEntityInstance;
+	};
 
 	//////////////////////////////////////////////////////////////////////////
 	// Entity Resource
@@ -219,8 +315,8 @@ namespace nap
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		using ComponentList = std::vector<ObjectPtr<Component>>;
-		using EntityList = std::vector<ObjectPtr<Entity>>;
+		using ComponentList = std::vector<rtti::ObjectPtr<Component>>;
+		using EntityList = std::vector<rtti::ObjectPtr<Entity>>;
 
 		/**
 		 * Find component of the specified type
@@ -228,7 +324,7 @@ namespace nap
 		 * @param type The type of component to find
 		 * @return The found component. Null if not found
 		 */
-		ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
+		rtti::ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		 * Check whether this Entity has a component of the specified type
