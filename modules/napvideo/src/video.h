@@ -30,16 +30,82 @@ namespace nap
 	class Video;
 
 	/**
-	 * Description of an audio format for resampling of data to a certain format.
+	 * Description of an audio format for converting source data to a target format.
 	 */
-	struct AudioFormat
+	class AudioFormat
 	{
-		int			mFrequency;				///< Frequency, or samplerate, in hz. For instance, 48000
-		int			mNumChannels;			///< Number of channels
-		int64_t		mChannelLayout;
-		int			mFormat;
-		int			mFrameSize;
-		int			mBytesPerSec;
+	public:
+		enum class EChannelLayout : uint8_t
+		{
+			Mono,
+			Stereo,
+			_2Point1,
+			_2_1,
+			Surround,
+			_3Point1,
+			_4Point0,
+			_4Point1,
+			_2_2,
+			Quad,
+			_5Point0,
+			_5Point1,
+			_5Point0_Back,
+			_5Point1_Back,
+			_6Point0,
+			_6Point0_Front,
+			Hexagonal,
+			_6Point1,
+			_6Point1_Back,
+			_6Point1_Front,
+			_7Point0,
+			_7Point0_Front,
+			_7Point1,
+			_7Point1_Wide,
+			_7Point1_Wide_Back,
+			Octagonal,
+			Hexadecagonal,
+			Stereo_Downmix
+		};
+
+		enum class ESampleFormat 
+		{
+			U8,         ///< unsigned 8 bits
+			S16,        ///< signed 16 bits
+			S32,        ///< signed 32 bits
+			FLT,		///< float
+			DBL,        ///< double
+			S64			///< signed 64 bits
+		};
+
+		/**
+		 * Constructor taking explicit channel layout.
+		 */
+		AudioFormat(EChannelLayout channelLayout, ESampleFormat sampleFormat, int sampleRate);
+
+		/**
+		 * Constructor taking number of channels. Uses default channel layout for this number of channels.
+		 */
+		AudioFormat(int numChannels, ESampleFormat sampleFormat, int sampleRate);
+
+		/**
+		 * @return samplerate, in hz.
+		 */
+		int getSampleRate() const { return mSampleRate; }
+
+		/**
+		 * @return ffmpeg-style channel layout (not EChannelLayout)
+		 */
+		int64_t getChannelLayout() const { return mChannelLayout; }
+
+		/**
+		 * @return ffmpeg-style sample format (not ESampleFormat)
+		 */
+		int getSampleFormat() const { return mSampleFormat; }
+
+	private:
+		int			mSampleRate;			///< Samplerate, in hz. For instance, 48000
+		int64_t		mChannelLayout;			///< One of AV_CH_LAYOUT_xxx defines as defined in channel_layout.h
+		int			mSampleFormat;			///< One of the value of the AVSampleFormat enum, as defined in samplefmt.h
 	};
 
 	/**

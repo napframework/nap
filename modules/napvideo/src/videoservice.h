@@ -59,12 +59,12 @@ namespace nap
 		*/
 		void removeVideoPlayer(Video& receiver);
 
-		int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, AudioFormat& audio_hw_params);
+		std::unique_ptr<AudioFormat> audio_open(void *opaque, int wanted_nb_channels, int wanted_sample_rate);
 
 		static void sdlAudioCallback(void* userData, uint8_t* stream, int len);
 
 	private:
-		std::vector<Video*> mVideoPlayers;			///< All registered video players
-		AudioFormat mAudioHwParams;
+		std::vector<Video*> mVideoPlayers;					///< All registered video players
+		std::unique_ptr<AudioFormat> mTargetAudioFormat;	///< Audio format that our device is using
 	};
 }
