@@ -90,11 +90,13 @@ namespace nap
 		background_material.getOrCreateUniform<UniformVec3>("colorTwo").setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
         
         auto level = mVideoEntity->getComponent<audio::LevelMeterComponentInstance>().getLevel(0);
+        // get smoothed level value
+        float smoothedLevel = mSoundLevelSmoother.update(level, deltaTime);
 
 		// Push displacement properties to material
 		MaterialInstance& displaceme_material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement + level * mSoundInfluence);
-		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness + level * mSoundInfluence);
+		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement + smoothedLevel * mSoundInfluence);
+		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness + smoothedLevel * mSoundInfluence);
 	}
 	
 	

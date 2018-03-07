@@ -17,6 +17,8 @@
 #include <rendertarget.h>
 #include <imguiservice.h>
 #include <color.h>
+#include <smoothdamp.h>
+
 
 namespace nap
 {
@@ -134,6 +136,8 @@ namespace nap
 		float mDisplacement = 0.22f;									//< Total amount of displacement
 		float mRandomness = 0.25f;										//< Total amount of displacement deviation
         float mSoundInfluence = 1.f;                                    //< Influence of the sound amplitude on displacement and randomness
+        
+        math::FloatSmoothOperator mSoundLevelSmoother = { 0.0f, 0.1f }; //< Smoothes level of the sound over time
 
 		/**
 		 * Sets up the GUI every frame	
