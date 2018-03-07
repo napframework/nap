@@ -241,6 +241,8 @@ namespace nap
 		mIOFinishedPacket->size = 0;
 		mIOFinishedPacket->stream_index = stream;
 
+		// The End Of File packet is a special packet with a null data pointer. Unlike the other command packet we do 
+		// not explicitly check for mEndOfFilePacket, but avcodec_receive_frame will return EOF if this packet is passed onto it.
 		mEndOfFilePacket = std::make_unique<AVPacket>();
 		av_init_packet(mEndOfFilePacket.get());
 		mEndOfFilePacket->data = nullptr;
@@ -488,6 +490,9 @@ namespace nap
 			{
 				VIDEO_DEBUG_LOG("receive_frame: stream %s", getStream() == 0 ? "video" : "audio");
 
+				// NOTE: it is important to understand that a single send_packet can cause multiple frames to be 'received'. So we
+				// continue calling avcoded_receive_frame until it returns AVERROR(EAGAIN), meaning it needs a new packet.
+				// Also, we may need to send multiple packets to the decoder for a single frame.
 				result = avcodec_receive_frame(mCodecContext, &frame);
 
 				VIDEO_DEBUG_LOG("receive_frame - notify %s", getStream() == 0 ? "video" : "audio");
@@ -495,12 +500,15 @@ namespace nap
 
 				if (result >= 0)
 				{
+					// We have a frame, copy the first DTS that was used to produce this packet (and reset it for the next frame)
 					frameFirstPacketDTS = mFrameFirstPacketDTS;
 					mFrameFirstPacketDTS = -INT_MAX;
 					VIDEO_DEBUG_LOG("receive_frame: pkt_pos: %d, dts: %d, pts: %d", frame.pkt_pos, frame.pkt_dts, frame.pkt_pts);					
 					return EDecodeFrameResult::GotFrame;
 				}
 
+				// An EOF is returned from avcoded_receive_frame if an EOF packet (a specific packet with a nullptr for data) is sent
+				// from the I/O thread. 
 				if (result == AVERROR_EOF)
 				{
 					avcodec_flush_buffers(mCodecContext);
@@ -513,6 +521,7 @@ namespace nap
 				// kinds of decoding errors that are non-fatal and will 'resolve' themselves?
 			} while (result != AVERROR(EAGAIN));
 
+			// Pop a packet from the queue
 			AVPacket* packet;
 			{
 				std::unique_lock<std::mutex> lock(mPacketQueueMutex);
@@ -531,7 +540,7 @@ namespace nap
 				VIDEO_DEBUG_LOG("pop packet: pkt_pos: %d, dts: %d, pts: %d, %s", packet->pos, packet->dts, packet->pts, getStream() == 0 ? "video" : "audio");
 			}
 
-			// If we dequeued a flush packet, flush all buffers for the video codec and clear the frame queue
+			// If we dequeued a seek packet, flush all buffers for the video codec and clear the frame queue
 			if (packet == mSeekStartPacket.get())
 			{
 				VIDEO_DEBUG_LOG("seek start received");
@@ -542,6 +551,8 @@ namespace nap
 				clearFrameQueue(mSeekFrameQueue, false);
 
 				{
+					// We started seeking, we flip the target queue to a temporary 'seek' frame queue
+					// so that the I/O thread can consume temporary seek frames
 					std::unique_lock<std::mutex> frame_lock(mFrameQueueMutex);
 					mActiveFrameQueue = &mSeekFrameQueue;
 				}
@@ -551,12 +562,16 @@ namespace nap
 			else if (packet == mSeekEndPacket.get())
 			{
 				clearFrameQueue(mSeekFrameQueue, false);
-
+				
+				// Seeking is done, switch back to the regular frame queue so that the user can continue
+				// processing frames
 				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 				mActiveFrameQueue = &mFrameQueue;
 			}
 			else if (packet == mIOFinishedPacket.get())
 			{
+				// I/O thread has no more packets to produce. It is the last packet in the queue, so 
+				// we are also done producing frames.
 				mFinishedProducingFrames = true;
 				return EDecodeFrameResult::Exit;
 			}
@@ -564,9 +579,11 @@ namespace nap
 			{
 				VIDEO_DEBUG_LOG("avcodec_send_packet: pkt_pos: %d, dts: %d, pts: %d", packet->pos, packet->dts, packet->pts);
 
+				// If this is the first packet for this frame, set this packets' DTS as the first DTS
 				if (mFrameFirstPacketDTS == -INT_MAX)
 					mFrameFirstPacketDTS = packet->dts;
 
+				// Send packet to decoder, this is used by avcoded_receive frame later
 				result = avcodec_send_packet(mCodecContext, packet);
 				assert(result != AVERROR(EAGAIN));
 				av_packet_unref(packet);
@@ -866,7 +883,7 @@ namespace nap
 	
 	double Video::getCurrentTime() const
 	{
-		if (mIOThreadState != IOThreadState::Normal)
+		if (mIOThreadState != IOThreadState::Playing)
 			return mSeekTargetSecs;
 		else
 			return mVideoClockSecs;
@@ -909,13 +926,20 @@ namespace nap
 
 		VIDEO_DEBUG_LOG("read packet: pkt_pos: %d, dts: %d, pts: %d", packet.mPacket->pos, packet.mPacket->dts, packet.mPacket->pts);
 
-		// If we ended playback we either exit the loop or start from the beginning
 		if (result == AVERROR_EOF)
 		{
+			// When end of file is reached, we put a special packet onto the queue that is actually consumed as a regular
+			// packet by the decode thread. avcoded_receive_frame will decode it and return EOF when receiving. This lets
+			// the decode thread know it reached the end of the stream. By doing it this way, we are sure that all frames
+			// in the queue are properly processed. The decode thread will flush the codec at that point in time.
 			mVideoState.addEndOfFilePacket(mExitIOThreadSignalled);
 			if (mAudioState.isValid())
 				mAudioState.addEndOfFilePacket(mExitIOThreadSignalled);
 
+			// We wait for the decode thread to have fully processed the EOF command. This is actually only required when looping,
+			// as the loop command will seek back to the beginning of the file and clear everything that it is currently playing.
+			// We don't want that to happen for looping, so we wait until the EOF packet is consumed on the decode thread and all
+			// packets are properly decoded into frames. 
 			mVideoState.waitForEndOfFileProcessed();
 			if (mAudioState.isValid())
 				mAudioState.waitForEndOfFileProcessed();
@@ -937,6 +961,8 @@ namespace nap
 		}
 		else if (mAudioState.matchesStream(*packet.mPacket))
 		{
+			// Note that audio packets are always consumed to make sure that the stream progresses as it should, 
+			// but they are only added when the client want to push the packets on the queue
 			packet_result = EProducePacketResult::GotAudioPacket;
 			if (inAddAudioPackets && mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
 				packet.mPacket = nullptr;
@@ -950,11 +976,11 @@ namespace nap
 	{
 		while (!mExitIOThreadSignalled)
 		{
-			// If a seek target is set, seek to that position
 			switch (mIOThreadState)
 			{
-			case IOThreadState::Normal:
+			case IOThreadState::Playing:
 				{
+					// read a frame from the stream and push a packet in the packet queue
 					EProducePacketResult produce_packet_result = ProducePacket(true);
 					if (produce_packet_result == EProducePacketResult::EndOfFile)
 					{
@@ -965,6 +991,8 @@ namespace nap
 						}
 						else
 						{
+							// We have reached end of the packet stream and we're not looping. Inform the decode 
+							// threads that it does not need to expect any more packets.
 							mVideoState.addIOFinishedPacket(mExitIOThreadSignalled);
 							if (mAudioState.isValid())
 								mAudioState.addIOFinishedPacket(mExitIOThreadSignalled);
@@ -981,6 +1009,8 @@ namespace nap
 
 			case IOThreadState::SeekRequest:
 				{
+					// Seeking stage 1: we've received a seek request. Make sure that we clear out any existing state (queues, codecs) and move the cursor in the stream
+
 					// After seeking we should clear any queues. We will clear the packet queue here, the frame queue can only be cleared by the decode thread.
 					clearPacketQueue();
 					VIDEO_DEBUG_LOG("ioThread seek start, clear packet queue");
@@ -991,6 +1021,7 @@ namespace nap
 					if (mAudioState.isValid())
 						mAudioState.addSeekStartPacket(mExitIOThreadSignalled);
 
+					// Wait until the seek start is processed so that we are sure that there is not more state pending in the decode thread
 					mVideoState.waitSeekStartPacketProcessed();
 					
 					if (mAudioState.isValid())
@@ -998,6 +1029,9 @@ namespace nap
 
 					VIDEO_DEBUG_LOG("ioThread seek to %d", mSeekKeyframeTarget);
 
+					// We can only seek by DTS, but we start out with a target PTS (in stream units). The DTS will be smaller or equal to the PTS. We search
+					// backwards in the stream to the current keyframe target. Later we will test if that keyframes' PTS is actually smaller or equal to the
+					// PTS that we are looking for.
 					int seek_result = av_seek_frame(mFormatContext, mVideoState.getStream(), mSeekKeyframeTarget, AVSEEK_FLAG_BACKWARD);
 					if (seek_result < 0)
 					{
@@ -1011,6 +1045,10 @@ namespace nap
 
 			case IOThreadState::SeekingStartFrame:
 				{
+					// Seeking stage 2: Push packets onto the queue and wait for a single frame to be received. If the PTS of that frame is greater than the PTS
+					// we are looking for, we go back to stage 1 with a new seek (internal) target. Otherwise we continue the seeking process.
+
+					// Receive single frame in lock-step
 					EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
 					while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile)
 					{
@@ -1027,21 +1065,26 @@ namespace nap
 					Frame seek_frame = mVideoState.popSeekFrame();
 					VIDEO_DEBUG_LOG("seek start frame, pop frame: pkt_pos: %d, dts: %d, pts: %d", seek_frame.mFrame->pkt_pos, seek_frame.mFrame->pkt_dts, seek_frame.mFrame->pkt_pts);
 
+					// Test if PTS > frame PTS and start new seek request if so. If we're at the beginning of the stream we never seek back any further
 					if (seek_frame.mFrame->best_effort_timestamp > mSeekTarget && seek_frame.mFirstPacketDTS != mFormatContext->streams[mVideoState.getStream()]->first_dts)
 					{
 						mIOThreadState = IOThreadState::SeekRequest;
+						
+						// The new seek target is computed by targeting any packet *before* the smallest DTS that was used to construct this frame
 						mSeekKeyframeTarget = seek_frame.mFirstPacketDTS - 1;
 					}
 					else if (seek_frame.mFrame->best_effort_timestamp < mSeekTarget && produce_packet_result != EProducePacketResult::EndOfFile)
 					{
+						// In case the target PTS > frame PTS and we haven't reached EOF, start stage 3 where we progress through frames until we reach target PTS
 						mIOThreadState = IOThreadState::SeekingTargetFrame;
 					}
 					else
 					{
-						mIOThreadState = IOThreadState::Normal;
+						// PTS could be exactly equal to target PTS, we may have reached EOF. We're done finding out target frame.
+						mIOThreadState = IOThreadState::Playing;
 
+						// Inform the decode thread that it should switch back to the regular frame queue
 						mVideoState.addSeekEndPacket(mExitIOThreadSignalled);
-
 						if (mAudioState.isValid())
 							mAudioState.addSeekEndPacket(mExitIOThreadSignalled);
 					}
@@ -1050,8 +1093,11 @@ namespace nap
 
 			case IOThreadState::SeekingTargetFrame:
 				{
+					// Seeking stage 3: The current frame PTS lies before the target PTS. Now we continue decoding frames until we decode
+					// a frame that is greater or equal to the target PTS.
 					while (true)
 					{
+						// Receive single frame in lock-step
 						EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
 						while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile)
 						{
@@ -1068,8 +1114,10 @@ namespace nap
 						Frame seek_frame = mVideoState.popSeekFrame();
 						if (seek_frame.mFrame->best_effort_timestamp >= mSeekTarget || produce_packet_result == EProducePacketResult::EndOfFile)
 						{
-							mIOThreadState = IOThreadState::Normal;
+							// We have found the correct PTS or we may have reached EOF. We're done finding out target frame.
+							mIOThreadState = IOThreadState::Playing;
 
+							// Inform the decode thread that it should switch back to the regular frame queue
 							mVideoState.addSeekEndPacket(mExitIOThreadSignalled);
 							if (mAudioState.isValid())
 								mAudioState.addSeekEndPacket(mExitIOThreadSignalled);
@@ -1111,6 +1159,8 @@ namespace nap
 
 	bool Video::getNextAudioFrame(const AudioFormat& targetAudioFormat)
 	{
+		// If there was a previous frame allocated, we have consumed it completely across audio callback and we 
+		// can now destroy it as we're about to decode a new frame.
 		if (mCurrentAudioFrame.mFrame != nullptr)
 		{
 			av_frame_unref(mCurrentAudioFrame.mFrame);
@@ -1127,7 +1177,7 @@ namespace nap
 		int64_t dec_channel_layout = (frame->channel_layout && frame->channels == av_get_channel_layout_nb_channels(frame->channel_layout)) ?
 			frame->channel_layout : av_get_default_channel_layout(frame->channels);
 
-
+		// If the format of the audio frame does not match the target audio format, we need to allocate a resample context (once)
 		if ((frame->format != (AVSampleFormat)targetAudioFormat.mFormat ||
 			dec_channel_layout != targetAudioFormat.mChannelLayout ||
 			frame->sample_rate != targetAudioFormat.mFrequency) &&
@@ -1138,6 +1188,7 @@ namespace nap
 			assert(result >= 0);
 		}
 
+		// Resample if the source and target formats do not match
 		if (mAudioResampleContext != nullptr)
 		{
 			const uint8_t **in = (const uint8_t **)frame->extended_data;
@@ -1153,14 +1204,17 @@ namespace nap
 			assert(len2 >= 0);
 			assert(len2 != out_count);
 
+			// Let 'current' audio buffer point to the resampled data
 			mCurrentAudioBuffer = mAudioResampleBuffer.data();
 			buffer_size = len2 * targetAudioFormat.mNumChannels * av_get_bytes_per_sample((AVSampleFormat)targetAudioFormat.mFormat);
 		}
 		else 
 		{
+			// We don't need to resample, let 'current' audio buffer point to the data in the frame directly
 			mCurrentAudioBuffer = frame->data[0];
 		}
 
+		// We have a new frame, reset cursor and size
 		mAudioFrameSize = buffer_size;
 		mAudioFrameReadOffset = 0;
 
@@ -1168,14 +1222,22 @@ namespace nap
 	}
 	
 
-	bool Video::OnAudioCallback(uint8_t* stream, int len, const AudioFormat& audioHwParams)
+	bool Video::OnAudioCallback(uint8_t* dataBuffer, int sizeInBytes, const AudioFormat& targetAudioFormat)
 	{
-		uint8_t* dest = stream;
-		int data_remaining = len;
+		// Here we are going to fill the audio buffer. The audio buffer has a certain fixed size,
+		// the decoded audio buffer will most probably not match the target buffer size: it can be greater, 
+		// equal or smaller than the buffer we need to fill. 
+
+		uint8_t* dest = dataBuffer;
+		int data_remaining = sizeInBytes;
 		while (data_remaining > 0)
 		{
+			// Is the last frame we have have read fully copied to the target buffer? If so, we need to 
+			// decode a new audio frame. Otherwise, we can continue with the existing decoded buffer and 
+			// copy a part of the already decoded frame to the target buffer.
+			// (The last decoded frame could also be the last frame from the previous audio callback).
 			if (mAudioFrameReadOffset >= mAudioFrameSize)
-				if (!getNextAudioFrame(audioHwParams))
+				if (!getNextAudioFrame(targetAudioFormat))
 					return false;
 
 			int num_bytes_to_read = mAudioFrameSize - mAudioFrameReadOffset;
