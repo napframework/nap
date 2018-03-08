@@ -6,6 +6,10 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE HEADERS src/*.h)
 file(GLOB_RECURSE RESOURCES resources/*.qrc)
 
+if (MSVC)
+    set(RESOURCES ${RESOURCES} resources/resources.rc)
+endif()
+
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
