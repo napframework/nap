@@ -2,12 +2,30 @@ find_package(mpg123 REQUIRED)
 target_link_libraries(${PROJECT_NAME} mpg123)
 
 if(WIN32)
-    # Add post-build step to set copy mpg123 to bin
+    # Add post-build step to set copy mpg123 to bin on Win64
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} 
                                -E copy
                                $<TARGET_FILE:mpg123>
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}> 
+                       )
+
+    # Copy libsndfile to bin post-build on Win64
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} 
+                               -E copy
+                               ${THIRDPARTY_DIR}/libsndfile/libsndfile-1.dll
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}> 
+                       )
+
+    # Copy portaudio to bin post-build on Win64
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} 
+                               -E copy
+                               ${THIRDPARTY_DIR}/portaudio/portaudio_x64.dll
                                $<TARGET_FILE_DIR:${PROJECT_NAME}> 
                        )
 elseif(UNIX)
