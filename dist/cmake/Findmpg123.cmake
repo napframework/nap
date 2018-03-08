@@ -6,7 +6,7 @@ if (WIN32)
         )
     set(MPG123_LIBS_DIR ${LIBMPG123_DIR}/bin)
     set(MPG123_LIBS_RELEASE_DLL ${MPG123_LIBS_DIR}/libmpg123.dll)
-  	set(MPG123_LIBS ${MPG123_LIBS_DIR}/libmpg123.lib)
+  	set(MPG123_LIBS ${LIBMPG123_DIR}/lib/libmpg123.lib)
 elseif(UNIX)
     find_path(
         LIBMPG123_DIR

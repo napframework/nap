@@ -51,8 +51,18 @@ endif()
 package_module()
 
 # Package mpg123 into platform release
-install(FILES ${THIRDPARTY_DIR}/mpg123/doc/LICENSE DESTINATION "thirdparty/mpg123")
-if(APPLE)
+install(FILES ${THIRDPARTY_DIR}/mpg123/doc/LICENSE DESTINATION thirdparty/mpg123)
+if(WIN32)
+    file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/install/msvc/*.dll)
+    install(FILES ${MPG123_DYLIBS}
+            DESTINATION thirdparty/mpg123/bin)
+    file(GLOB MPG123_HEADERS ${THIRDPARTY_DIR}/mpg123/install/msvc/*.h)
+    install(FILES ${MPG123_HEADERS}
+            DESTINATION thirdparty/mpg123/include)
+    file(GLOB MPG123_LIBFILES ${THIRDPARTY_DIR}/mpg123/install/msvc/*.lib)
+    install(FILES ${MPG123_LIBFILES}
+            DESTINATION thirdparty/mpg123/lib)   
+elseif(APPLE)
     # Ensure our mpg123 install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
                        PRE_BUILD
@@ -61,30 +71,36 @@ if(APPLE)
 
     file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${MPG123_DYLIBS}
-            DESTINATION "thirdparty/mpg123/lib")
+            DESTINATION thirdparty/mpg123/lib)
 
     foreach(build_type Release Debug)
-        ensure_macos_file_has_rpath_at_install("${CMAKE_INSTALL_PREFIX}/modules/mod_napaudio/lib/${build_type}/libmod_napaudio.dylib"
+        ensure_macos_file_has_rpath_at_install(${CMAKE_INSTALL_PREFIX}/modules/mod_napaudio/lib/${build_type}/libmod_napaudio.dylib
                                                "@loader_path/../../../../thirdparty/mpg123/lib")
     endforeach()
 elseif(UNIX)
     file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${MPG123_DYLIBS}
-            DESTINATION "thirdparty/mpg123/lib")
+            DESTINATION thirdparty/mpg123/lib)
 endif()
 
 # Package libsndfile into platform release
-install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/install/COPYING DESTINATION "thirdparty/libsndfile")
-if(UNIX AND NOT APPLE)
+install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/install/COPYING DESTINATION thirdparty/libsndfile)
+if(WIN32)
+    install(DIRECTORY ${THIRDPARTY_DIR}/libsndfile/msvc64/
+            DESTINATION thirdparty/libsndfile)
+elseif(UNIX AND NOT APPLE)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
-            DESTINATION "thirdparty/libsndfile/lib")
+            DESTINATION thirdparty/libsndfile/lib)
 endif()
 
 # Package portaudio into platform release
-install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION "thirdparty/portaudio")
-if(UNIX AND NOT APPLE)
+install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION thirdparty/portaudio)
+if(WIN32)
+    install(DIRECTORY ${THIRDPARTY_DIR}/portaudio/msvc64/
+            DESTINATION thirdparty/portaudio)
+elseif(UNIX AND NOT APPLE)
     file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS}
-            DESTINATION "thirdparty/portaudio/lib")
+            DESTINATION thirdparty/portaudio/lib)
 endif()
