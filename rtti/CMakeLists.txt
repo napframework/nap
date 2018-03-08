@@ -70,10 +70,6 @@ if (WIN32)
     copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
     copy_files_to_bin(${PYTHON_DLLS})    
-elseif(APPLE)
-    # Copy over RTTR for macOS
-    # TODO Don't copy the lib, work via RPATH changes
-    copy_lib_to_lib_dir("RTTR::Core")
 endif()
 
 if(APPLE)
@@ -126,13 +122,6 @@ elseif(APPLE)
     set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
     install(DIRECTORY "${THIRDPARTY_DIR}/rttr/xcode/install/" DESTINATION "thirdparty/rttr")
-
-    foreach(build_conf Release Debug)
-        macos_replace_single_install_name_link_install_time("Python"
-                                                            ${CMAKE_INSTALL_PREFIX}/lib/${build_conf}/lib${PROJECT_NAME}.dylib 
-                                                            "@rpath"
-                                                            )
-    endforeach()
 elseif(UNIX)
     install(DIRECTORY "${THIRDPARTY_DIR}/rttr/linux/install/" DESTINATION "thirdparty/rttr")
 endif()

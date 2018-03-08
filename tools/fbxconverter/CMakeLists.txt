@@ -28,7 +28,12 @@ if (WIN32)
 
     # Copy over some crap window dlls
     copy_base_windows_graphics_dlls()
+    # Add post-build step to set RTTR RPATH
+elseif(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()    
 endif()
+
 
 # ======================= UNIT TESTS
 enable_testing()
@@ -47,12 +52,13 @@ add_test(NAME ConvertFile COMMAND ${PROJECT_NAME} -o
 add_custom_command(OUTPUT always_rebuild COMMAND cmake -E echo)
 
 # copy test data
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_LIST_DIR}/res/vinyl_cover.fbx
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/res-test/vinyl_cover.fbx
-        DEPENDS always_rebuild
-        )
+add_custom_command(TARGET ${PROJECT_NAME} 
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                           ${CMAKE_CURRENT_LIST_DIR}/res/vinyl_cover.fbx
+                           $<TARGET_FILE_DIR:${PROJECT_NAME}>/res-test/vinyl_cover.fbx
+                   DEPENDS always_rebuild
+                   )
 
 # auto run test
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

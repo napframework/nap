@@ -37,6 +37,9 @@ if (WIN32)
     # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
     # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
     bulk_copy_windows_dlls_to_bin()
+elseif(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()
 endif()
 
 # Copy project json to project bin dir and export fbx, via post-build events
