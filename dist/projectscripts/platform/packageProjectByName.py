@@ -250,6 +250,12 @@ def populate_build_info_into_project(project_package_path, timestamp):
     with open(project_info_file) as json_file:
         project_info = json.load(json_file)
 
+    # Populate NAP release info into project into, for now
+    nap_root = os.path.join(project_package_path, os.pardir, os.pardir, os.pardir)
+    nap_release_info_file = os.path.join(nap_root, 'cmake', 'buildInfo.json')
+    with open(nap_release_info_file) as json_file:
+        project_info['napReleaseInfo'] = json.load(json_file)
+
     # Add project timestamp and write back out
     project_info['buildTimestamp'] = timestamp
     with open(project_info_file, 'w') as outfile:
