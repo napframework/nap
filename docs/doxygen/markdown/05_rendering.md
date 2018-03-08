@@ -21,6 +21,8 @@ Rendering {#rendering}
 		*	[Image From File](@ref image_from_file)
 	* 	[Reading Textures From The GPU](@ref reading_textures)
 	*	[Parameters](@ref texture_parameters)
+*	[Offscreen Rendering](@ref offscreen_rendering)
+*	[Cameras](@ref cameras)
 
 Introduction {#render_intro}
 =======================
@@ -849,6 +851,58 @@ A lod level of 0 prevents the texture from mipmapping, ie: the renderer only cho
 }
 ```
 
+Offscreen Rendering {#offscreen_rendering}
+=======================
 
+Often you want to render a selection of objects to a texture instead of a screen. But you can't render to a texture directly, you need a [render target](@ref nap::RenderTarget) to do that for you. To see how this works take a look at the video modulation demo. In this demo a video is applied to a plane and rendered to a texture. This texture is used as an input for two materials. 
 
+Every render target is a resource that links to two textures: a color and depth texture. The result of the render step is stored in both. The color texture contains the color information. The depth texture holds information about the distance of an object to the camera based on the clipping planes of the camera. You can declare a render target in json just like any other resource:
 
+```
+{
+    "Type": "nap::RenderTexture2D",
+    "mID": "VideoColorTexture",
+    "Usage": "DynamicRead",
+    "Width": 1920,
+    "Height": 1080,
+	"Format": "RGB8"
+},
+{
+	"Type": "nap::RenderTexture2D",
+	"mID": "VideoDepthTexture",
+    "Usage": "Static",
+    "Width": 1920,
+    "Height": 1080,
+    "Format": "Depth"
+},
+{
+	"Type": "nap::RenderTarget",
+    "mID": "VideoRenderTarget",
+    "mColorTexture": "VideoColorTexture",
+    "mDepthTexture": "VideoDepthTexture",
+    "mClearColor": 
+    {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+    	"w": 1.0
+    }
+}
+```
+
+In this example we create two textures and a render target. The render target links to both textures. The only thing left to do is locate the target in your application and give it to the render service together with a selection of components to render. Notice that rendering to a render target or screen works exactly the same:
+
+~~~~~~~~~~~~~~~{.cpp}
+// Clear buffers of video render target
+mRenderService->clearRenderTarget(mVideoRenderTarget->getTarget());
+			
+// Get objects to render
+std::vector<RenderableComponentInstance*> render_objects;
+render_objects.emplace_back(&mVideoEntity->getComponent<RenderableMeshComponentInstance>());
+
+// Render
+mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, render_objects);
+~~~~~~~~~~~~~~~
+
+Cameras {#cameras}
+=======================
