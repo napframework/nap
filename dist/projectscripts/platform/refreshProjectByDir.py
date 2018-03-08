@@ -5,18 +5,8 @@ import os
 from subprocess import call
 import sys 
 
-if sys.platform == 'win32':
-    from msvcrt import getch
-else:
-    def getch():
-        import tty, termios
-        fd = sys.stdin.fileno()
-        old = termios.tcgetattr(fd)
-        try:
-            tty.setraw(fd)
-            return sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old)            
+
+from NAPShared import read_console_char
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -63,4 +53,4 @@ if __name__ == '__main__':
         print("Press key to close...")
 
         # Read a char from console
-        getch()
+        read_console_char()

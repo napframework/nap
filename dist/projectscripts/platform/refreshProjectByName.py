@@ -17,7 +17,7 @@ elif sys.platform == 'win32':
 else:
     BUILD_DIR = 'build'
 
-def update_project(project_name, build_type, show_solution):
+def cmake_reconfigure_project(project_name, build_type, show_solution):
     project_path = find_project(project_name)
     if project_path is None:
         return ERROR_MISSING_MODULE
@@ -75,5 +75,5 @@ if __name__ == '__main__':
         build_type = None
         show_solution = not args.no_show
 
-    exit_code = update_project(args.PROJECT_NAME, build_type, show_solution)
+    exit_code = cmake_reconfigure_project(args.PROJECT_NAME, build_type, show_solution)
     sys.exit(exit_code)
