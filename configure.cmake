@@ -39,61 +39,27 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
 
-macro(export_fbx SRCDIR)
-    if (MSVC OR APPLE)
-        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>")
-    else()
-        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH}")
-    endif()
-
-    set(FBXCONV_DIR "${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}")
-
-    # Set project data out path
-    set(OUTDIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data/${PROJECT_NAME}")
-
-    # Ensure data output directory for project exists
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTDIR}
-                       COMMENT "Ensure project output directory exists for fbxconverter")
-
-    # Do the export
-    if (MSVC)
-        add_custom_command(TARGET ${PROJECT_NAME}
-                           POST_BUILD
-                           COMMAND set "PATH=${FBXCONV_DIR}/..;%PATH%"
-                           COMMAND "${FBXCONV_DIR}/fbxconverter" -o ${OUTDIR} "${SRCDIR}/*.fbx"
-                           COMMENT "Export FBX in '${SRCDIR}'")
-    else()
-        add_custom_command(TARGET ${PROJECT_NAME}
-                           POST_BUILD
-                           COMMAND "${FBXCONV_DIR}/fbxconverter" -o ${OUTDIR} "${SRCDIR}/*.fbx"
-                           COMMENT "Export FBX in '${SRCDIR}'")
-    endif()
-endmacro()
-
 macro(export_fbx_in_place SRCDIR)
     if (MSVC OR APPLE)
-        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>")
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
     else()
-        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH}")
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
     endif()
 
-    set(FBXCONV_DIR "${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}")
+    # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't 
+    # fall into place
+    if(DEFINED NAP_PACKAGED_BUILD)
+        set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/packagingBin/${BUILD_CONF})
+    else()
+        set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF})
+    endif()
 
     # Do the export
-    if (MSVC)
-        add_custom_command(TARGET ${PROJECT_NAME}
-                           POST_BUILD
-                           COMMAND set "PATH=${FBXCONV_DIR}/..;%PATH%"
-                           COMMAND "${FBXCONV_DIR}/fbxconverter" -o ${SRCDIR} "${SRCDIR}/*.fbx"
-                           COMMENT "Export FBX in '${SRCDIR}'")
-    else()
-        add_custom_command(TARGET ${PROJECT_NAME}
-                           POST_BUILD
-                           COMMAND "${FBXCONV_DIR}/fbxconverter" -o ${SRCDIR} "${SRCDIR}/*.fbx"
-                           COMMENT "Export FBX in '${SRCDIR}'")
-    endif()
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${FBXCONV_DIR}/fbxconverter -o ${SRCDIR} ${SRCDIR}/*.fbx
+                       COMMENT "Export FBX in '${SRCDIR}'"
+                       )
 endmacro()
 
 macro(copy_dir_to_bin SRCDIR DSTDIR)
@@ -241,15 +207,13 @@ macro(set_output_directories)
     if (MSVC OR APPLE)
         # Loop over each configuration for multi-configuration systems
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-            set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
-            set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}/${PROJECT_NAME})
             string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+            set(BIN_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}}/${PROJECT_NAME})
             set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
         endforeach()
     else()
         # Single built type, for Linux
-        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
-        set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}/${PROJECT_NAME})
+        set(BIN_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME})
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
     endif()
 endmacro()
