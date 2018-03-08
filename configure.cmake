@@ -78,20 +78,6 @@ macro(copy_files_to_bin)
     endforeach()
 endmacro()
 
-macro(copy_lib_to_lib_dir LIB_NAME)
-    if (MSVC OR APPLE)
-        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>")
-    else()
-        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH}")
-    endif()
-    set(lib_path ${CMAKE_SOURCE_DIR}/lib/${BUILD_CONF})
-
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${LIB_NAME}> ${lib_path}
-                       COMMENT "Copy ${IN_FILE} -> ${OUT_DIR}")
-endmacro()
-
 macro(copy_base_windows_graphics_dlls)
     # Copy over some crap window dlls
     set(FILES_TO_COPY
@@ -320,4 +306,13 @@ macro(project_json_to_cmake)
 
     execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/projectscripts/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR})    
     include(cached_project_json.cmake)
+endmacro()
+
+# Add the runtime path for RTTR.  
+# TODO As a lower priority this should get pulled in automatically, need to cleanup.  Jira NAP-108.
+macro(add_macos_rttr_rpath)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/xcode/install/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
+                       )    
 endmacro()
