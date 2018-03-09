@@ -6,12 +6,12 @@ cmake_minimum_required(VERSION 3.5)
 # much of an issue
 
 # Verify we have a project name
-if (NOT DEFINED COPIER_IN_PATH)
+if(NOT DEFINED COPIER_IN_PATH)
     message(FATAL_ERROR "No input path")
 endif()
 
 # Verify we have a project name
-if (NOT DEFINED COPIER_OUTPUT_PATH)
+if(NOT DEFINED COPIER_OUTPUT_PATH)
     message(FATAL_ERROR "No output path")
 endif()
 

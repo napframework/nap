@@ -21,10 +21,10 @@ namespace nap
 	};
 
 	/**
-	 * Deserialize a set of objects and their data from the specified JSON string
+	 * Deserialize project information from the specified JSON string
 	 *
 	 * @param json The JSON to deserialize from
-	 * @param result The result of deserialization
+	 * @param result The resulting project information
 	 * @param errorState The error state of deserialization
 	 *
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
@@ -32,13 +32,12 @@ namespace nap
 	bool NAPAPI deserializeProjectInfoJSON(const std::string& json, ProjectInfo& result, utility::ErrorState& errorState);
 	
 	/**
-	 * Read and deserialize a set of objects and their data from the specified JSON file
+	 * Read and deserialize and project information from JSON file
 	 *
-	 * @param json The JSON file to deserialize from
-	 * @param result The result of deserialization
+	 * @param result The resulting project information
 	 * @param errorState The error state of deserialization
 	 *
-	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
+	 * @return True if read and deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
 	bool NAPAPI loadProjectInfoFromJSON(ProjectInfo& result, utility::ErrorState& errorState);
 

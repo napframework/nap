@@ -58,10 +58,13 @@ elseif(UNIX)
 endif ()
 
 # Package into release build
-if(WIN32 OR APPLE)
+if(WIN32)
 	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
                                     ARCHIVE DESTINATION lib/$<CONFIG>)
+elseif(APPLE)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)
 endif()
+
 if(WIN32)
     # Install for fbxconverter on Win64
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform

@@ -2,7 +2,7 @@
 if(WIN32)
     if(DEFINED PACKAGE_NAPKIN AND NOT PACKAGE_NAPKIN)
         # Copy Python DLLs and modules post-build on Windows
-        copy_python_dlls_and_modules_postbuild_win64()
+        win64_copy_python_dlls_and_modules_postbuild()
     endif()
 endif()
 

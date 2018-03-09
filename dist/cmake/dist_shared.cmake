@@ -29,7 +29,7 @@ macro(add_project_module)
     endif()
 endmacro()
 
-# Somewhat temporary generic way to import each module for different configurations.  Included is a primitive mechanism for 
+# Generic way to import each module for different configurations.  Included is a primitive mechanism for 
 # extra per-module cmake logic.
 macro(find_nap_module MODULE_NAME)
     if (EXISTS ${NAP_ROOT}/usermodules/${MODULE_NAME}/)
@@ -108,17 +108,17 @@ macro(find_nap_module MODULE_NAME)
     endif()    
 endmacro()
 
-macro(dist_export_fbx SRCDIR)
-    set(TOOLS_DIR "${NAP_ROOT}/tools/")
-
+# Export FBX to mesh
+macro(export_fbx SRCDIR)
     # Set the binary name
-    set(FBXCONVERTER_BIN "${TOOLS_DIR}/platform/fbxconverter")
+    set(TOOLS_DIR ${NAP_ROOT}/tools)
+    set(FBXCONVERTER_BIN ${TOOLS_DIR}/platform/fbxconverter)
 
     # Do the export
     add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND "${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
-        COMMENT "Export FBX in '${SRCDIR}'")
+        COMMENT "Exporting FBX in '${SRCDIR}'")
 endmacro()
 
 # Change our project output directories
@@ -164,6 +164,7 @@ macro(set_module_output_directories)
     endif()
 endmacro()
 
+# macOS: At install time replace a Qt lib install names in specified file
 macro(macos_replace_qt_framework_links_install_time FRAMEWORKS LIB_NAME FILEPATH PATH_PREFIX)
     foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
         if(NOT ${QT_LINK_FRAMEWORK} STREQUAL ${LIB_NAME})
@@ -172,6 +173,7 @@ macro(macos_replace_qt_framework_links_install_time FRAMEWORKS LIB_NAME FILEPATH
     endforeach()    
 endmacro()
 
+# macOS: At install time replace a single lib install name in the provided file
 macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEPATH PATH_PREFIX)
     # Change link to dylib
     install(CODE "if(EXISTS ${FILEPATH})
@@ -194,6 +196,7 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                   ")
 endmacro()
 
+# macOS: At post-build replace a Qt lib install names in specified file
 macro(macos_replace_qt_framework_links FRAMEWORKS SRC_FILEPATH FILEPATH PATH_PREFIX)
     foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
         macos_replace_single_install_name_link(${QT_LINK_FRAMEWORK}
@@ -203,14 +206,12 @@ macro(macos_replace_qt_framework_links FRAMEWORKS SRC_FILEPATH FILEPATH PATH_PRE
     endforeach()    
 endmacro()
 
-
+# macOS: At post-build replace a single lib install name in the provided file
 macro(macos_replace_single_install_name_link REPLACE_LIB_NAME SRC_FILEPATH FILEPATH PATH_PREFIX)
     execute_process(COMMAND sh -c "otool -L ${SRC_FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'"
                     OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
     if(NOT ${REPLACE_INSTALL_NAME} STREQUAL "")
-        # message("Adding install name change in ${QT_INSTALL_FRAMEWORK} for ${QT_LINK_FRAMEWORK}")
         string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
-
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
@@ -222,6 +223,7 @@ macro(macos_replace_single_install_name_link REPLACE_LIB_NAME SRC_FILEPATH FILEP
     endif()
 endmacro()
 
+# Copy files to project binary dir
 macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
@@ -244,8 +246,8 @@ macro(find_python_in_thirdparty)
     endif()
 endmacro()
 
-# Copy Python DLLs and modules post-build on Windows
-macro(copy_python_dlls_and_modules_postbuild_win64)
+# Windows: Copy Python DLLs and modules post-build
+macro(win64_copy_python_dlls_and_modules_postbuild)
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/*.dll)
     foreach(PYTHON_DLL ${PYTHON_DLLS})
         add_custom_command(TARGET ${PROJECT_NAME}
@@ -259,7 +261,7 @@ macro(copy_python_dlls_and_modules_postbuild_win64)
                        )
 endmacro()
 
-# Ensure our specified file has provided RPATH in post-build
+# macOS: Ensure our specified file has provided RPATH in post-build
 macro(macos_add_rpath_to_module_post_build TARGET_NAME FILENAME PATH_TO_ADD)
     add_custom_command(TARGET ${TARGET_NAME}
                        POST_BUILD

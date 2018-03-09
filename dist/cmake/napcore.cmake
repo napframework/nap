@@ -28,9 +28,12 @@ if (NOT NAPCORE_LIBS_DIR)
     message(FATAL_ERROR "Couldn't find NAP core")
 endif()
 
+# Setup as interface library
 add_library(napcore INTERFACE)
 target_link_libraries(napcore INTERFACE debug ${NAPCORE_LIBS_DEBUG})
 target_link_libraries(napcore INTERFACE optimized ${NAPCORE_LIBS_RELEASE})
+
+# Show headers in IDE
 file(GLOB core_headers ${CMAKE_CURRENT_LIST_DIR}/../include/nap/*.h)
 target_sources(napcore INTERFACE ${core_headers})
 source_group(NAP\\Core FILES ${core_headers})
@@ -48,7 +51,7 @@ endif()
 if(NOT WIN32)
     install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
 
-    # On Linux set use lib directory for RPATH
+    # On Linux use lib directory for RPATH
     if(NOT APPLE)
         install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/libnapcore.so\")
                       execute_process(COMMAND patchelf

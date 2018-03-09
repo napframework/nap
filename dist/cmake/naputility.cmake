@@ -29,9 +29,12 @@ if (NOT NAPUTILITY_LIBS_DIR)
     message(FATAL_ERROR "Couldn't find NAP utility")
 endif()
 
+# Setup as interface library
 add_library(naputility INTERFACE)
 target_link_libraries(naputility INTERFACE optimized ${NAPUTILITY_LIBS_RELEASE})
 target_link_libraries(naputility INTERFACE debug ${NAPUTILITY_LIBS_DEBUG})
+
+# Show headers in IDE
 file(GLOB utility_headers ${CMAKE_CURRENT_LIST_DIR}/../include/utility/*.h)
 target_sources(naputility INTERFACE ${utility_headers})
 source_group(NAP\\Utility FILES ${utility_headers})

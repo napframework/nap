@@ -227,7 +227,7 @@ namespace nap
 		outSearchDirectories.push_back(utility::getExecutableDir());
 #elif defined(NAP_PACKAGED_BUILD)
 		// Running against released NAP on macOS & Linux
-		std::string exeDir = utility::getExecutableDir();
+		const std::string exeDir = utility::getExecutableDir();
 		
 		// Check if we're running a packaged project (on macOS or Linux)
 		if (utility::fileExists(exeDir + "/lib/libnapcore." + sharedLibExtension))
@@ -235,7 +235,8 @@ namespace nap
 			outSearchDirectories.push_back(exeDir + "/lib");
 		}
 		// If we have no modules requested we're running in a non-project context, eg. napkin
-		else if (moduleNames.size() == 0) {
+		else if (moduleNames.size() == 0)
+		{
 			buildPackagedNapNonProjectModulePaths(outSearchDirectories);
 		}
 		else {
@@ -254,7 +255,7 @@ namespace nap
 #else
 		Logger::debug("Running from NAP source");
 	
-		std::string exeDir = utility::getExecutableDir();
+		const std::string exeDir = utility::getExecutableDir();
 
 		std::vector<std::string> dirParts;
 		utility::splitString(exeDir, '/', dirParts);
@@ -262,8 +263,8 @@ namespace nap
 		if (dirParts.size() > 2 && folderNameContainsBuildConfiguration(dirParts.end()[-2]))
 		{
 			// MacOS & Linux apps in NAP internal source
-			std::string napRoot = exeDir + "/../../../";
-			std::string full_configuration_name = dirParts.end()[-2];
+			const std::string napRoot = exeDir + "/../../../";
+			const std::string full_configuration_name = dirParts.end()[-2];
 			outSearchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
 
 		} else {

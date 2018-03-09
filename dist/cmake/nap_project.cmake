@@ -49,7 +49,7 @@ cmake_policy(SET CMP0043 NEW)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 
 # Allow extra Find{project}.cmake files to be found by projects
-list(APPEND CMAKE_MODULE_PATH "${NAP_ROOT}/cmake")
+list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/cmake)
 
 if(WIN32)
     if(MINGW)
@@ -113,9 +113,11 @@ endif()
 
 # Copy data to bin post-build
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
-dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
+export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
+# Package into packaged project on *nix
 if(NOT WIN32)
+    # Set RPATH to search in ./lib
     if (APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
     else()

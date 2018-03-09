@@ -178,9 +178,11 @@ namespace nap
 		 */
 		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
 		
-		// Temporarily set our Python home location until we have the ability to do this via CMake
-		// into runtime module configuration
-		void tempSettingOfPythonHome();
+		/**
+		 * Setup our Python environment to find Python in thirdparty for NAP release or NAP source,
+		 * or alongside our binary for a packaged project
+		 */
+		void setupPythonEnvironment();
 		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
