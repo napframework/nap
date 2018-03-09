@@ -8,10 +8,6 @@
 
 namespace nap
 {
-	// Static useful values
-	NAPAPI extern const int16_t etherMinValue;
-	NAPAPI extern const int16_t etherMaxValue;
-
 	/**
 	 * Point that is send to the EtherDream DAC
 	 */
@@ -112,6 +108,16 @@ namespace nap
 		 * @param repeatCount: Number of times to repeat the drawing of the points, must not be 0, 1 is default
 		 */
 		bool		writeFrame(int number, const EtherDreamPoint* data, uint npoints, uint pps, uint repeatCount);
+
+		/**
+		 *	@return etherdream dac min value
+		 */
+		static constexpr int16_t etherMin()		{ return  std::numeric_limits<int16_t>::min(); }
+
+		/**
+		 *	@return etherdream dac max value
+		 */
+		static constexpr int16_t etherMax()		{ return  std::numeric_limits<int16_t>::max(); }
 
 	private:
 		// Number of available dacs found after initialization
