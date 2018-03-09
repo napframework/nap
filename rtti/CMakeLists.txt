@@ -89,7 +89,6 @@ endif()
 # Package into release build
 if (WIN32)
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
-                                    LIBRARY DESTINATION lib/$<CONFIG>
                                     ARCHIVE DESTINATION lib/$<CONFIG>)
 
     # Install for fbxconverter

@@ -59,7 +59,7 @@ endif ()
 
 # Package into release build
 if(WIN32 OR APPLE)
-	install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>
+	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
                                     ARCHIVE DESTINATION lib/$<CONFIG>)
 endif()
 if(WIN32)
