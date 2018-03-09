@@ -48,20 +48,18 @@ endif()
 package_module()
 
 # Package libartnet into platform release
-install(FILES "${THIRDPARTY_DIR}/libartnet/AUTHORS" DESTINATION "thirdparty/libartnet")
-install(FILES "${THIRDPARTY_DIR}/libartnet/COPYING" DESTINATION "thirdparty/libartnet")
-install(FILES "${THIRDPARTY_DIR}/libartnet/README" DESTINATION "thirdparty/libartnet")
+install(FILES ${THIRDPARTY_DIR}/libartnet/AUTHORS DESTINATION thirdparty/libartnet)
+install(FILES ${THIRDPARTY_DIR}/libartnet/COPYING DESTINATION thirdparty/libartnet)
+install(FILES ${THIRDPARTY_DIR}/libartnet/README DESTINATION thirdparty/libartnet)
+install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin)
 if(WIN32)
-    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/bin")
-    install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION "thirdparty/libartnet/bin")
+    install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION thirdparty/libartnet/bin)
 elseif(APPLE)
     # Ensure our libArtnet install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
                        PRE_BUILD
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libArtnet.dylib $<TARGET_FILE:artnet>
                        COMMENT "Setting install name for libartnet")
-
-    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/bin")
 
     foreach(build_type Release Debug)
         install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
@@ -71,6 +69,4 @@ elseif(APPLE)
                                       ERROR_QUIET
                                       )")
     endforeach()
-else()
-    install(FILES $<TARGET_FILE:artnet> DESTINATION "thirdparty/libartnet/bin")
 endif()

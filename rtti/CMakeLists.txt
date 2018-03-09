@@ -35,11 +35,7 @@ add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 # Let find_python find our prepackaged Python in thirdparty
 find_python_in_thirdparty()
 set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
-find_package(pybind11 REQUIRED) 
-# Ensure we've found Python3
-if(NOT ${PYTHON_VERSION_MAJOR} EQUAL 3)
-    message(FATAL_ERROR "Python found in ${PYTHON_PREFIX} is not v3")
-endif()
+find_package(pybind11 REQUIRED)
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
@@ -108,13 +104,13 @@ endif()
 install(DIRECTORY "src/rtti/" DESTINATION "include/rtti/"
         FILES_MATCHING PATTERN "*.h")
 
-# Package dependent into release --
+# Package dependent lib into platform release --
 
-# Package pybind into platform release
+# Package pybind
 install(DIRECTORY ${THIRDPARTY_DIR}/pybind11/install/ DESTINATION thirdparty/pybind11)
 install(FILES ${THIRDPARTY_DIR}/pybind11/LICENSE DESTINATION thirdparty/pybind11)
 
-# Package RTTR into platform release
+# Package RTTR
 if (MSVC)
     install(DIRECTORY "${THIRDPARTY_DIR}/rttr/msvc64/install/" DESTINATION "thirdparty/rttr")
 elseif(APPLE)

@@ -34,15 +34,15 @@ if (WIN32)
     # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
     # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
     bulk_copy_windows_dlls_to_bin()
+
+    # Copy artnet DLL
+    find_package(artnet REQUIRED)
+    if(WIN32)
+        copy_artnet_dll()
+    endif()
 elseif(APPLE)
     # Add the runtime path for RTTR on macOS
     add_macos_rttr_rpath()
-endif()
-
-# Copy artnet DLL
-find_package(artnet REQUIRED)
-if(WIN32)
-    copy_artnet_dll()
 endif()
 
 # Copy project json to project bin dir and export fbx, via post-build events

@@ -71,7 +71,7 @@ if __name__ == '__main__':
         print("Error: Please specify module name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
         sys.exit(ERROR_INVALID_INPUT)
 
-    # TODO validate module name only has includes valid characters
+    # TODO validate module name only includes valid characters
 
     exit_code = create_module(module_name, not args.no_generate)
     sys.exit(exit_code)

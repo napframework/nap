@@ -1,9 +1,10 @@
 import os
 from subprocess import Popen
+import sys
 
 def call_except_on_failure(cwd, cmd):
-    print('dir: %s' % cwd)
-    print('cmd: %s' % cmd)
+    # print('dir: %s' % cwd)
+    # print('cmd: %s' % cmd)
     proc = Popen(cmd, cwd=cwd)
     out, err = proc.communicate()
     if proc.returncode != 0:

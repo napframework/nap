@@ -16,7 +16,7 @@ elseif(APPLE)
     set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/osx/include)
     set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/osx/bin/Release)
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/libEtherDream.dylib)
-    set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS_DIR}/libEtherDream.dylib)
+    set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS})
 else()
     find_path(ETHERDREAM_DIR
               NAMES linux/include/etherdream.h
@@ -25,7 +25,7 @@ else()
     set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/linux/include)
     set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/linux/bin)
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/libetherdream.so)
-    set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS_DIR}/libetherdream.so)
+    set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS})
 endif()
 
 mark_as_advanced(ETHERDREAM_INCLUDE_DIRS)
