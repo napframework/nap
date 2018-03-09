@@ -54,6 +54,11 @@ copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data unit_tests_data)
 
 nap_qt_post(${PROJECT_NAME})
 
+if(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()    
+endif()
+
 # Now run the tests right after the build
 add_custom_command(TARGET ${PROJECT_NAME}_autorun
                    COMMENT "Run tests"

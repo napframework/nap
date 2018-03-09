@@ -89,7 +89,8 @@ if(NOT WIN32)
     endif()   
 
     # Install our Python dylib from thirdparty.  Doing this here instead of in mod_nappython as RTTI (and as a result Core)
-    # depend on Python. Python modules are only installed if we're using mod_nappython as they're not required for RTTI/Core.
+    # depend on Python. The Python modules however are only installed if we're using mod_nappython as they're not required 
+    # for RTTI/Core.
     file(GLOB PYTHON_DYLIBS ${THIRDPARTY_DIR}/python/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PYTHON_DYLIBS} DESTINATION lib/)
 endif()

@@ -3,7 +3,7 @@ project(napcore)
 
 file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
 
-# Add whether we're a NAP release or not.  Maybe useful for versioning later too.
+# Add whether we're a NAP release or not
 configure_file(src/nap/packaginginfo.h.in packaginginfo.h @ONLY)
 list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/packaginginfo.h)
 
@@ -58,35 +58,30 @@ elseif(UNIX)
 endif ()
 
 # Package into release build
-if (WIN32)
-	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
-                                    LIBRARY DESTINATION lib/$<CONFIG>
+if(WIN32 OR APPLE)
+	install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>
                                     ARCHIVE DESTINATION lib/$<CONFIG>)
-
-    # Install for fbxconverter
+endif()
+if(WIN32)
+    # Install for fbxconverter on Win64
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
             CONFIGURATIONS Release)
 elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
     set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)  
-
-    foreach(build_conf Release Debug)
-        macos_replace_single_install_name_link_install_time("Python"
-                                                            ${CMAKE_INSTALL_PREFIX}/lib/${build_conf}/lib${PROJECT_NAME}.dylib 
-                                                            "@rpath"
-                                                            )
-    endforeach()    
 else()
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})   
 endif()
 
+# Package headers
 install(DIRECTORY "src/nap/" DESTINATION "include/nap/"
         FILES_MATCHING PATTERN "*.h"
         PATTERN "linux" EXCLUDE
         PATTERN "osx" EXCLUDE
         PATTERN "win32" EXCLUDE
 )
+
+# Package release version info
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h
         DESTINATION "include/nap/")

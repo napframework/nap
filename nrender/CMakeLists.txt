@@ -74,6 +74,7 @@ list(APPEND LIBRARIES
      ${FREEIMAGE_LIBRARIES}
      )
 
+# TODO Investigate why we're using a static lib for Win64 only
 if(MSVC)
     list(APPEND LIBRARIES
          ${ASSIMP_LIBRARY_DIRS}/${ASSIMP_LIBRARIES}${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -111,7 +112,7 @@ endif()
 install(DIRECTORY "src/" DESTINATION "include/nrender/"
         FILES_MATCHING PATTERN "*.h")
 
-# Package dependent into release --
+# Package dependent libs into platform release --
 
 # Assimp
 install(FILES ${THIRDPARTY_DIR}/assimp/LICENSE DESTINATION thirdparty/assimp)

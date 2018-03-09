@@ -10,6 +10,7 @@
 //const std::string appJson = "audiofileplay.json";
 //const std::string appJson = "pythonsequencer.json";
 //const std::string appJson = "ambientdrone.json";
+// Enabled midilogging as default test for now as I'm using this a mod_napmidi test packaging project until we have a proper one
 const std::string appJson = "midilogging.json";
 //const std::string appJson = "pythonosc.json";
 //const std::string appJson = "pythonmidi.json";

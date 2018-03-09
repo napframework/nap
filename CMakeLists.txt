@@ -116,7 +116,7 @@ add_subdirectory(demos/videomodulation/module)
 add_subdirectory(demos/blobtrace)
 add_subdirectory(demos/audioplayback)
 
-#add_subdirectory(unittests)
+add_subdirectory(unittests)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
