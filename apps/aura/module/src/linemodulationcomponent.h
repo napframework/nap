@@ -17,7 +17,7 @@ namespace nap
 	/**
 	 *	Properties associated with the line modulation component
 	 */
-	struct ModulationProperties
+	struct NAPAPI ModulationProperties
 	{
 		float mFrequency = 1.0f;							// Frequency of the waveform
 		float mFrequencySmoothTime = 0.1f;					// Freq smooth time
@@ -35,7 +35,7 @@ namespace nap
 	/**
 	* Resource of the LineModulationComponent
 	*/
-	class LineModulationComponent : public Component
+	class NAPAPI LineModulationComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LineModulationComponent, LineModulationComponentInstance)

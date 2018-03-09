@@ -1,4 +1,4 @@
-#include "etherdreamapp.h"
+#include "auraapp.h"
 
 // Local includes
 #include "lineselectioncomponent.h"
@@ -10,7 +10,7 @@
 #include <perspcameracomponent.h>
 #include <scene.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherdreamApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AuraApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -20,7 +20,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool EtherdreamApp::init(utility::ErrorState& error)
+	bool AuraApp::init(utility::ErrorState& error)
 	{
 		// Create render service
 		mRenderService = getCore().getService<RenderService>(); 
@@ -35,7 +35,7 @@ namespace nap
 		mResourceManager = getCore().getResourceManager();
 
 		// Load scene
-		if (!mResourceManager->loadFile("etherdream.json", error)) 
+		if (!mResourceManager->loadFile("aura.json", error)) 
 			return false;    
 
 		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -65,7 +65,7 @@ namespace nap
 	
 	
 	// Called when the window is going to render
-	void EtherdreamApp::render()
+	void AuraApp::render()
 	{
 		// Get rid of unnecessary resources
 		mRenderService->destroyGLContextResources({ mRenderWindow });
@@ -92,13 +92,13 @@ namespace nap
 	}
 	
 	
-	void EtherdreamApp::windowMessageReceived(WindowEventPtr windowEvent) 
+	void AuraApp::windowMessageReceived(WindowEventPtr windowEvent) 
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void EtherdreamApp::inputMessageReceived(InputEventPtr inputEvent) 
+	void AuraApp::inputMessageReceived(InputEventPtr inputEvent) 
 	{
 		// If we pressed escape, quit the loop
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
@@ -119,13 +119,13 @@ namespace nap
 	}
 
 	
-	void EtherdreamApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	void AuraApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
 		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	int EtherdreamApp::shutdown()
+	int AuraApp::shutdown()
 	{
 		return 0;
 	}

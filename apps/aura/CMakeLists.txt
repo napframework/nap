@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(etherdream)
+project(aura)
 
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
@@ -18,7 +18,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
 # preprocessor
-target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow mod_naposc mod_napsvg mod_napapp)
+target_link_libraries(${PROJECT_NAME} mod_napaura mod_napapp)
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 

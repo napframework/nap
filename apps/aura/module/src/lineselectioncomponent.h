@@ -15,7 +15,7 @@ namespace nap
 	/**
 	 * LineSelectionComponent Resource
 	 */
-	class LineSelectionComponent : public Component
+	class NAPAPI LineSelectionComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LineSelectionComponent, LineSelectionComponentInstance)
@@ -32,7 +32,7 @@ namespace nap
 	 * Holds a set of lines that the user can select from
 	 * When a line index changes the mIndexChanged signal is emitted
 	 */
-	class LineSelectionComponentInstance : public ComponentInstance
+	class NAPAPI LineSelectionComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

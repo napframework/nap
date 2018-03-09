@@ -16,7 +16,7 @@ namespace nap
 	/**
 	* This component syncs the size of the canvas to the frustrum of the laser
 	*/
-	class FrustumSyncComponent : public Component
+	class NAPAPI FrustumSyncComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(FrustumSyncComponent, FrustumSyncComponentInstance)
@@ -35,7 +35,7 @@ namespace nap
 	/**
 	 *	When created this object spawns a laser canvas entity that is synced every update to the canvas of the laser
 	 */
-	class FrustumSyncComponentInstance : public ComponentInstance
+	class NAPAPI FrustumSyncComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

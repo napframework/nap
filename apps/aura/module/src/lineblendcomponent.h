@@ -18,7 +18,7 @@ namespace nap
 	/**
 	 * Resource of the line blend component
 	 */
-	class LineBlendComponent : public Component
+	class NAPAPI LineBlendComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LineBlendComponent, LineBlendComponentInstance)
@@ -44,7 +44,7 @@ namespace nap
 	 * This component blends two lines based on the selection of two other components
 	 * This component writes the result to another mesh. Only the position, uv's and normals are blended
 	 */
-	class LineBlendComponentInstance : public ComponentInstance
+	class NAPAPI LineBlendComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

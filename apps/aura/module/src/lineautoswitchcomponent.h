@@ -15,7 +15,7 @@ namespace nap
 	/**
 	 *	Resource for component that automatically switches the line selection
 	 */
-	class LineAutoSwitchComponent : public Component
+	class NAPAPI LineAutoSwitchComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LineAutoSwitchComponent, LineAutoSwitchComponentInstance)
@@ -41,7 +41,7 @@ namespace nap
 	 * based on the blend value of the LineBlendComponent. Switching can occur
 	 * randomly or based on an explicit next line index
 	 */
-	class LineAutoSwitchComponentInstance : public ComponentInstance
+	class NAPAPI LineAutoSwitchComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

@@ -19,11 +19,11 @@ namespace nap
 	/**
 	 * Main application that is called from within the main loop
 	 */
-	class EtherdreamApp : public App
+	class AuraApp : public App
 	{
 		RTTI_ENABLE(App)
 	public:
-		EtherdreamApp(nap::Core& core) : App(core)		{ }
+		AuraApp(nap::Core& core) : App(core)		{ }
 		
 		/**
 		 *	Initialize all the services and app specific data structures
@@ -58,12 +58,12 @@ namespace nap
 		
 	private:
 		// Nap Services
-		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
-		ResourceManager* mResourceManager = nullptr;	//< Manages all the loaded resources
-		SceneService* mSceneService = nullptr;						//< Manages all the objects in the scene
-		InputService* mInputService = nullptr;						//< Input service for processing input
-		EtherDreamService* mLaserService = nullptr;					// < Laser service
-		OSCService* mOscService = nullptr;							// < Laser DAC
+		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
+		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
+		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
+		InputService* mInputService = nullptr;							//< Input service for processing input
+		EtherDreamService* mLaserService = nullptr;						// < Laser service
+		OSCService* mOscService = nullptr;								// < Laser DAC
 	
 		rtti::ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointers to the render window// Laser DAC
 		rtti::ObjectPtr<EntityInstance> mLaserController = nullptr;		//< Entity that holds all the lasers to update / draw

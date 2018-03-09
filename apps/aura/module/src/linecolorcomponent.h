@@ -17,7 +17,7 @@ namespace nap
 	/**
 	 *	Resource of the line color component
 	 */
-	class LineColorComponent : public Component
+	class NAPAPI LineColorComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LineColorComponent, LineColorComponentInstance)

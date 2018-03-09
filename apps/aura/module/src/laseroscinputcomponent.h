@@ -15,7 +15,7 @@ namespace nap
 	/**
 	 *	Receives OSC events based on the address filter
 	 */
-	class LaserOSCInputComponent : public OSCInputComponent
+	class NAPAPI LaserOSCInputComponent : public OSCInputComponent
 	{
 		RTTI_ENABLE(OSCInputComponent)
 	public:
@@ -35,7 +35,7 @@ namespace nap
 	 * This component will forward any received osc messages to listening components
 	 * Register to the @messageReceived event to receive osc events that match the address pattern
 	 */
-	class LaserOSCInputComponentInstance : public OSCInputComponentInstance
+	class NAPAPI LaserOSCInputComponentInstance : public OSCInputComponentInstance
 	{
 		RTTI_ENABLE(OSCInputComponentInstance)
 	public:

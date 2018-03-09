@@ -33,7 +33,7 @@ namespace nap
 	/**
 	 * Component that converts and sends data to ether-dream laser DAC
 	 */
-	class LaserOutputComponent : public Component
+	class NAPAPI LaserOutputComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LaserOutputComponent, LaserOutputComponentInstance)
@@ -58,7 +58,7 @@ namespace nap
 	 * between the beginning and ends of line segments. The final distribution
 	 * depends on the line to gap ratio of the line that is updated and sent.
 	 */
-	class LaserOutputComponentInstance : public ComponentInstance
+	class NAPAPI LaserOutputComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
