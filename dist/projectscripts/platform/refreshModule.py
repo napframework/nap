@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import argparse
 import sys
 import os
@@ -7,9 +6,11 @@ from subprocess import Popen
 
 from NAPShared import find_module, call_except_on_failure
 
+# Exit codes
 ERROR_MISSING_PROJECT = 1
 ERROR_INVALID_PROJECT_JSON = 2
 
+# Platform-specific build directories
 if sys.platform == 'darwin':
     BUILD_DIR = 'xcode'
 elif sys.platform == 'win32':
@@ -18,6 +19,7 @@ else:
     BUILD_DIR = 'build'
 
 def update_module(module_name, build_type):
+    # Find the module
     module_path = find_module(module_name)
     if module_path is None:
         return ERROR_MISSING_PROJECT
@@ -32,11 +34,10 @@ def update_module(module_name, build_type):
         if not os.path.exists(full_build_dir):
             os.makedirs(full_build_dir)
 
-        # Generate project
         call_except_on_failure(module_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
     print("Solution generated in %s" % os.path.relpath(os.path.join(module_path, BUILD_DIR)))
-    sys.exit(0)
+    return(0)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

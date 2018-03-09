@@ -5,7 +5,6 @@ import os
 from subprocess import call
 import sys 
 
-
 from NAPShared import read_console_char
 
 if __name__ == '__main__':
@@ -41,6 +40,7 @@ if __name__ == '__main__':
         python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
     cmd = [python, script_path, project_name] 
+    # If we don't want to show the solution and we weren't not on Linux specify that
     if not show_solution and not sys.platform.startswith('linux'):
         cmd.append('--no-show')
     call(cmd)

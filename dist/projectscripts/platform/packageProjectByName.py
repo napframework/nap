@@ -20,15 +20,18 @@ PACKAGED_BUILDINFO_FILE = '%s/cmake/buildinfo.json' % PACKAGING_DIR
 PROJECT_INFO_FILE = 'project.json'
 PACKAGED_BUILD_TYPE = 'Release'
 
+# Exit codes
 ERROR_BAD_INPUT = 1
 ERROR_MISSING_PROJECT = 2
 ERROR_INVALID_PROJECT_JSON = 3
 
 def package_project(project_name, show_created_package, include_napkin, zip_package):
+    # Find the project
     project_path = find_project(project_name)
     if project_path is None:
         return ERROR_MISSING_PROJECT
 
+    # Process the project info to get project full name and version
     (project_version, project_full_name) = process_project_info(project_path)
     if project_version is None:
         return ERROR_INVALID_PROJECT_JSON
@@ -135,7 +138,7 @@ def archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_versi
 
     shutil.move(bin_dir, archive_dir)
 
-    # Ardhive
+    # Archive
     print("Archiving to %s.." % package_filename_with_ext)
     call_except_on_failure(project_dir, ['tar', '-cJvf', package_filename_with_ext, package_filename])
 

@@ -2,6 +2,7 @@ import os
 from subprocess import Popen
 import sys
 
+# Run command, raising exception on failure
 def call_except_on_failure(cwd, cmd):
     # print('dir: %s' % cwd)
     # print('cmd: %s' % cmd)
@@ -11,11 +12,13 @@ def call_except_on_failure(cwd, cmd):
         raise Exception(proc.returncode)
     return out
 
+# Locate module specified by name
 def find_module(module_name):
     script_path = os.path.realpath(__file__)
     script_to_nap_root = os.path.join(os.pardir, os.pardir)
     nap_root = os.path.join(os.path.dirname(script_path), script_to_nap_root)
 
+    # Create module dir name
     module_dir_name = module_name.lower()
     if not module_dir_name.startswith("mod_"):
         module_dir_name = "mod_%s" % module_dir_name
@@ -23,6 +26,7 @@ def find_module(module_name):
     modules_root = os.path.join(nap_root, 'usermodules')
     module_path = os.path.join(modules_root, module_dir_name)
 
+    # Does it exist?
     if os.path.exists(module_path):
         cmake_path = os.path.join(module_path, 'CMakeLists.txt')
         if os.path.exists(cmake_path):
@@ -35,6 +39,7 @@ def find_module(module_name):
         print("Couldn't find module with name '%s'" % module_name)
         return None
 
+# Locate project specified by name
 def find_project(project_name, silent_failure=False):
     script_path = os.path.realpath(__file__)
     script_to_nap_root = os.path.join(os.pardir, os.pardir)
@@ -52,6 +57,7 @@ def find_project(project_name, silent_failure=False):
         print("Couldn't find project, demo or example with name '%s'" % project_name)
     return None
 
+# Super basic camelcase validation of name
 def validate_camelcase_name(module_name):
     # Check we're not a single char
     if len(module_name) < 2:

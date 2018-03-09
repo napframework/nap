@@ -7,9 +7,10 @@ from subprocess import Popen, call
 
 from NAPShared import find_project, call_except_on_failure
 
-
+# Exit codes
 ERROR_MISSING_MODULE = 1
 
+# Platform-specific build directories
 if sys.platform == 'darwin':
     BUILD_DIR = 'xcode'
 elif sys.platform == 'win32':
@@ -18,6 +19,7 @@ else:
     BUILD_DIR = 'build'
 
 def cmake_reconfigure_project(project_name, build_type, show_solution):
+    # Find the project
     project_path = find_project(project_name)
     if project_path is None:
         return ERROR_MISSING_MODULE
