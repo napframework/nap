@@ -21,6 +21,7 @@ Rendering {#rendering}
 		*	[Image From File](@ref image_from_file)
 	* 	[Reading Textures From The GPU](@ref reading_textures)
 	*	[Parameters](@ref texture_parameters)
+*	[Windows](@ref multi_screen)
 *	[Offscreen Rendering](@ref offscreen_rendering)
 *	[Cameras](@ref cameras)
 
@@ -815,7 +816,6 @@ Another thing that will affect performance is the [ETextureUsage](@ref opengl::E
 
 This flag allows the video card driver to choose the most optimal memory on the GPU for your use case scenario. For instance: when DynamicWrite is set the texture will (most likely) be placed into WriteCombined memory.
 
-
 Texture Parameters {#texture_parameters}
 -----------------------
 
@@ -850,6 +850,73 @@ A lod level of 0 prevents the texture from mipmapping, ie: the renderer only cho
 	"Format": "RGB8"
 }
 ```
+
+Windows {#multi_screen}
+=======================
+
+In most render engines resources are locked to a specific render context. This makes it (almost) impossible to render the same set of objects to multiple screens. With NAP you can render the same object to screen A and B without having to worry about the associated render context. As mentioned in the introduction: this is one of the biggest advantages of the render engine that ships with NAP. The system manages every context and resource for you. 
+
+Every application that uses the render module spawns at least 1 window. This is the primary window. The primary window is imporant when rendering [off screen surfaces](@ref offscreen_rendering). Even if you don't specify a window in json the system creates one for you. By default this window is hidden. When you declare only 1 window in json that window becomes the primary window and is made visible. When you declare multiple windows the first window the system encounters becomes the primary window and is made visible. When working with multiple windows you can't assume that the first window declared in json becomes the primary window! You can (however) always [ask](@ref nap::RenderService.getPrimaryWindow) the render service what the primary window is.
+
+You can add as many windows to your application as you want. Take a look at the multi window demo for a working example. That demo spawns three windows and renders the same set of objects (in different configurations) to every one of them. In your application you have to activate the window you want to render to before issuing any render commands. This is demonstrated in the example below:
+
+~~~~~~~~~~~~~~~{.cpp}
+void MultiWindowApp::render()
+{
+	// Clear opengl context related resources that are not necessary any more
+	mRenderService->destroyGLContextResources({ mRenderWindowOne });
+
+	// Render Window One : Sphere
+	{
+		// Activate current window for drawing
+		mRenderWindowOne->makeActive();
+
+		// Clear back-buffer
+		mRenderService->clearRenderTarget(mRenderWindowOne->getBackbuffer());
+
+		// Find the world and add as an object to render
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		components_to_render.emplace_back(&renderable_world);
+
+		// Find the camera
+		nap::PerspCameraComponentInstance& camera = mPerspectiveCameraOne->getComponent<nap::PerspCameraComponentInstance>();
+
+		// Render the world with the right camera directly to screen
+		mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
+
+		// Swap buffers window one
+		mRenderWindowOne->swap();
+	}
+
+	// Render Window Two : Texture
+	{
+		// Make window 2 active
+		mRenderWindowTwo->makeActive();
+
+		// Clear backbuffer
+		mRenderService->clearRenderTarget(mRenderWindowTwo->getBackbuffer());
+
+		// Find the plane entity and add as an object to render
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		nap::RenderableMeshComponentInstance& renderable_plane = mPlaneOneEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		components_to_render.emplace_back(&renderable_plane);
+
+		// Find the camera
+		nap::OrthoCameraComponentInstance& camera = mOrthoCamera->getComponent<nap::OrthoCameraComponentInstance>();
+
+		// Render the plane with the orthographic to window two
+		mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
+
+		// Swap buffers window two
+		mRenderWindowTwo->swap();
+	}
+
+	....
+}
+~~~~~~~~~~~~~~~
+
+In the example above we render two objects (a sphere and a plane) to a different window. Before rendering anything we tell the system to remove all obsolete OpenGL resources. After that we activate the first window and render a sphere using a perspective camera. This pattern repeats itself for the second window but with a different camera and object. The last thing we do before activating a new window is swap the buffers of the window we just rendered in to. This replaces the pixels of the window with the just rendered result.
 
 Offscreen Rendering {#offscreen_rendering}
 =======================
@@ -890,9 +957,12 @@ Every render target is a resource that links to two textures: a color and depth 
 }
 ```
 
-In this example we create two textures and a render target. The render target links to both textures. The only thing left to do is locate the target in your application and give it to the render service together with a selection of components to render. Notice that rendering to a render target or screen works exactly the same:
+In this example we create two textures and a render target. The render target links to both textures. The only thing left to do is locate the target in your application and give it to the render service together with a selection of components to render. Off screen surfaces are always rendered with the context associated with the primary window! Make sure to activate the primary window before issuing your off screen render commands. Other than that rendering to a render target works exactly the same as rendering to a window:
 
 ~~~~~~~~~~~~~~~{.cpp}
+// Activate the primary render context
+mRenderService->getPrimaryWindow().makeCurrent();
+
 // Clear buffers of video render target
 mRenderService->clearRenderTarget(mVideoRenderTarget->getTarget());
 			
