@@ -42,9 +42,12 @@ if (NOT NAPRTTI_LIBS_DIR)
     message(FATAL_ERROR "Couldn't find NAP RTTI")
 endif()
 
+# Setup as interface library
 add_library(naprtti INTERFACE)
 target_link_libraries(naprtti INTERFACE debug ${NAPRTTI_LIBS_DEBUG})
 target_link_libraries(naprtti INTERFACE optimized ${NAPRTTI_LIBS_RELEASE})
+
+# Show headers in IDE
 file(GLOB rtti_headers ${CMAKE_CURRENT_LIST_DIR}/../include/rtti/*.h)
 target_sources(naprtti INTERFACE ${rtti_headers})
 source_group(NAP\\RTTI FILES ${rtti_headers})

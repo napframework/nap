@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+# Get our module name
 if (IMPORTING_PROJECT_MODULE)
     set(MODULE_NAME "mod_${PROJECT_NAME}")    
 else()
@@ -7,8 +8,8 @@ endif(IMPORTING_PROJECT_MODULE)
 
 project(${MODULE_NAME})
 
+# Support building user modules from their own (build system) project
 if(NOT MODULE_INTO_PROJ)
-
     get_filename_component(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../ REALPATH)
     message(STATUS "Using NAP root: ${NAP_ROOT}")
     get_filename_component(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty REALPATH)
@@ -65,7 +66,6 @@ if(NOT MODULE_INTO_PROJ)
             endforeach ()
         endif()
     endif()
-
 endif(NOT MODULE_INTO_PROJ)
 
 include_directories(${NAP_ROOT}/include/)

@@ -1,3 +1,5 @@
+# Top level entry point for creating platform release.  Mainly a gathering place for things not captured 
+# in the install phase elsewhere.
 macro(package_nap)
     # Populate JSON build info
     if(DEFINED NAP_PACKAGED_BUILD)
@@ -50,9 +52,8 @@ macro(package_nap)
     endif()
 endmacro()
 
-# Package installed Python for distribution with NAP release (for use with mod_nappython & Napkin)
+# Package installed Python for distribution with NAP release (for use with mod_nappython, Napkin and interpreter for Python scripts)
 macro(package_python)
-
     if(WIN32)
         # Install main framework
         install(DIRECTORY ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/
@@ -107,6 +108,12 @@ endmacro()
 macro(package_qt)
     set(QT_FRAMEWORKS Core Gui Widgets)
 
+    # Install licenses.  This link is a little tenuous but seems to work for Win64
+    # TODO Fail if we don't find sufficient licenses (which happens pre Qt 5.10)
+    install(DIRECTORY ${QT_DIR}/../../Licenses/
+            DESTINATION thirdparty/Qt/licenses
+            CONFIGURATIONS Release
+            )
     if(WIN32)
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
@@ -130,11 +137,6 @@ macro(package_qt)
                 DESTINATION thirdparty/Qt/plugins/Release/platforms/
                 CONFIGURATIONS Release)
 
-        # Install licenses.  This link is a little tenuous but seems to work for Win64
-        install(DIRECTORY ${QT_DIR}/../../Licenses/
-                DESTINATION thirdparty/Qt/licenses
-                CONFIGURATIONS Release
-                )
     elseif(APPLE)
         # macOS appears to depend on these extra Qt frameworks
         list(APPEND QT_FRAMEWORKS PrintSupport)
@@ -174,12 +176,6 @@ macro(package_qt)
                                          ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqcocoa.dylib
                                          ${PATH_FROM_QT_PLUGIN_TOLIB}
                                          )
-
-        # Install licenses.  This link is a little tenuous but seems to work for macOS
-        install(DIRECTORY ${QT_DIR}/../../Licenses/
-                DESTINATION thirdparty/Qt/licenses
-                CONFIGURATIONS Release
-                )
     elseif(UNIX)
         list(APPEND QT_FRAMEWORKS DBus XcbQpa)
 
@@ -201,7 +197,6 @@ macro(package_qt)
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                 )
 
-
         # Install Qt dependent libs on Linux
         set(QT_DEPENDENT_LIBS_LINUX icudata icui18n icuuc)
         foreach(QT_DEPENDENT_LIB ${QT_DEPENDENT_LIBS_LINUX})
@@ -213,13 +208,6 @@ macro(package_qt)
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                     )            
         endforeach()
-
-        # Install licenses.  This link is a little tenuous but seems to work for Linux
-        install(DIRECTORY ${QT_DIR}/../../Licenses/
-                DESTINATION thirdparty/Qt/licenses
-                CONFIGURATIONS Release
-                )
-
     endif()
 endmacro()
 
@@ -371,24 +359,18 @@ macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MO
 
     # Iterate over each module and append to path
     foreach(module ${DEPENDENT_NAP_MODULES})
-        # if (NOT BUILT_RPATH STREQUAL "")
-        #     set(BUILT_RPATH "${BUILT_RPATH}:")
-        # endif()
-
         set(THIS_MODULE_PATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/modules/${module}/lib/${CMAKE_BUILD_TYPE}")
-        # message("Adding ${module} as ${THIS_MODULE_PATH}")
         set(BUILT_RPATH "${BUILT_RPATH}:${THIS_MODULE_PATH}")
     endforeach(module)
-    # message("Built rpath: ${BUILT_RPATH}")
     set_target_properties(${TARGET_NAME} PROPERTIES SKIP_BUILD_RPATH FALSE
                                                     INSTALL_RPATH ${BUILT_RPATH})
 endmacro()
 
-
+# On macOS set the packaged RPATH of a binary object for its dependent modules for a single build configuration
 macro(set_single_config_installed_rpath_on_macos_object_for_dependent_modules CONFIG DEPENDENT_NAP_MODULES OBJECT_FILENAME NAP_ROOT_LOCATION_TO_OBJECT)
     ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/python/lib")
     ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/rttr/bin")
-    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/lib/${CONFIG}")
+    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/lib/${CONFIG}")   
     foreach(DEPENDENT_MODULE_NAME ${DEPENDENT_NAP_MODULES})
         ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/modules/${DEPENDENT_MODULE_NAME}/lib/${CONFIG}")
     endforeach()
@@ -398,7 +380,7 @@ macro(set_single_config_installed_rpath_on_macos_object_for_dependent_modules CO
     endforeach()       
 endmacro()
 
-# Set the packaged RPATH of a macOS binary object for its dependent modules
+# On macOS set the packaged RPATH of a module on macOS for its dependent modules
 macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE)
     foreach(MODULECONFIG Release Debug)
         ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/python/lib")
@@ -414,11 +396,13 @@ macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MO
     endforeach()
 endmacro()
 
+# On macOS ensure the specified module has the provided RPATH for the specified build configuration
 macro(ensure_macos_module_has_rpath_at_install MODULE_NAME CONFIG PATH_TO_ADD)
     set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/modules/${MODULE_NAME}/lib/${CONFIG}/lib${MODULE_NAME}.dylib)
     ensure_macos_file_has_rpath_at_install(${MODULE_FILENAME} ${PATH_TO_ADD})
 endmacro()
 
+# On macOS ensure the specified binary object has the provided RPATH
 macro(ensure_macos_file_has_rpath_at_install FILENAME PATH_TO_ADD)
     install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
                                           -add_rpath

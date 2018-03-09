@@ -59,9 +59,8 @@ namespace nap
 		// expected when apps are launched directly from Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
-		// Temporarily set our Python home location until we have the ability to do this via CMake
-		// into runtime module configuration
-		tempSettingOfPythonHome();
+		// Setup our Python environment
+		setupPythonEnvironment();
 		
 		// Load our module names from the project info
 		ProjectInfo projectInfo;
@@ -390,9 +389,8 @@ namespace nap
 		return false;
 	}
 
-	// Temporarily set our Python home location until we have the ability to do this via CMake
-	// into runtime module configuration
-	void Core::tempSettingOfPythonHome()
+	
+	void Core::setupPythonEnvironment()
 	{
 #ifdef _WIN32
 		const std::string platformPrefix = "msvc";
@@ -408,46 +406,40 @@ namespace nap
 		const bool packagedBuild = false;
 #endif
 
-		std::string exeDir = utility::getExecutableDir();
+		const std::string exeDir = utility::getExecutableDir();
 
 #if _WIN32
 		if (packagedBuild)
 		{
 			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
 			const std::string packagedAppPythonPath = exeDir + "/python36.zip";
-			// Logger::info("Setting PYTHONPATH for packaged project to %s\n", packagedAppPythonPath.c_str());
 			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
 		}
 		else {
-			// set PYTHONPATH for thirdparty location beside NAP source
-			std::string napRoot = exeDir + "/../../..";
+			// Set PYTHONPATH for thirdparty location beside NAP source
+			const std::string napRoot = exeDir + "/../../..";
 			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
-			// Logger::info("Setting PYTHONPATH for project against NAP source to %s\n", pythonHome.c_str());
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
 #else	
-
 		if (packagedBuild)
 		{
+			// Check for packaged app modules dir
 			const std::string packagedAppPythonPath = exeDir + "/lib/python3.6";
 			if (utility::dirExists(packagedAppPythonPath)) {
-				// set PYTHONHOME for that
-				// Logger::info("Setting PYTHONHOME to %s\n", exeDir.c_str());
 				setenv("PYTHONHOME", exeDir.c_str(), 1);
 			}
 			else {
-				// set PYTHONHOME to thirdparty location within packaged NAP release
+				// Set PYTHONHOME to thirdparty location within packaged NAP release
 				const std::string napRoot = exeDir + "/../../../../";
 				const std::string pythonHome = napRoot + "/thirdparty/python/";
-				// Logger::info("Setting PYTHONHOME to %s\n", pythonHome.c_str());
 				setenv("PYTHONHOME", pythonHome.c_str(), 1);
 			}
 		} 
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
-			std::string napRoot = exeDir + "/../../../";
+			const std::string napRoot = exeDir + "/../../../";
 			const std::string pythonHome = napRoot + "/../thirdparty/python/" + platformPrefix + "/install";
-			// Logger::info("Setting PYTHONHOME to %s\n", pythonHome.c_str());
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
