@@ -9,17 +9,20 @@
 
 namespace nap
 {
+	// Forward Declares
     class Core;
 	class Component;
 	class Entity;
 	class EntityInstance;	
 	class Scene;
 
+	// Using
 	using EntityList = std::vector<EntityInstance*>;
 
 	/**
-	 * An EntityInstance is the runtime-instance of an Entity, which is read from json.
-	 * It contains a list of ComponentInstances and functionality to query these components
+	 * The runtime counterpart of an Entity which is used to group components and child entities.
+	 * This class only works with run-time versions of both, ie: ComponentInstance and EntityInstance
+	 * On construction every entity receives a reference to Core and the Entity it originated from.
 	 */
 	class NAPAPI EntityInstance : public rtti::RTTIObject
 	{
@@ -34,7 +37,6 @@ namespace nap
 		using ComponentConstIterator = utility::UniquePtrConstVectorWrapper<ComponentList, ComponentInstance*>;
 
 		/**
-		 * The constructor
 		 * @param core: the nap core instance associated with the application
 		 * @param entity: the resource that was used to create this instance, this is null
 		 * when there is no resource associated with the instance, for example: the root entity
@@ -309,7 +311,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * An Entity is the static data as deserialized from json. It can be used to create an EntityInstance
+	 * Resource part of an entity.
+	 * This represents the static data that is deserialized from json and contains a list of child entities and components
+	 * This class is used as a blueprint for the creation of an EntityInstance.
 	 */
 	class NAPAPI Entity : public rtti::RTTIObject
 	{

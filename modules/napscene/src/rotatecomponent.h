@@ -25,7 +25,7 @@ namespace nap
 	class RotateComponentInstance;
 
 	/**
-	 * Rotate component resource
+	 * Resource part of the rotate component
 	 */
 	class NAPAPI RotateComponent : public Component
 	{
@@ -47,8 +47,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Rotate component instance
-	 *
+	 * Instance part of the rotate component. 
 	 * Automatically rotates the entity along a certain axis at a certain speed
 	 * The initial rotation value after initialization is used to rotate along the specified axis
 	 * This component updates (overrides) the rotate value of the transform component

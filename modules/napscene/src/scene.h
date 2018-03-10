@@ -8,6 +8,7 @@
 
 namespace nap
 {
+	// Forward Declares
 	class Entity;
 	class SpawnedEntityInstance;
 	class Core;
