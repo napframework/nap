@@ -35,9 +35,9 @@ namespace nap
 		IMesh& getMeshResource()			{ return *mMesh; }
 
 	public:
-		rtti::ObjectPtr<IMesh>					mMesh;								///< Resource to render
-		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
-		math::Rect							mClipRect;							///< Clipping rectangle, in pixel coordinates
+		rtti::ObjectPtr<IMesh>				mMesh;								///< Property: 'Mesh' Resource to render
+		MaterialInstanceResource			mMaterialInstanceResource;			///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
+		math::Rect							mClipRect;							///< Property: 'ClipRect' Optional clipping rectangle, in pixel coordinates
 	};
 
 
