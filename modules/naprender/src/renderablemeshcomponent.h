@@ -14,8 +14,10 @@ namespace nap
 	class RenderableMeshComponentInstance;
 	
 	/**
-	* Resource class for RenderableMeshResource. Hold static data as read from file.
-	*/
+	 * Resource part of the component used for managing and rendering a mesh.
+	 * The link to the mesh and clipping rectangle (property) are optional. You can set the mesh at runtime if necessary
+	 * The material is required. 
+	 */
 	class NAPAPI RenderableMeshComponent : public RenderableComponent
 	{
 		RTTI_ENABLE(RenderableComponent)

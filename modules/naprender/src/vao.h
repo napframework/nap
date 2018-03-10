@@ -15,7 +15,7 @@ namespace nap
 	class RenderService;
 
 	/**
-	 * A vertex array object is identified by the combination of Material and MeshResource, as it
+	 * A vertex array object is identified by the combination of Material and MeshResource and
 	 * binds those two objects together.
 	 */
 	struct NAPAPI VAOKey final

@@ -12,8 +12,8 @@ namespace nap
 	class DefaultInputRouterComponentInstance;
 
 	/**
-	 * Base class for input routing. An input router selects input components from a hierarchy of entities
-	 * This class provides an interface to forward input events to input components associated with an entity
+	 * Base class for routing input events. An input router selects input components from a hierarchy of entities.
+	 * This class provides an interface to forward input events to input components that belong to one of the entities.
 	 * Override the routing call to implement custom routing behavior. 
 	 */
 	class NAPAPI InputRouter

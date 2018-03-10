@@ -14,8 +14,8 @@ namespace nap
 
 	/**
 	 * The OSCArgument wraps an OSCValue.
-	 * This class offers some utility methods to quickly work with the most common OSC values
-	 * For other / more complex OSC Value types you can ask for the value using the get<T> function
+	 * This class offers some utility methods to quickly work with the most common OSC values.
+	 * For other / more complex OSC Value types you can ask for the value using the get<T> function.
 	 * Note that this argument owns the value.
 	 */
 	class NAPAPI OSCArgument

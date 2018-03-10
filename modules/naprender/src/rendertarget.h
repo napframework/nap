@@ -17,8 +17,9 @@ namespace opengl
 namespace nap
 {
 	/**
-	 * Frame buffer specialization of the render target resource
-	 * Wraps an opengl frame buffer (RGBA + DEPTH)
+	 * A resource that is used to render objects to an off screen surface (set of textures).
+	 * This objects requires a link to a color and depth texture and internally manages an opengl render target.
+	 * The result of the render step is stored in the linked textures.
 	 */
 	class NAPAPI RenderTarget : public rtti::RTTIObject
 	{
@@ -62,8 +63,8 @@ namespace nap
 		std::unique_ptr<opengl::TextureRenderTarget2D> mTextureRenderTarget = nullptr;
 
 	public:
-		rtti::ObjectPtr<Texture2D>	mColorTexture = nullptr;	// Color texture to be used by the render target
-		rtti::ObjectPtr<Texture2D>	mDepthTexture = nullptr;	// Depth texture to be used by the render target
-		glm::vec4						mClearColor;				// Color used when clearing the render target
+		rtti::ObjectPtr<Texture2D>		mColorTexture = nullptr;	///< Property: 'mColorTexture' link to texture used to store the color values of a render step
+		rtti::ObjectPtr<Texture2D>		mDepthTexture = nullptr;	///< Property: 'mDepthTexture' link to texture used to store the depth values of a render step
+		glm::vec4						mClearColor;				///< Property: 'mClearColor' RGBA color used when clearing the render target
 	};
 }

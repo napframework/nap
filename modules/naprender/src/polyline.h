@@ -12,7 +12,7 @@ namespace nap
 	 */
 	struct PolyLineProperties
 	{
-		glm::vec4 mColor = { 1.0f, 1.0f, 1.0f,1.0f };	// Color of the line
+		glm::vec4 mColor = { 1.0f, 1.0f, 1.0f,1.0f };	///< Property: 'Color' RGBA color of the line
 	};
 
 
@@ -33,53 +33,53 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 *	@return the mesh associated with this poly line
+		 *	@return The polygon line mesh
 		 */
 		virtual MeshInstance& getMeshInstance() override						{ return *mMeshInstance; }
 
 		/**
-		 *	@return const reference to the mesh associated with this poly line
+		 *	@return The polygon line mesh
 		 */
 		virtual const MeshInstance&	getMeshInstance() const override 			{ return *mMeshInstance; }
 
 		/**
-		 *	@return the position vertex data
+		 *	@return The line position vertex data
 		 */
 		Vec3VertexAttribute& getPositionAttr();
 		
 		/**
-		*	@return the position vertex data
+		*	@return The line position vertex data
 		*/
 		const Vec3VertexAttribute& getPositionAttr() const;
 
 		/**
-		 *	@return the color vertex data
+		 *	@return The line color vertex data
 		 */
 		Vec4VertexAttribute& getColorAttr();
 
 		/**
-		*	@return the color vertex data
+		*	@return The line color vertex data
 		*/
 		const Vec4VertexAttribute& getColorAttr() const;
 		
 		/**
-		 *	@return the normal data
+		 *	@return The line normal vertex data
 		 */
 		Vec3VertexAttribute& getNormalAttr();
 
 		/**
-		*	@return the normal data
+		*	@return The line normal vertex data
 		*/
 		const Vec3VertexAttribute& getNormalAttr() const;
 		
 		/**
-		 *	@return the uv data
+		 *	@return The line uv vertex data
 		 */
 		Vec3VertexAttribute& getUvAttr();
 
 		/**
-		*	@return the uv data
-		*/
+		 *	@return The line uv vertex data
+		 */
 		const Vec3VertexAttribute& getUvAttr() const;
 
 		/**
@@ -125,8 +125,8 @@ namespace nap
 		float getDistances(std::map<float, int>& outDistances) const;
 
 		/**
-		*	@return if the line is closed or not
-		*/
+		 * @return if the line is closed or not
+		 */
 		bool isClosed() const;
 
 		// Properties associated with a line
@@ -143,27 +143,25 @@ namespace nap
 
 
 	/**
-	 * Simple line from a to b, note that the associated uv coordinates are directly associated
-	 * with the x and y position of the line start and end position, the normals are perpendicular
-	 * to the direction of the line, ie: cross({0,0,1}, normalize(End-Start)))
+	 * Simple line from a to b. 
+	 * The uv coordinates are derived from start and end position of the line (x, y coordinates). 
+	 * The normals are perpendicular to the direction of the line, ie: cross({0,0,1}, normalize(End-Start)))
 	 */
 	class NAPAPI Line : public PolyLine
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
 		// Properties
-		glm::vec3 mStart =	{ -0.5f, 0.0f, 0.0f };	// Start point of the line
-		glm::vec3 mEnd =	{ 0.5f, 0.0f, 0.0f };	// End point of the line
-		bool mClosed =		false;					// If the line is closed or not
-		
+		glm::vec3 mStart =	{ -0.5f, 0.0f, 0.0f };	///< Property: 'Start' location of the line
+		glm::vec3 mEnd =	{ 0.5f, 0.0f, 0.0f };	///< Property: 'End' location of the line
+		bool mClosed =		false;					///< Property: 'Closed' if the line is considered closed
+		int mVertexCount = 2;						///< Property: 'Vertices' number of line vertices, defaults to two
+
 		/**
 		 * Creates the line
 		 * @return if the line was successfully created
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		// Property: the amount of vertices of this line
-		int mVertexCount = 2;
 	};
 
 
@@ -171,16 +169,16 @@ namespace nap
 
 
 	/**
-	 * Simple rectangle as a polygon line on the x / y axis
-	 * Vertex count starts at the lower left corner and evolves counter-clockwise
-	 * The uv coordinates are normalized based on the longest edge
-	 * The normals are interpolated from the edge vertices and point outwards from the center
+	 * Simple rectangle as a polygon line.
+	 * Vertex count starts at the lower left corner and evolves counter-clockwise.
+	 * The uv coordinates are normalized based on the longest edge.
+	 * The normals are interpolated from the edge vertices and point outwards from the center.
 	 */
 	class NAPAPI Rectangle : public PolyLine
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		glm::vec2 mDimensions;						// Width / Height of the rectangle 
+		glm::vec2 mDimensions;						///< Property: 'Dimensions' vec2 that describes the width and height of the rectangle 
 
 		/**
 		* Creates the rectangle
@@ -191,35 +189,33 @@ namespace nap
 
 
 	/**
-	 * Simple circle as a polygon line
-	 * The uv's are normalized 0-1, the normals point outwards from the center
+	 * Simple circle as a polygon line. 
+	 * The uv's are normalized 0-1, the normals point outwards from the center.
 	 */
 	class NAPAPI Circle : public PolyLine
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		float mRadius;							// Radius of the circle
+		float mRadius;							///< Property: 'Radius' of the circle
+		int mSegments = 100;					///< Property: 'Segments' number of circle segments 
 
 		/**
 		* Creates the rectangle
 		* @return if the rectangle was successfully created
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		// property: the number of segments
-		int mSegments = 100;
 	};
 
 	
 	/**
-	 * Simple hexagon as a polygon line
-	 * The uv's are normalized 0-1, the normals point outwards from the center
+	 * Simple hexagon as a polygon line.
+	 * The uv's are normalized 0-1, the normals point outwards from the center.
 	 */
 	class NAPAPI Hexagon : public PolyLine
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		float mRadius = 1.0f;						// Radius of the hexagon
+		float mRadius = 1.0f;						///< Property: 'Radius' of the hexagon
 
 		/**
 		 * Creates the hexagon
@@ -230,14 +226,14 @@ namespace nap
 
 	
 	/**
-	 * Simple equal sided triangle
-	 * The uv's are normalized 0-1, the normals point outwards from the center
+	 * Simple equal sided triangle.
+	 * The uv's are normalized 0-1, the normals point outwards from the center.
 	 */
 	class NAPAPI TriangleLine : public PolyLine
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		float mRadius = 1.0f;							// Size of the triangle
+		float mRadius = 1.0f;							///< Property: 'Radius' of the triangle
 
 		/**
 		 * Creates the equal sided triangle
