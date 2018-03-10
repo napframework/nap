@@ -12,8 +12,9 @@ namespace nap
 	class DefaultInputRouterComponentInstance;
 
 	/**
-	 * Base class for input routing. An input router selects InputComponents from a hierarchy of entities
-	 * to send the input to.
+	 * Base class for input routing. An input router selects input components from a hierarchy of entities
+	 * This class provides an interface to forward input events to input components associated with an entity
+	 * Override the routing call to implement custom routing behavior. 
 	 */
 	class NAPAPI InputRouter
 	{
@@ -21,7 +22,7 @@ namespace nap
 		using EntityList = std::vector<EntityInstance*>;
 
 		/**
-		 * Processes a single event.
+		 * Forwards an input event to a set of entities.
 		 * @param event The event to process.
 		 * @param entities The list of entities to process recursively.
 		 */
@@ -30,7 +31,8 @@ namespace nap
 
 
 	/**
-	 * Default implementation of InputRouter. Sends event to all entities.
+	 * Default implementation of an input router. 
+	 * Sends input events to all input components that are associated with the selection of entities.
 	 */
 	class NAPAPI DefaultInputRouter : public InputRouter
 	{
@@ -43,7 +45,9 @@ namespace nap
 
 
 	/**
-	 * Component used to have a default input router entity
+	 * Allows you to define a default input router as a component in json
+	 * When instantiated this component holds a default input router that can be
+	 * used to forward events to a selection of entities
 	 */
 	class NAPAPI DefaultInputRouterComponent : public Component
 	{
@@ -53,7 +57,8 @@ namespace nap
 
 
 	/**
-	 * Wrapper component for Default Input Router
+	 * Instance part of the default input router component
+	 * Use the input router to forward input events to a selection of entities
 	 */
 	class NAPAPI DefaultInputRouterComponentInstance : public ComponentInstance
 	{
