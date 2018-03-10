@@ -44,8 +44,9 @@ napkin::FlatTypeModel::FlatTypeModel(const rttr::type& basetype) : mBaseType(bas
 
 
 
-napkin::FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
+napkin::FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : QMenu(nullptr)
 {
+	mTreeView.setModel(&model);
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.addWidget(&mTreeView);
@@ -53,7 +54,6 @@ napkin::FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
 	mTreeView.getLineEdit().setFocusPolicy(Qt::StrongFocus);
 	mTreeView.setIsItemSelector(true);
 	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &FilterPopup::confirm);
-	setMinimumSize(400, 400);
 }
 
 void napkin::FilterPopup::showEvent(QShowEvent* event)
@@ -64,9 +64,8 @@ void napkin::FilterPopup::showEvent(QShowEvent* event)
 
 nap::rtti::RTTIObject* napkin::FilterPopup::getObject(QWidget* parent, const rttr::type& typeConstraint)
 {
-	FilterPopup dialog(parent);
 	FlatObjectModel model(typeConstraint);
-	dialog.mTreeView.setModel(&model);
+	FilterPopup dialog(parent, model);
 
 	dialog.exec(QCursor::pos());
 
@@ -79,8 +78,8 @@ nap::rtti::RTTIObject* napkin::FilterPopup::getObject(QWidget* parent, const rtt
 
 nap::rtti::TypeInfo napkin::FilterPopup::getDerivedType(QWidget* parent, const rttr::type& baseType)
 {
-	auto dialog = new FilterPopup(parent);
-	dialog->mTreeView.setModel(new FlatTypeModel(baseType));
+	FlatTypeModel model(baseType);
+	auto dialog = new FilterPopup(parent, model);
 	dialog->exec(QCursor::pos());
 
 	auto selected_item = dialog->mTreeView.getSelectedItem();
@@ -92,11 +91,12 @@ nap::rtti::TypeInfo napkin::FilterPopup::getDerivedType(QWidget* parent, const r
 
 nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
 {
-	auto dialog = new FilterPopup(parent);
-	auto model = new QStandardItemModel();
+
+	QStandardItemModel model;
 	for (const auto t : getResourceTypes())
-		model->appendRow(new QStandardItem(QString::fromUtf8(t.get_name().data())));
-	dialog->mTreeView.setModel(model);
+		model.appendRow(new QStandardItem(QString::fromUtf8(t.get_name().data())));
+
+	auto dialog = new FilterPopup(parent, model);
 
 	dialog->exec(QCursor::pos());
 
@@ -143,6 +143,11 @@ void napkin::FilterPopup::moveSelection(int dir)
 void napkin::FilterPopup::confirm()
 {
 	close();
+}
+
+QSize napkin::FilterPopup::sizeHint() const
+{
+	return mSize;
 }
 
 
