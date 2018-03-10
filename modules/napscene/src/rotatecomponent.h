@@ -15,9 +15,9 @@ namespace nap
 {
 	struct NAPAPI RotateProperties
 	{
-		glm::vec3	mAxis;		// Rotation axis
-		float		mSpeed;		// Rotation speed (seconds)
-		float		mOffset;	// Rotation offset in seconds
+		glm::vec3	mAxis;		///< Property: 'Axis' Rotation axis
+		float		mSpeed;		///< Property: 'Speed' Rotation speed (seconds)
+		float		mOffset;	///< Property: 'Offset' Rotation offset in seconds
 	};
 
 	//////////////////////////////////////////////////////////////////////////
