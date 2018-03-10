@@ -10,9 +10,9 @@ namespace nap
 {
 	/**
 	 * This mesh builds a line structure based on the vertices of another mesh
-	 * The build line structure represents the normals of the reference mesh and can
-	 * be drawn to screen. The mesh itself carries 2 attributes, position and color, where
-	 * the color's alpha = 1 at the beginning of the normal and 0 at the end
+	 * The line structure represents the normals of the reference mesh and can be drawn to screen. 
+	 * The mesh itself carries 2 attributes, position and color, where
+	 * the alpha value = 1 at the beginning of the normal and 0 at the end.
 	 */
 	class NAPAPI VisualizeNormalsMesh : public IMesh
 	{
@@ -40,10 +40,10 @@ namespace nap
 		bool updateNormals(utility::ErrorState& error, bool push=true);
 
 		// property: pointer to the IMesh that is used as a reference
-		rtti::ObjectPtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' pointer to the IMesh that is used as a reference
+		rtti::ObjectPtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference
 		
 		// property: length of the normals
-		float mNormalLength = 1.0f;											///< Property: 'Length' length of the normals
+		float mNormalLength = 1.0f;													///< Property: 'Length' length of the normals
 
 	protected:
 		std::unique_ptr<MeshInstance> mMeshInstance;

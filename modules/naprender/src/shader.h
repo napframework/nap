@@ -8,9 +8,8 @@
 namespace nap
 {
 	/**
-	 * Wraps a shader that can be used as a resource for a material instance
-	 * Note that the shader is not initialized (created) when the resource is created
-	 * this is deferred to actual rendering because of gl initialization
+	 * Resource that loads and compiles a shader from disk using the provided vertex and fragment shader paths.
+	 * A material and material instance link to a shader. The shader is compiled on initialization.
 	 */
 	class NAPAPI Shader : public rtti::RTTIObject
 	{

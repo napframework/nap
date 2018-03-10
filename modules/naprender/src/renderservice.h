@@ -26,7 +26,12 @@ namespace nap
 	class RenderWindow;
 
 	/**
-	 * Main interface for rendering operations. 
+	 * Main interface for 3D rendering operations.
+	 * The main function of this service is to initialize the render back-end, create and manage vertex array objects and
+	 * provide an interface to render objects to a specific target (screen or back-buffer).
+	 * Vertex array object management is handled completely by this service. As a user you only work
+	 * with the render interface to render a set of render-able components to a target using a camera.
+	 * The service is shut down automatically on exit. Including the destruction of windows and left over resources.
 	 */
 	class NAPAPI RenderService : public Service
 	{
@@ -40,10 +45,10 @@ namespace nap
 		 */
 		enum class State : int
 		{
-			Uninitialized		= -1,
-			Initialized			= 0,
-			WindowError			= 1,
-			SystemError			= 2,
+			Uninitialized	= -1,		///< The render back end is not initialized
+			Initialized		= 0,		///< The render back end initialized correctly
+			WindowError		= 1,		///< The render back end produced a window error
+			SystemError		= 2,		///< The render back end produced a system error
 		};
 
 		// Default constructor

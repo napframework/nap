@@ -10,11 +10,9 @@
 namespace nap
 {
 	/**
-	 * Renderer Base Class
-	 * Derived classed implement specific hardware rendering
-	 * options. Every renderer renders a set of objects to 
-	 * a specific render target. The render target initialization
-	 * and binding is handled by that target
+	 * OpenGL render back-end. 
+	 * Initializes and shuts down the OpenGL API and allows for the creation of new render windows.
+	 * This class also manages the primary window.
 	 */
 	class NAPAPI Renderer final
 	{
@@ -43,6 +41,8 @@ namespace nap
 
 		/**
 		 * Initialize the renderer
+		 * @param errorState contains the error when the renderer can't be initialized
+		 * @return if the renderer initialized successfully
 		 */
 		bool init(utility::ErrorState& errorState);
 
@@ -52,7 +52,7 @@ namespace nap
 		void shutdown();
 
 		/**
-		 * Get the primary window (i.e. the window that was used to init OpenGL against)
+		 * Get the primary window (i.e. the window that was used to init against)
 		 */
 		GLWindow& getPrimaryWindow() { return *mPrimaryWindow; }
 

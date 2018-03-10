@@ -23,6 +23,7 @@ namespace nap
 	/**
 	 * Object that receives and processes osc events
 	 * The receiver manages it's own connection in a background thread
+	 * All received messages are consumed by the OSC service
 	 */
 	class NAPAPI OSCReceiver : public rtti::RTTIObject
 	{
@@ -44,11 +45,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		// Property: the port to listen to for messages
-		int mPort = 7000;
-
-		// Property: if the receiver prints the received osc messages
-		bool mDebugOutput = false;
+		int mPort = 7000;				///< Property: 'Port' The port that is opened and used to receive osc messages
+		bool mDebugOutput = false;		///< Property: 'EnableDebugOutput' when enabled this objects prints all received osc messages
 
 		/**
 		 * Adds an event to the queue
