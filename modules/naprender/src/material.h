@@ -191,11 +191,11 @@ namespace nap
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
 	public:
-		std::vector<rtti::ObjectPtr<Uniform>>			mUniforms;											///< Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Mapping from mesh vertex attr to shader vertex attr
-		rtti::ObjectPtr<Shader>						mShader = nullptr;									///< The shader that this material is using
-		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Blend mode for this material
-		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determines how the Z buffer is used									///< Holds all the uniform values
+		std::vector<rtti::ObjectPtr<Uniform>>	mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
+		rtti::ObjectPtr<Shader>					mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
+		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material
+		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' Optional, determines how the Z buffer is used
 	};
 
 	//////////////////////////////////////////////////////////////////////////
