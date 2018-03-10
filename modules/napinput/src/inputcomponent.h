@@ -46,6 +46,7 @@ namespace nap
 
 	/**
 	 * Input component for press/release key events.
+	 * Register to the various signals to receive keyboard events
 	 */
 	class NAPAPI KeyInputComponentInstance : public InputComponentInstance
 	{
@@ -59,8 +60,8 @@ namespace nap
 		}
 
 		// Signals
-		Signal<const KeyPressEvent&>		pressed;		//< If the key has been pressed
-		Signal<const KeyReleaseEvent&>		released;		//< If the key has been released
+		Signal<const KeyPressEvent&>		pressed;		///< Signal emitted when a key is pressed
+		Signal<const KeyReleaseEvent&>		released;		///< Signal emitted when a key is released
 
 	protected:
 		virtual void trigger(const nap::InputEvent& inEvent) override;
@@ -79,6 +80,7 @@ namespace nap
 
 	/**
 	 * Input component for mouse/touch events.
+	 * Register to the various signals to receive mouse events
 	 */
 	class NAPAPI PointerInputComponentInstance : public InputComponentInstance
 	{
@@ -91,9 +93,9 @@ namespace nap
 		{
 		}
 
-		Signal<const PointerPressEvent&>	pressed;		//< If the input component was clicked
-		Signal<const PointerReleaseEvent&>	released;		//< If the input component click has been released
-		Signal<const PointerMoveEvent&>		moved;			//< If the component received a move (mousemove)
+		Signal<const PointerPressEvent&>	pressed;		///< Signal emitted when the input component receives a click
+		Signal<const PointerReleaseEvent&>	released;		///< Signal emitted when the click is released
+		Signal<const PointerMoveEvent&>		moved;			///< Signal emitted when this component receives a mouse move
 
 	protected:
 		virtual void trigger(const nap::InputEvent& inEvent) override;
