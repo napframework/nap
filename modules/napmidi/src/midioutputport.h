@@ -2,7 +2,7 @@
 
 #include <utility/dllexport.h>
 #include <RtMidi.h>
-#include <resource.h>
+#include <nap/resource.h>
 #include "midiservice.h"
 
 namespace nap {
