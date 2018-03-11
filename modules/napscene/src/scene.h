@@ -1,10 +1,14 @@
 #pragma once
 
+// Local Includes
 #include "instanceproperty.h"
 #include "entitycreationparameters.h"
+
+// External Includes
 #include <rtti/rttiobject.h>
 #include <utility/uniqueptrmapiterator.h>
 #include <rtti/factory.h>
+#include <nap/resource.h>
 
 namespace nap
 {
@@ -26,9 +30,9 @@ namespace nap
 	/**
 	 * Container for entities. The Scene is responsible for instantiating all of the entities.
 	 */
-	class NAPAPI Scene : public rtti::RTTIObject
+	class NAPAPI Scene : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 
 	public:
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
