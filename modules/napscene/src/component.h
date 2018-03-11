@@ -1,8 +1,9 @@
 #pragma once
 
-#include "rtti/rttiobject.h"
-#include "rtti/objectptr.h"
-#include "utility/dllexport.h"
+#include <rtti/rttiobject.h>
+#include <rtti/objectptr.h>
+#include <utility/dllexport.h>
+#include <nap/resource.h>
 
 namespace nap
 {
@@ -129,9 +130,9 @@ namespace nap
 	 * A run time counterpart is created after deserialization. Derived classes need to implement the DECLARE_COMPONENT macro,
 	 * This macro tells the system what the run time counterpart of the resource is. 
 	 */
-	class NAPAPI Component : public rtti::RTTIObject
+	class NAPAPI Component : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 
 	public:
 		/**
