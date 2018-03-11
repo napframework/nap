@@ -5,7 +5,7 @@
 #include "entitycreationparameters.h"
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <utility/uniqueptrmapiterator.h>
 #include <rtti/factory.h>
 #include <nap/resource.h>
@@ -38,7 +38,7 @@ namespace nap
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
         using RootEntityList = std::vector<RootEntity>;
-		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
+		using InstanceByIDMap = std::unordered_map<std::string, rtti::Object*>;
 
 		Scene(Core& core);
 		virtual ~Scene() override;
@@ -112,7 +112,7 @@ namespace nap
 		/**
 		 * Helper for spawning entities. Used by both spawn and init functions.
 		 */
-		bool spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::RTTIObject*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, utility::ErrorState& errorState);
+		bool spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::Object*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, utility::ErrorState& errorState);
 
 	public:
 		RootEntityList 						mEntities;						///< List of root entities owned by the Scene

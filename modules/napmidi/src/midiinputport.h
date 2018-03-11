@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <utility/dllexport.h>
 #include <RtMidi.h>
 #include <nap/resource.h>

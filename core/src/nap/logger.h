@@ -3,7 +3,7 @@
 // Local Includes
 #include "utility/stringutils.h"
 #include "signalslot.h"
-#include "rtti/rttiobject.h"
+#include "rtti/object.h"
 
 // External Includes
 #include <memory>
@@ -24,7 +24,7 @@
 	}																							\
 																								\
 static void																						\
-	NAME(const rtti::RTTIObject& obj, const std::string& msg)									\
+	NAME(const rtti::Object& obj, const std::string& msg)									\
 	{																							\
 		instance().log(LogMessage(NAME##Level(), msg, &obj));									\
 	}																							\
@@ -34,7 +34,7 @@ static void																						\
 		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg, args...)));			\
 	}																							\
 	template <typename... Args>																	\
-	static void NAME(rtti::RTTIObject& obj, const std::string& msg, Args... args)				\
+	static void NAME(rtti::Object& obj, const std::string& msg, Args... args)				\
 	{																							\
 		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg, args...), &obj));	\
 	}
@@ -79,7 +79,7 @@ namespace nap
 	class NAPAPI LogMessage
 	{
 	public:
-		LogMessage(const LogLevel& lvl, const std::string& msg, const rtti::RTTIObject* obj = nullptr)
+		LogMessage(const LogLevel& lvl, const std::string& msg, const rtti::Object* obj = nullptr)
 			: mLevel(lvl), mMessage(msg), mObj(obj)
 		{}
 
@@ -96,12 +96,12 @@ namespace nap
 		/**
 		 * @return the object associated with this message, optional
 		 */
-		const rtti::RTTIObject* object() const		{ return mObj; }
+		const rtti::Object* object() const		{ return mObj; }
 
 	private:
 		const LogLevel mLevel;
 		const std::string mMessage;
-		const rtti::RTTIObject* mObj = nullptr;
+		const rtti::Object* mObj = nullptr;
 	};
 
     

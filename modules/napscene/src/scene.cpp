@@ -21,8 +21,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	using ClonedResourceMap = std::unordered_map<rtti::RTTIObject*, std::vector<rtti::RTTIObject*>>;
-	using ObjectsByTypeMap = std::unordered_map<rtti::TypeInfo, std::vector<rtti::RTTIObject*>>;
+	using ClonedResourceMap = std::unordered_map<rtti::Object*, std::vector<rtti::Object*>>;
+	using ObjectsByTypeMap = std::unordered_map<rtti::TypeInfo, std::vector<rtti::Object*>>;
 	using RootEntityInstanceMap = std::unordered_map<std::string, EntityInstance*>;
 
 	/**
@@ -77,7 +77,7 @@ namespace nap
 		/**
 		 * Adds object to the type map. It will add itself and all its base types to the map so that the map contains the entire inheritance hierarchy
 		 */
-		static void sRecursiveAddToObjectsByType(rtti::RTTIObject& object, const rtti::TypeInfo& type, ObjectsByTypeMap& objectsByType)
+		static void sRecursiveAddToObjectsByType(rtti::Object& object, const rtti::TypeInfo& type, ObjectsByTypeMap& objectsByType)
 		{
 			objectsByType[type].push_back(&object);
 			for (const rtti::TypeInfo& base : type.get_base_classes())
@@ -489,17 +489,17 @@ namespace nap
 		return entity_instance;
 	}
 
-	bool Scene::spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::RTTIObject*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, utility::ErrorState& errorState)
+	bool Scene::spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::Object*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, utility::ErrorState& errorState)
 	{
 		EntityObjectGraph object_graph;
 		ObjectsByTypeMap objects_by_type;			// Used by EntityObjectGraphItem to find dependencies between types
 		ClonedResourceMap cloned_resource_map;		// Used by EntityObjectGraphItem to add edges to cloned resources
 
 		// Build map of objects per type, this is used for tracking type dependencies while building the graph
-		for (rtti::RTTIObject* object : allObjects)
+		for (rtti::Object* object : allObjects)
 			SceneInstantiation::sRecursiveAddToObjectsByType(*object, object->get_type(), objects_by_type);
 
-		if (!object_graph.build(allObjects, [&objects_by_type, &cloned_resource_map](rtti::RTTIObject* object) { return EntityObjectGraphItem::create(object, objects_by_type, cloned_resource_map); }, errorState))
+		if (!object_graph.build(allObjects, [&objects_by_type, &cloned_resource_map](rtti::Object* object) { return EntityObjectGraphItem::create(object, objects_by_type, cloned_resource_map); }, errorState))
 			return false;
 
 		ClonedComponentByEntityMap		cloned_components_by_entity;	// Map owning the cloned component resource, is moved later to mClonedComponentsByEntity on success
@@ -612,7 +612,7 @@ namespace nap
 
 	SpawnedEntityInstance Scene::spawn(const Entity& entity, utility::ErrorState& errorState)
 	{
-		std::vector<rtti::RTTIObject*> all_objects;
+		std::vector<rtti::Object*> all_objects;
 		rtti::getPointeesRecursive(entity, all_objects);
 		all_objects.push_back(const_cast<Entity*>(&entity));
 
@@ -628,7 +628,7 @@ namespace nap
 	}
 
 
-	static void sGetInstancesToDestroyRecursive(EntityInstance& entity, std::vector<rtti::RTTIObject*>& instancesToDestroy)
+	static void sGetInstancesToDestroyRecursive(EntityInstance& entity, std::vector<rtti::Object*>& instancesToDestroy)
 	{
 		instancesToDestroy.push_back(&entity);
 
@@ -643,7 +643,7 @@ namespace nap
 	void Scene::destroy(SpawnedEntityInstance& entity)
 	{
 		// Recursively get all instances to destroy (i.e. Entity and Component instances)
-		std::vector<rtti::RTTIObject*> all_instances;
+		std::vector<rtti::Object*> all_instances;
 		sGetInstancesToDestroyRecursive(*entity, all_instances);
 
 		// First remove the entity from the root
@@ -655,7 +655,7 @@ namespace nap
 		std::vector<std::unique_ptr<EntityInstance>> entity_instances_to_delete;
 
 		// Remove instances from the map, but don't delete them yet
-		for (rtti::RTTIObject* instance : all_instances)
+		for (rtti::Object* instance : all_instances)
 		{
 			rtti::TypeInfo type_info = instance->get_type();
 
@@ -678,7 +678,7 @@ namespace nap
 
 	bool Scene::init(utility::ErrorState& errorState)
 	{
-		std::vector<rtti::RTTIObject*> all_objects;
+		std::vector<rtti::Object*> all_objects;
 		rtti::getPointeesRecursive(*this, all_objects);
 		all_objects.push_back(this);
 

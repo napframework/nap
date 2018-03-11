@@ -27,7 +27,7 @@ namespace nap
 	 */
 	class NAPAPI Composition : public nap::Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(rtti::Object)
 	public:
 		virtual ~Composition();
 

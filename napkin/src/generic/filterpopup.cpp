@@ -62,7 +62,7 @@ void napkin::FilterPopup::showEvent(QShowEvent* event)
 	mTreeView.getLineEdit().setFocus();
 }
 
-nap::rtti::RTTIObject* napkin::FilterPopup::getObject(QWidget* parent, const rttr::type& typeConstraint)
+nap::rtti::Object* napkin::FilterPopup::getObject(QWidget* parent, const rttr::type& typeConstraint)
 {
 	FilterPopup dialog(parent);
 	FlatObjectModel model(typeConstraint);

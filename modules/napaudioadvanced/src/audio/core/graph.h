@@ -7,7 +7,7 @@
 #include <nap/resourceptr.h>
 
 // Nap includes
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <rtti/factory.h>
 
 // Audio includes
@@ -58,7 +58,7 @@ namespace nap
         /**
          * Instance of Graph that manages a number of different audio objects, connected together to represent a DSP network to perform a specific task of mono or multichannel audio processing.
          */
-        class NAPAPI GraphInstance : rtti::RTTIObject
+        class NAPAPI GraphInstance : rtti::Object
         {
             RTTI_ENABLE()
         public:

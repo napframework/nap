@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <imagefromfile.h>
 #include <nap/configure.h>
 #include <color.h>

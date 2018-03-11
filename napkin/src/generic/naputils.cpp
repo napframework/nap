@@ -38,7 +38,7 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 	ObjectList objects_to_visit = objects;
 	for (int index = 0; index < objects_to_visit.size(); ++index)
 	{
-		RTTIObject* object = objects_to_visit[index];
+		Object* object = objects_to_visit[index];
 		allObjects.insert(object);
 
 		// Find links for all objects
@@ -62,7 +62,7 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 	// pointer but the writer does not support embedded pointers
     ObjectList topLevelObjects; // RVO will take care of this
 	topLevelObjects.reserve(allObjects.size());
-	for (RTTIObject* object : allObjects)
+	for (Object* object : allObjects)
 	{
 		bool is_embedded_object = false;
 
@@ -72,7 +72,7 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 			if (link.mTarget != object)
 				continue;
 
-			ResolvedRTTIPath resolved_path;
+			ResolvedPath resolved_path;
 			link.mSourcePath.resolve(link.mSource, resolved_path);
 
 			auto property = resolved_path.getProperty();
@@ -117,7 +117,7 @@ std::vector<rttr::type> napkin::getResourceTypes()
 {
 	// TODO: Find a proper way to retrieve 'resource types' via RTTI
 	std::vector<rttr::type> ret;
-	rttr::type rootType = RTTI_OF(nap::rtti::RTTIObject);
+	rttr::type rootType = RTTI_OF(nap::rtti::Object);
 	for (const rttr::type& derived : rootType.get_derived_classes())
 	{
 		if (derived.is_derived_from<nap::Component>())
@@ -134,23 +134,23 @@ std::vector<rttr::type> napkin::getResourceTypes()
 	return ret;
 }
 
-nap::rtti::ResolvedRTTIPath napkin::resolve(const nap::rtti::RTTIObject& obj, nap::rtti::RTTIPath path)
+nap::rtti::ResolvedPath napkin::resolve(const nap::rtti::Object& obj, nap::rtti::Path path)
 {
-	nap::rtti::ResolvedRTTIPath resolvedPath;
+	nap::rtti::ResolvedPath resolvedPath;
 	path.resolve(&obj, resolvedPath);
 	assert(resolvedPath.isValid());
 	return resolvedPath;
 }
 
-nap::rtti::RTTIObject* napkin::getPointee(const PropertyPath& path)
+nap::rtti::Object* napkin::getPointee(const PropertyPath& path)
 {
 	auto resolvedPath = path.resolve();
 	auto value = resolvedPath.getValue();
 	auto value_type = value.get_type();
 	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 	bool is_wrapper = wrapped_type != value_type;
-	nap::rtti::RTTIObject* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::RTTIObject*>()
-												: value.get_value<nap::rtti::RTTIObject*>();
+	nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>()
+												: value.get_value<nap::rtti::Object*>();
 	return pointee;
 }
 
@@ -194,7 +194,7 @@ std::string napkin::fromLocalURI(const std::string& fileuri)
 }
 
 
-std::string napkin::toURI(const nap::rtti::RTTIObject& object)
+std::string napkin::toURI(const nap::rtti::Object& object)
 {
 	return NAP_URI_PREFIX + "://" + object.mID;
 }

@@ -1,20 +1,20 @@
-#include <rtti/rttipath.h>
-#include <rtti/rttiobject.h>
+#include "path.h"
+#include "object.h"
 #include <utility/stringutils.h>
 
 namespace nap
 {
 	namespace rtti
 	{
-		const std::string RTTIPath::toString() const
+		const std::string Path::toString() const
 		{
 			std::string result;
 			for (int index = 0; index < mLength; ++index)
 			{
-				const RTTIPathElement& element = mElements[index];
+				const PathElement& element = mElements[index];
 				switch (element.mType)
 				{
-				case RTTIPathElement::Type::ATTRIBUTE:
+				case PathElement::Type::ATTRIBUTE:
 				{
 					if (result.empty())
 						result += element.Attribute.Name;
@@ -24,7 +24,7 @@ namespace nap
 					break;
 				}
 
-				case RTTIPathElement::Type::ARRAY_ELEMENT:
+				case PathElement::Type::ARRAY_ELEMENT:
 				{
 					if (result.empty())
 						result += utility::stringFormat("%d", element.ArrayElement.Index);
@@ -39,9 +39,9 @@ namespace nap
 		}
 
 
-		const RTTIPath RTTIPath::fromString(const std::string& path)
+		const Path Path::fromString(const std::string& path)
 		{
-			RTTIPath result;
+			Path result;
 
 			// Split string on path seperator
 			std::list<std::string> parts;
@@ -66,7 +66,7 @@ namespace nap
 		}
 
 
-		bool RTTIPath::resolve(const rtti::RTTIObject* object, ResolvedRTTIPath& resolvedPath) const
+		bool Path::resolve(const rtti::Object* object, ResolvedPath& resolvedPath) const
 		{
 			// Can't resolve an empty path
 			if (mLength == 0)
@@ -74,10 +74,10 @@ namespace nap
 
 			for (int index = 0; index < mLength; ++index)
 			{
-				const RTTIPathElement& element = mElements[index];
+				const PathElement& element = mElements[index];
 
 				// Handle attribute
-				if (element.mType == RTTIPathElement::Type::ATTRIBUTE)
+				if (element.mType == PathElement::Type::ATTRIBUTE)
 				{
 					// If this is the first element on the path, we need to push a 'root' element. The root element is identical to the attribute element,
 					// with the difference that the root element does not make a copy of the object that the property is on (the attribute element does)
@@ -107,7 +107,7 @@ namespace nap
 						resolvedPath.pushAttribute(current_context, property);
 					}
 				}
-				else if (element.mType == RTTIPathElement::Type::ARRAY_ELEMENT)
+				else if (element.mType == PathElement::Type::ARRAY_ELEMENT)
 				{
 					// Retrieve the current value of the resolved path. If there is none, the path is invalid (we're trying to push a nested attribute on an empty path)
 					const rtti::Variant& current_context = resolvedPath.getValue();
@@ -130,7 +130,7 @@ namespace nap
 		/**
 		 * Note that while this function gets the value of the property currently on the path, it does so by returning a *copy*. See setValue for more information
 		 */
-		const rtti::Variant ResolvedRTTIPath::getValue() const
+		const rtti::Variant ResolvedPath::getValue() const
 		{
 			// If empty, we can't get the value
 			if (isEmpty())
@@ -179,7 +179,7 @@ namespace nap
 		 *
 		 * In essence, setting a value is a recursive function where the value to set is recursively copied up the path from the bottom
 		 */
-		bool ResolvedRTTIPath::setValue(const rtti::Variant& value)
+		bool ResolvedPath::setValue(const rtti::Variant& value)
 		{
 			// Empty path, can't set value
 			if (isEmpty())
@@ -228,13 +228,13 @@ namespace nap
 		}
 
 
-		const rtti::TypeInfo ResolvedRTTIPath::getType() const
+		const rtti::TypeInfo ResolvedPath::getType() const
 		{
 			return getValue().get_type();
 		}
 
 		
-		const rtti::Property& ResolvedRTTIPath::getProperty() const
+		const rtti::Property& ResolvedPath::getProperty() const
 		{
 			const rtti::Property* property = nullptr;
 			for (int index = mLength - 1; index >= 0; --index)
