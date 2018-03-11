@@ -8,7 +8,7 @@
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
 #include <orthocameracomponent.h>
-#include <resourceptr.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
