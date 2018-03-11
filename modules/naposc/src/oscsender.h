@@ -2,7 +2,7 @@
 
 // External Includes
 #include <ip/UdpSocket.h>
-#include <resource.h>
+#include <nap/resource.h>
 #include <rtti/factory.h>
 #include <queue>
 
