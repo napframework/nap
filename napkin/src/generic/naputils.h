@@ -4,7 +4,7 @@
 #include <QFileInfo>
 
 #include <rtti/rtti.h>
-#include <rtti/rttideserializeresult.h>
+#include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
 
 #include "propertypath.h"
@@ -46,7 +46,7 @@ namespace napkin
 	 * @return The model index representing the item to be found.
 	 */
 	template<typename T>
-	T* findItemInModel(const QStandardItemModel& model, const nap::rtti::RTTIObject& obj, int column = 0)
+	T* findItemInModel(const QStandardItemModel& model, const nap::rtti::Object& obj, int column = 0)
 	{
 		T* foundItem = nullptr;
 
@@ -75,7 +75,7 @@ namespace napkin
 	/**
 	 * Resolve a property path
 	 */
-	nap::rtti::ResolvedRTTIPath resolve(const nap::rtti::RTTIObject& obj, nap::rtti::RTTIPath path);
+	nap::rtti::ResolvedPath resolve(const nap::rtti::Object& obj, nap::rtti::Path path);
 
 	/**
 	 * @return All nap component types in the rtti system
@@ -90,7 +90,7 @@ namespace napkin
 	/**
 	 * Given a Pointer Property (or how do you call them), find the object it's pointing to
 	 */
-	nap::rtti::RTTIObject* getPointee(const PropertyPath& path);
+	nap::rtti::Object* getPointee(const PropertyPath& path);
 
 	/**
 	 * Get the reference directory for resources.
@@ -137,7 +137,7 @@ namespace napkin
 	 * @param object The object the URI should point to
 	 * @return An URI
 	 */
-	std::string toURI(const nap::rtti::RTTIObject& object);
+	std::string toURI(const nap::rtti::Object& object);
 
 	/**
 	 * Create an URI to a property

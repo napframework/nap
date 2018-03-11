@@ -6,7 +6,7 @@
 #include "utility/errorstate.h"
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <rtti/factory.h>
 #include <set>
 

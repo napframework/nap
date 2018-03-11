@@ -354,7 +354,7 @@ TEST_CASE("Commands", TAG_NAPKIN)
 		REQUIRE(doc->getObjects().size() == 1);
 	}
 
-	nap::rtti::RTTIObject* entity1 = doc->getObjects()[0].get();
+	nap::rtti::Object* entity1 = doc->getObjects()[0].get();
 	nap::Entity* e1 = rtti_cast<nap::Entity>(entity1);
 	REQUIRE(e1 != nullptr);
 
@@ -371,7 +371,7 @@ TEST_CASE("Commands", TAG_NAPKIN)
 		REQUIRE(doc->getObjects().size() == 2);
 	}
 
-	nap::rtti::RTTIObject* entity2 = doc->getObjects()[1].get();
+	nap::rtti::Object* entity2 = doc->getObjects()[1].get();
 	nap::Entity* e2 = rtti_cast<nap::Entity>(entity2);
 	REQUIRE(e2 != nullptr);
 	REQUIRE(doc->getParent(*e2) == e1);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <utility/dllexport.h>
 
 namespace nap
@@ -10,15 +10,15 @@ namespace nap
 	 * Derive from this class to create your own resource type and
 	 * implement the init() call to initialize the object after de-serialization.
 	 */
-	class NAPAPI Resource : public rtti::RTTIObject
+	class NAPAPI Resource : public rtti::Object
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(rtti::Object)
 	public:
 		Resource();
 
 		/**
 		 * Override in derived classes to initialize resource after de-serialization
 		 */
-		using rtti::RTTIObject::init;
+		using rtti::Object::init;
 	};
 }

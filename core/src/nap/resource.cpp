@@ -4,6 +4,6 @@ RTTI_DEFINE_BASE(nap::Resource)
 
 namespace nap
 {
-	Resource::Resource() : RTTIObject()
+	Resource::Resource() : Object()
 	{  }
 }

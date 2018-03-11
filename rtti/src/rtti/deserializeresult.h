@@ -3,7 +3,7 @@
 // RTTI includes
 #include <rtti/rtti.h>
 #include <rtti/rttiutilities.h>
-#include "rttipath.h"
+#include "path.h"
 #include "utility/dllexport.h"
 #include "unresolvedpointer.h"
 
@@ -14,11 +14,11 @@ namespace nap
 {
 	namespace rtti
 	{
-		class RTTIObject;
+		// Forward Declares
+		class Object;
 
 		/**
 		 * Represents a file link from an object to a target file.
-		 *
 		 * This is an output of readJSonFile and can be used to determine file dependencies
 		 */
 		struct NAPAPI FileLink
@@ -27,17 +27,18 @@ namespace nap
 			std::string		mTargetFile;		// The path to the file that's being to
 		};
 
-		using OwnedObjectList = std::vector<std::unique_ptr<rtti::RTTIObject>>;
-		using ObservedObjectList = std::vector<rtti::RTTIObject*>;
+		using OwnedObjectList = std::vector<std::unique_ptr<rtti::Object>>;
+		using ObservedObjectList = std::vector<rtti::Object*>;
 
 		/**
-		 * Output of RTTI deserialization (both binary and json)
+		 * Represents the output of an rtti de serialization process.
+		 * This result is used by the binary and json readers
 		 */
-		struct NAPAPI RTTIDeserializeResult
+		struct NAPAPI DeserializeResult
 		{
-			RTTIDeserializeResult() = default;
-			RTTIDeserializeResult(const RTTIDeserializeResult&) = delete;
-			RTTIDeserializeResult& operator=(const RTTIDeserializeResult&) = delete;
+			DeserializeResult() = default;
+			DeserializeResult(const DeserializeResult&) = delete;
+			DeserializeResult& operator=(const DeserializeResult&) = delete;
 
 			OwnedObjectList			mReadObjects;			// The list of objects that was read. Note that this struct owns these objects.
 			std::vector<FileLink>	mFileLinks;				// The list of FileLinks that was read

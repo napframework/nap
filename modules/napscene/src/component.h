@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <rtti/objectptr.h>
 #include <utility/dllexport.h>
 #include <nap/resource.h>
@@ -25,12 +25,12 @@ namespace nap
 	 * Every runtime version of a component receives on construction the resource it was created from and
 	 * the entity instance it belongs to.
 	 */
-	class NAPAPI ComponentInstance : public rtti::RTTIObject
+	class NAPAPI ComponentInstance : public rtti::Object
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(rtti::Object)
 
 	public:
-        using RTTIObject::init;
+        using Object::init;
         
 		/**
 		 * Constructor

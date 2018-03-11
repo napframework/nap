@@ -77,7 +77,7 @@ namespace napkin
 		 * Called when the selection changes
 		 * @param objects The newly selected objects
 		 */
-		void onResourceSelectionChanged(QList<nap::rtti::RTTIObject*> objects);
+		void onResourceSelectionChanged(QList<nap::rtti::Object*> objects);
 
 	private:
 		ResourcePanel mResourcePanel;	// ResourcePanel
