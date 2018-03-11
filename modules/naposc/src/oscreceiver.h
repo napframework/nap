@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <resource.h>
+#include <nap/resource.h>
 #include <rtti/factory.h>
 #include <utility/dllexport.h>
 #include <thread>
