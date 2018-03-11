@@ -7,6 +7,7 @@
 #include <rtti/objectptr.h>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
+#include <nap/resource.h>
 
 namespace nap
 {
@@ -15,9 +16,9 @@ namespace nap
 	/**
 	 * Base class for all types of uniforms, whether texture or value.
 	 */
-	class NAPAPI Uniform : public rtti::RTTIObject
+	class NAPAPI Uniform : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 
 		/**

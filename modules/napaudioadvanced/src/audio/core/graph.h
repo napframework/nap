@@ -4,7 +4,7 @@
 #include <vector>
 
 // Nap includes
-#include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 
 // Nap includes
 #include <rtti/rttiobject.h>
@@ -22,15 +22,15 @@ namespace nap
     namespace audio
     {
         
-        using AudioObjectPtr = rtti::ObjectPtr<AudioObject>;
+        using AudioObjectPtr = ResourcePtr<AudioObject>;
         
         
         /**
          * The Graph manages a number of different audio objects that are connected together to represent a DSP network to perform a specific task of mono or multichannel audio processing.
          */
-        class NAPAPI Graph : public rtti::RTTIObject
+        class NAPAPI Graph : public Resource
         {
-            RTTI_ENABLE(rtti::RTTIObject)
+            RTTI_ENABLE(Resource)
         public:
             Graph(NodeManager& nodeManager) : mNodeManager(&nodeManager)  { }
 

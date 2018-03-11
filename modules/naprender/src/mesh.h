@@ -341,9 +341,9 @@ namespace nap
 	/**
 	 * Base class for each mesh resource. Every derived mesh should provide a MeshInstance class.
 	 */
-	class IMesh : public rtti::RTTIObject
+	class IMesh : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 
 	public:
 		virtual MeshInstance& getMeshInstance() = 0;

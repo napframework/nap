@@ -1,7 +1,7 @@
 #pragma once
 
 // nap includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 
 // audio includes
 #include <audio/utility/audiotypes.h>
@@ -15,9 +15,9 @@ namespace nap
         /**
          * A buffer of multichannel audio data in memory.
          */
-        class AudioBufferResource : public rtti::RTTIObject
+        class AudioBufferResource : public Resource
         {
-            RTTI_ENABLE(rtti::RTTIObject)
+            RTTI_ENABLE(Resource)
         public:
             AudioBufferResource() = default;
             

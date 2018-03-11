@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <resource.h>
 #include <rtti/factory.h>
 #include <utility/dllexport.h>
 #include <thread>
@@ -25,10 +25,10 @@ namespace nap
 	 * The receiver manages it's own connection in a background thread
 	 * All received messages are consumed by the OSC service
 	 */
-	class NAPAPI OSCReceiver : public rtti::RTTIObject
+	class NAPAPI OSCReceiver : public Resource
 	{
 		friend class OSCService;
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		// Default constructor
 		OSCReceiver() = default;

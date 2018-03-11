@@ -1,10 +1,8 @@
 #pragma once
 
-#include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
-
 #include <RtMidi.h>
-
+#include <resource.h>
 #include "midiservice.h"
 
 namespace nap {
@@ -12,10 +10,9 @@ namespace nap {
     /**
      * Opens and manages a midi output port that midi messages can be sent to.
      */
-    class NAPAPI MidiOutputPort : public rtti::RTTIObject
+    class NAPAPI MidiOutputPort : public Resource
     {
-        RTTI_ENABLE(rtti::RTTIObject)
-        
+        RTTI_ENABLE(Resource)
     public:
         MidiOutputPort() = default;
         MidiOutputPort(MidiService& service);
