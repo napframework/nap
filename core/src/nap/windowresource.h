@@ -1,15 +1,17 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
 #include <nap/configure.h>
 #include <nap/signalslot.h>
+#include <utility/uniqueptrvectoriterator.h>
 
 // Local Includes
-#include "event.h"
-#include "utility/uniqueptrvectoriterator.h"
 #include "windowevent.h"
-#include "utility/dllexport.h"
+#include "event.h"
+#include "resource.h"
+
+// External Includes
+#include <utility/dllexport.h>
 
 namespace nap
 {
@@ -19,10 +21,9 @@ namespace nap
 	 * for dealing with input and window related messages, without relying on any platform or graphics
 	 * API.
 	 */
-	class NAPAPI Window : public rtti::RTTIObject
+	class NAPAPI Window : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
-
+		RTTI_ENABLE(Resource)
 	public:
 		using EventPtrList = std::vector<EventPtr>;
 		using EventPtrConstIterator = utility::UniquePtrConstVectorWrapper<WindowEventPtrList, Event*>;
