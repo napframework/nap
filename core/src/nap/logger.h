@@ -10,10 +10,13 @@
 #include <mutex>
 #include <string>
 
+// This ugly macro gives us a nice, usable interface
+// without making a long list of hard to read member functions to maintain.
+//
+// Logger::info("Hello %s number %.2f", "engine", 9);
 
-// TODO is there a way to avoid/get rid of this macro?
 #define NAP_DECLARE_LOG_LEVEL(LEVEL, NAME)														\
-	static const LogLevel& NAME##Level()														\
+	static LogLevel& NAME##Level()														        \
 	{																							\
         static LogLevel lvl(#NAME, LEVEL);														\
 		return lvl;																				\
@@ -60,11 +63,12 @@ namespace nap
         // returns the level number to indicate the level's ranking
 		int level() const								{ return mLevel; }
 		const std::string& name() const					{ return mName; }
-        
+
         // comparison operators
 		bool operator<(const LogLevel& other) const		{ return this->mLevel < other.mLevel; }
 		bool operator==(const LogLevel& other) const	{ return this->mLevel == other.mLevel; }
-		bool operator<=(const LogLevel& other) const	{ return this->mLevel < other.mLevel || this->mLevel == other.mLevel; }
+		bool operator<=(const LogLevel& other) const	{ return this->mLevel <= other.mLevel; }
+		bool operator>=(const LogLevel& other) const	{ return this->mLevel >= other.mLevel; }
 
 	private:
 		std::string mName;
@@ -87,12 +91,12 @@ namespace nap
          * @return the log level of this message
          */
 		const LogLevel& level() const				{ return mLevel; }
-       
+
 		/**
 		 * @return the text associated with this message
 		 */
 		const std::string& text() const				{ return mMessage; }
-        
+
 		/**
 		 * @return the object associated with this message, optional
 		 */
@@ -104,24 +108,24 @@ namespace nap
 		const rtti::RTTIObject* mObj = nullptr;
 	};
 
-    
-    
+
+
     /**
      * The Logger invokes log messages through a global system using a singleton isntance.
      */
 	class NAPAPI Logger
 	{
 	public:
-        /** 
-         * Sets the current log level.
-         * Messages with a level lower than the current level will not be displayed.
-         */
+		/**
+		 * Sets the current log level.
+		 * Messages with a level lower than the current level will not be displayed.
+		 */
 		static void setLevel(LogLevel lvl)			{ instance().mLevel = lvl; }
-        
+
 		/**
 		 * @return the current log level
 		 */
-		static const LogLevel& getLevel()			{ return instance().mLevel; }
+		static const LogLevel& getCurrentLevel()			{ return instance().mLevel; }
 
 		/**
 		 * @return instance of the actual logger
@@ -143,6 +147,24 @@ namespace nap
         // fatal errors that seriously hinder the functionality of the app
 		NAP_DECLARE_LOG_LEVEL(400, fatal)
 
+		/**
+		 * @return all available log levels.
+		 */
+		static const std::vector<LogLevel>& getLevels()
+		{
+			// In-line so you will remember to amend this list
+			// when you add or remove a LogLevel above.
+			// Must be ordered by level value.
+			static std::vector<LogLevel> lvls = {
+					fineLevel(),
+					debugLevel(),
+					infoLevel(),
+					warnLevel(),
+					fatalLevel()
+			};
+			return lvls;
+		}
+
 	private:
 		LogLevel mLevel;
 
@@ -150,7 +172,6 @@ namespace nap
 		Slot<LogMessage> onLogSlot = {[&](LogMessage message)	{ onLog(message); }};
 
 		Logger() : mLevel(debugLevel())							{ log.connect(onLogSlot); }
-
 		Logger(Logger const&) : mLevel(debugLevel())			{}
 		void operator=(Logger const&);
 
