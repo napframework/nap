@@ -6,6 +6,7 @@ System {#system}
 *   [Apps](@ref apps)
 *   [Core](@ref core)
 *	[Resourcemanager](@ref resourcemanager)
+*	[Events](@ref events)
 
 Overview {#system_overview}
 =======================
@@ -134,3 +135,9 @@ Every resource has an identifier. In the example above we use various identifier
 Every resource is derived from [Resource](@ref nap::Resource). Every resource carries an identifier that the resource manager uses to identify an object. The most important task of a resource is to tell the resource manager if initialization succeeded using the [init](@ref nap::Resource::init) function. A good example of a resource is the [Image](@ref nap::Image). On initialization the image will try to load a picture from disk and store the result internally. Initialization will fail if the picture doesn't exist or isn't supported. If that's the case the resourcemanager will halt execution, return an error message and as a result stop further execution of your program. This is the point where NAP tries to validate data for you.
 
 The resourcemanager and init structure are further explained in the [resource](@ref resources) section.
+
+Events {#events}
+=======================
+
+NAP uses [events](@ref nap::Event) to signal the occurrence of an action to the running application. Events often originate from an external environment and are handled by their respective services. When the event is generated asynchronously the service makes sure it is consumed before making it available to potential listeners (often components) on the main thread. This is the general design pattern behind event handling in NAP. [Input](@ref nap::InputEvent), [OSC](@ref nap::OSCEvent) and [Midi](@ref nap::MidiEvent) events are handled this way. This also ensures that new messages don't stall the running application.
+
