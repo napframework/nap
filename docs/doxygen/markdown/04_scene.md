@@ -154,7 +154,7 @@ RTTI_END_CLASS
 
 Here we create a perspective camera with a field of view property. Some concepts are familiar, others are new:
 
-- We derive from Component instead of RTTIObject
+- We derive from [Component](@ref nap::Component) instead of [Resource](@ref nap::Resource)
 - The DECLARE_COMPONENT macro tells the system which instance of this component to create
 - [getDependentComponents()](@ref nap::Component::getDependentComponents) tells the system that this component depends on a transform 
 
@@ -249,11 +249,11 @@ public:
 	ComponentPtr<LineSelectionComponent> mSelectionComponentTwo;
 
 	// property: link to the mesh to store the blend result
-	ObjectPtr<nap::PolyLine> mTarget;
+	ResourcePtr<nap::PolyLine> mTarget;
 };
 ~~~~~~~~~~~~~~~
 
-This component blends two lines based on a blend value. The end result is stored in 'mTarget'. The blend target is a link to a regular resource ([ObjectPtr](@ref nap::ObjectPtr)). Both input lines are extracted from a different component that live under the same entity, in this case a line selection component. Input 1 and 2 are therefore links to a different component and are required by the blend component to perform the blend operation.
+This component blends two lines based on a blend value. The end result is stored in 'mTarget'. The blend target is a link to a regular resource ([ResourcePtr](@ref nap::ObjectPtr)). Both input lines are extracted from a different component that live under the same entity, in this case a line selection component. Input 1 and 2 are therefore links to a different component and are required by the blend component to perform the blend operation.
 
 The registration of this part of the component in the cpp file should look familiar. Links to components are registered as regular properties:
 

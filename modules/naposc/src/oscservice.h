@@ -13,7 +13,12 @@ namespace nap
 	class OSCInputComponentInstance;
 
 	/**
-	 * Main interface for OSC messages in NAP
+	 * Main interface for processing OSC messages in NAP
+	 * All osc components and receivers are registered and de-registered with this service on initialization and destruction
+	 * This service consumes all received osc messages and forwards them to all registered osc components.
+	 * Events are only forwarded to a component if an individual address in the filter starts with the address of an osc event.
+	 * Components that don't have any filter entries are forwarded all osc events
+	 * Processing is handled automatically every frame
 	 */
 	class NAPAPI OSCService : public Service
 	{
@@ -34,11 +39,16 @@ namespace nap
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
-		// Initialization
+		/**
+		 * Initializes the osc service
+		 */
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
-		* Processes all OSC received events
+		* Processes all received osc events from all registered osc receivers
+		* The events are forwarded to all the the registered osc components
+		* This function is called automatically by the application loop
+		* @param deltaTime time in between calls in seconds
 		*/
 		virtual void update(double deltaTime) override;
 

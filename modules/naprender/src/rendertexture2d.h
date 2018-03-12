@@ -8,7 +8,7 @@ namespace nap
 	/**
 	 * GPU texture resource that it is initially empty
 	 * This texture can be declared as a resource together with
-	 * the format to use and a with and height.
+	 * the format to use, width and height.
 	 */
 	class NAPAPI RenderTexture2D : public Texture2D
 	{

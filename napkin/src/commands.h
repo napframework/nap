@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rtti/objectptr.h>
-#include <rtti/rttipath.h>
+#include <rtti/path.h>
 
 #include <QUndoCommand>
 #include <QtCore/QVariant>
@@ -18,7 +18,7 @@ namespace napkin
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:
-		AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject* parent = nullptr);
+		AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent = nullptr);
         /**
          * Redo
          */
@@ -40,7 +40,7 @@ namespace napkin
 	class DeleteObjectCommand : public QUndoCommand
 	{
 	public:
-		DeleteObjectCommand(nap::rtti::RTTIObject& object);
+		DeleteObjectCommand(nap::rtti::Object& object);
         /**
          * Undo
          */
@@ -93,7 +93,7 @@ namespace napkin
          * @param path The path to the property
          * @param newValue The new value of the property
          */
-		SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue);
+		SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue);
 
         /**
          * Undo
@@ -189,13 +189,13 @@ namespace napkin
 		/**
 		 * @param prop The array property to add the element to
 		 */
-		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object, size_t index);
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::Object& object, size_t index);
 
 		/**
 		 * @param prop The array property to add the element to
 		 * @param index The index at which to insert the element
 		 */
-		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object);
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::Object& object);
 
 		void redo() override;
 		void undo() override;

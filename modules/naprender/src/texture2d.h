@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <utility/dllexport.h>
 #include <ntexture2d.h>
 #include <glm/glm.hpp>
@@ -49,12 +49,13 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * GPU representation of a 2D bitmap. 
+	 * GPU representation of a 2D bitmap. This is the base class for all 2D textures.
+	 * Classes should derive from Texture2D and call either initTexture (for a GPU-only texture) or initFromBitmap (for a CPU & GPU texture).
 	 * This class does not own any CPU data but offers an interface to up and download texture data from and in to a bitmap
 	 */
-	class NAPAPI Texture2D : public rtti::RTTIObject
+	class NAPAPI Texture2D : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		/**
 		 * Initializes the opengl texture using the associated parameters and given settings.

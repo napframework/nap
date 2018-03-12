@@ -9,6 +9,7 @@
 #include <audio/component/audiocomponentbase.h>
 #include <audio/core/audionode.h>
 #include <audio/core/audioobject.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -33,9 +34,7 @@ namespace nap
             /**
              * The audio object that is wrapped by this component
              */
-            rtti::ObjectPtr<AudioObject> mObject;
-            
-        private:
+            ResourcePtr<AudioObject> mObject;
         };
 
         

@@ -37,7 +37,7 @@ namespace nap
 			 * @param targetID The ID to resolve. This ID could be retrieved straight from deserialization or transformed through the static translateTargetID function on the type.
 			 * @return nullptr if the target could not be resolved, otherwise the resolved target object.
 			 */
-			virtual RTTIObject* findTarget(const std::string& targetID) = 0;
+			virtual Object* findTarget(const std::string& targetID) = 0;
 		};
 	}
 }

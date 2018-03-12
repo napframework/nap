@@ -5,7 +5,7 @@
 
 // External Includes
 #include <unordered_set>
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <pybind11/cast.h>
 
 namespace nap
@@ -27,7 +27,7 @@ namespace nap
 			/**
 			 * ctor taking direct pointer.
 			 */
-			ObjectPtrBase(rtti::RTTIObject* ptr) :
+			ObjectPtrBase(rtti::Object* ptr) :
 			mPtr(ptr)
 			{
 			}
@@ -35,7 +35,7 @@ namespace nap
 			/**
 			 * @return RTTIObject pointer.
 			 */
-			rtti::RTTIObject* get()
+			rtti::Object* get()
 			{
 				return mPtr;
 			}
@@ -43,7 +43,7 @@ namespace nap
 			/**
 			 * @return RTTIObject pointer.
 			 */
-			const rtti::RTTIObject* get() const
+			const rtti::Object* get() const
 			{
 				return mPtr;
 			}
@@ -51,7 +51,7 @@ namespace nap
 			/**
 			 * @param ptr new pointer to set.
 			 */
-			void set(rtti::RTTIObject* ptr)
+			void set(rtti::Object* ptr)
 			{
 				mPtr = ptr;
 			}
@@ -59,7 +59,7 @@ namespace nap
 			template<class T> friend class ObjectPtr;
 			friend class ObjectPtrManager;
         
-			rtti::RTTIObject* mPtr = nullptr;
+			rtti::Object* mPtr = nullptr;
 		};
     
 		/**
@@ -97,7 +97,7 @@ namespace nap
 			{
 				for (ObjectPtrBase* ptr : mObjectPointers)
 				{
-					rtti::RTTIObject* target = ptr->get();
+					rtti::Object* target = ptr->get();
 					if (target == nullptr)
 						continue;
 
@@ -112,7 +112,7 @@ namespace nap
  			 * Resets all ObjectPtrs to the specified object to nullptr
 			 * @param targetObject The object to which ObjectPtrs are pointing to
 			 */
-			void resetPointers(const rtti::RTTIObject& targetObject)
+			void resetPointers(const rtti::Object& targetObject)
 			{
 				for (ObjectPtrBase* ptr : mObjectPointers)
 					if (ptr->get() == &targetObject)

@@ -23,7 +23,7 @@ napkin::ResourceFactory::ResourceFactory()
 			{RTTI_OF(Entity),     QRC_ICONS_ENTITY},
 			{RTTI_OF(Scene),      QRC_ICONS_SCENE},
 			{RTTI_OF(Component),  QRC_ICONS_COMPONENT},
-			{RTTI_OF(RTTIObject), QRC_ICONS_RTTIOBJECT},
+			{RTTI_OF(Object), QRC_ICONS_RTTIOBJECT},
 	};
 
 	mFileTypes = {
@@ -38,7 +38,7 @@ napkin::ResourceFactory::ResourceFactory()
 }
 
 
-const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::RTTIObject& object) const
+const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::Object& object) const
 {
 	for (auto entry : mObjectIconMap)
 	{

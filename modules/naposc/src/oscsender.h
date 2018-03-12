@@ -2,7 +2,7 @@
 
 // External Includes
 #include <ip/UdpSocket.h>
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <rtti/factory.h>
 #include <queue>
 
@@ -25,14 +25,12 @@ namespace nap
 {
 	/**
 	 * Objects that sends osc messages 
-	 * The sender manages it's own connection that can be constructed
-	 * using a target ip address and port
+	 * The sender manages it's own connection and is constructed using a target ip address and port
 	 */
-	class NAPAPI OSCSender : public rtti::RTTIObject
+	class NAPAPI OSCSender : public Resource
 	{
 		friend class OSCService;
-		RTTI_ENABLE(rtti::RTTIObject)
-
+		RTTI_ENABLE(Resource)
 	public:
 		OSCSender() = default;
 
@@ -42,11 +40,8 @@ namespace nap
 		// Kills connection
 		virtual ~OSCSender();
 
-		// Property: target machine ip address
-		std::string mIPAddress;
-
-		// Property: target machine port
-		int mPort = 8000;
+		std::string mIPAddress;		///< Property: 'IpAddress' target machine ip address
+		int mPort = 8000;			///< Property: 'Port' target machine port1
 
 		/**
 		 * Initializes the sender and registers it with the OSCService
