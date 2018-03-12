@@ -19,7 +19,7 @@ namespace nap {
              * Constructor takes the video object and the number of requested output channels.
              */
             VideoNode(NodeManager& nodeManager, Video& video, int channelCount);
-            
+
             // Inherited from Node
             int getChannelCount() const { return mOutputs.size(); }
             OutputPin& getOutput(int channel) { return *mOutputs[channel]; }
@@ -28,6 +28,12 @@ namespace nap {
              * Change the source video object
              */
             void setVideo(Video& video) { mVideo = &video; }
+
+			/** 
+			 * We need to delete these so that the compiler doesn't try to use them. Otherwise we get compile errors on unique_ptr. Not sure why.
+			 */
+			VideoNode(const VideoNode&) = delete;
+			VideoNode& operator=(const VideoNode&) = delete;
             
         private:
             // Inherited form Node
