@@ -50,12 +50,6 @@ void LeafFilterProxyModel::clearExemptions()
 	invalidateFilter();
 }
 
-void LeafFilterProxyModel::clearExtraFilters()
-{
-	mExtraFilters.clear();
-	invalidateFilter();
-}
-
 bool LeafFilterProxyModel::isExempt(int sourceRow, const QModelIndex& sourceParent) const
 {
 	// Run through any exempted indexes

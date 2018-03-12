@@ -32,11 +32,6 @@ namespace napkin
 		void clearExemptions();
 
 		/**
-		 * Clear all filters set using addFilter();
-		 */
-		void clearExtraFilters();
-
-		/**
 		 * Forward to Qt's protected invalidateFilter() method.
 		 */
 		void refreshFilter() { invalidateFilter(); }
