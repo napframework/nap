@@ -23,5 +23,9 @@ endif()
 # Iterate the files in the input path and copy
 file(GLOB FILES_TO_COPY ${COPIER_IN_PATH})
 foreach(copy_file ${FILES_TO_COPY})
-    file(COPY ${copy_file} DESTINATION ${COPIER_OUTPUT_PATH})
+    execute_process(COMMAND ${CMAKE_COMMAND}
+                            -E copy_if_different
+                            ${copy_file}
+                            ${COPIER_OUTPUT_PATH}
+                            )
 endforeach()
