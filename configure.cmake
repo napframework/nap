@@ -230,6 +230,10 @@ macro(project_json_to_cmake)
     execute_process(COMMAND ${CMAKE_COMMAND} -E remove ProjectJsonTriggerDummy.json
                     ERROR_QUIET)
 
+    # Clear any system Python path settings
+    unset(ENV{PYTHONHOME})
+    unset(ENV{PYTHONPATH})
+
     # Parse our project.json and import it
     if(WIN32)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python)
