@@ -33,7 +33,7 @@ namespace nap
 
 
 		/**
-		 * Allows for easy construction of a resource using a single argument.
+		 * Allows for easy construction of a resource using a single argument of type T.
 		 * The template parameter Object specifies the type of resource this creator returns
 		 * The template parameter T specifies the type of input argument that is used to construct the new resource, ie:
 		 * ObjectCreator<Image, RenderService> specifies an object creator that creates an image that is constructed using
@@ -44,8 +44,8 @@ namespace nap
 		{
 		public:
 			/**
-			* Constructor
-			* @param service: the service to associate with this object creator
+			* @param argument reference to the object that becomes the first input argument when the resource 
+			* is constructed after serialization
 			*/
 			ObjectCreator(T& argument) :
 				mArgument(argument) { }
@@ -56,7 +56,7 @@ namespace nap
 			rtti::TypeInfo getTypeToCreate() const override		{ return RTTI_OF(Object); }
 
 			/**
-			* @return Creates the object with the (...yes?)
+			* @return Constructs the resource using as a first argument the object stored in this class
 			*/
 			virtual rtti::Object* create() override			{ return new Object(mArgument); }
 
