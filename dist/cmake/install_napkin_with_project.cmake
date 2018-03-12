@@ -42,8 +42,8 @@ if(WIN32)
                        COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/plugins/$<CONFIG>/platforms $<TARGET_FILE_DIR:${PROJECT_NAME}>/platforms
                        )
 
-    # Deploy Python DLLs and modules post-build on Win64
-    win64_copy_python_dlls_and_modules_postbuild()
+    # Deploy Python modules post-build on Win64
+    win64_copy_python_modules_postbuild()
 
     # Deploy dependent modules on Win64
     foreach(MODULE_NAME ${NAPKIN_DEPENDENT_NAP_MODULES})
