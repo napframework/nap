@@ -113,4 +113,11 @@ namespace nap
 	{
 		return glm::inverse(mTransformComponent->getGlobalTransform());
 	}
+
+
+	void OrthoCameraComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.push_back(RTTI_OF(TransformComponent));
+	}
+
 }

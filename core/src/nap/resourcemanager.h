@@ -62,7 +62,7 @@ namespace nap
 		/**
 		* Find an object by object ID. Returns null if not found.
 		*/
-		const rtti::ObjectPtr<rtti::RTTIObject> findObject(const std::string& id);
+		const rtti::ObjectPtr<rtti::Object> findObject(const std::string& id);
 
 		/**
 		* Find an object by object ID. Returns null if not found.
@@ -73,7 +73,7 @@ namespace nap
 		/**
 		* Creates an object and adds it to the manager.
 		*/
-		const rtti::ObjectPtr<rtti::RTTIObject> createObject(const rtti::TypeInfo& type);
+		const rtti::ObjectPtr<rtti::Object> createObject(const rtti::TypeInfo& type);
 
 		/**
 		* Creates an object and adds it to the manager.
@@ -93,8 +93,8 @@ namespace nap
 		rtti::Factory& getFactory();
 
 	private:
-		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;					// Map from object ID to object (non-owned)
-		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::RTTIObject>>;	// Map from object ID to object (owned)
+		using InstanceByIDMap	= std::unordered_map<std::string, rtti::Object*>;					// Map from object ID to object (non-owned)
+		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::Object>>;	// Map from object ID to object (owned)
 		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
 
 		class OverlayLinkResolver;
@@ -106,7 +106,7 @@ namespace nap
 			Error
 		};
 
-		void addObject(const std::string& id, std::unique_ptr<rtti::RTTIObject> object);
+		void addObject(const std::string& id, std::unique_ptr<rtti::Object> object);
 		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 

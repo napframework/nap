@@ -11,7 +11,10 @@
 namespace nap
 {
 	/**
-	 * Resource class for RenderWindow
+	 * 3D render window resource that can be declared in json.
+	 * This resource offers an interface to change window settings and manages
+	 * an OpenGL window including associated render context.
+	 * It is important to activate the window before issuing any draw commands!
 	 */
 	class NAPAPI RenderWindow : public Window
 	{
@@ -139,13 +142,13 @@ namespace nap
 		void handleEvent(const Event& event);
 
 	public:
-		int										mWidth			= 512;							// Width of the window
-		int										mHeight			= 512;							// Height of the window
-		bool									mBorderless		= false;						// If the window is borderless
-		bool									mResizable		= true;							// If the window is resizable
-		bool									mSync			= true;							// If v-sync is turned on for the window
-		std::string								mTitle			= "";							// Name of the window
-		glm::vec4								mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };	// Window backbuffer clear color
+		int										mWidth			= 512;							///< Property: 'Width' of the window in pixels
+		int										mHeight			= 512;							///< Property: 'Height' of the window in pixels
+		bool									mBorderless		= false;						///< Property: 'Borderless' if the window has any borders
+		bool									mResizable		= true;							///< Property: 'Resizable' if the window is resizable
+		bool									mSync			= true;							///< Property: 'Sync' If v-sync is enabled
+		std::string								mTitle			= "";							///< Property: 'Title' window title
+		glm::vec4								mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };	///< Property: 'ClearColor' background clear color
 
 	private:
 		RenderService*							mRenderService	= nullptr;						// Render service
@@ -175,7 +178,7 @@ namespace nap
 		/**
 		* @return Creates a WindowResource
 		*/
-		virtual rtti::RTTIObject* create() override
+		virtual rtti::Object* create() override
 		{
 			return new RenderWindow(mRenderService);
 		}

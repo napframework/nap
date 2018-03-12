@@ -25,7 +25,7 @@ void napkin::ResourceModel::refresh()
 	auto entitiesItem = new class GroupItem(TXT_LABEL_ENTITIES);
 	appendRow(entitiesItem);
 
-	for (nap::rtti::RTTIObject* ob : topLevelObjects(AppContext::get().getDocument()->getObjectPointers()))
+	for (nap::rtti::Object* ob : topLevelObjects(AppContext::get().getDocument()->getObjectPointers()))
 	{
 		auto typeItem = new RTTITypeItem(ob->get_type());
 		
@@ -137,7 +137,7 @@ void napkin::ResourcePanel::onFileOpened(const QString& filename)
 void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
 	// Grab selected nap objects
-	QList<nap::rtti::RTTIObject*> selectedObjects;
+	QList<nap::rtti::Object*> selectedObjects;
 	for (auto m : mTreeView.getSelectedItems())
 	{
 		auto item = dynamic_cast<ObjectItem*>(m);
@@ -168,7 +168,7 @@ void napkin::ResourcePanel::refresh()
 	mTreeView.getTreeView().expandAll();
 }
 
-::napkin::ObjectItem* napkin::ResourcePanel::findItem(const nap::rtti::RTTIObject& obj)
+::napkin::ObjectItem* napkin::ResourcePanel::findItem(const nap::rtti::Object& obj)
 {
 	ObjectItem* foundItem = nullptr;
 
@@ -209,11 +209,11 @@ void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& 
 	mTreeView.selectAndReveal(findItemInModel<ObjectItem>(mModel, comp));
 }
 
-void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject)
+void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object& obj, bool selectNewObject)
 {
 	QList<QStandardItem*> selected_items = mTreeView.getSelectedItems();
 
-	nap::rtti::RTTIObject* object_to_select = nullptr;
+	nap::rtti::Object* object_to_select = nullptr;
 	if (!selected_items.empty() && !selectNewObject)
 	{
 		ObjectItem* object_item = dynamic_cast<ObjectItem*>(selected_items[0]);
@@ -232,14 +232,14 @@ void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selec
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *object_to_select));
 }
 
-void ResourcePanel::selectObjects(const QList<nap::rtti::RTTIObject*>& obj)
+void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 {
 	if (obj.size() > 0)
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]));
 }
 
 
-void napkin::ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
+void napkin::ResourcePanel::onObjectRemoved(nap::rtti::Object& object)
 {
 	// TODO: Don't refresh the whole mModel
 	auto item = findItemInModel<napkin::ObjectItem>(mModel, object);
