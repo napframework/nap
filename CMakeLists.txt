@@ -116,6 +116,7 @@ add_subdirectory(demos/videomodulation/module)
 add_subdirectory(demos/blobtrace)
 add_subdirectory(demos/audioplayback)
 
+# Unit tests
 add_subdirectory(unittests)
 
 if(APPLE)
