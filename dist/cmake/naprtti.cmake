@@ -65,6 +65,9 @@ if (WIN32)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:RTTR::Core> $<TARGET_FILE_DIR:${PROJECT_NAME}>
     )
+
+    # Copy Python DLLs post-build on Windows
+    win64_copy_python_dlls_postbuild()
 endif()
 
 # Install naprtti and RTTR into projects for macOS/Linux
