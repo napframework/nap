@@ -49,7 +49,7 @@ def create_module(module_name, generate_solution):
         else:
             python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
-        cmd = [python, './tools/platform/refreshModule.py', module_name.lower()]
+        cmd = [python, './tools/platform/regenerateModule.py', module_name.lower()]
         if call(cmd, cwd=nap_root) != 0:
             print("Solution generation failed")
             sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    

@@ -48,7 +48,7 @@ def create_project(project_name, module_list, generate_solution):
         else:
             python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
                 
-        cmd = [python, './tools/platform/refreshProjectByName.py', project_name]
+        cmd = [python, './tools/platform/regenerateProjectByName.py', project_name]
         if call(cmd, cwd=nap_root) != 0:
             print("Solution generation failed")
             return ERROR_SOLUTION_GENERATION_FAILURE
