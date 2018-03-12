@@ -438,7 +438,9 @@ namespace nap
 
 		void getDerivedTypesRecursive(const rtti::TypeInfo& baseType, std::vector<rtti::TypeInfo>& types)
 		{
-			types.push_back(baseType);
+			// Don't add same type more than once (eg. in case of multiple inheritance)
+			if (std::find(types.begin(), types.end(), baseType) == types.end())
+				types.push_back(baseType);
 
 			for (const rtti::TypeInfo& derived_type : baseType.get_derived_classes())
 				getDerivedTypesRecursive(derived_type, types);
