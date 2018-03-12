@@ -74,7 +74,7 @@ macro(copy_files_to_bin)
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                           COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
+                           COMMENT "Copying ${F} -> to bin dir of ${PROJECT_NAME}")
     endforeach()
 endmacro()
 
