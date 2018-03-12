@@ -202,7 +202,7 @@ namespace nap
 		/**
 		 * Adds the 'seek end' packet to the packet queue. This functions as a command to the decode thread.
 		 */
-		bool addSeekEndPacket(const bool& exitIOThreadSignalled);
+		bool addSeekEndPacket(const bool& exitIOThreadSignalled, double seekTargetSecs);
 
 		/**
 		 * Adds the 'end of file' packet to the packet queue. The end of file packet is a special packet
@@ -325,12 +325,14 @@ namespace nap
 		std::unique_ptr<AVPacket>	mSeekEndPacket;							///< Specific 'command' packet to communicate 'seek end' to decode thread
 		std::unique_ptr<AVPacket>	mEndOfFilePacket;						///< Specific 'command' packet to communicate 'EndOfFile' to decode thread
 		std::unique_ptr<AVPacket>	mIOFinishedPacket;						///< Specific 'command' packet to communicate 'I/O finished' to decode thread
+		double						mSeekTargetSecs;						///< When a seek end packet is added, this value is set to the time in seconds of the seek target
 
 		utility::AutoResetEvent		mEndOfFileProcessedEvent;				///< Event that is signaled when EndOfFile packet is consumed by decode thread
 		utility::AutoResetEvent		mSeekStartProcessedEvent;				///< Event that is signaled when seek start packet is consumed by decode thread
 		utility::AutoResetEvent		mReceiveFrameEvent;						///< Event that is signaled when avcodec_receive is called by decode thread
 		bool						mReceiveFrameNeedsPacket;				///< Value set when avcoded_receive requires more packet to produce a frame
 
+		double						mLastFramePTSSecs = 0.0;				///< The PTS of the last frame in seconds, used to 'guess' the PTS of a new frame if it's unknown.
 		int							mFrameFirstPacketDTS = -INT_MAX;		///< Cached value for the first DTS that was used to produce the current frame
 	};
 
@@ -454,11 +456,12 @@ namespace nap
 	private:
 		enum class EProducePacketResult : uint8_t
 		{
-			GotAudioPacket		= 1,								///< Received an audio packet
-			GotVideoPacket		= 2,								///< Received a video packet
-			GotPacket			= GotAudioPacket | GotVideoPacket,	///< Received either an audio or video packet
-			EndOfFile			= 4,								///< EndOfFile was reached, no packet was pushed
-			Error				= 8									///< An error occurred during stream reading
+			GotAudioPacket		= 1,													///< Received an audio packet
+			GotVideoPacket		= 2,													///< Received a video packet
+			GotUnknownPacket	= 4,													///< Received an unknown packet
+			GotPacket			= GotAudioPacket | GotVideoPacket | GotUnknownPacket,	///< Received either an audio or video packet
+			EndOfFile			= 8,													///< EndOfFile was reached, no packet was pushed
+			Error				= 16													///< An error occurred during stream reading
 		};
 
 		/**
