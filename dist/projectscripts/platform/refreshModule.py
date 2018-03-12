@@ -19,6 +19,10 @@ else:
     BUILD_DIR = 'build'
 
 def update_module(module_name, build_type):
+    # If module name is prefixed with mod_ remove it
+    if(module_name.startswith('mod_')):
+        module_name = module_name[4:]
+        
     # Find the module
     module_path = find_module(module_name)
     if module_path is None:

@@ -66,6 +66,10 @@ if __name__ == '__main__':
 
     module_name = args.CAMEL_CASE_MODULE_NAME
 
+    # If module name is prefixed with mod_ remove it
+    if(module_name.startswith('mod_')):
+        module_name = module_name[4:]
+
     # Validate module name is camelcase, only includes valid characters
     if not validate_camelcase_name(module_name):
         print("Error: Please specify module name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")

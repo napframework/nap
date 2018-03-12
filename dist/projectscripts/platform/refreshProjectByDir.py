@@ -10,7 +10,9 @@ from NAPShared import read_console_char
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_PATH", type=str, help="Path to the project")
-    if not sys.platform.startswith('linux'):    
+    if sys.platform.startswith('linux'):    
+        parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
+    else:    
         parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the generated solution")       
         parser.add_argument("-np", "--no-pause", action="store_true",
@@ -40,6 +42,9 @@ if __name__ == '__main__':
         python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
     cmd = [python, script_path, project_name] 
+    # Add our build type for Linux
+    if sys.platform.startswith('linux'):    
+        cmd.append(args.BUILD_TYPE)
     # If we don't want to show the solution and we weren't not on Linux specify that
     if not show_solution and not sys.platform.startswith('linux'):
         cmd.append('--no-show')

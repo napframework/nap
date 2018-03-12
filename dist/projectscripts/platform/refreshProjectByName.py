@@ -71,6 +71,7 @@ if __name__ == '__main__':
     # default to debug
     if sys.platform.startswith('linux'):    
         build_type = args.BUILD_TYPE
+        # TODO Validate build type
         print("Using build type '%s'" % build_type)
         show_solution = False
     else:
