@@ -11,7 +11,9 @@ namespace nap
 		class Object;
 
 		/**
-		 * Derive from this object to supply custom constructor arguments to objects.
+		 * Derive from this object to apply custom constructor arguments to resources.
+		 * The system uses this object to create a new resource instead of invoking the default constructor after serialization
+		 * This allows for the implementation of custom construction behavior of resources after serialization.
 		 */
 		class NAPAPI IObjectCreator
 		{
@@ -31,8 +33,12 @@ namespace nap
 
 
 		/**
-		* Allows easy construction of object @Object using a single argument @T.
-		*/
+		 * Allows for easy construction of a resource using a single argument.
+		 * The template parameter Object specifies the type of resource this creator returns
+		 * The template parameter T specifies the type of input argument that is used to construct the new resource, ie:
+		 * ObjectCreator<Image, RenderService> specifies an object creator that creates an image that is constructed using
+		 * the render service as input argument.
+		 */
 		template <typename Object, typename T>
 		class ObjectCreator : public rtti::IObjectCreator
 		{
@@ -60,7 +66,8 @@ namespace nap
 
 
 		/**
-		 * Manages IObjectCreators.
+		 * Manages all the custom defined object creators.
+		 * This class is given to a service when the system collects all custom object creators
 		 */
 		class NAPAPI Factory
 		{
