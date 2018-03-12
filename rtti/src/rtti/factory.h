@@ -37,7 +37,7 @@ namespace nap
 		 * The template parameter Object specifies the type of resource this creator returns
 		 * The template parameter T specifies the type of input argument that is used to construct the new resource, ie:
 		 * ObjectCreator<Image, RenderService> specifies an object creator that creates an image that is constructed using
-		 * the render service as input argument.
+		 * the render service as an input argument.
 		 */
 		template <typename Object, typename T>
 		class ObjectCreator : public rtti::IObjectCreator
