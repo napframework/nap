@@ -29,7 +29,7 @@ void deserialize(Core& core, const std::string& jsonData, OwnedObjectList& outOb
 
 	auto& factory = core.getResourceManager()->getFactory();
 
-	nap::rtti::RTTIDeserializeResult result;
+	nap::rtti::DeserializeResult result;
 	if (!deserializeJSON(jsonData, factory, result, err))
 		FAIL("Failed to deserialize json data: " + err.toString());
 

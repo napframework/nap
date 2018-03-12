@@ -1,20 +1,20 @@
-#include <rtti/rttiwriter.h>
-#include <rtti/rttiobject.h>
-#include <cassert>
+#include "writer.h"
+#include "object.h"
 #include "rttiutilities.h"
+#include <cassert>
 
 namespace nap
 {
 	namespace rtti
 	{
-		bool serializeObjectRecursive(const rtti::Instance object, const ObjectSet& allObjects, bool isEmbeddedObject, RTTIWriter& writer, utility::ErrorState& errorState);
-		bool serializeValue(const rtti::Property& property, const rtti::Variant& variant, const ObjectSet& allObjects, RTTIWriter& writer, utility::ErrorState& errorState);
+		bool serializeObjectRecursive(const rtti::Instance object, const ObjectSet& allObjects, bool isEmbeddedObject, Writer& writer, utility::ErrorState& errorState);
+		bool serializeValue(const rtti::Property& property, const rtti::Variant& variant, const ObjectSet& allObjects, Writer& writer, utility::ErrorState& errorState);
 
 
 		/**
 		 * Helper function to serialize an array
 		 */
-		bool serializeArray(const rtti::Property& property, const rtti::VariantArray& array, const ObjectSet& allObjects, RTTIWriter& writer, utility::ErrorState& errorState)
+		bool serializeArray(const rtti::Property& property, const rtti::VariantArray& array, const ObjectSet& allObjects, Writer& writer, utility::ErrorState& errorState)
 		{
 			// Write the start of the array
 			if (!errorState.check(writer.startArray(array.get_size()), "Failed write start of array"))
@@ -41,7 +41,7 @@ namespace nap
 		/**
 		 * Helper function to serialize a property
 		 */
-		bool serializeProperty(const rtti::Property& property, const rtti::Variant& value, const ObjectSet& allObjects, RTTIWriter& writer, utility::ErrorState& errorState)
+		bool serializeProperty(const rtti::Property& property, const rtti::Variant& value, const ObjectSet& allObjects, Writer& writer, utility::ErrorState& errorState)
 		{
 			// Write property name
 			if (!errorState.check(writer.writeProperty(property.get_name().data()), "Failed to write property name"))
@@ -57,7 +57,7 @@ namespace nap
 		/**
 		 * Helper function to serialize a value
 		*/
-		bool serializeValue(const rtti::Property& property, const rtti::Variant& value, const ObjectSet& allObjects, RTTIWriter& writer, utility::ErrorState& errorState)
+		bool serializeValue(const rtti::Property& property, const rtti::Variant& value, const ObjectSet& allObjects, Writer& writer, utility::ErrorState& errorState)
 		{
 			auto value_type = value.get_type();
 			auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
@@ -76,10 +76,10 @@ namespace nap
 			else if (wrapped_type.is_pointer())
 			{
 				// Pointees must be derived from Object
-				if (!errorState.check(wrapped_type.is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object"))
+				if (!errorState.check(wrapped_type.is_derived_from<rtti::Object>(), "Encountered pointer to non-Object"))
 					return false;
 
-				RTTIObject* pointee = is_wrapper ? value.extract_wrapped_value().get_value<RTTIObject*>() : value.get_value<RTTIObject*>();
+				Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<Object*>() : value.get_value<Object*>();
 				if (pointee != nullptr)
 				{
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);
@@ -173,7 +173,7 @@ namespace nap
 		/**
 		 * Helper function to serialize a RTTI object (not just rtti::RTTIObject)
 		 */
-		bool serializeObjectRecursive(const rtti::Instance object, const ObjectSet& objectsToSerialize, bool isEmbeddedObject, RTTIWriter& writer, utility::ErrorState& errorState)
+		bool serializeObjectRecursive(const rtti::Instance object, const ObjectSet& objectsToSerialize, bool isEmbeddedObject, Writer& writer, utility::ErrorState& errorState)
 		{
 			// Determine the actual type of the object
 			rtti::Instance actual_object = object.get_type().get_raw_type().is_wrapper() ? object.get_wrapped_instance() : object;
@@ -208,14 +208,14 @@ namespace nap
 		 * @param objectsToSerialize The set of objects that should actually be serialized at
 		 * the top level of the document; contains only the non-embedded objects
 		 */
-		void getObjectsToSerialize(const ObjectList& objects, RTTIWriter& writer, ObjectSet& allObjects, ObjectList& objectsToSerialize)
+		void getObjectsToSerialize(const ObjectList& objects, Writer& writer, ObjectSet& allObjects, ObjectList& objectsToSerialize)
 		{
 			// Pass 1: determine the set of all potential root objects
 			std::vector<ObjectLink> all_object_links;
 			ObjectList objects_to_visit = objects;
 			for (int index = 0; index < objects_to_visit.size(); ++index)
 			{
-				RTTIObject* object = objects_to_visit[index];
+				Object* object = objects_to_visit[index];
 				allObjects.insert(object);
 
 				// Find links for all objects
@@ -237,7 +237,7 @@ namespace nap
 			// Pass 2: now that we know all potential root objects, build the list of actual root object
 			// An object is a root object if it is not pointed to by an embedded pointer, or if it's pointed to by an embedded pointer but the writer does not support embedded pointers
 			objectsToSerialize.reserve(allObjects.size());
-			for (RTTIObject* object : allObjects)
+			for (Object* object : allObjects)
 			{
 				bool is_embedded_object = false;
 
@@ -250,7 +250,7 @@ namespace nap
 						if (link.mTarget != object)
 							continue;
 
-						ResolvedRTTIPath resolved_path;
+						ResolvedPath resolved_path;
 						link.mSourcePath.resolve(link.mSource, resolved_path);
 
 						const rtti::Property& property = resolved_path.getProperty();
@@ -268,7 +268,7 @@ namespace nap
 			}
 
 			// Pass 3: sort objects on type & ID to ensure files remain consistent after saving (for diffing and such)
-			std::sort(objectsToSerialize.begin(), objectsToSerialize.end(), [](RTTIObject* a, RTTIObject* b)
+			std::sort(objectsToSerialize.begin(), objectsToSerialize.end(), [](Object* a, Object* b)
 			{
 				if (a->get_type() == b->get_type())
 					return a->mID < b->mID;
@@ -278,7 +278,7 @@ namespace nap
 		};
 
 
-		bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, utility::ErrorState& errorState)
+		bool serializeObjects(const ObjectList& rootObjects, Writer& writer, utility::ErrorState& errorState)
 		{
 			// Determine which objects actually need to be written (expands the set with pointees, handle embedded pointers)
 			ObjectSet all_objects;
@@ -290,7 +290,7 @@ namespace nap
 				return false;
 
 			// Go through the array of objects to write. Note that we keep querying the length of the array because objects can be added during traversal
-			for (RTTIObject* object : objects_to_write)
+			for (Object* object : objects_to_write)
 			{
 				if (!errorState.check(!object->mID.empty(), "Encountered object of type: %s without ID. This is not allowed", object->get_type().get_name().data()))
 					return false;

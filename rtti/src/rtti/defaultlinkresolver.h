@@ -3,7 +3,7 @@
 #include "rttiutilities.h"
 #include <unordered_map>
 #include "linkresolver.h"
-#include "rttideserializeresult.h"
+#include "deserializeresult.h"
 
 namespace nap
 {
@@ -23,10 +23,10 @@ namespace nap
 			static bool sResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 
 		private:
-			virtual RTTIObject* findTarget(const std::string& targetID) override;
+			virtual Object* findTarget(const std::string& targetID) override;
 
 		private:
-			using ObjectsByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
+			using ObjectsByIDMap = std::unordered_map<std::string, rtti::Object*>;
 			ObjectsByIDMap mObjectsByID;	// Objects stored by ID, used for lookup
 		};
 	}

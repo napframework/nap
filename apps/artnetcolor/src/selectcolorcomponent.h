@@ -6,6 +6,7 @@
 #include <nap/configure.h>
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -27,7 +28,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// property: link to the artnet controller
-		rtti::ObjectPtr<ArtNetController> mController;
+		ResourcePtr<ArtNetController> mController;
 		ComponentPtr<RenderableMeshComponent> mMesh;
 
 		// property: channel to send data to

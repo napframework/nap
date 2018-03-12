@@ -1,16 +1,20 @@
 #pragma once
 
+// Local Includes
+#include "typeinfo.h"
+
+// External Includes
+#include <utility/dllexport.h>
 #include <string>
 #include <assert.h>
-#include <rtti/typeinfo.h>
-#include "utility/dllexport.h"
 
 namespace nap
 {
 	namespace rtti
 	{
-		class RTTIObject;
-        class ResolvedRTTIPath;
+		class Object;
+        class ResolvedPath;
+
 		/**
 		 * Represents an element on an RTTIPath. Each element is of a specific type and has different data, depending on the type of the element.
 		 * In order to be able to have an array (without dynamic allocs) of these elements, it makes use of an anonymous union to store the data.
@@ -18,7 +22,7 @@ namespace nap
 		 *
 		 * Note: this class should be used through RTTIPath, not directly
 		 */
-		class NAPAPI RTTIPathElement
+		class NAPAPI PathElement
 		{
 		public:
 			/**
@@ -34,7 +38,7 @@ namespace nap
 			/**
 			 * Equality operator
 			 */
-			bool operator==(const RTTIPathElement& lhs) const
+			bool operator==(const PathElement& lhs) const
 			{
 				// Check type first
 				if (mType != lhs.mType)
@@ -53,7 +57,7 @@ namespace nap
 			/**
 			 * Inequality operator
 			 */
-			bool operator!=(const RTTIPathElement& lhs) const
+			bool operator!=(const PathElement& lhs) const
 			{
 				return !(*this == lhs);
 			}
@@ -73,12 +77,12 @@ namespace nap
 			};
 
 		private:
-			friend class RTTIPath;
+			friend class Path;
 
 			/**
 			 * Default constructor
 			 */
-			RTTIPathElement() :
+			PathElement() :
 				mType(Type::INVALID)
 			{
 			}
@@ -89,7 +93,7 @@ namespace nap
 			 *
 			 * @param attributeName The name of the attribute represented by this element. 
 			 */
-			RTTIPathElement(const char* attributeName) :
+			PathElement(const char* attributeName) :
 				mType(Type::ATTRIBUTE)
 			{
 				Attribute.Name = attributeName;
@@ -102,7 +106,7 @@ namespace nap
 			 *
 			 * @param attributeName The name of the attribute represented by this element. 
 			 */
-			RTTIPathElement(const std::string& attributeName) :
+			PathElement(const std::string& attributeName) :
 				mType(Type::ATTRIBUTE)
 			{
 				mAttributeNameStorage = std::make_unique<std::string>(attributeName);
@@ -114,7 +118,7 @@ namespace nap
 			 *
 			 * @param arrayIndex The index of the array element represented by this element
 			 */
-			RTTIPathElement(int arrayIndex) :
+			PathElement(int arrayIndex) :
 				mType(Type::ARRAY_ELEMENT)
 			{
 				ArrayElement.Index = arrayIndex;
@@ -123,7 +127,7 @@ namespace nap
 			/**
 			 * Copy constructor
 			 */
-			RTTIPathElement(const RTTIPathElement& other)
+			PathElement(const PathElement& other)
 			{
 				copyFrom(other);
 			}
@@ -131,7 +135,7 @@ namespace nap
 			/**
 			 * Assignment operator
 			 */
-			RTTIPathElement& operator=(const RTTIPathElement& other)
+			PathElement& operator=(const PathElement& other)
 			{
 				// Prevent self-assignment
 				if (&other == this)
@@ -146,7 +150,7 @@ namespace nap
 			/**
 			 * Helper function to copy data
 			 */
-			inline void copyFrom(const RTTIPathElement& other)
+			inline void copyFrom(const PathElement& other)
 			{
 				mType = other.mType;
 				if (mType == Type::ATTRIBUTE)
@@ -177,7 +181,7 @@ namespace nap
 		class NAPAPI ResolvedRTTIPathElement
 		{
 		private:
-			friend class ResolvedRTTIPath;
+			friend class ResolvedPath;
 			/**
 			 * The type of this element
 			 */
@@ -398,7 +402,7 @@ namespace nap
 		 *
 		 * After the setValue, object->mArrayOfCompounds[0].mPointerProperty now points to 'some_other_object'
 		*/
-		class NAPAPI RTTIPath
+		class NAPAPI Path
 		{
 		public:
 			/**
@@ -410,7 +414,7 @@ namespace nap
 			inline void pushAttribute(const char* attributeName)
 			{
 				assert(mLength < RTTIPATH_MAX_LENGTH);
-				mElements[mLength++] = RTTIPathElement(attributeName);
+				mElements[mLength++] = PathElement(attributeName);
 			}
 
 			/**
@@ -423,7 +427,7 @@ namespace nap
 			inline void pushAttribute(const std::string& attributeName)
 			{
 				assert(mLength < RTTIPATH_MAX_LENGTH);
-				mElements[mLength++] = RTTIPathElement(attributeName);
+				mElements[mLength++] = PathElement(attributeName);
 			}
 
 			/**
@@ -434,7 +438,7 @@ namespace nap
 			inline void pushArrayElement(int index)
 			{
 				assert(mLength < RTTIPATH_MAX_LENGTH);
-				mElements[mLength++] = RTTIPathElement(index);
+				mElements[mLength++] = PathElement(index);
 			}
 
 			/**
@@ -443,13 +447,13 @@ namespace nap
 			inline void popBack()
 			{
 				assert(mLength > 0);
-				mElements[--mLength] = RTTIPathElement();
+				mElements[--mLength] = PathElement();
 			}
 
 			/**
 			 * Equality comparison
 			 */
-			bool operator==(const RTTIPath& lhs) const
+			bool operator==(const Path& lhs) const
 			{
 				if (mLength != lhs.mLength)
 					return false;
@@ -464,7 +468,7 @@ namespace nap
 			/**
 			 * Inequality comparison
 			 */
-			bool operator!=(const RTTIPath& lhs) const
+			bool operator!=(const Path& lhs) const
 			{
 				return !(*this == lhs);
 			}
@@ -481,7 +485,7 @@ namespace nap
 			 *
 			 * @return The RTTIPath
 			 */
-			static const RTTIPath fromString(const std::string& path);
+			static const Path fromString(const std::string& path);
 
 			/**
 			 * Resolve an RTTIPath against an Object
@@ -490,11 +494,11 @@ namespace nap
 			 * @param path The resolved RTTI path
 			 * @return Whether the resolve succeeded or not
 			 */
-			bool resolve(const rtti::RTTIObject* object, ResolvedRTTIPath& resolvedPath) const;
+			bool resolve(const rtti::Object* object, ResolvedPath& resolvedPath) const;
 
 		private:
 			static const int	RTTIPATH_MAX_LENGTH = 16;			// Maximum number of elements on an RTTIPath
-			RTTIPathElement		mElements[RTTIPATH_MAX_LENGTH];		// The elements on the path
+			PathElement		mElements[RTTIPATH_MAX_LENGTH];		// The elements on the path
 			int					mLength = 0;						// Current length of the path
 		};
 
@@ -502,7 +506,7 @@ namespace nap
 		 * ResolvedRTTIPath is the 'resolved' version of an RTTIPath and can be used to get/set the value of the property being pointed to
 		 * See RTTIPath for further documentation
 		 */
-		class NAPAPI ResolvedRTTIPath
+		class NAPAPI ResolvedPath
 		{
 		public:
 			/**
@@ -552,7 +556,7 @@ namespace nap
 			bool isValid() const { return !isEmpty(); }
 
 		private:
-			friend class RTTIPath;
+			friend class Path;
 
 			/**
 			 * Push the root object/attribute on the path. Note that this is different from a regular attribute in that no copy is made of the attribute value (it keeps a pointer to the root object)
