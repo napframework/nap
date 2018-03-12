@@ -6,6 +6,7 @@
 // external includes
 #include <component.h>
 #include <renderablemesh.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -28,8 +29,8 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		std::vector<rtti::ObjectPtr<VideoMeshFromFile>> mMeshes;	///< Property: "Meshes" link to videos
-		int mIndex = 0;										///< Property: "Index" current video index
+		std::vector<ResourcePtr<VideoMeshFromFile>> mMeshes;	///< Property: "Meshes" link to videos
+		int mIndex = 0;											///< Property: "Index" current video index
 	};
 
 

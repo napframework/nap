@@ -5,7 +5,7 @@
 #include <thread>
 #include <mutex>
 #include <limits>
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <rtti/factory.h>
 
 struct AVPacket;
@@ -37,9 +37,9 @@ namespace nap
 	 * thread to decode the package) and pushes the frame onto the frame queue. 
 	 * The main thread will consume the frames when they are present in the frame queue and their timestamp has 'passed'.
 	 */
-	class NAPAPI Video final : public rtti::RTTIObject
+	class NAPAPI Video final : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 
 	public:
 		/**

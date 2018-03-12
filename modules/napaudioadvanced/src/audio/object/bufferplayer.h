@@ -1,7 +1,7 @@
 #pragma once
 
 // Nap includes
-#include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 
 // Audio includes
 #include <audio/core/audioobject.h>
@@ -25,7 +25,7 @@ namespace nap
             BufferPlayer() = default;
             
             int mChannelCount = 1; /**< Number of channels that will be played back from the source buffer */
-            rtti::ObjectPtr<AudioBufferResource> mBufferResource = nullptr; /**< Resource containing the buffer that will be played. */
+            ResourcePtr<AudioBufferResource> mBufferResource = nullptr; /**< Resource containing the buffer that will be played. */
             bool mAutoPlay = true; /**<  If true, the object will start playing back immediately after initialization. */
             
         private:

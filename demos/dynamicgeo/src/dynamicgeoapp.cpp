@@ -33,7 +33,7 @@ namespace nap
 			return false;                
 		}
 		
-		rtti::ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
+		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
 		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");
 		mCameraEntity				= scene->findEntity("CameraEntity");
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");

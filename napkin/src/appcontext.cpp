@@ -55,7 +55,7 @@ Document* AppContext::loadDocument(const QString& filename)
 
 	ErrorState err;
 
-	nap::rtti::RTTIDeserializeResult result;
+	nap::rtti::DeserializeResult result;
 	if (!readJSONFile(filename.toStdString(), getCore().getResourceManager()->getFactory(), result, err))
 	{
 		nap::Logger::fatal(err.toString());

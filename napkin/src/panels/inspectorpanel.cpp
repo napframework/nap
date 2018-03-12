@@ -13,7 +13,7 @@
 using namespace nap::rtti;
 
 
-void napkin::InspectorModel::setObject(RTTIObject* object)
+void napkin::InspectorModel::setObject(Object* object)
 {
 	mObject = object;
 
@@ -92,10 +92,10 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 	auto pointer_item = dynamic_cast<PointerItem*>(item);
 	if (pointer_item != nullptr)
 	{
-		nap::rtti::RTTIObject* pointee = getPointee(pointer_item->getPath());
+		nap::rtti::Object* pointee = getPointee(pointer_item->getPath());
 		QAction* action = menu.addAction("Select Resource", [pointer_item, pointee]
 		{
-			QList<nap::rtti::RTTIObject*> objects = {pointee};
+			QList<nap::rtti::Object*> objects = {pointee};
 			AppContext::get().selectionChanged(objects);
 		});
 		action->setEnabled(pointee != nullptr);
@@ -114,7 +114,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
 			menu.addAction("Add...", [this, array_path, wrapped_type]()
 			{
-				nap::rtti::RTTIObject* selected_object = FilterPopup::getObject(this, wrapped_type.get_raw_type());
+				nap::rtti::Object* selected_object = FilterPopup::getObject(this, wrapped_type.get_raw_type());
 				if (selected_object != nullptr)
 					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 			});
@@ -138,7 +138,7 @@ void napkin::InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 }
 
 
-void napkin::InspectorPanel::setObject(RTTIObject* objects)
+void napkin::InspectorPanel::setObject(Object* objects)
 {
 	mModel.setObject(objects);
 	mTreeView.getTreeView().expandAll();
@@ -153,7 +153,7 @@ void napkin::InspectorPanel::rebuild()
 
 void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
-	QList<nap::rtti::RTTIObject*> objects = {&prop.getObject()};
+	QList<nap::rtti::Object*> objects = {&prop.getObject()};
 	AppContext::get().selectionChanged(objects);
 
 
@@ -181,7 +181,7 @@ void napkin::InspectorModel::populateItems()
 		std::string name = prop.get_name().data();
 		QString qName = QString::fromStdString(name);
 
-		nap::rtti::RTTIPath path;
+		nap::rtti::Path path;
 		path.pushAttribute(name);
 
 		auto value = prop.get_value(mObject);
@@ -209,7 +209,7 @@ bool napkin::InspectorModel::setData(const QModelIndex& index, const QVariant& v
 	return QStandardItemModel::setData(index, value, role);
 }
 
-nap::rtti::RTTIObject* napkin::InspectorModel::getObject()
+nap::rtti::Object* napkin::InspectorModel::getObject()
 {
 	return mObject;
 }

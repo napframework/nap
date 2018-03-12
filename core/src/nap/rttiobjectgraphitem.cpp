@@ -1,6 +1,6 @@
 #include "rttiobjectgraphitem.h"
 #include "rtti/rttiutilities.h"
-#include "rtti/rttiobject.h"
+#include "rtti/object.h"
 #include "utility/errorstate.h"
 
 namespace nap
@@ -9,7 +9,7 @@ namespace nap
 	 * Creates a graph item.
 	 * @param object Object to wrap in the item that is created.
 	 */
-	const RTTIObjectGraphItem RTTIObjectGraphItem::create(rtti::RTTIObject* object)
+	const RTTIObjectGraphItem RTTIObjectGraphItem::create(rtti::Object* object)
 	{
 		RTTIObjectGraphItem item;
 		item.mType = EType::Object;

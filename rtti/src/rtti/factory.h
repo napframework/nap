@@ -1,14 +1,14 @@
 #pragma once
 
 // RTTI includes
-#include "rttiobject.h"
+#include "object.h"
 #include "utility/dllexport.h"
 
 namespace nap
 {
 	namespace rtti
 	{
-		class RTTIObject;
+		class Object;
 
 		/**
 		 * Derive from this object to supply custom constructor arguments to objects.
@@ -21,7 +21,7 @@ namespace nap
 			/**
 			* Creates the object specified with getCreationType()
 			*/
-			virtual RTTIObject* create() = 0;
+			virtual Object* create() = 0;
 
 			/**
 			* @return the type this object creates
@@ -52,7 +52,7 @@ namespace nap
 			/**
 			* @return Creates the object with the (...yes?)
 			*/
-			virtual rtti::RTTIObject* create() override			{ return new Object(mArgument); }
+			virtual rtti::Object* create() override			{ return new Object(mArgument); }
 
 		private:
 			T& mArgument;
@@ -82,7 +82,7 @@ namespace nap
 			 * @return instance of the type.
 			 * @param typeInfo: the type to create an instance of.
 			 */
-			RTTIObject* create(rtti::TypeInfo typeInfo);
+			Object* create(rtti::TypeInfo typeInfo);
 
 			/**
 			 * @return If the type in @typeInfo is registered into the Factory, returns true. If the type is not 

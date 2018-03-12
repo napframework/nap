@@ -23,7 +23,7 @@ namespace nap
     }
     
     
-    MidiInputPort::MidiInputPort(MidiService& service) : rtti::RTTIObject(), mService(&service)
+    MidiInputPort::MidiInputPort(MidiService& service) : Resource(), mService(&service)
     {
 
     }

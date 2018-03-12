@@ -15,9 +15,10 @@
 
 namespace nap
 {
+	using namespace rtti;
+
 	/**
 	 * Demo application that is called from within the main loop
-	 *
 	 */
 	class AudioPlaybackApp : public App
 	{
@@ -67,8 +68,8 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
-		rtti::ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
-        rtti::ObjectPtr<audio::AudioBufferResource> mBuffer = nullptr;        //< Pointer to the audio file in memory
+		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
+        ObjectPtr<audio::AudioBufferResource> mBuffer = nullptr;        //< Pointer to the audio file in memory
         audio::PlaybackComponentInstance* mPlaybackComponent = nullptr; //< Component that takes care of audio playback
         audio::TimeValue mStartPosition = 0;
         audio::TimeValue mDuration = 0;

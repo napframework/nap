@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <rtti/factory.h>
 #include <thread>
 #include <mutex>
@@ -25,10 +25,10 @@ namespace nap
 	 * closed. When the DAC is unavailable to the system the DAC is still is a valid resource but not active
 	 * This object manages it's own connection to the DAC
 	 */
-	class NAPAPI EtherDreamDac : public rtti::RTTIObject
+	class NAPAPI EtherDreamDac : public Resource
 	{
 		friend class EtherDreamService;
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		// Default constructor
 		EtherDreamDac() = default;

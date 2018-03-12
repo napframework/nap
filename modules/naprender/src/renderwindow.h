@@ -178,7 +178,7 @@ namespace nap
 		/**
 		* @return Creates a WindowResource
 		*/
-		virtual rtti::RTTIObject* create() override
+		virtual rtti::Object* create() override
 		{
 			return new RenderWindow(mRenderService);
 		}

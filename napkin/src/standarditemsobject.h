@@ -36,7 +36,7 @@ namespace napkin
 		/**
 		 * @param o The object this item should represent
 		 */
-		explicit ObjectItem(nap::rtti::RTTIObject* o);
+		explicit ObjectItem(nap::rtti::Object* o);
 
 		/**
 		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
@@ -53,7 +53,7 @@ namespace napkin
 		/**
 		 * @return The object held by this item
 		 */
-		nap::rtti::RTTIObject* getObject() const;
+		nap::rtti::Object* getObject() const;
 
 		/**
 		 * @return The name of the object.
@@ -64,7 +64,7 @@ namespace napkin
 
 
 	protected:
-		nap::rtti::RTTIObject* mObject; // THe object held by this item
+		nap::rtti::Object* mObject; // THe object held by this item
 	};
 
 	/**
