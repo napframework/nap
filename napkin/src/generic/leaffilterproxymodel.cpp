@@ -6,16 +6,16 @@ LeafFilterProxyModel::LeafFilterProxyModel() : QSortFilterProxyModel() {}
 
 bool napkin::LeafFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
+	if (isExempt(sourceRow, sourceParent))
+		return true;
+
+	for (const auto& extraFilter : mExtraFilters)
+		if (!extraFilter(*this, sourceRow, sourceParent))
+			return false;
+
 	if (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent))
 		return true;
 
-	// Run through any exempted indexes
-	for (int col = 0, len=sourceModel()->columnCount(sourceParent); col < len; col++)
-	{
-		const auto sourceIndex = sourceParent.child(sourceRow, col);
-		if (mExemptions.contains(sourceIndex))
-			return true;
-	}
 
 	return acceptsAnyChild(sourceRow, sourceParent);
 }
@@ -38,10 +38,35 @@ void LeafFilterProxyModel::exemptSourceIndex(QModelIndex sourceIndex)
 	invalidateFilter();
 }
 
+void LeafFilterProxyModel::addExtraFilter(FilterFunction func)
+{
+	mExtraFilters << func;
+	invalidateFilter();
+}
+
 void LeafFilterProxyModel::clearExemptions()
 {
 	mExemptions.clear();
 	invalidateFilter();
 }
+
+void LeafFilterProxyModel::clearExtraFilters()
+{
+	mExtraFilters.clear();
+	invalidateFilter();
+}
+
+bool LeafFilterProxyModel::isExempt(int sourceRow, const QModelIndex& sourceParent) const
+{
+	// Run through any exempted indexes
+	for (int col = 0, len=sourceModel()->columnCount(sourceParent); col < len; col++)
+	{
+		const auto sourceIndex = sourceParent.child(sourceRow, col);
+		if (mExemptions.contains(sourceIndex))
+			return true;
+	}
+	return false;
+}
+
 
 
