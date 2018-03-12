@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     project_name = os.path.basename(args.PROJECT_PATH.strip('\\'))
     nap_root = os.path.abspath(os.path.join(args.PROJECT_PATH, os.pardir, os.pardir))
-    script_path = os.path.join(nap_root, 'tools', 'platform', 'refreshProjectByName.py')
+    script_path = os.path.join(nap_root, 'tools', 'platform', 'regenerateProjectByName.py')
 
     # If we're on Windows or macOS and we're generating a solution for the first time show the generated solution
     show_solution = sys.platform in ('win32', 'darwin') and not args.no_show

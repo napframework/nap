@@ -33,7 +33,7 @@ def find_module(module_name):
             print("Found module %s at %s" % (module_name, module_path))
             return module_path
         else:
-            print("Module %s at %s does not contain CMakeLists.txt and can't be refreshed" % (module_name, module_path))
+            print("Module %s at %s does not contain CMakeLists.txt and can't be regenerated" % (module_name, module_path))
             return None
     else:
         print("Couldn't find module with name '%s'" % module_name)

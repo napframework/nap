@@ -45,7 +45,7 @@ def update_module(module_name, build_type):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("MODULE_NAME", type=str, help="The module to refresh")
+    parser.add_argument("MODULE_NAME", type=str, help="The module to regenerate")
     # Linux: if we've specified a build type let's grab that, otherwise default to debug
     if sys.platform.startswith('linux'):
         parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')

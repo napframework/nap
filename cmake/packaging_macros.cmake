@@ -31,7 +31,7 @@ macro(package_nap)
     file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/platform/*py")
     install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
 
-    # Package project directory package & refresh shortcuts
+    # Package project directory package & regenerate shortcuts
     package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
 
     # Create empty projects and usermodules directories
@@ -264,14 +264,14 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
 endmacro()
 
 macro(package_project_dir_shortcuts DESTINATION)
-    # Package project directory package & refresh shortcuts
+    # Package project directory package & regenerate shortcuts
     if(WIN32)
-        install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.cmd
-                         ${NAP_ROOT}/dist/win64/project_dir_shortcuts/refresh.cmd
+        install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.bat
+                         ${NAP_ROOT}/dist/win64/project_dir_shortcuts/regenerate.bat
                 DESTINATION ${DESTINATION})
     else()
         install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
-                         ${NAP_ROOT}/dist/unix/project_dir_shortcuts/refresh
+                         ${NAP_ROOT}/dist/unix/project_dir_shortcuts/regenerate
                 DESTINATION ${DESTINATION})
     endif()
 endmacro()
@@ -298,7 +298,7 @@ macro(package_project_into_release DEST_DIR)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/projectExtra.cmake DESTINATION ${DEST_DIR})
     endif()
 
-    # Package our refresh & package shortcuts into the project directory
+    # Package our regenerate & package shortcuts into the project directory
     package_project_dir_shortcuts(${DEST_DIR})
 endmacro()
 
