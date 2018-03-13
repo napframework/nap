@@ -8,8 +8,8 @@ import sys
 from NAPShared import read_console_char
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("PROJECT_PATH", type=str, help="Path to the project")
+    parser = argparse.ArgumentParser(prog='package')
+    parser.add_argument("PROJECT_PATH", type=str, help=argparse.SUPPRESS)
     parser.add_argument("-ns", "--no-show", action="store_true",
                         help="Don't show the generated package")
     parser.add_argument("-nn", "--no-napkin", action="store_true",
