@@ -66,7 +66,7 @@ namespace napkin
 		/**
 		 * @return The sort/filter model that sits between the user model and the view.
 		 */
-		const LeafFilterProxyModel& getFilterModel() const { return mSortFilter; }
+		LeafFilterProxyModel& getFilterModel() { return mSortFilter; }
 
 		/**
 		 * @return The actual QTreeView used by this widget.
@@ -122,6 +122,11 @@ namespace napkin
 		 */
 		void setMenuHook(std::function<void(QMenu&)> fn) { mMenuHookFn = fn; }
 
+		/**
+		 * @return The widget at the top-right corner, next to the filter line edit.
+		 */
+		QWidget& getCornerWidget();
+
 	protected:
         /**
          * Invoked when the filter has changed
@@ -147,7 +152,9 @@ namespace napkin
 
 	private:
 		QVBoxLayout mLayout; ///< The main layout
+		QHBoxLayout mTopLayout; ///< The layout containing the filter input and the corner widget
 		QLineEdit mLineEditFilter; ///< The filter box
+		QWidget mCornerWidget;	///< The [empty] widget at the tip right corner
 		_FilterTreeView mTreeView; ///< Custom treeview to customize behavior for Napkin
 		LeafFilterProxyModel mSortFilter; ///< Sits in between the user model and the tree view
 		std::function<void(QMenu&)> mMenuHookFn = nullptr; ///< Gives subclasses the chance to add to the menu
