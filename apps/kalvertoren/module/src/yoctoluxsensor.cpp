@@ -111,7 +111,7 @@ namespace nap
 			if (!curr_sensor->isOnline())
 			{
 				mCurrentRetries++;
-				nap::Logger::warn("lux sensor: %s is offline", mName.c_str());
+				nap::Logger::warn("lux sensor: %s is offline", mID.c_str());
 				continue;
 			}
 

@@ -24,19 +24,11 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * @return if the hub is connected
-		 */
-		bool isRegistered() const							{ return mRegistered; }
-
 		std::string		mAddress;								///< Property:'Address' hub ip address or host name
 		std::string		mUsername;								///< Property:'Username' ethernet user name
 		std::string		mPass;									///< Property:'Pass' ethernet user password
 		int				mPort = 80;								///< Property:'Port' ethernet port
 		bool			mConnect = true;						///< Property:'Connect' if on initialization this object should connect to the ethernet hub
 		std::vector<rtti::ObjectPtr<YoctoLuxSensor>> mSensors;	///< Property:'Sensors' list of connected lux sensors;
-
-	private:
-		bool			mRegistered = false;	// If a connection has been established
 	};
 }

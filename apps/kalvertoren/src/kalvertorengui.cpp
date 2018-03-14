@@ -349,7 +349,7 @@ namespace nap
 			// plot lux history
 			ImGui::TextColored(float_clr_gui, "Lux Sensor Average");
 			ImGui::Text(utility::stringFormat("%f", light_comp.getLuxAverage()).c_str());
-			ImGui::SliderFloat("Sample Interval (sec)", &mLuxSampleTime, 0.0f, 10.0f, "%.3f", 2.0f);
+			ImGui::SliderFloat("Sample Interval (sec)", &mLuxSampleTime, 0.0f, 100.0f, "%.3f", 2.0f);
 			glm::vec2 lux_range = light_comp.getLuxRange();
 			ImGui::InputFloat2("Display Bounds", &(mLuxDisplayBounds.x));
 			ImGui::PlotHistogram("Sensor History", mLuxValues.data(), mLuxValues.size(), mLuxIdx, NULL, mLuxDisplayBounds.x, mLuxDisplayBounds.y, ImVec2(0, 80));

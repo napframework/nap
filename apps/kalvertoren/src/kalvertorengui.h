@@ -74,8 +74,8 @@ namespace nap
 		float												mDisplaySize = 0.5f;
 
 		// Information
-		std::array<float, 180>								mLuxValues;
-		std::array<float, 180>								mBrightnessValues;
+		std::array<float, 512>								mLuxValues;
+		std::array<float, 512>								mBrightnessValues;
 		float												mLuxSampleTime = 1.0f;
 		int													mLuxIdx		= 0;
 		int													mBrightnessIdx = 0;

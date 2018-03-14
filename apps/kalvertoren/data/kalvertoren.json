@@ -2965,7 +2965,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": false,
+            "Connect": true,
             "Sensors": [
                 "LuxSensor1"
             ]
@@ -2977,7 +2977,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": false,
+            "Connect": true,
             "Sensors": [
                 "LuxSensor2"
             ]
@@ -2989,7 +2989,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": true,
+            "Connect": false,
             "Sensors": [
                 "LuxSensor3"
             ]
@@ -3000,7 +3000,7 @@
             "Name": "LIGHTMK3-B65A4",
             "Retries": 10,
             "BufferSize": 30,
-            "DelayTime": 250
+            "DelayTime": 500
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3008,7 +3008,7 @@
             "Name": "LIGHTMK3-BA5E3",
             "Retries": 10,
             "BufferSize": 30,
-            "DelayTime": 250
+            "DelayTime": 500
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3016,7 +3016,7 @@
             "Name": "LIGHTMK3-BAC3D",
             "Retries": 10,
             "BufferSize": 30,
-            "DelayTime": 250
+            "DelayTime": 500
         }
     ]
 }
