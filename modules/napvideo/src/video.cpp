@@ -122,7 +122,7 @@ RTTI_END_CLASS
 namespace nap
 {
 	// Max video value, used as state check
-	const double Video::sVideoMax = std::numeric_limits<double>::max();
+	const double Video::sClockMax = std::numeric_limits<double>::max();
 
 
 	const std::string sErrorToString(int err)
@@ -586,10 +586,10 @@ namespace nap
 			if (decode_result == AVState::EDecodeFrameResult::EndOfFile)
 				continue;
 
-			// We calculate when the next frame needs to be displayed. The videostream contains PTS information, but there are cases
+			// We calculate when the next frame needs to be displayed. The stream contains PTS information, but there are cases
 			// when there is no PTS available, we need to account for these cases.
 			Frame new_frame;
-			new_frame.mPTSSecs = Video::sVideoMax;
+			new_frame.mPTSSecs = Video::sClockMax;
 			new_frame.mFirstPacketDTS = frameFirstPacketDTS;
 
 			// Note: we use the best_effort_timestamp (which is provided/calculated by the decoder), because it seems to deal with some video files/formats
@@ -996,14 +996,16 @@ namespace nap
 
 		// Reset all state to make sure threads don't immediately exit from a previous 'stop' call
 		mPlaying = true;
-		mVideoClockSecs = sVideoMax;
+		mSystemClockSecs = sClockMax;
+		mAudioClockSecs = sClockMax;
+		mAudioDecodeClockSecs = sClockMax;
 
 		seek(startTimeSecs);
 
 		mVideoState.startDecodeThread(std::bind(&Video::onClearVideoFrameQueue, this));
 		
 		if (mAudioState.isValid())
-			mAudioState.startDecodeThread();
+			mAudioState.startDecodeThread(std::bind(&Video::onClearAudioFrameQueue, this));
 
 		startIOThread();
 	}
@@ -1047,7 +1049,7 @@ namespace nap
 		if (mIOThreadState != IOThreadState::Playing)
 			return mSeekTargetSecs;
 		else
-			return mVideoClockSecs;
+			return hasAudio() ? mAudioClockSecs : mSystemClockSecs;
 	}
 
 
@@ -1068,9 +1070,17 @@ namespace nap
 	void Video::onClearVideoFrameQueue()
 	{
 		// After clearing the frame queue, we also need to reset the video clock in order for playback to re-sync to possible new frames
-		mVideoClockSecs = sVideoMax;
+		mSystemClockSecs = sClockMax;
 	}
 
+
+	void Video::onClearAudioFrameQueue()
+	{
+		// After clearing the audio frame queue, we need to reset the audio clocks, to ensure that the video playback does not block while waiting for the audio clock to advance
+		mAudioDecodeClockSecs = sClockMax;
+		mAudioClockSecs = sClockMax;
+	}
+	
 
 	void Video::setErrorOccurred(const std::string& errorMessage)
 	{
@@ -1381,6 +1391,9 @@ namespace nap
 		// We have a new frame, reset cursor and size
 		mAudioFrameSize = buffer_size;
 		mAudioFrameReadOffset = 0;
+		
+		// After decoding, we know the PTS of the decoded frame and we know its duration. So, we advance the audio decode clock to the end of the audio frame (in time)
+		mAudioDecodeClockSecs = mCurrentAudioFrame.mPTSSecs + ((double)mCurrentAudioFrame.mFrame->nb_samples / mCurrentAudioFrame.mFrame->sample_rate);
 
 		return true;
 	}
@@ -1415,6 +1428,23 @@ namespace nap
 			mAudioFrameReadOffset += num_bytes_to_read;
 		}
 
+		// After copying data into the buffer, it will not immediately play; there is some time between the return of this callback and the audio actually playing.
+		// However, we've already advanced the audio decode clock (in getNextAudioFrame) to the *end* of the audio frame, while it hasn't started playing yet.
+		// Syncing video to the audio decode clock would therefore result in out-of-sync audio/video.
+		//
+		// To correct for this delay, we determine the 'actual' audio clock, by calculating the difference between the decoded time and the time of the first sample
+		// that still needs to be played. 
+		// Furthermore, we assume that the audio system in use will not immediately play the audio after returning from this function, 
+		// due to double buffering (i.e. when this function returns, a previous buffer is still playing).
+		// Therefore, we multiply the incoming buffer size by 2, to account for this double buffering. Note that this is a 'best guess'; the actual delay may be smaller or larger, 
+		// but we can't know it exactly.
+		uint64_t bytes_decoded = 2 * sizeInBytes + (mAudioFrameSize - mAudioFrameReadOffset);
+		uint64_t bytes_per_sec = av_samples_get_buffer_size(NULL, av_get_channel_layout_nb_channels(targetAudioFormat.getChannelLayout()), targetAudioFormat.getSampleRate(), (AVSampleFormat)targetAudioFormat.getSampleFormat(), 1);
+		double decoded_time = (double)bytes_decoded / (double)bytes_per_sec;
+
+		// Set audio clock to actual 'play' time
+		mAudioClockSecs = mAudioDecodeClockSecs - decoded_time;
+
 		return true;
 	}
 
@@ -1427,11 +1457,11 @@ namespace nap
 		// If the frametime spikes, make sure we re-sync to the first frame again, otherwise it may be possible that
 		// the main thread is trying to catch up, but it never really can catch up
  		if (deltaTime > 1.0)
- 			mVideoClockSecs = sVideoMax;
+ 			mSystemClockSecs = sClockMax;
 
-		// Update clock if it has been initialized
-		if (mVideoClockSecs != sVideoMax)
-			mVideoClockSecs += (deltaTime * mSpeed);
+		// Update systen clock if it has been initialized
+		if (mSystemClockSecs != sClockMax)
+			mSystemClockSecs += (deltaTime * mSpeed);
 
 		// Peek into the frame queue. If we have a frame and the PTS value of the first frame on
 		// the FIFO queue has expired, we pop it. If there is no frame or the frame has not expired,
@@ -1447,16 +1477,20 @@ namespace nap
 				return errorState.check(mErrorMessage.empty(), mErrorMessage.c_str());
 			}
 
-			// Initialize the video clock to the first frame we see (if it has not been initialized yet)
-			if (mVideoClockSecs == sVideoMax)
+			// Initialize the system clock to the first frame we see (if it has not been initialized yet)
+			if (mSystemClockSecs == sClockMax)
 			{
 				Frame frame = mVideoState.peekFrame();
 				if (frame.isValid())
-					mVideoClockSecs = frame.mPTSSecs;
+					mSystemClockSecs = frame.mPTSSecs;
 			}
 
-			// Try to get next frame to display (based on video clock)
-			cur_frame = mVideoState.tryPopFrame(mVideoClockSecs);
+			// If the video we're playing has an audio stream, we use the audio clock to present frames.
+			// This makes sure that audio/video remain in sync. If there is no audio stream, we use the system clock.
+			double display_clock = hasAudio() ? mAudioClockSecs : mSystemClockSecs;
+			
+			// Try to get next frame to display (based on display clock)			
+			cur_frame = mVideoState.tryPopFrame(display_clock);
 			if (!cur_frame.isValid())
 				return true;
 		}

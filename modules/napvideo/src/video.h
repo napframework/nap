@@ -510,11 +510,14 @@ namespace nap
 		void clearFrameQueue();
 		
 		/**
-		 * Callback that is called when the frame queue is cleared.
+		 * Callback that is called when the video frame queue is cleared.
 		 */
 		void onClearVideoFrameQueue();
 
-		friend class AVState;
+		/**
+		 * Callback that is called when the audio frame queue is cleared.
+		 */
+		void onClearAudioFrameQueue();
 
 		/**
 		 * Called by functions on critical error. Stops execution of video.
@@ -522,6 +525,8 @@ namespace nap
 		void setErrorOccurred(const std::string& errorMessage);
 
 	private:
+		friend class AVState;
+
 		enum class IOThreadState
 		{
 			Playing,					///< Regular playing state
@@ -530,7 +535,7 @@ namespace nap
 			SeekingTargetFrame			///< Third stage of seeking, decoding up until the target PTS
 		};
 
-		static const double		sVideoMax;
+		static const double		sClockMax;
 
 		std::unique_ptr<RenderTexture2D> mYTexture;
 		std::unique_ptr<RenderTexture2D> mUTexture;
@@ -541,7 +546,10 @@ namespace nap
 		int						mWidth = 0;									///< Width of the video, in pixels
 		int						mHeight = 0;								///< Height of the video, in pixels
 		float					mDuration = 0.0f;							///< Duration of the video in seconds
-		double					mVideoClockSecs = sVideoMax;				///< Clock that we use to synchronize the video to
+		double					mSystemClockSecs = sClockMax;				///< Clock that we use to synchronize the video to if there is no audio stream
+		double					mAudioDecodeClockSecs = sClockMax;			///< Clock that indicates up to which time the audio thread has decoded frame
+		double					mAudioClockSecs = sClockMax;				///< Clock that indicates the actual time of the *playing* audio
+
 		std::string				mErrorMessage;								///< If an error occurs, this is the string containing error information. If empty, no error occured.
 		
 		AVState					mVideoState;								///< State containing all video decoding
@@ -564,7 +572,6 @@ namespace nap
 		uint64_t				mAudioFrameSize = 0;						///< Size of the current decoded (and possible resampled) audio buffer, in bytes
 
 		IOThreadState			mIOThreadState = IOThreadState::Playing;		///< FSM state of the I/O thread
-
 	};
 
 	// Object creator used for constructing the the OSC receiver
