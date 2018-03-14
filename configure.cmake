@@ -107,11 +107,11 @@ endmacro()
 # Helper function to filter out platform-specific files
 # The function outputs the following new variables with the platform-specific sources:
 # - WIN32_SOURCES
-# - OSX_SOURCES
+# - MACOS_SOURCES
 # - LINUX_SOURCES
 function(filter_platform_specific_files UNFILTERED_SOURCES)
     set(LOCAL_WIN32_SOURCES)
-    set(LOCAL_OSX_SOURCES)
+    set(LOCAL_MACOS_SOURCES)
     set(LOCAL_LINUX_SOURCES)
     foreach(TMP_PATH ${${UNFILTERED_SOURCES}})
         string(FIND ${TMP_PATH} "/win32/" WIN32_EXCLUDE_DIR_FOUND)
@@ -119,9 +119,9 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
             message(STATUS "Win32 File: " ${TMP_PATH})
             list(APPEND LOCAL_WIN32_SOURCES ${TMP_PATH})
         else()
-            string(FIND ${TMP_PATH} "/osx/" OSX_EXCLUDE_DIR_FOUND)
-            if(NOT ${OSX_EXCLUDE_DIR_FOUND} EQUAL -1)
-                list(APPEND LOCAL_OSX_SOURCES ${TMP_PATH})
+            string(FIND ${TMP_PATH} "/osx/" MACOS_EXCLUDE_DIR_FOUND)
+            if(NOT ${MACOS_EXCLUDE_DIR_FOUND} EQUAL -1)
+                list(APPEND LOCAL_MACOS_SOURCES ${TMP_PATH})
             else()
                 string(FIND ${TMP_PATH} "/linux/" LINUX_EXCLUDE_DIR_FOUND)
                 if(NOT ${LINUX_EXCLUDE_DIR_FOUND} EQUAL -1)
@@ -132,13 +132,13 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
     endforeach(TMP_PATH)
 
     set(WIN32_SOURCES ${LOCAL_WIN32_SOURCES} PARENT_SCOPE)
-    set(OSX_SOURCES ${LOCAL_OSX_SOURCES} PARENT_SCOPE)
+    set(MACOS_SOURCES ${LOCAL_MACOS_SOURCES} PARENT_SCOPE)
     set(LINUX_SOURCES ${LOCAL_LINUX_SOURCES} PARENT_SCOPE)
 endfunction()
 
 # Helper macro to add platform-specific files to the correct directory and
 # to only compile the platform-specific files that match the current platform
-macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
+macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
 
     # Add to solution folders
     if(MSVC)
@@ -152,13 +152,13 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
             endif()
         endforeach()
 
-        # Sort header and cpps into solution folders for OSX
-        foreach(TMP_PATH ${OSX_SOURCES})
+        # Sort header and cpps into solution folders for macOS
+        foreach(TMP_PATH ${MACOS_SOURCES})
             string(FIND ${TMP_PATH} ".cpp" IS_CPP)
             if(NOT ${IS_CPP} EQUAL -1)
-                source_group("Source Files\\OSX" FILES ${TMP_PATH})
+                source_group("Source Files\\macOS" FILES ${TMP_PATH})
             else()
-                source_group("Header Files\\OSX" FILES ${TMP_PATH})
+                source_group("Header Files\\macOS" FILES ${TMP_PATH})
             endif()
         endforeach()
 
@@ -180,7 +180,7 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
     endif()
 
     if(NOT APPLE)
-        set_source_files_properties(${OSX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
+        set_source_files_properties(${MACOS_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
     endif()
 
     if(APPLE OR NOT UNIX)

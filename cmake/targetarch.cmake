@@ -52,46 +52,46 @@ set(archdetect_c_code "
 
 function(target_architecture output_var)
     if(APPLE AND CMAKE_OSX_ARCHITECTURES)
-        # On OS X we use CMAKE_OSX_ARCHITECTURES *if* it was set
+        # On macOS we use CMAKE_OSX_ARCHITECTURES *if* it was set
         # First let's normalize the order of the values
 
         # Note that it's not possible to compile PowerPC applications if you are using
-        # the OS X SDK version 10.6 or later - you'll need 10.4/10.5 for that, so we
+        # the macOS SDK version 10.6 or later - you'll need 10.4/10.5 for that, so we
         # disable it by default
         # See this page for more information:
         # http://stackoverflow.com/questions/5333490/how-can-we-restore-ppc-ppc64-as-well-as-full-10-4-10-5-sdk-support-to-xcode-4
 
-        # Architecture defaults to i386 or ppc on OS X 10.5 and earlier, depending on the CPU type detected at runtime.
-        # On OS X 10.6+ the default is x86_64 if the CPU supports it, i386 otherwise.
+        # Architecture defaults to i386 or ppc on macOS 10.5 and earlier, depending on the CPU type detected at runtime.
+        # On macOS 10.6+ the default is x86_64 if the CPU supports it, i386 otherwise.
 
-        foreach(osx_arch ${CMAKE_OSX_ARCHITECTURES})
-            if("${osx_arch}" STREQUAL "ppc" AND ppc_support)
-                set(osx_arch_ppc TRUE)
-            elseif("${osx_arch}" STREQUAL "i386")
-                set(osx_arch_i386 TRUE)
-            elseif("${osx_arch}" STREQUAL "x86_64")
-                set(osx_arch_x86_64 TRUE)
-            elseif("${osx_arch}" STREQUAL "ppc64" AND ppc_support)
-                set(osx_arch_ppc64 TRUE)
+        foreach(macos_arch ${CMAKE_OSX_ARCHITECTURES})
+            if("${macos_arch}" STREQUAL "ppc" AND ppc_support)
+                set(macos_arch_ppc TRUE)
+            elseif("${macos_arch}" STREQUAL "i386")
+                set(macos_arch_i386 TRUE)
+            elseif("${macos_arch}" STREQUAL "x86_64")
+                set(macos_arch_x86_64 TRUE)
+            elseif("${macos_arch}" STREQUAL "ppc64" AND ppc_support)
+                set(macos_arch_ppc64 TRUE)
             else()
-                message(FATAL_ERROR "Invalid OS X arch name: ${osx_arch}")
+                message(FATAL_ERROR "Invalid macOS arch name: ${macos_arch}")
             endif()
         endforeach()
 
         # Now add all the architectures in our normalized order
-        if(osx_arch_ppc)
+        if(macos_arch_ppc)
             list(APPEND ARCH ppc)
         endif()
 
-        if(osx_arch_i386)
+        if(macos_arch_i386)
             list(APPEND ARCH i386)
         endif()
 
-        if(osx_arch_x86_64)
+        if(macos_arch_x86_64)
             list(APPEND ARCH x86_64)
         endif()
 
-        if(osx_arch_ppc64)
+        if(macos_arch_ppc64)
             list(APPEND ARCH ppc64)
         endif()
     else()
