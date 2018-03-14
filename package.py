@@ -11,11 +11,16 @@ from sys import platform
 
 WORKING_DIR = '.'
 BUILD_DIR = 'packagingBuild'
+LIB_DIR = 'packagingLib'
+BIN_DIR = 'packagingBin'
 PACKAGING_DIR = 'packagingStaging'
 ARCHIVING_DIR = 'archiving'
 BUILDINFO_FILE = 'dist/cmake/buildInfo.json'
+BUILD_TYPES = ('Release', 'Debug')
 
 def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
+    """Execute command in provided working directory"""
+
     # print('dir: %s' % cwd)
     # print('cmd: %s' % cmd)
     if capture_output:
@@ -29,7 +34,9 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     return (out, err)
 
 def package(zip_release, include_docs, include_apps, clean):
-    print("Packaging..")
+    """Package a NAP platform release - main entry point"""
+
+    print("Packaging...")
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     # Remove old packaging path if it exists
@@ -39,23 +46,23 @@ def package(zip_release, include_docs, include_apps, clean):
 
     # Clean build if requested
     if clean:
-        print("Cleaning..")
+        print("Cleaning...")
         if platform.startswith('linux'):    
-            for build_type in ['Release', 'Debug']:
+            for build_type in BUILD_TYPES:
                 if os.path.exists(BUILD_DIR + build_type):
-                    print("Clean removing %s" % (BUILD_DIR + build_type))
+                    print("Clean removing %s" % os.path.abspath(BUILD_DIR + build_type))
                     shutil.rmtree(BUILD_DIR + build_type, True)
         else:
             if os.path.exists(BUILD_DIR):
-                print("Clean removing %s" % BUILD_DIR)
+                print("Clean removing %s" % os.path.abspath(BUILD_DIR))
                 shutil.rmtree(BUILD_DIR, True)
 
-        if os.path.exists('packagingLib'):
-            print("Clean removing %s" % 'packagingLib')
-            shutil.rmtree('packagingLib', True)
-        if os.path.exists('packagingBin'):
-            print("Clean removing %s" % 'packagingLib')
-            shutil.rmtree('packagingBin', True)                
+        if os.path.exists(LIB_DIR):
+            print("Clean removing %s" % os.path.abspath(LIB_DIR))
+            shutil.rmtree(LIB_DIR, True)
+        if os.path.exists(BIN_DIR):
+            print("Clean removing %s" % os.path.abspath(BIN_DIR))
+            shutil.rmtree(BIN_DIR, True)                
 
     # Add timestamp and git revision for build info
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
@@ -63,7 +70,7 @@ def package(zip_release, include_docs, include_apps, clean):
     git_revision = git_revision.decode('ascii', 'ignore').strip()
 
     if platform.startswith('linux'):    
-        for build_type in ['Release', 'Debug']:
+        for build_type in BUILD_TYPES:
             build_dir_for_type = BUILD_DIR + build_type
             call(WORKING_DIR, ['cmake', 
                                '-H.', 
@@ -99,7 +106,7 @@ def package(zip_release, include_docs, include_apps, clean):
 
         # Build & install to packaging dir
         d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-        for build_type in ['Release', 'Debug']:
+        for build_type in BUILD_TYPES:
             call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install', '-jobs', str(cpu_count())])
 
         # Remove unwanted files (eg. .DS_Store)
@@ -129,7 +136,7 @@ def package(zip_release, include_docs, include_apps, clean):
                            ])
 
         # Build & install to packaging dir
-        for build_type in ['Release', 'Debug']:
+        for build_type in BUILD_TYPES:
             call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
         # Create archive
@@ -138,35 +145,38 @@ def package(zip_release, include_docs, include_apps, clean):
         else:
             archive_to_timestamped_dir('Win64', timestamp)
 
-# Create build archive to xz tarball on Linux
 def archive_to_linux_tar_xz(timestamp):
+    """Create build archive to xz tarball on Linux"""
+
     package_filename = build_package_basename('Linux', timestamp)
     shutil.move(PACKAGING_DIR, package_filename)
 
     package_filename_with_ext = '%s.%s' % (package_filename, 'tar.xz')
-    print("Archiving to %s.." % package_filename_with_ext)
+    print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
     call(WORKING_DIR, ['tar', '-cJvf', package_filename_with_ext, package_filename])
 
     # Cleanup
     shutil.move(package_filename, PACKAGING_DIR)
-    print("Packaged to %s" % package_filename_with_ext)  
+    print("Packaged to %s" % os.path.abspath(package_filename_with_ext))
 
-# Create build archive to zip on macOS
 def archive_to_macos_zip(timestamp):
+    """Create build archive to zip on macOS"""
+
     package_filename = build_package_basename('macOS', timestamp)
     shutil.move(PACKAGING_DIR, package_filename)
 
     # Archive
     package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
-    print("Archiving to %s.." % package_filename_with_ext)
+    print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
     call(WORKING_DIR, ['zip', '-yr', package_filename_with_ext, package_filename])
 
     # Cleanup
     shutil.move(package_filename, PACKAGING_DIR)
-    print("Packaged to %s" % package_filename_with_ext)  
+    print("Packaged to %s" % os.path.abspath(package_filename_with_ext))  
 
-# Create build archive to zip on Win64
 def archive_to_win64_zip(timestamp):
+    """Create build archive to zip on Win64"""
+
     package_filename = build_package_basename('Win64', timestamp)
     package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
 
@@ -181,24 +191,26 @@ def archive_to_win64_zip(timestamp):
     shutil.move(package_filename, archive_path)
 
     # Create archive
-    print("Archiving to %s.." % package_filename_with_ext)
+    print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
     shutil.make_archive(package_filename, 'zip', ARCHIVING_DIR)
 
     # Cleanup
     shutil.move(archive_path, PACKAGING_DIR)
     shutil.rmtree(ARCHIVING_DIR)
 
-    print("Packaged to %s" % package_filename_with_ext)  
+    print("Packaged to %s" % os.path.abspath(package_filename_with_ext))  
 
-# Copy our packaged dir to a timestamped dir
 def archive_to_timestamped_dir(platform, timestamp):
+    """Copy our packaged dir to a timestamped dir"""
+
     package_filename = build_package_basename(platform, timestamp)
     shutil.move(PACKAGING_DIR, package_filename)
 
-    print("Packaged to directory %s" % package_filename)
+    print("Packaged to directory %s" % os.path.abspath(package_filename))
 
-# Build the name of our package and populate our JSON build info file
 def build_package_basename(platform, timestamp):
+    """Build the name of our package and populate our JSON build info file"""
+
     # Fetch version from build info
     # TODO hardening, deal with: missing build info, exception loading build info file and no version entry
     with open(BUILDINFO_FILE) as json_file:
@@ -207,7 +219,6 @@ def build_package_basename(platform, timestamp):
     package_filename = "NAP-%s-%s-%s" % (build_info['version'], platform, timestamp)
     return package_filename
     
-# Main
 if __name__ == '__main__':
     # TODO add options for
     # - not populating git revision into buildInfo
