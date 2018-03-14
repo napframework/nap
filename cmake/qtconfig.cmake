@@ -2,13 +2,12 @@
 macro(nap_qt_pre)
 
     ## First, let cmake know where the Qt library path is, we go from there.
-    
-    # Pick up QT_DIR environment variable
-    if(DEFINED ENV{QT_DIR})
-        set(QTDIR $ENV{QT_DIR})
-        message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
-    elseif(APPLE OR MSVC)
-        message("No QT_DIR env var found")
+    if(MSVC OR APPLE)
+        # Pick up QT_DIR environment variable
+        if(DEFINED ENV{QT_DIR})
+            set(QTDIR $ENV{QT_DIR})
+            message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
+        endif()
     endif()
 
     # Add possible Qt installation paths to the HINTS section
