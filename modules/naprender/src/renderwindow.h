@@ -66,6 +66,17 @@ namespace nap
 		int getHeight() const													{ return mWindow->getSize().y; }
 
 		/**
+		 * Shows the window and gives it input focus.
+		 * This call also makes sure the window is on top of other windows.
+		 */
+		void show();
+
+		/**
+		 *	Hides the window
+		 */
+		void hide();
+
+		/**
 		 *	@return the window title
 		 */
 		const std::string& getTitle() const										{ return mTitle; }
