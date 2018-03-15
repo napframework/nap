@@ -187,6 +187,12 @@ namespace opengl
 	}
 
 
+	void raiseWindow(SDL_Window* window)
+	{
+		SDL_RaiseWindow(window);
+	}
+
+
 	void setFullscreen(SDL_Window* window, bool value)
 	{
 		// Otherwise set
