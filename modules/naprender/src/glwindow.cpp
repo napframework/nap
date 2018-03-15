@@ -174,6 +174,7 @@ namespace nap
 	void GLWindow::showWindow()
 	{
 		opengl::showWindow(mWindow, true);
+		opengl::raiseWindow(mWindow);
 	}
 
 
