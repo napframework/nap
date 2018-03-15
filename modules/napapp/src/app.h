@@ -9,8 +9,9 @@
 namespace nap
 {
 	/**
-	 * Utility class that can be used in conjunction with NAP specific applications
-	 * This is the base application 
+	 * Acts as a blueprint for all NAP applications. This class does not receive any input events.
+	 * Every application holds a reference to a Core object. The init, update, render and shutdown functions
+	 * are called from within the main loop by the AppRunner.
 	 */
 	class NAPAPI BaseApp
 	{
@@ -98,7 +99,9 @@ namespace nap
 
 
 	/**
-	 *	App that allows the handling of input and window messages
+	 * The default NAP application. Derive from this object to receive mouse, keyboard and window events.
+	 * Override inputMessageReceived to receive mouse and keyboard events. Override windowMessageReceived to
+	 * receive window events. This class works in conjunction with an AppEventHandler which polls and forwards incoming system messages.
 	 */
 	class NAPAPI App : public BaseApp
 	{

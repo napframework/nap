@@ -976,3 +976,39 @@ mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, render
 
 Cameras {#cameras}
 =======================
+
+NAP supports 2 camera types:
+
+- [Orthographic](@ref nap::OrthoCameraComponent)
+- [PerSpective](@ref nap::PerspCameraComponent)
+
+With an orthographic camera the scene is rendered using a flat projection matrix. With an orthographic camera the scene is rendered using a perspective matrix. The render service expects a reference to one of the cameras when rendering a set of objects to a target. You can create as many cameras as you want by adding one as a component to an entity in json:
+
+```
+{
+	"Type" : "nap::Entity",
+	"mID": "Camera",
+	"Components" : 
+	[
+		{
+			"Type" : "nap::PerspCameraComponent",
+			"Properties": 
+			{
+				"FieldOfView": 45.0,
+				"NearClippingPlane" : 1,
+				"FarClippingPlane" : 1000.0
+			}
+		},
+		{
+			"Type" : "nap::TransformComponent"
+		}
+	]
+}
+```
+
+Two things define a camera: it's location in the world and type. The world space location of a camera is used to compose the view matrix. The camera projection method is used to compose the projection matrix. Both are extracted by the renderer and forwarded to the shader. Every camera therefore needs access to a transform component that is a sibling of the parent entity. For a working example take a look at the multi window demo. This demo renders a set of objects to different windows using a mix of cameras.
+
+
+
+
+
