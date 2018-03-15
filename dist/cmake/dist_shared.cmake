@@ -64,7 +64,7 @@ macro(find_nap_module MODULE_NAME)
 
             target_link_libraries(${MODULE_NAME} INTERFACE debug ${${MODULE_NAME}_DEBUG_LIB})
             target_link_libraries(${MODULE_NAME} INTERFACE optimized ${${MODULE_NAME}_RELEASE_LIB})
-            file(GLOB_RECURSE module_headers ${NAP_ROOT}/modules/${NAP_MODULE}/include/*.h)
+            file(GLOB_RECURSE module_headers ${NAP_ROOT}/modules/${NAP_MODULE}/include/*.h ${NAP_ROOT}/modules/${NAP_MODULE}/include/*.hpp)
             target_sources(${MODULE_NAME} INTERFACE ${module_headers})
             source_group(Modules\\${MODULE_NAME} FILES ${module_headers})
         endif(NOT TARGET ${NAP_MODULE})

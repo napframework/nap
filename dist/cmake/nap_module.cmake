@@ -72,7 +72,7 @@ include_directories(${NAP_ROOT}/include/)
 
 # Add source
 file(GLOB_RECURSE SOURCES src/*.cpp)
-file(GLOB_RECURSE HEADERS src/*.h)
+file(GLOB_RECURSE HEADERS src/*.h src/*.hpp)
 
 # Create IDE groups
 source_group("Headers" FILES ${HEADERS})
