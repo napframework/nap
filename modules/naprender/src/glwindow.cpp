@@ -53,14 +53,14 @@ namespace nap
 	{
 		opengl::enableVSync(settings.sync);
 		setSize(glm::vec2(settings.width, settings.height));
+		opengl::setWindowPosition(mWindow, glm::vec2(settings.x, settings.y));
+		opengl::setWindowResizable(mWindow, settings.resizable);
+		opengl::setWindowBordered(mWindow, !settings.borderless);
+		opengl::setWindowTitle(mWindow, settings.title);
 		if (settings.visible)
 			showWindow();
 		else
 			hideWindow();
-
-		opengl::setWindowResizable(mWindow, settings.resizable);
-		opengl::setWindowBordered(mWindow, !settings.borderless);
-		opengl::setWindowTitle(mWindow, settings.title);
 	}
 
 
