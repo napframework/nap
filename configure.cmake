@@ -243,7 +243,12 @@ macro(project_json_to_cmake)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
     endif()
 
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/projectscripts/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR})    
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/projectscripts/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR}
+                    RESULT_VARIABLE EXIT_CODE
+                    )
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not parse modules from project.json (${EXIT_CODE})")
+    endif()
     include(cached_project_json.cmake)
 endmacro()
 
