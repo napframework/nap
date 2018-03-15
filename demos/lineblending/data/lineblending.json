@@ -1,0 +1,81 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "Camera",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent",
+                    "Properties": {
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Line",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Window 1",
+            "Sync": true,
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "Camera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "Line",
+                    "InstanceProperties": []
+                }
+            ]
+        }
+    ]
+}
