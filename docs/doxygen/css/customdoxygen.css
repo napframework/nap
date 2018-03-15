@@ -1351,3 +1351,25 @@ th.markdownTableHeadCenter, td.markdownTableBodyCenter {
 	text-align: middle;
 	width: 10em;
 }
+svg .graph polygon {
+    fill: transparent;
+}
+svg .node polygon {
+    fill: #8b8ca0;
+    stroke: #52546a;
+    stroke-width: 1px;
+}
+svg .graph .edge polygon{
+    fill: #52546a;
+    stroke: #52546a;
+} 
+svg .graph .edge path {
+    fill: none;
+    stroke: #52546a;
+}
+svg .graph .node text {
+    fill: #111426;
+}
+svg .graph .edge text {
+    fill: #8b8ca0;
+}

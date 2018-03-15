@@ -3,26 +3,36 @@
 #include <appcontext.h>
 #include <QScrollBar>
 #include <QTimer>
+#include <QSettings>
+#include "generic/autosettings.h"
 
 using namespace napkin;
 
 class LogTextItem : public QStandardItem
 {
 public:
-	LogTextItem(const QString& text) : QStandardItem(text)
-	{
-	}
+	explicit LogTextItem(const QString& text) : QStandardItem(text)	{}
 
-	void setLink(const QString& link)
-	{
-		mLink = link;
-	}
+	void setLink(const QString& link) { mLink = link; }
 
 	bool hasLink() const { return !mLink.isEmpty(); }
 
 	const QString& link() { return mLink; }
 private:
 	QString mLink;
+};
+
+class LevelItem : public QStandardItem
+{
+public:
+	explicit LevelItem(const nap::LogLevel& level) : QStandardItem(), mLevel(level)
+	{
+		setText(QString::fromStdString(level.name()));
+	}
+
+	const nap::LogLevel& level() { return mLevel; }
+private:
+	nap::LogLevel mLevel;
 };
 
 LogModel::LogModel() : QStandardItemModel()
@@ -46,7 +56,7 @@ void LogModel::onLog(nap::LogMessage log)
 
 	QRegularExpression re("([a-z]+:(\\/\\/)[^\\s&^'&^\"]+)");
 	auto color = QColor(mColors[log.level()]);
-	auto levelitem = new QStandardItem(levelname);
+	auto levelitem = new LevelItem(log.level());
 	levelitem->setEditable(false);
 	auto textitem = new LogTextItem(logtext);
 	textitem->setToolTip(logtext);
@@ -70,15 +80,45 @@ void LogModel::onLog(nap::LogMessage log)
 
 LogPanel::LogPanel() : QWidget()
 {
-	setLayout(new QVBoxLayout());
-	layout()->setContentsMargins(0, 0, 0, 0);
-	layout()->addWidget(&mTreeView);
+	AutoSettings::get().registerStorer(new WidgetStorer<LogPanel>());
+
+	mLayout.setContentsMargins(0, 0, 0, 0);
+	setLayout(&mLayout);
+
+	mLayout.addWidget(&mTreeView);
+
+	QWidget& cornerWidget = mTreeView.getCornerWidget();
+	mCornerLayout.setContentsMargins(0,0,0,0);
+	mCornerLayout.setSpacing(0);
+	cornerWidget.setLayout(&mCornerLayout);
+	mCornerLayout.addWidget(&mFilterCombo);
+
+	// Let the treeview filter log messages (Look at these beautiful placeholders)
+	mTreeView.getFilterModel().addExtraFilter(std::bind(&LogPanel::levelFilter, this,
+														std::placeholders::_1,
+														std::placeholders::_2,
+														std::placeholders::_3));
+	populateFilterCombo();
 
 	mTreeView.setModel(&mLogModel);
 
+
+	connect(&mFilterCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+			this, &LogPanel::onLevelChanged);
 	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &LogPanel::onDoubleClicked);
 	connect(mTreeView.getModel(), &QAbstractItemModel::rowsInserted, this, &LogPanel::onRowInserted);
 	connect(mTreeView.getModel(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogPanel::onRowsAboutToBeInserted);
+}
+
+void LogPanel::populateFilterCombo()
+{
+	for (const auto& level : nap::Logger::getLevels())
+		mFilterCombo.addItem(QString::fromStdString(level.name()), level.level());
+}
+
+void LogPanel::onLevelChanged(int index)
+{
+	mTreeView.getFilterModel().refreshFilter();
 }
 
 void LogPanel::onDoubleClicked(const QModelIndex& index)
@@ -110,3 +150,73 @@ void LogPanel::onRowInserted(const QModelIndex &parent, int first, int last)
 	}
 }
 
+void LogPanel::showEvent(QShowEvent* event)
+{
+	QWidget::showEvent(event);
+}
+
+void LogPanel::closeEvent(QCloseEvent* event)
+{
+	QWidget::closeEvent(event);
+}
+
+bool LogPanel::levelFilter(const LeafFilterProxyModel& model, int sourceRow,
+						   const QModelIndex& sourceParent)
+{
+	auto index = mLogModel.index(sourceRow, 0, sourceParent);
+	auto levelItem = dynamic_cast<LevelItem*>(mLogModel.itemFromIndex(index));
+	assert(levelItem != nullptr);
+
+	nap::LogLevel itemLevel = levelItem->level();
+	return levelItem->level() >= getCurrentLevel();
+}
+
+const nap::LogLevel& LogPanel::getCurrentLevel() const
+{
+	const auto levels = nap::Logger::getLevels();
+	int idx = mFilterCombo.currentIndex();
+	assert(idx > 0 && idx < levels.size());
+	return levels[idx];
+}
+
+void LogPanel::setCurrentLevel(const nap::LogLevel& level)
+{
+	int idx = getLevelIndex(level);
+	assert(idx > 0);
+	mFilterCombo.setCurrentIndex(idx);
+}
+
+int LogPanel::getLevelIndex(const nap::LogLevel& level) const
+{
+	const auto levels = nap::Logger::getLevels();
+	return static_cast<int>(std::find(levels.begin(), levels.end(), level) - levels.begin());
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// LogPanel Storer
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<>
+void WidgetStorer<LogPanel>::store(const LogPanel& widget, const QString& key, QSettings& s) const
+{
+	s.setValue(key + "_LOGLEVEL", widget.getLevelIndex(widget.getCurrentLevel()));
+}
+
+template<>
+void WidgetStorer<LogPanel>::restore(LogPanel& widget, const QString& key,
+									  const QSettings& s) const
+{
+	const auto levels = nap::Logger::getLevels();
+	nap::LogLevel defaultLevel = nap::Logger::infoLevel();
+	int defaultIndex = widget.getLevelIndex(defaultLevel);
+	int index = s.value(key + "_LOGLEVEL", defaultIndex).toInt();
+
+	if (index < 0 || index >= levels.size()) {
+		nap::Logger::warn("Wrong log level in settings (%s), using default", std::to_string(index).c_str());
+		index = defaultIndex;
+	}
+
+	widget.setCurrentLevel(levels[index]);
+}
