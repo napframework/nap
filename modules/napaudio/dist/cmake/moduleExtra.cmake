@@ -1,4 +1,6 @@
-find_package(mpg123 REQUIRED)
+if(NOT TARGET mpg123)
+    find_package(mpg123 REQUIRED)
+endif()
 target_link_libraries(${PROJECT_NAME} mpg123)
 
 if(WIN32)
