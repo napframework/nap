@@ -114,6 +114,10 @@ napkin::FilterTreeView::FilterTreeView()
 	mLayout.setSpacing(0);
 	setLayout(&mLayout);
 
+	mTopLayout.setContentsMargins(0,0,0,0);
+	mTopLayout.setSpacing(0);
+	mLayout.addLayout(&mTopLayout);
+
 	mTreeView.setAlternatingRowColors(true);
 
 	mSortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -122,7 +126,9 @@ napkin::FilterTreeView::FilterTreeView()
 	mLineEditFilter.setPlaceholderText("filter");
 	mLineEditFilter.setClearButtonEnabled(true);
 	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
-	mLayout.addWidget(&mLineEditFilter);
+	mTopLayout.addWidget(&mLineEditFilter);
+
+	mTopLayout.addWidget(&mCornerWidget);
 
 	mTreeView.setModel(&mSortFilter);
 
@@ -246,5 +252,10 @@ void napkin::FilterTreeView::setTopItemSelected()
 	auto rightIndex = model->index(0, model->columnCount() - 1);
 	QItemSelection selection(leftIndex, rightIndex);
 	getSelectionModel()->select(selection, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+}
+
+QWidget& napkin::FilterTreeView::getCornerWidget()
+{
+	return mCornerWidget;
 }
 
