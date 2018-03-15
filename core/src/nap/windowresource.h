@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <nap/signalslot.h>
 #include <utility/uniqueptrvectoriterator.h>
 

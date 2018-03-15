@@ -3,7 +3,7 @@
 #include <component.h>
 #include <rtti/objectptr.h>
 #include <artnetcontroller.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
 #include <nap/resourceptr.h>

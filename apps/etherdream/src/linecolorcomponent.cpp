@@ -4,7 +4,7 @@
 // External Includes
 #include <nap/logger.h>
 #include <entity.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 
 RTTI_BEGIN_CLASS(nap::LineColorComponent)
 	RTTI_PROPERTY("BlendComponent",			&nap::LineColorComponent::mBlendComponent,	nap::rtti::EPropertyMetaData::Required)

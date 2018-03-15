@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <rtti/rtti.h>
 #include <utility/dllexport.h>
 #include <glm/glm.hpp>
