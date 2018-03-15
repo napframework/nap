@@ -2,7 +2,7 @@
 
 // External Includes
 #include <rtti/rtti.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <nap/event.h>
 #include "keycode.h"
 #include "mousebutton.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "configure.h"
+#include "numeric.h"
 #include "utility/dllexport.h"
 #include "utility/errorstate.h"
 

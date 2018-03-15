@@ -7,7 +7,7 @@
 #include <string.h>
 #include <glm/glm.hpp>
 #include <nsdlgl.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <utility/dllexport.h>
 
 struct SDL_Window;

@@ -9,7 +9,7 @@
 #include <utility/dllexport.h>
 #include <rtti/object.h>
 #include <rtti/objectptr.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
