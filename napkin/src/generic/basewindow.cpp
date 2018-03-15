@@ -32,12 +32,12 @@ QDockWidget* napkin::BaseWindow::addDock(const QString& name, QWidget* widget, Q
 void napkin::BaseWindow::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
-	AutoSettings().restore(*this);
+	AutoSettings::get().restore(*this);
 }
 
 void napkin::BaseWindow::closeEvent(QCloseEvent* event)
 {
-	AutoSettings().store(*this);
+	AutoSettings::get().store(*this);
 	QWidget::closeEvent(event);
 }
 
