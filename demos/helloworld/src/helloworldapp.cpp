@@ -168,12 +168,6 @@ namespace nap
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
-	
-	void HelloWorldApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
-	}
-
 
 	int HelloWorldApp::shutdown()
 	{
