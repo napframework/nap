@@ -71,9 +71,17 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
         else:
             packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'Linux')
 
+        # Running from X/Wayland session
+        gui_session = ('DISPLAY' or 'WAYLAND_DISPLAY') in os.environ
+
         # Show in Nautilus
-        if show_created_package:
-            call(["nautilus -s %s > /dev/null 2>&1 &" % packaged_to], shell=True)
+        if show_created_package and gui_session:
+            # Configurable command to show resulting file
+            show_command = os.getenv('NAP_SHOW_FILE_COMMAND', 'nautilus -s %PACKAGE_PATH%')
+            show_command = '%s > /dev/null 2>&1 &' % show_command.replace('%PACKAGE_PATH%', packaged_to)
+
+            call([show_command], shell=True)
+            # call(["nautilus -s %s > /dev/null 2>&1 &" % packaged_to], shell=True)
 
     elif platform == 'darwin':
         # Generate project

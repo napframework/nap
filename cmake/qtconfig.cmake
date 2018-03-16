@@ -1,14 +1,20 @@
 
 macro(nap_qt_pre)
 
-    ## First, let cmake know where the Qt library path is, we go from there.
-    
-    # Pick up QT_DIR environment variable
+    # Search for hints about our Qt library location
     if(DEFINED ENV{QT_DIR})
         set(QTDIR $ENV{QT_DIR})
         message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
-    elseif(APPLE OR MSVC)
-        message("No QT_DIR env var found")
+    else()
+        # Also allow for NAP_QT_DIR set directly (not using QT_DIR so we don't conflict with the variable below)
+        if(DEFINED NAP_QT_DIR)
+            set(QTDIR, NAP_QT_DIR)
+        elseif(DEFINED NAP_PACKAGED_BUILD)
+            # If we're doing a platform release let's enforce the an explicit Qt path so that we're
+            # certain what we're bundling with the release       
+            message(FATAL_ERROR "Please set the QT_DIR environment variable to define the Qt5 version"
+                                "to be installed with the platform release, eg. \"C:/dev/Qt/5.9.1/msvc2015_64\"")              
+        endif()
     endif()
 
     # Add possible Qt installation paths to the HINTS section
@@ -23,7 +29,7 @@ macro(nap_qt_pre)
               )
 
     if(DEFINED QT_DIR)
-        if(APPLE)
+        if(APPLE AND DEFINED NAP_PACKAGED_BUILD)
               # Ensure we're not using Qt from homebrew as we don't know the legal situation with packaging homebrew's packages.
               # Plus Qt's own opensource packages should have wider macOS version support.
               if(EXISTS ${QT_DIR}/INSTALL_RECEIPT.json)
@@ -35,7 +41,7 @@ macro(nap_qt_pre)
 
         # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})        
-    elseif(APPLE OR MSVC)
+    elseif()
         message(WARNING
                 "The QT5 Directory could not be found, "
                 "consider setting the QT_DIR environment variable "

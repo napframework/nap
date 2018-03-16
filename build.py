@@ -8,10 +8,6 @@ import shutil
 WORKING_DIR = '.'
 
 THIRDPARTY = 'thirdparty'
-THIRDPARTY_DIR = '%s/../thirdparty' % WORKING_DIR
-THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/thirdparty.git'
-NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/nap.git'
-NAP_BRANCH = 'build'
 BUILD_DIR = 'build'
 CLEAN_BUILD = False
 LINUX_BUILD_TYPE = 'Debug'

@@ -12,7 +12,7 @@ namespace nap
 	/**
 	 * OpenGL render back-end. 
 	 * Initializes and shuts down the OpenGL API and allows for the creation of new render windows.
-	 * This class also manages the primary window.
+	 * This class also creates and manages the primary window which is constructed on initialization
 	 */
 	class NAPAPI Renderer final
 	{
@@ -40,7 +40,9 @@ namespace nap
 		std::shared_ptr<GLWindow> createRenderWindow(const RenderWindowSettings& settings, const std::string& windowID, utility::ErrorState& errorState);
 
 		/**
-		 * Initialize the renderer
+		 * Initialize the renderer.
+		 * This call sets up the render attributes, create the first window and
+		 * initializes the opengl engine. After initialization the primary window is active.
 		 * @param errorState contains the error when the renderer can't be initialized
 		 * @return if the renderer initialized successfully
 		 */
@@ -59,5 +61,11 @@ namespace nap
 	private:
 		std::shared_ptr<GLWindow>	mPrimaryWindow;			///< Primary Window. This always exists for as long as the Renderer exists.
 		std::string					mPrimaryWindowID;		///< When a RenderWindow is bound to the primary window, this contains the ID of the RenderWindow
+
+		/**
+		 * Creates the primary render window which is always available
+		 * By default this window is hidden and not synchronized to the display refresh rate
+		 */
+		bool createPrimaryWindow(utility::ErrorState& error);
 	};
 }

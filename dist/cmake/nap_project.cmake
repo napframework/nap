@@ -68,10 +68,9 @@ endif()
 include_directories(${NAP_ROOT}/include/)
 
 #add all cpp files to SOURCES
-file(GLOB SOURCES src/*.cpp)
-file(GLOB HEADERS src/*.h)
-file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
-file(GLOB DATA data/*)
+file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE HEADERS src/*.h src/*.hpp)
+file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert)
 
 # Create IDE groups
 source_group("Headers" FILES ${HEADERS})
