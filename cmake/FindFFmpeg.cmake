@@ -20,21 +20,15 @@ if(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
     # in cache already
     set(FFMPEG_FOUND TRUE)
 else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
-    if(UNIX AND NOT APPLE)
-        # use pkg-config to get the directories and then use these values
-        # in the FIND_PATH() and FIND_LIBRARY() calls
-        find_package(PkgConfig)
-        if(PKG_CONFIG_FOUND)
-            pkg_check_modules(_FFMPEG_AVCODEC libavcodec)
-            pkg_check_modules(_FFMPEG_AVFORMAT libavformat)
-            pkg_check_modules(_FFMPEG_AVUTIL libavutil)
-        endif(PKG_CONFIG_FOUND)
-    endif(UNIX AND NOT APPLE)
-
     if(APPLE)
         find_path(FFMPEG_AVCODEC_INCLUDE_DIR
                   NAMES libavcodec/avcodec.h
                   HINTS ${THIRDPARTY_DIR}/ffmpeg/osx/install/include
+                  )
+    elseif(UNIX)
+        find_path(FFMPEG_AVCODEC_INCLUDE_DIR
+                  NAMES libavcodec/avcodec.h
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/linux/install/include
                   )
     else()
         find_path(FFMPEG_AVCODEC_INCLUDE_DIR
@@ -48,6 +42,7 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                        ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 NO_DEFAULT_PATH
                  )
 
     find_library(FFMPEG_LIBAVFORMAT
@@ -55,6 +50,7 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                        ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 NO_DEFAULT_PATH
                  )
 
     find_library(FFMPEG_LIBAVUTIL
@@ -62,6 +58,7 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                        ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 NO_DEFAULT_PATH
                  )
 
     if(FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)

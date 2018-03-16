@@ -18,7 +18,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # Package into platform release
 if(UNIX)
-    set(EXTRA_RPATH "../../../../thirdparty/rtmidi/lib")
+    set(UNIX_EXTRA_RPATH "../../../../thirdparty/rtmidi/lib")
 endif()
 package_module()
 

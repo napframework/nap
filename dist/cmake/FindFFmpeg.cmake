@@ -19,33 +19,28 @@ if (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 	# in cache already
 	set(FFMPEG_FOUND TRUE)
 else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
-	# use pkg-config to get the directories and then use these values
-	# in the FIND_PATH() and FIND_LIBRARY() calls
-	find_package(PkgConfig)
-	if (PKG_CONFIG_FOUND)
-		pkg_check_modules(_FFMPEG_AVCODEC libavcodec)
-		pkg_check_modules(_FFMPEG_AVFORMAT libavformat)
-		pkg_check_modules(_FFMPEG_AVUTIL libavutil)
-	endif (PKG_CONFIG_FOUND)
-
 	find_path(FFMPEG_AVCODEC_INCLUDE_DIR
 		NAMES libavcodec/avcodec.h
 		HINTS ${THIRDPARTY_DIR}/FFmpeg/include
+		NO_DEFAULT_PATH
 	)
 
 	find_library(FFMPEG_LIBAVCODEC
 		NAMES avcodec
 		PATHS ${THIRDPARTY_DIR}/FFmpeg/lib
+		NO_DEFAULT_PATH
 	)
 
 	find_library(FFMPEG_LIBAVFORMAT
 		NAMES avformat
 		PATHS ${THIRDPARTY_DIR}/FFmpeg/lib
+		NO_DEFAULT_PATH
 	)
 
 	find_library(FFMPEG_LIBAVUTIL
 		NAMES avutil
 		PATHS ${THIRDPARTY_DIR}/FFmpeg/lib
+		NO_DEFAULT_PATH
 	)
 
 	if (FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)

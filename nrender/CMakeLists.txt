@@ -182,5 +182,6 @@ elseif(APPLE)
 elseif(UNIX)
     install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/linux/install/include" DESTINATION "thirdparty/SDL2")
     file(GLOB SDL_DYLIBS ${THIRDPARTY_DIR}/SDL2/linux/install/lib/*.so*)
-    install(FILES ${SDL_DYLIBS} DESTINATION thirdparty/SDL2/lib)    
+    install(FILES ${SDL_DYLIBS} ${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2main.a
+            DESTINATION thirdparty/SDL2/lib)
 endif()
