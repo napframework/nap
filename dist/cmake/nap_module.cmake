@@ -70,15 +70,15 @@ endif(NOT MODULE_INTO_PROJ)
 
 include_directories(${NAP_ROOT}/include/)
 
-#add all cpp files to SOURCES
-file(GLOB SOURCES src/*.cpp)
-file(GLOB HEADERS src/*.h)
+# Add source
+file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE HEADERS src/*.h src/*.hpp)
 
 # Create IDE groups
 source_group("Headers" FILES ${HEADERS})
 source_group("Sources" FILES ${SOURCES})
 
-# compile shared lib as target
+# Compile target as shared lib
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 if(IMPORTING_PROJECT_MODULE)
     set(MODULE_FOLDER_NAME ProjectModule)
@@ -87,10 +87,10 @@ else()
 endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${MODULE_FOLDER_NAME})    
 
-# add include dirs
+# Add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
-# preprocessor
+# Preprocessor
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 

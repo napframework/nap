@@ -22,6 +22,7 @@ namespace nap
 
 	// Forward Declares
 	class GLWindow;
+	class Renderer;
 
 	/**
 	* Holds all window launch settings
@@ -56,6 +57,7 @@ namespace nap
 	class NAPAPI GLWindow final
 	{
 		RTTI_ENABLE()
+		friend class Renderer;
 	public:
 
 		GLWindow();
@@ -68,12 +70,6 @@ namespace nap
 		GLWindow& operator=(const GLWindow& other) = delete;
 
 		bool init(const RenderWindowSettings& settings, GLWindow* sharedWindow, utility::ErrorState& errorState);
-
-		/**
-		 * Apply the specified window settings. Normally this is done during init, but for real-time editing scenarios we need this to update the primary window (which is never recreated)
-		 * @param settings The settings to apply
-		 */
-		void applySettings(const RenderWindowSettings& settings);
 
 		/**
 		* @return the hardware window handle, nullptr if undefined
@@ -168,5 +164,12 @@ namespace nap
 		opengl::BackbufferRenderTarget					mBackbuffer;
 		SDL_Window*										mWindow = nullptr;		// Actual GL window
 		SDL_GLContext									mContext = nullptr;		// GL Context
+
+		/**
+		 * Apply the specified window settings. Normally this is done during initialization of new windows,
+		 * but for real-time editing scenarios we need this call to update the primary window which has been created before
+		 * @param settings The settings to apply
+		 */
+		void applySettings(const RenderWindowSettings& settings);
 	};
 }

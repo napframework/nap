@@ -8,8 +8,8 @@ import sys
 from NAPShared import read_console_char
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("PROJECT_PATH", type=str, help="Path to the project")
+    parser = argparse.ArgumentParser(prog='regenerate')
+    parser.add_argument("PROJECT_PATH", type=str, help=argparse.SUPPRESS)
     if sys.platform.startswith('linux'):    
         parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
     else:    

@@ -7,7 +7,7 @@ from subprocess import call
 from NAPShared import find_project, validate_camelcase_name
 
 # Default modules if none are specified
-DEFAULT_MODULE_LIST = "mod_naprender,mod_napmath,mod_napinput,mod_napsdlinput,mod_napsdlwindow,mod_napapp,mod_napscene,mod_napimgui"
+DEFAULT_MODULE_LIST = "mod_naprender,mod_napmath,mod_napinput,mod_napsdlinput,mod_napsdlwindow,mod_napapp,mod_napscene,mod_napimgui,mod_napaudio"
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -61,8 +61,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("CAMEL_CASE_PROJECT_NAME", type=str,
                         help="The project name, in camel case (eg. MyProjectName)")
-    parser.add_argument('MODULE_LIST_CSV', nargs='?', default=DEFAULT_MODULE_LIST,
-                        help="List of modules to user, otherwise default list used: %s" % DEFAULT_MODULE_LIST)    
     parser.add_argument("-ng", "--no-generate", action="store_true",
                         help="Don't generate the solution for the created project")       
     args = parser.parse_args()
@@ -70,17 +68,10 @@ if __name__ == '__main__':
     project_name = args.CAMEL_CASE_PROJECT_NAME
 
     # Validate project name is camelcase, only includes valid characters
+    # TODO validate project name only includes valid characters
     if not validate_camelcase_name(project_name):
         print("Error: Please specify project name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
         sys.exit(ERROR_INVALID_INPUT)
 
-    # TODO validate project name only includes valid characters
-
-    module_list = args.MODULE_LIST_CSV
-    if module_list == DEFAULT_MODULE_LIST:
-        print("No module list specified, using default list: %s" % DEFAULT_MODULE_LIST)
-
-    # TODO validate module list is CSV, no invalid characters
-
-    exit_code = create_project(project_name, module_list, not args.no_generate)
+    exit_code = create_project(project_name, DEFAULT_MODULE_LIST, not args.no_generate)
     sys.exit(exit_code)
