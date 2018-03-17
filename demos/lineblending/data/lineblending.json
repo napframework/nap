@@ -295,7 +295,7 @@
             "Normalize": true,
             "Scale": 2.0,
             "FlipHorizontal": false,
-            "FlipVertical": false,
+            "FlipVertical": true,
             "LineIndex": 0
         },
         {
