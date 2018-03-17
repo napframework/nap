@@ -48,6 +48,11 @@ namespace napkin
 		/**
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
+		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
+
+		/**
+		 * @return All the objects (resources?) that are currently loaded.
+		 */
 		nap::rtti::ObjectList getObjectPointers();
 
 		/**
