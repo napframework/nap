@@ -118,7 +118,7 @@
                     "SelectionComponentOne": "./SelectionComponentOne",
                     "SelectionComponentTwo": "./SelectionComponentTwo",
                     "BlendComponent": "LineBlender",
-                    "Random": false
+                    "Random": true
                 },
                 {
                     "Type": "nap::LineBlendComponent",
@@ -189,15 +189,28 @@
                     },
                     "SecondColor": {
                         "Values": [
-                            1.0,
-                            0.0,
-                            0.0
+                            0.7839999794960022,
+                            0.41100001335144045,
+                            0.41100001335144045
                         ]
                     },
                     "Intensity": 1.0,
                     "Wrap": true,
                     "WrapPower": 1.0,
                     "Link": false
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "nap::RotateComponent",
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.05000000074505806,
+                        "Offset": 0.0
+                    }
                 }
             ],
             "Children": []
