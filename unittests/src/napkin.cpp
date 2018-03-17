@@ -1,4 +1,5 @@
 #include "catch.hpp"
+#include "../../apps/etherdream/src/lineblendcomponent.h"
 
 #include <appcontext.h>
 #include <commands.h>
@@ -8,6 +9,7 @@
 #include <shader.h>
 #include <generic/naputils.h>
 #include <QCoreApplication>
+#include <firstpersoncontroller.h>
 
 #define TAG_NAPKIN "[napkin]"
 
@@ -71,80 +73,80 @@ TEST_CASE("Document Signals", TAG_NAPKIN)
 	REQUIRE(sigObjectRemoved.count() == 1);
 
 }
+//
+//TEST_CASE("Array Value Elements", TAG_NAPKIN)
+//{
+//	auto doc = napkin::AppContext::get().newDocument();
+//	auto colors = doc->addObject<nap::WeekVariations>();
+//	REQUIRE(colors  != nullptr);
+//
+//	// Check invalid nonexistent path
+//	napkin::PropertyPath nonExistent(*colors, "NonExistent_________");
+//	REQUIRE(!nonExistent.isValid());
+//
+//	// Grab a valid path
+//	napkin::PropertyPath variations(*colors, "Variations");
+//	REQUIRE(variations.isValid());
+//
+//	// Ensure empty array
+//	REQUIRE(variations.getArrayLength() == 0);
+//
+//	// Add an element
+//	{
+//		auto index = doc->arrayAddValue(variations);
+//		REQUIRE(index == 0); // The index at which the new element lives
+//		REQUIRE(variations.getArrayLength() == 1);
+//	}
+//
+//	// Add another element
+//	{
+//		auto index = doc->arrayAddValue(variations);
+//		REQUIRE(index == 1); // Index should be one
+//		REQUIRE(variations.getArrayLength() == 2);
+//	}
+//
+//	// Remove first element
+//	{
+//		doc->arrayRemoveElement(variations, 0);
+//		REQUIRE(variations.getArrayLength() == 1);
+//	}
+//
+//	// Remove the second element
+//	{
+//		doc->arrayRemoveElement(variations, 0);
+//		REQUIRE(variations.getArrayLength() == 0);
+//	}
+//}
 
-TEST_CASE("Array Value Elements", TAG_NAPKIN)
-{
-	auto doc = napkin::AppContext::get().newDocument();
-	auto colors = doc->addObject<nap::WeekVariations>();
-	REQUIRE(colors  != nullptr);
-
-	// Check invalid nonexistent path
-	napkin::PropertyPath nonExistent(*colors, "NonExistent_________");
-	REQUIRE(!nonExistent.isValid());
-
-	// Grab a valid path
-	napkin::PropertyPath variations(*colors, "Variations");
-	REQUIRE(variations.isValid());
-
-	// Ensure empty array
-	REQUIRE(variations.getArrayLength() == 0);
-
-	// Add an element
-	{
-		auto index = doc->arrayAddValue(variations);
-		REQUIRE(index == 0); // The index at which the new element lives
-		REQUIRE(variations.getArrayLength() == 1);
-	}
-
-	// Add another element
-	{
-		auto index = doc->arrayAddValue(variations);
-		REQUIRE(index == 1); // Index should be one
-		REQUIRE(variations.getArrayLength() == 2);
-	}
-
-	// Remove first element
-	{
-		doc->arrayRemoveElement(variations, 0);
-		REQUIRE(variations.getArrayLength() == 1);
-	}
-
-	// Remove the second element
-	{
-		doc->arrayRemoveElement(variations, 0);
-		REQUIRE(variations.getArrayLength() == 0);
-	}
-}
-
-TEST_CASE("Array add weekcolor", TAG_NAPKIN)
-{
-	auto doc = napkin::AppContext::get().newDocument();
-	auto* col = doc->addObject<nap::WeekVariations>();
-	REQUIRE(col != nullptr);
-
-	napkin::PropertyPath variations(*col, "Variations");
-	REQUIRE(variations.isValid());
-
-	// Add an element to the array
-	{
-		auto index = doc->arrayAddValue(variations);
-		REQUIRE(index == 0);
-		REQUIRE(variations.getArrayLength() == 1);
-
-		// Verify validity of new element
-		REQUIRE(napkin::PropertyPath(*col, "Variations/0").isValid());
-	}
-
-	// Add another value
-	{
-		auto index = doc->arrayAddValue(variations);
-		REQUIRE(index == 1);
-		REQUIRE(variations.getArrayLength() == 2);
-
-		// Verify validity of new element
-		REQUIRE(napkin::PropertyPath(*col, "Variations/1").isValid());
-	}
-}
+//TEST_CASE("Array add weekcolor", TAG_NAPKIN)
+//{
+//	auto doc = napkin::AppContext::get().newDocument();
+//	auto* col = doc->addObject<nap::WeekVariations>();
+//	REQUIRE(col != nullptr);
+//
+//	napkin::PropertyPath variations(*col, "Variations");
+//	REQUIRE(variations.isValid());
+//
+//	// Add an element to the array
+//	{
+//		auto index = doc->arrayAddValue(variations);
+//		REQUIRE(index == 0);
+//		REQUIRE(variations.getArrayLength() == 1);
+//
+//		// Verify validity of new element
+//		REQUIRE(napkin::PropertyPath(*col, "Variations/0").isValid());
+//	}
+//
+//	// Add another value
+//	{
+//		auto index = doc->arrayAddValue(variations);
+//		REQUIRE(index == 1);
+//		REQUIRE(variations.getArrayLength() == 2);
+//
+//		// Verify validity of new element
+//		REQUIRE(napkin::PropertyPath(*col, "Variations/1").isValid());
+//	}
+//}
 
 TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 {
@@ -501,9 +503,23 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	REQUIRE(!napkin::directoryContains(absShaderPath, resourcedir));
 
 }
-//
-//
-//TEST_CASE("Load Document", TAG_NAPKIN)
-//{
-//	napkin::AppContext::get().loadDocument(getResource("kalvertoren.json"));
-//}
+
+
+TEST_CASE("Component to Component pointer", TAG_NAPKIN)
+{
+	auto& ctx = napkin::AppContext::get();
+	auto doc = ctx.newDocument();
+	nap::Entity& entity = doc->addEntity();
+	auto fpcam = doc->addComponent<nap::FirstPersonController>(entity);
+	REQUIRE(fpcam != nullptr);
+	REQUIRE(!fpcam->mID.empty());
+	auto perspcam = doc->addComponent<nap::PerspCameraComponent>(entity);
+	REQUIRE(perspcam != nullptr);
+	REQUIRE(!fpcam->mID.empty());
+	napkin::PropertyPath selectionPath(*fpcam, "PerspCameraComponent");
+	REQUIRE(selectionPath.isValid());
+	selectionPath.setValue(perspcam);
+
+	std::string serialized_doc = ctx.documentToString();
+	nap::Logger::info(serialized_doc);
+}

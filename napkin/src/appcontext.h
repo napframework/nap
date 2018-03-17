@@ -88,6 +88,12 @@ namespace napkin
 		void saveDocumentAs(const QString& filename);
 
 		/**
+		 * Serialize the current document to a string
+		 * @return The document, serialized to string
+		 */
+		std::string documentToString() const;
+
+		/**
 		 * (Re-)open the file that was opened last. Uses local user settings to persist the filename.
 		 */
 		void openRecentDocument();
@@ -101,6 +107,11 @@ namespace napkin
 		 * @return The current document
 		 */
 		Document* getDocument();
+
+		/**
+		 * @return The current document or nullptr if there is no document
+		 */
+		const Document* getDocument() const;
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.

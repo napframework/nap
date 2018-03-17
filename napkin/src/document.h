@@ -48,6 +48,11 @@ namespace napkin
 		/**
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
+		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
+
+		/**
+		 * @return All the objects (resources?) that are currently loaded.
+		 */
 		nap::rtti::ObjectList getObjectPointers();
 
 		/**
@@ -97,6 +102,15 @@ namespace napkin
 		nap::Component* addComponent(nap::Entity& entity, rttr::type type);
 
 		/**
+		 * Add a component of the specified type to an Entity
+		 * @tparam T The type of the desired component
+		 * @param entity The entity to add the component to.
+		 * @return The newly created component
+		 */
+		template<typename T>
+		T* addComponent(nap::Entity& entity) { return rtti_cast<T>(addComponent(entity, RTTI_OF(T))); }
+
+		/**
 		 * Add an object of the specified type.
 		 * @param type The type of the desired object.
 		 * @param parent The parent of the object: In the case of Entity, this will be its new parent.
@@ -113,6 +127,12 @@ namespace napkin
 		 */
 		template<typename T>
 		T* addObject(nap::rtti::Object* parent = nullptr) { return rtti_cast<T>(addObject(RTTI_OF(T), parent)); }
+
+		/**
+		 * Add and entity to the document
+		 * @return The newly created Entity
+		 */
+		nap::Entity& addEntity();
 
 		/**
 		 * Obliterate the specified object
