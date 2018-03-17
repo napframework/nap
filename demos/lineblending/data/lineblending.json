@@ -90,6 +90,7 @@
                     "Type": "nap::LineSelectionComponent",
                     "mID": "SelectionComponentOne",
                     "Lines": [
+                        "LogoFromFile",
                         "SingleLine",
                         "Circle",
                         "Rectangle",
@@ -102,6 +103,7 @@
                     "Type": "nap::LineSelectionComponent",
                     "mID": "SelectionComponentTwo",
                     "Lines": [
+                        "LogoFromFile",
                         "SingleLine",
                         "Circle",
                         "Rectangle",
@@ -251,6 +253,27 @@
             },
             "Closed": false,
             "Vertices": 2
+        },
+        {
+            "Type": "nap::LineFromFile",
+            "mID": "LogoFromFile",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "File": "logo.svg",
+            "Units": "px",
+            "DPI": 96.0,
+            "Tolerance": 1.0,
+            "Normalize": true,
+            "Scale": 2.0,
+            "FlipHorizontal": false,
+            "FlipVertical": true,
+            "LineIndex": 0
         },
         {
             "Type": "nap::Material",
