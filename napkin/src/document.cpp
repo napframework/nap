@@ -55,10 +55,15 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 
 nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 {
-	assert(type.can_create_instance());
+	auto& factory = mCore.getResourceManager()->getFactory();
+	bool canCreate = factory.canCreate(type);
+
+	if (!canCreate)
+		nap::Logger::fatal("Cannot create instance of '%s'", type.get_name().data());
+	assert(canCreate);
 	assert(type.is_derived_from<nap::Component>());
 
-	auto compVariant = type.create();
+	nap::rtti::Variant compVariant = factory.create(type);
 	auto comp = compVariant.get_value<nap::Component*>();
 	comp->mID = getUniqueName(type.get_name().data());
 	mObjects.emplace_back(comp);

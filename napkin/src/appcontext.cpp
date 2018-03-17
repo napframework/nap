@@ -88,22 +88,13 @@ void AppContext::saveDocument()
 
 void AppContext::saveDocumentAs(const QString& filename)
 {
-	ObjectList objects;
-	for (auto& ob : getDocument()->getObjects())
-	{
-		objects.emplace_back(ob.get());
-	}
 
-	JSONWriter writer;
-	ErrorState err;
-	if (!serializeObjects(objects, writer, err))
-	{
-		nap::Logger::fatal(err.toString());
+	std::string serialized_document = documentToString();
+	if (serialized_document.empty())
 		return;
-	}
 
 	std::ofstream out(filename.toStdString());
-	out << writer.GetJSON();
+	out << serialized_document;
 	out.close();
 
 	getDocument()->setFilename(filename);
@@ -116,6 +107,23 @@ void AppContext::saveDocumentAs(const QString& filename)
 	getUndoStack().setClean();
 	documentChanged(mDocument.get());
 }
+
+std::string AppContext::documentToString() const
+{
+	ObjectList objects;
+	for (auto& ob : getDocument()->getObjects())
+		objects.emplace_back(ob.get());
+
+	JSONWriter writer;
+	ErrorState err;
+	if (!serializeObjects(objects, writer, err))
+	{
+		nap::Logger::fatal(err.toString());
+		return std::string();
+	}
+	return writer.GetJSON();
+}
+
 
 void AppContext::openRecentDocument()
 {
@@ -226,9 +234,15 @@ Document* AppContext::getDocument()
 	return mDocument.get();
 }
 
+const Document* AppContext::getDocument() const
+{
+	return mDocument.get();
+}
+
 void AppContext::onUndoIndexChanged()
 {
 	documentChanged(mDocument.get());
 }
+
 
 
