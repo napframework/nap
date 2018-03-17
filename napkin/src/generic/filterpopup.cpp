@@ -54,19 +54,6 @@ nap::rtti::Object* napkin::FilterPopup::getObject(QWidget* parent, const rttr::t
 	return nullptr;
 }
 
-nap::rtti::TypeInfo napkin::FilterPopup::getDerivedType(QWidget* parent, const rttr::type& baseType)
-{
-	FlatTypeModel model(baseType);
-	auto dialog = new FilterPopup(parent, model);
-	dialog->exec(QCursor::pos());
-
-	auto selected_item = dialog->mTreeView.getSelectedItem();
-	if (selected_item == nullptr)
-		return rttr::type::empty();
-
-	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
-}
-
 nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
 {
 
@@ -74,8 +61,7 @@ nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
 	for (const auto t : getResourceTypes())
 		model.appendRow(new QStandardItem(QString::fromUtf8(t.get_name().data())));
 
-	auto dialog = new FilterPopup(parent, model);
-
+	FilterPopup dialog(parent, model);
 	dialog.exec(QCursor::pos());
 
 	auto selected_item = dialog.mTreeView.getSelectedItem();
