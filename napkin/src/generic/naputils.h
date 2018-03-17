@@ -93,6 +93,14 @@ namespace napkin
 	nap::rtti::Object* getPointee(const PropertyPath& path);
 
 	/**
+	 * Set the pointer property value to an object
+	 * TODO: Use/provide paths to identify target, this version is using MID (broken!)
+	 * @param path The path to the property that holds the pointer
+	 * @param target The object to point to
+	 */
+	void setPointee(const napkin::PropertyPath& path, const nap::rtti::Object* target);
+
+	/**
 	 * Get the reference directory for resources.
 	 * @param reference The path to the reference directory or file.
 	 * 	If nothing is provided, this will fall back to the currently opened document
@@ -145,5 +153,6 @@ namespace napkin
 	 * @return An URI
 	 */
 	std::string toURI(const PropertyPath& path);
+
 
 }

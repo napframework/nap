@@ -59,10 +59,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::addDocks()
 {
+//	addDock("Available Types", &mHierarchyPanel);
+//	addDock("History", &mHistoryPanel);
+
 	addDock("Resources", &mResourcePanel);
-	addDock("Available Types", &mHierarchyPanel);
 	addDock("Inspector", &mInspectorPanel);
-	addDock("History", &mHistoryPanel);
 	addDock("Log", &mLogPanel);
 	addDock("AppRunner", &mAppRunnerPanel);
     addDock("Scene", &mScenePanel);

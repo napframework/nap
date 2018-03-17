@@ -159,6 +159,25 @@ nap::rtti::Object* napkin::getPointee(const PropertyPath& path)
 	return pointee;
 }
 
+void napkin::setPointee(const napkin::PropertyPath& path, const Object* target)
+{
+	nap::rtti::ResolvedPath resolved_path = path.resolve();
+	assert(resolved_path.isValid());
+
+	rttr::method assign_method = nap::rtti::findMethodRecursive(resolved_path.getType(), "assign");
+	if (assign_method.is_valid())
+	{
+		auto target_value = resolved_path.getValue();
+		assign_method.invoke(target_value, target->mID, *target);
+	}
+	else
+	{
+		bool value_set = resolved_path.setValue(target);
+		assert(value_set);
+	}
+}
+
+
 QString napkin::getAbsoluteResourcePath(const QString& relPath, const QString& reference)
 {
 	auto ref = getResourceReferencePath(reference);
@@ -208,5 +227,6 @@ std::string napkin::toURI(const napkin::PropertyPath& path)
 {
 	return NAP_URI_PREFIX + "://" + path.toString();
 }
+
 
 
