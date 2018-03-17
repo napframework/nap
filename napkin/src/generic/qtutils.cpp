@@ -5,11 +5,11 @@
 #include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QLabel>
+#include <QPushButton>
 
 #include <mathutils.h>
 #include <standarditemsproperty.h>
 #include <appcontext.h>
-#include <nap/logger.h>
 
 #include "panels/finderpanel.h"
 
@@ -152,6 +152,12 @@ void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, 
 
 	QDialogButtonBox buttonBox(QDialogButtonBox::Close);
 	layout.addWidget(&buttonBox);
+
+	QPushButton* closeButton = buttonBox.button(QDialogButtonBox::Close);
+
+	dialog.connect(closeButton, &QPushButton::clicked, [&dialog]() {
+		dialog.close();
+	});
 
 	dialog.exec();
 }
