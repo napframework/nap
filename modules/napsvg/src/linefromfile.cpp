@@ -9,6 +9,7 @@
 #include <rect.h>
 #include <limits>
 #include <meshutils.h>
+#include <mathutils.h>
 
 RTTI_BEGIN_ENUM(nap::ESVGUnits)
 	RTTI_ENUM_VALUE(nap::ESVGUnits::PX,		"px"),
@@ -230,7 +231,6 @@ namespace nap
 
 			// Resize
 			uvs.reserve(path->size());
-			normals.reserve(path->size());
 			positions.reserve(path->size());
 
 			// Calculate uv's first as they use the rect to figure out the normalized 0-1 coordinates
@@ -270,26 +270,49 @@ namespace nap
 				return false;
 
 			// Now we have the final vertex positions of this line we can calculate their respective normals
-			glm::vec3 crossn(0.0f, 0.0f, -1.0f);
-			for (int i = 0; i < positions.size() - 1; i++)
+			if (positions.size() > 1)
 			{
-				// Get vector pointing to next vertex
-				glm::vec3 dnormal = glm::normalize(positions[i+1] - positions[i]);
+				// The normal to rotage against 
+				glm::vec3 crossn(0.0f, 0.0f, -1.0f);
+				
+				// Resize normal array to be size of vertices
+				normals.resize(positions.size());
 
-				// Rotate around z using cross product
-				normals.emplace_back(glm::cross(dnormal, crossn));
-			}
+				// Calculate the normal based on the previous and next vertex
+				for (int i = 1; i < positions.size() - 1; i++)
+				{
+					// Get vector pointing to next and previous vertex
+					glm::vec3 dnormal_one = glm::normalize(positions[i + 1] - positions[i]);
+					glm::vec3 dnormal_two = glm::normalize(positions[i] - positions[i - 1]);
 
-			// If the shape is closed the last normal can point to the first, otherwise we pick the previous one
-			if (is_closed)
-			{
-				glm::vec3& curr_pos = positions.back();
-				glm::vec3& next_pos = positions.front();
-				normals.emplace_back(glm::cross(glm::normalize(next_pos - curr_pos), crossn));
+					// Rotate around z using cross product
+					normals[i] = glm::cross(glm::normalize(math::lerp<glm::vec3>(dnormal_one, dnormal_two, 0.5f)), crossn);
+				}
+
+				// Closed shapes need to wrap the first and last vertex
+				if (is_closed)
+				{
+					// First normal
+					glm::vec3 dnormal_one = glm::normalize(positions[1] - positions.front());
+					glm::vec3 dnormal_two = glm::normalize(positions.front() - positions.back());
+					normals[0] = glm::cross(math::lerp<glm::vec3>(dnormal_one, dnormal_two, 0.5f), crossn);
+					
+					// Last normal
+					dnormal_one = glm::normalize(positions.front() - positions.back());
+					dnormal_two = glm::normalize(positions.back() - positions[positions.size() - 2]);
+
+					normals.back() = glm::cross(math::lerp<glm::vec3>(dnormal_one, dnormal_two, 0.5f), crossn);
+				}
+				// Otherwise the first vertex uses the next position and the last one the previous
+				else
+				{
+					normals[0] = glm::cross(glm::normalize(positions[1] - positions.front()), crossn);
+					normals.back() = normals[normals.size() - 2];
+				}
 			}
 			else
 			{
-				normals.emplace_back(normals.back());
+				normals.front() = { 0,1.0,0.0 };
 			}
 
 			addShape(positions, normals, uvs, is_closed);

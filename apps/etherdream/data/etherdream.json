@@ -1325,7 +1325,7 @@
 					"SelectionComponentOne" : "./LineSelectorOne",
 					"SelectionComponentTwo" : "./LineSelectorTwo",
 					"BlendComponent" : "./LineBlender",
-					"Random" : true
+					"Random" : false
 				},
 				{
 					"Type" : "nap::LineModulationComponent",

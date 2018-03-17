@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <smoothdamp.h>
 #include <nap/resourceptr.h>
+#include <color.h>
 
 namespace nap
 {
@@ -29,23 +30,11 @@ namespace nap
 		// property: link to the component that holds the mesh that we want to color
 		ComponentPtr<nap::LineBlendComponent> mBlendComponent;
 
-		// property: link to the image component that holds the lookup image
-		ResourcePtr<nap::ImageFromFile> mLookupImage;
+		// property: first color
+		RGBColorFloat mColorOne =  {1.0f, 1.0f, 1.0f};
 
-		// property: start lookup color for spline
-		glm::vec2 mStartPos = { 0.5f, 0.5f };
-
-		// property: end lookup color for spline
-		glm::vec2 mEndPos = { 0.5f, 0.5f };
-
-		// property: smoothing speed for start point
-		glm::vec2 mStartSmoothTime = { 1.0f, 1.0f };
-
-		// property: smoothing speed for end point
-		glm::vec2 mEndSmoothTime = { 1.0f, 1.0f };
-
-		// property: smoothing speed for intensity
-		float mIntensitySmoothTime = 1.0f;
+		// property: second color
+		RGBColorFloat mColorTwo =  {1.0f, 0.0f, 0.0f };
 
 		// property: intensity of the spline
 		float mIntensity = 1.0f;
@@ -88,23 +77,28 @@ namespace nap
 		 * Sets the start uv coordinate of the line, will be clamped between 0-1
 		 * @param startPosition start position in uv space of the line
 		 */
-		void setStartPosition(const glm::vec2& startPosition);
+		void setFirstColor(const RGBColorFloat& color);
 
 		/**
 		 * @return the current start position in uv coordinates
 		 */
-		const glm::vec2& getStartPosition() const					{ return mStartPosition; }
+		const RGBColorFloat& getFirstColor() const						{ return mFirstColor; }
 
 		/**
 		 * Sets the end uv coordinate of the line, will be clamped between 0-1
 		 * @param endPosition end position in uv space of the line
 		 */
-		void setEndPosition(const glm::vec2& endPosition);
+		void setSecondColor(const RGBColorFloat& endPosition);
 
 		/**
 		 *	@return the current end position in uv coordinates
 		 */
-		const glm::vec2& getEndPosition() const						{ return mEndPosition; }
+		const RGBColorFloat& getSecondColor() const						{ return mSecondColor; }
+
+		/**
+		 *	Set color smooth speed
+		 */
+		void setColorSmoothSpeed(float speed);
 
 		/**
 		 * Sets the intensity of the line, this is a global multiplier
@@ -113,67 +107,33 @@ namespace nap
 		void setIntensity(float intensity);
 
 		/**
-		 * Sets the smooth speed for the start point's x axis
-		 * @param speed the time it takes in seconds
-		 */
-		void setStartSmoothSpeedX(float speed)						{ mStartSmootherX.mSmoothTime = math::max<float>(speed, 0.0f); }
-
-		/**
-		 * Sets the smooth speed for the start point's y axis
-		 * @param speed the time it takes in seconds
-		 */
-		void setStartSmoothSpeedY(float speed)						{ mStartSmootherY.mSmoothTime = math::max<float>(speed, 0.0f); }
-
-		/**
-		 * Sets the smooth speed for end point's x axis
-		 * @param speed the time it takes in seconds
-		 */
-		void setEndSmoothSpeedX(float speed)						{ mEndSmootherX.mSmoothTime = math::max<float>(speed, 0.0f); }
-
-		/**
-		* Sets the smooth speed for end point's x axis
-		* @param speed the time it takes in seconds
-		*/
-		void setEndSmoothSpeedY(float speed)						{ mEndSmootherY.mSmoothTime = math::max<float>(speed, 0.0f); }
-
-		/**
 		 *	Sets the smooth speed for intensity
 		 */
-		void setIntensitySmoothSpeed(float speed)					{ mIntensitySmoother.mSmoothTime = math::max<float>(speed, 0.0f); }
+		void setIntensitySmoothSpeed(float speed)						{ mIntensitySmoother.mSmoothTime = math::max<float>(speed, 0.0f); }
 
 		/**
 		 *	If we want to link color 2 to color 1
 		 * @param value if we want to link the colors
 		 */
-		void link(bool value)										{ mLink = value; }
-
-		/**
-		 * @return the pixel color as vector 3 at uv position x,y
-		 * @param uvPos the uv position to get the color for
-		 * @param outColor the pixel color as normalized float
-		 */
-		void getColor(const glm::vec2& uvPos, glm::vec3& outColor);
+		void link(bool value)											{ mLink = value; }
 
 	private:
 		ComponentInstancePtr<LineBlendComponent> mBlendComponent = { this, &LineColorComponent::mBlendComponent };		// Holds the line we want to color
-		ImageFromFile* mLookupImage = nullptr;					// Image used for color lookup
-		glm::vec2 mStartPosition = { 0.5f, 0.5f };					// Start point lookup in uv space
-		glm::vec2 mEndPosition = { 0.5f, 0.5f };					// End point lookup in uv space
-		float mIntensity = 1.0f;									// Final intensity
-		bool mWrap = false;											// If the color values should be wrapped
-		float mPower = 1.0f;										// Amount of blend power when computing the wrap
-		bool mLink = false;											// If color 2 is linked to color one
+		RGBColorFloat mFirstColor  = { 1.0f, 1.0f, 1.0f };		// Start point lookup in uv space
+		RGBColorFloat mSecondColor = { 1.0f, 0.0f, 0.0f };		// End point lookup in uv space
+		float mIntensity = 1.0f;								// Final intensity
+		bool mWrap = false;										// If the color values should be wrapped
+		float mPower = 1.0f;									// Amount of blend power when computing the wrap
+		bool mLink = false;										// If color 2 is linked to color one
 
-		// Smooths the start point
-		math::SmoothOperator<float> mStartSmootherX					{ 0.5f, 1.0f };
-		math::SmoothOperator<float> mStartSmootherY					{ 0.5f, 1.0f };
+		// Smooths the first color
+		math::SmoothOperator<glm::vec3> mColorOneSmoother		{ {1.0f, 1.0f, 1.0f},  0.5f };
 
-		// Smooths the end point
-		math::SmoothOperator<float> mEndSmootherX					{ 0.5f, 1.0f };
-		math::SmoothOperator<float> mEndSmootherY					{ 0.5f, 1.0f };
+		// Smooths the second color
+		math::SmoothOperator<glm::vec3> mColorTwoSmoother		{ { 1.0f, 0.0f, 0.0f}, 0.5f };
 
 		// Smooths intensity
-		math::SmoothOperator<float> mIntensitySmoother				{ 1.0f, 0.1f };
+		math::SmoothOperator<float> mIntensitySmoother			{ 1.0f, 0.1f };
 	};
 }
 

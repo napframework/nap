@@ -118,7 +118,7 @@
                     "SelectionComponentOne": "./SelectionComponentOne",
                     "SelectionComponentTwo": "./SelectionComponentTwo",
                     "BlendComponent": "LineBlender",
-                    "Random": true
+                    "Random": false
                 },
                 {
                     "Type": "nap::LineBlendComponent",
@@ -175,6 +175,29 @@
                     "Type": "nap::UpdateNormalsComponent",
                     "mID": "UpdateLaserNormalsComponent",
                     "NormalMesh": "NormalsMesh"
+                },
+                {
+                    "Type": "nap::LineColorComponent",
+                    "mID": "nap::LineColorComponent",
+                    "BlendComponent": "./LineBlender",
+                    "FirstColor": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "SecondColor": {
+                        "Values": [
+                            1.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "Intensity": 1.0,
+                    "Wrap": true,
+                    "WrapPower": 1.0,
+                    "Link": false
                 }
             ],
             "Children": []
@@ -242,12 +265,12 @@
                 }
             },
             "Start": {
-                "x": -1.0,
+                "x": 1.0,
                 "y": 0.0,
                 "z": 0.0
             },
             "End": {
-                "x": 1.0,
+                "x": -1.0,
                 "y": 0.0,
                 "z": 0.0
             },
@@ -272,7 +295,7 @@
             "Normalize": true,
             "Scale": 2.0,
             "FlipHorizontal": false,
-            "FlipVertical": true,
+            "FlipVertical": false,
             "LineIndex": 0
         },
         {
