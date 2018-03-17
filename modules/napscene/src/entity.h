@@ -4,8 +4,11 @@
 #include "componentptr.h"
 #include "component.h"
 #include "instanceproperty.h"
+
+// External Includes
 #include <utility/uniqueptrvectoriterator.h>
-#include <rtti/objectptr.h>
+#include <nap/resource.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -24,12 +27,12 @@ namespace nap
 	 * This class only works with run-time versions of both, ie: ComponentInstance and EntityInstance
 	 * On construction every entity receives a reference to Core and the Entity it originated from.
 	 */
-	class NAPAPI EntityInstance : public rtti::RTTIObject
+	class NAPAPI EntityInstance : public rtti::Object
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(rtti::Object)
 
 	public:
-        using rtti::RTTIObject::init;
+        using rtti::Object::init;
         
 		using ComponentList = std::vector<std::unique_ptr<ComponentInstance>>;
 		using ChildList = std::vector<EntityInstance*>;
@@ -315,9 +318,9 @@ namespace nap
 	 * This represents the static data that is deserialized from json and contains a list of child entities and components
 	 * This class is used as a blueprint for the creation of an EntityInstance.
 	 */
-	class NAPAPI Entity : public rtti::RTTIObject
+	class NAPAPI Entity : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		using ComponentList = std::vector<rtti::ObjectPtr<Component>>;
 		using EntityList = std::vector<rtti::ObjectPtr<Entity>>;

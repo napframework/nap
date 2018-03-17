@@ -246,3 +246,8 @@ void napkin::FilterTreeView::setTopItemSelected()
 	getSelectionModel()->select(selection, QItemSelectionModel::SelectionFlag::ClearAndSelect);
 }
 
+QWidget& napkin::FilterTreeView::getCornerWidget()
+{
+	return mCornerWidget;
+}
+

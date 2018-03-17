@@ -7,7 +7,7 @@
 #include <QUndoCommand>
 #include <QMainWindow>
 
-#include <rtti/rttideserializeresult.h>
+#include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
 #include <nap/core.h>
 #include <nap/logger.h>
@@ -150,7 +150,7 @@ namespace napkin
 		 * Fired when the global selection has changed.
 		 * TODO: This will need to be changed into a multi-level/hierarchical selection context
 		 */
-		void selectionChanged(QList<nap::rtti::RTTIObject*> obj);
+		void selectionChanged(QList<nap::rtti::Object*> obj);
 
 
 		/**
@@ -209,20 +209,20 @@ namespace napkin
 		 * 		This is a notification, not a directive.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object& obj, bool selectNewObject);
 
 		/**
 		 * Qt Signal
 		 * Invoked after an object has changed drastically
 		 */
-		void objectChanged(nap::rtti::RTTIObject& obj);
+		void objectChanged(nap::rtti::Object& obj);
 
 		/**
 		 * Qt Signal
 		 * Invoked just before an object is removed (including Entities)
 		 * @param object The object about to be removed
 		 */
-		void objectRemoved(nap::rtti::RTTIObject& object);
+		void objectRemoved(nap::rtti::Object& object);
 
 		/**
 		 * Qt Signal

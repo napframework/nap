@@ -4,7 +4,7 @@
 #include <rtti/rtti.h>
 #include <vector>
 #include <unordered_set>
-#include "rttipath.h"
+#include "path.h"
 #include "factory.h"
 #include "unresolvedpointer.h"
 #include "utility/dllexport.h"
@@ -13,27 +13,27 @@ namespace nap
 {
 	namespace rtti
 	{
-		class RTTIObject;
+		class Object;
 
 		/**
 		 * Represents a link from an object
 		 */
 		struct NAPAPI ObjectLink
 		{
-			const rtti::RTTIObject*	mSource;		// The object the link originates from
-			RTTIPath				mSourcePath;	// The RTTIPath to the pointer property linking to the object
-			rtti::RTTIObject*		mTarget;		// The object being linked to (i.e. target of the pointer)
+			const rtti::Object*	mSource;		// The object the link originates from
+			Path				mSourcePath;	// The RTTIPath to the pointer property linking to the object
+			rtti::Object*		mTarget;		// The object being linked to (i.e. target of the pointer)
 		};
 
-        using ObjectList = std::vector<RTTIObject*>;
-        using ObjectSet = std::unordered_set<RTTIObject*>;
+        using ObjectList = std::vector<Object*>;
+        using ObjectSet = std::unordered_set<Object*>;
 
         /**
 		 * Copies rtti attributes from one object to another.
 		 * @param srcObject: the object to copy attributes from
 		 * @param dstObject: the target object
 		 */
-		void NAPAPI copyObject(const rtti::RTTIObject& srcObject, rtti::RTTIObject& dstObject);
+		void NAPAPI copyObject(const rtti::Object& srcObject, rtti::Object& dstObject);
 
 		/**
 		 * Creates a new object with the same attributes as it's source.
@@ -54,21 +54,21 @@ namespace nap
 		 * @param objectB: second object to compare attributes from.
 		 * @param unresolvedPointers: list of unresolved pointers that should be used for pointer comparisons in case of unresolved pointers.
 		 */
-		bool NAPAPI areObjectsEqual(const rtti::RTTIObject& objectA, const rtti::RTTIObject& objectB, const rtti::UnresolvedPointerList& unresolvedPointers = UnresolvedPointerList());
+		bool NAPAPI areObjectsEqual(const rtti::Object& objectA, const rtti::Object& objectB, const rtti::UnresolvedPointerList& unresolvedPointers = UnresolvedPointerList());
 
 		/**
 		 * Searches through object's rtti attributes for attribute that have the 'file link' tag.
 		 * @param object: object to find file links from.
 		 * @param fileLinks: output array containing the filenames.
 		 */
-		void NAPAPI findFileLinks(const rtti::RTTIObject& object, std::vector<std::string>& fileLinks);
+		void NAPAPI findFileLinks(const rtti::Object& object, std::vector<std::string>& fileLinks);
 
 		/**
 		 * Searches through object's rtti attributes for pointer attributes.
 		 * @param object: object to find file links from.
 		 * @param objectLinks: output array containing the object links
 		 */
-		void NAPAPI findObjectLinks(const rtti::RTTIObject& object, std::vector<ObjectLink>& objectLinks);
+		void NAPAPI findObjectLinks(const rtti::Object& object, std::vector<ObjectLink>& objectLinks);
 
 		/**
 		 * Helper to find the index of the unresolved pointer with the specified object and path combination
@@ -79,14 +79,14 @@ namespace nap
 		 *
 		 * @return The index of the UnresolvedPointer in the specified list. -1 if not found.
 		 */
-		int NAPAPI findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const RTTIObject* object, const rtti::RTTIPath& path);
+		int NAPAPI findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const Object* object, const rtti::Path& path);
 
 		/**
 		 * Recursively traverses pointers of @object and puts them in @pointees. Basically traverses the object graph beneath @object.
 		 * @param object The root object to start traversing pointers from.
 		 * @param pointees The resulting array of objects.
 		 */
-		void NAPAPI getPointeesRecursive(const rtti::RTTIObject& object, std::vector<rtti::RTTIObject*>& pointees);
+		void NAPAPI getPointeesRecursive(const rtti::Object& object, std::vector<rtti::Object*>& pointees);
 
 		/**
 		 * Calculate the version number of the specified type

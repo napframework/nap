@@ -1,12 +1,12 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
 #include <texture2d.h>
 #include <color.h>
 #include <bitmap.h>
 #include <unordered_map>
-#include "rtti/objectptr.h"
+#include <nap/resource.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -15,9 +15,9 @@ namespace nap
 	/**
 	 *	Defines the variations for every week
 	 */
-	class NAPAPI WeekVariations : public rtti::RTTIObject
+	class NAPAPI WeekVariations : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		std::vector<std::vector<int>>	mVariations;		///< The variations for this week. Each element is an array of indices into the palette for this week.
 		
@@ -31,9 +31,9 @@ namespace nap
 	/**
 	 * Defines the palette colors for a particular week
 	 */
-	class NAPAPI WeekColors : public rtti::RTTIObject
+	class NAPAPI WeekColors : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 
 	public:
 		// Helper struct to represent an index into the color palette grid
@@ -62,7 +62,7 @@ namespace nap
 
 	public:
 		std::string						mPalette;			///< The palette pattern. Each element (separated by a space) denotes an index in the palette grid
-		rtti::ObjectPtr<WeekVariations>	mVariations;		///< The variations based on the pattern
+		ResourcePtr<WeekVariations>		mVariations;		///< The variations based on the pattern
 
 	private:
 		std::vector<GridColorIndex>	mPaletteColors;
@@ -72,10 +72,9 @@ namespace nap
 	 * Represents a color grid palette. Extracts the colors from and image and the LED colors from the corresponding txt file.
 	 * Allows the client to get the palette for a given week and variation
 	 */
-	class NAPAPI LedColorPaletteGrid : public rtti::RTTIObject
+	class NAPAPI LedColorPaletteGrid : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
-
+		RTTI_ENABLE(Resource)
 	public:
 		struct PaletteColor
 		{
@@ -113,10 +112,10 @@ namespace nap
 		bool checkWeekColors(utility::ErrorState& errorState);		///< Verify that the colors & mappings specified in the WeekColors array are correct
 
 	public:
-		std::string							mGridImagePath;			///< Path to the palette grid image on disk
-		std::string							mGridLedColorsPath;		///< Path to the palette grid led colors text file on disk
-		int									mGridSize;				///< Size of each square in the grid (in pixels)
-		std::vector<rtti::ObjectPtr<WeekColors>>	mWeekColors;			///< The colors for each week
+		std::string								mGridImagePath;			///< Path to the palette grid image on disk
+		std::string								mGridLedColorsPath;		///< Path to the palette grid led colors text file on disk
+		int										mGridSize;				///< Size of each square in the grid (in pixels)
+		std::vector<ResourcePtr<WeekColors>>	mWeekColors;			///< The colors for each week
 
 	private:
 		using PaletteRow = std::vector<PaletteColor>;

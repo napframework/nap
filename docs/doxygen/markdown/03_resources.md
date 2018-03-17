@@ -39,12 +39,12 @@ The resources mentioned above are both of a different kind and have their own se
 Creating Resources {#creating_resources}
 =======================
 
-To make sure that C++ classes and properties can be created and edited in json you need to expose them explicitly through something called [RTTI](https://en.wikipedia.org/wiki/Run-time_type_information) (better known as RunTime Type Information). NAP uses a number of macros to ease the way you can expose classes and properties. To create a resource that can be authored in json you need to derive if from [RTTIObject](@ref nap::rtti::RTTIObject) and tell the system what the parent object is. To accomplish this you add to the class declaration the RTTI_ENABLE macro:
+To make sure that C++ classes and properties can be created and edited in json you need to expose them explicitly through something called [RTTI](https://en.wikipedia.org/wiki/Run-time_type_information) (better known as RunTime Type Information). NAP uses a number of macros to ease the way you can expose classes and properties. To create a resource that can be authored in json you need to derive if from [Resource](@ref nap::Resource) and tell the system what the parent object is. To accomplish this you add to the class declaration the RTTI_ENABLE macro:
 
 ~~~~~~~~~~~~~~~{.cpp}
-class NAPAPI Shader : public rtti::RTTIObject
+class NAPAPI Shader : public Resource
 {
-	RTTI_ENABLE(rtti::RTTIObject)
+	RTTI_ENABLE(Resource)
 };
 ~~~~~~~~~~~~~~~
 
@@ -55,7 +55,7 @@ RTTI_BEGIN_CLASS(nap::Shader)
 RTTI_END_CLASS
 ~~~~~~~~~~~~~~~
 
-This is the basis for setting up an rtti enabled class. In the example above we defined a shader. The RTTI_ENABLE macro makes sure that the system knows this class is derived from RTTIObject. The input for the RTTI_ENABLE macro is always the parent object. The code in the cpp file exposes this class as a resource to NAP. The shader is now available as an object that can be authored in json.
+This is the basis for setting up an rtti enabled class. In the example above we defined a shader. The RTTI_ENABLE macro makes sure that the system knows this class is derived from a Resource. The input for the RTTI_ENABLE macro is always the parent object. The code in the cpp file exposes this class as a resource to NAP. The shader is now available as an object that can be authored in json.
 
 The NAPAPI macro makes sure that the class can be read and accessed (from the outside world) by the NAP system. The compiler (on windows) won't expose the class to the outside world when you forget to put in the NAPAPI macro. Remember that on startup a NAP application (automatically) loads all modules. NAP tries to find all the exposed resources that are compatible with the NAP system when loading a module. When it encounters a resource in a json file that is not available to the system the resource manager will raise a warning and stop execution. It is therefore important to always expose a class to the outside world using the NAPAPI macro.
 
@@ -65,9 +65,9 @@ Exposing Properties {#exposing_properties}
 Properties belong to a resource. You can think of properties as attributes and add as many as you want. To extend a resource with properties you add a property field to your class. In the example below we add two properties: 'VertPath' and 'FragPath':
 
 ~~~~~~~~~~~~~~~{.cpp}
-class NAPAPI Shader : public rtti::RTTIObject
+class NAPAPI Shader : public Resource
 {
-	RTTI_ENABLE(rtti::RTTIObject)
+	RTTI_ENABLE(Resource)
 	public:
 		std::string	mVertPath;				// Property: Path to the vertex shader on disk
 		std::string mFragPath;				// Property: Path to the fragment shader on disk
@@ -107,14 +107,14 @@ The resource identifier ('mID') can be anything you like. The identifier is used
 Pointing to Resources {#pointing}
 =======================
 
-It is often useful if a resource can access information from another resource. NAP allows you to create links between objects (in json) to accomplish just that. A resource can point to other resources in json by referring to the name (identifier) of a resource. In C++, we use a specific type of pointer to accomplish this: [object pointer](@ref nap::ObjectPtr). Let's assume there is a resource called 'Material' that points to a 'Shader'. The material wants to use the information stored in the shader and exposes that in the form of a link to a shader. The material can now access the shader without having to worry about order of initialization. When the material is initialized the shader has been created and validated. You only have to implement the logic you want to perform based on the information that is present in the shader:
+It is often useful if a resource can access information from another resource. NAP allows you to create links between objects (in json) to accomplish just that. A resource can point to other resources in json by referring to the name (identifier) of a resource. In C++, we use a specific type of pointer to accomplish this: [resource pointer](@ref nap::ResourcePtr). Let's assume there is a resource called 'Material' that points to a 'Shader'. The material wants to use the information stored in the shader and exposes that in the form of a link to a shader. The material can now access the shader without having to worry about order of initialization. When the material is initialized the shader has been created and validated. You only have to implement the logic you want to perform based on the information that is present in the shader:
 
 ~~~~~~~~~~~~~~~{.cpp}
-class NAPAPI Material : public rtti::RTTIObject
+class NAPAPI Material : public Resource
 {
-	RTTI_ENABLE(rtti::RTTIObject)
+	RTTI_ENABLE(Resource)
 public:
-	ObjectPtr<nap::Shader> mShader;	// Property: Link to a 'Shader' resource
+	ResourcePtr<nap::Shader> mShader;	// Property: Link to a 'Shader' resource
 };
 ~~~~~~~~~~~~~~~
 
@@ -163,7 +163,7 @@ Here are the rules for writing a correct [init](@ref nap::RTTIObject::init) func
 - If the function fails make sure that a clear error message is presented to [error](@ref nap::utility::ErrorState) object that is passed to init().
 - Make sure that the init() function does not have any side effects. This means that it should not update any global state. The system cannot revert such changes in case of an error.
 
-nap::utility::ErrorState is a class that offers a convenient way to report an error to a user. The general pattern is as follows:
+[ErrorState](@ref nap::utility::ErrorState) is a class that offers a convenient way to report an error to a user. The general pattern is as follows:
 
 ~~~~~~~~~~~~~~~{.cpp}
 if (!errorState.check(loadImage(), "Failed to load image %s, dimensions are unsupported (%d:%d)", mPath.c_str(), mDimensions.x, mDimensions.y))
@@ -174,7 +174,7 @@ The pattern is somewhat similar to the way asserts work: the first parameter is 
 
 Linking Media {#media}
 =======================
-In the [real time editing](@ref editing) section we briefly touched upon linking to external files. Some objects read information from other files. Examples include a texture resource that reads (among others) .png files or an audio player that reads .wav or .mp3 files. The real-time editing system will reload any of these external files when a modification to them is made. For these situations we need to explicitly define the relationship to the external file in RTTI. You do this by marking a property to be a file link:
+In the [real time editing](@ref editing) section we briefly touched upon linking to external files. Some objects read information from other files. Examples include a texture resource that reads (among others).png files or an audio player that reads .wav or .mp3 files. The real-time editing system will reload any of these external files when a modification to them is made. For this to work you need to tell the system if a property is a link to a file. You do this by marking a property of a resource as a file link:
 
 ~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(Texture)
@@ -195,7 +195,7 @@ class NAPAPI VideoContainer : public rtti::RTTIObject
 {
 	RTTI_ENABLE(rtti::RTTIObject)
 public:
-	std::vector<ObjectPtr<Video>> mVideoFiles;		///< Property: "Videos" link to videos
+	std::vector<ResourcePtr<Video>> mVideoFiles;		///< Property: "Videos" link to videos
 }
 ~~~~~~~~~~~~~~~
 
@@ -265,14 +265,14 @@ So what are the advantages of using a struct? A struct is a light weight object 
 - is not a resource.
 - but needs to be available in json.
 
-Define it as a struct. In all other cases: define it as a class. But what is the difference between a class and resource? A resource is a class that can live by itself in json. As you know every resource carries an identifier and is initialized by NAP after construction. A resource is always derived from RTTIObject. On the other hand, structs and classes that are not derived from RTTIObject can't be declared in json as a resource because they don't have a name and can't be initialized. You can only use those objects in json as an [embedded object](@ref embedding_objects). Only when a class is derived from RTTIObject is it considered as a resource to the system.
+Define it as a struct. In all other cases: define it as a class. But what is the difference between a class and resource? A resource is a class that can live by itself in json. As you know every resource carries an identifier and is initialized by NAP after construction. A resource is always derived from [Resource](@ref nap::Resource). On the other hand, structs and classes that are not derived from Resource can't be declared in json as a resource because they don't have a name and can't be initialized. You can only use those objects in json as an [embedded object](@ref embedding_objects). Only when a class is derived from a Resource is it considered as a resource to the system.
 
 This might sound confusing but try to follow these rules: Do I need to author (edit) my class in json?
 - Yes
 	-  Is it a resource?
 		- Yes
-			- Derive your class from RTTIObject (.h)
-			- Or any object that is derived from RTTIObject (.h)
+			- Derive your class from [Resource](@ref nap::Resource) (.h)
+			- Or any object that is derived from [Resource](@ref nap::Resource) (.h)
 			- Always implement the RTTI_ENABLE macro (.h)
 			- Define it as a class (.cpp)
 		- No
@@ -303,9 +303,9 @@ class NAPAPI Color
 };
 
 // Palette that contains two colors
-class NAPAPI Palette : public rtti::RTTIObject
+class NAPAPI Palette : public Resource
 {
-	RTTI_ENABLE(rtti::RTTIObject)
+	RTTI_ENABLE(Resource)
 public:
 	Color mColorOne;		// First Color of the palette
 	Color mColorTwo;		// Second Color of the palette
@@ -363,11 +363,11 @@ Embedded objects have the benefit that their notation in json is rather compact.
 
 ~~~~~~~~~~~~~~~{.cpp}
 // A palette container links to a color palette
-class NAPAPI PaletteContainer : public rtti::RTTIObject
+class NAPAPI PaletteContainer : public Resource
 {
-	RTTI_ENABLE(rtti::RTTIObject)
+	RTTI_ENABLE(Resource)
 public:
-	ObjectPtr<Palette>	mColorPalette;			// Property: Link to a color palette
+	ResourcePtr<Palette>	mColorPalette;			// Property: Link to a color palette
 };
 ~~~~~~~~~~~~~~~
 
