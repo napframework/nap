@@ -13,6 +13,23 @@
 <link href="$relpath^tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="$relpath^jquery.js"></script>
 <script type="text/javascript" src="$relpath^dynsections.js"></script>
+<script type="text/javascript">
+  function inlineSVGfromIFrame () {
+    console.log("blaaat")
+    var alreadyImported = Boolean(document.querySelectorAll('.dyncontent svg').length)
+    if (alreadyImported) return
+    
+    var allIFrames = document.querySelectorAll('.dyncontent iframe')
+    var allContentBoxes = document.querySelectorAll('.dyncontent .center')
+    
+    allIFrames.forEach(function(iFrame, index) {
+      var svgElem = iFrame.contentWindow.document.documentElement.cloneNode(true)
+      allContentBoxes[index].appendChild(svgElem)
+      iFrame.style.display = 'none'
+    })
+  }
+  window.addEventListener("load", inlineSVGfromIFrame, false)
+</script>
 $treeview
 $search
 $mathjax
@@ -28,7 +45,7 @@ $extrastylesheet
  <tbody>
  <tr style="height: 56px;">
   <!--BEGIN PROJECT_LOGO-->
-  <td id="projectlogo"><img alt="Logo" src="$relpath^$projectlogo"/></td>
+  <td id="projectlogo"><a href="http://www.napframework.com"><img alt="Logo" src="$relpath^$projectlogo"/></a></td>
   <!--END PROJECT_LOGO-->
   <!--BEGIN PROJECT_NAME-->
   <td id="projectalign" style="padding-left: 0.5em;">

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QtWidgets/QDialog>
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include "filtertreeview.h"
 
 namespace napkin
@@ -13,15 +13,6 @@ namespace napkin
 
 	private:
 		const rttr::type mBaseType;
-	};
-
-	class FlatTypeModel : public QStandardItemModel
-	{
-	public:
-		FlatTypeModel(const rttr::type& basetype);
-	private:
-		const rttr::type mBaseType;
-
 	};
 
 	/**
@@ -40,15 +31,7 @@ namespace napkin
 		 * @param typeConstraint The base type to filter by.
 		 * @return The selected object or nullptr if no object was selected
 		 */
-		static nap::rtti::RTTIObject* getObject(QWidget* parent, const rttr::type& typeConstraint);
-
-		/**
-		 * Display a selection dialog with all available instantiable subtypes of the specified base type.
-		 * @param parent The parent widget to attach to
-		 * @param baseType The base type to constrain the selection to.
-		 * @return The resulting selected type or an empty/invalid type if none was selected.
-		 */
-		static nap::rtti::TypeInfo getDerivedType(QWidget* parent, const rttr::type& baseType);
+		static nap::rtti::Object* getObject(QWidget* parent, const rttr::type& typeConstraint);
 
 
 		/**

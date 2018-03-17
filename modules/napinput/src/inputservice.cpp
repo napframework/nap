@@ -1,8 +1,10 @@
 /// local includes
-#include <inputservice.h>
+#include "inputservice.h"
 #include "inputevent.h"
 #include "inputrouter.h"
-#include "nap/windowresource.h"
+
+#include <nap/windowresource.h>
+#include <nap/resource.h>
 
 RTTI_BEGIN_CLASS(nap::InputService)
 RTTI_END_CLASS

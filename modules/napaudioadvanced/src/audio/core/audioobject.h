@@ -1,8 +1,8 @@
 #pragma once
 
 // Nap includes
-#include <rtti/rttiobject.h>
 #include <rtti/factory.h>
+#include <nap/resource.h>
 
 // Audio includes
 #include <audio/core/audionode.h>
@@ -22,7 +22,7 @@ namespace nap
         /**
          * Instance of a object that generates audio output for one or more channels
          */
-        class NAPAPI AudioObjectInstance : public rtti::RTTIObject
+        class NAPAPI AudioObjectInstance : public rtti::Object
         {
             RTTI_ENABLE()
             
@@ -61,9 +61,9 @@ namespace nap
          * AudioObjects can be linked together to build a more complex DSP system in a Graph.
          * AudioObject is a resource that can be instantiated.
          */
-        class AudioObject : public rtti::RTTIObject
+        class AudioObject : public Resource
         {
-            RTTI_ENABLE(rtti::RTTIObject)
+            RTTI_ENABLE(Resource)
             
         public:
             AudioObject() = default;

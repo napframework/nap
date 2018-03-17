@@ -1,12 +1,15 @@
 #pragma once
 
-#include "rtti/typeinfo.h"
-#include <vector>
-#include "utility/dllexport.h"
+// Local Includes
+#include "typeinfo.h"
 #include "rttiutilities.h"
+
+// External Includes
+#include <utility/dllexport.h>
 
 namespace nap
 {
+	// Forward Declares
 	namespace utility
 	{
 		class ErrorState;
@@ -14,14 +17,15 @@ namespace nap
 
 	namespace rtti
 	{
-		class RTTIObject;
+		// Forward Declares
+		class Object;
 
 		/**
 		 * This is the interface used by serializeObjects to serialize RTTI objects.
 		 * Having this interface allows the object hierarchy traversal logic to remain separate from the actual writing logic.
 		 * This in turn means that the same interface (serializeObjects) can be used to write to a variety of formats (JSON, binary, BSON, etc).
 		 */
-		class NAPAPI RTTIWriter
+		class NAPAPI Writer
 		{
 		public:
 
@@ -91,6 +95,6 @@ namespace nap
 		/**
 		 * Serialize a set of objects to the specified writer. This function does all the traversal logic, the actual writing is done by the RTTIWriter passed in.
 		 */
-		bool NAPAPI serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, utility::ErrorState& errorState);
+		bool NAPAPI serializeObjects(const ObjectList& rootObjects, Writer& writer, utility::ErrorState& errorState);
 	}
 }

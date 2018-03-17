@@ -8,7 +8,7 @@ namespace nap
 {
 	namespace rtti
 	{
-		class RTTIObject;
+		class Object;
 	}
 }
 
@@ -44,10 +44,10 @@ namespace napkin
 		/**
 		 * Set the current selection of the treeview to the given objects
 		 */
-		void selectObjects(const QList<nap::rtti::RTTIObject*>& selection);
+		void selectObjects(const QList<nap::rtti::Object*>& selection);
 
 	Q_SIGNALS:
-		void selectionChanged(QList<nap::rtti::RTTIObject*> obj);
+		void selectionChanged(QList<nap::rtti::Object*> obj);
 
 	private:
 		/**
@@ -74,13 +74,13 @@ namespace napkin
 		 * @param obj The object that was added
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void onObjectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
+		void onObjectAdded(nap::rtti::Object& obj, bool selectNewObject);
 
 		/**
 		 * Called when an object is about to be removed
 		 * @param obj The object that will be removed
 		 */
-		void onObjectRemoved(nap::rtti::RTTIObject& obj);
+		void onObjectRemoved(nap::rtti::Object& obj);
 
 		/**
 		 * Called when a new file was created.
@@ -110,7 +110,7 @@ namespace napkin
 		 * @param obj The object to look for in the model items
 		 * @return The model item or nullptr if no such item was found
 		 */
-		class ObjectItem* findItem(const nap::rtti::RTTIObject& obj);
+		class ObjectItem* findItem(const nap::rtti::Object& obj);
 
 		/**
 		 * @return The instances currently selected in the view.

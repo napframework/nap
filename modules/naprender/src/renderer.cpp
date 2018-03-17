@@ -96,15 +96,8 @@ namespace nap
 #endif
 		setOpenGLAttributes(attrs);
 
-		// Create the primary window, this window is invisible and only
-		// used to synchronize resources. Therefore it does not need to be v-synced
-		RenderWindowSettings settings;
-		settings.visible = false;
-		settings.sync = false;
-
 		// Create primary window
-		mPrimaryWindow = std::make_shared<GLWindow>();
-		if (!mPrimaryWindow->init(settings, nullptr, errorState))
+		if (!createPrimaryWindow(errorState))
 			return false;
 
 		// Make sure initialization of that window succeeded
@@ -136,7 +129,6 @@ namespace nap
 
 		// Construct and return new window
 		std::shared_ptr<GLWindow> new_window = std::make_shared<GLWindow>();
-
 		if (!new_window->init(settings, mPrimaryWindow.get(), errorState))
 			return nullptr;
 
@@ -150,4 +142,24 @@ namespace nap
 		opengl::shutdown();
 	}
 
+
+	bool Renderer::createPrimaryWindow(utility::ErrorState& error)
+	{
+		// Create the primary window, this window is invisible and only
+		// used to synchronize resources. Therefore it does not need to be v-synced
+		RenderWindowSettings settings;
+		settings.visible = false;
+		settings.sync = false;
+		settings.borderless = false;
+		settings.height = 512;
+		settings.width = 512;
+		settings.title = "";
+		settings.resizable = true;
+		settings.x = SDL_WINDOWPOS_CENTERED;
+		settings.y = SDL_WINDOWPOS_CENTERED;
+
+		// Create primary window
+		mPrimaryWindow = std::make_shared<GLWindow>();
+		return mPrimaryWindow->init(settings, nullptr, error);
+	}
 }

@@ -9,6 +9,7 @@
 #include <transformcomponent.h>
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -40,10 +41,10 @@ namespace nap
 
 	public:
 		// Link to the DAC
-		rtti::ObjectPtr<EtherDreamDac> mDac;
+		ResourcePtr<EtherDreamDac> mDac;
 
 		// Link to component that holds the line to send to the laser
-		rtti::ObjectPtr<PolyLine> mLine;
+		ResourcePtr<PolyLine> mLine;
 
 		ComponentPtr<TransformComponent> mLineTransform;
 

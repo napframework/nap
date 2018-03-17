@@ -1,5 +1,5 @@
 #include "defaultlinkresolver.h"
-#include "rttiobject.h"
+#include "object.h"
 
 namespace nap
 {
@@ -15,7 +15,7 @@ namespace nap
 		/**
 		 * Resolves the target ID to an object, using the ObjectsByID mapping
 		 */
-		RTTIObject* DefaultLinkResolver::findTarget(const std::string& targetID)
+		Object* DefaultLinkResolver::findTarget(const std::string& targetID)
 		{
 			ObjectsByIDMap::iterator pos = mObjectsByID.find(targetID);
 			if (pos == mObjectsByID.end())
