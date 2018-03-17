@@ -598,9 +598,9 @@ namespace nap
 	{
 		return 
 		{ 
-			(float)(mValues[0]), 
-			(float)(mValues[1]), 
-			(float)(mValues[2]) 
+			(float)(RGBColor<T>::mValues[0]),
+			(float)(RGBColor<T>::mValues[1]),
+			(float)(RGBColor<T>::mValues[2])
 		};
 	};
 
@@ -609,10 +609,10 @@ namespace nap
 	{
 		return
 		{
-			(float)(mValues[0]),
-			(float)(mValues[1]),
-			(float)(mValues[2]),
-			(float)(mValues[3])
+			(float)(RGBColor<T>::mValues[0]),
+			(float)(RGBColor<T>::mValues[1]),
+			(float)(RGBColor<T>::mValues[2]),
+			(float)(RGBColor<T>::mValues[3])
 		};
 	}
 }
