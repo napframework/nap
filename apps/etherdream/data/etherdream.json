@@ -54,16 +54,9 @@
 
 		{
 			"Type" : "nap::Shader",
-			"mID": "CanvasShader",
-			"mVertShader": "shaders/etherdream/canvas.vert",
-			"mFragShader": "shaders/etherdream/canvas.frag"
-		},
-
-		{
-			"Type" : "nap::Shader",
 			"mID": "NormalsShader",
-			"mVertShader": "shaders/etherdream/normals.vert",
-			"mFragShader": "shaders/etherdream/normals.frag"
+			"mVertShader": "shaders/normals.vert",
+			"mFragShader": "shaders/normals.frag"
 		},
 
 		{

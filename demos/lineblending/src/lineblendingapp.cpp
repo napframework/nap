@@ -90,6 +90,12 @@ namespace nap
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
+		nap::RenderableMeshComponentInstance& renderable_mesh = mLineEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		std::vector<RenderableComponentInstance*> render_comps;
+		render_comps.emplace_back(&renderable_mesh);
+
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
+
 		// Swap screen buffers
 		mRenderWindow->swap();
 	}
