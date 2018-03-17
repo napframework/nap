@@ -175,7 +175,7 @@ const nap::LogLevel& LogPanel::getCurrentLevel() const
 {
 	const auto levels = nap::Logger::getLevels();
 	int idx = mFilterCombo.currentIndex();
-	assert(idx > 0 && idx < levels.size());
+	assert(idx >= 0 && idx < levels.size());
 	return levels[idx];
 }
 
