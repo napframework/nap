@@ -7,17 +7,13 @@
 #include <nap/numeric.h>
 
 RTTI_BEGIN_CLASS(nap::LineColorComponent)
-	RTTI_PROPERTY("BlendComponent",			&nap::LineColorComponent::mBlendComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LookupImage",			&nap::LineColorComponent::mLookupImage,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("StartPosition",			&nap::LineColorComponent::mStartPos,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("StartSmoothTime",		&nap::LineColorComponent::mStartSmoothTime,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("EndPosition",			&nap::LineColorComponent::mEndPos,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("EndSmoothTime",			&nap::LineColorComponent::mEndSmoothTime,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Intensity",				&nap::LineColorComponent::mIntensity,		nap::rtti::EPropertyMetaData::Default)	
-	RTTI_PROPERTY("IntensitySmoothTime",	&nap::LineColorComponent::mIntensitySmoothTime,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Wrap",					&nap::LineColorComponent::mWrap,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WrapPower",				&nap::LineColorComponent::mWrapPower,		nap::rtti::EPropertyMetaData::Default)		
-	RTTI_PROPERTY("Link",					&nap::LineColorComponent::mLink,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendComponent",			&nap::LineColorComponent::mBlendComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FirstColor",				&nap::LineColorComponent::mColorOne,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SecondColor",			&nap::LineColorComponent::mColorTwo,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Intensity",				&nap::LineColorComponent::mIntensity,			nap::rtti::EPropertyMetaData::Default)	
+	RTTI_PROPERTY("Wrap",					&nap::LineColorComponent::mWrap,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("WrapPower",				&nap::LineColorComponent::mWrapPower,			nap::rtti::EPropertyMetaData::Default)		
+	RTTI_PROPERTY("Link",					&nap::LineColorComponent::mLink,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineColorComponentInstance)
@@ -28,38 +24,23 @@ namespace nap
 {
 	bool LineColorComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// Get necessary objects
-		mLookupImage	= getComponent<LineColorComponent>()->mLookupImage.get();
-
-		// Set start and end uv sample position
-		setStartPosition(getComponent<LineColorComponent>()->mStartPos);
-		setEndPosition(getComponent<LineColorComponent>()->mEndPos);
+		// Set intensity and color values
+		setFirstColor(getComponent<LineColorComponent>()->mColorOne);
+		setSecondColor(getComponent<LineColorComponent>()->mColorTwo);
 		setIntensity(getComponent<LineColorComponent>()->mIntensity);
 
 		mWrap = getComponent<LineColorComponent>()->mWrap;
 		mPower = getComponent<LineColorComponent>()->mWrapPower;
 		mLink = getComponent<LineColorComponent>()->mLink;
 
-		// Copy over start smooth times
-		mStartSmootherX.mSmoothTime = getComponent<LineColorComponent>()->mStartSmoothTime.x;
-		mStartSmootherX.setValue(getComponent<LineColorComponent>()->mStartPos.x);
+		// Force first smoother to be the first color
+		mColorOneSmoother.setValue(mFirstColor.toVec3());
 
-		mStartSmootherY.mSmoothTime = getComponent<LineColorComponent>()->mStartSmoothTime.y;
-		mStartSmootherY.setValue(getComponent<LineColorComponent>()->mStartPos.y);
-
-		// Copy over end smooth times
-		mEndSmootherX.mSmoothTime = getComponent<LineColorComponent>()->mEndSmoothTime.x;
-		mEndSmootherX.setValue(getComponent<LineColorComponent>()->mEndPos.x);
-
-		mEndSmootherY.mSmoothTime = getComponent<LineColorComponent>()->mEndSmoothTime.y;
-		mEndSmootherY.setValue(getComponent<LineColorComponent>()->mEndPos.y);
+		// Force second smoother to be the second color
+		mColorTwoSmoother.setValue(mSecondColor.toVec3());
 
 		// Copy over intensity smooth time
-		mIntensitySmoother.mSmoothTime = getComponent<LineColorComponent>()->mIntensitySmoothTime;
-
-		// Ensure the image is at least RGB
-		if (!(mLookupImage->getBitmap().getNumberOfChannels() >= 3))
-			return errorState.check(false, "lookup image does not have 3 or more color channels");
+		mIntensitySmoother.setValue(getComponent<LineColorComponent>()->mIntensity);
 
 		return true;
 	}
@@ -68,12 +49,10 @@ namespace nap
 	void LineColorComponentInstance::update(double deltaTime)
 	{
 		// Update start smoothing operator
-		mStartSmootherX.update(mStartPosition.x, deltaTime);
-		mStartSmootherY.update(mStartPosition.y, deltaTime);
+		mColorOneSmoother.update(mFirstColor.toVec3(), deltaTime);
 
 		// Update end smoothing operator
-		mEndSmootherX.update(mEndPosition.x, deltaTime);
-		mEndSmootherY.update(mEndPosition.y, deltaTime);
+		mColorTwoSmoother.update(mSecondColor.toVec3(), deltaTime);
 
 		// Update intensity smooth operator
 		mIntensitySmoother.update(mIntensity, deltaTime);
@@ -90,21 +69,8 @@ namespace nap
 		// Get inc blend value
 		float inc = 1.0f / static_cast<float>(vert_count - 1);
 
-		// Will hold the lerped color value in uv-space
-		glm::vec3 lerp_color;
-
-		// Will hold the interpolated uv coordinates
-		glm::vec2 lerped_uv_coordinates;
-
-		// End sample position, is the same as the beginning if linking is turned on
-		glm::vec2 end_pos = mLink ? glm::vec2(mStartSmootherX.getValue(), mStartSmootherY.getValue()) : glm::vec2(mEndSmootherX.getValue(), mEndSmootherY.getValue());
-		end_pos.x = math::clamp<float>(end_pos.x, 0.0f, 1.0f);
-		end_pos.y = math::clamp<float>(end_pos.y, 0.0f, 1.0f);
-
-		// Get start position
-		glm::vec2 sta_pos = {mStartSmootherX.getValue(), mStartSmootherY.getValue()};
-		sta_pos.x = math::clamp<float>(sta_pos.x, 0.0f, 1.0f);
-		sta_pos.y = math::clamp<float>(sta_pos.y, 0.0f, 1.0f);
+		// Will hold the lerped color
+		glm::vec3 lerped_color;
 
 		// Update color values along line
 		for (int i = 0; i < vert_count; i++)
@@ -113,11 +79,10 @@ namespace nap
 			lerp_v = mWrap ? math::bell<float>(lerp_v, mPower) : lerp_v;
 
 			// Get interpolated uv coordinates
-			lerped_uv_coordinates = math::lerp<glm::vec2>(sta_pos, end_pos, lerp_v);
+			lerped_color = math::lerp<glm::vec3>(mColorOneSmoother.getValue(), mColorTwoSmoother.getValue(), lerp_v);
 
-			// Get and set color
-			getColor(lerped_uv_coordinates, lerp_color);
-			color_data[i] = glm::vec4(lerp_color, mIntensitySmoother.getValue());
+			// Set color
+			color_data[i] = glm::vec4(lerped_color, mIntensitySmoother.getValue());
 		}
 
 		// Update line
@@ -129,37 +94,27 @@ namespace nap
 	}
 
 
-	void LineColorComponentInstance::setStartPosition(const glm::vec2& startPosition)
+	void LineColorComponentInstance::setFirstColor(const RGBColorFloat& color)
 	{
-		mStartPosition.x = math::clamp<float>(startPosition.x, 0.0f, 1.0f);
-		mStartPosition.y = math::clamp<float>(startPosition.y, 0.0f, 1.0f);
+		mFirstColor = color;
 	}
 
 
-	void LineColorComponentInstance::setEndPosition(const glm::vec2& endPosition)
+	void LineColorComponentInstance::setSecondColor(const RGBColorFloat& color)
 	{
-		mEndPosition.x = math::clamp<float>(endPosition.x, 0.0f, 1.0f);
-		mEndPosition.y = math::clamp<float>(endPosition.y, 0.0f, 1.0f);
+		mSecondColor = color;
+	}
+
+
+	void LineColorComponentInstance::setColorSmoothSpeed(float speed)
+	{
+		mColorOneSmoother.mSmoothTime = speed;
+		mColorTwoSmoother.mSmoothTime = speed;
 	}
 
 
 	void LineColorComponentInstance::setIntensity(float intensity)
 	{
 		mIntensity = math::clamp<float>(intensity, 0.0f, 1.0f);
-	}
-
-
-	void LineColorComponentInstance::getColor(const glm::vec2& uvPos, glm::vec3& outColor)
-	{
-		// Get max width and height in bitmap space
-		const Bitmap& bitmap = mLookupImage->getBitmap();
-		int x = static_cast<int>(static_cast<float>(bitmap.getWidth()  - 1) * uvPos.x);
-		int y = static_cast<int>(static_cast<float>(bitmap.getHeight() - 1) * uvPos.y);
-
-		// Get bitmap values, ie: where
-		RGBColorFloat rcolor = bitmap.getPixel<RGBColorFloat>(x, y);
-
-		// Set color
-		outColor = glm::vec3(rcolor.getRed(), rcolor.getGreen(), rcolor.getBlue());
 	}
 }
