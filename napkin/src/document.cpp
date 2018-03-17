@@ -112,6 +112,13 @@ Object* Document::addObject(rttr::type type, Object* parent)
 	return obj;
 }
 
+nap::Entity& Document::addEntity()
+{
+	auto e = addObject<nap::Entity>();
+	assert(e != nullptr);
+	return *e;
+}
+
 std::string Document::getUniqueName(const std::string& suggestedName)
 {
 	std::string newName = suggestedName;
@@ -430,6 +437,7 @@ Document::~Document()
 {
 	
 }
+
 
 
 

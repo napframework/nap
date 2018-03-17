@@ -93,7 +93,7 @@ void SetPointerValueCommand::redo()
 	nap::rtti::ResolvedPath resolved_path = mPath.resolve();
 	assert(resolved_path.isValid());
 
-	auto new_object = AppContext::get().getDocument()->getObject(mNewValue);
+	nap::rtti::Object* new_object = AppContext::get().getDocument()->getObject(mNewValue);
 	bool value_set = resolved_path.setValue(new_object);
 	assert(value_set);
 	AppContext::get().getDocument()->propertyValueChanged(mPath);

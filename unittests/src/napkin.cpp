@@ -1,4 +1,5 @@
 #include "catch.hpp"
+#include "../../apps/etherdream/src/lineblendcomponent.h"
 
 #include <appcontext.h>
 #include <commands.h>
@@ -501,9 +502,17 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	REQUIRE(!napkin::directoryContains(absShaderPath, resourcedir));
 
 }
-//
-//
-//TEST_CASE("Load Document", TAG_NAPKIN)
-//{
-//	napkin::AppContext::get().loadDocument(getResource("kalvertoren.json"));
-//}
+
+
+TEST_CASE("Component to Component pointer", TAG_NAPKIN)
+{
+	auto doc = napkin::AppContext::get().newDocument();
+	nap::Entity& entity = doc->addEntity();
+	auto selComp = doc->addComponent<nap::LineSelectionComponent>(entity);
+	REQUIRE(selComp != nullptr);
+	auto lineComp = doc->addComponent<nap::LineBlendComponent>(entity);
+	REQUIRE(lineComp != nullptr);
+	napkin::PropertyPath selectionPath(*lineComp, "SelectionComponentOne");
+	REQUIRE(selectionPath.isValid());
+	selectionPath.setValue(selComp);
+}
