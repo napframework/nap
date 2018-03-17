@@ -1,19 +1,38 @@
 {
     "Objects": [
         {
+            "Type": "nap::Circle",
+            "mID": "Circle",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Radius": 1.0,
+            "Segments": 100
+        },
+        {
             "Type": "nap::Entity",
             "mID": "Camera",
             "Components": [
                 {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "nap::OrthoCameraComponent",
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "nap::PerspCameraComponent",
                     "Properties": {
-                        "LeftPlane": 0.0,
-                        "RightPlane": 100.0,
-                        "TopPlane": 100.0,
-                        "BottomPlane": 0.0,
+                        "FieldOfView": 45.0,
                         "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 1000.0
+                        "FarClippingPlane": 10000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
                     }
                 },
                 {
@@ -23,7 +42,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 0.0
+                            "z": 5.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -44,8 +63,266 @@
         {
             "Type": "nap::Entity",
             "mID": "Line",
-            "Components": [],
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "LineTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::LineSelectionComponent",
+                    "mID": "SelectionComponentOne",
+                    "Lines": [
+                        "SingleLine",
+                        "Circle",
+                        "Rectangle",
+                        "TriangleLine",
+                        "Hexagon"
+                    ],
+                    "Index": 0
+                },
+                {
+                    "Type": "nap::LineSelectionComponent",
+                    "mID": "SelectionComponentTwo",
+                    "Lines": [
+                        "SingleLine",
+                        "Circle",
+                        "Rectangle",
+                        "TriangleLine",
+                        "Hexagon"
+                    ],
+                    "Index": 0
+                },
+                {
+                    "Type": "nap::LineAutoSwitchComponent",
+                    "mID": "AutoSwitchComponent",
+                    "SelectionComponentOne": "./SelectionComponentOne",
+                    "SelectionComponentTwo": "./SelectionComponentTwo",
+                    "BlendComponent": "LineBlender",
+                    "Random": true
+                },
+                {
+                    "Type": "nap::LineBlendComponent",
+                    "mID": "LineBlender",
+                    "SelectionComponentOne": "./SelectionComponentOne",
+                    "SelectionComponentTwo": "./SelectionComponentTwo",
+                    "Target": "DisplayLine",
+                    "BlendValue": 0.5,
+                    "BlendSpeed": 0.5
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "LineRenderableComponent",
+                    "Mesh": "DisplayLine",
+                    "MaterialInstance": {
+                        "Material": "LineMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "NormalsRenderableComponent",
+                    "Mesh": "NormalsMesh",
+                    "MaterialInstance": {
+                        "Material": "NormalsMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::UpdateNormalsComponent",
+                    "mID": "UpdateLaserNormalsComponent",
+                    "NormalMesh": "NormalsMesh"
+                }
+            ],
             "Children": []
+        },
+        {
+            "Type": "nap::Hexagon",
+            "mID": "Hexagon",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Radius": 1.0
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageFromFile",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "kleurencirkel.png",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::Line",
+            "mID": "DisplayLine",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Start": {
+                "x": -0.5,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "End": {
+                "x": 0.5,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Closed": false,
+            "Vertices": 500
+        },
+        {
+            "Type": "nap::Line",
+            "mID": "SingleLine",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Start": {
+                "x": -1.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "End": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Closed": false,
+            "Vertices": 2
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "LineMaterial",
+            "Uniforms": [],
+            "Shader": "LineShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normals"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "NormalsMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec4",
+                    "mID": "nap::UniformVec4",
+                    "Name": "mColor",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0,
+                        "w": 1.0
+                    }
+                }
+            ],
+            "Shader": "NormalsShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                }
+            ],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Rectangle",
+            "mID": "Rectangle",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Dimensions": {
+                "x": 1.0,
+                "y": 1.0
+            }
         },
         {
             "Type": "nap::RenderWindow",
@@ -76,6 +353,37 @@
                     "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "LineShader",
+            "mVertShader": "shaders/line.vert",
+            "mFragShader": "shaders/line.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "NormalsShader",
+            "mVertShader": "shaders/normals.vert",
+            "mFragShader": "shaders/normals.frag"
+        },
+        {
+            "Type": "nap::TriangleLine",
+            "mID": "TriangleLine",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Radius": 1.0
+        },
+        {
+            "Type": "nap::VisualizeNormalsMesh",
+            "mID": "NormalsMesh",
+            "ReferenceMesh": "DisplayLine",
+            "Length": 0.10000000149011612
         }
     ]
 }
