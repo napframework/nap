@@ -1,5 +1,9 @@
-#include <nap/logger.h>
 #include "document.h"
+
+#include <nap/logger.h>
+#include <scene.h>
+
+#include "generic/naputils.h"
 
 using namespace napkin;
 using namespace nap::rtti;
@@ -20,6 +24,7 @@ nap::Entity* Document::getParent(const nap::Entity& child)
 	}
 	return nullptr;
 }
+
 
 nap::Entity* Document::getOwner(const nap::Component& component)
 {
@@ -76,6 +81,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 	return comp;
 }
 
+
 Object* Document::addObject(rttr::type type, Object* parent)
 {
 	Factory& factory = mCore.getResourceManager()->getFactory();
@@ -119,12 +125,14 @@ Object* Document::addObject(rttr::type type, Object* parent)
 	return obj;
 }
 
+
 nap::Entity& Document::addEntity()
 {
 	auto e = addObject<nap::Entity>();
 	assert(e != nullptr);
 	return *e;
 }
+
 
 std::string Document::getUniqueName(const std::string& suggestedName)
 {
@@ -135,6 +143,7 @@ std::string Document::getUniqueName(const std::string& suggestedName)
 	return newName;
 }
 
+
 Object* Document::getObject(const std::string& name)
 {
 	auto it = std::find_if(mObjects.begin(), mObjects.end(),
@@ -143,6 +152,7 @@ Object* Document::getObject(const std::string& name)
 		return nullptr;
 	return it->get();
 }
+
 
 Object* Document::getObject(const std::string& name, const rttr::type& type)
 {
@@ -169,35 +179,70 @@ ObjectList Document::getObjectPointers()
 
 void Document::removeObject(Object& object)
 {
+	// Emit signal first so observers can act before the change
 	objectRemoved(object);
 
-	if (object.get_type().is_derived_from<nap::Entity>())
+	// Start by cleaning up objects that depend on this one
+	auto entity = rtti_cast<nap::Entity>(&object);
+	if (entity != nullptr)
 	{
-		nap::Entity* entity = *rtti_cast<nap::Entity*>(&object);
+		// Remove from any scenes
+		for (auto& obj : getObjects())
+		{
+			auto scene = rtti_cast<nap::Scene>(obj.get());
+			if (scene != nullptr)
+				removeEntityFromScene(*scene, *entity);
+		}
+
+		// Delete any components on this Entity
+		std::vector<nap::rtti::ObjectPtr<nap::Component>> comps = entity->getComponents();
+		for (auto compptr : comps)
+			removeObject(*compptr.get());
+
+		// Remove from parent
 		nap::Entity* parent = getParent(*entity);
 		if (parent)
 			parent->mChildren.erase(std::remove(parent->mChildren.begin(), parent->mChildren.end(), &object));
+
 	}
-	else if (object.get_type().is_derived_from<nap::Component>())
+
+	auto component = rtti_cast<nap::Component>(&object);
+	if (component != nullptr)
 	{
-		nap::Component* component = rtti_cast<nap::Component>(&object);
 		nap::Entity* owner = getOwner(*component);
 		if (owner)
 			owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
 	}
 
-
-	mObjects.erase(
-			std::remove_if(mObjects.begin(), mObjects.end(),
-						   [&object](std::unique_ptr<Object>& obj) { return obj.get() == &object; }),
-			mObjects.end());
+	// All cleam. Remove our object
+	auto filter = [&](auto& obj) { return obj.get() == &object; };
+	mObjects.erase(std::remove_if(mObjects.begin(), mObjects.end(), filter), mObjects.end());
 }
+
 
 void Document::removeObject(const std::string& name)
 {
 	auto object = getObject(name);
 	if (object != nullptr)
 		removeObject(*object);
+}
+
+
+size_t Document::addEntityToScene(nap::Scene& scene, nap::Entity& entity)
+{
+	nap::RootEntity rootEntity;
+	rootEntity.mEntity = &entity;
+	size_t index = scene.mEntities.size();
+	scene.mEntities.emplace_back(rootEntity);
+	return index;
+}
+
+
+void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
+{
+	auto& v = scene.mEntities;
+	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity== &entity; };
+	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
 }
 
 
@@ -450,11 +495,6 @@ Document::~Document()
 {
 	
 }
-
-
-
-
-
 
 
 

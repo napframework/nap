@@ -67,11 +67,21 @@ TEST_CASE("Document Management", TAG_NAPKIN)
 	REQUIRE(e.getComponents().size() == 1);
 	REQUIRE(doc->getOwner(*comp) == &e);
 
-	// Remove component (from entity)
-	doc->removeObject(*comp);
-	REQUIRE(doc->getObjects().size() == 1);
-	REQUIRE(e.getComponents().size() == 0);
+	// Add another component
+	auto xfcomp = doc->addComponent<nap::TransformComponent>(e);
+	REQUIRE(xfcomp != nullptr);
+	REQUIRE(doc->getObjects().size() == 3);
+	REQUIRE(e.getComponents().size() == 2);
+	REQUIRE(doc->getOwner(*xfcomp) == &e);
 
+	// Remove first component (from entity)
+	doc->removeObject(*comp);
+	REQUIRE(doc->getObjects().size() == 2);
+	REQUIRE(e.getComponents().size() == 1);
+
+	// Remove entity (should also remove component)
+	doc->removeObject(e);
+	REQUIRE(doc->getObjects().size() == 0);
 }
 
 TEST_CASE("Document Signals", TAG_NAPKIN)

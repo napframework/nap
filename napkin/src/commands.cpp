@@ -171,15 +171,9 @@ void AddEntityToSceneCommand::redo()
 	auto entity = AppContext::get().getDocument()->getObject<nap::Entity>(mEntityID);
 	assert(entity != nullptr);
 
-	nap::RootEntity rootEntity;
-	rootEntity.mEntity = entity;
-
-	// Store index for undo
-	mIndex = scene->mEntities.size();
-
-	scene->mEntities.emplace_back(rootEntity);
-
-	AppContext::get().getDocument()->objectChanged(*scene);
+	auto doc = AppContext::get().getDocument();
+	mIndex = doc->addEntityToScene(*scene, *entity);
+	doc->objectChanged(*scene);
 }
 
 ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop, size_t index)
