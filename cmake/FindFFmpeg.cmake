@@ -20,33 +20,45 @@ if(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
     # in cache already
     set(FFMPEG_FOUND TRUE)
 else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
-    # use pkg-config to get the directories and then use these values
-    # in the FIND_PATH() and FIND_LIBRARY() calls
-    find_package(PkgConfig)
-    if(PKG_CONFIG_FOUND)
-        pkg_check_modules(_FFMPEG_AVCODEC libavcodec)
-        pkg_check_modules(_FFMPEG_AVFORMAT libavformat)
-        pkg_check_modules(_FFMPEG_AVUTIL libavutil)
-    endif(PKG_CONFIG_FOUND)
-
-    find_path(FFMPEG_AVCODEC_INCLUDE_DIR
-              NAMES libavcodec/avcodec.h
-              HINTS ${THIRDPARTY_DIR}/ffmpeg/include
-              )
+    if(APPLE)
+        find_path(FFMPEG_AVCODEC_INCLUDE_DIR
+                  NAMES libavcodec/avcodec.h
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/osx/install/include
+                  )
+    elseif(UNIX)
+        find_path(FFMPEG_AVCODEC_INCLUDE_DIR
+                  NAMES libavcodec/avcodec.h
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/linux/install/include
+                  )
+    else()
+        find_path(FFMPEG_AVCODEC_INCLUDE_DIR
+                  NAMES libavcodec/avcodec.h
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/include
+                  )
+    endif()
 
     find_library(FFMPEG_LIBAVCODEC
                  NAMES avcodec
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 NO_DEFAULT_PATH
                  )
 
     find_library(FFMPEG_LIBAVFORMAT
                  NAMES avformat
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 NO_DEFAULT_PATH
                  )
 
     find_library(FFMPEG_LIBAVUTIL
                  NAMES avutil
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 NO_DEFAULT_PATH
                  )
 
     if(FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
@@ -61,12 +73,11 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
             ${FFMPEG_LIBAVFORMAT}
             ${FFMPEG_LIBAVUTIL}
             )
-
     endif(FFMPEG_FOUND)
 
     if(FFMPEG_FOUND)
         if(NOT FFMPEG_FIND_QUIETLY)
-            message(STATUS "Found FFMPEG or Libav: ${FFMPEG_LIBRARIES}, ${FFMPEG_INCLUDE_DIR}")
+            message(STATUS "Found FFmpeg or Libav: ${FFMPEG_LIBRARIES}, ${FFMPEG_INCLUDE_DIR}")
         endif(NOT FFMPEG_FIND_QUIETLY)
     else(FFMPEG_FOUND)
         if(FFMPEG_FIND_REQUIRED)
@@ -75,3 +86,6 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
     endif(FFMPEG_FOUND)
 
 endif(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(FFmpeg REQUIRED_VARS FFMPEG_LIBRARIES)

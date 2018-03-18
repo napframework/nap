@@ -14,3 +14,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME} napcore)
 
+# Package into platform release
+package_module()
+
+if (WIN32)
+    # Install for fbxconverter
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+    		CONFIGURATIONS Release)
+endif()
