@@ -114,21 +114,13 @@ napkin::FilterTreeView::FilterTreeView()
 	mLayout.setSpacing(0);
 	setLayout(&mLayout);
 
-	mTopLayout.setContentsMargins(0,0,0,0);
-	mTopLayout.setSpacing(0);
-	mLayout.addLayout(&mTopLayout);
-
-	mTreeView.setAlternatingRowColors(true);
-
 	mSortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
 	mSortFilter.setFilterKeyColumn(-1); // Filter all columns
 
 	mLineEditFilter.setPlaceholderText("filter");
 	mLineEditFilter.setClearButtonEnabled(true);
 	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
-	mTopLayout.addWidget(&mLineEditFilter);
-
-	mTopLayout.addWidget(&mCornerWidget);
+	mLayout.addWidget(&mLineEditFilter);
 
 	mTreeView.setModel(&mSortFilter);
 
