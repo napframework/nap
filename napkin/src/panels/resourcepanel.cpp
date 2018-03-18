@@ -241,10 +241,11 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 
 void napkin::ResourcePanel::onObjectRemoved(nap::rtti::Object& object)
 {
-	// TODO: Don't refresh the whole mModel
 	auto item = findItemInModel<napkin::ObjectItem>(mModel, object);
+	if (item == nullptr)
+		return;
+
 	mModel.removeRow(item->row(), item->parent()->index());
-//	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
 }
 
