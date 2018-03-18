@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(artnetcolor)
 
 #add all cpp files to SOURCES
@@ -19,19 +19,37 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 target_link_libraries(${PROJECT_NAME} mod_napartnet mod_napinput mod_napsdlinput mod_napsdlwindow mod_naprender mod_napimgui mod_napapp)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-if (WIN32)
-	# Copy freeimage DLL
-	find_package(freeimage REQUIRED)
-	copy_freeimage_dll()
+# Build into a project directory under bin
+set_output_directories()
 
-    	# Copy over some crap window dlls
-	copy_base_windows_graphics_dlls()
-	copy_windows_ffmpeg_dlls()
+if (WIN32)
+    # Copy freeimage DLL
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
+
+    # Copy over some crap window dlls
+    copy_base_windows_graphics_dlls()
+    copy_windows_ffmpeg_dlls()
+
+    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
+    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
+    bulk_copy_windows_dlls_to_bin()
+
+    # Copy artnet DLL
+    find_package(artnet REQUIRED)
+    if(WIN32)
+        copy_artnet_dll()
+    endif()
+elseif(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()
 endif()
 
-# Copy artnet DLL
-find_package(artnet REQUIRED)
-copy_artnet_dll()
-
-# create post build event
+# Copy project json to project bin dir and export fbx, via post-build events
+copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
 export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+
+# Package into release build if requested
+if(PACKAGE_NAIVI_APPS)
+    package_project_into_release("projects/${PROJECT_NAME}")
+endif()
