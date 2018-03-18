@@ -89,7 +89,11 @@ namespace nap
 		attrs.doubleBuffer = true;
 		attrs.versionMinor = 3;
 		attrs.versionMajor = 3;
+#ifdef __linux__
+		attrs.enableMultiSampling = false;
+#else
 		attrs.enableMultiSampling = true;
+#endif
 		attrs.multiSampleSamples = 8;
 #ifdef _DEBUG
 		attrs.debug = true;

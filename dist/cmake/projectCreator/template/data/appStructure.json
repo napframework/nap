@@ -1,0 +1,62 @@
+{
+	"Objects" : 
+	[
+		{
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window",
+			"Width" : 512,
+			"Height" : 512,
+			"Title" : "@PROJECT_NAME_CAMELCASE@"
+		},
+	
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",
+			
+			"Entities" : 
+			[
+				{
+					"Entity" : "CameraEntity"
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "CameraEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::OrthoCameraComponent",
+					"mID" : "OrthoCameraComponent",
+					"Properties": {
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 10000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		}	
+	]
+} 

@@ -19,6 +19,15 @@ elseif(APPLE)
     )
     set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
     set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/osx/freeimage.a)
+elseif(UNIX)
+    find_path(
+            FREEIMAGE_DIR
+            NAMES include/FreeImage.h
+            HINTS
+            ${THIRDPARTY_DIR}/FreeImage/linux/install
+    )
+    set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
+    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/libfreeimage.so)
 endif()
 
 
