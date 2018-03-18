@@ -349,7 +349,7 @@ namespace nap
 		/**
 		 * @return All the components currently on this entity
 		 */
-		const ComponentList getComponents() const { return mComponents; }
+		const ComponentList& getComponents() const { return mComponents; }
 
 	public:
 		ComponentList	mComponents;			// The components of this entity
