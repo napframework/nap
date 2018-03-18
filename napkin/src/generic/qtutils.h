@@ -96,7 +96,8 @@ namespace napkin
 	 * @param props The properties to display in the dialog
 	 * @param message The custom to display alongside the list of properties
 	 */
-	void showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, const QString& title, QString message);
+	bool showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
+									   QString message);
 
 	/**
 	 * @tparam QEnum The enum type to use
