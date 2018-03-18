@@ -134,6 +134,11 @@ bool napkin::PropertyPath::operator==(const napkin::PropertyPath& other) const
 	return true;
 }
 
+bool napkin::PropertyPath::isArray()
+{
+	return getType().is_array();
+}
+
 
 
 

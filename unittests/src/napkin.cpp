@@ -6,9 +6,7 @@
 #include <composition.h>
 #include <ledcolorpalettegrid.h>
 #include <imagelayer.h>
-#include <shader.h>
 #include <generic/naputils.h>
-#include <QCoreApplication>
 #include <firstpersoncontroller.h>
 
 #define TAG_NAPKIN "[napkin]"
@@ -56,6 +54,23 @@ TEST_CASE("Document Management", TAG_NAPKIN)
 	REQUIRE(doc->getCurrentFilename().isEmpty());
 	REQUIRE(doc->getObjects().size() == 0);
 
+	// Create entity
+	auto& e = doc->addEntity();
+	REQUIRE(!e.mID.empty());
+	REQUIRE(doc->getObjects().size() == 1);
+	REQUIRE(e.getComponents().size() == 0);
+
+	// Add component to entity
+	auto comp = doc->addComponent<nap::PerspCameraComponent>(e);
+	REQUIRE(comp != nullptr);
+	REQUIRE(doc->getObjects().size() == 2);
+	REQUIRE(e.getComponents().size() == 1);
+	REQUIRE(doc->getOwner(*comp) == &e);
+
+	// Remove component (from entity)
+	doc->removeObject(*comp);
+	REQUIRE(doc->getObjects().size() == 1);
+	REQUIRE(e.getComponents().size() == 0);
 
 }
 
@@ -518,7 +533,7 @@ TEST_CASE("Component to Component pointer", TAG_NAPKIN)
 	REQUIRE(!fpcam->mID.empty());
 	napkin::PropertyPath selectionPath(*fpcam, "PerspCameraComponent");
 	REQUIRE(selectionPath.isValid());
-	selectionPath.setValue(perspcam);
+	napkin::setPointee(selectionPath, perspcam);
 
 	std::string serialized_doc = ctx.documentToString();
 	nap::Logger::info(serialized_doc);

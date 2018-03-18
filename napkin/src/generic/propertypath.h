@@ -104,6 +104,8 @@ namespace napkin
 		 */
 		bool operator==(const PropertyPath& other) const;
 
+		bool isArray();
+
 	private:
 		/**
 		 * If this property is an array, get its arrayview

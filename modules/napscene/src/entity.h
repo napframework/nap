@@ -346,6 +346,11 @@ namespace nap
 		template<class T>
 		bool hasComponent(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
+		/**
+		 * @return All the components currently on this entity
+		 */
+		const ComponentList getComponents() const { return mComponents; }
+
 	public:
 		ComponentList	mComponents;			// The components of this entity
 		EntityList		mChildren;				// The children of this entity

@@ -28,12 +28,13 @@ nap::Entity* Document::getOwner(const nap::Component& component)
 		if (!o->get_type().is_derived_from<nap::Entity>())
 			continue;
 
-		nap::Entity* owner = *rtti_cast<nap::Entity*>(o.get());
-		auto it = std::find_if(
-				owner->mComponents.begin(), owner->mComponents.end(),
-				[&component](ObjectPtr<nap::Component> comp) -> bool { return &component == comp.get(); });
+		nap::Entity* owner = rtti_cast<nap::Entity>(o.get());
+		auto filter = [&component](ObjectPtr<nap::Component> comp) -> bool
+		{
+			return &component == comp.get();
+		};
 
-		if (it != owner->mComponents.end())
+		if (std::find_if(owner->mComponents.begin(), owner->mComponents.end(), filter) != owner->mComponents.end())
 			return owner;
 	}
 	return nullptr;
@@ -66,6 +67,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 	nap::rtti::Variant compVariant = factory.create(type);
 	auto comp = compVariant.get_value<nap::Component*>();
 	comp->mID = getUniqueName(type.get_name().data());
+
 	mObjects.emplace_back(comp);
 	entity.mComponents.emplace_back(comp);
 
@@ -178,7 +180,7 @@ void Document::removeObject(Object& object)
 	}
 	else if (object.get_type().is_derived_from<nap::Component>())
 	{
-		nap::Component* component = *rtti_cast<nap::Component*>(&object);
+		nap::Component* component = rtti_cast<nap::Component>(&object);
 		nap::Entity* owner = getOwner(*component);
 		if (owner)
 			owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
@@ -422,9 +424,10 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
-QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& obj)
+QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& obj, bool excludeArrays)
 {
 	QList<PropertyPath> properties;
+
 	for (const auto& object : mObjects)
 	{
 		std::vector<nap::rtti::ObjectLink> links;
@@ -432,7 +435,12 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& obj)
 		for (const auto& link : links)
 		{
 			if (link.mTarget == &obj)
-				properties << PropertyPath(*object, link.mSourcePath);
+			{
+				PropertyPath propPath(*object, link.mSourcePath);
+				if (!excludeArrays || !propPath.isArray())
+					properties << propPath;
+
+			}
 		}
 	}
 	return properties;
