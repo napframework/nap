@@ -68,11 +68,6 @@ namespace nap
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 		
 		/**
-		 *	Toggles full screen
-		 */
-		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
-		
-		/**
 		 *	Called when loop finishes
 		 */
 		int shutdown() override;
@@ -88,5 +83,9 @@ namespace nap
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance> mLineEntity = nullptr;				//< Pointer to the entity that holds the sphere
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+
+		// Colors
+		RGBColorFloat mColorTwo = { 0.784f, 0.411f, 0.411f };	
+		RGBColorFloat mColorOne = { 1.0f, 1.0f, 1.0f };
 	};
 }

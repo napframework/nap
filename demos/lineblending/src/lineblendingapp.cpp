@@ -13,6 +13,7 @@
 #include <triangleiterator.h>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <linecolorcomponent.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -47,6 +48,10 @@ namespace nap
 		mLineEntity = scene->findEntity("Line");
 		mCameraEntity = scene->findEntity("Camera");
 
+		// Set initial colors
+		mColorOne = mLineEntity->getComponent<LineColorComponentInstance>().getFirstColor();
+		mColorTwo = mLineEntity->getComponent<LineColorComponentInstance>().getSecondColor();
+
 		return true;
 	}
 	
@@ -68,6 +73,29 @@ namespace nap
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
+
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"left mouse button to world, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		// Color
+		if (ImGui::CollapsingHeader("Color"))
+		{
+			if (ImGui::ColorEdit3("Color One", mColorOne.getData()))
+			{
+				mLineEntity->getComponent<LineColorComponentInstance>().setFirstColor(mColorOne);
+			}
+			if (ImGui::ColorEdit3("Color Two", mColorTwo.getData()))
+			{
+				mLineEntity->getComponent<LineColorComponentInstance>().setSecondColor(mColorTwo);
+			}
+		}
+
+		ImGui::End();
 	}
 
 	
@@ -95,6 +123,9 @@ namespace nap
 		render_comps.emplace_back(&renderable_mesh);
 
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
+
+		// Draw gui to screen
+		mGuiService->draw();
 
 		// Swap screen buffers
 		mRenderWindow->swap();
@@ -134,12 +165,6 @@ namespace nap
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
-	}
-
-	
-	void LineBlendingApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 
