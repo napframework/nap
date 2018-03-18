@@ -75,6 +75,9 @@ namespace napkin
 
 		/**
 		 * Retrieve the parent of the specified Entity
+		 *
+		 * TODO: Move to nap::Entity if possible
+		 *
 		 * @param entity The entity to find the parent from.
 		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
 		 */
@@ -82,6 +85,9 @@ namespace napkin
 
 		/**
 		 * Retrieve the Entity the provided Component belongs to.
+		 *
+		 * TODO: Move to nap::Component if possible
+		 *
 		 * @param component The component of which to find the owner.
 		 * @return The owner of the component
 		 */
@@ -90,11 +96,16 @@ namespace napkin
 		/**
 		 * Set an object's name. This is similar to setting a value on it's name property,
 		 * but this ensures the object has a unique name.
+		 *
+		 * TODO: Move to nap::rtti::Object if possible
 		 */
 		const std::string& setObjectName(nap::rtti::Object& object, const std::string& name);
 
 		/**
 		 * Add a component of the specified type to an Entity.
+		 *
+		 * TODO: Move to nap::Entity if possible
+		 *
 		 * @param entity The entity to add the component to.
 		 * @param type The type of the desired component.
 		 * @return The newly created component.
@@ -135,7 +146,7 @@ namespace napkin
 		nap::Entity& addEntity();
 
 		/**
-		 * Obliterate the specified object
+		 * Obliterate the specified object and its dependents
 		 * @param object The object to be deleted.
 		 */
 		void removeObject(nap::rtti::Object& object);
@@ -144,6 +155,21 @@ namespace napkin
 		 * If the object with the specified name was found, nuke it from orbit.
 		 */
 		void removeObject(const std::string& name);
+
+		/**
+		 * Remove an entity from a scene, note that a Scene may contain the same entity multiple times.
+		 * @param scene The Scene to remove the entity from
+		 * @param entity The entity to remove from the scene
+		 */
+		void removeEntityFromScene(nap::Scene& scene, nap::Entity& entity);
+
+		/**
+		 * Add an entity to a scene (at root level)
+		 * @param scene The Scene to add the Entity to
+		 * @param entity The Entity to add to the Scene
+		 * @return the index at which the entity was added
+		 */
+		size_t addEntityToScene(nap::Scene& scene, nap::Entity& entity);
 
 		/**
 		 * Retrieve all properties referring to the given object.
