@@ -22,10 +22,14 @@ add_library(${PROJECT_NAME} SHARED ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES} mod_napmath mod_napscene mod_napaudio)
+set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene mod_napaudio)
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
+
+# Package into platform release
+package_module()
 
 if (WIN32)
     set(FILES_TO_COPY
@@ -33,4 +37,3 @@ if (WIN32)
 
     copy_files_to_bin(${FILES_TO_COPY})
 endif()
-

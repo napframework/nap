@@ -51,9 +51,10 @@ namespace nap
 		 * Loads all modules in to the core environment and creates all the associated services
 		 * @param error contains the error code when initialization fails
 		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
+		 * @param runningInNonProjectContext indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath=std::string());
+		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath=std::string(), bool runningInNonProjectContext=false);
 		
 		/**
 		* Initializes all registered services
@@ -158,11 +159,6 @@ namespace nap
 						utility::ErrorState& errorState);
 
 		/**
-		 * Load all available modules
-		 */
-		bool loadModules(utility::ErrorState& error);
-
-		/**
 		* Occurs when a file has been successfully loaded by the resource manager
 		* Forwards the call to all interested services
 		* @param file the currently loaded resource file
@@ -181,6 +177,12 @@ namespace nap
 		 * @return if the project data was successfully found and working path set
 		 */
 		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
+		
+		/**
+		 * Setup our Python environment to find Python in thirdparty for NAP release or NAP source,
+		 * or alongside our binary for a packaged project
+		 */
+		void setupPythonEnvironment();
 		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;

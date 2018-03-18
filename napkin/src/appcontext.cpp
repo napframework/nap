@@ -208,7 +208,7 @@ nap::Core& AppContext::getCore()
 	if (!mCoreInitialized)
 	{
 		ErrorState err;
-		if (!mCore.initializeEngine(err, getExecutableDir()))
+		if (!mCore.initializeEngine(err, getExecutableDir(), true))
 		{
 			nap::Logger::fatal("Failed to initialize engine");
 		}
