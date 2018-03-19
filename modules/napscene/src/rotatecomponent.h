@@ -15,9 +15,9 @@ namespace nap
 {
 	struct NAPAPI RotateProperties
 	{
-		glm::vec3	mAxis;		// Rotation axis
-		float		mSpeed;		// Rotation speed (seconds)
-		float		mOffset;	// Rotation offset in seconds
+		glm::vec3	mAxis;		///< Property: 'Axis' Rotation axis
+		float		mSpeed;		///< Property: 'Speed' Rotation speed (seconds)
+		float		mOffset;	///< Property: 'Offset' Rotation offset in seconds
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ namespace nap
 	class RotateComponentInstance;
 
 	/**
-	 * Rotate component resource
+	 * Resource part of the rotate component
 	 */
 	class NAPAPI RotateComponent : public Component
 	{
@@ -47,8 +47,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Rotate component instance
-	 *
+	 * Instance part of the rotate component. 
 	 * Automatically rotates the entity along a certain axis at a certain speed
 	 * The initial rotation value after initialization is used to rotate along the specified axis
 	 * This component updates (overrides) the rotate value of the transform component

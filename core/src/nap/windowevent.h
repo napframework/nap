@@ -163,6 +163,26 @@ namespace nap
 		WindowCloseEvent(int window) : WindowEvent(window) { }
 	};
 
+	/**
+	 *	Window has been exposed
+	 */
+	class NAPAPI WindowExposedEvent : public WindowEvent
+	{
+		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowExposedEvent(int window) : WindowEvent(window) { }
+	};
+
+	/**
+	 *	Window is being offered focus
+	 */
+	class NAPAPI WindowTakeFocusEvent : public WindowEvent
+	{
+		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowTakeFocusEvent(int window) : WindowEvent(window) { }
+	};
+
 	using WindowEventPtr = std::unique_ptr<WindowEvent>;
 	using WindowEventPtrList = std::vector<WindowEventPtr>;
 }

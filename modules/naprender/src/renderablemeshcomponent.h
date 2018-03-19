@@ -5,7 +5,7 @@
 #include "renderablemesh.h"
 
 // External Includes
-#include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 #include <transformcomponent.h>
 #include <rect.h>
 
@@ -14,8 +14,10 @@ namespace nap
 	class RenderableMeshComponentInstance;
 	
 	/**
-	* Resource class for RenderableMeshResource. Hold static data as read from file.
-	*/
+	 * Resource part of the component used for managing and rendering a mesh.
+	 * The link to the mesh and clipping rectangle (property) are optional. You can set the mesh at runtime if necessary
+	 * The material is required. 
+	 */
 	class NAPAPI RenderableMeshComponent : public RenderableComponent
 	{
 		RTTI_ENABLE(RenderableComponent)
@@ -35,9 +37,9 @@ namespace nap
 		IMesh& getMeshResource()			{ return *mMesh; }
 
 	public:
-		rtti::ObjectPtr<IMesh>					mMesh;								///< Resource to render
-		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
-		math::Rect							mClipRect;							///< Clipping rectangle, in pixel coordinates
+		ResourcePtr<IMesh>					mMesh;								///< Property: 'Mesh' Resource to render
+		MaterialInstanceResource			mMaterialInstanceResource;			///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
+		math::Rect							mClipRect;							///< Property: 'ClipRect' Optional clipping rectangle, in pixel coordinates
 	};
 
 

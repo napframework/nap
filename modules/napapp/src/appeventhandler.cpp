@@ -43,9 +43,10 @@ namespace nap
 			if (nap::isInputEvent(event))
 			{
 				nap::InputEventPtr input_event = nap::translateInputEvent(event);
-
-				// Register our input event with the appRunner
-				getApp<App>().inputMessageReceived(std::move(input_event));
+				if (input_event != nullptr)
+				{
+					getApp<App>().inputMessageReceived(std::move(input_event));
+				}
 			}
 
 			// Check if we're dealing with a window event
@@ -85,17 +86,23 @@ namespace nap
 			ImGui_ImplSdlGL3_ProcessEvent(&event);
 
 			// Forward if we're not capturing mouse and it's a pointer event
-			if (nap::isPointerEvent(event) && !io.WantCaptureMouse)
+			if (nap::isMouseEvent(event) && !io.WantCaptureMouse)
 			{
 				nap::InputEventPtr input_event = nap::translateInputEvent(event);
-				getApp<App>().inputMessageReceived(std::move(input_event));
+				if (input_event != nullptr)
+				{
+					getApp<App>().inputMessageReceived(std::move(input_event));
+				}
 			}
 
 			// Forward if we're not capturing keyboard and it's a key event
 			else if (nap::isKeyEvent(event) && !io.WantCaptureKeyboard)
 			{
 				nap::InputEventPtr input_event = nap::translateInputEvent(event);
-				getApp<App>().inputMessageReceived(std::move(input_event));
+				if (input_event != nullptr)
+				{
+					getApp<App>().inputMessageReceived(std::move(input_event));
+				}
 			}
 
 			// Always forward window events

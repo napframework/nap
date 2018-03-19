@@ -1,0 +1,7 @@
+{
+    "title": "@PROJECT_NAME_CAMELCASE@",
+    "version": "0.1",
+    "modules": [
+        @MODULE_LIST_SUB_JSON@
+    ]
+}

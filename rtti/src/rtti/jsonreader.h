@@ -1,9 +1,11 @@
 #pragma once
 
-// RTTI includes
-#include <rtti/rtti.h>
-#include <rtti/rttipath.h>
-#include <rtti/rttideserializeresult.h>
+// Local Includes
+#include "rtti.h"
+#include "rtti/path.h"
+#include "deserializeresult.h"
+
+// External Includes
 #include "utility/dllexport.h"
 
 // STL includes
@@ -29,7 +31,7 @@ namespace nap
 		 *
 		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 		 */
-		bool NAPAPI deserializeJSON(const std::string& json, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
+		bool NAPAPI deserializeJSON(const std::string& json, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
 
 		/**
 		 * Read and deserialize a set of objects and their data from the specified JSON file
@@ -40,7 +42,7 @@ namespace nap
 		 *
 		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 		 */
-		bool NAPAPI readJSONFile(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
+		bool NAPAPI readJSONFile(const std::string& path, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
 	} //< End Namespace nap
 
 }

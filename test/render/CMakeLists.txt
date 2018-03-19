@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(render)
 
 #add all cpp files to SOURCES
@@ -12,6 +12,8 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
+# Let find_python find our prepackaged Python in thirdparty
+find_python_in_thirdparty()
 set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
 find_package(pybind11)
 
@@ -20,10 +22,35 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter mod_nappython)
 
+# Get our modules list from project.json
+project_json_to_cmake()
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow mod_nappython mod_napcameracontrol mod_napapp mod_napimgui)
+target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES} nrender)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
+# Build into a project directory under bin
+set_output_directories()
 
-# create post build event
+if (WIN32)
+    # Copy freeimage DLL
+	find_package(freeimage REQUIRED)
+	copy_freeimage_dll()
+
+    # Copy over some crap window dlls
+	copy_base_windows_graphics_dlls()
+
+    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
+    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
+    bulk_copy_windows_dlls_to_bin()
+elseif(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()
+endif()
+
+# Copy project json to project bin dir and export fbx, via post-build events
+copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
 export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+
+# Package into release build.. for now
+package_project_into_release("examples/${PROJECT_NAME}")

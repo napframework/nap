@@ -12,7 +12,7 @@ void napkin::TypeModel::refresh()
 	while (rowCount() > 0)
 		removeRow(0);
 
-	nap::rtti::TypeInfo rootType = RTTI_OF(nap::rtti::RTTIObject);
+	nap::rtti::TypeInfo rootType = RTTI_OF(nap::rtti::Object);
 	for (const nap::rtti::TypeInfo& derived : rootType.get_derived_classes())
 	{
 		appendRow(new RTTITypeItem(derived));

@@ -30,17 +30,16 @@ namespace nap
 		DECLARE_COMPONENT(PerspCameraComponent, PerspCameraComponentInstance)
 
 		/**
-		 * Camera is dependent on the transform component for calculating the view matrix.
+		 * The perspective camera needs on a transform to calculate it's view matrix
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { components.push_back(RTTI_OF(TransformComponent)); }
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 	public:
-		PerpCameraProperties mProperties;	// Properties of the camera
+		PerpCameraProperties mProperties;	///< Property: 'Properties' the camera settings
 	};
 
 	/**
-	 * Implementation of the perspective camera. View matrix is calculated from the transform component
-	 * that is attached to the entity. Be sure to call setRenderTargetSize to use the correct aspect ratio.
+	 * Implementation of the perspective camera. The view matrix is calculated using the transform attached to the entity. 
 	 */
 	class NAPAPI PerspCameraComponentInstance : public CameraComponentInstance
 	{
@@ -86,16 +85,13 @@ namespace nap
 
 	private:
 		/**
-		* Sets this camera to be dirty, ie:
-		* next time the matrix is queried it is recomputed
+		* Recomputes the projection matrix when requested the next time
 		*/
 		void setDirty() { mDirty = true; }
 
 	private:
 		mutable glm::mat4x4				mProjectionMatrix;		// The composed projection matrix
-
 		mutable bool					mDirty = true;			// If the projection matrix needs to be recalculated
-		
 		PerpCameraProperties			mProperties;			// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
 		TransformComponentInstance*		mTransformComponent;	// Cached transform component
 	};

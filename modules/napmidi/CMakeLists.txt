@@ -10,6 +10,22 @@ add_library(${PROJECT_NAME} SHARED ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
-target_link_libraries(${PROJECT_NAME} napcore mod_napscene debug ${RTMIDI_LIBRARIES_DEBUG} optimized ${RTMIDI_LIBRARIES_RELEASE} )
+
+set(DEPENDENT_NAP_MODULES mod_napscene)
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${RTMIDI_LIBRARIES_DEBUG} optimized ${RTMIDI_LIBRARIES_RELEASE} )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
+
+# Package into platform release
+if(UNIX)
+    set(UNIX_EXTRA_RPATH "../../../../thirdparty/rtmidi/lib")
+endif()
+package_module()
+
+# Package rtmidi into platform release
+install(FILES ${THIRDPARTY_DIR}/rtmidi/linux/install/README.md DESTINATION thirdparty/rtmidi)
+if(UNIX AND NOT APPLE)
+    file(GLOB RTMIDI_DYLIBS ${RTMIDI_DIR}/linux/install/lib/librtmidi${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${RTMIDI_DYLIBS}
+            DESTINATION thirdparty/rtmidi/lib)
+endif()
