@@ -56,7 +56,6 @@ namespace nap
 		// Set settings
 		opengl::setAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, cur_major);
 		opengl::setAttribute(SDL_GL_CONTEXT_MINOR_VERSION, cur_minor);
-		opengl::setAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
 		// Set double buffering
 		int double_buffer = static_cast<int>(attributes.doubleBuffer);
@@ -89,11 +88,7 @@ namespace nap
 		attrs.doubleBuffer = true;
 		attrs.versionMinor = 3;
 		attrs.versionMajor = 3;
-#ifdef __linux__
-		attrs.enableMultiSampling = false;
-#else
 		attrs.enableMultiSampling = true;
-#endif
 		attrs.multiSampleSamples = 8;
 #ifdef _DEBUG
 		attrs.debug = true;

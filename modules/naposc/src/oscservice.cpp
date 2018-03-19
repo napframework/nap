@@ -105,5 +105,4 @@ namespace nap
 		assert(found_it != mInputs.end());
 		mInputs.erase(found_it);
 	}
-
 }
