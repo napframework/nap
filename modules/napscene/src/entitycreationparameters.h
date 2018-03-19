@@ -7,16 +7,15 @@
 
 namespace nap
 {
+	// Forward Declares
 	namespace rtti
 	{
-		class RTTIObject;
+		class Object;
 	}
-
 	class Component;
 	class ComponentInstance;
 	class Entity;
 	class EntityInstance;	
-
 	class EntityObjectGraphItem;
 	template<typename ITEM> class ObjectGraph;
 	using EntityObjectGraph = ObjectGraph<EntityObjectGraphItem>;
@@ -36,13 +35,14 @@ namespace nap
 	using ClonedComponentResourceList = std::vector<ClonedComponentResource>;
 	using ClonedComponentByEntityMap = std::unordered_map<const Entity*, ClonedComponentResourceList>;
 
+
 	/**
 	 * Structure used to hold data necessary to create new instances during init
 	 */
 	struct EntityCreationParameters final
 	{
 		using EntityInstanceByIDMap			= std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
-		using InstanceByIDMap				= std::unordered_map<std::string, rtti::RTTIObject*>;
+		using InstanceByIDMap				= std::unordered_map<std::string, rtti::Object*>;
 		using EntityInstanceMap				= std::unordered_map<Entity*, std::vector<EntityInstance*>>;
 		using ComponentInstanceMap			= std::unordered_map<Component*, std::vector<ComponentInstance*>>;
 

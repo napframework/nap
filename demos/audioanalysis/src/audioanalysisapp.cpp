@@ -48,7 +48,7 @@ namespace nap
 		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
 		// Find the world and camera entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+        ResourcePtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
         // Find entities and components
         mAudioEntity = scene->findEntity("Audio");

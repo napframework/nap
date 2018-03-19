@@ -18,36 +18,36 @@ namespace opengl
 	void openGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 	{
 		std::string readable_type;
-		MessageType message_type = MessageType::INFO;
+		EGLSLMessageType message_type = EGLSLMessageType::Info;
 
 		switch (type) {
 		case GL_DEBUG_TYPE_ERROR:
 			readable_type = "Error";
-			message_type = MessageType::ERROR;
+			message_type = EGLSLMessageType::Error;
 			break;
 		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
 			readable_type = "Deprecated Behaviour";
-			message_type = MessageType::WARNING;
+			message_type = EGLSLMessageType::Warning;
 			break;
 		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
 			readable_type = "Undefined Behaviour";
-			message_type = MessageType::WARNING;
+			message_type = EGLSLMessageType::Warning;
 			break;
 		case GL_DEBUG_TYPE_PORTABILITY:
 			readable_type = "Portability";
-			message_type = MessageType::WARNING;
+			message_type = EGLSLMessageType::Warning;
 			break;
 		case GL_DEBUG_TYPE_PERFORMANCE:
 			readable_type ="Performance";
-			message_type = MessageType::WARNING;
+			message_type = EGLSLMessageType::Warning;
 			break;
 		case GL_DEBUG_TYPE_OTHER:
 			readable_type = "Other";
-			message_type = MessageType::INFO;
+			message_type = EGLSLMessageType::Info;
 			break;
 		default:
 			readable_type = "Unknown";
-			message_type = MessageType::INFO;
+			message_type = EGLSLMessageType::Info;
 			break;
 		}
 
@@ -79,7 +79,7 @@ namespace opengl
 		// Initialize SDL's Video subsystem
 		if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		{
-			printMessage(MessageType::ERROR, "failed to init SDL video subsystem");
+			printMessage(EGLSLMessageType::Error, "failed to init SDL video subsystem");
 			printSDLError();
 			return false;
 		}
@@ -96,14 +96,14 @@ namespace opengl
 		GLenum error = glewInit();
 		if (error != GLEW_OK)
 		{
-			printMessage(MessageType::ERROR, "glew init failed with error code %d:", error);
+			printMessage(EGLSLMessageType::Error, "glew init failed with error code %d:", error);
 			return false;
 		}
 //#endif // !__APPLE__
 
-		printMessage(MessageType::INFO, "initialized glew successfully");
-		printMessage(MessageType::INFO, "vendor: %s", glGetString(GL_VENDOR));
-		printMessage(MessageType::INFO, "shading language: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+		printMessage(EGLSLMessageType::Info, "initialized glew successfully");
+		printMessage(EGLSLMessageType::Info, "vendor: %s", glGetString(GL_VENDOR));
+		printMessage(EGLSLMessageType::Info, "shading language: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 		// Check whether debug flag is set
 		int context_flags;
@@ -184,6 +184,12 @@ namespace opengl
 			return;
 		}
 		SDL_HideWindow(window);
+	}
+
+
+	void raiseWindow(SDL_Window* window)
+	{
+		SDL_RaiseWindow(window);
 	}
 
 
@@ -284,7 +290,7 @@ namespace opengl
 	// Prints the last SDL error
 	void printSDLError()
 	{
-		printMessage(MessageType::ERROR, getSDLError().c_str());
+		printMessage(EGLSLMessageType::Error, getSDLError().c_str());
 	}
 
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rtti/rttideserializeresult.h>
+#include <rtti/deserializeresult.h>
 #include <QtCore/QString>
 #include <entity.h>
 #include <QtWidgets/QUndoCommand>
@@ -20,6 +20,8 @@ namespace napkin
 
 		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
 				: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects)) {}
+		
+		~Document();
 		
 		/**
 		 * @return The name of the currently opened file
@@ -53,12 +55,12 @@ namespace napkin
 		 * @param name The name/id of the object to find
 		 * @return The found object or nullptr if none was found
 		 */
-		nap::rtti::RTTIObject* getObject(const std::string& name);
+		nap::rtti::Object* getObject(const std::string& name);
 
 		/**
 		 * Get an object by name and type
 		 */
-		nap::rtti::RTTIObject* getObject(const std::string& name, const rttr::type& type);
+		nap::rtti::Object* getObject(const std::string& name, const rttr::type& type);
 
 		/**
 		 * Get an object by name and type
@@ -84,7 +86,7 @@ namespace napkin
 		 * Set an object's name. This is similar to setting a value on it's name property,
 		 * but this ensures the object has a unique name.
 		 */
-		const std::string& setObjectName(nap::rtti::RTTIObject& object, const std::string& name);
+		const std::string& setObjectName(nap::rtti::Object& object, const std::string& name);
 
 		/**
 		 * Add a component of the specified type to an Entity.
@@ -101,7 +103,7 @@ namespace napkin
 		 * 	In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::RTTIObject* addObject(rttr::type type, nap::rtti::RTTIObject* parent = nullptr);
+		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr);
 
 		/**
 		 * Add an object of the specified type
@@ -110,13 +112,13 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::RTTIObject* parent = nullptr) { return rtti_cast<T>(addObject(RTTI_OF(T), parent)); }
+		T* addObject(nap::rtti::Object* parent = nullptr) { return rtti_cast<T>(addObject(RTTI_OF(T), parent)); }
 
 		/**
 		 * Obliterate the specified object
 		 * @param object The object to be deleted.
 		 */
-		void removeObject(nap::rtti::RTTIObject& object);
+		void removeObject(nap::rtti::Object& object);
 
 		/**
 		 * If the object with the specified name was found, nuke it from orbit.
@@ -128,7 +130,7 @@ namespace napkin
 		 * @param obj The object that is being referred to.
 		 * @return A list of properties pointing to the given object.
 		 */
-		QList<PropertyPath> getPointersTo(const nap::rtti::RTTIObject& obj);
+		QList<PropertyPath> getPointersTo(const nap::rtti::Object& obj);
 
 		/**
 		 * Add an element to an array
@@ -155,7 +157,7 @@ namespace napkin
 		 * @param index The index at which to add the new element
 		 * @return The index at which the element lives.
 		 */
-		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object, size_t index);
+		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::Object* object, size_t index);
 
 		/**
 		 * Add an existing pointer to the end of an array
@@ -164,7 +166,7 @@ namespace napkin
 		 * @param object The object pointer to addd
 		 * @return The index at which the element lives.
 		 */
-		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object);
+		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::Object* object);
 
 		/**
 		 * Create an object of the specified type and add it to the array
@@ -268,20 +270,20 @@ namespace napkin
 		 * 		This is a notification, not a directive.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object& obj, bool selectNewObject);
 
 		/**
 		 * Qt Signal
 		 * Invoked after an object has changed drastically
 		 */
-		void objectChanged(nap::rtti::RTTIObject& obj);
+		void objectChanged(nap::rtti::Object& obj);
 
 		/**
 		 * Qt Signal
 		 * Invoked just before an object is removed (including Entities)
 		 * @param object The object about to be removed
 		 */
-		void objectRemoved(nap::rtti::RTTIObject& object);
+		void objectRemoved(nap::rtti::Object& object);
 
 		/**
 		 * Qt Signal

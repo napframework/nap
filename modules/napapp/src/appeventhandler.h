@@ -57,8 +57,8 @@ namespace nap
 
 
 	/**
-	 * Default app event handler
-	 * Forwards key presses and window events to the running application
+	 * Default application event handler.
+	 * Forwards key, mouse and window events to the running application
 	 */
 	class NAPAPI AppEventHandler : public BaseAppEventHandler
 	{
@@ -75,11 +75,9 @@ namespace nap
 
 
 	/**
-	 * App event handler associated with gui applications
-	 * When working with an application that hosts a GUI you often don't
-	 * want to forward events when the gui is active and used
-	 * This app handler checks if the user is interacting with a gui, if so
-	 * no events are forwarded to the application
+	 * Application event handler that is designed to work with applications that host a graphical user interface.
+	 * This class checks if the user is interacting with a GUI element, if so, 
+	 * no input events are forwarded to the application.
 	 */
 	class NAPAPI GUIAppEventHandler : public BaseAppEventHandler
 	{

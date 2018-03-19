@@ -12,16 +12,17 @@
 
 // External Includes
 #include <utility/fileutils.h>
+#include <packaginginfo.h>
 
 namespace
 {
 	// Extension for shared libraries (dependent on platform)
 #ifdef _WIN32
-	static std::string moduleExtension = "dll";
+	static std::string sharedLibExtension = "dll";
 #elif __APPLE__
-	static std::string moduleExtension = "dylib";
+	static std::string sharedLibExtension = "dylib";
 #else
-	static std::string moduleExtension = "so";
+	static std::string sharedLibExtension = "so";
 #endif
 
 
@@ -127,73 +128,245 @@ namespace nap
 		*/
 	}
 
-	void ModuleManager::loadModules(const std::string& directory)
+	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
-		// Find all files in the specified directory
-		std::vector<std::string> files_in_directory;
-		utility::listDir(directory.c_str(), files_in_directory);
+		/** 
+		 * TODO Discuss changing loadModules to provide these two modes of operation:
+		 *   - A standard/project mode where it only loads the modules specified in the provided list and fails if
+		 *     any of those modules couldn't be loaded
+		 *   - A 'load everything' mode for Napkin or sandbox NAP use where no modules are specified and we load 
+		 *     everything we encounter
+		 */
+		
+		// Build a list of directories to search for modules
+		std::vector<std::string> directories;
+		if (!buildModuleSearchDirectories(moduleNames, directories, error))
+			return false;
 
-		for (const auto& filename : files_in_directory)
-		{
-			rtti::TypeInfo service = rtti::TypeInfo::empty();
-
-			// Ignore directories
-			if (utility::dirExists(filename))
+		// Iterate each directory
+		for (const auto& directory : directories) {
+			// Skip directory if it doesn't exist
+			if (!utility::dirExists(directory))
 				continue;
 
-			// Ignore non-shared libraries
-			if (utility::getFileExtension(filename) != moduleExtension)
-				continue;
+			// Find all files in the specified directory
+			std::vector<std::string> files_in_directory;
+			utility::listDir(directory.c_str(), files_in_directory);
 
-			std::string module_path = utility::getAbsolutePath(filename);
-
-			// Try to load the module
-			std::string error_string;
-			void* module_handle = LoadModule(module_path, error_string);
-			if (!module_handle)
+			for (const auto& filename : files_in_directory)
 			{
-				Logger::warn("Failed to load module %s: %s", module_path.c_str(), error_string.c_str());
-				continue;
-			}
+				rtti::TypeInfo service = rtti::TypeInfo::empty();
 
-			// Find descriptor. If the descriptor wasn't found in the dll, assume it's not actually a nap module and unload it again.
-			ModuleDescriptor* descriptor = (ModuleDescriptor*)FindSymbol(module_handle, "descriptor");
-			if (descriptor == nullptr)
-			{
-				UnloadModule(module_handle);
-				continue;
-			}
+				// Ignore directories
+				if (utility::dirExists(filename))
+					continue;
 
-			// Check that the module version matches, skip otherwise.
-			if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
-			{
-				Logger::warn("Module %s was built against a different version of nap (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
-				UnloadModule(module_handle);
-				continue;
-			}
+				// Ignore non-shared libraries
+				if (utility::getFileExtension(filename) != sharedLibExtension)
+					continue;
 
-			// Try to load service if one is defined
-			if (descriptor->mService != nullptr)
-			{
-				rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(rttr::string_view(descriptor->mService));
-				if (!stype.is_derived_from(RTTI_OF(Service)))
+				std::string module_path = utility::getAbsolutePath(filename);
+
+				// Try to load the module
+				std::string error_string;
+				void* module_handle = LoadModule(module_path, error_string);
+				if (!module_handle)
 				{
-					Logger::warn("Module %s service descriptor %s is not a service; skipping", module_path.c_str(), descriptor->mService);
+					Logger::warn("Failed to load module %s: %s", module_path.c_str(), error_string.c_str());
+					continue;
+				}
+
+				// Find descriptor. If the descriptor wasn't found in the dll, assume it's not actually a nap module and unload it again.
+				ModuleDescriptor* descriptor = (ModuleDescriptor*)FindSymbol(module_handle, "descriptor");
+				if (descriptor == nullptr)
+				{
 					UnloadModule(module_handle);
 					continue;
 				}
-				service = stype;
+
+				// Check that the module version matches, skip otherwise.
+				if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
+				{
+					Logger::warn("Module %s was built against a different version of NAP (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
+					UnloadModule(module_handle);
+					continue;
+				}
+
+				// Try to load service if one is defined
+				if (descriptor->mService != nullptr)
+				{
+					rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(rttr::string_view(descriptor->mService));
+					if (!stype.is_derived_from(RTTI_OF(Service)))
+					{
+						Logger::warn("Module %s service descriptor %s is not a service; skipping", module_path.c_str(), descriptor->mService);
+						UnloadModule(module_handle);
+						continue;
+					}
+					service = stype;
+				}
+
+				Logger::debug("Loaded module %s v%s", descriptor->mID, descriptor->mVersion);
+
+				// Construct module based on found module information
+				Module module;
+				module.mDescriptor = descriptor;
+				module.mHandle = module_handle;
+				module.mService = service;
+
+				mModules.push_back(module);
 			}
-
-			Logger::debug("Loaded module %s v%s", descriptor->mID, descriptor->mVersion);
-
-			// Construct module based on found module information
-			Module module;
-			module.mDescriptor = descriptor;
-			module.mHandle = module_handle;
-			module.mService = service;
-
-			mModules.push_back(module);
 		}
+		return true;
+	}
+	
+
+	bool ModuleManager::buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories, utility::ErrorState& errorState)
+	{
+#ifdef _WIN32
+		// Windows
+		outSearchDirectories.push_back(utility::getExecutableDir());
+#elif defined(NAP_PACKAGED_BUILD)
+		// Running against released NAP on macOS & Linux
+		const std::string exeDir = utility::getExecutableDir();
+		
+		// Check if we're running a packaged project (on macOS or Linux)
+		if (utility::fileExists(exeDir + "/lib/libnapcore." + sharedLibExtension))
+		{
+			outSearchDirectories.push_back(exeDir + "/lib");
+		}
+		// If we have no modules requested we're running in a non-project context, eg. napkin
+		else if (moduleNames.size() == 0)
+		{
+			buildPackagedNapNonProjectModulePaths(outSearchDirectories);
+		}
+		else {
+			std::vector<std::string> dirParts;
+			utility::splitString(exeDir, '/', dirParts);
+			// Check if we can see our build output folder, otherwise we're in an unexpected configuration
+			if (folderNameContainsBuildConfiguration(dirParts.end()[-1]))
+			{
+				buildPackagedNapProjectModulePaths(moduleNames, outSearchDirectories);
+			}
+			else {
+				errorState.fail("Unexpected path configuration found, can't locate modules");
+				return false;
+			}
+		}
+#else
+		Logger::debug("Running from NAP source");
+	
+		const std::string exeDir = utility::getExecutableDir();
+
+		std::vector<std::string> dirParts;
+		utility::splitString(exeDir, '/', dirParts);
+		// Check if we can see our build output folder, otherwise we're in an unexpected configuration
+		if (dirParts.size() > 2 && folderNameContainsBuildConfiguration(dirParts.end()[-2]))
+		{
+			// MacOS & Linux apps in NAP internal source
+			const std::string napRoot = exeDir + "/../../../";
+			const std::string full_configuration_name = dirParts.end()[-2];
+			outSearchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
+
+		} else {
+			errorState.fail("Unexpected path configuration found, can't locate modules");
+			return false;
+		}
+#endif // _WIN32
+		return true;
+	}
+	
+
+	bool ModuleManager::folderNameContainsBuildConfiguration(std::string& folderName)
+	{
+		std::vector<std::string> configParts;
+		utility::splitString(folderName, '-', configParts);
+		// If we don't have enough parts we're not looking at a build folder
+		if (configParts.size() != 3)
+			return false;
+		
+#if defined(__APPLE__) || defined(_WIN32)
+		const std::string folderBuildType = configParts[2];
+#elif __unix__
+		const std::string folderBuildType = configParts[1];
+#endif
+
+#ifdef NDEBUG
+		const std::string runningBuildType = "Release";
+#else
+		const std::string runningBuildType = "Debug";
+#endif
+	
+		if (runningBuildType != folderBuildType)
+			return false;
+		
+		return true;
+	}
+	
+
+	void ModuleManager::buildPackagedNapNonProjectModulePaths(std::vector<std::string>& outSearchDirectories)
+	{
+		// Cater for Napkin running against packaged NAP.  Module names won't be specified.  Let's load everything we can find.
+		
+#ifdef NDEBUG
+		const std::string buildType = "Release";
+#else
+		const std::string buildType = "Debug";
+#endif
+		
+		std::string exeDir = utility::getExecutableDir();
+		std::string napRoot = exeDir + "/../../../../";
+		
+		// NAP modules
+		std::string searchDir = napRoot + "modules";
+		std::vector<std::string> filesInDirectory;
+		utility::listDir(searchDir.c_str(), filesInDirectory, false);
+		for (const std::string& module: filesInDirectory)
+		{
+			std::string dirName = napRoot + "modules/" + module + "/lib/" + buildType;
+			if (!utility::dirExists(dirName))
+				continue;
+			outSearchDirectories.push_back(dirName);
+			//Logger::info("Adding module search path %s for napkin", dirName.c_str());
+		}
+		
+		// User modules
+		searchDir = napRoot + "usermodules";
+		filesInDirectory.clear();
+		utility::listDir(searchDir.c_str(), filesInDirectory, false);
+		for (const std::string& module: filesInDirectory)
+		{
+			std::string dirName = napRoot + "usermodules/" + module + "/lib/" + buildType;
+			if (!utility::dirExists(dirName))
+				continue;
+			outSearchDirectories.push_back(dirName);
+			//Logger::info("Adding user module search path %s for napkin", dirName.c_str());
+		}
+
+		// Project module
+		outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
+	}
+
+	
+	void ModuleManager::buildPackagedNapProjectModulePaths(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories)
+	{
+#ifdef NDEBUG
+		const std::string buildType = "Release";
+#else
+		const std::string buildType = "Debug";
+#endif
+		
+		std::string exeDir = utility::getExecutableDir();
+		std::string napRoot = exeDir + "/../../../../";
+		// Normal project running against packaged NAP
+		for (const std::string& module : moduleNames)
+		{
+			// NAP modules
+			outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
+			// User modules
+			outSearchDirectories.push_back(napRoot + "usermodules/" + module + "/lib/" + buildType);
+		}
+		
+		// Project module
+		outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
 	}
 }

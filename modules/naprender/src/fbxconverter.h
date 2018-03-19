@@ -18,8 +18,8 @@ namespace nap
 	 */
 	enum class NAPAPI EFBXConversionOptions
 	{
-		CONVERT_ALWAYS,		// Always convert FBX
-		CONVERT_IF_NEWER	// Only convert FBX if the destination does not exist or is older
+		CONVERT_ALWAYS,		///< Always convert FBX
+		CONVERT_IF_NEWER	///< Only convert FBX if the destination does not exist or is older
 	};
 
 	/**

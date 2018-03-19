@@ -10,7 +10,7 @@ namespace nap {
             return;
 
         outputMutex.lock();
-        const rtti::RTTIObject* obj = message.object();
+        const rtti::Object* obj = message.object();
 
         ostream* os = &cout;
         if (message.level().level() >= Logger::fatalLevel().level()) {

@@ -24,7 +24,9 @@ using namespace nap::utility;
 using namespace napkin;
 
 AppContext::AppContext()
-{}
+{
+	nap::Logger::instance().log.connect(mLogHandler);
+}
 
 AppContext::~AppContext()
 {}
@@ -53,7 +55,7 @@ Document* AppContext::loadDocument(const QString& filename)
 
 	ErrorState err;
 
-	nap::rtti::RTTIDeserializeResult result;
+	nap::rtti::DeserializeResult result;
 	if (!readJSONFile(filename.toStdString(), getCore().getResourceManager()->getFactory(), result, err))
 	{
 		nap::Logger::fatal(err.toString());
@@ -131,8 +133,10 @@ const QString AppContext::getLastOpenedFilename()
 
 void AppContext::restoreUI()
 {
+	getThemeManager().watchThemeDir();
+
 	// Restore theme
-	const QString& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_DEFAULT_THEME).toString();
+	const QString& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_THEME_NATIVE).toString();
 	getThemeManager().setTheme(recentTheme);
 
 	// Let the ui come up before loading all the recent file and initializing core
@@ -204,7 +208,7 @@ nap::Core& AppContext::getCore()
 	if (!mCoreInitialized)
 	{
 		ErrorState err;
-		if (!mCore.initializeEngine(err, getExecutableDir()))
+		if (!mCore.initializeEngine(err, getExecutableDir(), true))
 		{
 			nap::Logger::fatal("Failed to initialize engine");
 		}

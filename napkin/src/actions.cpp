@@ -103,7 +103,7 @@ void AddObjectAction::perform()
 	AppContext::get().executeCommand(new AddObjectCommand(mType));
 }
 
-DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object)
+DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : Action(), mObject(object)
 {
     setText("Delete");
 }
@@ -122,7 +122,7 @@ void DeleteObjectAction::perform()
 
 SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
 {
-    setText(themeName.isEmpty() ? napkin::TXT_DEFAULT_THEME : themeName);
+    setText(themeName.isEmpty() ? napkin::TXT_THEME_NATIVE : themeName);
     setCheckable(true);
 }
 

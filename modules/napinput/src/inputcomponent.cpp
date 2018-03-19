@@ -48,12 +48,6 @@ namespace nap
 			moved.trigger(move_event);
 			return;
 		}
-		else if (event_type == RTTI_OF(PointerDragEvent))
-		{
-			const PointerDragEvent& drag_event = static_cast<const PointerDragEvent&>(inEvent);
-			dragged.trigger(drag_event);
-			return;
-		}
 	}
 
 

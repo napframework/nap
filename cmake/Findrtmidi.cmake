@@ -17,19 +17,17 @@ if(WIN32)
     set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/bin/msvc/rtmidi.lib winmm)
     set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/bin/msvc/rtmidid.lib winmm)
 elseif(APPLE)
+    # TODO Discussed with Stijn, there's no reason this is statically linked for macOS only, will fix  
     set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/bin/osx/librtmidi.a
         "-framework CoreMidi" "-framework CoreAudio" "-framework CoreFoundation")
     set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/bin/osx/librtmidi.a
         "-framework CoreMidi" "-framework CoreAudio" "-framework CoreFoundation")
 else()
-    set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/bin/linux/librtmidi.so)
-    set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/bin/linux/librtmidi.so)
+    set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/linux/install/lib/librtmidi.so)
+    set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/linux/install/lib/librtmidi.so)
 endif()
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set RTMIDI_FOUND to TRUE
 # if all listed variables are TRUE
 find_package_handle_standard_args(rtmidi REQUIRED_VARS RTMIDI_INCLUDE_DIR RTMIDI_LIBRARIES_RELEASE RTMIDI_LIBRARIES_DEBUG)
-
-
-

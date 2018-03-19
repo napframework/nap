@@ -8,7 +8,7 @@
 
 // nap includes
 #include <utility/dllexport.h>
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 
 // audio includes
 #include <audio/core/audionodemanager.h>
@@ -27,9 +27,9 @@ namespace nap
          * Represents an audio stream handling multichannel audio input and output to and from an audio device.
          * It initializes an audio callback and owns a @NodeManager that performs the processing.
          */
-        class NAPAPI AudioDevice : public rtti::RTTIObject
+        class NAPAPI AudioDevice : public Resource
         {
-            RTTI_ENABLE(rtti::RTTIObject)
+            RTTI_ENABLE(Resource)
             
         public:
             AudioDevice() = default;

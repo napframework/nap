@@ -4,29 +4,35 @@
 #include "componentptr.h"
 #include "component.h"
 #include "instanceproperty.h"
+
+// External Includes
 #include <utility/uniqueptrvectoriterator.h>
-#include <nap/objectptr.h>
+#include <nap/resource.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
+	// Forward Declares
     class Core;
 	class Component;
 	class Entity;
 	class EntityInstance;	
 	class Scene;
 
+	// Using
 	using EntityList = std::vector<EntityInstance*>;
 
 	/**
-	 * An EntityInstance is the runtime-instance of an Entity, which is read from json.
-	 * It contains a list of ComponentInstances and functionality to query these components
+	 * The runtime counterpart of an Entity which is used to group components and child entities.
+	 * This class only works with run-time versions of both, ie: ComponentInstance and EntityInstance
+	 * On construction every entity receives a reference to Core and the Entity it originated from.
 	 */
-	class NAPAPI EntityInstance : public rtti::RTTIObject
+	class NAPAPI EntityInstance : public rtti::Object
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(rtti::Object)
 
 	public:
-        using rtti::RTTIObject::init;
+        using rtti::Object::init;
         
 		using ComponentList = std::vector<std::unique_ptr<ComponentInstance>>;
 		using ChildList = std::vector<EntityInstance*>;
@@ -34,7 +40,6 @@ namespace nap
 		using ComponentConstIterator = utility::UniquePtrConstVectorWrapper<ComponentList, ComponentInstance*>;
 
 		/**
-		 * The constructor
 		 * @param core: the nap core instance associated with the application
 		 * @param entity: the resource that was used to create this instance, this is null
 		 * when there is no resource associated with the instance, for example: the root entity
@@ -168,6 +173,12 @@ namespace nap
 		void clearChildren();
 
 		/**
+		 * Removes a single child from the entity instance
+		 * @param EntityInstance to remove.
+		 */
+		void removeChild(const EntityInstance& entityInstance);
+
+		/**
 		 * Get all children of this entity
 		 */
 		const ChildList& getChildren() const;
@@ -207,20 +218,112 @@ namespace nap
 		ChildList		mChildren;				// The children of this entity
 	};
 
+	/**
+	 * A SpawnedEntityInstance is identical in functionality to a regular EntityInstance. It is only used to be able to 
+	 * distinguish between entities that were spawned during init and entities that were spawned at runtime.
+	 * A SpawnedEntityInstance is created through the Scene::spawn interface and can be destroyed by passing this object 
+	 * to Scene::destroy.
+	 */
+	class NAPAPI SpawnedEntityInstance
+	{
+	public:
+		SpawnedEntityInstance() = default;
+
+		rtti::ObjectPtr<EntityInstance>& get() { return mEntityInstance; }
+
+		const rtti::ObjectPtr<EntityInstance>& get() const { return mEntityInstance; }
+
+		const EntityInstance& operator*() const
+		{
+			assert(mEntityInstance != nullptr);
+			return *mEntityInstance;
+		}
+
+		EntityInstance& operator*()
+		{
+			assert(mEntityInstance != nullptr);
+			return *mEntityInstance;
+		}
+
+		EntityInstance* operator->() const
+		{
+			assert(mEntityInstance != nullptr);
+			return mEntityInstance.get();
+		}
+
+		EntityInstance* operator->()
+		{
+			assert(mEntityInstance != nullptr);
+			return mEntityInstance.get();
+		}
+
+		bool operator==(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance == other.mEntityInstance;
+		}
+
+		bool operator==(const EntityInstance* ptr) const
+		{
+			return mEntityInstance == ptr;
+		}
+
+		bool operator!=(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance != other.mEntityInstance;
+		}
+
+		bool operator!=(const EntityInstance* ptr) const
+		{
+			return mEntityInstance != ptr;
+		}
+
+		bool operator<(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance < other.mEntityInstance;
+		}
+
+		bool operator>(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance > other.mEntityInstance;
+		}
+
+		bool operator<=(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance <= other.mEntityInstance;
+		}
+
+		bool operator>=(const SpawnedEntityInstance& other) const
+		{
+			return mEntityInstance >= other.mEntityInstance;
+		}
+
+	private:
+		friend class Scene;
+
+		SpawnedEntityInstance(EntityInstance* entityInstance) :
+			mEntityInstance(entityInstance)
+		{
+		}
+
+	private:
+		rtti::ObjectPtr<EntityInstance> mEntityInstance;
+	};
 
 	//////////////////////////////////////////////////////////////////////////
 	// Entity Resource
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * An Entity is the static data as deserialized from json. It can be used to create an EntityInstance
+	 * Resource part of an entity.
+	 * This represents the static data that is deserialized from json and contains a list of child entities and components
+	 * This class is used as a blueprint for the creation of an EntityInstance.
 	 */
-	class NAPAPI Entity : public rtti::RTTIObject
+	class NAPAPI Entity : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
-		using ComponentList = std::vector<ObjectPtr<Component>>;
-		using EntityList = std::vector<ObjectPtr<Entity>>;
+		using ComponentList = std::vector<rtti::ObjectPtr<Component>>;
+		using EntityList = std::vector<rtti::ObjectPtr<Entity>>;
 
 		/**
 		 * Find component of the specified type
@@ -228,7 +331,7 @@ namespace nap
 		 * @param type The type of component to find
 		 * @return The found component. Null if not found
 		 */
-		ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
+		rtti::ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		 * Check whether this Entity has a component of the specified type
