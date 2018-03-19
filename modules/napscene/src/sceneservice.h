@@ -5,6 +5,10 @@
 
 namespace nap
 {
+	/**
+	 * Manages all the currently loaded scenes and updates the transform hierarchy
+	 * from the root of every scene. Transformation updates are performed after application update.
+	 */
 	class NAPAPI SceneService : public Service
 	{
 		RTTI_ENABLE(Service)

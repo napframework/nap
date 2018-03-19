@@ -43,14 +43,26 @@
 
 // clang-format on
 
-#define MAX_PATH_SIZE 260
+#ifdef _WIN32
+	#ifdef MAX_PATH
+		#define MAX_PATH_SIZE MAX_PATH
+	#else
+		#define MAX_PATH_SIZE 260
+	#endif
+#elif defined(__linux__) || defined(__APPLE__)
+	#ifdef PATH_MAX
+		#define MAX_PATH_SIZE PATH_MAX
+	#else
+		#define MAX_PATH_SIZE 4096
+	#endif
+#endif
 
 namespace nap
 {
 	namespace utility
 	{
 		// List all files in a directory
-		bool listDir(const char* directory, std::vector<std::string>& outFilenames)
+		bool listDir(const char* directory, std::vector<std::string>& outFilenames, bool absolute)
 		{
 			DIR* dir;
 			struct dirent* ent;
@@ -60,9 +72,15 @@ namespace nap
 				if (!strcmp(ent->d_name, ".")) continue;
 				if (!strcmp(ent->d_name, "..")) continue;
 
-				char buffer[512];
-				sprintf(buffer, "%s/%s", directory, ent->d_name);
-				outFilenames.push_back(buffer);
+				char buffer[MAX_PATH_SIZE];
+				if (absolute)
+				{
+					sprintf(buffer, "%s/%s", directory, ent->d_name);
+					outFilenames.push_back(buffer);
+				}
+				else {
+					outFilenames.push_back(ent->d_name);
+				}
 			}
 			closedir(dir);
 			return true;
@@ -237,7 +255,7 @@ namespace nap
 		std::string getExecutablePath()
 		{
 			std::string out_path;
-			unsigned int bufferSize = 512;
+			unsigned int bufferSize = MAX_PATH_SIZE;
 			std::vector<char> buffer(bufferSize + 1);
 
 #if defined(_WIN32)

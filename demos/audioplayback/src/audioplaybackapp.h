@@ -15,9 +15,10 @@
 
 namespace nap
 {
+	using namespace rtti;
+
 	/**
 	 * Demo application that is called from within the main loop
-	 *
 	 */
 	class AudioPlaybackApp : public App
 	{

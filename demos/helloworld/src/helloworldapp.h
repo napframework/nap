@@ -14,6 +14,8 @@
 
 namespace nap
 {
+	using namespace rtti;
+
 	/**
 	 * Demo application that is called from within the main loop
 	 *
@@ -64,11 +66,6 @@ namespace nap
 		 *  Forwards the received input event to the input service
 		 */
 		void inputMessageReceived(InputEventPtr inputEvent) override;
-		
-		/**
-		 *	Toggles full screen
-		 */
-		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
 		
 		/**
 		 *	Called when loop finishes

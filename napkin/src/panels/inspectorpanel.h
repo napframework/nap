@@ -3,7 +3,7 @@
 #include <QStandardItemModel>
 #include <QMenu>
 
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 
 #include "generic/propertypath.h"
 #include "generic/filtertreeview.h"
@@ -34,12 +34,12 @@ namespace napkin
 		 * Set the
 		 * @param object
 		 */
-		void setObject(nap::rtti::RTTIObject* object);
+		void setObject(nap::rtti::Object* object);
 
 		/**
 		 * @return The object currently displayed/edited by this model
 		 */
-		nap::rtti::RTTIObject* getObject();
+		nap::rtti::Object* getObject();
 
 		/**
 		 * http://doc.qt.io/qt-4.8/qabstractitemmodel.html#data
@@ -87,7 +87,7 @@ namespace napkin
 		 */
 		void populateItems();
 
-		nap::rtti::RTTIObject* mObject = nullptr; // The object currently used by this model
+		nap::rtti::Object* mObject = nullptr; // The object currently used by this model
 	};
 
 	/**
@@ -106,7 +106,7 @@ namespace napkin
 		 * Show this object in the inspector.
 		 * @param object The object shown in the inspector.
 		 */
-		void setObject(nap::rtti::RTTIObject* object);
+		void setObject(nap::rtti::Object* object);
 
 	private:
 		/**

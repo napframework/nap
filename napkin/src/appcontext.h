@@ -1,19 +1,21 @@
 #pragma once
 
+#include <vector>
 
-#include <entity.h>
-#include <nap/core.h>
-
-#include "thememanager.h"
-#include "document.h"
 #include <QApplication>
 #include <QObject>
 #include <QUndoCommand>
-#include <generic/resourcefactory.h>
-#include <rtti/rttideserializeresult.h>
+#include <QMainWindow>
+
+#include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
-#include <vector>
-#include <QtWidgets/QMainWindow>
+#include <nap/core.h>
+#include <nap/logger.h>
+#include <entity.h>
+
+#include "thememanager.h"
+#include "document.h"
+#include "generic/resourcefactory.h"
 
 namespace napkin
 {
@@ -148,7 +150,7 @@ namespace napkin
 		 * Fired when the global selection has changed.
 		 * TODO: This will need to be changed into a multi-level/hierarchical selection context
 		 */
-		void selectionChanged(QList<nap::rtti::RTTIObject*> obj);
+		void selectionChanged(QList<nap::rtti::Object*> obj);
 
 
 		/**
@@ -183,7 +185,6 @@ namespace napkin
 		 */
 		void documentChanged(Document* doc);
 
-	Q_SIGNALS:
 		/**
 		 * Qt Signal
 		 * Invoked when an Entity has been added to the system
@@ -208,20 +209,20 @@ namespace napkin
 		 * 		This is a notification, not a directive.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object& obj, bool selectNewObject);
 
 		/**
 		 * Qt Signal
 		 * Invoked after an object has changed drastically
 		 */
-		void objectChanged(nap::rtti::RTTIObject& obj);
+		void objectChanged(nap::rtti::Object& obj);
 
 		/**
 		 * Qt Signal
 		 * Invoked just before an object is removed (including Entities)
 		 * @param object The object about to be removed
 		 */
-		void objectRemoved(nap::rtti::RTTIObject& object);
+		void objectRemoved(nap::rtti::Object& object);
 
 		/**
 		 * Qt Signal
@@ -230,6 +231,12 @@ namespace napkin
 		 * @param path The path to the property that has changed
 		 */
 		void propertyValueChanged(const PropertyPath path);
+
+		/**
+		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread
+		 * @param msg The log message being handled
+		 */
+		void logMessage(nap::LogMessage msg);
 
 	private:
 		AppContext();
@@ -244,6 +251,8 @@ namespace napkin
 		 */
 		void onUndoIndexChanged();
 
+		// Slot to relay nap log messages into a Qt Signal (for thread safety)
+		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
 		nap::Core mCore;						// The nap::Core
 		bool mCoreInitialized = false;			// Keep track of core initialization state

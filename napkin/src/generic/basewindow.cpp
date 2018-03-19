@@ -1,7 +1,6 @@
 #include "basewindow.h"
 #include "napkinglobals.h"
-#include <QSettings>
-
+#include "autosettings.h"
 
 
 napkin::BaseWindow::BaseWindow()
@@ -33,15 +32,23 @@ QDockWidget* napkin::BaseWindow::addDock(const QString& name, QWidget* widget, Q
 void napkin::BaseWindow::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
-	QSettings s;
-	restoreGeometry(s.value(settingsKey::WIN_GEO).toByteArray());
-	restoreState(s.value(settingsKey::WIN_STATE).toByteArray());
+	AutoSettings::get().restore(*this);
 }
 
 void napkin::BaseWindow::closeEvent(QCloseEvent* event)
 {
-	QSettings s;
+	AutoSettings::get().store(*this);
+	QWidget::closeEvent(event);
+}
+
+void napkin::BaseWindow::saveSettings(QSettings& s)
+{
 	s.setValue(settingsKey::WIN_STATE, saveState());
 	s.setValue(settingsKey::WIN_GEO, saveGeometry());
-	QWidget::closeEvent(event);
+}
+
+void napkin::BaseWindow::restoreSettings(QSettings& s)
+{
+	restoreGeometry(s.value(settingsKey::WIN_GEO).toByteArray());
+	restoreState(s.value(settingsKey::WIN_STATE).toByteArray());
 }

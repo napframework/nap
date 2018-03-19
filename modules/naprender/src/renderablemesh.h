@@ -11,36 +11,37 @@ namespace nap
 	class RenderableMeshComponentInstance;
 
 	/**
-	* Represent the coupling between a mesh and a material. Must be created through RenderableMeshComponentInstance.
-	*/
+	 * Represents the coupling between a mesh and a material. This object can only be created by a RenderableMeshComponentInstance
+	 * This object manages a vertex array object handle that is issued by the render service. 
+	 */
 	class NAPAPI RenderableMesh final
 	{
 	public:
 		RenderableMesh() = default;
 
 		/**
-		* @return whether the material and mesh form a valid combination. It is valid when the vertex attributes
-		* of the mesh match with the vertex attributes of the shader that is applied on the material.
+		* @return whether the material and mesh form a valid combination. The combination is valid when the vertex attributes
+		* of a mesh match the vertex attributes of a shader.
 		*/
 		bool isValid() const													{ return mVAOHandle.isValid(); }
 
 		/**
-		* @return The IMesh object that was used to create this object.
+		* @return The mesh object used to create this object.
 		*/
 		IMesh& getMesh()														{ return *mMesh; }
 
 		/**
-		* @return The IMesh object that was used to create this object.
+		* @return The mesh object used to create this object.
 		*/
 		const IMesh& getMesh() const											{ return *mMesh; }
 
 		/**
-		* @return The MaterialInstance object that was used to create this object.
+		* @return The material instance object used to create this object.
 		*/
 		MaterialInstance& getMaterialInstance()									{ return *mMaterialInstance; }
 
 		/**
-		* @return The MaterialInstance object that was used to create this object.
+		* @return The material instance object used to create this object.
 		*/
 		const MaterialInstance& getMaterialInstance() const						{ return *mMaterialInstance; }
 
@@ -48,8 +49,8 @@ namespace nap
 		friend class RenderableMeshComponentInstance;
 
 		/**
-		* Constructor.
-		*/
+		 * Constructor.
+		 */
 		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, const VAOHandle& vaoHandle);
 
 		MaterialInstance*	mMaterialInstance = nullptr;	///< Material instance

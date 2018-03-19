@@ -3,6 +3,7 @@
 #include "selectcolormethodcomponent.h"
 
 #include <component.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -19,7 +20,7 @@ namespace nap
 		/**
 		 *	The mesh it should color
 		 */
-		ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;
+		ResourcePtr<ArtnetMeshFromFile> mMesh = nullptr;
 		ComponentPtr<SelectColorMethodComponent> mSelector = nullptr;
 	};
 

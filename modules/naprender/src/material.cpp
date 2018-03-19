@@ -24,10 +24,11 @@ RTTI_BEGIN_ENUM(nap::EDepthMode)
 	RTTI_ENUM_VALUE(nap::EDepthMode::NoReadWrite,			"NoReadWrite")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
+RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding)
+	RTTI_VALUE_CONSTRUCTOR(const std::string&, const std::string&)
 	RTTI_PROPERTY("MeshAttributeID",			&nap::Material::VertexAttributeBinding::mMeshAttributeID, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShaderAttributeID",			&nap::Material::VertexAttributeBinding::mShaderAttributeID, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
+RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)
@@ -59,22 +60,22 @@ namespace nap
 
 		switch (declaration.mGLSLType)
 		{
-		case opengl::GLSLType::Int:
+		case opengl::EGLSLType::Int:
 			result = std::make_unique<UniformInt>();
 			break;
-		case opengl::GLSLType::Float:
+		case opengl::EGLSLType::Float:
 			result = std::make_unique<UniformFloat>();
 			break;
-		case opengl::GLSLType::Vec4:
+		case opengl::EGLSLType::Vec4:
 			result = std::make_unique<UniformVec4>();
 			break;
-		case opengl::GLSLType::Mat4:
+		case opengl::EGLSLType::Mat4:
 			result = std::make_unique<UniformMat4>();
 			break;
-		case opengl::GLSLType::Tex2D:
+		case opengl::EGLSLType::Tex2D:
 			result = std::make_unique<UniformTexture2D>();
 			break;
-		case opengl::GLSLType::Vec3:
+		case opengl::EGLSLType::Vec3:
 			result = std::make_unique<UniformVec3>();
 			break;
 		}
@@ -117,7 +118,7 @@ namespace nap
 		const opengl::UniformDeclarations& uniform_declarations = resource.mMaterial->getShader()->getShader().getUniformDeclarations();
 
 		// Create new uniforms for all the uniforms in mUniforms
-		for (ObjectPtr<Uniform>& uniform : resource.mUniforms)
+		for (ResourcePtr<Uniform>& uniform : resource.mUniforms)
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
 			if (declaration == uniform_declarations.end())
@@ -190,7 +191,7 @@ namespace nap
 
 			// See if we have a matching uniform in our input data
 			Uniform* matching_uniform = nullptr;
-			for (ObjectPtr<Uniform>& uniform : mUniforms)
+			for (ResourcePtr<Uniform>& uniform : mUniforms)
 			{
 				if (uniform->mName == name)
 				{

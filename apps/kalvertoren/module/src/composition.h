@@ -5,8 +5,8 @@
 #include "imagesequencelayer.h"
 
 // External Includes
-#include <rtti/rttiobject.h>
-#include <nap/objectptr.h>
+#include <nap/resourceptr.h>
+#include <nap/resource.h>
 #include <vector>
 #include <nap/signalslot.h>
 
@@ -25,9 +25,9 @@ namespace nap
 	/**
 	 * A composition consists out of a set of layers that are blended on top of each other
 	 */
-	class NAPAPI Composition : public rtti::RTTIObject
+	class NAPAPI Composition : public nap::Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(rtti::Object)
 	public:
 		virtual ~Composition();
 
@@ -37,7 +37,7 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<nap::ObjectPtr<Layer>>	mLayers;									///< All the layers this composition works with
+		std::vector<ResourcePtr<Layer>>	mLayers;									///< All the layers this composition works with
 		CompositionPlayMode					mMode = CompositionPlayMode::Length;		///< Property: controls the composition playback mode
 		float								mLength = 1.0f;								///< Length of the sequence
 	};

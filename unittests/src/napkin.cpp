@@ -354,7 +354,7 @@ TEST_CASE("Commands", TAG_NAPKIN)
 		REQUIRE(doc->getObjects().size() == 1);
 	}
 
-	nap::rtti::RTTIObject* entity1 = doc->getObjects()[0].get();
+	nap::rtti::Object* entity1 = doc->getObjects()[0].get();
 	nap::Entity* e1 = rtti_cast<nap::Entity>(entity1);
 	REQUIRE(e1 != nullptr);
 
@@ -371,7 +371,7 @@ TEST_CASE("Commands", TAG_NAPKIN)
 		REQUIRE(doc->getObjects().size() == 2);
 	}
 
-	nap::rtti::RTTIObject* entity2 = doc->getObjects()[1].get();
+	nap::rtti::Object* entity2 = doc->getObjects()[1].get();
 	nap::Entity* e2 = rtti_cast<nap::Entity>(entity2);
 	REQUIRE(e2 != nullptr);
 	REQUIRE(doc->getParent(*e2) == e1);
@@ -424,35 +424,33 @@ TEST_CASE("Commands", TAG_NAPKIN)
 
 TEST_CASE("File Extensions", TAG_NAPKIN)
 {
-    napkin::ResourceFactory fact = napkin::AppContext::get().getResourceFactory();
-    {
-        QStringList imageExtensions;
-        for (const auto& e : fact.getImageExtensions())
-            imageExtensions << e;
+	napkin::ResourceFactory fact = napkin::AppContext::get().getResourceFactory();
+	{
+		QStringList imageExtensions;
+		for (const auto& e : fact.getImageExtensions())
+			imageExtensions << e;
 		REQUIRE(imageExtensions.size() > 0);
 
-        auto imageExtString = "Image Extensions: " + imageExtensions.join(", ");
-        REQUIRE(!imageExtString.isEmpty());
+		auto imageExtString = "Image Extensions: " + imageExtensions.join(", ");
+		REQUIRE(!imageExtString.isEmpty());
 
 		nap::Logger::debug(imageExtString.toStdString());
-    }
-    {
-        QStringList videoExtensions;
-        for (const auto& e : fact.getVideoExtensions())
-            videoExtensions << e;
+	}
+	{
+		QStringList videoExtensions;
+		for (const auto& e : fact.getVideoExtensions())
+			videoExtensions << e;
 		REQUIRE(videoExtensions.size() > 0);
 
-        auto videoExtString = "Video Extensions: " + videoExtensions.join(", ");
-        REQUIRE(!videoExtString.isEmpty());
+		auto videoExtString = "Video Extensions: " + videoExtensions.join(", ");
+		REQUIRE(!videoExtString.isEmpty());
 
-        nap::Logger::debug(videoExtString.toStdString());
-    }
+		nap::Logger::debug(videoExtString.toStdString());
+	}
 }
 
 TEST_CASE("Resource Management", TAG_NAPKIN)
 {
-	// NOTE: Some conversion to std::string to let Catch print useful debug info
-
 	// Must start QApplication in order to have an event loop for signals?
 	int argc = 1;
 	char* argv[] = {"arg!"};
@@ -486,6 +484,7 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	auto relJsonPath = napkin::getRelativeResourcePath(absJsonFilePath);
 	REQUIRE(relJsonPath.toStdString() == jsonFile.toStdString());
 
+
 	// Check relative path
 	auto relShaderPath = napkin::getRelativeResourcePath(absShaderFilePath);
 	REQUIRE(relShaderPath.toStdString() == shaderFile.toStdString());
@@ -502,3 +501,9 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	REQUIRE(!napkin::directoryContains(absShaderPath, resourcedir));
 
 }
+//
+//
+//TEST_CASE("Load Document", TAG_NAPKIN)
+//{
+//	napkin::AppContext::get().loadDocument(getResource("kalvertoren.json"));
+//}

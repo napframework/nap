@@ -1,11 +1,14 @@
 #pragma once
 
 #include <QWidget>
-#include <QtGui/QStandardItemModel>
-#include <QtWidgets/QTreeView>
-#include <QtWidgets/QVBoxLayout>
-#include <generic/filtertreeview.h>
+#include <QStandardItemModel>
+#include <QTreeView>
+#include <QVBoxLayout>
+#include <QComboBox>
+
 #include <nap/logger.h>
+
+#include "generic/filtertreeview.h"
 
 namespace napkin
 {
@@ -18,14 +21,6 @@ namespace napkin
 	public:
 		LogModel();
 
-	Q_SIGNALS:
-
-		/**
-		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread
-		 * @param msg The log message being handled
-		 */
-		void napLogged(nap::LogMessage msg);
-
 	private:
 		/**
 		 * Signals from napLogged() will arrive on this handler.
@@ -34,7 +29,6 @@ namespace napkin
 		void onLog(nap::LogMessage log);
 
 		int mMaxRows = 1000; // The maximum number of rows to show in the log
-		nap::Slot<nap::LogMessage> mLogHandler = { this, &LogModel::napLogged };
 		QMap<nap::LogLevel, QString> mColors;
 	};
 
@@ -46,11 +40,33 @@ namespace napkin
 		Q_OBJECT
 	public:
 		explicit LogPanel();
+		const nap::LogLevel& getCurrentLevel() const;
+		void setCurrentLevel(const nap::LogLevel& level);
+		int getLevelIndex(const nap::LogLevel& level) const;
+
+	protected:
+		void closeEvent(QCloseEvent* event) override;
+		void showEvent(QShowEvent* event) override;
 
 	private:
-		void onDoubleClicked(const QModelIndex& index);
+		void populateFilterCombo();
+		/**
+		 * Provide FilterTreeView with a way of filtering log messages based on our level
+		 */
+		bool levelFilter(const LeafFilterProxyModel& model, int sourceRow, const QModelIndex& sourceParent);
 
-		FilterTreeView mTreeView; // Treeview with log entries
-		LogModel mLogModel;		  // The model containing the log entries
+		void onLevelChanged(int index);
+		void onDoubleClicked(const QModelIndex& index);
+		void onRowsAboutToBeInserted(const QModelIndex &parent, int first, int last);
+		void onRowInserted(const QModelIndex &parent, int first, int last);
+
+		FilterTreeView mTreeView; 	// Treeview with log entries
+		QVBoxLayout mLayout;		// The main layout
+		QHBoxLayout mCornerLayout; 	// Layout at the top-right corner
+		QComboBox mFilterCombo;		// Combo containing the log levels to filter on
+		LogModel mLogModel;		  	// The model containing the log entries
+		bool wasMaxScroll = true; 	// Whether the scroll view was at max
 	};
+
+
 };

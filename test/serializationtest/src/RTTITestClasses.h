@@ -1,7 +1,7 @@
 #pragma once
 
-#include <nap/objectptr.h>
-#include <rtti/rttiobject.h>
+#include <rtti/objectptr.h>
+#include <rtti/object.h>
 
 enum class ETestEnum
 {
@@ -25,27 +25,27 @@ struct DataStruct
 	{
 	}
 
-	DataStruct(float value, nap::rtti::RTTIObject* pointer = nullptr) : 
+	DataStruct(float value, nap::rtti::Object* pointer = nullptr) : 
 		mFloatProperty(value), 
 		mPointerProperty(pointer) 
 	{
 	}
 
 	float					mFloatProperty = 0.0f;
-	nap::rtti::RTTIObject*	mPointerProperty = nullptr;
+	nap::rtti::Object*	mPointerProperty = nullptr;
 	ENestedEnum				mNestedEnum = ENestedEnum::Five;
 };
 
-class BaseClass : public nap::rtti::RTTIObject
+class BaseClass : public nap::rtti::Object
 {
-	RTTI_ENABLE(nap::rtti::RTTIObject)
+	RTTI_ENABLE(nap::rtti::Object)
 
 public:
 	int						mIntProperty = 0;
 	std::string				mStringProperty;
-	nap::rtti::RTTIObject*	mPointerProperty = nullptr;
+	nap::rtti::Object*	mPointerProperty = nullptr;
 	ETestEnum				mEnumProperty = ETestEnum::One;
-	nap::ObjectPtr<nap::rtti::RTTIObject>	mObjectPtrProperty;
+	nap::rtti::ObjectPtr<nap::rtti::Object>	mObjectPtrProperty;
 };
 
 class DerivedClass : public BaseClass
@@ -56,9 +56,9 @@ public:
 	DataStruct							mNestedCompound;
 	std::vector<int>					mArrayOfInts;
 	std::vector<DataStruct>				mArrayOfCompounds;
-	std::vector<nap::rtti::RTTIObject*>	mArrayOfPointers;
-	nap::rtti::RTTIObject*				mEmbeddedPointer;
-	std::vector<nap::rtti::RTTIObject*>	mArrayOfEmbeddedPointers;
+	std::vector<nap::rtti::Object*>	mArrayOfPointers;
+	nap::rtti::Object*				mEmbeddedPointer;
+	std::vector<nap::rtti::Object*>	mArrayOfEmbeddedPointers;
 };
 
 class DerivedClass2 : public BaseClass

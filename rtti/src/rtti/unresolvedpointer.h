@@ -2,7 +2,7 @@
 
 // RTTI includes
 #include <rtti/rtti.h>
-#include "rttipath.h"
+#include "path.h"
 
 // STL includes
 #include <string>
@@ -13,7 +13,7 @@ namespace nap
 {
 	namespace rtti
 	{
-		class RTTIObject;
+		class Object;
 
 		/**
 		 * An UnresolvedPointer represents a pointer property in a nap object that is currently unresolved (i.e. null)
@@ -23,15 +23,15 @@ namespace nap
 		 */
 		struct NAPAPI UnresolvedPointer
 		{
-			UnresolvedPointer(RTTIObject* object, const rtti::RTTIPath& path, const std::string& targetID) :
+			UnresolvedPointer(Object* object, const rtti::Path& path, const std::string& targetID) :
 				mObject(object),
 				mRTTIPath(path),
 				mTargetID(targetID)
 			{
 			}
 
-			RTTIObject*		mObject;		// The object this pointer is on
-			rtti::RTTIPath	mRTTIPath;		// RTTIPath to the pointer on <mObject>
+			Object*		mObject;		// The object this pointer is on
+			rtti::Path	mRTTIPath;		// RTTIPath to the pointer on <mObject>
 			std::string		mTargetID;		// The ID of the target this pointer should point to
 		};
 

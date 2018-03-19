@@ -20,10 +20,10 @@ namespace nap
 	 */
 	struct NAPAPI RenderState
 	{
-		bool				mEnableMultiSampling = true;
-		float				mLineWidth = 1.0f;
-		float				mPointSize = 1.0;
-		opengl::PolygonMode mPolygonMode = opengl::PolygonMode::FILL;
+		bool					mEnableMultiSampling = true;				///< Enables anti-aliasing
+		float					mLineWidth = 1.0f;							///< Display line width
+		float					mPointSize = 1.0;							///< Display point size
+		opengl::EPolygonMode	mPolygonMode = opengl::EPolygonMode::Fill;	///< Display mode
 
 	private:
 		friend class RenderService;

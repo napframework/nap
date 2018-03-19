@@ -14,7 +14,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} napcore
-        mod_napinput
-        mod_naprender
-        )
+set(DEPENDENT_NAP_MODULES mod_napinput mod_naprender)
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
+
+# Package into platform release
+package_module()
+
+# Set packaged Linux RPATH 
+if (UNIX AND NOT APPLE)
+    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
+endif()

@@ -26,7 +26,12 @@ namespace nap
 	class RenderWindow;
 
 	/**
-	 * Main interface for rendering operations. 
+	 * Main interface for 3D rendering operations.
+	 * The main function of this service is to initialize the render back-end, create and manage vertex array objects and
+	 * provide an interface to render objects to a specific target (screen or back-buffer).
+	 * Vertex array object management is handled completely by this service. As a user you only work
+	 * with the render interface to render a set of render-able components to a target using a camera.
+	 * The service is shut down automatically on exit. Including the destruction of windows and left over resources.
 	 */
 	class NAPAPI RenderService : public Service
 	{
@@ -40,10 +45,10 @@ namespace nap
 		 */
 		enum class State : int
 		{
-			Uninitialized		= -1,
-			Initialized			= 0,
-			WindowError			= 1,
-			SystemError			= 2,
+			Uninitialized	= -1,		///< The render back end is not initialized
+			Initialized		= 0,		///< The render back end initialized correctly
+			WindowError		= 1,		///< The render back end produced a window error
+			SystemError		= 2,		///< The render back end produced a system error
 		};
 
 		// Default constructor
@@ -122,7 +127,7 @@ namespace nap
  		 * Destroys all per-context OpenGL resources that are scheduled for destruction. 
  		 * @param renderWindows: all render windows that are active, as they hold the GL contexts.
 		 */
-		void destroyGLContextResources(const std::vector<ObjectPtr<RenderWindow>>& renderWindows);
+		void destroyGLContextResources(const std::vector<rtti::ObjectPtr<RenderWindow>>& renderWindows);
 
 		/**
 		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
@@ -153,14 +158,14 @@ namespace nap
 		 * @param nativeWindow the native window handle (i.e. the SDL_Window pointer)
 		 * @return the render window associated with the native window
 		 */
-		ObjectPtr<RenderWindow> findWindow(void* nativeWindow) const;
+		rtti::ObjectPtr<RenderWindow> findWindow(void* nativeWindow) const;
 
 		/**
 		 * Find a RenderWindow based on a window id
 		 * @param the associated window id
 		 * @return the RenderWindowResource, nullptr if not found
 		 */
-		ObjectPtr<RenderWindow> getWindow(uint id) const;
+		rtti::ObjectPtr<RenderWindow> getWindow(uint id) const;
 
 		/**
 		 * Get the primary window (i.e. the window that was used to init OpenGL against)

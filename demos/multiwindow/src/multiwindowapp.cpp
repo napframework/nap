@@ -239,7 +239,7 @@ namespace nap
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
-				nap::ObjectPtr<nap::RenderWindow> window = mRenderService->getWindow(press_event->mWindow);
+				rtti::ObjectPtr<nap::RenderWindow> window = mRenderService->getWindow(press_event->mWindow);
 				window->toggleFullscreen();
 			}
 		}
