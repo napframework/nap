@@ -82,10 +82,12 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance> mLineEntity = nullptr;				//< Pointer to the entity that holds the sphere
+		ObjectPtr<EntityInstance> mLaserEntity = nullptr;				//< Pointer to the entity that represents the laser canvas
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 
 		// Colors
-		RGBColorFloat mColorTwo = { 0.784f, 0.411f, 0.411f };	
-		RGBColorFloat mColorOne = { 1.0f, 1.0f, 1.0f };
+		RGBColorFloat mColorTwo = { 0.784f, 0.411f, 0.411f };			//< Line first color	
+		RGBColorFloat mColorOne = { 1.0f, 1.0f, 1.0f };					//< Line second color
+		float mBlendSpeed = 1.0f;										//< Line blend speed
 	};
 }

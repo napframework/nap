@@ -51,10 +51,7 @@ namespace nap
 
 
 	/**
-	 * Colors a line based on a bitmap
-	 * The end and start vertices are given uv coordinates that are used to perform a bitmap color lookup
-	 * The remaining vertices are assigned uv's based on those boundary uv coordinates
-	 * This ensures the line only receives colors associated with a bitmap and no blended (interpolated) colors
+	 * Colors a line based on two colors
 	 */
 	class NAPAPI LineColorComponentInstance : public ComponentInstance
 	{
@@ -69,13 +66,13 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 	   /**
-		* Updates the line color
+		* Updates the color of all the line vertices
 		*/
 		virtual void update(double deltaTime) override;
 
 		/**
-		 * Sets the start uv coordinate of the line, will be clamped between 0-1
-		 * @param startPosition start position in uv space of the line
+		 * Sets the first color
+		 * @param color the new color
 		 */
 		void setFirstColor(const RGBColorFloat& color);
 
@@ -85,10 +82,10 @@ namespace nap
 		const RGBColorFloat& getFirstColor() const						{ return mFirstColor; }
 
 		/**
-		 * Sets the end uv coordinate of the line, will be clamped between 0-1
-		 * @param endPosition end position in uv space of the line
+		 * Sets the seconds color
+		 * @param color the new color
 		 */
-		void setSecondColor(const RGBColorFloat& endPosition);
+		void setSecondColor(const RGBColorFloat& color);
 
 		/**
 		 *	@return the current end position in uv coordinates
