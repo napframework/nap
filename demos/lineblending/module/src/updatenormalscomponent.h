@@ -30,7 +30,7 @@ namespace nap
 
 
 	/**
-	 * updatenormalscomponentInstance	
+	 * Pushes the updated mesh (which represents the normals of the line) to the GPU every frame
 	 */
 	class NAPAPI UpdateNormalsComponentInstance : public ComponentInstance
 	{
@@ -40,10 +40,7 @@ namespace nap
 			ComponentInstance(entity, resource)									{ }
 
 		/**
-		 * Initialize updatenormalscomponentInstance based on the updatenormalscomponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
-		 * @param errorState should hold the error message when initialization fails
-		 * @return if the updatenormalscomponentInstance is initialized successfully
+		 * Initializes this instance
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -53,7 +50,7 @@ namespace nap
 		void setMesh(nap::VisualizeNormalsMesh& mesh)					{ mNormalMesh = &mesh; }
 
 		/**
-		 *	Updates the mesh, CPU and GPU
+		 * Forces an update of the mesh that represents the normals
 		 */
 		virtual void update(double deltaTime) override;
 

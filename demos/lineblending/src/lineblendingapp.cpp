@@ -42,13 +42,15 @@ namespace nap
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 
-		// Find the world and camera entities
+		// Extract the only scene
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
+		// Find the entities we're interested in
 		mLineEntity = scene->findEntity("Line");
 		mCameraEntity = scene->findEntity("Camera");
+		mLaserEntity = scene->findEntity("LaserEntity");
 
-		// Set initial colors
+		// Set initial line colors
 		mColorOne = mLineEntity->getComponent<LineColorComponentInstance>().getFirstColor();
 		mColorTwo = mLineEntity->getComponent<LineColorComponentInstance>().getSecondColor();
 
@@ -57,42 +59,45 @@ namespace nap
 	
 	
 	/**
-	 * Forward all the received input messages to the camera input components.
-	 * The input router is used to filter the input events and to forward them
-	 * to the input components of a set of entities, in this case our camera.
-	 * 
-	 * The camera has two input components: KeyInputComponent and PointerInputComponent
-	 * The key input component receives key events, the pointer input component receives pointer events
-	 * The orbit controller listens to both of them
-	 * When an input component receives a message it sends a signal to the orbit controller.
-	 * The orbit controller validates if it's something useful and acts accordingly,
-	 * in this case by rotating around or zooming in on the sphere.
-	 */
+	* Forward all the received input messages to the camera input components.
+	* The input router is used to filter the input events and to forward them
+	* to the input components of a set of entities, in this case our camera.
+	* After that we setup the gui.
+	*/
 	void LineBlendingApp::update(double deltaTime)
 	{
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
 
+		// Forward all input events associated with the first window to the listening components
+		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
+		mInputService->processEvents(*mRenderWindow, input_router, entities);
+
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to world, right mouse button to zoom");
+			"left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		// Color
 		if (ImGui::CollapsingHeader("Color"))
 		{
-			if (ImGui::ColorEdit3("Color One", mColorOne.getData()))
+			if (ImGui::ColorEdit3("Line Color One", mColorOne.getData()))
 			{
 				mLineEntity->getComponent<LineColorComponentInstance>().setFirstColor(mColorOne);
 			}
-			if (ImGui::ColorEdit3("Color Two", mColorTwo.getData()))
+			if (ImGui::ColorEdit3("Line Color Two", mColorTwo.getData()))
 			{
 				mLineEntity->getComponent<LineColorComponentInstance>().setSecondColor(mColorTwo);
 			}
+		}
+		if (ImGui::CollapsingHeader("Blending"))
+		{
+			float* blend_speed = &(mLineEntity->getComponent<LineBlendComponentInstance>().mBlendSpeed);
+			ImGui::SliderFloat("Blend Speed", blend_speed, 0.0f, 1.0f);
 		}
 
 		ImGui::End();
@@ -100,12 +105,9 @@ namespace nap
 
 	
 	/**
-	 * Render loop is rather straight forward:
-	 * Set the camera position in the world shader for the halo effect
-	 * make the main window active, this makes sure that all subsequent render calls are 
-	 * associated with that window. When you have multiple windows and don't activate the right window subsequent
-	 * render calls could end up being associated with the wrong context, resulting in undefined behavior.
-	 * Next we clear the render target, render the object and swap the main window back-buffer.
+	 * Render loop is rather straight forward. 
+	 * All the objects in the scene are rendered at once including the line + normals and canvas
+	 * This demo doesn't require special render steps
 	 */
 	void LineBlendingApp::render()
 	{
@@ -118,10 +120,8 @@ namespace nap
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
-		nap::RenderableMeshComponentInstance& renderable_mesh = mLineEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		std::vector<RenderableComponentInstance*> render_comps;
-		render_comps.emplace_back(&renderable_mesh);
-
+		// Render all objects in the scene at once
+		// This includes the line + normals and the laser canvas
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
 
 		// Draw gui to screen
