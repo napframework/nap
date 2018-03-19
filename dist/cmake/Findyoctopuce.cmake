@@ -1,37 +1,39 @@
+set(YOCTO_DIR ${THIRDPARTY_DIR}/yoctopuce)
+set(YOCTO_INCLUDE_DIRS ${YOCTO_DIR}/include ${YOCTO_DIR}/include/yapi)
 if (WIN32)
-  find_path(
+    find_path(
         YOCTOPUCE_DIR
         NAMES bin/release/yocto.dll
-        HINTS ${THIRDPARTY_DIR}/yoctopuce
-    )
-  set(YOCTOPUCE_LIBS_DIR ${YOCTOPUCE_DIR}/bin)
-	set(YOCTOPUCE_LIBS ${YOCTOPUCE_LIBS_DIR}/release/yocto.lib)
-	set(YOCTOPUCE_LIBS_RELEASE_DLL ${YOCTOPUCE_LIBS_DIR}/release/yocto.dll)
+        HINTS ${YOCTO_DIR}
+        )
+    set(YOCTOPUCE_LIBS_DIR ${YOCTOPUCE_DIR}/bin)
+    set(YOCTOPUCE_LIBS ${YOCTOPUCE_LIBS_DIR}/release/yocto.lib)
+    set(YOCTOPUCE_LIBS_RELEASE_DLL ${YOCTOPUCE_LIBS_DIR}/release/yocto.dll)
 elseif(APPLE)
-  find_path(
+    find_path(
         YOCTOPUCE_DIR
         NAMES bin/libyocto.dylib
-        HINTS ${THIRDPARTY_DIR}/yoctopuce
-    )   
-  set(YOCTOPUCE_LIBS_DIR ${YOCTOPUCE_DIR}/bin)
-	set(YOCTOPUCE_LIBS ${YOCTOPUCE_LIBS_DIR}/libyocto.dylib)
-	set(YOCTOPUCE_LIBS_RELEASE_DLL ${YOCTOPUCE_LIBS})
+        HINTS ${YOCTO_DIR}
+        )   
+    set(YOCTOPUCE_LIBS_DIR ${YOCTOPUCE_DIR}/bin)
+    set(YOCTOPUCE_LIBS ${YOCTOPUCE_LIBS_DIR}/libyocto.dylib)
+    set(YOCTOPUCE_LIBS_RELEASE_DLL ${YOCTOPUCE_LIBS})
 else()
-  find_path(
+    find_path(
         YOCTOPUCE_DIR
         NAMES bin/libyocto.so.1.0.1
-        HINTS ${THIRDPARTY_DIR}/yoctopuce
-    )   
-  set(YOCTOPUCE_LIBS_DIR ${YOCTOPUCE_DIR}/bin)
-	set(YOCTOPUCE_LIBS ${YOCTOPUCE_LIBS_DIR}/libyocto.so.1.0.1)
-	set(YOCTOPUCE_LIBS_RELEASE_DLL ${YOCTOPUCE_LIBS})
+        HINTS ${YOCTO_DIR}
+        )   
+    set(YOCTOPUCE_LIBS_DIR ${YOCTOPUCE_DIR}/bin)
+    set(YOCTOPUCE_LIBS ${YOCTOPUCE_LIBS_DIR}/libyocto.so.1.0.1)
+    set(YOCTOPUCE_LIBS_RELEASE_DLL ${YOCTOPUCE_LIBS})
 endif()
 
 mark_as_advanced(YOCTOPUCE_LIBS_DIR)
 
 # promote package for find
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(yoctopuce REQUIRED_VARS YOCTOPUCE_DIR YOCTOPUCE_LIBS YOCTOPUCE_LIBS_DIR)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(yoctopuce REQUIRED_VARS YOCTOPUCE_DIR YOCTOPUCE_LIBS YOCTOPUCE_LIBS_DIR YOCTO_INCLUDE_DIRS)
 
 add_library(yoctopuce SHARED IMPORTED)
 set_target_properties(yoctopuce PROPERTIES
