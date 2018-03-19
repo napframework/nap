@@ -10,14 +10,20 @@ if(WIN32)
     set(YOCTO_LIBS_DEBUG ${YOCTO_DIR}/Binaries/windows/x64/Debug/yocto.lib)
     set(YOCTO_LIBS_RELEASE ${YOCTO_DIR}/Binaries/windows/x64/Release/yocto.lib)
     set(YOCTO_LIBS_DIR ${YOCTO_DIR}/Binaries/windows/x64)
+    set(YOCTO_DEBUG_DLL ${YOCTO_DIR}/Binaries/windows/x64/Debug/yocto.dll)
+    set(YOCTO_RELEASE_DLL ${YOCTO_DIR}/Binaries/windows/x64/Release/yocto.dll)
 elseif(APPLE)
     set(YOCTO_LIBS_DEBUG ${YOCTO_DIR}/Binaries/osx/libyocto.dylib)
     set(YOCTO_LIBS_RELEASE ${YOCTO_DIR}/Binaries/osx/libyocto.dylib)
     set(YOCTO_LIBS_DIR ${YOCTO_DIR}/Binaries/osx)
+    set(YOCTO_DEBUG_DLL ${YOCTO_LIBS_DEBUG})
+    set(YOCTO_RELEASE_DLL ${YOCTO_LIBS_RELEASE})
 else()
     set(YOCTO_LIBS_DEBUG ${YOCTO_DIR}/Binaries/linux/64bits/libyocto.so.1.0.1)
     set(YOCTO_LIBS_RELEASE ${YOCTO_DIR}/Binaries/linux/64bits/libyocto.so.1.0.1)
     set(YOCTO_LIBS_DIR ${YOCTO_DIR}/Binaries/linux/64bits)
+    set(YOCTO_DEBUG_DLL ${YOCTO_LIBS_DEBUG})
+    set(YOCTO_RELEASE_DLL ${YOCTO_LIBS_RELEASE})
 endif()
 
 mark_as_advanced(YOCTO_INCLUDE_DIRS)
@@ -27,28 +33,27 @@ mark_as_advanced(YOCTO_LIBS_RELEASE)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(yoctopuce REQUIRED_VARS YOCTO_INCLUDE_DIRS YOCTO_LIBS_DEBUG YOCTO_LIBS_RELEASE YOCTO_LIBS_DIR)
 
-if (WIN32)
-    set(YOCTO_DEBUG_DLL ${YOCTO_DIR}/Binaries/windows/x64/Debug/yocto.dll)
-    set(YOCTO_RELEASE_DLL ${YOCTO_DIR}/Binaries/windows/x64/Release/yocto.dll)
-else()
-    set(YOCTO_DEBUG_DLL ${YOCTO_LIBS_DEBUG})
-    set(YOCTO_RELEASE_DLL ${YOCTO_LIBS_RELEASE})
+add_library(yoctopuce SHARED IMPORTED)
+set_target_properties(yoctopuce PROPERTIES
+                      IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
+                      IMPORTED_LOCATION_RELEASE ${YOCTO_RELEASE_DLL}
+                      IMPORTED_LOCATION_DEBUG ${YOCTO_DEBUG_DLL}
+                      IMPORTED_LOCATION_MINSIZEREL ${YOCTO_RELEASE_DLL}
+                      IMPORTED_LOCATION_RELWITHDEBINFO ${YOCTO_RELEASE_DLL}
+                      )
+
+if(WIN32)
+    set_target_properties(yoctopuce PROPERTIES
+                          IMPORTED_IMPLIB_RELEASE ${YOCTO_LIBS_RELEASE}
+                          IMPORTED_IMPLIB_DEBUG ${YOCTO_LIBS_DEBUG}
+                          )
 endif()
 
 # Copy the etherdream dynamic linked lib into the build directory
 macro(copy_yoctopuce_dll)
-    add_library(yoctopucelib SHARED IMPORTED)
-    set_target_properties(yoctopucelib PROPERTIES
-                          IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
-                          IMPORTED_LOCATION_RELEASE ${YOCTO_RELEASE_DLL}
-                          IMPORTED_LOCATION_DEBUG ${YOCTO_DEBUG_DLL}
-                          IMPORTED_LOCATION_MINSIZEREL ${YOCTO_RELEASE_DLL}
-                          IMPORTED_LOCATION_RELWITHDEBINFO ${YOCTO_RELEASE_DLL}
-                          )
-
     add_custom_command(
             TARGET ${PROJECT_NAME}
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:yoctopucelib> $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:yoctopucelib>
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:yoctopuce> $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:yoctopuce>
     )
 endmacro()

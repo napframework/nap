@@ -23,7 +23,7 @@ if(NOT WIN32)
 endif()
 
 set(DEPENDENT_NAP_MODULES napcore mod_napmath mod_napscene)
-target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES}  debug ${YOCTO_LIBS_DEBUG} optimized ${YOCTO_LIBS_RELEASE})
+target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} yoctopuce)
 
 if (WIN32)
   copy_yoctopuce_dll()
