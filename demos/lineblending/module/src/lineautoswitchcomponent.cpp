@@ -74,22 +74,33 @@ namespace nap
 		float threshold = (std::accumulate(mBlendDiffs.begin(), mBlendDiffs.end(), 0.0f) / static_cast<float>(mBlendDiffs.size())) * 5.0f;
 
 		// Check if we changed direction and below or under the threshold
-		bool change_in_direction = current_direction != mPrevDirection;
-		if (mPrevDirection == EBlendDirection::Down 
-			&& current_direction == EBlendDirection::Up 
+		if (mPrevDirection == EBlendDirection::Down && current_direction == EBlendDirection::Up 
 			&& current_blend_value < threshold)
 		{
-			int new_index = mRandom ? math::random<int>(0, mSelectorTwo->getCount() - 1) : mNextLine;
+			int new_index = mRandom ? mSelectorOne->getIndex() : mNextLine;
+			if (mRandom)
+			{
+				while (new_index == mSelectorOne->getIndex())
+				{
+					new_index = math::random<int>(0, mSelectorTwo->getCount() - 1);
+				}
+			}
 			std::cout << "switching selector 2: " << new_index << "\n";
 			mSelectorTwo->setIndex(new_index);
 			mPrevDirection = current_direction;
 		}
 
-		else if (mPrevDirection == EBlendDirection::Up && 
-			current_direction == EBlendDirection::Down && 
+		else if (mPrevDirection == EBlendDirection::Up && current_direction == EBlendDirection::Down && 
 			current_blend_value > (1.0f-threshold))
 		{
-			int new_index = mRandom ? math::random<int>(0, mSelectorOne->getCount() - 1) : mNextLine;
+			int new_index = mRandom ? mSelectorTwo->getIndex() : mNextLine;
+			if (mRandom)
+			{
+				while (new_index == mSelectorTwo->getIndex())
+				{
+					new_index = math::random<int>(0, mSelectorOne->getCount() - 1);
+				}
+			}
 			std::cout << "switching selector 1: " << new_index << "\n";
 			mSelectorOne->setIndex(new_index);
 			mPrevDirection = current_direction;
