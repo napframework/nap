@@ -158,7 +158,7 @@ void MainWindow::onLog(nap::LogMessage msg)
 {
 	statusBar()->showMessage(QString::fromStdString(msg.text()));
 
-	if (msg.level().level() >= nap::Logger::warnLevel().level())
+	if (msg.level().level() >= nap::Logger::fatalLevel().level())
 		showError(msg);
 }
 

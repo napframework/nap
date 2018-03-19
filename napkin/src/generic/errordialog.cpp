@@ -32,7 +32,7 @@ void ErrorDialog::closeEvent(QCloseEvent* event)
 
 QSize ErrorDialog::sizeHint() const
 {
-	return QSize(600, 300);
+	return {600, 300};
 }
 
 void ErrorDialog::showEvent(QShowEvent* event)
