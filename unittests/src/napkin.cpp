@@ -530,21 +530,21 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 }
 
 
-TEST_CASE("Component to Component pointer", TAG_NAPKIN)
-{
-	auto& ctx = napkin::AppContext::get();
-	auto doc = ctx.newDocument();
-	nap::Entity& entity = doc->addEntity();
-	auto fpcam = doc->addComponent<nap::FirstPersonController>(entity);
-	REQUIRE(fpcam != nullptr);
-	REQUIRE(!fpcam->mID.empty());
-	auto perspcam = doc->addComponent<nap::PerspCameraComponent>(entity);
-	REQUIRE(perspcam != nullptr);
-	REQUIRE(!fpcam->mID.empty());
-	napkin::PropertyPath selectionPath(*fpcam, "PerspCameraComponent");
-	REQUIRE(selectionPath.isValid());
-	napkin::setPointee(selectionPath, perspcam);
-
-	std::string serialized_doc = ctx.documentToString();
-	REQUIRE(!serialized_doc.empty());
-}
+//TEST_CASE("Component to Component pointer", TAG_NAPKIN)
+//{
+//	auto& ctx = napkin::AppContext::get();
+//	auto doc = ctx.newDocument();
+//	nap::Entity& entity = doc->addEntity();
+//	auto fpcam = doc->addComponent<nap::FirstPersonController>(entity);
+//	REQUIRE(fpcam != nullptr);
+//	REQUIRE(!fpcam->mID.empty());
+//	auto perspcam = doc->addComponent<nap::PerspCameraComponent>(entity);
+//	REQUIRE(perspcam != nullptr);
+//	REQUIRE(!fpcam->mID.empty());
+//	napkin::PropertyPath selectionPath(*fpcam, "PerspCameraComponent");
+//	REQUIRE(selectionPath.isValid());
+//	napkin::setPointee(selectionPath, perspcam);
+//
+//	std::string serialized_doc = ctx.documentToString();
+//	REQUIRE(!serialized_doc.empty());
+//}
