@@ -114,6 +114,7 @@ namespace nap
 	struct Frame
 	{
 		bool isValid() const { return mFrame != nullptr; }
+		void free();
 
 		AVFrame*	mFrame = nullptr;	///< Frame as decoded by the decode thread
 		double		mPTSSecs;			///< When the frame needs to be displayed (absolute clock time)
@@ -295,6 +296,8 @@ namespace nap
 		void clearFrameQueue(std::queue<Frame>& frameQueue, bool emitCallback);
 
 	private:
+		using FrameQueue = std::queue<Frame>;
+
 		Video*						mVideo;
 		AVCodec*					mCodec = nullptr;
 		AVCodecContext*				mCodecContext = nullptr;
@@ -305,9 +308,9 @@ namespace nap
 		OnClearFrameQueueFunction	mOnClearFrameQueueFunction;				///< Callback that is called when the frame queue is cleared
 		bool						mExitDecodeThreadSignalled = false;		///< If this boolean is set, the decode thread will exit ASAP. This is used internally by exitDecodeThread and should not be used separately
 
-		std::queue<Frame>			mFrameQueue;							///< The frame queue as produced by the decodeThread and consumed by the main thread
-		std::queue<Frame>			mSeekFrameQueue;						///< The frame queue as produced by the decodeThread and consumed by the main thread
-		std::queue<Frame>*			mActiveFrameQueue = &mFrameQueue;		
+		FrameQueue					mFrameQueue;							///< The frame queue as produced by the decodeThread and consumed by the main thread
+		FrameQueue					mSeekFrameQueue;						///< The frame queue as produced by the decodeThread and consumed by the main thread
+		FrameQueue*					mActiveFrameQueue = &mFrameQueue;		
 		mutable std::mutex			mFrameQueueMutex;						///< Mutex protection for the frame queue
 		std::condition_variable		mFrameDataAvailableCondition;			///< Condition describing whether there is data in the frame queue to process
 		std::condition_variable		mFrameQueueRoomAvailableCondition;		///< Condition describing whether there is still room in the frame queue to add new frames
