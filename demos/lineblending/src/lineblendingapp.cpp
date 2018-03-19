@@ -10,8 +10,6 @@
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
 #include <imgui/imgui.h>
-#include <triangleiterator.h>
-#include <meshutils.h>
 #include <mathutils.h>
 #include <linecolorcomponent.h>
 #include <laseroutputcomponent.h>
