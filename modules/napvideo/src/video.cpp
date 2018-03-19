@@ -349,6 +349,17 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
+	void Frame::free()
+	{
+		if (isValid())
+		{
+			av_frame_unref(mFrame);
+			av_frame_free(&mFrame);
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
 	AVState::AVState(Video& video, int maxPacketQueueSize) :
 		mVideo(&video),
 		mMaxPacketQueueSize(maxPacketQueueSize)
@@ -778,13 +789,19 @@ namespace nap
 	Frame AVState::tryPopFrame(double pts)
 	{
 		std::unique_lock<std::mutex> lock(mFrameQueueMutex);
-		if (mFrameQueue.empty() || pts < mFrameQueue.front().mPTSSecs)
-			return Frame();
 
-		Frame cur_frame = mFrameQueue.front();
-		mFrameQueue.pop();
+		Frame cur_frame;
+		while (!mFrameQueue.empty() && pts >= mFrameQueue.front().mPTSSecs)
+		{
+			if (cur_frame.isValid())
+				cur_frame.free();
 
-		mFrameQueueRoomAvailableCondition.notify_one();
+			cur_frame = mFrameQueue.front();
+			mFrameQueue.pop();
+		}
+
+		if (cur_frame.isValid())
+			mFrameQueueRoomAvailableCondition.notify_one();
 
 		return cur_frame;
 	}
@@ -1491,8 +1508,12 @@ namespace nap
 			
 			// Try to get next frame to display (based on display clock)			
 			cur_frame = mVideoState.tryPopFrame(display_clock);
-			if (!cur_frame.isValid())
+
+			if (!cur_frame.isValid() || display_clock == sClockMax)
+			{
+				cur_frame.free();
 				return true;
+			}
 		}
 
 		// Copy data into texture
@@ -1501,8 +1522,7 @@ namespace nap
 		mVTexture->update(cur_frame.mFrame->data[2], cur_frame.mFrame->linesize[2]);
 
 		// Destroy frame that was allocated in the decode thread, after it has been processed
-		av_frame_unref(cur_frame.mFrame);
-		av_frame_free(&cur_frame.mFrame);
+		cur_frame.free();
 
 		return true;
 	}
