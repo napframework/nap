@@ -19,6 +19,7 @@ namespace nap
 {
 	bool LineBlendComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// When the line selection changes we resample the new line and cache it internally
 		mSelectorOne->mIndexChanged.connect(mSelectionChangedSlot);
 		mSelectorTwo->mIndexChanged.connect(mSelectionChangedSlot);
 
@@ -29,7 +30,7 @@ namespace nap
 		// Copy line
 		mTarget = getComponent<LineBlendComponent>()->mTarget.get();
 
-		// Cache current line attributes
+		// Resample and cache current line selections
 		cacheVertexAttributes(*mSelectorOne);
 		cacheVertexAttributes(*mSelectorTwo);
 
