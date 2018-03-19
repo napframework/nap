@@ -84,15 +84,12 @@ namespace nap
 
 	void LaserOutputComponentInstance::update(double deltaTime)
 	{
-		// Get the laser world position
-		nap::TransformComponentInstance& laser_xform = this->getEntityInstance()->getComponent<nap::TransformComponentInstance>();
-
 		// Send the polyline to the dac based on the location of the laser and the location of the line
-		populateLaserBuffer(*mLine, laser_xform.getGlobalTransform(), mLineTransform->getGlobalTransform());
+		populateLaserBuffer(*mLine, mLineTransform->getGlobalTransform());
 	}
 
 
-	void LaserOutputComponentInstance::populateLaserBuffer(const PolyLine& line, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform)
+	void LaserOutputComponentInstance::populateLaserBuffer(const PolyLine& line, const glm::mat4x4& lineXform)
 	{
 		const Vec3VertexAttribute& vert_attr = line.getPositionAttr();
 		const Vec4VertexAttribute& colr_attr = line.getColorAttr();

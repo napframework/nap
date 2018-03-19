@@ -98,7 +98,7 @@ namespace nap
 			{
 				mLineEntity->getComponent<LineColorComponentInstance>().setSecondColor(mColorTwo);
 			}
-			if (ImGui::SliderFloat("Size", &mLineSize, 0.01f, 1.0f, "%.3f", 1.0f))
+			if (ImGui::SliderFloat("Size", &mLineSize, 0.01f, 1.0f, "%.3f", 2.0f))
 			{
 				mLineEntity->getComponent<TransformComponentInstance>().setUniformScale(mLineSize);
 			}

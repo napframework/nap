@@ -89,7 +89,7 @@ namespace nap
 
 	private:
 		// Populate Laser Buffer
-		void populateLaserBuffer(const PolyLine& line, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
+		void populateLaserBuffer(const PolyLine& line, const glm::mat4x4& lineXform);
 
 		// Xform associated with the line
 		ComponentInstancePtr<TransformComponent> mLineTransform = { this, &LaserOutputComponent::mLineTransform };
