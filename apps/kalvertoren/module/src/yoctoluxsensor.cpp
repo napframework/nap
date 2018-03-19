@@ -4,7 +4,7 @@
 #include <nap/logger.h>
 #include <yocto_lightsensor.h>
 #include <iostream>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 
 // nap::yoctoluxsensor run time class definition 
 RTTI_BEGIN_CLASS(nap::YoctoLuxSensor)

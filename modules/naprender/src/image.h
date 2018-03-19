@@ -6,8 +6,7 @@
 namespace nap
 {
 	/**
-	 * Represents both CPU and GPU data for a texture. The CPU data is stored internally as a bitmap and is optional.
-	 * Classes should derive from Texture2D and call either initTexture (for a GPU-only texture) or initFromBitmap (for a CPU & GPU texture).
+	 * Represents both CPU and GPU data for a texture. The CPU data is stored internally as a bitmap and is optional
 	 * GPU textures can be read back to CPU using the getData functions. This will fill the internal bitmap with the data read-back from the GPU.
 	 * A texture can be modified in two ways:
 	 * - By modifying the internal bitmap (retrieved through getBitmap()) and calling update(). This is the most common way of updating the texture.

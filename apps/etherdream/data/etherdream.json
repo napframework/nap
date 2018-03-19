@@ -211,24 +211,6 @@
 		},
 
 		{
-			"Type" : "nap::Line",
-			"mID": "LineMesh",
-			"Start" :
-			{
-				"x": -1.0,
-				"y": 0.0,
-				"z": 0.0
-			},
-			"End" :
-			{
-				"x": 1.0,
-				"y": 0.0,
-				"z": 0.0
-			},
-			"Closed" : false
-		},
-
-		{
 			"Type" : "nap::Rectangle",
 			"mID": "RectangleMesh",
 			"Dimensions":
@@ -262,6 +244,24 @@
 			"mID" : "TracerVisualizeMesh",
 			"Radius" : 0.07
 		},
+
+	{
+		"Type" : "nap::Line",
+		"mID": "LineMesh",
+		"Start" :
+		{
+			"x": -1.0,
+			"y": 0.0,
+			"z": 0.0
+		},
+		"End" :
+		{
+			"x": 1.0,
+			"y": 0.0,
+			"z": 0.0
+		},
+		"Closed" : false
+	},
 
 		{
 			"Type" : "nap::Line",
@@ -695,12 +695,22 @@
 						},
 		 				{
 					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserOutputEntity/LaserOutputComponent",
-					 		"TargetAttributes" : [
+					 		"TargetAttributes" : 
+					 		[
 					 			{
 					 				"Path" : "Line",
-					 				"Value" : {
+					 				"Value" : 
+					 				{
 					 					"Type" : "nap::PointerInstancePropertyValue",
 					 					"Value": "LaserTraceMesh1"
+					 				}
+					 			},
+					 			{
+					 				"Path" : "Dac",
+					 				"Value" : 
+					 				{
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "Laser1"
 					 				}
 					 			}
 					 		]			 		
@@ -710,7 +720,8 @@
 					 		"TargetAttributes" : [
 					 			{
 					 				"Path" : "LaserID",
-					 				"Value" : {
+					 				"Value" : 
+					 				{
 					 					"Type" : "nap::Int32InstancePropertyValue",
 					 					"Value": 0
 					 				}
@@ -791,12 +802,16 @@
 					 		"TargetAttributes" : [
 					 			{
 					 				"Path" : "Line",
-					 				"Value" : {
+					 				"Value" : 
+					 				{
 					 					"Type" : "nap::PointerInstancePropertyValue",
 					 					"Value": "LaserTraceMesh2"
-					 				},
-					 				"Path" : "DAC",
-					 				"Value" : {
+					 				}
+					 			},
+					 			{
+					 				"Path" : "Dac",
+					 				"Value" : 
+					 				{
 					 					"Type" : "nap::PointerInstancePropertyValue",
 					 					"Value": "Laser2"
 					 				}
@@ -890,12 +905,16 @@
 					 		"TargetAttributes" : [
 					 			{
 					 				"Path" : "Line",
-					 				"Value" : {
+					 				"Value" : 
+					 				{
 					 					"Type" : "nap::PointerInstancePropertyValue",
 					 					"Value": "LaserTraceMesh3"
-					 				},
-					 				"Path" : "DAC",
-					 				"Value" : {
+					 				}
+					 			},
+					 			{
+					 				"Path" : "Dac",
+					 				"Value" : 
+					 				{
 					 					"Type" : "nap::PointerInstancePropertyValue",
 					 					"Value": "Laser3"
 					 				}
@@ -985,15 +1004,20 @@
 						},
 			 			{
 					 		"TargetComponent" : "./LaserPrototypeEntity:3/LaserOutputEntity/LaserOutputComponent",
-					 		"TargetAttributes" : [
+					 		"TargetAttributes" : 
+					 		[
 					 			{
 					 				"Path" : "Line",
-					 				"Value" : {
+					 				"Value" : 
+					 				{
 					 					"Type" : "nap::PointerInstancePropertyValue",
 					 					"Value": "LaserTraceMesh4"
-					 				},
-					 				"Path" : "DAC",
-					 				"Value" : {
+					 				}
+					 			},
+					 			{
+					 				"Path" : "Dac",
+					 				"Value" : 
+					 				{
 					 					"Type" : "nap::PointerInstancePropertyValue",
 					 					"Value": "Laser4"
 					 				}
@@ -1199,7 +1223,8 @@
 						"LineFromFile6",
 						"LineFromFile7",
 						"LineFromFile8",
-						"LineFromFile9"
+						"LineFromFile9",
+						"LineMesh"
 					],
 					"Index" : 0
 				},
@@ -1217,7 +1242,8 @@
 						"LineFromFile6",
 						"LineFromFile7",
 						"LineFromFile8",
-						"LineFromFile9"
+						"LineFromFile9",
+						"LineMesh"
 					],
 					"Index" : 0
 				},

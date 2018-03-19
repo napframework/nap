@@ -51,7 +51,7 @@ namespace nap
 		mRenderWindowThree->setPosition({ offset_x + 1024, offset_y });
 
 		// Find the world and camera entities
-		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
 		mWorldEntity = scene->findEntity("World");
 		mPerspectiveCameraOne = scene->findEntity("PerpectiveCameraOne");

@@ -41,7 +41,7 @@ elseif (APPLE)
 
 elseif (UNIX)
     list(APPEND UNITTEST_LIBS
-            freeimage
+            ${FREEIMAGE_LIBRARIES}  
             ${FFMPEG_LIBRARIES}
             )
 endif ()
@@ -54,10 +54,29 @@ copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data unit_tests_data)
 
 nap_qt_post(${PROJECT_NAME})
 
+# Output to bin/unittests
+set_output_directories()
+
+if(WIN32)
+    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
+    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
+    bulk_copy_windows_dlls_to_bin()
+elseif(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()    
+endif()
+
 # Now run the tests right after the build
-add_custom_command(TARGET ${PROJECT_NAME}_autorun
+#
+# TODO These are currently disabling while packaging a platform release due to:
+# - Modules locating etc path problems due to the fact that we have NAP_PACKAGED_BUILD set but have 
+#   (close to) NAP source file structure
+# - Further path issues due to specially named lib output dir for packaging
+if(NOT NAP_PACKAGED_BUILD)
+    add_custom_command(TARGET ${PROJECT_NAME}_autorun
                    COMMENT "Run tests"
                    POST_BUILD
                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                    COMMAND "$<TARGET_FILE:${PROJECT_NAME}>"
                    )
+endif()

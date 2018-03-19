@@ -2,7 +2,7 @@
 
 // External includes
 #include <component.h>
-#include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 #include <renderablemeshcomponent.h>
 #include <polyline.h>
 #include <transformcomponent.h>
@@ -21,7 +21,7 @@ namespace nap
 		DECLARE_COMPONENT(LineSelectionComponent, LineSelectionComponentInstance)
 	public:
 		// Property: list of selectable poly lines
-		std::vector<rtti::ObjectPtr<nap::PolyLine>> mLines;
+		std::vector<ResourcePtr<nap::PolyLine>> mLines;
 
 		// property: index of the line
 		int mIndex = 0;

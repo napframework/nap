@@ -4,17 +4,17 @@
 #include "yoctoluxsensor.h"
 
 // External Includes
-#include <rtti/rttiobject.h>
-#include <rtti/objectptr.h>
+#include <nap/resource.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
 	/**
 	 * Manages a yocotopuce ethernet hub and connection
 	 */
-	class YoctoEthernetHub : public rtti::RTTIObject
+	class YoctoEthernetHub : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		virtual ~YoctoEthernetHub();
 
@@ -29,6 +29,6 @@ namespace nap
 		std::string		mPass;									///< Property:'Pass' ethernet user password
 		int				mPort = 80;								///< Property:'Port' ethernet port
 		bool			mConnect = true;						///< Property:'Connect' if on initialization this object should connect to the ethernet hub
-		std::vector<rtti::ObjectPtr<YoctoLuxSensor>> mSensors;	///< Property:'Sensors' list of connected lux sensors;
+		std::vector<ResourcePtr<YoctoLuxSensor>> mSensors;		///< Property:'Sensors' list of connected lux sensors;
 	};
 }

@@ -5,7 +5,7 @@
 
 // External Includes
 #include <nap/event.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <utility/uniqueptrvectoriterator.h>
 
 namespace nap
@@ -13,9 +13,9 @@ namespace nap
 	using OSCArgumentList = std::vector<std::unique_ptr<OSCArgument>>;
 
 	/**
-	 * Generic OSC event
-	 * An OSC event has an address and a set of arguments associated with it
-	 * This event can be constructed by a client to be send over or evaluated when received
+	 * A generic OSC event. An OSC event has an address and a set of arguments (values) associated with it.
+	 * This event can be constructed by a client to be send over or evaluated when received.
+	 * Use the array [] overload to access the individual osc arguments.
 	 */
 	class NAPAPI OSCEvent : public Event
 	{
@@ -86,8 +86,16 @@ namespace nap
 		 */
 		std::size_t getSize() const;
 
-		// Array subscript overloads
+		/**
+		 * Array [] subscript operator
+		 * @return the osc argument at index
+		 */
 		OSCArgument& operator[](std::size_t idx)							{ return *getArgument(static_cast<int>(idx)); }
+		
+		/**
+		 * Array [] subscript operator
+		 * @return the osc argument at index
+		 */
 		const OSCArgument& operator[](std::size_t idx) const				{ return *getArgument(static_cast<int>(idx)); }
 
 	private:

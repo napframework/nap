@@ -20,4 +20,8 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender mod_napsdlinput mod_napsdlwindow mod_napimgui)
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napsdlinput mod_napsdlwindow mod_napimgui mod_napinput mod_napscene mod_napmath)
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
+
+# Package into platform release
+package_module()

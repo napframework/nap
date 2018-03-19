@@ -220,7 +220,7 @@ namespace nap
 	{
 		rtti::Factory factory;
 
-		rtti::RTTIDeserializeResult deserialize_result;
+		rtti::DeserializeResult deserialize_result;
 		if (!errorState.check(readBinary(meshPath, factory, deserialize_result, errorState), "Failed to load mesh from %s", meshPath.c_str()))
 			return nullptr;
 

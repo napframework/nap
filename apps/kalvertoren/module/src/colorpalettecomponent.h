@@ -5,7 +5,7 @@
 #include "imagefromfile.h"
 
 #include <component.h>
-#include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -38,12 +38,12 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		rtti::ObjectPtr<IndexMap>				mIndexMap;											///< Property: The index map to use
-		rtti::ObjectPtr<LedColorPaletteGrid>	mPaletteGrid;										///< Property: The palette grid to use, containing palettes for each weak
-		rtti::ObjectPtr<ImageFromFile>			mDebugImage;										///< Property: Debug image used to display the currently selected palette
-		int								mIndex = 0;											///< Property: Current palette selection
-		float							mCycleSpeed = 1.0f;									///< Property: Time it takes to jump to a new color palette
-		ColorPaletteCycleMode			mVariationCycleMode = ColorPaletteCycleMode::Off;	///< Property: Default cycle mode
+		ResourcePtr<IndexMap>				mIndexMap;											///< Property: The index map to use
+		ResourcePtr<LedColorPaletteGrid>	mPaletteGrid;										///< Property: The palette grid to use, containing palettes for each weak
+		ResourcePtr<ImageFromFile>			mDebugImage;										///< Property: Debug image used to display the currently selected palette
+		int									mIndex = 0;											///< Property: Current palette selection
+		float								mCycleSpeed = 1.0f;									///< Property: Time it takes to jump to a new color palette
+		ColorPaletteCycleMode				mVariationCycleMode = ColorPaletteCycleMode::Off;	///< Property: Default cycle mode
 	};
 
 
@@ -162,9 +162,9 @@ namespace nap
 		 */
 		void updateSelectedPalette();
 
-		rtti::ObjectPtr<IndexMap>				mIndexMap;									///< The index map to use
-		rtti::ObjectPtr<LedColorPaletteGrid>	mPaletteGrid;								///< The palette grid to use, containing palettes for each weak
-		rtti::ObjectPtr<ImageFromFile>			mDebugImage;								///< Debug image used to display the currently selected palette
+		ResourcePtr<IndexMap>				mIndexMap;									///< The index map to use
+		ResourcePtr<LedColorPaletteGrid>	mPaletteGrid;								///< The palette grid to use, containing palettes for each weak
+		ResourcePtr<ImageFromFile>			mDebugImage;								///< Debug image used to display the currently selected palette
 
 		// Map that binds index colors to current color palette colors
 		std::map<IndexMap::IndexColor, LedColorPaletteGrid::PaletteColor> mIndexToPaletteMap;

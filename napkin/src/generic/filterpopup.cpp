@@ -21,31 +21,10 @@ napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType
 	}
 }
 
-napkin::FlatTypeModel::FlatTypeModel(const rttr::type& basetype) : mBaseType(basetype)
+
+napkin::FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : QMenu(nullptr)
 {
-	std::vector<nap::rtti::TypeInfo> derived_types;
-	nap::rtti::getDerivedTypesRecursive(basetype.get_raw_type(), derived_types);
-
-	// Remove any types that are not actually createable (base classes and such)
-	nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
-	for (long index = derived_types.size() - 1; index >= 0; --index)
-	{
-		if (!factory.canCreate(derived_types[index]))
-			derived_types.erase(derived_types.begin() + index);
-	}
-
-	for (const rttr::type t : derived_types) {
-		auto name = QString::fromUtf8(t.get_name().data());
-		auto item = new QStandardItem(name);
-		appendRow(item);
-	}
-
-}
-
-
-
-napkin::FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
-{
+	mTreeView.setModel(&model);
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.addWidget(&mTreeView);
@@ -53,7 +32,6 @@ napkin::FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
 	mTreeView.getLineEdit().setFocusPolicy(Qt::StrongFocus);
 	mTreeView.setIsItemSelector(true);
 	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &FilterPopup::confirm);
-	setMinimumSize(400, 400);
 }
 
 void napkin::FilterPopup::showEvent(QShowEvent* event)
@@ -62,11 +40,10 @@ void napkin::FilterPopup::showEvent(QShowEvent* event)
 	mTreeView.getLineEdit().setFocus();
 }
 
-nap::rtti::RTTIObject* napkin::FilterPopup::getObject(QWidget* parent, const rttr::type& typeConstraint)
+nap::rtti::Object* napkin::FilterPopup::getObject(QWidget* parent, const rttr::type& typeConstraint)
 {
-	FilterPopup dialog(parent);
 	FlatObjectModel model(typeConstraint);
-	dialog.mTreeView.setModel(&model);
+	FilterPopup dialog(parent, model);
 
 	dialog.exec(QCursor::pos());
 
@@ -77,30 +54,17 @@ nap::rtti::RTTIObject* napkin::FilterPopup::getObject(QWidget* parent, const rtt
 	return nullptr;
 }
 
-nap::rtti::TypeInfo napkin::FilterPopup::getDerivedType(QWidget* parent, const rttr::type& baseType)
-{
-	auto dialog = new FilterPopup(parent);
-	dialog->mTreeView.setModel(new FlatTypeModel(baseType));
-	dialog->exec(QCursor::pos());
-
-	auto selected_item = dialog->mTreeView.getSelectedItem();
-	if (selected_item == nullptr)
-		return rttr::type::empty();
-
-	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
-}
-
 nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
 {
-	auto dialog = new FilterPopup(parent);
-	auto model = new QStandardItemModel();
+
+	QStandardItemModel model;
 	for (const auto t : getResourceTypes())
-		model->appendRow(new QStandardItem(QString::fromUtf8(t.get_name().data())));
-	dialog->mTreeView.setModel(model);
+		model.appendRow(new QStandardItem(QString::fromUtf8(t.get_name().data())));
 
-	dialog->exec(QCursor::pos());
+	FilterPopup dialog(parent, model);
+	dialog.exec(QCursor::pos());
 
-	auto selected_item = dialog->mTreeView.getSelectedItem();
+	auto selected_item = dialog.mTreeView.getSelectedItem();
 	if (selected_item == nullptr)
 		return rttr::type::empty();
 
@@ -123,7 +87,7 @@ void napkin::FilterPopup::keyPressEvent(QKeyEvent* event)
 void napkin::FilterPopup::moveSelection(int dir)
 {
 	auto selectedIndexes = mTreeView.getSelectionModel()->selection().indexes();
-	if (selectedIndexes.size() == 0)
+	if (selectedIndexes.empty())
 		return;
 
 	int row = selectedIndexes.at(0).row();
@@ -143,6 +107,11 @@ void napkin::FilterPopup::moveSelection(int dir)
 void napkin::FilterPopup::confirm()
 {
 	close();
+}
+
+QSize napkin::FilterPopup::sizeHint() const
+{
+	return mSize;
 }
 
 

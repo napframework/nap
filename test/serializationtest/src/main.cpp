@@ -10,8 +10,9 @@
 #include <nap/logger.h>
 #include <utility/memorystream.h>
 #include <utility/stringutils.h>
-#include <rtti/rttipath.h>
+#include <rtti/path.h>
 #include <rtti/defaultlinkresolver.h>
+#include <rtti/deserializeresult.h>
 #include <iostream>
 
 using namespace nap;
@@ -115,7 +116,7 @@ int main(int argc, char* argv[])
 	BaseClass* root = createTestHierarchy();
 	 
 	// Create path to float property in array of nested compounds
- 	rtti::RTTIPath float_property_path;
+ 	rtti::Path float_property_path;
  	float_property_path.pushAttribute("ArrayOfCompounds");
  	float_property_path.pushArrayElement(0);
  	float_property_path.pushAttribute("FloatProperty");
@@ -124,12 +125,12 @@ int main(int argc, char* argv[])
  	std::string path_str = float_property_path.toString();
 
 	// Convert back and verify the path is the same
- 	rtti::RTTIPath path_copy = rtti::RTTIPath::fromString(path_str);
+ 	rtti::Path path_copy = rtti::Path::fromString(path_str);
 	if (path_copy != float_property_path)
 		return -1;
  
 	// Resolve the path and verify it succeeded
- 	rtti::ResolvedRTTIPath resolved_path;
+ 	rtti::ResolvedPath resolved_path;
 	if (!float_property_path.resolve(root->mPointerProperty, resolved_path))
 		return -1;
 
@@ -156,7 +157,7 @@ int main(int argc, char* argv[])
 		std::cout << json << std::endl;
 
 		// Read json and verify it succeeds
-		RTTIDeserializeResult read_result;
+		DeserializeResult read_result;
 		if (!deserializeJSON(json, factory, read_result, error_state))
 			return -1;
 
@@ -165,7 +166,7 @@ int main(int argc, char* argv[])
 			return -1;
 
 		// Sort read objects into id mapping
-		std::map<std::string, RTTIObject*> objects_by_id;
+		std::map<std::string, Object*> objects_by_id;
 		for (auto& object : read_result.mReadObjects)
 			objects_by_id.insert({ object->mID, object.get() });
 
@@ -188,7 +189,7 @@ int main(int argc, char* argv[])
 
 		// Read binary and verify it succeeds
 		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
-		RTTIDeserializeResult read_result;
+		DeserializeResult read_result;
 		if (!deserializeBinary(stream, factory, read_result, error_state))
 			return -1;
 
@@ -197,7 +198,7 @@ int main(int argc, char* argv[])
 			return -1;
 
 		// Sort read objects into id mapping
-		std::map<std::string, RTTIObject*> objects_by_id;
+		std::map<std::string, Object*> objects_by_id;
 		for (auto& object : read_result.mReadObjects)
 			objects_by_id.insert({ object->mID, object.get() });
 

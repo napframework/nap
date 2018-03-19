@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QtGui/QIcon>
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <QtCore/QMap>
 
 namespace napkin {
@@ -27,7 +27,7 @@ namespace napkin {
     public:
         ResourceFactory();
 
-        const QIcon getIcon(const nap::rtti::RTTIObject& object) const;
+        const QIcon getIcon(const nap::rtti::Object& object) const;
 
 		/**
 		 * Get a Qt-compatible file filter for the given property.

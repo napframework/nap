@@ -146,7 +146,7 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::onResourceSelectionChanged(QList<nap::rtti::RTTIObject*> objects)
+void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
 {
 	mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
 }

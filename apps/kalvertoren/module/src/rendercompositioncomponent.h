@@ -8,6 +8,7 @@
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
 #include <orthocameracomponent.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -29,8 +30,8 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		rtti::ObjectPtr<RenderTarget> mTargetA = nullptr;							///< Property: The first render target
-		rtti::ObjectPtr<RenderTarget> mTargetB = nullptr;							///< Property: The second render target
+		ResourcePtr<RenderTarget> mTargetA = nullptr;							///< Property: The first render target
+		ResourcePtr<RenderTarget> mTargetB = nullptr;							///< Property: The second render target
 
 		ComponentPtr<CompositionComponent>		mCompositionComponent = nullptr;
 		ComponentPtr<RenderableMeshComponent>	mRenderableComponent  = nullptr;

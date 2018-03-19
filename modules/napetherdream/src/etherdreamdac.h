@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <rtti/factory.h>
 #include <thread>
 #include <mutex>
@@ -18,17 +18,17 @@ namespace nap
 namespace nap
 {
 	/**
-	 * Represents an Etherdream DAC object, the DAC is connected to an ILDA supported laser
+	 * Represents an Etherdream DAC object, the DAC is connected to an ILDA supported laser.
 	 * Every DAC has a unique DAC name, index and point rate associated with it.
 	 * The index is set after Service Registration. If the DAC is available to the system
 	 * it will automatically be connected on initialization. On destruction a possible active connection is 
-	 * closed. When the DAC is unavailable to the system the DAC is still is a valid resource but not active
+	 * closed. When the DAC is unavailable to the system the DAC is still is a valid resource but not active.
 	 * This object manages it's own connection to the DAC
 	 */
-	class NAPAPI EtherDreamDac : public rtti::RTTIObject
+	class NAPAPI EtherDreamDac : public Resource
 	{
 		friend class EtherDreamService;
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		// Default constructor
 		EtherDreamDac() = default;
@@ -40,7 +40,7 @@ namespace nap
 		virtual ~EtherDreamDac();
 
 		/**
-		 * Initializes this DAC and registers it with the etherdream service
+		 * Initializes this DAC and registers it with the etherdream service.
 		 * If the DAC is not connected or unavailable this call will fail and block
 		 * further execution of the program.
 		 */
@@ -50,15 +50,10 @@ namespace nap
 		 *	Set the points for this dac to write
 		 */
 		void setPoints(std::vector<EtherDreamPoint>& points);
-
-		// Unique name of the dac (property), used for finding the device on the network
-		std::string	mDacName;
-
-		// The amount of points per second the connected laser is allowed to draw (property)
-		int	mPointRate = 30000;
-
-		// If initialization succeeds when the DAC can't be found on the network or can't be connected to
-		bool mAllowFailure = true;
+		
+		std::string	mDacName;				///< Property: 'DacName' Unique name of the DAC, used for finding the device on the network
+		int	mPointRate = 30000;				///< Property: 'PointRate' The amount of points per second the connected laser is allowed to draw (property)
+		bool mAllowFailure = true;			///< Property: 'AllowFailure' Allows initialization to succeed when the DAC can't be found on the network or can't be connected to
 
 	private:
 		// The etherdream service

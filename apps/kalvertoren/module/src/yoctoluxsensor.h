@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <rtti/objectptr.h>
 #include <thread>
 #include <atomic>
@@ -15,9 +15,9 @@ namespace nap
 	 * A light sensor connected to a certain hub. This object does nothing on initialization
 	 * The ethernet hub controls and manages a specific sensor. 
 	 */
-	class YoctoLuxSensor : public rtti::RTTIObject
+	class YoctoLuxSensor : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 		friend class YoctoEthernetHub;
 	public:
 		YoctoLuxSensor();
