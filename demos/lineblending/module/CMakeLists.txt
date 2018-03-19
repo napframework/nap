@@ -1,4 +1,4 @@
-	project(mod_lineblending)
+project(mod_lineblending)
 
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
@@ -20,6 +20,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napcameracontrol mod_napsvg mod_napetherdream mod_napcameracontrol)
 
-if (WIN32)
+if(WIN32)
     copy_files_to_bin(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
 endif()

@@ -160,7 +160,8 @@ namespace nap
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
-		* Forwards the call to all interested services
+		* Forwards the call to all interested services.
+		* This can only be called when the services have been initialized
 		* @param file the currently loaded resource file
 		*/
 		void resourceFileChanged(const std::string& file);
