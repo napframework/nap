@@ -552,9 +552,6 @@
             "Components" : 
             [
                 {
-                    "Type" : "nap::TransformComponent"      
-                },
-                {
                     "Type":"nap::LaserOutputComponent",
                     "mID" : "LaserOutputComponent",
                     "Properties" :
