@@ -138,7 +138,7 @@
                     "mID": "LineTransform",
                     "Properties": {
                         "Translate": {
-                            "x": -0.02,
+                            "x": 0.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -152,7 +152,7 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 0.15
+                        "UniformScale": 1.0
                     }
                 },
                 {
@@ -196,7 +196,7 @@
                     "SelectionComponentTwo": "./SelectionComponentTwo",
                     "Target": "DisplayLine",
                     "BlendValue": 0.5,
-                    "BlendSpeed":0.49
+                    "BlendSpeed": 1.0
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -273,11 +273,11 @@
                     "mID": "nap::RotateComponent",
                     "Properties": {
                         "Axis": {
-                            "x": 1.75,
-                            "y": 0.6,
-                            "z": 0.4
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
                         },
-                        "Speed": 0.1,
+                        "Speed": 0.0,
                         "Offset": 0.0
                     }
                 }
