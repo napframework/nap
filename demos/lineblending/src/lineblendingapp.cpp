@@ -14,6 +14,8 @@
 #include <meshutils.h>
 #include <mathutils.h>
 #include <linecolorcomponent.h>
+#include <laseroutputcomponent.h>
+#include <meshutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -54,6 +56,9 @@ namespace nap
 		mColorOne = mLineEntity->getComponent<LineColorComponentInstance>().getFirstColor();
 		mColorTwo = mLineEntity->getComponent<LineColorComponentInstance>().getSecondColor();
 
+		// Set initial line size
+		mLineSize = mLineEntity->getComponent<TransformComponentInstance>().getUniformScale();
+
 		return true;
 	}
 	
@@ -83,15 +88,31 @@ namespace nap
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		// Color
-		if (ImGui::CollapsingHeader("Color"))
+		if (ImGui::CollapsingHeader("Line"))
 		{
-			if (ImGui::ColorEdit3("Line Color One", mColorOne.getData()))
+			if (ImGui::ColorEdit3("Color One", mColorOne.getData()))
 			{
 				mLineEntity->getComponent<LineColorComponentInstance>().setFirstColor(mColorOne);
 			}
-			if (ImGui::ColorEdit3("Line Color Two", mColorTwo.getData()))
+			if (ImGui::ColorEdit3("Color Two", mColorTwo.getData()))
 			{
 				mLineEntity->getComponent<LineColorComponentInstance>().setSecondColor(mColorTwo);
+			}
+			if (ImGui::SliderFloat("Size", &mLineSize, 0.01f, 1.0f, "%.3f", 1.0f))
+			{
+				mLineEntity->getComponent<TransformComponentInstance>().setUniformScale(mLineSize);
+			}
+			if (ImGui::DragFloat2("Position", &(mLinePosition.x), 0.002f, 0.0f, 1.0f))
+			{
+				// Compute new line position based on size of output frustrum
+				// Note that for this to work we just assume the canvas is not rotated and constructed in xy space
+				LaserOutputComponentInstance& laser_output = mLaserEntity->getComponent<LaserOutputComponentInstance>();
+				float frust_x = laser_output.mProperties.mFrustum.x / 2.0f;
+				float frust_y = laser_output.mProperties.mFrustum.y / 2.0f;
+				float pos_x = math::lerp<float>(-frust_x, frust_x, mLinePosition.x);
+				float pos_y = math::lerp<float>(-frust_y, frust_y, mLinePosition.y);
+				TransformComponentInstance& line_xform = mLineEntity->getComponent<TransformComponentInstance>();
+				line_xform.setTranslate({ pos_x, pos_y, line_xform.getTranslate().z });
 			}
 		}
 		if (ImGui::CollapsingHeader("Blending"))

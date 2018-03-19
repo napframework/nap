@@ -89,5 +89,7 @@ namespace nap
 		RGBColorFloat mColorTwo = { 0.784f, 0.411f, 0.411f };			//< Line first color	
 		RGBColorFloat mColorOne = { 1.0f, 1.0f, 1.0f };					//< Line second color
 		float mBlendSpeed = 1.0f;										//< Line blend speed
+		float mLineSize = 0.5f;											//< Size of the line (normalized)
+		glm::vec2 mLinePosition = { 0.5f, 0.5f };						//< Position of the line relative to canvas
 	};
 }

@@ -11,7 +11,7 @@
                     "w": 1.0
                 }
             },
-            "Radius": 1.0,
+            "Radius": 0.5,
             "Segments": 100
         },
         {
@@ -71,8 +71,8 @@
                     "mID": "PerpectiveCamera",
                     "Properties": {
                         "FieldOfView": 45.0,
-                        "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 10000.0,
+                        "NearClippingPlane": 0.5,
+                        "FarClippingPlane": 100.0,
                         "GridDimensions": {
                             "x": 1,
                             "y": 1
@@ -90,7 +90,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 5.0
+                            "z": 1.33
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -116,7 +116,7 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.033,
+                    "MovementSpeed": 0.011,
                     "RotateSpeed": 0.0033,
                     "PerspCameraComponent": "PerpectiveCamera",
                     "LookAtPosition" : 
@@ -152,7 +152,7 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 1.0
+                        "UniformScale": 0.5
                     }
                 },
                 {
@@ -295,7 +295,7 @@
                     "w": 1.0
                 }
             },
-            "Radius": 1.0
+            "Radius": 0.5
         },
         {
             "Type": "nap::ImageFromFile",
@@ -348,12 +348,12 @@
                 }
             },
             "Start": {
-                "x": 1.0,
+                "x": 0.5,
                 "y": 0.0,
                 "z": 0.0
             },
             "End": {
-                "x": -1.0,
+                "x": -0.5,
                 "y": 0.0,
                 "z": 0.0
             },
@@ -376,7 +376,7 @@
             "DPI": 96.0,
             "Tolerance": 1.0,
             "Normalize": true,
-            "Scale": 2.0,
+            "Scale": 1.0,
             "FlipHorizontal": false,
             "FlipVertical": true,
             "LineIndex": 0
@@ -449,8 +449,8 @@
                 }
             },
             "Dimensions": {
-                "x": 1.659999966621399,
-                "y": 1.659999966621399
+                "x": 1,
+                "y": 1
             }
         },
         {
@@ -516,7 +516,7 @@
                     "w": 1.0
                 }
             },
-            "Radius": 1.0
+            "Radius": 0.5
         },
         {
             "Type": "nap::VisualizeNormalsMesh",
@@ -561,8 +561,8 @@
                     {
                         "Frustum" :
                         {
-                            "x" : 3,
-                            "y" : 3
+                            "x" : 1,
+                            "y" : 1
                         }
                     },
                     "Dac" : "Laser",
