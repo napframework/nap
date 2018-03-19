@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QCloseEvent>
+
 using namespace napkin;
 
 void MainWindow::bindSignals()
@@ -10,6 +11,7 @@ void MainWindow::bindSignals()
 	connect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	connect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
 }
 
 
@@ -19,6 +21,7 @@ void MainWindow::unbindSignals()
 	disconnect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	disconnect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	disconnect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
 }
 
 
@@ -128,19 +131,13 @@ void MainWindow::updateWindowTitle()
 	setWindowTitle(QString("%1%2 - %3").arg(filename, changed, QApplication::applicationName()));
 }
 
-MainWindow::MainWindow()
+MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 {
 	setStatusBar(&mStatusBar);
 
 	addDocks();
 	addMenu();
 	bindSignals();
-
-	// Show something interesting in the status bar
-	connect(&AppContext::get(), &AppContext::logMessage, [this](nap::LogMessage msg){
-		statusBar()->showMessage(QString::fromStdString(msg.text()));
-	});
-
 }
 
 MainWindow::~MainWindow()
@@ -155,5 +152,19 @@ void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
 void MainWindow::onDocumentOpened(const QString filename)
 {
 	onDocumentChanged();
+}
+
+void MainWindow::onLog(nap::LogMessage msg)
+{
+	statusBar()->showMessage(QString::fromStdString(msg.text()));
+
+	if (msg.level().level() >= nap::Logger::warnLevel().level())
+		showError(msg);
+}
+
+void MainWindow::showError(nap::LogMessage msg)
+{
+	mErrorDialog.addMessage(msg);
+	mErrorDialog.show();
 }
 
