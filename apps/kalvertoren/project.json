@@ -11,6 +11,7 @@
         "mod_napapp",
         "mod_napmath",
         "mod_napartnet",
-        "mod_napimgui"
+        "mod_napimgui",
+        "mod_napyoctopuce"
     ]
 }

@@ -3,6 +3,7 @@
 // External includes
 #include "imagefromfile.h"
 #include <utility/fileutils.h>
+#include <mathutils.h>
 #include "bitmaputils.h"
 
 RTTI_BEGIN_CLASS(nap::ImageSequenceLayer)
@@ -99,4 +100,13 @@ namespace nap
 			completed(*this);
 		}
 	}
+
+
+	float ImageSequenceLayerInstance::getProgress()
+	{
+		float v = (float)mCurrentTime / getLength();
+		v -= static_cast<int>(v);
+		return v;
+	}
+
 }

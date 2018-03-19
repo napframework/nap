@@ -1,9 +1,11 @@
 #pragma once
+
+// Local Includes
 #include "artnetmeshfromfile.h"
 #include "selectcolormethodcomponent.h"
+#include "lightintensitycomponent.h"
 
 #include <component.h>
-#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -20,8 +22,9 @@ namespace nap
 		/**
 		 *	The mesh it should color
 		 */
-		ResourcePtr<ArtnetMeshFromFile> mMesh = nullptr;
-		ComponentPtr<SelectColorMethodComponent> mSelector = nullptr;
+		rtti::ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;							///< Property: The mesh this component applies the information to
+		ComponentPtr<SelectColorMethodComponent> mSelector = nullptr;			///< Property: The component that selects the current color method
+		ComponentPtr<LightIntensityComponent> mLightRegulator = nullptr;		///< Property: The component that regulates the final light intensity
 	};
 
 
@@ -72,6 +75,11 @@ namespace nap
 		 *	The selector to register this object with
 		 */
 		ComponentInstancePtr<SelectColorMethodComponent> mSelector =	{ this, &ApplyColorComponent::mSelector };
+		
+		/**
+		 * The component that manages intensity values
+		 */
+		ComponentInstancePtr<LightIntensityComponent> mLightRegulator = { this, &ApplyColorComponent::mLightRegulator };
 
 	protected:
 		/**

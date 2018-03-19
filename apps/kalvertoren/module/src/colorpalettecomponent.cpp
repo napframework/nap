@@ -70,23 +70,29 @@ namespace nap
 		{
 			int newWeekNumber = utility::getCurrentDateTime().getWeek()-1;
 			if (newWeekNumber != mCurrentWeek)
+			{
 				selectWeek(newWeekNumber);
+			}
 		}
 
 		if (mTime >= mCycleSpeed)
 		{
+			// Switch based on action to take
 			switch (mVariationCycleMode)
 			{
 				case ColorPaletteCycleMode::Off:
+				{
 					break;
-					mTime = 0.0;
+				}
 				case ColorPaletteCycleMode::Random:
 				{
 					if (getVariationCount() > 1)
 					{
 						int new_idx = mCurrentVariationIndex;
 						while (new_idx == mCurrentVariationIndex)
+						{
 							new_idx = math::random<int>(0, getVariationCount() - 1);
+						}
 						selectVariation(new_idx);
 					}
 					break;
@@ -171,6 +177,19 @@ namespace nap
 		// Select closest
 		return d_lower < d_highr ? lower_it->second : upper_it->second;
 	}
+
+
+	float ColorPaletteComponentInstance::getProgress() const
+	{
+		return math::fit<float>(mTime, 0.0f, mCycleSpeed, 0.0f, 1.0f);
+	}
+
+
+	nap::ColorPaletteComponentInstance::EStatus ColorPaletteComponentInstance::getStatus() const
+	{
+		return mTime > mCycleSpeed ? EStatus::Completed : EStatus::Active;
+	}
+
 
 	void ColorPaletteComponentInstance::updateSelectedPalette()
 	{

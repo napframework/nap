@@ -38,6 +38,10 @@ if (WIN32)
     find_package(artnet REQUIRED)
     copy_artnet_dll()
 
+    # copy yoctopuce dll
+    find_package(yoctopuce REQUIRED)
+    copy_yoctopuce_dll()
+
     # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
     # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
     bulk_copy_windows_dlls_to_bin()
