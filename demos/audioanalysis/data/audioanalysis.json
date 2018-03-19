@@ -16,71 +16,9 @@
 		},
 
 		{
-			"Type" : "nap::ImageFromFile",	
-			"mID" : "WorldTexture",
-			"ImagePath" : "world_texture.png"
-		},
-
-		{
-			"Type" : "nap::Shader",
-			"mID": "WorldShader",
-			"mVertShader": "shaders/audioanalysis/world.vert",
-			"mFragShader": "shaders/audioanalysis/world.frag"
-		},
-
-		{
-			"Type" : "nap::SphereMesh",
-			"mID": "WorldMesh"
-		},
-
-		{
 			"Type": "nap::audio::AudioFileResource",
 			"mID": "audioFile",
 			"AudioFilePath": "hang.mp3"
-		},
-
-
-		{
-			"Type" : "nap::Material",
-			"mID": "WorldMaterial",
-			"Shader": "WorldShader",
-			"VertexAttributeBindings" : 
-			[
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				},
-				{
-					"MeshAttributeID" : "Normal",
-					"ShaderAttributeID" : "in_Normal"
-				},
-				{
-					"MeshAttributeID" : "Color0",
-					"ShaderAttributeID" : "in_Color0"
-				}
-			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "inWorldTexture",
-					"Texture" : "WorldTexture"
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "inCameraPosition",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 4.0
-					}
-				}
-			]			
 		},
 
 		{
@@ -89,93 +27,8 @@
 			"Entities" : 
 			[
 				{
-					"Entity" : "World"
-				},
-				{
-					"Entity" : "Camera"
-				},
-				{
 					"Entity" : "Audio"
 				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "World",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "WorldMesh",
-					"MaterialInstance" : 
-					{
-						"mID": "WorldMaterialInstance",
-						"Material": "WorldMaterial"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent"
-				},
-				{
-					"Type" : "nap::RotateComponent",
-					"Properties": 
-					{
-						"Axis": 
-						{
-							"x": 0.0,
-							"y": 1.0,
-							"z": 0.0
-						},
-						"Speed": 0.025,
-						"Offset": 0.65
-					}
-				}		
-			]
-		},
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "Camera",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::PerspCameraComponent",
-					"mID" : "PerspCameraComponent",
-					"Properties": 
-					{
-						"FieldOfView": 45.0,
-						"NearClippingPlane" : 0.1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 4.0
-						}			
-					}
-				},
-				{
-                    "Type": "nap::KeyInputComponent",
-                    "mID": "nap::KeyInputComponent"
-                },
-                {
-                    "Type": "nap::PointerInputComponent",
-                    "mID": "nap::PointerInputComponent"
-                },
-                {
-                    "Type": "nap::OrbitController",
-                    "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.033,
-                    "RotateSpeed": 0.0033,
-                    "PerspCameraComponent": "PerspCameraComponent"
-                }
 			]
 		},
 
@@ -211,7 +64,6 @@
 
 			]
 		}
-
 
 	]
 }
