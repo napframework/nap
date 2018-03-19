@@ -163,6 +163,7 @@ namespace nap
 		float fr_width	= mProperties.mFrustum.x;
 		float fr_height = mProperties.mFrustum.y;
 
+		// Calculate frustrum bounds
 		glm::vec2 min_bounds(frustum.x - (fr_width / 2.0f), frustum.y - (fr_height / 2.0f));
 		glm::vec2 max_bounds(frustum.x + (fr_width / 2.0f), frustum.y + (fr_height / 2.0f));
 

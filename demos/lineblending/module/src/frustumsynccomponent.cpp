@@ -34,7 +34,7 @@ namespace nap
 			return false;
 
 		// Move the frustrum back a bit so objects around 0 are sorted correctly
-		mCanvasTransform->setTranslate(glm::vec3(0.0f, 0.0f, -0.1f));
+		mCanvasTransform->setTranslate(glm::vec3(0.0f, 0.0f, -0.001f));
 
 		return true;
 	}
