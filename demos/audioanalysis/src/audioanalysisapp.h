@@ -18,8 +18,9 @@
 namespace nap
 {
 	/**
-	 * Demo application that is called from within the main loop
-	 *
+	 * Demo application that shows how to analyze an audio signal in order to extract the output level of a certain frequency band of the signal.
+     * Audio is played back using an audio::PlaybackComponent. The signal is sent to an audio::OutpuComponent so we can hear it and to an audio::LevelMeterComponent that we can adjust with a GUI.
+     * The output of the LevelMeterComponent is plotted in the GUI.
 	 */
 	class AudioAnalysisApp : public App
 	{
@@ -70,13 +71,12 @@ namespace nap
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ResourcePtr<RenderWindow> mRenderWindow;						//< Pointer to the render window
-        rtti::ObjectPtr<EntityInstance> mAudioEntity = nullptr;
-        audio::LevelMeterComponentInstance* mLevelMeter = nullptr;
-        TransformComponentInstance* mTransform = nullptr;
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-        audio::ControllerValue mAnalysisFrequency = 500.f;
-        audio::ControllerValue mAnalysisBand = 100.f;
-        audio::ControllerValue mAnalysisGain = 5.0f;
-        std::vector<audio::ControllerValue> mAnalysisPlotValues = { };
+        rtti::ObjectPtr<EntityInstance> mAudioEntity = nullptr;         //< Entity that contains the audio processing
+        audio::LevelMeterComponentInstance* mLevelMeter = nullptr;      //< Component that performs the analysis of the audio signal
+        audio::ControllerValue mAnalysisFrequency = 500.f;              //< Center frequency of the analysis
+        audio::ControllerValue mAnalysisBand = 100.f;                   //< Bandwidth of the analysis
+        audio::ControllerValue mAnalysisGain = 5.0f;                    //< Factor to gain the analysis input before analyzing
+        std::vector<audio::ControllerValue> mAnalysisPlotValues = { };  //< Output of the analysis will be stored chronologically in this factor, so we can draw a plot of the data
+        RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };    //< GUI text highlight color
 	};
 }
