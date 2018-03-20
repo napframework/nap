@@ -67,7 +67,7 @@ namespace nap
 	 */
 	void AudioPlaybackApp::update(double deltaTime)
 	{
-		// Draw some gui elements
+		// Draw some gui elements to control audio playback
 		ImGui::Begin("Audio Playback");
         if (!mPlaybackComponent->isPlaying())
         {

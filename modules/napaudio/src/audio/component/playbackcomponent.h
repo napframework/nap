@@ -8,6 +8,7 @@
 #include <audio/node/bufferplayernode.h>
 #include <audio/node/gainnode.h>
 #include <audio/node/controlnode.h>
+#include <audio/node/filternode.h>
 #include <nap/resourceptr.h>
 
 namespace nap
