@@ -105,8 +105,6 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	auto groupItem = dynamic_cast<GroupItem*>(item);
 	if (groupItem != nullptr)
 	{
-		// TODO: Use anything other than string comparison to filter this shit
-		// (necessary type chain is not usable at the time of writing)
 		if (groupItem->text() == TXT_LABEL_ENTITIES)
 		{
 			menu.addAction(new AddEntityAction(nullptr));
@@ -149,48 +147,10 @@ void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, c
 	selectionChanged(selectedObjects);
 }
 
-std::vector<rttr::instance> napkin::ResourcePanel::getSelectedInstances() const
-{
-	std::vector<rttr::instance> instances;
-	for (QStandardItem* item : mTreeView.getSelectedItems())
-	{
-		auto objItem = dynamic_cast<ObjectItem*>(item);
-		if (objItem == nullptr)
-			continue;
-		instances.emplace_back(objItem->getObject());
-	}
-	return instances;
-}
-
 void napkin::ResourcePanel::refresh()
 {
 	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
-}
-
-::napkin::ObjectItem* napkin::ResourcePanel::findItem(const nap::rtti::Object& obj)
-{
-	ObjectItem* foundItem = nullptr;
-
-	findIndexInModel(mTreeView.getFilterModel(), [this, &foundItem, &obj](const QModelIndex& idx) -> bool {
-		QStandardItem* item = mModel.itemFromIndex(mTreeView.getFilterModel().mapToSource(idx));
-		if (item == nullptr)
-			return false;
-
-		auto objItem = dynamic_cast<ObjectItem*>(item);
-		if (objItem == nullptr)
-			return false;
-
-		if (objItem->getObject() == &obj)
-		{
-			foundItem = objItem;
-			return true;
-		}
-
-		return false;
-	});
-
-	return foundItem;
 }
 
 void napkin::ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)

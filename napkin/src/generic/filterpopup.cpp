@@ -64,6 +64,9 @@ nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
 	FilterPopup dialog(parent, model);
 	dialog.exec(QCursor::pos());
 
+	if (!dialog.wasAccepted())
+		return rttr::type::empty();
+
 	auto selected_item = dialog.mTreeView.getSelectedItem();
 	if (selected_item == nullptr)
 		return rttr::type::empty();
@@ -106,6 +109,7 @@ void napkin::FilterPopup::moveSelection(int dir)
 
 void napkin::FilterPopup::confirm()
 {
+	mWasAccepted = true;
 	close();
 }
 
