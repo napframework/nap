@@ -34,6 +34,11 @@ macro(package_nap)
     # Package project directory package & regenerate shortcuts
     package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
 
+    # Package checkBuildEnvironment scripts
+    if(APPLE)
+        install(PROGRAMS ${NAP_ROOT}/dist/macos/checkBuildEnvironment DESTINATION .)
+    endif()
+
     # Create empty projects and usermodules directories
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
