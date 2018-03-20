@@ -5,7 +5,12 @@ import sys
 import termios
 import tty
 
+REQUIRED_MACOS_VERSION = '10.13'
+CMAKE_MIN_VERSION = (3, 5)
+
 def getch():
+    """Read a char from the console; pause"""
+
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
     try:
@@ -41,7 +46,7 @@ def check_macos():
 
     macos_version = call('sw_vers -productVersion')
     # macos_version = '10.12.2'
-    macos_version_ok = macos_version.startswith('10.13')
+    macos_version_ok = macos_version.startswith(REQUIRED_MACOS_VERSION)
     log_test_success('macOS High Sierra', macos_version_ok)
     return macos_version_ok    
 
@@ -58,7 +63,7 @@ def check_cmake():
         cmake_version = call('cmake --version | grep version')
         chunks = cmake_version.strip().split()
         (major, minor, patch) = chunks[2].split('.')
-        cmake_ok = int(major) == 3 and int(minor) >= 5
+        cmake_ok = int(major) == CMAKE_MIN_VERSION[0] and int(minor) >= CMAKE_MIN_VERSION[1]
 
     # cmake_ok = False
     log_test_success('CMake >= 3.5', cmake_ok)
@@ -75,7 +80,6 @@ def check_xcode_installed():
     # xcode_installed = False
     log_test_success('Xcode installed', xcode_installed)
     return xcode_installed
-
 
 def check_xcode_command_line_tools_installed():
     """Check if the Xcode Command Line Tools are installed"""
