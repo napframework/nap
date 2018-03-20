@@ -25,13 +25,7 @@ endif()
 set(DEPENDENT_NAP_MODULES napcore mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} artnet)
 
-if (WIN32)
-    set(FILES_TO_COPY
-            ${ARTNET_LIBS_DIR}/libartnet.dll
-            )
-
-    copy_files_to_bin(${FILES_TO_COPY})
-elseif(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE)
     set(ARTNET_LIB_FILE ${ARTNET_LIBS_DIR}/libartnet.so)
 
     # HACK, somehow on some systems, libartnet.so gets linked with libartnet.so.1 because it already exists

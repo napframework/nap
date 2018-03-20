@@ -95,11 +95,6 @@ if(MSVC)
     generate_export_header(${PROJECT_NAME})
 endif()
 
-if(WIN32)
-    copy_freeimage_dll()
-    copy_base_windows_graphics_dlls()
-endif()
-
 # Package into release build
 if (WIN32)
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)
