@@ -19,16 +19,23 @@ namespace nap
 	/**
 	 * Demo application that is called from within the main loop
 	 *
-	 * Shows a rotating textured sphere in the center of the viewport
-	 * You can use the left mouse button to orbit around the object and 
-	 * the right mouse button to zoom in on the object
+	 * Shows a line that morphs from target A to target B over time based on the blend speed.
+	 * The resulting line is projected onto a canvas that is used to define the laser projection bounds.
+	 * If you happen to have an etherdream DAC you can configure it in the json file. 
+	 * The result is sent to the laser over the network. Ths application also works without a laser attached to your network.
 	 * 
-	 * This demo uses 3 important modules:
-	 * mod_naprender, mod_napinput, mod_napcameracontrol
-	 * The sphere is rendered using a simple material that blends 2 colors based on a texture's alpha value
-	 * The sphere is positioned by a transform component and rotated along the y axis by a rotate component
-	 * The camera is placed away from the origin but can be moved using the mouse. The camera looks at
-	 * the sphere and uses that information to orbit around the object.
+	 * This demo uses of a lot of custom components that are defined in mod_lineblending.
+	 * The various components automate the line selection process and modulate the line based on a set of conditions.
+	 * Take a look at the various components for a better understanding of what they do.
+	 * The app contains 3 important entities: a line, a laser, and a camera. The canvas is a child entity of the laser
+	 * The canvas uses the laser to position itself in space and give it the right dimensions
+	 * The laser DAC is a resource and is referenced by the LaserOutputComponent that lives under the laser entity.
+	 * The laser output component translates the line coordinates to laser coordinates and pushes those to the laser dac resource.
+	 * 
+	 * Every line is a resource of type 'PolyLine', which in turn is a generic mesh.
+	 * The target (output) line is called 'DisplayLine'. This mesh is continuously updated by the various
+	 * components that live under the line entity. The 'source' lines are individual resources that the line blend component
+	 * interpolates in between. The result of that operation is stored in the display line.
 	 *
 	 * Mouse and key events are forwarded to the input service, the input service collects input events
 	 * and processes all of them on update. Because NAP does not have a default space (objects can
