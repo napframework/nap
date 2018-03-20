@@ -251,17 +251,24 @@ endmacro()
 
 # Copy core Windows DLLs to project bin
 macro(copy_core_windows_dlls)
-    find_rttr()
-
-    copy_windows_python_dlls_to_project()
-
     set(FILES_TO_COPY
         $<TARGET_FILE:napcore>
         $<TARGET_FILE:naprtti>
-        $<TARGET_FILE:RTTR::Core>
         )
     copy_files_to_bin(${FILES_TO_COPY})
+
+    copy_core_thirdparty_windows_dlls()
 endmacro()
+
+# Copy core thirdparty Windows DLLs to project bin
+function(copy_core_thirdparty_windows_dlls)
+    # RTTR
+    find_rttr()
+    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
+
+    # Python
+    copy_windows_python_dlls_to_project()
+endfunction()
 
 # Copy Windows Python DLLs to project output directory
 function(copy_windows_python_dlls_to_project)
@@ -304,6 +311,18 @@ macro(find_rttr)
     endif()
 endmacro()
 
+# Run any module post-build logic for set modules
+macro(include_module_postbuilds_per_project NAP_MODULES)
+    foreach(NAP_MODULE ${NAP_MODULES})
+        set(SHORT_MODULE_NAME )
+        string(SUBSTRING ${NAP_MODULE} 4 -1 SHORT_MODULE_NAME)
+        set(MODULE_POSTBUILD ${NAP_ROOT}/modules/${SHORT_MODULE_NAME}/modulePostBuildPerProject.cmake)
+        if(EXISTS ${MODULE_POSTBUILD})
+            include(${MODULE_POSTBUILD})
+        endif()
+    endforeach()    
+endmacro()
+
 # Set output paths, copy Windows DLLs, package into release, etc
 # INCLUDE_WITH_RELEASE: whether the project should be packaged with the NAP platform release
 # INCLUDE_ONLY_WITH_NAIVI_APPS: whether a project should only be packaged if packaging Naivi apps
@@ -315,6 +334,9 @@ function(nap_source_project_output_and_packaging INCLUDE_WITH_RELEASE INCLUDE_ON
     set_output_directories()
 
     # Run any module post-build logic for this project
+    include_module_postbuilds_per_project("${NAP_MODULES}")
+
+    # Copy modules into project bin directories
     foreach(NAP_MODULE ${NAP_MODULES})
         if(WIN32)
             add_custom_command(
@@ -324,12 +346,6 @@ function(nap_source_project_output_and_packaging INCLUDE_WITH_RELEASE INCLUDE_ON
                             copy $<TARGET_FILE:${NAP_MODULE}> 
                             $<TARGET_FILE_DIR:${PROJECT_NAME}>
                     )
-        endif()
-        set(SHORT_MODULE_NAME )
-        string(SUBSTRING ${NAP_MODULE} 4 -1 SHORT_MODULE_NAME)
-        set(MODULE_POSTBUILD ${NAP_ROOT}/modules/${SHORT_MODULE_NAME}/modulePostBuildPerProject.cmake)
-        if(EXISTS ${MODULE_POSTBUILD})
-            include(${MODULE_POSTBUILD})
         endif()
     endforeach()
 
@@ -356,4 +372,4 @@ function(nap_source_project_output_and_packaging INCLUDE_WITH_RELEASE INCLUDE_ON
     if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR DEFINED PACKAGE_NAIVI_APPS))
         package_project_into_release(${PROJECT_PREFIX}/${PROJECT_NAME})
     endif()
-endfunction()
+endfunction() 

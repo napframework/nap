@@ -77,8 +77,22 @@ nap_qt_post(${PROJECT_NAME})
 # binary directory on Windows
 set(NAP_MODULES ${NAP_MODULES_USAGE_DEPENDENCIES})
 
-# Set output paths, copy Windows DLLs, package into release, etc
-nap_source_project_output_and_packaging(FALSE FALSE "unused" FALSE)
+# Run any module post-build hooks for usage dependencies so that they can dump thirdparty
+# requirements into the root of bin for napkin to use
+include_module_postbuilds_per_project("${NAP_MODULES_USAGE_DEPENDENCIES}")
+
+# Build into a napkin directory under bin on Unix, because we can (don't have same Windows DLL copying problems) and it's cleaner
+if(UNIX)
+    set_output_directories()
+endif()
+
+if(WIN32)
+    # Copy core Windows thirdparty DLLs
+    copy_core_thirdparty_windows_dlls()
+elseif(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()
+endif()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
