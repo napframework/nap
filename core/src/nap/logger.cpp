@@ -18,16 +18,11 @@ namespace nap
 
 	std::string timestamp()
 	{
-		timeval curTime;
-		gettimeofday(&curTime, nullptr);
-		int milli = (int) curTime.tv_usec / 1000;
-
-		char buffer [80];
-		strftime(buffer, 80, "%Y-%m-%d_%H-%M-%S", localtime(&curTime.tv_sec));
-
-		char currentTime[84] = "";
-		sprintf(currentTime, "%s-%00d", buffer, milli);
-		return std::string(currentTime);
+        // TODO: Needs millisecond precision
+        char buf[100];
+        time_t now = time(nullptr);
+        strftime(buf, 100, "%Y-%m-%d_%H-%M-%S-000", localtime(&now));
+        return std::string(buf);
 	}
 
 
