@@ -10,6 +10,7 @@
 
 #include "napkinglobals.h"
 #include "appcontext.h"
+#include "napkinresources.h"
 
 using namespace napkin;
 
@@ -129,20 +130,17 @@ void ThemeManager::loadFonts()
 		return;
 
 	QStringList fonts;
-	fonts << ":/fonts/Montserrat-ExtraBold.ttf";
-	fonts << ":/fonts/Montserrat-Light.ttf";
-	fonts << ":/fonts/Montserrat-Medium.ttf";
-	fonts << ":/fonts/NunitoSans-ExtraBold.ttf";
-	fonts << ":/fonts/NunitoSans-Regular.ttf";
-	fonts << ":/fonts/NunitoSans-SemiBold.ttf";
+	fonts << QRC_FONTS_MONTSERRAT_EXTRABOLD;
+	fonts << QRC_FONTS_MONTSERRAT_LIGHT;
+	fonts << QRC_FONTS_MONTSERRAT_MEDIUM;
+	fonts << QRC_FONTS_MONTSERRAT_SEMIBOLD;
+	fonts << QRC_FONTS_NUNITOSANS_EXTRABOLD;
+	fonts << QRC_FONTS_NUNITOSANS_REGULAR;
 
 	for (auto font : fonts)
 	{
-		int id = QFontDatabase::addApplicationFont(font);
-		if (id < 0)
-		{
+		if (QFontDatabase::addApplicationFont(font) < 0)
 			nap::Logger::warn("Failed to load font: '%s'", font.toStdString().c_str());
-		}
 	}
 
 	mFontsLoaded = true;
