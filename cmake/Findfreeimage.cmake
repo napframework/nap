@@ -52,8 +52,9 @@ macro(copy_freeimage_dll)
         add_custom_command(
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E
-                copy $<TARGET_FILE:freeimagelib> $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:freeimagelib>
-        )
+                COMMAND ${CMAKE_COMMAND} -E copy 
+                        $<TARGET_FILE:freeimagelib> 
+                        $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:freeimagelib>
+                )
     endif()
 endmacro()

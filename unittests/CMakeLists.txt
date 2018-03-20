@@ -11,17 +11,13 @@ file(GLOB SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 add_executable(${PROJECT_NAME}_autorun ${SOURCES})
 
+set(NAP_MODULES mod_napkalvertoren mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napsandbox mod_napvideo mod_napmath mod_napscene mod_napartnet mod_napcameracontrol)
 
 set(UNITTEST_LIBS
     napcore
-    mod_napkalvertoren
+    ${NAP_MODULES}
     napkin_lib
-    mod_naprender
     nrender
-    mod_napinput
-    mod_napsdlinput
-    mod_napsandbox
-    mod_napvideo
     )
 
 find_package(FFmpeg REQUIRED)
@@ -31,8 +27,6 @@ if (MSVC)
             ${FREEIMAGE_LIBRARIES}
             ${FFMPEG_LIBRARIES}
             )
-    copy_freeimage_dll()
-    copy_windows_ffmpeg_dlls()
 elseif (APPLE)
     list(APPEND UNITTEST_LIBS
             ${FREEIMAGE_LIBRARIES}
@@ -54,17 +48,8 @@ copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data unit_tests_data)
 
 nap_qt_post(${PROJECT_NAME})
 
-# Output to bin/unittests
-set_output_directories()
-
-if(WIN32)
-    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
-    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
-    bulk_copy_windows_dlls_to_bin()
-elseif(APPLE)
-    # Add the runtime path for RTTR on macOS
-    add_macos_rttr_rpath()    
-endif()
+# Set output paths, copy Windows DLLs, package into release, etc
+nap_source_project_output_and_packaging(FALSE FALSE "unused" FALSE)
 
 # Now run the tests right after the build
 #

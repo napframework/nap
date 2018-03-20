@@ -20,11 +20,3 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set(DEPENDENT_NAP_MODULES mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow mod_napcameracontrol mod_napapp mod_napartnet mod_napimgui)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
-
-if (WIN32)
-    set(FILES_TO_COPY
-            ${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll
-            )
-
-    copy_files_to_bin(${FILES_TO_COPY})
-endif()

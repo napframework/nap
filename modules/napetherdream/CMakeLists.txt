@@ -23,14 +23,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} etherdreamlib)
 
-if (WIN32)
-    set(FILES_TO_COPY
-            ${ETHERDREAM_LIBS_DIR}/EtherDream.dll
-            )
-
-    copy_files_to_bin(${FILES_TO_COPY})
-endif()
-
 # Package into platform release
 if(UNIX)
     set(EXTRA_RPATH ../../../../thirdparty/etherdream/bin)

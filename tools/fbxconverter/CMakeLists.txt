@@ -22,13 +22,10 @@ set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
 if (WIN32)
-    # Copy freeimage DLL
-    find_package(freeimage REQUIRED)
-    copy_freeimage_dll()
+    find_rttr()
+    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)    
 
-    # Copy over some crap window dlls
-    copy_base_windows_graphics_dlls()
-    # Add post-build step to set RTTR RPATH
+    copy_windows_python_dlls_to_project()
 elseif(APPLE)
     # Add the runtime path for RTTR on macOS
     add_macos_rttr_rpath()    

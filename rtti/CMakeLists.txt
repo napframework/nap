@@ -4,30 +4,7 @@ project(naprtti)
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
 
-if (WIN32)
-    if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-        set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc64/install/cmake")
-    else()
-        set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc32/install/cmake")
-    endif()
-elseif(APPLE)
-    find_path(
-            RTTR_DIR
-            NAMES rttr-config.cmake
-            HINTS
-            ${THIRDPARTY_DIR}/rttr/xcode/install/cmake
-    )
-else()
-    find_path(
-            RTTR_DIR
-            NAMES rttr-config.cmake
-            HINTS
-            ${THIRDPARTY_DIR}/rttr/install/cmake
-            ${THIRDPARTY_DIR}/rttr/linux/install/cmake
-    )
-endif()
-
-find_package(RTTR CONFIG REQUIRED Core)
+find_rttr()
 
 find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
@@ -60,13 +37,6 @@ if(APPLE)
 elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} dl pthread)
 endif ()
-
-if (WIN32)
-    # Copy over dlls
-    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
-    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
-    copy_files_to_bin(${PYTHON_DLLS})    
-endif()
 
 if(APPLE)
     add_custom_command(TARGET ${PROJECT_NAME}

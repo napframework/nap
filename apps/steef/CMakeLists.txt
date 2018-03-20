@@ -17,32 +17,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow mod_napapp)
+# Get our modules list from project.json
+project_json_to_cmake()
 
-# Build into a project directory under bin
-set_output_directories()
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES} nrender)
 
-if (WIN32)
-    # Copy freeimage DLL
-    find_package(freeimage REQUIRED)
-    copy_freeimage_dll()
-
-    # Copy over some crap window dlls
-    copy_base_windows_graphics_dlls()
-
-    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
-    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
-    bulk_copy_windows_dlls_to_bin()
-elseif(APPLE)
-    # Add the runtime path for RTTR on macOS
-    add_macos_rttr_rpath()
-endif()
-
-# Copy project json to project bin dir and export fbx, via post-build events
-copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
-export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
-
-# Package into release build if requested
-if(PACKAGE_NAIVI_APPS)
-    package_project_into_release("projects/${PROJECT_NAME}")
-endif()
+# Set output paths, copy Windows DLLs, package into release, etc
+nap_source_project_output_and_packaging(TRUE TRUE "projects" TRUE)
