@@ -15,54 +15,6 @@
             "Segments": 100
         },
         {
-            "Type" : "nap::PlaneMesh",
-            "mID" : "CanvasMesh"
-        },
-        {
-            "Type" : "nap::EtherDreamDac",
-            "mID": "Laser",
-            "DacName": "dc3c10",
-            "PointRate": "30000"
-        },
-        {
-            "Type" : "nap::Material",
-            "mID": "CanvasMaterial",
-            "Shader": "CanvasShader",
-            "VertexAttributeBindings" : 
-            [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Color0",
-                    "ShaderAttributeID": "in_Color0"
-                }
-            ],
-            "Uniforms" : 
-            [
-                {
-                    "Type" : "nap::UniformTexture2D",
-                    "Name" : "mCanvas",
-                    "Texture" : "CanvasImage"
-                },
-                {
-                    "Type" : "nap::UniformVec3",
-                    "Name" : "mColor",
-                    "Value" : 
-                    {
-                        "x" : 0.321,
-                        "y" : 0.329,
-                        "z" : 0.415
-                    }
-                }
-            ]
-        },
-        {
             "Type": "nap::Entity",
             "mID": "Camera",
             "Components": [
@@ -90,7 +42,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 1.33
+                            "z": 1.3300000429153443
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -116,18 +68,98 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.011,
-                    "RotateSpeed": 0.0033,
+                    "MovementSpeed": 0.010999999940395356,
+                    "RotateSpeed": 0.0032999999821186067,
                     "PerspCameraComponent": "PerpectiveCamera",
-                    "LookAtPosition" : 
-                    {
-                        "x" : 0,
-                        "y" : 0,
-                        "z" : 0
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
                     }
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CanvasEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "CanvasMesh",
+                    "MaterialInstance": {
+                        "Material": "CanvasMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "ReadOnly"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "LaserEntity",
+            "Components": [
+                {
+                    "Type": "nap::LaserOutputComponent",
+                    "mID": "LaserOutputComponent",
+                    "Dac": "Laser",
+                    "Line": "DisplayLine",
+                    "Transform": "LineTransform",
+                    "Properties": {
+                        "Frustum": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "FlipVertical": false,
+                        "FlipHorizontal": false,
+                        "Framerate": 60,
+                        "GapThreshold": 0.009999999776482582
+                    }
+                },
+                {
+                    "Type": "nap::FrustumSyncComponent",
+                    "mID": "LaserFrustumComponent",
+                    "LaserOutputComponent": "./LaserOutputComponent"
+                }
+            ],
+            "Children": [
+                "CanvasEntity"
+            ]
         },
         {
             "Type": "nap::Entity",
@@ -241,11 +273,6 @@
                     }
                 },
                 {
-                    "Type": "nap::UpdateNormalsComponent",
-                    "mID": "UpdateLaserNormalsComponent",
-                    "NormalMesh": "NormalsMesh"
-                },
-                {
                     "Type": "nap::LineColorComponent",
                     "mID": "nap::LineColorComponent",
                     "BlendComponent": "./LineBlender",
@@ -280,9 +307,36 @@
                         "Speed": 0.0,
                         "Offset": 0.0
                     }
+                },
+                {
+                    "Type": "nap::LineNoiseComponent",
+                    "mID": "nap::LineNoiseComponent",
+                    "Properties": {
+                        "Frequency": 2.25,
+                        "FrequencySmoothTime": 1.5,
+                        "Speed": 0.325,
+                        "SpeedSmoothTime": 0.10000000149011612,
+                        "Offset": 0.0,
+                        "OffsetSmoothTime": 0.10000000149011612,
+                        "Amplitude": 0.00,
+                        "AmplitudeSmoothTime": 0.10000000149011612
+                    },
+                    "BlendComponent": "./LineBlender"
+                },
+                {
+                    "Type": "nap::UpdateNormalsComponent",
+                    "mID": "UpdateLaserNormalsComponent",
+                    "NormalMesh": "NormalsMesh"
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::EtherDreamDac",
+            "mID": "Laser",
+            "DacName": "dc3c10",
+            "PointRate": 30000,
+            "AllowFailure": true
         },
         {
             "Type": "nap::Hexagon",
@@ -300,8 +354,7 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "CanvasImage",
-            "Parameters": 
-            {
+            "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
@@ -383,6 +436,45 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "CanvasMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "nap::UniformTexture2D",
+                    "Name": "mCanvas",
+                    "Texture": "CanvasImage"
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "nap::UniformVec3",
+                    "Name": "mColor",
+                    "Value": {
+                        "x": 0.32100000977516177,
+                        "y": 0.32899999618530276,
+                        "z": 0.41499999165534975
+                    }
+                }
+            ],
+            "Shader": "CanvasShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "LineMaterial",
             "Uniforms": [],
             "Shader": "LineShader",
@@ -438,6 +530,20 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::PlaneMesh",
+            "mID": "CanvasMesh",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
             "Type": "nap::Rectangle",
             "mID": "Rectangle",
             "Properties": {
@@ -449,8 +555,8 @@
                 }
             },
             "Dimensions": {
-                "x": 1,
-                "y": 1
+                "x": 1.0,
+                "y": 1.0
             }
         },
         {
@@ -489,6 +595,12 @@
         },
         {
             "Type": "nap::Shader",
+            "mID": "CanvasShader",
+            "mVertShader": "shaders/canvas.vert",
+            "mFragShader": "shaders/canvas.frag"
+        },
+        {
+            "Type": "nap::Shader",
             "mID": "LineShader",
             "mVertShader": "shaders/line.vert",
             "mFragShader": "shaders/line.frag"
@@ -498,12 +610,6 @@
             "mID": "NormalsShader",
             "mVertShader": "shaders/normals.vert",
             "mFragShader": "shaders/normals.frag"
-        },
-        {
-            "Type": "nap::Shader",
-            "mID": "CanvasShader",
-            "mVertShader": "shaders/canvas.vert",
-            "mFragShader": "shaders/canvas.frag"
         },
         {
             "Type": "nap::TriangleLine",
@@ -522,60 +628,7 @@
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
             "ReferenceMesh": "DisplayLine",
-            "Length": 0.10000000149011612
-        },
-        {
-            "Type" : "nap::Entity",
-            "mID"  : "CanvasEntity",
-            
-            "Components" :
-            [
-                {
-                    "Type" : "nap::TransformComponent"      
-                },
-                {
-                    "Type" : "nap::RenderableMeshComponent",
-                    "Mesh" : "CanvasMesh",
-                    "MaterialInstance" : 
-                    {
-                        "Material": "CanvasMaterial",
-                        "BlendMode" : "AlphaBlend",
-                        "DepthMode" : "ReadOnly"
-                    }
-                }
-            ]
-        },
-        {
-            "Type" : "nap::Entity",
-            "mID": "LaserEntity",
-            
-            "Components" : 
-            [
-                {
-                    "Type":"nap::LaserOutputComponent",
-                    "mID" : "LaserOutputComponent",
-                    "Properties" :
-                    {
-                        "Frustum" :
-                        {
-                            "x" : 1,
-                            "y" : 1
-                        }
-                    },
-                    "Dac" : "Laser",
-                    "Line": "DisplayLine",
-                    "Transform" : "LineTransform"
-                },
-                {
-                    "Type" : "nap::FrustumSyncComponent",
-                    "mID" : "LaserFrustumComponent",
-                    "LaserOutputComponent" : "./LaserOutputComponent"
-                }       
-            ],
-            "Children" :
-            [
-                "CanvasEntity"
-            ]
+            "Length": 0.05
         }
     ]
 }

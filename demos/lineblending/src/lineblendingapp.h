@@ -19,29 +19,29 @@ namespace nap
 	/**
 	 * Demo application that is called from within the main loop
 	 *
-	 * Shows a line that morphs from target A to target B over time based on the blend speed.
+	 * Shows a line that morphs from target A to target B over time based on a blend speed.
 	 * The resulting line is projected onto a canvas that is used to define the laser projection bounds.
 	 * If you happen to have an etherdream DAC you can configure it in the json file. 
-	 * The result is sent to the laser over the network. Ths application also works without a laser attached to your network.
-	 * 
+	 * The blend result is sent to the laser over the network. This application also works without a laser attached to your network. 
+	 *
 	 * This demo uses of a lot of custom components that are defined in mod_lineblending.
 	 * The various components automate the line selection process and modulate the line based on a set of conditions.
 	 * Take a look at the various components for a better understanding of what they do.
 	 * The app contains 3 important entities: a line, a laser, and a camera. The canvas is a child entity of the laser
-	 * The canvas uses the laser to position itself in space and give it the right dimensions
+	 * The canvas entity uses the information from the laser entity to position itself in space and give itself the right dimensions.
 	 * The laser DAC is a resource and is referenced by the LaserOutputComponent that lives under the laser entity.
-	 * The laser output component translates the line coordinates to laser coordinates and pushes those to the laser dac resource.
+	 * The laser output component translates the line coordinates to laser coordinates and pushes those to the laser DAC resource.
 	 * 
 	 * Every line is a resource of type 'PolyLine', which in turn is a generic mesh.
 	 * The target (output) line is called 'DisplayLine'. This mesh is continuously updated by the various
 	 * components that live under the line entity. The 'source' lines are individual resources that the line blend component
 	 * interpolates in between. The result of that operation is stored in the display line.
+	 * The display line also has normals which are visualized and used to add a displacement effect.
 	 *
 	 * Mouse and key events are forwarded to the input service, the input service collects input events
 	 * and processes all of them on update. Because NAP does not have a default space (objects can
 	 * be rendered in multiple ways), you need to specify what input actually means to the application. 
-	 * The input router does that for you. This demo uses the default one that forwards the events to every input component
-	 * Refer to the cpp-update() call for more information on handling input
+	 * The input router does that for you. This demo uses the default one that forwards the events to every input component.
 	 */
 	class LineBlendingApp : public App
 	{
