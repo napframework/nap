@@ -30,15 +30,8 @@ target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 
-if (WIN32)
-    set(FILES_TO_COPY
-        ${LIBSNDFILE_LIB_DIR}/libsndfile-1.dll
-        ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll
-        ${LIBMPG123_LIB_DIR}/libmpg123.dll
-    )
-
-    copy_files_to_bin(${FILES_TO_COPY})
-endif()
+# Include our modulePostBuildPerProject hook into bin root so that Napkin gets the our thirdparty DLLs on Windows
+include(${CMAKE_CURRENT_SOURCE_DIR}/modulePostBuildPerProject.cmake)
 
 # Package into platform release
 if(UNIX)

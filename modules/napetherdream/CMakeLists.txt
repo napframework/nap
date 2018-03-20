@@ -23,6 +23,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} etherdreamlib)
 
+# Include our modulePostBuildPerProject hook into bin root so that Napkin gets the our thirdparty DLLs on Windows
+include(${CMAKE_CURRENT_SOURCE_DIR}/modulePostBuildPerProject.cmake)
+
 # Package into platform release
 if(UNIX)
     set(UNIX_EXTRA_RPATH ../../../../thirdparty/etherdream/bin)
