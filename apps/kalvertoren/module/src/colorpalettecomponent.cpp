@@ -86,15 +86,15 @@ namespace nap
 				}
 				case ColorPaletteCycleMode::Random:
 				{
+					int new_idx = mCurrentVariationIndex;
 					if (getVariationCount() > 1)
 					{
-						int new_idx = mCurrentVariationIndex;
 						while (new_idx == mCurrentVariationIndex)
 						{
 							new_idx = math::random<int>(0, getVariationCount() - 1);
 						}
-						selectVariation(new_idx);
 					}
+					selectVariation(new_idx);
 					break;
 				}
 				case ColorPaletteCycleMode::Sequence:
