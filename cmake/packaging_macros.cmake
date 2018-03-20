@@ -36,9 +36,12 @@ macro(package_nap)
 
     # Package checkBuildEnvironment scripts
     if(APPLE)
-        install(PROGRAMS ${NAP_ROOT}/dist/macos/checkBuildEnvironment DESTINATION .)
+        install(PROGRAMS ${NAP_ROOT}/dist/macos/check_build_environment/checkBuildEnvironment DESTINATION tools)
     elseif(UNIX)
-        install(PROGRAMS ${NAP_ROOT}/dist/linux/checkBuildEnvironment DESTINATION .)
+        install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/checkBuildEnvironment DESTINATION tools)
+    else()
+        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/checkBuildEnvironment.bat DESTINATION tools)
+        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/checkBuildEnvironmentContinued.py DESTINATION tools/platform)
     endif()
 
     # Create empty projects and usermodules directories

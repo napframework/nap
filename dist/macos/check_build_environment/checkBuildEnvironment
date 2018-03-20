@@ -125,7 +125,7 @@ def check_build_environment():
     # Check if Xcode command line tools are installed
     xcode_cli_tools_installed = xcode_installed and check_xcode_command_line_tools_installed()
 
-    # Check cmake
+    # Check CMake
     cmake_ok = check_cmake()
 
     print("")
