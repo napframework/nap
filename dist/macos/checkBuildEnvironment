@@ -35,22 +35,22 @@ def check_macos():
     return macos_version_ok    
 
 def check_cmake():
-    """Check if the CMake >= 3.6 is installed"""
+    """Check if the CMake >= 3.5 is installed"""
 
-    # Check if cmake installed
+    # Check if installed
     cmake_ok = False
     cmake_location = call('which cmake')
     cmake_installed = cmake_location != ''
 
-    # Check cmake version >= 3.6
+    # Check version >= 3.5
     if cmake_installed:
         cmake_version = call('cmake --version | grep version')
         chunks = cmake_version.strip().split()
         (major, minor, patch) = chunks[2].split('.')
-        cmake_ok = int(major) == 3 and int(minor) >= 6
+        cmake_ok = int(major) == 3 and int(minor) >= 5
 
     # cmake_ok = False
-    log_test_success('CMake >= 3.6', cmake_ok)
+    log_test_success('CMake >= 3.5', cmake_ok)
     return cmake_ok
 
 def check_xcode_installed():
@@ -143,9 +143,9 @@ def check_build_environment():
         else:
             print("Xcode not installed. Re-run checkBuildEnvironment once Xcode is installed.")
 
-    # If we don't CMake >= 3.6 provide help for installing it
+    # If we don't CMake >= 3.5 provide help for installing it
     if not cmake_ok:
-        print("\nCMake version 3.6 or higher is required. CMake can be downloaded from https://cmake.org/download/ or installed via Homebrew.")
+        print("\nCMake version 3.5 or higher is required. CMake can be downloaded from https://cmake.org/download/ or installed via Homebrew.")
         print("Re-run checkBuildEnvironment once CMake is installed.")
 
 if __name__ == '__main__':
