@@ -31,7 +31,11 @@ package_module()
 
 # Package etherdreamlib into platform release
 install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin)
-if(APPLE)
+if(WIN32)
+    # Install etherdream IMPLIB on Windows
+    get_target_property(ETHERDREAM_IMPLIB etherdreamlib IMPORTED_IMPLIB_RELEASE)
+    install(FILES ${ETHERDREAM_IMPLIB} DESTINATION thirdparty/etherdream/bin)    
+elseif(APPLE)
     # Ensure our etherdream install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
                        PRE_BUILD
