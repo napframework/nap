@@ -35,6 +35,9 @@ if(UNIX AND NOT APPLE)
             COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>/libartnet.so.1")
 endif()
 
+# Include our modulePostBuildPerProject hook into bin root so that Napkin gets the our thirdparty DLLs on Windows
+include(${CMAKE_CURRENT_SOURCE_DIR}/modulePostBuildPerProject.cmake)
+
 # Package into platform release
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/libartnet/bin")
