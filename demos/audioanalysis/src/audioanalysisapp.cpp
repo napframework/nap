@@ -50,14 +50,16 @@ namespace nap
 		// Find the world and camera entities
         ResourcePtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
-        // Find entities and components
+        // Find audio entities and the level meter component that will perform the audio analysis
         mAudioEntity = scene->findEntity("Audio");
         mLevelMeter = mAudioEntity->findComponent<audio::LevelMeterComponentInstance>();
         
+        // Set parameters for level meter component
         mLevelMeter->setCenterFrequency(mAnalysisFrequency);
         mLevelMeter->setBandWidth(mAnalysisBand);
         mLevelMeter->setFilterGain(mAnalysisGain);
         
+        // Resize the vector containing the results of the analysis
         mAnalysisPlotValues.resize(100, 0);
 
 		return true;
@@ -72,13 +74,15 @@ namespace nap
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
 		
+        // Shift the values in the vector with output values one position to the right, in order to make place for a new value.
         for (auto i = mAnalysisPlotValues.size() - 1; i > 0; i--)
             mAnalysisPlotValues[i] = mAnalysisPlotValues[i - 1];
+        // Insert the new output value at the top of the vector.
         mAnalysisPlotValues[0] = mLevelMeter->getLevel(0);
         
 		// Draw some gui elements
 		ImGui::Begin("Audio analysis");
-        ImGui::PlotLines("", mAnalysisPlotValues.data(), mAnalysisPlotValues.size() - 1);
+        ImGui::PlotLines("", mAnalysisPlotValues.data(), mAnalysisPlotValues.size() - 1); // Plot the output values
         ImGui::SliderFloat("Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Band", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Gain", &mAnalysisGain, 0.f, 10.0f, "%.3f", 1.0f);
