@@ -2,6 +2,17 @@
 import os
 import subprocess
 import sys
+import termios
+import tty
+
+def getch():
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        return sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 def call(cmd):
     """Execute command and return stdout"""
@@ -150,3 +161,5 @@ def check_build_environment():
 
 if __name__ == '__main__':
     check_build_environment()
+    print("Press key to close...")
+    getch()
