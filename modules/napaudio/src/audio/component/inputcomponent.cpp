@@ -30,11 +30,8 @@ namespace nap
 
             for (auto channel = 0; channel < resource->mChannels.size(); ++channel)
             {
-                if (resource->mChannels[channel] >= nodeManager->getInputChannelCount())
-                {
-                    errorState.fail("Input channel out of bounds");
+                if (!errorState.check(resource->mChannels[channel] >= nodeManager->getInputChannelCount(), "Input channel out of bounds"))
                     return false;
-                }
                 auto node = std::make_unique<InputNode>(*nodeManager);
                 node->setInputChannel(resource->mChannels[channel]);
                 mInputNodes.emplace_back(std::move(node));

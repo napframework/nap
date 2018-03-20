@@ -4,17 +4,20 @@
 #include <audio/core/audionode.h>
 #include <audio/utility/delay.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {        
         
         /**
          * Multi-purpose DSP filter using the Butterworth filter algorithm to calculate biquad coefficients.
          * Is able to apply lowpass and highpass with or without variable resonance peak and bandpass filtering.
          */
-        class NAPAPI FilterNode : public Node {
+        class NAPAPI FilterNode : public Node
+        {
         public:
-            enum class Mode { LOWPASS, HIGHPASS, BANDPASS, LOWRES, HIGHRES };
+            enum class EMode { LowPass, HighPass, BandPass, LowRes, HighRes };
             
         public:
             FilterNode(NodeManager& nodeManager) : Node(nodeManager), mOutput(8), mInput(8) { }
@@ -35,7 +38,7 @@ namespace nap {
             /**
              * Sets the mode of the filter: lowpass, highpass, bandpass, lowpass with resonance peak or highpass with resonance peak.
              */
-            void setMode(Mode mode);
+            void setMode(EMode mode);
             
             /**
              * Sets the frequency parameter of the filter in Hz. For the different modes this means:
@@ -62,7 +65,7 @@ namespace nap {
             /**
              * Returns the mode of the filter.
              */
-            Mode getMode() const { return mMode; }
+            EMode getMode() const { return mMode; }
             
             /**
              * @return: the cutoff frequency (for highpass and lowpass filters) or the center frequency (for bandpass filters) in Hz.
@@ -87,7 +90,7 @@ namespace nap {
         private:
             void adjust();
             
-            Mode mMode = Mode::LOWPASS;
+            EMode mMode = EMode::LowPass;
             ControllerValue mFrequency = 440.f;
             ControllerValue mResonance = 0.f;
             ControllerValue mBand = 100.f;

@@ -1,8 +1,10 @@
 #include "filternode.h"
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         
         void FilterNode::process()
@@ -15,9 +17,6 @@ namespace nap {
                 mInput.write(inputBuffer[i]);
                 auto temp = a0 * mInput.read(0) + a1 * mInput.read(1) + a2 * mInput.read(2) - b1 * mOutput.read(0) - b2 * mOutput.read(1);
                 
-//                if (abs(temp) < insignificant())
-//                    temp = 0;
-                
                 mOutput.write(temp);
                 outputBuffer[i] = temp;
             }
@@ -25,7 +24,7 @@ namespace nap {
         }
         
         
-        void FilterNode::setMode(Mode mode)
+        void FilterNode::setMode(EMode mode)
         {
             mMode = mode;
             adjust();
@@ -69,7 +68,7 @@ namespace nap {
             ControllerValue c, d, cSqr, q;
             switch (mMode)
             {
-                case Mode::LOWPASS:
+                case EMode::LowPass:
                     c = 1 / tan(M_PI * mFrequency / getSampleRate());
                     cSqr = c * c;
                     a0 = (1 / (1 + M_SQRT2 * c + cSqr));
@@ -78,7 +77,7 @@ namespace nap {
                     b1 = 2 * a0 * (1 - cSqr);
                     b2 = a0 * (1 - M_SQRT2 * c + cSqr);
                     break;
-                case Mode::HIGHPASS:
+                case EMode::HighPass:
                     c = tan(M_PI * mFrequency / getSampleRate());
                     cSqr = c * c;
                     a0 = 1 / (1 + M_SQRT2 * c + cSqr);
@@ -87,7 +86,7 @@ namespace nap {
                     b1 = 2 * a0 * (cSqr - 1);
                     b2 = a0 * (1 - M_SQRT2 * c + cSqr);
                     break;
-                case Mode::BANDPASS:
+                case EMode::BandPass:
                     c = 1 / tan(M_PI * mBand / getSampleRate());
                     d = 2 * cos(2 * M_PI * mFrequency / getSampleRate());
                     a0 = 1 / (1 + c);
@@ -96,7 +95,7 @@ namespace nap {
                     b1 = a2 * c * d;
                     b2 = a0 * (c - 1);
                     break;
-                case Mode::LOWRES:
+                case EMode::LowRes:
                     c = 1 / tan(M_PI * mFrequency / getSampleRate());
                     cSqr = c * c;
                     q = M_SQRT2 * mResonance;
@@ -106,7 +105,7 @@ namespace nap {
                     b1 = 2 * a0 * (1 - cSqr);
                     b2 = a0 * (1 - q * c + cSqr);
                     break;
-                case Mode::HIGHRES:
+                case EMode::HighRes:
                     c = tan(M_PI * mFrequency / getSampleRate());
                     cSqr = c * c;
                     q = M_SQRT2 * mResonance;

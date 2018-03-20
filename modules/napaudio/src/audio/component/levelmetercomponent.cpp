@@ -38,7 +38,7 @@ namespace nap
                 if (resource->mFilterInput)
                 {
                     auto filter = std::make_unique<FilterNode>(getNodeManager());
-                    filter->setMode(FilterNode::Mode::BANDPASS);
+                    filter->setMode(FilterNode::EMode::BandPass);
                     filter->setFrequency(resource->mCenterFrequency);
                     filter->setGain(resource->mFilterGain);
                     filter->audioInput.connect(mInput->getOutputForChannel(channel));
