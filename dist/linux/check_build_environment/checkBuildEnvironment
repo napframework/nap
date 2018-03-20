@@ -3,6 +3,10 @@ import os
 import subprocess
 import sys
 
+REQUIRED_UBUNTU_VERSION = '17.10'
+CMAKE_MIN_VERSION = (3, 5)
+
+
 def call(cmd):
     """Execute command and return stdout"""
 
@@ -43,8 +47,8 @@ def check_distribution_version():
     release = release.split(':')[1].strip()
     # release = '1.1'
     # release = '17.10'
-    release_ok = release == '17.10'
-    log_test_success('Ubuntu 17.10', release_ok)
+    release_ok = release == REQUIRED_UBUNTU_VERSION
+    log_test_success('Ubuntu %s' % REQUIRED_UBUNTU_VERSION, release_ok)
     return release_ok
 
 def apt_package_installed(package_name):
@@ -77,12 +81,11 @@ def check_cmake_installed():
 def check_cmake():
     """Check if the CMake version is >= 3.5"""
 
-
     # Check version >= 3.5
     cmake_version = call('cmake --version | grep version')
     chunks = cmake_version.strip().split()
     (major, minor, patch) = chunks[2].split('.')
-    cmake_ok = int(major) == 3 and int(minor) >= 5
+    cmake_ok = int(major) == CMAKE_MIN_VERSION[0] and int(minor) >= CMAKE_MIN_VERSION[1]
 
     # cmake_ok = False
     log_test_success('CMake >= 3.5', cmake_ok)
