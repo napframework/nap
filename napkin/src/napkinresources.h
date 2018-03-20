@@ -35,5 +35,12 @@ namespace napkin
 	static const QString QRC_ICONS_PAGE_WHITE               = ":/icons/page_white.png";
 	static const QString QRC_ICONS_RTTIOBJECT               = ":/icons/rttiobject.png";
 	static const QString QRC_ICONS_SCENE                    = ":/icons/scene.png";
+	static const QString QRC_FONTS_MONTSERRAT_EXTRABOLD     = ":/fonts/Montserrat-ExtraBold.ttf";
+	static const QString QRC_FONTS_MONTSERRAT_LIGHT         = ":/fonts/Montserrat-Light.ttf";
+	static const QString QRC_FONTS_MONTSERRAT_MEDIUM        = ":/fonts/Montserrat-Medium.ttf";
+	static const QString QRC_FONTS_MONTSERRAT_SEMIBOLD      = ":/fonts/Montserrat-SemiBold.ttf";
+	static const QString QRC_FONTS_NUNITOSANS_EXTRABOLD     = ":/fonts/NunitoSans-ExtraBold.ttf";
+	static const QString QRC_FONTS_NUNITOSANS_REGULAR       = ":/fonts/NunitoSans-Regular.ttf";
+	static const QString QRC_FONTS_NUNITOSANS_SEMIBOLD      = ":/fonts/NunitoSans-SemiBold.ttf";
 } // namespace napkin
 

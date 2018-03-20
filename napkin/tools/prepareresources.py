@@ -41,7 +41,7 @@ def convertSVGtoPNG(size=128):
 
 
 def __resourceFiles():
-    dirs = ('icons',)
+    dirs = ('icons', 'fonts')
     filetypes = ('ttf', 'png')
     for d in dirs:
         for f in sorted(walkDir(resourcePath(d))):
