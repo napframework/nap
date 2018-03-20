@@ -37,6 +37,8 @@ macro(package_nap)
     # Package checkBuildEnvironment scripts
     if(APPLE)
         install(PROGRAMS ${NAP_ROOT}/dist/macos/checkBuildEnvironment DESTINATION .)
+    elseif(UNIX)
+        install(PROGRAMS ${NAP_ROOT}/dist/linux/checkBuildEnvironment DESTINATION .)
     endif()
 
     # Create empty projects and usermodules directories
