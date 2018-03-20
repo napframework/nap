@@ -14,6 +14,7 @@
 #include <linecolorcomponent.h>
 #include <laseroutputcomponent.h>
 #include <meshutils.h>
+#include <linenoisecomponent.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -118,7 +119,14 @@ namespace nap
 			float* blend_speed = &(mLineEntity->getComponent<LineBlendComponentInstance>().mBlendSpeed);
 			ImGui::SliderFloat("Blend Speed", blend_speed, 0.0f, 1.0f);
 		}
-
+		if (ImGui::CollapsingHeader("Noise"))
+		{
+			LineNoiseComponentInstance& line_mod = mLineEntity->getComponent<LineNoiseComponentInstance>();
+			ImGui::SliderFloat("Amplitude", &line_mod.mProperties.mAmplitude, 0.0f, 0.2f, "%.3f", 2.0f);
+			ImGui::SliderFloat("Speed", &line_mod.mProperties.mSpeed, 0.0f, 1.0f, "%.3f", 2.0f);
+			ImGui::SliderFloat("Offset", &line_mod.mProperties.mOffset, 0.0f, 1.0f);
+			ImGui::SliderFloat("Frequency", &line_mod.mProperties.mFrequency, 0.0f, 10.0f, "%.3f", 1.5f);
+		}
 		ImGui::End();
 	}
 
