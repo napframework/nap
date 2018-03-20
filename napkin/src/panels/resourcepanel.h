@@ -106,18 +106,6 @@ namespace napkin
 		void onPropertyValueChanged(const PropertyPath& path);
 
 		/**
-		 * Finds a model item that keeps track of the specified object
-		 * @param obj The object to look for in the model items
-		 * @return The model item or nullptr if no such item was found
-		 */
-		class ObjectItem* findItem(const nap::rtti::Object& obj);
-
-		/**
-		 * @return The instances currently selected in the view.
-		 */
-		std::vector<rttr::instance> getSelectedInstances() const;
-
-		/**
 		 * Used to provide this view with custom menu items
 		 * @param menu The menu to append items to.
 		 */

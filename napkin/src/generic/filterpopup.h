@@ -50,7 +50,15 @@ namespace napkin
 		template<typename T>
 		static T* getObject(QWidget* parent) { return rtti_cast<T>(getObject(parent, RTTI_OF(T))); }
 
+		/**
+		 * Override to provide a reasonable size
+		 */
 		QSize sizeHint() const override;
+
+		/**
+		 * @return true if the user choice was confirmed, false if the dialog was dismissed
+		 */
+		bool wasAccepted() const { return mWasAccepted; }
 
 	protected:
 		/**
@@ -67,10 +75,11 @@ namespace napkin
 		void moveSelection(int dir);
 		void confirm();
 
-
+		bool mWasAccepted = false;
 		FilterTreeView mTreeView;
 		QVBoxLayout mLayout;
 		QSize mSize = { 400, 400 };
+
 	};
 
 } // namespace napkin
