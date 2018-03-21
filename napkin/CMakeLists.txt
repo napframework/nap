@@ -73,23 +73,7 @@ target_include_directories(${NAPKIN_LIB} PUBLIC src ${FREEIMAGE_INCLUDE_DIRS})
 
 nap_qt_post(${PROJECT_NAME})
 
-# Set our NAP modules to be list of modules we want to use with Napkin so we they get copied into Napkin's
-# binary directory on Windows
-set(NAP_MODULES ${NAP_MODULES_USAGE_DEPENDENCIES})
-
-# Run any module post-build hooks for usage dependencies so that they can dump thirdparty
-# requirements into the root of bin for napkin to use
-include_module_postbuilds_per_project("${NAP_MODULES_USAGE_DEPENDENCIES}")
-
-# Build into a napkin directory under bin on Unix, because we can (don't have same Windows DLL copying problems) and it's cleaner
-if(UNIX)
-    set_output_directories()
-endif()
-
-if(WIN32)
-    # Copy core Windows thirdparty DLLs
-    copy_core_thirdparty_windows_dlls()
-elseif(APPLE)
+if(APPLE)
     # Add the runtime path for RTTR on macOS
     add_macos_rttr_rpath()
 endif()

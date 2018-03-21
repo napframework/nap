@@ -73,7 +73,7 @@ macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
                            COMMENT "Copying ${F} -> to bin dir of ${PROJECT_NAME}")
     endforeach()
 endmacro()
@@ -249,29 +249,8 @@ macro(add_macos_rttr_rpath)
                        )    
 endmacro()
 
-# Copy core Windows DLLs to project bin
-macro(copy_core_windows_dlls)
-    set(FILES_TO_COPY
-        $<TARGET_FILE:napcore>
-        $<TARGET_FILE:naprtti>
-        )
-    copy_files_to_bin(${FILES_TO_COPY})
-
-    copy_core_thirdparty_windows_dlls()
-endmacro()
-
-# Copy core thirdparty Windows DLLs to project bin
-function(copy_core_thirdparty_windows_dlls)
-    # RTTR
-    find_rttr()
-    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
-
-    # Python
-    copy_windows_python_dlls_to_project()
-endfunction()
-
-# Copy Windows Python DLLs to project output directory
-function(copy_windows_python_dlls_to_project)
+# Copy Windows Python DLLs to output directory
+function(copy_windows_python_dlls_to_bin)
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
     copy_files_to_bin(${PYTHON_DLLS})
 endfunction()
@@ -312,6 +291,7 @@ macro(find_rttr)
 endmacro()
 
 # Run any module post-build logic for set modules
+# Note: Currently unused, leaving as draft for potential later use
 macro(include_module_postbuilds_per_project NAP_MODULES)
     foreach(NAP_MODULE ${NAP_MODULES})
         set(SHORT_MODULE_NAME )
@@ -329,13 +309,7 @@ endmacro()
 # PROJECT_PREFIX: folder to package the project into in the NAP release (eg. demos, examples, etc)
 # RUN_FBX_CONVERTER: whether to run fbxconverter for the project
 function(nap_source_project_output_and_packaging INCLUDE_WITH_RELEASE INCLUDE_ONLY_WITH_NAIVI_APPS PROJECT_PREFIX RUN_FBX_CONVERTER)
-    # Run any module post-build logic for this project
-    include_module_postbuilds_per_project("${NAP_MODULES}")
-
-    if(WIN32)
-        # Copy core Windows DLLs
-        copy_core_windows_dlls()
-    elseif(APPLE)
+    if(APPLE)
         # Add the runtime path for RTTR on macOS
         add_macos_rttr_rpath()
     endif()

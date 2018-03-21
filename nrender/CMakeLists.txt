@@ -95,6 +95,19 @@ if(MSVC)
     generate_export_header(${PROJECT_NAME})
 endif()
 
+# Windows thirdparty DLL copying
+if(WIN32)
+    # Copy freeimage DLL to build directory
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
+
+    # Copy over Windows graphics DLLs to build directory
+    copy_base_windows_graphics_dlls()
+
+    # Copy over Assimp to build directory
+    copy_files_to_bin(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
+endif()
+
 # Package into release build
 if (WIN32)
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)

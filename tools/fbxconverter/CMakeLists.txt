@@ -21,12 +21,7 @@ endif()
 set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
-if (WIN32)
-    find_rttr()
-    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)    
-
-    copy_windows_python_dlls_to_project()
-elseif(APPLE)
+if(APPLE)
     # Add the runtime path for RTTR on macOS
     add_macos_rttr_rpath()    
 endif()
