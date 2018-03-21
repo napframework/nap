@@ -1361,7 +1361,7 @@
         {
             "Type": "nap::ImageLayer",
             "mID": "BACKBASIC1",
-            "Path": "backgrounds/final/BACKGROUND_000_basis.png"
+            "Path": "backgrounds/FINAL/BACKGROUND_000_basis.png"
         },
         {
             "Type": "nap::ImageLayer",
@@ -1564,7 +1564,7 @@
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT3",
-            "BaseFilename": "FINAL/T3_png/T3_%02d.png",
+            "BaseFilename": "FINAL/T3_PNG/T3_%02d.png",
             "FPS": 0.10000000149011612
         },
         {
@@ -1582,7 +1582,7 @@
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGV2",
-            "BaseFilename": "FINAL/V2_png/V2_%03d.png",
+            "BaseFilename": "FINAL/V2_PNG/V2_%03d.png",
             "FPS": 0.10000000149011612
         },
         {
@@ -1648,7 +1648,7 @@
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "V_1_sequence",
-            "BaseFilename": "sequences/final/vertikaal/V1_%03d.png",
+            "BaseFilename": "sequences/FINAL/vertikaal/V1_%03d.png",
             "FPS": 0.10000000149011612
         },
         {
@@ -3221,11 +3221,11 @@
         {
             "Type": "nap::YoctoEthernetHub",
             "mID": "LightHub1",
-            "Address": "lethernet_hub_1",
+            "Address": "192.168.1.102",
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": false,
+            "Connect": true,
             "Sensors": [
                 "LuxSensor1"
             ]
