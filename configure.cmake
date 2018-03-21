@@ -320,7 +320,7 @@ macro(include_module_postbuilds_per_project NAP_MODULES)
         if(EXISTS ${MODULE_POSTBUILD})
             include(${MODULE_POSTBUILD})
         endif()
-    endforeach()    
+    endforeach()
 endmacro()
 
 # Set output paths, copy Windows DLLs, package into release, etc
@@ -329,25 +329,8 @@ endmacro()
 # PROJECT_PREFIX: folder to package the project into in the NAP release (eg. demos, examples, etc)
 # RUN_FBX_CONVERTER: whether to run fbxconverter for the project
 function(nap_source_project_output_and_packaging INCLUDE_WITH_RELEASE INCLUDE_ONLY_WITH_NAIVI_APPS PROJECT_PREFIX RUN_FBX_CONVERTER)
-
-    # Build into a project directory under bin
-    set_output_directories()
-
     # Run any module post-build logic for this project
     include_module_postbuilds_per_project("${NAP_MODULES}")
-
-    # Copy modules into project bin directories
-    foreach(NAP_MODULE ${NAP_MODULES})
-        if(WIN32)
-            add_custom_command(
-                    TARGET ${PROJECT_NAME}
-                    POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E
-                            copy $<TARGET_FILE:${NAP_MODULE}> 
-                            $<TARGET_FILE_DIR:${PROJECT_NAME}>
-                    )
-        endif()
-    endforeach()
 
     if(WIN32)
         # Copy core Windows DLLs
@@ -355,13 +338,6 @@ function(nap_source_project_output_and_packaging INCLUDE_WITH_RELEASE INCLUDE_ON
     elseif(APPLE)
         # Add the runtime path for RTTR on macOS
         add_macos_rttr_rpath()
-    endif()
-
-    # Copy project json to project bin dir and export fbx, via post-build events
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/project.json)
-        copy_files_to_bin(${CMAKE_CURRENT_SOURCE_DIR}/project.json)
-    else()
-        message(STATUS "Couldn't find project.json for ${PROJECT_NAME}")
     endif()
 
     if(${RUN_FBX_CONVERTER})
