@@ -18,8 +18,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 set(DEPENDENT_NAP_MODULES mod_naprender)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${FFMPEG_LIBRARIES})
 
-# Include our modulePostBuildPerProject hook into bin root so that Napkin gets the our thirdparty DLLs on Windows
-include(${CMAKE_CURRENT_SOURCE_DIR}/modulePostBuildPerProject.cmake)
+if(WIN32)
+    # Copy FFmpeg DLLs to project build directory
+    copy_windows_ffmpeg_dlls()
+endif()
 
 # Package into platform release
 if(UNIX)

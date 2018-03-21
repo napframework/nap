@@ -38,6 +38,15 @@ elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} dl pthread)
 endif ()
 
+# Windows thirdparty DLL copying
+if(WIN32)
+    # RTTR
+    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
+
+    # Python
+    copy_windows_python_dlls_to_bin()
+endif()
+
 if(APPLE)
     add_custom_command(TARGET ${PROJECT_NAME}
                        PRE_BUILD

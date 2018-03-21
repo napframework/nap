@@ -35,8 +35,13 @@ if(UNIX AND NOT APPLE)
             COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>/libartnet.so.1")
 endif()
 
-# Include our modulePostBuildPerProject hook into bin root so that Napkin gets the our thirdparty DLLs on Windows
-include(${CMAKE_CURRENT_SOURCE_DIR}/modulePostBuildPerProject.cmake)
+if(WIN32)
+    # Copy artnet DLL to project build directory
+    if(NOT TARGET artnet)
+        find_package(artnet REQUIRED)
+    endif()
+    copy_artnet_dll()
+endif()
 
 # Package into platform release
 if(UNIX)
