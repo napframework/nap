@@ -150,7 +150,7 @@ def check_build_environment():
 
     # Warn about wrong Ubuntu version
     if not distribution_version_ok:
-        print("\nWarning: This version of NAP is supported on Ubuntu 17.10.  Other macOS versions may work but are unsupported.")
+        print("\nWarning: This version of NAP is supported on Ubuntu 17.10.  Other Linux configurations may work but are unsupported.")
 
     # Build apt packages to offer to install
     packages_to_install = []
