@@ -26,14 +26,12 @@
 	#include <direct.h>
 #elif __APPLE__
     #include <stdlib.h>
-    #include <zconf.h>
     #include <sys/stat.h>
     #include <dirent.h>
     #include <fstream>
 	#include <unistd.h>
 	#include <mach-o/dyld.h>
 #else
-    #include <zconf.h>
     #include <sys/stat.h>
     #include <dirent.h>
     #include <fstream>
