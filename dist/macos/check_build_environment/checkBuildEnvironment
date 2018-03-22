@@ -127,7 +127,7 @@ def check_build_environment():
     xcode_installed = check_xcode_installed()
 
     # Check if Xcode command line tools are installed
-    xcode_cli_tools_installed = xcode_installed and check_xcode_command_line_tools_installed()
+    xcode_cli_tools_installed = check_xcode_command_line_tools_installed()
 
     # Check CMake
     cmake_ok = check_cmake()
@@ -135,7 +135,7 @@ def check_build_environment():
     print("")
 
     # If everything looks good log and exit
-    if macos_version_ok and xcode_cli_tools_installed and cmake_ok:
+    if macos_version_ok and xcode_installed and xcode_cli_tools_installed and cmake_ok:
         print("Your build environment appears to be ready for NAP!")
         return
 
@@ -145,23 +145,34 @@ def check_build_environment():
     if not macos_version_ok:
         print("\nWarning: This version of NAP is supported on macOS High Sierra (10.13). Other macOS versions may work but are unsupported.")
 
-    # If we don't have Xcode Command Line Tools help install it
-    if not xcode_cli_tools_installed:
-        if xcode_installed:        
-            print("\nXcode is installed but the Xcode Command Line Tools are not.")
-        else:
-            print("\nXcode and its Command Line Tools are not installed.")
-        install_xcode = read_yes_no("Kick off installation?")
+    # If Xcode isn't installed assist in installation
+    if not xcode_installed:
+        print("\nXcode is not installed.")
+        install_xcode = read_yes_no("Open Xcode in App Store for installation?")
         if install_xcode:
-            print("Triggering installation. Re-run checkBuildEnvironment once the installation has completed.")
-            call('xcode-select --install')
+            print("Opening the App Store...")
+            if not xcode_cli_tools_installed:
+                print("Re-run checkBuildEnvironment once the installation has completed to install Xcode Command Line Tools.")
+            else:
+                print("Re-run checkBuildEnvironment once the installation has completed.")                
+            call('open \'macappstore://itunes.apple.com/us/app/xcode/id497799835\'')
         else:
             print("Xcode not installed. Re-run checkBuildEnvironment once Xcode is installed.")
 
+    # If we don't have Xcode Command Line Tools help install it
+    if not xcode_cli_tools_installed:
+        if xcode_installed:        
+            print("\nXcode Command Line Tools are not installed.")
+            install_command_line_tools = read_yes_no("Kick off installation?")
+            call('xcode-select --install')
+
     # If we don't CMake >= 3.5 provide help for installing it
     if not cmake_ok:
-        print("\nCMake version 3.5 or higher is required. CMake can be downloaded from https://cmake.org/download/ or installed via Homebrew.")
-        print("Re-run checkBuildEnvironment once CMake is installed.")
+        print("\nCMake version 3.5 or higher is required on the command line.")
+        print("CMake can be downloaded from https://cmake.org/download/ or installed via Homebrew.")
+        print("If installing via the cmake.org download follow the instructions in CMake's Commane Line Tools") 
+        print("help under the Options menu to install for the command line.")
+        print("\nRe-run checkBuildEnvironment once CMake is setup.")
 
 if __name__ == '__main__':
     check_build_environment()
