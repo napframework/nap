@@ -60,6 +60,11 @@ macro(package_nap)
         install(CODE "execute_process(COMMAND python ${NAP_ROOT}/docs/doxygen/generateDocumentation.py)
                       execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/docs/html/ ${CMAKE_INSTALL_PREFIX}/doc)")
     endif()
+
+    # Install IDE templates
+    if(WIN32)
+        install(DIRECTORY ${NAP_ROOT}/idetemplates/vstemplates/ DESTINATION visualStudioTemplates)
+    endif()
 endmacro()
 
 # Package installed Python for distribution with NAP release (for use with mod_nappython, Napkin and interpreter for Python scripts)
