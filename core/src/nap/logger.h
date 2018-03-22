@@ -12,6 +12,7 @@
 #include <queue>
 #include <thread>
 #include <fstream>
+#include <utility/datetimeutils.h>
 
 /**
  * This ugly macro allows us to register a nice, easy interface per log level
@@ -21,7 +22,7 @@
  */
 
 #define NAP_DECLARE_LOG_LEVEL(LEVEL, NAME)																	\
-	static LogLevel& NAME##Level()														        			\
+	static LogLevel& NAME##Level()																			\
 	{																										\
 		static LogLevel lvl(#NAME, LEVEL);																	\
 		return lvl;																							\
@@ -90,24 +91,45 @@ namespace nap
 	class NAPAPI LogMessage
 	{
 	public:
-		LogMessage(const LogLevel& lvl, const std::string& msg)
-			: mLevel(lvl), mMessage(msg)
-		{}
+		LogMessage(const LogLevel& lvl, const std::string& msg);
 
 		/**
 		 * @return the log level of this message
 		 */
-		const LogLevel& level() const				{ return mLevel; }
+		const LogLevel& level() const { return mLevel; }
 
 		/**
 		 * @return the text associated with this message
 		 */
-		const std::string& text() const				{ return mMessage; }
+		const std::string& text() const { return mMessage; }
+
+		/**
+		 * @return the message's timestamp in milliseconds since epoch
+		 */
+		const utility::SystemTimeStamp& getTimestamp() const { return mTimeStamp; }
 
 	private:
 		const LogLevel mLevel;
 		const std::string mMessage;
+		const utility::SystemTimeStamp mTimeStamp;
 	};
+
+	// Shorthand for string formatter
+	using LogMessageFormatter = std::function<std::string(const LogMessage& msg)>;
+
+	/**
+	 * Minimal log message formatter, containing only the level and the message
+	 * @param msg the LogMessage to format
+	 * @param result string into which to write the formatted message
+	 */
+	std::string basicLogMessageFormatter(const LogMessage& msg);
+
+	/**
+	 * LogMessage string formatter that includes a timestamp in ISO format
+	 * @param msg the LogMessage to format
+	 * @param result string into which to write the formatted message
+	 */
+	std::string timestampLogMessageFormatter(const LogMessage& msg);
 
 	/**
 	 * Abstract base class for log handlers.
@@ -137,8 +159,22 @@ namespace nap
 		 */
 		const LogLevel& getLogLevel() const { return mLevel; }
 
+		/**
+		 * Override the basic log message formatter
+		 * @param formatter the formatter to use when writing the log message if used by the derived class
+		 */
+		void setFormatter(LogMessageFormatter formatter);
+
+		/**
+		 * Format a log message using the currently set log formatter.
+		 * @param msg the message to format
+		 * @return a formatted log message
+		 */
+		std::string formatMessage(LogMessage& msg);
+
 	private:
 		LogLevel mLevel;
+		LogMessageFormatter mFormatter = nullptr;
 	};
 
 	/**

@@ -6,28 +6,35 @@
 namespace nap
 {
 
-	/**
-	 * Format the log message
-	 * @param msg The message to format
-	 * @return A formatted message (how convenient)
-	 */
-	std::string formatMessage(const LogMessage& message)
+	LogMessage::LogMessage(const LogLevel& lvl, const std::string& msg)
+		: mLevel(lvl), mMessage(msg), mTimeStamp(utility::getCurrentTime())
+	{}
+
+	std::string basicLogMessageFormatter(const LogMessage& msg)
 	{
-		return utility::stringFormat("[%s] %s", message.level().name().c_str(), message.text().c_str());
+		return utility::stringFormat("[%s] %s", msg.level().name().c_str(), msg.text().c_str());
 	}
 
-	std::string timestamp()
+	std::string timestampLogMessageFormatter(const LogMessage& msg)
 	{
-        // TODO: Needs millisecond precision
-        char buf[100];
-        time_t now = time(nullptr);
-        strftime(buf, 100, "%Y-%m-%d_%H-%M-%S-000", localtime(&now));
-        return std::string(buf);
+		return utility::timeFormat(msg.getTimestamp()) + " " + basicLogMessageFormatter(msg);
 	}
 
+	LogHandler::LogHandler()
+		: mLevel(Logger::fineLevel()), mFormatter(&basicLogMessageFormatter)
+	{
+	}
 
-	LogHandler::LogHandler() : mLevel(Logger::fineLevel()) { }
+	void LogHandler::setFormatter(LogMessageFormatter formatter)
+	{
+		assert(formatter != nullptr);
+		mFormatter = formatter;
+	}
 
+	std::string LogHandler::formatMessage(LogMessage& msg)
+	{
+		return mFormatter(msg);
+	}
 
 	Logger::Logger() : mLevel(fineLevel())
 	{
@@ -95,8 +102,13 @@ namespace nap
 
 	void Logger::logToDirectory(const std::string& directory, const std::string& prefix)
 	{
-		std::string filename(utility::stringFormat("%s/%s_%s.log",
-												   directory.c_str(), prefix.c_str(), timestamp().c_str()));
+		// filename-safe time format
+		std::string timeformat = "%Y-%m-%d_%H-%M-%S_%ms";
+		std::string timestamp = utility::timeFormat(utility::getCurrentTime(), timeformat);
+		std::string filename = utility::stringFormat("%s/%s_%s.log",
+													 directory.c_str(),
+													 prefix.c_str(),
+													 timestamp.c_str());
 		addFileHandler(filename);
 	}
 
@@ -104,6 +116,8 @@ namespace nap
 	FileLogHandler::FileLogHandler(const std::string& mFilename)
 		: LogHandler(),  mFilename(mFilename)
 	{
+		// Set the default formatter to use a timestamp
+		setFormatter(&timestampLogMessageFormatter);
 		// Kick off the writing thread
 		mWriteThread = std::make_unique<std::thread>(std::bind(&FileLogHandler::writeLoop, this));
 	}
