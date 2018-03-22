@@ -52,5 +52,4 @@ macro(copy_artnet_dll)
                                $<TARGET_FILE:artnet>
                                "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
                        )
-
 endmacro()
