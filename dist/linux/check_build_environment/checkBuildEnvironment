@@ -104,7 +104,7 @@ def check_build_environment():
     distribution_ok = check_distribution()
     if not distribution_ok:
         print("\nThis version of NAP supports Ubuntu Linux (17.10).  Other distributions may work but are unsupported.")
-        print("Hint for the adventurous: On Ubuntu we depend on build-essential, CMake >= 3.5, libgl1-mesa-dev, zlib1g-dev, libglu1-mesa-dev and patchelf")
+        print("Hint for the adventurous: On Ubuntu we depend on build-essential, CMake >= 3.5, libglu1-mesa-dev and patchelf")
         print("\nNot continuing checks.")
         sys.exit(1)
 
@@ -118,14 +118,6 @@ def check_build_environment():
     # Check package patchelf installed
     patchelf_installed = apt_package_installed('patchelf')
     log_test_success('for patchelf package', patchelf_installed)
-
-    # Check package libgl1-mesa-dev installed
-    mesa_dev_installed = apt_package_installed('libgl1-mesa-dev')
-    log_test_success('for libgl1-mesa-dev package', mesa_dev_installed)
-
-    # Check package zlib1g-dev installed
-    zlib_installed = apt_package_installed('zlib1g-dev')
-    log_test_success('for zlib1g-dev package', zlib_installed)
 
     # Check package libglu1-mesa-dev installed
     glut_intalled = apt_package_installed('libglu1-mesa-dev')
@@ -161,10 +153,6 @@ def check_build_environment():
         packages_to_install.append('patchelf')
     if not cmake_installed:
         packages_to_install.append('cmake')
-    if not mesa_dev_installed:
-        packages_to_install.append('libgl1-mesa-dev')
-    if not zlib_installed:
-        packages_to_install.append('zlib1g-dev')
     if not glut_intalled:
         packages_to_install.append('libglu1-mesa-dev')
         
