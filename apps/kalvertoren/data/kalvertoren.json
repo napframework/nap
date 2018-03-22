@@ -3225,7 +3225,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Enabled": false,
+            "Enabled": true,
             "AllowFailure" : true,
             "Sensors": [
                 "LuxSensor1"
@@ -3238,7 +3238,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Enabled": false,
+            "Enabled": true,
             "AllowFailure" : true,
             "Sensors": [
                 "LuxSensor2"
@@ -3261,7 +3261,7 @@
             "Type": "nap::YoctoLuxSensor",
             "mID": "LuxSensor1",
             "Name": "LIGHTMK3-B65A4",
-            "Retries": 10,
+            "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 500
         },
@@ -3269,7 +3269,7 @@
             "Type": "nap::YoctoLuxSensor",
             "mID": "LuxSensor2",
             "Name": "LIGHTMK3-BA5E3",
-            "Retries": 10,
+            "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 500
         },
@@ -3277,7 +3277,7 @@
             "Type": "nap::YoctoLuxSensor",
             "mID": "LuxSensor3",
             "Name": "LIGHTMK3-BAC3D",
-            "Retries": 10,
+            "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 500
         }
