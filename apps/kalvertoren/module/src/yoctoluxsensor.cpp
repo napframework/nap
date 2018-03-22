@@ -87,7 +87,7 @@ namespace nap
 
 		// Create buffer that holds x amount of lux read-out values
 		std::vector<float> lux_buffer(mBufferSize, 0.0f);
-		int lux_idx = 0;
+		uint64 lux_idx = 0;
 		float accum_value = 0.0f;
 		bool first = true;
 
@@ -96,7 +96,7 @@ namespace nap
 		{
 			// Signal that we want to reconnect
 			if (mCurrentRetries > 0)
-				nap::Logger::warn("retry: %d", mCurrentRetries);
+				nap::Logger::warn("lux sensor: %s retry: %d", mID.c_str(), mCurrentRetries);
 
 			// Sleep
 			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), errorMsg);

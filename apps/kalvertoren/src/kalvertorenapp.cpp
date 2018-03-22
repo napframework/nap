@@ -167,4 +167,3 @@ namespace nap
 		inputService->addEvent(std::move(inputEvent));
 	}
 }
- 

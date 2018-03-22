@@ -3221,11 +3221,12 @@
         {
             "Type": "nap::YoctoEthernetHub",
             "mID": "LightHub1",
-            "Address": "192.168.1.102",
+            "Address": "192.168.14.201",
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": true,
+            "Enabled": false,
+            "AllowFailure" : true,
             "Sensors": [
                 "LuxSensor1"
             ]
@@ -3233,11 +3234,12 @@
         {
             "Type": "nap::YoctoEthernetHub",
             "mID": "LightHub2",
-            "Address": "lethernet_hub_2",
+            "Address": "192.168.14.202",
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": false,
+            "Enabled": false,
+            "AllowFailure" : true,
             "Sensors": [
                 "LuxSensor2"
             ]
@@ -3245,11 +3247,12 @@
         {
             "Type": "nap::YoctoEthernetHub",
             "mID": "LightHub3",
-            "Address": "lethernet_hub_3",
+            "Address": "192.168.14.203",
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": false,
+            "Enabled": true,
+            "AllowFailure" : true,
             "Sensors": [
                 "LuxSensor3"
             ]

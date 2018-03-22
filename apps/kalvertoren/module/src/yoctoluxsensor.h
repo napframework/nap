@@ -5,6 +5,7 @@
 #include <rtti/objectptr.h>
 #include <thread>
 #include <atomic>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -39,17 +40,16 @@ namespace nap
 		 */
 		float getValue()								{ return mValue; }
 
-		std::string			mName;						///< Property: 'Name' name of the lux sensor
-		int					mRetries = 10;				///< Number of times connection is retried before exiting the loop
-		int					mBufferSize = 30;			///< Size of the lux sensor read-out buffer
-		int					mDelayTime = 500;			///< Time in between sensor reads
-
+		std::string					mName;					///< Property: 'Name' name of the lux sensor
+		int							mRetries = 10;			///< Number of times connection is retried before exiting the loop
+		int							mBufferSize = 30;		///< Size of the lux sensor read-out buffer
+		int							mDelayTime = 500;		///< Time in between sensor reads
 	private:
-		void*				mSensor = nullptr;			///< Light sensor
-		std::atomic<float>	mValue;                     ///< Current light value
-		bool				mStopReading = false;		///< Stops the thread from reading sensor values
-		int					mCurrentRetries = 0;		///< Number of retries associated with read out failure
-		std::atomic<bool>	mReading;                   ///< If the sensor is currently online
+		void*						mSensor = nullptr;		///< Light sensor
+		std::atomic<float>			mValue;					///< Current light value
+		bool						mStopReading = false;	///< Stops the thread from reading sensor values
+		int							mCurrentRetries = 0;	///< Number of retries associated with read out failure
+		std::atomic<bool>			mReading;				///< If the sensor is currently online
 
 		/**
 		 * Starts reading sensor input on a background thread
