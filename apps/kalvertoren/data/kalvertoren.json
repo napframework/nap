@@ -3221,11 +3221,12 @@
         {
             "Type": "nap::YoctoEthernetHub",
             "mID": "LightHub1",
-            "Address": "192.168.1.102",
+            "Address": "192.168.14.201",
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": true,
+            "Enabled": true,
+            "AllowFailure" : true,
             "Sensors": [
                 "LuxSensor1"
             ]
@@ -3233,11 +3234,12 @@
         {
             "Type": "nap::YoctoEthernetHub",
             "mID": "LightHub2",
-            "Address": "lethernet_hub_2",
+            "Address": "192.168.14.202",
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": false,
+            "Enabled": true,
+            "AllowFailure" : true,
             "Sensors": [
                 "LuxSensor2"
             ]
@@ -3245,11 +3247,12 @@
         {
             "Type": "nap::YoctoEthernetHub",
             "mID": "LightHub3",
-            "Address": "lethernet_hub_3",
+            "Address": "192.168.14.203",
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Connect": false,
+            "Enabled": true,
+            "AllowFailure" : true,
             "Sensors": [
                 "LuxSensor3"
             ]
@@ -3258,7 +3261,7 @@
             "Type": "nap::YoctoLuxSensor",
             "mID": "LuxSensor1",
             "Name": "LIGHTMK3-B65A4",
-            "Retries": 10,
+            "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 500
         },
@@ -3266,7 +3269,7 @@
             "Type": "nap::YoctoLuxSensor",
             "mID": "LuxSensor2",
             "Name": "LIGHTMK3-BA5E3",
-            "Retries": 10,
+            "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 500
         },
@@ -3274,7 +3277,7 @@
             "Type": "nap::YoctoLuxSensor",
             "mID": "LuxSensor3",
             "Name": "LIGHTMK3-BAC3D",
-            "Retries": 10,
+            "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 500
         }

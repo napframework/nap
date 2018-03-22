@@ -20,11 +20,9 @@ RTTI_END_CLASS
 namespace nap
 {
     YoctoLuxSensor::YoctoLuxSensor()
-    {
-        mReading = false;
-        mValue = -1.0f;
-    }
+    {  }
     
+
 	YoctoLuxSensor::~YoctoLuxSensor()			
 	{
 		stop();
@@ -39,79 +37,90 @@ namespace nap
 
 	void YoctoLuxSensor::start()
 	{
-		// Stop active sensor read
-		stop();
+		// Fire off monitor thread. Automatically tries to reconnect to the sensor
+		// When connection fails it waits until it tries again
+		mMonitorThread = std::thread(std::bind(&YoctoLuxSensor::monitor, this));
+	}
 
-		// Find sensor and try to locate it
-		// Note that it's allowed for the sensor not to be found immediately
-		// The loop that reads the value will try to connect 10 times before bumming out
-		YLightSensor* sensor = yFindLightSensor(mName.c_str());
-		if (!sensor->isOnline())
+
+	void YoctoLuxSensor::monitor()
+	{
+		while (!mStopRunning)
 		{
-			nap::Logger::warn("%s: sensor: %s appears to be offline", this->mID.c_str(), mName.c_str());
+			// Find sensor and try to locate it
+			// Note that it's allowed for the sensor not to be found immediately
+			// The loop that reads the value will try to connect 10 times before bumming out
+			YLightSensor* sensor = yFindLightSensor(mName.c_str());
+
+			// Set the sensor
+			mSensor = sensor;
+
+			// Start reading in a separate thread
+			mReadThread = std::thread(std::bind(&YoctoLuxSensor::read, this));
+
+			// Wait till it finishes
+			mReadThread.join();
+
+			// Check if the sensor is still online
+			if (!sensor->isOnline())
+			{
+				nap::Logger::warn("%s: sensor: %s appears to be offline", this->mID.c_str(), mName.c_str());
+			}
 		}
-
-		// Set the sensor
-		mSensor = sensor;
-
-		// Start reading in a separate thread
-		mReadThread = std::thread(std::bind(&YoctoLuxSensor::read, this));
 	}
 
 
 	void YoctoLuxSensor::stop()
 	{
-		if (mSensor != nullptr)
+		mStopRunning = true;
+		mStopReading = true;
+		if (mMonitorThread.joinable())
 		{
-			mStopReading = true;
-			mReadThread.join();
-			mSensor = nullptr;
+			mMonitorThread.join();
 		}
 	}
 
 
 	void YoctoLuxSensor::read()
 	{
-		// Read the light value
-		std::string errorMsg;
-
 		// Get the sensor
 		assert(mSensor != nullptr);
 		YLightSensor* curr_sensor = static_cast<YLightSensor*>(mSensor);
 
-		// We want to continue reading
+		// Reset some state variables
 		mStopReading = false;
-
-		// Number of retries when read-out fails
-		mCurrentRetries = 0;
+		int retries = 0;
+		uint64 lux_idx = 0;
+		float accum_value = 0.0f;
+		bool first = true;
+		std::string error_msg;
 
 		// Create buffer that holds x amount of lux read-out values
 		std::vector<float> lux_buffer(mBufferSize, 0.0f);
-		int lux_idx = 0;
-		float accum_value = 0.0f;
-		bool first = true;
 
 		// Keep running until a 
-		while (!mStopReading && mCurrentRetries <= mRetries)
+		while (!mStopReading)
 		{
 			// Signal that we want to reconnect
-			if (mCurrentRetries > 0)
-				nap::Logger::warn("retry: %d", mCurrentRetries);
+			if (retries > 0)
+			{
+				nap::Logger::warn("lux sensor: %s retry: %d", mID.c_str(), retries);
+			}
 
 			// Sleep
-			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), errorMsg);
+			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), error_msg);
 			if (sleep != YAPI_SUCCESS)
 			{
-				mCurrentRetries++;
-				nap::Logger::warn("unable to sleep: %s", errorMsg.c_str());
+				if(++retries > mRetries)
+					break;
 				continue;
 			}
 
 			// Check if the sensor is still online
 			if (!curr_sensor->isOnline())
 			{
-				mCurrentRetries++;
-				nap::Logger::warn("lux sensor: %s is offline", mID.c_str());
+				if(++retries > mRetries)
+					break;
 				continue;
 			}
 
@@ -135,7 +144,7 @@ namespace nap
 			mReading = true;
 
 			// Reset retries
-			mCurrentRetries = 0;
+			retries = 0;
 		}
 
 		// When exiting this loop we're no longer reading any values
