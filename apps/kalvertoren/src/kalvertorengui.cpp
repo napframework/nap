@@ -435,5 +435,3 @@ namespace nap
 			mBrightnessIdx = 0;
 	}
 }
-
-
