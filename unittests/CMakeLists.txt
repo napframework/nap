@@ -48,8 +48,8 @@ copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data unit_tests_data)
 
 nap_qt_post(${PROJECT_NAME})
 
-# Set output paths, copy Windows DLLs, package into release, etc
-nap_source_project_output_and_packaging(FALSE FALSE "unused" FALSE)
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(FALSE FALSE "unused" FALSE)
 
 # Now run the tests right after the build
 #
