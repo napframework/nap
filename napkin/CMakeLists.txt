@@ -27,7 +27,6 @@ set(NAP_MODULES_USAGE_DEPENDENCIES
     mod_napapp 
     mod_napartnet
     mod_napaudio
-    mod_napaudioadvanced
     mod_napcameracontrol
     mod_napetherdream
     mod_napimgui
