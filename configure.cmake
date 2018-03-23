@@ -303,17 +303,18 @@ macro(include_module_postbuilds_per_project NAP_MODULES)
     endforeach()
 endmacro()
 
-# Set output paths, copy Windows DLLs, package into release, etc
+# Package into release, export FBX, other shared source project fixes
 # INCLUDE_WITH_RELEASE: whether the project should be packaged with the NAP platform release
 # INCLUDE_ONLY_WITH_NAIVI_APPS: whether a project should only be packaged if packaging Naivi apps
 # PROJECT_PREFIX: folder to package the project into in the NAP release (eg. demos, examples, etc)
 # RUN_FBX_CONVERTER: whether to run fbxconverter for the project
-function(nap_source_project_output_and_packaging INCLUDE_WITH_RELEASE INCLUDE_ONLY_WITH_NAIVI_APPS PROJECT_PREFIX RUN_FBX_CONVERTER)
+function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_RELEASE INCLUDE_ONLY_WITH_NAIVI_APPS PROJECT_PREFIX RUN_FBX_CONVERTER)
+    # Add the runtime path for RTTR on macOS
     if(APPLE)
-        # Add the runtime path for RTTR on macOS
         add_macos_rttr_rpath()
     endif()
 
+    # Run FBX converter
     if(${RUN_FBX_CONVERTER})
         export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
     endif()

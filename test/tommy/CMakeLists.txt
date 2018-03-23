@@ -23,5 +23,5 @@ project_json_to_cmake()
 
 target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES} nrender)
 
-# Set output paths, copy Windows DLLs, package into release, etc
-nap_source_project_output_and_packaging(TRUE FALSE "examples" FALSE)
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(TRUE FALSE "examples" FALSE)

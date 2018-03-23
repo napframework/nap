@@ -25,5 +25,5 @@ target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-# Set output paths, copy Windows DLLs, package into release, etc
-nap_source_project_output_and_packaging(TRUE TRUE "projects" TRUE)
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" TRUE)
