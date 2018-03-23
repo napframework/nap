@@ -224,11 +224,14 @@ macro(project_json_to_cmake)
 
     # Parse our project.json and import it
     if(WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
     elseif(APPLE)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
     else()
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+    endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
     endif()
 
     execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/projectscripts/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR}
