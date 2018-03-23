@@ -60,12 +60,6 @@ namespace nap
 
 			// Wait till it finishes
 			mReadThread.join();
-
-			// Check if the sensor is still online
-			if (!sensor->isOnline())
-			{
-				nap::Logger::warn("%s: sensor: %s appears to be offline", this->mID.c_str(), mName.c_str());
-			}
 		}
 	}
 
@@ -101,26 +95,26 @@ namespace nap
 		// Keep running until a 
 		while (!mStopReading)
 		{
-			// Signal that we want to reconnect
-			if (retries > 0)
-			{
-				nap::Logger::warn("lux sensor: %s retry: %d", mID.c_str(), retries);
-			}
-
 			// Sleep
 			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), error_msg);
 			if (sleep != YAPI_SUCCESS)
 			{
-				if(++retries > mRetries)
+				if (++retries > mRetries)
+				{
+					nap::Logger::warn("%s: sensor: %s has trouble sleeping", mID.c_str(), mName.c_str());
 					break;
+				}
 				continue;
 			}
 
 			// Check if the sensor is still online
 			if (!curr_sensor->isOnline())
 			{
-				if(++retries > mRetries)
+				if (++retries > mRetries)
+				{
+					nap::Logger::warn("%s: sensor: %s appears to be offline", this->mID.c_str(), mName.c_str());
 					break;
+				}
 				continue;
 			}
 

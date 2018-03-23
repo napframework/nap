@@ -103,11 +103,6 @@ namespace nap
 		void selectCompositionCycleMode();
 
 		/**
-		*	Sets the current palette week
-		*/
-		void selectPaletteWeek();
-
-		/**
 		*	Sets the current palette cycle mode
 		*/
 		void selectPaletteCycleMode();

@@ -122,6 +122,11 @@ namespace nap
 
 		// Connect to finished signal
 		mCompositionInstance->finished.connect(mCompositionFinishedSlot);
+		
+		// Notify listeners
+		mSelectionChanged.trigger(*this);
+
+		// We've switched
 		mSwitch = false;
 	}
 
