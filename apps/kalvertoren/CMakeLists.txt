@@ -23,5 +23,5 @@ project_json_to_cmake()
 target_link_libraries(${PROJECT_NAME} mod_napkalvertoren)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-# Set output paths, copy Windows DLLs, package into release, etc
-nap_source_project_output_and_packaging(TRUE TRUE "projects" TRUE)
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" TRUE)

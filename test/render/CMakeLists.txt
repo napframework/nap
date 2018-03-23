@@ -29,5 +29,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES} nrender)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-# Set output paths, copy Windows DLLs, package into release, etc
-nap_source_project_output_and_packaging(TRUE FALSE "examples" TRUE)
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(TRUE FALSE "examples" TRUE)
