@@ -18,10 +18,11 @@ set(NAPKIN_LIB ${PROJECT_NAME}_lib)
 add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 
 # The NAP modules Napkin needs to link against
-# TODO this needs updating/verifying
+# TODO this needs updating/verifying; can any of these move into NAP_MODULES_USAGE_DEPENDENCIES below? 
 set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo)
 
-# This is the superset of modules that we want to have available to Napkin to run against
+# This is the superset of modules that we want to have available to Napkin to run against; just a handy
+# way to ensure they've built
 set(NAP_MODULES_USAGE_DEPENDENCIES 
     ${NAP_MODULES_LINK_DEPENDENCIES} 
     mod_napapp 

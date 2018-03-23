@@ -294,10 +294,9 @@ macro(find_rttr)
 endmacro()
 
 # Run any module post-build logic for set modules
-# Note: Currently unused, leaving as draft for potential later use
+# Note: Currently unused, leaving as useful draft for potential later use
 macro(include_module_postbuilds_per_project NAP_MODULES)
     foreach(NAP_MODULE ${NAP_MODULES})
-        set(SHORT_MODULE_NAME )
         string(SUBSTRING ${NAP_MODULE} 4 -1 SHORT_MODULE_NAME)
         set(MODULE_POSTBUILD ${NAP_ROOT}/modules/${SHORT_MODULE_NAME}/modulePostBuildPerProject.cmake)
         if(EXISTS ${MODULE_POSTBUILD})

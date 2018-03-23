@@ -19,7 +19,7 @@ set(DEPENDENT_NAP_MODULES mod_naprender)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${FFMPEG_LIBRARIES})
 
 if(WIN32)
-    # Copy FFmpeg DLLs to project build directory
+    # Copy FFmpeg DLLs to build directory
     copy_windows_ffmpeg_dlls()
 endif()
 
