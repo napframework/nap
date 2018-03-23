@@ -13,6 +13,7 @@
 #include <thread>
 #include <fstream>
 #include <utility/datetimeutils.h>
+#include <atomic>
 
 /**
  * This ugly macro allows us to register a nice, easy interface per log level
@@ -316,7 +317,7 @@ namespace nap
 		std::unique_ptr<std::thread> mWriteThread;	///< used to concurrently write to the file
 		std::queue<LogMessage> mMessages;			///< commit will add to this queue and return
 		std::mutex mQueueMutex;						///< to protect the queue
-		bool mRunning = true;						///< available for writing as long as we're running
+		std::atomic<bool> mRunning;					///< available for writing as long as we're running
 	};
 
 

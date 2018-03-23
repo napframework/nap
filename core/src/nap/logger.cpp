@@ -118,7 +118,9 @@ namespace nap
 	{
 		// Set the default formatter to use a timestamp
 		setFormatter(&timestampLogMessageFormatter);
+
 		// Kick off the writing thread
+		mRunning = true;
 		mWriteThread = std::make_unique<std::thread>(std::bind(&FileLogHandler::writeLoop, this));
 	}
 
@@ -126,15 +128,17 @@ namespace nap
 	void FileLogHandler::commit(LogMessage message)
 	{
 		// Put messages on the queue, as not to be blocked by writing
-		mQueueMutex.lock();
+		std::lock_guard<std::mutex> lock(mQueueMutex);
 		mMessages.emplace(message);
-		mQueueMutex.unlock();
 	}
 
 
 	FileLogHandler::~FileLogHandler()
 	{
 		mRunning = false;
+		// Wait for the stream to close
+		if (mWriteThread->joinable())
+			mWriteThread->join();
 	}
 
 
@@ -165,13 +169,14 @@ namespace nap
 		while (mRunning)
 		{
 			// Consume all messages from the main queue
-			mQueueMutex.lock();
-			while (!mMessages.empty())
 			{
-				writeQueue.emplace(mMessages.front());
-				mMessages.pop();
+				std::lock_guard<std::mutex> lock(mQueueMutex);
+
+				writeQueue.swap(mMessages);
+
+				std::queue<LogMessage> empty;
+				mMessages.swap(empty);
 			}
-			mQueueMutex.unlock();
 
 			// Dump messages to the stream
 			while (!writeQueue.empty())
