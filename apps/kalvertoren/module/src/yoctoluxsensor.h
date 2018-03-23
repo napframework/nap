@@ -5,6 +5,7 @@
 #include <rtti/objectptr.h>
 #include <thread>
 #include <atomic>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -39,17 +40,16 @@ namespace nap
 		 */
 		float getValue()								{ return mValue; }
 
-		std::string			mName;						///< Property: 'Name' name of the lux sensor
-		int					mRetries = 10;				///< Number of times connection is retried before exiting the loop
-		int					mBufferSize = 30;			///< Size of the lux sensor read-out buffer
-		int					mDelayTime = 500;			///< Time in between sensor reads
-
+		std::string					mName;					///< Property: 'Name' name of the lux sensor
+		int							mRetries = 10;			///< Number of times connection is retried before exiting the loop
+		int							mBufferSize = 30;		///< Size of the lux sensor read-out buffer
+		int							mDelayTime = 500;		///< Time in between sensor reads
 	private:
-		void*				mSensor = nullptr;			///< Light sensor
-		std::atomic<float>	mValue;                     ///< Current light value
-		bool				mStopReading = false;		///< Stops the thread from reading sensor values
-		int					mCurrentRetries = 0;		///< Number of retries associated with read out failure
-		std::atomic<bool>	mReading;                   ///< If the sensor is currently online
+		void*						mSensor = nullptr;		///< Light sensor
+		float						mValue = -1.0f;			///< Current light value
+		bool						mStopReading = false;	///< Stops the thread from reading sensor values
+		bool						mStopRunning = false;	///< Stops the monitor thread
+		bool						mReading = false;		///< If the sensor is currently online
 
 		/**
 		 * Starts reading sensor input on a background thread
@@ -57,6 +57,11 @@ namespace nap
 		 * 
 		 */
 		void start();
+
+		/**
+		 *	Monitor
+		 */
+		void monitor();
 
 		/**
 		 * Stops a possible thread from reading sensor values
@@ -71,6 +76,9 @@ namespace nap
 
 		// The thread that receives and converts the messages
 		std::thread mReadThread;
+
+		// The thread that monitor the read thread
+		std::thread mMonitorThread;
 
 		/**
 		 *	Sets the current sensor value
