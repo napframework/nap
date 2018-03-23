@@ -25,7 +25,13 @@ endif()
 set(DEPENDENT_NAP_MODULES napcore mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} artnet)
 
-if(UNIX AND NOT APPLE)
+if(WIN32)
+    # Copy artnet DLL to build directory
+    if(NOT TARGET artnet)
+        find_package(artnet REQUIRED)
+    endif()
+    copy_artnet_dll()
+elseif(UNIX AND NOT APPLE)
     set(ARTNET_LIB_FILE ${ARTNET_LIBS_DIR}/libartnet.so)
 
     # HACK, somehow on some systems, libartnet.so gets linked with libartnet.so.1 because it already exists
@@ -33,14 +39,6 @@ if(UNIX AND NOT APPLE)
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy "${ARTNET_LIB_FILE}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/libartnet.so.1"
             COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>/libartnet.so.1")
-endif()
-
-if(WIN32)
-    # Copy artnet DLL to project build directory
-    if(NOT TARGET artnet)
-        find_package(artnet REQUIRED)
-    endif()
-    copy_artnet_dll()
 endif()
 
 # Package into platform release
