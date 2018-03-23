@@ -697,8 +697,8 @@
                     "PaletteGrid": "PaletteGrid",
                     "DebugImage": "PaletteDebugImage",
                     "Index": 0,
-                    "VariationCycleMode": "Off",
-                    "Speed": 1.0
+                    "Composition" : "./CompositionComponent",
+                    "Link": true
                 },
                 {
                     "Type": "nap::FacadeLightComponent",
