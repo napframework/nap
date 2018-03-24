@@ -190,4 +190,6 @@ if __name__ == '__main__':
     convertSVGtoPNG()
     generateQRC()
     generateHeader()
-    generateICO()
+
+    if os.name == 'nt': # Windows
+        generateICO()
