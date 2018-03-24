@@ -159,19 +159,9 @@ void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, 
 bool napkin::revealInFileBrowser(const QString& filename)
 {
 #ifdef _WIN32
-	const QString explorer = Environment::systemEnvironment().searchInPath(QLatin1String("explorer.exe"));
-	if (explorer.isEmpty())
-	{
-		QMessageBox::warning(parent, tr("Launching Windows Explorer failed"),
-							 tr("Could not find explorer.exe in path to launch Windows Explorer."));
-		return;
-	}
-	QString param;
-	if (!QFileInfo(pathIn).isDir())
-		param = QLatin1String("/select,");
-	param += QDir::toNativeSeparators(pathIn);
-	QString command = explorer + " " + param;
-	QProcess::startDetached(command);
+	QStringList args;
+	args << "/select," << QDir::toNativeSeparators(filename);
+	QProcess::execute("explorer.exe", args);
 #elif defined(__APPLE__)
 	QStringList scriptArgs;
 	scriptArgs << QLatin1String("-e")
