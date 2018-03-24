@@ -54,7 +54,9 @@ The objects displayed here don't do anything by themselves. Once added to the Sc
 Shows the live objects in your application. The Entities in here represent instances of their original Entity  
 
 ### AppRunner
-You can quickly start/stop your application here.
+You can quickly start/stop your application here.<br>
+Use the file field to browse to your executable. When you run your application through Napkin, its log messages will be forwarded into the log view.<br>
+If your application logs object names in the proper format, you can double-click log messages with that link in the Log panel and it will highlight the appropriate object/property in the editor.  
  
 ### Inspector
 This panel shows the **properties** for the currently selected object.<br>
