@@ -19,7 +19,10 @@ namespace nap
 		std::make_pair(SDL_WINDOWEVENT_FOCUS_LOST,		RTTI_OF(nap::WindowFocusLostEvent)),
 		std::make_pair(SDL_WINDOWEVENT_CLOSE,			RTTI_OF(nap::WindowCloseEvent)),
 		std::make_pair(SDL_WINDOWEVENT_RESIZED,			RTTI_OF(nap::WindowResizedEvent)),
-		std::make_pair(SDL_WINDOWEVENT_MOVED,			RTTI_OF(nap::WindowMovedEvent))
+		std::make_pair(SDL_WINDOWEVENT_MOVED,			RTTI_OF(nap::WindowMovedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_EXPOSED,			RTTI_OF(nap::WindowExposedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_SIZE_CHANGED,	RTTI_OF(nap::WindowResizedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_TAKE_FOCUS,		RTTI_OF(nap::WindowTakeFocusEvent))
 	};
 
 
@@ -35,12 +38,18 @@ namespace nap
 		// When destroying a window (for example, during real time editing), we still get events for the destroyed window, after it has already been destroyed
 		// We deal with this by checking if the window ID is still known by SDL itself; if not, we ignore the event.
 		if (SDL_GetWindowFromID(window_id) == nullptr)
+		{
 			return nullptr;
+		}
 
 		// If it's one of the two parameterized constructors, add the arguments
 		rtti::TypeInfo event_type = window_it->second;
 		if (event_type.is_derived_from(RTTI_OF(nap::ParameterizedWindowEvent)))
-			return WindowEventPtr(event_type.create<WindowEvent>({ sdlEvent.window.data1, sdlEvent.window.data2, window_id }));
+		{
+			int d1 = static_cast<int>(sdlEvent.window.data1);
+			int d2 = static_cast<int>(sdlEvent.window.data2);
+			return WindowEventPtr(event_type.create<WindowEvent>({ d1, d2, window_id }));
+		}
 
 		// Create and return correct window event
 		return WindowEventPtr(event_type.create<nap::WindowEvent>({ window_id }));

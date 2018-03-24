@@ -157,10 +157,26 @@ namespace nap
             }
 
 			auto hostApi = mService->getHostApiName(Pa_GetDefaultHostApi());
-			auto inputDevice = mService->getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultInputDevice()).name;
-            auto outputDevice = mService->getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultOutputDevice()).name;
-
-            Logger::info("Portaudio default stream started: %s - %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice, outputDevice, mInputChannelCount, mOutputChannelCount, int(mSampleRate), mBufferSize);
+            
+            // Log the host API, devices, and channel, samplerate and buffersize being used
+            if (mInputChannelCount <= 0)
+            {
+                // no input, only output
+                auto outputDevice = mService->getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultOutputDevice()).name;
+                Logger::info("Portaudio default stream started: %s - %s, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), outputDevice, mOutputChannelCount, int(mSampleRate), mBufferSize);
+            }
+            else if (mOutputChannelCount <= 0)
+            {
+                // no output, input only
+                auto inputDevice = mService->getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultInputDevice()).name;
+                Logger::info("Portaudio default stream started: %s - %s, %i inputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice, mInputChannelCount, int(mSampleRate), mBufferSize);
+            }
+            else {
+                auto inputDevice = mService->getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultInputDevice()).name;
+                auto outputDevice = mService->getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultOutputDevice()).name;
+                Logger::info("Portaudio default stream started: %s - %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice, outputDevice, mInputChannelCount, mOutputChannelCount, int(mSampleRate), mBufferSize);
+            }
+            
             return true;
         }
         

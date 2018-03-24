@@ -1,8 +1,9 @@
 #pragma once
 
-#include "rtti/rttiobject.h"
-#include "nap/objectptr.h"
-#include "utility/dllexport.h"
+#include <rtti/object.h>
+#include <rtti/objectptr.h>
+#include <utility/dllexport.h>
+#include <nap/resource.h>
 
 namespace nap
 {
@@ -18,14 +19,18 @@ namespace nap
 	struct EntityCreationParameters;
 
 	/**
-	 * A ComponentInstance is the runtime-instance of a Component, which is read from json.
+	 * Runtime version of a Component.
+	 * Adds behavior to an entity and allows for operations on a per frame basis.
+	 * Override the init and update methods in derived classes
+	 * Every runtime version of a component receives on construction the resource it was created from and
+	 * the entity instance it belongs to.
 	 */
-	class NAPAPI ComponentInstance : public rtti::RTTIObject
+	class NAPAPI ComponentInstance : public rtti::Object
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(rtti::Object)
 
 	public:
-        using RTTIObject::init;
+        using Object::init;
         
 		/**
 		 * Constructor
@@ -42,23 +47,17 @@ namespace nap
 		 * Update this component
 		 * @param deltaTime the time in between cooks in seconds
 		 */
-		virtual void update(double deltaTime) {}
+		virtual void update(double deltaTime)				{ }
 
 		/**
-		 * @ return the entity this component belongs to
+		 * @return the entity this component belongs to
 		 */
-		nap::EntityInstance* getEntityInstance() const
-		{
-			return mEntityInstance;
-		}
+		nap::EntityInstance* getEntityInstance() const 		{ return mEntityInstance; }
 
 		/**
 		 * @return the resource this component was created from
 		 */
-		nap::Component* getComponent() const
-		{
-			return mResource;
-		}
+		nap::Component* getComponent() const				{ return mResource; }
 
 		/**
 		 * @return the resource this component was created from as type T
@@ -127,15 +126,18 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * A Component is the static data that is deserialized from json. A ComponentInstance is created from it
+	 * Resource part of a component. This represents the the static data that is deserialized from json. 
+	 * A run time counterpart is created after deserialization. Derived classes need to implement the DECLARE_COMPONENT macro,
+	 * This macro tells the system what the run time counterpart of the resource is. 
 	 */
-	class NAPAPI Component : public rtti::RTTIObject
+	class NAPAPI Component : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 
 	public:
 		/**
-		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
+		 * Populates a list of all component types this component depends on (i.e. must be initialized before this one)
+		 * @param components list of component types this resource depends on.
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const { }
 

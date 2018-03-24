@@ -238,11 +238,11 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		/**
-		* Keeps track of time from the moment the timer is started
-		* This is a template Timer that can work with various chrono clocks
-		* Use the utility classes SystemTimer and HighResolutionTimer to work with specific clocks
+		* Keeps track of time from the moment the timer is started.
+		* This is a template Timer that can work with various chrono clocks.
+		* Use the utility classes SystemTimer and HighResolutionTimer to work with specific clocks.
 		* The template type T should be a specific type of chrono clock, ie: HighResolutionClock etc.
-		* This timer is not threaded and doesn't work with callbacks
+		* This timer is not threaded and doesn't work with callbacks.
 		*/
 		template<typename Clock>
 		class Timer
@@ -293,16 +293,16 @@ namespace nap
 		};
 
 		/**
-		* Keeps track of time from the moment the timer is started
-		* This timer uses the chrono SystemClock and should be sufficient for most time based operations
+		* Keeps track of time from the moment the timer is started.
+		* This timer uses the chrono SystemClock and should be sufficient for most time based operations.
 		* The timestamp associated with a SystemTimer can be converted to days, seconds, weeks etc.
 		*/
         using SystemTimer = Timer<SystemClock>;
 
 
 		/**
-		* Keeps track of time from the moment the timer is started
-		* This timer uses the chrono HighResolutionClock and should be used when extreme accuracy is important
+		* Keeps track of time from the moment the timer is started.
+		* This timer uses the chrono HighResolutionClock and should be used when extreme accuracy is important.
 		* The timestamp associated with a HighResolutionTime can not be converted to days, seconds, weeks etc.
 		*/
         using HighResolutionTimer = Timer<HighResolutionClock>;

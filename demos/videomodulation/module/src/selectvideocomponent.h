@@ -28,7 +28,7 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		std::vector<ObjectPtr<Video>> mVideoFiles;		///< Property: "Videos" link to videos
+		std::vector<rtti::ObjectPtr<Video>> mVideoFiles;		///< Property: "Videos" link to videos
 		int mIndex = 0;									///< Property: "Index" current video index
 	};
 

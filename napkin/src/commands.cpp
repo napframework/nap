@@ -16,7 +16,7 @@ SetValueCommand::SetValueCommand(const PropertyPath& propPath, QVariant newValue
 void SetValueCommand::undo()
 {
 	// resolve path
-	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
+	nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
 	assert(resolvedPath.isValid());
 
 	// set new value
@@ -55,7 +55,7 @@ void SetValueCommand::redo()
 
 }
 
-SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue)
+SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue)
 		: mPath(path), mNewValue(newValue->mID), QUndoCommand()
 {
 	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
@@ -69,7 +69,7 @@ SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rt
 
 void SetPointerValueCommand::undo()
 {
-	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
+	nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
 	assert(resolvedPath.isValid());
 
 
@@ -90,7 +90,7 @@ void SetPointerValueCommand::undo()
 
 void SetPointerValueCommand::redo()
 {
-	nap::rtti::ResolvedRTTIPath resolved_path = mPath.resolve();
+	nap::rtti::ResolvedPath resolved_path = mPath.resolve();
 	assert(resolved_path.isValid());
 
 	auto new_object = AppContext::get().getDocument()->getObject(mNewValue);
@@ -99,7 +99,7 @@ void SetPointerValueCommand::redo()
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
-AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject* parent)
+AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent)
 		: mType(type), QUndoCommand()
 {
 
@@ -135,7 +135,7 @@ void AddObjectCommand::undo()
 }
 
 
-DeleteObjectCommand::DeleteObjectCommand(nap::rtti::RTTIObject& object) : mObjectName(object.mID), QUndoCommand()
+DeleteObjectCommand::DeleteObjectCommand(nap::rtti::Object& object) : mObjectName(object.mID), QUndoCommand()
 {
 	setText(QString("Deleting Object '%1'").arg(QString::fromStdString(mObjectName)));
 }
@@ -232,7 +232,7 @@ void ArrayAddNewObjectCommand::undo()
 }
 
 
-ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object,
+ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::Object& object,
 															 size_t index)
 		: mPath(prop), mObjectName(object.mID), mIndex(index), QUndoCommand()
 {
@@ -241,7 +241,7 @@ ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath&
 }
 
 
-ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object)
+ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::Object& object)
 		: mPath(prop), mObjectName(object.mID), QUndoCommand()
 {
 	setText(QString("Add %1 to %2").arg(QString::fromStdString(object.mID),
@@ -252,7 +252,7 @@ ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath&
 
 void ArrayAddExistingObjectCommand::redo()
 {
-	nap::rtti::RTTIObject* object = AppContext::get().getDocument()->getObject(mObjectName);
+	nap::rtti::Object* object = AppContext::get().getDocument()->getObject(mObjectName);
 	assert(object != nullptr);
 	AppContext::get().getDocument()->arrayAddExistingObject(mPath, object, mIndex);
 }

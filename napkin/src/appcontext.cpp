@@ -55,7 +55,7 @@ Document* AppContext::loadDocument(const QString& filename)
 
 	ErrorState err;
 
-	nap::rtti::RTTIDeserializeResult result;
+	nap::rtti::DeserializeResult result;
 	if (!readJSONFile(filename.toStdString(), getCore().getResourceManager()->getFactory(), result, err))
 	{
 		nap::Logger::fatal(err.toString());
@@ -208,7 +208,7 @@ nap::Core& AppContext::getCore()
 	if (!mCoreInitialized)
 	{
 		ErrorState err;
-		if (!mCore.initializeEngine(err, getExecutableDir()))
+		if (!mCore.initializeEngine(err, getExecutableDir(), true))
 		{
 			nap::Logger::fatal("Failed to initialize engine");
 		}

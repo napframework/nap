@@ -3,12 +3,13 @@
 // Nap includes
 #include <component.h>
 #include <componentptr.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
 #include <audio/core/audionode.h>
 #include <audio/core/audioobject.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -33,9 +34,7 @@ namespace nap
             /**
              * The audio object that is wrapped by this component
              */
-            ObjectPtr<AudioObject> mObject;
-            
-        private:
+            ResourcePtr<AudioObject> mObject;
         };
 
         

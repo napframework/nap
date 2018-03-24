@@ -5,7 +5,7 @@
 
 // External includes
 #include <component.h>
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <glm/glm.hpp>
 #include <waveform.h>
 #include <smoothdamp.h>

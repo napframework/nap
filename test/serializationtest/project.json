@@ -1,0 +1,8 @@
+{
+    "title": "SerializationTest",
+    "version": "0.1",
+    "modules": [
+        "mod_naprender",
+        "mod_napmath"
+    ]
+}

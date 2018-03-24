@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <rtti/factory.h>
 
 namespace nap
@@ -15,9 +15,9 @@ namespace nap
 	 *
 	 * See comments in ArtNetService on addressing on how data is eventually sent over the network.
 	 */
-	class NAPAPI ArtNetController : public rtti::RTTIObject
+	class NAPAPI ArtNetController : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 
 	public:
 		using ByteChannelData = std::vector<uint8_t>;

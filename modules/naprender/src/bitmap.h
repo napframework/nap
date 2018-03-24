@@ -1,9 +1,11 @@
 #pragma once
 
+// Local Includes
+#include "color.h"
+
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <utility/dllexport.h>
-#include <color.h>
 
 namespace opengl
 {
@@ -23,9 +25,9 @@ namespace nap
 	 * This object wraps a Bitmap and allocates the bitmap resource on init()
 	 * The properties associated with the bitmap are set when initialized from texture or file
 	 */
-	class NAPAPI Bitmap : public rtti::RTTIObject
+	class NAPAPI Bitmap : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		/**
 		 *	Supported bitmap data types

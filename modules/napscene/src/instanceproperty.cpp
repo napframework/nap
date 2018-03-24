@@ -1,5 +1,5 @@
 #include "instanceproperty.h"
-#include "rtti/rttipath.h"
+#include "rtti/path.h"
 
 RTTI_BEGIN_CLASS(nap::ComponentInstanceProperties)
 	RTTI_PROPERTY("TargetComponent",	&nap::ComponentInstanceProperties::mTargetComponent,	nap::rtti::EPropertyMetaData::Required)
@@ -39,11 +39,11 @@ RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::QuatInstancePropertyValue)
 namespace nap
 {
 
-	bool PointerInstancePropertyValue::setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const
+	bool PointerInstancePropertyValue::setValue(rtti::ResolvedPath& resolvedTargetPath, utility::ErrorState& errorState) const
 	{
 		// Check if target attribute is of correct type
  		rtti::TypeInfo target_type = resolvedTargetPath.getType();
- 		if (!errorState.check(target_type.is_derived_from(RTTI_OF(ObjectPtrBase)), "Target pointer is not an ObjectPtr"))
+ 		if (!errorState.check(target_type.is_derived_from(RTTI_OF(rtti::ObjectPtrBase)), "Target pointer is not an ObjectPtr"))
  			return false;
 
 		// Check if the internal (wrapped) type is of the correct type
@@ -56,7 +56,7 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	bool ComponentPtrInstancePropertyValue::setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const
+	bool ComponentPtrInstancePropertyValue::setValue(rtti::ResolvedPath& resolvedTargetPath, utility::ErrorState& errorState) const
 	{
 		// Check if target attribute is of correct type
 		rtti::TypeInfo target_type = resolvedTargetPath.getType();
@@ -82,11 +82,11 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	bool TargetAttribute::apply(rtti::RTTIObject& target, utility::ErrorState& errorState) const
+	bool TargetAttribute::apply(rtti::Object& target, utility::ErrorState& errorState) const
 	{
-		const rtti::RTTIPath rtti_path = rtti::RTTIPath::fromString(mPath);
+		const rtti::Path rtti_path = rtti::Path::fromString(mPath);
 
-		rtti::ResolvedRTTIPath resolved_path;
+		rtti::ResolvedPath resolved_path;
 		if (!errorState.check(rtti_path.resolve(&target, resolved_path), "Path %s to instance property for component %s could not be resolved", mPath.c_str(), target.mID.c_str()))
 			return false;
 

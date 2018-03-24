@@ -36,7 +36,7 @@ namespace nap
 			return false;
 		
 		// Get important entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
 		mBackgroundEntity = scene->findEntity("BackgroundEntity");
 		mVideoEntity = scene->findEntity("VideoEntity");
@@ -55,12 +55,6 @@ namespace nap
 
 		SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
 		mCurrentVideo = video_selector.getIndex();
-
-		// Position window center of screen
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
-		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
-		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
-		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
 		return true;
 	}
