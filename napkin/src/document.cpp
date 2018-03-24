@@ -13,7 +13,7 @@ nap::Entity* Document::getParent(const nap::Entity& child)
 
 		nap::Entity* parent = rtti_cast<nap::Entity>(o);
 		auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(),
-							   [&child](nap::ObjectPtr<nap::Entity> e) -> bool { return &child == e.get(); });
+							   [&child](ObjectPtr<nap::Entity> e) -> bool { return &child == e.get(); });
 
 		if (it != parent->mChildren.end())
 			return parent;
@@ -31,7 +31,7 @@ nap::Entity* Document::getOwner(const nap::Component& component)
 		nap::Entity* owner = *rtti_cast<nap::Entity*>(o.get());
 		auto it = std::find_if(
 				owner->mComponents.begin(), owner->mComponents.end(),
-				[&component](nap::ObjectPtr<nap::Component> comp) -> bool { return &component == comp.get(); });
+				[&component](ObjectPtr<nap::Component> comp) -> bool { return &component == comp.get(); });
 
 		if (it != owner->mComponents.end())
 			return owner;
@@ -40,7 +40,7 @@ nap::Entity* Document::getOwner(const nap::Component& component)
 }
 
 
-const std::string& Document::setObjectName(nap::rtti::RTTIObject& object, const std::string& name)
+const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name)
 {
 	if (name.empty())
 		return object.mID;
@@ -69,11 +69,11 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 	return comp;
 }
 
-RTTIObject* Document::addObject(rttr::type type, RTTIObject* parent)
+Object* Document::addObject(rttr::type type, Object* parent)
 {
 	Factory& factory = mCore.getResourceManager()->getFactory();
 	assert(factory.canCreate(type));
-	assert(type.is_derived_from<RTTIObject>());
+	assert(type.is_derived_from<Object>());
 
 	// Strip off namespace prefixes when creating new objects
 	std::string base_name = type.get_name().data();
@@ -81,7 +81,7 @@ RTTIObject* Document::addObject(rttr::type type, RTTIObject* parent)
 	if (last_colon != std::string::npos)
 		base_name = base_name.substr(last_colon + 1);
 
-	RTTIObject* obj = factory.create(type);
+	Object* obj = factory.create(type);
 	obj->mID = getUniqueName(base_name);
 	mObjects.emplace_back(obj);
 
@@ -121,16 +121,16 @@ std::string Document::getUniqueName(const std::string& suggestedName)
 	return newName;
 }
 
-RTTIObject* Document::getObject(const std::string& name)
+Object* Document::getObject(const std::string& name)
 {
 	auto it = std::find_if(mObjects.begin(), mObjects.end(),
-						   [&name](std::unique_ptr<RTTIObject>& obj) { return obj->mID == name; });
+						   [&name](std::unique_ptr<Object>& obj) { return obj->mID == name; });
 	if (it == mObjects.end())
 		return nullptr;
 	return it->get();
 }
 
-RTTIObject* Document::getObject(const std::string& name, const rttr::type& type)
+Object* Document::getObject(const std::string& name, const rttr::type& type)
 {
 	auto object = getObject(name);
 
@@ -153,7 +153,7 @@ ObjectList Document::getObjectPointers()
 }
 
 
-void Document::removeObject(RTTIObject& object)
+void Document::removeObject(Object& object)
 {
 	objectRemoved(object);
 
@@ -175,7 +175,7 @@ void Document::removeObject(RTTIObject& object)
 
 	mObjects.erase(
 			std::remove_if(mObjects.begin(), mObjects.end(),
-						   [&object](std::unique_ptr<RTTIObject>& obj) { return obj.get() == &object; }),
+						   [&object](std::unique_ptr<Object>& obj) { return obj.get() == &object; }),
 			mObjects.end());
 }
 
@@ -189,7 +189,7 @@ void Document::removeObject(const std::string& name)
 
 size_t Document::arrayAddValue(const PropertyPath& path, size_t index)
 {
-	ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
@@ -215,7 +215,7 @@ size_t Document::arrayAddValue(const PropertyPath& path, size_t index)
 
 size_t Document::arrayAddValue(const PropertyPath& path)
 {
-	ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
@@ -242,9 +242,9 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 }
 
 
-size_t Document::arrayAddExistingObject(const PropertyPath& path, RTTIObject* object, size_t index)
+size_t Document::arrayAddExistingObject(const PropertyPath& path, Object* object, size_t index)
 {
-	ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
@@ -275,9 +275,9 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, RTTIObject* ob
 	return index;
 }
 
-size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object)
+size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::Object* object)
 {
-	ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
@@ -312,13 +312,13 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTT
 
 size_t Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, size_t index)
 {
-	ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
 	VariantArray array_view = array.create_array_view();
 
-	RTTIObject* new_object = addObject(type);
+	Object* new_object = addObject(type);
 
 	assert(index <= array_view.get_size());
 	bool inserted = array_view.insert_value(index, new_object);
@@ -334,13 +334,13 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& typ
 
 size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type)
 {
-	ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
 	VariantArray array_view = array.create_array_view();
 
-	RTTIObject* new_object = addObject(type);
+	Object* new_object = addObject(type);
 
 	size_t index = array_view.get_size();
 	bool inserted = array_view.insert_value(index, new_object);
@@ -357,7 +357,7 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::Ty
 
 void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 {
-	ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedPath resolved_path = path.resolve();
 	Variant value = resolved_path.getValue();
 	VariantArray array = value.create_array_view();
 	assert(index < array.get_size());
@@ -373,7 +373,7 @@ void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 
 size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
 {
-	ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedPath resolved_path = path.resolve();
 	Variant array_value = resolved_path.getValue();
 	VariantArray array = array_value.create_array_view();
 	assert(fromIndex <= array.get_size());
@@ -399,7 +399,7 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 
 nap::rtti::Variant Document::arrayGetElement(const PropertyPath& path, size_t index) const
 {
-	ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedPath resolved_path = path.resolve();
 	Variant array_value = resolved_path.getValue();
 	VariantArray array = array_value.create_array_view();
 	return array.get_value(index);
@@ -410,7 +410,7 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
-QList<PropertyPath> Document::getPointersTo(const nap::rtti::RTTIObject& obj)
+QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& obj)
 {
 	QList<PropertyPath> properties;
 	for (const auto& object : mObjects)

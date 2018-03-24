@@ -16,10 +16,11 @@ namespace nap
 		/**
 		* List all files in a directory
 		* @param directory The directory to search in
-		* @param outFilenames A vector of files to populate with absolute filenames
-		* @return False on faillure
+		* @param outFilenames A vector of files to populate with filenames
+		* @param absolute Whether to populate absolute filenames
+		* @return False on failure
 		*/
-		bool listDir(const char* directory, std::vector<std::string>& outFilenames);
+		bool listDir(const char* directory, std::vector<std::string>& outFilenames, bool absolute=true);
 
 		/**
 		* Given a relative path, return an absolute path

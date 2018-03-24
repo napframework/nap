@@ -1,10 +1,11 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <utility/dllexport.h>
 #include <ntexture2d.h>
 #include <glm/glm.hpp>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -49,12 +50,13 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * GPU representation of a 2D bitmap. 
+	 * GPU representation of a 2D bitmap. This is the base class for all 2D textures.
+	 * Classes should derive from Texture2D and call either initTexture (for a GPU-only texture) or initFromBitmap (for a CPU & GPU texture).
 	 * This class does not own any CPU data but offers an interface to up and download texture data from and in to a bitmap
 	 */
-	class NAPAPI Texture2D : public rtti::RTTIObject
+	class NAPAPI Texture2D : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		/**
 		 * Initializes the opengl texture using the associated parameters and given settings.
@@ -109,6 +111,11 @@ namespace nap
 		void getData(Bitmap& bitmap);
 
 		/**
+		 * @return the OpenGL texture hardware handle.
+		 */
+		nap::uint getHandle() const;
+
+		/**
 		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call.
 		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered.
 		 */
@@ -137,7 +144,15 @@ namespace nap
 		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;			///< Property: 'Usage' How this texture is used, ie: updated on the GPU
 
 	protected:
-		opengl::Texture2D& getTexture() { return mTexture; }
+		/**
+		 *	@return the opengl texture
+		 */
+		opengl::Texture2D& getTexture()												{ return mTexture; }
+
+		/**
+		 *	@return the opengl texture
+		 */
+		const opengl::Texture2D& getTexture() const									{ return mTexture; }
 
 	private:
 		friend class RenderTarget;

@@ -1,6 +1,6 @@
 #include "propertypath.h"
 
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <rtti/linkresolver.h>
 #include <rtti/defaultlinkresolver.h>
 #include <appcontext.h>
@@ -14,13 +14,13 @@ napkin::PropertyPath::PropertyPath(const napkin::PropertyPath& other)
 }
 
 
-napkin::PropertyPath::PropertyPath(RTTIObject& obj, const RTTIPath& path)
+napkin::PropertyPath::PropertyPath(Object& obj, const Path& path)
 		: mObject(&obj), mPath(path)
 {
 }
 
-napkin::PropertyPath::PropertyPath(RTTIObject& obj, const std::string& path)
-		: mObject(&obj), mPath(RTTIPath())
+napkin::PropertyPath::PropertyPath(Object& obj, const std::string& path)
+		: mObject(&obj), mPath(Path())
 {
 	std::vector<std::string> split = nap::utility::splitString(path, '/');
 	for (auto part : split)
@@ -48,9 +48,9 @@ rttr::type napkin::PropertyPath::getType() const
 	return getValue().get_type();
 }
 
-ResolvedRTTIPath napkin::PropertyPath::resolve() const
+ResolvedPath napkin::PropertyPath::resolve() const
 {
-	ResolvedRTTIPath resolvedPath;
+	ResolvedPath resolvedPath;
 	mPath.resolve(mObject, resolvedPath);
 	return resolvedPath;
 }
@@ -58,7 +58,7 @@ ResolvedRTTIPath napkin::PropertyPath::resolve() const
 
 rttr::type napkin::PropertyPath::getArrayElementType()
 {
-	ResolvedRTTIPath resolved_path = resolve();
+	ResolvedPath resolved_path = resolve();
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
@@ -73,7 +73,7 @@ rttr::type napkin::PropertyPath::getArrayElementType()
 
 size_t napkin::PropertyPath::getArrayLength()const
 {
-	ResolvedRTTIPath resolved_path = resolve();
+	ResolvedPath resolved_path = resolve();
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
@@ -103,7 +103,7 @@ std::string napkin::PropertyPath::toString() const
 
 napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) const
 {
-	nap::rtti::RTTIPath child_path = getPath();
+	nap::rtti::Path child_path = getPath();
 	child_path.pushAttribute(name);
 	return {*mObject, child_path};
 }

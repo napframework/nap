@@ -32,7 +32,7 @@ namespace nap
 		{
 			// Gather all used types
 			std::unordered_set<rtti::TypeInfo> types;
-			for (RTTIObject* object : rootObjects)
+			for (Object* object : rootObjects)
 				types.insert(object->get_type());
 
 			// Write binary version

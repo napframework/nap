@@ -20,6 +20,8 @@
 
 namespace nap
 {
+	using namespace rtti;
+
 	/**
 	* Demo application that is called from within the main loop
 	*
@@ -117,7 +119,7 @@ namespace nap
 		ObjectPtr<EntityInstance> mDisplacementEntity = nullptr;		//< The entity that holds the displacement mesh
 		ObjectPtr<EntityInstance> mPerspCameraEntity = nullptr;			//< Perspective camera
 
-		// The video render target
+		// video render target
 		ObjectPtr<RenderTarget>	mVideoRenderTarget = nullptr;			//< Video render target
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Render window
 

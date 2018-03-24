@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(audiotest)
 
 #add all cpp files to SOURCES
@@ -15,13 +15,32 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} napcore mod_napaudio mod_napapp mod_nappython mod_naposc mod_napmidi)
+# Get our modules list from project.json
+project_json_to_cmake()
+
+target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES})
+
+# Build into a project directory under bin
+set_output_directories()
 
 if (WIN32)
     # Copy freeimage DLL
-	find_package(freeimage REQUIRED)
-	copy_freeimage_dll()
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
 
     # Copy over some crap window dlls
-	copy_base_windows_graphics_dlls()
+    copy_base_windows_graphics_dlls()
+
+    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
+    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
+    bulk_copy_windows_dlls_to_bin()
+elseif(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()
 endif()
+
+# Copy project json to project bin dir via post-build events
+copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
+
+# Package into release build.. for now
+package_project_into_release("examples/tempmiditest")

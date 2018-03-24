@@ -5,7 +5,7 @@
 #include <entity.h>
 #include <nanosvg.h>
 #include <utility/stringutils.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <rect.h>
 #include <limits>
 #include <meshutils.h>

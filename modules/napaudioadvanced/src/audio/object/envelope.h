@@ -1,7 +1,7 @@
 #pragma once
 
 // Nap includes
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 
 // Audio includes
 #include <audio/core/audioobject.h>

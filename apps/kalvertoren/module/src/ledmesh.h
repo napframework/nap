@@ -4,17 +4,18 @@
 #include "artnetmeshfromfile.h"
 
 // External Includes
-#include <rtti/rttiobject.h>
 #include <meshfromfile.h>
+#include <nap/resourceptr.h>
+#include <nap/resource.h>
 
 namespace nap
 {
 	/**
 	 * Holds pointers to two meshes that together make up an led mesh
 	 */
-	class NAPAPI LedMesh : public rtti::RTTIObject
+	class NAPAPI LedMesh : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		virtual ~LedMesh();
 
@@ -24,7 +25,7 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		ObjectPtr<ArtnetMeshFromFile>	mTriangleMesh;		//< Holds the led addressable triangles
-		ObjectPtr<MeshFromFile>			mFrameMesh;			//< Holds the mesh that is the frame
+		ResourcePtr<ArtnetMeshFromFile>		mTriangleMesh;		//< Holds the led addressable triangles
+		ResourcePtr<MeshFromFile>			mFrameMesh;			//< Holds the mesh that is the frame
 	};
 }

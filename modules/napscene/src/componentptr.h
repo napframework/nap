@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nap/objectptr.h"
+#include "rtti/objectptr.h"
 #include "component.h"
 
 namespace nap
@@ -33,7 +33,7 @@ namespace nap
 		 * @param targetID The ID of the target
 		 * @param targetObject The pointer to be assigned
 		 */
-		virtual void assign(const std::string& targetID, rtti::RTTIObject& targetObject) = 0;
+		virtual void assign(const std::string& targetID, rtti::Object& targetObject) = 0;
 	};
 
 	/**
@@ -86,7 +86,7 @@ namespace nap
 			return mPath;
 		}
 
-		virtual void assign(const std::string& targetID, rtti::RTTIObject& targetObject) override
+		virtual void assign(const std::string& targetID, rtti::Object& targetObject) override
 		{
 			mPath = targetID;
 			mResource = rtti_cast<ComponentType>(&targetObject);
@@ -191,7 +191,7 @@ namespace nap
 		}
 
 	private:
-		ObjectPtr<ComponentType>	mResource;		///< Pointer to the target resource
+		rtti::ObjectPtr<ComponentType>	mResource;		///< Pointer to the target resource
 		std::string					mPath;			///< Path in the entity hierarchy, either relative or absolute
 	};
 

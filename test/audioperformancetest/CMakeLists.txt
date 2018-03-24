@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(audioperformancetest)
 
 #add all cpp files to SOURCES
@@ -14,13 +14,20 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} napcore mod_napaudio)
+# Get our modules list from project.json
+project_json_to_cmake()
+
+target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES})
 
 # if (WIN32)
 #    # Copy portaudio DLL
 #    find_package(portaudio REQUIRED)
 #   copy_portaudio_lib()
 # endif()
+if(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()
+endif()
 
 # create post build event
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)

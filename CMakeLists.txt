@@ -22,6 +22,7 @@ message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
 
 include(cmake/targetarch.cmake)
+target_architecture(ARCH)
 
 include(cmake/qtconfig.cmake)
 
@@ -49,11 +50,16 @@ endif()
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
+# Restrict to debug and release build types
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 
 include(configure.cmake)
+
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packagingStaging)
 
 if(WIN32)
     if(MINGW)
@@ -108,8 +114,10 @@ add_subdirectory(demos/dynamicgeo/module)
 add_subdirectory(demos/videomodulation)
 add_subdirectory(demos/videomodulation/module)
 add_subdirectory(demos/blobtrace)
+add_subdirectory(demos/audioanalysis)
 add_subdirectory(demos/audioplayback)
 
+# Unit tests
 add_subdirectory(unittests)
 
 if(APPLE)
@@ -130,16 +138,21 @@ add_subdirectory(modules/nappython)
 add_subdirectory(modules/napvideo)
 add_subdirectory(modules/napetherdream)
 add_subdirectory(modules/napaudio)
-add_subdirectory(modules/napaudioadvanced)
+#add_subdirectory(modules/napaudioadvanced)
 add_subdirectory(modules/napartnet)
 add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napapp)
 add_subdirectory(modules/napimgui)
 add_subdirectory(modules/napmidi)
+add_subdirectory(modules/napyoctopuce)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
 
 # app modules
 add_subdirectory(apps/kalvertoren/module)
+
+# Packaging
+include(cmake/packaging_macros.cmake)
+package_nap()

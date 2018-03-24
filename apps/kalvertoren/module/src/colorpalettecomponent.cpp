@@ -6,20 +6,14 @@
 #include <nap/logger.h>
 #include <utility/datetimeutils.h>
 
-RTTI_BEGIN_ENUM(nap::ColorPaletteCycleMode)
-	RTTI_ENUM_VALUE(nap::ColorPaletteCycleMode::Off, "Off"),
-	RTTI_ENUM_VALUE(nap::ColorPaletteCycleMode::Random, "Random"),
-	RTTI_ENUM_VALUE(nap::ColorPaletteCycleMode::Sequence, "List")
-RTTI_END_ENUM
-
 // nap::colorpalettecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ColorPaletteComponent)
 	RTTI_PROPERTY("IndexMap",			&nap::ColorPaletteComponent::mIndexMap,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PaletteGrid",		&nap::ColorPaletteComponent::mPaletteGrid,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("DebugImage",			&nap::ColorPaletteComponent::mDebugImage,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Index",				&nap::ColorPaletteComponent::mIndex,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VariationCycleMode",	&nap::ColorPaletteComponent::mVariationCycleMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",				&nap::ColorPaletteComponent::mCycleSpeed,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Composition",		&nap::ColorPaletteComponent::mCompositionComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Link",				&nap::ColorPaletteComponent::mLinkToComposition,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::colorpalettecomponentInstance run time class definition 
@@ -44,9 +38,7 @@ namespace nap
 		mIndexMap = color_palette_component->mIndexMap;
 		mPaletteGrid = color_palette_component->mPaletteGrid;
 		mDebugImage = color_palette_component->mDebugImage;
-
-		mCycleSpeed = getComponent<ColorPaletteComponent>()->mCycleSpeed;
-		mVariationCycleMode = getComponent<ColorPaletteComponent>()->mVariationCycleMode;
+		mLinked = color_palette_component->mLinkToComposition;
 
 		if (!errorState.check(mIndexMap->getBitmap().getWidth() == mDebugImage->getBitmap().getWidth() && mIndexMap->getBitmap().getHeight() == mDebugImage->getBitmap().getHeight(),
 			"The dimensions of the IndexMap (%s) and DebugImage (%s) must match", mIndexMap->mID.c_str(), mDebugImage->mID.c_str()))
@@ -60,6 +52,10 @@ namespace nap
 		// Select current week
 		selectWeek(utility::getCurrentDateTime().getWeek()-1);
 
+		// Listen to composition component completion
+		// If link is turned on this will cause the palette to change
+		mCompositionComp->mSelectionChanged.connect(mCompChangedSlot);
+
 		return true;
 	}
 
@@ -70,39 +66,10 @@ namespace nap
 		{
 			int newWeekNumber = utility::getCurrentDateTime().getWeek()-1;
 			if (newWeekNumber != mCurrentWeek)
-				selectWeek(newWeekNumber);
-		}
-
-		if (mTime >= mCycleSpeed)
-		{
-			switch (mVariationCycleMode)
 			{
-				case ColorPaletteCycleMode::Off:
-					break;
-					mTime = 0.0;
-				case ColorPaletteCycleMode::Random:
-				{
-					if (getVariationCount() > 1)
-					{
-						int new_idx = mCurrentVariationIndex;
-						while (new_idx == mCurrentVariationIndex)
-							new_idx = math::random<int>(0, getVariationCount() - 1);
-						selectVariation(new_idx);
-					}
-					break;
-				}
-				case ColorPaletteCycleMode::Sequence:
-				{
-					if (getVariationCount() > 0)
-					{
-						int new_index = (mCurrentVariationIndex + 1) % static_cast<int>(getVariationCount());
-						selectVariation(new_index);
-					}
-					break;
-				}
+				selectWeek(newWeekNumber);
 			}
 		}
-		mTime += deltaTime;
 	}
 
 
@@ -126,7 +93,6 @@ namespace nap
 	void ColorPaletteComponentInstance::selectVariation(int index)
 	{
 		mCurrentVariationIndex = nap::math::clamp<int>(index, 0, getVariationCount() - 1);
-		mTime = 0.0;
 		updateSelectedPalette();
 	}
 
@@ -172,6 +138,7 @@ namespace nap
 		return d_lower < d_highr ? lower_it->second : upper_it->second;
 	}
 
+
 	void ColorPaletteComponentInstance::updateSelectedPalette()
 	{
 		// Build a map that maps the index colors to palette colors
@@ -213,5 +180,23 @@ namespace nap
 		}
 
 		mDebugImage->update(mDebugImage->getBitmap());
+	}
+
+
+	void ColorPaletteComponentInstance::onCompositionChanged(const CompositionComponentInstance& composition)
+	{
+		if (!mLinked)
+			return;
+
+		// Select a new color variation based on random number
+		int new_idx = mCurrentVariationIndex;
+		if (getVariationCount() > 1)
+		{
+			while (new_idx == mCurrentVariationIndex)
+			{
+				new_idx = math::random<int>(0, getVariationCount() - 1);
+			}
+		}
+		selectVariation(new_idx);
 	}
 }

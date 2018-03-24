@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rtti/rttipath.h>
+#include <rtti/path.h>
 #include <QMetaType>
 
 namespace napkin
@@ -24,13 +24,13 @@ namespace napkin
 		 * @param obj The object this property is on
 		 * @param path The path to the property
 		 */
-		PropertyPath(nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path);
+		PropertyPath(nap::rtti::Object& obj, const nap::rtti::Path& path);
 
 		/**
 		 * @param obj The object this property is on
 		 * @param path The path to the property
 		 */
-		PropertyPath(nap::rtti::RTTIObject& obj, const std::string& path);
+		PropertyPath(nap::rtti::Object& obj, const std::string& path);
 
 		/**
 		 * @return The value of this property
@@ -60,17 +60,17 @@ namespace napkin
 		/**
 		 * @return obj The object this property is on
 		 */
-		nap::rtti::RTTIObject& getObject() const { return *mObject; }
+		nap::rtti::Object& getObject() const { return *mObject; }
 
 		/**
 		 * @return path The path to the property
 		 */
-		const nap::rtti::RTTIPath& getPath() const { return mPath; }
+		const nap::rtti::Path& getPath() const { return mPath; }
 
 		/**
 		 * Resolve a property path
 		 */
-		nap::rtti::ResolvedRTTIPath resolve() const;
+		nap::rtti::ResolvedPath resolve() const;
 
 		/**
 		 * If this path refers to an array property, get the element type
@@ -112,10 +112,10 @@ namespace napkin
 
 
 
-		nap::rtti::RTTIObject* mObject = nullptr;
-		nap::rtti::RTTIPath mPath;
+		nap::rtti::Object* mObject = nullptr;
+		nap::rtti::Path mPath;
 		// Temps
-		nap::rtti::ResolvedRTTIPath mResolvedPath;
+		nap::rtti::ResolvedPath mResolvedPath;
 		nap::rtti::Variant mVariant;
 		nap::rtti::VariantArray mVariantArray;
 	};

@@ -46,6 +46,8 @@ namespace nap
 		VertexAttribute<glm::vec4>& color_data = mesh.getColorAttribute();
 		VertexAttribute<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute();
 
+		float brightness = mLightRegulator->getBrightness();
+
 		TriangleIterator shape_iterator(mesh.getMeshInstance());
 		while (!shape_iterator.isDone())
 		{
@@ -60,9 +62,9 @@ namespace nap
 			avg_pos += positionTriangleData.third();
 			avg_pos /= 3;
 
-			float r = pow(math::fit<float>(avg_pos.x, box.getMin().x, box.getMax().x, 0.0f, 1.0f), 2.0);
-			float g = pow(math::fit<float>(avg_pos.y, box.getMin().y, box.getMax().y, 0.0f, 1.0f), 2.0);
-			float b = pow(math::fit<float>(avg_pos.z, box.getMin().z, box.getMax().z, 0.0f, 1.0f), 2.0);
+			float r = pow(math::fit<float>(avg_pos.x, box.getMin().x, box.getMax().x, 0.0f, 1.0f), 2.0) * brightness;
+			float g = pow(math::fit<float>(avg_pos.y, box.getMin().y, box.getMax().y, 0.0f, 1.0f), 2.0) * brightness;
+			float b = pow(math::fit<float>(avg_pos.z, box.getMin().z, box.getMax().z, 0.0f, 1.0f), 2.0) * brightness;
 
 			// Set rgb for the mesh
 			TriangleData<glm::vec4> colorTriangleData = triangle.getVertexData(color_data);

@@ -1,0 +1,1 @@
+set(DEPENDENT_MODULES mod_naprender mod_napmath mod_napsdlinput mod_napsdlwindow mod_napcameracontrol mod_napapp mod_napartnet mod_napimgui mod_napscene mod_napyoctopuce)

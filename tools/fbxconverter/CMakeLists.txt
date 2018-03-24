@@ -18,7 +18,21 @@ if (MSVC)
 	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "setargv.obj")
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
+target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
+
+if (WIN32)
+    # Copy freeimage DLL
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
+
+    # Copy over some crap window dlls
+    copy_base_windows_graphics_dlls()
+    # Add post-build step to set RTTR RPATH
+elseif(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()    
+endif()
 
 
 # ======================= UNIT TESTS
@@ -38,14 +52,51 @@ add_test(NAME ConvertFile COMMAND ${PROJECT_NAME} -o
 add_custom_command(OUTPUT always_rebuild COMMAND cmake -E echo)
 
 # copy test data
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_LIST_DIR}/res/vinyl_cover.fbx
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/res-test/vinyl_cover.fbx
-        DEPENDS always_rebuild
-        )
+add_custom_command(TARGET ${PROJECT_NAME} 
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                           ${CMAKE_CURRENT_LIST_DIR}/res/vinyl_cover.fbx
+                           $<TARGET_FILE_DIR:${PROJECT_NAME}>/res-test/vinyl_cover.fbx
+                   DEPENDS always_rebuild
+                   )
 
 # auto run test
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #        COMMAND ctest -C $<CONFIGURATION> --output-on-failure
 #        DEPENDS always_rebuild)
+
+# ==================================
+
+# Package into NAP release
+set(FBXCONVERTER_PACKAGED_BUILD_TYPE Release)
+set(FBXCONVERTER_INSTALL_LOCATION tools/platform)
+
+install(TARGETS ${PROJECT_NAME} 
+        DESTINATION ${FBXCONVERTER_INSTALL_LOCATION}
+        CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE})
+
+if (WIN32)   
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    # TODO Update to find the libraries then install locating them via TARGET_FILE
+    install(FILES ${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll
+                  ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll
+                  ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
+                  ${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll
+                  ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll
+                  ${PYTHON_DLLS}
+            DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
+elseif(APPLE)
+    set(PATH_TO_NAP_ROOT "../..")
+    set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/glew/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
+
+    set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 
+                                                                            "${DEPENDENT_NAP_MODULES}" 
+                                                                            ${CMAKE_INSTALL_PREFIX}/tools/platform/fbxconverter
+                                                                            "../.."
+                                                                            "${EXTRA_RPATH}")
+elseif(UNIX)
+    set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../..")
+endif()
