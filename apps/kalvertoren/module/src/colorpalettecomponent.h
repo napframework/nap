@@ -2,26 +2,16 @@
 
 #include "indexmap.h"
 #include "ledcolorpalettegrid.h"
-#include "imagefromfile.h"
+#include "selectcolormethodcomponent.h"
+#include "compositioncomponent.h"
 
+#include <imagefromfile.h>
 #include <component.h>
 #include <nap/resourceptr.h>
 
 namespace nap
 {
 	class ColorPaletteComponentInstance;
-
-
-   /**
-	* Determines how the color palette component cycles through the available compositions
-	*/
-	enum class ColorPaletteCycleMode : int
-	{
-		Off			= 0,			///< Palettes do not cycle automatically
-		Random		= 1,			///< A new palette is chosen when the active one finishes
-		Sequence	= 2				///< Plays through all the compositions one by one
-	};
-
 
 	/**
 	 *	colorpalettecomponent
@@ -42,8 +32,8 @@ namespace nap
 		ResourcePtr<LedColorPaletteGrid>	mPaletteGrid;										///< Property: The palette grid to use, containing palettes for each weak
 		ResourcePtr<ImageFromFile>			mDebugImage;										///< Property: Debug image used to display the currently selected palette
 		int									mIndex = 0;											///< Property: Current palette selection
-		float								mCycleSpeed = 1.0f;									///< Property: Time it takes to jump to a new color palette
-		ColorPaletteCycleMode				mVariationCycleMode = ColorPaletteCycleMode::Off;	///< Property: Default cycle mode
+		ComponentPtr<CompositionComponent>	mCompositionComponent;								///< Property: Link to the composition component
+		bool								mLinkToComposition = true;							///< Property: If we want to listen to composition changes;
 	};
 
 
@@ -54,11 +44,6 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		enum class EStatus : int
-		{
-			Active = 0,
-			Completed
-		};
 
 		ColorPaletteComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
@@ -83,16 +68,6 @@ namespace nap
 		int getVariationCount() const;
 
 		/**
-		 *	@return whether the weeknumber of the current date should be used to select a palette
-		 */
-		bool getLockWeek() const { return mLockWeek; }
-
-		/**
-		 *	Set whether the weeknumber of the current date should be used to select a palette
-		 */
-		void setLockWeek(bool inLock) { mLockWeek = inLock; }
-
-		/**
 		 * Selects a week to be used to get the palette from
 		 */
 		void selectWeek(int index);
@@ -106,6 +81,11 @@ namespace nap
 		 *	Selects a new variation within the week's color palette to be used
 		 */
 		void selectVariation(int index);
+
+		/**
+		 *	@return the current variation index
+		 */
+		int getVariation() const { return mCurrentVariationIndex; }
 
 		/**
 		 *	@return the index map
@@ -129,31 +109,25 @@ namespace nap
 		LedColorPaletteGrid::PaletteColor getPaletteColor(const IndexMap::IndexColor& indexColor) const;
 
 		/**
-		 * Sets if we want to cycle through colors
-		 * @param cycle if we want to cycle through the colors or not
+		 * Resolved link to runtime composition component
 		 */
-		void setCycleMode(ColorPaletteCycleMode mode)								{ mVariationCycleMode = mode; }
+		ComponentInstancePtr<CompositionComponent> mCompositionComp =				{ this, &ColorPaletteComponent::mCompositionComponent };
 
 		/**
-		 * @return the current cycle mode
+		 * Links the change of color to completion of composition
+		 * @param value if this object listens to composition changes or not
 		 */
-		ColorPaletteCycleMode getCycleMode() const									{ return mVariationCycleMode; }
+		bool mLinked = false;															///< If we're currently switching based on component changes
 
 		/**
-		 * Sets the cycle speed in seconds
-		 * @param speed cycle speed in seconds
+		 * If the week is locked
 		 */
-		void setCycleSpeed(float speed)												{ mCycleSpeed = speed; }
+		bool mLockWeek = true;
 
 		/**
-		 * @return progress in 0-1 range
+		 *	If the week selection is locked
 		 */
-		float getProgress() const;
-
-		/**
-		 *	@return current color cycle status
-		 */
-		EStatus getStatus() const;
+		bool isLocked() const { return mLockWeek; }
 
 	private:
 		/**
@@ -166,17 +140,12 @@ namespace nap
 		ResourcePtr<LedColorPaletteGrid>	mPaletteGrid;								///< The palette grid to use, containing palettes for each weak
 		ResourcePtr<ImageFromFile>			mDebugImage;								///< Debug image used to display the currently selected palette
 
+
 		// Map that binds index colors to current color palette colors
 		std::map<IndexMap::IndexColor, LedColorPaletteGrid::PaletteColor> mIndexToPaletteMap;
 
 		// Cycle Speed
 		float mCycleSpeed = 1.0f;
-
-		// Current time
-		double mTime = 0.0;
-
-		// Use week number of current date
-		bool mLockWeek = true;
 
 		// Current week
 		int mCurrentWeek = -1;
@@ -184,7 +153,7 @@ namespace nap
 		// Current Selection
 		int mCurrentVariationIndex = 0;
 
-		// Cycle Mode
-		ColorPaletteCycleMode mVariationCycleMode = ColorPaletteCycleMode::Off;
+		void onCompositionChanged(const CompositionComponentInstance& composition);
+		NSLOT(mCompChangedSlot, const CompositionComponentInstance&, onCompositionChanged);
 	};
 }

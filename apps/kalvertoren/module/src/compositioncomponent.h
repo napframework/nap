@@ -135,6 +135,11 @@ namespace nap
 		 */
 		void switchMode(EMode mode);
 
+		/**
+		 * Emitted when the selection changes
+		 */
+		Signal<const CompositionComponentInstance&>		mSelectionChanged;
+
 	private:
 		int										mCurrentIndex = -1;							///< Currently selected composition @index
 		CompositionContainer*					mCurrentContainer = nullptr;				///< Container associated with active day

@@ -71,27 +71,6 @@ namespace nap
 	}
 
 
-	void KalvertorenGui::selectPaletteWeek()
-	{
-		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.selectWeek(mSelectedWeek - 1);
-	}
-
-
-	void KalvertorenGui::selectPaletteCycleMode()
-	{
-		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.setCycleMode(static_cast<nap::ColorPaletteCycleMode>(mColorPaletteCycleMode));
-	}
-
-
-	void KalvertorenGui::setColorPaletteCycleSpeed(float minutes)
-	{
-		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.setCycleSpeed(minutes * 60.0f);
-	}
-
-
 	void KalvertorenGui::selectPaintMethod()
 	{
 		// Get all the color selection components
@@ -134,8 +113,6 @@ namespace nap
 
 		// Force cycle modes
 		selectCompositionCycleMode();
-		selectPaletteCycleMode();
-		setColorPaletteCycleSpeed(mColorCycleTime);
 	}
 
 
@@ -229,34 +206,26 @@ namespace nap
 				}
 			}
 
+			// Turn lock to week on / off
 			ColorPaletteComponentInstance& color_palette_comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-			bool lockWeek = color_palette_comp.getLockWeek();
-			if (ImGui::Checkbox("Lock week to current week", &lockWeek))
-				color_palette_comp.setLockWeek(lockWeek);
+			ImGui::Checkbox("Lock week to current week", &(color_palette_comp.mLockWeek));
+
+			// Link 
+			ImGui::Checkbox("Link To Composition", &(color_palette_comp.mLinked));
 
 			mSelectedWeek = color_palette_comp.getSelectedWeek() + 1;
 			if (ImGui::InputInt("Week Number", &mSelectedWeek, 1))
 			{
-				if (!lockWeek)
-					selectPaletteWeek();
+				if (!color_palette_comp.isLocked())
+				{
+					color_palette_comp.selectWeek(mSelectedWeek - 1);
+				}
 			}
 
 			// Changes the color palette
 			if (ImGui::InputInt("Variation", &mPaletteSelection, 1))
 			{
 				palette_selector.selectVariation(mPaletteSelection);
-			}
-
-			// Changes the mesh paint mode
-			if (ImGui::Combo("Variation Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
-			{
-				selectPaletteCycleMode();
-			}
-
-			// Changes the time at which a new color palette is selected
-			if (ImGui::SliderFloat("Cycle Time (minutes)", &mColorCycleTime, 0.0f, 60.0f, "%.3f", 3.0f))
-			{
-				setColorPaletteCycleSpeed(mColorCycleTime);
 			}
 		}
 
@@ -390,10 +359,12 @@ namespace nap
 		if (ImGui::CollapsingHeader("Colors"))
 		{
 			ColorPaletteComponentInstance& palette_comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-			ImGui::TextColored(float_clr_gui, "Status: ");
+			ImGui::TextColored(float_clr_gui, "Selected Week: ");
 			ImGui::SameLine();
-			ImGui::Text(palette_comp.getStatus() == ColorPaletteComponentInstance::EStatus::Active ? "Active" : "Completed");
-			ImGui::ProgressBar(palette_comp.getProgress());
+			ImGui::Text(utility::stringFormat("%d", palette_comp.getSelectedWeek()+1).c_str());
+			ImGui::TextColored(float_clr_gui, "Palette Index: ");
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("%d", palette_comp.getVariation()).c_str());
 		}
 
 		if (ImGui::CollapsingHeader("Index Map"))
@@ -464,5 +435,3 @@ namespace nap
 			mBrightnessIdx = 0;
 	}
 }
-
-
