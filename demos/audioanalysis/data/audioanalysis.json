@@ -1,0 +1,69 @@
+{
+	"Objects":
+	[
+		{		
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window0",
+			"Width" : 1280,
+			"Height" : 720,
+			"Title" : "Window 1",
+			"ClearColor": {
+                "x": 0.0666,
+                "y": 0.0784,
+                "z": 0.1490,
+                "w": 1.0
+            }
+		},
+
+		{
+			"Type": "nap::audio::AudioFileResource",
+			"mID": "audioFile",
+			"AudioFilePath": "hang.mp3"
+		},
+
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "Audio"
+				}
+			]
+		},
+
+		{
+			"Type": "nap::Entity",
+			"mID": "Audio",
+			"Components":
+			[
+				{					
+					"Type": "nap::audio::PlaybackComponent",
+					"mID": "playbackComponent",
+					"ChannelRouting": [ 0, 1 ],
+					"Buffer": "audioFile",
+					"AutoPlay": "True"
+				},
+
+				{
+					"Type": "nap::audio::OutputComponent",
+					"mID": "output",
+					"Routing": [ 0, 0 ],
+					"Input": "playbackComponent"
+				},
+
+				{
+					"Type": "nap::audio::LevelMeterComponent",
+					"mID": "levelMeter",
+					"Input": "playbackComponent",
+					"FilterInput": "True",
+					"CenterFrequency": 400,
+					"BandWidth": 100
+				}
+
+
+			]
+		}
+
+	]
+}
