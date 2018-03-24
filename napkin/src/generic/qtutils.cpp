@@ -1,16 +1,16 @@
 #include "qtutils.h"
 
+#include <QDialogButtonBox>
 #include <QDir>
 #include <QHBoxLayout>
-#include <QDialogButtonBox>
-#include <QMessageBox>
 #include <QLabel>
+#include <QMessageBox>
+#include <QProcess>
 
-#include <mathutils.h>
-#include <standarditemsproperty.h>
 #include <appcontext.h>
-#include <nap/logger.h>
+#include <mathutils.h>
 
+#include "standarditemsproperty.h"
 #include "panels/finderpanel.h"
 
 
@@ -156,9 +156,47 @@ void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, 
 	dialog.exec();
 }
 
-void napkin::revealInFileBrowser(const QString& filename)
+bool napkin::revealInFileBrowser(const QString& filename)
 {
-	// TODO: Reveal files
-	nap::Logger::fatal("Revealing files not supported yet: %s", filename.toStdString().c_str());
+#ifdef _WIN32
+	const QString explorer = Environment::systemEnvironment().searchInPath(QLatin1String("explorer.exe"));
+	if (explorer.isEmpty())
+	{
+		QMessageBox::warning(parent, tr("Launching Windows Explorer failed"),
+							 tr("Could not find explorer.exe in path to launch Windows Explorer."));
+		return;
+	}
+	QString param;
+	if (!QFileInfo(pathIn).isDir())
+		param = QLatin1String("/select,");
+	param += QDir::toNativeSeparators(pathIn);
+	QString command = explorer + " " + param;
+	QProcess::startDetached(command);
+#elif defined(__APPLE__)
+	QStringList scriptArgs;
+	scriptArgs << QLatin1String("-e")
+			   << QString::fromLatin1("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(pathIn);
+	QProcess::execute(QLatin1String("/usr/bin/osascript"), scriptArgs);
+	scriptArgs.clear();
+	scriptArgs << QLatin1String("-e") << QLatin1String("tell application \"Finder\" to activate");
+	QProcess::execute("/usr/bin/osascript", scriptArgs);
+#else
+	// Linux
+	// We don't have a reliable way of selecting the file after revealing, just open the file browser
+	QString dirname = QFileInfo(filename).dir().path();
+	QProcess::startDetached("xdg-open " + dirname);
+#endif
+	return true;
+}
+
+QString napkin::fileBrowserName()
+{
+#ifdef _WIN32
+	return "Explorer";
+#elif defined(__APPLE__)
+	return "Finder";
+#else
+	return "file browser";
+#endif
 }
 

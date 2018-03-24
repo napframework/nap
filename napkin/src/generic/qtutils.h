@@ -113,7 +113,12 @@ namespace napkin
 	 * Reveal the given file in Explorer, Finder, Files or whatever the OS' file browser is.
 	 * @param filename The file to show (not open)
 	 */
-	void revealInFileBrowser(const QString& filename);
+	bool revealInFileBrowser(const QString& filename);
+
+	/**
+	 * @return The name of the OS' default file browser.
+	 */
+	QString fileBrowserName();
 
 }
 

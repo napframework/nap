@@ -3,6 +3,8 @@
 #include <QApplication>
 #include <QMimeData>
 
+#include <utility/fileutils.h>
+
 #include "appcontext.h"
 #include "commands.h"
 #include "napkinglobals.h"
@@ -89,6 +91,28 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		}
 	}
 
+	// File link?
+	auto path_item = dynamic_cast<PropertyPathItem*>(item);
+	if (path_item != nullptr)
+	{
+		const auto& type = path_item->getPath().getType();
+		const auto& prop = path_item->getPath().getProperty();
+		if (type.is_derived_from<std::string>() && nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::FileLink))
+		{
+			bool ok;
+			std::string filename = path_item->getPath().getValue().to_string(&ok);
+			if (nap::utility::fileExists(filename))
+			{
+				menu.addAction("Show file in " + fileBrowserName(), [filename]()
+				{
+					revealInFileBrowser(QString::fromStdString(filename));
+				});
+			}
+
+		}
+	}
+
+	// Pointer?
 	auto pointer_item = dynamic_cast<PointerItem*>(item);
 	if (pointer_item != nullptr)
 	{
@@ -101,6 +125,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		action->setEnabled(pointee != nullptr);
 	}
 
+	// Array item?
 	auto* array_item = dynamic_cast<ArrayPropertyItem*>(item);
 	if (array_item != nullptr)
 	{
