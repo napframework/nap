@@ -1,5 +1,6 @@
 #include "artnetcolorapp.h"
 #include "selectcolorcomponent.h"
+#include "sendcolorcomponent.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -72,41 +73,45 @@ namespace nap
 			int idx(0);
 			for (auto& selector : comps)
 			{
-				// Color picker
 				std::string led_color_label = utility::stringFormat("Color %d", idx);
-				if (ImGui::ColorEdit3(led_color_label.c_str(), selector->mColor.getData()))
+				if (ImGui::CollapsingHeader(utility::stringFormat("Color %d", idx).c_str()))
 				{
-					selector->setDirty();
+					// Color picker
+					if (ImGui::ColorEdit3(led_color_label.c_str(), selector->mColor.getData()))
+					{
+						selector->setDirty();
+					}
+
+					// White Slider
+					std::string white_color_label = utility::stringFormat("White %d", idx);
+					if (ImGui::SliderFloat(white_color_label.c_str(), selector->mWhite.getData(), 0, 1.0f))
+					{
+						selector->setDirty();
+					}
+
+					// show led output colors
+					RGBColor8 conv_color = selector->mColor.convert<RGBColor8>();
+					RColor8 conv_color_f = selector->mWhite.convert<RColor8>();
+
+					char ccolor[128];
+					snprintf(ccolor, 128, "%d %d %d %d", conv_color.getRed(), conv_color.getGreen(), conv_color.getBlue(), conv_color_f.getRed());
+					std::string dmx_name = utility::stringFormat("LED Color %d", idx);
+					ImGui::InputText(dmx_name.c_str(), ccolor, 128, ImGuiInputTextFlags_ReadOnly);
+
+					// show RGB output colors as a combination
+					int pr = math::clamp<int>(conv_color.getRed() + conv_color_f.getRed(), 0, math::max<uint8>());
+					int pg = math::clamp<int>(conv_color.getGreen() + conv_color_f.getRed(), 0, math::max<uint8>());
+					int pb = math::clamp<int>(conv_color.getBlue() + conv_color_f.getRed(), 0, math::max<uint8>());
+
+					char pxcolor[128];
+					snprintf(pxcolor, 128, "%d %d %d", pr, pg, pb);
+					std::string pixel_name = utility::stringFormat("Pixel Color %d", idx);
+					ImGui::InputText(pixel_name.c_str(), pxcolor, 128, ImGuiInputTextFlags_ReadOnly);
 				}
-				
-				// White Slider
-				std::string white_color_label = utility::stringFormat("White %d", idx);
-				if (ImGui::SliderFloat(white_color_label.c_str(), selector->mWhite.getData(), 0, 1.0f))
-				{
-					selector->setDirty();
-				}
-
-				// show led output colors
-				RGBColor8 conv_color = selector->mColor.convert<RGBColor8>();
-				RColor8 conv_color_f = selector->mWhite.convert<RColor8>();
-
-				char ccolor[128];
-				snprintf(ccolor, 128, "%d %d %d %d", conv_color.getRed(), conv_color.getGreen(), conv_color.getBlue(), conv_color_f.getRed());
-				std::string dmx_name = utility::stringFormat("LED Color %d", idx);
-				ImGui::InputText(dmx_name.c_str(), ccolor, 128, ImGuiInputTextFlags_ReadOnly);
-
-				// show RGB output colors as a combination
-				int pr = math::clamp<int>(conv_color.getRed() + conv_color_f.getRed(), 0, math::max<uint8>());
-				int pg = math::clamp<int>(conv_color.getGreen() + conv_color_f.getRed(), 0, math::max<uint8>());
-				int pb = math::clamp<int>(conv_color.getBlue() + conv_color_f.getRed(), 0, math::max<uint8>());
-
-				char pxcolor[128];
-				snprintf(pxcolor, 128, "%d %d %d", pr, pg, pb);
-				std::string pixel_name = utility::stringFormat("Pixel Color %d", idx);
-				ImGui::InputText(pixel_name.c_str(), pxcolor, 128, ImGuiInputTextFlags_ReadOnly);
-
 				idx++;
 			}
+			int* span = &(mPlaneEntity->getComponent<SendColorComponentInstance>().mSpan);
+			ImGui::SliderInt("Span", span, 1, 20);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 	}

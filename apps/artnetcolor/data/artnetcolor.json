@@ -235,6 +235,21 @@
 							0.0
 						]
 					}
+				},
+				{
+					"Type" : "nap::SendColorComponent",
+					"Span" : 2,
+					"Controllers" : 
+					[
+						"Universe0",
+						"Universe1",
+						"Universe2",
+						"Universe3",
+						"Universe4",
+						"Universe5",
+						"Universe6",
+						"Universe8"
+					]
 				}
 			]
 		},
