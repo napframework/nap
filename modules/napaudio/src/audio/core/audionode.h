@@ -35,6 +35,7 @@ namespace nap
             friend class OutputPin;
             friend class InputPin;
             friend class MultiInputPin;
+            friend class NodePtrBase;
             
         public:
             /**

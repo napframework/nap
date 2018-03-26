@@ -1,6 +1,7 @@
 #pragma once
 
 // Nap includes
+#include <nap/resourceptr.h>
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
@@ -9,7 +10,7 @@
 #include <audio/node/gainnode.h>
 #include <audio/node/controlnode.h>
 #include <audio/node/filternode.h>
-#include <nap/resourceptr.h>
+#include <audio/core/audionodeptr.h>
 
 namespace nap
 {
@@ -144,9 +145,9 @@ namespace nap
         private:            
             void applyGain(TimeValue rampTime);
             
-            std::vector<std::unique_ptr<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
-            std::vector<std::unique_ptr<GainNode>> mGainNodes; // Nodes for each channel to gain the signal.
-            std::vector<std::unique_ptr<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
+            std::vector<NodePtr<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
+            std::vector<NodePtr<GainNode>> mGainNodes; // Nodes for each channel to gain the signal.
+            std::vector<NodePtr<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
             
             ControllerValue mGain = 0;
             ControllerValue mStereoPanning = 0.5;

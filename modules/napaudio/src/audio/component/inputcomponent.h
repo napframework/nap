@@ -4,6 +4,7 @@
 #include <component.h>
 
 // Audio includes
+#include <audio/core/audionodeptr.h>
 #include <audio/component/audiocomponentbase.h>
 #include <audio/node/inputnode.h>
 
@@ -53,7 +54,7 @@ namespace nap
             OutputPin& getOutputForChannel(int channel) override { return mInputNodes[channel]->audioOutput; }
             
         private:
-            std::vector<std::unique_ptr<InputNode>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
+            std::vector<NodePtr<InputNode>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
         };
         
     }

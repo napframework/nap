@@ -1,5 +1,6 @@
 #include "audionodemanager.h"
 #include "audionode.h"
+#include "audionodeptr.h"
 
 #include <nap/logger.h>
 #include <nap/core.h>
@@ -122,6 +123,7 @@ namespace nap
             {
                 // this call is rather symbolic, as the dequeued node will go out of scope anyway and will be implicitly destructed.
                 node = nullptr;
+                Logger::debug("removing node from trash");
             }
         }
 
