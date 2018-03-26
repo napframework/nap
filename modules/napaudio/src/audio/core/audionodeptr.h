@@ -44,10 +44,7 @@ namespace nap
             virtual ~NodePtrBase()
             {
                 if (mPtr != nullptr)
-                {
-                    Logger::debug("node ptr destruct");
                     mPtr->getNodeManager().mNodeTrashBin.enqueue(std::move(mPtr));
-                }
             }
             
         protected:
