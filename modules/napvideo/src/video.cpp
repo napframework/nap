@@ -442,6 +442,21 @@ namespace nap
 		return result;
 	}
 
+	void AVState::drainSeekFrameQueue()
+	{
+		// While frames are produced we need to keep on clearing the queue, otherwise the decode thread will block waiting
+		// for room to be available. When waitForReceiveFrame returns true, it requires another package, so no new 
+		// frames will be produced
+		while (!waitForReceiveFrame())
+			clearFrameQueue(mSeekFrameQueue, false);
+
+		// It may be possible that frames were produced between the last test and the last clear, so do a final clear here
+		clearFrameQueue(mSeekFrameQueue, false);
+
+		// After waitForReceiveFrame, the event is reset. We set the event manually here, otherwise the next waitForReceiveFrame
+		// will block indefinitely because at this stage, a new packet is required first before waitForReceiveFrame is unblocked.
+		mReceiveFrameEvent.set();
+	}
 
 	void AVState::clearPacketQueue()
 	{
@@ -471,6 +486,8 @@ namespace nap
 			av_frame_unref(frame.mFrame);
 			av_frame_free(&frame.mFrame);
 		}
+
+		mFrameQueueRoomAvailableCondition.notify_one();
 
 		if (emitCallback && mOnClearFrameQueueFunction)
 			mOnClearFrameQueueFunction();
@@ -644,47 +661,10 @@ namespace nap
 	}
 
 
-	AVState::EDecodeFrameResult AVState::decodeFrame(AVFrame& frame, int& frameFirstPacketDTS)
+	AVPacket* AVState::popPacket()
 	{
-		// Here we pull packets from the queue and decode them until all data for this frame is processed
 		while (true)
 		{
-			int result = AVERROR(EAGAIN);
-			do 
-			{
-				VIDEO_DEBUG_LOG("receive_frame: stream %s", getStream() == 0 ? "video" : "audio");
-
-				// NOTE: it is important to understand that a single send_packet can cause multiple frames to be 'received'. So we
-				// continue calling avcoded_receive_frame until it returns AVERROR(EAGAIN), meaning it needs a new packet.
-				// Also, we may need to send multiple packets to the decoder for a single frame.
-				result = avcodec_receive_frame(mCodecContext, &frame);
-
-				VIDEO_DEBUG_LOG("receive_frame - notify %s", getStream() == 0 ? "video" : "audio");
-				mReceiveFrameEvent.set([this, result]() { mReceiveFrameNeedsPacket = (result == AVERROR(EAGAIN)); });
-
-				if (result >= 0)
-				{
-					// We have a frame, copy the first DTS that was used to produce this packet (and reset it for the next frame)
-					frameFirstPacketDTS = mFrameFirstPacketDTS;
-					mFrameFirstPacketDTS = -INT_MAX;
-					VIDEO_DEBUG_LOG("receive_frame: pkt_pos: %d, dts: %d, pts: %d", frame.pkt_pos, frame.pkt_dts, frame.pkt_pts);					
-					return EDecodeFrameResult::GotFrame;
-				}
-
-				// An EOF is returned from avcoded_receive_frame if an EOF packet (a specific packet with a nullptr for data) is sent
-				// from the I/O thread. 
-				if (result == AVERROR_EOF)
-				{
-					avcodec_flush_buffers(mCodecContext);
-					mEndOfFileProcessedEvent.set();
-					return EDecodeFrameResult::EndOfFile;
-				}
-
-				// Note: we keep spinning as long as EAGAIN is not returned, even in the case of errors. 
-				// We're not 100% sure why this is (this logic came from ffplay), but perhaps there are certain 
-				// kinds of decoding errors that are non-fatal and will 'resolve' themselves?
-			} while (result != AVERROR(EAGAIN));
-
 			// Pop a packet from the queue
 			AVPacket* packet;
 			{
@@ -695,7 +675,7 @@ namespace nap
 				});
 
 				if (mExitDecodeThreadSignalled)
-					return EDecodeFrameResult::Exit;
+					return nullptr;
 
 				packet = mPacketQueue.front();
 				mPacketQueue.pop();
@@ -721,12 +701,14 @@ namespace nap
 					mActiveFrameQueue = &mSeekFrameQueue;
 				}
 
-				mSeekStartProcessedEvent.set();				
+				mSeekStartProcessedEvent.set();
 			}
 			else if (packet == mSeekEndPacket.get())
 			{
+				VIDEO_DEBUG_LOG("seek end received");
+
 				clearFrameQueue(mSeekFrameQueue, false);
-				
+
 				// Seeking is done, switch back to the regular frame queue so that the user can continue
 				// processing frames
 				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
@@ -741,24 +723,74 @@ namespace nap
 				// I/O thread has no more packets to produce. It is the last packet in the queue, so 
 				// we are also done producing frames.
 				mFinishedProducingFrames = true;
-				return EDecodeFrameResult::Exit;
+				return nullptr;
 			}
 			else
 			{
-				VIDEO_DEBUG_LOG("avcodec_send_packet: pkt_pos: %d, dts: %d, pts: %d", packet->pos, packet->dts, packet->pts);
-
-				// If this is the first packet for this frame, set this packets' DTS as the first DTS
-				if (mFrameFirstPacketDTS == -INT_MAX)
-					mFrameFirstPacketDTS = packet->dts;
-
-				// Send packet to decoder, this is used by avcoded_receive frame later
-				result = avcodec_send_packet(mCodecContext, packet);
-				assert(result != AVERROR(EAGAIN));
-
-				// If the packet is the EOF packet, we shouldn't deref (delete) it (it will be destroyed when the AVState is destroyed)
-				if (packet != mEndOfFilePacket.get())
-					av_packet_unref(packet);
+				return packet;
 			}
+		}
+
+		return nullptr;
+	}
+
+	AVState::EDecodeFrameResult AVState::decodeFrame(AVFrame& frame, int& frameFirstPacketDTS)
+	{
+		// Here we pull packets from the queue and decode them until all data for this frame is processed
+		while (true)
+		{
+			int result = AVERROR(EAGAIN);
+			do 
+			{
+				VIDEO_DEBUG_LOG("receive_frame: stream %s", getStream() == 0 ? "video" : "audio");
+
+				// NOTE: it is important to understand that a single send_packet can cause multiple frames to be 'received'. So we
+				// continue calling avcoded_receive_frame until it returns AVERROR(EAGAIN), meaning it needs a new packet.
+				// Also, we may need to send multiple packets to the decoder for a single frame.
+				result = avcodec_receive_frame(mCodecContext, &frame);
+
+				VIDEO_DEBUG_LOG("receive_frame - notify %s", getStream() == 0 ? "video" : "audio");
+				mReceiveFrameEvent.set([this, result]() { mReceiveFrameNeedsPacket = (result == AVERROR(EAGAIN)); });
+				if (result >= 0)
+				{
+					// We have a frame, copy the first DTS that was used to produce this packet (and reset it for the next frame)
+					frameFirstPacketDTS = mFrameFirstPacketDTS;
+					mFrameFirstPacketDTS = -INT_MAX;
+					VIDEO_DEBUG_LOG("receive_frame: pkt_pos: %d, dts: %d, pts: %d", frame.pkt_pos, frame.pkt_dts, frame.pkt_pts);					
+					return EDecodeFrameResult::GotFrame;
+				}
+
+				// An EOF is returned from avcoded_receive_frame if an EOF packet (a specific packet with a nullptr for data) is sent
+				// from the I/O thread. 
+				if (result == AVERROR_EOF)
+				{
+					avcodec_flush_buffers(mCodecContext);
+					mEndOfFileProcessedEvent.set();
+					return EDecodeFrameResult::EndOfFile;
+				}
+
+				// Note: we keep spinning as long as EAGAIN is not returned, even in the case of errors. 
+				// We're not 100% sure why this is (this logic came from ffplay), but perhaps there are certain 
+				// kinds of decoding errors that are non-fatal and will 'resolve' themselves?
+			} while (result != AVERROR(EAGAIN));
+
+			AVPacket* packet = popPacket();
+			if (packet == nullptr)
+				return EDecodeFrameResult::Exit;
+
+			VIDEO_DEBUG_LOG("avcodec_send_packet: pkt_pos: %d, dts: %d, pts: %d", packet->pos, packet->dts, packet->pts);
+
+			// If this is the first packet for this frame, set this packets' DTS as the first DTS
+			if (mFrameFirstPacketDTS == -INT_MAX)
+				mFrameFirstPacketDTS = packet->dts;
+
+			// Send packet to decoder, this is used by avcoded_receive frame later
+			result = avcodec_send_packet(mCodecContext, packet);
+			assert(result != AVERROR(EAGAIN));
+
+			// If the packet is the EOF packet, we shouldn't deref (delete) it (it will be destroyed when the AVState is destroyed)
+			if (packet != mEndOfFilePacket.get())
+				av_packet_unref(packet);
 		}
 
 		assert(false);
@@ -1019,12 +1051,14 @@ namespace nap
 
 		seek(startTimeSecs);
 
+		// It is important that the IOThread is started before the decode thread. The reason is that in startIOThread, we are
+		// initializing synchronization primitives that are used in both IO thread and decode thread 
+		startIOThread();
+
 		mVideoState.startDecodeThread(std::bind(&Video::onClearVideoFrameQueue, this));
 		
 		if (mAudioState.isValid())
 			mAudioState.startDecodeThread(std::bind(&Video::onClearAudioFrameQueue, this));
-
-		startIOThread();
 	}
 
 
@@ -1124,14 +1158,6 @@ namespace nap
 			if (mAudioState.isValid())
 				mAudioState.addEndOfFilePacket(mExitIOThreadSignalled);
 
-			// We wait for the decode thread to have fully processed the EOF command. This is actually only required when looping,
-			// as the loop command will seek back to the beginning of the file and clear everything that it is currently playing.
-			// We don't want that to happen for looping, so we wait until the EOF packet is consumed on the decode thread and all
-			// packets are properly decoded into frames. 
-			mVideoState.waitForEndOfFileProcessed();
-			if (mAudioState.isValid())
-				mAudioState.waitForEndOfFileProcessed();
-
 			return EProducePacketResult::EndOfFile;
 		}
 		else if (result < 0)
@@ -1160,6 +1186,23 @@ namespace nap
 	}
 
 
+	void Video::finishSeeking()
+	{
+		// It may be possible that after submitting a single packet, multiple frames are output on the decode thread. This can cause the decode
+		// thread to block waiting for room to be available in the seek frame queue. Therefore we need to drain any additional frames produced.
+		// Here we wait until the decode thread needs a new packet, this guarantees that no additional frames will follow.
+		mVideoState.drainSeekFrameQueue();
+
+		// PTS could be exactly equal to target PTS, we may have reached EOF. We're done finding out target frame.
+		mIOThreadState = IOThreadState::Playing;
+
+		// Inform the decode thread that it should switch back to the regular frame queue
+		mVideoState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
+		if (mAudioState.isValid())
+			mAudioState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
+	}
+
+
 	void Video::ioThread()
 	{
 		while (!mExitIOThreadSignalled)
@@ -1174,6 +1217,14 @@ namespace nap
 					{
 						if (mLoop)
 						{
+							// We wait for the decode thread to have fully processed the EOF command. This is actually only required when looping,
+							// as the loop command will seek back to the beginning of the file and clear everything that it is currently playing.
+							// We don't want that to happen for looping, so we wait until the EOF packet is consumed on the decode thread and all
+							// packets are properly decoded into frames. 
+							mVideoState.waitForEndOfFileProcessed();
+							if (mAudioState.isValid())
+								mAudioState.waitForEndOfFileProcessed();
+
 							seek(0.0);
 							continue;
 						}
@@ -1244,7 +1295,7 @@ namespace nap
 						do
 						{
 							produce_packet_result = ProducePacket(false);
-						} while (produce_packet_result != EProducePacketResult::GotVideoPacket);
+						} while (produce_packet_result != EProducePacketResult::GotVideoPacket && produce_packet_result != EProducePacketResult::EndOfFile);
 
 						if (produce_packet_result == EProducePacketResult::Error)
 							return;
@@ -1269,13 +1320,9 @@ namespace nap
 					}
 					else
 					{
-						// PTS could be exactly equal to target PTS, we may have reached EOF. We're done finding out target frame.
-						mIOThreadState = IOThreadState::Playing;
-
-						// Inform the decode thread that it should switch back to the regular frame queue
-						mVideoState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
-						if (mAudioState.isValid())
-							mAudioState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
+						// If the frame we've found is an exact match with the PTS we're looking for, or we can't search further to the left (because the frame is at the start of the stream),
+						// we finish the seek operation and resume normal play
+						finishSeeking();
 					}
 				}
 				break;
@@ -1294,7 +1341,7 @@ namespace nap
 							do
 							{
 								produce_packet_result = ProducePacket(false);
-							} while (produce_packet_result != EProducePacketResult::GotVideoPacket);
+							} while (produce_packet_result != EProducePacketResult::GotVideoPacket && produce_packet_result != EProducePacketResult::EndOfFile);
 
 							if (produce_packet_result == EProducePacketResult::Error)
 								return;
@@ -1303,14 +1350,8 @@ namespace nap
 						Frame seek_frame = mVideoState.popSeekFrame();
 						if (seek_frame.mFrame->best_effort_timestamp >= mSeekTarget || produce_packet_result == EProducePacketResult::EndOfFile)
 						{
-							// We have found the correct PTS or we may have reached EOF. We're done finding out target frame.
-							mIOThreadState = IOThreadState::Playing;
-
-							// Inform the decode thread that it should switch back to the regular frame queue
-							mVideoState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
-							if (mAudioState.isValid())
-								mAudioState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
-
+							// If we've found a matching frame, finish the seek operation and resume normal play
+							finishSeeking();
 							break;
 						}
 					}

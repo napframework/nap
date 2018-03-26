@@ -240,6 +240,11 @@ namespace nap
 		bool waitForReceiveFrame();
 
 		/**
+		 * Consumes all frames in the frame queue until the decode thread needs new packets.
+		 */
+		void drainSeekFrameQueue();
+
+		/**
 		 * Block until a frame can be popped from the queue.
 		 * @return The next frame on the queue. If the thread was exited during this operation, an empty frame is returned.
 		 */
@@ -292,6 +297,7 @@ namespace nap
 
 		void decodeThread();
 		EDecodeFrameResult decodeFrame(AVFrame& frame, int& frameFirstPacketDTS);
+		AVPacket* popPacket();
 
 		void clearFrameQueue(std::queue<Frame>& frameQueue, bool emitCallback);
 
@@ -333,7 +339,7 @@ namespace nap
 		utility::AutoResetEvent		mEndOfFileProcessedEvent;				///< Event that is signaled when EndOfFile packet is consumed by decode thread
 		utility::AutoResetEvent		mSeekStartProcessedEvent;				///< Event that is signaled when seek start packet is consumed by decode thread
 		utility::AutoResetEvent		mReceiveFrameEvent;						///< Event that is signaled when avcodec_receive is called by decode thread
-		bool						mReceiveFrameNeedsPacket;				///< Value set when avcoded_receive requires more packet to produce a frame
+		bool						mReceiveFrameNeedsPacket = false;		///< Value set when avcoded_receive requires more packet to produce a frame
 
 		double						mLastFramePTSSecs = 0.0;				///< The PTS of the last frame in seconds, used to 'guess' the PTS of a new frame if it's unknown.
 		int							mFrameFirstPacketDTS = -INT_MAX;		///< Cached value for the first DTS that was used to produce the current frame
@@ -526,6 +532,11 @@ namespace nap
 		 * Called by functions on critical error. Stops execution of video.
 		 */
 		void setErrorOccurred(const std::string& errorMessage);
+
+		/**
+		 * Finishes the seeking operation and returns back to playing state.
+		 */
+		void finishSeeking();
 
 	private:
 		friend class AVState;
