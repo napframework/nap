@@ -149,16 +149,6 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
                 source_group("Header Files\\macOS" FILES ${TMP_PATH})
             endif()
         endforeach()
-
-        # Sort header and cpps into solution folders for Linux
-        foreach(TMP_PATH ${LINUX_SOURCES})
-            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
-            if(NOT ${IS_CPP} EQUAL -1)
-                source_group("Source Files\\Linux" FILES ${TMP_PATH})
-            else()
-                source_group("Header Files\\Linux" FILES ${TMP_PATH})
-            endif()
-        endforeach()
     endif()
 
     # Unfortunately, there's no clean way to add a file to the solution (for browsing purposes, etc) but
