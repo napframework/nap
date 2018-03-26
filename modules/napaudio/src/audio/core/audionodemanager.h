@@ -31,6 +31,7 @@ namespace nap
             friend class AudioTrigger;
             friend class OutputNode;
             friend class InputNode;
+            friend class NodePtrBase;
             
         public:
             using OutputMapping = std::vector<std::vector<SampleBufferPtr>>;

@@ -63,9 +63,9 @@ namespace nap
                     return false;
                 }
                 
-                auto bufferPlayer = std::make_unique<BufferPlayerNode>(*nodeManager);
-                auto gain = std::make_unique<GainNode>(*nodeManager);
-                auto gainControl = std::make_unique<ControlNode>(*nodeManager);
+                auto bufferPlayer = make_node<BufferPlayerNode>(*nodeManager);
+                auto gain = make_node<GainNode>(*nodeManager);
+                auto gainControl = make_node<ControlNode>(*nodeManager);
 
                 gain->inputs.connect(bufferPlayer->audioOutput);
                 gain->inputs.connect(gainControl->output);                
