@@ -49,7 +49,7 @@ namespace nap
 		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
 		// Find the audio entity
-		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
         auto audioEntity = scene->findEntity("audioEntity");
         
         // Find the audio playback component and initialize parameters
@@ -67,7 +67,7 @@ namespace nap
 	 */
 	void AudioPlaybackApp::update(double deltaTime)
 	{
-		// Draw some gui elements
+		// Draw some gui elements to control audio playback
 		ImGui::Begin("Audio Playback");
         if (!mPlaybackComponent->isPlaying())
         {

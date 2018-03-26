@@ -15,6 +15,8 @@
 
 namespace nap
 {
+	using namespace rtti;
+
 	/**
 	 * Demo application that is called from within the main loop
 	 *
@@ -93,13 +95,13 @@ namespace nap
 		InputService*			mInputService = nullptr;			//< Input service for processing input
 		IMGuiService*			mGuiService = nullptr;				//< Gui service
 
-		rtti::ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointer to the render window
-		rtti::ObjectPtr<HeightMesh>	mHeightMesh = nullptr;				//< Pointer to the height map mesh
-		rtti::ObjectPtr<Material>		mNormalsMaterial = nullptr;			//< Material used to draw the normals
-		rtti::ObjectPtr<Material>		mHeightmapMaterial = nullptr;		//< Material used to draw the heightmap
+		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointer to the render window
+		ObjectPtr<HeightMesh>	mHeightMesh = nullptr;				//< Pointer to the height map mesh
+		ObjectPtr<Material>		mNormalsMaterial = nullptr;			//< Material used to draw the normals
+		ObjectPtr<Material>		mHeightmapMaterial = nullptr;		//< Material used to draw the heightmap
 
-		rtti::ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
-		rtti::ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< Pointer to the entity that holds the sphere
+		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< Pointer to the entity that holds the sphere
 
 		// Gui variables
 		float	mBlendValue = 1.0f;									//< Height blend value

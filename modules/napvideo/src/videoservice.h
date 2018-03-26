@@ -5,7 +5,6 @@
 
 // Nap Includes
 #include <nap/service.h>
-#include <queue>
 
 namespace nap
 {
@@ -36,8 +35,6 @@ namespace nap
 		*/
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
-		virtual void shutdown();
-
 		/**
 		 * Updates all registered video resources
 		 */
@@ -59,12 +56,7 @@ namespace nap
 		*/
 		void removeVideoPlayer(Video& receiver);
 
-		std::unique_ptr<AudioFormat> audio_open(void *opaque, int wanted_nb_channels, int wanted_sample_rate);
-
-		static void sdlAudioCallback(void* userData, uint8_t* stream, int len);
-
 	private:
-		std::vector<Video*> mVideoPlayers;					///< All registered video players
-		std::unique_ptr<AudioFormat> mTargetAudioFormat;	///< Audio format that our device is using
+		std::vector<Video*> mVideoPlayers;			///< All registered video players
 	};
 }

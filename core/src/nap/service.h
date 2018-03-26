@@ -1,12 +1,12 @@
 #pragma once
 
 // Local Includes
-#include "configure.h"
+#include "numeric.h"
 #include "utility/dllexport.h"
 #include "utility/errorstate.h"
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <rtti/factory.h>
 #include <set>
 

@@ -57,6 +57,22 @@ Streams operate in a certain 'time base'. This is just the frequency in hz, and 
 a proper faction by using av_q2d. Each stream also has a start_time. We use the start time and frequency to convert from seconds to the streams' timebase.
 
 ----------------------------------------------------
+Timing
+----------------------------------------------------
+Each stream in a video file (audio, video) has its own timebase and PTS/DTS values. When displaying frames/playing back audio, we need to make sure that these two streams are in 'sync'.
+In order to be able to sync these streams, we maintain a few different 'clocks':
+	- Audio decode clock:	This clock is updated whenever a new audio frame is consumed from the audio frame queue. It updates the clock to point to the *end* of the decoded frame (i.e. *start* of the next frame)
+	- Audio master clock:	This clock is updated whenever the audio callback is called. This clock is based on the audio decode clock: in order to compensate for the delay in audio submission and actual playback,
+							we subtract the 'length' of the callback buffer (in time) from the decode clock. This new subtracted value serves as the 'actual' time. For more details, see the audio callback.
+	- System clock:			This clock is updated with the deltatime on every update of the Video.
+
+Syncing is achieved by simply only presenting new video frames if the clock has advanced far enough. Depending on whether the video has an audio stream or not, either the audio clock or the system clock
+is used to determine whether the frame should be presented. If the audio is too far ahead of the video, video frames will be dropped. If the audio is behind the video, the frames will simply be displayed for longer periods of time.
+
+Note that in the case where the video has an audio stream, this implies a dependency of the video stream on the audio stream. No frames will be presented if the audio clock doesn't advance,
+which could lead to the frame queue being full, which in turn can lead to the decode & IO threads waiting for the frame queue to be emptied.
+
+----------------------------------------------------
 Seeking
 ----------------------------------------------------
 Seeking is challenging for the following reasons:
@@ -733,6 +749,7 @@ namespace nap
 
 		return nullptr;
 	}
+
 
 	AVState::EDecodeFrameResult AVState::decodeFrame(AVFrame& frame, int& frameFirstPacketDTS)
 	{

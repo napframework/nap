@@ -15,9 +15,11 @@
 
 namespace nap
 {
+	using namespace rtti;
+
 	/**
-	 * Demo application that is called from within the main loop
-	 *
+     * This demo application shows how to playback an audio file using audio::PlaybackComponent.
+     * It shows how to start and stop playback and how to modify playback parameters.
 	 */
 	class AudioPlaybackApp : public App
 	{
@@ -67,15 +69,15 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
-		rtti::ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
-        rtti::ObjectPtr<audio::AudioBufferResource> mBuffer = nullptr;        //< Pointer to the audio file in memory
+		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
+        ObjectPtr<audio::AudioBufferResource> mBuffer = nullptr;        //< Pointer to the audio file in memory
         audio::PlaybackComponentInstance* mPlaybackComponent = nullptr; //< Component that takes care of audio playback
-        audio::TimeValue mStartPosition = 0;
-        audio::TimeValue mDuration = 0;
-        audio::TimeValue mFadeInTime = 0;
-        audio::TimeValue mFadeOutTime = 0;
-        audio::ControllerValue mPitch = 1.0;
-        audio::ControllerValue mPanning = 0.5;
+        audio::TimeValue mStartPosition = 0;                            //< Start position of the playback in ms
+        audio::TimeValue mDuration = 0;                                 //< Duration of the playback in ms
+        audio::TimeValue mFadeInTime = 0;                               //< Fade in time in ms
+        audio::TimeValue mFadeOutTime = 0;                              //< Fade out time in ms
+        audio::ControllerValue mPitch = 1.0;                            //< Pitch of the playback in relation to original pitch of the audio file
+        audio::ControllerValue mPanning = 0.5;                          //< Panning of the audio in the stereo field
         RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };    //< GUI text highlight color
 	};
 }

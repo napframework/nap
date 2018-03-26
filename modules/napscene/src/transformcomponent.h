@@ -26,7 +26,8 @@ namespace nap
 
 
 	/**
-	 * Resource for the TransformComponent
+	 * Resource part of the transform component.
+	 * Positions an object in a scene
 	 */
 	class NAPAPI TransformComponent : public Component
 	{
@@ -34,7 +35,7 @@ namespace nap
 		DECLARE_COMPONENT(TransformComponent, TransformComponentInstance)
 
 	public:
-		TransformProperties mProperties;									//< Property: 'Properties', translate, rotate and scale
+		TransformProperties mProperties;									///< Property: 'Properties', translate, rotate and scale
 	};
 
 

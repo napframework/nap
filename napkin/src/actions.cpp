@@ -103,7 +103,7 @@ void AddObjectAction::perform()
 	AppContext::get().executeCommand(new AddObjectCommand(mType));
 }
 
-DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object)
+DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : Action(), mObject(object)
 {
     setText("Delete");
 }

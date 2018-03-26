@@ -3,7 +3,7 @@ project(naputility)
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
 
-add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
+add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 
@@ -14,3 +14,15 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
+
+# Package into release build
+if (WIN32)
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)
+elseif(APPLE)
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)  
+else()
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/${CMAKE_BUILD_TYPE})   
+endif()
+
+install(DIRECTORY "src/utility/" DESTINATION "include/utility/"
+        FILES_MATCHING PATTERN "*.h")

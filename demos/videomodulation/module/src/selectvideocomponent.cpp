@@ -48,7 +48,6 @@ namespace nap
         mAudioComponent = &getEntityInstance()->getComponent<audio::VideoAudioComponentInstance>();
 
 		// Select one
-//		selectVideo(4);
 		selectVideo(resource->mIndex);
 		return true;
 	}

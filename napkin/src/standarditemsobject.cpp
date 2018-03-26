@@ -9,7 +9,7 @@ napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {
 }
 
-napkin::ObjectItem::ObjectItem(nap::rtti::RTTIObject* rttiObject) : mObject(rttiObject)
+napkin::ObjectItem::ObjectItem(nap::rtti::Object* rttiObject) : mObject(rttiObject)
 {
 	refresh();
 
@@ -26,7 +26,7 @@ const QString napkin::ObjectItem::getName() const
 	return QString::fromStdString(mObject->mID);
 }
 
-nap::rtti::RTTIObject* napkin::ObjectItem::getObject() const
+nap::rtti::Object* napkin::ObjectItem::getObject() const
 {
 	return mObject;
 }
