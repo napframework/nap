@@ -14,7 +14,7 @@ namespace nap
 			wait();
 		}
 
-		AutoResetEvent::EWaitResult AutoResetEvent::wait(const LockedWaitCallback& callback)
+		AutoResetEvent::EWaitResult AutoResetEvent::wait(const AutoResetEvent::LockedWaitCallback& callback)
 		{
 			// Wait for flag to be set
 			std::unique_lock<std::mutex> lock(mMutex);
@@ -33,7 +33,7 @@ namespace nap
 			return result;
 		}
 
-		void AutoResetEvent::set(const LockedSetCallback& callback)
+		void AutoResetEvent::set(const AutoResetEvent::LockedSetCallback& callback)
 		{
 			{
 				std::unique_lock<std::mutex> lock(mMutex);
