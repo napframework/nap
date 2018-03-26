@@ -179,14 +179,13 @@ namespace nap
              */
             bool isConnected() const { return !mOutputs.empty(); }
             
-            // Used by @InputPin to poll this output for a new buffer of output samples
+            /**
+             * Used by @InputPin to poll this output for a new buffer of output samples
+             */
             SampleBufferPtr pull();
             
         protected:
-            /**
-             * The buffer containing the latest output
-             */
-            SampleBuffer mBuffer;
+            SampleBuffer mBuffer; ///< The buffer containing the latest output
             
         private:
             // Used by the @NodeManager to resize the internal buffers when necessary

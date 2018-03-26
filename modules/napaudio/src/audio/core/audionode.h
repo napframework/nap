@@ -94,7 +94,7 @@ namespace nap
             NodeManager& getNodeManager() { return *mNodeManager; }
 
         private:
-            /**
+            /*
              * Override this method to do the actual audio processing and fill the buffers of this node's outputs with new audio data
              * Use @getOutputBuffer() to access the buffers that have to be filled.
              */
@@ -119,19 +119,11 @@ namespace nap
              */
             void setSampleRate(float sampleRate) { sampleRateChanged(sampleRate); }
             
-            /*
-             * Used internally by the node to keep track of all its outputs.
-             */
-            std::set<OutputPin*> mOutputs;
+            std::set<OutputPin*> mOutputs; // Used internally by the node to keep track of all its outputs.
             
-            // The time stamp of the latest calculated sample by this node
-            DiscreteTimeValue mLastCalculatedSample = 0;
+            DiscreteTimeValue mLastCalculatedSample = 0; // The time stamp of the latest calculated sample by this node
             
-            /**
-             * The node manager that this node is processed on
-             */
-            NodeManager* mNodeManager = nullptr;
-            
+            NodeManager* mNodeManager = nullptr; // The node manager that this node is processed on            
         };
         
         
