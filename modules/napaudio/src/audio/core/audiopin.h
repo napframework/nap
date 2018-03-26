@@ -27,9 +27,25 @@ namespace nap
         {
         public:
             virtual ~InputPinBase() = default;
+            
+            /**
+             * Connects a pin to this input. Disconnects the current connection first if necessary.
+             */
             virtual void connect(OutputPin& input) = 0;
+            
+            /**
+             * Disconnects a pin from this input, if it is connected.
+             */
             virtual void disconnect(OutputPin& input) = 0;
+            
+            /**
+             * Disconnects all pins connected to this pint.
+             */
             virtual void disconnectAll() = 0;
+            
+            /**
+             * Returns wether this pin is connected to one or more other pins.
+             */
             virtual bool isConnected() const = 0;
         };
         
@@ -65,13 +81,13 @@ namespace nap
             
             
             /**
-             * Disconnects this input from the specified output
+             * Disconnects this input from the specified output, if this connections exists.
              */
             void disconnect(OutputPin& input) override;
             
             
             /**
-             * Disconnects this input from the connected output
+             * If connected, disconnects this pin.
              */
             void disconnectAll() override;
             
@@ -107,12 +123,18 @@ namespace nap
              */
             std::vector<SampleBufferPtr> pull();
             
+            /**
+             * Connects @input to this pin.
+             */
             void connect(OutputPin& input) override;
             
+            /**
+             * If @input is connected to this pin it will be disconnected.
+             */
             void disconnect(OutputPin& input) override;
             
             /**
-             * Disconnects this input from all the connected outputs
+             * Disconnects this input from all the connected pins.
              */
             void disconnectAll() override;
             
