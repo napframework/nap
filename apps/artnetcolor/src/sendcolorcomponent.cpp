@@ -70,10 +70,10 @@ namespace nap
 				// Compose color for span
 				for (int c = 0; c < buffer_size; c+=4)
 				{
-					color_data[c+0] = mColors[color_idx].getRed();
-					color_data[c+1] = mColors[color_idx].getGreen();
-					color_data[c+2] = mColors[color_idx].getBlue();
-					color_data[c+3] = mWhites[color_idx].getRed();
+					color_data[c+0] = static_cast<uint8>(static_cast<float>(mColors[color_idx].getRed())   * mIntensity);
+					color_data[c+1] = static_cast<uint8>(static_cast<float>(mColors[color_idx].getGreen()) * mIntensity);
+					color_data[c+2] = static_cast<uint8>(static_cast<float>(mColors[color_idx].getBlue())  * mIntensity);
+					color_data[c+3] = static_cast<uint8>(static_cast<float>(mWhites[color_idx].getRed())   * mIntensity);
 				}
 
 				// Send span

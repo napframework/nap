@@ -7,7 +7,7 @@
 			"Width" : 512,
 			"Height" : 512,
 			"Title" : "ArtnetColor",
-			"Sync" : "false"
+			"Sync" : "true"
 		},
         {
             "Type": "nap::ArtNetController",

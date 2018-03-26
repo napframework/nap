@@ -76,6 +76,8 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Pointer to the entity that holds the plane
 		rtti::ObjectPtr<ArtNetController> mArtnetController = nullptr;	//< The art-net controller
 
+		std::vector<int> mWhiteValues;
+
 		// Window event handling
 		void handleWindowEvent(const WindowEvent& windowEvent);
 		NSLOT(mWindowEventSlot, const nap::WindowEvent&, handleWindowEvent)
