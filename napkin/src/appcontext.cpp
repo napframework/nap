@@ -1,6 +1,6 @@
 #include "appcontext.h"
 #include "napkinglobals.h"
-
+#include "napkinlinkresolver.h"
 // std
 #include <fstream>
 
@@ -12,7 +12,6 @@
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-#include <rtti/defaultlinkresolver.h>
 #include <nap/logger.h>
 
 // local
@@ -56,13 +55,13 @@ Document* AppContext::loadDocument(const QString& filename)
 	ErrorState err;
 
 	nap::rtti::DeserializeResult result;
-	if (!readJSONFile(filename.toStdString(), getCore().getResourceManager()->getFactory(), result, err))
+	if (!readJSONFile(filename.toStdString(), EPropertyValidationMode::AllowMissingProperties, getCore().getResourceManager()->getFactory(), result, err))
 	{
 		nap::Logger::fatal(err.toString());
 		return nullptr;
 	}
 
-	if (!nap::rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
+	if (!NapkinLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
 	{
 		nap::Logger::fatal("Failed to resolve links: %s", err.toString().c_str());
 		return nullptr;
