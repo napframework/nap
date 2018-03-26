@@ -48,6 +48,11 @@ namespace nap
 			return object_to_update->second.get();
 		}
 
+		virtual EInvalidLinkBehaviour onInvalidLink(const UnresolvedPointer& unresolvedPointer) override
+		{
+			return LinkResolver::EInvalidLinkBehaviour::TreatAsError;
+		}
+
 	private:
 		ResourceManager*	mResourceManager;
 		ObjectByIDMap*		mObjectsToUpdate;
@@ -213,7 +218,7 @@ namespace nap
 
 		// Read objects from disk
 		DeserializeResult read_result;
-		if (!readJSONFile(filename, getFactory(), read_result, errorState))
+		if (!readJSONFile(filename, EPropertyValidationMode::DisallowMissingProperties, getFactory(), read_result, errorState))
 			return false;
 
 		// We first gather the objects that require an update. These are the new objects and the changed objects.

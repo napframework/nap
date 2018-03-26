@@ -16,16 +16,18 @@ namespace nap
 	{
 		struct ReadState
 		{
-			ReadState(Factory& factory, DeserializeResult& result) :
+			ReadState(EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result) :
+				mPropertyValidationMode(propertyValidationMode),
 				mFactory(factory),
 				mResult(result)
 			{
 			}
 
+			EPropertyValidationMode			mPropertyValidationMode;
 			Path							mCurrentRTTIPath;
-			Factory&							mFactory;
+			Factory&						mFactory;
 			DeserializeResult&				mResult;
-			std::unordered_set<std::string>		mObjectIDs;
+			std::unordered_set<std::string>	mObjectIDs;
 		};
 
 		static const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated")
@@ -129,7 +131,7 @@ namespace nap
 				readState.mCurrentRTTIPath.pushAttribute(property.get_name().data());
 
 				// Determine meta-data for the property
-				bool is_required = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Required);
+				bool is_required = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Required) && readState.mPropertyValidationMode == EPropertyValidationMode::DisallowMissingProperties;
 				bool is_file_link = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::FileLink);
 				bool is_object_id = Object::isIDProperty(compound, property);
 
@@ -453,7 +455,7 @@ namespace nap
 		}
 
 
-		bool deserializeJSON(const std::string& json, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
+		bool deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			// Try to parse the json file
 			rapidjson::Document document;
@@ -465,7 +467,7 @@ namespace nap
 			}
 
 			// Read objects
-			ReadState readState(factory, result);
+			ReadState readState(propertyValidationMode, factory, result);
 			rapidjson::Value::ConstMemberIterator objects = document.FindMember("Objects");
 			if (!errorState.check(objects != document.MemberEnd(), "Unable to find required 'Objects' field"))
 				return false;
@@ -483,13 +485,13 @@ namespace nap
 			return true;
 		}
 
-		bool readJSONFile(const std::string& path, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
+		bool readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			std::string buffer;
 			if (!utility::readFileToString(path, buffer, errorState))
 				return false;
 
-			return deserializeJSON(buffer, factory, result, errorState);
+			return deserializeJSON(buffer, propertyValidationMode, factory, result, errorState);
 		}
 
 	}
