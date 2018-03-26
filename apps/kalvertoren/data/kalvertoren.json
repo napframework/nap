@@ -697,7 +697,7 @@
                     "PaletteGrid": "PaletteGrid",
                     "DebugImage": "PaletteDebugImage",
                     "Index": 0,
-                    "Composition" : "./CompositionComponent",
+                    "Composition": "./CompositionComponent",
                     "Link": true
                 },
                 {
@@ -1957,6 +1957,52 @@
             "mID": "SingelFrameMesh",
             "Path": "singel_export_singel_frame.mesh",
             "Usage": "Static"
+        },
+        {
+            "Type": "nap::OpeningHours",
+            "mID": "OpeningHours",
+            "Monday": {
+                "MorningHour": 9,
+                "MorningMinute": 0,
+                "EveningHour": 19,
+                "EveningMinute": 0
+            },
+            "Tuesday": {
+                "MorningHour": 9,
+                "MorningMinute": 0,
+                "EveningHour": 19,
+                "EveningMinute": 0
+            },
+            "Wednesday": {
+                "MorningHour": 9,
+                "MorningMinute": 0,
+                "EveningHour": 19,
+                "EveningMinute": 0
+            },
+            "Thursday": {
+                "MorningHour": 9,
+                "MorningMinute": 0,
+                "EveningHour": 21,
+                "EveningMinute": 0
+            },
+            "Friday": {
+                "MorningHour": 9,
+                "MorningMinute": 0,
+                "EveningHour": 19,
+                "EveningMinute": 0
+            },
+            "Saturday": {
+                "MorningHour": 9,
+                "MorningMinute": 0,
+                "EveningHour": 19,
+                "EveningMinute": 0
+            },
+            "Sunday": {
+                "MorningHour": 11,
+                "MorningMinute": 0,
+                "EveningHour": 18,
+                "EveningMinute": 30
+            }
         },
         {
             "Type": "nap::PlaneMesh",
@@ -3226,7 +3272,7 @@
             "Pass": "givemelight",
             "Port": 80,
             "Enabled": true,
-            "AllowFailure" : true,
+            "AllowFailure": true,
             "Sensors": [
                 "LuxSensor1"
             ]
@@ -3239,7 +3285,7 @@
             "Pass": "givemelight",
             "Port": 80,
             "Enabled": true,
-            "AllowFailure" : true,
+            "AllowFailure": true,
             "Sensors": [
                 "LuxSensor2"
             ]
@@ -3252,7 +3298,7 @@
             "Pass": "givemelight",
             "Port": 80,
             "Enabled": true,
-            "AllowFailure" : true,
+            "AllowFailure": true,
             "Sensors": [
                 "LuxSensor3"
             ]
