@@ -23,9 +23,9 @@ namespace nap
             std::vector<ResourcePtr<AudioObject>> mInputs;
             
         private:
-            std::unique_ptr<Node> createNode(int channel, NodeManager& nodeManager) override
+            NodePtr<Node> createNode(int channel, NodeManager& nodeManager) override
             {
-                auto node = std::make_unique<GainNode>(nodeManager);
+                auto node = make_node<GainNode>(nodeManager);
                 node->setGain(mGain[channel % mGain.size()]);
                 for (auto& input : mInputs)
                     if (input != nullptr)

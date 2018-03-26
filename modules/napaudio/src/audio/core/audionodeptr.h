@@ -38,6 +38,10 @@ namespace nap
         public:
             NodePtrBase() = default;
             
+            // Copy and move are not allowed because it would copy a unique_tr
+            NodePtrBase(const NodePtrBase& other) = delete;
+            NodePtrBase& operator=(const NodePtrBase& other) = delete;
+            
             /*
              * The destructor of the NodePtr base class. Instead of letting the managed unique_ptr<Node> destruct itself it is thrown into the NodeManager's trash bin, from which it will be deleted on the next audio callback.
              */
@@ -47,7 +51,15 @@ namespace nap
                     mPtr->getNodeManager().mNodeTrashBin.enqueue(std::move(mPtr));
             }
             
+
         protected:
+            template <typename OTHER>
+            void assign(NodePtr<OTHER>& other)
+            {
+                mPtr = std::move(other.mPtr);
+                other.mPtr = nullptr;
+            }
+            
             std::unique_ptr<Node> mPtr = nullptr; // The unique_ptr managed by the NodePtr internally
         };
         
@@ -71,50 +83,33 @@ namespace nap
                 mPtr = std::unique_ptr<T>(ptr);
             }
             
-            ~NodePtr() override
-            {
-                
-            }
-            
-            // Copy and move are not allowed because it would copy a unique_tr
-            NodePtr(const NodePtr<T>& other) = delete;
-            NodePtr<T>& operator=(const NodePtr<T>& other) = delete;
-
             // Move ctor is fine, as unique_ptr's can be moved
             NodePtr(NodePtr<T>&& other)
             {
-                mPtr = std::move(other.mPtr);
-                other.mPtr = nullptr;
+                assign(other);
             }
             
             // Move assignment operator
             NodePtr<T>& operator=(NodePtr<T>&& other)
             {
-                mPtr = std::move(other.mPtr);
-                other.mPtr = nullptr;
+                assign(other);
                 return *this;
             }
             
-            //////////////////////////////////////////////////////////////////////////
-            
-            // Regular move ctor taking different type
-            template<typename OTHER>
+            // Move ctor is fine, as unique_ptr's can be moved
+            template <typename OTHER>
             NodePtr(NodePtr<OTHER>&& other)
             {
-                mPtr = std::move(other.mPtr);
-                other.mPtr = nullptr;
+                assign(other);
             }
             
-            // Move assignment operator taking different type
-            template<typename OTHER>
+            // Move assignment operator
+            template <typename OTHER>
             NodePtr<T>& operator=(NodePtr<OTHER>&& other)
             {
-                mPtr = std::move(other.mPtr);
-                other.mPtr = nullptr;
+                assign(other);
                 return *this;
             }
-            
-            //////////////////////////////////////////////////////////////////////////
             
             const T& operator*() const
             {
