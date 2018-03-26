@@ -167,8 +167,13 @@ void napkin::setPointee(const napkin::PropertyPath& path, const Object* target)
 	rttr::method assign_method = nap::rtti::findMethodRecursive(resolved_path.getType(), "assign");
 	if (assign_method.is_valid())
 	{
+		// Assign the new value to the pointer (note that we're modifying a copy)
 		auto target_value = resolved_path.getValue();
 		assign_method.invoke(target_value, target->mID, *target);
+
+		// Apply the modified value back to the source property
+		bool value_set = resolved_path.setValue(target_value);
+		assert(value_set);
 	}
 	else
 	{
