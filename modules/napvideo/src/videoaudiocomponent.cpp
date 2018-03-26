@@ -22,11 +22,6 @@ namespace nap
         bool VideoAudioComponentInstance::init(utility::ErrorState& errorState)
         {
             auto resource = getComponent<VideoAudioComponent>();
-            if (!resource->mVideo->hasAudio())
-            {
-                errorState.fail("The video has no audio frame.");
-                return false;
-            }
             mNode = std::make_unique<VideoNode>(getNodeManager(), *resource->mVideo, resource->mChannelCount);
             return true;
         }
