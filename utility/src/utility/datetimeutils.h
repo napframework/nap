@@ -30,21 +30,42 @@ namespace nap
 		 * @return the current time as a time stamp, this time is acquired using the system clock.
 		 * this time can be converted in days, minutes etc using ctime related functions.
 		 */
-		extern SystemTimeStamp	getCurrentTime();
+		extern SystemTimeStamp getCurrentTime();
 
 		/**
 		 * @return a structure that contains the current date and time/
 		 * Note that the time will be Local to this computer and includes daylight savings
 		 */
-		extern DateTime			getCurrentDateTime();
+		extern DateTime	getCurrentDateTime();
 
 		/**
 		 * Populates a DateTime structure that contains the current date and time
 		 * Note that the time will be Local to this computer and includes daylight savings
 		 * @param dateTime the time structure to populate with the current date and time
-
 		 */
-		extern void				getCurrentDateTime(DateTime& outDateTime);
+		extern void	getCurrentDateTime(DateTime& outDateTime);
+
+		/**
+		 * Convert a timestamp to string using a string format simlar to strftime.
+		 * Also takes care of milliseconds using %ms
+		 * @param time the timestamp to format into a string
+		 * @param format the strftime-like format string
+		 * @param outstring the resulting string
+		 */
+		std::string timeFormat(const SystemTimeStamp& time, const std::string& format = "%Y-%m-%d %H:%M:%S.%ms");
+
+		/**
+		 * Create a timestamp from the given data
+		 * @param year the year as number (eg. 1970)
+		 * @param month the month as 1-based number (3 == march)
+		 * @param day the day of the month as 1-based number
+		 * @param hour the hour of the day
+		 * @param minute the minute of the hour
+		 * @param second the second of the minute
+		 * @param millisecond additional milliseconds
+		 * @return the complete timestamp
+		 */
+		SystemTimeStamp createTimestamp(int year, int month, int day, int hour, int minute, int second, int millisecond);
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -238,11 +259,11 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		/**
-		* Keeps track of time from the moment the timer is started
-		* This is a template Timer that can work with various chrono clocks
-		* Use the utility classes SystemTimer and HighResolutionTimer to work with specific clocks
+		* Keeps track of time from the moment the timer is started.
+		* This is a template Timer that can work with various chrono clocks.
+		* Use the utility classes SystemTimer and HighResolutionTimer to work with specific clocks.
 		* The template type T should be a specific type of chrono clock, ie: HighResolutionClock etc.
-		* This timer is not threaded and doesn't work with callbacks
+		* This timer is not threaded and doesn't work with callbacks.
 		*/
 		template<typename Clock>
 		class Timer
@@ -293,16 +314,16 @@ namespace nap
 		};
 
 		/**
-		* Keeps track of time from the moment the timer is started
-		* This timer uses the chrono SystemClock and should be sufficient for most time based operations
+		* Keeps track of time from the moment the timer is started.
+		* This timer uses the chrono SystemClock and should be sufficient for most time based operations.
 		* The timestamp associated with a SystemTimer can be converted to days, seconds, weeks etc.
 		*/
         using SystemTimer = Timer<SystemClock>;
 
 
 		/**
-		* Keeps track of time from the moment the timer is started
-		* This timer uses the chrono HighResolutionClock and should be used when extreme accuracy is important
+		* Keeps track of time from the moment the timer is started.
+		* This timer uses the chrono HighResolutionClock and should be used when extreme accuracy is important.
 		* The timestamp associated with a HighResolutionTime can not be converted to days, seconds, weeks etc.
 		*/
         using HighResolutionTimer = Timer<HighResolutionClock>;

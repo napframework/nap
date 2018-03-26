@@ -1,8 +1,9 @@
 #pragma once
 
 // External includes
-#include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 #include <utility/dllexport.h>
+#include <nap/resource.h>
 
 // Local includes
 #include "shader.h"
@@ -48,8 +49,8 @@ namespace nap
 	class NAPAPI MaterialInstanceResource
 	{
 	public:
-		std::vector<rtti::ObjectPtr<Uniform>>		mUniforms;										///< Property: "Uniforms" that you're overriding
-		rtti::ObjectPtr<Material>					mMaterial;										///< Property: "Material" that you're overriding uniforms from
+		std::vector<ResourcePtr<Uniform>>	mUniforms;										///< Property: "Uniforms" that you're overriding
+		ResourcePtr<Material>				mMaterial;										///< Property: "Material" that you're overriding uniforms from
 		EBlendMode							mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
 		EDepthMode							mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
 	};
@@ -124,9 +125,9 @@ namespace nap
 	* on the material, all the objects that use this material will use that value. To change uniform values
 	* per object, set uniform values on MaterialInstances.
 	*/
-	class NAPAPI Material : public rtti::RTTIObject, public UniformContainer
+	class NAPAPI Material : public Resource, public UniformContainer
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 
 		/**
@@ -191,11 +192,11 @@ namespace nap
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
 	public:
-		std::vector<rtti::ObjectPtr<Uniform>>			mUniforms;											///< Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Mapping from mesh vertex attr to shader vertex attr
-		rtti::ObjectPtr<Shader>						mShader = nullptr;									///< The shader that this material is using
-		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Blend mode for this material
-		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determines how the Z buffer is used									///< Holds all the uniform values
+		std::vector<ResourcePtr<Uniform>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
+		ResourcePtr<Shader>						mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
+		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material
+		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' Optional, determines how the Z buffer is used
 	};
 
 	//////////////////////////////////////////////////////////////////////////

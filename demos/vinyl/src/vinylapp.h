@@ -18,6 +18,8 @@
 
 namespace nap
 {
+	using namespace rtti;
+
 	/**
 	 * Demo application that is called from within the main loop
 	 *
@@ -93,18 +95,18 @@ namespace nap
 		// Updates color of the vinyl record
 		void setRecordColor();
 		
-		rtti::ObjectPtr<ImageFromFile>	mVinylLabelImg = nullptr;			//< Vinyl Label Image Resource
-		rtti::ObjectPtr<ImageFromFile>	mVinylCoverImg = nullptr;			//< Vinyl Cover Image Resource
+		ObjectPtr<ImageFromFile>	mVinylLabelImg = nullptr;			//< Vinyl Label Image Resource
+		ObjectPtr<ImageFromFile>	mVinylCoverImg = nullptr;			//< Vinyl Cover Image Resource
 		
 		RenderService*				mRenderService = nullptr;			//< Render Service that handles render calls
 		IMGuiService*				mGuiService = nullptr;				//< Gui Service handles all gui related update / drawing
 		ResourceManager*			mResourceManager = nullptr;			//< Manages all the loaded resources
 		SceneService*				mSceneService = nullptr;			//< Manages all the objects in the scene
 		
-		rtti::ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the spawned render window
-		rtti::ObjectPtr<EntityInstance>	mModelEntity = nullptr;				//< Pointer to the entity that holds all the vinyl parts
-		rtti::ObjectPtr<EntityInstance>	mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
-		rtti::ObjectPtr<EntityInstance>	mBackgroundEntity = nullptr;		//< Pointer to the entity that holds the background image
+		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the spawned render window
+		ObjectPtr<EntityInstance>	mModelEntity = nullptr;				//< Pointer to the entity that holds all the vinyl parts
+		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance>	mBackgroundEntity = nullptr;		//< Pointer to the entity that holds the background image
 
 		// Color of the vinyl record
 		nap::RGBColorFloat			mRecordColor = nap::RGBColorFloat(0.07f, 0.07f, 0.07f);

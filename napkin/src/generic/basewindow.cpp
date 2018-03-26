@@ -1,7 +1,6 @@
 #include "basewindow.h"
 #include "napkinglobals.h"
-#include <QSettings>
-
+#include "autosettings.h"
 
 
 napkin::BaseWindow::BaseWindow()
@@ -33,14 +32,12 @@ QDockWidget* napkin::BaseWindow::addDock(const QString& name, QWidget* widget, Q
 void napkin::BaseWindow::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
-	QSettings s;
-	restoreSettings(s);
+	AutoSettings::get().restore(*this);
 }
 
 void napkin::BaseWindow::closeEvent(QCloseEvent* event)
 {
-	QSettings s;
-	saveSettings(s);
+	AutoSettings::get().store(*this);
 	QWidget::closeEvent(event);
 }
 

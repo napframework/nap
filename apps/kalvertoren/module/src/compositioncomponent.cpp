@@ -76,7 +76,7 @@ namespace nap
 			case CompositionCycleMode::Random:
 			{
 				int new_idx = mCurrentIndex;
-				while (new_idx == mCurrentIndex)
+				while (sample_container.count() > 1 && new_idx == mCurrentIndex)
 				{
 					new_idx = math::random<int>(0, sample_container.count() - 1);
 				}
@@ -122,6 +122,11 @@ namespace nap
 
 		// Connect to finished signal
 		mCompositionInstance->finished.connect(mCompositionFinishedSlot);
+		
+		// Notify listeners
+		mSelectionChanged.trigger(*this);
+
+		// We've switched
 		mSwitch = false;
 	}
 

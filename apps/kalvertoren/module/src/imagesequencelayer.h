@@ -91,6 +91,11 @@ namespace nap
 		 */
 		virtual const nap::Texture2D&	getTexture() const override			{ return *mCurrentFrameTexture; }
 
+		/**
+		 *	@return Sequence progress in the 0-1 range
+		 */
+		float							getProgress();
+
 		// Signal that is triggered when the sequence completed
 		nap::Signal<ImageSequenceLayerInstance&> completed;
 

@@ -12,4 +12,28 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)
+# Get our modules list from project.json
+project_json_to_cmake()
+
+target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES} nrender)
+
+# Build into a project directory under bin
+set_output_directories()
+
+if (WIN32)
+    # Copy freeimage DLL
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
+
+    # Copy over some crap window dlls
+    copy_base_windows_graphics_dlls()
+
+    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
+    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
+    bulk_copy_windows_dlls_to_bin()
+elseif(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()
+endif()
+
+copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)

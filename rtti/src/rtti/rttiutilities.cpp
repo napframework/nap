@@ -1,5 +1,5 @@
 #include <rtti/rttiutilities.h>
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 
 namespace nap
 {
@@ -19,7 +19,7 @@ namespace nap
 		 *
 		 */
 		template<class FUNC>
-		void VisitRTTIPropertiesRecursive(const rtti::Property& property, const Variant& variant, RTTIPath& path, FUNC& visitFunc)
+		void VisitRTTIPropertiesRecursive(const rtti::Property& property, const Variant& variant, Path& path, FUNC& visitFunc)
 		{
 			// Extract wrapped type
 			auto value_type = variant.get_type();
@@ -84,7 +84,7 @@ namespace nap
 		 *
 		 */
 		template<class FUNC>
-		void VisitRTTIProperties(const Instance& instance, RTTIPath& path, FUNC& visitFunc)
+		void VisitRTTIProperties(const Instance& instance, Path& path, FUNC& visitFunc)
 		{
 			// Recursively visit each property of the type
 			for (const rtti::Property& property : instance.get_derived_type().get_properties())
@@ -113,31 +113,31 @@ namespace nap
 		struct ObjectLinkVisitor
 		{
 		public:
-			ObjectLinkVisitor(const rtti::RTTIObject& sourceObject, std::vector<ObjectLink>& objectLinks) :
+			ObjectLinkVisitor(const rtti::Object& sourceObject, std::vector<ObjectLink>& objectLinks) :
 				mSourceObject(sourceObject),
 				mObjectLinks(objectLinks)
 			{
 			}
 
-			void operator()(const Instance& instance, const Property& property, const Variant& value, const RTTIPath& path)
+			void operator()(const Instance& instance, const Property& property, const Variant& value, const Path& path)
 			{
 				auto actual_type = value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
 				if (!actual_type.is_pointer())
 					return;
 
 				Variant actual_value = value.get_type().is_wrapper() ? value.extract_wrapped_value() : value;
-				assert(actual_value.get_type().is_derived_from<rtti::RTTIObject>());
+				assert(actual_value.get_type().is_derived_from<rtti::Object>());
 
 				// rttr::Variant::convert<T> fails and returns garbage if the current value of the pointer is a nullptr.
 				// The non-templated convert function instead returns a bool to indicate succss/failure, so we use that one here
-				RTTIObject* target = nullptr;
+				Object* target = nullptr;
 				actual_value.convert(target);
 
 				mObjectLinks.push_back({ &mSourceObject, path, target });
 			}
 
 		private:
-			const rtti::RTTIObject&		mSourceObject;	// The object we're visiting (i.e. the source of any link found)
+			const rtti::Object&		mSourceObject;	// The object we're visiting (i.e. the source of any link found)
 			std::vector<ObjectLink>&	mObjectLinks;	// Array of all links found
 		};
 
@@ -153,7 +153,7 @@ namespace nap
 			{
 			}
 
-			void operator()(const Instance& instance, const Property& property, const Variant& value, const RTTIPath& path)
+			void operator()(const Instance& instance, const Property& property, const Variant& value, const Path& path)
 			{
 				if (!rtti::hasFlag(property, rtti::EPropertyMetaData::FileLink))
 					return;
@@ -173,7 +173,7 @@ namespace nap
 		* Helper function to recursively check whether two variants (i.e. values) are equal
 		* Correctly deals with arrays and nested compounds, but note: does not follow pointers
 		*/
-		bool areVariantsEqualRecursive(const RTTIObject* unresolvedPointerRootObject, const rtti::Variant& variantA, const rtti::Variant& variantB, RTTIPath& currentRTTIPath, const rtti::UnresolvedPointerList& unresolvedPointers)
+		bool areVariantsEqualRecursive(const Object* unresolvedPointerRootObject, const rtti::Variant& variantA, const rtti::Variant& variantB, Path& currentRTTIPath, const rtti::UnresolvedPointerList& unresolvedPointers)
 		{
 			// Extract wrapped type
 			auto value_type = variantA.get_type();
@@ -221,10 +221,10 @@ namespace nap
 					rtti::Variant value_b = is_wrapper ? variantB.extract_wrapped_value() : variantB;
 
 					// Can only compare pointers that are of type Object
-					assert(value_a.get_type().is_derived_from<rtti::RTTIObject>() && value_b.get_type().is_derived_from<rtti::RTTIObject>());
+					assert(value_a.get_type().is_derived_from<rtti::Object>() && value_b.get_type().is_derived_from<rtti::Object>());
 
 					// Extract the objects
-					rtti::RTTIObject* object_a = value_a.get_value<rtti::RTTIObject*>();
+					rtti::Object* object_a = value_a.get_value<rtti::Object*>();
 					if (object_a == nullptr)
 					{
 						int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, unresolvedPointerRootObject, currentRTTIPath);
@@ -236,7 +236,7 @@ namespace nap
 						target_a_id = object_a->mID;
 					}
 
-					rtti::RTTIObject* object_b = value_b.get_value<rtti::RTTIObject*>();
+					rtti::Object* object_b = value_b.get_value<rtti::Object*>();
 					if (object_b != nullptr)
 						target_b_id = object_b->mID;
 
@@ -271,7 +271,7 @@ namespace nap
 		/**
 		* Copies rtti attributes from one object to another.
 		*/
-		void copyObject(const rtti::RTTIObject& srcObject, rtti::RTTIObject& dstObject)
+		void copyObject(const rtti::Object& srcObject, rtti::Object& dstObject)
 		{
 			rtti::TypeInfo type = srcObject.get_type();
 			assert(type == dstObject.get_type());
@@ -292,12 +292,12 @@ namespace nap
 		 * @param objectB: second object to compare attributes from.
 		 * @param unresolvedPointers: list of unresolved pointers as returned from readJSONFile.
 		 */
-		bool areObjectsEqual(const rtti::RTTIObject& objectA, const rtti::RTTIObject& objectB, const rtti::UnresolvedPointerList& unresolvedPointers)
+		bool areObjectsEqual(const rtti::Object& objectA, const rtti::Object& objectB, const rtti::UnresolvedPointerList& unresolvedPointers)
 		{
 			rtti::TypeInfo typeA = objectA.get_type();
 			assert(typeA == objectB.get_type());
 
-			RTTIPath path;
+			Path path;
 			for (const rtti::Property& property : typeA.get_properties())
 			{
 				path.pushAttribute(property.get_name().data());
@@ -317,11 +317,11 @@ namespace nap
 		/**
 		* Searches through object's rtti attributes for attribute that have the 'file link' tag.
 		*/
-		void findFileLinks(const rtti::RTTIObject& object, std::vector<std::string>& fileLinks)
+		void findFileLinks(const rtti::Object& object, std::vector<std::string>& fileLinks)
 		{
 			fileLinks.clear();
 
-			RTTIPath path;
+			Path path;
 			FileLinkVisitor visitor(fileLinks);
 			VisitRTTIProperties(object, path, visitor);
 		}
@@ -330,20 +330,20 @@ namespace nap
 		/**
 		* Searches through object's rtti attributes for pointer attributes.
 		*/
-		void findObjectLinks(const rtti::RTTIObject& object, std::vector<ObjectLink>& objectLinks)
+		void findObjectLinks(const rtti::Object& object, std::vector<ObjectLink>& objectLinks)
 		{
 			objectLinks.clear();
 
-			RTTIPath path;
+			Path path;
 			ObjectLinkVisitor visitor(object, objectLinks);
 			VisitRTTIProperties(object, path, visitor);
 		}
 
 
-		void getPointeesRecursive(const rtti::RTTIObject& object, std::vector<rtti::RTTIObject*>& pointees)
+		void getPointeesRecursive(const rtti::Object& object, std::vector<rtti::Object*>& pointees)
 		{
-			std::unordered_set<const rtti::RTTIObject*> objects_to_visit_set;
-			std::vector<const rtti::RTTIObject*> objects_to_visit;
+			std::unordered_set<const rtti::Object*> objects_to_visit_set;
+			std::vector<const rtti::Object*> objects_to_visit;
 
 			objects_to_visit_set.insert(&object);
 			objects_to_visit.push_back(&object);
@@ -423,7 +423,7 @@ namespace nap
 		/**
 		 * Helper to find the index of the unresolved pointer with the specified object and path combination
 		 */
-		int findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const RTTIObject* object, const rtti::RTTIPath& path)
+		int findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const Object* object, const rtti::Path& path)
 		{
 			for (int index = 0; index < unresolvedPointers.size(); ++index)
 			{
@@ -438,7 +438,9 @@ namespace nap
 
 		void getDerivedTypesRecursive(const rtti::TypeInfo& baseType, std::vector<rtti::TypeInfo>& types)
 		{
-			types.push_back(baseType);
+			// Don't add same type more than once (eg. in case of multiple inheritance)
+			if (std::find(types.begin(), types.end(), baseType) == types.end())
+				types.push_back(baseType);
 
 			for (const rtti::TypeInfo& derived_type : baseType.get_derived_classes())
 				getDerivedTypesRecursive(derived_type, types);

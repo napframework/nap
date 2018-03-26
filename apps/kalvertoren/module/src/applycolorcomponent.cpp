@@ -7,6 +7,7 @@
 RTTI_BEGIN_CLASS(nap::ApplyColorComponent)
 	RTTI_PROPERTY("Mesh", &nap::ApplyColorComponent::mMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Selector", &nap::ApplyColorComponent::mSelector, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LightRegulator", &nap::ApplyColorComponent::mLightRegulator, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::colormeshcomponentInstance run time class definition 

@@ -10,7 +10,6 @@ RTTI_BEGIN_CLASS(nap::ApplyCompositionComponent)
 	RTTI_PROPERTY("CompositionRenderer",	&nap::ApplyCompositionComponent::mCompositionRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorPaletteComponent",	&nap::ApplyCompositionComponent::mColorPaletteComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShowIndexColors",		&nap::ApplyCompositionComponent::mShowIndexColors,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Intensity",				&nap::ApplyCompositionComponent::mIntensity,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::applycompositioncomponentInstance run time class definition 
@@ -36,9 +35,6 @@ namespace nap
 
 		// Copy if we want to show index colors
 		mShowIndexColors = getComponent<ApplyCompositionComponent>()->mShowIndexColors;
-
-		// Copy colors and intensity
-		mIntensity = getComponent<ApplyCompositionComponent>()->mIntensity;
 		return true;
 	}
 
@@ -75,6 +71,9 @@ namespace nap
 		auto source_pixel = mBitmap.makePixel();
 		assert(mBitmap.mType == Bitmap::EDataType::BYTE);
 
+		// Get brightness
+		float brightness = mLightRegulator->getBrightness();
+
 		TriangleIterator triangle_iterator(mesh.getMeshInstance());
 		while (!triangle_iterator.isDone())
 		{
@@ -108,19 +107,19 @@ namespace nap
 
 			// Set the color data used to display the mesh in the viewport
 			glm::vec4 mesh_color = glm::vec4(
-				rgb_colorf.getRed()	  * mIntensity,
-				rgb_colorf.getGreen() * mIntensity,
-				rgb_colorf.getBlue()  * mIntensity,
+				rgb_colorf.getRed()	  * brightness,
+				rgb_colorf.getGreen() * brightness,
+				rgb_colorf.getBlue()  * brightness,
 				1.0f);
 			
 			triangle.setVertexData(color_data, mesh_color);
 
 			// Set the color data that is used to send over artnet
 			glm::vec4 artnet_color = glm::vec4(
-				led_colorf.getRed()	  * mIntensity, 
-				led_colorf.getGreen() * mIntensity,
-				led_colorf.getBlue()  * mIntensity,
-				led_colorf.getAlpha() * mIntensity);
+				led_colorf.getRed()	  * brightness,
+				led_colorf.getGreen() * brightness,
+				led_colorf.getBlue()  * brightness,
+				led_colorf.getAlpha() * brightness);
 			
 			triangle.setVertexData(artnet_data, artnet_color);
 		}

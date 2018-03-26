@@ -3,6 +3,7 @@
 #include "mainwindow.h"
 
 #include <QFontDatabase>
+#include <utility/fileutils.h>
 
 using namespace napkin;
 
@@ -11,6 +12,9 @@ using namespace napkin;
  */
 int main(int argc, char* argv[])
 {
+	// Start logging to file
+	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
+
 	// nap::Core is declared in AppContext
 	QApplication::setOrganizationName("NaiviSoftware");
 	QApplication::setApplicationName("Napkin");
