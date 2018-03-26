@@ -15,21 +15,29 @@ namespace nap
         
         class EnvelopeInstance;
         
+        /**
+         * Audio object resource for an envelope generator.
+         */
         class Envelope : public AudioObject
         {
             RTTI_ENABLE(AudioObject)
         public:
             Envelope() = default;
             
-            EnvelopeGenerator::Envelope mSegments;
+            EnvelopeGenerator::Envelope mSegments; ///< The segments that define the envelope's shape.
             
-            bool mAutoTrigger = false;
+            bool mAutoTrigger = false; ///< If true the envelope will be triggered automatically on initialization
             
         private:
+            // Inherited from AudioObject
             std::unique_ptr<AudioObjectInstance> createInstance();
         };
         
         
+        
+        /**
+         * Instance of an envelope generator.
+         */
         class EnvelopeInstance : public AudioObjectInstance
         {
             RTTI_ENABLE(AudioObjectInstance)
@@ -38,7 +46,7 @@ namespace nap
             
             bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override
             {
-                mEnvelopeGenerator = std::make_unique<EnvelopeGenerator>(nodeManager);
+                mEnvelopeGenerator = make_node<EnvelopeGenerator>(nodeManager);
                 auto resource = rtti_cast<Envelope>(&getResource());
                 if (resource->mAutoTrigger)
                     mEnvelopeGenerator->trigger(resource->mSegments);
@@ -61,7 +69,7 @@ namespace nap
             nap::Signal<EnvelopeGenerator&>& getEnvelopeFinishedSignal() { return mEnvelopeGenerator->envelopeFinishedSignal; }
             
         private:
-            std::unique_ptr<EnvelopeGenerator> mEnvelopeGenerator = nullptr;
+            NodePtr<EnvelopeGenerator> mEnvelopeGenerator = nullptr;
         };
         
     }
