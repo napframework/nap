@@ -160,7 +160,7 @@ def package_for_macos(package_basename, timestamp, git_revision, include_apps, i
     else:
         archive_to_timestamped_dir(package_basename)
 
-def package_for_win64(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release, include_timestamp_in_name):
+def package_for_win64(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release):
     """Package NAP platform release for Windows"""
 
     # Create build dir if it doesn't exist
