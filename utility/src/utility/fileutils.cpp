@@ -30,6 +30,7 @@
 	#include <unistd.h>
 	#include <mach-o/dyld.h>
 #else
+    #include <unistd.h>
     #include <dirent.h>
     #include <fstream>
 #endif
