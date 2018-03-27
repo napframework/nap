@@ -98,6 +98,8 @@ namespace nap
         void NodeManager::registerRootNode(Node& rootNode)
         {
             auto rootNodePtr = &rootNode;
+            
+            // We postpone this to the audio thread for thread safety, to make sure it's not called while processing
             execute([&, rootNodePtr](){ mRootNodes.emplace(rootNodePtr); });
         }
 
@@ -105,7 +107,9 @@ namespace nap
         void NodeManager::unregisterRootNode(Node& rootNode)
         {
             auto rootNodePtr = &rootNode;
-            execute([&, rootNodePtr](){ mRootNodes.erase(rootNodePtr); });
+            
+            // Nodes are always destructed by the audio thread, so we can execute this immediately
+            mRootNodes.erase(rootNodePtr);
         }
 
         
