@@ -17,6 +17,7 @@ namespace nap
 {	
 	class Core;
 	class Scene;
+	class Device;
 
 	class RTTIObjectGraphItem;
 	template<typename ITEM> class ObjectGraph;
@@ -111,7 +112,6 @@ namespace nap
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
-		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		EFileModified isFileModified(const std::string& modifiedFile);
@@ -123,17 +123,21 @@ namespace nap
 		 * Helper class that patches object pointers back to the objects as present in the resource manager.
 		 * When clear is called, no rollback is performed.
 		 */
-		struct RollbackHelper
+		struct RollbackHelper final
 		{
 		public:
 			RollbackHelper(ResourceManager& service);
 			~RollbackHelper();
 
 			void clear();
+			void addExistingDevice(Device& device);
+			void addNewDevice(Device& device);
 
 		private:
-			ResourceManager& mService;
-			bool mPatchObjects = true;
+			ResourceManager&		mService;
+			std::vector<Device*>	mExistingDevices;
+			std::vector<Device*>	mNewDevices;
+			bool					mRollbackObjects = true;
 		};
 
 		using ModifiedTimeMap = std::unordered_map<std::string, uint64>;
