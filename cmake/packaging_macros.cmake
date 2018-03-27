@@ -64,6 +64,8 @@ macro(package_nap)
     # Install IDE templates
     if(WIN32)
         install(DIRECTORY ${NAP_ROOT}/idetemplates/vstemplates/ DESTINATION visualStudioTemplates)
+    elseif(APPLE)
+        install(DIRECTORY ${NAP_ROOT}/idetemplates/xcodetemplates/ DESTINATION xcodeTemplates)
     endif()
 endmacro()
 
