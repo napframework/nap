@@ -286,7 +286,7 @@ macro(project_json_to_cmake)
 
     # Parse our project.json and import it
     if(WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python.exe)
     elseif(UNIX)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
     endif()
