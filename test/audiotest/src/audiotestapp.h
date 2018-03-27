@@ -13,7 +13,7 @@
 const std::string appJson = "pythonsequencer.json";
 //const std::string appJson = "ambientdrone.json";
 //const std::string appJson = "midilogging.json";
-const std::string appJson = "pythonosc.json";
+//const std::string appJson = "pythonosc.json";
 //const std::string appJson = "pythonmidi.json";
 
 
