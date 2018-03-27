@@ -34,7 +34,7 @@ namespace nap
             {
                 auto node = make_node<BufferPlayerNode>(nodeManager);
                 if (mAutoPlay)
-                    node->play(mBufferResource->getBuffer()[channel], 0, 1.);
+                    node->play(mBufferResource->getBuffer().getChannelPtr(channel), 0, 1.);
                 return std::move(node);
             }
             
