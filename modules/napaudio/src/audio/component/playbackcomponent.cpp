@@ -113,7 +113,7 @@ namespace nap
                 mCurrentPlayingTime = 0;
                 for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
                 {
-                    mBufferPlayers[channel]->play(resource->mBuffer->getBuffer()[resource->mChannelRouting[channel]], startPosition * nodeManager->getSamplesPerMillisecond(), actualSpeed);
+                    mBufferPlayers[channel]->play(resource->mBuffer->getBuffer().getChannelPtr(resource->mChannelRouting[channel]), startPosition * nodeManager->getSamplesPerMillisecond(), actualSpeed);
                 }
                 applyGain(mFadeInTime);
             });
