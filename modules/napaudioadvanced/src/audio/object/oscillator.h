@@ -18,7 +18,10 @@ namespace nap
             RTTI_ENABLE(MultiChannelObject)
             
         public:
-            Oscillator() = default;
+            Oscillator()
+            {
+                mWaveTable = std::make_shared<WaveTable>(2048);
+            }
             
             int mChannelCount = 1;
             std::vector<ControllerValue> mFrequency = { 220.f };
@@ -40,7 +43,7 @@ namespace nap
             }
             
             int getChannelCount() const override { return mChannelCount; }
-            WaveTable mWaveTable  = { 2048 };
+            std::shared_ptr<WaveTable> mWaveTable = nullptr;
         };
         
        

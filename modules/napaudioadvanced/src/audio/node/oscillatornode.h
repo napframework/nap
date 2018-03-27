@@ -62,7 +62,7 @@ namespace nap
             /**
              * Constructor takes the waveform of the oscillator
              */
-            OscillatorNode(NodeManager& aManager, WaveTable& aWave);
+            OscillatorNode(NodeManager& aManager, std::shared_ptr<WaveTable>& aWave);
             
             /**
              * Set the frequency in Hz
@@ -82,11 +82,11 @@ namespace nap
             /**
              * Set a new waveform for the oscillator
              */
-            void setWave(WaveTable& aWave);
+            void setWave(std::shared_ptr<WaveTable>& aWave);
             
             ControllerValue getFrequency() const { return mFrequency; }
             ControllerValue getAmplitude() const { return mAmplitude; }
-            ControllerValue getPhase() const { return mPhaseOffset / float(mWave.getSize()); }
+            ControllerValue getPhase() const { return mPhaseOffset / float(mWave->getSize()); }
 
             InputPin fmInput;
             OutputPin output = { this };
@@ -95,7 +95,8 @@ namespace nap
             void process() override;
             void sampleRateChanged(float sampleRate) override;
 
-            WaveTable& mWave;
+            // WaveTable has to be a shared pointer because audio nodes destruction is always deferred until the next audio callback
+            std::shared_ptr<WaveTable> mWave;
 
             ControllerValue mFrequency = { 0 };
             ControllerValue mAmplitude = { 1.f };
