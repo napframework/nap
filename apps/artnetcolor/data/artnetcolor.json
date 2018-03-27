@@ -7,36 +7,72 @@
 			"Width" : 512,
 			"Height" : 512,
 			"Title" : "ArtnetColor",
-			"Sync" : "false"
+			"Sync" : "true"
 		},
-		
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe0",
-			"Subnet" 	: 0,
-			"Universe" 	: 0,
-			"Frequency" : 44,
-			"WaitTime"	: 0.5
-		},
-
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe1",
-			"Subnet" 	: 0,
-			"Universe" 	: 1,
-			"Frequency" : 44,
-			"WaitTime"	: 0.5
-		},
-
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe2",
-			"Subnet" 	: 0,
-			"Universe" 	: 2,
-			"Frequency" : 44,
-			"WaitTime"	: 0.5
-		},
-
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe0",
+            "Subnet": 0,
+            "Universe": 0,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe1",
+            "Subnet": 0,
+            "Universe": 1,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe2",
+            "Subnet": 0,
+            "Universe": 2,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe3",
+            "Subnet": 0,
+            "Universe": 3,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe4",
+            "Subnet": 0,
+            "Universe": 4,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe5",
+            "Subnet": 0,
+            "Universe": 5,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe6",
+            "Subnet": 0,
+            "Universe": 6,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe8",
+            "Subnet": 0,
+            "Universe": 8,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
 		{
 			"Type" : "nap::Shader",
 			"mID": "PlaneShader",
@@ -122,33 +158,98 @@
 				},
 				{
 					"Type" : "nap::SelectColorComponent",
-					"Controller" : "Universe0",
 					"Mesh" : "RenderPlane",
-					"Channel" : 0,
-					"Red" : 255,
-					"Green" : 0,
-					"Blue" : 0,
-					"White" : 0
+					"Color":
+					{
+						"Values" :
+						[
+							1.0,
+							0.0,
+							0.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
 				},
 				{
 					"Type" : "nap::SelectColorComponent",
-					"Controller" : "Universe1",
 					"Mesh" : "RenderPlane",
-					"Channel" : 0,
-					"Red" : 0,
-					"Green" : 255,
-					"Blue" : 0,
-					"White" : 0
+					"Color":
+					{
+						"Values" :
+						[
+							0.0,
+							1.0,
+							0.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
 				},
 				{
 					"Type" : "nap::SelectColorComponent",
-					"Controller" : "Universe2",
 					"Mesh" : "RenderPlane",
-					"Channel" : 0,
-					"Red" : 0,
-					"Green" : 0,
-					"Blue" : 255,
-					"White" : 0
+					"Color":
+					{
+						"Values" :
+						[
+							0.0,
+							0.0,
+							1.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Mesh" : "RenderPlane",
+					"Color":
+					{
+						"Values" :
+						[
+							1.0,
+							0.0,
+							1.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
+				},
+				{
+					"Type" : "nap::SendColorComponent",
+					"Span" : 2,
+					"Controllers" : 
+					[
+						"Universe0",
+						"Universe1",
+						"Universe2",
+						"Universe3",
+						"Universe4",
+						"Universe5",
+						"Universe6",
+						"Universe8"
+					]
 				}
 			]
 		},

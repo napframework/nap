@@ -76,8 +76,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Pointer to the entity that holds the plane
 		rtti::ObjectPtr<ArtNetController> mArtnetController = nullptr;	//< The art-net controller
 
-		std::vector<glm::vec3> mColor;								//< Current Color for every selection component
-		std::vector<int> mWhite;									//< Current white level for every selection component
+		std::vector<int> mWhiteValues;
 
 		// Window event handling
 		void handleWindowEvent(const WindowEvent& windowEvent);
