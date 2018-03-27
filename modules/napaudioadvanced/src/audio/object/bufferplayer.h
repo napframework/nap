@@ -30,14 +30,8 @@ namespace nap
             bool mAutoPlay = true; /**<  If true, the object will start playing back immediately after initialization. */
             
         private:
-            NodePtr<Node> createNode(int channel, NodeManager& nodeManager) override
-            {
-                auto node = make_node<BufferPlayerNode>(nodeManager);
-                if (mAutoPlay)
-                    node->play(mBufferResource->getBuffer().getChannelPtr(channel), 0, 1.);
-                return std::move(node);
-            }
-            
+            // Inherited from MultiChannelObject
+            NodePtr<Node> createNode(int channel, NodeManager& nodeManager);
             int getChannelCount() const override { return mChannelCount; }
         };
         

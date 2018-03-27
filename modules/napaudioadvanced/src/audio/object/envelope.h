@@ -44,32 +44,38 @@ namespace nap
         public:
             EnvelopeInstance(Envelope& resource) : AudioObjectInstance(resource) { }
             
-            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override
-            {
-                mEnvelopeGenerator = make_node<EnvelopeGenerator>(nodeManager);
-                auto resource = rtti_cast<Envelope>(&getResource());
-                if (resource->mAutoTrigger)
-                    mEnvelopeGenerator->trigger(resource->mSegments);
-                return true;
-            }                        
-            
+            // Inherited from AudioObjectInstance
+            bool init(NodeManager& nodeManager, utility::ErrorState& errorState);
             OutputPin& getOutputForChannel(int channel) override { return mEnvelopeGenerator->output; }
             int getChannelCount() const override { return 1; }
             
+            /**
+             * Triggers the envelope to start playing from the start segment.
+             * If @totalDuration does not equal zero the relative durations in the segments will be scaled in order to get the total duration of the envelope to match this parameter.
+             */
             void trigger(TimeValue totalDuration = 0)
             {
-                auto& envelope = rtti_cast<Envelope>(&getResource())->mSegments;
-                mEnvelopeGenerator->trigger(envelope, totalDuration);
+                mEnvelopeGenerator->trigger(mSegments, totalDuration);
             }
             
+            /**
+             * Stops playing the envelope by fading to zero within @rampTime.
+             */
             void stop(TimeValue rampTime) { mEnvelopeGenerator->stop(rampTime); }
             
+            /**
+             * Returns the current output value of the envelope generator.
+             */
             ControllerValue getValue() const { return mEnvelopeGenerator->getValue(); }
-            
+
+            /**
+             * Returns a signal that will be emitted when the total envelope shape has finished and the generator outputs zero again.
+             */
             nap::Signal<EnvelopeGenerator&>& getEnvelopeFinishedSignal() { return mEnvelopeGenerator->envelopeFinishedSignal; }
             
         private:
             NodePtr<EnvelopeGenerator> mEnvelopeGenerator = nullptr;
+            std::shared_ptr<EnvelopeGenerator::Envelope> mSegments = nullptr;
         };
         
     }
