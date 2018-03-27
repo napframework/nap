@@ -1373,3 +1373,7 @@ svg .graph .node text {
 svg .graph .edge text {
     fill: #8b8ca0;
 }
+div.contents code {
+    font-size: 0.9rem;
+    color: #c68787;
+}
