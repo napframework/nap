@@ -1,8 +1,8 @@
 #pragma once
 
 // External Includes
-#include <nap/resource.h>
 #include <rtti/factory.h>
+#include <nap/device.h>
 
 namespace nap
 {
@@ -15,9 +15,9 @@ namespace nap
 	 *
 	 * See comments in ArtNetService on addressing on how data is eventually sent over the network.
 	 */
-	class NAPAPI ArtNetController : public Resource
+	class NAPAPI ArtNetController : public Device
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(Device)
 
 	public:
 		using ByteChannelData = std::vector<uint8_t>;
@@ -30,14 +30,14 @@ namespace nap
 		// Constructor used by factory
 		ArtNetController(ArtNetService& service);
 
-		~ArtNetController();
-
 		/**
-		 * Creates a mapping to the subnet and address. 
+		 * Creates a mapping to the subnet and address.
 		 * @param errorState Contains error information in case the function returns false.
 		 * @return true on success, false otherwise. In case of an error, @errorState contains error information.
 		 */
-		bool init(nap::utility::ErrorState& errorState);
+		virtual bool start(nap::utility::ErrorState& errorState) override;
+
+		virtual void stop() override;
 
 		/**
 		 * Sends normalized float channel data (ranging from 0.0 to 1.0) over the artnet network. Internally, the float data

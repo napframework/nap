@@ -21,18 +21,8 @@ namespace nap
 	{
 	}
 
-
-	ArtNetController::~ArtNetController()
-	{
-		if (mNode != nullptr)
-		{
-			mService->removeController(*this);
-			artnet_destroy(mNode);			
-		}
-	}
-
-
-	bool ArtNetController::init(nap::utility::ErrorState& errorState)
+ 
+	bool ArtNetController::start(nap::utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mSubnet < 16, "%s: Subnet must be between 0 and 16", mID.c_str()))
 			return false;
@@ -40,13 +30,14 @@ namespace nap
 		if (!errorState.check(mUniverse < 16, "%s: Universe must be between 0 and 16", mID.c_str()))
 			return false;
 
+		assert(mNode == nullptr);
 		mNode = artnet_new(NULL, 0);
 
 		artnet_set_short_name(mNode, "artnet-nap");
 		artnet_set_long_name(mNode, "Artnet NAP Node");
 		artnet_set_node_type(mNode, ARTNET_SRV);
-		artnet_set_port_type(mNode, 0, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX);		
-		
+		artnet_set_port_type(mNode, 0, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX);
+
 		// Set artnet port
 		if (!errorState.check(artnet_set_port_addr(mNode, 0, ARTNET_INPUT_PORT, mUniverse) == 0, "Unable to set port address of ArtNode: %s error: %s", mID.c_str(), artnet_strerror()))
 			return false;
@@ -58,11 +49,22 @@ namespace nap
 		// Start running
 		if (!errorState.check(artnet_start(mNode) == 0, "Unable to start ArtNode node %s, error: %s", mID.c_str(), artnet_strerror()))
 			return false;
-		
+
 		if (!mService->addController(*this, errorState))
 			return false;
 
 		return true;
+	}
+
+
+	void ArtNetController::stop()
+	{
+		if (mNode != nullptr)
+		{
+			mService->removeController(*this);
+			artnet_destroy(mNode);
+			mNode = nullptr;
+		}
 	}
 
 

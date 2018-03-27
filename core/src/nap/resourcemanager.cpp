@@ -10,6 +10,7 @@
 #include <rtti/pythonmodule.h>
 #include <rtti/linkresolver.h>
 #include <nap/core.h>
+#include <nap/device.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -66,14 +67,37 @@ namespace nap
 
 	ResourceManager::RollbackHelper::~RollbackHelper()
 	{
-		if (mPatchObjects)
-			rtti::ObjectPtrManager::get().patchPointers(mService.mObjects);
+		if (!mRollbackObjects)
+			return;
+
+		for (Device* new_device : mNewDevices)
+			new_device->stop();
+
+		utility::ErrorState errorState;
+		for (Device* existing_device : mExistingDevices)
+		{
+			bool result = existing_device->start(errorState);
+			assert(result);
+		}
+
+		rtti::ObjectPtrManager::get().patchPointers(mService.mObjects);
 	}
 
 
 	void ResourceManager::RollbackHelper::clear()
 	{
-		mPatchObjects = false;
+		mRollbackObjects = false;
+	}
+
+
+	void ResourceManager::RollbackHelper::addExistingDevice(Device& device)
+	{
+		mExistingDevices.push_back(&device);
+	}
+
+	void ResourceManager::RollbackHelper::addNewDevice(Device& device)
+	{
+		mNewDevices.push_back(&device);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -181,31 +205,6 @@ namespace nap
 	}
 
 
-	// inits all objects 
-	bool ResourceManager::initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
-	{
-        // Init all objects in the correct order
-        for (const std::string& id : objectsToInit)
-        {
-	        rtti::Object* object = nullptr;
-        
-	        // We perform lookup by ID. Objects in objectsToUpdate have preference over the manager's objects.
-	        ObjectByIDMap::const_iterator updated_object = objectsToUpdate.find(id);
-	        if (updated_object != objectsToUpdate.end())
-		        object = updated_object->second.get();
-	        else
-		        object = findObject(id).get();
-
-			if (!object->init(errorState)) {
-				Logger::warn("Couldn't initialise object '%s'", id.c_str());
-		        return false;
-			}
-        }
-
-        return true;
-	}
-
-
 	bool ResourceManager::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
@@ -226,7 +225,7 @@ namespace nap
 		// The reason why we cannot first resolve and then compare, is because deciding what to resolve against what objects
 		// depends on the dirty comparison.
 		// Finally, we could improve on the unresolved pointer check if we could introduce actual UnresolvedPointer objects
-		// that the pointers are pointing to after loading. These would hol3d the ID, so that comparisons could be made easier.
+		// that the pointers are pointing to after loading. These would hold the ID, so that comparisons could be made easier.
 		// The reason we don't do this is because it isn't possible to do so in RTTR as it's very strict in it's type safety.
 		ObjectByIDMap objects_to_update;
 		for (auto& read_object : read_result.mReadObjects)
@@ -281,8 +280,7 @@ namespace nap
 
 				std::unique_ptr<Object> cloned_object = rtti::cloneObject(*object, getFactory());
 				
-				// TEMP HACK: Replace original object in object graph with the cloned version. This fixes problems when real-time editing components. 
-				// This should be replaced with a rebuild of the object graph, but that change is on another branch
+				// Replace original object in object graph with the cloned version. This fixes problems when real-time editing components. 
 				RTTIObjectGraph::Node* originalObjectNode = object_graph.findNode(object->mID);
 				assert(originalObjectNode && originalObjectNode->mItem.mType == RTTIObjectGraphItem::EType::Object);
 
@@ -291,12 +289,48 @@ namespace nap
 			}
 		}
 
+		// Stop all existing devices that are about to be updated
+		for (auto& kvp : objects_to_update)
+		{
+			if (!kvp.second->get_type().is_derived_from<Device>())
+				continue;
+
+			ObjectByIDMap::iterator existing_object = mObjects.find(kvp.first);
+			if (existing_object != mObjects.end())
+			{
+				Device* device = (Device*)(existing_object->second.get());
+				device->stop();
+
+				// Devices that are stopped need to be (re)started when an error occurs
+				rollback_helper.addExistingDevice(*device);
+			}
+		}
+
 		// Patch again to update pointers to objects that were cloned
 		rtti::ObjectPtrManager::get().patchPointers(objects_to_update);
 
-		// init all objects in the correct order
-		if (!initObjects(objects_to_init, objects_to_update, errorState))
-			return false;
+		// Init all objects in the correct order and start devices at the same time
+		for (const std::string& id : objects_to_init)
+		{
+			rtti::Object* object = nullptr;
+
+			ObjectByIDMap::const_iterator pos = objects_to_update.find(id);
+			assert(pos != objects_to_update.end());
+			
+			object = pos->second.get();
+			if (!errorState.check(object->init(errorState), "Couldn't initialize object '%s'", id.c_str()))
+				return false;
+
+			if (object->get_type().is_derived_from<Device>())				
+			{
+				Device* device = (Device*)object;
+				if (!errorState.check(device->start(errorState), "Couldn't start device '%s'", id.c_str()))
+					return false;
+
+				// Any device that is successfully started needs to be stopped when an error occurs
+				rollback_helper.addNewDevice(*device);
+			}
+		}
 
 		// In case all init() operations were successful, we can now replace the objects
 		// in the manager by the new objects. This effectively destroys the old objects as well.
