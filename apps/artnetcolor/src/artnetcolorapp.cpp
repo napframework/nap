@@ -56,6 +56,14 @@ namespace nap
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 
+		// Sample white values
+		std::vector<nap::SelectColorComponentInstance*> comps;
+		mPlaneEntity->getComponentsOfType<nap::SelectColorComponentInstance>(comps);
+		for (auto& comp : comps)
+		{
+			mWhiteValues.emplace_back(static_cast<int>(static_cast<float>(math::max<uint8>()) * 
+				comp->mWhite.getRed()));
+		}
 		return true;
 	}
 
@@ -84,8 +92,9 @@ namespace nap
 
 					// White Slider
 					std::string white_color_label = utility::stringFormat("White %d", idx);
-					if (ImGui::SliderFloat(white_color_label.c_str(), selector->mWhite.getData(), 0, 1.0f))
+					if (ImGui::SliderInt(white_color_label.c_str(), &(mWhiteValues[idx]), 0, math::max<uint8>()))
 					{
+						selector->mWhite.setValue(EColorChannel::Red, static_cast<float>(mWhiteValues[idx]) / static_cast<float>(math::max<uint8>()));
 						selector->setDirty();
 					}
 
@@ -111,7 +120,9 @@ namespace nap
 				idx++;
 			}
 			int* span = &(mPlaneEntity->getComponent<SendColorComponentInstance>().mSpan);
+			float* intensity = &(mPlaneEntity->getComponent<SendColorComponentInstance>().mIntensity);
 			ImGui::SliderInt("Span", span, 1, 20);
+			ImGui::SliderFloat("Intensity", intensity, 0.0f, 1.0f);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 	}

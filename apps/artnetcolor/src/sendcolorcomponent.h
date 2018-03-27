@@ -68,6 +68,11 @@ namespace nap
 		 */
 		int mSpan = 1;
 
+		/**
+		 *	Intensity
+		 */
+		float mIntensity = 1.0f;
+
 	private:
 		// Holds all the controllers
 		std::vector<ArtNetController*> mControllers;
