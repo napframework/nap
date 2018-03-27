@@ -11,7 +11,7 @@ namespace nap
          * Utility class representing a single delay that can be written and read from.
          * Supports interpolation between samples while reading.
          */
-        class Delay final
+        class NAPAPI Delay
         {
         public:
             /**

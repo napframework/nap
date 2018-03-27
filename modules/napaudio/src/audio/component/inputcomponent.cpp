@@ -9,11 +9,11 @@
 #include <audio/service/audioservice.h>
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::InputComponent)
-    RTTI_PROPERTY("Channels", &nap::audio::InputComponent::mChannels, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::audio::AudioInputComponent)
+    RTTI_PROPERTY("Channels", &nap::audio::AudioInputComponent::mChannels, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::InputComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioInputComponentInstance)
     RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -23,9 +23,9 @@ namespace nap
     namespace audio
     {
     
-        bool InputComponentInstance::init(utility::ErrorState& errorState)
+        bool AudioInputComponentInstance::init(utility::ErrorState& errorState)
         {
-            auto resource = getComponent<InputComponent>();
+            auto resource = getComponent<AudioInputComponent>();
             NodeManager* nodeManager = &getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH)->getNodeManager();
 
             for (auto channel = 0; channel < resource->mChannels.size(); ++channel)
