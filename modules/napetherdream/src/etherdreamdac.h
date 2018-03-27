@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <nap/resource.h>
+#include <nap/device.h>
 #include <rtti/factory.h>
 #include <thread>
 #include <mutex>
@@ -25,10 +25,10 @@ namespace nap
 	 * closed. When the DAC is unavailable to the system the DAC is still is a valid resource but not active.
 	 * This object manages it's own connection to the DAC
 	 */
-	class NAPAPI EtherDreamDac : public Resource
+	class NAPAPI EtherDreamDac : public Device
 	{
 		friend class EtherDreamService;
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(Device)
 	public:
 		// Default constructor
 		EtherDreamDac() = default;
@@ -36,15 +36,17 @@ namespace nap
 		// Constructor used by factory
 		EtherDreamDac(EtherDreamService& service);
 
-		// Default destructor
-		virtual ~EtherDreamDac();
-
 		/**
 		 * Initializes this DAC and registers it with the etherdream service.
 		 * If the DAC is not connected or unavailable this call will fail and block
 		 * further execution of the program.
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool start(utility::ErrorState& errorState) override;
+
+		/**
+		 * Stops the DAC and unregisters it from the etherdream service.
+		 */
+		virtual void stop() override;
 
 		/**
 		 *	Set the points for this dac to write
