@@ -260,11 +260,11 @@ namespace nap
 		std::vector<std::string> dirParts;
 		utility::splitString(exeDir, '/', dirParts);
 		// Check if we can see our build output folder, otherwise we're in an unexpected configuration
-		if (dirParts.size() > 2 && folderNameContainsBuildConfiguration(dirParts.end()[-2]))
+		if (dirParts.size() > 1 && folderNameContainsBuildConfiguration(dirParts.end()[-1]))
 		{
 			// MacOS & Linux apps in NAP internal source
-			const std::string napRoot = exeDir + "/../../../";
-			const std::string full_configuration_name = dirParts.end()[-2];
+			const std::string napRoot = exeDir + "/../../";
+			const std::string full_configuration_name = dirParts.end()[-1];
 			outSearchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
 
 		} else {
