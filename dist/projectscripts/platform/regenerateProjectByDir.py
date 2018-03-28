@@ -16,7 +16,7 @@ if __name__ == '__main__':
         parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the generated solution")       
         parser.add_argument("-np", "--no-pause", action="store_true",
-                            help="Don't pause afterwards")
+                            help="Don't pause afterwards on failed generation")
     args = parser.parse_args()
 
     project_name = os.path.basename(args.PROJECT_PATH.strip('\\'))
@@ -40,9 +40,10 @@ if __name__ == '__main__':
     if not show_solution and not sys.platform.startswith('linux'):
         cmd.append('--no-show')
     call(cmd)
+    clean_exit = call(cmd) == 0
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
-    if not sys.platform.startswith('linux') and not args.no_pause:
+    if not clean_exit and not sys.platform.startswith('linux') and not args.no_pause:
         print("Press key to close...")
 
         # Read a char from console
