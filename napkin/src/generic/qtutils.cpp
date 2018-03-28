@@ -6,6 +6,8 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QProcess>
+#include <QDesktopServices>
+#include <QUrl>
 
 #include <appcontext.h>
 #include <mathutils.h>
@@ -178,6 +180,13 @@ bool napkin::revealInFileBrowser(const QString& filename)
 #endif
 	return true;
 }
+
+
+bool napkin::openInExternalEditor(const QString& filename)
+{
+    QDesktopServices::openUrl(QUrl("file:///" + filename, QUrl::TolerantMode));
+}
+
 
 QString napkin::fileBrowserName()
 {
