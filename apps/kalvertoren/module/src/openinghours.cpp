@@ -1,11 +1,9 @@
 #include "openinghours.h"
 
 RTTI_BEGIN_STRUCT(nap::OpeningTime)
-	RTTI_VALUE_CONSTRUCTOR(int, int, int, int)
-	RTTI_PROPERTY("MorningHour",	&nap::OpeningTime::mMorningHour,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MorningMinute",	&nap::OpeningTime::mMorningMinute,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EveningHour",	&nap::OpeningTime::mEveningHour,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EveningMinute",	&nap::OpeningTime::mEveningMinute,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_VALUE_CONSTRUCTOR(int, int)
+	RTTI_PROPERTY("Hour",	&nap::OpeningTime::mHour,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Minute",	&nap::OpeningTime::mMinute,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 // nap::openinghours run time class definition 

@@ -1960,48 +1960,66 @@
         },
         {
             "Type": "nap::OpeningHours",
-            "mID": "OpeningHours",
+            "mID": "ClosingHours",
             "Monday": {
-                "MorningHour": 9,
-                "MorningMinute": 0,
-                "EveningHour": 19,
-                "EveningMinute": 0
+                "Hour": 19,
+                "Minute": 0
             },
             "Tuesday": {
-                "MorningHour": 9,
-                "MorningMinute": 0,
-                "EveningHour": 19,
-                "EveningMinute": 0
+                "Hour": 19,
+                "Minute": 0
             },
             "Wednesday": {
-                "MorningHour": 9,
-                "MorningMinute": 0,
-                "EveningHour": 19,
-                "EveningMinute": 0
+                "Hour": 19,
+                "Minute": 0
             },
             "Thursday": {
-                "MorningHour": 9,
-                "MorningMinute": 0,
-                "EveningHour": 21,
-                "EveningMinute": 0
+                "Hour": 21,
+                "Minute": 0
             },
             "Friday": {
-                "MorningHour": 9,
-                "MorningMinute": 0,
-                "EveningHour": 19,
-                "EveningMinute": 0
+                "Hour": 19,
+                "Minute": 0
             },
             "Saturday": {
-                "MorningHour": 9,
-                "MorningMinute": 0,
-                "EveningHour": 19,
-                "EveningMinute": 0
+                "Hour": 19,
+                "Minute": 0
             },
             "Sunday": {
-                "MorningHour": 11,
-                "MorningMinute": 0,
-                "EveningHour": 18,
-                "EveningMinute": 30
+                "Hour": 18,
+                "Minute": 30
+            }
+        },
+        {
+            "Type": "nap::OpeningHours",
+            "mID": "OpeningHours",
+            "Monday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Tuesday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Wednesday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Thursday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Friday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Saturday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Sunday": {
+                "Hour": 11,
+                "Minute": 0
             }
         },
         {

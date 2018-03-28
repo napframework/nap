@@ -13,16 +13,10 @@ namespace nap
 	{
 	public:
 		OpeningTime() = default;
-		OpeningTime(int morningHour, int morningMinute, int eveningHour, int eveningMinute) :
-			mMorningHour(morningHour),
-			mMorningMinute(morningMinute),
-			mEveningHour(eveningHour),
-			mEveningMinute(eveningMinute)	{}
+		OpeningTime(int hour, int minute) : mHour(hour), mMinute(minute)	{ }
 
-		int mMorningHour   = 0;		///< Property
-		int mMorningMinute = 0;		///< Property
-		int mEveningHour   = 0;		///< Property
-		int mEveningMinute = 0;		///< Property
+		int mHour = 0;				///< Property
+		int mMinute = 0;			///< Property
 	};
 
 	/**
@@ -41,12 +35,12 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Property: All opening hours
-		OpeningTime mMonday		= { 9,0,19,0 };
-		OpeningTime mTuesday	= { 9,0,19,0 };
-		OpeningTime mWednesday	= { 9,0,19,0 };
-		OpeningTime mThursday	= { 9,0,21,0 };
-		OpeningTime mFriday		= { 9,0,19,0 };
-		OpeningTime mSaturday	= { 9,0,19,0 };
-		OpeningTime mSunday		= { 11,0,18,30 };
+		OpeningTime mMonday		= { 9,0  };
+		OpeningTime mTuesday	= { 9,0  };
+		OpeningTime mWednesday	= { 9,0  };
+		OpeningTime mThursday	= { 9,0  };
+		OpeningTime mFriday		= { 9,0  };
+		OpeningTime mSaturday	= { 9,0  };
+		OpeningTime mSunday		= { 11,0 };
 	};
 }
