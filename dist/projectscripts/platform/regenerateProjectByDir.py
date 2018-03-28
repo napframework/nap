@@ -39,7 +39,6 @@ if __name__ == '__main__':
     # If we don't want to show the solution and we weren't not on Linux specify that
     if not show_solution and not sys.platform.startswith('linux'):
         cmd.append('--no-show')
-    call(cmd)
     clean_exit = call(cmd) == 0
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
