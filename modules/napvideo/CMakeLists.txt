@@ -15,7 +15,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${FFMPEG_INCLUDE_DIR})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
-set(DEPENDENT_NAP_MODULES mod_naprender)
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napaudio)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${FFMPEG_LIBRARIES})
 
 # Package into platform release
