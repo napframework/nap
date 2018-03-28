@@ -2,6 +2,7 @@
 
 // std library includes
 #include <vector>
+#include <memory>
 
 // nap includes
 #include <utility/dllexport.h>
