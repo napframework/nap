@@ -165,7 +165,7 @@ bool napkin::revealInFileBrowser(const QString& filename)
 #elif defined(__APPLE__)
 	QStringList scriptArgs;
 	scriptArgs << QLatin1String("-e")
-			   << QString::fromLatin1("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(pathIn);
+			   << QString::fromLatin1("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(filename);
 	QProcess::execute(QLatin1String("/usr/bin/osascript"), scriptArgs);
 	scriptArgs.clear();
 	scriptArgs << QLatin1String("-e") << QLatin1String("tell application \"Finder\" to activate");
