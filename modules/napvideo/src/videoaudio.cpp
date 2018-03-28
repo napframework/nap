@@ -20,7 +20,7 @@ namespace nap {
         
         void VideoNode::process()
         {
-            if (!mVideo->hasAudio())
+            if (mVideo == nullptr || !mVideo->hasAudio())
             {
                 // If the video has no audio channels we fill the output pins with zeros
                 for (auto channel = 0; channel < getChannelCount(); ++channel)

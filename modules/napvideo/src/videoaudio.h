@@ -1,5 +1,8 @@
 #pragma once
 
+// Nap includes
+#include <rtti/objectptr.h>
+
 // Video includes
 #include <video.h>
 
@@ -40,7 +43,7 @@ namespace nap {
             void process() override final;
             
             std::vector<std::unique_ptr<OutputPin>> mOutputs; ///< The output pins for each individual channel of video audio
-            Video* mVideo = nullptr; ///< Pointer to the source video object
+            rtti::ObjectPtr<Video> mVideo = nullptr; ///< Pointer to the source video object
             AudioFormat mAudioFormat; ///< This object tells the Video object what is our desired audio format
             std::vector<float> mDataBuffer; ///< The buffer that is passed to the Video object to be filled with audio data
         };
