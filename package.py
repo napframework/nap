@@ -18,6 +18,8 @@ ARCHIVING_DIR = 'archiving'
 BUILDINFO_FILE = 'dist/cmake/buildInfo.json'
 BUILD_TYPES = ('Release', 'Debug')
 
+ERROR_PACKAGE_EXISTS = 1
+
 def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     """Execute command in provided working directory"""
 
@@ -33,11 +35,21 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
         raise Exception(proc.returncode)
     return (out, err)
 
-def package(zip_release, include_docs, include_apps, clean):
+def package(zip_release, include_docs, include_apps, clean, include_timestamp_in_name):
     """Package a NAP platform release - main entry point"""
 
-    print("Packaging...")
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+    # Add timestamp and git revision for build info
+    timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
+    (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
+    git_revision = git_revision.decode('ascii', 'ignore').strip()
+    package_basename = build_package_basename(include_timestamp_in_name, timestamp)
+
+    # Ensure we won't overwrite any existing package
+    check_for_existing_package(package_basename, zip_release)
+
+    print("Packaging...")
 
     # Remove old packaging path if it exists
     if os.path.exists(PACKAGING_DIR):
@@ -46,39 +58,55 @@ def package(zip_release, include_docs, include_apps, clean):
 
     # Clean build if requested
     if clean:
-        print("Cleaning...")
-        if platform.startswith('linux'):    
-            for build_type in BUILD_TYPES:
-                if os.path.exists(BUILD_DIR + build_type):
-                    print("Clean removing %s" % os.path.abspath(BUILD_DIR + build_type))
-                    shutil.rmtree(BUILD_DIR + build_type, True)
-        else:
-            if os.path.exists(BUILD_DIR):
-                print("Clean removing %s" % os.path.abspath(BUILD_DIR))
-                shutil.rmtree(BUILD_DIR, True)
-
-        if os.path.exists(LIB_DIR):
-            print("Clean removing %s" % os.path.abspath(LIB_DIR))
-            shutil.rmtree(LIB_DIR, True)
-        if os.path.exists(BIN_DIR):
-            print("Clean removing %s" % os.path.abspath(BIN_DIR))
-            shutil.rmtree(BIN_DIR, True)                
-
-    # Add timestamp and git revision for build info
-    timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
-    (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
-    git_revision = git_revision.decode('ascii', 'ignore').strip()
+        clean_the_build()
 
     # Do the packaging
     if platform.startswith('linux'):    
-        package_for_linux(timestamp, git_revision, include_apps, include_docs, zip_release)
+        package_for_linux(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release)
     elif platform == 'darwin':
-        package_for_macos(timestamp, git_revision, include_apps, include_docs, zip_release)
+        package_for_macos(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release)
     else:
-        package_for_win64(timestamp, git_revision, include_apps, include_docs, zip_release)
+        package_for_win64(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release)
 
 
-def package_for_linux(timestamp, git_revision, include_apps, include_docs, zip_release):
+def clean_the_build():
+    """Clean the build"""
+
+    print("Cleaning...")
+    if platform.startswith('linux'):    
+        for build_type in BUILD_TYPES:
+            if os.path.exists(BUILD_DIR + build_type):
+                print("Clean removing %s" % os.path.abspath(BUILD_DIR + build_type))
+                shutil.rmtree(BUILD_DIR + build_type, True)
+    else:
+        if os.path.exists(BUILD_DIR):
+            print("Clean removing %s" % os.path.abspath(BUILD_DIR))
+            shutil.rmtree(BUILD_DIR, True)
+
+    if os.path.exists(LIB_DIR):
+        print("Clean removing %s" % os.path.abspath(LIB_DIR))
+        shutil.rmtree(LIB_DIR, True)
+    if os.path.exists(BIN_DIR):
+        print("Clean removing %s" % os.path.abspath(BIN_DIR))
+        shutil.rmtree(BIN_DIR, True)                  
+
+def check_for_existing_package(package_path, zip_release):
+    """Ensure we aren't overwriting a previous package"""
+
+    # Add extension if zipping
+    if zip_release:
+        if platform.startswith('linux'):
+            package_path += '.tar.xz'
+        else:
+            package_path += '.zip'
+
+    # Check and fail
+    if os.path.exists(package_path):
+        print("Error: %s already exists" % package_path)
+        sys.exit(ERROR_PACKAGE_EXISTS)
+
+
+def package_for_linux(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release):
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
@@ -99,11 +127,11 @@ def package_for_linux(timestamp, git_revision, include_apps, include_docs, zip_r
 
     # Create archive
     if zip_release:
-        archive_to_linux_tar_xz(timestamp)
+        archive_to_linux_tar_xz(package_basename)
     else:
-        archive_to_timestamped_dir('Linux', timestamp)
+        archive_to_timestamped_dir(package_basename)
 
-def package_for_macos(timestamp, git_revision, include_apps, include_docs, zip_release):
+def package_for_macos(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release):
     """Package NAP platform release for macOS"""
 
     # Generate project
@@ -128,11 +156,11 @@ def package_for_macos(timestamp, git_revision, include_apps, include_docs, zip_r
 
     # Create archive
     if zip_release:
-        archive_to_macos_zip(timestamp)
+        archive_to_macos_zip(package_basename)
     else:
-        archive_to_timestamped_dir('macOS', timestamp)
+        archive_to_timestamped_dir(package_basename)
 
-def package_for_win64(timestamp, git_revision, include_apps, include_docs, zip_release):
+def package_for_win64(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release):
     """Package NAP platform release for Windows"""
 
     # Create build dir if it doesn't exist
@@ -158,58 +186,55 @@ def package_for_win64(timestamp, git_revision, include_apps, include_docs, zip_r
 
     # Create archive
     if zip_release:
-        archive_to_win64_zip(timestamp)
+        archive_to_win64_zip(package_basename)
     else:
-        archive_to_timestamped_dir('Win64', timestamp)
+        archive_to_timestamped_dir(package_basename)
 
-def archive_to_linux_tar_xz(timestamp):
+def archive_to_linux_tar_xz(package_basename):
     """Create build archive to xz tarball on Linux"""
 
-    package_filename = build_package_basename('Linux', timestamp)
-    shutil.move(PACKAGING_DIR, package_filename)
+    shutil.move(PACKAGING_DIR, package_basename)
 
-    package_filename_with_ext = '%s.%s' % (package_filename, 'tar.xz')
+    package_filename_with_ext = '%s.%s' % (package_basename, 'tar.xz')
     print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
-    call(WORKING_DIR, ['tar', '-cJvf', package_filename_with_ext, package_filename])
+    call(WORKING_DIR, ['tar', '-cJvf', package_filename_with_ext, package_basename])
 
     # Cleanup
-    shutil.move(package_filename, PACKAGING_DIR)
+    shutil.move(package_basename, PACKAGING_DIR)
     print("Packaged to %s" % os.path.abspath(package_filename_with_ext))
 
-def archive_to_macos_zip(timestamp):
+def archive_to_macos_zip(package_basename):
     """Create build archive to zip on macOS"""
 
-    package_filename = build_package_basename('macOS', timestamp)
-    shutil.move(PACKAGING_DIR, package_filename)
+    shutil.move(PACKAGING_DIR, package_basename)
 
     # Archive
-    package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
+    package_filename_with_ext = '%s.%s' % (package_basename, 'zip')
     print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
-    call(WORKING_DIR, ['zip', '-yr', package_filename_with_ext, package_filename])
+    call(WORKING_DIR, ['zip', '-yr', package_filename_with_ext, package_basename])
 
     # Cleanup
-    shutil.move(package_filename, PACKAGING_DIR)
+    shutil.move(package_basename, PACKAGING_DIR)
     print("Packaged to %s" % os.path.abspath(package_filename_with_ext))  
 
-def archive_to_win64_zip(timestamp):
+def archive_to_win64_zip(package_basename):
     """Create build archive to zip on Win64"""
 
-    package_filename = build_package_basename('Win64', timestamp)
-    package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
+    package_filename_with_ext = '%s.%s' % (package_basename, 'zip')
 
     # Rename our packaging dir to match the release
-    shutil.move(PACKAGING_DIR, package_filename)
+    shutil.move(PACKAGING_DIR, package_basename)
 
     # Create our archive dir, used to create a copy level folder within the archive
     if os.path.exists(ARCHIVING_DIR):
         shutil.rmtree(ARCHIVING_DIR, True)
     os.makedirs(ARCHIVING_DIR)
-    archive_path = os.path.join(ARCHIVING_DIR, package_filename)
-    shutil.move(package_filename, archive_path)
+    archive_path = os.path.join(ARCHIVING_DIR, package_basename)
+    shutil.move(package_basename, archive_path)
 
     # Create archive
     print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
-    shutil.make_archive(package_filename, 'zip', ARCHIVING_DIR)
+    shutil.make_archive(package_basename, 'zip', ARCHIVING_DIR)
 
     # Cleanup
     shutil.move(archive_path, PACKAGING_DIR)
@@ -217,23 +242,33 @@ def archive_to_win64_zip(timestamp):
 
     print("Packaged to %s" % os.path.abspath(package_filename_with_ext))  
 
-def archive_to_timestamped_dir(platform, timestamp):
+def archive_to_timestamped_dir(package_basename):
     """Copy our packaged dir to a timestamped dir"""
 
-    package_filename = build_package_basename(platform, timestamp)
-    shutil.move(PACKAGING_DIR, package_filename)
+    shutil.move(PACKAGING_DIR, package_basename)
 
-    print("Packaged to directory %s" % os.path.abspath(package_filename))
+    print("Packaged to directory %s" % os.path.abspath(package_basename))
 
-def build_package_basename(platform, timestamp):
+def build_package_basename(include_timestamp_in_name, timestamp):
     """Build the name of our package and populate our JSON build info file"""
+
+    # Do the packaging
+    if platform.startswith('linux'):
+        platform_name = 'Linux'
+    elif platform == 'darwin':
+        platform_name = 'macOS'
+    else:
+        platform_name = 'Win64'
 
     # Fetch version from build info
     # TODO hardening, deal with: missing build info, exception loading build info file and no version entry
     with open(BUILDINFO_FILE) as json_file:
         build_info = json.load(json_file)
 
-    package_filename = "NAP-%s-%s-%s" % (build_info['version'], platform, timestamp)
+    # Create filename, including timestamp or not as requested
+    package_filename = "NAP-%s-%s" % (build_info['version'], platform_name)
+    if include_timestamp_in_name:
+        package_filename += "-%s" % timestamp
     return package_filename
     
 if __name__ == '__main__':
@@ -243,6 +278,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-nz", "--no-zip", action="store_true",
                         help="Don't zip the release, package to a directory")
+    parser.add_argument("-nt", "--no-timestamp", action="store_true",
+                        help="Don't include timestamp in the release archive and folder name, for final releases")
     parser.add_argument("-c", "--clean", action="store_true",
                         help="Clean build")
     parser.add_argument("-a", "--include-apps", action="store_true",
@@ -252,4 +289,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Package our build
-    package(not args.no_zip, args.include_docs, args.include_apps, args.clean)
+    package(not args.no_zip, args.include_docs, args.include_apps, args.clean, not args.no_timestamp)
