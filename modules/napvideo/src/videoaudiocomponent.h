@@ -6,6 +6,7 @@
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
+#include <audio/core/audionodeptr.h>
 
 namespace nap
 {
@@ -54,7 +55,7 @@ namespace nap
             void setVideo(Video& video);
             
         private:
-            std::unique_ptr<VideoNode> mNode = nullptr; ///< The audio node that polls the Video object for audio output
+            NodePtr<VideoNode> mNode = nullptr; ///< The audio node that polls the Video object for audio output
         };
         
     }

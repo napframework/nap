@@ -22,7 +22,7 @@ namespace nap
         bool VideoAudioComponentInstance::init(utility::ErrorState& errorState)
         {
             auto resource = getComponent<VideoAudioComponent>();
-            mNode = std::make_unique<VideoNode>(getNodeManager(), *resource->mVideo, resource->mChannelCount);
+            mNode = make_node<VideoNode>(getNodeManager(), *resource->mVideo, resource->mChannelCount);
             return true;
         }
         
