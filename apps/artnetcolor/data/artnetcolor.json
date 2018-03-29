@@ -237,6 +237,126 @@
 					}
 				},
 				{
+					"Type" : "nap::SelectColorComponent",
+					"Mesh" : "RenderPlane",
+					"Color":
+					{
+						"Values" :
+						[
+							1.0,
+							0.0,
+							1.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Mesh" : "RenderPlane",
+					"Color":
+					{
+						"Values" :
+						[
+							1.0,
+							0.0,
+							1.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Mesh" : "RenderPlane",
+					"Color":
+					{
+						"Values" :
+						[
+							1.0,
+							0.0,
+							1.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Mesh" : "RenderPlane",
+					"Color":
+					{
+						"Values" :
+						[
+							1.0,
+							0.0,
+							1.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Mesh" : "RenderPlane",
+					"Color":
+					{
+						"Values" :
+						[
+							1.0,
+							0.0,
+							1.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Mesh" : "RenderPlane",
+					"Color":
+					{
+						"Values" :
+						[
+							1.0,
+							0.0,
+							1.0
+						]
+					},
+					"White":
+					{
+						"Values" :
+						[
+							0.0
+						]
+					}
+				},
+				{
 					"Type" : "nap::SendColorComponent",
 					"Span" : 2,
 					"Controllers" : 

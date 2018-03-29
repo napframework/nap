@@ -31,6 +31,9 @@ namespace nap
 
 		// Property: Span of the colors
 		int mSpan = 1;
+
+		// Property: Number of color
+		int mNumber = 4;
 	};
 
 
@@ -59,9 +62,19 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
+		 * @return the number of available colors
+		 */
+		int getColorCount() const							{ return mColorComps.size(); }
+
+		/**
 		 * Set span per color
 		 */
 		void setSpan(int value);
+
+		/**
+		 *	Set number of colors
+		 */
+		void setNumber(int value);
 
 		/**
 		 *	Span per color
@@ -72,6 +85,11 @@ namespace nap
 		 *	Intensity
 		 */
 		float mIntensity = 1.0f;
+
+		/**
+		 *	Number of colors to send
+		 */
+		int mNumber = 4;
 
 	private:
 		// Holds all the controllers

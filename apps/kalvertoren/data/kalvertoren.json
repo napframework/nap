@@ -697,7 +697,7 @@
                     "PaletteGrid": "PaletteGrid",
                     "DebugImage": "PaletteDebugImage",
                     "Index": 0,
-                    "Composition" : "./CompositionComponent",
+                    "Composition": "./CompositionComponent",
                     "Link": true
                 },
                 {
@@ -727,7 +727,10 @@
                         "y": 1.0
                     },
                     "LuxCurve": 0.5,
-                    "SmoothTime": 1.0
+                    "SmoothTime": 1.0,
+                    "OpeningHours": "OpeningHours",
+                    "ClosingHours": "ClosingHours",
+                    "UseOpeningHours" : true
                 }
             ],
             "Children": [
@@ -1957,6 +1960,70 @@
             "mID": "SingelFrameMesh",
             "Path": "singel_export_singel_frame.mesh",
             "Usage": "Static"
+        },
+        {
+            "Type": "nap::OpeningHours",
+            "mID": "ClosingHours",
+            "Monday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Tuesday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Wednesday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Thursday": {
+                "Hour": 21,
+                "Minute": 0
+            },
+            "Friday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Saturday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Sunday": {
+                "Hour": 18,
+                "Minute": 30
+            }
+        },
+        {
+            "Type": "nap::OpeningHours",
+            "mID": "OpeningHours",
+            "Monday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Tuesday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Wednesday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Thursday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Friday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Saturday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Sunday": {
+                "Hour": 11,
+                "Minute": 0
+            }
         },
         {
             "Type": "nap::PlaneMesh",
@@ -3226,7 +3293,7 @@
             "Pass": "givemelight",
             "Port": 80,
             "Enabled": true,
-            "AllowFailure" : true,
+            "AllowFailure": true,
             "Sensors": [
                 "LuxSensor1"
             ]
@@ -3239,7 +3306,7 @@
             "Pass": "givemelight",
             "Port": 80,
             "Enabled": true,
-            "AllowFailure" : true,
+            "AllowFailure": true,
             "Sensors": [
                 "LuxSensor2"
             ]
@@ -3252,7 +3319,7 @@
             "Pass": "givemelight",
             "Port": 80,
             "Enabled": true,
-            "AllowFailure" : true,
+            "AllowFailure": true,
             "Sensors": [
                 "LuxSensor3"
             ]
