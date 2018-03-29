@@ -727,7 +727,10 @@
                         "y": 1.0
                     },
                     "LuxCurve": 0.5,
-                    "SmoothTime": 1.0
+                    "SmoothTime": 1.0,
+                    "OpeningHours": "OpeningHours",
+                    "ClosingHours": "ClosingHours",
+                    "UseOpeningHours" : true
                 }
             ],
             "Children": [

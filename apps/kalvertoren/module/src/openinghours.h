@@ -9,7 +9,7 @@ namespace nap
 	/**
 	 * Simple struct used to define an opening time
 	 */
-	class OpeningTime
+	class OpeningTime final
 	{
 	public:
 		OpeningTime() = default;
