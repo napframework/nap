@@ -17,9 +17,10 @@ namespace nap
 			return SystemClock::now();
 		}
 
+
 		extern DateTime getCurrentDateTime()
 		{
-			return DateTime(getCurrentTime(), DateTime::ConversionMode::Local);
+			return DateTime(SystemClock::now(), DateTime::ConversionMode::Local);
 		}
 
 
