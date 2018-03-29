@@ -119,9 +119,14 @@ namespace nap
 				}
 				idx++;
 			}
-			int* span = &(mPlaneEntity->getComponent<SendColorComponentInstance>().mSpan);
-			float* intensity = &(mPlaneEntity->getComponent<SendColorComponentInstance>().mIntensity);
+
+			SendColorComponentInstance& color_comp_instance = mPlaneEntity->getComponent<SendColorComponentInstance>();
+			int* span = &(color_comp_instance.mSpan);
+			float* intensity = &(color_comp_instance.mIntensity);
+			int* number = &(color_comp_instance.mNumber);
+
 			ImGui::SliderInt("Span", span, 1, 20);
+			ImGui::SliderInt("Number Of Colors", number, 1, color_comp_instance.getColorCount());
 			ImGui::SliderFloat("Intensity", intensity, 0.0f, 1.0f);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
