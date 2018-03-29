@@ -686,7 +686,7 @@
                     "Friday": "Friday",
                     "Saturday": "Saturday",
                     "Sunday": "Sunday",
-                    "CycleMode": "Off",
+                    "CycleMode": "List",
                     "Index": 0,
                     "DurationScale": 1.0
                 },
@@ -3330,7 +3330,8 @@
             "Name": "LIGHTMK3-B65A4",
             "Retries": 25,
             "BufferSize": 30,
-            "DelayTime": 500
+            "DelayTime": 1000,
+            "Log":true
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3338,7 +3339,8 @@
             "Name": "LIGHTMK3-BA5E3",
             "Retries": 25,
             "BufferSize": 30,
-            "DelayTime": 500
+            "DelayTime": 1000,
+            "Log":true
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3346,7 +3348,8 @@
             "Name": "LIGHTMK3-BAC3D",
             "Retries": 25,
             "BufferSize": 30,
-            "DelayTime": 500
+            "DelayTime": 1000,
+            "Log":true
         }
     ]
 }

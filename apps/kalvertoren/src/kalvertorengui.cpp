@@ -29,6 +29,9 @@ namespace nap
 		mBrightnessValues.fill(0.0f);
 		mLedOn  = app.getCore().getResourceManager()->findObject<nap::ImageFromFile>("LedOnImage");
 		mLedOff = app.getCore().getResourceManager()->findObject<nap::ImageFromFile>("LedOffImage");
+
+		CompositionComponentInstance& comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
+		mCompositionCycleMode = static_cast<int>(comp.getCycleMode());
 	}
 
 
