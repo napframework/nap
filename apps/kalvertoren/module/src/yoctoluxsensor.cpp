@@ -12,6 +12,7 @@ RTTI_BEGIN_CLASS(nap::YoctoLuxSensor)
 	RTTI_PROPERTY("Retries",	&nap::YoctoLuxSensor::mRetries,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize", &nap::YoctoLuxSensor::mBufferSize,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DelayTime",	&nap::YoctoLuxSensor::mDelayTime,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Log",		&nap::YoctoLuxSensor::mLog,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,7 +102,7 @@ namespace nap
 			{
 				if (++retries > mRetries)
 				{
-					nap::Logger::warn("%s: sensor: %s has trouble sleeping", mID.c_str(), mName.c_str());
+					logMessage("has trouble sleeping");
 					break;
 				}
 				continue;
@@ -112,7 +113,7 @@ namespace nap
 			{
 				if (++retries > mRetries)
 				{
-					nap::Logger::warn("%s: sensor: %s appears to be offline", this->mID.c_str(), mName.c_str());
+					logMessage("appears to be offline");
 					break;
 				}
 				continue;
@@ -120,6 +121,7 @@ namespace nap
 
 			// Read current value
 			float sensor_value = static_cast<float>(curr_sensor->get_currentValue());
+			logMessage(utility::stringFormat("%.2f lux", sensor_value));
 
 			// Calculate accumulated value sensor vale
 			accum_value -= lux_buffer[lux_idx];
@@ -143,5 +145,17 @@ namespace nap
 
 		// When exiting this loop we're no longer reading any values
 		mReading = false;
+	}
+
+
+	void YoctoLuxSensor::logMessage(const std::string& message, bool warning)
+	{
+		if (mLog)
+		{
+			if (warning)
+				nap::Logger::warn("%s: sensor: %s: %s", this->mID.c_str(), mName.c_str(), message.c_str());
+			else
+				nap::Logger::info("%s: sensor: %s: %s", this->mID.c_str(), mName.c_str(), message.c_str());
+		}
 	}
 }

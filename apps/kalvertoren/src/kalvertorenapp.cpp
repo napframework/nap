@@ -19,6 +19,7 @@
 #include <planemesh.h>
 #include <ctime>
 #include <chrono>
+#include <utility/fileutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -69,6 +70,9 @@ namespace nap
 		// Create gui
 		mGui = std::make_unique<KalvertorenGui>(*this);
 		mGui->init();
+
+		// Start logging to directory
+		nap::Logger::logToDirectory(utility::getExecutableDir());
 
 		return true;
 	}
