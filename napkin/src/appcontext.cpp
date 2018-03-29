@@ -23,19 +23,37 @@ using namespace nap::rtti;
 using namespace nap::utility;
 using namespace napkin;
 
+std::unique_ptr<AppContext> appContextInstance = nullptr;
+
+
 AppContext::AppContext()
 {
 	nap::Logger::instance().log.connect(mLogHandler);
 }
 
+
 AppContext::~AppContext()
 {}
 
+
 AppContext& AppContext::get()
 {
-	static AppContext inst;
-	return inst;
+    assert(appContextInstance != nullptr);
+    return *appContextInstance;
 }
+
+
+void AppContext::create()
+{
+    appContextInstance = std::make_unique<AppContext>();
+}
+
+
+void AppContext::destroy()
+{
+    appContextInstance = nullptr;
+}
+
 
 Document* AppContext::newDocument()
 {

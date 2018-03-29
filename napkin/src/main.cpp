@@ -1,6 +1,7 @@
 
 #include "generic/filtertreeview.h"
 #include "mainwindow.h"
+#include "appcontext.h"
 
 #include <QFontDatabase>
 #include <utility/fileutils.h>
@@ -14,6 +15,9 @@ int main(int argc, char* argv[])
 {
 	// Start logging to file
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
+    
+    // Construct the app context singleton
+    AppContext::create();
 
 	// nap::Core is declared in AppContext
 	QApplication::setOrganizationName("NaiviSoftware");
@@ -26,6 +30,9 @@ int main(int argc, char* argv[])
 
 	int re = app.exec();
 	QFontDatabase::removeAllApplicationFonts();
+    
+    // Destruct the app context singleton
+    AppContext::destroy();
 
 	return re;
 }
