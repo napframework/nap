@@ -55,11 +55,11 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 xcode-select --install
 ```
 4. Install CMake. 
-  * We recommend installing via [Homebrew](https://brew.sh/)
-  * Alternatively download from [cmake.org/download](http://cmake.org/download) and install, then add CMake to your path, eg. by adding the following to `.bash_profile` in your home directory:
+  * Download and install CMake [cmake.org/download](http://cmake.org/download) then add CMake to your path, eg. by adding the following to `.bash_profile` in your home directory:
 ```
 export PATH="/Applications/CMake.app/Contents/bin:$PATH"
 ```
+  * Alternatively installing via [Homebrew](https://brew.sh/) is also possible
 
 ## Linux {#setup_build_env_linux}
 
