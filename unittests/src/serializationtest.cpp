@@ -1,3 +1,5 @@
+#include "catch.hpp"
+
 #include "RTTITestClasses.h"
 #include <rtti/rtti.h>
 #include <rtti/rttiutilities.h>
@@ -63,7 +65,7 @@ void testObjectPtr()
 	typedef rtti::ObjectPtr<BaseClass> BaseClassPtr;
 	typedef rtti::ObjectPtr<DerivedClass> DerivedClassPtr;
 	typedef rtti::ObjectPtr<DerivedClass2> DerivedClass2Ptr;
-	
+
 	DerivedClassPtr derived = new DerivedClass();
 	BaseClassPtr base = derived;
 	BaseClassPtr other_base;
@@ -93,18 +95,14 @@ void testObjectPtr()
 	}
 }
 
-int main(int argc, char* argv[])
+TEST_CASE("Serialization", "[Serialization]")
 {
 	//testObjectPtr();
 	Logger::setLevel(Logger::debugLevel());
 
 	Core core;
 	nap::utility::ErrorState error;
-	if (!core.initializeEngine(error))
-	{
-		nap::Logger::fatal(error.toString().c_str());
-		return -1;
-	}
+	REQUIRE(core.initializeEngine(error));
 
 	rtti::TypeInfo::get<std::vector<DataStruct>>();
 
@@ -114,30 +112,27 @@ int main(int argc, char* argv[])
 
 	// Create test hierarchy
 	BaseClass* root = createTestHierarchy();
-	 
+
 	// Create path to float property in array of nested compounds
- 	rtti::Path float_property_path;
- 	float_property_path.pushAttribute("ArrayOfCompounds");
- 	float_property_path.pushArrayElement(0);
- 	float_property_path.pushAttribute("FloatProperty");
- 
+	rtti::Path float_property_path;
+	float_property_path.pushAttribute("ArrayOfCompounds");
+	float_property_path.pushArrayElement(0);
+	float_property_path.pushAttribute("FloatProperty");
+
 	// Convert path to string
- 	std::string path_str = float_property_path.toString();
+	std::string path_str = float_property_path.toString();
 
 	// Convert back and verify the path is the same
- 	rtti::Path path_copy = rtti::Path::fromString(path_str);
-	if (path_copy != float_property_path)
-		return -1;
- 
+	rtti::Path path_copy = rtti::Path::fromString(path_str);
+	REQUIRE(path_copy == float_property_path);
+
 	// Resolve the path and verify it succeeded
- 	rtti::ResolvedPath resolved_path;
-	if (!float_property_path.resolve(root->mPointerProperty, resolved_path))
-		return -1;
+	rtti::ResolvedPath resolved_path;
+	REQUIRE(float_property_path.resolve(root->mPointerProperty, resolved_path));
 
 	// Verify setting the value works
 	float old_value = resolved_path.getValue().get_value<float>();
-	if (!resolved_path.setValue(8.0f))
-		return -1; 
+	REQUIRE(resolved_path.setValue(8.0f));
 
 	// Restore value so we can compare later
 	resolved_path.setValue(old_value);
@@ -149,8 +144,7 @@ int main(int argc, char* argv[])
 
 		// Write to json
 		JSONWriter writer;
-		if (!serializeObjects({ root }, writer, error_state))
-			return -1;
+		REQUIRE(serializeObjects({ root }, writer, error_state));
 
 		// Print json
 		std::string json = writer.GetJSON();
@@ -158,12 +152,10 @@ int main(int argc, char* argv[])
 
 		// Read json and verify it succeeds
 		DeserializeResult read_result;
-		if (!deserializeJSON(json, factory, read_result, error_state))
-			return -1;
+		REQUIRE(deserializeJSON(json, EPropertyValidationMode::DisallowMissingProperties, factory, read_result, error_state));
 
 		// Resolve links
-		if (!DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state))
-			return -1;
+		REQUIRE(DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state));
 
 		// Sort read objects into id mapping
 		std::map<std::string, Object*> objects_by_id;
@@ -173,7 +165,7 @@ int main(int argc, char* argv[])
 // 		// Compare root objects
 // 		if (!rtti::areObjectsEqual(*objects_by_id["Root"], *root, rtti::EPointerComparisonMode::BY_ID))
 // 			return -1;
-//  
+//
 // 		// Compare pointee-objects
 // 		if (!rtti::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, rtti::EPointerComparisonMode::BY_ID))
 // 			return -1;
@@ -184,18 +176,15 @@ int main(int argc, char* argv[])
 
 		// Write to binary
 		BinaryWriter binary_writer;
-		if (!serializeObjects({ root }, binary_writer, error_state))
-			return -1;
+		REQUIRE(serializeObjects({ root }, binary_writer, error_state));
 
 		// Read binary and verify it succeeds
 		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
 		DeserializeResult read_result;
-		if (!deserializeBinary(stream, factory, read_result, error_state))
-			return -1;
+		REQUIRE(deserializeBinary(stream, factory, read_result, error_state));
 
 		// Resolve links
-		if (!DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state))
-			return -1;
+		REQUIRE(DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state));
 
 		// Sort read objects into id mapping
 		std::map<std::string, Object*> objects_by_id;
@@ -205,13 +194,10 @@ int main(int argc, char* argv[])
 // 		// Compare root objects
 // 		if (!rtti::areObjectsEqual(*objects_by_id["Root"], *root, rtti::EPointerComparisonMode::BY_ID))
 // 			return -1;
-// 
+//
 // 		// Compare pointee-objects
 // 		if (!rtti::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, rtti::EPointerComparisonMode::BY_ID))
 // 			return -1;
 	}
 
-	Logger::info("Serialization test exiting cleanly");
-	
-	return 0;
-} 
+}
