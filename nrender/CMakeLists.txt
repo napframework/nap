@@ -3,17 +3,17 @@ project(nrender)
 
 if(WIN32)
     if(MSVC)
-        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/SDL2/msvc/lib/x64")
+        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64)
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/msvc)
     else()
-        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/SDL2/mingw/x86_64-w64-mingw32")
+        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/mingw/x86_64-w64-mingw32)
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/mingw/x86_64-w64-mingw32)
     endif()
 elseif(APPLE)
-    set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/SDL2/osx/install/lib")
+    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/osx/install/lib)
     set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/osx/install)
 elseif(UNIX)
-    set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/SDL2/linux/install/lib")
+    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/linux/install/lib)
     set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/linux/install)    
 endif()
 find_package(SDL2 REQUIRED)
@@ -21,27 +21,27 @@ find_package(SDL2 REQUIRED)
 if(WIN32)
     if(MSVC)
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/msvc)
-        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64")
+        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64)
     else()
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/msvc)
-        set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64")
+        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64)
     endif()
 elseif(APPLE)
-    set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/osx/install/lib")
+    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/osx/install/lib)
     set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/osx/install)
 elseif(UNIX)
-    set(CMAKE_LIBRARY_PATH "${THIRDPARTY_DIR}/glew/linux/install/lib")
+    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/glew/linux/install/lib)
     set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/glew/linux/install)
 endif()
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
 find_package(GLEW REQUIRED)
 
 if(WIN32)
-    set(assimp_DIR "${THIRDPARTY_DIR}/assimp/msvc64/install/lib/cmake/assimp-3.3")
+    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/msvc64/install/lib/cmake/assimp-3.3)
 elseif(APPLE)
-    set(assimp_DIR "${THIRDPARTY_DIR}/assimp/osx/install/lib/cmake/assimp-3.3")      
+    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/osx/install/lib/cmake/assimp-3.3)      
 elseif(UNIX)
-    set(assimp_DIR "${THIRDPARTY_DIR}/assimp/linux/install/lib/cmake/assimp-3.3")   
+    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/linux/install/lib/cmake/assimp-3.3)   
 endif()
 find_package(assimp REQUIRED)
 
@@ -117,7 +117,7 @@ else()
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/${CMAKE_BUILD_TYPE})   
 endif()
 
-install(DIRECTORY "src/" DESTINATION "include/nrender/"
+install(DIRECTORY src/ DESTINATION include/nrender/
         FILES_MATCHING PATTERN "*.h")
 
 # Package dependent libs into platform release --
@@ -155,22 +155,22 @@ elseif(UNIX)
 endif()
 
 # GLM
-install(FILES "${THIRDPARTY_DIR}/glm/copying.txt" DESTINATION "thirdparty/glm")
-install(DIRECTORY "${THIRDPARTY_DIR}/glm/glm/" DESTINATION "thirdparty/glm")
+install(FILES ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION thirdparty/glm)
+install(DIRECTORY ${THIRDPARTY_DIR}/glm/glm/ DESTINATION thirdparty/glm)
 
 # GLEW
 if (WIN32)
-    install(DIRECTORY "${THIRDPARTY_DIR}/glew/msvc/" DESTINATION "thirdparty/glew"
+    install(DIRECTORY ${THIRDPARTY_DIR}/glew/msvc/ DESTINATION thirdparty/glew
             PATTERN "lib" EXCLUDE
             PATTERN "bin" EXCLUDE)
-    install(DIRECTORY "${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/" DESTINATION "thirdparty/glew/bin")
-    install(FILES ${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64/glew32.lib DESTINATION "thirdparty/glew/lib/")
+    install(DIRECTORY ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/ DESTINATION thirdparty/glew/bin)
+    install(FILES ${THIRDPARTY_DIR}/glew/msvc/lib/Release/x64/glew32.lib DESTINATION thirdparty/glew/lib/)
 elseif(APPLE)
-    install(DIRECTORY "${THIRDPARTY_DIR}/glew/osx/install/" DESTINATION "thirdparty/glew"
+    install(DIRECTORY ${THIRDPARTY_DIR}/glew/osx/install/ DESTINATION thirdparty/glew
             PATTERN "lib" EXCLUDE)
-    install(FILES "${THIRDPARTY_DIR}/glew/osx/install/lib/libGLEW.dylib" DESTINATION "thirdparty/glew/lib")
+    install(FILES ${THIRDPARTY_DIR}/glew/osx/install/lib/libGLEW.dylib DESTINATION thirdparty/glew/lib)
 elseif(UNIX)
-    install(DIRECTORY "${THIRDPARTY_DIR}/glew/linux/install/" DESTINATION "thirdparty/glew"
+    install(DIRECTORY ${THIRDPARTY_DIR}/glew/linux/install/ DESTINATION thirdparty/glew
             PATTERN "lib" EXCLUDE)
     file(GLOB GLEW_DYLIBS ${THIRDPARTY_DIR}/glew/linux/install/lib/*.so*)
     install(FILES ${GLEW_DYLIBS} DESTINATION thirdparty/glew/lib)
@@ -180,15 +180,15 @@ endif()
 install(FILES ${THIRDPARTY_DIR}/SDL2/msvc/COPYING.txt
         DESTINATION thirdparty/SDL2)
 if (WIN32)
-    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/msvc/" DESTINATION "thirdparty/SDL2"
+    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/msvc/ DESTINATION thirdparty/SDL2
             PATTERN "lib" EXCLUDE)
-    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/" DESTINATION "thirdparty/SDL2/lib")
+    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/ DESTINATION thirdparty/SDL2/lib)
 elseif(APPLE)
-    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/osx/install/include" DESTINATION "thirdparty/SDL2")
+    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/osx/install/include DESTINATION thirdparty/SDL2)
     file(GLOB SDL_DYLIBS ${THIRDPARTY_DIR}/SDL2/osx/install/lib/*.dylib)
     install(FILES ${SDL_DYLIBS} DESTINATION thirdparty/SDL2/lib)    
 elseif(UNIX)
-    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/linux/install/include" DESTINATION "thirdparty/SDL2")
+    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/linux/install/include DESTINATION thirdparty/SDL2)
     file(GLOB SDL_DYLIBS ${THIRDPARTY_DIR}/SDL2/linux/install/lib/*.so*)
     install(FILES ${SDL_DYLIBS} ${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2main.a
             DESTINATION thirdparty/SDL2/lib)

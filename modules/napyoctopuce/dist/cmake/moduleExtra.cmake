@@ -15,3 +15,5 @@ elseif(UNIX)
     # Install yoctopuce lib into packaged app
     install(FILES $<TARGET_FILE:yoctopuce> DESTINATION lib)
 endif()
+
+# TODO Install yoctopuce library with packaged app if we find one

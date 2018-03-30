@@ -26,29 +26,36 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDES})
 
 if(UNIX)
     # Package assimp into packaged project on *nix
-    install(DIRECTORY "${THIRDPARTY_DIR}/assimp/lib/" 
+    install(DIRECTORY ${THIRDPARTY_DIR}/assimp/lib/
             DESTINATION "lib"
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE)    
 
     # Package SDL2 into packaged project on *nix
-    install(DIRECTORY "${THIRDPARTY_DIR}/SDL2/lib/" 
+    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/lib/
             DESTINATION "lib"
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)    
 
     # Package glew into packaged project on *nix
-    install(DIRECTORY "${THIRDPARTY_DIR}/glew/lib/" 
-            DESTINATION "lib")   
+    install(DIRECTORY ${THIRDPARTY_DIR}/glew/lib/
+            DESTINATION lib)   
 endif()    
 
 if(UNIX AND NOT APPLE)
     # Package FreeImage into packaged project on *nix
     # TODO move into above block once we've resolved the macOS-only static lib, Jira NAP-71
-    install(DIRECTORY "${THIRDPARTY_DIR}/FreeImage/lib/" 
-            DESTINATION "lib"
+    install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/lib/"
+            DESTINATION lib
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)    
 endif()
+
+# Install thirdparty licenses into lib
+install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/license/ DESTINATION licenses/FreeImage)
+install(DIRECTORY ${THIRDPARTY_DIR}/glew/LICENSE.txt DESTINATION licenses/glew)
+install(DIRECTORY ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION licenses/glm)
+install(DIRECTORY ${THIRDPARTY_DIR}/assimp/LICENSE DESTINATION licenses/assimp)
+install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/COPYING.txt DESTINATION licenses/SDL2)

@@ -22,3 +22,6 @@ elseif(UNIX)
     # Install FFmpeg into packaged app
     install(DIRECTORY "${THIRDPARTY_DIR}/FFmpeg/lib/" DESTINATION "lib")
 endif()
+
+# TODO Install FFmpeg license into packaged app
+# TODO Install FFmpeg source into packaged app to comply with license?!

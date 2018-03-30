@@ -92,3 +92,8 @@ elseif(APPLE)
 elseif(UNIX)
     set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../..")
 endif()
+
+# Add tclap license into release
+install(FILES ${THIRDPARTY_DIR}/tclap-1.2.1/README
+              ${THIRDPARTY_DIR}/tclap-1.2.1/COPYING
+        DESTINATION thirdparty/tclap)
