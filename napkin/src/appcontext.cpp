@@ -38,7 +38,9 @@ AppContext::~AppContext()
 
 AppContext& AppContext::get()
 {
-    assert(appContextInstance != nullptr);
+	if (appContextInstance == nullptr)
+		create();
+
     return *appContextInstance;
 }
 
