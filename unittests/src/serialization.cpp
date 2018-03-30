@@ -30,7 +30,8 @@ void deserialize(Core& core, const std::string& jsonData, OwnedObjectList& outOb
 	auto& factory = core.getResourceManager()->getFactory();
 
 	nap::rtti::DeserializeResult result;
-	if (!deserializeJSON(jsonData, factory, result, err))
+
+	if (!deserializeJSON(jsonData, EPropertyValidationMode::DisallowMissingProperties, factory, result, err))
 		FAIL("Failed to deserialize json data: " + err.toString());
 
 	if (!DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
