@@ -186,3 +186,6 @@ else()
     endforeach()
     unset(INSTALLING_MODULE_FOR_NAPKIN)
 endif()
+
+# Install Qt licenses into packaged app
+install(DIRECTORY ${THIRDPARTY_DIR}/Qt/licenses/ DESTINATION licenses/Qt)
