@@ -46,7 +46,7 @@ endif()
 if(UNIX AND NOT APPLE)
     # Package FreeImage into packaged project on *nix
     # TODO move into above block once we've resolved the macOS-only static lib, Jira NAP-71
-    install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/lib/"
+    install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/lib/
             DESTINATION lib
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
@@ -55,7 +55,7 @@ endif()
 
 # Install thirdparty licenses into lib
 install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/license/ DESTINATION licenses/FreeImage)
-install(DIRECTORY ${THIRDPARTY_DIR}/glew/LICENSE.txt DESTINATION licenses/glew)
-install(DIRECTORY ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION licenses/glm)
-install(DIRECTORY ${THIRDPARTY_DIR}/assimp/LICENSE DESTINATION licenses/assimp)
-install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/COPYING.txt DESTINATION licenses/SDL2)
+install(FILES ${THIRDPARTY_DIR}/glew/LICENSE.txt DESTINATION licenses/glew)
+install(FILES ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION licenses/glm)
+install(FILES ${THIRDPARTY_DIR}/assimp/LICENSE DESTINATION licenses/assimp)
+install(FILES ${THIRDPARTY_DIR}/SDL2/COPYING.txt DESTINATION licenses/SDL2)

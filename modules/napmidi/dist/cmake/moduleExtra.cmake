@@ -4,5 +4,5 @@ if(UNIX AND NOT APPLE)
     install(FILES ${RTMIDI_DYLIBS} DESTINATION lib)
 endif()
 
-# Install rtmidi into packaged project
+# Install rtmidi license into packaged project
 install(FILES ${THIRDPARTY_DIR}/rtmidi/README.md DESTINATION licenses/rtmidi)
