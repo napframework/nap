@@ -47,6 +47,7 @@ AppContext& AppContext::get()
 
 void AppContext::create()
 {
+	assert(appContextInstance == nullptr);
     appContextInstance = std::make_unique<AppContext>();
 }
 
