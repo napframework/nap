@@ -98,7 +98,7 @@ namespace nap
              * The number of input channels in the stream. 
              * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
              */
-            int mInputChannelCount = 0;
+            int mInputChannelCount = 1;
 
             /** 
              * The number of output channels in the stream. 

@@ -65,13 +65,13 @@ namespace nap
 		float												mDurationScale = 1.0f;
 		bool												mCycleColors = false;
 		float												mColorCycleTime = 1.0f;
-		int													mCompositionCycleMode = 0;
 		int													mSelectedWeek = 1;
 		int													mColorPaletteCycleMode = 0;
 		int													mDay = 0;
 		utility::DateTime									mDateTime;
 		RGBColor8											mTextColor = { 0xC8, 0x69, 0x69 };
 		float												mDisplaySize = 0.5f;
+		int													mCompositionCycleMode = 2;
 
 		// Information
 		std::array<float, 512>								mLuxValues;
@@ -101,21 +101,6 @@ namespace nap
 		*	Sets the current composition cycle mode
 		*/
 		void selectCompositionCycleMode();
-
-		/**
-		*	Sets the current palette week
-		*/
-		void selectPaletteWeek();
-
-		/**
-		*	Sets the current palette cycle mode
-		*/
-		void selectPaletteCycleMode();
-
-		/**
-		*	Sets the current color palette cycle speed
-		*/
-		void setColorPaletteCycleSpeed(float seconds);
 
 		/**
 		 *	Update lux historgram

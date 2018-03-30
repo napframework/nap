@@ -29,6 +29,9 @@ namespace nap
 		mBrightnessValues.fill(0.0f);
 		mLedOn  = app.getCore().getResourceManager()->findObject<nap::ImageFromFile>("LedOnImage");
 		mLedOff = app.getCore().getResourceManager()->findObject<nap::ImageFromFile>("LedOffImage");
+
+		CompositionComponentInstance& comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
+		mCompositionCycleMode = static_cast<int>(comp.getCycleMode());
 	}
 
 
@@ -68,27 +71,6 @@ namespace nap
 	{
 		CompositionComponentInstance& comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
 		comp.setCycleMode(static_cast<nap::CompositionCycleMode>(mCompositionCycleMode));
-	}
-
-
-	void KalvertorenGui::selectPaletteWeek()
-	{
-		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.selectWeek(mSelectedWeek - 1);
-	}
-
-
-	void KalvertorenGui::selectPaletteCycleMode()
-	{
-		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.setCycleMode(static_cast<nap::ColorPaletteCycleMode>(mColorPaletteCycleMode));
-	}
-
-
-	void KalvertorenGui::setColorPaletteCycleSpeed(float minutes)
-	{
-		ColorPaletteComponentInstance& comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.setCycleSpeed(minutes * 60.0f);
 	}
 
 
@@ -134,8 +116,6 @@ namespace nap
 
 		// Force cycle modes
 		selectCompositionCycleMode();
-		selectPaletteCycleMode();
-		setColorPaletteCycleSpeed(mColorCycleTime);
 	}
 
 
@@ -229,16 +209,20 @@ namespace nap
 				}
 			}
 
+			// Turn lock to week on / off
 			ColorPaletteComponentInstance& color_palette_comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-			bool lockWeek = color_palette_comp.getLockWeek();
-			if (ImGui::Checkbox("Lock week to current week", &lockWeek))
-				color_palette_comp.setLockWeek(lockWeek);
+			ImGui::Checkbox("Lock week to current week", &(color_palette_comp.mLockWeek));
+
+			// Link 
+			ImGui::Checkbox("Link To Composition", &(color_palette_comp.mLinked));
 
 			mSelectedWeek = color_palette_comp.getSelectedWeek() + 1;
 			if (ImGui::InputInt("Week Number", &mSelectedWeek, 1))
 			{
-				if (!lockWeek)
-					selectPaletteWeek();
+				if (!color_palette_comp.isLocked())
+				{
+					color_palette_comp.selectWeek(mSelectedWeek - 1);
+				}
 			}
 
 			// Changes the color palette
@@ -246,23 +230,12 @@ namespace nap
 			{
 				palette_selector.selectVariation(mPaletteSelection);
 			}
-
-			// Changes the mesh paint mode
-			if (ImGui::Combo("Variation Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
-			{
-				selectPaletteCycleMode();
-			}
-
-			// Changes the time at which a new color palette is selected
-			if (ImGui::SliderFloat("Cycle Time (minutes)", &mColorCycleTime, 0.0f, 60.0f, "%.3f", 3.0f))
-			{
-				setColorPaletteCycleSpeed(mColorCycleTime);
-			}
 		}
 
 		if (ImGui::CollapsingHeader("Brightness"))
 		{
 			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+			ImGui::Checkbox("Use Opening Hours", &(light_comp.mUseOpeningHours));
 			if (ImGui::InputFloat2("Lux Range", &(mLuxRange.x)))
 				light_comp.setLuxRange(mLuxRange);
 
@@ -360,6 +333,23 @@ namespace nap
 			ImGui::PlotHistogram("Brightness History", mBrightnessValues.data(), mBrightnessValues.size(), mBrightnessIdx, NULL, 0.0f, 1.0f, ImVec2(0, 80));
 		}
 
+		// Opening Hours
+		if (ImGui::CollapsingHeader("Opening Hours"))
+		{
+			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+			OpeningTime opening_time, closing_time;
+			light_comp.getOpeningTimes(utility::getCurrentDateTime(), opening_time, closing_time);
+			ImGui::TextColored(float_clr_gui, "Opening Hours:");
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("%02d:%02d", opening_time.mHour, opening_time.mMinute).c_str());
+			ImGui::TextColored(float_clr_gui, "Closing Hours:");
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("%02d:%02d", closing_time.mHour, closing_time.mMinute).c_str());
+			ImGui::TextColored(float_clr_gui, "Stores: ");
+			ImGui::SameLine();
+			ImGui::Text(light_comp.isOpen() ? "Open" : "Closed");
+		}
+
 		if (ImGui::CollapsingHeader("Composition"))
 		{
 			CompositionComponentInstance& composition_comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
@@ -390,10 +380,12 @@ namespace nap
 		if (ImGui::CollapsingHeader("Colors"))
 		{
 			ColorPaletteComponentInstance& palette_comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-			ImGui::TextColored(float_clr_gui, "Status: ");
+			ImGui::TextColored(float_clr_gui, "Selected Week: ");
 			ImGui::SameLine();
-			ImGui::Text(palette_comp.getStatus() == ColorPaletteComponentInstance::EStatus::Active ? "Active" : "Completed");
-			ImGui::ProgressBar(palette_comp.getProgress());
+			ImGui::Text(utility::stringFormat("%d", palette_comp.getSelectedWeek()+1).c_str());
+			ImGui::TextColored(float_clr_gui, "Palette Index: ");
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("%d", palette_comp.getVariation()).c_str());
 		}
 
 		if (ImGui::CollapsingHeader("Index Map"))
@@ -464,5 +456,3 @@ namespace nap
 			mBrightnessIdx = 0;
 	}
 }
-
-
