@@ -1,13 +1,11 @@
 // Local Includes
 #include "fileutils.h"
-#include "stringutils.h"
 
 // External Includes
 #include <cstring>
 
 // clang-format off
 
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #ifdef _WIN32
@@ -26,19 +24,15 @@
 	#include <direct.h>
 #elif __APPLE__
     #include <stdlib.h>
-    #include <zconf.h>
     #include <sys/stat.h>
     #include <dirent.h>
     #include <fstream>
 	#include <unistd.h>
 	#include <mach-o/dyld.h>
 #else
-    #include <zconf.h>
-    #include <sys/stat.h>
+    #include <unistd.h>
     #include <dirent.h>
     #include <fstream>
-	#include <unistd.h>
-	#include <sstream>
 #endif
 
 // clang-format on
@@ -109,7 +103,7 @@ namespace nap
 		// Return file extension, empty string if file has no extension
 		std::string getFileExtension(const std::string &filename)
 		{
-			const size_t idx = filename.find_last_of(".");
+			const size_t idx = filename.find_last_of('.');
 			if (idx == std::string::npos)
 				return "";
 			return filename.substr(idx + 1);
@@ -135,7 +129,7 @@ namespace nap
 			// to get the current dir running from command line on OSX.
 			replaceAllInstances(name, "/./", "/");
 
-			const size_t last_slash_idx = name.find_last_of("/");
+			const size_t last_slash_idx = name.find_last_of('/');
 			if (last_slash_idx != std::string::npos)
 				name = name.erase(last_slash_idx, name.size() - last_slash_idx);
 			return name;
@@ -154,7 +148,7 @@ namespace nap
 		// Get file name without extension
 		void stripFileExtension(std::string& file)
 		{
-			const size_t idx = file.find_last_of(".");
+			const size_t idx = file.find_last_of('.');
 			if (idx != std::string::npos)
 			{
 				size_t length = file.size() - idx;
@@ -215,6 +209,25 @@ namespace nap
 		}
 
 
+		bool makeDirs(const std::string& directory)
+		{
+			std::string parent_dir = getFileDir(directory);
+			if (!dirExists(parent_dir))
+			{
+				if (!makeDirs(parent_dir))
+					return false;
+			}
+
+			int err= 0;
+#if defined(_WIN32)
+			err = _mkdir(directory.c_str());
+#else
+			err = mkdir(directory.c_str(), 0733); // UNIX style permissions
+#endif
+			return (err == 0);
+		}
+
+
 		void writeStringToFile(const std::string& filename, const std::string& contents) {
 			std::ofstream out(filename);
 			out << contents;
@@ -270,7 +283,7 @@ namespace nap
 			std::string link = oss.str();
 
 			// Read the contents of the link.
-			int count = readlink(link.c_str(), &buffer[0], bufferSize);
+			ssize_t count = readlink(link.c_str(), &buffer[0], bufferSize);
 			if (count == -1) throw std::runtime_error("Could not read symbolic link");
 			buffer[count] = '\0';
 
