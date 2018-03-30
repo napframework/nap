@@ -99,4 +99,13 @@ if(NOT WIN32)
     # for RTTI/Core.
     file(GLOB PYTHON_DYLIBS ${THIRDPARTY_DIR}/python/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PYTHON_DYLIBS} DESTINATION lib/)
+
+    # Install Python license into packaged project
+    install(FILES ${THIRDPARTY_DIR}/python/LICENSE DESTINATION licenses/python/)    
 endif()
+
+# Install RTTR license into packaged project
+install(FILES ${THIRDPARTY_DIR}/rttr/LICENSE.txt DESTINATION licenses/RTTR/)
+
+# Install pybind license into packaged project
+install(FILES ${THIRDPARTY_DIR}/pybind11/LICENSE DESTINATION licenses/pybind11/)

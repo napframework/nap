@@ -11,6 +11,9 @@ if(WIN32)
                                $<TARGET_FILE_DIR:${PROJECT_NAME}> 
                        )
 elseif(UNIX)
-    # Install artnet lib into packaged app
+    # Install artnet lib into packaged project
     install(FILES $<TARGET_FILE:artnet> DESTINATION lib)
 endif()
+
+# Install artnet license into packaged project
+install(FILES ${THIRDPARTY_DIR}/libartnet/COPYING DESTINATION licenses/libartnet)

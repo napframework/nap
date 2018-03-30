@@ -43,3 +43,8 @@ elseif(UNIX)
         install(FILES $<TARGET_FILE_DIR:mpg123>/libmpg123.dylib DESTINATION lib)        
     endif()
 endif()
+
+# Install thirdparty licenses into packaged project
+install(FILES ${THIRDPARTY_DIR}/portaudio/LICENSE.txt licenses/portaudio)
+install(FILES ${THIRDPARTY_DIR}/libsndfile/COPYING licenses/libsndfile)
+install(FILES ${THIRDPARTY_DIR}/mpg123/LICENSE licenses/mpg123)
