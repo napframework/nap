@@ -21,9 +21,9 @@ macro(package_nap)
 
     # Install wrapper batch scripts for user tools
     if(WIN32)
-        file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/win64/user_tools_wrappers/*.*")
+        file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/win64/userToolsWrappers/*.*")
     else()
-        file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/unix/user_tools_wrappers/*")
+        file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/unix/userToolsWrappers/*")
     endif()
     install(PROGRAMS ${USER_TOOL_WRAPPERS} DESTINATION tools)
 
@@ -32,16 +32,16 @@ macro(package_nap)
     install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
 
     # Package project directory package & regenerate shortcuts
-    package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
+    package_project_dir_shortcuts("tools/platform/projectDirShortcuts")
 
     # Package checkBuildEnvironment scripts
     if(APPLE)
-        install(PROGRAMS ${NAP_ROOT}/dist/macos/check_build_environment/checkBuildEnvironment DESTINATION tools)
+        install(PROGRAMS ${NAP_ROOT}/dist/macos/checkBuildEnvironment/checkBuildEnvironment DESTINATION tools)
     elseif(UNIX)
-        install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/checkBuildEnvironment DESTINATION tools)
+        install(PROGRAMS ${NAP_ROOT}/dist/linux/checkBuildEnvironment/checkBuildEnvironment DESTINATION tools)
     else()
-        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/checkBuildEnvironment.bat DESTINATION tools)
-        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/checkBuildEnvironmentContinued.py DESTINATION tools/platform)
+        install(FILES ${NAP_ROOT}/dist/win64/checkBuildEnvironment/checkBuildEnvironment.bat DESTINATION tools)
+        install(FILES ${NAP_ROOT}/dist/win64/checkBuildEnvironment/checkBuildEnvironmentContinued.py DESTINATION tools/platform)
     endif()
 
     # Create empty projects and usermodules directories
@@ -283,12 +283,12 @@ endmacro()
 macro(package_project_dir_shortcuts DESTINATION)
     # Package project directory package & regenerate shortcuts
     if(WIN32)
-        install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.bat
-                         ${NAP_ROOT}/dist/win64/project_dir_shortcuts/regenerate.bat
+        install(PROGRAMS ${NAP_ROOT}/dist/win64/projectDirShortcuts/package.bat
+                         ${NAP_ROOT}/dist/win64/projectDirShortcuts/regenerate.bat
                 DESTINATION ${DESTINATION})
     else()
-        install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
-                         ${NAP_ROOT}/dist/unix/project_dir_shortcuts/regenerate
+        install(PROGRAMS ${NAP_ROOT}/dist/unix/projectDirShortcuts/package
+                         ${NAP_ROOT}/dist/unix/projectDirShortcuts/regenerate
                 DESTINATION ${DESTINATION})
     endif()
 endmacro()

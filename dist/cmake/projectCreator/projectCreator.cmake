@@ -36,11 +36,11 @@ configure_file(${TEMPLATE_ROOT}/src/templateapp.h ${PROJECT_DIR}/src/${PROJECT_N
 
 # Create our project directory package and regenerate shortcuts
 if(UNIX)
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/package ${PROJECT_DIR}/package @ONLY)
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/regenerate ${PROJECT_DIR}/regenerate @ONLY)
+    configure_file(${NAP_ROOT}/tools/platform/projectDirShortcuts/package ${PROJECT_DIR}/package @ONLY)
+    configure_file(${NAP_ROOT}/tools/platform/projectDirShortcuts/regenerate ${PROJECT_DIR}/regenerate @ONLY)
 elseif(WIN32)
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/package.bat ${PROJECT_DIR}/package.bat @ONLY)
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/regenerate.bat ${PROJECT_DIR}/regenerate.bat @ONLY)    
+    configure_file(${NAP_ROOT}/tools/platform/projectDirShortcuts/package.bat ${PROJECT_DIR}/package.bat @ONLY)
+    configure_file(${NAP_ROOT}/tools/platform/projectDirShortcuts/regenerate.bat ${PROJECT_DIR}/regenerate.bat @ONLY)    
 endif()
 
 # Make a shaders directory
