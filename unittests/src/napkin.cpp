@@ -11,6 +11,8 @@
 
 #define TAG_NAPKIN "[napkin]"
 
+using namespace napkin;
+
 class SigCapture
 {
 public:
@@ -36,6 +38,7 @@ QString getResource(const QString& filename)
 
 TEST_CASE("Document Management", TAG_NAPKIN)
 {
+	
 	auto doc = napkin::AppContext::get().getDocument();
 
 	// Must have a default document
