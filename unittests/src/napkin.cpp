@@ -456,8 +456,8 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 {
 	// Must start QApplication in order to have an event loop for signals?
 	int argc = 1;
-	char* argv[] = {"arg!"};
-	QCoreApplication app(argc, argv);
+	const char* argv[] = { "arg","blop" };
+	QCoreApplication app(argc, const_cast<char**>(argv));
 
 	// Assume this test file's directory as the base path
 	QString jsonFile = "objects.json";
