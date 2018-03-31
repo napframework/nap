@@ -66,6 +66,8 @@ namespace nap
 	public:
 		ImageSequenceLayerInstance(ImageSequenceLayer& layer);
 
+		~ImageSequenceLayerInstance();
+
 		/**
 		 *	Update the animation of this sequence.
 		 */
