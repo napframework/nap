@@ -111,7 +111,15 @@ napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) con
 rttr::type napkin::PropertyPath::getWrappedType() const
 {
 	const auto& type = getType();
-	return type.is_wrapper() ? type.get_wrapped_type() : type;
+	auto wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
+	if (type.is_array())
+	{
+		nap::rtti::Variant value = getValue();
+		nap::rtti::VariantArray array = value.create_array_view();
+		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+		wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+	}
+	return wrapped_type;
 }
 
 bool napkin::PropertyPath::isValid() const
