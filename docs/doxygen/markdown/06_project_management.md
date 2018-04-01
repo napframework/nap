@@ -25,7 +25,7 @@ Project Management {#project_management}
 
 # Overview {#proj_overview}
 
-NAP leverages a [CMake](https://cmake.org/) build system to provide all the basic project management facilities of the framework.  The access points to this system are all within the tools folder in the root of the framework release.  Convenience shortcuts to regenerate the IDE/Unix makefile project and package the NAP project also sit within each project.
+NAP leverages a <a href="https://cmake.org/" target="_blank">CMake</a> build system to provide all the basic project management facilities of the framework.  The access points to this system are all within the tools folder in the root of the framework release.  Convenience shortcuts to regenerate the IDE/Unix makefile project and package the NAP project also sit within each project.
 
 We'll go over the basic tasks here and then cover some more advanced topics in the [Custom CMake](@ref custom_cmake) section for those who want to take things further.
 
@@ -245,7 +245,7 @@ Project packaging is also accessible from by command prompt in the NAP root via 
 
 # Custom CMake {#custom_cmake}
 
-For the NAP beta release we've focused on providing a streamlined environment for people to start making projects and modules against the framework along with of course some testing out of the demos.  However we've also provided some extensibility in the [CMake](https://cmake.org/) system for people who would like to take things a little further.
+For the NAP beta release we've focused on providing a streamlined environment for people to start making projects and modules against the framework along with of course some testing out of the demos.  However we've also provided some extensibility in the <a href="https://cmake.org/" target="_blank">CMake</a> system for people who would like to take things a little further.
 
 CMake itself is vast and complex system and far beyond the scope of this document but we look forward to hearing from you and getting feedback on limitations reached with the current hooks we've provided for custom CMake logic.
 
@@ -262,9 +262,9 @@ Below is an example of a simple `projectExtra.cmake` with an added include path:
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/pathToHeaders)
 ```
 
-In this example [target_include_directories](https://cmake.org/cmake/help/v3.6/command/target_include_directories.html) is used with ${PROJECT_NAME} referring to the project target and `CMAKE_CURRENT_LIST_DIR` being used to refer to the project root directory.  It's important to remember that `projectExtra.cmake` is included within NAP's existing CMake project and as such doesn't replace the existing template and as a result this limits what functions make sense within this supplementary file.
+In this example <a href="https://cmake.org/cmake/help/v3.6/command/target_include_directories.html" target="_blank">target_include_directories</a> is used with `${PROJECT_NAME}` referring to the project target and `CMAKE_CURRENT_LIST_DIR` being used to refer to the project root directory.  It's important to remember that `projectExtra.cmake` is included within NAP's existing CMake project and as such doesn't replace the existing template and as a result this limits what functions make sense within this supplementary file.
 
-When a project is packaged the entire `data` directory from the project is included, alongside the core libraries, the modules and their third party dependencies.  If you need to include anything extra into the packaged project do so using CMake's [install](https://cmake.org/cmake/help/v3.6/command/install.html) command.  Below is an example `projectExtra.json` installing an extra file `example.txt` from the project root into the packaged project.
+When a project is packaged the entire `data` directory from the project is included, alongside the core libraries, the modules and their third party dependencies.  If you need to include anything extra into the packaged project do so using CMake's <a href="https://cmake.org/cmake/help/v3.6/command/install.html" target="_blank">install</a> command.  Below is an example `projectExtra.json` installing an extra file `example.txt` from the project root into the packaged project.
 
 ```
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/example.txt DESTINATION .)
@@ -343,11 +343,11 @@ find_package(foo REQUIRED)
 target_link_libraries(${PROJECT_NAME} foo)
 ```
 
-CMake's [find_package](https://cmake.org/cmake/help/v3.6/command/find_package.html) has been used to locate the module, and [target_link_libraries](https://cmake.org/cmake/help/v3.6/command/target_link_libraries.html) links the library into the module.
+CMake's <a href="https://cmake.org/cmake/help/v3.6/command/find_package.html" target="_blank">find_package</a> has been used to locate the module, and <a href="https://cmake.org/cmake/help/v3.6/command/target_link_libraries.html" target="_blank">target_link_libraries</a> links the library into the module.
 
 At this stage the library is now available to include and link on all platforms however if we attempt to run a project using the module on Windows the DLL won't be found.
 
-Let's use a post-build command via [add_custom_command](https://cmake.org/cmake/help/v3.6/command/add_custom_command.html) to copy the third party DLL into the project directory by adding the following into the `moduleExtra.cmake`:
+Let's use a post-build command via <a href="https://cmake.org/cmake/help/v3.6/command/add_custom_command.html" target="_blank">add_custom_command</a> to copy the third party DLL into the project directory by adding the following into the `moduleExtra.cmake`:
 
 ```
 if(WIN32)
@@ -364,7 +364,7 @@ endif()
 
 Your module with its libfoo third party dependency will now build and run on all three platforms.
 
-The last consideration is to ensure the third party shared library is include in the packaged project.  Due to the fact that we've already copied the DLL into the project bin directory on Windows we have already completed that step there.  However on macOS and Linux we need to need to add this as a step using CMake's [install](https://cmake.org/cmake/help/v3.6/command/install.html) command.  Add the following to your `moduleExtra.cmake`, noting that we're installing the library into the `lib` directory within the package:
+The last consideration is to ensure the third party shared library is include in the packaged project.  Due to the fact that we've already copied the DLL into the project bin directory on Windows we have already completed that step there.  However on macOS and Linux we need to need to add this as a step using CMake's <a href="https://cmake.org/cmake/help/v3.6/command/install.html" target="_blank">install</a> command.  Add the following to your `moduleExtra.cmake`, noting that we're installing the library into the `lib` directory within the package:
 ```
 if(UNIX)
     # Install libfoo into lib directory in packaged project on macOS and Linux
