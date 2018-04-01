@@ -184,7 +184,7 @@ bool napkin::revealInFileBrowser(const QString& filename)
 
 bool napkin::openInExternalEditor(const QString& filename)
 {
-    QDesktopServices::openUrl(QUrl("file:///" + filename, QUrl::TolerantMode));
+    return QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
 }
 
 
