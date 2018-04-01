@@ -141,7 +141,20 @@ bool napkin::PropertyPath::isEnum() const
 
 bool napkin::PropertyPath::isPointer() const
 {
-	return getType().is_pointer();
+	const auto& type = getType();
+	const nap::rtti::TypeInfo wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
+	// TODO: There must be a less convoluted way.
+	// In the case of array elements, the type will be the array type, not the element type.
+	// For now, grab the array's element type and use that.
+	nap::rtti::TypeInfo wrapped_array_type = rttr::type::empty();
+	if (type.is_array()) {
+		nap::rtti::Variant value = getValue();
+		nap::rtti::VariantArray array = value.create_array_view();
+		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+		wrapped_array_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+	}
+
+	return wrapped_type.is_pointer() || wrapped_array_type.is_pointer();
 }
 
 
