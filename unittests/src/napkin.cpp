@@ -368,6 +368,8 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 		napkin::PropertyPath path(comp, "Mesh");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
+		REQUIRE(!path.getWrappedType().is_derived_from(RTTI_OF(nap::Entity)));
+		REQUIRE(path.getWrappedType().is_derived_from(RTTI_OF(nap::IMesh)));
 	}
 
 	SECTION("verify nested pointer")
@@ -376,6 +378,8 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 		napkin::PropertyPath path(comp, "MaterialInstance/Material");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
+		REQUIRE(!path.getWrappedType().is_derived_from(RTTI_OF(nap::Entity)));
+		REQUIRE(path.getWrappedType().is_derived_from(RTTI_OF(nap::Material)));
 	}
 }
 
