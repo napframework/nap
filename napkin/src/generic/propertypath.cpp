@@ -134,6 +134,16 @@ bool napkin::PropertyPath::operator==(const napkin::PropertyPath& other) const
 	return true;
 }
 
+bool napkin::PropertyPath::isEnum() const
+{
+	return getType().is_enumeration();
+}
+
+bool napkin::PropertyPath::isPointer() const
+{
+	return getType().is_pointer();
+}
+
 
 
 
