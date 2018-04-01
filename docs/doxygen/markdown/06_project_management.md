@@ -282,7 +282,7 @@ The focus here will be on including a new thirdparty dependency into a module bu
 
 The steps provided create a CMake module for the third party library, which we bring in as an import library.  There are other ways to implement this with CMake but we'll here be focused on an import library approach using a CMake module.
 
-Let's work on with an imaginery libfoo that we want to bring into our user module mod_testmodule.  We're going to keep the thirdparty library sitting alongside the module, but this is of course up to you.  Let's envisage that we have libfoo prebuilt for all three platforms as a shared library.
+Let's work on with an imaginary libfoo that we want to bring into our user module mod_myfirstmodule.  We're going to keep the thirdparty library sitting alongside the module, but this is of course up to you.  Let's envisage that we have libfoo prebuilt for all three platforms as a shared library.
 
 The first step for including a new third party library will be to make (or import) a CMake module file.  Many third party libraries will come with a CMake module ready for your use.  Below we're going to create a simple one from scratch.
 
@@ -290,7 +290,7 @@ Within the `cmake` directory in the NAP root create a CMake module file `Findfoo
 
 ```
 # Setup our fictional library paths
-set(FOO_DIR ${NAP_ROOT}/usermodules/mod_testmodule/thirdparty/libfoo)
+set(FOO_DIR ${NAP_ROOT}/usermodules/mod_myfirstmodule/thirdparty/libfoo)
 set(FOO_INCLUDE_DIRECTORIES ${FOO_DIR}/include)
 if (WIN32)
     set(FOO_LIBS_DIR ${FOO_DIR}/msvc/bin)
@@ -312,7 +312,7 @@ mark_as_advanced(FOO_LIBS_DIR)
 
 # Standard find package handling
 include(FindPackageHandleStandardArgs)
-find_package_handle_starndard_args(foo REQUIRED_VARS FOO_DIR FOO_LIBS FOO_INCLUDE_DIRECTORIES)
+find_package_handle_standard_args(foo REQUIRED_VARS FOO_DIR FOO_LIBS FOO_INCLUDE_DIRECTORIES)
 
 # Setup our shared import library
 add_library(foo SHARED IMPORTED)
@@ -322,9 +322,8 @@ set_target_properties(foo PROPERTIES
                       IMPORTED_CONFIGURATIONS "Debug;Release"
                       IMPORTED_LOCATION_RELEASE ${FOO_LIBS_DLL}
                       IMPORTED_LOCATION_DEBUG ${FOO_LIBS_DLL}
-                      INCLUDE_DIRECTORIES ${FOO_INCLUDE_DIRECTORIES}
                       )
-
+                      
 # Add Windows import library properties
 if(WIN32)
     set_target_properties(foo PROPERTIES
@@ -341,9 +340,10 @@ Create a file named `moduleExtra.cmake` in the root of your module directory con
 ```
 find_package(foo REQUIRED)
 target_link_libraries(${PROJECT_NAME} foo)
+target_include_directories(${PROJECT_NAME} PUBLIC ${FOO_INCLUDE_DIRECTORIES})
 ```
 
-CMake's <a href="https://cmake.org/cmake/help/v3.6/command/find_package.html" target="_blank">find_package</a> has been used to locate the module, and <a href="https://cmake.org/cmake/help/v3.6/command/target_link_libraries.html" target="_blank">target_link_libraries</a> links the library into the module.
+CMake's <a href="https://cmake.org/cmake/help/v3.6/command/find_package.html" target="_blank">find_package</a> has been used to locate the module, <a href="https://cmake.org/cmake/help/v3.6/command/target_link_libraries.html" target="_blank">target_link_libraries</a> links the library into the module and <a href="https://cmake.org/cmake/help/v3.6/command/target_include_directories.html">target_include_directories</a> adds the include directory.
 
 At this stage the library is now available to include and link on all platforms however if we attempt to run a project using the module on Windows the DLL won't be found.
 
@@ -364,7 +364,7 @@ endif()
 
 Your module with its libfoo third party dependency will now build and run on all three platforms.
 
-The last consideration is to ensure the third party shared library is include in the packaged project.  Due to the fact that we've already copied the DLL into the project bin directory on Windows we have already completed that step there.  However on macOS and Linux we need to need to add this as a step using CMake's <a href="https://cmake.org/cmake/help/v3.6/command/install.html" target="_blank">install</a> command.  Add the following to your `moduleExtra.cmake`, noting that we're installing the library into the `lib` directory within the package:
+The last consideration is to ensure the third party shared library is include in the packaged project.  Due to the fact that we've already copied the DLL into the project bin directory on Windows we have already completed that step there.  However on macOS and Linux we need to add this as a step using CMake's <a href="https://cmake.org/cmake/help/v3.6/command/install.html" target="_blank">install</a> command.  Add the following to your `moduleExtra.cmake`, noting that we're installing the library into the `lib` directory within the package:
 ```
 if(UNIX)
     # Install libfoo into lib directory in packaged project on macOS and Linux
@@ -376,6 +376,7 @@ In the end with a minor simplification your `moduleExtra.cmake` should look like
 ```
 find_package(foo REQUIRED)
 target_link_libraries(${PROJECT_NAME} foo)
+target_include_directories(${PROJECT_NAME} PUBLIC ${FOO_INCLUDE_DIRECTORIES})
 
 if(WIN32)
     # Add post-build step to copy libfoo to bin on Windows
