@@ -45,7 +45,7 @@ rttr::property napkin::PropertyPath::getProperty() const
 
 rttr::type napkin::PropertyPath::getType() const
 {
-	return getValue().get_type();
+	return getProperty().get_type();
 }
 
 ResolvedPath napkin::PropertyPath::resolve() const
