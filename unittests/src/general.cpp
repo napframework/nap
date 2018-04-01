@@ -4,6 +4,9 @@
 #include <utility/fileutils.h>
 #include <utility/datetimeutils.h>
 #include <nap/logger.h>
+#include <material.h>
+#include <generic/propertypath.h>
+#include <renderablemeshcomponent.h>
 
 
 TEST_CASE("File path transformations", "[fileutils]")
@@ -82,4 +85,30 @@ TEST_CASE("DateTime Utilities", "[datetime]")
 	REQUIRE(flc1_launch_date.getMilliSecond() == 123);
 
 	REQUIRE(nap::utility::timeFormat(flc1_launch) == flc1_launch_str);
+}
+
+
+TEST_CASE("Detect Enum", "[RTTI]")
+{
+	{
+		nap::Material mat;
+		napkin::PropertyPath blendModePath(mat, "BlendMode2_invalid");
+		REQUIRE(!blendModePath.isValid());
+	}
+	{
+		nap::Material mat;
+		napkin::PropertyPath blendModePath(mat, "BlendMode");
+		REQUIRE(blendModePath.getProperty().get_name() == "BlendMode");
+		REQUIRE(blendModePath.getType() == RTTI_OF(nap::EBlendMode));
+		REQUIRE(blendModePath.isValid());
+		REQUIRE(blendModePath.getType().is_enumeration());
+	}
+	{
+		nap::RenderableMeshComponent res;
+		napkin::PropertyPath blendModePath(res, "MaterialInstance/BlendMode");
+		REQUIRE(blendModePath.isValid());
+		REQUIRE(blendModePath.getType() == RTTI_OF(nap::EBlendMode));
+		REQUIRE(blendModePath.getProperty().get_name() == "BlendMode");
+		REQUIRE(blendModePath.getType().is_enumeration());
+	}
 }
