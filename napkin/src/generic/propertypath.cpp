@@ -136,11 +136,16 @@ bool napkin::PropertyPath::operator==(const napkin::PropertyPath& other) const
 
 bool napkin::PropertyPath::isEnum() const
 {
+	if (!isValid())
+		return false;
 	return getType().is_enumeration();
 }
 
 bool napkin::PropertyPath::isPointer() const
 {
+	if (!isValid())
+		return false;
+
 	const auto& type = getType();
 	const nap::rtti::TypeInfo wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
 	// TODO: There must be a less convoluted way.
