@@ -39,7 +39,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 	}
 
 
-	if (type.is_enumeration())
+	if (path.isEnum())
 	{
 		uint val = index.model()->data(index, Qt::DisplayRole).toUInt();
 		QStyleOptionViewItem op(option);
@@ -48,7 +48,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
 		QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &op, painter);
 	}
-	else if (wrapped_type.is_pointer() || wrapped_array_type.is_pointer())
+	else if (path.isPointer())
 	{
 		// Forward to draw text field
 		QRect rect_txt = QRect(option.rect.left(),
@@ -122,7 +122,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 	auto path = getPropertyPathFromIndex(index);
 
 	auto type = getTypeFromModelIndex(index);
-	if (type.is_enumeration())
+	if (path.isEnum())
 	{
 		return false;
 	}
