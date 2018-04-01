@@ -13,20 +13,20 @@ namespace nap
     namespace audio
     {
     
-        class InputComponentInstance;
+        class AudioInputComponentInstance;
         
         
         /**
          * Component to receive audio input from the audio interface.
          * Can be used as input to an @OutpuComponent of @LevelMeterComponent.
          */
-        class NAPAPI InputComponent : public AudioComponentBase
+        class NAPAPI AudioInputComponent : public AudioComponentBase
         {
             RTTI_ENABLE(AudioComponentBase)
-            DECLARE_COMPONENT(InputComponent, InputComponentInstance)
+            DECLARE_COMPONENT(InputComponent, AudioInputComponentInstance)
             
         public:
-            InputComponent() : AudioComponentBase() { }
+            AudioInputComponent() : AudioComponentBase() { }
             
             // Properties
             std::vector<int> mChannels; ///< property: 'Channels' Defines what audio input channels to receive data from. The size of this array determines the number of channels that this component will output.
@@ -39,11 +39,11 @@ namespace nap
          * Instance of component to receive audio input from the audio interface.
          * Can be used as input to an @OutpuComponent of @LevelMeterComponent.
          */
-        class NAPAPI InputComponentInstance : public AudioComponentBaseInstance
+        class NAPAPI AudioInputComponentInstance : public AudioComponentBaseInstance
         {
             RTTI_ENABLE(AudioComponentBaseInstance)
         public:
-            InputComponentInstance(EntityInstance& entity, Component& resource) : AudioComponentBaseInstance(entity, resource) { }
+            AudioInputComponentInstance(EntityInstance& entity, Component& resource) : AudioComponentBaseInstance(entity, resource) { }
             
             // Inherited from ComponentInstance
             bool init(utility::ErrorState& errorState) override;

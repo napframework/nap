@@ -11,6 +11,8 @@
 
 #define TAG_NAPKIN "[napkin]"
 
+using namespace napkin;
+
 class SigCapture
 {
 public:
@@ -36,6 +38,7 @@ QString getResource(const QString& filename)
 
 TEST_CASE("Document Management", TAG_NAPKIN)
 {
+	
 	auto doc = napkin::AppContext::get().getDocument();
 
 	// Must have a default document
@@ -453,8 +456,8 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 {
 	// Must start QApplication in order to have an event loop for signals?
 	int argc = 1;
-	char* argv[] = {"arg!"};
-	QCoreApplication app(argc, argv);
+	const char* argv[] = { "arg","blop" };
+	QCoreApplication app(argc, const_cast<char**>(argv));
 
 	// Assume this test file's directory as the base path
 	QString jsonFile = "objects.json";

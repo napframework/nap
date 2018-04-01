@@ -30,10 +30,3 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 
 # Package into platform release
 package_module()
-
-if (WIN32)
-    set(FILES_TO_COPY
-    )
-
-    copy_files_to_bin(${FILES_TO_COPY})
-endif()
