@@ -8,6 +8,7 @@
 #include <shader.h>
 #include <generic/naputils.h>
 #include <QCoreApplication>
+#include <renderablemeshcomponent.h>
 
 #define TAG_NAPKIN "[napkin]"
 
@@ -324,6 +325,58 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 	nameProp.setValue(newName);
 	REQUIRE(nameProp.getValue() == newName);
 	REQUIRE(entity->mID == newName);
+
+	SECTION("verify invalid path")
+	{
+		nap::Material mat;
+		napkin::PropertyPath blendModePath(mat, "BlendMode2_invalid");
+		REQUIRE(!blendModePath.isValid());
+	}
+
+	SECTION("verify not an enum/pointer")
+	{
+		nap::Material mat;
+		napkin::PropertyPath path(mat, "mID");
+		REQUIRE(path.isValid());
+		REQUIRE(!path.isEnum());
+		REQUIRE(!path.isPointer());
+	}
+
+	SECTION("verify root-level enum")
+	{
+		nap::Material mat;
+		napkin::PropertyPath path(mat, "BlendMode");
+		REQUIRE(path.getProperty().get_name() == "BlendMode");
+		REQUIRE(path.getType() == RTTI_OF(nap::EBlendMode));
+		REQUIRE(path.isValid());
+		REQUIRE(path.isEnum());
+	}
+
+	SECTION("verify nested enum")
+	{
+		nap::RenderableMeshComponent comp;
+		napkin::PropertyPath path(comp, "MaterialInstance/BlendMode");
+		REQUIRE(path.isValid());
+		REQUIRE(path.getType() == RTTI_OF(nap::EBlendMode));
+		REQUIRE(path.getProperty().get_name() == "BlendMode");
+		REQUIRE(path.isEnum());
+	}
+
+	SECTION("verify root-level pointer")
+	{
+		nap::RenderableMeshComponent comp;
+		napkin::PropertyPath path(comp, "Mesh");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isPointer());
+	}
+
+	SECTION("verify nested pointer")
+	{
+		nap::RenderableMeshComponent comp;
+		napkin::PropertyPath path(comp, "MaterialInstance/Material");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isPointer());
+	}
 }
 
 TEST_CASE("Commands", TAG_NAPKIN)
