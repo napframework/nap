@@ -163,7 +163,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 				}
 
-				if (propertyPath.isValid() && (wrapped_type.is_pointer()))
+				if (propertyPath.isPointer())
 				{
 					auto variant = index.data(Qt::UserRole);
 
