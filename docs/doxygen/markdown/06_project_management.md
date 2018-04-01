@@ -32,7 +32,7 @@ We'll go over the basic tasks here and then cover some more advanced topics in t
 # Windows {#proj_overview_win64}
 ## Create Project {#proj_creation_win64}
 
-Follow the steps below to create a new project titled NewProjectName.
+Follow the steps below to create a new project titled MyFirstProject.
 
 Note: You're required to provide the project name in CamelCase so that you get proper case in your class definition for the new project.  The camel case name is also used for the packaged project name.
 
@@ -40,19 +40,19 @@ Note: You're required to provide the project name in CamelCase so that you get p
 2. Change into your NAP framework directory
 3. Create the project
 ```
-tools\createProject NewProjectName
+tools\createProject MyFirstProject
 ```
-4. The NAP project will the created and Visual Studio solution generated.  The Visual Studio solution will be shown in Explorer, located in `userprojects\newprojectname`.
+4. The NAP project will the created and Visual Studio solution generated.  The Visual Studio solution will be shown in Explorer, located in `userprojects\myfirstproject`.
 
 ## Configure Project Modules {#module_config_win64}
 
 Within each project folder you'll find the `project.json` file which contains (among other things) the list of modules used by the project.
 
-Below is a sample `project.json` from our NewProjectName:
+Below is a sample `project.json` from our MyFirstProject (located at `userprojects\myfirstproject\project.json`):
 
 ```
 {
-    "title": "NewProjectName",
+    "title": "MyFirstProject",
     "version": "0.1",
     "modules": [
         "mod_naprender",
@@ -76,14 +76,14 @@ Once you've updated your `project.json` run regenerate.bat within the project fo
 
 ## Create Module {#module_creation_win64}
 
-Follow the steps below to create a new module named NewModuleName.
+Follow the steps below to create a new module named MyFirstModule.
 1. Open a command prompt
 2. Change into your NAP framework directory
 3. Create the module
 ```
-tools\createModule NewModuleName
+tools\createModule MyFirstModule
 ```
-4. The module will the created in `usermodules\newmodulename` and a Visual Studio solution generated
+4. The module will the created in `usermodules\myfirstmodule` and a Visual Studio solution generated
 
 While it's possible to open the module Visual Studio solution directly, it's often easier to include the module in a project and work on the module from there as module DLLs are only updated into projects when the project using the module is built.
 	
@@ -102,7 +102,7 @@ Project packaging is also accessible from by command prompt in the NAP root via 
 # macOS {#proj_overview_macos}
 ## Create Project {#proj_creation_macos}
 
-Follow the steps below to create a new project titled NewProjectName.
+Follow the steps below to create a new project titled MyFirstProject.
 
 Note: You're required to provide the project name in CamelCase so that you get proper case in your class definition for the new project.  The camel case name is also used for the packaged project name.
 
@@ -110,19 +110,19 @@ Note: You're required to provide the project name in CamelCase so that you get p
 2. Change into your NAP framework directory
 3. Create the project
 ```
-./tools/createProject NewProjectName
+./tools/createProject MyFirstProject
 ```
-4. The NAP project will the created and Xcode project generated.  The Xcode project will be shown in Finder, located in `userprojects/newprojectname`.
+4. The NAP project will the created and Xcode project generated.  The Xcode project will be shown in Finder, located in `userprojects/myfirstproject`.
 
 ## Configure Project Modules {#module_config_macos}
 
 Within each project folder you'll find the `project.json` file which contains (among other things) the list of modules used by the project.
 
-Below is a sample `project.json` from our NewProjectName:
+Below is a sample `project.json` from our MyFirstProject (located at `userprojects/myfirstproject/project.json`):
 
 ```
 {
-    "title": "NewProjectName",
+    "title": "MyFirstProject",
     "version": "0.1",
     "modules": [
         "mod_naprender",
@@ -146,14 +146,14 @@ Once you've updated your `project.json` run regenerate within the project folder
 
 ## Create Module {#module_creation_macos}
 
-Follow the steps below to create a new module named NewModuleName.
+Follow the steps below to create a new module named MyFirstModule.
 1. Open a terminal
 2. Change into your NAP framework directory
 3. Create the module
 ```
-./tools/createModule NewModuleName
+./tools/createModule MyFirstModule
 ```
-4. The module will the created in `usermodules/newmodulename` and an Xcode project generated
+4. The module will the created in `usermodules/myfirstmodule` and an Xcode project generated
 
 While it's possible to open the module Xcode project directly, it's often easier to include the module in the project you initially intend to use it with and work on the module from there.
 
@@ -172,7 +172,7 @@ Project packaging is also accessible from by command prompt in the NAP root via 
 # Linux {#proj_overview_linux}
 ## Create Project {#proj_creation_linux}
 
-Follow these steps to create a new project titled NewProjectName.
+Follow these steps to create a new project titled MyFirstProject.
 
 Note: You're required to provide the project name in CamelCase so that you get proper case in your class definition for the new project.  The camel case name is also used for the packaged project name.
 
@@ -180,19 +180,19 @@ Note: You're required to provide the project name in CamelCase so that you get p
 2. Change into your NAP framework directory
 3. Create the project
 ```
-./tools/createProject NewProjectName
+./tools/createProject MyFirstProject
 ```
-4. The NAP project will the created and project Unix makefile system generated.  The project will be located in `userprojects/newprojectname` and the build system is located in the `build` folder within
+4. The NAP project will the created and project Unix makefile system generated.  The project will be located in `userprojects/myfirstproject` and the build system is located in the `build` folder within
 
 ## Configure Project Modules {#module_config_linux}
 
 Within each project folder you'll find the `project.json` file which contains (among other things) the list of modules used by the project.
 
-Below is a sample `project.json` from our NewProjectName:
+Below is a sample `project.json` from our MyFirstProject (located at `userprojects/myfirstproject/project.json`):
 
 ```
 {
-    "title": "NewProjectName",
+    "title": "MyFirstProject",
     "version": "0.1",
     "modules": [
         "mod_naprender",
@@ -216,14 +216,14 @@ Changes to your `project.json` will be automatically pulled in when you next bui
 
 ## Create Module {#module_creation_linux}
 
-Follow the steps below to create a new module named NewModuleName.
+Follow the steps below to create a new module named MyFirstModule.
 1. Open a terminal
 2. Change into your NAP framework directory
 3. Create the module
 ```
-./tools/createModule NewModuleName
+./tools/createModule MyFirstModule
 ```
-4. The module will the created in `usermodules/newmodulename` and a Unix makefile system generated
+4. The module will the created in `usermodules/myfirstmodule` and a Unix makefile system generated
 
 ## Package Project For Release {#package_linux}
 
@@ -232,7 +232,7 @@ Packaging a project provides an archive containing the project, its data, all re
 Packaging a project with default settings:
 1. Navigate to your project
 ```
-cd userprojects/newprojectname
+cd userprojects/myfirstproject
 ```
 2. Run package
 ```

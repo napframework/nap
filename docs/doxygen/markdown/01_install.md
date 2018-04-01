@@ -25,9 +25,7 @@ The prerequisites installation script is called checkBuildEnvironment and can be
 
 Follow these steps for a guided installation:
 1. Extract `NAP-0.1.0-Win64.zip` using Explorer (or your preferred tool)
-2. In `NAP-0.1.0-Win64\tools` run `checkBuildEnvironment.bat` to guide you through installing prerequisites
-3. Follow the instructions in the command prompt
-4. If any changes are required re-run `checkBuildEnvironment.bat` after those changes have been made to verify the final environment
+2. In `NAP-0.1.0-Win64\tools` run `checkBuildEnvironment.bat` to guide you through installing prerequisites, following the instructions
 
 _Manual Dependency Installation_
 
@@ -40,9 +38,7 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 
 Follow these steps for a guided installation:
 1. Extract the release by double clicking `NAP-0.1.0-macOS.zip` in Finder
-2. In `NAP-0.1.0-macOS/tools` run `checkBuildEnvironment` to guide you through installing prerequisites
-3. Follow the instructions in the terminal
-4. If any changes are required re-run `checkBuildEnvironment` after those changes have been made to verify the final environment
+2. In `NAP-0.1.0-macOS/tools` run `checkBuildEnvironment` to guide you through installing prerequisites, following the instructions
 
 _Manual Dependency Installation_
 
