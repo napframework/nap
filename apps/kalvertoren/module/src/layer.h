@@ -16,6 +16,16 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		/**
+		 *	Constructor
+		 */
+		LayerInstance() = default;
+		
+		/**
+		 * Destructor
+		 */
+		virtual ~LayerInstance();
+
+		/**
 		 * Updates the LayerInstance.
 		 * @param deltaTime Time between frames.
 		 */

@@ -362,8 +362,8 @@ namespace nap
 		}
 #else // NAP_PACKAGED_BUILD
 		// We're running from NAP source
-		napRoot = utility::getAbsolutePath(exeDir + "/../../../");
-		projectName = dirParts.end()[-1];
+		napRoot = utility::getAbsolutePath(exeDir + "/../../");
+		projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
 #endif // NAP_PACKAGED_BUILD
 		
 		// Iterate possible project locations
@@ -417,7 +417,7 @@ namespace nap
 		}
 		else {
 			// Set PYTHONPATH for thirdparty location beside NAP source
-			const std::string napRoot = exeDir + "/../../..";
+			const std::string napRoot = exeDir + "/../..";
 			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
@@ -438,7 +438,7 @@ namespace nap
 		} 
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
-			const std::string napRoot = exeDir + "/../../../";
+			const std::string napRoot = exeDir + "/../../";
 			const std::string pythonHome = napRoot + "/../thirdparty/python/" + platformPrefix + "/install";
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}

@@ -286,10 +286,14 @@ macro(project_json_to_cmake)
 
     # Parse our project.json and import it
     if(WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python.exe)
     elseif(UNIX)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
     endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}")
+    endif()
+
     execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR}
                     RESULT_VARIABLE EXIT_CODE
                     )

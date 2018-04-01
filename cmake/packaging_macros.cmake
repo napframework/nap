@@ -34,6 +34,16 @@ macro(package_nap)
     # Package project directory package & regenerate shortcuts
     package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
 
+    # Package checkBuildEnvironment scripts
+    if(APPLE)
+        install(PROGRAMS ${NAP_ROOT}/dist/macos/check_build_environment/checkBuildEnvironment DESTINATION tools)
+    elseif(UNIX)
+        install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/checkBuildEnvironment DESTINATION tools)
+    else()
+        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/checkBuildEnvironment.bat DESTINATION tools)
+        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/checkBuildEnvironmentContinued.py DESTINATION tools/platform)
+    endif()
+
     # Create empty projects and usermodules directories
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
@@ -49,6 +59,13 @@ macro(package_nap)
         find_package(Doxygen REQUIRED)
         install(CODE "execute_process(COMMAND python ${NAP_ROOT}/docs/doxygen/generateDocumentation.py)
                       execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/docs/html/ ${CMAKE_INSTALL_PREFIX}/doc)")
+    endif()
+
+    # Install IDE templates
+    if(WIN32)
+        install(DIRECTORY ${NAP_ROOT}/idetemplates/vstemplates/ DESTINATION visualStudioTemplates)
+    elseif(APPLE)
+        install(DIRECTORY ${NAP_ROOT}/idetemplates/xcodetemplates/ DESTINATION xcodeTemplates)
     endif()
 endmacro()
 
