@@ -21,12 +21,34 @@ set(NAPKIN_LIB ${PROJECT_NAME}_lib)
 # create library from app for unittests
 add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 
+# The NAP modules Napkin needs to link against
+# TODO this needs updating/verifying; can any of these move into NAP_MODULES_USAGE_DEPENDENCIES below? 
+set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo)
 
-set(DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo)
+# This is the superset of modules that we want to have available to Napkin to run against; just a handy
+# way to ensure they've built
+set(NAP_MODULES_USAGE_DEPENDENCIES 
+    ${NAP_MODULES_LINK_DEPENDENCIES} 
+    mod_napapp 
+    mod_napartnet
+    mod_napaudio
+    mod_napcameracontrol
+    mod_napetherdream
+    mod_napimgui
+    mod_napinput
+    mod_napmidi
+    mod_naposc
+    mod_napsandbox
+    mod_napsdlinput
+    mod_napsdlwindow
+    mod_napsvg
+    )
+
+add_dependencies(${PROJECT_NAME} ${NAP_MODULES_USAGE_DEPENDENCIES})
 
 set(LIBS
     napcore
-    ${DEPENDENT_NAP_MODULES}
+    ${NAP_MODULES_LINK_DEPENDENCIES}
     Qt5::Widgets Qt5::Core Qt5::Gui
     )
 
@@ -35,8 +57,6 @@ if(MSVC)
          ${FREEIMAGE_LIBRARIES}
          ${FFMPEG_LIBRARIES}
          )
-    copy_freeimage_dll()
-    copy_windows_ffmpeg_dlls()
 elseif(APPLE)
     list(APPEND UNITTEST_LIBS
          ${FREEIMAGE_LIBRARIES}
@@ -57,23 +77,16 @@ target_include_directories(${NAPKIN_LIB} PUBLIC src ${FREEIMAGE_INCLUDE_DIRS})
 
 nap_qt_post(${PROJECT_NAME})
 
-# Output to bin/napkin
-set_output_directories()
+if(APPLE)
+    # Add the runtime path for RTTR on macOS
+    add_macos_rttr_rpath()
+endif()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_LIST_DIR}/resources
                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
                    COMMENT "Copy Resources")
-
-if(WIN32)
-    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
-    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
-    bulk_copy_windows_dlls_to_bin()
-elseif(APPLE)
-    # Add the runtime path for RTTR on macOS
-    add_macos_rttr_rpath()    
-endif()
 
 # Package into release build
 set(NAPKIN_PACKAGED_BUILD_TYPE Release)
@@ -102,7 +115,7 @@ if(APPLE)
 
     foreach(MODULECONFIG Release Debug)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
-                                                                                "${DEPENDENT_NAP_MODULES}" 
+                                                                                "${NAP_MODULES_LINK_DEPENDENCIES}" 
                                                                                 ${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/${MODULECONFIG}/napkin
                                                                                 "../../../.."
                                                                                 "${EXTRA_RPATH}")
@@ -115,5 +128,5 @@ elseif(UNIX)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
     list(APPEND EXTRA_RPATH lib)
 
-    set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
+    set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_LINK_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
 endif()

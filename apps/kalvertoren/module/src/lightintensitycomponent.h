@@ -2,11 +2,14 @@
 
 // Local Includes
 #include "yoctoluxsensor.h"
+#include "openinghours.h"
 
 // External Includes
 #include <component.h>
 #include <glm/glm.hpp>
 #include <smoothdamp.h>
+#include <nap/resourceptr.h>
+#include <utility/datetimeutils.h>
 
 namespace nap
 {
@@ -35,6 +38,9 @@ namespace nap
 		glm::vec2 mLightRange = { 0.1f, 1.0f };							///< Property: "Output light range" 
 		float mLuxPower = 1.0f;											///< Property: "LuxCurve" power of curve associated with min / max values
 		float mSmoothTime = 1.0f;										///< Property: "SmoothTime" amount of time in seconds to blend between value
+		ResourcePtr<OpeningHours> mOpeningHours;						///< Property: "OpeningHours" when the shops open
+		ResourcePtr<OpeningHours> mClosingHours;						///< Property: "ClosingHours" when the shops close
+		bool mUseOpeningHours = true;									///< Property: "UseOpeningHours" if opening hours are taken into consideration
 	};
 
 
@@ -118,6 +124,21 @@ namespace nap
 		 */
 		const std::vector<YoctoLuxSensor*>& getSensors();
 
+		/**
+		 * @return if the shops are open
+		 */
+		bool isOpen() const;
+
+		/**
+		 * Returns the opening and closing times
+		 */
+		void getOpeningTimes(const nap::utility::DateTime& dateTime, OpeningTime& outOpeningTime, OpeningTime& outClosingTime) const;
+
+		/**
+		 * If opening hours are taken into consideration
+		 */
+		bool mUseOpeningHours = true;
+
 	private:
 		// All lux sensors
 		std::vector<YoctoLuxSensor*> mSensors;
@@ -134,6 +155,10 @@ namespace nap
 		glm::vec2 mLuxRange = { 10.0f, 25000.0f };						
 		glm::vec2 mLightRange = { 0.1f, 1.0f };							
 		float mLuxPower = 1.0f;											
+
+		// Shop opening and closing times
+		OpeningHours* mOpeningHours = nullptr;
+		OpeningHours* mClosingHours = nullptr;
 
 		 //This operator smooths the brightness value over time
 		math::SmoothOperator<float> mIntensitySmoother = { mBrightness, 1.0f };

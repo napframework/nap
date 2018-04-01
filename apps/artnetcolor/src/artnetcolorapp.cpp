@@ -1,5 +1,6 @@
 #include "artnetcolorapp.h"
 #include "selectcolorcomponent.h"
+#include "sendcolorcomponent.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -54,18 +55,18 @@ namespace nap
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
-		
-		// Initialize colors
+
+		// Sample white values
 		std::vector<nap::SelectColorComponentInstance*> comps;
 		mPlaneEntity->getComponentsOfType<nap::SelectColorComponentInstance>(comps);
 		for (auto& comp : comps)
 		{
-			mColor.emplace_back(comp->getColor());
-			mWhite.emplace_back(comp->getWhite());
+			mWhiteValues.emplace_back(static_cast<int>(static_cast<float>(math::max<uint8>()) * 
+				comp->mWhite.getRed()));
 		}
-
 		return true;
 	}
+
 	
 	
 	// Called when the window is updating
@@ -81,37 +82,52 @@ namespace nap
 			for (auto& selector : comps)
 			{
 				std::string led_color_label = utility::stringFormat("Color %d", idx);
-				if (ImGui::ColorEdit3(led_color_label.c_str(), (float*)&mColor[idx].r))
+				if (ImGui::CollapsingHeader(utility::stringFormat("Color %d", idx).c_str()))
 				{
-					selector->setColor(mColor[idx]);
+					// Color picker
+					if (ImGui::ColorEdit3(led_color_label.c_str(), selector->mColor.getData()))
+					{
+						selector->setDirty();
+					}
+
+					// White Slider
+					std::string white_color_label = utility::stringFormat("White %d", idx);
+					if (ImGui::SliderInt(white_color_label.c_str(), &(mWhiteValues[idx]), 0, math::max<uint8>()))
+					{
+						selector->mWhite.setValue(EColorChannel::Red, static_cast<float>(mWhiteValues[idx]) / static_cast<float>(math::max<uint8>()));
+						selector->setDirty();
+					}
+
+					// show led output colors
+					RGBColor8 conv_color = selector->mColor.convert<RGBColor8>();
+					RColor8 conv_color_f = selector->mWhite.convert<RColor8>();
+
+					char ccolor[128];
+					snprintf(ccolor, 128, "%d %d %d %d", conv_color.getRed(), conv_color.getGreen(), conv_color.getBlue(), conv_color_f.getRed());
+					std::string dmx_name = utility::stringFormat("LED Color %d", idx);
+					ImGui::InputText(dmx_name.c_str(), ccolor, 128, ImGuiInputTextFlags_ReadOnly);
+
+					// show RGB output colors as a combination
+					int pr = math::clamp<int>(conv_color.getRed() + conv_color_f.getRed(), 0, math::max<uint8>());
+					int pg = math::clamp<int>(conv_color.getGreen() + conv_color_f.getRed(), 0, math::max<uint8>());
+					int pb = math::clamp<int>(conv_color.getBlue() + conv_color_f.getRed(), 0, math::max<uint8>());
+
+					char pxcolor[128];
+					snprintf(pxcolor, 128, "%d %d %d", pr, pg, pb);
+					std::string pixel_name = utility::stringFormat("Pixel Color %d", idx);
+					ImGui::InputText(pixel_name.c_str(), pxcolor, 128, ImGuiInputTextFlags_ReadOnly);
 				}
-
-				std::string white_color_label = utility::stringFormat("White %d", idx);
-				if (ImGui::SliderInt(white_color_label.c_str(), &mWhite[idx], 0, nap::math::max<uint8>()))
-				{
-					selector->setWhite(static_cast<float>(mWhite[idx]) / static_cast<float>(nap::math::max<uint8>()));
-				}
-
-				// show led output colors
-				uint8 r, g, b, w;
-				selector->getColor(r, g, b, w);
-				char ccolor[128];
-				snprintf(ccolor, 128, "%d %d %d %d", r, g, b, w);
-				std::string dmx_name = utility::stringFormat("LED Color %d", idx);
-				ImGui::InputText(dmx_name.c_str(), ccolor, 128, ImGuiInputTextFlags_ReadOnly);
-
-				// show RGB output colors as a combination
-				int pr = math::clamp<int>(r + w, 0, math::max<uint8>());
-				int pg = math::clamp<int>(g + w, 0, math::max<uint8>());
-				int pb = math::clamp<int>(b + w, 0, math::max<uint8>());
-
-				char pxcolor[128];
-				snprintf(pxcolor, 128, "%d %d %d", pr, pg, pb);
-				std::string pixel_name = utility::stringFormat("Pixel Color %d", idx);
-				ImGui::InputText(pixel_name.c_str(), pxcolor, 128, ImGuiInputTextFlags_ReadOnly);
-
 				idx++;
 			}
+
+			SendColorComponentInstance& color_comp_instance = mPlaneEntity->getComponent<SendColorComponentInstance>();
+			int* span = &(color_comp_instance.mSpan);
+			float* intensity = &(color_comp_instance.mIntensity);
+			int* number = &(color_comp_instance.mNumber);
+
+			ImGui::SliderInt("Span", span, 1, 20);
+			ImGui::SliderInt("Number Of Colors", number, 1, color_comp_instance.getColorCount());
+			ImGui::SliderFloat("Intensity", intensity, 0.0f, 1.0f);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 	}

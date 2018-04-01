@@ -73,8 +73,8 @@ macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                           COMMENT "Copying ${F} -> to bin dir of ${PROJECT_NAME}")
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
+                           COMMENT "Copying ${F} -> bin dir")
     endforeach()
 endmacro()
 
@@ -90,18 +90,6 @@ endmacro()
 macro(copy_windows_ffmpeg_dlls)
     file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/bin/*.dll)
     copy_files_to_bin(${FFMPEGDLLS})
-endmacro()
-
-# Copy all of our Windows DLLs that have build in bin into project dir.  See notes in windowsdllcopier.cmake.
-macro(bulk_copy_windows_dlls_to_bin)
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} 
-                               -DCOPIER_IN_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>/../*.dll 
-                               -DCOPIER_OUTPUT_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>/ 
-                               -P 
-                               ${CMAKE_SOURCE_DIR}/cmake/windowsdllcopier.cmake
-                       COMMENT "Bulk copying Windows library DLLs to ${PROJECT_NAME}'s bin dir")
 endmacro()
 
 # Helper function to filter out platform-specific files
@@ -159,16 +147,6 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
                 source_group("Source Files\\macOS" FILES ${TMP_PATH})
             else()
                 source_group("Header Files\\macOS" FILES ${TMP_PATH})
-            endif()
-        endforeach()
-
-        # Sort header and cpps into solution folders for Linux
-        foreach(TMP_PATH ${LINUX_SOURCES})
-            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
-            if(NOT ${IS_CPP} EQUAL -1)
-                source_group("Source Files\\Linux" FILES ${TMP_PATH})
-            else()
-                source_group("Header Files\\Linux" FILES ${TMP_PATH})
             endif()
         endforeach()
     endif()
@@ -236,11 +214,14 @@ macro(project_json_to_cmake)
 
     # Parse our project.json and import it
     if(WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
     elseif(APPLE)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
     else()
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+    endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
     endif()
 
     execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/projectscripts/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR}
@@ -260,3 +241,78 @@ macro(add_macos_rttr_rpath)
                        COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/xcode/install/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
                        )    
 endmacro()
+
+# Copy Windows Python DLLs to output directory
+function(copy_windows_python_dlls_to_bin)
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    copy_files_to_bin(${PYTHON_DLLS})
+endfunction()
+
+# Copy Windows FFmpeg DLLs to project output directory
+function(copy_windows_ffmpeg_dlls_to_project)
+    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/bin/*.dll)
+    copy_files_to_bin(${FFMPEGDLLS})
+endfunction()
+
+# Find RTTR using our thirdparty paths
+macro(find_rttr)
+    if(NOT TARGET RTTR::Core)
+        if (WIN32)
+            if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc64/install/cmake")
+            else()
+                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc32/install/cmake")
+            endif()
+        elseif(APPLE)
+            find_path(
+                    RTTR_DIR
+                    NAMES rttr-config.cmake
+                    HINTS
+                    ${THIRDPARTY_DIR}/rttr/xcode/install/cmake
+            )
+        else()
+            find_path(
+                    RTTR_DIR
+                    NAMES rttr-config.cmake
+                    HINTS
+                    ${THIRDPARTY_DIR}/rttr/install/cmake
+                    ${THIRDPARTY_DIR}/rttr/linux/install/cmake
+            )
+        endif()
+        find_package(RTTR CONFIG REQUIRED Core)
+    endif()
+endmacro()
+
+# Run any module post-build logic for set modules
+# Note: Currently unused, leaving as useful draft for potential later use
+macro(include_module_postbuilds_per_project NAP_MODULES)
+    foreach(NAP_MODULE ${NAP_MODULES})
+        string(SUBSTRING ${NAP_MODULE} 4 -1 SHORT_MODULE_NAME)
+        set(MODULE_POSTBUILD ${NAP_ROOT}/modules/${SHORT_MODULE_NAME}/modulePostBuildPerProject.cmake)
+        if(EXISTS ${MODULE_POSTBUILD})
+            include(${MODULE_POSTBUILD})
+        endif()
+    endforeach()
+endmacro()
+
+# Package into release, export FBX, other shared source project fixes
+# INCLUDE_WITH_RELEASE: whether the project should be packaged with the NAP platform release
+# INCLUDE_ONLY_WITH_NAIVI_APPS: whether a project should only be packaged if packaging Naivi apps
+# PROJECT_PREFIX: folder to package the project into in the NAP release (eg. demos, examples, etc)
+# RUN_FBX_CONVERTER: whether to run fbxconverter for the project
+function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_RELEASE INCLUDE_ONLY_WITH_NAIVI_APPS PROJECT_PREFIX RUN_FBX_CONVERTER)
+    # Add the runtime path for RTTR on macOS
+    if(APPLE)
+        add_macos_rttr_rpath()
+    endif()
+
+    # Run FBX converter
+    if(${RUN_FBX_CONVERTER})
+        export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+    endif()
+
+    # Package into release build
+    if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR DEFINED PACKAGE_NAIVI_APPS))
+        package_project_into_release(${PROJECT_PREFIX}/${PROJECT_NAME})
+    endif()
+endfunction() 
