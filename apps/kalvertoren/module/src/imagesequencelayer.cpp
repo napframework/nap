@@ -5,6 +5,7 @@
 #include <utility/fileutils.h>
 #include <mathutils.h>
 #include "bitmaputils.h"
+#include <iostream>
 
 RTTI_BEGIN_CLASS(nap::ImageSequenceLayer)
 	RTTI_PROPERTY_FILELINK("BaseFilename",	&nap::ImageSequenceLayer::mBaseFilename,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded, nap::rtti::EPropertyFileType::ImageSequence)
@@ -76,6 +77,13 @@ namespace nap
 		mCurrentFrameTexture = std::make_unique<Texture2D>();
 		mCurrentFrameTexture->initTexture(layer.getTextureSettings());
 	}
+
+
+	ImageSequenceLayerInstance::~ImageSequenceLayerInstance()
+	{
+		mCurrentFrameTexture.reset(nullptr);
+	}
+
 
 	void ImageSequenceLayerInstance::update(double deltaTime)
 	{

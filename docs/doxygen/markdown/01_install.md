@@ -25,41 +25,37 @@ The prerequisites installation script is called checkBuildEnvironment and can be
 
 Follow these steps for a guided installation:
 1. Extract `NAP-0.1.0-Win64.zip` using Explorer (or your preferred tool)
-2. In `NAP-0.1.0-Win64\tools` run `checkBuildEnvironment.bat` to guide you through installing prerequisites
-3. Follow the instructions in the command prompt
-4. If any changes are required re-run `checkBuildEnvironment.bat` after those changes have been made to verify the final environment
+2. In `NAP-0.1.0-Win64\tools` run `checkBuildEnvironment.bat` to guide you through installing prerequisites, following the instructions
 
 _Manual Dependency Installation_
 
 Alternatively you can follow the steps below to install the dependencies, however we still recommend running `checkBuildEnvironment.bat` afterwards to verify your build environment.
 
-1. Download and install Visual Studio 2015 Update 3 from [visualstudio.com/vs/older-downloads/](https://www.visualstudio.com/vs/older-downloads/). The Community Edition can be downloaded for free.
-2. Download and install CMake from [cmake.org/download](http://cmake.org/download)
+1. Download and install Visual Studio 2015 Update 3 from <a href="https://www.visualstudio.com/vs/older-downloads/" target="_blank">visualstudio.com/vs/older-downloads</a>. The Community Edition can be downloaded for free.
+2. Download and install <a href="http://cmake.org/download" target="_blank">CMake</a>
 
 ## macOS {#setup_build_env_macos}
 
 Follow these steps for a guided installation:
 1. Extract the release by double clicking `NAP-0.1.0-macOS.zip` in Finder
-2. In `NAP-0.1.0-macOS/tools` run `checkBuildEnvironment` to guide you through installing prerequisites
-3. Follow the instructions in the terminal
-4. If any changes are required re-run `checkBuildEnvironment` after those changes have been made to verify the final environment
+2. In `NAP-0.1.0-macOS/tools` run `checkBuildEnvironment` to guide you through installing prerequisites, following the instructions
 
 _Manual Dependency Installation_
 
 Alternatively you can follow the steps below to install the dependencies, however we still recommend running `checkBuildEnvironment` afterwards to verify your build environment.
 
-1. Install [Xcode from the App Store](https://itunes.apple.com/us/app/xcode/id497799835?mt=12)
+1. Install <a href="https://itunes.apple.com/us/app/xcode/id497799835?mt=12" target="_blank">Xcode from the App Store</a>
 2. Open Xcode once to accept the license agreement.  You can close it afterwards.
 3. Install Xcode Command Line Tools by running the following command in a terminal:
 ```    
 xcode-select --install
 ```
 4. Install CMake. 
-  * Download and install CMake [cmake.org/download](http://cmake.org/download) then add CMake to your path, eg. by adding the following to `.bash_profile` in your home directory:
+  * Download and install <a href="http://cmake.org/download" target="_blank">CMake</a> then add CMake to your path, eg. by adding the following to `.bash_profile` in your home directory:
 ```
 export PATH="/Applications/CMake.app/Contents/bin:$PATH"
 ```
-  * Alternatively installing via [Homebrew](https://brew.sh/) is also possible
+  * Alternatively installing via <a href="https://brew.sh/" target="_blank">Homebrew</a> is also possible
 
 ## Linux {#setup_build_env_linux}
 

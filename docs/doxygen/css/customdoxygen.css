@@ -6,6 +6,12 @@ body{
 	margin: 0;
 	font-size: 12pt;
 }
+
+#top
+{
+	border-top: 5px solid #c86969;
+}
+
 body, table, div, p, dl,
 table.directory, #nav-tree,#nav-tree .label {
 font-family:  'Nunito Sans', sans-serif;

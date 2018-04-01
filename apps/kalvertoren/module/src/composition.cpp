@@ -62,6 +62,12 @@ namespace nap
 	}
 
 
+	CompositionInstance::~CompositionInstance()
+	{
+		mLayerInstances.clear();
+	}
+
+
 	void CompositionInstance::update(double deltaTime)
 	{
 		// Increment time if this component is active
