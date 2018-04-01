@@ -107,7 +107,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 				{
 					revealInFileBrowser(QString::fromStdString(filename));
 				});
-                menu.addAction("Open file" , [filename]()
+                menu.addAction("Open in external editor" , [filename]()
                 {
                     openInExternalEditor(QString::fromStdString(filename));
                 });
