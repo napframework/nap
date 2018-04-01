@@ -196,7 +196,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		float mRadius;							///< Property: 'Radius' of the circle
+		float mRadius = 1.0f;					///< Property: 'Radius' of the circle
 		int mSegments = 100;					///< Property: 'Segments' number of circle segments 
 
 		/**
