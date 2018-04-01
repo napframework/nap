@@ -110,8 +110,8 @@ napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) con
 
 rttr::type napkin::PropertyPath::getWrappedType() const
 {
-	auto value = getValue();
-	return value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
+	const auto& type = getType();
+	return type.is_wrapper() ? type.get_wrapped_type() : type;
 }
 
 bool napkin::PropertyPath::isValid() const
