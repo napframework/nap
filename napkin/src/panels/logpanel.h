@@ -21,15 +21,20 @@ namespace napkin
 	public:
 		LogModel();
 
+		/**
+		 * Overridden to set log colors
+		 */
+		QVariant data(const QModelIndex& index, int role) const override;
+
 	private:
 		/**
 		 * Signals from napLogged() will arrive on this handler.
-		 * @param log The log mesage
+		 * @param msg The log mesage
 		 */
-		void onLog(nap::LogMessage log);
+		void onLog(nap::LogMessage msg);
 
+	private:
 		int mMaxRows = 1000; // The maximum number of rows to show in the log
-		QMap<nap::LogLevel, QString> mColors;
 	};
 
 	/**
