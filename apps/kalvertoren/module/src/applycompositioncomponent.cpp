@@ -3,13 +3,16 @@
 // External Includes
 #include <entity.h>
 #include <meshutils.h>
-#include <triangleiterator.h>
 
 // nap::applycompositioncomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyCompositionComponent)
 	RTTI_PROPERTY("CompositionRenderer",	&nap::ApplyCompositionComponent::mCompositionRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorPaletteComponent",	&nap::ApplyCompositionComponent::mColorPaletteComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShowIndexColors",		&nap::ApplyCompositionComponent::mShowIndexColors,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendToWhite",			&nap::ApplyCompositionComponent::mBlendToWhite,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendAxis",				&nap::ApplyCompositionComponent::mBlendAxis,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendRange",				&nap::ApplyCompositionComponent::mBlendRange,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendPower",				&nap::ApplyCompositionComponent::mBlendPower,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::applycompositioncomponentInstance run time class definition 
@@ -22,6 +25,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	const RGBAColorFloat ApplyCompositionComponentInstance::mWhiteLedColor(0.0f, 0.0f, 0.0f, 1.0f);
+	const RGBColorFloat  ApplyCompositionComponentInstance::mWhiteRGBColor(1.0f, 1.0f, 1.0f);
+
 	void ApplyCompositionComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 
@@ -33,8 +39,13 @@ namespace nap
 		if (!ApplyColorComponentInstance::init(errorState))
 			return false;
 
-		// Copy if we want to show index colors
-		mShowIndexColors = getComponent<ApplyCompositionComponent>()->mShowIndexColors;
+		// Copy and set attributes
+		ApplyCompositionComponent* component = getComponent<ApplyCompositionComponent>();
+		mShowIndexColors = component->mShowIndexColors;
+		blendToWhite(component->mBlendToWhite);
+		setBlendRange(component->mBlendRange);
+		setBlendAxis(component->mBlendAxis);
+		mBlendPower = component->mBlendPower;
 		return true;
 	}
 
@@ -58,6 +69,9 @@ namespace nap
 		// UV attribute we use to sample
 		VertexAttribute<glm::vec3>& uv_data = mesh.getUVAttribute();
 
+		// Position attribute used for blending to white
+		VertexAttribute<glm::vec3>& pos_data = mesh.getPositionAttribute();
+
 		// Color attribute we use to sample
 		VertexAttribute<glm::vec4>& color_data  = mesh.getColorAttribute();
 		VertexAttribute<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute();
@@ -74,7 +88,7 @@ namespace nap
 		// Get brightness
 		float brightness = mLightRegulator->getBrightness();
 
-		TriangleIterator triangle_iterator(mesh.getMeshInstance());
+		TriangleIterator triangle_iterator(mesh_instance);
 		while (!triangle_iterator.isDone())
 		{
 			Triangle triangle = triangle_iterator.next();
@@ -105,6 +119,56 @@ namespace nap
 			// Get the associated LED color
 			palette_color.mLedColor.convert(led_colorf);
 
+			if (mBlendToWhite)
+			{
+				// Calculate avg vertex position
+				glm::vec3 pos_avg{ 0.0f, 0.0f, 0.0f };
+				TriangleData<glm::vec3> pos_vertex_data = triangle.getVertexData(pos_data);
+				pos_avg += pos_vertex_data.first();
+				pos_avg += pos_vertex_data.second();
+				pos_avg += pos_vertex_data.third();
+				pos_avg /= 3.0f;
+
+				// Members that hold the blend value and blend range
+				float pov = 0.0f;
+				glm::vec2 pox = { 0.0f,0.0f };
+
+				const math::Box& mesh_box = mesh.getBoundingBox();
+				switch (mBlendAxis)
+				{
+				case 0:
+					pov = pos_avg.x;
+					pox = { mesh_box.getMin().x, mesh_box.getMax().x };
+					break;
+				case 1:
+					pov = pos_avg.y;
+					pox = { mesh_box.getMin().y, mesh_box.getMax().y };
+					break;
+				case 2:
+					pov = pos_avg.z;
+					pox = { mesh_box.getMin().z, mesh_box.getMax().z };
+				default:
+					assert(false);
+					break;
+				}
+
+				// Calculate normalized lerp value to mix in white
+				float norm_v = math::fit<float>(pov, pox.x, pox.y, 0.0f, 1.0f);
+				float lerp_v = pow(math::fit<float>(norm_v, mBlendRange.x, mBlendRange.y, 0.0f, 1.0f), mBlendPower);
+
+				// Mix in white for rgb pixel color
+				for (int i = 0; i < rgb_colorf.getNumberOfChannels(); i++)
+				{
+					rgb_colorf[i] = math::lerp<float>(rgb_colorf[i], mWhiteRGBColor[i], lerp_v);
+				}
+
+				// Mix white for led pixel
+				for (int i = 0; i < led_colorf.getNumberOfChannels(); i++)
+				{
+					led_colorf[i] = math::lerp<float>(led_colorf[i], mWhiteLedColor[i], lerp_v);
+				}
+			}
+
 			// Set the color data used to display the mesh in the viewport
 			glm::vec4 mesh_color = glm::vec4(
 				rgb_colorf.getRed()	  * brightness,
@@ -129,5 +193,18 @@ namespace nap
 		{
 			assert(false);
 		}
+	}
+
+
+	void ApplyCompositionComponentInstance::setBlendAxis(int axis)
+	{
+		mBlendAxis = math::clamp<int>(axis, 0, 2);
+	}
+
+
+	void ApplyCompositionComponentInstance::setBlendRange(const glm::vec2& range)
+	{
+		mBlendRange.x = math::clamp<float>(range.x, 0.0f, 1.0f);
+		mBlendRange.y = math::clamp<float>(range.y, 0.0f, 1.0f);
 	}
 }

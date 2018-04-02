@@ -871,7 +871,15 @@
                     "LightRegulator": "nap::LightIntensityComponent",
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
-                    "ShowIndexColors": false
+                    "ShowIndexColors": false,
+                    "BlendToWhite":true,
+                    "BlendAxis":1,
+                    "BlendPower":0.75,
+                    "BlendRange": 
+                    {
+                        "x": 0.1,
+                        "y": 0.25
+                    }
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -973,7 +981,15 @@
                     "LightRegulator": "nap::LightIntensityComponent",
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
-                    "ShowIndexColors": false
+                    "ShowIndexColors": false,
+                    "BlendToWhite":false,
+                    "BlendAxis":2,
+                    "BlendPower":1.0,
+                    "BlendRange":
+                    {
+                        "x":0.4,
+                        "y":0.6
+                    }
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1267,7 +1283,15 @@
                     "LightRegulator": "nap::LightIntensityComponent",
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
-                    "ShowIndexColors": false
+                    "ShowIndexColors": false,
+                    "BlendToWhite":false,
+                    "BlendAxis":2,
+                    "BlendPower":1.0,
+                    "BlendRange":
+                    {
+                        "x":0.4,
+                        "y":0.6
+                    }
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -2159,7 +2183,7 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Kalvertoren",
-            "Sync": false,
+            "Sync": true,
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
