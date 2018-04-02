@@ -148,8 +148,10 @@ namespace nap
 				if (utility::fileExists(testDataPath))
 				{
 					projectInfoToRead = testDataPath;
+					break;
 				}
-				else {
+				else 
+				{
 					errorState.fail("Couldn't find project.json beside binary or in project folder %s", testDataPath.c_str());
 					return false;
 				}
