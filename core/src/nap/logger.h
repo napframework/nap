@@ -240,6 +240,12 @@ namespace nap
 		}
 
 		/**
+		 * @param name the name of the log level
+		 * @return the corresponding log level or nullptr if it doesn't exist
+		 */
+		static const LogLevel* getLevel(const std::string& name);
+
+		/**
 		 * Convenience function to start logging to a file.
 		 * @param filename The filename to write log entries to.
 		 * @param level The minimum level the handler should process
