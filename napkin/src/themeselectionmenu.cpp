@@ -12,8 +12,14 @@ ThemeSelectionMenu::ThemeSelectionMenu() : QMenu("Theme")
 void ThemeSelectionMenu::refresh()
 {
 	clear();
-	auto defaultThemeAction = new SetThemeAction(nullptr);
-	addAction(defaultThemeAction);
+
+	const auto& themes = AppContext::get().getThemeManager().getAvailableThemes();
+	if (themes.empty())
+	{
+		setEnabled(false);
+		return;
+	}
+	setEnabled(true);
 
 	for (auto theme : AppContext::get().getThemeManager().getAvailableThemes())
 	{
