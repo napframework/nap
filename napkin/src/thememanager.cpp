@@ -69,7 +69,7 @@ const QString ThemeManager::getThemeDir() const
 	return QString("%1/%2").arg(QCoreApplication::applicationDirPath(), sThemeSubDirectory);
 }
 
-void ThemeManager::reloadTheme()
+void ThemeManager::applyTheme()
 {
 	auto app = AppContext::get().getQApplication();
 
@@ -92,7 +92,7 @@ void ThemeManager::reloadTheme()
 	QFile file(theme_filename);
 	if (!file.open(QFile::ReadOnly | QFile::Text))
 	{
-		nap::Logger::warn("Could not load file: %s", theme_filename.toStdString().c_str());
+		nap::Logger::warn("Could not load file: %s", stylesheetFile.toStdString().c_str());
 		return;
 	}
 
@@ -100,9 +100,14 @@ void ThemeManager::reloadTheme()
 	auto styleSheet = in.readAll();
 	file.close();
 
-	mFileWatcher.addPath(theme_filename);
+	// Start watching for file changes
+	mWatchedFilenames.clear();
+	mWatchedFilenames << stylesheetFile;
+	mWatchedFilenames << mCurrentTheme->getFilename();
+	mWatchedFilenames << QFileInfo(mCurrentTheme->getFilename()).absolutePath();
+	watchThemeFiles();
 
-	app->setStyle(QStyleFactory::create("Fusion"));
+	QApplication::setStyle(QStyleFactory::create("Fusion"));
 	app->setStyleSheet(styleSheet);
 
 }
@@ -112,16 +117,26 @@ const QString ThemeManager::getThemeFilename(const QString& themeName) const
 	return QString("%1/%2.%3").arg(getThemeDir(), themeName, sThemeFileExtension);
 }
 
+void ThemeManager::watchThemeFiles()
+{
+	for (const auto& filename : mWatchedFilenames)
+	{
+		nap::Logger::info("Watching: %s", filename.toStdString().c_str());
+		mFileWatcher.addPath(filename);
+	}
+}
+
+
 void ThemeManager::onFileChanged(const QString& path)
 {
 	auto theme_filename = getThemeFilename(mCurrentTheme);
 	QFileInfo path_info(path);
 	if (path_info.filePath() == theme_filename) {
 		nap::Logger::info("Reloading: %s", path.toStdString().c_str());
-		reloadTheme();
+		applyTheme();
 	}
 
-	mFileWatcher.addPath(theme_filename);
+	watchThemeFiles();
 }
 
 void ThemeManager::loadFonts()
@@ -129,6 +144,7 @@ void ThemeManager::loadFonts()
 	if (mFontsLoaded)
 		return;
 
+	// TODO: Move this to the theme
 	QStringList fonts;
 	fonts << QRC_FONTS_MONTSERRAT_EXTRABOLD;
 	fonts << QRC_FONTS_MONTSERRAT_LIGHT;
@@ -137,7 +153,7 @@ void ThemeManager::loadFonts()
 	fonts << QRC_FONTS_NUNITOSANS_EXTRABOLD;
 	fonts << QRC_FONTS_NUNITOSANS_REGULAR;
 
-	for (auto font : fonts)
+	for (const auto& font : fonts)
 	{
 		if (QFontDatabase::addApplicationFont(font) < 0)
 			nap::Logger::warn("Failed to load font: '%s'", font.toStdString().c_str());

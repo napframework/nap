@@ -1,4 +1,5 @@
 #include "layer.h"
+#include <iostream>
 
 // nap::layer run time class definition
 RTTI_DEFINE_BASE(nap::Layer)
@@ -13,4 +14,9 @@ namespace nap
 	{
 		return true;
 	}
+
+
+	LayerInstance::~LayerInstance()
+	{ }
+
 }

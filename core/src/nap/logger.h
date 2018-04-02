@@ -69,6 +69,9 @@ namespace nap
 		 * in comparison to other levels
 		 */
 		LogLevel(const std::string& name, int level) : mName(name), mLevel(level) {}
+		LogLevel(const LogLevel&) = delete;
+		LogLevel& operator=(const LogLevel&) = delete;
+
 		// returns the level number to indicate the level's ranking
 		int level() const								{ return mLevel; }
 		const std::string& name() const					{ return mName; }
@@ -97,7 +100,7 @@ namespace nap
 		/**
 		 * @return the log level of this message
 		 */
-		const LogLevel& level() const { return mLevel; }
+		const LogLevel& level() const { return *mLevel; }
 
 		/**
 		 * @return the text associated with this message
@@ -110,7 +113,7 @@ namespace nap
 		const utility::SystemTimeStamp& getTimestamp() const { return mTimeStamp; }
 
 	private:
-		const LogLevel mLevel;
+		const LogLevel* mLevel;
 		const std::string mMessage;
 		const utility::SystemTimeStamp mTimeStamp;
 	};
@@ -152,13 +155,13 @@ namespace nap
 		 * will not be sent to this handler.
 		 * @param level The minimum level to be sent to this handler
 		 */
-		void setLogLevel(const LogLevel& level) { mLevel = level; }
+		void setLogLevel(const LogLevel& level) { mLevel = &level; }
 
 		/**
 		 * @return The current log level of this handler, log messages lower than this level will
 		 * not be handled by this logger.
 		 */
-		const LogLevel& getLogLevel() const { return mLevel; }
+		const LogLevel& getLogLevel() const { return *mLevel; }
 
 		/**
 		 * Override the basic log message formatter
@@ -174,7 +177,7 @@ namespace nap
 		std::string formatMessage(LogMessage& msg);
 
 	private:
-		LogLevel mLevel;
+		const LogLevel* mLevel;
 		LogMessageFormatter mFormatter = nullptr;
 	};
 
@@ -188,12 +191,9 @@ namespace nap
 		 * Sets the current log level.
 		 * Messages with a level lower than the current level will not be displayed.
 		 */
-		static void setLevel(LogLevel lvl)			{ instance().mLevel = lvl; }
+		static void setLevel(const LogLevel& lvl)			{ instance().setCurrentLevel(lvl); }
 
-		/**
-		 * @return the current log level
-		 */
-		static const LogLevel& getCurrentLevel()			{ return instance().mLevel; }
+		void setCurrentLevel(const LogLevel& level) { mLevel = &level; }
 
 		/**
 		 * @return instance of the actual logger
@@ -224,17 +224,17 @@ namespace nap
 		/**
 		 * @return all available log levels.
 		 */
-		static const std::vector<LogLevel>& getLevels()
+		static const std::vector<const LogLevel*>& getLevels()
 		{
 			// In-line so you will remember to amend this list
 			// when you add or remove a LogLevel above.
 			// Must be ordered by level value.
-			static std::vector<LogLevel> lvls = {
-					fineLevel(),
-					debugLevel(),
-					infoLevel(),
-					warnLevel(),
-					fatalLevel()
+			static std::vector<const LogLevel*> lvls = {
+					&fineLevel(),
+					&debugLevel(),
+					&infoLevel(),
+					&warnLevel(),
+					&fatalLevel()
 			};
 			return lvls;
 		}
@@ -269,7 +269,7 @@ namespace nap
 		void onLog(const LogMessage& message);
 
 		Slot<LogMessage> onLogSlot = {[&](LogMessage message)	{ onLog(message); }};
-		LogLevel mLevel;
+		const LogLevel* mLevel;
 		std::vector<std::unique_ptr<LogHandler>> mHandlers{};
 	};
 
