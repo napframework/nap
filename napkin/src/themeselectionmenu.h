@@ -24,7 +24,7 @@ namespace napkin {
          * Called when the theme has been changed
          * @param theme
          */
-        void onThemeChanged(const QString& theme);
+        void onThemeChanged(const Theme* theme);
 
         /**
          * Set the current theme as checked in the menu

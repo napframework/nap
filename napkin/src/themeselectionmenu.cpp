@@ -21,23 +21,22 @@ void ThemeSelectionMenu::refresh()
 	}
 	setEnabled(true);
 
-	for (auto theme : AppContext::get().getThemeManager().getAvailableThemes())
-	{
-		auto action = new SetThemeAction(theme);
-		addAction(action);
-	}
+	for (const auto& theme : themes)
+		addAction(new SetThemeAction(theme->getName()));
 
 	checkCurrentTheme();
 }
 
-void ThemeSelectionMenu::onThemeChanged(const QString& theme)
+void ThemeSelectionMenu::onThemeChanged(const Theme* theme)
 {
 	checkCurrentTheme();
 }
 
 void ThemeSelectionMenu::checkCurrentTheme()
 {
-	const QString& theme = AppContext::get().getThemeManager().getCurrentTheme();
+	const auto theme = AppContext::get().getThemeManager().getCurrentTheme();
+	if (theme == nullptr)
+		return;
 	for (auto action : actions())
-		action->setChecked(action->text() == theme);
+		action->setChecked(action->text() == theme->getName());
 }

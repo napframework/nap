@@ -112,6 +112,14 @@ namespace nap
 		addFileHandler(filename);
 	}
 
+	const LogLevel* Logger::getLevel(const std::string& name)
+	{
+		for (const auto lvl : getLevels())
+			if (lvl->name() == name)
+				return lvl;
+		return nullptr;
+	}
+
 
 	FileLogHandler::FileLogHandler(const std::string& mFilename)
 		: LogHandler(),  mFilename(mFilename)
