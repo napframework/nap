@@ -5,8 +5,8 @@ if (WIN32)
         HINTS ${THIRDPARTY_DIR}/libartnet
     )
     set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin)
-	set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.lib)
-	set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS_DIR}/libartnet.dll)
+    set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.lib)
+    set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS_DIR}/libartnet.dll)
 elseif(APPLE)
     find_path(
         ARTNET_DIR
@@ -14,8 +14,8 @@ elseif(APPLE)
         HINTS ${THIRDPARTY_DIR}/libartnet
     )   
     set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin)
-	set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libArtnet.dylib)
-	set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
+    set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libArtnet.dylib)
+    set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
 else()
     find_path(
         ARTNET_DIR
@@ -23,8 +23,8 @@ else()
         HINTS ${THIRDPARTY_DIR}/libartnet
     )   
     set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin)
-	set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so.1)
-	set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
+    set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so.1)
+    set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
 endif()
 
 mark_as_advanced(ARTNET_LIBS_DIR)

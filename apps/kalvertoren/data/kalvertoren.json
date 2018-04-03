@@ -98,23 +98,83 @@
         },
         {
             "Type": "nap::Composition",
-            "mID": "COMPO_D1",
+            "mID": "COMPO_C1",
             "Layers": [
-                "D1_basic",
-                "D1_1seq"
+                "Basislaag1",
+                "LAAGC1"
             ],
             "Mode": "Sequence",
-            "Length": 15.0
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_C2",
+            "Layers": [
+                "Basislaag1",
+                "LAAGC2"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_C3",
+            "Layers": [
+                "Basislaag1",
+                "LAAGC3"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_C4",
+            "Layers": [
+                "Basislaag1",
+                "LAAGC4"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_D1",
+            "Layers": [
+                "Basislaag1",
+                "LAAGD1"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
         },
         {
             "Type": "nap::Composition",
             "mID": "COMPO_D2",
             "Layers": [
-                "D1_basic",
-                "D2_seq"
+                "Basislaag1",
+                "LAAGD2"
             ],
             "Mode": "Sequence",
-            "Length": 15.0
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_D3",
+            "Layers": [
+                "Basislaag1",
+                "LAAGD3"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_D4",
+            "Layers": [
+                "Basislaag1",
+                "LAAGD4"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
         },
         {
             "Type": "nap::Composition",
@@ -124,7 +184,7 @@
                 "LAAGH1"
             ],
             "Mode": "Sequence",
-            "Length": 0.800000011920929
+            "Length": 1.0
         },
         {
             "Type": "nap::Composition",
@@ -134,7 +194,7 @@
                 "LAAGH2"
             ],
             "Mode": "Sequence",
-            "Length": 0.800000011920929
+            "Length": 1.0
         },
         {
             "Type": "nap::Composition",
@@ -144,7 +204,7 @@
                 "LAAGH3"
             ],
             "Mode": "Sequence",
-            "Length": 0.800000011920929
+            "Length": 1.0
         },
         {
             "Type": "nap::Composition",
@@ -154,7 +214,87 @@
                 "LAAGH4"
             ],
             "Mode": "Sequence",
-            "Length": 0.800000011920929
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_M1",
+            "Layers": [
+                "Basislaag1",
+                "LAAGM1"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_M2",
+            "Layers": [
+                "Basislaag1",
+                "LAAGM2"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_M3",
+            "Layers": [
+                "Basislaag1",
+                "LAAGM3"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_M4",
+            "Layers": [
+                "Basislaag1",
+                "LAAGM4"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_S1",
+            "Layers": [
+                "Basislaag1",
+                "LAAGS1"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_S2",
+            "Layers": [
+                "Basislaag1",
+                "LAAGS2"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_S3",
+            "Layers": [
+                "Basislaag1",
+                "LAAGS3"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_S4",
+            "Layers": [
+                "Basislaag1",
+                "LAAGS4"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
         },
         {
             "Type": "nap::Composition",
@@ -228,13 +368,13 @@
         },
         {
             "Type": "nap::Composition",
-            "mID": "COMPO_V_1",
+            "mID": "COMPO_V4",
             "Layers": [
-                "BACKBASIC1",
-                "V_1_sequence"
+                "Basislaag1",
+                "LAAGV4"
             ],
             "Mode": "Sequence",
-            "Length": 15.0
+            "Length": 1.0
         },
         {
             "Type": "nap::Composition",
@@ -245,16 +385,6 @@
             ],
             "Mode": "Sequence",
             "Length": 10.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "COMPO_v4",
-            "Layers": [
-                "Basislaag1",
-                "LAAGV4"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
         },
         {
             "Type": "nap::Composition",
@@ -496,38 +626,40 @@
             "Type": "nap::CompositionContainer",
             "mID": "Friday",
             "Compositions": [
-                "COMPO_cross_test1"
+                "COMPO_S1",
+                "COMPO_S2",
+                "COMPO_S3",
+                "COMPO_S4"
             ]
         },
         {
             "Type": "nap::CompositionContainer",
             "mID": "Monday",
             "Compositions": [
-                "COMPO_H1",
-                "COMPO_H2",
-                "COMPO_H3",
-                "COMPO_H4"
+                "COMPO_D1",
+                "COMPO_D2",
+                "COMPO_D3",
+                "COMPO_D4"
             ]
         },
         {
             "Type": "nap::CompositionContainer",
             "mID": "Saturday",
             "Compositions": [
-                "Composition3",
-                "Composition4",
-                "Composition5",
-                "Composition7",
-                "Composition0",
-                "Composition9",
-                "Composition10",
-                "Composition12"
+                "COMPO_C1",
+                "COMPO_C2",
+                "COMPO_C3",
+                "COMPO_C4"
             ]
         },
         {
             "Type": "nap::CompositionContainer",
             "mID": "Sunday",
             "Compositions": [
-                "COMPO_cross_test1"
+                "COMPO_M1",
+                "COMPO_M2",
+                "COMPO_M3",
+                "COMPO_M4"
             ]
         },
         {
@@ -544,7 +676,10 @@
             "Type": "nap::CompositionContainer",
             "mID": "Tuesday",
             "Compositions": [
-                "COMPO_cross_test1"
+                "COMPO_H1",
+                "COMPO_H2",
+                "COMPO_H3",
+                "COMPO_H4"
             ]
         },
         {
@@ -554,7 +689,7 @@
                 "COMPO_V1",
                 "COMPO_V2",
                 "COMPO_V3",
-                "COMPO_v4"
+                "COMPO_V4"
             ]
         },
         {
@@ -686,7 +821,7 @@
                     "Friday": "Friday",
                     "Saturday": "Saturday",
                     "Sunday": "Sunday",
-                    "CycleMode": "Off",
+                    "CycleMode": "List",
                     "Index": 0,
                     "DurationScale": 1.0
                 },
@@ -697,7 +832,7 @@
                     "PaletteGrid": "PaletteGrid",
                     "DebugImage": "PaletteDebugImage",
                     "Index": 0,
-                    "Composition" : "./CompositionComponent",
+                    "Composition": "./CompositionComponent",
                     "Link": true
                 },
                 {
@@ -727,7 +862,10 @@
                         "y": 1.0
                     },
                     "LuxCurve": 0.5,
-                    "SmoothTime": 1.0
+                    "SmoothTime": 1.0,
+                    "OpeningHours": "OpeningHours",
+                    "ClosingHours": "ClosingHours",
+                    "UseOpeningHours": true
                 }
             ],
             "Children": [
@@ -868,7 +1006,14 @@
                     "LightRegulator": "nap::LightIntensityComponent",
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
-                    "ShowIndexColors": false
+                    "ShowIndexColors": false,
+                    "BlendToWhite": false,
+                    "BlendAxis": 1,
+                    "BlendRange": {
+                        "x": 0.10000000149011612,
+                        "y": 0.25
+                    },
+                    "BlendPower": 0.75
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -970,7 +1115,14 @@
                     "LightRegulator": "nap::LightIntensityComponent",
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
-                    "ShowIndexColors": false
+                    "ShowIndexColors": false,
+                    "BlendToWhite": false,
+                    "BlendAxis": 2,
+                    "BlendRange": {
+                        "x": 0.4000000059604645,
+                        "y": 0.6000000238418579
+                    },
+                    "BlendPower": 1.0
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1264,7 +1416,14 @@
                     "LightRegulator": "nap::LightIntensityComponent",
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
-                    "ShowIndexColors": false
+                    "ShowIndexColors": false,
+                    "BlendToWhite": false,
+                    "BlendAxis": 2,
+                    "BlendRange": {
+                        "x": 0.4000000059604645,
+                        "y": 0.6000000238418579
+                    },
+                    "BlendPower": 1.0
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1517,139 +1676,235 @@
             "Type": "nap::ImageSequenceLayer",
             "mID": "D1_1seq",
             "BaseFilename": "backgrounds/FINAL/diagonaal/D1/D1_%03d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.01666666753590107
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "D2_seq",
             "BaseFilename": "backgrounds/FINAL/diagonaal/D2/D2_%03d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 1.0
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGC1",
+            "BaseFilename": "FINAL/C1_png/C1_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGC2",
+            "BaseFilename": "FINAL/C2_png/C2_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGC3",
+            "BaseFilename": "FINAL/C3_png/C3_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGC4",
+            "BaseFilename": "FINAL/C4_png/C4_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGD1",
+            "BaseFilename": "FINAL/D1_png/D1_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGD2",
+            "BaseFilename": "FINAL/D2_png/D2_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGD3",
+            "BaseFilename": "FINAL/D3_png/D3_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGD4",
+            "BaseFilename": "FINAL/D4_png/D4_%02d.png",
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGH1",
             "BaseFilename": "FINAL/H1_png/H1_%02d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGH2",
-            "BaseFilename": "FINAL/H2_png/H2_%03d.png",
-            "FPS": 0.10000000149011612
+            "BaseFilename": "FINAL/H2_png/H2_%02d.png",
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGH3",
             "BaseFilename": "FINAL/H3_png/H3_%02d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGH4",
             "BaseFilename": "FINAL/H4_png/H4_%02d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGM1",
+            "BaseFilename": "FINAL/M1_png/M1_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGM2",
+            "BaseFilename": "FINAL/M2_png/M2_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGM3",
+            "BaseFilename": "FINAL/M3_png/M3_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGM4",
+            "BaseFilename": "FINAL/M4_png/M4_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGS1",
+            "BaseFilename": "FINAL/S1_png/S1_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGS2",
+            "BaseFilename": "FINAL/S2_png/S2_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGS3",
+            "BaseFilename": "FINAL/S3_png/S3_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGS4",
+            "BaseFilename": "FINAL/S4_png/S4_%02d.png",
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT1",
             "BaseFilename": "FINAL/T1_png/T1_%02d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT2",
             "BaseFilename": "FINAL/T2_png/T2_%02d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT3",
-            "BaseFilename": "FINAL/T3_PNG/T3_%02d.png",
-            "FPS": 0.10000000149011612
+            "BaseFilename": "FINAL/T3_png/T3_%02d.png",
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT4",
             "BaseFilename": "FINAL/T4_png/T4_%02d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGV1",
             "BaseFilename": "FINAL/V1_png/V1_%02d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGV2",
-            "BaseFilename": "FINAL/V2_PNG/V2_%03d.png",
-            "FPS": 0.10000000149011612
+            "BaseFilename": "FINAL/V2_png/V2_%02d.png",
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGV3",
             "BaseFilename": "FINAL/V3_png/V3_%02d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGV4",
             "BaseFilename": "FINAL/V4_png/V4_%02d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.6000000238418579
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "MOVEcrosstest1",
             "BaseFilename": "sequences/MOVE-6/%03d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "SeC-cross_test1_2",
             "BaseFilename": "sequences/MOVE-1/move_1_%03d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence1_2",
             "BaseFilename": "sequences/MOVE-1/move_1_%03d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence2_2",
             "BaseFilename": "sequences/MOVE-2/move_2_%03d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence3",
             "BaseFilename": "sequences/MOVE-3/move_3_%03d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence4",
             "BaseFilename": "sequences/MOVE-4/move_4_%03d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "Sequence5",
             "BaseFilename": "sequences/MOVE-5/move_5_%04d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "TestSequence",
             "BaseFilename": "sequences/test/%d.png",
-            "FPS": 0.10000000149011612
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "V_1_sequence",
-            "BaseFilename": "sequences/FINAL/vertikaal/V1_%03d.png",
-            "FPS": 0.10000000149011612
+            "BaseFilename": "sequences/final/vertikaal/V1_%03d.png",
+            "FPS": 0.05000000074505806
         },
         {
             "Type": "nap::IndexMap",
@@ -1959,6 +2214,70 @@
             "Usage": "Static"
         },
         {
+            "Type": "nap::OpeningHours",
+            "mID": "ClosingHours",
+            "Monday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Tuesday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Wednesday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Thursday": {
+                "Hour": 21,
+                "Minute": 0
+            },
+            "Friday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Saturday": {
+                "Hour": 19,
+                "Minute": 0
+            },
+            "Sunday": {
+                "Hour": 18,
+                "Minute": 30
+            }
+        },
+        {
+            "Type": "nap::OpeningHours",
+            "mID": "OpeningHours",
+            "Monday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Tuesday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Wednesday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Thursday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Friday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Saturday": {
+                "Hour": 9,
+                "Minute": 0
+            },
+            "Sunday": {
+                "Hour": 11,
+                "Minute": 0
+            }
+        },
+        {
             "Type": "nap::PlaneMesh",
             "mID": "ColorDebugMesh",
             "Size": {
@@ -2092,7 +2411,7 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Kalvertoren",
-            "Sync": false,
+            "Sync": true,
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
@@ -3226,7 +3545,7 @@
             "Pass": "givemelight",
             "Port": 80,
             "Enabled": true,
-            "AllowFailure" : true,
+            "AllowFailure": true,
             "Sensors": [
                 "LuxSensor1"
             ]
@@ -3239,7 +3558,7 @@
             "Pass": "givemelight",
             "Port": 80,
             "Enabled": true,
-            "AllowFailure" : true,
+            "AllowFailure": true,
             "Sensors": [
                 "LuxSensor2"
             ]
@@ -3252,7 +3571,7 @@
             "Pass": "givemelight",
             "Port": 80,
             "Enabled": true,
-            "AllowFailure" : true,
+            "AllowFailure": true,
             "Sensors": [
                 "LuxSensor3"
             ]
@@ -3263,7 +3582,8 @@
             "Name": "LIGHTMK3-B65A4",
             "Retries": 25,
             "BufferSize": 30,
-            "DelayTime": 500
+            "DelayTime": 1000,
+            "Log": true
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3271,7 +3591,8 @@
             "Name": "LIGHTMK3-BA5E3",
             "Retries": 25,
             "BufferSize": 30,
-            "DelayTime": 500
+            "DelayTime": 1000,
+            "Log": true
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3279,7 +3600,8 @@
             "Name": "LIGHTMK3-BAC3D",
             "Retries": 25,
             "BufferSize": 30,
-            "DelayTime": 500
+            "DelayTime": 1000,
+            "Log": true
         }
     ]
 }

@@ -59,6 +59,8 @@ namespace nap
 		
 		CompositionInstance(Composition& composition);
 
+		virtual ~CompositionInstance();
+
 		/**
 		 * Updates all LayerInstances.
 		 */

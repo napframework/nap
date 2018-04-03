@@ -3,6 +3,7 @@
 // External Includes
 #include <entity.h>
 #include <mathutils.h>
+#include <assert.h>
 
 // nap::lightintensitycomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::LightIntensityComponent)
@@ -13,6 +14,9 @@ RTTI_BEGIN_CLASS(nap::LightIntensityComponent)
 	RTTI_PROPERTY("LightOutput",		&nap::LightIntensityComponent::mLightRange,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LuxCurve",			&nap::LightIntensityComponent::mLuxPower,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SmoothTime",			&nap::LightIntensityComponent::mSmoothTime,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OpeningHours",		&nap::LightIntensityComponent::mOpeningHours,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ClosingHours",		&nap::LightIntensityComponent::mClosingHours,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("UseOpeningHours",	&nap::LightIntensityComponent::mUseOpeningHours,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::lightintensitycomponentInstance run time class definition 
@@ -45,12 +49,18 @@ namespace nap
 		for (auto& sensor : resource->mLuxSensors)
 			mSensors.emplace_back(sensor.get());
 
+		// When the shops open and close
+		mOpeningHours = resource->mOpeningHours.get();
+		mClosingHours = resource->mClosingHours.get();
+
+		// Copy settings
 		setMasterBrightness(resource->mMasterIntensity);
 		setSensorInfluence(resource->mSensorInfluence);
 		setLuxRange(resource->mLuxRange);
 		setLightRange(resource->mLightRange);
 		setLuxPower(resource->mLuxPower);
 		setSmoothTime(resource->mSmoothTime);
+		mUseOpeningHours = resource->mUseOpeningHours;
 
 		return true;
 	}
@@ -89,6 +99,10 @@ namespace nap
 
 		// Set brightness, ensure within 0-1 range
 		float target_value = math::clamp<float>(mMasterIntensity * sensor_value, 0.0f, 1.0f);
+
+		// Only set intensity when store is open and we want to use that to influence intensity
+		if (mUseOpeningHours)
+			target_value = isOpen() ? target_value : 0.0f;
 
 		// Blend and store
 		mBrightness = mIntensitySmoother.update(target_value, deltaTime);
@@ -132,4 +146,60 @@ namespace nap
 		return mSensors;
 	}
 
+
+	bool LightIntensityComponentInstance::isOpen() const
+	{
+		// Get opening times based on current date / time
+		utility::DateTime cdt = utility::getCurrentDateTime();
+		OpeningTime current_opening;
+		OpeningTime current_closing;
+		getOpeningTimes(cdt, current_opening, current_closing);
+
+		// Check if the stores are open
+		int t_x = (cdt.getHour() * 100) + cdt.getMinute();
+		int o_x = (current_opening.mHour * 100) + current_opening.mMinute;
+		int c_x = (current_closing.mHour * 100) + current_closing.mMinute;
+		assert(o_x < c_x);
+		return t_x >= o_x && t_x <= c_x;
+	}
+
+
+	void LightIntensityComponentInstance::getOpeningTimes(const utility::DateTime& dateTime, OpeningTime& outOpeningTime, OpeningTime& outClosingTime) const
+	{
+		// Scale target value with opening hours
+		switch (dateTime.getDay())
+		{
+		case utility::EDay::Monday:
+			outOpeningTime = mOpeningHours->mMonday;
+			outClosingTime = mClosingHours->mMonday;
+			break;
+		case utility::EDay::Tuesday:
+			outOpeningTime = mOpeningHours->mTuesday;
+			outClosingTime = mClosingHours->mTuesday;
+			break;
+		case utility::EDay::Wednesday:
+			outOpeningTime = mOpeningHours->mWednesday;
+			outClosingTime = mClosingHours->mWednesday;
+			break;
+		case utility::EDay::Thursday:
+			outOpeningTime = mOpeningHours->mThursday;
+			outClosingTime = mClosingHours->mThursday;
+			break;
+		case utility::EDay::Friday:
+			outOpeningTime = mOpeningHours->mFriday;
+			outClosingTime = mClosingHours->mFriday;
+			break;
+		case utility::EDay::Saturday:
+			outOpeningTime = mOpeningHours->mSaturday;
+			outClosingTime = mClosingHours->mSaturday;
+			break;
+		case utility::EDay::Sunday:
+			outOpeningTime = mOpeningHours->mSunday;
+			outClosingTime = mClosingHours->mSunday;
+			break;
+		default:
+			assert(false);
+			break;
+		}
+	}
 }

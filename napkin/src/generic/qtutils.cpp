@@ -1,16 +1,18 @@
 #include "qtutils.h"
 
+#include <QDialogButtonBox>
 #include <QDir>
 #include <QHBoxLayout>
-#include <QDialogButtonBox>
-#include <QMessageBox>
 #include <QLabel>
+#include <QMessageBox>
+#include <QProcess>
+#include <QDesktopServices>
+#include <QUrl>
 
-#include <mathutils.h>
-#include <standarditemsproperty.h>
 #include <appcontext.h>
-#include <nap/logger.h>
+#include <mathutils.h>
 
+#include "standarditemsproperty.h"
 #include "panels/finderpanel.h"
 
 
@@ -156,9 +158,44 @@ void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, 
 	dialog.exec();
 }
 
-void napkin::revealInFileBrowser(const QString& filename)
+bool napkin::revealInFileBrowser(const QString& filename)
 {
-	// TODO: Reveal files
-	nap::Logger::fatal("Revealing files not supported yet: %s", filename.toStdString().c_str());
+#ifdef _WIN32
+	QStringList args;
+	args << "/select," << QDir::toNativeSeparators(filename);
+	QProcess::execute("explorer.exe", args);
+#elif defined(__APPLE__)
+	QStringList scriptArgs;
+	scriptArgs << QLatin1String("-e")
+			   << QString::fromLatin1("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(filename);
+	QProcess::execute(QLatin1String("/usr/bin/osascript"), scriptArgs);
+	scriptArgs.clear();
+	scriptArgs << QLatin1String("-e") << QLatin1String("tell application \"Finder\" to activate");
+	QProcess::execute("/usr/bin/osascript", scriptArgs);
+#else
+	// Linux
+	// We don't have a reliable way of selecting the file after revealing, just open the file browser
+	QString dirname = QFileInfo(filename).dir().path();
+	QProcess::startDetached("xdg-open " + dirname);
+#endif
+	return true;
+}
+
+
+bool napkin::openInExternalEditor(const QString& filename)
+{
+    return QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
+}
+
+
+QString napkin::fileBrowserName()
+{
+#ifdef _WIN32
+	return "Explorer";
+#elif defined(__APPLE__)
+	return "Finder";
+#else
+	return "file browser";
+#endif
 }
 

@@ -65,7 +65,7 @@ namespace nap
 		 * @param millisecond additional milliseconds
 		 * @return the complete timestamp
 		 */
-		SystemTimeStamp createTimestamp(int year, int month, int day, int hour, int minute, int second, int millisecond);
+		SystemTimeStamp createTimestamp(int year, int month, int day, int hour, int minute, int second=0, int millisecond=0);
 
 
 		//////////////////////////////////////////////////////////////////////////
