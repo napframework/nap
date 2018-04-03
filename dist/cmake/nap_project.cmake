@@ -133,6 +133,6 @@ if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
 endif()
 
 # Package redistributable help on Windows
-if(WIN32)
-    install("${NAP_ROOT}/platform/tools/redistHelp/Microsoft Visual C++ Redistributable Help.txt" DESTINATION .)
+if(WIN32 AND PROJECT_PACKAGE_BIN_DIR)
+    copy_files_to_bin(${NAP_ROOT}/tools/platform/Microsoft\ Visual\ C++\ Redistributable\ Help.txt)
 endif()
