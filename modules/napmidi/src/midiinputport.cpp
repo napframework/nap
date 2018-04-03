@@ -23,21 +23,16 @@ namespace nap
     }
     
     
-    MidiInputPort::MidiInputPort(MidiService& service) : Resource(), mService(&service)
+    MidiInputPort::MidiInputPort(MidiService& service) :
+		mService(&service)
     {
+    }
+    
 
-    }
-    
-    
-    MidiInputPort::~MidiInputPort()
+	bool MidiInputPort::start(utility::ErrorState& errorState)
     {
-        mService->unregisterInputPort(*this);
-    }
-    
-    
-    bool MidiInputPort::init(utility::ErrorState& errorState)
-    {
-        try {
+        try 
+		{
             if (mPortNames.empty())
             {
                 for (auto portNumber = 0; portNumber < mService->getInputPortCount(); ++portNumber)
@@ -46,7 +41,8 @@ namespace nap
                     mPortNames.emplace_back(mService->getInputPortName(portNumber));
                 }
             }
-            else {
+            else 
+			{
                 for (auto& portName : mPortNames)
                 {
                     auto portNumber = mService->getInputPortNumber(portName);
@@ -77,12 +73,20 @@ namespace nap
             mService->registerInputPort(*this);
             return true;
         }
-        catch(RtMidiError& error) {
+        catch(RtMidiError& error) 
+		{
             errorState.fail(error.getMessage());
             return false;
         }
     }
     
+	void MidiInputPort::stop()
+	{
+		midiIns.clear();
+		mPortNumbers.clear();
+		mPortNames.clear();
+		mService->unregisterInputPort(*this);
+	}
     
     std::string MidiInputPort::getPortNames() const
     {

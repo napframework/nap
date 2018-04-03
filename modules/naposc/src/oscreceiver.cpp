@@ -25,22 +25,10 @@ namespace nap
 	{	}
 
 
-	OSCReceiver::~OSCReceiver()
-	{
-		if (mSocket != nullptr)
-		{
-			mSocket->stop();
-			mEventThread.join();
-			mService->removeReceiver(*this);
-			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
-		}
-	}
-
-
 	/**
 	 * Creates the thread that will run the OSC message handler
 	 */
-	bool OSCReceiver::init(utility::ErrorState& errorState)
+	bool OSCReceiver::start(utility::ErrorState& errorState)
 	{
 		// Register the receiver
 		mService->registerReceiver(*this);
@@ -60,12 +48,22 @@ namespace nap
 	}
 	
 
+	void OSCReceiver::stop()
+	{
+		if (mSocket != nullptr)
+		{
+			mSocket->stop();
+			mEventThread.join();
+			mService->removeReceiver(*this);
+			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
+		}
+	}
+
 	void OSCReceiver::addEvent(OSCEventPtr event)
 	{
 		std::lock_guard<std::mutex> lock(mEventMutex);
 		mEvents.emplace(std::move(event));
 	}
-
 
 	void OSCReceiver::consumeEvents(std::queue<OSCEventPtr>& outEvents)
 	{

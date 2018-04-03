@@ -2,7 +2,7 @@
 
 #include <utility/dllexport.h>
 #include <RtMidi.h>
-#include <nap/resource.h>
+#include <nap/device.h>
 #include "midiservice.h"
 
 namespace nap {
@@ -10,15 +10,22 @@ namespace nap {
     /**
      * Opens and manages a midi output port that midi messages can be sent to.
      */
-    class NAPAPI MidiOutputPort : public Resource
+    class NAPAPI MidiOutputPort : public Device
     {
         RTTI_ENABLE(Resource)
     public:
         MidiOutputPort() = default;
         MidiOutputPort(MidiService& service);
-        virtual ~MidiOutputPort() = default;
         
-        bool init(utility::ErrorState& errorState) override;
+        /**
+         * Starts the midi output port.
+         */
+        virtual bool start(utility::ErrorState& errorState) override;
+
+        /**
+         * Stops the midi output port.
+         */
+		virtual void stop() override;
         
         MidiService& getService() { return *mService; }
         
