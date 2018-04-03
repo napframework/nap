@@ -59,6 +59,7 @@ namespace nap
 		}
 	}
 
+
 	void OSCReceiver::addEvent(OSCEventPtr event)
 	{
 		std::lock_guard<std::mutex> lock(mEventMutex);
