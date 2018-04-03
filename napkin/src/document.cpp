@@ -469,23 +469,32 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
-QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& obj, bool excludeArrays)
+QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& obj, bool excludeArrays, bool excludeParent)
 {
 	QList<PropertyPath> properties;
 
-	for (const auto& object : mObjects)
+	for (const std::unique_ptr<nap::rtti::Object>& object : mObjects)
 	{
 		std::vector<nap::rtti::ObjectLink> links;
 		findObjectLinks(*object, links);
 		for (const auto& link : links)
 		{
-			if (link.mTarget == &obj)
-			{
-				PropertyPath propPath(*object, link.mSourcePath);
-				if (!excludeArrays || !propPath.isArray())
-					properties << propPath;
+			if (link.mTarget != &obj)
+				continue;
 
+			PropertyPath propPath(*object, link.mSourcePath);
+			if (excludeArrays && propPath.isArray())
+				continue;
+
+			if (excludeParent) {
+				auto entity = rtti_cast<nap::Entity>(object.get());
+				if (std::find(entity->mChildren.begin(), entity->mChildren.end(), &obj) != entity->mChildren.end())
+					continue;
+				if (std::find(entity->mComponents.begin(), entity->mComponents.end(), &obj) != entity->mComponents.end())
+					continue;
 			}
+
+			properties << propPath;
 		}
 	}
 	return properties;
