@@ -61,11 +61,16 @@ macro(package_nap)
                       execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/docs/html/ ${CMAKE_INSTALL_PREFIX}/doc)")
     endif()
 
-    # Install IDE templates
+    # Package IDE templates
     if(WIN32)
         install(DIRECTORY ${NAP_ROOT}/idetemplates/vstemplates/ DESTINATION visualStudioTemplates)
     elseif(APPLE)
         install(DIRECTORY ${NAP_ROOT}/idetemplates/xcodetemplates/ DESTINATION xcodeTemplates)
+    endif()
+
+    # Package Windows redistributable help
+    if(WIN32)
+        install(FILES "${NAP_ROOT}/dist/win64/redistHelp/Microsoft Visual C++ Redistributable Help.txt" DESTINATION tools/platform)
     endif()
 endmacro()
 
