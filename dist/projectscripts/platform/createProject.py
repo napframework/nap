@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import argparse
 import os
+import re
 import sys
 from subprocess import call
 
@@ -67,8 +68,12 @@ if __name__ == '__main__':
 
     project_name = args.CAMEL_CASE_PROJECT_NAME
 
+    # Validate module name only includes valid characters.  For now we're only allowing ASCII alphabet, numeric, underscore and dash.
+    if re.match(r'^[A-Za-z0-9_-]+$', project_name) == None:
+        print("Error: Please specify project name in CamelCase (ie. with an uppercase letter for each word, starting with the first word) without any special characters")
+        sys.exit(ERROR_INVALID_INPUT)
+
     # Validate project name is camelcase, only includes valid characters
-    # TODO validate project name only includes valid characters
     if not validate_camelcase_name(project_name):
         print("Error: Please specify project name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
         sys.exit(ERROR_INVALID_INPUT)
