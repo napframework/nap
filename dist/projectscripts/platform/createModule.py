@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import argparse
 import os
+import re
 import sys
 from subprocess import call
 
@@ -67,15 +68,18 @@ if __name__ == '__main__':
     module_name = args.CAMEL_CASE_MODULE_NAME
 
     # If module name is prefixed with mod_ remove it
-    if(module_name.startswith('mod_')):
+    if module_name.startswith('mod_'):
         module_name = module_name[4:]
+
+    # Validate module name only includes valid characters.  For now we're only allowing ASCII alphabet, numeric, underscore and dash.
+    if re.match(r'^[A-Za-z0-9_-]+$', module_name) == None:
+        print("Error: Please specify module name in CamelCase (ie. with an uppercase letter for each word, starting with the first word) without any special characters")
+        sys.exit(ERROR_INVALID_INPUT)
 
     # Validate module name is camelcase, only includes valid characters
     if not validate_camelcase_name(module_name):
         print("Error: Please specify module name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
         sys.exit(ERROR_INVALID_INPUT)
-
-    # TODO validate module name only includes valid characters
 
     exit_code = create_module(module_name, not args.no_generate)
     sys.exit(exit_code)

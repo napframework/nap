@@ -245,7 +245,13 @@ def process_project_info(project_path):
             print("Invalid project.json: %s" % e)
             return (None, None)
 
-    # TODO validate loaded JSON
+    # Some simple validation on loaded JSON
+    if not 'version' in project_info:
+        print("Missing 'version' in %s" % PROJECT_INFO_FILE)
+        return (None, None)
+    if not 'title' in project_info:
+        print("Missing 'title' in %s" % PROJECT_INFO_FILE)
+        return (None, None)
 
     # Read our version
     version = project_info['version']
