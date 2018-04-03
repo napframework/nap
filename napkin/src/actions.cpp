@@ -110,7 +110,8 @@ DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : Action(), mO
 
 void DeleteObjectAction::perform()
 {
-	auto pointers = AppContext::get().getDocument()->getPointersTo(mObject, false);
+	auto pointers = AppContext::get().getDocument()->getPointersTo(mObject, false, true);
+
 	if (!pointers.empty())
 	{
 		QString message = "The following properties are still pointing to this object,\n"

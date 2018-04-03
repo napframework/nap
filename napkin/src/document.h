@@ -176,7 +176,7 @@ namespace napkin
 		 * @param obj The object that is being referred to.
 		 * @return A list of properties pointing to the given object.
 		 */
-		QList<PropertyPath> getPointersTo(const nap::rtti::Object& obj, bool excludeArrays);
+		QList<PropertyPath> getPointersTo(const nap::rtti::Object& obj, bool excludeArrays, bool excludeParent);
 
 		/**
 		 * Add an element to an array
