@@ -12,7 +12,7 @@ namespace nap {
      */
     class NAPAPI MidiOutputPort : public Device
     {
-        RTTI_ENABLE(Resource)
+        RTTI_ENABLE(Device)
     public:
         MidiOutputPort() = default;
         MidiOutputPort(MidiService& service);

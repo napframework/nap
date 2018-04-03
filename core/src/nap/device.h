@@ -30,7 +30,7 @@ namespace nap
 		virtual bool start(utility::ErrorState& errorState) { return true; }
 
 		/**
-		 * Stop the device. Will be called before the object is reloaded
+		 * Stop the device. Will be called before the object is reloaded and during shutdown
 		 */
 		virtual void stop() {}
 	};

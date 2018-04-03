@@ -47,6 +47,7 @@ namespace nap
 		 */
 		virtual void stop() override;
 
+	public:
 		int mPort = 7000;				///< Property: 'Port' The port that is opened and used to receive osc messages
 		bool mDebugOutput = false;		///< Property: 'EnableDebugOutput' when enabled this objects prints all received osc messages
 
@@ -55,8 +56,6 @@ namespace nap
 		 * @param event the event to add, note that this receiver will take ownership of the event
 		 */
 		void addEvent(OSCEventPtr event);
-
-
 
 	private:
 		// Runs in the background

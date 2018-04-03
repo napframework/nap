@@ -135,8 +135,8 @@ namespace nap
 
 		private:
 			ResourceManager&		mService;
-			std::vector<Device*>	mExistingDevices;
-			std::vector<Device*>	mNewDevices;
+			std::vector<Device*>	mExistingDevices;			///< This is the list of devices that *already exist* in the ResourceManager which will be updated
+			std::vector<Device*>	mNewDevices;				///< This is the list of devices that have been newly read from the json file, which contain the updated versions of the existing devices
 			bool					mRollbackObjects = true;
 		};
 

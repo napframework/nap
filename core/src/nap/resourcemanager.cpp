@@ -70,9 +70,11 @@ namespace nap
 		if (!mRollbackObjects)
 			return;
 
+		// For any device that was read from json and has been started, stop it again after a failure
 		for (Device* new_device : mNewDevices)
 			new_device->stop();
 
+		// For any device that was already in the ResourceManager, but has been stopped in preparation of a real-time edit, start them again
 		utility::ErrorState errorState;
 		for (Device* existing_device : mExistingDevices)
 		{
@@ -289,19 +291,22 @@ namespace nap
 			}
 		}
 
-		// Stop all existing devices that are about to be updated
+		// Objects to update contains all objects that will be updated.  We need to go through them and stop any existing devices, 
+		// so that we can start the updated versions of the devices, without the old & new device conflicting with eachother.
 		for (auto& kvp : objects_to_update)
 		{
 			if (!kvp.second->get_type().is_derived_from<Device>())
 				continue;
 
+			// We're only interested in devices which are currently in the resource manager (objects_to_update) also contains new objects.
 			ObjectByIDMap::iterator existing_object = mObjects.find(kvp.first);
 			if (existing_object != mObjects.end())
 			{
+				// Stop the device
 				Device* device = (Device*)(existing_object->second.get());
 				device->stop();
 
-				// Devices that are stopped need to be (re)started when an error occurs
+				// Add the stopped device to the rollback helper, so that they're restarted when an error occurs.
 				rollback_helper.addExistingDevice(*device);
 			}
 		}
@@ -321,13 +326,14 @@ namespace nap
 			if (!errorState.check(object->init(errorState), "Couldn't initialize object '%s'", id.c_str()))
 				return false;
 
+			// If the object is a device, we also need to start it
 			if (object->get_type().is_derived_from<Device>())				
 			{
 				Device* device = (Device*)object;
 				if (!errorState.check(device->start(errorState), "Couldn't start device '%s'", id.c_str()))
 					return false;
 
-				// Any device that is successfully started needs to be stopped when an error occurs
+				// We add the started device to the rollback helper, so that they're automatically stopped if an error occurs during init/start of a later object.
 				rollback_helper.addNewDevice(*device);
 			}
 		}
