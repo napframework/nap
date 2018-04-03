@@ -131,3 +131,8 @@ endif()
 if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
     include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_project.cmake)
 endif()
+
+# Package redistributable help on Windows
+if(WIN32)
+    install("${NAP_ROOT}/platform/tools/redistHelp/Microsoft Visual C++ Redistributable Help.txt" DESTINATION .)
+endif()
