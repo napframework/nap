@@ -40,5 +40,17 @@ namespace nap
 	 * @return True if read and deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
 	bool NAPAPI loadProjectInfoFromJSON(ProjectInfo& result, utility::ErrorState& errorState);
+	
+	/**
+	 * Locate project information file project.json for working against NAP source when the file isn't alongside
+	 * the binary.
+	 *
+	 * @param projectInfoToRead The file path to populate
+	 * @param errorState The error state of deserialization
+	 *
+	 * @return True if project.json found, false if not. In case of failure, @a errorState contains detailed error info.
+	 */
+	bool NAPAPI findProjectInfoForNonPackagedFramework(std::string& projectInfoToRead, utility::ErrorState& errorState);
+
 
 } //< End Namespace nap

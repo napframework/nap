@@ -1,12 +1,24 @@
 #include "projectinfomanager.h"
 #include "logger.h"
 
+#include <utility/fileutils.h>
+
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 #include <fstream>
 
+
 namespace nap
-{
+{	
+	const std::string possibleProjectParents[] =
+	{
+		"projects", // User projects against packaged NAP
+		"examples", // Example projects
+		"demos", // Demo projects
+		"apps", // Applications in NAP source
+		"test" // Old test projects in NAP source
+	};
+
 	int getLine(const std::string& json, size_t offset)
 	{
 		int line = 1;
@@ -74,8 +86,28 @@ namespace nap
 	
 	bool loadProjectInfoFromJSON(ProjectInfo& result, utility::ErrorState& errorState)
 	{
+		// Check for our project.json in its normal location, beside the binary
+		std::string projectInfoToRead;
+		if (utility::fileExists(PROJECT_INFO_FILENAME)) {
+			projectInfoToRead = PROJECT_INFO_FILENAME;
+		}
+		else {
+#ifndef NAP_PACKAGED_BUILD
+			// When working against NAP source find our project.json in the tree structure in the project source.
+			// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
+			// so that we avoid module DLL copying hell.
+			const bool projectInfoFound = findProjectInfoForNonPackagedFramework(projectInfoToRead, errorState);
+			if (!projectInfoFound)
+				return false;
+#else // NAP_PACKAGED_BUILD
+			// Fail if we're not running against NAP source and we don't have a project.json
+			errorState.fail("project.json not found alongside binary" );
+			return false;
+#endif // NAP_PACKAGED_BUILD
+		}
+		
 		// Open the file
-		std::ifstream in(PROJECT_INFO_FILENAME, std::ios::in | std::ios::binary);
+		std::ifstream in(projectInfoToRead, std::ios::in | std::ios::binary);
 		if (!errorState.check(in.good(), "Unable to open file %s", PROJECT_INFO_FILENAME))
 			return false;
 		
@@ -94,5 +126,45 @@ namespace nap
 			return false;
 		
 		return true;
-	}	
+	}
+	
+	bool findProjectInfoForNonPackagedFramework(std::string& projectInfoToRead, utility::ErrorState& errorState)
+	{
+		const std::string exeDir = utility::getExecutableDir();
+		const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
+		const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+		
+		projectInfoToRead = "";
+		
+		// Iterate possible project locations
+		for (auto& parentPath : possibleProjectParents)
+		{
+			std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
+			if (utility::dirExists(testDataPath))
+			{
+				// We found our project folder, now let's verify we have a project.json in there
+				testDataPath += "/";
+				testDataPath += PROJECT_INFO_FILENAME;
+				if (utility::fileExists(testDataPath))
+				{
+					projectInfoToRead = testDataPath;
+					break;
+				}
+				else 
+				{
+					errorState.fail("Couldn't find project.json beside binary or in project folder %s", testDataPath.c_str());
+					return false;
+				}
+			}
+		}
+		
+		// Error if we didn't find a source folder for our project
+		if (projectInfoToRead == "")
+		{
+			errorState.fail("Couldn't find source folder for project %s when searching for project.json", projectName.c_str());
+			return false;
+		}
+		
+		return true;
+	}
 }

@@ -25,12 +25,12 @@ endif()
 set(DEPENDENT_NAP_MODULES napcore mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} artnet)
 
-if (WIN32)
-    set(FILES_TO_COPY
-            ${ARTNET_LIBS_DIR}/libartnet.dll
-            )
-
-    copy_files_to_bin(${FILES_TO_COPY})
+if(WIN32)
+    # Copy artnet DLL to build directory
+    if(NOT TARGET artnet)
+        find_package(artnet REQUIRED)
+    endif()
+    copy_artnet_dll()
 elseif(UNIX AND NOT APPLE)
     set(ARTNET_LIB_FILE ${ARTNET_LIBS_DIR}/libartnet.so)
 
