@@ -29,6 +29,7 @@ namespace nap
 	{
 		mVideoPlayer = getComponent<VideoControlComponent>()->mVideoPlayer.get();
 		mVideoPlayer->play();
+		mVideoPlayer->mLoop = true;
 		return true;
 	}
 

@@ -63,9 +63,9 @@ namespace nap
                     return false;
                 }
                 
-                auto bufferPlayer = std::make_unique<BufferPlayerNode>(*nodeManager);
-                auto gain = std::make_unique<GainNode>(*nodeManager);
-                auto gainControl = std::make_unique<ControlNode>(*nodeManager);
+                auto bufferPlayer = make_node<BufferPlayerNode>(*nodeManager);
+                auto gain = make_node<GainNode>(*nodeManager);
+                auto gainControl = make_node<ControlNode>(*nodeManager);
 
                 gain->inputs.connect(bufferPlayer->audioOutput);
                 gain->inputs.connect(gainControl->output);                
@@ -113,7 +113,7 @@ namespace nap
                 mCurrentPlayingTime = 0;
                 for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
                 {
-                    mBufferPlayers[channel]->play(resource->mBuffer->getBuffer()[resource->mChannelRouting[channel]], startPosition * nodeManager->getSamplesPerMillisecond(), actualSpeed);
+                    mBufferPlayers[channel]->play(resource->mBuffer->getBuffer().getChannelPtr(resource->mChannelRouting[channel]), startPosition * nodeManager->getSamplesPerMillisecond(), actualSpeed);
                 }
                 applyGain(mFadeInTime);
             });

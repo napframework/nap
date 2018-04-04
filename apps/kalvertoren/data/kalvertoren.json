@@ -568,6 +568,20 @@
                     "Type": "nap::VideoControlComponent",
                     "mID": "VideoController",
                     "Player" : "VideoPlayer"
+                },
+                {
+                    "Type": "nap::audio::VideoAudioComponent",
+                    "Video": "VideoPlayer",
+                    "mID": "VideoAudioComponent"
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "Input": "VideoAudioComponent",
+                    "Routing": [ 0 , 1 ]
+                },
+                {
+                    "Type": "nap::audio::LevelMeterComponent",
+                    "Input": "VideoAudioComponent"
                 }
             ],
             "Children": [
@@ -1728,7 +1742,7 @@
             "mColorTexture": "VideoTexture",
             "mDepthTexture": "VideoDepthTexture",
             "mClearColor": {
-                "x": 0.0,
+                "x": 1.0,
                 "y": 0.0,
                 "z": 0.0,
                 "w": 0.0
