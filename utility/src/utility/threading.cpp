@@ -13,17 +13,17 @@ namespace nap {
     }
     
     
-    TaskQueue::TaskQueue(unsigned int maxQueueItems) : queue(maxQueueItems)
+    TaskQueue::TaskQueue(unsigned int maxQueueItems) : mQueue(maxQueueItems)
     {
-        dequeuedTasks.resize(maxQueueItems);
+        mDequeuedTasks.resize(maxQueueItems);
     }
     
     
     
     void TaskQueue::processBlocking()
     {
-        auto it = dequeuedTasks.begin();
-        auto count = queue.wait_dequeue_bulk(it, dequeuedTasks.size());
+        auto it = mDequeuedTasks.begin();
+        auto count = mQueue.wait_dequeue_bulk(it, mDequeuedTasks.size());
         for (auto i = 0; i < count; ++i)
             (*it++)();
     }
@@ -31,16 +31,16 @@ namespace nap {
     
     void TaskQueue::process()
     {
-        auto it = dequeuedTasks.begin();
-        auto count = queue.try_dequeue_bulk(it, dequeuedTasks.size());
+        auto it = mDequeuedTasks.begin();
+        auto count = mQueue.try_dequeue_bulk(it, mDequeuedTasks.size());
         for (auto i = 0; i < count; ++i)
             (*it++)();
     }
     
     
-    WorkerThread::WorkerThread(bool blocking, unsigned int maxQueueItems) : blocking(blocking), taskQueue(maxQueueItems)
+    WorkerThread::WorkerThread(bool blocking, unsigned int maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
     {
-        running = false;        
+        mRunning = false;
     }
     
     
@@ -52,47 +52,47 @@ namespace nap {
     
     void WorkerThread::start()
     {
-        if (running)
+        if (mRunning)
             return;
         
-        running = true;
+        mRunning = true;
         
-        if (blocking)
+        if (mBlocking)
         {
-            thread = std::make_unique<std::thread>([&](){
-                while (running)
-                    taskQueue.processBlocking();
+            mThread = std::make_unique<std::thread>([&](){
+                while (mRunning)
+                    mTaskQueue.processBlocking();
             });
         }
         else {
-            thread = std::make_unique<std::thread>([&](){
-                while (running) {
-                    taskQueue.process();
-                    loop(*this);
+            mThread = std::make_unique<std::thread>([&](){
+                while (mRunning) {
+                    mTaskQueue.process();
+                    loop();
                 }
             });
         }
-        setThreadScheduling(*thread);
+        setThreadScheduling(*mThread);
     }
     
     
     void WorkerThread::stop()
     {
-        if (!running)
+        if (!mRunning)
             return;
         
-        running = false;
+        mRunning = false;
         
         // enqueue empty function for thread to make it stop blocking
-        taskQueue.enqueue([](){});
+        mTaskQueue.enqueue([](){});
         
-        thread->join();
+        mThread->join();
     }
     
     
-    ThreadPool::ThreadPool(unsigned int numberOfThreads, unsigned int maxQueueItems) : taskQueue(maxQueueItems)
+    ThreadPool::ThreadPool(unsigned int numberOfThreads, unsigned int maxQueueItems) : mTaskQueue(maxQueueItems)
     {
-        stop = false;
+        mStop = false;
         for (unsigned int i = 0; i < numberOfThreads; ++i)
             addThread();
     }
@@ -106,16 +106,16 @@ namespace nap {
     
     void ThreadPool::shutDown()
     {
-        stop = true;
+        mStop = true;
         
         // enqueue empty function for each thread to make it stop blocking
-        for (unsigned int i = 0; i < threads.size(); ++i)
-            taskQueue.enqueue([](){});
+        for (unsigned int i = 0; i < mThreads.size(); ++i)
+            mTaskQueue.enqueue([](){});
         
-        for (auto& thread : threads)
+        for (auto& thread : mThreads)
             thread.join();
         
-        threads.clear();
+        mThreads.clear();
     }
     
     
@@ -123,7 +123,7 @@ namespace nap {
     {
         shutDown();
         
-        stop = false;
+        mStop = false;
         for (auto i = 0; i < numberOfThreads; ++i)
             addThread();
     }
@@ -131,12 +131,12 @@ namespace nap {
     
     void ThreadPool::addThread()
     {
-        threads.emplace_back([&](){
-            while (!stop)
-                taskQueue.processBlocking();
+        mThreads.emplace_back([&](){
+            while (!mStop)
+                mTaskQueue.processBlocking();
         });
         
-        setThreadScheduling(threads.back());
+        setThreadScheduling(mThreads.back());
     }
     
     
