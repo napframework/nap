@@ -82,7 +82,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 }
 
 
-Object* Document::addObject(rttr::type type, Object* parent)
+Object* Document::addObject(rttr::type type, Object* parent, bool selectNewObject)
 {
 	Factory& factory = mCore.getResourceManager()->getFactory();
 	assert(factory.canCreate(type));
@@ -120,7 +120,7 @@ Object* Document::addObject(rttr::type type, Object* parent)
 		}
 	}
 
-	objectAdded(*obj, parent);
+	objectAdded(*obj, selectNewObject);
 
 	return obj;
 }
@@ -377,7 +377,7 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& typ
 	Variant array = resolved_path.getValue();
 	VariantArray array_view = array.create_array_view();
 
-	Object* new_object = addObject(type);
+	Object* new_object = addObject(type, nullptr, false);
 
 	assert(index <= array_view.get_size());
 	bool inserted = array_view.insert_value(index, new_object);
@@ -399,7 +399,7 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::Ty
 	Variant array = resolved_path.getValue();
 	VariantArray array_view = array.create_array_view();
 
-	Object* new_object = addObject(type);
+	Object* new_object = addObject(type, nullptr, false);
 
 	size_t index = array_view.get_size();
 	bool inserted = array_view.insert_value(index, new_object);
@@ -412,7 +412,6 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::Ty
 
 	return index;
 }
-
 
 void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 {
@@ -469,29 +468,37 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
-QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& obj, bool excludeArrays, bool excludeParent)
+QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent)
 {
 	QList<PropertyPath> properties;
 
-	for (const std::unique_ptr<nap::rtti::Object>& object : mObjects)
+	for (const std::unique_ptr<nap::rtti::Object>& sourceObject : mObjects)
 	{
 		std::vector<nap::rtti::ObjectLink> links;
-		findObjectLinks(*object, links);
+		findObjectLinks(*sourceObject, links);
 		for (const auto& link : links)
 		{
-			if (link.mTarget != &obj)
+			assert(link.mSource == sourceObject.get());
+
+			if (link.mTarget != &targetObject)
 				continue;
 
-			PropertyPath propPath(*object, link.mSourcePath);
+			PropertyPath propPath(*sourceObject.get(), link.mSourcePath);
+			assert(propPath.isPointer());
+
 			if (excludeArrays && propPath.isArray())
 				continue;
 
 			if (excludeParent) {
-				auto entity = rtti_cast<nap::Entity>(object.get());
-				if (std::find(entity->mChildren.begin(), entity->mChildren.end(), &obj) != entity->mChildren.end())
-					continue;
-				if (std::find(entity->mComponents.begin(), entity->mComponents.end(), &obj) != entity->mComponents.end())
-					continue;
+				auto entity = rtti_cast<nap::Entity>(sourceObject.get());
+				if (entity != nullptr)
+				{
+					if (std::find(entity->mChildren.begin(), entity->mChildren.end(), &targetObject) != entity->mChildren.end())
+						continue;
+					if (std::find(entity->mComponents.begin(), entity->mComponents.end(), &targetObject) !=
+						entity->mComponents.end())
+						continue;
+				}
 			}
 
 			properties << propPath;

@@ -9,44 +9,117 @@
 
 using namespace napkin;
 
-napkin::ResourceModel::ResourceModel()
+
+
+napkin::ResourceModel::ResourceModel() : mObjectsItem(TXT_LABEL_OBJECTS), mEntitiesItem(TXT_LABEL_ENTITIES)
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE});
+	appendRow(&mObjectsItem);
+	appendRow(&mEntitiesItem);
+}
+
+// TODO: move to utils or document
+bool isPointedToByEmbeddedPointer(const nap::rtti::Object& obj, napkin::Document& doc)
+{
+	for (const auto& path : doc.getPointersTo(obj, false, false))
+	{
+		nap::Logger::info("Pointer path: %s", path.toString().c_str());
+		assert(path.isPointer());
+		if (path.isEmbeddedPointer())
+			return true;
+	}
+
+	return false;
+}
+
+// TODO: rename
+bool shouldObjectBeVisible(const nap::rtti::Object& obj)
+{
+	auto doc = AppContext::get().getDocument();
+
+	// Exclude components
+	if (obj.get_type().is_derived_from<nap::Component>())
+		return false;
+
+	// Exclude embeded objects
+	if (isPointedToByEmbeddedPointer(obj, *doc))
+		return false;
+
+	// Non-root entities are culled
+	if (obj.get_type().is_derived_from<nap::Entity>())
+		if (doc->getParent(*rtti_cast<const nap::Entity>(&obj)))
+			return false;
+
+	return true;
 }
 
 
 void napkin::ResourceModel::refresh()
 {
-	while (rowCount() > 0)
-		removeRow(0);
+	while (mEntitiesItem.rowCount() > 0)
+		mEntitiesItem.removeRow(0);
+	while (mObjectsItem.rowCount() > 0)
+		mObjectsItem.removeRow(0);
 
-	auto objectsItem = new class GroupItem(TXT_LABEL_OBJECTS);
-	appendRow(objectsItem);
-	auto entitiesItem = new class GroupItem(TXT_LABEL_ENTITIES);
-	appendRow(entitiesItem);
+	auto doc = AppContext::get().getDocument();
 
-	for (nap::rtti::Object* ob : topLevelObjects(AppContext::get().getDocument()->getObjectPointers()))
+	if (doc == nullptr)
+		return;
+
+	for (nap::rtti::Object* ob : topLevelObjects(doc->getObjectPointers()))
+		addObjectItem(*ob);
+}
+
+void ResourceModel::addObjectItem(nap::rtti::Object& ob)
+{
+	if (!shouldObjectBeVisible(ob))
+		return;
+
+	auto typeItem = new RTTITypeItem(ob.get_type());
+
+	// Entity?
+	if (ob.get_type().is_derived_from<nap::Entity>())
 	{
-		auto typeItem = new RTTITypeItem(ob->get_type());
-		
-		// All objects are in this flat list, filter here
-		if (ob->get_type().is_derived_from<nap::Entity>())
-		{
-			// Grab entities and stuff them in a group
-			nap::Entity& e = *rtti_cast<nap::Entity>(ob);
+		// Grab entities and stuff them in a group
+		nap::Entity& e = *rtti_cast<nap::Entity>(&ob);
 
-			if (AppContext::get().getDocument()->getParent(e))
-				continue; // Only add root objects
-
-			auto entityItem = new EntityItem(e);
-			entitiesItem->appendRow({entityItem, typeItem});
-		}
-		else if (!ob->get_type().is_derived_from<nap::Component>())
-		{
-			// If it's not a Component, stick under objects group
-			objectsItem->appendRow({new ObjectItem(ob), typeItem});
-		}
+		auto entityItem = new EntityItem(e);
+		mEntitiesItem.appendRow({entityItem, typeItem});
+		return;
 	}
+
+	// ... now the rest in Objects...
+	mObjectsItem.appendRow({new ObjectItem(&ob), typeItem});
+}
+
+void ResourceModel::removeObjectItem(const nap::rtti::Object& object)
+{
+	auto item = findItemInModel<napkin::ObjectItem>(*this, object);
+	if (item == nullptr)
+		return;
+
+	removeRow(item->row(), item->parent()->index());
+}
+
+void ResourceModel::removeEmbeddedObjects()
+{
+	auto doc = AppContext::get().getDocument();
+
+	// First, gather the objects that are pointed to by embedded pointers,
+	// we are going to change the model layout
+	QList<const nap::rtti::Object*> objects;
+	for (int row=0; row < mObjectsItem.rowCount(); row++)
+	{
+		auto item = dynamic_cast<ObjectItem*>(mObjectsItem.child(row, 0));
+		assert(item != nullptr);
+		auto obj = item->getObject();
+		if (isPointedToByEmbeddedPointer(*obj, *doc))
+			objects << obj;
+	}
+
+	// Now remove
+	for (const auto obj : objects)
+		removeObjectItem(*obj);
 }
 
 
@@ -171,25 +244,9 @@ void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& 
 
 void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object& obj, bool selectNewObject)
 {
-	QList<QStandardItem*> selected_items = mTreeView.getSelectedItems();
-
-	nap::rtti::Object* object_to_select = nullptr;
-	if (!selected_items.empty() && !selectNewObject)
-	{
-		ObjectItem* object_item = dynamic_cast<ObjectItem*>(selected_items[0]);
-		if (object_item != nullptr)
-			object_to_select = object_item->getObject();
-	}
-	else if (selectNewObject)
-		object_to_select = &obj;
-	
-	
-	// TODO: Don't refresh the whole mModel
-	mModel.refresh();
-	mTreeView.getTreeView().expandAll();
-
-	if (object_to_select != nullptr)
-		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *object_to_select));
+	mModel.addObjectItem(obj);
+	if (selectNewObject)
+		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, obj));
 }
 
 void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
@@ -199,24 +256,21 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 }
 
 
-void napkin::ResourcePanel::onObjectRemoved(nap::rtti::Object& object)
+void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object& object)
 {
-	auto item = findItemInModel<napkin::ObjectItem>(mModel, object);
-	if (item == nullptr)
-		return;
-
-	mModel.removeRow(item->row(), item->parent()->index());
-	mTreeView.getTreeView().expandAll();
+	mModel.removeObjectItem(object);
 }
 
 void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 {
-	auto resolvedPath = path.resolve();
-	if (resolvedPath.getProperty().get_name() != nap::rtti::sIDPropertyName)
-		return;
+	// Update object name?
+	if (path.getProperty().get_name() == nap::rtti::sIDPropertyName)
+	{
+		auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, path.getObject());
+		if (objectItem != nullptr)
+			objectItem->setText(QString::fromStdString(path.getObject().mID));
+	}
 
-	auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, path.getObject());
-	if (objectItem != nullptr)
-		objectItem->setText(QString::fromStdString(path.getObject().mID));
+	mModel.removeEmbeddedObjects();
 }
 

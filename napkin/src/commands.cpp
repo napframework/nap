@@ -123,13 +123,14 @@ void AddObjectCommand::redo()
 
 	// Create object
 	auto parent = ctx.getDocument()->getObject(mParentName);
-	auto object = ctx.getDocument()->addObject(mType, parent);
+	auto object = ctx.getDocument()->addObject(mType, parent, true);
 
 	// Remember for undo
 	mObjectName = object->mID;
 
 	ctx.selectionChanged({object});
 }
+
 void AddObjectCommand::undo()
 {
 	AppContext::get().getDocument()->removeObject(mObjectName);
