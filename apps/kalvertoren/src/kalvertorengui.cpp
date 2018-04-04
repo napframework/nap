@@ -29,6 +29,9 @@ namespace nap
 		mBrightnessValues.fill(0.0f);
 		mLedOn  = app.getCore().getResourceManager()->findObject<nap::ImageFromFile>("LedOnImage");
 		mLedOff = app.getCore().getResourceManager()->findObject<nap::ImageFromFile>("LedOffImage");
+
+		CompositionComponentInstance& comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
+		mCompositionCycleMode = static_cast<int>(comp.getCycleMode());
 	}
 
 
@@ -232,6 +235,7 @@ namespace nap
 		if (ImGui::CollapsingHeader("Brightness"))
 		{
 			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+			ImGui::Checkbox("Use Opening Hours", &(light_comp.mUseOpeningHours));
 			if (ImGui::InputFloat2("Lux Range", &(mLuxRange.x)))
 				light_comp.setLuxRange(mLuxRange);
 
@@ -327,6 +331,23 @@ namespace nap
 			ImGui::TextColored(float_clr_gui, "Output Brightness");
 			ImGui::Text(utility::stringFormat("%f", light_comp.getBrightness()).c_str());
 			ImGui::PlotHistogram("Brightness History", mBrightnessValues.data(), mBrightnessValues.size(), mBrightnessIdx, NULL, 0.0f, 1.0f, ImVec2(0, 80));
+		}
+
+		// Opening Hours
+		if (ImGui::CollapsingHeader("Opening Hours"))
+		{
+			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+			OpeningTime opening_time, closing_time;
+			light_comp.getOpeningTimes(utility::getCurrentDateTime(), opening_time, closing_time);
+			ImGui::TextColored(float_clr_gui, "Opening Hours:");
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("%02d:%02d", opening_time.mHour, opening_time.mMinute).c_str());
+			ImGui::TextColored(float_clr_gui, "Closing Hours:");
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("%02d:%02d", closing_time.mHour, closing_time.mMinute).c_str());
+			ImGui::TextColored(float_clr_gui, "Stores: ");
+			ImGui::SameLine();
+			ImGui::Text(light_comp.isOpen() ? "Open" : "Closed");
 		}
 
 		if (ImGui::CollapsingHeader("Composition"))

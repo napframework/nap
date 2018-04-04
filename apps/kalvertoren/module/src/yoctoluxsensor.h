@@ -44,6 +44,7 @@ namespace nap
 		int							mRetries = 10;			///< Number of times connection is retried before exiting the loop
 		int							mBufferSize = 30;		///< Size of the lux sensor read-out buffer
 		int							mDelayTime = 500;		///< Time in between sensor reads
+		bool						mLog = false;			///< If we want to log sensor data
 	private:
 		void*						mSensor = nullptr;		///< Light sensor
 		float						mValue = -1.0f;			///< Current light value
@@ -84,5 +85,10 @@ namespace nap
 		 *	Sets the current sensor value
 		 */
 		void setValue(float value)					{ mValue = value; }
+
+		/**
+		 * Log a message
+		 */
+		void logMessage(const std::string& message, bool warning = false);
 	};
 }

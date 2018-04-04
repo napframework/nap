@@ -54,6 +54,8 @@ macro(copy_etherdream_dll)
     add_custom_command(
             TARGET ${PROJECT_NAME}
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:etherdreamlib> $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:etherdreamlib>
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                    $<TARGET_FILE:etherdreamlib> 
+                    "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
     )
 endmacro()

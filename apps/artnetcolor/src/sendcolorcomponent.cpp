@@ -8,6 +8,7 @@
 RTTI_BEGIN_CLASS(nap::SendColorComponent)
 	RTTI_PROPERTY("Controllers", &nap::SendColorComponent::mControllers, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Span", &nap::SendColorComponent::mSpan, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Number", &nap::SendColorComponent::mNumber, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::sendcolorcomponentInstance run time class definition 
@@ -41,7 +42,13 @@ namespace nap
 		if (!errorState.check(!mColorComps.empty(), "No color components found"))
 			return false;
 
+		// Set span
 		setSpan(getComponent<SendColorComponent>()->mSpan);
+
+		// Set number of colors
+		setNumber(getComponent<SendColorComponent>()->mNumber);
+
+		// All done
 		return true;
 	}
 
@@ -80,7 +87,8 @@ namespace nap
 				controller->send(color_data, i);
 
 				// Increment color
-				color_idx = ++color_idx % mColors.size();
+				assert(mNumber > 0);
+				color_idx = ++color_idx % mNumber;
 			}
 		}
 	}
@@ -89,6 +97,12 @@ namespace nap
 	void SendColorComponentInstance::setSpan(int value)
 	{
 		mSpan = math::max<int>(value, 1);
+	}
+
+
+	void SendColorComponentInstance::setNumber(int value)
+	{
+		mNumber = math::min<int>(value, mColorComps.size());
 	}
 
 

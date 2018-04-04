@@ -17,39 +17,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
+# Get our modules list from project.json
+project_json_to_cmake()
+
 # preprocessor
-target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow mod_naposc mod_napsvg mod_napapp)
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-# Copy etherdream DLL
-find_package(etherdream REQUIRED)
-copy_etherdream_dll()
-
-# Build into a project directory under bin
-set_output_directories()
-
-if (WIN32)
-    # Copy freeimage DLL
-    find_package(freeimage REQUIRED)
-    copy_freeimage_dll()
-
-    # Copy over some crap window dlls
-    copy_base_windows_graphics_dlls()
-
-    # Copy all of our Windows DLLs that have build in bin into project dir.  Temporary approach until we're
-    # reading cleaner approach ala what we do against NAP release makes it into builds against NAP source.
-    bulk_copy_windows_dlls_to_bin()
-elseif(APPLE)
-    # Add the runtime path for RTTR on macOS
-    add_macos_rttr_rpath()
-endif()
-
-# Copy project json to project bin dir and export fbx, via post-build events
-copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
-export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
-
-# Package into release build if requested
-if(PACKAGE_NAIVI_APPS)
-    package_project_into_release("projects/${PROJECT_NAME}")
-endif()
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" TRUE)
