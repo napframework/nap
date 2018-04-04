@@ -20,11 +20,8 @@ napkin::PropertyPath::PropertyPath(Object& obj, const Path& path)
 }
 
 napkin::PropertyPath::PropertyPath(Object& obj, const std::string& path)
-		: mObject(&obj), mPath(Path())
+		: mObject(&obj), mPath(Path::fromString(path))
 {
-	std::vector<std::string> split = nap::utility::splitString(path, '/');
-	for (auto part : split)
-		mPath.pushAttribute(part);
 }
 
 rttr::variant napkin::PropertyPath::getValue() const
@@ -45,7 +42,8 @@ rttr::property napkin::PropertyPath::getProperty() const
 
 rttr::type napkin::PropertyPath::getType() const
 {
-	return getValue().get_type();
+	Variant value = resolve().getValue();
+	return value.get_type();
 }
 
 ResolvedPath napkin::PropertyPath::resolve() const
@@ -56,7 +54,7 @@ ResolvedPath napkin::PropertyPath::resolve() const
 }
 
 
-rttr::type napkin::PropertyPath::getArrayElementType()
+rttr::type napkin::PropertyPath::getArrayElementType() const
 {
 	ResolvedPath resolved_path = resolve();
 	assert(resolved_path.isValid());
@@ -67,8 +65,8 @@ rttr::type napkin::PropertyPath::getArrayElementType()
 		return rttr::type::empty();
 
 	VariantArray array_view = array.create_array_view();
-	auto arrayView = getArrayView();
-	return arrayView.get_rank_type(arrayView.get_rank());
+	auto elmtype = array_view.get_rank_type(array_view.get_rank());
+	return elmtype.is_wrapper() ? elmtype.get_wrapped_type() : elmtype;
 }
 
 size_t napkin::PropertyPath::getArrayLength()const
@@ -87,11 +85,11 @@ size_t napkin::PropertyPath::getArrayLength()const
 	return array_view.get_size();
 }
 
-rttr::variant_array_view napkin::PropertyPath::getArrayView()
+rttr::variant_array_view napkin::PropertyPath::getArrayView() const
 {
-	mResolvedPath = resolve();
-	mVariant = mResolvedPath.getValue();
-	mVariantArray = mVariant.create_array_view();
+	auto mResolvedPath = resolve();
+	auto mVariant = mResolvedPath.getValue();
+	auto mVariantArray = mVariant.create_array_view();
 	return mVariantArray;
 }
 
@@ -110,8 +108,8 @@ napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) con
 
 rttr::type napkin::PropertyPath::getWrappedType() const
 {
-	auto value = getValue();
-	return value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
+	const auto& type = getType();
+	return type.is_wrapper() ? type.get_wrapped_type() : type;
 }
 
 bool napkin::PropertyPath::isValid() const
@@ -134,10 +132,40 @@ bool napkin::PropertyPath::operator==(const napkin::PropertyPath& other) const
 	return true;
 }
 
-bool napkin::PropertyPath::isArray()
+bool napkin::PropertyPath::isArray() const
 {
 	return getType().is_array();
 }
+
+bool napkin::PropertyPath::isPointer() const
+{
+	if (isArray())
+		return getArrayElementType().is_pointer();
+	return getWrappedType().is_pointer();
+}
+
+bool napkin::PropertyPath::isEmbeddedPointer() const
+{
+	if (!isPointer())
+		return false;
+
+	return nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded);
+}
+
+bool napkin::PropertyPath::isNonEmbeddedPointer() const
+{
+	if (!isPointer())
+		return false;
+
+	return !nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded);
+}
+
+
+bool napkin::PropertyPath::isEnum() const
+{
+	return getWrappedType().is_enumeration();
+}
+
 
 
 
