@@ -18,6 +18,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 set(DEPENDENT_NAP_MODULES mod_naprender mod_napaudio)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${FFMPEG_LIBRARIES})
 
+if(WIN32)
+    # Copy FFmpeg DLLs to build directory
+    copy_windows_ffmpeg_dlls()
+endif()
+
 # Package into platform release
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/FFmpeg/lib")

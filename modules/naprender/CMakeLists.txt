@@ -22,15 +22,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} nrender ${DEPENDENT_NAP_MODULES})
 
-if (WIN32)
-    copy_files_to_bin(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
-
-    copy_base_windows_graphics_dlls()
-
-    find_package(freeimage REQUIRED)
-    copy_freeimage_dll()
-endif()
-
 # Package into platform release
 if (UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/glew/lib")

@@ -19,15 +19,5 @@ project_json_to_cmake()
 
 target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES})
 
-# if (WIN32)
-#    # Copy portaudio DLL
-#    find_package(portaudio REQUIRED)
-#   copy_portaudio_lib()
-# endif()
-if(APPLE)
-    # Add the runtime path for RTTR on macOS
-    add_macos_rttr_rpath()
-endif()
-
-# create post build event
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(FALSE FALSE "unused" FALSE)
