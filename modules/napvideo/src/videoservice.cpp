@@ -5,6 +5,7 @@
 #include <sceneservice.h>
 #include <renderservice.h>
 #include <nap/logger.h>
+#include "utility/datetimeutils.h"
 
 extern "C"
 {
@@ -16,10 +17,12 @@ RTTI_DEFINE_CLASS(nap::VideoService)
 
 namespace nap
 {
+
 	bool VideoService::init(nap::utility::ErrorState& errorState)
 	{
 		av_register_all();
 		avcodec_register_all();
+
 		return true;
 	}
 

@@ -11,6 +11,7 @@
 #include <mathutils.h>
 #include <selectvideocomponent.h>
 #include <selectvideomeshcomponent.h>
+#include <audio/component/levelmetercomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoModulationApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -81,11 +82,15 @@ namespace nap
 		MaterialInstance& background_material = mBackgroundEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
 		background_material.getOrCreateUniform<UniformVec3>("colorOne").setValue({ mBackgroundColorOne.getRed(), mBackgroundColorOne.getGreen(), mBackgroundColorOne.getBlue() });
 		background_material.getOrCreateUniform<UniformVec3>("colorTwo").setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
+        
+        auto level = mVideoEntity->getComponent<audio::LevelMeterComponentInstance>().getLevel(0);
+        // get smoothed level value
+        float smoothedLevel = mSoundLevelSmoother.update(level, deltaTime);
 
 		// Push displacement properties to material
 		MaterialInstance& displaceme_material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement);
-		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness);
+		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement + smoothedLevel * mSoundInfluence);
+		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness + smoothedLevel * mSoundInfluence);
 	}
 	
 	
@@ -220,11 +225,22 @@ namespace nap
 		{
 			ImGui::SliderFloat("Amount", &mDisplacement, 0.0f, 1.0f, "%.3f", 2.0f);
 			ImGui::SliderFloat("Random", &mRandomness, 0.0f, 1.0f, "%.3f", 2.25f);
+            ImGui::SliderFloat("Sound influence", &mSoundInfluence, 0.0f, 2.0f, "%.3f", 1.f);
 		}
 		if (ImGui::CollapsingHeader("Background Colors"))
 		{
 			ImGui::ColorEdit3("Color One", mBackgroundColorOne.getData());
 			ImGui::ColorEdit3("Color Two", mBackgroundColorTwo.getData());
+		}
+		
+		if (ImGui::CollapsingHeader("Playback"))
+		{
+			SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
+			Video* current_video = video_selector.getCurrentVideo();
+			float currentTime = current_video->getCurrentTime();
+			if (ImGui::SliderFloat("Current Time", &currentTime, 0.0f, current_video->getDuration(), "%.3fs", 2.0f))
+				current_video->seek(currentTime);
+			ImGui::Text("Total time: %fs", current_video->getDuration());
 		}
 		
 		ImGui::End();

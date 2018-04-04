@@ -33,11 +33,11 @@ namespace nap
             auto resource = getComponent<LevelMeterComponent>();
             for (auto channel = 0; channel < mInput->getChannelCount(); ++channel)
             {
-                mMeters.emplace_back(std::make_unique<LevelMeterNode>(getNodeManager()));
+                mMeters.emplace_back(make_node<LevelMeterNode>(getNodeManager()));
                 
                 if (resource->mFilterInput)
                 {
-                    auto filter = std::make_unique<FilterNode>(getNodeManager());
+                    auto filter = make_node<FilterNode>(getNodeManager());
                     filter->setMode(FilterNode::EMode::BandPass);
                     filter->setFrequency(resource->mCenterFrequency);
                     filter->setGain(resource->mFilterGain);
