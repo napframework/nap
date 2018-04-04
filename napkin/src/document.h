@@ -128,7 +128,7 @@ namespace napkin
 		 * 	In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr);
+		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject = true);
 
 		/**
 		 * Add an object of the specified type
@@ -137,7 +137,7 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr) { return rtti_cast<T>(addObject(RTTI_OF(T), parent)); }
+		T* addObject(nap::rtti::Object* parent = nullptr) { return rtti_cast<T>(addObject(RTTI_OF(T), parent, true)); }
 
 		/**
 		 * Add and entity to the document
@@ -173,10 +173,10 @@ namespace napkin
 
 		/**
 		 * Retrieve all properties referring to the given object.
-		 * @param obj The object that is being referred to.
+		 * @param targetObject The object that is being referred to.
 		 * @return A list of properties pointing to the given object.
 		 */
-		QList<PropertyPath> getPointersTo(const nap::rtti::Object& obj, bool excludeArrays, bool excludeParent);
+		QList<PropertyPath> getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent);
 
 		/**
 		 * Add an element to an array

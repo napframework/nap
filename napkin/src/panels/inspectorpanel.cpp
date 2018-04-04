@@ -105,21 +105,28 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 	if (array_item != nullptr)
 	{
 		PropertyPath array_path = array_item->getPath();
-		// Determine the type of the array
-		const nap::rtti::TypeInfo array_type = array_item->getArray().get_rank_type(array_item->getArray().get_rank());
-		const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 
-		if (wrapped_type.is_pointer())
+		if (array_path.isNonEmbeddedPointer())
 		{
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
-			menu.addAction("Add...", [this, array_path, wrapped_type]()
+			menu.addAction("Add...", [this, array_path]()
 			{
-				nap::rtti::Object* selected_object = FilterPopup::getObject(this, wrapped_type.get_raw_type());
+				nap::rtti::Object* selected_object = FilterPopup::getObject(this, array_path.getArrayElementType());
 				if (selected_object != nullptr)
 					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 			});
 
-		} else
+		}
+		else if (array_path.isEmbeddedPointer())
+		{
+			menu.addAction("Create...", [this, array_path]()
+			{
+				rttr::type elementType = FilterPopup::getResourceType(this, array_path.getArrayElementType());
+				if (!elementType.empty())
+					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
+			});
+		}
+		else
 		{
 			auto element_type = array_path.getArrayElementType();
 			menu.addAction(QString("Add %1").arg(QString::fromUtf8(element_type.get_name().data())), [array_path]()

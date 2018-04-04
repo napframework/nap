@@ -1,5 +1,6 @@
 #pragma once
 
+#include <standarditemsobject.h>
 #include "generic/filtertreeview.h"
 #include "actions.h"
 
@@ -30,6 +31,27 @@ namespace napkin
 		 * Clear all the items from the model and rebuild
 		 */
 		void refresh();
+
+		/**
+		 * Add an item (row) to represent an Object
+		 * @param object the object to represent
+		 */
+		void addObjectItem(nap::rtti::Object& object);
+
+		/**
+		 * Remove an item (row) representing an Object
+		 * @param object remove the item that represents this Object
+		 */
+		void removeObjectItem(const nap::rtti::Object& object);
+
+		/**
+		 * Find all Objects that are pointed to by an embedded pointer and remove the corresponding items
+		 */
+		void removeEmbeddedObjects();
+
+	private:
+		GroupItem mObjectsItem; // top level item that will hold objects/resources
+		GroupItem mEntitiesItem; // top level item that will hold entities
 	};
 
 	/**
@@ -80,7 +102,7 @@ namespace napkin
 		 * Called when an object is about to be removed
 		 * @param obj The object that will be removed
 		 */
-		void onObjectRemoved(nap::rtti::Object& obj);
+		void onObjectRemoved(const nap::rtti::Object& obj);
 
 		/**
 		 * Called when a new file was created.
