@@ -151,7 +151,7 @@ TEST_CASE("Serialization", "[Serialization]")
 
 		// Print json
 		std::string json = writer.GetJSON();
-		std::cout << json << std::endl;
+//		std::cout << json << std::endl;
 
 		// Read json and verify it succeeds
 		DeserializeResult read_result;
