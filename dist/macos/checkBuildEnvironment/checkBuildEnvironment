@@ -42,6 +42,26 @@ def log_test_success(test_item, success):
 
     print("Checking %s: %s" % (test_item, 'PASS' if success else 'FAIL'))
 
+def read_yes_no(question):
+    """Read a yes/no answer for a question"""
+
+    yes = ('yes','y', 'ye', '')
+    no = ('no','n')
+     
+    while True:
+        prompt = question + ' [Y/n] '
+        if sys.version_info >= (3, 0):
+            choice = input(prompt)
+        else:
+            choice = raw_input(prompt)
+        choice = choice.lower().strip()
+        if choice in yes:
+           return True
+        elif choice in no:
+           return False
+        else:
+           print("Please respond with 'yes' or 'no'\n")
+
 def check_arch():
     """Check if the we're running on a 64bit machine"""
 
@@ -173,21 +193,6 @@ def handle_xcode_license_approval():
         re_run_tests = False
     return re_run_tests
 
-def read_yes_no(question):
-    """Read a yes/no answer for a question"""
-
-    yes = ('yes','y', 'ye', '')
-    no = ('no','n')
-     
-    while True:
-        choice = raw_input(question + ' [Y/n] ').lower().strip()
-        if choice in yes:
-           return True
-        elif choice in no:
-           return False
-        else:
-           print("Please respond with 'yes' or 'no'\n")
-
 def check_build_environment():
     """Check whether macOS build environment appears ready for NAP"""
 
@@ -241,7 +246,7 @@ def check_build_environment():
     if not cmake_ok:
         return handle_missing_cmake()
 
-    # This should never happen
+    # We might fall through here if the only issue they have is their macOS version
     return False
 
 if __name__ == '__main__':

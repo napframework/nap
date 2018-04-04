@@ -3,6 +3,7 @@ from msvcrt import getch
 import os
 import subprocess
 import sys
+import webbrowser
 
 REQUIRED_WINDOWS_VERSION = '10.0'
 VS_2015_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\VisualStudio.DTE.14.0'
@@ -25,6 +26,26 @@ def log_test_success(test_item, success):
     """Log a test success"""
 
     print("Checking %s: %s" % (test_item, 'PASS' if success else 'FAIL'))
+
+def read_yes_no(question):
+    """Read a yes/no answer for a question"""
+
+    yes = ('yes','y', 'ye', '')
+    no = ('no','n')
+     
+    while True:
+        prompt = question + ' [Y/n] '
+        if sys.version_info >= (3, 0):
+            choice = input(prompt)
+        else:
+            choice = raw_input(prompt)
+        choice = choice.lower().strip()
+        if choice in yes:
+           return True
+        elif choice in no:
+           return False
+        else:
+           print("Please respond with 'yes' or 'no'\n")
 
 def check_windows_version():
     """Check if the we're running Windows 10"""
@@ -57,6 +78,24 @@ def check_visual_studio_2015_is_update3():
     log_test_success('Visual Studio 2015 is Update 3', version_ok)
     return version_ok
 
+def handle_missing_vs2015_update3(have_earlier_vs_2015):
+    """If we don't have Visual Studio 2015 Update 3 help install it"""
+
+    # Show different help depending on whether they already have an older version installed.
+    if have_earlier_vs_2015:        
+        print("\nVisual Studio 2015 is installed but is an older version.  Update 3 is required and can be installed within VS or downloaded from https://www.visualstudio.com/vs/older-downloads/.")
+    else:
+        print("\nVisual Studio 2015 Update 3 is required and Community Edition can be downloaded for free from https://www.visualstudio.com/vs/older-downloads/.")
+
+    # Offer to open download page
+    open_vs_download = read_yes_no("Open download page?")
+    if open_vs_download:
+        webbrowser.open('https://www.visualstudio.com/vs/older-downloads/')
+        print("Re-run checkBuildEnvironment after update has completed and you have rebooted.")
+    else:
+        # Provide more specific instruction if they aren't downloading now
+        print("Re-run checkBuildEnvironment after you have installed Visual Studio 2015 Update 3 and rebooted.")        
+
 def check_cmake():
     """Check if the CMake >= 3.5 is installed"""
 
@@ -75,6 +114,18 @@ def check_cmake():
     # cmake_ok = False
     log_test_success('CMake >= 3.5', cmake_ok)
     return cmake_ok
+
+def handle_missing_cmake():
+    """Assist with CMake installation"""
+
+    print("\nCMake version 3.5 or higher is required and can be downloaded from https://cmake.org/download/.  It needs to be available in the PATH environment variable.")
+    open_cmake_download = read_yes_no("Open download page?")
+    if open_cmake_download:
+        webbrowser.open('https://cmake.org/download/')
+
+    # We'll need to run in a new shell with updated environment variables for CMake to be available on the command line,
+    # so there's no point in attempting to loop through the tests again.
+    print("\nRe-run checkBuildEnvironment once CMake is installed and added to the PATH.")
 
 def check_build_environment():
     """Check whether Windows build environment appears ready for NAP"""
@@ -104,19 +155,14 @@ def check_build_environment():
     if not windows_version_ok:
         print("\nWarning: This version of NAP is supported on Windows 10.  Other Windows versions may work but are unsupported.")
 
-    # If we don't have Xcode Command Line Tools help install it
+    # If we don't have Visual Studio 2015 Update 3 help install it
     if not have_vs_2015_update3:
-        if have_vs_2015:        
-            print("\nVisual Studio 2015 is installed but is an older version.  Update 3 is required and can be downloaded from https://www.visualstudio.com/vs/older-downloads/.")
-        else:
-            print("\nVisual Studio 2015 Update 3 is required and Community Edition can be downloaded for free from https://www.visualstudio.com/vs/older-downloads/.")
-
-        print("Re-run checkBuildEnvironment once VS2015 Update 3 is installed.")
+        handle_missing_vs2015_update3(have_vs_2015)
+        return
 
     # If we don't CMake >= 3.5 provide help for installing it
     if not cmake_ok:
-        print("\nCMake version 3.5 or higher is required. CMake can be downloaded from https://cmake.org/download/.")
-        print("Re-run checkBuildEnvironment once CMake is installed.")
+        handle_missing_cmake()
 
 if __name__ == '__main__':
     check_build_environment()
