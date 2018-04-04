@@ -29,15 +29,15 @@ namespace nap
         }
         
         
-        void EnvelopeGenerator::trigger(Envelope& envelope, TimeValue totalDuration)
+        void EnvelopeGenerator::trigger(std::shared_ptr<Envelope>& envelope, TimeValue totalDuration)
         {
-            trigger(envelope, 0, envelope.size() - 1, 0, totalDuration);
+            trigger(envelope, 0, envelope->size() - 1, 0, totalDuration);
         }
 
         
-        void EnvelopeGenerator::trigger(Envelope& envelope, int startSegment, int endSegment, ControllerValue startValue, TimeValue totalDuration)
+        void EnvelopeGenerator::trigger(std::shared_ptr<Envelope>& envelope, int startSegment, int endSegment, ControllerValue startValue, TimeValue totalDuration)
         {
-            mEnvelope = &envelope;
+            mEnvelope = envelope;
             mEndSegment = endSegment;
             setValue(startValue);
             
@@ -45,7 +45,7 @@ namespace nap
             auto relativeDuration = 0.f;
             for (auto i = startSegment; i < endSegment; ++i)
             {
-                auto& segment = envelope[i];
+                auto& segment = (*envelope)[i];
                 if (!segment.mDurationRelative)
                     absoluteDuration += segment.mDuration;
                 else

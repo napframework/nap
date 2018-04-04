@@ -10,7 +10,7 @@
 #include <audio/core/audionodemanager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OscillatorNode)
-    RTTI_CONSTRUCTOR(nap::audio::NodeManager&, nap::audio::WaveTable&)
+    RTTI_CONSTRUCTOR(nap::audio::NodeManager&, std::shared_ptr<nap::audio::WaveTable>&)
     RTTI_FUNCTION("setFrequency", &nap::audio::OscillatorNode::setFrequency)
     RTTI_FUNCTION("getFrequency", &nap::audio::OscillatorNode::getFrequency)
     RTTI_FUNCTION("setAmplitude", &nap::audio::OscillatorNode::setAmplitude)
@@ -95,11 +95,11 @@ namespace nap
         
 // --- Oscillator --- //
 
-        OscillatorNode::OscillatorNode(NodeManager& manager, WaveTable& aWave) :
+        OscillatorNode::OscillatorNode(NodeManager& manager, std::shared_ptr<WaveTable>& aWave) :
             Node(manager),
             mWave(aWave)
         {
-            mStep = mWave.getSize() / getNodeManager().getSampleRate();
+            mStep = mWave->getSize() / getNodeManager().getSampleRate();
             setFrequency(440);
         }
 
@@ -109,11 +109,11 @@ namespace nap
             auto& outputBuffer = getOutputBuffer(output);
             SampleBuffer* fmInputBuffer = fmInput.pull();
             
-            auto waveSize = mWave.getSize();
+            auto waveSize = mWave->getSize();
             
             for (auto i = 0; i < getBufferSize(); i++)
             {
-                auto val = mAmplitude * mWave.interpolate(mPhase + mPhaseOffset);   //   calculate new value, use wave as a lookup table
+                auto val = mAmplitude * mWave->interpolate(mPhase + mPhaseOffset);   //   calculate new value, use wave as a lookup table
                 if (fmInputBuffer)
                     mPhase += ((*fmInputBuffer)[i] + 1) * mFrequency * mStep;      //   calculate new phase
                 else
@@ -138,7 +138,7 @@ namespace nap
         
         void OscillatorNode::setPhase(ControllerValue phase)
         {
-            mPhaseOffset = phase * mWave.getSize();
+            mPhaseOffset = phase * mWave->getSize();
         }
 
 
@@ -148,16 +148,16 @@ namespace nap
         }
         
         
-        void OscillatorNode::setWave(WaveTable& wave)
+        void OscillatorNode::setWave(std::shared_ptr<WaveTable>& wave)
         {
             mWave = wave;
-            mStep = mWave.getSize() / getNodeManager().getSampleRate();
+            mStep = mWave->getSize() / getNodeManager().getSampleRate();
         }
         
         
         void OscillatorNode::sampleRateChanged(float sampleRate)
         {
-            mStep = mWave.getSize() / sampleRate;
+            mStep = mWave->getSize() / sampleRate;
         }
     }
 }

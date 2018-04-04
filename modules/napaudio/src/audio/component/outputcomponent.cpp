@@ -48,7 +48,7 @@ namespace nap
                     return false;
                 }
                 
-                mOutputs.emplace_back(std::make_unique<OutputNode>(nodeManager));
+                mOutputs.emplace_back(make_node<OutputNode>(nodeManager));
                 mOutputs.back()->setOutputChannel(channel);
                 mOutputs.back()->audioInput.connect(mInput->getOutputForChannel(resource->mChannelRouting[channel]));
             }

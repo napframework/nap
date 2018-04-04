@@ -20,6 +20,21 @@ namespace nap
         {
             return std::make_unique<EnvelopeInstance>(*this);
         }
+        
+        
+        bool EnvelopeInstance::init(NodeManager& nodeManager, utility::ErrorState& errorState)
+        {
+            mEnvelopeGenerator = make_node<EnvelopeGenerator>(nodeManager);
+            auto resource = rtti_cast<Envelope>(&getResource());
+            
+            // We copy the envelope data from the resource to a shared pointer that can be safely shared with the node
+            mSegments = std::make_shared<EnvelopeGenerator::Envelope>(resource->mSegments);
+            if (resource->mAutoTrigger)
+                mEnvelopeGenerator->trigger(mSegments);
+            return true;
+        }
+        
+
     }
     
 }
