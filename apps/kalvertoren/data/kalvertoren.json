@@ -563,6 +563,11 @@
                     "OpeningHours": "OpeningHours",
                     "ClosingHours": "ClosingHours",
                     "UseOpeningHours": true
+                },
+                {
+                    "Type": "nap::VideoControlComponent",
+                    "mID": "VideoController",
+                    "Player" : "VideoPlayer"
                 }
             ],
             "Children": [
@@ -713,6 +718,14 @@
                     "BlendPower": 0.75
                 },
                 {
+                    "Type": "nap::ApplyVideoComponent",
+                    "mID": "nap::ApplyVideoComponent",
+                    "Mesh": "HeiligewegMesh",
+                    "Selector": "./ColorMethodSelectorHeiligeweg",
+                    "LightRegulator": "nap::LightIntensityComponent",
+                    "VideoController" : "../VideoController"
+                },
+                {
                     "Type": "nap::MeshToArtnetComponent",
                     "mID": "nap::MeshToArtnetComponent_2",
                     "Mesh": "HeiligewegMesh",
@@ -763,6 +776,14 @@
                         "y": 0.6000000238418579
                     },
                     "BlendPower": 1.0
+                },
+                {
+                    "Type": "nap::ApplyVideoComponent",
+                    "mID": "nap::ApplyVideoComponent_2",
+                    "Mesh": "KalverMesh",
+                    "Selector": "./ColorMethodSelectorKalver",
+                    "LightRegulator": "nap::LightIntensityComponent",
+                    "VideoController" : "../VideoController"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1007,6 +1028,14 @@
                         "y": 0.6000000238418579
                     },
                     "BlendPower": 1.0
+                },
+                {
+                    "Type": "nap::ApplyVideoComponent",
+                    "mID": "nap::ApplyVideoComponent_3",
+                    "Mesh": "SingelMesh",
+                    "Selector": "./ColorMethodSelectorSingel",
+                    "LightRegulator": "nap::LightIntensityComponent",
+                    "VideoController" : "../VideoController"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1498,6 +1527,24 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::Material",
+            "mID": "VideoMaterial",
+            "Uniforms": [],
+            "Shader": "VideoShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
             "Type": "nap::MeshFromFile",
             "mID": "HeiligewegFrameMesh",
             "Path": "heiligeweg_export_heiligeweg_frame.mesh",
@@ -1618,6 +1665,18 @@
             }
         },
         {
+            "Type": "nap::RenderTarget",
+            "mID": "VideoRenderTarget",
+            "mColorTexture": "VideoTexture",
+            "mDepthTexture": "VideoDepthTexture",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
             "Type": "nap::RenderTexture2D",
             "mID": "CompositionDepthTextureA",
             "Parameters": {
@@ -1665,6 +1724,36 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "CompositionTextureB",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "Repeat",
+                "WrapHorizontal": "Repeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "DynamicRead",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoDepthTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoTexture",
             "Parameters": {
                 "MinFilter": "Linear",
                 "MaxFilter": "Linear",
@@ -1746,6 +1835,12 @@
             "mFragShader": "shaders/vertexcolor.frag"
         },
         {
+            "Type": "nap::Shader",
+            "mID": "VideoShader",
+            "mVertShader": "shaders/video.vert",
+            "mFragShader": "shaders/video.frag"
+        },
+        {
             "Type": "nap::TransformComponent",
             "mID": "nap::TransformComponent",
             "Properties": {
@@ -1810,6 +1905,13 @@
                 },
                 "UniformScale": 1.0
             }
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "VideoPlayer",
+            "Path": "video/opening_test2.mp4",
+            "Loop": true,
+            "Speed": 1.0
         },
         {
             "Type": "nap::WeekColors",

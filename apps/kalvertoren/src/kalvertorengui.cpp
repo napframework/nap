@@ -8,6 +8,7 @@
 #include "applycompositioncomponent.h"
 #include "rendercompositioncomponent.h"
 #include "lightintensitycomponent.h"
+#include "applyvideocomponent.h"
 
 #include <imguiservice.h>
 #include <nap/core.h>
@@ -98,6 +99,9 @@ namespace nap
 			case 2:
 				color_method->select(RTTI_OF(nap::ApplyCompositionComponentInstance));
 				break;
+			case 3:
+				color_method->select(RTTI_OF(nap::ApplyVideoComponentInstance));
+				break;
 			default:
 				assert(false);
 				break;
@@ -150,7 +154,7 @@ namespace nap
 		if (ImGui::CollapsingHeader("DisplaySettings"))
 		{
 			// Changes the mesh paint mode
-			if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0"))
+			if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0Video\0\0"))
 			{
 				selectPaintMethod();
 			}
