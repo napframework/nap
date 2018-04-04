@@ -568,6 +568,20 @@
                     "Type": "nap::VideoControlComponent",
                     "mID": "VideoController",
                     "Player" : "VideoPlayer"
+                },
+                {
+                    "Type": "nap::audio::VideoAudioComponent",
+                    "Video": "VideoPlayer",
+                    "mID": "VideoAudioComponent"
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "Input": "VideoAudioComponent",
+                    "Routing": [ 0 , 1 ]
+                },
+                {
+                    "Type": "nap::audio::LevelMeterComponent",
+                    "Input": "VideoAudioComponent"
                 }
             ],
             "Children": [
