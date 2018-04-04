@@ -2,6 +2,7 @@
 
 // External Includes
 #include <entity.h>
+#include <video.h>
 
 // nap::controlvideocomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::VideoControlComponent)
@@ -26,6 +27,8 @@ namespace nap
 
 	bool VideoControlComponentInstance::init(utility::ErrorState& errorState)
 	{
+		mVideoPlayer = getComponent<VideoControlComponent>()->mVideoPlayer.get();
+		mVideoPlayer->play();
 		return true;
 	}
 

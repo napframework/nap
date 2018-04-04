@@ -55,5 +55,8 @@ namespace nap
 		 * Renders the video to a texture target
 		 */
 		void render();
+
+	private:
+		nap::Video* mVideoPlayer = nullptr;
 	};
 }

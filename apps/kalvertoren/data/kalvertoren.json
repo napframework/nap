@@ -896,6 +896,64 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "RenderVideoEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::VideoRenderTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderVideoComponent",
+                    "mID": "RenderVideoComponent",
+                    "Target": "VideoRenderTarget",
+                    "Player" : "VideoPlayer",
+                    "RenderComponent": "./RenderableVideoPlaneMeshComponent",
+                    "CameraComponent": "CompositionCamera"
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderableVideoPlaneMeshComponent",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Material": "VideoMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "SceneCameraEntity",
             "Components": [
                 {
@@ -1808,6 +1866,10 @@
                 },
                 {
                     "Entity": "RenderCompositionEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "RenderVideoEntity",
                     "InstanceProperties": []
                 },
                 {
