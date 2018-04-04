@@ -54,12 +54,15 @@ nap::rtti::Object* napkin::FilterPopup::getObject(QWidget* parent, const rttr::t
 	return nullptr;
 }
 
-nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
+nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent, const rttr::type& typeConstraint)
 {
-
 	QStandardItemModel model;
+
 	for (const auto t : getResourceTypes())
-		model.appendRow(new QStandardItem(QString::fromUtf8(t.get_name().data())));
+	{
+		if (typeConstraint == rttr::type::empty() || t.is_derived_from(typeConstraint))
+			model.appendRow(new QStandardItem(QString::fromUtf8(t.get_name().data())));
+	}
 
 	FilterPopup dialog(parent, model);
 	dialog.exec(QCursor::pos());
@@ -72,6 +75,11 @@ nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
 		return rttr::type::empty();
 
 	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
+}
+
+nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
+{
+	return getResourceType(parent, rttr::type::empty());
 }
 
 
@@ -117,5 +125,6 @@ QSize napkin::FilterPopup::sizeHint() const
 {
 	return mSize;
 }
+
 
 
