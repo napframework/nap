@@ -65,6 +65,11 @@ namespace nap
 		 */
 		void render();
 
+		/**
+		 * @return the video color texture
+		 */
+		Texture2D& getTexture()													{ return mTarget->getColorTexture(); }
+
 		ComponentInstancePtr<RenderableMeshComponent> mRenderableComponent =	{ this, &RenderVideoComponent::mRenderableComponent };
 		ComponentInstancePtr<OrthoCameraComponent> mCameraComponent =			{ this, &RenderVideoComponent::mCameraComponent };
 

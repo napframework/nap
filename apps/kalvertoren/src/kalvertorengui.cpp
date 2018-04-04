@@ -9,6 +9,7 @@
 #include "rendercompositioncomponent.h"
 #include "lightintensitycomponent.h"
 #include "applyvideocomponent.h"
+#include "rendervideocomponent.h"
 
 #include <imguiservice.h>
 #include <nap/core.h>
@@ -405,6 +406,16 @@ namespace nap
 			
 			// Draw slider regarding display size
 			ImGui::SliderFloat("Display Size", &mDisplaySize, 0.0f, 1.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Video"))
+		{
+			RenderVideoComponentInstance& video_render_comp = mApp.renderVideoEntity->getComponent<RenderVideoComponentInstance>();
+			float col_width = ImGui::GetContentRegionAvailWidth() * mVideoDisplaySize;
+			ImGui::Image(video_render_comp.getTexture(), { col_width, col_width });
+
+			// Draw slider regarding display size
+			ImGui::SliderFloat("Display Size", &mVideoDisplaySize, 0.0f, 1.0f);
 		}
 
 		// Artnet information
