@@ -23,7 +23,6 @@ bool isPointedToByEmbeddedPointer(const nap::rtti::Object& obj, napkin::Document
 {
 	for (const auto& path : doc.getPointersTo(obj, false, false))
 	{
-		nap::Logger::info("Pointer path: %s", path.toString().c_str());
 		assert(path.isPointer());
 		if (path.isEmbeddedPointer())
 			return true;
