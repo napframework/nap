@@ -7,7 +7,7 @@ namespace nap {
     
     namespace audio {
         
-        VideoNode::VideoNode(NodeManager& nodeManager, Video& video, int channelCount) : Node(nodeManager), mVideo(&video), mAudioFormat(channelCount, AudioFormat::ESampleFormat::FLT, int(nodeManager.getSampleRate()))
+        VideoNode::VideoNode(NodeManager& nodeManager, Video& video, int channelCount) : Node(nodeManager), mAudioFormat(channelCount, AudioFormat::ESampleFormat::FLT, int(nodeManager.getSampleRate()))
         {
             // Initialize the output pins
             for (auto channel = 0; channel < channelCount; ++channel)
@@ -15,11 +15,15 @@ namespace nap {
             
             // Initialize the buffer to be filled by the video object
             mDataBuffer.resize(getBufferSize() * getChannelCount());
+            
+            setVideo(video);
         }
         
         
         void VideoNode::process()
         {
+            std::lock_guard<std::mutex> lock(mVideoMutex);
+            
             if (mVideo == nullptr || !mVideo->hasAudio())
             {
                 // If the video has no audio channels we fill the output pins with zeros
@@ -42,6 +46,33 @@ namespace nap {
                     getOutputBuffer(*mOutputs[channel])[i] = *(samplePtr++);
 
         }
+        
+        
+        void VideoNode::setVideo(Video& video)
+        {
+            std::lock_guard<std::mutex> lock(mVideoMutex);
+            
+            // unregister from the old video's destruct signal
+            if (mVideo != nullptr)
+                mVideo->mDestructedSignal.disconnect(mVideoDestructedSlot);
+            
+            mVideo = &video;
+            
+            // connect to the new video's destruct signal
+            if (mVideo != nullptr)
+                    mVideo->mDestructedSignal.connect(mVideoDestructedSlot);
+        }
+        
+        
+        void VideoNode::videoDestructed(Video& video)
+        {
+            std::lock_guard<std::mutex> lock(mVideoMutex);
+            
+            if (mVideo == &video)
+                mVideo = nullptr;
+        }
+
+
 
         
     }

@@ -901,6 +901,8 @@ namespace nap
 
 	Video::~Video()
 	{
+        mDestructedSignal(*this);
+        
 		if (mFormatContext != nullptr)
 			mService.removeVideoPlayer(*this);
 		
