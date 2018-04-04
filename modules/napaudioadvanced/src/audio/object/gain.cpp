@@ -12,6 +12,18 @@ namespace nap
     namespace audio
     {
         
+        NodePtr<Node> Gain::createNode(int channel, NodeManager& nodeManager)
+        {
+            auto node = make_node<GainNode>(nodeManager);
+            node->setGain(mGain[channel % mGain.size()]);
+            for (auto& input : mInputs)
+                if (input != nullptr)
+                {
+                    node->inputs.connect(input->getInstance()->getOutputForChannel(channel % input->getInstance()->getChannelCount()));
+                }
+            
+            return std::move(node);
+        }
     }
     
 }

@@ -2,12 +2,11 @@
     "title": "TempMidiTest",
     "version": "0.1",
     "modules": [
-        "mod_napaudio",
+        "mod_napaudioadvanced",
         "mod_napapp",
         "mod_nappython",
         "mod_naposc",
         "mod_napmidi",
-
         "mod_napinput",
         "mod_napsdlinput",
         "mod_napimgui",

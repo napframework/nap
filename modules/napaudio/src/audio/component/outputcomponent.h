@@ -5,6 +5,7 @@
 #include <componentptr.h>
 
 // Audio includes
+#include <audio/core/audionodeptr.h>
 #include <audio/node/outputnode.h>
 #include <audio/component/audiocomponentbase.h>
 
@@ -52,7 +53,7 @@ namespace nap
             bool init(utility::ErrorState& errorState) override;
             
         private:
-            std::vector<std::unique_ptr<OutputNode>> mOutputs; // Nodes presenting the audio output to the node manager
+            std::vector<NodePtr<OutputNode>> mOutputs; // Nodes presenting the audio output to the node manager
             nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &OutputComponent::mInput }; // Pointer to the component whose input will be sent to the output.
         };
 
