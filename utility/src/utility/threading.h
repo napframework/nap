@@ -2,7 +2,6 @@
 
 // Local Includes
 #include "blockingconcurrentqueue.h"
-#include "signalslot.h"
 #include "utility/dllexport.h"
 
 // External Includes
@@ -23,22 +22,29 @@ namespace nap
         using Task = std::function<void()>;
         
     public:
-        // constructor takes maximum number of items that can be in the queue at a time
+        /**
+         * Constructor takes maximum number of items that can be in the queue at a time.
+         */
         TaskQueue(unsigned int maxQueueItems = 20);
-        // add a task to the end of the queue
-        void enqueue(Task task) { queue.enqueue(task); }
+        /**
+         * Add a task to the end of the queue.
+         */
+        void enqueue(Task task) { mQueue.enqueue(task); }
         
         /**
          * If the queue is empty, this function blocks until tasks are enqueued and executes them.
          * If the queue is not empty all the tasks are executed.
          */
         void processBlocking();
-        // executes all tasks currently in the queue
+        
+        /**
+         * Executes all tasks currently in the queue
+         */
         void process();
         
     private:
-        moodycamel::BlockingConcurrentQueue<Task> queue;
-        std::vector<Task> dequeuedTasks;
+        moodycamel::BlockingConcurrentQueue<Task> mQueue;
+        std::vector<Task> mDequeuedTasks;
     };
     
     
@@ -57,28 +63,36 @@ namespace nap
         WorkerThread(bool blocking = true, unsigned int maxQueueItems = 20);
         ~WorkerThread();
         
-        // enqueues a task to be performed on this thread
-        void enqueue(TaskQueue::Task task) { taskQueue.enqueue(task); }
+        /**
+         * enqueues a task to be performed on this thread
+         */
+        void enqueue(TaskQueue::Task task) { mTaskQueue.enqueue(task); }
         
-        // start the thread and the thread loop
+        /**
+         * Start the thread and the thread loop.
+         */
         void start();
         
-        // stop the thread loop and join the thread
+        /**
+         * Stop the thread loop and join the thread.
+         */
         void stop();
         
-        bool isRunning() { return running; }
-        
-        /** 
-         * Signal emitted every time the thread loop is executed
-         * Only in case of a non-blocking thread.
+        /**
+         * Returns wether the thread is running and not shutting down.
          */
-        nap::Signal<WorkerThread&> loop;
+        bool isRunning() { return mRunning; }
+        
+        /**
+         * Overwrite this method to specify behaviour to be executed each loop after processing the task queue.
+         */
+        virtual void loop() { }
         
     private:
-        std::unique_ptr<std::thread> thread = nullptr;
-        std::atomic<bool> running;
-        bool blocking = true;
-        TaskQueue taskQueue;
+        std::unique_ptr<std::thread> mThread = nullptr;
+        std::atomic<bool> mRunning;
+        bool mBlocking = true;
+        TaskQueue mTaskQueue;
     };
     
     
@@ -91,26 +105,36 @@ namespace nap
         ThreadPool(unsigned int numberOfThreads = 1, unsigned int maxQueueItems = 20);
         ~ThreadPool();
         
-        // enqueues a task to be performed on the next idle thread
-        void execute(TaskQueue::Task task) { taskQueue.enqueue(task); }        
+        /**
+         * Enqueues a task to be performed on the next idle thread.
+         */
+        void execute(TaskQueue::Task task) { mTaskQueue.enqueue(task); }
         
-        // sets stopping to true and joins and exits all threads in the pool
+        /**
+         * Sets stopping to true and joins and exits all threads in the pool.
+         */
         void shutDown();
         
-        // resizes the number of threads in the pool, joins and exits all existing threads first!
+        /**
+         * Resizes the number of threads in the pool, joins and exits all existing threads first!
+         */
         void resize(int numberOfThreads);
         
-        // returns the number ot threads in the pool
-        int getThreadCount() const { return int(threads.size()); }
+        /**
+         * Returns the number ot threads in the pool.
+         */
+        int getThreadCount() const { return int(mThreads.size()); }
         
-        // returns wether this thread is shutting down
-        bool isStopping() const { return (stop == true); }
+        /**
+         * Returns wether this thread is shutting down.
+         */
+        bool isStopping() const { return (mStop == true); }
         
     private:
         void addThread();
         
-        std::vector<std::thread> threads;
-        std::atomic<bool> stop;
-        TaskQueue taskQueue;
+        std::vector<std::thread> mThreads;
+        std::atomic<bool> mStop;
+        TaskQueue mTaskQueue;
     };
 }

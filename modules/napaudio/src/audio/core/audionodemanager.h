@@ -2,9 +2,10 @@
 
 // Std includes
 #include <mutex>
+#include <set>
 
 // Nap includes
-#include <nap/threading.h>
+#include <utility/threading.h>
 
 // Audio includes
 #include <audio/utility/audiotypes.h>
