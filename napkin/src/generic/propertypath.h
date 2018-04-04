@@ -76,7 +76,7 @@ namespace napkin
 		 * If this path refers to an array property, get the element type
 		 * If this path does not refer to an array property, return type::empty()
 		 */
-		rttr::type getArrayElementType();
+		rttr::type getArrayElementType() const;
 
 		/**
 		 * If this path refers to an array property, return the length of the array.
@@ -99,18 +99,42 @@ namespace napkin
 		bool isValid() const;
 
 		/**
+		 * @return true if the property pointed to is representing a pointer
+		 */
+		bool isPointer() const;
+
+		/**
+		 * @return true if the property pointed to is representing an embedded pointer
+		 */
+		bool isEmbeddedPointer() const;
+
+		/**
+		 * @return true if the property pointed to represents a non-embedded pointer
+		 */
+		bool isNonEmbeddedPointer() const;
+
+		/**
+		 * @return true if the property pointed to is representing an enum
+		 */
+		bool isEnum() const;
+
+		/**
+		 * @return true if the property pointed to is an array
+		 */
+		bool isArray() const;
+
+		/**
 		 * @param other The property to compare to
 		 * @return true if the both property paths point to the same property
 		 */
 		bool operator==(const PropertyPath& other) const;
 
-		bool isArray();
 
 	private:
 		/**
 		 * If this property is an array, get its arrayview
 		 */
-		rttr::variant_array_view getArrayView();
+		rttr::variant_array_view getArrayView() const;
 
 
 
