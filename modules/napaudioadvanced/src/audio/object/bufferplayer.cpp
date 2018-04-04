@@ -12,6 +12,13 @@ namespace nap
     namespace audio
     {
         
+        NodePtr<Node> BufferPlayer::createNode(int channel, NodeManager& nodeManager)
+        {
+            auto node = make_node<BufferPlayerNode>(nodeManager);
+            if (mAutoPlay)
+                node->play(mBufferResource->getBuffer().getChannelPtr(channel), 0, 1.);
+            return std::move(node);
+        }
     }
     
 }

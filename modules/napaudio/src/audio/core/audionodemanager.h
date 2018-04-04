@@ -31,6 +31,7 @@ namespace nap
             friend class AudioTrigger;
             friend class OutputNode;
             friend class InputNode;
+            friend class NodePtrBase;
             
         public:
             using OutputMapping = std::vector<std::vector<SampleBufferPtr>>;
@@ -139,6 +140,11 @@ namespace nap
              */
             const SampleValue& getInputSample(int channel, int index) const { return mInputBuffer[channel][mInternalBufferOffset + index]; }
             
+            /*
+             * Clears and destructs all the nodes in the node trash bin. The node trash bin contains the nodes that are no longer used so that they can be safely destroyed from within the audio thread.
+             */
+            void clearNodeTrashBin();
+            
             int mInputChannelCount = 0; // Number of input channels this node manager processes
             int mOutputChannelCount = 0; // Number of channel this node manager outputs
             float mSampleRate = 0; // Current sample rate the node manager runs on.
@@ -157,6 +163,10 @@ namespace nap
             std::set<Node*> mRootNodes; // the nodes that will be processed directly by the manager on every audio callback
             
             nap::TaskQueue mAudioCallbackTaskQueue; // Queue with lambda functions to be executed on the next audio callback
+            
+            // Queue with nodes that are no longer used and that can be destructed safely on the next audio callback.
+            // Destruction is performed by the NodeManager on the audio callback to make sure the node can not be destructed while it is being processed.
+            moodycamel::ConcurrentQueue<std::unique_ptr<Node>> mNodeTrashBin; // Queue with nodes to be destructed on the next process() call
         };
         
     }

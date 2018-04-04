@@ -6,6 +6,7 @@
 
 // Audio includes
 #include <audio/core/audionode.h>
+#include <audio/core/audionodeptr.h>
 #include <audio/core/audionodemanager.h>
 #include <audio/service/audioservice.h>
 
@@ -107,7 +108,7 @@ namespace nap
             /**
              * This factory method has to be implemented by descendants to create a DSP Node for a certain channel.
              */
-            virtual std::unique_ptr<Node> createNode(int channel, NodeManager& nodeManager) = 0;
+            virtual NodePtr<Node> createNode(int channel, NodeManager& nodeManager) = 0;
             
             /**
              * This method has to be overwritten by descendants to return the number of nodes/channels that the instance of this object will own.
@@ -138,7 +139,7 @@ namespace nap
             Node* getChannel(int channel);
             
         private:
-            std::vector<std::unique_ptr<Node>> mNodes;
+            std::vector<NodePtr<Node>> mNodes;
         };
                 
     }
