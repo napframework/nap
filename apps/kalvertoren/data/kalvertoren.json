@@ -377,252 +377,6 @@
             "Length": 1.0
         },
         {
-            "Type": "nap::Composition",
-            "mID": "COMPO_cross_test1",
-            "Layers": [
-                "BACK-cross-test1",
-                "MOVEcrosstest1"
-            ],
-            "Mode": "Sequence",
-            "Length": 10.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "COMPOkleurtest01",
-            "Layers": [
-                "AAAAkleurtest1"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "COMPOkleurtest02",
-            "Layers": [
-                "AAAAkleurtest02"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "COMPOkleurtest03",
-            "Layers": [
-                "AAAAkleurtest03"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition",
-            "Layers": [
-                "AAAAkleurtest02"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition--test",
-            "Layers": [
-                "BASIS_cross_1",
-                "MOVEcrosstest1"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition-kleurtest1",
-            "Layers": [
-                "KLEURTESTlocatie1"
-            ],
-            "Mode": "Length",
-            "Length": 30.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition-kleurtest2",
-            "Layers": [
-                "KLEURTESTlocatie2"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition-kleurtest3",
-            "Layers": [
-                "KLEURTESTlocatie3"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition-kleurtest4",
-            "Layers": [
-                "KLEURTESTlocatie4"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition-kleurtest5",
-            "Layers": [
-                "KLEURTESTlocatie5"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition0",
-            "Layers": [
-                "Background9_2"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition1",
-            "Layers": [
-                "Background1",
-                "Shape1",
-                "Shape5"
-            ],
-            "Mode": "Length",
-            "Length": 2.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition10",
-            "Layers": [
-                "Sequence2_2"
-            ],
-            "Mode": "Sequence",
-            "Length": 3.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition11",
-            "Layers": [
-                "Sequence3"
-            ],
-            "Mode": "Sequence",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition12",
-            "Layers": [
-                "Sequence4"
-            ],
-            "Mode": "Sequence",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition13",
-            "Layers": [
-                "Sequence5"
-            ],
-            "Mode": "Sequence",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition1_A",
-            "Layers": [
-                "basic_1_01.png",
-                "Shape_1_A"
-            ],
-            "Mode": "Length",
-            "Length": 2.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition2",
-            "Layers": [
-                "Background2",
-                "Shape2",
-                "Shape3"
-            ],
-            "Mode": "Length",
-            "Length": 2.5
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition3",
-            "Layers": [
-                "Background3",
-                "Shape3"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition4",
-            "Layers": [
-                "Background4",
-                "Shape4"
-            ],
-            "Mode": "Length",
-            "Length": 3.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition5",
-            "Layers": [
-                "Background5",
-                "Shape3"
-            ],
-            "Mode": "Length",
-            "Length": 1.5
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition6",
-            "Layers": [
-                "Background6"
-            ],
-            "Mode": "Length",
-            "Length": 1.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition7",
-            "Layers": [
-                "Background7",
-                "TestSequence"
-            ],
-            "Mode": "Sequence",
-            "Length": 2.0
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition8",
-            "Layers": [
-                "Background8",
-                "Shape6"
-            ],
-            "Mode": "Length",
-            "Length": 0.5
-        },
-        {
-            "Type": "nap::Composition",
-            "mID": "Composition9",
-            "Layers": [
-                "Sequence1_2"
-            ],
-            "Mode": "Sequence",
-            "Length": 1.0
-        },
-        {
             "Type": "nap::CompositionContainer",
             "mID": "Friday",
             "Compositions": [
@@ -745,63 +499,6 @@
                             "z": 1.0
                         },
                         "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "CompositionDebugDisplayEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderableCompositionDebugMeshComponent",
-                    "Mesh": "CompositionDebugMesh",
-                    "MaterialInstance": {
-                        "Material": "DebugMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformTexture2D",
-                                "mID": "nap::UniformTexture2D_3",
-                                "Name": "debugImage",
-                                "Texture": "CompositionTextureA"
-                            }
-                        ],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NoReadWrite"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
                     }
                 }
             ],
@@ -1010,8 +707,8 @@
                     "BlendToWhite": false,
                     "BlendAxis": 1,
                     "BlendRange": {
-                        "x": 0.10000000149011612,
-                        "y": 0.25
+                        "x": 0.2750000059604645,
+                        "y": 0.3499999940395355
                     },
                     "BlendPower": 0.75
                 },
@@ -1024,63 +721,6 @@
                         "Universe5",
                         "Universe8"
                     ]
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "IndexDebugDisplayEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_2",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderableIndexDebugMeshComponent",
-                    "Mesh": "ColorDebugMesh",
-                    "MaterialInstance": {
-                        "Material": "DebugMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformTexture2D",
-                                "mID": "nap::UniformTexture2D_4",
-                                "Name": "debugImage",
-                                "Texture": "IndexMap"
-                            }
-                        ],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NoReadWrite"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
                 }
             ],
             "Children": []
@@ -1169,63 +809,6 @@
                             "z": 1.0
                         },
                         "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "PaletteDebugDisplayEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_3",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderablePaletteDebugMeshComponent",
-                    "Mesh": "ColorDebugMesh",
-                    "MaterialInstance": {
-                        "Material": "DebugMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformTexture2D",
-                                "mID": "nap::UniformTexture2D_5",
-                                "Name": "debugImage",
-                                "Texture": "IndexMap"
-                            }
-                        ],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NoReadWrite"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
                     }
                 }
             ],
@@ -1479,210 +1062,9 @@
             "Compressed": false
         },
         {
-            "Type": "nap::ImageFromFile",
-            "mID": "UVMap",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "ImagePath": "uvmap.jpg",
-            "Compressed": false
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "AAAAkleurtest02",
-            "Path": "backgrounds/kleurtest/kleurtest02.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "AAAAkleurtest03",
-            "Path": "backgrounds/kleurtest/kleurtest03.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "AAAAkleurtest1",
-            "Path": "backgrounds/kleurtest/kleurtest01.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "BACK-cross-test1",
-            "Path": "backgrounds/000.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "BACK-test2",
-            "Path": "backgrounds/C-seq_01A.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "BACKBASIC1",
-            "Path": "backgrounds/FINAL/BACKGROUND_000_basis.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "BASIS_cross_1",
-            "Path": "backgrounds/000.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Background1",
-            "Path": "backgrounds/background_1.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Background2",
-            "Path": "backgrounds/background_2.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Background3",
-            "Path": "backgrounds/background_3.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Background4",
-            "Path": "backgrounds/background_4.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Background5",
-            "Path": "backgrounds/background_5.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Background6",
-            "Path": "backgrounds/background_6.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Background7",
-            "Path": "backgrounds/background_7.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Background8",
-            "Path": "backgrounds/background_8.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Background9_2",
-            "Path": "backgrounds/background_9.png"
-        },
-        {
             "Type": "nap::ImageLayer",
             "mID": "Basislaag1",
             "Path": "backgrounds/FINAL/WITGRIDgeel.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "D1_basic",
-            "Path": "backgrounds/FINAL/diagonaal/D_basis.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "ImageLayer-test1",
-            "Path": "backgrounds/monday/background_D_019B.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "ImageLayer_2",
-            "Path": "backgrounds/BACK_cross_test1/move-test_001.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "KLEURTESTlocatie1",
-            "Path": "backgrounds/kleurentest_01.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "KLEURTESTlocatie2",
-            "Path": "backgrounds/kleurentest_02.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "KLEURTESTlocatie3",
-            "Path": "backgrounds/kleurentest_03.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "KLEURTESTlocatie4",
-            "Path": "backgrounds/kleurentest_04.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "KLEURTESTlocatie5",
-            "Path": "backgrounds/kleurentest_05.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "LAAG1--test",
-            "Path": "backgrounds/BACK--testtttt/backgrounds_M_009.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "SHAPE__TEST2_2",
-            "Path": "shapes/SHAPES_test/C-seq_03.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "SHAPE__TEST3",
-            "Path": "shapes/SHAPES_test/C-seq_04.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Shape1",
-            "Path": "shapes/shape_1.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Shape2",
-            "Path": "shapes/shape_2.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Shape3",
-            "Path": "shapes/shape_3.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Shape4",
-            "Path": "shapes/shape_4.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Shape5",
-            "Path": "shapes/shape_5.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Shape6",
-            "Path": "shapes/shape_6.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "Shape_1_A",
-            "Path": "shapes/1/shape_1_1_4.png"
-        },
-        {
-            "Type": "nap::ImageLayer",
-            "mID": "basic_1_01.png",
-            "Path": "backgrounds/1/basic_1_01.png"
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "D1_1seq",
-            "BaseFilename": "backgrounds/FINAL/diagonaal/D1/D1_%03d.png",
-            "FPS": 0.01666666753590107
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "D2_seq",
-            "BaseFilename": "backgrounds/FINAL/diagonaal/D2/D2_%03d.png",
-            "FPS": 1.0
         },
         {
             "Type": "nap::ImageSequenceLayer",
@@ -1853,60 +1235,6 @@
             "FPS": 0.6000000238418579
         },
         {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "MOVEcrosstest1",
-            "BaseFilename": "sequences/MOVE-6/%03d.png",
-            "FPS": 0.05000000074505806
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "SeC-cross_test1_2",
-            "BaseFilename": "sequences/MOVE-1/move_1_%03d.png",
-            "FPS": 0.05000000074505806
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "Sequence1_2",
-            "BaseFilename": "sequences/MOVE-1/move_1_%03d.png",
-            "FPS": 0.05000000074505806
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "Sequence2_2",
-            "BaseFilename": "sequences/MOVE-2/move_2_%03d.png",
-            "FPS": 0.05000000074505806
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "Sequence3",
-            "BaseFilename": "sequences/MOVE-3/move_3_%03d.png",
-            "FPS": 0.05000000074505806
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "Sequence4",
-            "BaseFilename": "sequences/MOVE-4/move_4_%03d.png",
-            "FPS": 0.05000000074505806
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "Sequence5",
-            "BaseFilename": "sequences/MOVE-5/move_5_%04d.png",
-            "FPS": 0.05000000074505806
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "TestSequence",
-            "BaseFilename": "sequences/test/%d.png",
-            "FPS": 0.05000000074505806
-        },
-        {
-            "Type": "nap::ImageSequenceLayer",
-            "mID": "V_1_sequence",
-            "BaseFilename": "sequences/final/vertikaal/V1_%03d.png",
-            "FPS": 0.05000000074505806
-        },
-        {
             "Type": "nap::IndexMap",
             "mID": "IndexMap",
             "Parameters": {
@@ -2018,32 +1346,6 @@
                 }
             ],
             "Shader": "CompositionShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normals"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Color0",
-                    "ShaderAttributeID": "in_Color0"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "DebugMaterial",
-            "Uniforms": [],
-            "Shader": "DebugShader_2",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
@@ -2279,34 +1581,6 @@
         },
         {
             "Type": "nap::PlaneMesh",
-            "mID": "ColorDebugMesh",
-            "Size": {
-                "x": 240.0,
-                "y": 25.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
-            "Type": "nap::PlaneMesh",
-            "mID": "CompositionDebugMesh",
-            "Size": {
-                "x": 240.0,
-                "y": 240.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
-            "Type": "nap::PlaneMesh",
             "mID": "PlaneMesh",
             "Size": {
                 "x": 1024.0,
@@ -2461,12 +1735,6 @@
         },
         {
             "Type": "nap::Shader",
-            "mID": "DebugShader_2",
-            "mVertShader": "shaders/debug.vert",
-            "mFragShader": "shaders/debug.frag"
-        },
-        {
-            "Type": "nap::Shader",
             "mID": "FrameShader",
             "mVertShader": "shaders/frame.vert",
             "mFragShader": "shaders/frame.frag"
@@ -2476,6 +1744,50 @@
             "mID": "VertexColorShader",
             "mVertShader": "shaders/vertexcolor.vert",
             "mFragShader": "shaders/vertexcolor.frag"
+        },
+        {
+            "Type": "nap::TransformComponent",
+            "mID": "nap::TransformComponent",
+            "Properties": {
+                "Translate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "Rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "Scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "UniformScale": 1.0
+            }
+        },
+        {
+            "Type": "nap::TransformComponent",
+            "mID": "nap::TransformComponent_2",
+            "Properties": {
+                "Translate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "Rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "Scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "UniformScale": 1.0
+            }
         },
         {
             "Type": "nap::TransformComponent",
