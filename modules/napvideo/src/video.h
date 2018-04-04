@@ -8,6 +8,7 @@
 #include <nap/resource.h>
 #include <rtti/factory.h>
 #include <utility/autoresetevent.h>
+#include <nap/signalslot.h>
 
 struct AVPacket;
 struct AVCodec;
@@ -461,6 +462,8 @@ namespace nap
 		std::string mPath;				///< Path to the video to playback
 		bool		mLoop = false;		///< If the video needs to loop
 		float		mSpeed = 1.0f;		///< Video playback speed
+        
+        nap::Signal<Video&> mDestructedSignal; ///< This signal will be emitted before the Video resource is destructed
 
 	private:
 		enum class EProducePacketResult : uint8_t

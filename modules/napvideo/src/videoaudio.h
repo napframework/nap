@@ -1,5 +1,8 @@
 #pragma once
 
+// Std includes
+#include <mutex>
+
 // Nap includes
 #include <rtti/objectptr.h>
 
@@ -30,7 +33,7 @@ namespace nap {
             /**
              * Change the source video object
              */
-            void setVideo(Video& video) { mVideo = &video; }
+            void setVideo(Video& video);
 
 			/** 
 			 * We need to delete these so that the compiler doesn't try to use them. Otherwise we get compile errors on unique_ptr. Not sure why.
@@ -42,10 +45,14 @@ namespace nap {
             // Inherited form Node
             void process() override final;
             
+            nap::Slot<Video&> mVideoDestructedSlot = { this, &nap::audio::VideoNode::videoDestructed };             ///< Slot to notify the Node when the Video resource it is pointing to is being destructed
+            void videoDestructed(Video&);
+            
             std::vector<std::unique_ptr<OutputPin>> mOutputs; ///< The output pins for each individual channel of video audio
-            rtti::ObjectPtr<Video> mVideo = nullptr; ///< Pointer to the source video object
+            Video* mVideo = nullptr; ///< Pointer to the source video object
             AudioFormat mAudioFormat; ///< This object tells the Video object what is our desired audio format
             std::vector<float> mDataBuffer; ///< The buffer that is passed to the Video object to be filled with audio data
+            std::mutex mVideoMutex; ///< Mutex to protect the video pointer to be onl accessed by one thread at a time
         };
                 
     }
