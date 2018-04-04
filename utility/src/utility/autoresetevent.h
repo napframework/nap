@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mutex>
+#include <functional>
 #include <condition_variable>
 
 namespace nap
