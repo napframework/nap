@@ -60,6 +60,11 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
                        ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
                  NO_DEFAULT_PATH
                  )
+				 
+    find_library(FFMPEG_SWRESAMPLE
+                 NAMES swresample
+                 PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
+                 )				 
 
     if(FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
         set(FFMPEG_FOUND TRUE)
@@ -72,6 +77,7 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
             ${FFMPEG_LIBAVCODEC}
             ${FFMPEG_LIBAVFORMAT}
             ${FFMPEG_LIBAVUTIL}
+			${FFMPEG_SWRESAMPLE}
             )
     endif(FFMPEG_FOUND)
 

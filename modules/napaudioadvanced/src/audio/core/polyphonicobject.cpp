@@ -44,7 +44,7 @@ namespace nap
             
             // Create the mix nodes to mix output of all the voices
             for (auto i = 0; i < resource->mVoice->mOutput->getInstance()->getChannelCount(); ++i)
-                mMixNodes.emplace_back(std::make_unique<MixNode>(resource->mVoice->getNodeManager()));
+                mMixNodes.emplace_back(make_node<MixNode>(resource->mVoice->getNodeManager()));
             
             return true;
         }

@@ -1,5 +1,6 @@
 #include "audionodemanager.h"
 #include "audionode.h"
+#include "audionodeptr.h"
 
 #include <nap/logger.h>
 #include <nap/core.h>
@@ -16,14 +17,17 @@ namespace nap
             for (auto channel = 0; channel < mOutputChannelCount; ++channel)
                 memset(outputBuffer[channel], 0, sizeof(float) * framesPerBuffer);
             
+            // process tasks that are enqueued from outside the audio thread
+            mAudioCallbackTaskQueue.process();
+            
+            // clean the Node trash bin with nodes that are no longer used and scheduled for destruction
+            clearNodeTrashBin();
+            
             mInputBuffer = inputBuffer;
             
             mInternalBufferOffset = 0;
             while (mInternalBufferOffset < framesPerBuffer)
             {
-                // process tasks that are enqueued from outside the audio thread
-                mAudioCallbackTaskQueue.process();
-                
                 for (auto& channelMapping : mOutputMapping)
                     channelMapping.clear();
                 
@@ -94,6 +98,8 @@ namespace nap
         void NodeManager::registerRootNode(Node& rootNode)
         {
             auto rootNodePtr = &rootNode;
+            
+            // We postpone this to the audio thread for thread safety, to make sure it's not called while processing
             execute([&, rootNodePtr](){ mRootNodes.emplace(rootNodePtr); });
         }
 
@@ -101,7 +107,9 @@ namespace nap
         void NodeManager::unregisterRootNode(Node& rootNode)
         {
             auto rootNodePtr = &rootNode;
-            execute([&, rootNodePtr](){ mRootNodes.erase(rootNodePtr); });
+            
+            // Nodes are always destructed by the audio thread, so we can execute this immediately
+            mRootNodes.erase(rootNodePtr);
         }
 
         
@@ -110,6 +118,18 @@ namespace nap
             assert(channel < mOutputMapping.size());
             mOutputMapping[channel].emplace_back(buffer);
         }
+        
+        
+        void NodeManager::clearNodeTrashBin()
+        {
+            std::unique_ptr<Node> node = nullptr;
+            while (mNodeTrashBin.try_dequeue(node))
+            {
+                // this call is rather symbolic, as the dequeued node will go out of scope anyway and will be implicitly destructed.
+                node = nullptr;
+            }
+        }
+
         
     }
     
