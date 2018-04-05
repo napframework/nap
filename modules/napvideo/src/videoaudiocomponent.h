@@ -1,12 +1,14 @@
 #pragma once
 
+// Nap includes
+#include <utility/safeptr.h>
+
 // Video includes
 #include <video.h>
 #include <videoaudio.h>
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
-#include <audio/core/audionodeptr.h>
 
 namespace nap
 {
@@ -55,7 +57,7 @@ namespace nap
             void setVideo(Video& video);
             
         private:
-            NodePtr<VideoNode> mNode = nullptr; ///< The audio node that polls the Video object for audio output
+            utility::SafeOwner<VideoNode> mNode = nullptr; ///< The audio node that polls the Video object for audio output
         };
         
     }
