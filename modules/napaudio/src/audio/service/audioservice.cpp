@@ -8,6 +8,8 @@
 // Audio includes
 #include "audioservice.h"
 #include "audiodevice.h"
+#include <audio/resource/audiobufferresource.h>
+#include <audio/resource/audiofileresource.h>
 
 //#include <audio/core/graph.h>
 //#include <audio/core/voice.h>
@@ -40,8 +42,8 @@ namespace nap
         
         void AudioService::registerObjectCreators(rtti::Factory& factory)
         {
-//            factory.addObjectCreator(std::make_unique<GraphObjectCreator>(getNodeManager()));
-//            factory.addObjectCreator(std::make_unique<VoiceObjectCreator>(getNodeManager()));
+            factory.addObjectCreator(std::make_unique<AudioBufferResourceObjectCreator>(*this));
+            factory.addObjectCreator(std::make_unique<AudioFileResourceObjectCreator>(*this));
         }
 
         
