@@ -353,6 +353,9 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 		nameProp.setValue(newName);
 		REQUIRE(nameProp.getValue() == newName);
 		REQUIRE(entity->mID == newName);
+
+		PropertyPath invalidPath;
+		REQUIRE(!invalidPath.isValid());
 	}
 
 	nap::Material mat;
@@ -404,6 +407,32 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 		REQUIRE(!path.isEnum());
 	}
 
+}
+
+TEST_CASE("Embedded Pointers")
+{
+	auto doc = napkin::AppContext::get().newDocument();
+
+	auto mat = doc->addObject<nap::Material>();
+	REQUIRE(mat != nullptr);
+	REQUIRE(doc->getObjects().size() == 1);
+
+	PropertyPath uniforms(*mat, "Uniforms");
+	REQUIRE(uniforms.isValid());
+
+	doc->arrayAddNewObject(uniforms, RTTI_OF(nap::UniformVec3));
+	REQUIRE(doc->getObjects().size() == 2);
+
+	PropertyPath uniform(*mat, "Uniforms/0");
+	REQUIRE(uniform.isValid());
+	REQUIRE(uniform.isEmbeddedPointer());
+
+	auto uniformVec3 = uniform.getPointee();
+	REQUIRE(uniformVec3->get_type() == RTTI_OF(nap::UniformVec3));
+	REQUIRE(uniformVec3 != nullptr);
+
+	doc->arrayRemoveElement(uniforms, 0);
+	REQUIRE(doc->getObjects().size() == 1);
 }
 
 TEST_CASE("Commands", TAG_NAPKIN)

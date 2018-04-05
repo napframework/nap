@@ -12,16 +12,17 @@
 
 namespace napkin
 {
-    /**
-     * TODO: To be implemented
-     */
+	/**
+	 * TODO: To be implemented
+	 */
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:
 		AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent = nullptr);
-        /**
-         * Redo
-         */
+
+		/**
+		 * Redo
+		 */
 		void redo() override;
 
 		/**
@@ -41,43 +42,44 @@ namespace napkin
 	{
 	public:
 		DeleteObjectCommand(nap::rtti::Object& object);
-        /**
-         * Undo
-         */
-        void undo() override;
 
-        /**
-         * Redo
-         */
-        void redo() override;
+		/**
+		 * Undo
+		 */
+		void undo() override;
+
+		/**
+		 * Redo
+		 */
+		void redo() override;
 	private:
 		const std::string mObjectName;
 
 	};
 
-    /**
-     * This command sets the value of a property
-     * TODO: This will just set the value, undo cannot be currently made to work with nap.
-     */
+	/**
+	 * This command sets the value of a property
+	 * TODO: This will just set the value, undo cannot be currently made to work with nap.
+	 */
 	class SetValueCommand : public QUndoCommand
 	{
 	public:
-        /**
-         * @param ptr The pointer to the object
-         * @param path The path to the property
-         * @param newValue The new value of the property
-         */
+		/**
+		 * @param ptr The pointer to the object
+		 * @param path The path to the property
+		 * @param newValue The new value of the property
+		 */
 		SetValueCommand(const PropertyPath& propPath, QVariant newValue);
 
-        /**
-         * Undo
-         */
-        void undo() override;
+		/**
+		 * Undo
+		 */
+		void undo() override;
 
-        /**
-         * Redo
-         */
-        void redo() override;
+		/**
+		 * Redo
+		 */
+		void redo() override;
 
 	private:
 		const PropertyPath mPath; // The path to the property
@@ -88,27 +90,27 @@ namespace napkin
 	class SetPointerValueCommand : public QUndoCommand
 	{
 	public:
-        /**
-         * @param ptr The pointer to the object
-         * @param path The path to the property
-         * @param newValue The new value of the property
-         */
+		/**
+		 * @param ptr The pointer to the object
+		 * @param path The path to the property
+		 * @param newValue The new value of the property
+		 */
 		SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue);
 
-        /**
-         * Undo
-         */
-        void undo() override;
+		/**
+		 * Undo
+		 */
+		void undo() override;
 
-        /**
-         * Redo
-         */
-        void redo() override;
+		/**
+		 * Redo
+		 */
+		void redo() override;
 
 	private:
-		const PropertyPath	mPath;		// The path to the property
+		PropertyPath		mPath;			// The path to the property
 		const std::string	mNewValue;	// The new value
-		std::string	mOldValue;	// The old value
+		std::string			mOldValue;			// The old value
 	};
 
 

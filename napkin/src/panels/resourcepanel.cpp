@@ -18,19 +18,6 @@ napkin::ResourceModel::ResourceModel() : mObjectsItem(TXT_LABEL_OBJECTS), mEntit
 	appendRow(&mEntitiesItem);
 }
 
-// TODO: move to utils or document
-bool isPointedToByEmbeddedPointer(const nap::rtti::Object& obj, napkin::Document& doc)
-{
-	for (const auto& path : doc.getPointersTo(obj, false, false))
-	{
-		assert(path.isPointer());
-		if (path.isEmbeddedPointer())
-			return true;
-	}
-
-	return false;
-}
-
 // TODO: rename
 bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 {
@@ -41,7 +28,7 @@ bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 		return false;
 
 	// Exclude embeded objects
-	if (isPointedToByEmbeddedPointer(obj, *doc))
+	if (doc->isPointedToByEmbeddedPointer(obj))
 		return false;
 
 	// Non-root entities are culled
@@ -106,18 +93,19 @@ void ResourceModel::removeEmbeddedObjects()
 
 	// First, gather the objects that are pointed to by embedded pointers,
 	// we are going to change the model layout
-	QList<const nap::rtti::Object*> objects;
+	QList<const nap::rtti::Object*> removeObjects;
 	for (int row=0; row < mObjectsItem.rowCount(); row++)
 	{
 		auto item = dynamic_cast<ObjectItem*>(mObjectsItem.child(row, 0));
 		assert(item != nullptr);
 		auto obj = item->getObject();
-		if (isPointedToByEmbeddedPointer(*obj, *doc))
-			objects << obj;
+		if (doc->isPointedToByEmbeddedPointer(*obj))
+			removeObjects << obj;
+
 	}
 
 	// Now remove
-	for (const auto obj : objects)
+	for (const auto obj : removeObjects)
 		removeObjectItem(*obj);
 }
 

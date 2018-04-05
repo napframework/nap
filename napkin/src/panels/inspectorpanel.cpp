@@ -92,7 +92,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 	auto pointer_item = dynamic_cast<PointerItem*>(item);
 	if (pointer_item != nullptr)
 	{
-		nap::rtti::Object* pointee = getPointee(pointer_item->getPath());
+		nap::rtti::Object* pointee = pointer_item->getPath().getPointee();
 		QAction* action = menu.addAction("Select Resource", [pointer_item, pointee]
 		{
 			QList<nap::rtti::Object*> objects = {pointee};

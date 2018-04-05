@@ -1,4 +1,5 @@
 #include "propertypath.h"
+#include "naputils.h"
 
 #include <rtti/object.h>
 #include <rtti/linkresolver.h>
@@ -85,12 +86,13 @@ size_t napkin::PropertyPath::getArrayLength()const
 	return array_view.get_size();
 }
 
-rttr::variant_array_view napkin::PropertyPath::getArrayView() const
+napkin::PropertyPath napkin::PropertyPath::getArrayElement(size_t index) const
 {
-	auto mResolvedPath = resolve();
-	auto mVariant = mResolvedPath.getValue();
-	auto mVariantArray = mVariant.create_array_view();
-	return mVariantArray;
+	if (!isArray())
+		return PropertyPath();
+	auto child_path = getPath();
+	child_path.pushArrayElement(index);
+	return {*mObject, child_path};
 }
 
 
@@ -165,6 +167,46 @@ bool napkin::PropertyPath::isEnum() const
 {
 	return getWrappedType().is_enumeration();
 }
+
+Object* napkin::PropertyPath::getPointee() const
+{
+	if (!isPointer())
+		return nullptr;
+
+	ResolvedPath resolvedPath = resolve();
+	auto value = resolvedPath.getValue();
+	auto value_type = value.get_type();
+	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+
+	if(wrapped_type != value_type)
+		return value.extract_wrapped_value().get_value<nap::rtti::Object*>();
+	else
+		return value.get_value<nap::rtti::Object*>();
+}
+
+void napkin::PropertyPath::setPointee(Object* pointee)
+{
+	nap::rtti::ResolvedPath resolved_path = resolve();
+	assert(resolved_path.isValid());
+
+	rttr::method assign_method = nap::rtti::findMethodRecursive(resolved_path.getType(), "assign");
+	if (assign_method.is_valid())
+	{
+		// Assign the new value to the pointer (note that we're modifying a copy)
+		auto target_value = resolved_path.getValue();
+		assign_method.invoke(target_value, pointee->mID, *pointee);
+
+		// Apply the modified value back to the source property
+		bool value_set = resolved_path.setValue(target_value);
+		assert(value_set);
+	}
+	else
+	{
+		bool value_set = resolved_path.setValue(pointee);
+		assert(value_set);
+	}
+}
+
 
 
 

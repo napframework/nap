@@ -271,6 +271,13 @@ namespace napkin
 		T arrayGetElement(const PropertyPath& path, size_t index) { return arrayGetElement(path, index).convert<T>(); }
 
 		/**
+		 * See if this object is being pointed to by an embedded pointer.
+		 * @param obj The object potentially being pointed to
+		 * @return true if this object is being pointed to by an embedded pointer
+		 */
+		bool isPointedToByEmbeddedPointer(const nap::rtti::Object& obj);
+
+		/**
 		 * Execute the specified command and push the provided command onto the undostack.
 		 * @param cmd The command to be executed
 		 */
