@@ -47,7 +47,7 @@ namespace nap
         
         NodeManager& AudioService::getNodeManager()
         {
-            return mInterface.getNodeManager();
+            return mNodeManager;
         }
         
         
@@ -173,6 +173,20 @@ namespace nap
 				Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
 			Logger::info("Portaudio terminated");
 		}
+        
+        
+        void AudioService::audioCallback(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
+        {
+            // process tasks that are enqueued from outside the audio thread
+            mAudioCallbackTaskQueue.process();
+            
+            // clean the trash bin with nodes and resources that are no longer used and scheduled for destruction
+            mTrashBin.clear();
+
+            // process the node manager
+            mNodeManager.process(inputBuffer, outputBuffer, framesPerBuffer);
+        }
+
     }
 }
 

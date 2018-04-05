@@ -1,5 +1,7 @@
 #include "outputnode.h"
 
+// Audio includes
+#include <audio/service/audioservice.h>
 #include <audio/core/audionodemanager.h>
 
 RTTI_DEFINE_BASE(nap::audio::OutputNode)
@@ -10,9 +12,9 @@ namespace nap
     namespace audio
     {
         
-        OutputNode::OutputNode(NodeManager& manager, bool active) : Node(manager)
+        OutputNode::OutputNode(AudioService& service, bool active) : Node(service.getNodeManager())
         {
-            manager.registerRootNode(*this);
+            service.execute([&](){ getNodeManager().registerRootNode(*this); });
             mActive = active;
         }
         

@@ -4,9 +4,6 @@
 #include <mutex>
 #include <set>
 
-// Nap includes
-#include <utility/threading.h>
-
 // Audio includes
 #include <audio/utility/audiotypes.h>
 
@@ -97,19 +94,13 @@ namespace nap
             /**
              * Changes the sample rate the node system is running on
              */
-            void setSampleRate(float sampleRate);
-            
+            void setSampleRate(float sampleRate);            
             
             /**
              * Changes the internal buffer size that the node system uses.
              * Beware: this can be smaller than the buffersize the audio device is running on.
              */
             void setInternalBufferSize(int size);
-            
-            /**
-             * Enqueue a task to be executed within the process() method for thread safety
-             */
-            void execute(TaskQueue::Task task) { mAudioCallbackTaskQueue.enqueue(task); }
             
             // Used by nodes to register themselves to be processed directly by the node manager
             void registerRootNode(Node& rootNode);
@@ -141,11 +132,6 @@ namespace nap
              */
             const SampleValue& getInputSample(int channel, int index) const { return mInputBuffer[channel][mInternalBufferOffset + index]; }
             
-            /*
-             * Clears and destructs all the nodes in the node trash bin. The node trash bin contains the nodes that are no longer used so that they can be safely destroyed from within the audio thread.
-             */
-            void clearNodeTrashBin();
-            
             int mInputChannelCount = 0; // Number of input channels this node manager processes
             int mOutputChannelCount = 0; // Number of channel this node manager outputs
             float mSampleRate = 0; // Current sample rate the node manager runs on.
@@ -161,13 +147,7 @@ namespace nap
             float** mInputBuffer = nullptr; //  Pointing to the audio input that this node manager has to process. The format is a non-interleaved array containing a float array for each channel.
             
             std::set<Node*> mNodes; // all the audio nodes managed by this node manager
-            std::set<Node*> mRootNodes; // the nodes that will be processed directly by the manager on every audio callback
-            
-            nap::TaskQueue mAudioCallbackTaskQueue; // Queue with lambda functions to be executed on the next audio callback
-            
-            // Queue with nodes that are no longer used and that can be destructed safely on the next audio callback.
-            // Destruction is performed by the NodeManager on the audio callback to make sure the node can not be destructed while it is being processed.
-            moodycamel::ConcurrentQueue<std::unique_ptr<Node>> mNodeTrashBin; // Queue with nodes to be destructed on the next process() call
+            std::set<Node*> mRootNodes; // the nodes that will be processed directly by the manager on every audio callback            
         };
         
     }
