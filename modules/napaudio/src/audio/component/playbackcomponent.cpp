@@ -46,26 +46,27 @@ namespace nap
     
         bool PlaybackComponentInstance::init(utility::ErrorState& errorState)
         {
-            resource = getComponent<PlaybackComponent>();
-            mGain = resource->mGain;
-            mStereoPanning = resource->mStereoPanning;
-            mFadeInTime = resource->mFadeInTime;
-            mFadeOutTime = resource->mFadeOutTime;
-            mPitch = resource->mPitch;
+            mResource = getComponent<PlaybackComponent>();
+            mGain = mResource->mGain;
+            mStereoPanning = mResource->mStereoPanning;
+            mFadeInTime = mResource->mFadeInTime;
+            mFadeOutTime = mResource->mFadeOutTime;
+            mPitch = mResource->mPitch;
             
-            nodeManager = &getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH)->getNodeManager();
+            mAudioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            mNodeManager = &mAudioService->getNodeManager();
             
-            for (auto channel = 0; channel < resource->mChannelRouting.size(); ++channel)
+            for (auto channel = 0; channel < mResource->mChannelRouting.size(); ++channel)
             {
-                if (resource->mChannelRouting[channel] >= resource->mBuffer->getChannelCount())
+                if (mResource->mChannelRouting[channel] >= mResource->mBuffer->getChannelCount())
                 {
                     errorState.fail("Routed channel is out of buffer's channel bounds");
                     return false;
                 }
                 
-                auto bufferPlayer = make_node<BufferPlayerNode>(*nodeManager);
-                auto gain = make_node<GainNode>(*nodeManager);
-                auto gainControl = make_node<ControlNode>(*nodeManager);
+                auto bufferPlayer = mAudioService->makeSafe<BufferPlayerNode>(*mNodeManager);
+                auto gain = mAudioService->makeSafe<GainNode>(*mNodeManager);
+                auto gainControl = mAudioService->makeSafe<ControlNode>(*mNodeManager);
 
                 gain->inputs.connect(bufferPlayer->audioOutput);
                 gain->inputs.connect(gainControl->output);                
@@ -83,8 +84,8 @@ namespace nap
             }
             
             
-            if (resource->mAutoPlay)
-                start(resource->mStartPosition, resource->mDuration);
+            if (mResource->mAutoPlay)
+                start(mResource->mStartPosition, mResource->mDuration);
             
             return true;
         }
@@ -103,17 +104,17 @@ namespace nap
         
         void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
         {
-            ControllerValue actualSpeed = mPitch * resource->mBuffer->getSampleRate() / nodeManager->getSampleRate();
-            nodeManager->execute([&, actualSpeed, startPosition, duration](){
+            ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
+            mAudioService->execute([&, actualSpeed, startPosition, duration](){
                 mPlaying = true;
                 if (duration == 0)
-                    mDuration = resource->mBuffer->getSize();
+                    mDuration = mResource->mBuffer->getSize();
                 else
                     mDuration = duration;
                 mCurrentPlayingTime = 0;
                 for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
                 {
-                    mBufferPlayers[channel]->play(resource->mBuffer->getBuffer().getChannelPtr(resource->mChannelRouting[channel]), startPosition * nodeManager->getSamplesPerMillisecond(), actualSpeed);
+                    mBufferPlayers[channel]->play(mResource->mBuffer->getBuffer().getChannelPtr(mResource->mChannelRouting[channel]), startPosition * mNodeManager->getSamplesPerMillisecond(), actualSpeed);
                 }
                 applyGain(mFadeInTime);
             });
@@ -125,7 +126,7 @@ namespace nap
             if (!mPlaying)
                 return;
             
-            nodeManager->execute([&](){
+            mAudioService->execute([&](){
                 mPlaying = false;
                 for (auto& gainControl : mGainControls)
                     gainControl->ramp(0, mFadeOutTime, ControlNode::RampMode::EXPONENTIAL);
@@ -137,7 +138,7 @@ namespace nap
         {
             if (gain == mGain)
                 return;
-            nodeManager->execute([&, gain](){
+            mAudioService->execute([&, gain](){
                 mGain = gain;
                 if (mPlaying)
                     applyGain(5);
@@ -149,7 +150,7 @@ namespace nap
         {
             if (panning == mStereoPanning)
                 return;
-            nodeManager->execute([&, panning](){
+            mAudioService->execute([&, panning](){
                 mStereoPanning = panning;
                 if (mPlaying)
                     applyGain(5);
@@ -174,9 +175,9 @@ namespace nap
             if (pitch == mPitch)
                 return;
             
-            nodeManager->execute([&, pitch](){
+            mAudioService->execute([&, pitch](){
                 mPitch = pitch;
-                ControllerValue actualSpeed = mPitch * resource->mBuffer->getSampleRate() / nodeManager->getSampleRate();
+                ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
                 for (auto& bufferPlayer : mBufferPlayers)
                     bufferPlayer->setSpeed(actualSpeed);
             });
@@ -185,7 +186,7 @@ namespace nap
         
         void PlaybackComponentInstance::applyGain(TimeValue rampTime)
         {
-            if (resource->isStereo())
+            if (mResource->isStereo())
             {
                 ControllerValue left = 0;
                 ControllerValue right = 0;

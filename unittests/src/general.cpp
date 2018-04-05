@@ -110,9 +110,8 @@ TEST_CASE("Safe pointers", "[safepointer]")
         auto safeOwner = nap::utility::SafeOwner<Test>(trashBin, new Test(5, counter));
         REQUIRE(counter == 2);
         
-        // Moving the old owner into the new one, this should not change the counter, but move the previous content of the new one to the TrashBin
+        // Moving the old owner to the new one, this should not change the counter, but move the previous content of the new one to the TrashBin
         safeOwner = std::move(safeOwnerOld);
-        
         REQUIRE(counter == 2);
         REQUIRE(safeOwner->mX == 10);
 

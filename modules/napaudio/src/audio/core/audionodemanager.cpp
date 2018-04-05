@@ -1,6 +1,5 @@
 #include "audionodemanager.h"
 #include "audionode.h"
-#include "audionodeptr.h"
 
 #include <nap/logger.h>
 #include <nap/core.h>
@@ -16,12 +15,6 @@ namespace nap
             // clean the output buffers
             for (auto channel = 0; channel < mOutputChannelCount; ++channel)
                 memset(outputBuffer[channel], 0, sizeof(float) * framesPerBuffer);
-            
-            // process tasks that are enqueued from outside the audio thread
-            mAudioCallbackTaskQueue.process();
-            
-            // clean the Node trash bin with nodes that are no longer used and scheduled for destruction
-            clearNodeTrashBin();
             
             mInputBuffer = inputBuffer;
             
@@ -97,19 +90,13 @@ namespace nap
         
         void NodeManager::registerRootNode(Node& rootNode)
         {
-            auto rootNodePtr = &rootNode;
-            
-            // We postpone this to the audio thread for thread safety, to make sure it's not called while processing
-            execute([&, rootNodePtr](){ mRootNodes.emplace(rootNodePtr); });
+            mRootNodes.emplace(&rootNode);
         }
 
         
         void NodeManager::unregisterRootNode(Node& rootNode)
         {
-            auto rootNodePtr = &rootNode;
-            
-            // Nodes are always destructed by the audio thread, so we can execute this immediately
-            mRootNodes.erase(rootNodePtr);
+            mRootNodes.erase(&rootNode);
         }
 
         
@@ -119,17 +106,6 @@ namespace nap
             mOutputMapping[channel].emplace_back(buffer);
         }
         
-        
-        void NodeManager::clearNodeTrashBin()
-        {
-            std::unique_ptr<Node> node = nullptr;
-            while (mNodeTrashBin.try_dequeue(node))
-            {
-                // this call is rather symbolic, as the dequeued node will go out of scope anyway and will be implicitly destructed.
-                node = nullptr;
-            }
-        }
-
         
     }
     

@@ -10,6 +10,9 @@ namespace nap
     {
     
         
+        // Forward declarations
+        class AudioService;
+        
         /**
          * Node to provide audio output for the node manager's audio processing, typically sent to an audio interface.
          * The OutputNode is a root node that will be directly processed by the node manager.
@@ -18,10 +21,10 @@ namespace nap
         {
         public:
             /**
-             * @param manager: the node manager that this node will be registered to and processed by. This node provides audio output for the manager.
+             * @param service: The AudioService this node provides output for. This node feeds audio output for the manager of this service.
              * @param active: true if the node is active and being processed from the moment of creation. This can cause glitches if the node tree and it's parameters are still being build.
              */
-            OutputNode(NodeManager& manager, bool active = true);
+            OutputNode(AudioService& service, bool active = true);
             
             ~OutputNode() override final;
             
