@@ -3,6 +3,7 @@
 
 #include <utility/fileutils.h>
 #include <utility/datetimeutils.h>
+#include <utility/safeptr.h>
 #include <nap/logger.h>
 
 
@@ -82,4 +83,53 @@ TEST_CASE("DateTime Utilities", "[datetime]")
 	REQUIRE(flc1_launch_date.getMilliSecond() == 123);
 
 	REQUIRE(nap::utility::timeFormat(flc1_launch) == flc1_launch_str);
+}
+
+TEST_CASE("Safe pointers", "[safepointer]")
+{
+    // Test object that increments a counter when it's constructed and decrements it on destruction
+    class Test {
+    public:
+        Test(int x, int& destructed) : mX(x), mCounter(destructed) { mCounter++; }
+        ~Test() { mCounter--; }
+        int mX = 0;
+        int& mCounter;
+    };
+    
+    int counter = 0; // The counter to count the number of existing objects
+    nap::utility::TrashBin trashBin; // The TrashBin used
+    nap::utility::SafePtr<Test> safePtr = nullptr;
+    nap::utility::SafePtr<Test> safePtrCopy = nullptr;
+
+    {
+        // Constructing a new SafeOwner, should increment the counter
+        nap::utility::SafeOwner<Test> safeOwnerOld(trashBin, new Test(10, counter));
+        REQUIRE(counter == 1);
+        
+        // Constructing another SafeOwner, should increment the counter
+        auto safeOwner = nap::utility::SafeOwner<Test>(trashBin, new Test(5, counter));
+        REQUIRE(counter == 2);
+        
+        // Moving the old owner into the new one, this should not change the counter, but move the previous content of the new one to the TrashBin
+        safeOwner = std::move(safeOwnerOld);
+        
+        REQUIRE(counter == 2);
+        REQUIRE(safeOwner->mX == 10);
+
+        // Construct a SafePtr pointing to safeOwner's content
+        safePtr = safeOwner.getSafe();
+        // Make a copy of the SafePtr
+        safePtrCopy = safePtr;
+    }
+    
+    // The owner goes out of scope, however the object should still be in the TrashBin and the SafePtr's should be valid
+    REQUIRE(counter == 2);
+    REQUIRE(safePtr->mX == 10);
+    REQUIRE(safePtrCopy->mX == 10);
+    
+    // We clear the TrashBin, the objects should be destroyed, the counter should be zero and the SafePtr's set to nullptr
+    trashBin.clear();
+    REQUIRE(counter == 0);
+    REQUIRE(safePtr == nullptr);
+    REQUIRE(safePtrCopy == nullptr);
 }
