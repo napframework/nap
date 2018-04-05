@@ -60,7 +60,7 @@ SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rt
 {
 	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
 															 QString::fromStdString(newValue->mID)));
-	auto pointee = getPointee(path);
+	auto pointee = path.getPointee();
 	if (pointee != nullptr)
 		mOldValue = pointee->mID;
 	else
@@ -95,7 +95,7 @@ void SetPointerValueCommand::redo()
 
 	nap::rtti::Object* new_object = AppContext::get().getDocument()->getObject(mNewValue);
 
-	setPointee(mPath, new_object);
+	mPath.setPointee(new_object);
 
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
@@ -103,15 +103,16 @@ void SetPointerValueCommand::redo()
 AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent)
 		: mType(type), QUndoCommand()
 {
+	auto type_name = QString::fromUtf8(type.get_name().data());
 
-	if (parent != nullptr) {
-		setText(QString("Add new %1 to %2").arg(QString::fromUtf8(type.get_name().data()),
-												QString::fromStdString(parent->mID)));
+	if (parent != nullptr)
+	{
+		setText(QString("Add new %1 to %2").arg(type_name, QString::fromStdString(parent->mID)));
 		mParentName = parent->mID;
 	}
 	else
 	{
-		setText(QString("Add new %1").arg(QString::fromUtf8(type.get_name().data())));
+		setText(QString("Add new %1").arg(type_name));
 	}
 
 }

@@ -183,9 +183,9 @@ void Document::removeObject(Object& object)
 	objectRemoved(object);
 
 	// Start by cleaning up objects that depend on this one
-	auto entity = rtti_cast<nap::Entity>(&object);
-	if (entity != nullptr)
+	if (object.get_type().is_derived_from<nap::Entity>())
 	{
+		auto entity = rtti_cast<nap::Entity>(&object);
 		// Remove from any scenes
 		for (auto& obj : getObjects())
 		{
@@ -415,6 +415,12 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::Ty
 
 void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 {
+	// If embedded pointer, get pointee so we can delete that too
+	auto elementPath = path.getArrayElement(index);
+	nap::rtti::Object* pointee = nullptr;
+	if (elementPath.isEmbeddedPointer())
+		pointee = elementPath.getPointee();
+
 	ResolvedPath resolved_path = path.resolve();
 	Variant value = resolved_path.getValue();
 	VariantArray array = value.create_array_view();
@@ -425,6 +431,9 @@ void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 
 	ok = resolved_path.setValue(value);
 	assert(ok);
+
+	if (pointee != nullptr)
+		removeObject(*pointee);
 
 	propertyValueChanged(path);
 }
@@ -510,6 +519,18 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 Document::~Document()
 {
 	
+}
+
+bool Document::isPointedToByEmbeddedPointer(const nap::rtti::Object& obj)
+{
+	for (const auto& path : getPointersTo(obj, false, false))
+	{
+		assert(path.isPointer());
+		if (path.isEmbeddedPointer())
+			return true;
+	}
+
+	return false;
 }
 
 

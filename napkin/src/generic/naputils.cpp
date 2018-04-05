@@ -147,41 +147,6 @@ nap::rtti::ResolvedPath napkin::resolve(const nap::rtti::Object& obj, nap::rtti:
 	return resolvedPath;
 }
 
-nap::rtti::Object* napkin::getPointee(const PropertyPath& path)
-{
-	auto resolvedPath = path.resolve();
-	auto value = resolvedPath.getValue();
-	auto value_type = value.get_type();
-	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-	bool is_wrapper = wrapped_type != value_type;
-	nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>()
-												: value.get_value<nap::rtti::Object*>();
-	return pointee;
-}
-
-void napkin::setPointee(const napkin::PropertyPath& path, const Object* target)
-{
-	nap::rtti::ResolvedPath resolved_path = path.resolve();
-	assert(resolved_path.isValid());
-
-	rttr::method assign_method = nap::rtti::findMethodRecursive(resolved_path.getType(), "assign");
-	if (assign_method.is_valid())
-	{
-		// Assign the new value to the pointer (note that we're modifying a copy)
-		auto target_value = resolved_path.getValue();
-		assign_method.invoke(target_value, target->mID, *target);
-
-		// Apply the modified value back to the source property
-		bool value_set = resolved_path.setValue(target_value);
-		assert(value_set);
-	}
-	else
-	{
-		bool value_set = resolved_path.setValue(target);
-		assert(value_set);
-	}
-}
-
 
 QString napkin::getAbsoluteResourcePath(const QString& relPath, const QString& reference)
 {

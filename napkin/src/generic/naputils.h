@@ -88,19 +88,6 @@ namespace napkin
 	std::vector<rttr::type> getResourceTypes();
 
 	/**
-	 * Given a Pointer Property (or how do you call them), find the object it's pointing to
-	 */
-	nap::rtti::Object* getPointee(const PropertyPath& path);
-
-	/**
-	 * Set the pointer property value to an object
-	 * TODO: Use/provide paths to identify target, this version is using MID (broken!)
-	 * @param path The path to the property that holds the pointer
-	 * @param target The object to point to
-	 */
-	void setPointee(const napkin::PropertyPath& path, const nap::rtti::Object* target);
-
-	/**
 	 * Get the reference directory for resources.
 	 * @param reference The path to the reference directory or file.
 	 * 	If nothing is provided, this will fall back to the currently opened document
