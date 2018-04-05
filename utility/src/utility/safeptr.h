@@ -2,6 +2,7 @@
 
 // Std includes
 #include <set>
+#include <functional>
 
 // Nap includes
 #include <utility/concurrentqueue.h>
