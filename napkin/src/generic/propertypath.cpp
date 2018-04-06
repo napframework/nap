@@ -189,6 +189,8 @@ void napkin::PropertyPath::setPointee(Object* pointee)
 	nap::rtti::ResolvedPath resolved_path = resolve();
 	assert(resolved_path.isValid());
 
+	// FIXME: This is a hack.
+	// Someone just needs to add an 'assign' method in the wrong place and it will break.
 	rttr::method assign_method = nap::rtti::findMethodRecursive(resolved_path.getType(), "assign");
 	if (assign_method.is_valid())
 	{
