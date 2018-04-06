@@ -523,7 +523,7 @@ TEST_CASE("Commands", TAG_NAPKIN)
 	REQUIRE(doc->getObjects().size() == 0);
 
 	// Add a component
-	auto entity = doc->addEntity();
+	auto& entity = doc->addEntity();
 	ctx.executeCommand(new napkin::AddComponentCommand(entity, RTTI_OF(nap::PerspCameraComponent)));
 	REQUIRE(entity.hasComponent<nap::PerspCameraComponent>());
 
