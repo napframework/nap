@@ -134,17 +134,16 @@ void SetThemeAction::perform()
     AppContext::get().getThemeManager().setTheme(mTheme);
 }
 
+AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
+	: Action(), mEntity(entity), mComponentType(type)
+{
+	setText(QString(type.get_name().data()));
+}
+
 void AddComponentAction::perform()
 {
     AppContext::get().getDocument()->addComponent(mEntity, mComponentType);
 }
-
-AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
-        : Action(), mEntity(entity), mComponentType(type)
-{
-    setText(QString(type.get_name().data()));
-}
-
 
 AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
 {

@@ -113,25 +113,20 @@ std::vector<rttr::type> napkin::getComponentTypes()
 	return ret;
 }
 
-std::vector<rttr::type> napkin::getResourceTypes()
+std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 {
-	rttr::type rootType = RTTI_OF(nap::rtti::Object);
 	nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
-
 	std::vector<rttr::type> ret;
 	std::vector<rttr::type> derived_classes;
+
+	auto rootType = RTTI_OF(nap::rtti::Object);
 	nap::rtti::getDerivedTypesRecursive(rootType, derived_classes);
 	for (const rttr::type& derived : derived_classes)
 	{
-		if (!derived.is_derived_from<nap::Resource>())
-			continue;
-
-		if (derived.is_derived_from<nap::Component>())
-			continue;
-		if (derived.is_derived_from<nap::Entity>())
-			continue;
-
 		if (!factory.canCreate(derived))
+			continue;
+
+		if (predicate != nullptr && !predicate(derived))
 			continue;
 
 		ret.emplace_back(derived);

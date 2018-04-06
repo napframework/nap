@@ -46,6 +46,8 @@ nap::rtti::Object* napkin::FilterPopup::getObject(QWidget* parent, const rttr::t
 	FilterPopup dialog(parent, model);
 
 	dialog.exec(QCursor::pos());
+	if (!dialog.wasAccepted())
+		return nullptr;
 
 	auto item = dynamic_cast<ObjectItem*>(dialog.mTreeView.getSelectedItem());
 	if (item != nullptr)
@@ -54,14 +56,14 @@ nap::rtti::Object* napkin::FilterPopup::getObject(QWidget* parent, const rttr::t
 	return nullptr;
 }
 
-nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent, const rttr::type& typeConstraint)
+nap::rtti::TypeInfo napkin::FilterPopup::getType(QWidget* parent, const TypePredicate& predicate)
 {
 	QStandardItemModel model;
 
-	for (const auto t : getResourceTypes())
+	for (const auto& t : getTypes(predicate))
 	{
-		if (typeConstraint == rttr::type::empty() || t.is_derived_from(typeConstraint))
-			model.appendRow(new QStandardItem(QString::fromUtf8(t.get_name().data())));
+		auto typeName = QString::fromUtf8(t.get_name().data());
+		model.appendRow(new QStandardItem(typeName));
 	}
 
 	FilterPopup dialog(parent, model);
@@ -75,11 +77,6 @@ nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent, const 
 		return rttr::type::empty();
 
 	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
-}
-
-nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
-{
-	return getResourceType(parent, rttr::type::empty());
 }
 
 
@@ -107,11 +104,9 @@ void napkin::FilterPopup::moveSelection(int dir)
 	if (row == newRow)
 		return;
 
-	auto leftIndex = mTreeView.getModel()->index(newRow, 0);
-	auto rightIndex = mTreeView.getModel()->index(newRow, mTreeView.getModel()->columnCount() - 1);
-	QItemSelection selection(leftIndex, rightIndex);
-
-	mTreeView.getSelectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+	auto newIndex = mTreeView.getModel()->index(newRow, 0);
+	mTreeView.getSelectionModel()->setCurrentIndex(newIndex, QItemSelectionModel::SelectCurrent);
+	mTreeView.update();
 }
 
 

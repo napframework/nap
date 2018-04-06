@@ -13,7 +13,7 @@ namespace napkin
 	static const QString TXT_LABEL_NAME			= "Name";
 	static const QString TXT_LABEL_VALUE		= "Value";
 	static const QString TXT_LABEL_TYPE			= "Type";
-	static const QString TXT_LABEL_OBJECTS		= "Objects";
+	static const QString TXT_LABEL_RESOURCES	= "Resources";
 	static const QString TXT_LABEL_ENTITIES		= "Entities";
 	static const QString TXT_UNTITLED_DOCUMENT	= "Untitled Document";
 	static const QString TXT_THEME_NATIVE		= "Native";
