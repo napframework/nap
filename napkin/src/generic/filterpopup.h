@@ -3,6 +3,7 @@
 #include <QtWidgets/QDialog>
 #include <rtti/object.h>
 #include "filtertreeview.h"
+#include "naputils.h"
 
 namespace napkin
 {
@@ -33,21 +34,12 @@ namespace napkin
 		 */
 		static nap::rtti::Object* getObject(QWidget* parent, const rttr::type& typeConstraint);
 
-
 		/**
-		 * Display a selection dialog with all available types that can be added as a resource.
+		 * Display a selection dialog with all available types, filtered by an optional predicate
 		 * @param parent The widget to attach to
 		 * @return The resulting selected type.
 		 */
-		static nap::rtti::TypeInfo getResourceType(QWidget* parent);
-
-		/**
-		 * Display a selection dialog with all available types that can be added as a resource.
-		 * @param parent The widget to attach to
-		 * @param typeConstraint Offer only types derived from this one.
-		 * @return The resulting selected type.
-		 */
-		static nap::rtti::TypeInfo getResourceType(QWidget* parent, const rttr::type& typeConstraint);
+		static nap::rtti::TypeInfo getType(QWidget* parent, const TypePredicate& predicate = nullptr);
 
 		/**
 		 * Display a selection dialog with all available objects, filtered by type T

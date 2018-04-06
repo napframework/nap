@@ -522,6 +522,11 @@ TEST_CASE("Commands", TAG_NAPKIN)
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 0);
 
+	// Add a component
+	auto entity = doc->addEntity();
+	ctx.executeCommand(new napkin::AddComponentCommand(entity, RTTI_OF(nap::PerspCameraComponent)));
+	REQUIRE(entity.hasComponent<nap::PerspCameraComponent>());
+
 	// TODO: Support undo for deletion
 //	doc->undo();
 //	REQUIRE(doc->getObjects().size() == 1);

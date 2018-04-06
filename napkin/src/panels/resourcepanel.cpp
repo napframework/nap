@@ -11,7 +11,7 @@ using namespace napkin;
 
 
 
-napkin::ResourceModel::ResourceModel() : mObjectsItem(TXT_LABEL_OBJECTS), mEntitiesItem(TXT_LABEL_ENTITIES)
+napkin::ResourceModel::ResourceModel() : mObjectsItem(TXT_LABEL_RESOURCES), mEntitiesItem(TXT_LABEL_ENTITIES)
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE});
 	appendRow(&mObjectsItem);
@@ -56,11 +56,8 @@ void napkin::ResourceModel::refresh()
 		addObjectItem(*ob);
 }
 
-void ResourceModel::addObjectItem(nap::rtti::Object& ob)
+ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 {
-	if (!shouldObjectBeVisible(ob))
-		return;
-
 	auto typeItem = new RTTITypeItem(ob.get_type());
 
 	// Entity?
@@ -70,12 +67,29 @@ void ResourceModel::addObjectItem(nap::rtti::Object& ob)
 		nap::Entity& e = *rtti_cast<nap::Entity>(&ob);
 
 		auto entityItem = new EntityItem(e);
-		mEntitiesItem.appendRow({entityItem, typeItem});
-		return;
+
+		auto parent = AppContext::get().getDocument()->getParent(e);
+		if (parent != nullptr)
+		{
+			auto parentItem = napkin::findItemInModel<EntityItem>(*this, *parent);
+			if (parentItem != nullptr)
+				parentItem->appendRow({entityItem, typeItem});
+		}
+		else
+		{
+			mEntitiesItem.appendRow({entityItem, typeItem});
+		}
+
+		return nullptr;
 	}
 
+	if (!shouldObjectBeVisible(ob))
+		return nullptr;
+
 	// ... now the rest in Objects...
-	mObjectsItem.appendRow({new ObjectItem(&ob), typeItem});
+	auto item = new ObjectItem(&ob);
+	mObjectsItem.appendRow({item, typeItem});
+	return item;
 }
 
 void ResourceModel::removeObjectItem(const nap::rtti::Object& object)
@@ -148,15 +162,22 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		if (entityItem != nullptr)
 		{
 			// Selected item is an Entity
-			auto parent = entityItem->getEntity();
-			menu.addAction(new AddEntityAction(parent));
+			auto entity = entityItem->getEntity();
+			menu.addAction(new AddEntityAction(entity));
 
 			// Components
-			auto addComponentMenu = menu.addMenu("Add Component");
-			for (const auto& type : getComponentTypes())
+			menu.addAction("Add Component...", [entity]()
 			{
-				addComponentMenu->addAction(new AddComponentAction(*entityItem->getEntity(), type));
-			}
+				auto parent = AppContext::get().getMainWindow();
+
+				auto comptype = FilterPopup::getType(parent, [](auto t) {
+					return t.is_derived_from(RTTI_OF(nap::Component));
+				});
+
+				if (comptype.is_valid())
+					AppContext::get().executeCommand(new AddComponentCommand(*entity, comptype));
+			});
+
 		}
 
 		menu.addAction(new DeleteObjectAction(*objItem->getObject()));
@@ -169,12 +190,19 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		{
 			menu.addAction(new AddEntityAction(nullptr));
 		}
-		else if (groupItem->text() == TXT_LABEL_OBJECTS)
+		else if (groupItem->text() == TXT_LABEL_RESOURCES)
 		{
 			// Resources
-			menu.addAction("Add Object", [this]() {
-				auto type = FilterPopup::getResourceType(this);
-				if (type.is_valid())
+			menu.addAction("Add Resource...", [this]()
+			{
+				auto type = FilterPopup::getType(this, [](auto t)
+				{
+					if (t.is_derived_from(RTTI_OF(nap::Component)))
+						return false;
+					return t.is_derived_from(RTTI_OF(nap::Resource));
+				});
+
+				if (type.is_valid() && !type.is_derived_from(RTTI_OF(nap::Component)))
 					AppContext::get().executeCommand(new AddObjectCommand(type));
 			});
 		}
@@ -231,9 +259,9 @@ void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& 
 
 void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object& obj, bool selectNewObject)
 {
-	mModel.addObjectItem(obj);
+	auto item = mModel.addObjectItem(obj);
 	if (selectNewObject)
-		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, obj));
+		mTreeView.selectAndReveal(item);
 }
 
 void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)

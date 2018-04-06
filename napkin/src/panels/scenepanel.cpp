@@ -99,8 +99,7 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 
 	}
 
-	auto add_scene_action = menu.addAction("Add Scene...");
-	connect(add_scene_action, &QAction::triggered, []()
+	menu.addAction("Add Scene", []()
 	{
 		AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Scene)));
 	});

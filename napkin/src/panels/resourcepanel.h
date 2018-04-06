@@ -36,7 +36,7 @@ namespace napkin
 		 * Add an item (row) to represent an Object
 		 * @param object the object to represent
 		 */
-		void addObjectItem(nap::rtti::Object& object);
+		ObjectItem* addObjectItem(nap::rtti::Object& object);
 
 		/**
 		 * Remove an item (row) representing an Object

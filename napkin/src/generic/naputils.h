@@ -29,6 +29,7 @@ namespace napkin
 		const nap::rtti::TypeInfo& type;
 	};
 
+	using TypePredicate = std::function<bool(const rttr::type& type)>;
 
 	/**
 	 * Filter the provided list of objects
@@ -85,7 +86,7 @@ namespace napkin
 	/**
 	 * @return All nap resource types in the rtti system
 	 */
-	std::vector<rttr::type> getResourceTypes();
+	std::vector<rttr::type> getTypes(TypePredicate predicate);
 
 	/**
 	 * Get the reference directory for resources.

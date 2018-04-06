@@ -35,6 +35,18 @@ namespace napkin
 		std::string mParentName = "";
 	};
 
+	class AddComponentCommand : public QUndoCommand
+	{
+	public:
+		AddComponentCommand(nap::Entity& entity, nap::rtti::TypeInfo type);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const rttr::type mType;
+		std::string mEntityName;
+		std::string mComponentName;
+	};
     /**
      * TODO: To be implemented
      */

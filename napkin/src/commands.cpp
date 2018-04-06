@@ -6,6 +6,9 @@
 
 using namespace napkin;
 
+// TODO: All commands need to get their document passed in
+// so we may support multiple documents in a far future
+
 SetValueCommand::SetValueCommand(const PropertyPath& propPath, QVariant newValue)
 		: mPath(propPath), mNewValue(newValue), QUndoCommand()
 {
@@ -137,6 +140,25 @@ void AddObjectCommand::undo()
 	AppContext::get().getDocument()->removeObject(mObjectName);
 }
 
+
+AddComponentCommand::AddComponentCommand(nap::Entity& entity, nap::rtti::TypeInfo type)
+: mEntityName(entity.mID), mType(type)
+{
+
+}
+
+void AddComponentCommand::redo()
+{
+	auto doc = AppContext::get().getDocument();
+	nap::Entity* entity = doc->getObject<nap::Entity>(mEntityName);
+	assert(entity != nullptr);
+	AppContext::get().getDocument()->addComponent(*entity, mType);
+}
+
+void AddComponentCommand::undo()
+{
+	nap::Logger::fatal("Undo is not available...");
+}
 
 DeleteObjectCommand::DeleteObjectCommand(nap::rtti::Object& object) : mObjectName(object.mID), QUndoCommand()
 {
@@ -294,3 +316,4 @@ void ArrayMoveElementCommand::undo()
 {
 	AppContext::get().getDocument()->arrayMoveElement(mPath, mNewIndex, mOldIndex);
 }
+

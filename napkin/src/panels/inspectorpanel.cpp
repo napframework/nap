@@ -121,7 +121,12 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		{
 			menu.addAction("Create...", [this, array_path]()
 			{
-				rttr::type elementType = FilterPopup::getResourceType(this, array_path.getArrayElementType());
+				auto type = array_path.getArrayElementType();
+
+				TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
+
+				rttr::type elementType = FilterPopup::getType(this, predicate);
+
 				if (!elementType.empty())
 					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
 			});

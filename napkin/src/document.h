@@ -359,6 +359,7 @@ namespace napkin
 		nap::rtti::OwnedObjectList mObjects;    // The objects in this document
 		QString mCurrentFilename;				// This document's filename
 		QUndoStack mUndoStack;					// This document's undostack
+
 	};
 
 }
