@@ -39,7 +39,7 @@ QString getResource(const QString& filename)
 TEST_CASE("Document Management", TAG_NAPKIN)
 {
 	
-	auto doc = napkin::AppContext::get().getDocument();
+	auto doc = AppContext::get().getDocument();
 
 	// Must have a default document
 	REQUIRE(doc != nullptr);
@@ -52,7 +52,7 @@ TEST_CASE("Document Management", TAG_NAPKIN)
 	doc->setFilename(testFilename);
 	REQUIRE(doc->getCurrentFilename() == testFilename);
 
-	doc = napkin::AppContext::get().newDocument();
+	doc = AppContext::get().newDocument();
 
 	REQUIRE(doc->getCurrentFilename().isEmpty());
 	REQUIRE(doc->getObjects().size() == 0);
@@ -89,11 +89,11 @@ TEST_CASE("Document Management", TAG_NAPKIN)
 
 TEST_CASE("Document Signals", TAG_NAPKIN)
 {
-	auto doc = napkin::AppContext::get().newDocument();
-	SigCapture sigObjectAdded(doc, &napkin::Document::objectAdded);
-	SigCapture sigObjectRemoved(doc, &napkin::Document::objectRemoved);
-	SigCapture sigObjectChanged(doc, &napkin::Document::objectChanged);
-	SigCapture sigPropertyValueChanged(doc, &napkin::Document::propertyValueChanged);
+	auto doc = AppContext::get().newDocument();
+	SigCapture sigObjectAdded(doc, &Document::objectAdded);
+	SigCapture sigObjectRemoved(doc, &Document::objectRemoved);
+	SigCapture sigObjectChanged(doc, &Document::objectChanged);
+	SigCapture sigPropertyValueChanged(doc, &Document::propertyValueChanged);
 
 	auto entity = doc->addObject<nap::Entity>();
 	REQUIRE(sigObjectAdded.count() == 1);
@@ -104,16 +104,16 @@ TEST_CASE("Document Signals", TAG_NAPKIN)
 
 TEST_CASE("Array Value Elements", TAG_NAPKIN)
 {
-	auto doc = napkin::AppContext::get().newDocument();
+	auto doc = AppContext::get().newDocument();
 	auto colors = doc->addObject<nap::WeekVariations>();
 	REQUIRE(colors  != nullptr);
 
 	// Check invalid nonexistent path
-	napkin::PropertyPath nonExistent(*colors, "NonExistent_________");
+	PropertyPath nonExistent(*colors, "NonExistent_________");
 	REQUIRE(!nonExistent.isValid());
 
 	// Grab a valid path
-	napkin::PropertyPath variations(*colors, "Variations");
+	PropertyPath variations(*colors, "Variations");
 	REQUIRE(variations.isValid());
 
 	// Ensure empty array
@@ -148,11 +148,11 @@ TEST_CASE("Array Value Elements", TAG_NAPKIN)
 
 TEST_CASE("Array add weekcolor", TAG_NAPKIN)
 {
-	auto doc = napkin::AppContext::get().newDocument();
+	auto doc = AppContext::get().newDocument();
 	auto* col = doc->addObject<nap::WeekVariations>();
 	REQUIRE(col != nullptr);
 
-	napkin::PropertyPath variations(*col, "Variations");
+	PropertyPath variations(*col, "Variations");
 	REQUIRE(variations.isValid());
 
 	// Add an element to the array
@@ -162,7 +162,7 @@ TEST_CASE("Array add weekcolor", TAG_NAPKIN)
 		REQUIRE(variations.getArrayLength() == 1);
 
 		// Verify validity of new element
-		REQUIRE(napkin::PropertyPath(*col, "Variations/0").isValid());
+		REQUIRE(PropertyPath(*col, "Variations/0").isValid());
 	}
 
 	// Add another value
@@ -172,19 +172,19 @@ TEST_CASE("Array add weekcolor", TAG_NAPKIN)
 		REQUIRE(variations.getArrayLength() == 2);
 
 		// Verify validity of new element
-		REQUIRE(napkin::PropertyPath(*col, "Variations/1").isValid());
+		REQUIRE(PropertyPath(*col, "Variations/1").isValid());
 	}
 }
 
 TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 {
-	auto doc = napkin::AppContext::get().newDocument();
+	auto doc = AppContext::get().newDocument();
 	auto composition = doc->addObject<nap::Composition>();
 	REQUIRE(composition != nullptr);
 	auto layer = doc->addObject<nap::ImageLayer>();
 	REQUIRE(layer != nullptr);
 
-	napkin::PropertyPath layers(*composition, "Layers");
+	PropertyPath layers(*composition, "Layers");
 	REQUIRE(layers.isValid());
 	REQUIRE(layers.getArrayLength() == 0);
 
@@ -206,12 +206,12 @@ TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 
 TEST_CASE("Array Move Element", TAG_NAPKIN)
 {
-	auto doc = napkin::AppContext::get().newDocument();
+	auto doc = AppContext::get().newDocument();
 	auto composition = doc->addObject<nap::Composition>();
 	REQUIRE(composition != nullptr);
 
 	// Set up an array with four elements
-	napkin::PropertyPath layers(*composition, "Layers");
+	PropertyPath layers(*composition, "Layers");
 	REQUIRE(layers.isValid());
 	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
 	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
@@ -253,7 +253,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
 
-	doc->executeCommand(new napkin::ArrayMoveElementCommand(layers, 1, 3));
+	doc->executeCommand(new ArrayMoveElementCommand(layers, 1, 3));
 	// State: 2, 3, [1], 0
 
 	REQUIRE(layers.getArrayLength() == 4);
@@ -280,7 +280,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
 
-	doc->executeCommand(new napkin::ArrayMoveElementCommand(layers, 3, 1));
+	doc->executeCommand(new ArrayMoveElementCommand(layers, 3, 1));
 	// State: 2, [0], 3, 1
 
 	REQUIRE(layers.getArrayLength() == 4);
@@ -322,7 +322,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 
 TEST_CASE("Document Functions", TAG_NAPKIN)
 {
-	auto doc = napkin::AppContext::get().newDocument();
+	auto doc = AppContext::get().newDocument();
 
 	auto entity = doc->addObject<nap::Entity>();
 
@@ -344,9 +344,9 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 {
 	SECTION("general")
 	{
-		auto doc = napkin::AppContext::get().newDocument();
+		auto doc = AppContext::get().newDocument();
 		auto entity = doc->addObject<nap::Entity>();
-		napkin::PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
+		PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
 		REQUIRE(&nameProp.getObject() == entity);
 		REQUIRE(nameProp.isValid());
 		std::string newName = "NewName";
@@ -411,7 +411,7 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 
 TEST_CASE("Embedded Pointers")
 {
-	auto doc = napkin::AppContext::get().newDocument();
+	auto doc = AppContext::get().newDocument();
 
 	auto mat = doc->addObject<nap::Material>();
 	REQUIRE(mat != nullptr);
@@ -433,115 +433,116 @@ TEST_CASE("Embedded Pointers")
 
 	doc->arrayRemoveElement(uniforms, 0);
 	REQUIRE(doc->getObjects().size() == 1);
+
 }
 
-TEST_CASE("Commands", TAG_NAPKIN)
-{
-	auto& ctx = napkin::AppContext::get();
-	SigCapture sigDocChanged(&ctx, &napkin::AppContext::documentChanged);
-	int sigDocCount = 0;
-	REQUIRE(sigDocChanged.count() == sigDocCount);
-
-	auto loadeddoc = ctx.loadDocument("unit_tests_data/objects.json");
-	{
-		REQUIRE(loadeddoc);
-		REQUIRE(sigDocChanged.count() == ++sigDocCount);
-		auto object = loadeddoc->getObject("material");
-
-	}
-
-	auto doc = ctx.newDocument();
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-
-	// Add an object and verify
-	ctx.executeCommand(new napkin::AddObjectCommand(RTTI_OF(nap::Entity)));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(doc->getObjects().size() == 1);
-	{
-		doc->undo();
-		REQUIRE(sigDocChanged.count() == ++sigDocCount);
-		REQUIRE(doc->getObjects().size() == 0);
-		doc->redo();
-		REQUIRE(sigDocChanged.count() == ++sigDocCount);
-		REQUIRE(doc->getObjects().size() == 1);
-	}
-
-	nap::rtti::Object* entity1 = doc->getObjects()[0].get();
-	nap::Entity* e1 = rtti_cast<nap::Entity>(entity1);
-	REQUIRE(e1 != nullptr);
-
-	// Add another one and verify
-	ctx.executeCommand(new napkin::AddObjectCommand(RTTI_OF(nap::Entity), entity1));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(doc->getObjects().size() == 2);
-	{
-		doc->undo();
-		REQUIRE(sigDocChanged.count() == ++sigDocCount);
-		REQUIRE(doc->getObjects().size() == 1);
-		doc->redo();
-		REQUIRE(sigDocChanged.count() == ++sigDocCount);
-		REQUIRE(doc->getObjects().size() == 2);
-	}
-
-	nap::rtti::Object* entity2 = doc->getObjects()[1].get();
-	nap::Entity* e2 = rtti_cast<nap::Entity>(entity2);
-	REQUIRE(e2 != nullptr);
-	REQUIRE(doc->getParent(*e2) == e1);
-
-	napkin::PropertyPath nameProp1(*entity1, nap::rtti::sIDPropertyName);
-	REQUIRE(nameProp1.isValid());
-	napkin::PropertyPath nameProp2(*entity2, nap::rtti::sIDPropertyName);
-	REQUIRE(nameProp2.isValid());
-
-	ctx.executeCommand(new napkin::SetValueCommand(nameProp1, "Loco"));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(entity1->mID == "Loco");
-
-	// Name may not be empty
-	ctx.executeCommand(new napkin::SetValueCommand(nameProp1, ""));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(entity1->mID == "Loco");
-
-	// No duplicate names
-	ctx.executeCommand(new napkin::SetValueCommand(nameProp2, "Loco"));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(entity2->mID != "Loco");
-
-	// Setting a unique name should succeed
-	ctx.executeCommand(new napkin::SetValueCommand(nameProp2, "Motion"));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(entity2->mID == "Motion");
-
-	// Remove object and verify
-	ctx.executeCommand(new napkin::DeleteObjectCommand(*entity1));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(doc->getObjects().size() == 1);
-
-	// Remove next and verify
-	ctx.executeCommand(new napkin::DeleteObjectCommand(*entity2));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(doc->getObjects().size() == 0);
-
-	// Add a component
-	auto& entity = doc->addEntity();
-	ctx.executeCommand(new napkin::AddComponentCommand(entity, RTTI_OF(nap::PerspCameraComponent)));
-	REQUIRE(entity.hasComponent<nap::PerspCameraComponent>());
-
-	// TODO: Support undo for deletion
-//	doc->undo();
+//TEST_CASE("Commands", TAG_NAPKIN)
+//{
+//	auto& ctx = AppContext::get();
+//	SigCapture sigDocChanged(&ctx, &AppContext::documentChanged);
+//	int sigDocCount = 0;
+//	REQUIRE(sigDocChanged.count() == sigDocCount);
+//
+//	auto loadeddoc = ctx.loadDocument("unit_tests_data/objects.json");
+//	{
+//		REQUIRE(loadeddoc);
+//		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//		auto object = loadeddoc->getObject("material");
+//
+//	}
+//
+//	auto doc = ctx.newDocument();
+//	REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//
+//	// Add an object and verify
+//	ctx.executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity)));
+//	REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//	REQUIRE(doc->getObjects().size() == 1);
+//	{
+//		doc->undo();
+//		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//		REQUIRE(doc->getObjects().size() == 0);
+//		doc->redo();
+//		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//		REQUIRE(doc->getObjects().size() == 1);
+//	}
+//
+//	nap::rtti::Object* entity1 = doc->getObjects()[0].get();
+//	nap::Entity* e1 = rtti_cast<nap::Entity>(entity1);
+//	REQUIRE(e1 != nullptr);
+//
+//	// Add another one and verify
+//	ctx.executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), entity1));
+//	REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//	REQUIRE(doc->getObjects().size() == 2);
+//	{
+//		doc->undo();
+//		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//		REQUIRE(doc->getObjects().size() == 1);
+//		doc->redo();
+//		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//		REQUIRE(doc->getObjects().size() == 2);
+//	}
+//
+//	nap::rtti::Object* entity2 = doc->getObjects()[1].get();
+//	nap::Entity* e2 = rtti_cast<nap::Entity>(entity2);
+//	REQUIRE(e2 != nullptr);
+//	REQUIRE(doc->getParent(*e2) == e1);
+//
+//	PropertyPath nameProp1(*entity1, nap::rtti::sIDPropertyName);
+//	REQUIRE(nameProp1.isValid());
+//	PropertyPath nameProp2(*entity2, nap::rtti::sIDPropertyName);
+//	REQUIRE(nameProp2.isValid());
+//
+//	ctx.executeCommand(new SetValueCommand(nameProp1, "Loco"));
+//	REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//	REQUIRE(entity1->mID == "Loco");
+//
+//	// Name may not be empty
+//	ctx.executeCommand(new SetValueCommand(nameProp1, ""));
+//	REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//	REQUIRE(entity1->mID == "Loco");
+//
+//	// No duplicate names
+//	ctx.executeCommand(new SetValueCommand(nameProp2, "Loco"));
+//	REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//	REQUIRE(entity2->mID != "Loco");
+//
+//	// Setting a unique name should succeed
+//	ctx.executeCommand(new SetValueCommand(nameProp2, "Motion"));
+//	REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//	REQUIRE(entity2->mID == "Motion");
+//
+//	// Remove object and verify
+//	ctx.executeCommand(new DeleteObjectCommand(*entity1));
+//	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 //	REQUIRE(doc->getObjects().size() == 1);
 //
-//	doc->undo();
-//	REQUIRE(doc->getObjects().size() == 2);
-
-//	ctx.executeCommand(new SetPointerValueCommand())
-//	ctx.executeCommand(new AddEntityToSceneCommand())
-//	ctx.executeCommand(new ArrayAddValueCommand());
-}
+//	// Remove next and verify
+//	ctx.executeCommand(new DeleteObjectCommand(*entity2));
+//	REQUIRE(sigDocChanged.count() == ++sigDocCount);
+//	REQUIRE(doc->getObjects().size() == 0);
+//
+//	// Add a component
+//	auto& entity = doc->addEntity();
+//	ctx.executeCommand(new AddComponentCommand(entity, RTTI_OF(nap::PerspCameraComponent)));
+//	REQUIRE(entity.hasComponent<nap::PerspCameraComponent>());
+//
+//	// TODO: Support undo for deletion
+////	doc->undo();
+////	REQUIRE(doc->getObjects().size() == 1);
+////
+////	doc->undo();
+////	REQUIRE(doc->getObjects().size() == 2);
+//
+////	ctx.executeCommand(new SetPointerValueCommand())
+////	ctx.executeCommand(new AddEntityToSceneCommand())
+////	ctx.executeCommand(new ArrayAddValueCommand());
+//}
 
 TEST_CASE("File Extensions", TAG_NAPKIN)
 {
-	napkin::ResourceFactory fact = napkin::AppContext::get().getResourceFactory();
+	ResourceFactory fact = AppContext::get().getResourceFactory();
 	{
 		QStringList imageExtensions;
 		for (const auto& e : fact.getImageExtensions())
@@ -579,7 +580,7 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	QString dataDir = ".";
 
 	// Just set the filename for reference purposes
-	napkin::AppContext::get().getDocument()->setFilename(getResource(jsonFile));
+	AppContext::get().getDocument()->setFilename(getResource(jsonFile));
 
 	// Ensure shader file exists
 	auto absJsonFilePath = QFileInfo(getResource(jsonFile)).absoluteFilePath();
@@ -594,35 +595,35 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 	REQUIRE(QFileInfo::exists(resourcedir));
 
 	// Test our local resource function with napkin's
-	auto basedir = QFileInfo(napkin::getResourceReferencePath()).absoluteFilePath();
+	auto basedir = QFileInfo(getResourceReferencePath()).absoluteFilePath();
 	REQUIRE(basedir.toStdString() == resourcedir.toStdString());
 
 	// Check relative path
-	auto relJsonPath = napkin::getRelativeResourcePath(absJsonFilePath);
+	auto relJsonPath = getRelativeResourcePath(absJsonFilePath);
 	REQUIRE(relJsonPath.toStdString() == jsonFile.toStdString());
 
 
 	// Check relative path
-	auto relShaderPath = napkin::getRelativeResourcePath(absShaderFilePath);
+	auto relShaderPath = getRelativeResourcePath(absShaderFilePath);
 	REQUIRE(relShaderPath.toStdString() == shaderFile.toStdString());
 
 	// Check absolute path
-	auto absShaderPath = napkin::getAbsoluteResourcePath(relShaderPath);
+	auto absShaderPath = getAbsoluteResourcePath(relShaderPath);
 	REQUIRE(absShaderPath.toStdString() == absShaderFilePath.toStdString());
 
 	// Check if dir contains path
-	REQUIRE(napkin::directoryContains(resourcedir, absShaderPath));
-	REQUIRE(napkin::directoryContains(resourcedir, absJsonFilePath));
-	REQUIRE(napkin::directoryContains(resourcedir + "/shaders", absShaderPath));
+	REQUIRE(directoryContains(resourcedir, absShaderPath));
+	REQUIRE(directoryContains(resourcedir, absJsonFilePath));
+	REQUIRE(directoryContains(resourcedir + "/shaders", absShaderPath));
 	// or not
-	REQUIRE(!napkin::directoryContains(absShaderPath, resourcedir));
+	REQUIRE(!directoryContains(absShaderPath, resourcedir));
 
 }
 
 
 //TEST_CASE("Component to Component pointer", TAG_NAPKIN)
 //{
-//	auto& ctx = napkin::AppContext::get();
+//	auto& ctx = AppContext::get();
 //	auto doc = ctx.newDocument();
 //	nap::Entity& entity = doc->addEntity();
 //	auto fpcam = doc->addComponent<nap::FirstPersonController>(entity);
@@ -631,9 +632,9 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 //	auto perspcam = doc->addComponent<nap::PerspCameraComponent>(entity);
 //	REQUIRE(perspcam != nullptr);
 //	REQUIRE(!fpcam->mID.empty());
-//	napkin::PropertyPath selectionPath(*fpcam, "PerspCameraComponent");
+//	PropertyPath selectionPath(*fpcam, "PerspCameraComponent");
 //	REQUIRE(selectionPath.isValid());
-//	napkin::setPointee(selectionPath, perspcam);
+//	setPointee(selectionPath, perspcam);
 //
 //	std::string serialized_doc = ctx.documentToString();
 //	REQUIRE(!serialized_doc.empty());
