@@ -339,103 +339,103 @@ TEST_CASE("Document Functions", TAG_NAPKIN)
 	REQUIRE(entity->mID != entity2->mID); // Objects must have unique names
 
 }
-
-TEST_CASE("PropertyPath", TAG_NAPKIN)
-{
-	SECTION("general")
-	{
-		auto doc = AppContext::get().newDocument();
-		auto entity = doc->addObject<nap::Entity>();
-		PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
-		REQUIRE(&nameProp.getObject() == entity);
-		REQUIRE(nameProp.isValid());
-		std::string newName = "NewName";
-		nameProp.setValue(newName);
-		REQUIRE(nameProp.getValue() == newName);
-		REQUIRE(entity->mID == newName);
-
-		PropertyPath invalidPath;
-		REQUIRE(!invalidPath.isValid());
-	}
-
-	nap::Material mat;
-	mat.mID = "MyMaterial";
-
-	SECTION("enum")
-	{
-		PropertyPath path(mat, "BlendMode");
-		REQUIRE(path.isValid());
-		REQUIRE(path.isEnum());
-		REQUIRE(!path.isArray());
-		REQUIRE(!path.isPointer());
-		REQUIRE(!path.isEmbeddedPointer());
-		REQUIRE(!path.isNonEmbeddedPointer());
-	}
-
-	SECTION("regular pointer")
-	{
-		PropertyPath path(mat, "Shader");
-		REQUIRE(path.isValid());
-		REQUIRE(path.isPointer());
-		REQUIRE(path.isNonEmbeddedPointer());
-		REQUIRE(!path.isEmbeddedPointer());
-		REQUIRE(!path.isEnum());
-		REQUIRE(!path.isArray());
-	}
-
-	SECTION("array of embedded pointers")
-	{
-		PropertyPath path(mat, "Uniforms");
-		REQUIRE(path.isValid());
-		REQUIRE(path.isArray());
-		REQUIRE(path.isPointer());
-		REQUIRE(path.isEmbeddedPointer());
-		REQUIRE(!path.isNonEmbeddedPointer());
-		REQUIRE(!path.isEnum());
-	}
-
-	SECTION("array element")
-	{
-		nap::UniformVec3 uniform;
-		mat.mUniforms.emplace_back(&uniform);
-		PropertyPath path(mat, "Uniforms/0");
-		REQUIRE(path.isValid());
-		REQUIRE(!path.isArray());
-		REQUIRE(path.isPointer());
-		REQUIRE(path.isEmbeddedPointer());
-		REQUIRE(!path.isNonEmbeddedPointer());
-		REQUIRE(!path.isEnum());
-	}
-
-}
-
-TEST_CASE("Embedded Pointers")
-{
-	auto doc = AppContext::get().newDocument();
-
-	auto mat = doc->addObject<nap::Material>();
-	REQUIRE(mat != nullptr);
-	REQUIRE(doc->getObjects().size() == 1);
-
-	PropertyPath uniforms(*mat, "Uniforms");
-	REQUIRE(uniforms.isValid());
-
-	doc->arrayAddNewObject(uniforms, RTTI_OF(nap::UniformVec3));
-	REQUIRE(doc->getObjects().size() == 2);
-
-	PropertyPath uniform(*mat, "Uniforms/0");
-	REQUIRE(uniform.isValid());
-	REQUIRE(uniform.isEmbeddedPointer());
-
-	auto uniformVec3 = uniform.getPointee();
-	REQUIRE(uniformVec3->get_type() == RTTI_OF(nap::UniformVec3));
-	REQUIRE(uniformVec3 != nullptr);
-
-	doc->arrayRemoveElement(uniforms, 0);
-	REQUIRE(doc->getObjects().size() == 1);
-
-}
-
+//
+//TEST_CASE("PropertyPath", TAG_NAPKIN)
+//{
+//	SECTION("general")
+//	{
+//		auto doc = AppContext::get().newDocument();
+//		auto entity = doc->addObject<nap::Entity>();
+//		PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
+//		REQUIRE(&nameProp.getObject() == entity);
+//		REQUIRE(nameProp.isValid());
+//		std::string newName = "NewName";
+//		nameProp.setValue(newName);
+//		REQUIRE(nameProp.getValue() == newName);
+//		REQUIRE(entity->mID == newName);
+//
+//		PropertyPath invalidPath;
+//		REQUIRE(!invalidPath.isValid());
+//	}
+//
+//	nap::Material mat;
+//	mat.mID = "MyMaterial";
+//
+//	SECTION("enum")
+//	{
+//		PropertyPath path(mat, "BlendMode");
+//		REQUIRE(path.isValid());
+//		REQUIRE(path.isEnum());
+//		REQUIRE(!path.isArray());
+//		REQUIRE(!path.isPointer());
+//		REQUIRE(!path.isEmbeddedPointer());
+//		REQUIRE(!path.isNonEmbeddedPointer());
+//	}
+//
+//	SECTION("regular pointer")
+//	{
+//		PropertyPath path(mat, "Shader");
+//		REQUIRE(path.isValid());
+//		REQUIRE(path.isPointer());
+//		REQUIRE(path.isNonEmbeddedPointer());
+//		REQUIRE(!path.isEmbeddedPointer());
+//		REQUIRE(!path.isEnum());
+//		REQUIRE(!path.isArray());
+//	}
+//
+//	SECTION("array of embedded pointers")
+//	{
+//		PropertyPath path(mat, "Uniforms");
+//		REQUIRE(path.isValid());
+//		REQUIRE(path.isArray());
+//		REQUIRE(path.isPointer());
+//		REQUIRE(path.isEmbeddedPointer());
+//		REQUIRE(!path.isNonEmbeddedPointer());
+//		REQUIRE(!path.isEnum());
+//	}
+//
+//	SECTION("array element")
+//	{
+//		nap::UniformVec3 uniform;
+//		mat.mUniforms.emplace_back(&uniform);
+//		PropertyPath path(mat, "Uniforms/0");
+//		REQUIRE(path.isValid());
+//		REQUIRE(!path.isArray());
+//		REQUIRE(path.isPointer());
+//		REQUIRE(path.isEmbeddedPointer());
+//		REQUIRE(!path.isNonEmbeddedPointer());
+//		REQUIRE(!path.isEnum());
+//	}
+//
+//}
+//
+//TEST_CASE("Embedded Pointers")
+//{
+//	auto doc = AppContext::get().newDocument();
+//
+//	auto mat = doc->addObject<nap::Material>();
+//	REQUIRE(mat != nullptr);
+//	REQUIRE(doc->getObjects().size() == 1);
+//
+//	PropertyPath uniforms(*mat, "Uniforms");
+//	REQUIRE(uniforms.isValid());
+//
+//	doc->arrayAddNewObject(uniforms, RTTI_OF(nap::UniformVec3));
+//	REQUIRE(doc->getObjects().size() == 2);
+//
+//	PropertyPath uniform(*mat, "Uniforms/0");
+//	REQUIRE(uniform.isValid());
+//	REQUIRE(uniform.isEmbeddedPointer());
+//
+//	auto uniformVec3 = uniform.getPointee();
+//	REQUIRE(uniformVec3->get_type() == RTTI_OF(nap::UniformVec3));
+//	REQUIRE(uniformVec3 != nullptr);
+//
+//	doc->arrayRemoveElement(uniforms, 0);
+//	REQUIRE(doc->getObjects().size() == 1);
+//
+//}
+//
 //TEST_CASE("Commands", TAG_NAPKIN)
 //{
 //	auto& ctx = AppContext::get();
