@@ -32,7 +32,7 @@ namespace nap
             friend class NodePtrBase;
             
         public:
-            using OutputMapping = std::vector<std::vector<SampleBufferPtr>>;
+            using OutputMapping = std::vector<std::vector<SampleBuffer*>>;
             
         public:
             NodeManager() = default;
@@ -122,7 +122,7 @@ namespace nap
              * @param buffer: a buffer of output
              * @param channel: the channel that the output will be played on
              */
-            void provideOutputBufferForChannel(SampleBufferPtr buffer, int channel);
+            void provideOutputBufferForChannel(SampleBuffer* buffer, int channel);
             
             /*
              * Used by @InputNode to request audio input for the current buffer

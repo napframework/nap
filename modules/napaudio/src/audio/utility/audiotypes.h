@@ -27,7 +27,6 @@ namespace nap
          * A buffer of samples
          */
         using SampleBuffer = std::vector<SampleValue>;
-        using SampleBufferPtr = SampleBuffer*;
         
         
         /**
@@ -94,7 +93,6 @@ namespace nap
             
             std::vector<SampleBuffer> channels;
         };
-        using MultiSampleBufferPtr = MultiSampleBuffer*;
         
         
         /**
