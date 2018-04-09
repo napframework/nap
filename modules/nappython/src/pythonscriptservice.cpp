@@ -4,11 +4,18 @@
 #include <utility/fileutils.h>
 
 
-RTTI_BEGIN_CLASS(nap::PythonScriptService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PythonScriptService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
+
 
 namespace nap
 {
+	PythonScriptService::PythonScriptService(ServiceConfiguration* configuration) :
+		Service(configuration)
+	{
+	}
+
 	bool PythonScriptService::TryLoad(const std::string& modulePath, pybind11::module& module, utility::ErrorState& errorState)
 	{
 		try 

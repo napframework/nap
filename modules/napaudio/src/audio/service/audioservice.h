@@ -5,15 +5,70 @@
 
 // Nap includes
 #include <nap/service.h>
-
-// Audio includes
-#include "audiodevice.h"
+#include <audio/core/audionodemanager.h>
 
 namespace nap
-{
-    
+{    
     namespace audio
     {
+		class AudioService;
+
+		class NAPAPI AudioServiceConfiguration : public ServiceConfiguration
+		{
+			RTTI_ENABLE(ServiceConfiguration)
+		public:
+			virtual rtti::TypeInfo GetServiceType() { return RTTI_OF(AudioService); }
+
+            /** 
+             * If true, the default host API, audio input and output device on this system are being used
+             */
+            bool mUseDefaultDevice = true;
+            
+            /**
+             * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
+             * The host API is an audio driver API like Windows MME, ASIO, CoreAudio, Jack, etc.
+             */
+            std::string mHostApi = "";
+            
+            /**
+             * Name of the input device being used. Use @AudioService to poll for available devices for a certain host API.
+             */
+            std::string mInputDevice = "";
+
+            /** 
+             * Name of the output device being used. Use @AudioService to poll for available devices for a certain host API.
+             */
+            std::string mOutputDevice = "";
+            
+            /** 
+             * The number of input channels in the stream. 
+             * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
+             */
+            int mInputChannelCount = 1;
+
+            /** 
+             * The number of output channels in the stream. 
+             * If the chosen device @mOutputDevice does not support this amount of channels the stream will not start.
+             */
+            int mOutputChannelCount = 2;
+            
+            /**
+             * The sample rate the audio stream will run on, the number of samples processed per channel per second.
+             */
+            float mSampleRate = 44100;
+            
+            /**
+             * The buffer size the audio stream will run on, every audio callback processes this amount of samples per channel
+             */
+            int mBufferSize = 256;
+
+			/**
+			 * The buffer size that is used internally by the node system to peform processing.
+			 * This can be lower than mBufferSize but has to fit within mBufferSize a discrete amount of times.
+			 * Lowering this can improve timing precision in the case that the node manager performs internal event scheduling, however will increase performance load.
+			 */
+			int mInternalBufferSize = 256;
+		};
         
         /**
          * Service that provides audio input and output processing directly for hardware audio devices.
@@ -24,7 +79,7 @@ namespace nap
             RTTI_ENABLE(nap::Service)
             
         public:
-            AudioService();
+            AudioService(ServiceConfiguration* configuration);
             
             ~AudioService();
             
@@ -105,10 +160,15 @@ namespace nap
              */
             int getDeviceIndex(const std::string& hostApi, const std::string& device);
             
-            
-            AudioDevice mInterface;
-        };
-        
-        
+		private:
+			/*
+             * Start the audio stream using the default audio devices available on the system.
+             */
+            bool startDefaultDevice(utility::ErrorState& errorState);
+		
+		private:
+            NodeManager mNodeManager; // The node manager that performs the audio processing.
+			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
+        };       
     }
 }

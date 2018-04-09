@@ -7,7 +7,6 @@
 
 // Audio includes
 #include "audioservice.h"
-#include "audiodevice.h"
 
 //#include <audio/core/graph.h>
 //#include <audio/core/voice.h>
@@ -16,15 +15,46 @@
 #include <mpg123.h>
 
 
-RTTI_DEFINE_CLASS(nap::audio::AudioService)
+RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
+	RTTI_PROPERTY("UseDefaultDevice",	&nap::audio::AudioServiceConfiguration::mUseDefaultDevice,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InputDevice",		&nap::audio::AudioServiceConfiguration::mInputDevice,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OutputDevice",		&nap::audio::AudioServiceConfiguration::mOutputDevice,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InputChannelCount",	&nap::audio::AudioServiceConfiguration::mInputChannelCount,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioServiceConfiguration::mOutputChannelCount,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SampleRate",			&nap::audio::AudioServiceConfiguration::mSampleRate,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BufferSize",			&nap::audio::AudioServiceConfiguration::mBufferSize,			nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
 
 namespace nap
 {
     
     namespace audio
     {
-        
-        AudioService::AudioService() : mInterface(*this)
+		/*
+         * The audio callback will be called by portaudio to process a buffer of audio input/output
+         */
+        static int audioCallback( const void *inputBuffer, void *outputBuffer,
+                                 unsigned long framesPerBuffer,
+                                 const PaStreamCallbackTimeInfo* timeInfo,
+                                 PaStreamCallbackFlags statusFlags,
+                                 void *userData )
+        {
+            float** out = (float**)outputBuffer;
+            float** in = (float**)inputBuffer;            
+            
+            NodeManager* nodeManager = reinterpret_cast<NodeManager*>(userData);
+            nodeManager->process(in, out, framesPerBuffer);
+            
+            return 0;
+        }
+
+
+        AudioService::AudioService(ServiceConfiguration* configuration) : 
+			Service(configuration)
         {
             // Initialize mpg123 library
             mpg123_init();
@@ -33,6 +63,11 @@ namespace nap
         
         AudioService::~AudioService()
         {
+			Pa_StopStream(mStream);
+			Pa_CloseStream(mStream);
+			mStream = nullptr;
+			Logger::info("Portaudio stopped");
+
             // Uninitialize mpg123 library
             mpg123_exit();
         }
@@ -47,13 +82,15 @@ namespace nap
         
         NodeManager& AudioService::getNodeManager()
         {
-            return mInterface.getNodeManager();
+            return mNodeManager;
         }
         
         
         bool AudioService::init(nap::utility::ErrorState& errorState)
         {
-            auto error = Pa_Initialize();
+			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
+
+			PaError error = Pa_Initialize();
             if (error != paNoError)
             {
                 std::string message = "Portaudio error: " + std::string(Pa_GetErrorText(error));
@@ -65,8 +102,113 @@ namespace nap
             printDevices();
             
             // Initialize the audio device
-            return mInterface.init(errorState);
+			if (configuration->mInternalBufferSize % configuration->mBufferSize != 0)
+			{
+				errorState.fail("Internal buffer size does not fit device buffer size");
+				return false;
+			}
+
+			if (configuration->mUseDefaultDevice)
+				return startDefaultDevice(errorState);
+
+			auto inputDeviceIndex = getDeviceIndex(configuration->mHostApi, configuration->mInputDevice);
+			if (inputDeviceIndex < 0)
+			{
+				errorState.fail("Audio input device not found");
+				return false;
+			}
+
+			auto outputDeviceIndex = getDeviceIndex(configuration->mHostApi, configuration->mOutputDevice);
+			if (outputDeviceIndex < 0)
+			{
+				errorState.fail("Audio output device not found");
+				return false;
+			}
+
+			PaStreamParameters inputParameters;
+			inputParameters.device = inputDeviceIndex;
+			inputParameters.channelCount = configuration->mInputChannelCount;
+			inputParameters.sampleFormat = paFloat32 | paNonInterleaved;
+			inputParameters.suggestedLatency = 0;
+			inputParameters.hostApiSpecificStreamInfo = nullptr;
+
+			PaStreamParameters outputParameters;
+			outputParameters.device = outputDeviceIndex;
+			outputParameters.channelCount = configuration->mOutputChannelCount;
+			outputParameters.sampleFormat = paFloat32 | paNonInterleaved;
+			outputParameters.suggestedLatency = 0;
+			outputParameters.hostApiSpecificStreamInfo = nullptr;
+
+			error = Pa_OpenStream(&mStream, &inputParameters, &outputParameters, configuration->mSampleRate, configuration->mBufferSize, paNoFlag, audioCallback, &mNodeManager);
+			if (error != paNoError)
+			{
+				errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+				return false;
+			}
+
+			mNodeManager.setInputChannelCount(configuration->mInputChannelCount);
+			mNodeManager.setOutputChannelCount(configuration->mOutputChannelCount);
+			mNodeManager.setSampleRate(configuration->mSampleRate);
+			mNodeManager.setInternalBufferSize(configuration->mInternalBufferSize);
+
+			error = Pa_StartStream(mStream);
+			if (error != paNoError)
+			{
+				errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+				return false;
+			}
+
+			Logger::info("Portaudio stream started: %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", configuration->mInputDevice.c_str(), configuration->mOutputDevice.c_str(), configuration->mInputChannelCount, configuration->mOutputChannelCount, configuration->mSampleRate, configuration->mBufferSize);
+
+			return true;
         }
+
+
+		bool AudioService::startDefaultDevice(utility::ErrorState& errorState)
+		{
+			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
+
+			auto error = Pa_OpenDefaultStream(&mStream, configuration->mInputChannelCount, configuration->mOutputChannelCount, paFloat32 | paNonInterleaved, configuration->mSampleRate, configuration->mBufferSize, audioCallback, &mNodeManager);
+			if (error != paNoError)
+			{
+				errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+				return false;
+			}
+
+			mNodeManager.setInputChannelCount(configuration->mInputChannelCount);
+			mNodeManager.setOutputChannelCount(configuration->mOutputChannelCount);
+			mNodeManager.setSampleRate(configuration->mSampleRate);
+
+			error = Pa_StartStream(mStream);
+			if (error != paNoError)
+			{
+				errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+				return false;
+			}
+
+			auto hostApi = getHostApiName(Pa_GetDefaultHostApi());
+
+			// Log the host API, devices, and channel, samplerate and buffersize being used
+			if (configuration->mInputChannelCount <= 0)
+			{
+				// no input, only output
+				auto outputDevice = getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultOutputDevice()).name;
+				Logger::info("Portaudio default stream started: %s - %s, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), outputDevice, configuration->mOutputChannelCount, int(configuration->mSampleRate), configuration->mBufferSize);
+			}
+			else if (configuration->mOutputChannelCount <= 0)
+			{
+				// no output, input only
+				auto inputDevice = getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultInputDevice()).name;
+				Logger::info("Portaudio default stream started: %s - %s, %i inputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice, configuration->mInputChannelCount, int(configuration->mSampleRate), configuration->mBufferSize);
+			}
+			else {
+				auto inputDevice = getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultInputDevice()).name;
+				auto outputDevice = getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultOutputDevice()).name;
+				Logger::info("Portaudio default stream started: %s - %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice, outputDevice, configuration->mInputChannelCount, configuration->mOutputChannelCount, int(configuration->mSampleRate), configuration->mBufferSize);
+			}
+
+			return true;
+		}
         
         
         unsigned int AudioService::getHostApiCount()
@@ -175,5 +317,3 @@ namespace nap
 		}
     }
 }
-
-RTTI_DEFINE_CLASS(nap::audio::AudioService)

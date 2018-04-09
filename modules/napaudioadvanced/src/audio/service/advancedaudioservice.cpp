@@ -13,13 +13,19 @@
 #include <audio/core/graph.h>
 #include <audio/core/voice.h>
 
-RTTI_DEFINE_CLASS(nap::audio::AdvancedAudioService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AdvancedAudioService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
 
 namespace nap
 {
     
     namespace audio
     {
+		AdvancedAudioService::AdvancedAudioService(ServiceConfiguration* configuration) :
+			Service(configuration)
+		{
+		}
         
         void AdvancedAudioService::registerObjectCreators(rtti::Factory& factory)
         {

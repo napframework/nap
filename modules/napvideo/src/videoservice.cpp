@@ -13,10 +13,16 @@ extern "C"
 	#include <libavformat/avformat.h>
 }
 
-RTTI_DEFINE_CLASS(nap::VideoService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
 
 namespace nap
 {
+	VideoService::VideoService(ServiceConfiguration* configuration) :
+		Service(configuration)
+	{
+	}
 
 	bool VideoService::init(nap::utility::ErrorState& errorState)
 	{

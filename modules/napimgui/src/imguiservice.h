@@ -25,7 +25,7 @@ namespace nap
 		/**
 		 *	Default constructor
 		 */
-		IMGuiService() = default;
+		IMGuiService(ServiceConfiguration* configuration);
 
 		/**
 		 * Draws the all the GUI elements to screen
