@@ -183,7 +183,7 @@ namespace nap
             mAudioCallbackTaskQueue.process();
             
             // clean the trash bin with nodes and resources that are no longer used and scheduled for destruction
-            mTrashBin.clear();
+            mDeletionQueue.clear();
 
             // process the node manager
             mNodeManager.process(inputBuffer, outputBuffer, framesPerBuffer);

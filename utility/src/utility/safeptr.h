@@ -14,31 +14,32 @@ namespace nap
     {
         
         // Forward declarations
-        class TrashBin;
+        class DeletionQueue;
         template <typename T> class SafeOwner;
         template <typename T> class SafePtr;
 
         
         /**
-         * The TrashBin holds the data that was owned by @SafeOwner smart-pointers until they went out of scope.
-         * SafeOwner's destructor disposes it's owned data in the TrashBin and the TrashBin takes over ownership over this data. The data does not only contain a pointer to the owned object but also a list of all SafePtrs that point to the SafeOwner's data.
-         * The TrashBin needs to be cleared regularly using the clear() method to free the heap of disposed data. When the TrashBin is cleared all SafePtrs that point to an object in the bin are set to nullptr.
-         * By making use of the TrashBin in combination with @SafeOwner and @SafePtr the programmer can control or restrict the moment where objects are  destructed and also choose the thread on which this will happen.
+         * The DeletionQueue holds the data that was owned by @SafeOwner smart-pointers until they went out of scope.
+         * SafeOwner's destructor disposes it's owned data in the DeletionQueue and the DeletionQueue takes over ownership over this data. The data does not only contain a pointer to the owned object but also a list of all SafePtrs that point to the SafeOwner's data.
+         * The DeletionQueue needs to be cleared regularly using the clear() method to free the heap of disposed data. When the DeletionQueue is cleared all SafePtrs that point to an object in the bin are set to nullptr.
+         * By making use of the DeletionQueue in combination with @SafeOwner and @SafePtr the programmer can control or restrict the moment where objects are  destructed and also choose the thread on which this will happen.
          */
-        class TrashBin {
+        class DeletionQueue final
+        {
         public:
-            TrashBin() = default;
-            ~TrashBin()
+            DeletionQueue() = default;
+            ~DeletionQueue()
             {
                 clear();
             }
             
             /**
              * This method is used by @SafeOwner to dispose it's data when it goes out of scope.
-             * The disposed data will be kept by the TrashBin and will be destructed and freed on the next call of clear().
+             * The disposed data will be kept by the DeletionQueue and will be destructed and freed on the next call of clear().
              */
             template <typename T>
-            void trash(typename SafeOwner<T>::Data* ownerData)
+            void enqueue(typename SafeOwner<T>::Data* ownerData)
             {
                 mQueue.enqueue([ownerData]()
                 {
@@ -47,8 +48,8 @@ namespace nap
             }
 
             /**
-             * Clears the TrashBin by destructing the objects is contains.
-             * It also sets all SafePtrs that point to the objects in the TrashBin to nullptr.
+             * Clears the DeletionQueue by destructing the objects is contains.
+             * It also sets all SafePtrs that point to the objects in the DeletionQueue to nullptr.
              */
             void clear()
             {
@@ -76,21 +77,21 @@ namespace nap
             }
             
             using DeleteFunction = std::function<void()>;
-            moodycamel::ConcurrentQueue<DeleteFunction> mQueue; ///< Lockfree queue that holds lambda's that each delete one object in the TrashBin. The pointer to the data to be deleted is held in the capture list of the lambda.
+            moodycamel::ConcurrentQueue<DeleteFunction> mQueue; ///< Lockfree queue that holds lambda's that each delete one object in the DeletionQueue. The pointer to the data to be deleted is held in the capture list of the lambda.
         };
         
         
         /**
          * SafeOwner is a special case smart pointer to an object that is used in multiple threads. It serves the purpose of making sure that the object is destructed in a thread safe manner when the SafeOwner goes out of scope.
          * It works very much like unique_ptr in such that it takes ownership over the object it points to and takes responsibility for it's destruction.
-         * The difference to unique_ptr is that instead of letting the object destruct itself when the pointer goes out of scope, it throws the object in a TrashBin.
-         * Objects in the TrashBin are kept alive until the trash bin is emptied at a moment when there is noone else using the object anymore.
+         * The difference to unique_ptr is that instead of letting the object destruct itself when the pointer goes out of scope, it throws the object in a DeletionQueue.
+         * Objects in the DeletionQueue are kept alive until the trash bin is emptied at a moment when there is noone else using the object anymore.
          * This is done to prevent the objects to be destroyed while they are possibly being used in another thread at the same time.
          */
         template <typename T>
-        class SafeOwner
+        class SafeOwner final
         {
-            friend class TrashBin;
+            friend class DeletionQueue;
             friend class SafePtr<T>;
             
         private:
@@ -108,11 +109,11 @@ namespace nap
             SafeOwner() = default;
             
             /**
-             * The constructor takes the TrashBin that the owner will use to dispose it's managed object and a pointer to the object it will manage.
+             * The constructor takes the DeletionQueue that the owner will use to dispose it's managed object and a pointer to the object it will manage.
              */
-            SafeOwner(TrashBin& trashBin, T* ptr)
+            SafeOwner(DeletionQueue& deletionQueue, T* ptr)
             {
-                mTrashBin = &trashBin;
+                mDeletionQueue = &deletionQueue;
                 mData = new Data();
                 mData->mObject = ptr;
             }
@@ -122,7 +123,7 @@ namespace nap
              */
             ~SafeOwner()
             {
-                trash();
+                enqueueForDeletion();
             }
             
             // Copy constructor with nullptr
@@ -131,7 +132,7 @@ namespace nap
             // Assignment operator with nullptr
             SafeOwner& operator=(const std::nullptr_t)
             {
-                trash();
+                enqueueForDeletion();
                 return *this;
             }
             
@@ -204,49 +205,46 @@ namespace nap
                 return ptr ? mData->mObject != ptr : mData != nullptr;
             }
             
-            T* get() const
-            {
-                assert(mData != nullptr);
-                return static_cast<T*>(mData->mObject);
-            }
-            
-            T* get()
-            {
-                assert(mData != nullptr);
-                return static_cast<T*>(mData->mObject);
-            }
-            
             /**
-             * Returns a SafePtr to the owned object. The SafePtr (and all it's future copies) will be set to nullptr when the managed object will be destroyed by the TrashBin.
+             * Returns a SafePtr to the owned object. The SafePtr (and all it's future copies) will be set to nullptr when the managed object will be destroyed by the DeletionQueue.
              */
-            SafePtr<T> getSafe()
+            SafePtr<T> get()
             {
                 auto safePtr = SafePtr<T>(*this);
                 return safePtr;
             }
             
             /**
-             * Disposes the managed object into the TrashBin. The TrashBin will free the object the next time it is cleared.
+             * Returns a const SafePtr to the owned object. The SafePtr (and all it's future copies) will be set to nullptr when the managed object will be destroyed by the DeletionQueue.
              */
-            void trash()
+            SafePtr<T> get() const
+            {
+                auto safePtr = SafePtr<T>(*this);
+                return safePtr;
+            }
+            
+            /**
+             * Disposes the managed object into the DeletionQueue. The DeletionQueue will free the object the next time it is cleared.
+             */
+            void enqueueForDeletion()
             {
                 if (mData != nullptr)
                 {
-                    assert(mTrashBin != nullptr);
-                    mTrashBin->trash<T>(mData);
+                    assert(mDeletionQueue != nullptr);
+                    mDeletionQueue->enqueue<T>(mData);
                     mData = nullptr;
                 }
             }
             
         private:
             Data* mData = nullptr; ///< The data containing a pointer to the owned object and pointers to all safe pointers pointing to this
-            TrashBin* mTrashBin = nullptr; ///< Pointer to the TrashBin thhis SafeOwner will use to dispose of it's managed object.
+            DeletionQueue* mDeletionQueue = nullptr; ///< Pointer to the DeletionQueue thhis SafeOwner will use to dispose of it's managed object.
             
             template <typename OTHER>
             void assign(SafeOwner<OTHER>& source)
             {
                 // When assigning from a different owner we first need to trash the current content (if any)
-                trash();
+                enqueueForDeletion();
                 
                 // Then we copy the source data
                 mData = source.mData;
@@ -255,19 +253,19 @@ namespace nap
                 source.mData = nullptr;
                 
                 // We have to copy the trashbin in case this SafeOwner was constructed with nullptr
-                mTrashBin = source.mTrashBin;
+                mDeletionQueue = source.mDeletionQueue;
             }
         };
         
 
         /**
-         * A SafePtr points to an object that is owned by a @SafeOwner somewhere. The SafePtr will remain valid when the owner has gone out of scope or when it has otherwise trashed the pointed object. Only when the @TrashBin is cleared the SafePtr will be set to nullptr and the data it previously pointed to will be rendered invalid.
+         * A SafePtr points to an object that is owned by a @SafeOwner somewhere. The SafePtr will remain valid when the owner has gone out of scope or when it has otherwise trashed the pointed object. Only when the @DeletionQueue is cleared the SafePtr will be set to nullptr and the data it previously pointed to will be rendered invalid.
          */
         template <typename T>
-        class SafePtr
+        class SafePtr final
         {
             friend class SafeOwner<T>;
-            friend class TrashBin;
+            friend class DeletionQueue;
             
         public:
             SafePtr() = default;
@@ -417,7 +415,7 @@ namespace nap
             }
             
         private:
-            typename SafeOwner<T>::Data* mOwnerData = nullptr; ///< The data pointed to by this SafePtr, managed by @SafeOwner or by the @TrashBin.
+            typename SafeOwner<T>::Data* mOwnerData = nullptr; ///< The data pointed to by this SafePtr, managed by @SafeOwner or by the @DeletionQueue.
             
             template <typename OTHER>
             void assign(const SafePtr<OTHER>& other)

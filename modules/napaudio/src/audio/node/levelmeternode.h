@@ -6,9 +6,11 @@
 // Audio includes
 #include <audio/core/audionode.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         // Forward declarations
         class AudioService;
@@ -18,7 +20,8 @@ namespace nap {
          * Can be used for VU meters or envelope followers for example.
          * Can switch between measuring peaks of the signal or the root mean square.
          */
-        class NAPAPI LevelMeterNode : public Node {
+        class NAPAPI LevelMeterNode : public Node
+        {
         public:
             enum Type { PEAK, RMS };
 

@@ -45,7 +45,7 @@ namespace nap
             /**
              * @return: access the actual data in the buffer
              */
-            utility::SafePtr<MultiSampleBuffer> getBuffer() { return mBuffer.getSafe(); }
+            utility::SafePtr<MultiSampleBuffer> getBuffer() { return mBuffer.get(); }
             
         protected:
             /**
