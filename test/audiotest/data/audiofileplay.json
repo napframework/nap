@@ -4,7 +4,7 @@
 		{
 			"Type": "nap::audio::AudioFileResource",
 			"mID": "audioFile",
-			"AudioFilePath": "testtone.wav"
+			"AudioFilePath": "hang.mp3"
 		},
 
 
@@ -34,7 +34,7 @@
 					"Duration": 0,					
 					"FadeInTime": 500,
 					"FadeOutTime": 500,
-					"Pitch": 0.5,
+					"Pitch": 1.0,
 					"Gain": 1.0,
 					"StereoPanning": 0.5
 				},
