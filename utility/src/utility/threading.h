@@ -15,7 +15,7 @@ namespace nap
      * Thread safe queue for tasks that are encapsulated in function objects.
      * It is possible to enqueue tasks at the end of the queue and to execute the tasks in the queue.
      */
-    class NAPAPI TaskQueue 
+    class TaskQueue 
 	{
     public:
         // a task in the queue is a function object
@@ -51,7 +51,7 @@ namespace nap
     /**
      * A single thread that runs its own task queue
      */
-    class NAPAPI WorkerThread 
+    class WorkerThread 
 	{
     public:
         /**
@@ -61,7 +61,7 @@ namespace nap
          * @maxQueueItems: the maximum number of items in the task queue
          */
         WorkerThread(bool blocking = true, unsigned int maxQueueItems = 20);
-        ~WorkerThread();
+		virtual ~WorkerThread();
         
         /**
          * enqueues a task to be performed on this thread
@@ -99,7 +99,7 @@ namespace nap
     /**
      * A pool of threads that can be used to perform multiple tasks at the same time
      */
-    class NAPAPI ThreadPool 
+    class ThreadPool 
 	{
     public:
         ThreadPool(unsigned int numberOfThreads = 1, unsigned int maxQueueItems = 20);
