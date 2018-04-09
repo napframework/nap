@@ -19,7 +19,8 @@ namespace nap {
     
     namespace audio {
         
-        LevelMeterNode::LevelMeterNode(AudioService& service, TimeValue analysisWindowSize) : Node(service.getNodeManager())
+        LevelMeterNode::LevelMeterNode(AudioService& service, TimeValue analysisWindowSize)
+            : Node(service.getNodeManager())
         {
             mBuffer.resize(getNodeManager().getSamplesPerMillisecond() * analysisWindowSize);
             service.execute([&](){ getNodeManager().registerRootNode(*this); });

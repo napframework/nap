@@ -1,17 +1,7 @@
 #include "threading.h"
 
-namespace nap {
-    
-    // utility to adjust thread scheduling to round-robin with highest priority, unix pthread only
-    void setThreadScheduling(std::thread& th)
-    {
-#ifdef UNIX
-        sched_param schedParams;
-        schedParams.sched_priority = 99;
-        pthread_setschedparam(th.native_handle(), SCHED_RR, &schedParams);
-#endif
-    }
-    
+namespace nap
+{
     
     TaskQueue::TaskQueue(unsigned int maxQueueItems) : mQueue(maxQueueItems)
     {
@@ -72,7 +62,6 @@ namespace nap {
                 }
             });
         }
-        setThreadScheduling(*mThread);
     }
     
     
@@ -90,7 +79,8 @@ namespace nap {
     }
     
     
-    ThreadPool::ThreadPool(unsigned int numberOfThreads, unsigned int maxQueueItems) : mTaskQueue(maxQueueItems)
+    ThreadPool::ThreadPool(unsigned int numberOfThreads, unsigned int maxQueueItems)
+        : mTaskQueue(maxQueueItems)
     {
         mStop = false;
         for (unsigned int i = 0; i < numberOfThreads; ++i)
@@ -135,8 +125,6 @@ namespace nap {
             while (!mStop)
                 mTaskQueue.processBlocking();
         });
-        
-        setThreadScheduling(mThreads.back());
     }
     
     

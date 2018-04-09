@@ -123,12 +123,12 @@ namespace nap
             void execute(TaskQueue::Task task) { mAudioCallbackTaskQueue.enqueue(task); }
             
             /**
-             * Constructs an object managed by a @SafeOwner that will dispose the object in the AudioService's @TrashBin when it is no longer used.
+             * Constructs an object managed by a @SafeOwner that will dispose the object in the AudioService's @DeletionQueue when it is no longer used.
              */
             template <typename T, typename... Args>
             utility::SafeOwner<T> makeSafe(Args&&... args)
             {
-                auto owner = utility::SafeOwner<T>(mTrashBin, new T(std::forward<Args>(args)...));
+                auto owner = utility::SafeOwner<T>(mDeletionQueue, new T(std::forward<Args>(args)...));
                 return owner;
             }
             
@@ -139,9 +139,9 @@ namespace nap
             
             nap::TaskQueue mAudioCallbackTaskQueue; // Queue with lambda functions to be executed on the next audio callback
             
-            // TrashBin with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
+            // DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
             // Clearing is performed by the NodeManager on the audio callback to make sure the node can not be destructed while it is being processed.
-            utility::TrashBin mTrashBin;
+            utility::DeletionQueue mDeletionQueue;
         };
         
         
