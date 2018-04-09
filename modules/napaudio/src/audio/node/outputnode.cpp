@@ -30,7 +30,7 @@ namespace nap
             if (!mActive)
                 return;
             
-            SampleBufferPtr buffer = audioInput.pull();
+            SampleBuffer* buffer = audioInput.pull();
             if (buffer)
                 getNodeManager().provideOutputBufferForChannel(buffer, mOutputChannel);
         }

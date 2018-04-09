@@ -100,7 +100,7 @@ namespace nap
         }
 
         
-        void NodeManager::provideOutputBufferForChannel(SampleBufferPtr buffer, int channel)
+        void NodeManager::provideOutputBufferForChannel(SampleBuffer* buffer, int channel)
         {
             assert(channel < mOutputMapping.size());
             mOutputMapping[channel].emplace_back(buffer);
