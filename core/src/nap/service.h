@@ -16,6 +16,13 @@ namespace nap
 	class Core;
 	class ServiceObjectGraphItem;
 
+	class NAPAPI ServiceConfiguration : public rtti::Object
+	{
+		RTTI_ENABLE(rtti::Object)
+	public:
+		virtual rtti::TypeInfo GetServiceType() = 0;
+	};
+
 	/**
 	 A Service is a process within core that cooperates with certain components in the system, this is the base
 	 class for all services. Often services are used to load a driver, set up a connection or manage global module
@@ -24,13 +31,14 @@ namespace nap
 	 service using the NAP_SERVICE_MODULE #define in a source file exactly once. This will ensure that core automatically loads,
 	 creates and initializes the service when loading the available system modules
 	 **/
-
 	class NAPAPI Service
 	{
 		RTTI_ENABLE()
 		friend class Core;
 		friend class ServiceObjectGraphItem;
 	public:
+		Service(ServiceConfiguration* configuration);
+
 		// Virtual destructor because of virtual methods!
 		virtual ~Service();
 
@@ -108,8 +116,15 @@ namespace nap
 		 */
 		virtual void resourcesLoaded()													{ }
 
+		template<typename SERVICE_CONFIG>
+		SERVICE_CONFIG* getConfiguration()
+		{
+			return rtti_cast<SERVICE_CONFIG>(mConfiguration.get());
+		}
+
 	private:
 		// this variable will be set by the core when the service is added
-		Core* mCore = nullptr;
+		Core*									mCore = nullptr;
+		std::unique_ptr<ServiceConfiguration>	mConfiguration;
 	};
 }

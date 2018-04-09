@@ -17,6 +17,7 @@
 #if defined(__APPLE__) || defined(__unix__)
 	#include <stdlib.h>
 #endif
+#include "rtti/jsonreader.h"
 
 using namespace std;
 
@@ -204,6 +205,21 @@ namespace nap
 
 	bool Core::createServices(utility::ErrorState& errorState)
 	{
+		rtti::DeserializeResult deserialize_result;
+		if (!rtti::readJSONFile("config.json", mResourceManager->getFactory(), deserialize_result, errorState))
+			return false;
+
+		using ConfigurationByTypeMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>>;
+		ConfigurationByTypeMap configuration_by_type;
+		for (auto& object : deserialize_result.mReadObjects)
+		{
+			if (!errorState.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
+				return false;
+
+			std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+			configuration_by_type[config->GetServiceType()] = std::move(config);
+		}
+
 		// First create and add all the services (unsorted)
 		std::vector<Service*> services;
 		for (auto& service : mModuleManager.mModules)
@@ -211,8 +227,13 @@ namespace nap
 			if (service.mService == rtti::TypeInfo::empty())
 				continue;
 
+			ServiceConfiguration* configuration = nullptr;
+			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(service.mService);
+			if (pos != configuration_by_type.end())
+				configuration = pos->second.release();
+
 			// Create the service
-			if (!addService(service.mService, services, errorState))
+			if (!addService(service.mService, configuration, services, errorState))
 				return false;
 		}
 
@@ -268,7 +289,7 @@ namespace nap
 
 
 	// Add a new service
-	bool Core::addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& errorState)
+	bool Core::addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState)
 	{
 		assert(type.is_valid());
 		assert(type.can_create_instance());
@@ -285,7 +306,7 @@ namespace nap
 			return false;
 
 		// Add service
-		Service* service = type.create<Service>();
+		Service* service = type.create<Service>({ configuration });
 		service->mCore = this;
 		outServices.emplace_back(service);
         

@@ -9,9 +9,14 @@
 #include <sceneservice.h>
 #include <renderservice.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherDreamService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
+
 namespace nap
 {
-	EtherDreamService::EtherDreamService()
+	EtherDreamService::EtherDreamService(ServiceConfiguration* configuration) :
+		Service(configuration)
 	{
 		// Create the interface
 		mInterface = std::make_unique<EtherDreamInterface>();
@@ -90,5 +95,3 @@ namespace nap
 		return true;
 	}
 }
-
-RTTI_DEFINE_CLASS(nap::EtherDreamService)

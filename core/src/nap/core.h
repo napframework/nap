@@ -155,8 +155,7 @@ namespace nap
 		* @param errorState in case of a duplicate, contains the error message if the service could not be added
 		* @return if the service was added successfully
 		*/
-		bool addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices,
-						utility::ErrorState& errorState);
+		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager

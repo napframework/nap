@@ -27,7 +27,7 @@ namespace nap
 		RTTI_ENABLE(Service)
 	public:
 		// Default Constructor
-		OSCService() = default;
+		OSCService(ServiceConfiguration* configuration);
 
 		// Default Destructor
 		virtual ~OSCService();

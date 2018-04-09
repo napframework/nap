@@ -17,7 +17,7 @@ namespace nap
 		using SceneSet = std::unordered_set<Scene*>;
 
         // Default Constructor
-		SceneService() = default;
+		SceneService(ServiceConfiguration* configuration);
 
 		// Default Destructor
 		virtual ~SceneService() = default;

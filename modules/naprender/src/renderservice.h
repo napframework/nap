@@ -52,7 +52,7 @@ namespace nap
 		};
 
 		// Default constructor
-		RenderService() = default;
+		RenderService(ServiceConfiguration* configuration);
 
 		// Default destructor
 		virtual ~RenderService();

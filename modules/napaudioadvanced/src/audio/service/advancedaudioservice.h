@@ -20,7 +20,7 @@ namespace nap
             RTTI_ENABLE(nap::Service)
             
         public:
-            AdvancedAudioService() = default;
+            AdvancedAudioService(ServiceConfiguration* configuration);
             
             /**
              * Register specific object creators
