@@ -15,7 +15,7 @@ namespace nap
      * Thread safe queue for tasks that are encapsulated in function objects.
      * It is possible to enqueue tasks at the end of the queue and to execute the tasks in the queue.
      */
-    class TaskQueue 
+    class TaskQueue final
 	{
     public:
         // a task in the queue is a function object
@@ -99,7 +99,7 @@ namespace nap
     /**
      * A pool of threads that can be used to perform multiple tasks at the same time
      */
-    class ThreadPool 
+    class ThreadPool final
 	{
     public:
         ThreadPool(unsigned int numberOfThreads = 1, unsigned int maxQueueItems = 20);
