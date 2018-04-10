@@ -5,7 +5,6 @@
 
 // Nap Includes
 #include <nap/service.h>
-#include <queue>
 
 namespace nap
 {
@@ -57,6 +56,7 @@ namespace nap
 		*/
 		void removeVideoPlayer(Video& receiver);
 
+	private:
 		std::vector<Video*> mVideoPlayers;			///< All registered video players
 	};
 }

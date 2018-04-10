@@ -18,7 +18,10 @@ namespace nap
             RTTI_ENABLE(MultiChannelObject)
             
         public:
-            Oscillator() = default;
+            Oscillator()
+            {
+                mWaveTable = std::make_shared<WaveTable>(2048);
+            }
             
             int mChannelCount = 1;
             std::vector<ControllerValue> mFrequency = { 220.f };
@@ -26,9 +29,9 @@ namespace nap
             ResourcePtr<AudioObject> mFmInput;
             
         private:
-            std::unique_ptr<Node> createNode(int channel, NodeManager& nodeManager) override
+            NodePtr<Node> createNode(int channel, NodeManager& nodeManager) override
             {
-                auto node = std::make_unique<OscillatorNode>(nodeManager, mWaveTable);
+                auto node = make_node<OscillatorNode>(nodeManager, mWaveTable);
                 node->setFrequency(mFrequency[channel % mFrequency.size()]);
                 node->setAmplitude(mAmplitude[channel % mAmplitude.size()]);
                 if (mFmInput != nullptr)
@@ -40,7 +43,7 @@ namespace nap
             }
             
             int getChannelCount() const override { return mChannelCount; }
-            WaveTable mWaveTable  = { 2048 };
+            std::shared_ptr<WaveTable> mWaveTable = nullptr;
         };
         
        

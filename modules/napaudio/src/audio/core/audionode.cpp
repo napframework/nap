@@ -1,5 +1,6 @@
 #include "audionode.h"
 #include "audionodemanager.h"
+#include "audionodeptr.h"
 
 RTTI_DEFINE_BASE(nap::audio::Node)
 
