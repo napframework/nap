@@ -66,6 +66,7 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
                  PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                        ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib                 
+                 NO_DEFAULT_PATH
                  )				 
 
     if(FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
