@@ -122,6 +122,10 @@ namespace nap
 		 */
 		virtual void resourcesLoaded()													{ }
 
+		/**
+		 * Retrieve the ServiceConfiguration for this service. Will be null if this service does not support configuration
+		 * @return The ServiceConfiguration
+		 */
 		template<typename SERVICE_CONFIG>
 		SERVICE_CONFIG* getConfiguration()
 		{
