@@ -104,7 +104,7 @@ namespace napkin
 		/**
 		 * Add a component of the specified type to an Entity.
 		 *
-		 * TODO: Move to nap::Entity if possible
+		 * TODO: Move to nap::Entity
 		 *
 		 * @param entity The entity to add the component to.
 		 * @param type The type of the desired component.
@@ -114,12 +114,28 @@ namespace napkin
 
 		/**
 		 * Add a component of the specified type to an Entity
+		 * TODO: Move to Entity
 		 * @tparam T The type of the desired component
 		 * @param entity The entity to add the component to.
 		 * @return The newly created component
 		 */
 		template<typename T>
 		T* addComponent(nap::Entity& entity) { return rtti_cast<T>(addComponent(entity, RTTI_OF(T))); }
+
+		/**
+		 * Get an Entity's first component of the given type.
+		 * TODO: Move to Entity
+		 * @param entity The entity that owns the component
+		 * @param componentType The type of component to look for
+		 * @return The component if found, nullptr otherwise
+		 */
+		nap::Component* getComponent(nap::Entity& entity, rttr::type componentType);
+
+		/**
+		 * Remove an Component from an Entity
+		 * @param component The component to remove from the entity.
+		 */
+		void removeComponent(nap::Component& component);
 
 		/**
 		 * Add an object of the specified type.
