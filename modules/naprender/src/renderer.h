@@ -9,6 +9,14 @@
 
 namespace nap
 {
+	class RendererSettings
+	{
+	public:
+		bool mDoubleBuffer = true;		///< Enables / Disabled double buffering
+		bool mEnableMultiSampling = 1;	///< Enables / Disables multi sampling.
+		int  mMultiSampleSamples = 8;	///< Number of samples per pixel when multi sampling is enabled
+	};
+
 	/**
 	 * OpenGL render back-end. 
 	 * Initializes and shuts down the OpenGL API and allows for the creation of new render windows.
@@ -46,7 +54,7 @@ namespace nap
 		 * @param errorState contains the error when the renderer can't be initialized
 		 * @return if the renderer initialized successfully
 		 */
-		bool init(utility::ErrorState& errorState);
+		bool init(const RendererSettings& rendererSettings, utility::ErrorState& errorState);
 
 		/**
 		 * Called when the renderer needs to shut down

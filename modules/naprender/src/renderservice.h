@@ -24,6 +24,17 @@ namespace nap
 	class CameraComponentInstance;
 	class RenderableComponentInstance;
 	class RenderWindow;
+	class RenderService;
+
+	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
+	{
+		RTTI_ENABLE(ServiceConfiguration)
+
+	public:
+		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
+
+		RendererSettings mSettings;
+	};
 
 	/**
 	 * Main interface for 3D rendering operations.
