@@ -47,6 +47,18 @@ namespace napkin
 		std::string mEntityName;
 		std::string mComponentName;
 	};
+
+	class RemoveComponentCommand : public QUndoCommand
+	{
+	public:
+		RemoveComponentCommand(nap::Component& comp);
+		void redo() override;
+		void undo() override;
+	private:
+		std::string mEntityName;
+		std::string mComponentName;
+	};
+
     /**
      * TODO: To be implemented
      */

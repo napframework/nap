@@ -152,7 +152,8 @@ void AddComponentCommand::redo()
 	auto doc = AppContext::get().getDocument();
 	nap::Entity* entity = doc->getObject<nap::Entity>(mEntityName);
 	assert(entity != nullptr);
-	AppContext::get().getDocument()->addComponent(*entity, mType);
+	auto comp = AppContext::get().getDocument()->addComponent(*entity, mType);
+	mComponentName = comp->mID;
 }
 
 void AddComponentCommand::undo()
@@ -317,3 +318,25 @@ void ArrayMoveElementCommand::undo()
 	AppContext::get().getDocument()->arrayMoveElement(mPath, mNewIndex, mOldIndex);
 }
 
+RemoveComponentCommand::RemoveComponentCommand(nap::Component& comp) : mComponentName(comp.mID)
+{
+	auto doc = AppContext::get().getDocument();
+	auto owner = doc->getOwner(comp);
+	assert(owner != nullptr);
+	mEntityName = owner->mID;
+}
+
+void RemoveComponentCommand::redo()
+{
+	auto doc = AppContext::get().getDocument();
+	auto owner = doc->getObject<nap::Entity>(mEntityName);
+	assert(owner != nullptr);
+	auto component = doc->getObject<nap::Component>(mComponentName);
+	assert(owner != nullptr);
+	doc->removeComponent(*component);
+}
+
+void RemoveComponentCommand::undo()
+{
+	QUndoCommand::undo();
+}

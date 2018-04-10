@@ -533,6 +533,25 @@ bool Document::isPointedToByEmbeddedPointer(const nap::rtti::Object& obj)
 	return false;
 }
 
+nap::Component* Document::getComponent(nap::Entity& entity, rttr::type componenttype)
+{
+	for (auto comp : entity.getComponents())
+	{
+		if (comp.get()->get_type().is_derived_from(componenttype))
+			return comp.get();
+	}
+	return nullptr;
+}
+
+void Document::removeComponent(nap::Component& comp)
+{
+	auto owner = getOwner(comp);
+	auto& comps = owner->mComponents;
+	comps.erase(std::remove_if(comps.begin(), comps.end(), [&comp](const auto& objptr) {
+		return objptr == &comp;
+	}));
+}
+
 
 
 
