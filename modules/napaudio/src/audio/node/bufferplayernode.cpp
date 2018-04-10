@@ -6,7 +6,7 @@ namespace nap
     namespace audio
     {
         
-        void BufferPlayerNode::play(utility::SafePtr<MultiSampleBuffer> buffer, int channel, DiscreteTimeValue position, ControllerValue speed)
+        void BufferPlayerNode::play(SafePtr<MultiSampleBuffer> buffer, int channel, DiscreteTimeValue position, ControllerValue speed)
         {
             mPlaying = true;
             mBuffer = buffer;

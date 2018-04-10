@@ -44,7 +44,7 @@ namespace nap
             GraphObjectInstance(GraphObject& resource) : AudioObjectInstance(resource) { }
             
             // Initialize the component
-            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override;
+            bool init(AudioService& audioService, utility::ErrorState& errorState) override;
             
             /**
              * Use this method to acquire an object within the graph by ID.

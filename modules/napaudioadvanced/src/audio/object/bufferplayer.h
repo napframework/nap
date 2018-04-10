@@ -4,7 +4,7 @@
 #include <nap/resourceptr.h>
 
 // Audio includes
-#include <audio/core/audionodeptr.h>
+#include <audio/utility/safeptr.h>
 #include <audio/core/audioobject.h>
 #include <audio/node/bufferplayernode.h>
 #include <audio/resource/audiobufferresource.h>
@@ -31,7 +31,7 @@ namespace nap
             
         private:
             // Inherited from MultiChannelObject
-            NodePtr<Node> createNode(int channel, NodeManager& nodeManager);
+            SafeOwner<Node> createNode(int channel, AudioService& audioService);
             int getChannelCount() const override { return mChannelCount; }
         };
         

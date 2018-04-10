@@ -45,7 +45,7 @@ namespace nap
             EnvelopeInstance(Envelope& resource) : AudioObjectInstance(resource) { }
             
             // Inherited from AudioObjectInstance
-            bool init(NodeManager& nodeManager, utility::ErrorState& errorState);
+            bool init(AudioService& audioService, utility::ErrorState& errorState);
             OutputPin& getOutputForChannel(int channel) override { return mEnvelopeGenerator->output; }
             int getChannelCount() const override { return 1; }
             
@@ -55,7 +55,7 @@ namespace nap
              */
             void trigger(TimeValue totalDuration = 0)
             {
-                mEnvelopeGenerator->trigger(mSegments, totalDuration);
+                mEnvelopeGenerator->trigger(mSegments.get(), totalDuration);
             }
             
             /**
@@ -74,8 +74,8 @@ namespace nap
             nap::Signal<EnvelopeGenerator&>& getEnvelopeFinishedSignal() { return mEnvelopeGenerator->envelopeFinishedSignal; }
             
         private:
-            NodePtr<EnvelopeGenerator> mEnvelopeGenerator = nullptr;
-            std::shared_ptr<EnvelopeGenerator::Envelope> mSegments = nullptr;
+            SafeOwner<EnvelopeGenerator> mEnvelopeGenerator = nullptr;
+            SafeOwner<EnvelopeGenerator::Envelope> mSegments = nullptr;
         };
         
     }

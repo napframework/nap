@@ -2,7 +2,7 @@
 
 // Nap includes
 #include <nap/resourceptr.h>
-#include <utility/safeptr.h>
+#include <audio/utility/safeptr.h>
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
@@ -147,9 +147,9 @@ namespace nap
         private:            
             void applyGain(TimeValue rampTime);
             
-            std::vector<utility::SafeOwner<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
-            std::vector<utility::SafeOwner<GainNode>> mGainNodes; // Nodes for each channel to gain the signal.
-            std::vector<utility::SafeOwner<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
+            std::vector<SafeOwner<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
+            std::vector<SafeOwner<GainNode>> mGainNodes; // Nodes for each channel to gain the signal.
+            std::vector<SafeOwner<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
             
             ControllerValue mGain = 0;
             ControllerValue mStereoPanning = 0.5;

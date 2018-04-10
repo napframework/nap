@@ -26,11 +26,11 @@ namespace nap
     {
         
         
-        std::unique_ptr<AudioObjectInstance> AudioObject::instantiate(NodeManager& nodeManager, utility::ErrorState& errorState)
+        std::unique_ptr<AudioObjectInstance> AudioObject::instantiate(AudioService& service, utility::ErrorState& errorState)
         {
             auto instance = createInstance();
             mInstance = instance.get();
-            if (errorState.check(instance->init(nodeManager, errorState), "Failed to instantiate object %s", mID.c_str()))
+            if (errorState.check(instance->init(service, errorState), "Failed to instantiate object %s", mID.c_str()))
                 return instance;
             else
                 return nullptr;
@@ -43,12 +43,12 @@ namespace nap
         }
         
         
-        bool MultiChannelObjectInstance::init(NodeManager& nodeManager, utility::ErrorState& errorState)
+        bool MultiChannelObjectInstance::init(AudioService& service, utility::ErrorState& errorState)
         {
             auto resource = rtti_cast<MultiChannelObject>(&getResource());
             for (auto channel = 0; channel < resource->getChannelCount(); ++channel)
             {
-                auto node = resource->createNode(channel, nodeManager);
+                auto node = resource->createNode(channel, service);
                 assert(node->getOutputs().size() == 1);
                 mNodes.emplace_back(std::move(node));
             }
@@ -56,7 +56,7 @@ namespace nap
         }
 
         
-        Node* MultiChannelObjectInstance::getChannel(int channel)
+        SafePtr<Node> MultiChannelObjectInstance::getChannel(int channel)
         {
             if (channel < mNodes.size())
                 return mNodes[channel].get();

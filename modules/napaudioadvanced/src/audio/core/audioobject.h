@@ -6,8 +6,7 @@
 
 // Audio includes
 #include <audio/core/audionode.h>
-#include <audio/core/audionodeptr.h>
-#include <audio/core/audionodemanager.h>
+#include <audio/utility/safeptr.h>
 #include <audio/service/audioservice.h>
 
 namespace nap
@@ -34,7 +33,7 @@ namespace nap
              * This method has to be overwritten by all descendants to initialize the instance.
              * Normally it will create all the Nodes owned by this instance and connect them.
              */
-            virtual bool init(NodeManager& nodeManager, utility::ErrorState& errorState) = 0;
+            virtual bool init(AudioService& service, utility::ErrorState& errorState) = 0;
             
             /**
              * This method has to be overwritten to return the output pin corresponding to a given output channel of the object.
@@ -77,7 +76,7 @@ namespace nap
             /**
              * This method spawns an instance of this resource.
              */
-            std::unique_ptr<AudioObjectInstance> instantiate(NodeManager& nodeManager, utility::ErrorState& errorState);
+            std::unique_ptr<AudioObjectInstance> instantiate(AudioService& service, utility::ErrorState& errorState);
             
         private:
             /**
@@ -108,7 +107,7 @@ namespace nap
             /**
              * This factory method has to be implemented by descendants to create a DSP Node for a certain channel.
              */
-            virtual NodePtr<Node> createNode(int channel, NodeManager& nodeManager) = 0;
+            virtual SafeOwner<Node> createNode(int channel, AudioService& service) = 0;
             
             /**
              * This method has to be overwritten by descendants to return the number of nodes/channels that the instance of this object will own.
@@ -128,7 +127,7 @@ namespace nap
         public:
             MultiChannelObjectInstance(MultiChannelObject& resource) : AudioObjectInstance(resource) { }
             
-            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override;
+            bool init(AudioService& service, utility::ErrorState& errorState) override;
             
             OutputPin& getOutputForChannel(int channel) override { return *(*mNodes[channel]->getOutputs().begin()); }
             int getChannelCount() const override { return mNodes.size(); }
@@ -136,10 +135,10 @@ namespace nap
             /**
              * Returns the DSP node for the specified channel.
              */
-            Node* getChannel(int channel);
+            SafePtr<Node> getChannel(int channel);
             
         private:
-            std::vector<NodePtr<Node>> mNodes;
+            std::vector<SafeOwner<Node>> mNodes;
         };
                 
     }

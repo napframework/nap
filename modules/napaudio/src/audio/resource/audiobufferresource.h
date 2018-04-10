@@ -2,7 +2,7 @@
 
 // Nap includes
 #include <nap/resource.h>
-#include <utility/safeptr.h>
+#include <audio/utility/safeptr.h>
 #include <rtti/object.h>
 #include <rtti/factory.h>
 
@@ -45,7 +45,7 @@ namespace nap
             /**
              * @return: access the actual data in the buffer
              */
-            utility::SafePtr<MultiSampleBuffer> getBuffer() { return mBuffer.get(); }
+            SafePtr<MultiSampleBuffer> getBuffer() { return mBuffer.get(); }
             
         protected:
             /**
@@ -55,7 +55,7 @@ namespace nap
 
         private:
             float mSampleRate = 0;
-            utility::SafeOwner<MultiSampleBuffer> mBuffer = nullptr;
+            SafeOwner<MultiSampleBuffer> mBuffer = nullptr;
             
         };
         

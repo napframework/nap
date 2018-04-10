@@ -2,7 +2,7 @@
 
 // Nap includes
 #include <component.h>
-#include <utility/safeptr.h>
+#include <audio/utility/safeptr.h>
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
@@ -54,7 +54,7 @@ namespace nap
             OutputPin& getOutputForChannel(int channel) override { return mInputNodes[channel]->audioOutput; }
             
         private:
-            std::vector<utility::SafeOwner<InputNode>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
+            std::vector<SafeOwner<InputNode>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
         };
         
     }

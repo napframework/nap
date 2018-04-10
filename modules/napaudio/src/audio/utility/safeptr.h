@@ -10,7 +10,7 @@
 namespace nap
 {
     
-    namespace utility
+    namespace audio
     {
         
         // Forward declarations
@@ -82,6 +82,38 @@ namespace nap
         
         
         /**
+         * Base class for SafeOwner<T> template
+         */
+        class SafeOwnerBase
+        {
+        public:
+            virtual ~SafeOwnerBase() = default;
+            
+        protected:
+            virtual void* getData() = 0;
+            virtual void setData(void* data) = 0;
+            virtual DeletionQueue* getDeletionQueue() = 0;
+            virtual void setDeletionQueue(DeletionQueue* queue) = 0;
+            virtual void enqueueForDeletion() = 0;
+
+            void assign(SafeOwnerBase& source)
+            {
+                // When assigning from a different owner we first need to trash the current content (if any)
+                enqueueForDeletion();
+                
+                // Then we copy the source data
+                setData(source.getData());
+                
+                // Because we transfer ownership here we set the source's data pointer to nullptr.
+                source.setData(nullptr);
+                
+                // We have to copy the deletion queue in case this SafeOwner was constructed with nullptr
+                setDeletionQueue(source.getDeletionQueue());
+            }
+        };
+        
+        
+        /**
          * SafeOwner is a special case smart pointer to an object that is used in multiple threads. It serves the purpose of making sure that the object is destructed in a thread safe manner when the SafeOwner goes out of scope.
          * It works very much like unique_ptr in such that it takes ownership over the object it points to and takes responsibility for it's destruction.
          * The difference to unique_ptr is that instead of letting the object destruct itself when the pointer goes out of scope, it throws the object in a DeletionQueue.
@@ -89,7 +121,7 @@ namespace nap
          * This is done to prevent the objects to be destroyed while they are possibly being used in another thread at the same time.
          */
         template <typename T>
-        class SafeOwner final
+        class SafeOwner final : public SafeOwnerBase
         {
             friend class DeletionQueue;
             friend class SafePtr<T>;
@@ -199,6 +231,12 @@ namespace nap
                 return ptr ? mData->mObject == ptr : mData == nullptr;
             }
             
+            bool operator==(const std::nullptr_t) const
+            {
+                
+                return mData == nullptr;
+            }
+            
             template<typename OTHER>
             bool operator!=(const OTHER* ptr) const
             {
@@ -223,10 +261,20 @@ namespace nap
                 return safePtr;
             }
             
+        protected:
+            void* getData() override { return mData; }
+            
+            void setData(void* data) override { mData = static_cast<Data*>(data); }
+            
+            DeletionQueue* getDeletionQueue() override { return mDeletionQueue; }
+            
+            void setDeletionQueue(DeletionQueue* queue) override { mDeletionQueue = queue; }
+            
+        private:
             /**
              * Disposes the managed object into the DeletionQueue. The DeletionQueue will free the object the next time it is cleared.
              */
-            void enqueueForDeletion()
+            void enqueueForDeletion() override
             {
                 if (mData != nullptr)
                 {
@@ -236,25 +284,8 @@ namespace nap
                 }
             }
             
-        private:
             Data* mData = nullptr; ///< The data containing a pointer to the owned object and pointers to all safe pointers pointing to this
             DeletionQueue* mDeletionQueue = nullptr; ///< Pointer to the DeletionQueue thhis SafeOwner will use to dispose of it's managed object.
-            
-            template <typename OTHER>
-            void assign(SafeOwner<OTHER>& source)
-            {
-                // When assigning from a different owner we first need to trash the current content (if any)
-                enqueueForDeletion();
-                
-                // Then we copy the source data
-                mData = source.mData;
-                
-                // Because we transfer ownership here we set the source's data pointer to nullptr.
-                source.mData = nullptr;
-                
-                // We have to copy the trashbin in case this SafeOwner was constructed with nullptr
-                mDeletionQueue = source.mDeletionQueue;
-            }
         };
         
 
