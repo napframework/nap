@@ -4,6 +4,7 @@
 #include <mutex>
 
 // Audio includes
+#include <audio/core/audionodeptr.h>
 #include <audio/core/audioobject.h>
 #include <audio/core/voice.h>
 #include <audio/node/mixnode.h>
@@ -90,7 +91,7 @@ namespace nap
             void voiceFinished(VoiceInstance& voice);
             
             std::vector<std::unique_ptr<VoiceInstance>> mVoices;
-            std::vector<std::unique_ptr<MixNode>> mMixNodes;
+            std::vector<NodePtr<MixNode>> mMixNodes;
             std::mutex mMixNodesMutex; /**< To protect mMixNodes */
             
             NodeManager* mNodeManager = nullptr;

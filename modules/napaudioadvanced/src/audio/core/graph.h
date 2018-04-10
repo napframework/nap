@@ -11,7 +11,6 @@
 #include <rtti/factory.h>
 
 // Audio includes
-#include <audio/core/audionode.h>
 #include <audio/core/audionodemanager.h>
 #include <audio/core/audioobject.h>
 

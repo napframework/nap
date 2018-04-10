@@ -9,10 +9,10 @@ namespace nap
     namespace audio
     {
         
-        void BufferPlayerNode::play(SampleBuffer& buffer, DiscreteTimeValue position, ControllerValue speed)
+        void BufferPlayerNode::play(std::shared_ptr<SampleBuffer>& buffer, DiscreteTimeValue position, ControllerValue speed)
         {
             mPlaying = true;
-            mBuffer = &buffer;
+            mBuffer = buffer;
             mPosition = position;
             mSpeed = speed;
         }
