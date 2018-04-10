@@ -16,10 +16,16 @@ namespace nap
 	class Core;
 	class ServiceObjectGraphItem;
 
+	/**
+	 * Base class for all Service configurations. In the derived class you can supply parameters that can be used to initialize a service.
+	 */
 	class NAPAPI ServiceConfiguration : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
 	public:
+		/**
+		 *	@return The Service type associated with this configuration.
+		 */
 		virtual rtti::TypeInfo getServiceType() = 0;
 	};
 

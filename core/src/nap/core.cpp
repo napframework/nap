@@ -5,19 +5,18 @@
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
 #include "projectinfomanager.h"
+#include "rtti/jsonreader.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
 #include <iostream>
 #include <utility/fileutils.h>
-
 #include <packaginginfo.h>
 
 // Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
 #if defined(__APPLE__) || defined(__unix__)
 	#include <stdlib.h>
 #endif
-#include "rtti/jsonreader.h"
 
 using namespace std;
 
@@ -227,28 +226,28 @@ namespace nap
 		}
 
 		// Gather all service configuration types
-		std::vector<rtti::TypeInfo> serviceConfigurationTypes;
-		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), serviceConfigurationTypes);
+		std::vector<rtti::TypeInfo> service_configuration_types;
+		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), service_configuration_types);
 
 		// For any ServiceConfigurations which weren't present in the config file, construct a default version of it,
 		// so the service doesn't get a nullptr for its ServiceConfiguration if it depends on one
-		for (const rtti::TypeInfo& serviceConfigurationType : serviceConfigurationTypes)
+		for (const rtti::TypeInfo& service_configuration_type : service_configuration_types)
 		{
-			if (serviceConfigurationType == RTTI_OF(ServiceConfiguration))
+			if (service_configuration_type == RTTI_OF(ServiceConfiguration))
 				continue;
 
-			assert(serviceConfigurationType.is_valid());
-			assert(serviceConfigurationType.can_create_instance());
+			assert(service_configuration_type.is_valid());
+			assert(service_configuration_type.can_create_instance());
 
 			// Construct the service configuration
-			std::unique_ptr<ServiceConfiguration> serviceConfiguration(serviceConfigurationType.create<ServiceConfiguration>());
-			rtti::TypeInfo serviceType = serviceConfiguration->getServiceType();
+			std::unique_ptr<ServiceConfiguration> service_configuration(service_configuration_type.create<ServiceConfiguration>());
+			rtti::TypeInfo serviceType = service_configuration->getServiceType();
 
 			// Insert it in the map if it doesn't exist. Note that if it does exist, the unique_ptr will go out of scope and the default
 			// object will be destroyed
 			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(serviceType);
 			if (pos == configuration_by_type.end())
-				configuration_by_type.insert(std::make_pair(serviceType, std::move(serviceConfiguration)));
+				configuration_by_type.insert(std::make_pair(serviceType, std::move(service_configuration)));
 		}
 
 		// First create and add all the services (unsorted)
