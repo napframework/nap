@@ -17,7 +17,7 @@ namespace nap
 		{
 			RTTI_ENABLE(ServiceConfiguration)
 		public:
-			virtual rtti::TypeInfo GetServiceType() { return RTTI_OF(AudioService); }
+			virtual rtti::TypeInfo getServiceType() { return RTTI_OF(AudioService); }
 
             /** 
              * If true, the default host API, audio input and output device on this system are being used

@@ -151,6 +151,7 @@ namespace nap
 		/**
 		* Adds a new service of type @type to @outServices
 		* @param type the type of service to add
+		* @param configuration The ServiceConfiguration that should be used to construct the service
 		* @param outServices the list of services the service of @type will be added to
 		* @param errorState in case of a duplicate, contains the error message if the service could not be added
 		* @return if the service was added successfully

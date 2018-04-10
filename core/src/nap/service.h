@@ -20,7 +20,7 @@ namespace nap
 	{
 		RTTI_ENABLE(rtti::Object)
 	public:
-		virtual rtti::TypeInfo GetServiceType() = 0;
+		virtual rtti::TypeInfo getServiceType() = 0;
 	};
 
 	/**
