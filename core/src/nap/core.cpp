@@ -205,35 +205,67 @@ namespace nap
 
 	bool Core::createServices(utility::ErrorState& errorState)
 	{
-		rtti::DeserializeResult deserialize_result;
-		if (!rtti::readJSONFile("config.json", mResourceManager->getFactory(), deserialize_result, errorState))
-			return false;
-
 		using ConfigurationByTypeMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>>;
 		ConfigurationByTypeMap configuration_by_type;
-		for (auto& object : deserialize_result.mReadObjects)
+
+		// If there is a config file, read the service configurations from it.
+		// Note that having a config file is optional, but if there *is* one, it should be valid
+		if (utility::fileExists("config.json"))
 		{
-			if (!errorState.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
+			rtti::DeserializeResult deserialize_result;
+			if (!rtti::readJSONFile("config.json", mResourceManager->getFactory(), deserialize_result, errorState))
 				return false;
 
-			std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
-			configuration_by_type[config->GetServiceType()] = std::move(config);
+			for (auto& object : deserialize_result.mReadObjects)
+			{
+				if (!errorState.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
+					return false;
+
+				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+				configuration_by_type[config->getServiceType()] = std::move(config);
+			}
+		}
+
+		// Gather all service configuration types
+		std::vector<rtti::TypeInfo> serviceConfigurationTypes;
+		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), serviceConfigurationTypes);
+
+		// For any ServiceConfigurations which weren't present in the config file, construct a default version of it,
+		// so the service doesn't get a nullptr for its ServiceConfiguration if it depends on one
+		for (const rtti::TypeInfo& serviceConfigurationType : serviceConfigurationTypes)
+		{
+			if (serviceConfigurationType == RTTI_OF(ServiceConfiguration))
+				continue;
+
+			assert(serviceConfigurationType.is_valid());
+			assert(serviceConfigurationType.can_create_instance());
+
+			// Construct the service configuration
+			std::unique_ptr<ServiceConfiguration> serviceConfiguration(serviceConfigurationType.create<ServiceConfiguration>());
+			rtti::TypeInfo serviceType = serviceConfiguration->getServiceType();
+
+			// Insert it in the map if it doesn't exist. Note that if it does exist, the unique_ptr will go out of scope and the default
+			// object will be destroyed
+			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(serviceType);
+			if (pos == configuration_by_type.end())
+				configuration_by_type.insert(std::make_pair(serviceType, std::move(serviceConfiguration)));
 		}
 
 		// First create and add all the services (unsorted)
 		std::vector<Service*> services;
-		for (auto& service : mModuleManager.mModules)
+		for (auto& module : mModuleManager.mModules)
 		{
-			if (service.mService == rtti::TypeInfo::empty())
+			if (module.mService == rtti::TypeInfo::empty())
 				continue;
 
+			// Find the ServiceConfiguration that should be used to construct this service (if any)
 			ServiceConfiguration* configuration = nullptr;
-			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(service.mService);
+			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(module.mService);
 			if (pos != configuration_by_type.end())
 				configuration = pos->second.release();
 
 			// Create the service
-			if (!addService(service.mService, configuration, services, errorState))
+			if (!addService(module.mService, configuration, services, errorState))
 				return false;
 		}
 
