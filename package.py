@@ -97,7 +97,7 @@ def check_for_existing_package(package_path, zip_release):
     # Add extension if zipping
     if zip_release:
         if platform.startswith('linux'):
-            package_path += '.tar.xz'
+            package_path += '.tar.bz2'
         else:
             package_path += '.zip'
 
@@ -128,7 +128,7 @@ def package_for_linux(package_basename, timestamp, git_revision, include_apps, i
 
     # Create archive
     if zip_release:
-        archive_to_linux_tar_xz(package_basename)
+        archive_to_linux_tar_bz2(package_basename)
     else:
         archive_to_timestamped_dir(package_basename)
 
@@ -191,14 +191,14 @@ def package_for_win64(package_basename, timestamp, git_revision, include_apps, i
     else:
         archive_to_timestamped_dir(package_basename)
 
-def archive_to_linux_tar_xz(package_basename):
-    """Create build archive to xz tarball on Linux"""
+def archive_to_linux_tar_bz2(package_basename):
+    """Create build archive to bzipped tarball on Linux"""
 
     shutil.move(PACKAGING_DIR, package_basename)
 
-    package_filename_with_ext = '%s.%s' % (package_basename, 'tar.xz')
+    package_filename_with_ext = '%s.%s' % (package_basename, 'tar.bz2')
     print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
-    call(WORKING_DIR, ['tar', '-cJvf', package_filename_with_ext, package_basename])
+    call(WORKING_DIR, ['tar', '-cjvf', package_filename_with_ext, package_basename])
 
     # Cleanup
     shutil.move(package_basename, PACKAGING_DIR)
