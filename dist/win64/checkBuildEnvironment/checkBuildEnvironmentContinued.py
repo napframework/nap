@@ -91,10 +91,10 @@ def handle_missing_vs2015_update3(have_earlier_vs_2015):
     open_vs_download = read_yes_no("Open download page?")
     if open_vs_download:
         webbrowser.open('https://www.visualstudio.com/vs/older-downloads/')
-        print("Re-run checkBuildEnvironment after update has completed and you have rebooted.")
+        print("\nPlease re-run checkBuildEnvironment after update has completed and you have rebooted.")
     else:
         # Provide more specific instruction if they aren't downloading now
-        print("Re-run checkBuildEnvironment after you have installed Visual Studio 2015 Update 3 and rebooted.")        
+        print("\nPlease re-run checkBuildEnvironment after you have installed Visual Studio 2015 Update 3 and rebooted.")        
 
 def check_cmake():
     """Check if the CMake >= 3.5 is installed"""
@@ -166,5 +166,5 @@ def check_build_environment():
 
 if __name__ == '__main__':
     check_build_environment()
-    print("Press key to close...")
+    print("\nPress key to close...")
     getch()
