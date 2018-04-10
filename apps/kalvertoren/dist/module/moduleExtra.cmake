@@ -1,1 +1,3 @@
 set(DEPENDENT_MODULES mod_naprender mod_napmath mod_napsdlinput mod_napsdlwindow mod_napcameracontrol mod_napapp mod_napartnet mod_napimgui mod_napscene mod_napyoctopuce mod_napvideo mod_napaudio)
+find_package(FFmpeg REQUIRED)
+target_link_libraries(${PROJECT_NAME} ${FFMPEG_LIBRARIES})
