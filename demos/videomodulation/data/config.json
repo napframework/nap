@@ -1,0 +1,18 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::audio::AudioServiceConfiguration",
+            "mID": "AudioServiceConfiguration",
+			"SampleRate" : 44100
+        },
+		{
+            "Type": "nap::RenderServiceConfiguration",
+            "mID": "RenderServiceConfiguration",
+			"Settings" : {
+				"DoubleBuffer": true,
+				"EnableMultiSampling": true,
+				"MultiSampleSamples": 8
+			}
+        }		
+	]
+}
