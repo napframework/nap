@@ -39,7 +39,7 @@ QString getResource(const QString& filename)
 TEST_CASE("Document Management", TAG_NAPKIN)
 {
 	
-	auto doc = AppContext::get().getDocument();
+	auto doc = AppContext::get().newDocument();
 
 	// Must have a default document
 	REQUIRE(doc != nullptr);
@@ -339,75 +339,75 @@ TEST_CASE("Document Functions", TAG_NAPKIN)
 	REQUIRE(entity->mID != entity2->mID); // Objects must have unique names
 
 }
-//
-//TEST_CASE("PropertyPath", TAG_NAPKIN)
-//{
-//	SECTION("general")
-//	{
-//		auto doc = AppContext::get().newDocument();
-//		auto entity = doc->addObject<nap::Entity>();
-//		PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
-//		REQUIRE(&nameProp.getObject() == entity);
-//		REQUIRE(nameProp.isValid());
-//		std::string newName = "NewName";
-//		nameProp.setValue(newName);
-//		REQUIRE(nameProp.getValue() == newName);
-//		REQUIRE(entity->mID == newName);
-//
-//		PropertyPath invalidPath;
-//		REQUIRE(!invalidPath.isValid());
-//	}
-//
-//	nap::Material mat;
-//	mat.mID = "MyMaterial";
-//
-//	SECTION("enum")
-//	{
-//		PropertyPath path(mat, "BlendMode");
-//		REQUIRE(path.isValid());
-//		REQUIRE(path.isEnum());
-//		REQUIRE(!path.isArray());
-//		REQUIRE(!path.isPointer());
-//		REQUIRE(!path.isEmbeddedPointer());
-//		REQUIRE(!path.isNonEmbeddedPointer());
-//	}
-//
-//	SECTION("regular pointer")
-//	{
-//		PropertyPath path(mat, "Shader");
-//		REQUIRE(path.isValid());
-//		REQUIRE(path.isPointer());
-//		REQUIRE(path.isNonEmbeddedPointer());
-//		REQUIRE(!path.isEmbeddedPointer());
-//		REQUIRE(!path.isEnum());
-//		REQUIRE(!path.isArray());
-//	}
-//
-//	SECTION("array of embedded pointers")
-//	{
-//		PropertyPath path(mat, "Uniforms");
-//		REQUIRE(path.isValid());
-//		REQUIRE(path.isArray());
-//		REQUIRE(path.isPointer());
-//		REQUIRE(path.isEmbeddedPointer());
-//		REQUIRE(!path.isNonEmbeddedPointer());
-//		REQUIRE(!path.isEnum());
-//	}
-//
-//	SECTION("array element")
-//	{
-//		nap::UniformVec3 uniform;
-//		mat.mUniforms.emplace_back(&uniform);
-//		PropertyPath path(mat, "Uniforms/0");
-//		REQUIRE(path.isValid());
-//		REQUIRE(!path.isArray());
-//		REQUIRE(path.isPointer());
-//		REQUIRE(path.isEmbeddedPointer());
-//		REQUIRE(!path.isNonEmbeddedPointer());
-//		REQUIRE(!path.isEnum());
-//	}
-//
-//}
+
+TEST_CASE("PropertyPath", TAG_NAPKIN)
+{
+	SECTION("general")
+	{
+		auto doc = AppContext::get().newDocument();
+		auto entity = doc->addObject<nap::Entity>();
+		PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
+		REQUIRE(&nameProp.getObject() == entity);
+		REQUIRE(nameProp.isValid());
+		std::string newName = "NewName";
+		nameProp.setValue(newName);
+		REQUIRE(nameProp.getValue() == newName);
+		REQUIRE(entity->mID == newName);
+
+		PropertyPath invalidPath;
+		REQUIRE(!invalidPath.isValid());
+	}
+
+	nap::Material mat;
+	mat.mID = "MyMaterial";
+
+	SECTION("enum")
+	{
+		PropertyPath path(mat, "BlendMode");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isEnum());
+		REQUIRE(!path.isArray());
+		REQUIRE(!path.isPointer());
+		REQUIRE(!path.isEmbeddedPointer());
+		REQUIRE(!path.isNonEmbeddedPointer());
+	}
+
+	SECTION("regular pointer")
+	{
+		PropertyPath path(mat, "Shader");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isPointer());
+		REQUIRE(path.isNonEmbeddedPointer());
+		REQUIRE(!path.isEmbeddedPointer());
+		REQUIRE(!path.isEnum());
+		REQUIRE(!path.isArray());
+	}
+
+	SECTION("array of embedded pointers")
+	{
+		PropertyPath path(mat, "Uniforms");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isArray());
+		REQUIRE(path.isPointer());
+		REQUIRE(path.isEmbeddedPointer());
+		REQUIRE(!path.isNonEmbeddedPointer());
+		REQUIRE(!path.isEnum());
+	}
+
+	SECTION("array element")
+	{
+		nap::UniformVec3 uniform;
+		mat.mUniforms.emplace_back(&uniform);
+		PropertyPath path(mat, "Uniforms/0");
+		REQUIRE(path.isValid());
+		REQUIRE(!path.isArray());
+		REQUIRE(path.isPointer());
+		REQUIRE(path.isEmbeddedPointer());
+		REQUIRE(!path.isNonEmbeddedPointer());
+		REQUIRE(!path.isEnum());
+	}
+
+}
 //
 //TEST_CASE("Embedded Pointers")
 //{
@@ -523,10 +523,14 @@ TEST_CASE("Commands", TAG_NAPKIN)
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 0);
 
-//	// Add a component
-//	auto& entity = doc->addEntity();
-//	ctx.executeCommand(new AddComponentCommand(entity, RTTI_OF(nap::PerspCameraComponent)));
-//	REQUIRE(entity.hasComponent<nap::PerspCameraComponent>());
+	// Add a component (crashes OSX?)
+	auto& entity = doc->addEntity();
+	ctx.executeCommand(new AddComponentCommand(entity, RTTI_OF(nap::PerspCameraComponent)));
+	REQUIRE(entity.hasComponent<nap::PerspCameraComponent>());
+	auto component = doc->getComponent(entity, RTTI_OF(nap::PerspCameraComponent));
+	REQUIRE(component != nullptr);
+	ctx.executeCommand(new RemoveComponentCommand(*component));
+	REQUIRE(!entity.hasComponent<nap::PerspCameraComponent>());
 
 	// TODO: Support undo for deletion
 //	doc->undo();
