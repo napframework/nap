@@ -89,7 +89,6 @@ macro(find_nap_module MODULE_NAME)
         endif()
 
         # Bring in any additional module requirements
-        # TODO make sure we're running this for our source modules
         set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
         if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
             include (${MODULE_EXTRA_CMAKE_PATH})
