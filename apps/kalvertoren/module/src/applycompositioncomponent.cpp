@@ -25,7 +25,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	const RGBAColorFloat ApplyCompositionComponentInstance::mWhiteLedColor(0.0f, 0.0f, 0.0f, 1.0f);
+	const RGBAColorFloat ApplyCompositionComponentInstance::mWhiteLedColor(0.941f, 0.941f, 0.941f, 0.941f);
 	const RGBColorFloat  ApplyCompositionComponentInstance::mWhiteRGBColor(1.0f, 1.0f, 1.0f);
 
 	void ApplyCompositionComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
