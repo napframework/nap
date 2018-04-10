@@ -56,10 +56,10 @@ namespace nap
         }
 
         
-        SafePtr<Node> MultiChannelObjectInstance::getChannel(int channel)
+        Node* MultiChannelObjectInstance::getChannel(int channel)
         {
             if (channel < mNodes.size())
-                return mNodes[channel].get();
+                return mNodes[channel].getRaw();
             else
                 return nullptr;
         }

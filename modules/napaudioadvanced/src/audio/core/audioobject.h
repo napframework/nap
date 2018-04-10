@@ -135,7 +135,7 @@ namespace nap
             /**
              * Returns the DSP node for the specified channel.
              */
-            SafePtr<Node> getChannel(int channel);
+            Node* getChannel(int channel);
             
         private:
             std::vector<SafeOwner<Node>> mNodes;

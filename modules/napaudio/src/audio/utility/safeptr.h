@@ -261,6 +261,16 @@ namespace nap
                 return safePtr;
             }
             
+            /**
+             * Returns a raw pointer to the owned object.
+             */
+            T* getRaw() { return mData->mObject; }
+            
+            /**
+             * Returns a const raw pointer to the owned object.
+             */
+            T* getRaw() const { return mData->mObject; }
+
         protected:
             void* getData() override { return mData; }
             
@@ -288,12 +298,31 @@ namespace nap
             DeletionQueue* mDeletionQueue = nullptr; ///< Pointer to the DeletionQueue thhis SafeOwner will use to dispose of it's managed object.
         };
         
+        
+        /**
+         * Base class for SafePtr<T> template.
+         */
+        class SafePtrBase
+        {
+        public:
+            virtual ~SafePtrBase() = default;
+            
+        protected:
+            virtual void* getOwnerData() const = 0;
+            virtual void setOwnerData(void* ownerData) = 0;
+            
+            void assign(const SafePtrBase& other)
+            {
+                setOwnerData(other.getOwnerData());
+            }
+        };
+        
 
         /**
          * A SafePtr points to an object that is owned by a @SafeOwner somewhere. The SafePtr will remain valid when the owner has gone out of scope or when it has otherwise trashed the pointed object. Only when the @DeletionQueue is cleared the SafePtr will be set to nullptr and the data it previously pointed to will be rendered invalid.
          */
         template <typename T>
-        class SafePtr final
+        class SafePtr final : public SafePtrBase
         {
             friend class SafeOwner<T>;
             friend class DeletionQueue;
@@ -446,21 +475,22 @@ namespace nap
             }
             
         private:
-            typename SafeOwner<T>::Data* mOwnerData = nullptr; ///< The data pointed to by this SafePtr, managed by @SafeOwner or by the @DeletionQueue.
+            void* getOwnerData() const override { return mOwnerData; }
             
-            template <typename OTHER>
-            void assign(const SafePtr<OTHER>& other)
+            void setOwnerData(void* ownerData) override
             {
                 // Remove itself from the list of SafePtrs that point to the previous target object.
                 if (mOwnerData != nullptr)
                     mOwnerData->mPointers.erase(this);
                 
                 // Update the target data
-                mOwnerData = other.mOwnerData;
+                mOwnerData = static_cast<typename SafeOwner<T>::Data*>(ownerData);
                 
                 // Register with the list of SafePtrs pointing to the new target
                 mOwnerData->mPointers.emplace(this);
             }
+            
+            typename SafeOwner<T>::Data* mOwnerData = nullptr; ///< The data pointed to by this SafePtr, managed by @SafeOwner or by the @DeletionQueue.
         };
         
         
