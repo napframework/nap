@@ -1,7 +1,7 @@
 #pragma once
 
 // Nap includes
-#include <utility/safeptr.h>
+#include <audio/utility/safeptr.h>
 
 // Audio includes
 #include <audio/core/audionode.h>
@@ -35,7 +35,7 @@ namespace nap
              * @param position: the starting position in the source buffer in samples
              * @param speed: the playbackspeed, 1.0 means 1 sample per sample, 2 means double speed, etc.
              */
-            void play(utility::SafePtr<MultiSampleBuffer> buffer, int channel = 0, DiscreteTimeValue position = 0, ControllerValue speed = 1.);
+            void play(SafePtr<MultiSampleBuffer> buffer, int channel = 0, DiscreteTimeValue position = 0, ControllerValue speed = 1.);
             
             /**
              * Stops playback
@@ -80,7 +80,7 @@ namespace nap
             int mChannel = 0; // The channel within the buffer that is being played bacl/
             long double mPosition = 0; // Current position of playback in samples within the source buffer.
             ControllerValue mSpeed = 1.f; // Playback speed as a fraction of the original speed.
-            utility::SafePtr<MultiSampleBuffer> mBuffer = nullptr; // Pointer to the buffer with audio material being played back.
+            SafePtr<MultiSampleBuffer> mBuffer = nullptr; // Pointer to the buffer with audio material being played back.
         };
         
     }

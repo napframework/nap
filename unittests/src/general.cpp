@@ -3,7 +3,7 @@
 
 #include <utility/fileutils.h>
 #include <utility/datetimeutils.h>
-#include <utility/safeptr.h>
+#include <audio/utility/safeptr.h>
 #include <nap/logger.h>
 
 
@@ -97,17 +97,17 @@ TEST_CASE("Safe pointers", "[safepointer]")
     };
     
     int counter = 0; // The counter to count the number of existing objects
-    nap::utility::DeletionQueue deletionQueue; // The DeletionQueue used
-    nap::utility::SafePtr<Test> safePtr = nullptr;
-    nap::utility::SafePtr<Test> safePtrCopy = nullptr;
+    nap::DeletionQueue deletionQueue; // The DeletionQueue used
+    nap::SafePtr<Test> safePtr = nullptr;
+    nap::SafePtr<Test> safePtrCopy = nullptr;
 
     {
         // Constructing a new SafeOwner, should increment the counter
-        nap::utility::SafeOwner<Test> safeOwnerOld(deletionQueue, new Test(10, counter));
+        nap::SafeOwner<Test> safeOwnerOld(deletionQueue, new Test(10, counter));
         REQUIRE(counter == 1);
         
         // Constructing another SafeOwner, should increment the counter
-        auto safeOwner = nap::utility::SafeOwner<Test>(deletionQueue, new Test(5, counter));
+        auto safeOwner = nap::SafeOwner<Test>(deletionQueue, new Test(5, counter));
         REQUIRE(counter == 2);
         
         // Moving the old owner to the new one, this should not change the counter, but move the previous content of the new one to the DeletionQueue

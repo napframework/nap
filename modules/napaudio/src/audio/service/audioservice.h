@@ -5,7 +5,7 @@
 
 // Nap includes
 #include <nap/service.h>
-#include <utility/safeptr.h>
+#include <audio/utility/safeptr.h>
 #include <utility/threading.h>
 
 // Audio includes
@@ -126,9 +126,9 @@ namespace nap
              * Constructs an object managed by a @SafeOwner that will dispose the object in the AudioService's @DeletionQueue when it is no longer used.
              */
             template <typename T, typename... Args>
-            utility::SafeOwner<T> makeSafe(Args&&... args)
+            SafeOwner<T> makeSafe(Args&&... args)
             {
-                auto owner = utility::SafeOwner<T>(mDeletionQueue, new T(std::forward<Args>(args)...));
+                auto owner = SafeOwner<T>(mDeletionQueue, new T(std::forward<Args>(args)...));
                 return owner;
             }
             
@@ -141,7 +141,7 @@ namespace nap
             
             // DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
             // Clearing is performed by the NodeManager on the audio callback to make sure the node can not be destructed while it is being processed.
-            utility::DeletionQueue mDeletionQueue;
+            DeletionQueue mDeletionQueue;
         };
         
         

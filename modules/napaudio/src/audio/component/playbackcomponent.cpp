@@ -71,7 +71,7 @@ namespace nap
                 gain->inputs.connect(bufferPlayer->audioOutput);
                 gain->inputs.connect(gainControl->output);                
                 gainControl->setValue(0);
-                utility::SafePtr<BufferPlayerNode> bufferPlayerPtr = bufferPlayer.get();
+                SafePtr<BufferPlayerNode> bufferPlayerPtr = bufferPlayer.get();
                 gainControl->rampFinishedSignal.connect([&, bufferPlayerPtr](ControlNode& gainControl){
                     if (gainControl.getValue() <= 0)
                         if (!mPlaying)
