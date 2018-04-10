@@ -1,4 +1,5 @@
 find_package(FFmpeg REQUIRED)
+target_link_libraries(${PROJECT_NAME} ${FFMPEG_LIBRARIES})
 
 if(WIN32)
     # Copy over DLLs post-build on Windows
