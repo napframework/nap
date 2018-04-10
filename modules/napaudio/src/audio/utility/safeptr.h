@@ -3,6 +3,7 @@
 // Std includes
 #include <set>
 #include <functional>
+#include <atomic>
 
 // Nap includes
 #include <utility/concurrentqueue.h>
@@ -133,8 +134,9 @@ namespace nap
             class Data
             {
             public:
-                T* mObject = nullptr; // The pointer to the object managed by the SafeOwner internally
-                std::set<SafePtr<T>*> mPointers;
+                T* mObject = nullptr; ///< The pointer to the object managed by the SafeOwner internally.
+                std::set<SafePtr<T>*> mPointers; ///< The list with SafePtrs that point to the managed object.
+                std::atomic<bool> mEnqueuedForDeletion = { false }; ///< Indicates wether the object has moved into the deletion queue.
             };
             
         public:
@@ -289,6 +291,7 @@ namespace nap
                 if (mData != nullptr)
                 {
                     assert(mDeletionQueue != nullptr);
+                    mData->mEnqueuedForDeletion = true;
                     mDeletionQueue->enqueue<T>(mData);
                     mData = nullptr;
                 }
@@ -454,12 +457,12 @@ namespace nap
             
             bool operator==(const std::nullptr_t) const
             {
-                return mOwnerData == nullptr;
+                return mOwnerData == nullptr || mOwnerData->mEnqueuedForDeletion == true;
             }
             
             bool operator!=(const std::nullptr_t) const
             {
-                return mOwnerData != nullptr;
+                return mOwnerData != nullptr && mOwnerData->mEnqueuedForDeletion == false;
             }
             
             T* get() const
