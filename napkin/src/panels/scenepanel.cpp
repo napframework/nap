@@ -35,19 +35,19 @@ void napkin::SceneModel::refresh()
 
 }
 
-void napkin::SceneModel::onObjectAdded(nap::rtti::Object& obj)
+void napkin::SceneModel::onObjectAdded(nap::rtti::Object* obj)
 {
 	// TODO: Don't refresh entire model
 	refresh();
 }
 
-void napkin::SceneModel::onObjectRemoved(nap::rtti::Object& obj)
+void napkin::SceneModel::onObjectRemoved(nap::rtti::Object* obj)
 {
 	// TODO: Don't refresh entire model
 	refresh();
 }
 
-void napkin::SceneModel::onObjectChanged(nap::rtti::Object& obj)
+void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
 {
 	// TODO: Don't refresh entire model
 	refresh();

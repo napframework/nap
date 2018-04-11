@@ -89,20 +89,20 @@ namespace napkin
 		 * @param comp The component that was added
 		 * @param owner The owner of the component
 		 */
-		void onComponentAdded(nap::Component& comp, nap::Entity& owner);
+		void onComponentAdded(nap::Component* comp, nap::Entity* owner);
 
 		/**
 		 * Called when an object has been added
 		 * @param obj The object that was added
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void onObjectAdded(nap::rtti::Object& obj, bool selectNewObject);
+		void onObjectAdded(nap::rtti::Object* obj, bool selectNewObject);
 
 		/**
 		 * Called when an object is about to be removed
 		 * @param obj The object that will be removed
 		 */
-		void onObjectRemoved(const nap::rtti::Object& obj);
+		void onObjectRemoved(const nap::rtti::Object* obj);
 
 		/**
 		 * Called when a new file was created.
