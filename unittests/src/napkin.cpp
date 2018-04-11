@@ -709,4 +709,5 @@ TEST_CASE("Pointer 'paths' 2", TAG_NAPKIN)
 		REQUIRE(doc->relativeObjectPath(*cOrthoCam,     *cRotate)   == "../../../Life/Fauna/Cats/Rotate");
 	}
 
+	napkin::AppContext::get().newDocument();
 }
