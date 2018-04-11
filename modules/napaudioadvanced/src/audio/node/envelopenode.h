@@ -2,6 +2,7 @@
 
 // Audio includes
 #include <audio/node/controlnode.h>
+#include <audio/utility/safeptr.h>
 
 namespace nap
 {
@@ -37,7 +38,7 @@ namespace nap
              * @param totalDuration: if this value is greater than the total of all durations of segments that have durationRelative = false
                  the resting time wille be divided over the segments with durationRelative = true, using their duration values as denominator.
              */
-            void trigger(std::shared_ptr<Envelope>& envelope, TimeValue totalDuration = 0);
+            void trigger(SafePtr<Envelope> envelope, TimeValue totalDuration = 0);
             
             /**
              * Triggers a section of an envelope.
@@ -48,7 +49,7 @@ namespace nap
              * @param totalDuration: if this value is greater than the total of all durations of segments that have durationRelative = false
              the resting time wille be divided over the segments with durationRelative = true, using their duration values as denominator.
              */
-            void trigger(std::shared_ptr<Envelope>& envelope, int startSegment, int endSegment, ControllerValue startValue = 0, TimeValue totalDuration = 0);
+            void trigger(SafePtr<Envelope> envelope, int startSegment, int endSegment, ControllerValue startValue = 0, TimeValue totalDuration = 0);
             
             /**
              * Stops playback of the envelope generator by fading the signal out to zero in @rampTime milliseconds.
@@ -68,7 +69,7 @@ namespace nap
             
             int mCurrentSegment = 0;
             int mEndSegment = 0;
-            std::shared_ptr<Envelope> mEnvelope = nullptr;
+            SafePtr<Envelope> mEnvelope = nullptr;
             TimeValue mTotalRelativeDuration = 0;
         };
         

@@ -22,15 +22,14 @@ namespace nap
         }
         
         
-        bool EnvelopeInstance::init(NodeManager& nodeManager, utility::ErrorState& errorState)
+        bool EnvelopeInstance::init(AudioService& audioService, utility::ErrorState& errorState)
         {
-            mEnvelopeGenerator = make_node<EnvelopeGenerator>(nodeManager);
+            mEnvelopeGenerator = audioService.makeSafe<EnvelopeGenerator>(audioService.getNodeManager());
             auto resource = rtti_cast<Envelope>(&getResource());
             
-            // We copy the envelope data from the resource to a shared pointer that can be safely shared with the node
-            mSegments = std::make_shared<EnvelopeGenerator::Envelope>(resource->mSegments);
+            mSegments = audioService.makeSafe<EnvelopeGenerator::Envelope>(resource->mSegments);
             if (resource->mAutoTrigger)
-                mEnvelopeGenerator->trigger(mSegments);
+                mEnvelopeGenerator->trigger(mSegments.get());
             return true;
         }
         
