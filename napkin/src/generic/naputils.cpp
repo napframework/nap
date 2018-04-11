@@ -192,21 +192,3 @@ std::string napkin::toURI(const napkin::PropertyPath& path)
 {
 	return NAP_URI_PREFIX + "://" + path.toString();
 }
-
-std::string napkin::relativePointerPath(const nap::rtti::Object& source, const nap::rtti::Object& target)
-{
-
-	return std::__cxx11::string();
-}
-
-std::string napkin::absolutePointerPath(const nap::rtti::Object& obj)
-{
-	auto entity = rtti_cast<const nap::Entity>(&obj);
-	if (entity != nullptr) {
-
-	}
-	return std::__cxx11::string();
-}
-
-
-

@@ -314,11 +314,11 @@
                     "Properties": {
                         "Frequency": 2.25,
                         "FrequencySmoothTime": 1.5,
-                        "Speed": 0.325,
+                        "Speed": 0.32499998807907107,
                         "SpeedSmoothTime": 0.10000000149011612,
                         "Offset": 0.0,
                         "OffsetSmoothTime": 0.10000000149011612,
-                        "Amplitude": 0.00,
+                        "Amplitude": 0.0,
                         "AmplitudeSmoothTime": 0.10000000149011612
                     },
                     "BlendComponent": "./LineBlender"
@@ -327,6 +327,15 @@
                     "Type": "nap::UpdateNormalsComponent",
                     "mID": "UpdateLaserNormalsComponent",
                     "NormalMesh": "NormalsMesh"
+                },
+                {
+                    "Type": "nap::LineBlendComponent",
+                    "mID": "nap::LineBlendComponent",
+                    "SelectionComponentOne": "SelectionComponentOne",
+                    "SelectionComponentTwo": "SelectionComponentTwo",
+                    "Target": "",
+                    "BlendValue": 0.0,
+                    "BlendSpeed": 0.0
                 }
             ],
             "Children": []
@@ -628,7 +637,7 @@
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
             "ReferenceMesh": "DisplayLine",
-            "Length": 0.05
+            "Length": 0.05000000074505806
         }
     ]
 }

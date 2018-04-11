@@ -6,6 +6,7 @@
 #include <QtWidgets/QUndoCommand>
 #include <nap/core.h>
 #include <generic/propertypath.h>
+#include <deque>
 
 namespace napkin
 {
@@ -18,8 +19,7 @@ namespace napkin
 	public:
 		Document(nap::Core& core) : QObject(), mCore(core)  {}
 
-		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
-				: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects)) {}
+		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects);
 		
 		~Document();
 		
@@ -53,7 +53,7 @@ namespace napkin
 		/**
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
-		nap::rtti::ObjectList getObjectPointers();
+		nap::rtti::ObjectList getObjectPointers() const;
 
 		/**
 		 * Retrieve an (data) object by name/id
@@ -81,7 +81,7 @@ namespace napkin
 		 * @param entity The entity to find the parent from.
 		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
 		 */
-		nap::Entity* getParent(const nap::Entity& entity);
+		nap::Entity* getParent(const nap::Entity& entity) const;
 
 		/**
 		 * Retrieve the Entity the provided Component belongs to.
@@ -91,7 +91,7 @@ namespace napkin
 		 * @param component The component of which to find the owner.
 		 * @return The owner of the component
 		 */
-		nap::Entity* getOwner(const nap::Component& component);
+		nap::Entity* getOwner(const nap::Component& component) const;
 
 		/**
 		 * Set an object's name. This is similar to setting a value on it's name property,
@@ -153,7 +153,7 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr) { return rtti_cast<T>(addObject(RTTI_OF(T), parent, true)); }
+		T* addObject(nap::rtti::Object* parent = nullptr) { return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, true)); }
 
 		/**
 		 * Add and entity to the document
@@ -294,6 +294,35 @@ namespace napkin
 		bool isPointedToByEmbeddedPointer(const nap::rtti::Object& obj);
 
 		/**
+		 * Get the absolute path of an object
+		 * @param obj The object to get the path to
+		 */
+		std::string absoluteObjectPath(const nap::rtti::Object& obj) const;
+
+		/**
+		 * Retrieve an absolute object path as a list
+		 * @param obj The object to get the path to
+		 * @param result A list to store the result into
+		 */
+		void absoluteObjectPathList(const nap::rtti::Object& obj, std::deque<std::string>& result) const;
+
+		/**
+		 * Get a relative path from an object to another object as a string
+		 * @param from The starting object
+		 * @param to The object to point to
+		 * @param result The relative path :)
+		 */
+		std::string relativeObjectPath(const nap::rtti::Object& origin, const nap::rtti::Object& target) const;
+
+		/**
+		 * Get a relative path from an object to another object as a list
+		 * @param from The starting object
+		 * @param to The object to point to
+		 * @param result The relative path
+		 */
+		void relativeObjectPathList(const nap::rtti::Object& origin, const nap::rtti::Object& target, std::deque<std::string>& result) const;
+
+		/**
 		 * Execute the specified command and push the provided command onto the undostack.
 		 * @param cmd The command to be executed
 		 */
@@ -329,7 +358,7 @@ namespace napkin
 		 * @param comp
 		 * @param owner
 		 */
-		void componentAdded(nap::Component& comp, nap::Entity& owner);
+		void componentAdded(nap::Component* comp, nap::Entity* owner);
 
 		/**
 		 * Qt Signal
@@ -339,20 +368,20 @@ namespace napkin
 		 * 		This is a notification, not a directive.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::Object& obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object* obj, bool selectNewObject);
 
 		/**
 		 * Qt Signal
 		 * Invoked after an object has changed drastically
 		 */
-		void objectChanged(nap::rtti::Object& obj);
+		void objectChanged(nap::rtti::Object* obj);
 
 		/**
 		 * Qt Signal
 		 * Invoked just before an object is removed (including Entities)
 		 * @param object The object about to be removed
 		 */
-		void objectRemoved(nap::rtti::Object& object);
+		void objectRemoved(nap::rtti::Object* object);
 
 		/**
 		 * Qt Signal
@@ -364,11 +393,12 @@ namespace napkin
 
 
 	private:
+
 		/**
 		 * @param suggestedName
 		 * @return
 		 */
-		std::string getUniqueName(const std::string& suggestedName);
+		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object);
 
 
 		nap::Core& mCore;                        // nap's core

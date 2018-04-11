@@ -142,10 +142,4 @@ namespace napkin
 	 */
 	std::string toURI(const PropertyPath& path);
 
-	std::string relativePointerPath(const nap::rtti::Object& source, const nap::rtti::Object& target);
-
-	std::string absolutePointerPath(const nap::rtti::Object& obj);
-	
-	
-
 }

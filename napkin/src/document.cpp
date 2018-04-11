@@ -8,7 +8,12 @@
 using namespace napkin;
 using namespace nap::rtti;
 
-nap::Entity* Document::getParent(const nap::Entity& child)
+Document::Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
+	: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects))
+{
+}
+
+nap::Entity* Document::getParent(const nap::Entity& child) const
 {
 	for (const auto& o : getObjectPointers())
 	{
@@ -26,7 +31,7 @@ nap::Entity* Document::getParent(const nap::Entity& child)
 }
 
 
-nap::Entity* Document::getOwner(const nap::Component& component)
+nap::Entity* Document::getOwner(const nap::Component& component) const
 {
 	for (const auto& o : getObjects())
 	{
@@ -51,7 +56,7 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	if (name.empty())
 		return object.mID;
 
-	object.mID = getUniqueName(name);
+	object.mID = getUniqueName(name, object);
 	PropertyPath path(object, nap::rtti::sIDPropertyName);
 	assert(path.isValid());
 	propertyValueChanged(path);
@@ -71,12 +76,12 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 
 	nap::rtti::Variant compVariant = factory.create(type);
 	auto comp = compVariant.get_value<nap::Component*>();
-	comp->mID = getUniqueName(type.get_name().data());
+	comp->mID = getUniqueName(type.get_name().data(), *comp);
 
 	mObjects.emplace_back(comp);
 	entity.mComponents.emplace_back(comp);
 
-	componentAdded(*comp, entity);
+	componentAdded(comp, &entity);
 
 	return comp;
 }
@@ -94,9 +99,11 @@ Object* Document::addObject(rttr::type type, Object* parent, bool selectNewObjec
 	if (last_colon != std::string::npos)
 		base_name = base_name.substr(last_colon + 1);
 
-	Object* obj = factory.create(type);
-	obj->mID = getUniqueName(base_name);
-	mObjects.emplace_back(obj);
+	std::unique_ptr<Object> obj = std::unique_ptr<Object>(factory.create(type));
+	Object* objptr = obj.get();
+	assert(objptr != nullptr);
+	obj->mID = getUniqueName(base_name, *objptr);
+	mObjects.emplace_back(std::move(obj));
 
 	// Handle adding to a parent
 	// TODO: Make this a little less hokey
@@ -104,8 +111,8 @@ Object* Document::addObject(rttr::type type, Object* parent, bool selectNewObjec
 	{
 		auto parentEntity = rtti_cast<nap::Entity>(parent);
 
-		auto newEntity = rtti_cast<nap::Entity>(obj);
-		auto newComponent = rtti_cast<nap::Component>(obj);
+		auto newEntity = rtti_cast<nap::Entity>(objptr);
+		auto newComponent = rtti_cast<nap::Component>(objptr);
 
 		if (parentEntity != nullptr)
 		{
@@ -120,9 +127,9 @@ Object* Document::addObject(rttr::type type, Object* parent, bool selectNewObjec
 		}
 	}
 
-	objectAdded(*obj, selectNewObject);
+	objectAdded(objptr, selectNewObject);
 
-	return obj;
+	return objptr;
 }
 
 
@@ -134,23 +141,26 @@ nap::Entity& Document::addEntity()
 }
 
 
-std::string Document::getUniqueName(const std::string& suggestedName)
+std::string Document::getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object)
 {
 	std::string newName = suggestedName;
 	int i = 2;
-	while (getObject(newName))
+	auto obj = getObject(newName);
+	while (obj != nullptr && obj != &object)
+	{
 		newName = suggestedName + "_" + std::to_string(i++);
+		obj = getObject(newName);
+	}
 	return newName;
 }
 
 
 Object* Document::getObject(const std::string& name)
 {
-	auto it = std::find_if(mObjects.begin(), mObjects.end(),
-						   [&name](std::unique_ptr<Object>& obj) { return obj->mID == name; });
-	if (it == mObjects.end())
-		return nullptr;
-	return it->get();
+	for (auto obj : getObjectPointers())
+		if (obj->mID == name)
+			return obj;
+	return nullptr;
 }
 
 
@@ -168,7 +178,7 @@ Object* Document::getObject(const std::string& name, const rttr::type& type)
 }
 
 
-ObjectList Document::getObjectPointers()
+ObjectList Document::getObjectPointers() const
 {
 	ObjectList ret;
 	for (auto& ob : getObjects())
@@ -180,7 +190,7 @@ ObjectList Document::getObjectPointers()
 void Document::removeObject(Object& object)
 {
 	// Emit signal first so observers can act before the change
-	objectRemoved(object);
+	objectRemoved(&object);
 
 	// Start by cleaning up objects that depend on this one
 	if (object.get_type().is_derived_from<nap::Entity>())
@@ -215,7 +225,7 @@ void Document::removeObject(Object& object)
 	}
 
 	// All cleam. Remove our object
-	auto filter = [&](auto& obj) { return obj.get() == &object; };
+	auto filter = [&](const auto& obj) { return obj.get() == &object; };
 	mObjects.erase(std::remove_if(mObjects.begin(), mObjects.end(), filter), mObjects.end());
 }
 
@@ -234,6 +244,7 @@ size_t Document::addEntityToScene(nap::Scene& scene, nap::Entity& entity)
 	rootEntity.mEntity = &entity;
 	size_t index = scene.mEntities.size();
 	scene.mEntities.emplace_back(rootEntity);
+	objectChanged(&scene);
 	return index;
 }
 
@@ -552,6 +563,110 @@ void Document::removeComponent(nap::Component& comp)
 	}));
 }
 
+void Document::absoluteObjectPathList(const nap::rtti::Object& obj, std::deque<std::string>& result) const
+{
+	const nap::Entity* entity = nullptr;
+
+	// If we got a component, push that first, then get the owning entity
+	auto component = rtti_cast<const nap::Component>(&obj);
+	if (component != nullptr) {
+		result.push_front(component->mID);
+		entity = getOwner(*component);
+		assert(entity != nullptr);
+	}
+
+	// Entity is null, so we must not have gotten a component
+	if (entity == nullptr)
+		entity = rtti_cast<const nap::Entity>(&obj);
+
+	assert(entity != nullptr); // Unsupported object type received.
+
+	while (entity != nullptr)
+	{
+		result.push_front(entity->mID);
+		entity = getParent(*entity);
+	}
+}
+
+std::string Document::absoluteObjectPath(const nap::rtti::Object& obj) const
+{
+	std::deque<std::string> path;
+	absoluteObjectPathList(obj, path);
+	return "/" + nap::utility::joinString(path, "/");
+}
+
+
+size_t findCommonStartingElements(const std::deque<std::string>& a, const std::deque<std::string>& b)
+{
+	size_t i = 0;
+	size_t len = std::min(a.size(), b.size());
+	for (; i < len; i++)
+	{
+		if (a[i] != b[i])
+			return i;
+	}
+	return i;
+}
+
+void Document::relativeObjectPathList(const nap::rtti::Object& origin, const nap::rtti::Object& target,
+									  std::deque<std::string>& result) const
+{
+	// This implementation is based off the description in componentptr.h
+	// Notes:
+	// - Sibling component paths start with a single period, but other paths (parent/child) do not.
+	//   What is the meaning of the period, can we get rid of it? It would make it more consistent
+	// - No speak of pointers to children, so making assumptions here.
+
+	// Going for Entity -> Component path here.
+	// In other words, we always start from an Entity
+
+	// Grab the origin entity (ignore component if provided)
+	auto originEntity = rtti_cast<const nap::Entity>(&origin);
+	if (!originEntity) {
+		auto originComponent = rtti_cast<const nap::Component>(&origin);
+		assert(originComponent != nullptr);
+		originEntity = getOwner(*originComponent);
+	}
+	assert(originEntity != nullptr);
+
+	auto targetComponent = rtti_cast<const nap::Component>(&target);
+	auto targetEntity = getOwner(*targetComponent);
+
+	// Sibling component found? Return only one element
+	if (targetEntity != nullptr && originEntity == targetEntity)
+	{
+		result.push_back("."); // TODO: Probably not necessary
+		result.push_back(targetComponent->mID);
+		return;
+	}
+
+	// Get absolute paths and compare
+	std::deque<std::string> absOriginPath;
+	std::deque<std::string> absTargetPath;
+
+	absoluteObjectPathList(*originEntity, absOriginPath);
+	nap::Logger::info(nap::utility::joinString(absOriginPath, "/"));
+	absoluteObjectPathList(*targetComponent, absTargetPath);
+	nap::Logger::info(nap::utility::joinString(absTargetPath, "/"));
+
+	size_t commonidx = findCommonStartingElements(absOriginPath, absTargetPath);
+	size_t origincount = absOriginPath.size() - commonidx;
+	for (size_t i = commonidx, len = absOriginPath.size(); i < len; i++)
+		result.push_back("..");
+
+	if (result.size() == 0) // Add a period to be consistent with sibling path?
+		result.push_back("."); // TODO: Probably not necessary
+
+	for (size_t i = commonidx, len=absTargetPath.size(); i<len; i++)
+		result.push_back(absTargetPath[i]);
+}
+
+std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const nap::rtti::Object& target) const
+{
+	std::deque<std::string> path;
+	relativeObjectPathList(origin, target, path);
+	return nap::utility::joinString(path, "/");
+}
 
 
 
