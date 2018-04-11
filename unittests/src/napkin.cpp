@@ -664,26 +664,6 @@ TEST_CASE("Component to Component pointer", TAG_NAPKIN)
 	REQUIRE(loadedEntity != nullptr);
 }
 
-TEST_CASE("Pointer 'paths'", TAG_NAPKIN)
-{
-	auto doc = napkin::AppContext::get().newDocument();
-
-	auto& entity = doc->addEntity();
-	doc->setObjectName(entity, "Line");
-	auto selA = doc->addComponent<nap::LineSelectionComponent>(entity);
-	REQUIRE(selA != nullptr);
-	auto selB = doc->addComponent<nap::LineSelectionComponent>(entity);
-	REQUIRE(selB != nullptr);
-	auto blend = doc->addComponent<nap::LineBlendComponent>(entity);
-	REQUIRE(blend != nullptr);
-
-	PropertyPath selAPath(*blend, "SelectionComponentOne");
-	REQUIRE(selAPath.isValid());
-	PropertyPath selBPath(*blend, "SelectionComponentTwo");
-	REQUIRE(selBPath.isValid());
-
-}
-
 TEST_CASE("Pointer 'paths' 2", TAG_NAPKIN)
 {
 	auto doc = napkin::AppContext::get().loadDocument("unit_tests_data/entitystructure.json");
