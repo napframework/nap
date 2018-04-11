@@ -24,7 +24,7 @@ namespace nap {
         {
             std::lock_guard<std::mutex> lock(mVideoMutex);
             
-            if (mVideo == nullptr || !mVideo->hasAudio())
+            if (mVideo == nullptr || !mVideo->hasAudio() || !mVideo->isPlaying())
             {
                 // If the video has no audio channels we fill the output pins with zeros
                 for (auto channel = 0; channel < getChannelCount(); ++channel)
