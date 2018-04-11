@@ -21,10 +21,10 @@ namespace nap
         {
         public:
             /**
-             * @param service: The AudioService this node provides output for. This node feeds audio output for the manager of this service.
+             * @param nodeManager: The @NodeManager this node provides output to.
              * @param active: true if the node is active and being processed from the moment of creation. This can cause glitches if the node tree and it's parameters are still being build.
              */
-            OutputNode(AudioService& service, bool active = true);
+            OutputNode(NodeManager& nodeManager, bool active = true);
             
             ~OutputNode() override final;
             

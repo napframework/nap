@@ -26,10 +26,10 @@ namespace nap
             enum Type { PEAK, RMS };
 
             /**
-             * @param manager: the AudioService this node will be processed on
+             * @param nodeManager: the NodeManager this node will be processed on
              * @param analysisWindowSize: the time window in milliseconds that will be used to generate one single output value. Also the period that corresponds to the analysis frequency.
              */
-            LevelMeterNode(AudioService& service, TimeValue analysisWindowSize = 10);
+            LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize = 10);
             virtual ~LevelMeterNode();
             
             InputPin input; /**< The input for the audio signal that will be analyzed. */

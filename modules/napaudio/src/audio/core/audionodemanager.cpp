@@ -12,6 +12,8 @@ namespace nap
 
         void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
+            mTaskQueue.process();
+            
             // clean the output buffers
             for (auto channel = 0; channel < mOutputChannelCount; ++channel)
                 memset(outputBuffer[channel], 0, sizeof(float) * framesPerBuffer);
@@ -90,13 +92,13 @@ namespace nap
         
         void NodeManager::registerRootNode(Node& rootNode)
         {
-            mRootNodes.emplace(&rootNode);
+            enqueueTask([&](){ mRootNodes.emplace(&rootNode); });
         }
 
         
         void NodeManager::unregisterRootNode(Node& rootNode)
         {
-            mRootNodes.erase(&rootNode);
+            enqueueTask([&](){ mRootNodes.erase(&rootNode); });
         }
 
         

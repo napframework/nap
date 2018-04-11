@@ -12,9 +12,9 @@ namespace nap
     namespace audio
     {
         
-        OutputNode::OutputNode(AudioService& service, bool active) : Node(service.getNodeManager())
+        OutputNode::OutputNode(NodeManager& nodeManager, bool active) : Node(nodeManager)
         {
-            service.execute([&](){ getNodeManager().registerRootNode(*this); });
+            nodeManager.registerRootNode(*this);
             mActive = active;
         }
         

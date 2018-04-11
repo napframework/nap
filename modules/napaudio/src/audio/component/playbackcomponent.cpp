@@ -105,7 +105,7 @@ namespace nap
         void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
         {
             ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
-            mAudioService->execute([&, actualSpeed, startPosition, duration](){
+            mAudioService->enqueueTask([&, actualSpeed, startPosition, duration](){
                 mPlaying = true;
                 if (duration == 0)
                     mDuration = mResource->mBuffer->getSize();
@@ -126,7 +126,7 @@ namespace nap
             if (!mPlaying)
                 return;
             
-            mAudioService->execute([&](){
+            mAudioService->enqueueTask([&](){
                 mPlaying = false;
                 for (auto& gainControl : mGainControls)
                     gainControl->ramp(0, mFadeOutTime, ControlNode::RampMode::EXPONENTIAL);
@@ -138,7 +138,7 @@ namespace nap
         {
             if (gain == mGain)
                 return;
-            mAudioService->execute([&, gain](){
+            mAudioService->enqueueTask([&, gain](){
                 mGain = gain;
                 if (mPlaying)
                     applyGain(5);
@@ -150,7 +150,7 @@ namespace nap
         {
             if (panning == mStereoPanning)
                 return;
-            mAudioService->execute([&, panning](){
+            mAudioService->enqueueTask([&, panning](){
                 mStereoPanning = panning;
                 if (mPlaying)
                     applyGain(5);
@@ -175,7 +175,7 @@ namespace nap
             if (pitch == mPitch)
                 return;
             
-            mAudioService->execute([&, pitch](){
+            mAudioService->enqueueTask([&, pitch](){
                 mPitch = pitch;
                 ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
                 for (auto& bufferPlayer : mBufferPlayers)

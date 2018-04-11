@@ -4,6 +4,9 @@
 #include <mutex>
 #include <set>
 
+// Nap includes
+#include <utility/threading.h>
+
 // Audio includes
 #include <audio/utility/audiotypes.h>
 
@@ -47,6 +50,12 @@ namespace nap
              * @param framesPerBuffer: the number of samples that has to be processed per channel
              */
             void process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer);
+            
+            /**
+             * Enqueue a lambda to be executed before the processing of the next internal buffer starts.
+             * This way modifications to the processing chain can be made in a threadsafe manner from outside of the audio thread, with a timing accuracy that corresponds to the internal buffer size.
+             */
+            void enqueueTask(nap::TaskQueue::Task task) { mTaskQueue.enqueue(task); }
             
             /**
              * @return: the number of input channels that will be fed into the node system
@@ -147,7 +156,9 @@ namespace nap
             float** mInputBuffer = nullptr; //  Pointing to the audio input that this node manager has to process. The format is a non-interleaved array containing a float array for each channel.
             
             std::set<Node*> mNodes; // all the audio nodes managed by this node manager
-            std::set<Node*> mRootNodes; // the nodes that will be processed directly by the manager on every audio callback            
+            std::set<Node*> mRootNodes; // the nodes that will be processed directly by the manager on every audio callback
+            
+            nap::TaskQueue mTaskQueue; // Queue with lambda functions to be executed before processing the next itnernal buffer.
         };
         
     }
