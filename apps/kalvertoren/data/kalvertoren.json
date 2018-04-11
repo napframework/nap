@@ -104,7 +104,7 @@
                 "LAAGC1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -114,7 +114,7 @@
                 "LAAGC2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -124,7 +124,7 @@
                 "LAAGC3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -134,7 +134,7 @@
                 "LAAGC4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -144,7 +144,7 @@
                 "LAAGD1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.8999999761581421
         },
         {
             "Type": "nap::Composition",
@@ -154,7 +154,7 @@
                 "LAAGD2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -164,7 +164,7 @@
                 "LAAGD3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -174,7 +174,7 @@
                 "LAAGD4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -184,7 +184,7 @@
                 "LAAGH1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -194,7 +194,7 @@
                 "LAAGH2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -204,7 +204,7 @@
                 "LAAGH3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -214,7 +214,7 @@
                 "LAAGH4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -224,7 +224,17 @@
                 "LAAGM1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_M1A",
+            "Layers": [
+                "Basislaag1",
+                "LAAGM1A"
+            ],
+            "Mode": "Length",
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -234,7 +244,7 @@
                 "LAAGM2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -244,7 +254,7 @@
                 "LAAGM3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -254,7 +264,7 @@
                 "LAAGM4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -264,7 +274,7 @@
                 "LAAGS1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -274,7 +284,7 @@
                 "LAAGS2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -284,7 +294,7 @@
                 "LAAGS3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -294,7 +304,7 @@
                 "LAAGS4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -304,7 +314,7 @@
                 "LAAGT1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -314,7 +324,7 @@
                 "LAAGT2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -324,7 +334,7 @@
                 "LAAGT3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -334,7 +344,7 @@
                 "LAAGT4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -344,7 +354,7 @@
                 "LAAGV1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -354,7 +364,7 @@
                 "LAAGV2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -364,7 +374,7 @@
                 "LAAGV3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -413,7 +423,8 @@
                 "COMPO_M1",
                 "COMPO_M2",
                 "COMPO_M3",
-                "COMPO_M4"
+                "COMPO_M4",
+                "COMPO_M1A"
             ]
         },
         {
@@ -552,13 +563,13 @@
                     "MasterIntensity": 1.0,
                     "LuxInput": {
                         "x": 10.0,
-                        "y": 25000.0
+                        "y": 7500.0
                     },
                     "LightOutput": {
-                        "x": 0.10000000149011612,
-                        "y": 1.0
+                        "x": 0.3,
+                        "y": 0.75
                     },
-                    "LuxCurve": 0.5,
+                    "LuxCurve": 0.66,
                     "SmoothTime": 1.0,
                     "OpeningHours": "OpeningHours",
                     "ClosingHours": "ClosingHours",
@@ -567,7 +578,8 @@
                 {
                     "Type": "nap::VideoControlComponent",
                     "mID": "VideoController",
-                    "Player": "VideoPlayer"
+                    "Player": "VideoPlayer",
+                    "FadeTime" : 1.5
                 },
                 {
                     "Type": "nap::audio::VideoAudioComponent",
@@ -1266,6 +1278,12 @@
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGM1",
             "BaseFilename": "FINAL/M1_png/M1_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGM1A",
+            "BaseFilename": "FINAL/M1A_png/M1A_%02d.png",
             "FPS": 0.6000000238418579
         },
         {

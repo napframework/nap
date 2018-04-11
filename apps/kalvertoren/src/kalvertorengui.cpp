@@ -35,6 +35,15 @@ namespace nap
 
 		CompositionComponentInstance& comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
 		mCompositionCycleMode = static_cast<int>(comp.getCycleMode());
+
+		// Store brightness settings
+		LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+		mLuxRange = light_comp.getLuxRange();
+		mLightRange = light_comp.getLightRange();
+		mSensorInfluence = light_comp.getSensorInfluence();
+		mLuxCurve = light_comp.getLuxPower();
+		mLightSmoothTime = light_comp.getSmoothTime();
+		mIntensity = light_comp.getMasterBrightness();
 	}
 
 

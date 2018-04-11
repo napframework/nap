@@ -60,7 +60,7 @@ namespace nap
 		double video_length = mVideoPlayer->getDuration();
 		double fade_in = math::fit<double>(current_time, 0.0, static_cast<double>(mFadeTime), 0.0, 1.0);
 		double fade_ou = math::fit<double>(current_time, video_length - static_cast<double>(mFadeTime), video_length, 1.0, 0.0);
-		return static_cast<float>(pow(fade_in * fade_ou, 2.0));
+		return static_cast<float>(pow(fade_in * fade_ou, 0.66));
 	}
 
 
