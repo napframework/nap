@@ -179,9 +179,6 @@ namespace nap
         
         void AudioService::audioCallback(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
-            // process tasks that are enqueued from outside the audio thread
-            mAudioCallbackTaskQueue.process();
-            
             // clean the trash bin with nodes and resources that are no longer used and scheduled for destruction
             mDeletionQueue.clear();
 

@@ -78,7 +78,7 @@ namespace nap
             
             voice->play(duration);
             
-            mAudioService->execute([&, voice](){
+            mAudioService->enqueueTask([&, voice](){
                 std::lock_guard<std::mutex> lock(mMixNodesMutex);
                 for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
                     mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));
@@ -91,7 +91,7 @@ namespace nap
             if (!voice)
                 return;
             
-            mAudioService->execute([&](){ voice->stop(); });
+            mAudioService->enqueueTask([&](){ voice->stop(); });
         }
         
 
@@ -115,7 +115,7 @@ namespace nap
             
             for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice.getOutput().getChannelCount()); ++channel)
             {
-                // this function is called from the audio thread, so we don't have to call AudioService::execute() to schedule disconnection on the audio thread
+                // this function is called from the audio thread, so we don't have to call AudioService::enqueueTask() to schedule disconnection on the audio thread
                 mMixNodes[channel]->inputs.disconnect(voice.getOutput().getOutputForChannel(channel));
             }
             voice.free();

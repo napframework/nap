@@ -49,7 +49,7 @@ namespace nap
                     return false;
                 }
                 
-                mOutputs.emplace_back(audioService->makeSafe<OutputNode>(*audioService));
+                mOutputs.emplace_back(audioService->makeSafe<OutputNode>(nodeManager));
                 mOutputs.back()->setOutputChannel(channel);
                 mOutputs.back()->audioInput.connect(mInput->getOutputForChannel(resource->mChannelRouting[channel]));
             }

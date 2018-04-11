@@ -34,7 +34,7 @@ namespace nap
             auto audioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
             for (auto channel = 0; channel < mInput->getChannelCount(); ++channel)
             {
-                mMeters.emplace_back(audioService->makeSafe<LevelMeterNode>(*audioService));
+                mMeters.emplace_back(audioService->makeSafe<LevelMeterNode>(audioService->getNodeManager()));
                 
                 if (resource->mFilterInput)
                 {

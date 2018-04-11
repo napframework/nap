@@ -9,7 +9,6 @@ RTTI_BEGIN_ENUM(nap::audio::LevelMeterNode::Type)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterNode)
-    RTTI_CONSTRUCTOR(nap::audio::AudioService&)
     RTTI_FUNCTION("getLevel", &nap::audio::LevelMeterNode::getLevel)
 RTTI_END_CLASS
 
@@ -19,11 +18,11 @@ namespace nap {
     
     namespace audio {
         
-        LevelMeterNode::LevelMeterNode(AudioService& service, TimeValue analysisWindowSize)
-            : Node(service.getNodeManager())
+        LevelMeterNode::LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize)
+            : Node(nodeManager)
         {
             mBuffer.resize(getNodeManager().getSamplesPerMillisecond() * analysisWindowSize);
-            service.execute([&](){ getNodeManager().registerRootNode(*this); });
+            getNodeManager().registerRootNode(*this);
         }
         
         
