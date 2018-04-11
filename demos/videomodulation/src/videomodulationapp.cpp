@@ -225,7 +225,7 @@ namespace nap
 		{
 			ImGui::SliderFloat("Amount", &mDisplacement, 0.0f, 1.0f, "%.3f", 2.0f);
 			ImGui::SliderFloat("Random", &mRandomness, 0.0f, 1.0f, "%.3f", 2.25f);
-            ImGui::SliderFloat("Sound influence", &mSoundInfluence, 0.0f, 2.0f, "%.3f", 1.f);
+            ImGui::SliderFloat("Sound influence", &mSoundInfluence, 0.0f, 4.0f, "%.3f", 1.f);
 		}
 		if (ImGui::CollapsingHeader("Background Colors"))
 		{
