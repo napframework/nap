@@ -12,11 +12,11 @@ namespace nap
     namespace audio
     {
         
-        NodePtr<Node> BufferPlayer::createNode(int channel, NodeManager& nodeManager)
+        SafeOwner<Node> BufferPlayer::createNode(int channel, AudioService& audioService)
         {
-            auto node = make_node<BufferPlayerNode>(nodeManager);
+            auto node = audioService.makeSafe<BufferPlayerNode>(audioService.getNodeManager());
             if (mAutoPlay)
-                node->play(mBufferResource->getBuffer().getChannelPtr(channel), 0, 1.);
+                node->play(mBufferResource->getBuffer(), 0, 1.);
             return std::move(node);
         }
     }
