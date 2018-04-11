@@ -425,7 +425,7 @@ namespace nap
 			ImGui::Image(video_render_comp.getTexture(), { col_width, col_width });
 
 			// Draw slider regarding display size
-			ImGui::SliderFloat("Display Size", &mVideoDisplaySize, 0.0f, 1.0f);
+			ImGui::SliderFloat("Video Display Size", &mVideoDisplaySize, 0.0f, 1.0f);
 		}
 
 		// Artnet information
