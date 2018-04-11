@@ -4,6 +4,7 @@
 #include <nap/resourceptr.h>
 
 // Audio includes
+#include <audio/utility/safeptr.h>
 #include <audio/core/audioobject.h>
 #include <audio/node/bufferplayernode.h>
 #include <audio/resource/audiobufferresource.h>
@@ -29,14 +30,8 @@ namespace nap
             bool mAutoPlay = true; /**<  If true, the object will start playing back immediately after initialization. */
             
         private:
-            std::unique_ptr<Node> createNode(int channel, NodeManager& nodeManager) override
-            {
-                auto node = std::make_unique<BufferPlayerNode>(nodeManager);
-                if (mAutoPlay)
-                    node->play(mBufferResource->getBuffer()[channel], 0, 1.);
-                return std::move(node);
-            }
-            
+            // Inherited from MultiChannelObject
+            SafeOwner<Node> createNode(int channel, AudioService& audioService);
             int getChannelCount() const override { return mChannelCount; }
         };
         

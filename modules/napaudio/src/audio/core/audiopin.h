@@ -27,9 +27,25 @@ namespace nap
         {
         public:
             virtual ~InputPinBase() = default;
+            
+            /**
+             * Connects a pin to this input. Disconnects the current connection first if necessary.
+             */
             virtual void connect(OutputPin& input) = 0;
+            
+            /**
+             * Disconnects a pin from this input, if it is connected.
+             */
             virtual void disconnect(OutputPin& input) = 0;
+            
+            /**
+             * Disconnects all pins connected to this pint.
+             */
             virtual void disconnectAll() = 0;
+            
+            /**
+             * Returns wether this pin is connected to one or more other pins.
+             */
             virtual bool isConnected() const = 0;
         };
         
@@ -54,7 +70,7 @@ namespace nap
              * This method can be used by the node to pull one sample buffer output from the connected audio output.
              * @return If the InputPin is not connected or somewhere down the graph silence is being output nullptr can be returned.
              */
-            SampleBufferPtr pull();
+            SampleBuffer* pull();
             
             /**
              * Connects another node's @OutputPin to this input.
@@ -65,13 +81,13 @@ namespace nap
             
             
             /**
-             * Disconnects this input from the specified output
+             * Disconnects this input from the specified output, if this connections exists.
              */
             void disconnect(OutputPin& input) override;
             
             
             /**
-             * Disconnects this input from the connected output
+             * If connected, disconnects this pin.
              */
             void disconnectAll() override;
             
@@ -105,14 +121,20 @@ namespace nap
              * This method can be used by the node to pull a buffer of samples for every connected output pin.
              * @return: the vector can contain nullptr items if somewhere down the line of connection silence is returned.
              */
-            std::vector<SampleBufferPtr> pull();
+            std::vector<SampleBuffer*> pull();
             
+            /**
+             * Connects @input to this pin.
+             */
             void connect(OutputPin& input) override;
             
+            /**
+             * If @input is connected to this pin it will be disconnected.
+             */
             void disconnect(OutputPin& input) override;
             
             /**
-             * Disconnects this input from all the connected outputs
+             * Disconnects this input from all the connected pins.
              */
             void disconnectAll() override;
             
@@ -157,14 +179,13 @@ namespace nap
              */
             bool isConnected() const { return !mOutputs.empty(); }
             
-            // Used by @InputPin to poll this output for a new buffer of output samples
-            SampleBufferPtr pull();
+            /**
+             * Used by @InputPin to poll this output for a new buffer of output samples
+             */
+            SampleBuffer* pull();
             
         protected:
-            /**
-             * The buffer containing the latest output
-             */
-            SampleBuffer mBuffer;
+            SampleBuffer mBuffer; ///< The buffer containing the latest output
             
         private:
             // Used by the @NodeManager to resize the internal buffers when necessary
