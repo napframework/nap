@@ -3,6 +3,9 @@
 // Nap includes
 #include <entity.h>
 
+// Audio includes
+#include <audio/service/audioservice.h>
+
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::VideoAudioComponent)
     RTTI_PROPERTY("Video", &nap::audio::VideoAudioComponent::mVideo, nap::rtti::EPropertyMetaData::Required)
@@ -22,7 +25,8 @@ namespace nap
         bool VideoAudioComponentInstance::init(utility::ErrorState& errorState)
         {
             auto resource = getComponent<VideoAudioComponent>();
-            mNode = make_node<VideoNode>(getNodeManager(), *resource->mVideo, resource->mChannelCount);
+            auto audioService = &getAudioService();
+            mNode = audioService->makeSafe<VideoNode>(audioService->getNodeManager(), *resource->mVideo, resource->mChannelCount);
             return true;
         }
         

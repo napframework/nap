@@ -29,7 +29,7 @@ namespace nap
         bool AudioComponentInstance::init(utility::ErrorState& errorState)
         {
             AudioComponent* resource = getComponent<AudioComponent>();
-            mObject = std::move(resource->mObject->instantiate(getNodeManager(), errorState));
+            mObject = std::move(resource->mObject->instantiate(getAudioService(), errorState));
             if (!mObject)
                 return false;
             
