@@ -12,9 +12,9 @@ namespace nap
     namespace audio
     {
         
-        NodePtr<Node> Gain::createNode(int channel, NodeManager& nodeManager)
+        SafeOwner<Node> Gain::createNode(int channel, AudioService& audioService)
         {
-            auto node = make_node<GainNode>(nodeManager);
+            auto node = audioService.makeSafe<GainNode>(audioService.getNodeManager());
             node->setGain(mGain[channel % mGain.size()]);
             for (auto& input : mInputs)
                 if (input != nullptr)
