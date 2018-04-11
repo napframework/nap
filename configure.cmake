@@ -5,8 +5,8 @@ if(MSVC OR APPLE)
         # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
         # builds when working in packaging and non-packaging at the same time)
         if(DEFINED NAP_PACKAGED_BUILD)
-            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingBin/${BUILD_CONF})
-            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingLib/${BUILD_CONF})
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${BUILD_CONF})
         else()
             set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
             set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
@@ -25,8 +25,8 @@ else()
     # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
     # builds when working in packaging and non-packaging at the same time)
     if(DEFINED NAP_PACKAGED_BUILD)
-        set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingBin/${BUILD_CONF})
-        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingLib/${BUILD_CONF})
+        set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
+        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${BUILD_CONF})
     else()
         set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
         set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
@@ -49,7 +49,7 @@ macro(export_fbx_in_place SRCDIR)
     # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't 
     # fall into place
     if(DEFINED NAP_PACKAGED_BUILD)
-        set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/packagingBin/${BUILD_CONF})
+        set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
     else()
         set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF})
     endif()
@@ -204,8 +204,8 @@ endmacro()
 # Populate modules list from project.json into var NAP_MODULES
 macro(project_json_to_cmake)
     # Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ProjectJsonTriggerDummy.json
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/project.json project_json_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove project_json_trigger_dummy.json
                     ERROR_QUIET)
 
     # Clear any system Python path settings
@@ -224,7 +224,7 @@ macro(project_json_to_cmake)
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
     endif()
 
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/projectscripts/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR}
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/project_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR}
                     RESULT_VARIABLE EXIT_CODE
                     )
     if(NOT ${EXIT_CODE} EQUAL 0)
@@ -288,7 +288,7 @@ endmacro()
 macro(include_module_postbuilds_per_project NAP_MODULES)
     foreach(NAP_MODULE ${NAP_MODULES})
         string(SUBSTRING ${NAP_MODULE} 4 -1 SHORT_MODULE_NAME)
-        set(MODULE_POSTBUILD ${NAP_ROOT}/modules/${SHORT_MODULE_NAME}/modulePostBuildPerProject.cmake)
+        set(MODULE_POSTBUILD ${NAP_ROOT}/modules/${SHORT_MODULE_NAME}/module_post_build_per_project.cmake)
         if(EXISTS ${MODULE_POSTBUILD})
             include(${MODULE_POSTBUILD})
         endif()
