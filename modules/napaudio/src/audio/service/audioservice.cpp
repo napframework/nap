@@ -8,6 +8,8 @@
 // Audio includes
 #include "audioservice.h"
 #include "audiodevice.h"
+#include <audio/resource/audiobufferresource.h>
+#include <audio/resource/audiofileresource.h>
 
 //#include <audio/core/graph.h>
 //#include <audio/core/voice.h>
@@ -40,14 +42,14 @@ namespace nap
         
         void AudioService::registerObjectCreators(rtti::Factory& factory)
         {
-//            factory.addObjectCreator(std::make_unique<GraphObjectCreator>(getNodeManager()));
-//            factory.addObjectCreator(std::make_unique<VoiceObjectCreator>(getNodeManager()));
+            factory.addObjectCreator(std::make_unique<AudioBufferResourceObjectCreator>(*this));
+            factory.addObjectCreator(std::make_unique<AudioFileResourceObjectCreator>(*this));
         }
 
         
         NodeManager& AudioService::getNodeManager()
         {
-            return mInterface.getNodeManager();
+            return mNodeManager;
         }
         
         
@@ -173,6 +175,17 @@ namespace nap
 				Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
 			Logger::info("Portaudio terminated");
 		}
+        
+        
+        void AudioService::audioCallback(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
+        {
+            // clean the trash bin with nodes and resources that are no longer used and scheduled for destruction
+            mDeletionQueue.clear();
+
+            // process the node manager
+            mNodeManager.process(inputBuffer, outputBuffer, framesPerBuffer);
+        }
+
     }
 }
 

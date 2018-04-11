@@ -70,7 +70,7 @@ namespace nap
              * This method can be used by the node to pull one sample buffer output from the connected audio output.
              * @return If the InputPin is not connected or somewhere down the graph silence is being output nullptr can be returned.
              */
-            SampleBufferPtr pull();
+            SampleBuffer* pull();
             
             /**
              * Connects another node's @OutputPin to this input.
@@ -121,7 +121,7 @@ namespace nap
              * This method can be used by the node to pull a buffer of samples for every connected output pin.
              * @return: the vector can contain nullptr items if somewhere down the line of connection silence is returned.
              */
-            std::vector<SampleBufferPtr> pull();
+            std::vector<SampleBuffer*> pull();
             
             /**
              * Connects @input to this pin.
@@ -182,7 +182,7 @@ namespace nap
             /**
              * Used by @InputPin to poll this output for a new buffer of output samples
              */
-            SampleBufferPtr pull();
+            SampleBuffer* pull();
             
         protected:
             SampleBuffer mBuffer; ///< The buffer containing the latest output

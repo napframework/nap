@@ -31,13 +31,14 @@ namespace nap
         bool LevelMeterComponentInstance::init(utility::ErrorState& errorState)
         {
             auto resource = getComponent<LevelMeterComponent>();
+            auto audioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
             for (auto channel = 0; channel < mInput->getChannelCount(); ++channel)
             {
-                mMeters.emplace_back(make_node<LevelMeterNode>(getNodeManager()));
+                mMeters.emplace_back(audioService->makeSafe<LevelMeterNode>(audioService->getNodeManager()));
                 
                 if (resource->mFilterInput)
                 {
-                    auto filter = make_node<FilterNode>(getNodeManager());
+                    auto filter = audioService->makeSafe<FilterNode>(getNodeManager());
                     filter->setMode(FilterNode::EMode::BandPass);
                     filter->setFrequency(resource->mCenterFrequency);
                     filter->setGain(resource->mFilterGain);

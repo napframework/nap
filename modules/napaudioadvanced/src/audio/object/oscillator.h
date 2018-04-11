@@ -6,6 +6,7 @@
 // Audio includes
 #include <audio/core/audioobject.h>
 #include <audio/node/oscillatornode.h>
+#include <audio/utility/safeptr.h>
 
 namespace nap
 {
@@ -18,20 +19,17 @@ namespace nap
             RTTI_ENABLE(MultiChannelObject)
             
         public:
-            Oscillator()
-            {
-                mWaveTable = std::make_shared<WaveTable>(2048);
-            }
-            
             int mChannelCount = 1;
             std::vector<ControllerValue> mFrequency = { 220.f };
             std::vector<ControllerValue> mAmplitude = { 1.f };
             ResourcePtr<AudioObject> mFmInput;
             
         private:
-            NodePtr<Node> createNode(int channel, NodeManager& nodeManager) override
+            SafeOwner<Node> createNode(int channel, AudioService& audioService) override
             {
-                auto node = make_node<OscillatorNode>(nodeManager, mWaveTable);
+                if (mWaveTable == nullptr)
+                    mWaveTable = audioService.makeSafe<WaveTable>(2048);
+                SafeOwner<OscillatorNode> node = audioService.makeSafe<OscillatorNode>(audioService.getNodeManager(), mWaveTable.get());
                 node->setFrequency(mFrequency[channel % mFrequency.size()]);
                 node->setAmplitude(mAmplitude[channel % mAmplitude.size()]);
                 if (mFmInput != nullptr)
@@ -43,7 +41,7 @@ namespace nap
             }
             
             int getChannelCount() const override { return mChannelCount; }
-            std::shared_ptr<WaveTable> mWaveTable = nullptr;
+            SafeOwner<WaveTable> mWaveTable = nullptr;
         };
         
        

@@ -7,10 +7,11 @@
 
 // Audio includes
 #include <audio/utility/audiofunctions.h>
+#include <audio/utility/safeptr.h>
 #include <audio/core/audionodemanager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OscillatorNode)
-    RTTI_CONSTRUCTOR(nap::audio::NodeManager&, std::shared_ptr<nap::audio::WaveTable>&)
+    RTTI_CONSTRUCTOR(nap::audio::NodeManager&, nap::audio::SafePtr<nap::audio::WaveTable>&)
     RTTI_FUNCTION("setFrequency", &nap::audio::OscillatorNode::setFrequency)
     RTTI_FUNCTION("getFrequency", &nap::audio::OscillatorNode::getFrequency)
     RTTI_FUNCTION("setAmplitude", &nap::audio::OscillatorNode::setAmplitude)
@@ -95,7 +96,7 @@ namespace nap
         
 // --- Oscillator --- //
 
-        OscillatorNode::OscillatorNode(NodeManager& manager, std::shared_ptr<WaveTable>& aWave) :
+        OscillatorNode::OscillatorNode(NodeManager& manager, SafePtr<WaveTable> aWave) :
             Node(manager),
             mWave(aWave)
         {
@@ -148,7 +149,7 @@ namespace nap
         }
         
         
-        void OscillatorNode::setWave(std::shared_ptr<WaveTable>& wave)
+        void OscillatorNode::setWave(SafePtr<WaveTable>& wave)
         {
             mWave = wave;
             mStep = mWave->getSize() / getNodeManager().getSampleRate();
