@@ -198,7 +198,7 @@ void AddEntityToSceneCommand::redo()
 
 	auto doc = AppContext::get().getDocument();
 	mIndex = doc->addEntityToScene(*scene, *entity);
-	doc->objectChanged(*scene);
+
 }
 
 ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop, size_t index)

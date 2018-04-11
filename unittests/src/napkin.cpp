@@ -624,22 +624,109 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 
 }
 
+#define entityName "Entity"
 
-//TEST_CASE("Component to Component pointer", TAG_NAPKIN)
-//{
-//	auto& ctx = AppContext::get();
-//	auto doc = ctx.newDocument();
-//	nap::Entity& entity = doc->addEntity();
-//	auto fpcam = doc->addComponent<nap::FirstPersonController>(entity);
-//	REQUIRE(fpcam != nullptr);
-//	REQUIRE(!fpcam->mID.empty());
-//	auto perspcam = doc->addComponent<nap::PerspCameraComponent>(entity);
-//	REQUIRE(perspcam != nullptr);
-//	REQUIRE(!fpcam->mID.empty());
-//	PropertyPath selectionPath(*fpcam, "PerspCameraComponent");
-//	REQUIRE(selectionPath.isValid());
-//	setPointee(selectionPath, perspcam);
-//
-//	std::string serialized_doc = ctx.documentToString();
-//	REQUIRE(!serialized_doc.empty());
-//}
+TEST_CASE("Component to Component pointer", TAG_NAPKIN)
+{
+	auto& ctx = napkin::AppContext::get();
+	std::string serializedData;
+
+	auto doc = ctx.newDocument();
+
+	nap::Entity& entity = doc->addEntity();
+	doc->setObjectName(entity, entityName);
+	REQUIRE(entity.mID == entityName);
+
+	auto fpcam = doc->addComponent<nap::FirstPersonController>(entity);
+	REQUIRE(fpcam != nullptr);
+	REQUIRE(!fpcam->mID.empty());
+
+	auto perspcam = doc->addComponent<nap::PerspCameraComponent>(entity);
+	REQUIRE(perspcam != nullptr);
+	REQUIRE(!fpcam->mID.empty());
+
+	napkin::PropertyPath perspCamPath(*fpcam, "PerspCameraComponent");
+	REQUIRE(perspCamPath.isValid());
+
+	perspCamPath.setPointee(perspcam);
+
+	auto pointee = perspCamPath.getPointee();
+	REQUIRE(pointee == perspcam);
+
+	serializedData = ctx.documentToString();
+	nap::Logger::info(serializedData);
+	REQUIRE(!serializedData.empty());
+
+	auto loadedDoc = ctx.loadDocumentFromString(serializedData);
+	REQUIRE(loadedDoc != nullptr);
+
+	auto loadedEntity = loadedDoc->getObject(entityName);
+	REQUIRE(loadedEntity != nullptr);
+}
+
+TEST_CASE("Pointer 'paths'", TAG_NAPKIN)
+{
+	auto doc = napkin::AppContext::get().newDocument();
+
+	auto& entity = doc->addEntity();
+	doc->setObjectName(entity, "Line");
+	auto selA = doc->addComponent<nap::LineSelectionComponent>(entity);
+	REQUIRE(selA != nullptr);
+	auto selB = doc->addComponent<nap::LineSelectionComponent>(entity);
+	REQUIRE(selB != nullptr);
+	auto blend = doc->addComponent<nap::LineBlendComponent>(entity);
+	REQUIRE(blend != nullptr);
+
+	PropertyPath selAPath(*blend, "SelectionComponentOne");
+	REQUIRE(selAPath.isValid());
+	PropertyPath selBPath(*blend, "SelectionComponentTwo");
+	REQUIRE(selBPath.isValid());
+
+}
+
+TEST_CASE("Pointer 'paths' 2", TAG_NAPKIN)
+{
+	auto doc = napkin::AppContext::get().loadDocument("unit_tests_data/entitystructure.json");
+
+	SECTION("absolute entity paths")
+	{
+		auto eBike = doc->getObject<nap::Entity>("Bike");
+		REQUIRE(eBike != nullptr);
+		REQUIRE(doc->absoluteObjectPath(*eBike) == "/Bike");
+
+		auto eHandleBars = doc->getObject<nap::Entity>("Handlebars");
+		REQUIRE(eHandleBars != nullptr);
+		REQUIRE(doc->absoluteObjectPath(*eHandleBars) == "/Bike/Handlebars");
+
+		auto eBell = doc->getObject<nap::Entity>("Bell");
+		REQUIRE(eBell!= nullptr);
+		REQUIRE(doc->absoluteObjectPath(*eBell) == "/Bike/Handlebars/Bell");
+	}
+
+	SECTION("absolute component paths")
+	{
+		auto cTransform2 = doc->getObject<nap::Component>("Transform_2");
+		REQUIRE(cTransform2 != nullptr);
+		REQUIRE(doc->absoluteObjectPath(*cTransform2) == "/Bike/Wheel_2/Transform_2");
+	}
+
+	SECTION("relative component path")
+	{
+		auto cPointerInput 	= doc->getObject<nap::Component>("PointerInput");
+		auto cKeyInput 		= doc->getObject<nap::Component>("KeyInput");
+		auto cTrans3 		= doc->getObject<nap::Component>("Transform_3");
+		auto cOrthoCam 		= doc->getObject<nap::Component>("OrthoCam");
+		auto cRotate 		= doc->getObject<nap::Component>("Rotate");
+
+		REQUIRE(cPointerInput != nullptr);
+		REQUIRE(cKeyInput     != nullptr);
+		REQUIRE(cTrans3       != nullptr);
+		REQUIRE(cOrthoCam     != nullptr);
+
+		REQUIRE(doc->relativeObjectPath(*cPointerInput, *cKeyInput) == "./KeyInput");
+		REQUIRE(doc->relativeObjectPath(*cPointerInput, *cTrans3)   == "../Transform_3");
+		REQUIRE(doc->relativeObjectPath(*cPointerInput, *cOrthoCam) == "./Bell/OrthoCam");
+		REQUIRE(doc->relativeObjectPath(*cOrthoCam,     *cRotate)   == "../../../Life/Fauna/Cats/Rotate");
+	}
+
+}

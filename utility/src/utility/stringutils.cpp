@@ -31,6 +31,7 @@ namespace nap
 			return ret;
 		}
 
+
 		// Write a string to ostream (binary)
 		void writeString(std::ostream& stream, const std::string& text)
 		{
@@ -175,6 +176,7 @@ namespace nap
 			}
 			return outString;
 		}
+
 
 	}
 

@@ -87,6 +87,13 @@ namespace napkin
 		Document* loadDocument(const QString& filename);
 
 		/**
+		 * Load a json string as document
+		 * @param data The json data to load.
+		 * @return A Document instance if loading succeeded, nullptr otherwise
+		 */
+		Document* loadDocumentFromString(const std::string& data, const QString& filename = "");
+
+		/**
 		 * Save the current data to disk using the currently set filename.
 		 * If no filename has been set, this method will do nothing.
 		 * The filename can be set by invoking saveFileAs(const QString& filename) before calling this method.
@@ -224,7 +231,7 @@ namespace napkin
 		 * @param comp
 		 * @param owner
 		 */
-		void componentAdded(nap::Component& comp, nap::Entity& owner);
+		void componentAdded(nap::Component* comp, nap::Entity* owner);
 
 		/**
 		 * Qt Signal
@@ -234,20 +241,20 @@ namespace napkin
 		 * 		This is a notification, not a directive.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::Object& obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object* obj, bool selectNewObject);
 
 		/**
 		 * Qt Signal
 		 * Invoked after an object has changed drastically
 		 */
-		void objectChanged(nap::rtti::Object& obj);
+		void objectChanged(nap::rtti::Object* obj);
 
 		/**
 		 * Qt Signal
 		 * Invoked just before an object is removed (including Entities)
 		 * @param object The object about to be removed
 		 */
-		void objectRemoved(nap::rtti::Object& object);
+		void objectRemoved(nap::rtti::Object* object);
 
 		/**
 		 * Qt Signal

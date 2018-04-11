@@ -62,9 +62,9 @@ Document* AppContext::newDocument()
 	mDocument = std::make_unique<Document>(getCore());
 	connectDocumentSignals();
 	newDocumentCreated();
-	Document* doc = mDocument.get();
-	documentChanged(doc);
-	return doc;
+
+	documentChanged(mDocument.get());
+	return mDocument.get();
 }
 
 Document* AppContext::loadDocument(const QString& filename)
@@ -74,27 +74,44 @@ Document* AppContext::loadDocument(const QString& filename)
 	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
 
 	ErrorState err;
-
 	nap::rtti::DeserializeResult result;
-	if (!readJSONFile(filename.toStdString(), EPropertyValidationMode::AllowMissingProperties, getCore().getResourceManager()->getFactory(), result, err))
+	std::string buffer;
+	if (!readFileToString(filename.toStdString(), buffer, err))
 	{
-		nap::Logger::fatal(err.toString());
+		nap::Logger::error(err.toString());
+		return nullptr;
+	}
+
+	return loadDocumentFromString(buffer, filename);
+}
+
+Document* AppContext::loadDocumentFromString(const std::string& data, const QString& filename)
+{
+	ErrorState err;
+	nap::rtti::DeserializeResult result;
+	auto& factory = getCore().getResourceManager()->getFactory();
+
+	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, factory, result, err))
+	{
+		nap::Logger::error(err.toString());
 		return nullptr;
 	}
 
 	if (!NapkinLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
 	{
-		nap::Logger::fatal("Failed to resolve links: %s", err.toString().c_str());
+		nap::Logger::error("Failed to resolve links: %s", err.toString().c_str());
 		return nullptr;
 	}
 
 	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
+
 	connectDocumentSignals();
 	documentOpened(filename);
 	Document* doc = mDocument.get();
-	documentChanged(doc); // Stack corruption?
+	documentChanged(doc);
 	return doc;
 }
+
 
 void AppContext::saveDocument()
 {
@@ -139,7 +156,7 @@ std::string AppContext::documentToString() const
 	if (!serializeObjects(objects, writer, err))
 	{
 		nap::Logger::fatal(err.toString());
-		return std::string();
+		return {};
 	}
 	return writer.GetJSON();
 }
@@ -263,6 +280,7 @@ void AppContext::onUndoIndexChanged()
 {
 	documentChanged(mDocument.get());
 }
+
 
 
 
