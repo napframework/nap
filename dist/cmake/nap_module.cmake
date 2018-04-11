@@ -115,7 +115,7 @@ if (MODULE_INTO_PROJ)
 endif()
 
 # Bring in any additional module requirements
-set(MODULE_EXTRA_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/moduleExtra.cmake)
+set(MODULE_EXTRA_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/module_extra.cmake)
 if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
     include (${MODULE_EXTRA_CMAKE_PATH})
 endif()

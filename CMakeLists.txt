@@ -59,7 +59,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include(configure.cmake)
 
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packagingStaging)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging_staging)
 
 if(WIN32)
     if(MINGW)

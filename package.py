@@ -10,14 +10,14 @@ import sys
 from sys import platform
 
 WORKING_DIR = '.'
-BUILD_DIR = 'packagingBuild'
-LIB_DIR = 'packagingLib'
-BIN_DIR = 'packagingBin'
-PACKAGING_DIR = 'packagingStaging'
+BUILD_DIR = 'packaging_build'
+LIB_DIR = 'packaging_lib'
+BIN_DIR = 'packaging_bin'
+PACKAGING_DIR = 'packaging_staging'
 ARCHIVING_DIR = 'archiving'
-BUILDINFO_FILE = 'dist/cmake/buildInfo.json'
+BUILDINFO_FILE = 'dist/cmake/build_info.json'
 BUILD_TYPES = ('Release', 'Debug')
-
+    
 ERROR_PACKAGE_EXISTS = 1
 ERROR_INVALID_VERSION = 2
 
@@ -76,9 +76,10 @@ def clean_the_build():
     print("Cleaning...")
     if platform.startswith('linux'):    
         for build_type in BUILD_TYPES:
-            if os.path.exists(BUILD_DIR + build_type):
-                print("Clean removing %s" % os.path.abspath(BUILD_DIR + build_type))
-                shutil.rmtree(BUILD_DIR + build_type, True)
+            build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
+            if os.path.exists(build_dir_for_type):
+                print("Clean removing %s" % os.path.abspath(build_dir_for_type))
+                shutil.rmtree(build_dir_for_type, True)
     else:
         if os.path.exists(BUILD_DIR):
             print("Clean removing %s" % os.path.abspath(BUILD_DIR))
@@ -111,7 +112,7 @@ def package_for_linux(package_basename, timestamp, git_revision, include_apps, i
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
-        build_dir_for_type = BUILD_DIR + build_type
+        build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
         call(WORKING_DIR, ['cmake', 
                            '-H.', 
                            '-B%s' % build_dir_for_type, 

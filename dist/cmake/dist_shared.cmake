@@ -32,10 +32,10 @@ endmacro()
 # Generic way to import each module for different configurations.  Included is a primitive mechanism for 
 # extra per-module cmake logic.
 macro(find_nap_module MODULE_NAME)
-    if (EXISTS ${NAP_ROOT}/usermodules/${MODULE_NAME}/)
+    if (EXISTS ${NAP_ROOT}/user_modules/${MODULE_NAME}/)
         message("Module is user module: ${MODULE_NAME}")
         set(MODULE_INTO_PROJ TRUE)
-        add_subdirectory(${NAP_ROOT}/usermodules/${MODULE_NAME} usermodules/${MODULE_NAME})
+        add_subdirectory(${NAP_ROOT}/user_modules/${MODULE_NAME} user_modules/${MODULE_NAME})
         unset(MODULE_INTO_PROJ)
 
         # On Windows copy over module DLLs post-build
@@ -89,7 +89,7 @@ macro(find_nap_module MODULE_NAME)
         endif()
 
         # Bring in any additional module requirements
-        set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
+        set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
         if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
             include (${MODULE_EXTRA_CMAKE_PATH})
         endif()
@@ -275,8 +275,8 @@ endmacro()
 # Populate modules list from project.json into var NAP_MODULES
 macro(project_json_to_cmake)
     # Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
-    configure_file(${CMAKE_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ProjectJsonTriggerDummy.json
+    configure_file(${CMAKE_SOURCE_DIR}/project.json project_json_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove project_json_trigger_dummy.json
                     ERROR_QUIET)
 
     # Clear any system Python path settings
@@ -293,7 +293,7 @@ macro(project_json_to_cmake)
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}")
     endif()
 
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR}
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/project_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR}
                     RESULT_VARIABLE EXIT_CODE
                     )
     if(NOT ${EXIT_CODE} EQUAL 0)

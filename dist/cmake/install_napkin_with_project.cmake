@@ -55,9 +55,9 @@ if(WIN32)
                                    $<TARGET_FILE_DIR:${PROJECT_NAME}>
                            )
 
-        # Run any moduleExtra to install module dependent DLLs
-        if(EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
-            include(${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
+        # Run any module_extra to install module dependent DLLs
+        if(EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
+            include(${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
         endif()
     endforeach()
 elseif(APPLE)
