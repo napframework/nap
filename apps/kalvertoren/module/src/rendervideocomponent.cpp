@@ -47,7 +47,16 @@ namespace nap
 
 	void RenderVideoComponentInstance::update(double deltaTime)
 	{
+		if (mTransferring)
+		{
+#ifndef _DEBUG 
+			mTarget->getColorTexture().endGetData(mBitmap);
+#else
+			mTarget->getColorTexture().getData(mBitmap);
+#endif // DEBUG
 
+		}
+		mTransferring = false;
 	}
 
 
@@ -71,6 +80,12 @@ namespace nap
 		// Render off screen surface
 		std::vector<nap::RenderableComponentInstance*> obj_to_render = { &render_plane };
 		mRenderService->renderObjects(mTarget->getTarget(), *mCameraComponent, obj_to_render);
+
+		// Start pixel data transfer so reading it later is performant
+#ifndef _DEBUG 
+		mTarget->getColorTexture().startGetData();
+#endif // !DEBUG
+		mTransferring = true;
 	}
 
 }

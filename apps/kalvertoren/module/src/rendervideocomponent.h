@@ -70,6 +70,11 @@ namespace nap
 		 */
 		Texture2D& getTexture()													{ return mTarget->getColorTexture(); }
 
+		/**
+		 *	@return the output bitmap
+		 */
+		nap::Bitmap& getBitmap()												{ return mBitmap; }
+
 		ComponentInstancePtr<RenderableMeshComponent> mRenderableComponent =	{ this, &RenderVideoComponent::mRenderableComponent };
 		ComponentInstancePtr<OrthoCameraComponent> mCameraComponent =			{ this, &RenderVideoComponent::mCameraComponent };
 
@@ -77,5 +82,7 @@ namespace nap
 		RenderService*	mRenderService = nullptr;
 		RenderTarget*	mTarget = nullptr;
 		Video*			mVideoPlayer = nullptr;
+		Bitmap			mBitmap;
+		bool			mTransferring = false;
 	};
 }

@@ -10,6 +10,7 @@
 #include "lightintensitycomponent.h"
 #include "applyvideocomponent.h"
 #include "rendervideocomponent.h"
+#include "videocontrolcomponent.h"
 
 #include <imguiservice.h>
 #include <nap/core.h>
@@ -285,6 +286,15 @@ namespace nap
 				{
 					tracer->selectChannel(mSelectChannel);
 				}
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Video"))
+		{
+			VideoControlComponentInstance& video_comp = mApp.compositionEntity->getComponent<VideoControlComponentInstance>();
+			if (ImGui::Button(video_comp.isPlaying() ? "Stop" : "Start"))
+			{
+				video_comp.play(!video_comp.isPlaying());
 			}
 		}
 		ImGui::End();

@@ -23,7 +23,8 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ResourcePtr<nap::Video> mVideoPlayer = nullptr;
+		ResourcePtr<nap::Video> mVideoPlayer = nullptr;		///< property: link to video player
+		float mFadeTime = 1.0f;								///< property: fade time in seconds
 	};
 
 
@@ -56,7 +57,23 @@ namespace nap
 		 */
 		void render();
 
+		/**
+		 *	@return brightness value based on time in video sequence
+		 */
+		float getIntensity();
+
+		/**
+		 * @return if the video is playing
+		 */
+		bool isPlaying() const						{ return mVideoPlayer->isPlaying();  }
+
+		/**
+		 *	Start the video
+		 */
+		void play(bool value);
+
 	private:
 		nap::Video* mVideoPlayer = nullptr;
+		float mFadeTime = 1.0f;
 	};
 }

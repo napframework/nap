@@ -567,21 +567,32 @@
                 {
                     "Type": "nap::VideoControlComponent",
                     "mID": "VideoController",
-                    "Player" : "VideoPlayer"
+                    "Player": "VideoPlayer"
                 },
                 {
                     "Type": "nap::audio::VideoAudioComponent",
+                    "mID": "VideoAudioComponent",
                     "Video": "VideoPlayer",
-                    "mID": "VideoAudioComponent"
+                    "ChannelCount": 2
                 },
                 {
                     "Type": "nap::audio::OutputComponent",
+                    "mID": "nap::audio::OutputComponent",
                     "Input": "VideoAudioComponent",
-                    "Routing": [ 0 , 1 ]
+                    "Routing": [
+                        0,
+                        1
+                    ]
                 },
                 {
                     "Type": "nap::audio::LevelMeterComponent",
-                    "Input": "VideoAudioComponent"
+                    "mID": "nap::audio::LevelMeterComponent",
+                    "Input": "VideoAudioComponent",
+                    "AnalysisWindowSize": 10.0,
+                    "MeterType": "RMS",
+                    "FilterInput": false,
+                    "CenterFrequency": 10000.0,
+                    "BandWidth": 10000.0
                 }
             ],
             "Children": [
@@ -737,6 +748,10 @@
                     "Mesh": "HeiligewegMesh",
                     "Selector": "./ColorMethodSelectorHeiligeweg",
                     "LightRegulator": "nap::LightIntensityComponent",
+                    "VideoRenderer": "RenderVideoComponent",
+                    "ColorGrid": "PaletteGrid",
+                    "VideoColors": "VideoColors",
+                    "IndexMap" : "IndexMap",
                     "VideoController" : "../VideoController"
                 },
                 {
@@ -797,6 +812,10 @@
                     "Mesh": "KalverMesh",
                     "Selector": "./ColorMethodSelectorKalver",
                     "LightRegulator": "nap::LightIntensityComponent",
+                    "VideoRenderer": "RenderVideoComponent",
+                    "ColorGrid": "PaletteGrid",
+                    "VideoColors": "VideoColors",
+                    "IndexMap" : "IndexMap",
                     "VideoController" : "../VideoController"
                 },
                 {
@@ -937,8 +956,8 @@
                 {
                     "Type": "nap::RenderVideoComponent",
                     "mID": "RenderVideoComponent",
+                    "Player": "VideoPlayer",
                     "Target": "VideoRenderTarget",
-                    "Player" : "VideoPlayer",
                     "RenderComponent": "./RenderableVideoPlaneMeshComponent",
                     "CameraComponent": "CompositionCamera"
                 },
@@ -1107,6 +1126,10 @@
                     "Mesh": "SingelMesh",
                     "Selector": "./ColorMethodSelectorSingel",
                     "LightRegulator": "nap::LightIntensityComponent",
+                    "VideoRenderer": "RenderVideoComponent",
+                    "ColorGrid": "PaletteGrid",
+                    "VideoColors": "VideoColors",
+                    "IndexMap" : "IndexMap",
                     "VideoController" : "../VideoController"
                 },
                 {
@@ -1988,6 +2011,12 @@
             "Path": "video/opening_test2.mp4",
             "Loop": true,
             "Speed": 1.0
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "VideoColors",
+            "Palette": "M42 C3 L10 A2 A14 E3 E21 I21 D4 J21 I3 A15 B2",
+            "Variations": "VideoVariations"
         },
         {
             "Type": "nap::WeekColors",
@@ -3024,6 +3053,27 @@
                     1,
                     5,
                     4
+                ]
+            ]
+        },
+        {
+            "Type": "nap::WeekVariations",
+            "mID": "VideoVariations",
+            "Variations": [
+                [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12
                 ]
             ]
         },

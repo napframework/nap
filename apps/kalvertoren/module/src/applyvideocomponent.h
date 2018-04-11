@@ -4,7 +4,10 @@
 #include "compositioncomponent.h"
 #include "colorpalettecomponent.h"
 #include "rendercompositioncomponent.h"
+#include "ledcolorpalettegrid.h"
+#include "rendervideocomponent.h"
 #include "videocontrolcomponent.h"
+#include "indexmap.h"
 
 #include <component.h>
 #include <componentptr.h>
@@ -29,7 +32,11 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ComponentPtr<VideoControlComponent>	mVideoController;			///< property: link to the composition component
+		ComponentPtr<RenderVideoComponent>	mVideoRenderer;				///< property: link to the video render component
+		ComponentPtr<VideoControlComponent>	mVideoController;			///< property: link to the video controller
+		ResourcePtr<LedColorPaletteGrid> mColorGrid;					///< property: link to the color palette grid
+		ResourcePtr<WeekColors> mVideoColors;							///< property: link to the specified video colors
+		ResourcePtr<IndexMap> mIndexMap;								///< property: link to the index map
 	};
 
 
@@ -56,7 +63,31 @@ namespace nap
 		 */
 		virtual void applyColor(double deltaTime) override;
 
+		// Resolved pointer to the video renderer
+		ComponentInstancePtr<RenderVideoComponent> mVideoRenderer =		{ this, &ApplyVideoComponent::mVideoRenderer };
+
 		// Resolved pointer to the video controller
-		ComponentInstancePtr<VideoControlComponent> mVideoController = { this, &ApplyVideoComponent::mVideoController };
+		ComponentInstancePtr<VideoControlComponent> mVideoController =	{ this, &ApplyVideoComponent::mVideoController };
+
+	private:
+		/**
+		 * Builds a map that binds the index colors to the currently selected palette colors
+		 * Note that when the index color count > palette color count the first palette color is used
+		 */
+		void updateSelectedPalette();
+
+		/**
+		* @param indexColor the color to get the associated palette color for
+		* @return the palette color associated with a certain index map color
+		*/
+		LedColorPaletteGrid::PaletteColor getPaletteColor(const IndexMap::IndexColor& indexColor) const;
+
+		// Map that binds index colors to current color palette colors
+		std::map<IndexMap::IndexColor, LedColorPaletteGrid::PaletteColor> mIndexToPaletteMap;
+
+		// Members from resource
+		LedColorPaletteGrid* mColorGrid = nullptr;
+		WeekColors* mVideoColors = nullptr;
+		IndexMap* mIndexMap = nullptr;
 	};
 }
