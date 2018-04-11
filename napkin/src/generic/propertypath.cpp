@@ -189,8 +189,9 @@ void napkin::PropertyPath::setPointee(Object* pointee)
 	nap::rtti::ResolvedPath resolved_path = resolve();
 	assert(resolved_path.isValid());
 
-	// FIXME: This is a hack.
+	// TODO: This is a hack to find ComponentPtr/ObjectPtr/EntityPtr method
 	// Someone just needs to add an 'assign' method in the wrong place and it will break.
+	// Also, ObjectPtr's assign method starts with uppercase A
 	rttr::method assign_method = nap::rtti::findMethodRecursive(resolved_path.getType(), "assign");
 	if (assign_method.is_valid())
 	{

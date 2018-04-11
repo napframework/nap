@@ -58,6 +58,10 @@ void napkin::ResourceModel::refresh()
 
 ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 {
+	ObjectItem* item = napkin::findItemInModel<ObjectItem>(*this, ob);
+	if (item != nullptr)
+		return item;
+
 	auto typeItem = new RTTITypeItem(ob.get_type());
 
 	// Entity?
@@ -87,7 +91,7 @@ ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 		return nullptr;
 
 	// ... now the rest in Objects...
-	auto item = new ObjectItem(&ob);
+	item = new ObjectItem(&ob);
 	mObjectsItem.appendRow({item, typeItem});
 	return item;
 }
@@ -249,17 +253,17 @@ void napkin::ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* pare
 	mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *entity));
 }
 
-void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
+void napkin::ResourcePanel::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 {
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
-	mTreeView.selectAndReveal(findItemInModel<ObjectItem>(mModel, comp));
+	mTreeView.selectAndReveal(findItemInModel<ObjectItem>(mModel, *comp));
 }
 
-void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object& obj, bool selectNewObject)
+void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object* obj, bool selectNewObject)
 {
-	auto item = mModel.addObjectItem(obj);
+	auto item = mModel.addObjectItem(*obj);
 	if (selectNewObject)
 		mTreeView.selectAndReveal(item);
 }
@@ -271,9 +275,9 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 }
 
 
-void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object& object)
+void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object* object)
 {
-	mModel.removeObjectItem(object);
+	mModel.removeObjectItem(*object);
 }
 
 void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
