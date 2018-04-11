@@ -142,7 +142,7 @@ def check_build_environment():
     # If everything looks good log and exit
     if distribution_version_ok and build_essential_installed and patchelf_installed and cmake_ok:
         print("Your build environment appears to be ready for NAP!")
-        return
+        return False
 
     print("Some issues were encountered:")
 
@@ -164,15 +164,19 @@ def check_build_environment():
     if len(packages_to_install) > 0:
         package_str = ' '.join(packages_to_install)
         print("\nThe following package/s are required and are not installed: %s" % package_str)
-        installation_approved = read_yes_no("Kick off installation?")
+        installation_approved = read_yes_no("Kick off installation via apt?")
         if installation_approved:
             subprocess.call('sudo apt-get install %s' % package_str, shell=True)
+            return True
         else:
             print("Re-run checkBuildEnvironment once you have installed the requirements.")
+            return False
     else:
         # If cmake is installed but the version is too low, let them know.  This will only occur on pre 16.04 Ubuntu distros.
         if not cmake_ok:
             print("\nYour installed cmake version is less than the minimum 3.5 required")
+            return False
 
 if __name__ == '__main__':
-    check_build_environment()
+     while check_build_environment():
+         print("\nRe-running checks...\n")
