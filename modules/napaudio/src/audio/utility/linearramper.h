@@ -1,5 +1,8 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 // Nap includes
 #include <nap/signalslot.h>
 
@@ -27,18 +30,35 @@ namespace nap
              */
             void ramp(const T& destination, int stepCount)
             {
-                // if there are zero steps we reach the destination of the ramp immediately
-                if (stepCount == 0)
-                {
-                    mStepCount = 0;
-                    mValue = destination;
-                    destinationReachedSignal(mValue);
-                }
+                assert(stepCount >= 0);
                 
-                mDestination = destination;
-                mStepCount = stepCount;
-                mStepCounter = 0;
-                mIncrement = (mDestination - mValue) / T(mStepCount);
+                mNewStepCount.store(stepCount);
+                mNewDestination.store(destination);
+                
+            }
+            
+            void updateRamp()
+            {
+                T newDestination = mNewDestination.load();
+                int newStepCount = mNewStepCount.load();
+                
+                if (newDestination != mDestination || newStepCount != mStepCount)
+                {
+                    mDestination = newDestination;
+                    mStepCount = newStepCount;
+                    
+                    // if there are zero steps we reach the destination of the ramp immediately
+                    if (mStepCount == 0)
+                    {
+                        mStepCounter = 0;
+                        mValue = mDestination;
+                        destinationReachedSignal(mValue);
+                        return;
+                    }
+                    
+                    mStepCounter = mStepCount;
+                    mIncrement = (mDestination - mValue) / T(mStepCount);
+                }
             }
             
             /**
@@ -46,13 +66,14 @@ namespace nap
              */
             void step()
             {
-                if (mStepCount > 0)
+                updateRamp();
+                
+                if (mStepCounter > 0)
                 {
                     mValue += mIncrement;
-                    mStepCounter++;
-                    if (mStepCounter == mStepCount)
+                    mStepCounter--;
+                    if (mStepCounter <= 0)
                     {
-                        mStepCount = 0;
                         mValue = mDestination;
                         destinationReachedSignal(mValue);
                     }
@@ -64,13 +85,14 @@ namespace nap
              */
             void stop()
             {
-                mStepCount = 0;
+                mNewStepCount.store(0);
+                mNewDestination.store(mValue);
             }
             
             /**
              * Returns true when currently playing a ramp
              */
-            bool isRamping() const { return mStepCount > 0; }
+            bool isRamping() const { return mStepCounter > 0; }
             
             /**
              * Signal emitted when the destination of a ramp has been reached.
@@ -78,11 +100,14 @@ namespace nap
             nap::Signal<T> destinationReachedSignal;
             
         private:
+            std::atomic<T> mNewDestination = { 0 };
+            std::atomic<int> mNewStepCount = { 0 };
+            
             T& mValue; // Value that is being controlled by this object.
             T mIncrement = 0; // Increment value per step of the current ramp.
             T mDestination = 0; // Destination value of the current ramp.
-            int mStepCounter = 0; // Current step index
-            int mStepCount = 0; // Number of steps in the current ramp.
+            int mStepCount = 0; // Number of steps in the ramp.
+            std::atomic<int> mStepCounter = { 0 }; // Current step index, 0 means at destination
         };
         
         
