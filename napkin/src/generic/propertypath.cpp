@@ -197,7 +197,11 @@ void napkin::PropertyPath::setPointee(Object* pointee)
 	{
 		// Assign the new value to the pointer (note that we're modifying a copy)
 		auto target_value = resolved_path.getValue();
-		assign_method.invoke(target_value, pointee->mID, *pointee);
+
+		auto doc = AppContext::get().getDocument(); // TODO: This needs to go, but we need it to get a relative path.
+		std::string path = doc->relativeObjectPath(*mObject, *pointee);
+
+		assign_method.invoke(target_value, path, *pointee);
 
 		// Apply the modified value back to the source property
 		bool value_set = resolved_path.setValue(target_value);
