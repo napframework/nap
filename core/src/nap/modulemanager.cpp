@@ -330,12 +330,12 @@ namespace nap
 		}
 		
 		// User modules
-		searchDir = napRoot + "usermodules";
+		searchDir = napRoot + "user_modules";
 		filesInDirectory.clear();
 		utility::listDir(searchDir.c_str(), filesInDirectory, false);
 		for (const std::string& module: filesInDirectory)
 		{
-			std::string dirName = napRoot + "usermodules/" + module + "/lib/" + buildType;
+			std::string dirName = napRoot + "user_modules/" + module + "/lib/" + buildType;
 			if (!utility::dirExists(dirName))
 				continue;
 			outSearchDirectories.push_back(dirName);
@@ -363,7 +363,7 @@ namespace nap
 			// NAP modules
 			outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
 			// User modules
-			outSearchDirectories.push_back(napRoot + "usermodules/" + module + "/lib/" + buildType);
+			outSearchDirectories.push_back(napRoot + "user_modules/" + module + "/lib/" + buildType);
 		}
 		
 		// Project module
