@@ -21,15 +21,19 @@ namespace nap
 
         
         /**
-         * The DeletionQueue holds the data that was owned by @SafeOwner smart-pointers until they went out of scope.
-         * SafeOwner's destructor disposes it's owned data in the DeletionQueue and the DeletionQueue takes over ownership over this data. The data does not only contain a pointer to the owned object but also a list of all SafePtrs that point to the SafeOwner's data.
-         * The DeletionQueue needs to be cleared regularly using the clear() method to free the heap of disposed data. When the DeletionQueue is cleared all SafePtrs that point to an object in the bin are set to nullptr.
-         * By making use of the DeletionQueue in combination with @SafeOwner and @SafePtr the programmer can control or restrict the moment where objects are  destructed and also choose the thread on which this will happen.
+         * The DeletionQueue holds the data that was previously owned by @SafeOwner smart-pointers before they went out of scope.
+         * SafeOwner's destructor disposes it's owned data in the DeletionQueue and the DeletionQueue takes over ownership over this data. The data does not only contain a pointer to the owned object but also a list of all SafePtrs that point to the object.
+         * The DeletionQueue needs to be cleared regularly using the clear() method to free the heap of disposed data. When the DeletionQueue is cleared all SafePtrs that point to an object held by the queue will be cleared as well.
+         * By making use of the DeletionQueue in combination with @SafeOwner and @SafePtr the programmer can control or restrict the moment where objects are destructed and also choose the thread on which this will happen.
          */
         class DeletionQueue final
         {
         public:
             DeletionQueue() = default;
+            
+            /**
+             * The destructor clears the queue so all memory still held will be freed.
+             */
             ~DeletionQueue()
             {
                 clear();
@@ -49,8 +53,8 @@ namespace nap
             }
 
             /**
-             * Clears the DeletionQueue by destructing the objects is contains.
-             * It also sets all SafePtrs that point to the objects in the DeletionQueue to nullptr.
+             * Clears the DeletionQueue by destructing the objects it contains.
+             * It also clears all the SafePtrs that point to objects in the queue.
              */
             void clear()
             {
@@ -63,12 +67,12 @@ namespace nap
             
         private:
             /*
-             * Destroys one object from the bin and sets all SafePtrs in the list pointing to the object to nullptr.
+             * Destroys one object from the bin and clears all SafePtrs in the list pointing to the object.
              */
             template <typename T>
             static void destroy(typename SafeOwner<T>::Data* ownerData)
             {
-                // Sets SafePtrs pointing to the data that will be destroyed to nullptr.
+                // Clear SafePtrs pointing to the data that will be destroyed.
                 for (auto& ptr : ownerData->mPointers)
                     ptr->mOwnerData = nullptr;
                 // Delete the object
@@ -91,12 +95,10 @@ namespace nap
             virtual ~SafeOwnerBase() = default;
             
         protected:
-            virtual void* getData() = 0;
-            virtual void setData(void* data) = 0;
-            virtual DeletionQueue* getDeletionQueue() = 0;
-            virtual void setDeletionQueue(DeletionQueue* queue) = 0;
-            virtual void enqueueForDeletion() = 0;
-
+            /**
+             * Transfer ownership of the object in @source to this. Source will be pointing to nothing.
+             * If we are currently holding any object it will be deleted safely using the DeletionQueue.
+             */
             void assign(SafeOwnerBase& source)
             {
                 // When assigning from a different owner we first need to trash the current content (if any)
@@ -111,6 +113,14 @@ namespace nap
                 // We have to copy the deletion queue in case this SafeOwner was constructed with nullptr
                 setDeletionQueue(source.getDeletionQueue());
             }
+            
+        private:
+            // These methods are internally used by @assign() and will be overwritted by SafeOwner<T> to support polymorphism.
+            virtual void* getData() = 0;
+            virtual void setData(void* data) = 0;
+            virtual DeletionQueue* getDeletionQueue() = 0;
+            virtual void setDeletionQueue(DeletionQueue* queue) = 0;
+            virtual void enqueueForDeletion() = 0;
         };
         
         
@@ -118,7 +128,7 @@ namespace nap
          * SafeOwner is a special case smart pointer to an object that is used in multiple threads. It serves the purpose of making sure that the object is destructed in a thread safe manner when the SafeOwner goes out of scope.
          * It works very much like unique_ptr in such that it takes ownership over the object it points to and takes responsibility for it's destruction.
          * The difference to unique_ptr is that instead of letting the object destruct itself when the pointer goes out of scope, it throws the object in a DeletionQueue.
-         * Objects in the DeletionQueue are kept alive until the trash bin is emptied at a moment when there is noone else using the object anymore.
+         * Objects in the DeletionQueue are kept alive until the DeletionQueue is cleared at a moment when there is noone else using the object anymore.
          * This is done to prevent the objects to be destroyed while they are possibly being used in another thread at the same time.
          */
         template <typename T>
@@ -129,7 +139,7 @@ namespace nap
             
         private:
             /**
-             * The data that SafeOwner manages does not only consist of the managed object but also contains a list of all SafePtrs that point to the object as well.
+             * The data that SafeOwner manages does not only consist of the managed object but also contains a list of all SafePtrs that point to the object.
              */
             class Data
             {
@@ -153,7 +163,7 @@ namespace nap
             }
             
             /**
-             * The destructor of the SafeOwner base class. Instead of letting the managed object destruct itself it is thrown into the trash bin, from which it will be deleted on a safe moment.
+             * The destructor of the SafeOwner base class. Instead of letting the managed object destruct itself it is thrown into the @DeletionQueue, from which it will be deleted on a safe moment.
              */
             ~SafeOwner()
             {
@@ -233,16 +243,22 @@ namespace nap
                 return ptr ? mData->mObject == ptr : mData == nullptr;
             }
             
+            template<typename OTHER>
+            bool operator!=(const OTHER* ptr) const
+            {
+                return ptr ? mData->mObject != ptr : mData != nullptr;
+            }
+            
             bool operator==(const std::nullptr_t) const
             {
                 
                 return mData == nullptr;
             }
             
-            template<typename OTHER>
-            bool operator!=(const OTHER* ptr) const
+            bool operator!=(const std::nullptr_t) const
             {
-                return ptr ? mData->mObject != ptr : mData != nullptr;
+                
+                return mData != nullptr;
             }
             
             /**
@@ -274,12 +290,10 @@ namespace nap
             T* getRaw() const { return mData->mObject; }
 
         protected:
+            // Inherited from SafeOwnerBase for polymorphism support
             void* getData() override { return mData; }
-            
             void setData(void* data) override { mData = static_cast<Data*>(data); }
-            
             DeletionQueue* getDeletionQueue() override { return mDeletionQueue; }
-            
             void setDeletionQueue(DeletionQueue* queue) override { mDeletionQueue = queue; }
             
         private:
@@ -311,18 +325,20 @@ namespace nap
             virtual ~SafePtrBase() = default;
             
         protected:
-            virtual void* getOwnerData() const = 0;
-            virtual void setOwnerData(void* ownerData) = 0;
-            
             void assign(const SafePtrBase& other)
             {
                 setOwnerData(other.getOwnerData());
             }
+            
+        private:
+            // These methods are internally used by @assign() in order to support polymorphism.
+            virtual void* getOwnerData() const = 0;
+            virtual void setOwnerData(void* ownerData) = 0;
         };
         
 
         /**
-         * A SafePtr points to an object that is owned by a @SafeOwner somewhere. The SafePtr will remain valid when the owner has gone out of scope or when it has otherwise trashed the pointed object. Only when the @DeletionQueue is cleared the SafePtr will be set to nullptr and the data it previously pointed to will be rendered invalid.
+         * A SafePtr points to an object that is owned by a @SafeOwner somewhere. When the owner goes out of scope and the pointed object will be moved into the @DeletionQueue the SafePtr will return true when checked if it equals nullptr. However the object it points to can still be used and safely accessed using the * and -> operators and the @get() method until the next time the @DeletionQueue is cleared. This way SafePtr guarantees that it can be safely used on both the thread where the SafeOwner went out of scope AND the thread that periodically empties the DeletionQueue, as long as you check if the SafePtr != nullptr before use.
          */
         template <typename T>
         class SafePtr final : public SafePtrBase

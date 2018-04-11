@@ -133,7 +133,7 @@ namespace nap
             int getChannelCount() const override { return mNodes.size(); }
             
             /**
-             * Returns the DSP node for the specified channel.
+             * Returns a raw pointer to the DSP node for the specified channel.
              */
             Node* getChannel(int channel);
             
