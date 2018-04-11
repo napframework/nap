@@ -28,7 +28,8 @@ namespace nap
         {
             OutputComponent* resource = getComponent<OutputComponent>();
             
-            auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH)->getNodeManager();
+            auto audioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            auto& nodeManager = audioService->getNodeManager();
             
             auto channelCount = resource->mChannelRouting.size();
             if (channelCount > nodeManager.getOutputChannelCount())
@@ -48,7 +49,7 @@ namespace nap
                     return false;
                 }
                 
-                mOutputs.emplace_back(make_node<OutputNode>(nodeManager));
+                mOutputs.emplace_back(audioService->makeSafe<OutputNode>(nodeManager));
                 mOutputs.back()->setOutputChannel(channel);
                 mOutputs.back()->audioInput.connect(mInput->getOutputForChannel(resource->mChannelRouting[channel]));
             }

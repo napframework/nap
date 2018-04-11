@@ -2,9 +2,10 @@
 
 // Std includes
 #include <mutex>
+#include <set>
 
 // Nap includes
-#include <nap/threading.h>
+#include <utility/threading.h>
 
 // Audio includes
 #include <audio/utility/audiotypes.h>
@@ -34,7 +35,7 @@ namespace nap
             friend class NodePtrBase;
             
         public:
-            using OutputMapping = std::vector<std::vector<SampleBufferPtr>>;
+            using OutputMapping = std::vector<std::vector<SampleBuffer*>>;
             
         public:
             NodeManager() = default;
@@ -49,6 +50,12 @@ namespace nap
              * @param framesPerBuffer: the number of samples that has to be processed per channel
              */
             void process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer);
+            
+            /**
+             * Enqueue a lambda to be executed before the processing of the next internal buffer starts.
+             * This way modifications to the processing chain can be made in a threadsafe manner from outside of the audio thread, with a timing accuracy that corresponds to the internal buffer size.
+             */
+            void enqueueTask(nap::TaskQueue::Task task) { mTaskQueue.enqueue(task); }
             
             /**
              * @return: the number of input channels that will be fed into the node system
@@ -96,19 +103,13 @@ namespace nap
             /**
              * Changes the sample rate the node system is running on
              */
-            void setSampleRate(float sampleRate);
-            
+            void setSampleRate(float sampleRate);            
             
             /**
              * Changes the internal buffer size that the node system uses.
              * Beware: this can be smaller than the buffersize the audio device is running on.
              */
             void setInternalBufferSize(int size);
-            
-            /**
-             * Enqueue a task to be executed within the process() method for thread safety
-             */
-            void execute(TaskQueue::Task task) { mAudioCallbackTaskQueue.enqueue(task); }
             
             // Used by nodes to register themselves to be processed directly by the node manager
             void registerRootNode(Node& rootNode);
@@ -130,7 +131,7 @@ namespace nap
              * @param buffer: a buffer of output
              * @param channel: the channel that the output will be played on
              */
-            void provideOutputBufferForChannel(SampleBufferPtr buffer, int channel);
+            void provideOutputBufferForChannel(SampleBuffer* buffer, int channel);
             
             /*
              * Used by @InputNode to request audio input for the current buffer
@@ -139,11 +140,6 @@ namespace nap
              * TODO: optimize by returning a float array for the whole buffer
              */
             const SampleValue& getInputSample(int channel, int index) const { return mInputBuffer[channel][mInternalBufferOffset + index]; }
-            
-            /*
-             * Clears and destructs all the nodes in the node trash bin. The node trash bin contains the nodes that are no longer used so that they can be safely destroyed from within the audio thread.
-             */
-            void clearNodeTrashBin();
             
             int mInputChannelCount = 0; // Number of input channels this node manager processes
             int mOutputChannelCount = 0; // Number of channel this node manager outputs
@@ -162,11 +158,7 @@ namespace nap
             std::set<Node*> mNodes; // all the audio nodes managed by this node manager
             std::set<Node*> mRootNodes; // the nodes that will be processed directly by the manager on every audio callback
             
-            nap::TaskQueue mAudioCallbackTaskQueue; // Queue with lambda functions to be executed on the next audio callback
-            
-            // Queue with nodes that are no longer used and that can be destructed safely on the next audio callback.
-            // Destruction is performed by the NodeManager on the audio callback to make sure the node can not be destructed while it is being processed.
-            moodycamel::ConcurrentQueue<std::unique_ptr<Node>> mNodeTrashBin; // Queue with nodes to be destructed on the next process() call
+            nap::TaskQueue mTaskQueue; // Queue with lambda functions to be executed before processing the next itnernal buffer.
         };
         
     }
