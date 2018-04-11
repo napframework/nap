@@ -1,0 +1,189 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "Bell",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "OrthoCam",
+                    "Properties": {
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Bike",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "Transform_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "Wheel",
+                "Wheel_2",
+                "Handlebars"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Cats",
+            "Components": [
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "Rotate",
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.0,
+                        "Offset": 0.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Dogs",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Fauna",
+            "Components": [],
+            "Children": [
+                "Cats",
+                "Dogs"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Flora",
+            "Components": [],
+            "Children": [
+                "Trees"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Handlebars",
+            "Components": [
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "KeyInput"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "PointerInput"
+                }
+            ],
+            "Children": [
+                "Bell"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Life",
+            "Components": [],
+            "Children": [
+                "Flora",
+                "Fauna"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Trees",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Wheel",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "Transform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Wheel_2",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "Transform_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        }
+    ]
+}
