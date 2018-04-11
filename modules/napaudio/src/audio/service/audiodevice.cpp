@@ -38,8 +38,8 @@ namespace nap
             float** out = (float**)outputBuffer;
             float** in = (float**)inputBuffer;            
             
-            NodeManager* nodeManager = reinterpret_cast<NodeManager*>(userData);
-            nodeManager->process(in, out, framesPerBuffer);
+            AudioService* service = reinterpret_cast<AudioService*>(userData);
+            service->audioCallback(in, out, framesPerBuffer);
             
             return 0;
         }
@@ -111,17 +111,18 @@ namespace nap
             outputParameters.suggestedLatency = 0;
             outputParameters.hostApiSpecificStreamInfo = nullptr;
             
-            auto error = Pa_OpenStream(&mStream, &inputParameters, &outputParameters, mSampleRate, mBufferSize, paNoFlag, audioCallback, &mNodeManager);
+            auto error = Pa_OpenStream(&mStream, &inputParameters, &outputParameters, mSampleRate, mBufferSize, paNoFlag, audioCallback, mService);
             if (error != paNoError)
             {
                 errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
                 return false;
             }
             
-            mNodeManager.setInputChannelCount(mInputChannelCount);
-            mNodeManager.setOutputChannelCount(mOutputChannelCount);
-            mNodeManager.setSampleRate(mSampleRate);
-			mNodeManager.setInternalBufferSize(mInternalBufferSize);
+            auto& nodeManager = getNodeManager();
+            nodeManager.setInputChannelCount(mInputChannelCount);
+            nodeManager.setOutputChannelCount(mOutputChannelCount);
+            nodeManager.setSampleRate(mSampleRate);
+			nodeManager.setInternalBufferSize(mInternalBufferSize);
             
             error = Pa_StartStream(mStream);
             if (error != paNoError)
@@ -138,16 +139,17 @@ namespace nap
         
         bool AudioDevice::startDefaultDevice(utility::ErrorState& errorState)
         {
-            auto error = Pa_OpenDefaultStream(&mStream, mInputChannelCount, mOutputChannelCount, paFloat32 | paNonInterleaved, mSampleRate, mBufferSize, audioCallback, &mNodeManager);
+            auto error = Pa_OpenDefaultStream(&mStream, mInputChannelCount, mOutputChannelCount, paFloat32 | paNonInterleaved, mSampleRate, mBufferSize, audioCallback, mService);
             if (error != paNoError)
             {
                 errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
                 return false;
             }
             
-            mNodeManager.setInputChannelCount(mInputChannelCount);
-            mNodeManager.setOutputChannelCount(mOutputChannelCount);
-            mNodeManager.setSampleRate(mSampleRate);
+            auto& nodeManager = getNodeManager();
+            nodeManager.setInputChannelCount(mInputChannelCount);
+            nodeManager.setOutputChannelCount(mOutputChannelCount);
+            nodeManager.setSampleRate(mSampleRate);
             
             error = Pa_StartStream(mStream);
             if (error != paNoError)
@@ -198,6 +200,12 @@ namespace nap
             return (mStream && Pa_IsStreamActive(mStream) == 1);
         }
         
+        
+        NodeManager& AudioDevice::getNodeManager()
+        {
+            return mService->getNodeManager();
+        }
+
         
      }
 }

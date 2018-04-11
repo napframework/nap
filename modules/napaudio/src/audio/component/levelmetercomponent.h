@@ -2,6 +2,7 @@
 
 // Nap includes
 #include <component.h>
+#include <audio/utility/safeptr.h>
 
 // Audio includes
 #include <audio/node/levelmeternode.h>
@@ -102,8 +103,8 @@ namespace nap
             NodeManager& getNodeManager();
             
             nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &LevelMeterComponent::mInput }; // Pointer to component that outputs this components audio input
-            std::vector<std::unique_ptr<LevelMeterNode>> mMeters; // Nodes doing the actual analysis
-            std::vector<std::unique_ptr<FilterNode>> mFilters; // Filters filtering the audio signal for each channel before analysis
+            std::vector<SafeOwner<LevelMeterNode>> mMeters; // Nodes doing the actual analysis
+            std::vector<SafeOwner<FilterNode>> mFilters; // Filters filtering the audio signal for each channel before analysis
         };
         
     }

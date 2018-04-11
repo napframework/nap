@@ -5,14 +5,10 @@
 
 // Nap includes
 #include <nap/resourceptr.h>
-
-// Nap includes
 #include <rtti/object.h>
 #include <rtti/factory.h>
 
 // Audio includes
-#include <audio/core/audionode.h>
-#include <audio/core/audionodemanager.h>
 #include <audio/core/audioobject.h>
 
 
@@ -32,7 +28,7 @@ namespace nap
         {
             RTTI_ENABLE(Resource)
         public:
-            Graph(NodeManager& nodeManager) : mNodeManager(&nodeManager)  { }
+            Graph(AudioService& service) : mAudioService(service)  { }
 
             /**
              * The audio objects managed by the graph that are part of it's DSP network.
@@ -46,12 +42,12 @@ namespace nap
             AudioObjectPtr mOutput;
             
             /**
-             * Returns the node manager that instances of this graph will run on.
+             * Returns the audio service that instances of this graph will perform their DSP processing on.
              */
-            NodeManager& getNodeManager() { return *mNodeManager; }
+            AudioService& getAudioService() { return mAudioService; }
             
         private:
-            NodeManager* mNodeManager = nullptr;
+            AudioService& mAudioService;
         };
         
         
@@ -96,7 +92,7 @@ namespace nap
         };
         
         
-        using GraphObjectCreator = rtti::ObjectCreator<Graph, NodeManager>;
+        using GraphObjectCreator = rtti::ObjectCreator<Graph, AudioService>;
         
     }
     

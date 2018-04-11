@@ -11,28 +11,28 @@ System {#system}
 Overview {#system_overview}
 =======================
 
-NAP enables you to connect and exchange data between various types of external hardware in a generic fashion. The system is designed to make it easy to re-use specific parts or components for future projects and keep app specific code local to your project. The underlying system provides you with all the handles to get up and running in no time. But it's important to understand what parts contribute to the overall system architecture. Below you see a dumbed-down schematic of an application build with NAP. This schematic shows some of the key components of the NAP system architecture:
+NAP enables you to connect and exchange data between various types of external hardware in a generic fashion. The system is designed to make it easy to re-use specific parts or components for future projects and keep app specific code local to your project. The underlying system provides you with all the handles to get up and running in no time. But it's important to understand what parts contribute to the overall system architecture. Below you see a dumbed-down schematic of an application built with NAP. This schematic shows some of the key components of the NAP system architecture:
 
 ![](@ref content/nap_overview.png)
 
-Let's start reading the graph left to right. Starting from the left we see an application runner that combines 3 objects, of which 2 are important: The Application and Core. Applications are the entry point for project specific code. This is where you define what parts of your application:
+Let's start reading the graph left to right. Starting from the left we see an application runner that combines three objects, of which two are important: The Application and Core. Applications are the entry point for project specific code. This is where you define what parts of your application..
 - Receive an update call 
 - Are rendered
 - Receive messages
 - Etc.
 
-Core is the heart of every NAP application and manages (among other things) modules. Core is also the gateway to the ResourceManager. Every NAP application requires a Core object. That's the reason you explicitly create one and give it to the getObject that runs your application. When creating Core you also create a ResourceManager. The resource manager does a lot of things but most importantly: it makes your life easy. It creates all the objects that are associated with your application, initializes them in the right order and keeps track of any content changes. When a change is detected, the resource manager automatically patches the system without having to re-compile your application. The initialzation call of your application is the perfect place to load the file and check for content errors.
+Core is the heart of every NAP application and manages (among other things) modules. Core is also the gateway to the ResourceManager. Every NAP application requires a Core object. That's the reason you explicitly create one and give it to the getObject that runs your application. When creating Core you also create a ResourceManager. The resource manager does a lot of things but most importantly: it makes your life easy. It creates all the objects that are associated with your application, initializes them in the right order and keeps track of any content changes. When a change is detected, the resource manager automatically patches the system without having to re-compile your application. The initialization call of your application is the perfect place to load the file and check for content errors.
 
-Modules are libraries that expose building blocks. You can use these building blocks to construct your application. Most modules expose specific building blocks, for example. The OSC module exposes osc receiving and sending objects, a generic interface to create and extract osc events and a service that deals with the osc library and network. Core loads all available modules automatically and initializes them in the right order. After a module is loaded all the building blocks are registered and the module can be initialized. You, as a user, don't have to do anything.
+Modules are libraries that expose building blocks. You can use these building blocks to construct your application. Most modules expose specific building blocks, for example. The OSC module exposes OSC receiving and sending objects, a generic interface to create and extract OSC events and a service that deals with the OSC library and network. Core loads all available modules automatically and initializes them in the right order. After a module is loaded all the building blocks are registered and the module can be initialized. You, as a user, don't have to do anything.
 
-The diagram has 4 resources from 3 different modules:
-- 1 OSC Receiver from the OSC Module
-- 2 Windows from the Render Module
-- 1 Midi Sender from the Midi Module
+The diagram has four resources from three different modules:
+- One OSC Receiver from the OSC Module
+- Two Windows from the Render Module
+- One Midi Sender from the Midi Module
 
-After initializing core (and therefore all modules) the building blocks can be created by the resource manager. We add the building blocks as individual resources to our JSON file and tell the resourcemanager to load the file and voila: 
+After initializing core (and therefore all modules) the building blocks can be created by the ResourceManager. We add the building blocks as individual resources to our JSON file and tell the ResourceManager to load the file and voila: 
 - You now have an OSC receiver that already opened it's port and is listening to messages
-- Your 2 windows are visible on screen
+- Your two windows are visible on screen
 - You are ready to send some midi notes over the just opened port
 
 You might notice that working this way saves you from typing many lines of code. You don't have to declare objects in C++ or have to worry about the right order of initialization. You can directly access the resources and start building what you had in mind.
@@ -45,12 +45,12 @@ Following the modular design of NAP: all functionality is split into [modules](@
 - [Entity](@ref scene)
 - [Component](@ref scene)
 
- The specifics of these objects are discussed in separate sections. Every module gets compiled into a dynamically linkable library (dll). NAP loads all available modules automatically when your application starts. Each module has the option to expose a [service](@ref nap::Service). A service is a rather abstract concept and can be used in many different ways. Let’s look at an example to understand what a service does. The render service manages, among other things, the following:
+The specifics of these objects are discussed in separate sections. Every module gets compiled into a dynamically linkable library (DLL). NAP loads all available modules automatically when your application starts. Each module has the option to expose a [service](@ref nap::Service). A service is a rather abstract concept and can be used in many different ways. Let's look at an example to understand what a service does. The render service manages, among other things, the following:
 - It initializes the render system and terminates it on exit.
 - It processes system events such as resizing a window.
 - It provides a high-level render interface for all compatible resources, components and entities.
 
-In a more abstract sense: a [service](@ref nap::Service) can be used to perform system wide operations such as initializing a library or keeping track of specific resources. A service receives an [update()](@ref nap::Service::update), [init()](@ref nap::Service::init) and [shutdown()](@ref nap::Service::shutdown) call. Update is called every frame, init is called before the application is initialized and shutdown is called directly after stopping the app. 
+In a more abstract sense: a [service](@ref nap::Service) can be used to perform system-wide operations such as initializing a library or keeping track of specific resources. A service receives [update()](@ref nap::Service::update), [init()](@ref nap::Service::init) and [shutdown()](@ref nap::Service::shutdown) calls. Update is called every frame, init is called before the application is initialized and shutdown is called directly after stopping the app. 
 
 It is possible that a service wants to use functionality from other services. NAP takes care of the correct order of initialization if you tell the system what other services your module depends on by implementing the [getDependentServices()](@ref nap::Service::getDependentServices) call. This function returns a list of services your module depends on with as a result that init, update and shutdown are called in the right order.
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 Core {#core}
 =======================
 
-Most of the building blocks of NAP are grouped into modules with one exception: the functionality that is present in the core library. Core is a static library, always loaded and can be used everywhere. Every application must have exactly one [Core](@ref nap::Core) instance. The Core object manages all services and is the main gateway to all the available resources. These resources are kept and maintained by the resource manager. 
+Most of the building blocks of NAP are grouped into modules with one exception: the functionality that is present in the core library. Core is a shared library, which is always loaded and can be used everywhere. Every application must have exactly one [Core](@ref nap::Core) instance. The Core object manages all services and is the main gateway to all the available resources. These resources are kept and maintained by the resource manager. 
 
 This example from the helloworld demo shows how to:
 - Retrieve initialized services
@@ -125,16 +125,16 @@ bool HelloWorldApp::init(utility::ErrorState& error)
 	}
 ~~~~~~~~~~~~~~~
 
-The Resourcemanager {#resourcemanager}
+The Resource Manager {#resourcemanager}
 =======================
 
-This [object](@ref nap::ResourceManager) is responsible for [loading](@ref nap::ResourceManager::loadFile) the json file that contains all the resources that are necessary for your application to run. The example above shows you how to do this. When loading a json file all the objects declared inside that file are created and initialized by the resource manager. We call these objects 'resources'. Every loaded resource is owned by the resource manager. This means that the lifetime of a resource is fully managed by the resource manager and not by the client (ie: you).
+This [object](@ref nap::ResourceManager) is responsible for [loading](@ref nap::ResourceManager::loadFile) the JSON file that contains all the resources that are necessary for your application to run. The example above shows you how to do this. When loading a JSON file all the objects declared inside that file are created and initialized by the resource manager. We call these objects 'resources'. Every loaded resource is owned by the resource manager. This means that the lifetime of a resource is fully managed by the resource manager and not by the client (ie: you).
 
 Every resource has an identifier. In the example above we use various identifiers to [find](@ref nap::ResourceManager::findObject) specific resources in the application after load.
 
-Every resource is derived from [Resource](@ref nap::Resource). Every resource carries an identifier that the resource manager uses to identify an object. The most important task of a resource is to tell the resource manager if initialization succeeded using the [init](@ref nap::Resource::init) function. A good example of a resource is the [Image](@ref nap::Image). On initialization the image will try to load a picture from disk and store the result internally. Initialization will fail if the picture doesn't exist or isn't supported. If that's the case the resourcemanager will halt execution, return an error message and as a result stop further execution of your program. This is the point where NAP tries to validate data for you.
+Every resource is derived from [Resource](@ref nap::Resource). Every resource carries an identifier that the resource manager uses to identify an object. The most important task of a resource is to tell the resource manager if initialization succeeded using the [init](@ref nap::Resource::init) function. A good example of a resource is the [Image](@ref nap::Image). On initialization the image will try to load a picture from disk and store the result internally. Initialization will fail if the picture doesn't exist or isn't supported. If that's the case the resource manager will halt execution, return an error message and as a result stop further execution of your program. This is the point where NAP tries to validate data for you.
 
-The resourcemanager and init structure are further explained in the [resource](@ref resources) section.
+The resource manager and init structure are further explained in the [resource](@ref resources) section.
 
 Events {#events}
 =======================

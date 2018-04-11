@@ -29,7 +29,7 @@ namespace nap
         }
         
     
-        bool GraphObjectInstance::init(NodeManager& nodeManager, utility::ErrorState& errorState)
+        bool GraphObjectInstance::init(AudioService& audioService, utility::ErrorState& errorState)
         {
             GraphObject* resource = rtti_cast<GraphObject>(&getResource());
             return mGraphInstance.init(*resource->mGraph, errorState);
