@@ -66,7 +66,6 @@ def check_arch():
     """Check if the we're running on a 64bit machine"""
 
     arch = call('getconf LONG_BIT')
-    # arch = '32'
     arch_ok = arch == '64'
     log_test_success('x86-64 architecture', arch_ok)
     return arch_ok
@@ -75,7 +74,6 @@ def check_macos():
     """Check if the we're running macOS High Sierra 10.13"""
 
     macos_version = call('sw_vers -productVersion')
-    # macos_version = '10.12.2'
     macos_version_ok = macos_version.startswith(REQUIRED_MACOS_VERSION)
     log_test_success('macOS High Sierra', macos_version_ok)
     return macos_version_ok    
@@ -95,7 +93,6 @@ def check_cmake():
         (major, minor, patch) = chunks[2].split('.')
         cmake_ok = int(major) == CMAKE_MIN_VERSION[0] and int(minor) >= CMAKE_MIN_VERSION[1]
 
-    # cmake_ok = False
     log_test_success('CMake >= 3.5', cmake_ok)
     return cmake_ok
 
@@ -124,7 +121,6 @@ def check_xcode_installed():
     if xcode_bundle_id != '':
         xcode_installed_path = call('osascript -e "tell application \\"Finder\\" to POSIX path of (get application file id \\"%s\\" as alias)"' % xcode_bundle_id)
         xcode_installed = xcode_installed_path != ''
-    # xcode_installed = False
     log_test_success('Xcode installed', xcode_installed)
     return xcode_installed
 
