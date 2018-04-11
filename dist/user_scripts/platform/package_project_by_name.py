@@ -66,7 +66,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
 
         # Create archive
         if zip_package:
-            packaged_to = archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_version)
+            packaged_to = archive_to_linux_tar_bz2(timestamp, bin_dir, project_full_name, project_version)
         else:
             packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'Linux')
 
@@ -132,10 +132,10 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
     # Clean exit code
     return 0
 
-# Create build archive to xz tarball on Linux
-def archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_version): 
+# Create build archive to bzipped tarball on Linux
+def archive_to_linux_tar_bz2(timestamp, bin_dir, project_full_name, project_version): 
     package_filename = build_package_filename(project_full_name, project_version, 'Linux', timestamp)
-    package_filename_with_ext = '%s.%s' % (package_filename, 'tar.xz')
+    package_filename_with_ext = '%s.%s' % (package_filename, 'tar.bz2')
 
     # Populate build info into the project
     populate_build_info_into_project(bin_dir, timestamp)
@@ -147,7 +147,7 @@ def archive_to_linux_tar_xz(timestamp, bin_dir, project_full_name, project_versi
 
     # Archive
     print("Archiving to %s.." % package_filename_with_ext)
-    call_except_on_failure(project_dir, ['tar', '-cJvf', package_filename_with_ext, package_filename])
+    call_except_on_failure(project_dir, ['tar', '-cjvf', package_filename_with_ext, package_filename])
 
     # Cleanup
     shutil.rmtree(archive_dir)
