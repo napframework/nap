@@ -45,6 +45,12 @@ namespace nap
             virtual ~Node();
             
             /**
+             * We need to delete these so that the compiler doesn't try to use them. Otherwise we get compile errors on unique_ptr. Not sure why.
+             */
+            Node(const Node&) = delete;
+            Node& operator=(const Node&) = delete;
+            
+            /**
              * Returns the internal buffersize of the node system that this node belongs to. 
              * Output is being pulled through the graph buffers of this size at a time.
              * Not to be confused with the buffersize that the audio callback runs on!
