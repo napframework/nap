@@ -14,6 +14,7 @@ namespace nap
     namespace audio
     {
     
+        class AudioService;
         class AudioComponentBaseInstance;
         
         
@@ -57,6 +58,11 @@ namespace nap
              * Returns the node system's node manager that the audio runs on
              */
             NodeManager& getNodeManager();
+            
+            /**
+             * Returns the audio service
+             */
+            AudioService& getAudioService();
         };
 
     }

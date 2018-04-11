@@ -2,6 +2,7 @@
 
 // Nap includes
 #include <nap/resourceptr.h>
+#include <audio/utility/safeptr.h>
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
@@ -10,7 +11,6 @@
 #include <audio/node/gainnode.h>
 #include <audio/node/controlnode.h>
 #include <audio/node/filternode.h>
-#include <audio/core/audionodeptr.h>
 
 namespace nap
 {
@@ -18,6 +18,8 @@ namespace nap
     namespace audio
     {
     
+        // Forward declares
+        class AudioService;
         class PlaybackComponentInstance;
         
         
@@ -145,9 +147,9 @@ namespace nap
         private:            
             void applyGain(TimeValue rampTime);
             
-            std::vector<NodePtr<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
-            std::vector<NodePtr<GainNode>> mGainNodes; // Nodes for each channel to gain the signal.
-            std::vector<NodePtr<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
+            std::vector<SafeOwner<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
+            std::vector<SafeOwner<GainNode>> mGainNodes; // Nodes for each channel to gain the signal.
+            std::vector<SafeOwner<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
             
             ControllerValue mGain = 0;
             ControllerValue mStereoPanning = 0.5;
@@ -159,8 +161,9 @@ namespace nap
             
             bool mPlaying = false;  // Indicates wether the component is currently playing
 
-            PlaybackComponent* resource = nullptr; // The component's resource
-            NodeManager* nodeManager = nullptr; // The audio node manager this component's audio nodes are managed by
+            PlaybackComponent* mResource = nullptr; // The component's resource
+            NodeManager* mNodeManager = nullptr; // The audio node manager this component's audio nodes are managed by
+            AudioService* mAudioService = nullptr; 
         };
         
     }

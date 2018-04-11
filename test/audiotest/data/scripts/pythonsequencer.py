@@ -2,7 +2,7 @@ import nap
 
 nextNoteTime = 0
 
-seq = [1, 4/5, 6/5, 0.5, 2/3, 4/3, 3/2]
+seq = [1, 4/5, 6/5, 0.5, 2/3, 4/3, 3/2, 6/5]
 index = 0
 
 def update(entity, currentTime, deltaTime):
@@ -21,8 +21,11 @@ def makeNote(entity, index, len, fac):
 	voice = instrument.findFreeVoice()
 	oscA = voice.getObject("oscillatorA")
 	oscB = voice.getObject("oscillatorB")
-	oscA.getChannel(0).setFrequency(330 * seq[index % len] * fac, 0);
-	oscA.getChannel(1).setFrequency(440 * 1.01 * seq[index % len] * fac, 0);
-	oscB.getChannel(0).setFrequency(880 * seq[index % len] * fac, 0);
-	oscB.getChannel(1).setFrequency(880 * 1.01 * seq[index % len] * fac, 0);
+	oscA.getChannel(0).setFrequency(220 * seq[index % len] * fac, 0);
+	oscA.getChannel(1).setFrequency(220 * 1.01 * seq[index % len] * fac, 0);
+	oscB.getChannel(0).setFrequency(440 * seq[index % len] * fac, 0);
+	oscB.getChannel(1).setFrequency(440 * 1.01 * seq[index % len] * fac, 0);
 	instrument.play(voice, 0)
+
+def init(entity):
+	pass

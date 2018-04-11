@@ -4,7 +4,7 @@
 #include <mutex>
 
 // Audio includes
-#include <audio/core/audionodeptr.h>
+#include <audio/utility/safeptr.h>
 #include <audio/core/audioobject.h>
 #include <audio/core/voice.h>
 #include <audio/node/mixnode.h>
@@ -62,8 +62,8 @@ namespace nap
         public:
             PolyphonicObjectInstance(PolyphonicObject& resource) : AudioObjectInstance(resource) { }
             
-            // Initialize the component
-            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override;
+            // Initialize the object
+            bool init(AudioService& audioService, utility::ErrorState& errorState) override;
             
             /**
              * Returns the first voice in the pool that is not being used (Voice::isBusy() == false) for playback.
@@ -91,10 +91,10 @@ namespace nap
             void voiceFinished(VoiceInstance& voice);
             
             std::vector<std::unique_ptr<VoiceInstance>> mVoices;
-            std::vector<NodePtr<MixNode>> mMixNodes;
+            std::vector<SafeOwner<MixNode>> mMixNodes;
             std::mutex mMixNodesMutex; /**< To protect mMixNodes */
             
-            NodeManager* mNodeManager = nullptr;
+            AudioService* mAudioService = nullptr;
         };
         
     }

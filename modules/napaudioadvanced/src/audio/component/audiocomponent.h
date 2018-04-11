@@ -4,12 +4,12 @@
 #include <component.h>
 #include <componentptr.h>
 #include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
 #include <audio/core/audionode.h>
 #include <audio/core/audioobject.h>
-#include <nap/resourceptr.h>
 
 namespace nap
 {
