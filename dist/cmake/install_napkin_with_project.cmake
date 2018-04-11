@@ -1,5 +1,5 @@
 # NAP modules which Napkin uses (as a minimum)
-set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo)
+set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio)
 # Qt frameworks which Napkin uses
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport)
 
