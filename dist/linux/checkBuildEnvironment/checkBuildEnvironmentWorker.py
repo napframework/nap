@@ -24,7 +24,6 @@ def check_arch():
     """Check if the we're running on a 64bit machine"""
 
     arch = call('uname -m')
-    # arch = '32'
     arch_ok = arch == 'x86_64'
     log_test_success('x86-64 architecture', arch_ok)
     return arch_ok
@@ -34,7 +33,6 @@ def check_distribution():
 
     distribution = call('lsb_release -id | grep ID')
     distributor_id = distribution.split(':')[1].strip().lower()
-    # distributor_id = 'fake'
     distribution_ok = distributor_id == 'ubuntu'
     log_test_success('Ubuntu distribution', distribution_ok)
     return distribution_ok    
@@ -44,8 +42,6 @@ def check_distribution_version():
 
     release = call('lsb_release -r')
     release = release.split(':')[1].strip()
-    # release = '1.1'
-    # release = '17.10'
     release_ok = release == REQUIRED_UBUNTU_VERSION
     log_test_success('Ubuntu %s' % REQUIRED_UBUNTU_VERSION, release_ok)
     return release_ok
@@ -72,7 +68,6 @@ def check_cmake():
     (major, minor, patch) = chunks[2].split('.')
     cmake_ok = int(major) == CMAKE_MIN_VERSION[0] and int(minor) >= CMAKE_MIN_VERSION[1]
 
-    # cmake_ok = False
     log_test_success('CMake >= 3.5', cmake_ok)
     return cmake_ok
 

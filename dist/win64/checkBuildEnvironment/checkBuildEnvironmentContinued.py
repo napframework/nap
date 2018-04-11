@@ -52,7 +52,6 @@ def check_windows_version():
 
     ver_output = call('ver').strip()
     version = ver_output.split()[-1]
-    # version = '3.11'
     windows_version_ok = version.startswith(REQUIRED_WINDOWS_VERSION + '.')
     log_test_success('for Windows 10', windows_version_ok)
     return windows_version_ok    
@@ -62,7 +61,6 @@ def check_visual_studio_2015_installed():
 
     return_code = call('reg query "%s"' % VS_2015_INSTALLED_REG_KEY, True)
 
-    # return_code = 1
     visual_studio_2015_installed = return_code == 0
     log_test_success('for Visual Studio 2015', visual_studio_2015_installed)
     return visual_studio_2015_installed    
@@ -72,7 +70,6 @@ def check_visual_studio_2015_is_update3():
 
     ver_output = call('reg query %s' % VS_2015_VERSION_REG_QUERY)
     version = ver_output.strip("'").split()[-1]
-    # version = '14.0.0'
     (_, minor, patch) = version.split('.')
     version_ok = int(minor) == 0 and int(patch) >= REQUIRED_VS_2015_PATCH_VERSION
     log_test_success('Visual Studio 2015 is Update 3', version_ok)
@@ -111,7 +108,6 @@ def check_cmake():
         (major, minor, patch) = chunks[2].split('.')
         cmake_ok = int(major) == CMAKE_MIN_VERSION[0] and int(minor) >= CMAKE_MIN_VERSION[1]
 
-    # cmake_ok = False
     log_test_success('CMake >= 3.5', cmake_ok)
     return cmake_ok
 
