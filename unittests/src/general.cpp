@@ -3,6 +3,7 @@
 
 #include <utility/fileutils.h>
 #include <utility/datetimeutils.h>
+#include <audio/utility/safeptr.h>
 #include <nap/logger.h>
 
 
@@ -82,4 +83,61 @@ TEST_CASE("DateTime Utilities", "[datetime]")
 	REQUIRE(flc1_launch_date.getMilliSecond() == 123);
 
 	REQUIRE(nap::utility::timeFormat(flc1_launch) == flc1_launch_str);
+}
+
+TEST_CASE("Safe pointers", "[safepointer]")
+{
+    using namespace nap::audio;
+    
+    class TestBase {
+    public:
+        virtual ~TestBase() = default;
+        virtual int getX() = 0;
+    };
+    
+    // Test object that increments a counter when it's constructed and decrements it on destruction
+    class Test : public TestBase {
+    public:
+        Test(int x, int& destructed) : mX(x), mCounter(destructed) { mCounter++; }
+        ~Test() { mCounter--; }
+        int getX() override { return mX; }
+        int mX = 0;
+        int& mCounter;
+    };
+    
+    int counter = 0; // The counter to count the number of existing objects
+    DeletionQueue deletionQueue; // The DeletionQueue used
+    SafePtr<Test> safePtr = nullptr;
+    SafePtr<TestBase> safePtrCopy = nullptr;
+
+    {
+        // Constructing a new SafeOwner, should increment the counter
+        SafeOwner<Test> safeOwnerOld(deletionQueue, new Test(10, counter));
+        REQUIRE(counter == 1);
+        
+        // Constructing another SafeOwner, should increment the counter
+        auto safeOwner = SafeOwner<Test>(deletionQueue, new Test(5, counter));
+        REQUIRE(counter == 2);
+        
+        // Moving the old owner to the new one, this should not change the counter, but move the previous content of the new one to the DeletionQueue
+        safeOwner = std::move(safeOwnerOld);
+        REQUIRE(counter == 2);
+        REQUIRE(safeOwner->mX == 10);
+
+        // Construct a SafePtr pointing to safeOwner's content
+        safePtr = safeOwner.get();
+        // Make a copy of the SafePtr using polymorhpism
+        safePtrCopy = safePtr;
+    }
+    
+    // The owner goes out of scope, however the object should still be in the DeletionQueue and the SafePtr's should be valid
+    REQUIRE(counter == 2);
+    REQUIRE(safePtr->mX == 10);
+    REQUIRE(safePtrCopy->getX() == 10);
+    
+    // We clear the DeletionQueue, the objects should be destroyed, the counter should be zero and the SafePtr's set to nullptr
+    deletionQueue.clear();
+    REQUIRE(counter == 0);
+    REQUIRE(safePtr == nullptr);
+    REQUIRE(safePtrCopy == nullptr);
 }
