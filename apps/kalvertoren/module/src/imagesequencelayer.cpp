@@ -3,7 +3,9 @@
 // External includes
 #include "imagefromfile.h"
 #include <utility/fileutils.h>
+#include <mathutils.h>
 #include "bitmaputils.h"
+#include <iostream>
 
 RTTI_BEGIN_CLASS(nap::ImageSequenceLayer)
 	RTTI_PROPERTY_FILELINK("BaseFilename",	&nap::ImageSequenceLayer::mBaseFilename,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded, nap::rtti::EPropertyFileType::ImageSequence)
@@ -76,6 +78,13 @@ namespace nap
 		mCurrentFrameTexture->initTexture(layer.getTextureSettings());
 	}
 
+
+	ImageSequenceLayerInstance::~ImageSequenceLayerInstance()
+	{
+		mCurrentFrameTexture.reset(nullptr);
+	}
+
+
 	void ImageSequenceLayerInstance::update(double deltaTime)
 	{
 		// Upload current texture data to the GPU if necessary
@@ -99,4 +108,13 @@ namespace nap
 			completed(*this);
 		}
 	}
+
+
+	float ImageSequenceLayerInstance::getProgress()
+	{
+		float v = (float)mCurrentTime / getLength();
+		v -= static_cast<int>(v);
+		return v;
+	}
+
 }

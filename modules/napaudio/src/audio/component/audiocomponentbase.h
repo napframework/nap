@@ -14,11 +14,12 @@ namespace nap
     namespace audio
     {
     
+        class AudioService;
         class AudioComponentBaseInstance;
         
         
         /**
-         * Component that contains some audio nodes to output audio.
+         * Component that generates audio output for one or more channels.
          */
         class NAPAPI AudioComponentBase : public Component
         {
@@ -33,7 +34,7 @@ namespace nap
 
         
         /**
-         * Instance of a component that generates audio output for one or more channels
+         * Instance of a component that generates audio output for one or more channels.
          */
         class NAPAPI AudioComponentBaseInstance : public ComponentInstance
         {
@@ -43,12 +44,12 @@ namespace nap
             AudioComponentBaseInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource) { }
             
             /**
-             * Override this method to specify the number of audio channels output by this component
+             * Override this method to specify the number of audio channels output by this component.
              */
             virtual int getChannelCount() const = 0;
             
             /**
-             * Returns the output pin that outputs audio data for the specified channel
+             * Override this to return the output pin that outputs audio data for the specified channel.
              */
             virtual OutputPin& getOutputForChannel(int channel) = 0;
             
@@ -57,6 +58,11 @@ namespace nap
              * Returns the node system's node manager that the audio runs on
              */
             NodeManager& getNodeManager();
+            
+            /**
+             * Returns the audio service
+             */
+            AudioService& getAudioService();
         };
 
     }

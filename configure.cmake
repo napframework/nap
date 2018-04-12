@@ -1,150 +1,16 @@
-
-
-# Based on the Qt 5 processor detection code, so should be very accurate
-# https://qt.gitorious.org/qt/qtbase/blobs/master/src/corelib/global/qprocessordetection.h
-# Currently handles arm (v5, v6, v7), x86 (32/64), ia64, and ppc (32/64)
-
-# Regarding POWER/PowerPC, just as is noted in the Qt source,
-# "There are many more known variants/revisions that we do not handle/detect."
-
-set(archdetect_c_code "
-#if defined(__arm__) || defined(__TARGET_ARCH_ARM)
-    #if defined(__ARM_ARCH_7__) \\
-        || defined(__ARM_ARCH_7A__) \\
-        || defined(__ARM_ARCH_7R__) \\
-        || defined(__ARM_ARCH_7M__) \\
-        || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 7)
-        #error cmake_ARCH armv7
-    #elif defined(__ARM_ARCH_6__) \\
-        || defined(__ARM_ARCH_6J__) \\
-        || defined(__ARM_ARCH_6T2__) \\
-        || defined(__ARM_ARCH_6Z__) \\
-        || defined(__ARM_ARCH_6K__) \\
-        || defined(__ARM_ARCH_6ZK__) \\
-        || defined(__ARM_ARCH_6M__) \\
-        || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 6)
-        #error cmake_ARCH armv6
-    #elif defined(__ARM_ARCH_5TEJ__) \\
-        || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 5)
-        #error cmake_ARCH armv5
-    #else
-        #error cmake_ARCH arm
-    #endif
-#elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
-    #error cmake_ARCH i386
-#elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(_M_X64)
-    #error cmake_ARCH x86_64
-#elif defined(__ia64) || defined(__ia64__) || defined(_M_IA64)
-    #error cmake_ARCH ia64
-#elif defined(__ppc__) || defined(__ppc) || defined(__powerpc__) \\
-      || defined(_ARCH_COM) || defined(_ARCH_PWR) || defined(_ARCH_PPC)  \\
-      || defined(_M_MPPC) || defined(_M_PPC)
-    #if defined(__ppc64__) || defined(__powerpc64__) || defined(__64BIT__)
-        #error cmake_ARCH ppc64
-    #else
-        #error cmake_ARCH ppc
-    #endif
-#endif
-
-#error cmake_ARCH unknown
-")
-
-# Set ppc_support to TRUE before including this file or ppc and ppc64
-# will be treated as invalid architectures since they are no longer supported by Apple
-
-function(target_architecture output_var)
-    if(APPLE AND CMAKE_OSX_ARCHITECTURES)
-        # On OS X we use CMAKE_OSX_ARCHITECTURES *if* it was set
-        # First let's normalize the order of the values
-
-        # Note that it's not possible to compile PowerPC applications if you are using
-        # the OS X SDK version 10.6 or later - you'll need 10.4/10.5 for that, so we
-        # disable it by default
-        # See this page for more information:
-        # http://stackoverflow.com/questions/5333490/how-can-we-restore-ppc-ppc64-as-well-as-full-10-4-10-5-sdk-support-to-xcode-4
-
-        # Architecture defaults to i386 or ppc on OS X 10.5 and earlier, depending on the CPU type detected at runtime.
-        # On OS X 10.6+ the default is x86_64 if the CPU supports it, i386 otherwise.
-
-        foreach(osx_arch ${CMAKE_OSX_ARCHITECTURES})
-            if("${osx_arch}" STREQUAL "ppc" AND ppc_support)
-                set(osx_arch_ppc TRUE)
-            elseif("${osx_arch}" STREQUAL "i386")
-                set(osx_arch_i386 TRUE)
-            elseif("${osx_arch}" STREQUAL "x86_64")
-                set(osx_arch_x86_64 TRUE)
-            elseif("${osx_arch}" STREQUAL "ppc64" AND ppc_support)
-                set(osx_arch_ppc64 TRUE)
-            else()
-                message(FATAL_ERROR "Invalid OS X arch name: ${osx_arch}")
-            endif()
-        endforeach()
-
-        # Now add all the architectures in our normalized order
-        if(osx_arch_ppc)
-            list(APPEND ARCH ppc)
-        endif()
-
-        if(osx_arch_i386)
-            list(APPEND ARCH i386)
-        endif()
-
-        if(osx_arch_x86_64)
-            list(APPEND ARCH x86_64)
-        endif()
-
-        if(osx_arch_ppc64)
-            list(APPEND ARCH ppc64)
-        endif()
-    else()
-        file(WRITE "${CMAKE_BINARY_DIR}/arch.c" "${archdetect_c_code}")
-
-        enable_language(C)
-
-        # Detect the architecture in a rather creative way...
-        # This compiles a small C program which is a series of ifdefs that selects a
-        # particular #error preprocessor directive whose message string contains the
-        # target architecture. The program will always fail to compile (both because
-        # file is not a valid C program, and obviously because of the presence of the
-        # #error preprocessor directives... but by exploiting the preprocessor in this
-        # way, we can detect the correct target architecture even when cross-compiling,
-        # since the program itself never needs to be run (only the compiler/preprocessor)
-        try_run(
-                run_result_unused
-                compile_result_unused
-                "${CMAKE_BINARY_DIR}"
-                "${CMAKE_BINARY_DIR}/arch.c"
-                COMPILE_OUTPUT_VARIABLE ARCH
-                CMAKE_FLAGS CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
-        )
-
-        # Parse the architecture name from the compiler output
-        string(REGEX MATCH "cmake_ARCH ([a-zA-Z0-9_]+)" ARCH "${ARCH}")
-
-        # Get rid of the value marker leaving just the architecture name
-        string(REPLACE "cmake_ARCH " "" ARCH "${ARCH}")
-
-        # If we are compiling with an unknown architecture this variable should
-        # already be set to "unknown" but in the case that it's empty (i.e. due
-        # to a typo in the code), then set it to unknown
-        if(NOT ARCH)
-            set(ARCH unknown)
-        endif()
-    endif()
-
-    set(${output_var} "${ARCH}" PARENT_SCOPE)
-endfunction()
-
-
-target_architecture(ARCH)
-
-
 if(MSVC OR APPLE)
     foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
         set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
 
-        set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
-        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
+        # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
+        # builds when working in packaging and non-packaging at the same time)
+        if(DEFINED NAP_PACKAGED_BUILD)
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingBin/${BUILD_CONF})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingLib/${BUILD_CONF})
+        else()
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
+        endif()
 
         string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
@@ -156,10 +22,16 @@ if(MSVC OR APPLE)
 else()
     set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
 
-    # Override binary directories
-    set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
+    # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
+    # builds when working in packaging and non-packaging at the same time)
+    if(DEFINED NAP_PACKAGED_BUILD)
+        set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingBin/${BUILD_CONF})
+        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingLib/${BUILD_CONF})
+    else()
+        set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
+        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
+    endif()
     file(MAKE_DIRECTORY ${BIN_DIR})
-    set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
     file(MAKE_DIRECTORY ${LIB_DIR})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
@@ -168,42 +40,26 @@ else()
 endif()
 
 macro(export_fbx_in_place SRCDIR)
-    # Set the binary name
-    if(MSVC)
-        set(FBXCONVERTER_BIN "fbxconverter.exe")
+    if (MSVC OR APPLE)
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
     else()
-        set(FBXCONVERTER_BIN "fbxconverter")
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
+    endif()
+
+    # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't 
+    # fall into place
+    if(DEFINED NAP_PACKAGED_BUILD)
+        set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/packagingBin/${BUILD_CONF})
+    else()
+        set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF})
     endif()
 
     # Do the export
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
-                       COMMENT "Export FBX in '${SRCDIR}'")
-endmacro()
-
-macro(export_fbx SRCDIR)
-    # Set the binary name
-    if(MSVC)
-        set(FBXCONVERTER_BIN "fbxconverter.exe")
-    else()
-        set(FBXCONVERTER_BIN "fbxconverter")
-    endif()
-
-    # Set project data out path
-    set(OUTDIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data/${PROJECT_NAME}")
-
-    # Ensure data output directory for project exists
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTDIR}
-                       COMMENT "Ensure project output directory exists for fbxconverter")
-
-    # Do the export
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${OUTDIR} "${SRCDIR}/*.fbx"
-                       COMMENT "Export FBX in '${SRCDIR}'")
+                       COMMAND ${FBXCONV_DIR}/fbxconverter -o ${SRCDIR} ${SRCDIR}/*.fbx
+                       COMMENT "Export FBX in '${SRCDIR}'"
+                       )
 endmacro()
 
 macro(copy_dir_to_bin SRCDIR DSTDIR)
@@ -217,8 +73,8 @@ macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                           COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
+                           COMMENT "Copying ${F} -> bin dir")
     endforeach()
 endmacro()
 
@@ -228,7 +84,6 @@ macro(copy_base_windows_graphics_dlls)
         ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
         ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
         )
-    # copy nrender (hack)
     copy_files_to_bin(${FILES_TO_COPY})
 endmacro()
 
@@ -240,11 +95,11 @@ endmacro()
 # Helper function to filter out platform-specific files
 # The function outputs the following new variables with the platform-specific sources:
 # - WIN32_SOURCES
-# - OSX_SOURCES
+# - MACOS_SOURCES
 # - LINUX_SOURCES
 function(filter_platform_specific_files UNFILTERED_SOURCES)
     set(LOCAL_WIN32_SOURCES)
-    set(LOCAL_OSX_SOURCES)
+    set(LOCAL_MACOS_SOURCES)
     set(LOCAL_LINUX_SOURCES)
     foreach(TMP_PATH ${${UNFILTERED_SOURCES}})
         string(FIND ${TMP_PATH} "/win32/" WIN32_EXCLUDE_DIR_FOUND)
@@ -252,9 +107,9 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
             message(STATUS "Win32 File: " ${TMP_PATH})
             list(APPEND LOCAL_WIN32_SOURCES ${TMP_PATH})
         else()
-            string(FIND ${TMP_PATH} "/osx/" OSX_EXCLUDE_DIR_FOUND)
-            if(NOT ${OSX_EXCLUDE_DIR_FOUND} EQUAL -1)
-                list(APPEND LOCAL_OSX_SOURCES ${TMP_PATH})
+            string(FIND ${TMP_PATH} "/osx/" MACOS_EXCLUDE_DIR_FOUND)
+            if(NOT ${MACOS_EXCLUDE_DIR_FOUND} EQUAL -1)
+                list(APPEND LOCAL_MACOS_SOURCES ${TMP_PATH})
             else()
                 string(FIND ${TMP_PATH} "/linux/" LINUX_EXCLUDE_DIR_FOUND)
                 if(NOT ${LINUX_EXCLUDE_DIR_FOUND} EQUAL -1)
@@ -265,13 +120,13 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
     endforeach(TMP_PATH)
 
     set(WIN32_SOURCES ${LOCAL_WIN32_SOURCES} PARENT_SCOPE)
-    set(OSX_SOURCES ${LOCAL_OSX_SOURCES} PARENT_SCOPE)
+    set(MACOS_SOURCES ${LOCAL_MACOS_SOURCES} PARENT_SCOPE)
     set(LINUX_SOURCES ${LOCAL_LINUX_SOURCES} PARENT_SCOPE)
 endfunction()
 
 # Helper macro to add platform-specific files to the correct directory and
 # to only compile the platform-specific files that match the current platform
-macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
+macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
 
     # Add to solution folders
     if(MSVC)
@@ -285,23 +140,13 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
             endif()
         endforeach()
 
-        # Sort header and cpps into solution folders for OSX
-        foreach(TMP_PATH ${OSX_SOURCES})
+        # Sort header and cpps into solution folders for macOS
+        foreach(TMP_PATH ${MACOS_SOURCES})
             string(FIND ${TMP_PATH} ".cpp" IS_CPP)
             if(NOT ${IS_CPP} EQUAL -1)
-                source_group("Source Files\\OSX" FILES ${TMP_PATH})
+                source_group("Source Files\\macOS" FILES ${TMP_PATH})
             else()
-                source_group("Header Files\\OSX" FILES ${TMP_PATH})
-            endif()
-        endforeach()
-
-        # Sort header and cpps into solution folders for Linux
-        foreach(TMP_PATH ${LINUX_SOURCES})
-            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
-            if(NOT ${IS_CPP} EQUAL -1)
-                source_group("Source Files\\Linux" FILES ${TMP_PATH})
-            else()
-                source_group("Header Files\\Linux" FILES ${TMP_PATH})
+                source_group("Header Files\\macOS" FILES ${TMP_PATH})
             endif()
         endforeach()
     endif()
@@ -313,7 +158,7 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
     endif()
 
     if(NOT APPLE)
-        set_source_files_properties(${OSX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
+        set_source_files_properties(${MACOS_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
     endif()
 
     if(APPLE OR NOT UNIX)
@@ -321,59 +166,153 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
     endif()
 endmacro()
 
-macro(prepareqt)
-    ## First, let cmake know where the Qt library path is, we go from there.
-    if(MSVC OR APPLE)
-        # Pick up QT_DIR environment variable
-        if(DEFINED ENV{QT_DIR})
-            set(QTDIR $ENV{QT_DIR})
-            message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
-        endif()
-
-        # Add possible Qt installation paths to the HINTS section
-        # The version probably doesn't have to match exactly (5.8.? is probably fine)
-        find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
-                  HINTS
-                  ${QTDIR}
-                  ${NAP_ROOT}/../../Qt/5.9.1/msvc2015_64
-                  ${NAP_ROOT}/../../Qt/5.9.2/msvc2015_64
-                  ~/Qt/5.8/clang_64
-                  )
-        # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
-        set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
-
-        if(NOT DEFINED QT_DIR)
-            message(WARNING
-                    "The QT5 Directory could not be found, "
-                    "consider setting the QT_DIR environment variable "
-                    "to something like: \"C:/dev/Qt/5.9.1/msvc2015_64\"")
-        endif()
+# Change our project output directories (when building against NAP source)
+macro(set_output_directories)
+    if (MSVC OR APPLE)
+        # Loop over each configuration for multi-configuration systems
+        foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+            string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+            set(BIN_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}}/${PROJECT_NAME})
+            set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
+        endforeach()
+    else()
+        # Single built type, for Linux
+        set(BIN_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME})
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
     endif()
-
-
-    find_package(Qt5Core REQUIRED)
-    find_package(Qt5Widgets REQUIRED)
-    find_package(Qt5Gui REQUIRED)
-
-    set(CMAKE_AUTOMOC ON)
-    set(CMAKE_AUTORCC ON)
-    add_definitions(-DQT_NO_KEYWORDS)
-
-    set(NAPKIN_QT_LIBRARIES
-        Qt5::Widgets
-        Qt5::Core
-        Qt5::Gui
-        )
 endmacro()
 
-macro(prepareqtpost)
-    qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)
+# Let find_python find our prepackaged Python in thirdparty
+macro(find_python_in_thirdparty)
+    # Set our pre built Python location
+    set(PYTHONLIBS_FOUND 1)
+    if(UNIX)
+        if(APPLE)
+            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
+        else()
+            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/install)
+        endif()
+        set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/lib/libpython3.6m${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/python3.6m)
+    else()
+        set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64)
+        set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/libs/python36.lib)
+        set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include)
+    endif()
+endmacro()
+
+# Populate modules list from project.json into var NAP_MODULES
+macro(project_json_to_cmake)
+    # Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ProjectJsonTriggerDummy.json
+                    ERROR_QUIET)
+
+    # Clear any system Python path settings
+    unset(ENV{PYTHONHOME})
+    unset(ENV{PYTHONPATH})
+
+    # Parse our project.json and import it
     if(WIN32)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                           $<TARGET_FILE:Qt5::Widgets>
-                           $<TARGET_FILE:Qt5::Core>
-                           $<TARGET_FILE:Qt5::Gui>
-                           $<TARGET_FILE_DIR:${PROJECT_NAME}>
-                           COMMENT "Copy Qt DLLs")
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
+    elseif(APPLE)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
+    else()
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+    endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
+    endif()
+
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/projectscripts/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR}
+                    RESULT_VARIABLE EXIT_CODE
+                    )
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not parse modules from project.json (${EXIT_CODE})")
+    endif()
+    include(cached_project_json.cmake)
+endmacro()
+
+# Add the runtime path for RTTR.  
+# TODO As a lower priority this should get pulled in automatically, need to cleanup.  Jira NAP-108.
+macro(add_macos_rttr_rpath)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/xcode/install/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
+                       )    
+endmacro()
+
+# Copy Windows Python DLLs to output directory
+function(copy_windows_python_dlls_to_bin)
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    copy_files_to_bin(${PYTHON_DLLS})
+endfunction()
+
+# Copy Windows FFmpeg DLLs to project output directory
+function(copy_windows_ffmpeg_dlls_to_project)
+    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/bin/*.dll)
+    copy_files_to_bin(${FFMPEGDLLS})
+endfunction()
+
+# Find RTTR using our thirdparty paths
+macro(find_rttr)
+    if(NOT TARGET RTTR::Core)
+        if (WIN32)
+            if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc64/install/cmake")
+            else()
+                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc32/install/cmake")
+            endif()
+        elseif(APPLE)
+            find_path(
+                    RTTR_DIR
+                    NAMES rttr-config.cmake
+                    HINTS
+                    ${THIRDPARTY_DIR}/rttr/xcode/install/cmake
+            )
+        else()
+            find_path(
+                    RTTR_DIR
+                    NAMES rttr-config.cmake
+                    HINTS
+                    ${THIRDPARTY_DIR}/rttr/install/cmake
+                    ${THIRDPARTY_DIR}/rttr/linux/install/cmake
+            )
+        endif()
+        find_package(RTTR CONFIG REQUIRED Core)
     endif()
 endmacro()
+
+# Run any module post-build logic for set modules
+# Note: Currently unused, leaving as useful draft for potential later use
+macro(include_module_postbuilds_per_project NAP_MODULES)
+    foreach(NAP_MODULE ${NAP_MODULES})
+        string(SUBSTRING ${NAP_MODULE} 4 -1 SHORT_MODULE_NAME)
+        set(MODULE_POSTBUILD ${NAP_ROOT}/modules/${SHORT_MODULE_NAME}/modulePostBuildPerProject.cmake)
+        if(EXISTS ${MODULE_POSTBUILD})
+            include(${MODULE_POSTBUILD})
+        endif()
+    endforeach()
+endmacro()
+
+# Package into release, export FBX, other shared source project fixes
+# INCLUDE_WITH_RELEASE: whether the project should be packaged with the NAP platform release
+# INCLUDE_ONLY_WITH_NAIVI_APPS: whether a project should only be packaged if packaging Naivi apps
+# PROJECT_PREFIX: folder to package the project into in the NAP release (eg. demos, examples, etc)
+# RUN_FBX_CONVERTER: whether to run fbxconverter for the project
+function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_RELEASE INCLUDE_ONLY_WITH_NAIVI_APPS PROJECT_PREFIX RUN_FBX_CONVERTER)
+    # Add the runtime path for RTTR on macOS
+    if(APPLE)
+        add_macos_rttr_rpath()
+    endif()
+
+    # Run FBX converter
+    if(${RUN_FBX_CONVERTER})
+        export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+    endif()
+
+    # Package into release build
+    if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR DEFINED PACKAGE_NAIVI_APPS))
+        package_project_into_release(${PROJECT_PREFIX}/${PROJECT_NAME})
+    endif()
+endfunction() 

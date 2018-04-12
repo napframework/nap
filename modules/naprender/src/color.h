@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rtti/rtti.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <utility/dllexport.h>
 
 namespace nap
@@ -276,6 +276,18 @@ namespace nap
 		 * Won't work when the color is a pointer
 		 */
 		bool operator>=(const Color<T, CHANNELS>& rhs) const							{ return !(*this < rhs); }
+
+		/**
+		 * Array subscript overload. Does not perform a bounds check!
+		 * @return the color at index
+		 */
+		T& operator[](std::size_t index)												{ return mValues[index]; }
+
+		/**
+		 * Array subscript overload. Does not perform a bounds check!
+		 * @return the color at index
+		 */
+		const T& operator[](std::size_t index) const									{ return mValues[index]; }
 
 		/**
 		 * Color values associated with this color

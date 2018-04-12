@@ -5,7 +5,7 @@
 
 // External Includes
 #include <nap/event.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <utility/uniqueptrvectoriterator.h>
 
 namespace nap

@@ -3,10 +3,11 @@
 #include <component.h>
 #include <rtti/objectptr.h>
 #include <artnetcontroller.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
 #include <nap/resourceptr.h>
+#include <color.h>
 
 namespace nap
 {
@@ -28,17 +29,14 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// property: link to the artnet controller
-		ResourcePtr<ArtNetController> mController;
 		ComponentPtr<RenderableMeshComponent> mMesh;
 
 		// property: channel to send data to
 		int mStartChannel = 0;
 
 		// property: rgb color as int
-		int mRed	= 0;	// 0 - 255
-		int mGreen	= 0;	// 0 - 255
-		int mBlue	= 0;	// 0 - 255
-		int mWhite	= 0;	// 0 - 255
+		RGBColorFloat mColor = { 0.0f, 0.0f, 0.0f };
+		RColorFloat mWhite	= 0.0f;	
 	};
 
 
@@ -69,7 +67,7 @@ namespace nap
 		 * Set the color using a set of floats
 		 * @param color the new color in the 0-1 float range
 		 */
-		void setColor(const glm::vec3& color);
+		void setColor(const RGBColorFloat& color);
 
 		/**
 		 * Set the level of white
@@ -79,31 +77,24 @@ namespace nap
 		/**
 		 * @return the color as a vec3 in the range of 0-1
 		 */
-		glm::vec3 getColor() const;
-
-		/**
-		 * @return the color as a 8bit unsigned int
-		 * @param red the color red
-		 * @param green the color green
-		 * @param blue the color blue
-		 * @param white the color white
-		 */
-		void getColor(uint8& red, uint8& green, uint8& blue, uint8& white);
+		RGBColorFloat getColor() const;
 
 		/**
 		 * @return the value of white as a float
 		 */
 		float getWhite() const;
 
+		/**
+		 *	Turn dirty on/off
+		 */
+		void setDirty()									{ mDirty = true; }
+
+		RGBColorFloat									mColor;
+		RColorFloat										mWhite;
+
 	private:
 		ComponentInstancePtr<RenderableMeshComponent>	mRenderableMeshComponent = { this, &SelectColorComponent::mMesh };
-		int												mStartChannel = 0;
-		ArtNetController*								mArtnetController = nullptr;
 		MaterialInstance*								mMaterial = nullptr;
-		nap::uint8										mRed = 0;
-		nap::uint8										mGreen = 0;
-		nap::uint8										mBlue = 0;
-		nap::uint8										mWhite = 0;
 		bool											mDirty = true;
 	};
 }

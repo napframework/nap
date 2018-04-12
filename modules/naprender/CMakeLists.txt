@@ -18,13 +18,21 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDE_DIRS} src)
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} nrender mod_napmath mod_napscene)
+
+set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
+target_link_libraries(${PROJECT_NAME} nrender ${DEPENDENT_NAP_MODULES})
+
+# Package into platform release
+if (UNIX)
+    set(UNIX_EXTRA_RPATH "../../../../thirdparty/glew/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/assimp/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/FreeImage/lib")
+endif()
+package_module()
 
 if (WIN32)
-    copy_files_to_bin(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
-
-    copy_base_windows_graphics_dlls()
-
-    find_package(freeimage REQUIRED)
-    copy_freeimage_dll()
+    # Install for fbxconverter
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+            CONFIGURATIONS Release)
 endif()

@@ -66,6 +66,8 @@ namespace nap
 	public:
 		ImageSequenceLayerInstance(ImageSequenceLayer& layer);
 
+		~ImageSequenceLayerInstance();
+
 		/**
 		 *	Update the animation of this sequence.
 		 */
@@ -90,6 +92,11 @@ namespace nap
 		 *	@return Const texture associated with this layer
 		 */
 		virtual const nap::Texture2D&	getTexture() const override			{ return *mCurrentFrameTexture; }
+
+		/**
+		 *	@return Sequence progress in the 0-1 range
+		 */
+		float							getProgress();
 
 		// Signal that is triggered when the sequence completed
 		nap::Signal<ImageSequenceLayerInstance&> completed;

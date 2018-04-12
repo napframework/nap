@@ -8,43 +8,46 @@
 
 using namespace napkin;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// QMainWindow Storer
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-template<>
-void WidgetStorer<QMainWindow>::store(const QMainWindow& widget, const QString& key, QSettings& s) const
+namespace napkin
 {
-	s.setValue(key + "_GEO", widget.saveGeometry());
-	s.setValue(key + "_STATE", widget.saveState());
-}
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// QMainWindow Storer
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<>
-void WidgetStorer<QMainWindow>::restore(QMainWindow& widget, const QString& key, const QSettings& s) const
-{
-	widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
-	widget.restoreState(s.value(key + "_STATE").toByteArray());
-}
+	template<>
+	void WidgetStorer<QMainWindow>::store(const QMainWindow& widget, const QString& key, QSettings& s) const
+	{
+		s.setValue(key + "_GEO", widget.saveGeometry());
+		s.setValue(key + "_STATE", widget.saveState());
+	}
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// QHeaderView Storer
-////////////////////////////////////////////////////////////////////////////////////////////////////
+	template<>
+	void WidgetStorer<QMainWindow>::restore(QMainWindow& widget, const QString& key, const QSettings& s) const
+	{
+		widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
+		widget.restoreState(s.value(key + "_STATE").toByteArray());
+	}
 
-template<>
-void WidgetStorer<QHeaderView>::store(const QHeaderView& widget, const QString& key, QSettings& s) const
-{
-	s.setValue(key + "_GEO", widget.saveGeometry());
-	s.setValue(key + "_STATE", widget.saveState());
-}
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// QHeaderView Storer
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<>
-void WidgetStorer<QHeaderView>::restore(QHeaderView& widget, const QString& key,
-											  const QSettings& s) const
-{
-	widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
-	widget.restoreState(s.value(key + "_STATE").toByteArray());
-}
+	template<>
+	void WidgetStorer<QHeaderView>::store(const QHeaderView& widget, const QString& key, QSettings& s) const
+	{
+		s.setValue(key + "_GEO", widget.saveGeometry());
+		s.setValue(key + "_STATE", widget.saveState());
+	}
 
+	template<>
+	void WidgetStorer<QHeaderView>::restore(QHeaderView& widget, const QString& key,
+											const QSettings& s) const
+	{
+		widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
+		widget.restoreState(s.value(key + "_STATE").toByteArray());
+	}
+
+} // namespace napkin
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

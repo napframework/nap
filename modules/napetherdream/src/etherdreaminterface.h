@@ -3,7 +3,7 @@
 #include <utility/dllexport.h>
 #include <stdint.h>
 #include <string>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <mutex>
 
 namespace nap

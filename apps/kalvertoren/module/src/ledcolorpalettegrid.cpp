@@ -22,14 +22,6 @@ RTTI_BEGIN_CLASS(nap::LedColorPaletteGrid)
 RTTI_END_CLASS
 
 
-RTTI_DEFINE_BASE(std::vector<int>)
-	RTTI_BEGIN_STRUCT(std::vector<int>)
-RTTI_END_STRUCT
-
-RTTI_DEFINE_BASE(int)
-	RTTI_BEGIN_STRUCT(int)
-RTTI_END_STRUCT
-
 //////////////////////////////////////////////////////////////////////////
 
 

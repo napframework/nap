@@ -7,6 +7,7 @@
 
 #include <component.h>
 #include <componentptr.h>
+#include <triangleiterator.h>
 
 namespace nap
 {
@@ -30,7 +31,10 @@ namespace nap
 		ComponentPtr<RenderCompositionComponent>	mCompositionRenderer;			///< property: link to the composition component
 		ComponentPtr<ColorPaletteComponent>			mColorPaletteComponent;			///< property: link to the color palette component
 		bool										mShowIndexColors = false;		///< property: if the index colors should be shown
-		float										mIntensity = 1.0f;				///< property: intensity
+		bool										mBlendToWhite = false;			///< property: if the colors should blend to white
+		int											mBlendAxis = 1;					///< property: axis used to blend over (0 = x, 1 = y, 2 = z)
+		glm::vec2									mBlendRange = { 0.4, 0.6 };		///< property: where to blend to white
+		float										mBlendPower = 1.0f;				///< property: blend power
 	};
 
 
@@ -64,9 +68,19 @@ namespace nap
 		void showIndexColors(bool value)												{ mShowIndexColors = value; }
 
 		/**
-		 *	Sets the intensity of the colors applied to the mesh
+		 * If when applied the colors should blend to white
 		 */
-		void setIntensity(float value)													{ mIntensity = value; }
+		void blendToWhite(bool value)													{ mBlendToWhite = value; }
+
+		/**
+		 * Applies the blend axis (0 = x, 1 = y, 2 = z)
+		 */
+		void setBlendAxis(int axis);
+
+		/**
+		 *	Sets the blend range
+		 */
+		void setBlendRange(const glm::vec2& range);
 
 		// pointer to the component that manages all the compositions
 		ComponentInstancePtr<RenderCompositionComponent> mCompositionRenderer	=		{ this, &ApplyCompositionComponent::mCompositionRenderer };
@@ -75,7 +89,16 @@ namespace nap
 		ComponentInstancePtr<ColorPaletteComponent> mColorPaletteComponent		=		{ this, &ApplyCompositionComponent::mColorPaletteComponent };
 
 	private:
-		bool  mShowIndexColors = false;
-		float mIntensity = 1.0f;
+		bool		mShowIndexColors = false;
+		bool		mBlendToWhite = false;
+		int			mBlendAxis = 1;
+		glm::vec2	mBlendRange = { 0.4f, 0.6f };
+		float		mBlendPower = 1.0f;
+
+		// White LED Color
+		static const RGBAColorFloat mWhiteLedColor;
+
+		// White RGB Color
+		static const RGBColorFloat mWhiteRGBColor;
 	};
 }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(kalvertoren)
 
 #add all cpp files to SOURCES
@@ -17,26 +17,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
+# Even though we're not using our modules here, run the process as a basic validation of the project.json
+project_json_to_cmake()
+
 target_link_libraries(${PROJECT_NAME} mod_napkalvertoren)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-if (WIN32)
-    # Copy freeimage DLL
-	find_package(freeimage REQUIRED)
-	copy_freeimage_dll()
-
-    # Copy over some crap window dlls
-	copy_base_windows_graphics_dlls()
-
-	# copy all ffmpeg dlls
-    copy_windows_ffmpeg_dlls()
-
-    # find artnet
-    find_package(artnet REQUIRED)
-    copy_artnet_dll()
-
-endif()
-
-# create post build event
-export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
-
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" TRUE)

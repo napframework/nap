@@ -4,11 +4,19 @@
 #include "logger.h"
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
+#include "projectinfomanager.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
 #include <iostream>
 #include <utility/fileutils.h>
+
+#include <packaginginfo.h>
+
+// Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
+#if defined(__APPLE__) || defined(__unix__)
+	#include <stdlib.h>
+#endif
 
 using namespace std;
 
@@ -35,8 +43,6 @@ namespace nap
 
 	Core::~Core()
 	{
-		mResourceManager->mFileLoadedSignal.disconnect(mFileLoadedSlot);
-
 		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
 		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
 		// Erase it
@@ -44,13 +50,24 @@ namespace nap
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath)
+	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath, bool runningInNonProjectContext)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
+		// Setup our Python environment
+		setupPythonEnvironment();
+		
+		// Load our module names from the project info
+		ProjectInfo projectInfo;
+		if (!runningInNonProjectContext)
+		{
+			if (!loadProjectInfoFromJSON(projectInfo, error))
+				return false;
+		}
+
 		// Find our project data
 		if (!determineAndSetWorkingDirectory(error, forcedDataPath))
 			return false;
@@ -61,35 +78,14 @@ namespace nap
 		mResourceManager = std::make_unique<ResourceManager>(*this);
 		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 
-		if (!loadModules(error))
+		// Load modules
+		if (!mModuleManager.loadModules(projectInfo.mModules, error))
 			return false;
-
+		
 		// Create the various services based on their dependencies
 		if (!createServices(error))
 			return false;
 
-		return true;
-	}
-
-
-	bool Core::loadModules(utility::ErrorState& error)
-	{
-		// Load all modules
-		// TODO: This should be correctly resolved, ie: the dll's should always
-		// be in the executable directory
-#ifdef _WIN32
-		mModuleManager.loadModules(utility::getExecutableDir());
-#else
-		// If we have a local lib dir let's presume that's where our modules are meant to be, for now.  Otherwise go hunting higher up where they'll be
-		// normally be built
-		std::string module_dir;
-		if (nap::utility::dirExists(utility::getExecutableDir() + "/lib"))
-			module_dir = utility::getExecutableDir() + "/lib";
-		else
-			module_dir = utility::getExecutableDir() + "/../../lib/" + utility::getFileName(utility::getExecutableDir());
-
-		mModuleManager.loadModules(module_dir);
-#endif // _WIN32
 		return true;
 	}
 
@@ -195,6 +191,8 @@ namespace nap
 
 	void Core::shutdownServices()
 	{
+		mResourceManager.reset();
+
 		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
 			Service& service = **it;
@@ -341,13 +339,32 @@ namespace nap
 			return true;
 		}
 		
-		// Get project name
-		// TODO once we have packaging work merged and we compile into project-specific paths use that folder name instead
-		std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+		// Split up our executable path to scrape our project name
+		std::string exeDir = utility::getExecutableDir();
+		std::vector<std::string> dirParts;
+		utility::splitString(exeDir, '/', dirParts);
 		
 		// Find NAP root.  Looks cludgey but we have control of this, it doesn't change.
-		// TODO add another level to this then when merged with packaging and we have project-specific build paths
-		std::string napRoot = utility::getAbsolutePath("../..");
+		
+		std::string napRoot;
+		std::string projectName;
+#ifdef NAP_PACKAGED_BUILD
+		// We're running from a NAP release
+		if (dirParts.size() >= 3)
+		{
+			// Non-packaged apps against released framework
+			napRoot = utility::getAbsolutePath(exeDir + "/../../../../");
+			projectName = dirParts.end()[-3];
+		}
+		else {
+			errorState.fail("Unexpected path configuration found, could not locate project data");
+			return false;
+		}
+#else // NAP_PACKAGED_BUILD
+		// We're running from NAP source
+		napRoot = utility::getAbsolutePath(exeDir + "/../../");
+		projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+#endif // NAP_PACKAGED_BUILD
 		
 		// Iterate possible project locations
 		std::string possibleProjectParents[] =
@@ -370,5 +387,61 @@ namespace nap
 		
 		errorState.fail("Couldn't find data for project %s", projectName.c_str());
 		return false;
+	}
+
+	
+	void Core::setupPythonEnvironment()
+	{
+#ifdef _WIN32
+		const std::string platformPrefix = "msvc";
+#elif defined(__APPLE__)
+		const std::string platformPrefix = "osx";
+#else // __unix__
+		const std::string platformPrefix = "linux";
+#endif
+
+#ifdef NAP_PACKAGED_BUILD
+		const bool packagedBuild = true;
+#else
+		const bool packagedBuild = false;
+#endif
+
+		const std::string exeDir = utility::getExecutableDir();
+
+#if _WIN32
+		if (packagedBuild)
+		{
+			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
+			const std::string packagedAppPythonPath = exeDir + "/python36.zip";
+			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
+		}
+		else {
+			// Set PYTHONPATH for thirdparty location beside NAP source
+			const std::string napRoot = exeDir + "/../..";
+			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
+			_putenv_s("PYTHONPATH", pythonHome.c_str());
+		}
+#else	
+		if (packagedBuild)
+		{
+			// Check for packaged app modules dir
+			const std::string packagedAppPythonPath = exeDir + "/lib/python3.6";
+			if (utility::dirExists(packagedAppPythonPath)) {
+				setenv("PYTHONHOME", exeDir.c_str(), 1);
+			}
+			else {
+				// Set PYTHONHOME to thirdparty location within packaged NAP release
+				const std::string napRoot = exeDir + "/../../../../";
+				const std::string pythonHome = napRoot + "/thirdparty/python/";
+				setenv("PYTHONHOME", pythonHome.c_str(), 1);
+			}
+		} 
+		else {
+			// set PYTHONHOME for thirdparty location beside NAP source
+			const std::string napRoot = exeDir + "/../../";
+			const std::string pythonHome = napRoot + "/../thirdparty/python/" + platformPrefix + "/install";
+			setenv("PYTHONHOME", pythonHome.c_str(), 1);
+		}
+#endif
 	}
 }

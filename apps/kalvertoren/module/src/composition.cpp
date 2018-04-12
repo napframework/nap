@@ -56,39 +56,66 @@ namespace nap
 		
 		// If the user selected sequence mode and there is a sequence available, make that the default
 		mMode = composition.mMode == CompositionPlayMode::Sequence && mImageSequence != nullptr ? CompositionPlayMode::Sequence : CompositionPlayMode::Length;
+
+		// Set status
+		mStatus = EStatus::Active;
+	}
+
+
+	CompositionInstance::~CompositionInstance()
+	{
+		mLayerInstances.clear();
 	}
 
 
 	void CompositionInstance::update(double deltaTime)
 	{
+		// Increment time if this component is active
+		if (mStatus == EStatus::Active)
+		{
+			mTime += (deltaTime * mDurationScale);
+		}
+
+		// When time runs out signal completion or, when we're dealing with a sequence:
+		// Wait for it to finish and signal completion
 		if (mTime > mComposition->mLength)
 		{
 			switch (mMode)
 			{
 			case CompositionPlayMode::Length:
-				finished(*this);
+				signalFinish();
 				break;
 			case CompositionPlayMode::Sequence:
-				assert(mImageSequence != nullptr);
-				mImageSequence->completed.connect(mLayerSequenceFinishedSlot);
+				connectSequence();
 				break;
 			}
-			mTime = 0.0f;
-		}
 
+			// Reset time
+			mTime = 0.0;
+		}
 
 		// Update all associated layers 
 		for (auto& layer_instance : mLayerInstances)
 			layer_instance->update(deltaTime);
-
-		// Increment time
-		mTime += (deltaTime * mDurationScale);
 	}
 
 
 	void CompositionInstance::onLayerSequenceFinished(ImageSequenceLayerInstance& sequence)
 	{
+		signalFinish();
+	}
+
+	void CompositionInstance::signalFinish()
+	{
+		mStatus = EStatus::Completed;
 		finished(*this);
+	}
+
+
+	void CompositionInstance::connectSequence()
+	{
+		mStatus = EStatus::WaitingForSequence;
+		mImageSequence->completed.connect(mLayerSequenceFinishedSlot);
 	}
 
 
@@ -104,4 +131,40 @@ namespace nap
 	{
 		mDurationScale = scale;
 	}
+
+
+	float CompositionInstance::getProgress() const
+	{
+		switch (mStatus)
+		{
+		case CompositionInstance::EStatus::Active:
+			return math::fit<float>(mTime, 0.0f, mComposition->mLength, 0.0f, 1.0f);
+		case CompositionInstance::EStatus::WaitingForSequence:
+			return mImageSequence->getProgress();
+		case CompositionInstance::EStatus::Completed:
+			return 1.0f;
+		default:
+			assert(false);
+		}
+		return 0.0f;
+	}
+
+
+	std::string CompositionInstance::getName() const
+	{
+		return mComposition->mID;
+	}
+
+
+	CompositionInstance::EStatus CompositionInstance::getStatus() const
+	{
+		return mStatus;
+	}
+
+
+	nap::CompositionPlayMode CompositionInstance::getMode() const
+	{
+		return mMode;
+	}
+
 }

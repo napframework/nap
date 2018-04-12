@@ -8,8 +8,11 @@
 #include <shader.h>
 #include <generic/naputils.h>
 #include <QCoreApplication>
+#include <renderablemeshcomponent.h>
 
 #define TAG_NAPKIN "[napkin]"
+
+using namespace napkin;
 
 class SigCapture
 {
@@ -36,6 +39,7 @@ QString getResource(const QString& filename)
 
 TEST_CASE("Document Management", TAG_NAPKIN)
 {
+	
 	auto doc = napkin::AppContext::get().getDocument();
 
 	// Must have a default document
@@ -321,6 +325,62 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 	nameProp.setValue(newName);
 	REQUIRE(nameProp.getValue() == newName);
 	REQUIRE(entity->mID == newName);
+
+	SECTION("verify invalid path")
+	{
+		nap::Material mat;
+		napkin::PropertyPath blendModePath(mat, "BlendMode2_invalid");
+		REQUIRE(!blendModePath.isValid());
+	}
+
+	SECTION("verify not an enum/pointer")
+	{
+		nap::Material mat;
+		napkin::PropertyPath path(mat, "mID");
+		REQUIRE(path.isValid());
+		REQUIRE(!path.isEnum());
+		REQUIRE(!path.isPointer());
+	}
+
+	SECTION("verify root-level enum")
+	{
+		nap::Material mat;
+		napkin::PropertyPath path(mat, "BlendMode");
+		REQUIRE(path.getProperty().get_name() == "BlendMode");
+		REQUIRE(path.getType() == RTTI_OF(nap::EBlendMode));
+		REQUIRE(path.isValid());
+		REQUIRE(path.isEnum());
+	}
+
+	SECTION("verify nested enum")
+	{
+		nap::RenderableMeshComponent comp;
+		napkin::PropertyPath path(comp, "MaterialInstance/BlendMode");
+		REQUIRE(path.isValid());
+		REQUIRE(path.getType() == RTTI_OF(nap::EBlendMode));
+		REQUIRE(path.getProperty().get_name() == "BlendMode");
+		REQUIRE(path.isEnum());
+	}
+
+	SECTION("verify root-level pointer")
+	{
+		nap::RenderableMeshComponent comp;
+		napkin::PropertyPath path(comp, "Mesh");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isPointer());
+		REQUIRE(!path.getWrappedType().is_derived_from(RTTI_OF(nap::Entity)));
+		REQUIRE(path.getWrappedType().is_derived_from(RTTI_OF(nap::IMesh)));
+	}
+
+	SECTION("verify nested pointer")
+	{
+		nap::RenderableMeshComponent comp;
+		napkin::PropertyPath path(comp, "MaterialInstance/Material");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isPointer());
+		REQUIRE(!path.getWrappedType().is_derived_from(RTTI_OF(nap::Entity)));
+		REQUIRE(path.getWrappedType().is_derived_from(RTTI_OF(nap::Material)));
+	}
 }
 
 TEST_CASE("Commands", TAG_NAPKIN)
@@ -453,8 +513,8 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 {
 	// Must start QApplication in order to have an event loop for signals?
 	int argc = 1;
-	char* argv[] = {"arg!"};
-	QCoreApplication app(argc, argv);
+	const char* argv[] = { "arg","blop" };
+	QCoreApplication app(argc, const_cast<char**>(argv));
 
 	// Assume this test file's directory as the base path
 	QString jsonFile = "objects.json";
