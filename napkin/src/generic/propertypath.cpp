@@ -45,7 +45,7 @@ rttr::property napkin::PropertyPath::getProperty() const
 
 rttr::type napkin::PropertyPath::getType() const
 {
-	return getValue().get_type();
+	return getProperty().get_type();
 }
 
 ResolvedPath napkin::PropertyPath::resolve() const
@@ -110,8 +110,16 @@ napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) con
 
 rttr::type napkin::PropertyPath::getWrappedType() const
 {
-	auto value = getValue();
-	return value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
+	const auto& type = getType();
+	auto wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
+	if (type.is_array())
+	{
+		nap::rtti::Variant value = getValue();
+		nap::rtti::VariantArray array = value.create_array_view();
+		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+		wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+	}
+	return wrapped_type;
 }
 
 bool napkin::PropertyPath::isValid() const
@@ -132,6 +140,34 @@ bool napkin::PropertyPath::operator==(const napkin::PropertyPath& other) const
 		return false;
 
 	return true;
+}
+
+bool napkin::PropertyPath::isEnum() const
+{
+	if (!isValid())
+		return false;
+	return getType().is_enumeration();
+}
+
+bool napkin::PropertyPath::isPointer() const
+{
+	if (!isValid())
+		return false;
+
+	const auto& type = getType();
+	const nap::rtti::TypeInfo wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
+	// TODO: There must be a less convoluted way.
+	// In the case of array elements, the type will be the array type, not the element type.
+	// For now, grab the array's element type and use that.
+	nap::rtti::TypeInfo wrapped_array_type = rttr::type::empty();
+	if (type.is_array()) {
+		nap::rtti::Variant value = getValue();
+		nap::rtti::VariantArray array = value.create_array_view();
+		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+		wrapped_array_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+	}
+
+	return wrapped_type.is_pointer() || wrapped_array_type.is_pointer();
 }
 
 
