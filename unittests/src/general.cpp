@@ -1,11 +1,12 @@
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
 
+#include <material.h>
+#include <nap/logger.h>
+#include <audio/utility/safeptr.h>
+#include <generic/propertypath.h>
 #include <utility/fileutils.h>
 #include <utility/datetimeutils.h>
-#include <audio/utility/safeptr.h>
-#include <nap/logger.h>
-
 
 TEST_CASE("File path transformations", "[fileutils]")
 {
@@ -16,7 +17,7 @@ TEST_CASE("File path transformations", "[fileutils]")
 	REQUIRE(nap::utility::getFileExtension("tommy.toedel.") == "");
 	REQUIRE(nap::utility::getFileExtension("file-name.longextension") == "longextension");
 
-//	REQUIRE(nap::utility::getFileDir("/home/someone//filename.ext") == "/home/someone");
+	//	REQUIRE(nap::utility::getFileDir("/home/someone//filename.ext") == "/home/someone");
 	REQUIRE(nap::utility::getFileDir("/home/someone/filename.ext") == "/home/someone");
 
 	REQUIRE(nap::utility::getFileName("/home/someone/filename.ext") == "filename.ext");
@@ -30,7 +31,6 @@ TEST_CASE("File path transformations", "[fileutils]")
 	REQUIRE(!nap::utility::hasExtension("foo.foo.bar", "foo.bar"));
 
 	// TODO: Make more of this sweet stuff
-
 }
 
 
@@ -69,9 +69,9 @@ TEST_CASE("String utilities", "[stringutils]")
 
 TEST_CASE("DateTime Utilities", "[datetime]")
 {
-	auto currenttime = nap::utility::getCurrentTime();
+	auto currenttime	 = nap::utility::getCurrentTime();
 	auto flc1_launch_str = "2006-03-24 22:30:01.123";
-	auto flc1_launch = nap::utility::createTimestamp(2006, 03, 24, 22, 30, 01, 123);
+	auto flc1_launch	 = nap::utility::createTimestamp(2006, 03, 24, 22, 30, 01, 123);
 
 	nap::utility::DateTime flc1_launch_date(flc1_launch);
 	REQUIRE(flc1_launch_date.getYear() == 2006);
@@ -141,3 +141,4 @@ TEST_CASE("Safe pointers", "[safepointer]")
     REQUIRE(safePtr == nullptr);
     REQUIRE(safePtrCopy == nullptr);
 }
+
