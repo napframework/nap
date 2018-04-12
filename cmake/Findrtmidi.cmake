@@ -17,11 +17,8 @@ if(WIN32)
     set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/bin/msvc/rtmidi.lib winmm)
     set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/bin/msvc/rtmidid.lib winmm)
 elseif(APPLE)
-    # TODO Discussed with Stijn, there's no reason this is statically linked for macOS only, will fix  
-    set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/bin/osx/librtmidi.4.dylib
-        "-framework CoreMidi" "-framework CoreAudio" "-framework CoreFoundation")
-    set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/bin/osx/librtmidi.4.dylib
-        "-framework CoreMidi" "-framework CoreAudio" "-framework CoreFoundation")
+    set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/bin/osx/librtmidi.4.dylib)
+    set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/bin/osx/librtmidi.4.dylib)
 else()
     set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/linux/install/lib/librtmidi.so)
     set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/linux/install/lib/librtmidi.so)
