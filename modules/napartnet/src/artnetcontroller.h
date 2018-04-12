@@ -37,6 +37,9 @@ namespace nap
 		 */
 		virtual bool start(nap::utility::ErrorState& errorState) override;
 
+		/**
+		 * Removes the controller from the service and destroys the managed artnet node
+		 */
 		virtual void stop() override;
 
 		/**
