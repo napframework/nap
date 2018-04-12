@@ -1561,7 +1561,7 @@ namespace nap
 
 			if (mVideoState.isFinished())
 			{
-				mPlaying = false;
+				stop(true);
 				return errorState.check(mErrorMessage.empty(), mErrorMessage.c_str());
 			}
 
