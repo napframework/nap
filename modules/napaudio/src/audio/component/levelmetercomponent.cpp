@@ -15,6 +15,7 @@ RTTI_BEGIN_CLASS(nap::audio::LevelMeterComponent)
     RTTI_PROPERTY("FilterInput", &nap::audio::LevelMeterComponent::mFilterInput, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("CenterFrequency", &nap::audio::LevelMeterComponent::mCenterFrequency, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("BandWidth", &nap::audio::LevelMeterComponent::mBandWidth, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Channel", &nap::audio::LevelMeterComponent::mChannel, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterComponentInstance)
@@ -30,91 +31,92 @@ namespace nap
         
         bool LevelMeterComponentInstance::init(utility::ErrorState& errorState)
         {
-            auto resource = getComponent<LevelMeterComponent>();
-            auto audioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
-            for (auto channel = 0; channel < mInput->getChannelCount(); ++channel)
-            {
-                mMeters.emplace_back(audioService->makeSafe<LevelMeterNode>(audioService->getNodeManager()));
+            mResource = getComponent<LevelMeterComponent>();
+            mAudioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            
+            mCenterFrequency = mResource->mCenterFrequency;
+            mBandWidth = mResource->mBandWidth;
+            mFilterGain = mResource->mFilterGain;
+            
+            if (!errorState.check(mResource->mChannel < mInput->getChannelCount(), "LevelMeterComponent: Channel exceeds number of input channels"))
+                return false;
+            
+            mMeter = mAudioService->makeSafe<LevelMeterNode>(mAudioService->getNodeManager());
                 
-                if (resource->mFilterInput)
-                {
-                    auto filter = audioService->makeSafe<FilterNode>(getNodeManager());
-                    filter->setMode(FilterNode::EMode::BandPass);
-                    filter->setFrequency(resource->mCenterFrequency);
-                    filter->setGain(resource->mFilterGain);
-                    filter->audioInput.connect(mInput->getOutputForChannel(channel));
-                    mMeters.back()->input.connect(filter->audioOutput);
-                    mFilters.emplace_back(std::move(filter));
-                }
-                else {
-                    mMeters.back()->input.connect(mInput->getOutputForChannel(channel));
-                }
+            if (mResource->mFilterInput)
+            {
+                mFilter = mAudioService->makeSafe<FilterNode>(mAudioService->getNodeManager());
+                mFilter->setMode(FilterNode::EMode::BandPass);
+                mFilter->setFrequency(mResource->mCenterFrequency);
+                mFilter->setGain(mResource->mFilterGain);
+                mFilter->audioInput.connect(mInput->getOutputForChannel(mResource->mChannel));
+                mMeter->input.connect(mFilter->audioOutput);
+            }
+            else {
+                mMeter->input.connect(mInput->getOutputForChannel(mResource->mChannel));
             }
             
             return true;
         }
         
         
-        NodeManager& LevelMeterComponentInstance::getNodeManager()
+        ControllerValue LevelMeterComponentInstance::getLevel()
         {
-            return getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH)->getNodeManager();
-        }
-        
-        
-        ControllerValue LevelMeterComponentInstance::getLevel(int channel)
-        {
-            assert(channel < mMeters.size());
-            return mMeters[channel]->getLevel();
+            return mMeter->getLevel();
         }
         
         
         void LevelMeterComponentInstance::setCenterFrequency(ControllerValue centerFrequency)
         {
-            for (auto& filter : mFilters)
-                filter->setFrequency(centerFrequency);
+            mCenterFrequency = centerFrequency;
+            mFilter->setFrequency(mCenterFrequency);
         }
         
         
         void LevelMeterComponentInstance::setBandWidth(ControllerValue bandWidth)
         {
-            for (auto& filter : mFilters)
-                filter->setBand(bandWidth);
+            mBandWidth = bandWidth;
+            mFilter->setBand(mBandWidth);
         }
         
         
         void LevelMeterComponentInstance::setFilterGain(ControllerValue gain)
         {
-            for (auto& filter : mFilters)
-                filter->setGain(gain);
+            mFilterGain = gain;
+            mFilter->setGain(mFilterGain);
         }
         
         
         ControllerValue LevelMeterComponentInstance::getCenterFrequency() const
         {
-            if (mFilters.size() > 0)
-                return (*mFilters.begin())->getFrequency();
-            else
-                return 0;
+            return mCenterFrequency;
         }
         
         
         ControllerValue LevelMeterComponentInstance::getBandWidth() const
         {
-            if (mFilters.size() > 0)
-                return (*mFilters.begin())->getBand();
-            else
-                return 0;
+            return mBandWidth;
         }
         
         
         ControllerValue LevelMeterComponentInstance::getFilterGain() const
         {
-            if (mFilters.size() > 0)
-                return (*mFilters.begin())->getGain();
-            else
-                return 0;
+            return mFilterGain;
         }
-
+        
+        
+        void LevelMeterComponentInstance::setInput(AudioComponentBaseInstance& input)
+        {
+            auto inputPtr = &input;
+            if (mResource->mFilterInput)
+                mAudioService->enqueueTask([&, inputPtr](){
+                    mFilter->audioInput.connect(inputPtr->getOutputForChannel(mResource->mChannel));
+                });
+            else
+                mAudioService->enqueueTask([&, inputPtr](){
+                    mMeter->input.connect(inputPtr->getOutputForChannel(mResource->mChannel));
+                });
+        }
         
     }
     
