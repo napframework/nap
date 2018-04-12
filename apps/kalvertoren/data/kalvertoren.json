@@ -1343,7 +1343,7 @@
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT3",
-            "BaseFilename": "FINAL/T3_png/T3_%02d.png",
+            "BaseFilename": "FINAL/T3_PNG/T3_%02d.png",
             "FPS": 0.6000000238418579
         },
         {
