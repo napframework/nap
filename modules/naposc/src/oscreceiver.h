@@ -28,7 +28,7 @@ namespace nap
 	class NAPAPI OSCReceiver : public Device
 	{
 		friend class OSCService;
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(Device)
 	public:
 		// Default constructor
 		OSCReceiver() = default;

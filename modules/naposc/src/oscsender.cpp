@@ -20,11 +20,8 @@ namespace nap
 	{}
 
 
-	bool OSCSender::init(utility::ErrorState& errorState)
+	bool OSCSender::start(utility::ErrorState& errorState)
 	{
-		// Make the buffer
-		// mBuffer.resize(initialPacketCapacity);
-
 		// Construct host endpoint
 		IpEndpointName host(mIPAddress.c_str(), mPort);
 
@@ -37,6 +34,12 @@ namespace nap
 		nap::Logger::info("Started OSC output connection, ip: %s, port: %d", hostIpAddress, mPort);
 
 		return true;
+	}
+
+
+	void OSCSender::stop()
+	{
+		mSocket.reset(nullptr);
 	}
 
 

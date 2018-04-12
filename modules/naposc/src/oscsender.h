@@ -5,6 +5,7 @@
 #include <nap/resource.h>
 #include <rtti/factory.h>
 #include <queue>
+#include <nap/device.h>
 
 // Local Includes
 #include "oscevent.h"
@@ -24,13 +25,13 @@ namespace osc
 namespace nap 
 {
 	/**
-	 * Objects that sends osc messages 
-	 * The sender manages it's own connection and is constructed using a target ip address and port
+	 * Sends a single OSC message or bundle of OSC messages.
+	 * This device manages it's own connection and is constructed using a target ip address and port
 	 */
-	class NAPAPI OSCSender : public Resource
+	class NAPAPI OSCSender : public Device
 	{
 		friend class OSCService;
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(Device)
 	public:
 		OSCSender() = default;
 
@@ -44,9 +45,14 @@ namespace nap
 		int mPort = 8000;			///< Property: 'Port' target machine port1
 
 		/**
-		 * Initializes the sender and registers it with the OSCService
+		 * Constructs the host end point and communication socket.
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool start(utility::ErrorState& errorState) override;
+
+		/**
+		 *	Deletes the communication socket
+		 */
+		virtual void stop() override;
 
 		/**
 		 * Sends an OSC message immediately without adding it to the queue
