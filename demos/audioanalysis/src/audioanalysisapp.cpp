@@ -14,6 +14,11 @@
 #include <meshutils.h>
 #include <mathutils.h>
 
+// Audio includes
+#include <audio/component/playbackcomponent.h>
+#include <audio/component/inputcomponent.h>
+#include <audio/component/outputcomponent.h>
+
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioAnalysisApp)
@@ -52,12 +57,12 @@ namespace nap
 
         // Find audio entities and the level meter component that will perform the audio analysis
         mAudioEntity = scene->findEntity("Audio");
-        mLevelMeter = mAudioEntity->findComponent<audio::LevelMeterComponentInstance>();
+        auto levelMeter = mAudioEntity->findComponent<audio::LevelMeterComponentInstance>();
         
         // Set parameters for level meter component
-        mLevelMeter->setCenterFrequency(mAnalysisFrequency);
-        mLevelMeter->setBandWidth(mAnalysisBand);
-        mLevelMeter->setFilterGain(mAnalysisGain);
+        levelMeter->setCenterFrequency(mAnalysisFrequency);
+        levelMeter->setBandWidth(mAnalysisBand);
+        levelMeter->setFilterGain(mAnalysisGain);
         
         // Resize the vector containing the results of the analysis
         mAnalysisPlotValues.resize(100, 0);
@@ -74,11 +79,20 @@ namespace nap
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
 		
+        auto levelMeter = mAudioEntity->findComponent<audio::LevelMeterComponentInstance>();
+        auto output = mAudioEntity->findComponent<audio::OutputComponentInstance>();
+        auto input = mAudioEntity->findComponent<audio::AudioInputComponentInstance>();
+        auto player = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
+        
+        assert(levelMeter);
+        assert(input);
+        assert(player);
+
         // Shift the values in the vector with output values one position to the right, in order to make place for a new value.
         for (auto i = mAnalysisPlotValues.size() - 1; i > 0; i--)
             mAnalysisPlotValues[i] = mAnalysisPlotValues[i - 1];
         // Insert the new output value at the top of the vector.
-        mAnalysisPlotValues[0] = mLevelMeter->getLevel(0);
+        mAnalysisPlotValues[0] = levelMeter->getLevel();
         
 		// Draw some gui elements
 		ImGui::Begin("Audio analysis");
@@ -86,12 +100,35 @@ namespace nap
         ImGui::SliderFloat("Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Band", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Gain", &mAnalysisGain, 0.f, 10.0f, "%.3f", 1.0f);
+        if (ImGui::RadioButton("Audio file input", mInputSource == EAudioFile))
+            mInputSource = EAudioFile;
+        if (ImGui::RadioButton("Audio device input", mInputSource == EAudioDevice))
+            mInputSource = EAudioDevice;
 		ImGui::End();
         
+        if (mInputSource != mCurrentInputSource)
+        {
+            mCurrentInputSource = mInputSource;
+            switch (mCurrentInputSource) {
+                case EAudioFile:
+                    levelMeter->setInput(*player);
+                    output->setInput(*player);
+                    break;
+                    
+                case EAudioDevice:
+                    levelMeter->setInput(*input);
+                    output->setInput(*input);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        
         // Update the audio level meter analysis component
-        mLevelMeter->setCenterFrequency(mAnalysisFrequency);
-        mLevelMeter->setBandWidth(mAnalysisBand);
-        mLevelMeter->setFilterGain(mAnalysisGain);
+        levelMeter->setCenterFrequency(mAnalysisFrequency);
+        levelMeter->setBandWidth(mAnalysisBand);
+        levelMeter->setFilterGain(mAnalysisGain);
 	}
 
 	
