@@ -8,6 +8,9 @@
 #include "applycompositioncomponent.h"
 #include "rendercompositioncomponent.h"
 #include "lightintensitycomponent.h"
+#include "applyvideocomponent.h"
+#include "rendervideocomponent.h"
+#include "videocontrolcomponent.h"
 
 #include <imguiservice.h>
 #include <nap/core.h>
@@ -32,6 +35,15 @@ namespace nap
 
 		CompositionComponentInstance& comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
 		mCompositionCycleMode = static_cast<int>(comp.getCycleMode());
+
+		// Store brightness settings
+		LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
+		mLuxRange = light_comp.getLuxRange();
+		mLightRange = light_comp.getLightRange();
+		mSensorInfluence = light_comp.getSensorInfluence();
+		mLuxCurve = light_comp.getLuxPower();
+		mLightSmoothTime = light_comp.getSmoothTime();
+		mIntensity = light_comp.getMasterBrightness();
 	}
 
 
@@ -98,6 +110,9 @@ namespace nap
 			case 2:
 				color_method->select(RTTI_OF(nap::ApplyCompositionComponentInstance));
 				break;
+			case 3:
+				color_method->select(RTTI_OF(nap::ApplyVideoComponentInstance));
+				break;
 			default:
 				assert(false);
 				break;
@@ -150,7 +165,7 @@ namespace nap
 		if (ImGui::CollapsingHeader("DisplaySettings"))
 		{
 			// Changes the mesh paint mode
-			if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0"))
+			if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0Video\0\0"))
 			{
 				selectPaintMethod();
 			}
@@ -282,6 +297,15 @@ namespace nap
 				}
 			}
 		}
+
+		if (ImGui::CollapsingHeader("Video"))
+		{
+			VideoControlComponentInstance& video_comp = mApp.compositionEntity->getComponent<VideoControlComponentInstance>();
+			if (ImGui::Button(video_comp.isPlaying() ? "Stop" : "Start"))
+			{
+				video_comp.play(!video_comp.isPlaying());
+			}
+		}
 		ImGui::End();
 	}
 
@@ -401,6 +425,16 @@ namespace nap
 			
 			// Draw slider regarding display size
 			ImGui::SliderFloat("Display Size", &mDisplaySize, 0.0f, 1.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Video"))
+		{
+			RenderVideoComponentInstance& video_render_comp = mApp.renderVideoEntity->getComponent<RenderVideoComponentInstance>();
+			float col_width = ImGui::GetContentRegionAvailWidth() * mVideoDisplaySize;
+			ImGui::Image(video_render_comp.getTexture(), { col_width, col_width });
+
+			// Draw slider regarding display size
+			ImGui::SliderFloat("Video Display Size", &mVideoDisplaySize, 0.0f, 1.0f);
 		}
 
 		// Artnet information

@@ -104,7 +104,7 @@
                 "LAAGC1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -114,7 +114,7 @@
                 "LAAGC2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -124,7 +124,7 @@
                 "LAAGC3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -134,7 +134,7 @@
                 "LAAGC4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -144,7 +144,7 @@
                 "LAAGD1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.8999999761581421
         },
         {
             "Type": "nap::Composition",
@@ -154,7 +154,7 @@
                 "LAAGD2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -164,7 +164,7 @@
                 "LAAGD3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -174,7 +174,7 @@
                 "LAAGD4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -184,7 +184,7 @@
                 "LAAGH1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -194,7 +194,7 @@
                 "LAAGH2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -204,7 +204,7 @@
                 "LAAGH3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -214,7 +214,7 @@
                 "LAAGH4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -224,7 +224,17 @@
                 "LAAGM1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "COMPO_M1A",
+            "Layers": [
+                "Basislaag1",
+                "LAAGM1A"
+            ],
+            "Mode": "Length",
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -234,7 +244,7 @@
                 "LAAGM2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -244,7 +254,7 @@
                 "LAAGM3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -254,7 +264,7 @@
                 "LAAGM4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -264,7 +274,7 @@
                 "LAAGS1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -274,7 +284,7 @@
                 "LAAGS2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -284,7 +294,7 @@
                 "LAAGS3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -294,7 +304,7 @@
                 "LAAGS4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -304,7 +314,7 @@
                 "LAAGT1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -314,7 +324,7 @@
                 "LAAGT2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -324,7 +334,7 @@
                 "LAAGT3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -334,7 +344,7 @@
                 "LAAGT4"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -344,7 +354,7 @@
                 "LAAGV1"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -354,7 +364,7 @@
                 "LAAGV2"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -364,7 +374,7 @@
                 "LAAGV3"
             ],
             "Mode": "Sequence",
-            "Length": 1.0
+            "Length": 0.699999988079071
         },
         {
             "Type": "nap::Composition",
@@ -413,7 +423,8 @@
                 "COMPO_M1",
                 "COMPO_M2",
                 "COMPO_M3",
-                "COMPO_M4"
+                "COMPO_M4",
+                "COMPO_M1A"
             ]
         },
         {
@@ -552,17 +563,48 @@
                     "MasterIntensity": 1.0,
                     "LuxInput": {
                         "x": 10.0,
-                        "y": 25000.0
+                        "y": 7500.0
                     },
                     "LightOutput": {
-                        "x": 0.10000000149011612,
-                        "y": 1.0
+                        "x": 0.3,
+                        "y": 0.75
                     },
-                    "LuxCurve": 0.5,
+                    "LuxCurve": 0.66,
                     "SmoothTime": 1.0,
                     "OpeningHours": "OpeningHours",
                     "ClosingHours": "ClosingHours",
                     "UseOpeningHours": true
+                },
+                {
+                    "Type": "nap::VideoControlComponent",
+                    "mID": "VideoController",
+                    "Player": "VideoPlayer",
+                    "FadeTime" : 1.5
+                },
+                {
+                    "Type": "nap::audio::VideoAudioComponent",
+                    "mID": "VideoAudioComponent",
+                    "Video": "VideoPlayer",
+                    "ChannelCount": 2
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "mID": "nap::audio::OutputComponent",
+                    "Input": "VideoAudioComponent",
+                    "Routing": [
+                        0,
+                        1
+                    ]
+                },
+                {
+                    "Type": "nap::audio::LevelMeterComponent",
+                    "mID": "nap::audio::LevelMeterComponent",
+                    "Input": "VideoAudioComponent",
+                    "AnalysisWindowSize": 10.0,
+                    "MeterType": "RMS",
+                    "FilterInput": false,
+                    "CenterFrequency": 10000.0,
+                    "BandWidth": 10000.0
                 }
             ],
             "Children": [
@@ -713,6 +755,18 @@
                     "BlendPower": 0.75
                 },
                 {
+                    "Type": "nap::ApplyVideoComponent",
+                    "mID": "nap::ApplyVideoComponent",
+                    "Mesh": "HeiligewegMesh",
+                    "Selector": "./ColorMethodSelectorHeiligeweg",
+                    "LightRegulator": "nap::LightIntensityComponent",
+                    "VideoRenderer": "RenderVideoComponent",
+                    "ColorGrid": "PaletteGrid",
+                    "VideoColors": "VideoColors",
+                    "IndexMap" : "IndexMap",
+                    "VideoController" : "../VideoController"
+                },
+                {
                     "Type": "nap::MeshToArtnetComponent",
                     "mID": "nap::MeshToArtnetComponent_2",
                     "Mesh": "HeiligewegMesh",
@@ -763,6 +817,18 @@
                         "y": 0.6000000238418579
                     },
                     "BlendPower": 1.0
+                },
+                {
+                    "Type": "nap::ApplyVideoComponent",
+                    "mID": "nap::ApplyVideoComponent_2",
+                    "Mesh": "KalverMesh",
+                    "Selector": "./ColorMethodSelectorKalver",
+                    "LightRegulator": "nap::LightIntensityComponent",
+                    "VideoRenderer": "RenderVideoComponent",
+                    "ColorGrid": "PaletteGrid",
+                    "VideoColors": "VideoColors",
+                    "IndexMap" : "IndexMap",
+                    "VideoController" : "../VideoController"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -855,6 +921,64 @@
                     "Mesh": "PlaneMesh",
                     "MaterialInstance": {
                         "Material": "CompositionMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "RenderVideoEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::VideoRenderTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderVideoComponent",
+                    "mID": "RenderVideoComponent",
+                    "Player": "VideoPlayer",
+                    "Target": "VideoRenderTarget",
+                    "RenderComponent": "./RenderableVideoPlaneMeshComponent",
+                    "CameraComponent": "CompositionCamera"
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderableVideoPlaneMeshComponent",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Material": "VideoMaterial",
                         "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -1009,6 +1133,18 @@
                     "BlendPower": 1.0
                 },
                 {
+                    "Type": "nap::ApplyVideoComponent",
+                    "mID": "nap::ApplyVideoComponent_3",
+                    "Mesh": "SingelMesh",
+                    "Selector": "./ColorMethodSelectorSingel",
+                    "LightRegulator": "nap::LightIntensityComponent",
+                    "VideoRenderer": "RenderVideoComponent",
+                    "ColorGrid": "PaletteGrid",
+                    "VideoColors": "VideoColors",
+                    "IndexMap" : "IndexMap",
+                    "VideoController" : "../VideoController"
+                },
+                {
                     "Type": "nap::MeshToArtnetComponent",
                     "mID": "nap::MeshToArtnetComponent_3",
                     "Mesh": "SingelMesh",
@@ -1142,6 +1278,12 @@
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGM1",
             "BaseFilename": "FINAL/M1_png/M1_%02d.png",
+            "FPS": 0.6000000238418579
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "LAAGM1A",
+            "BaseFilename": "FINAL/M1A_png/M1A_%02d.png",
             "FPS": 0.6000000238418579
         },
         {
@@ -1498,6 +1640,24 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::Material",
+            "mID": "VideoMaterial",
+            "Uniforms": [],
+            "Shader": "VideoShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
             "Type": "nap::MeshFromFile",
             "mID": "HeiligewegFrameMesh",
             "Path": "heiligeweg_export_heiligeweg_frame.mesh",
@@ -1618,6 +1778,18 @@
             }
         },
         {
+            "Type": "nap::RenderTarget",
+            "mID": "VideoRenderTarget",
+            "mColorTexture": "VideoTexture",
+            "mDepthTexture": "VideoDepthTexture",
+            "mClearColor": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
             "Type": "nap::RenderTexture2D",
             "mID": "CompositionDepthTextureA",
             "Parameters": {
@@ -1678,6 +1850,36 @@
             "Format": "RGB8"
         },
         {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoDepthTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "Repeat",
+                "WrapHorizontal": "Repeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "DynamicRead",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Width": 1024,
@@ -1722,6 +1924,10 @@
                     "InstanceProperties": []
                 },
                 {
+                    "Entity": "RenderVideoEntity",
+                    "InstanceProperties": []
+                },
+                {
                     "Entity": "LightEntity",
                     "InstanceProperties": []
                 }
@@ -1744,6 +1950,12 @@
             "mID": "VertexColorShader",
             "mVertShader": "shaders/vertexcolor.vert",
             "mFragShader": "shaders/vertexcolor.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "VideoShader",
+            "mVertShader": "shaders/video.vert",
+            "mFragShader": "shaders/video.frag"
         },
         {
             "Type": "nap::TransformComponent",
@@ -1810,6 +2022,19 @@
                 },
                 "UniformScale": 1.0
             }
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "VideoPlayer",
+            "Path": "video/opening_test2.mp4",
+            "Loop": true,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::WeekColors",
+            "mID": "VideoColors",
+            "Palette": "M42 C3 L10 A2 A14 E3 E21 I21 D4 J21 I3 A15 B2",
+            "Variations": "VideoVariations"
         },
         {
             "Type": "nap::WeekColors",
@@ -2846,6 +3071,27 @@
                     1,
                     5,
                     4
+                ]
+            ]
+        },
+        {
+            "Type": "nap::WeekVariations",
+            "mID": "VideoVariations",
+            "Variations": [
+                [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12
                 ]
             ]
         },

@@ -106,6 +106,11 @@ namespace nap
 		 */
 		std::vector<PaletteColor> getPalette(int weekNumber, int variationIndex) const;
 
+		/**
+		 * Get the palette for the given week and variation
+		 */
+		std::vector<PaletteColor> getPalette(const WeekColors& colors, int variationIndex);
+
 	private:
 		bool initPaletteGrid(utility::ErrorState& errorState);		///< Read the palette grid colors from the image
 		bool initLedColorMapping(utility::ErrorState& errorState);	///< Read the led colors from the txt file
