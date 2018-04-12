@@ -57,9 +57,9 @@ endif()
 # Package into platform release
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/mpg123/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
     if(NOT APPLE)
         list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
-        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
     endif()
 endif()    
 package_module()
@@ -110,10 +110,11 @@ endif()
 
 # Package portaudio into platform release
 install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION thirdparty/portaudio)
+install(DIRECTORY ${PORTAUDIO_INCLUDE_DIR}/ DESTINATION thirdparty/portaudio/include)
 if(WIN32)
     install(DIRECTORY ${THIRDPARTY_DIR}/portaudio/msvc64/
-            DESTINATION thirdparty/portaudio)
-elseif(UNIX AND NOT APPLE)
+            DESTINATION thirdparty/portaudio/bin)
+elseif(UNIX)
     file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS}
             DESTINATION thirdparty/portaudio/lib)
