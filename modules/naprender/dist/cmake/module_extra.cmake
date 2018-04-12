@@ -41,17 +41,14 @@ if(UNIX)
     # Package glew into packaged project on *nix
     install(DIRECTORY ${THIRDPARTY_DIR}/glew/lib/
             DESTINATION lib)   
-endif()    
 
-if(UNIX AND NOT APPLE)
     # Package FreeImage into packaged project on *nix
-    # TODO move into above block once we've resolved the macOS-only static lib, Jira NAP-71
     install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/lib/
             DESTINATION lib
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)    
-endif()
+endif()    
 
 # Install thirdparty licenses into lib
 install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/license/ DESTINATION licenses/FreeImage)
