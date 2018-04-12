@@ -21,7 +21,7 @@ namespace napkin
 	class FilterPopup : public QMenu
 	{
 	public:
-		explicit FilterPopup(QWidget* parent);
+		explicit FilterPopup(QWidget* parent, QStandardItemModel& model);
 
 	public:
 
@@ -50,6 +50,8 @@ namespace napkin
 		template<typename T>
 		static T* getObject(QWidget* parent) { return rtti_cast<T>(getObject(parent, RTTI_OF(T))); }
 
+		QSize sizeHint() const override;
+
 	protected:
 		/**
 		 * Set focus etc
@@ -68,6 +70,7 @@ namespace napkin
 
 		FilterTreeView mTreeView;
 		QVBoxLayout mLayout;
+		QSize mSize = { 400, 400 };
 	};
 
 } // namespace napkin

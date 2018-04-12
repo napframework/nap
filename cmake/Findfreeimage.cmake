@@ -19,6 +19,15 @@ elseif(APPLE)
     )
     set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
     set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/osx/freeimage.a)
+elseif(UNIX)
+    find_path(
+            FREEIMAGE_DIR
+            NAMES include/FreeImage.h
+            HINTS
+            ${THIRDPARTY_DIR}/FreeImage/linux/install
+    )
+    set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
+    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/libfreeimage.so)
 endif()
 
 
@@ -43,8 +52,9 @@ macro(copy_freeimage_dll)
         add_custom_command(
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E
-                copy $<TARGET_FILE:freeimagelib> $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:freeimagelib>
-        )
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        $<TARGET_FILE:freeimagelib> 
+                        "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
+                )
     endif()
 endmacro()

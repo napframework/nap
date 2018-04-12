@@ -5,7 +5,7 @@
 #include "rtti/objectptr.h"
 #include "utility/dllexport.h"
 #include "directorywatcher.h"
-#include "configure.h"
+#include "numeric.h"
 #include "signalslot.h"
 
 // External Includes

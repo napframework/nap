@@ -41,12 +41,6 @@ namespace nap
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 
-		// Position window
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
-		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
-		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
-		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
-
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
@@ -172,12 +166,6 @@ namespace nap
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
-	}
-
-	
-	void HelloWorldApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 

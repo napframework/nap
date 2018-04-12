@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(render)
 
 #add all cpp files to SOURCES
@@ -12,6 +12,8 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
+# Let find_python find our prepackaged Python in thirdparty
+find_python_in_thirdparty()
 set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
 find_package(pybind11)
 
@@ -20,10 +22,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter mod_nappython)
 
+# Get our modules list from project.json
+project_json_to_cmake()
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow mod_nappython mod_napcameracontrol mod_napapp mod_napimgui)
+target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES} nrender)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-
-# create post build event
-export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(TRUE FALSE "examples" TRUE)

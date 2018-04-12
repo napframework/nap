@@ -24,10 +24,11 @@ RTTI_BEGIN_ENUM(nap::EDepthMode)
 	RTTI_ENUM_VALUE(nap::EDepthMode::NoReadWrite,			"NoReadWrite")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
+RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding)
+	RTTI_VALUE_CONSTRUCTOR(const std::string&, const std::string&)
 	RTTI_PROPERTY("MeshAttributeID",			&nap::Material::VertexAttributeBinding::mMeshAttributeID, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShaderAttributeID",			&nap::Material::VertexAttributeBinding::mShaderAttributeID, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
+RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)

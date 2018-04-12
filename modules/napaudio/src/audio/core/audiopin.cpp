@@ -21,7 +21,7 @@ namespace nap
         }
         
         
-        SampleBufferPtr InputPin::pull()
+        SampleBuffer* InputPin::pull()
         {
             if (mInput)
                 return mInput->pull();
@@ -71,9 +71,9 @@ namespace nap
         }
         
         
-        std::vector<SampleBufferPtr> MultiInputPin::pull()
+        std::vector<SampleBuffer*> MultiInputPin::pull()
         {
-            std::vector<SampleBufferPtr> result;
+            std::vector<SampleBuffer*> result;
             
             auto inputs = mInputs; // we make a copy of mInputs because its contents can be changed while traversing the loop!
             for (auto& input : inputs)
@@ -133,7 +133,7 @@ namespace nap
         }
         
         
-        SampleBufferPtr OutputPin::pull()
+        SampleBuffer* OutputPin::pull()
         {
             mNode->update();
             return &mBuffer;

@@ -43,6 +43,20 @@ namespace napkin
 		 */
 		static AppContext& get();
 
+        /**
+         * Construct the singleton
+         * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
+         */
+        static void create();
+        
+        /**
+         * Destruct the singleton
+         * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
+         */
+        static void destroy();
+        
+        AppContext(); // Alas, this has to be public to be able to support the singleton unique_ptr construction
+
 		AppContext(AppContext const&) = delete;
 
 		void operator=(AppContext const&) = delete;
@@ -239,7 +253,6 @@ namespace napkin
 		void logMessage(nap::LogMessage msg);
 
 	private:
-		AppContext();
 
 		/**
 		 * Whenever a new document is created/loaded, register its signals for listeners

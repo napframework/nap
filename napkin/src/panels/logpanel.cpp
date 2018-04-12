@@ -175,7 +175,7 @@ const nap::LogLevel& LogPanel::getCurrentLevel() const
 {
 	const auto levels = nap::Logger::getLevels();
 	int idx = mFilterCombo.currentIndex();
-	assert(idx > 0 && idx < levels.size());
+	//assert(idx > 0 && idx < levels.size());
 	return levels[idx];
 }
 
@@ -198,25 +198,31 @@ int LogPanel::getLevelIndex(const nap::LogLevel& level) const
 // LogPanel Storer
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<>
-void WidgetStorer<LogPanel>::store(const LogPanel& widget, const QString& key, QSettings& s) const
+namespace napkin
 {
-	s.setValue(key + "_LOGLEVEL", widget.getLevelIndex(widget.getCurrentLevel()));
-}
 
-template<>
-void WidgetStorer<LogPanel>::restore(LogPanel& widget, const QString& key,
-									  const QSettings& s) const
-{
-	const auto levels = nap::Logger::getLevels();
-	nap::LogLevel defaultLevel = nap::Logger::infoLevel();
-	int defaultIndex = widget.getLevelIndex(defaultLevel);
-	int index = s.value(key + "_LOGLEVEL", defaultIndex).toInt();
-
-	if (index < 0 || index >= levels.size()) {
-		nap::Logger::warn("Wrong log level in settings (%s), using default", std::to_string(index).c_str());
-		index = defaultIndex;
+	template<>
+	void WidgetStorer<LogPanel>::store(const LogPanel& widget, const QString& key, QSettings& s) const
+	{
+		s.setValue(key + "_LOGLEVEL", widget.getLevelIndex(widget.getCurrentLevel()));
 	}
 
-	widget.setCurrentLevel(levels[index]);
-}
+	template<>
+	void WidgetStorer<LogPanel>::restore(LogPanel& widget, const QString& key,
+										 const QSettings& s) const
+	{
+		const auto levels = nap::Logger::getLevels();
+		nap::LogLevel defaultLevel = nap::Logger::infoLevel();
+		int defaultIndex = widget.getLevelIndex(defaultLevel);
+		int index = s.value(key + "_LOGLEVEL", defaultIndex).toInt();
+
+		if (index < 0 || index >= levels.size())
+		{
+			nap::Logger::warn("Wrong log level in settings (%s), using default", std::to_string(index).c_str());
+			index = defaultIndex;
+		}
+
+		widget.setCurrentLevel(levels[index]);
+	}
+
+} // namespace napkin

@@ -68,7 +68,7 @@ namespace nap
             /** 
              * @return the node manager that takes care of the audio processing performed on this stream
              */
-            NodeManager& getNodeManager() { return mNodeManager; }
+            NodeManager& getNodeManager();
             
         public:
             // PROPERTIES
@@ -98,7 +98,7 @@ namespace nap
              * The number of input channels in the stream. 
              * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
              */
-            int mInputChannelCount = 0;
+            int mInputChannelCount = 1;
 
             /** 
              * The number of output channels in the stream. 
@@ -128,8 +128,6 @@ namespace nap
              * Start the audio stream using the default audio devices available on the system.
              */
             bool startDefaultDevice(utility::ErrorState& errorState);
-            
-            NodeManager mNodeManager; // The node manager that performs the audio processing.
             
             PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
             

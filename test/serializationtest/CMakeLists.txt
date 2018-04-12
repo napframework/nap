@@ -12,4 +12,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)
+# Get our modules list from project.json
+project_json_to_cmake()
+
+target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES} nrender)
+
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(FALSE FALSE "unused" FALSE)

@@ -108,7 +108,6 @@ void MainWindow::addMenu()
 
 void MainWindow::onDocumentChanged()
 {
-	nap::Logger::info("DocumentChanged");
 	updateWindowTitle();
 }
 

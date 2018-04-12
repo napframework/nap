@@ -6,24 +6,30 @@
 // Audio includes
 #include <audio/core/audionode.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
+        
+        // Forward declarations
+        class AudioService;
         
         /**
          * Node to measure the amplitude level of an audio signal.
          * Can be used for VU meters or envelope followers for example.
          * Can switch between measuring peaks of the signal or the root mean square.
          */
-        class NAPAPI LevelMeterNode : public Node {
+        class NAPAPI LevelMeterNode : public Node
+        {
         public:
             enum Type { PEAK, RMS };
 
             /**
-             * @param manager: the NodeManager this node will be processed on
+             * @param nodeManager: the NodeManager this node will be processed on
              * @param analysisWindowSize: the time window in milliseconds that will be used to generate one single output value. Also the period that corresponds to the analysis frequency.
              */
-            LevelMeterNode(NodeManager& manager, TimeValue analysisWindowSize = 10);
+            LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize = 10);
             virtual ~LevelMeterNode();
             
             InputPin input; /**< The input for the audio signal that will be analyzed. */
