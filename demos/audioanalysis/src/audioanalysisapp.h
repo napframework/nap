@@ -19,7 +19,7 @@ namespace nap
 {
 	/**
 	 * Demo application that shows how to analyze an audio signal in order to extract the output level of a certain frequency band of the signal.
-     * Audio is played back using an audio::PlaybackComponent. The signal is sent to an audio::OutpuComponent so we can hear it and to an audio::LevelMeterComponent that we can adjust with a GUI.
+     * Audio is generated using an audio::PlaybackComponent or an audio::AudioInputComponent. The signal is sent to an audio::OutpuComponent so we can hear it and to an audio::LevelMeterComponent that we can adjust with a GUI.
      * The output of the LevelMeterComponent is plotted in the GUI.
 	 */
 	class AudioAnalysisApp : public App
@@ -80,8 +80,8 @@ namespace nap
         enum InputSource {
             EAudioDevice, EAudioFile
         };
-        InputSource mCurrentInputSource = EAudioFile;
-        InputSource mInputSource = EAudioFile;
+        InputSource mCurrentInputSource = EAudioFile;                   //< Indicates wether input from the audio device or a file will be analyzed
+        InputSource mInputSource = EAudioFile;                          //< GUI helper variable for the user to select a new input source
         
         RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };    //< GUI text highlight color
 	};
