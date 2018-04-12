@@ -179,11 +179,11 @@ namespace nap
         
         void AudioService::audioCallback(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
-            // clean the trash bin with nodes and resources that are no longer used and scheduled for destruction
-            mDeletionQueue.clear();
-
             // process the node manager
             mNodeManager.process(inputBuffer, outputBuffer, framesPerBuffer);
+            
+            // clean the trash bin with nodes and resources that are no longer used and scheduled for destruction
+            mDeletionQueue.clear();
         }
 
     }
