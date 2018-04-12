@@ -25,6 +25,11 @@ namespace nap
 	{	}
 
 
+	OSCReceiver::~OSCReceiver()
+	{
+		stop();
+	}
+
 	/**
 	 * Creates the thread that will run the OSC message handler
 	 */

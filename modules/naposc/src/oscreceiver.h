@@ -36,6 +36,9 @@ namespace nap
 		// Constructor used by factory
 		OSCReceiver(OSCService& service);
 
+		// Destructor
+		virtual ~OSCReceiver();
+
 		/**
 		 * Initializes the receiver and registers it with the OSCService
 		 * This call will also start the background thread that received the messages
