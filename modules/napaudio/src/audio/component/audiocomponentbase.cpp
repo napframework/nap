@@ -22,14 +22,15 @@ namespace nap
     namespace audio
     {
         
-        NodeManager& AudioComponentBaseInstance::getNodeManager()
+        AudioComponentBaseInstance::AudioComponentBaseInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource)
         {
-            return getAudioService().getNodeManager();
+            mAudioService = entity.getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
         }
         
-        AudioService& AudioComponentBaseInstance::getAudioService()
+        
+        NodeManager& AudioComponentBaseInstance::getNodeManager()
         {
-            return *getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            return mAudioService->getNodeManager();
         }
 
         
