@@ -23,6 +23,8 @@ The prerequisites installation script is called `check_build_environment` and ca
 
 ## Windows {#setup_build_env_win64}
 
+NAP 0.1.0 supports Windows 10 with Visual Studio 2015.  Although NAP is known to work on other versions of Windows, v10 is the current supported platform.
+
 Follow these steps for a guided installation:
 1. Extract `NAP-0.1.0-Win64.zip` using Explorer (or your preferred tool)
 2. In `NAP-0.1.0-Win64\tools` run `check_build_environment.bat` to guide you through installing prerequisites, following the instructions
@@ -35,6 +37,8 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 2. Download and install <a href="http://cmake.org/download" target="_blank">CMake</a>
 
 ## macOS {#setup_build_env_macos}
+
+NAP 0.1.0 supports macOS High Sierra 10.13.  Although NAP is known to work on other macOS releases, High Sierra is the current supported version.
 
 Follow these steps for a guided installation:
 1. Extract the release by double clicking `NAP-0.1.0-macOS.zip` in Finder
@@ -58,6 +62,8 @@ export PATH="/Applications/CMake.app/Contents/bin:$PATH"
   * Alternatively installing via <a href="https://brew.sh/" target="_blank">Homebrew</a> is also possible
 
 ## Linux {#setup_build_env_linux}
+
+NAP 0.1.0 supports Ubuntu Linux 17.10 on x86-64 machines.  Although NAP is known to work on other Ubuntu releases, 17.10 is the current supported version.
 
 Follow these steps for a guided installation:
 1. Extract the release:
