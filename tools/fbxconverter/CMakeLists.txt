@@ -82,6 +82,7 @@ elseif(APPLE)
     set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/glew/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
     set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 

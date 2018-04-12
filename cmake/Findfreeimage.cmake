@@ -18,7 +18,7 @@ elseif(APPLE)
             ${THIRDPARTY_DIR}/FreeImage/osx
     )
     set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
-    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/osx/freeimage.a)
+    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/libfreeimage-3.17.0.dylib)
 elseif(UNIX)
     find_path(
             FREEIMAGE_DIR
