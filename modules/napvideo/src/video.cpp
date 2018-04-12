@@ -1489,6 +1489,10 @@ namespace nap
 
 	bool Video::OnAudioCallback(uint8_t* dataBuffer, int sizeInBytes, const AudioFormat& targetAudioFormat)
 	{
+		// If we've finished playback (or never started), don't try to fill the buffers
+		if (!mPlaying)
+			return false;
+
 		// Here we are going to fill the audio buffer. The audio buffer has a certain fixed size,
 		// the decoded audio buffer will most probably not match the target buffer size: it can be greater, 
 		// equal or smaller than the buffer we need to fill. 
