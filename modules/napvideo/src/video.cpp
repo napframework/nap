@@ -1086,12 +1086,15 @@ namespace nap
 		if (!mPlaying)
 			return;
 
+		// It is important that the IO thread is stopped before the decode threads. The reason is that the IO thread may be in a seeking
+		// state when trying to exit it. If the decode threads exit first, the IO thread needs to be able to deal with null pointers, etc.
+		// By exiting the IO thread first, we don't have to have any special case handling in the seeking code for the decode thread exiting first.
+		exitIOThread(blocking);
+
 		mVideoState.exitDecodeThread(blocking);
 
 		if (mAudioState.isValid())
-			mAudioState.exitDecodeThread(blocking);
-
-		exitIOThread(blocking);
+			mAudioState.exitDecodeThread(blocking);		
 
 		mPlaying = false;
 
@@ -1308,7 +1311,7 @@ namespace nap
 
 					// Receive single frame in lock-step
 					EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
-					while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile)
+					while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
 					{
 						assert(((uint8_t)produce_packet_result & (uint8_t)EProducePacketResult::GotPacket) != 0);
 						do
@@ -1319,6 +1322,10 @@ namespace nap
 						if (produce_packet_result == EProducePacketResult::Error)
 							return;
 					}
+
+					// If we broke out of the receive frame loop because exit was signaled, just break out here (we can't make any assumptions about the state of the video frame queue)
+					if (mExitIOThreadSignalled)
+						break;
 
 					Frame seek_frame = mVideoState.popSeekFrame();
 					VIDEO_DEBUG_LOG("seek start frame, pop frame: pkt_pos: %d, dts: %d, pts: %d", seek_frame.mFrame->pkt_pos, seek_frame.mFrame->pkt_dts, seek_frame.mFrame->pkt_pts);
@@ -1354,7 +1361,7 @@ namespace nap
 					{
 						// Receive single frame in lock-step
 						EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
-						while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile)
+						while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
 						{
 							assert(((uint8_t)produce_packet_result & (uint8_t)EProducePacketResult::GotPacket) != 0);
 							do
@@ -1365,6 +1372,10 @@ namespace nap
 							if (produce_packet_result == EProducePacketResult::Error)
 								return;
 						}
+
+						// If we broke out of the receive frame loop because exit was signaled, just break out here (we can't make any assumptions about the state of the video frame queue)
+						if (mExitIOThreadSignalled)
+							break;
 
 						Frame seek_frame = mVideoState.popSeekFrame();
 						if (seek_frame.mFrame->best_effort_timestamp >= mSeekTarget || produce_packet_result == EProducePacketResult::EndOfFile)
