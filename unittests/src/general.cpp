@@ -7,6 +7,7 @@
 #include <generic/propertypath.h>
 #include <utility/fileutils.h>
 #include <utility/datetimeutils.h>
+#include <nap/signalslot.h>
 
 TEST_CASE("File path transformations", "[fileutils]")
 {
@@ -140,5 +141,23 @@ TEST_CASE("Safe pointers", "[safepointer]")
     REQUIRE(counter == 0);
     REQUIRE(safePtr == nullptr);
     REQUIRE(safePtrCopy == nullptr);
+}
+
+TEST_CASE("Signals and slots", "[signalslot]")
+{
+    int x = 0;
+    nap::Signal<int&> signal;
+    
+    nap::Slot<int&> slot = {
+        [](int& x){ x++; }
+    };
+    
+    signal.connect(slot);
+    signal(x);
+    REQUIRE(x == 1);
+    
+    signal.disconnect(slot);
+    signal(x);
+    REQUIRE(x == 1);
 }
 
