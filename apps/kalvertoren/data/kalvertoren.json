@@ -566,10 +566,10 @@
                         "y": 7500.0
                     },
                     "LightOutput": {
-                        "x": 0.3,
+                        "x": 0.30000001192092898,
                         "y": 0.75
                     },
-                    "LuxCurve": 0.66,
+                    "LuxCurve": 0.6600000262260437,
                     "SmoothTime": 1.0,
                     "OpeningHours": "OpeningHours",
                     "ClosingHours": "ClosingHours",
@@ -579,7 +579,8 @@
                     "Type": "nap::VideoControlComponent",
                     "mID": "VideoController",
                     "Player": "VideoPlayer",
-                    "FadeTime" : 1.5
+                    "MidiInputComponent" : "nap::MidiInputComponent",
+                    "FadeTime": 1.5
                 },
                 {
                     "Type": "nap::audio::VideoAudioComponent",
@@ -604,7 +605,16 @@
                     "MeterType": "RMS",
                     "FilterInput": false,
                     "CenterFrequency": 10000.0,
-                    "BandWidth": 10000.0
+                    "BandWidth": 10000.0,
+                    "Channel": 0
+                },
+                {
+                    "Type": "nap::MidiInputComponent",
+                    "mID": "nap::MidiInputComponent",
+                    "Ports": [],
+                    "Channels": [],
+                    "Numbers": [],
+                    "Types": ["noteOn"]
                 }
             ],
             "Children": [
@@ -763,8 +773,8 @@
                     "VideoRenderer": "RenderVideoComponent",
                     "ColorGrid": "PaletteGrid",
                     "VideoColors": "VideoColors",
-                    "IndexMap" : "IndexMap",
-                    "VideoController" : "../VideoController"
+                    "IndexMap": "IndexMap",
+                    "VideoController": "../VideoController"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -827,8 +837,8 @@
                     "VideoRenderer": "RenderVideoComponent",
                     "ColorGrid": "PaletteGrid",
                     "VideoColors": "VideoColors",
-                    "IndexMap" : "IndexMap",
-                    "VideoController" : "../VideoController"
+                    "IndexMap": "IndexMap",
+                    "VideoController": "../VideoController"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1141,8 +1151,8 @@
                     "VideoRenderer": "RenderVideoComponent",
                     "ColorGrid": "PaletteGrid",
                     "VideoColors": "VideoColors",
-                    "IndexMap" : "IndexMap",
-                    "VideoController" : "../VideoController"
+                    "IndexMap": "IndexMap",
+                    "VideoController": "../VideoController"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1674,6 +1684,12 @@
             "mID": "SingelFrameMesh",
             "Path": "singel_export_singel_frame.mesh",
             "Usage": "Static"
+        },
+        {
+            "Type": "nap::MidiInputPort",
+            "mID": "MidiInputPort",
+            "Ports": [],
+            "EnableDebugOutput": true
         },
         {
             "Type": "nap::OpeningHours",

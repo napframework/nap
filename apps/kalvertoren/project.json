@@ -14,6 +14,7 @@
         "mod_napimgui",
         "mod_napyoctopuce",
         "mod_napvideo",
-        "mod_napaudio"
+        "mod_napaudio",
+        "mod_napmidi"
     ]
 }
