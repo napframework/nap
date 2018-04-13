@@ -26,10 +26,10 @@ namespace nap
     public:
         MidiInputComponent() : nap::Component() { }
         
-        std::vector<std::string> mPorts; /**< Filter specifying input ports that will be listened to. Empty means all ports. */
-        std::vector<MidiValue> mChannels; /**< Filter specifying what midi channels to listen to. Empty means all channels. */
-        std::vector<MidiValue> mNumbers; /**< Filter specifying what number bytes (like cc numbers) to listen to. Empty means all numbers. */
-        std::vector<MidiEvent::Type> mTypes; /**< Filter specifying what event types to listen to. Empty means all types. */
+        std::vector<std::string> mPorts;			///< Property: 'Ports' Filter specifying input ports that will be listened to. Empty means all ports. */
+        std::vector<MidiValue> mChannels;			///< Property: 'Channels' Filter specifying what midi channels to listen to. Empty means all channels. */
+        std::vector<MidiValue> mNumbers;			///< Property: 'Numbers' Filter specifying what number bytes (like cc numbers) to listen to. Empty means all numbers. */
+        std::vector<MidiEvent::Type> mTypes;		///< Property: 'Types' Filter specifying what event types to listen to. Empty means all types. */
     };
 
     

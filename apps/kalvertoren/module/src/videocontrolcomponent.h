@@ -3,6 +3,9 @@
 #include <component.h>
 #include <video.h>
 #include <nap/resourceptr.h>
+#include <midiinputcomponent.h>
+#include <componentptr.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -23,8 +26,9 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ResourcePtr<nap::Video> mVideoPlayer = nullptr;		///< property: link to video player
-		float mFadeTime = 1.0f;								///< property: fade time in seconds
+		ResourcePtr<nap::Video> mVideoPlayer = nullptr;							///< property: link to video player
+		ComponentPtr<nap::MidiInputComponent> mMidiInputComponent = nullptr;	///< property: link to midi input component
+		float mFadeTime = 1.0f;													///< property: fade time in seconds
 	};
 
 
@@ -71,6 +75,16 @@ namespace nap
 		 *	Start the video
 		 */
 		void play(bool value);
+
+		// Resolved Component Pointer to midi input component
+		ComponentInstancePtr<MidiInputComponent> mMidiInputComponent = { this, &VideoControlComponent::mMidiInputComponent };	// Transform associated with beginning of trace component
+
+		/**
+		 * Occurs when the system receives a midi message
+		 * @param message the midi message
+		 */
+		void onMidiMessageReceived(const MidiEvent& message);
+		NSLOT(mMidiReceivedSlot, const MidiEvent&, onMidiMessageReceived);
 
 	private:
 		nap::Video* mVideoPlayer = nullptr;
