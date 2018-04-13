@@ -46,6 +46,10 @@ elseif(UNIX)
     # Install portaudio lib into packaged app
     file(GLOB PORTAUDIO_DYLIBS ${THIRDPARTY_DIR}/portaudio/lib/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS} DESTINATION lib)    
+
+    # Install libsndfile into packaged app
+    file(GLOB SNDFILE_DYLIBS ${THIRDPARTY_DIR}/libsndfile/lib/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${SNDFILE_DYLIBS} DESTINATION lib)
 endif()
 
 # Install thirdparty licenses into packaged project

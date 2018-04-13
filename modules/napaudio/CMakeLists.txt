@@ -58,9 +58,7 @@ endif()
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/mpg123/lib")
     list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
-    if(NOT APPLE)
-        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
-    endif()
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
 endif()    
 package_module()
 
@@ -102,7 +100,7 @@ install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/install/COPYING DESTINATION thi
 if(WIN32)
     install(DIRECTORY ${THIRDPARTY_DIR}/libsndfile/msvc64/
             DESTINATION thirdparty/libsndfile)
-elseif(UNIX AND NOT APPLE)
+elseif(UNIX)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
             DESTINATION thirdparty/libsndfile/lib)
