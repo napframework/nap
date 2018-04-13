@@ -46,16 +46,8 @@ namespace nap
 	 */
 	void OscMidiApp::update(double deltaTime)
 	{
-		// The default input router forwards messages to key and mouse input components
-		// attached to a set of entities.
-		nap::DefaultInputRouter input_router;
-		
-		// Forward all input events associated with the first window to the listening components
-//        std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
-//        mInputService->processEvents(*mRenderWindow, input_router, entities);
-
 		// Draw some gui elements
-		ImGui::Begin("Controls");
+		ImGui::Begin("Midi");
 		ImGui::End();
 	}
 

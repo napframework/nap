@@ -9,6 +9,10 @@
 #include <inputservice.h>
 #include <imguiservice.h>
 #include <app.h>
+#include <nap/signalslot.h>
+
+// Midi includes
+#include <midievent.h>
 
 namespace nap
 {
@@ -63,5 +67,9 @@ namespace nap
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+        
+        Slot<const MidiEvent&> midiEventSlot = { this, &OscMidiApp::onMidiEvent };
+        void onMidiEvent(const MidiEvent&) { }
+        
 	};
 }
