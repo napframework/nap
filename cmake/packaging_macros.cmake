@@ -34,6 +34,9 @@ macro(package_nap)
     # Package project directory package & regenerate shortcuts
     package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
 
+    # Package module directory regenerate shortcut
+    package_module_dir_shortcuts("tools/platform/module_dir_shortcuts")
+
     # Package check_build_environment scripts
     if(APPLE)
         install(PROGRAMS ${NAP_ROOT}/dist/macos/check_build_environment/check_build_environment DESTINATION tools)
@@ -286,8 +289,8 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                   ")
 endmacro()
 
+# Package project directory package & regenerate shortcuts
 macro(package_project_dir_shortcuts DESTINATION)
-    # Package project directory package & regenerate shortcuts
     if(WIN32)
         install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.bat
                          ${NAP_ROOT}/dist/win64/project_dir_shortcuts/regenerate.bat
@@ -295,6 +298,17 @@ macro(package_project_dir_shortcuts DESTINATION)
     else()
         install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
                          ${NAP_ROOT}/dist/unix/project_dir_shortcuts/regenerate
+                DESTINATION ${DESTINATION})
+    endif()
+endmacro()
+
+# Package module directory regenerate shortcut
+macro(package_module_dir_shortcuts DESTINATION)
+    if(WIN32)
+        install(PROGRAMS ${NAP_ROOT}/dist/win64/module_dir_shortcuts/regenerate.bat
+                DESTINATION ${DESTINATION})
+    else()
+        install(PROGRAMS ${NAP_ROOT}/dist/unix/module_dir_shortcuts/regenerate
                 DESTINATION ${DESTINATION})
     endif()
 endmacro()

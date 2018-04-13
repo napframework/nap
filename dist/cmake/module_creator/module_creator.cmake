@@ -18,3 +18,10 @@ configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${MODULE_DIR}/CMakeLists.txt @ONL
 configure_file(${TEMPLATE_ROOT}/src/mod_template.cpp ${MODULE_DIR}/src/mod_${MODULE_NAME_LOWERCASE}.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateservice.cpp ${MODULE_DIR}/src/${MODULE_NAME_LOWERCASE}service.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateservice.h ${MODULE_DIR}/src/${MODULE_NAME_LOWERCASE}service.h @ONLY)
+
+# Create our module directory regenerate shortcut
+if(UNIX)
+    configure_file(${NAP_ROOT}/tools/platform/module_dir_shortcuts/regenerate ${MODULE_DIR}/regenerate @ONLY)
+elseif(WIN32)
+    configure_file(${NAP_ROOT}/tools/platform/module_dir_shortcuts/regenerate.bat ${MODULE_DIR}/regenerate.bat @ONLY)    
+endif()
