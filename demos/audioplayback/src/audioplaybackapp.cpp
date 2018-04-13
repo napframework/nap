@@ -50,14 +50,14 @@ namespace nap
 
 		// Find the audio entity
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
-        auto audioEntity = scene->findEntity("audioEntity");
+        mAudioEntity = scene->findEntity("audioEntity");
         
         // Find the audio playback component and initialize parameters
-        mPlaybackComponent = audioEntity->findComponent<audio::PlaybackComponentInstance>();
-        mFadeInTime = mPlaybackComponent->getFadeInTime();
-        mFadeOutTime = mPlaybackComponent->getFadeOutTime();
-        mPitch = mPlaybackComponent->getPitch();
-        mPanning = mPlaybackComponent->getStereoPanning();
+        auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
+        mFadeInTime = playbackComponent->getFadeInTime();
+        mFadeOutTime = playbackComponent->getFadeOutTime();
+        mPitch = playbackComponent->getPitch();
+        mPanning = playbackComponent->getStereoPanning();
 
 		return true;
 	}
@@ -67,16 +67,18 @@ namespace nap
 	 */
 	void AudioPlaybackApp::update(double deltaTime)
 	{
+        auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
+        
 		// Draw some gui elements to control audio playback
 		ImGui::Begin("Audio Playback");
-        if (!mPlaybackComponent->isPlaying())
+        if (!playbackComponent->isPlaying())
         {
             if (ImGui::Button("Play"))
-                mPlaybackComponent->start(mStartPosition, mDuration);
+                playbackComponent->start(mStartPosition, mDuration);
         }
         else {
             if (ImGui::Button("Stop"))
-                mPlaybackComponent->stop();
+                playbackComponent->stop();
         }
         ImGui::SliderFloat("Start position", &mStartPosition, 0, mBuffer->getSize() / (mBuffer->getSampleRate() / 1000.), "%.3f", 2);
         ImGui::SliderFloat("Duration (0 is untill the end)", &mDuration, 0, 10000, "%.3f", 2);
@@ -87,10 +89,10 @@ namespace nap
 		ImGui::End();
         
         // Apply GUI parameters to audio playback component
-        mPlaybackComponent->setFadeInTime(mFadeInTime);
-        mPlaybackComponent->setFadeOutTime(mFadeOutTime);
-        mPlaybackComponent->setPitch(mPitch);
-        mPlaybackComponent->setStereoPanning(mPanning);
+        playbackComponent->setFadeInTime(mFadeInTime);
+        playbackComponent->setFadeOutTime(mFadeOutTime);
+        playbackComponent->setPitch(mPitch);
+        playbackComponent->setStereoPanning(mPanning);
 	}
 
 	

@@ -40,11 +40,6 @@ namespace nap
             float getLevel() const { return mValue; }
             
             /**
-             * Set the time window in milliseconds that will be used to generate one single output value. Also the period that corresponds to the analysis frequency.
-             */
-            void setAnalysisWindowSize(TimeValue size);
-            
-            /**
              * Set the Type of the analysis. PEAK means the highest absolute amplitude within the analyzed window will be output. RMS means the root mean square of all values within the analyzed window will be output.
              */
             void setType(Type type) { mType = type; }
