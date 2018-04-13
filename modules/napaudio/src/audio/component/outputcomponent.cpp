@@ -24,12 +24,12 @@ namespace nap
     namespace audio
     {
     
-        bool audio::OutputComponentInstance::init(utility::ErrorState& errorState)
+        bool OutputComponentInstance::init(utility::ErrorState& errorState)
         {
             OutputComponent* resource = getComponent<OutputComponent>();
             
-            auto audioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
-            auto& nodeManager = audioService->getNodeManager();
+            mAudioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            auto& nodeManager = mAudioService->getNodeManager();
             
             auto channelCount = resource->mChannelRouting.size();
             if (channelCount > nodeManager.getOutputChannelCount())
@@ -49,13 +49,29 @@ namespace nap
                     return false;
                 }
                 
-                mOutputs.emplace_back(audioService->makeSafe<OutputNode>(nodeManager));
+                mOutputs.emplace_back(mAudioService->makeSafe<OutputNode>(nodeManager));
                 mOutputs.back()->setOutputChannel(channel);
                 mOutputs.back()->audioInput.connect(mInput->getOutputForChannel(resource->mChannelRouting[channel]));
             }
             
             return true;
         }
+        
+        
+        void OutputComponentInstance::setInput(AudioComponentBaseInstance& input)
+        {
+            OutputComponent* resource = getComponent<OutputComponent>();
+            
+            AudioComponentBaseInstance* inputPtr = &input;
+            mAudioService->enqueueTask([&, inputPtr, resource](){
+                auto channelCount = resource->mChannelRouting.size();
+                for (auto channel = 0; channel < channelCount; ++channel)
+                {
+                    mOutputs[channel]->audioInput.connect(inputPtr->getOutputForChannel(resource->mChannelRouting[channel]));
+                }
+            });
+        }
+
 
     }
     
