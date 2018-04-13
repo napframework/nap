@@ -64,9 +64,12 @@ macro(find_nap_module MODULE_NAME)
 
             target_link_libraries(${MODULE_NAME} INTERFACE debug ${${MODULE_NAME}_DEBUG_LIB})
             target_link_libraries(${MODULE_NAME} INTERFACE optimized ${${MODULE_NAME}_RELEASE_LIB})
-            file(GLOB_RECURSE module_headers ${NAP_ROOT}/modules/${NAP_MODULE}/include/*.h ${NAP_ROOT}/modules/${NAP_MODULE}/include/*.hpp)
+            set(MODULE_INCLUDE_ROOT ${NAP_ROOT}/modules/${NAP_MODULE}/include)
+            file(GLOB_RECURSE module_headers ${MODULE_INCLUDE_ROOT}/*.h ${MODULE_INCLUDE_ROOT}/*.hpp)
             target_sources(${MODULE_NAME} INTERFACE ${module_headers})
-            source_group(Modules\\${MODULE_NAME} FILES ${module_headers})
+
+            # Build source groups for our headers maintaining their folder structure
+            create_hierarchical_source_groups_for_files("${module_headers}" ${MODULE_INCLUDE_ROOT} "Modules\\${MODULE_NAME}")
         endif(NOT TARGET ${NAP_MODULE})
 
         # Add module includes
@@ -301,3 +304,28 @@ macro(project_json_to_cmake)
     endif()
     include(cached_project_json.cmake)
 endmacro()
+
+# Build source groups for input files maintaining their folder structure
+# INPUT_FILES: Files to be added to source groups
+# RELATIVE_TO_PATH: The root path against which our relative source group paths will be built
+# GROUP_NAME_PREFIX: Any prefix that should be added onto the front of the group name
+function(create_hierarchical_source_groups_for_files INPUT_FILES RELATIVE_TO_PATH GROUP_NAME_PREFIX)
+    foreach(input_file ${INPUT_FILES})
+        # Get the file's directory
+        get_filename_component(THIS_FILE_DIR ${input_file} DIRECTORY)
+
+        # Determine the file's directory path relative to the root
+        file(RELATIVE_PATH RELATIVE_FILE_DIR ${RELATIVE_TO_PATH} ${THIS_FILE_DIR})
+
+        # If it's in a subfolder..
+        if(NOT ${RELATIVE_FILE_DIR} STREQUAL "")
+            # Switch path separators
+            string(REPLACE "/" "\\" RELATIVE_FILE_DIR ${RELATIVE_FILE_DIR})
+            # Prepend path separator
+            set(RELATIVE_FILE_DIR "\\${RELATIVE_FILE_DIR}")
+        endif()
+
+        # Add to source group
+        source_group(${GROUP_NAME_PREFIX}${RELATIVE_FILE_DIR} FILES ${input_file})
+    endforeach()
+endfunction()

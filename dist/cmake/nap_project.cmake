@@ -73,9 +73,9 @@ file(GLOB_RECURSE HEADERS src/*.h src/*.hpp)
 file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert)
 
 # Create IDE groups
-source_group("Headers" FILES ${HEADERS})
-source_group("Sources" FILES ${SOURCES})
-source_group("Shaders" FILES ${SHADERS})
+create_hierarchical_source_groups_for_files("${SOURCES}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Sources")
+create_hierarchical_source_groups_for_files("${HEADERS}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Headers")
+create_hierarchical_source_groups_for_files("${SHADERS}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Shaders")
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 if (WIN32)
