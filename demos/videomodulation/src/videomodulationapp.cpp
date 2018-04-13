@@ -83,7 +83,7 @@ namespace nap
 		background_material.getOrCreateUniform<UniformVec3>("colorOne").setValue({ mBackgroundColorOne.getRed(), mBackgroundColorOne.getGreen(), mBackgroundColorOne.getBlue() });
 		background_material.getOrCreateUniform<UniformVec3>("colorTwo").setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
         
-        auto level = mVideoEntity->getComponent<audio::LevelMeterComponentInstance>().getLevel(0);
+        auto level = mVideoEntity->getComponent<audio::LevelMeterComponentInstance>().getLevel();
         // get smoothed level value
         float smoothedLevel = mSoundLevelSmoother.update(level, deltaTime);
 
