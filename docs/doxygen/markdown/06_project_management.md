@@ -70,7 +70,7 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects\m
 
 To update this list simply add and remove entries to the `modules` list in the JSON.  The module names should match the module directory names in `\modules` and `\user_modules`.
 
-Note: This NAP beta release requires all modules to be listed in the project.json, even those you may not be accessing directly.  For example mod_napapp requires mod_napimgui and as a result mod_napimgui must always be listed in `project.json` whenever you're using mod_napapp.  **TODO** If this issue (NAP-95) isn't resolved before release the actual dependencies between NAP modules needs to be documented.
+Note: This NAP beta release requires all modules to be listed in the `project.json`, even those you may not be accessing directly.  For example mod_napapp requires mod_napimgui and as a result mod_napimgui must always be listed in `project.json` whenever you're using mod_napapp.  We intend on resolving this in a future release.  See the [list of NAP modules (TODO UPDATE LINK)](@ref project_management) for the inter-module dependencies.
 
 Once you've updated your `project.json` run regenerate.bat within the project folder to update the Visual Studio solution.
 
@@ -140,7 +140,7 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
 
 To update this list simply add and remove entries to the `modules` list in the JSON.  The module names should match the module directory names in `/modules` and `/user_modules`.
 
-Note: This NAP beta release requires all modules to be listed in the `project.json`, even those you may not be accessing directly.  For example mod_napapp requires mod_napimgui and as a result mod_napimgui must always be listed in `project.json` whenever you're using mod_napapp.  **TODO** If this issue (NAP-95) isn't resolved before release the actual dependencies between NAP modules needs to be documented.
+Note: This NAP beta release requires all modules to be listed in the `project.json`, even those you may not be accessing directly.  For example mod_napapp requires mod_napimgui and as a result mod_napimgui must always be listed in `project.json` whenever you're using mod_napapp.  We intend on resolving this in a future release.  See the [list of NAP modules (TODO UPDATE LINK)](@ref project_management) for the inter-module dependencies.
 
 Once you've updated your `project.json` run regenerate within the project folder to update the Xcode project.
 
@@ -210,7 +210,7 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
 
 To update this list simply add and remove entries to the `modules` list in the JSON.  The module names should match the module directory names in `/modules` and `/user_modules`.
 
-Note: This NAP beta release requires all modules to be listed in the `project.json`, even those you may not be accessing directly.  For example mod_napapp requires mod_napimgui and as a result mod_napimgui must always be listed in `project.json` whenever you're using mod_napapp.  **TODO** If this issue (NAP-95) isn't resolved before release the actual dependencies between NAP modules needs to be documented.
+Note: This NAP beta release requires all modules to be listed in the `project.json`, even those you may not be accessing directly.  For example mod_napapp requires mod_napimgui and as a result mod_napimgui must always be listed in `project.json` whenever you're using mod_napapp.  We intend on resolving this in a future release.  See the [list of NAP modules (TODO UPDATE LINK)](@ref project_management) for the inter-module dependencies.
 
 Changes to your `project.json` will be automatically pulled in when you next build the project.
 
