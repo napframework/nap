@@ -12,8 +12,8 @@ RTTI_BEGIN_ENUM(nap::MidiEvent::Type)
     RTTI_ENUM_VALUE(nap::MidiEvent::Type::afterTouch, "afterTouch"),
     RTTI_ENUM_VALUE(nap::MidiEvent::Type::controlChange, "controlChange"),
     RTTI_ENUM_VALUE(nap::MidiEvent::Type::programChange, "programChange"),
-    RTTI_ENUM_VALUE(nap::MidiEvent::Type::noteOff, "channelPressure"),
-    RTTI_ENUM_VALUE(nap::MidiEvent::Type::noteOff, "pitchBend")
+    RTTI_ENUM_VALUE(nap::MidiEvent::Type::channelPressure, "channelPressure"),
+    RTTI_ENUM_VALUE(nap::MidiEvent::Type::pitchBend, "pitchBend")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::MidiEvent)
