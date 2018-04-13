@@ -279,8 +279,8 @@ endmacro()
 macro(project_json_to_cmake)
     # Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
     configure_file(${CMAKE_SOURCE_DIR}/project.json project_json_trigger_dummy.json)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E remove project_json_trigger_dummy.json
-                    ERROR_QUIET)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/project_json_trigger_dummy.json
+                    ERROR_QUIET)    
 
     # Clear any system Python path settings
     unset(ENV{PYTHONHOME})
