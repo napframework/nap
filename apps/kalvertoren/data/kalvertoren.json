@@ -3146,7 +3146,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Enabled": true,
+            "Enabled": false,
             "AllowFailure": true,
             "Sensors": [
                 "LuxSensor3"
@@ -3159,7 +3159,7 @@
             "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 1000,
-            "Log": true
+            "Log": false
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3168,7 +3168,7 @@
             "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 1000,
-            "Log": true
+            "Log": false
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3177,7 +3177,7 @@
             "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 1000,
-            "Log": true
+            "Log": false
         }
     ]
 }
