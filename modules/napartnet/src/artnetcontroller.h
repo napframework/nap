@@ -30,6 +30,8 @@ namespace nap
 		// Constructor used by factory
 		ArtNetController(ArtNetService& service);
 
+		virtual ~ArtNetController() override;
+
 		/**
 		 * Creates a mapping to the subnet and address.
 		 * @param errorState Contains error information in case the function returns false.

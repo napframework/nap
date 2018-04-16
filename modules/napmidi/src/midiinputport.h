@@ -22,6 +22,8 @@ namespace nap
         MidiInputPort() = default;
         MidiInputPort(MidiService& service);
         
+		virtual ~MidiInputPort() override;
+
         /**
          * Starts the midi input port.
          */

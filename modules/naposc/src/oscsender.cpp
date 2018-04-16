@@ -17,7 +17,9 @@ static const size_t initialPacketCapacity(1536);
 namespace nap
 {
 	OSCSender::~OSCSender()
-	{}
+	{
+		stop();
+	}
 
 
 	bool OSCSender::start(utility::ErrorState& errorState)

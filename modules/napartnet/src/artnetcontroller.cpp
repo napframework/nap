@@ -21,6 +21,10 @@ namespace nap
 	{
 	}
 
+	ArtNetController::~ArtNetController()
+	{
+		stop();
+	}
  
 	bool ArtNetController::start(nap::utility::ErrorState& errorState)
 	{

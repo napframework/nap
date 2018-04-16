@@ -16,6 +16,12 @@ namespace nap
 		mService(&service)
     {
     }
+
+
+	MidiOutputPort::~MidiOutputPort()
+	{
+		stop();
+	}
     
     
     bool MidiOutputPort::start(utility::ErrorState& errorState)

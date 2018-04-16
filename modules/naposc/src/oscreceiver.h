@@ -37,7 +37,7 @@ namespace nap
 		OSCReceiver(OSCService& service);
 
 		// Destructor
-		virtual ~OSCReceiver();
+		virtual ~OSCReceiver() override;
 
 		/**
 		 * Initializes the receiver and registers it with the OSCService

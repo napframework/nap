@@ -29,6 +29,12 @@ namespace nap
     }
     
 
+	MidiInputPort::~MidiInputPort()
+	{
+		stop();
+	}
+
+
 	bool MidiInputPort::start(utility::ErrorState& errorState)
     {
         try 

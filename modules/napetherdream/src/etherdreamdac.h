@@ -36,6 +36,8 @@ namespace nap
 		// Constructor used by factory
 		EtherDreamDac(EtherDreamService& service);
 
+		virtual ~EtherDreamDac() override;
+
 		/**
 		 * Initializes this DAC and registers it with the etherdream service.
 		 * If the DAC is not connected or unavailable this call will fail and block
