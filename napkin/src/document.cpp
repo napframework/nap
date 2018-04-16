@@ -294,9 +294,14 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 
 	const TypeInfo element_type = array_view.get_rank_type(1);
 	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
-
 	assert(wrapped_type.can_create_instance());
-	Variant new_value = wrapped_type.create();
+
+	Variant new_value;
+	if (wrapped_type == RTTI_OF(std::string))
+		new_value = std::string();
+	else
+		new_value = wrapped_type.create();
+
 	assert(new_value.is_valid());
 	assert(array_view.is_dynamic());
 
