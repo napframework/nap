@@ -5,17 +5,17 @@
 
 namespace nap
 {
-	class NAPAPI @MODULE_NAME_CAMELCASE@Service : public Service
+	class NAPAPI @MODULE_NAME_PASCALCASE@Service : public Service
 	{
 		RTTI_ENABLE(Service)
 
 	public:
 		// Default Constructor
-		@MODULE_NAME_CAMELCASE@Service() = default;
+		@MODULE_NAME_PASCALCASE@Service() = default;
 
 		// Disable copy
-		@MODULE_NAME_CAMELCASE@Service(const @MODULE_NAME_CAMELCASE@Service& rhs) = delete;
-		@MODULE_NAME_CAMELCASE@Service& operator=(const @MODULE_NAME_CAMELCASE@Service& rhs) = delete;
+		@MODULE_NAME_PASCALCASE@Service(const @MODULE_NAME_PASCALCASE@Service& rhs) = delete;
+		@MODULE_NAME_PASCALCASE@Service& operator=(const @MODULE_NAME_PASCALCASE@Service& rhs) = delete;
 
 	protected:
 		

@@ -6,7 +6,7 @@
 			"mID" : "Window",
 			"Width" : 512,
 			"Height" : 512,
-			"Title" : "@PROJECT_NAME_CAMELCASE@"
+			"Title" : "@PROJECT_NAME_PASCALCASE@"
 		},
 	
 		{

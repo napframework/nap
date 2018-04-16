@@ -57,8 +57,8 @@ def find_project(project_name, silent_failure=False):
         print("Couldn't find project, demo or example with name '%s'" % project_name)
     return None
 
-# Super basic camelcase validation of name
-def validate_camelcase_name(module_name):
+# Super basic pascal case validation of name
+def validate_pascalcase_name(module_name):
     # Check we're not a single char
     if len(module_name) < 2:
         return False

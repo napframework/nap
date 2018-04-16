@@ -20,11 +20,11 @@ namespace nap
 	/**
 	 * Main application that is called from within the main loop
 	 */
-	class @PROJECT_NAME_CAMELCASE@App : public App
+	class @PROJECT_NAME_PASCALCASE@App : public App
 	{
 		RTTI_ENABLE(App)
 	public:
-		@PROJECT_NAME_CAMELCASE@App(nap::Core& core) : App(core) { }
+		@PROJECT_NAME_PASCALCASE@App(nap::Core& core) : App(core) { }
 		
 		/**
 		 *	Initialize all the services and app specific data structures
