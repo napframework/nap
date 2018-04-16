@@ -24,7 +24,7 @@ namespace nap {
         {
             std::lock_guard<std::mutex> lock(mVideoMutex);
             
-            if (mVideo == nullptr || !mVideo->hasAudio())
+            if (mVideo == nullptr || !mVideo->hasAudio() || !mVideo->isPlaying())
             {
                 // If the video has no audio channels we fill the output pins with zeros
                 for (auto channel = 0; channel < getChannelCount(); ++channel)
@@ -37,13 +37,14 @@ namespace nap {
             }
             
             // We tell the Video object to fill our buffer with audio data
-            mVideo->OnAudioCallback((uint8_t*)(mDataBuffer.data()), mDataBuffer.size() * sizeof(float), mAudioFormat);
-            
-            // Deinterleaving the data for our output pins
-            float* samplePtr = mDataBuffer.data();
-            for (auto i = 0; i < getBufferSize(); ++i)
-                for (auto channel = 0; channel < getChannelCount(); ++channel)
-                    getOutputBuffer(*mOutputs[channel])[i] = *(samplePtr++);
+            if (mVideo->OnAudioCallback((uint8_t*)(mDataBuffer.data()), mDataBuffer.size() * sizeof(float), mAudioFormat))            
+			{
+				// Deinterleaving the data for our output pins
+				float* samplePtr = mDataBuffer.data();
+				for (auto i = 0; i < getBufferSize(); ++i)
+					for (auto channel = 0; channel < getChannelCount(); ++channel)
+						getOutputBuffer(*mOutputs[channel])[i] = *(samplePtr++);
+			}
 
         }
         

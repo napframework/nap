@@ -2,7 +2,6 @@
 
 // std library includes
 #include <vector>
-#include <memory>
 
 // nap includes
 #include <utility/dllexport.h>
@@ -28,8 +27,7 @@ namespace nap
          * A buffer of samples
          */
         using SampleBuffer = std::vector<SampleValue>;
-        using SampleBufferPtr = SampleBuffer*;
-
+        
         
         /**
          * A collection of sample buffers, one for each channel to represent multichannel audio.
@@ -43,16 +41,13 @@ namespace nap
              * @param channelCount: number of channels in this buffer
              * @param size: size of the buffer in samples
              */
-            MultiSampleBuffer(std::size_t channelCount, std::size_t size)
-            {
-                resize(channelCount, size);
-            }
+            MultiSampleBuffer(std::size_t channelCount, std::size_t size) { resize(channelCount, size); }
             
             /**
              * Used to access the samples in the buffer
              * example: myBuffer[channelNumber][sampleIndex]
              */
-            SampleBuffer& operator[](std::size_t index) { return *channels[index]; }
+            SampleBuffer& operator[](std::size_t index) { return channels[index]; }
             
             /**
              * @return: number of channels in the buffer
@@ -62,12 +57,7 @@ namespace nap
             /**
              * @return: the size of the buffer in samples
              */
-            std::size_t getSize() const { return channels.empty() ? 0 : channels.front()->size();  }
-            
-            /**
-             * @return: channel as a shared pointer that can be thread-safely shared with audio nodes
-             */
-            std::shared_ptr<SampleBuffer>& getChannelPtr(size_t channel) { return channels[channel]; }
+            std::size_t getSize() const { return channels.empty() ? 0 : channels.front().size();  }
             
             /**
              * Resize the buffer
@@ -76,14 +66,21 @@ namespace nap
              */
             void resize(std::size_t channelCount, std::size_t size)
             {
-                auto oldChannelCount = channels.size();
                 channels.resize(channelCount);
-                for (auto channel = 0; channel < channelCount; ++channel)
-                {
-                    if (channel >= oldChannelCount)
-                        channels[channel] = std::make_shared<SampleBuffer>();
-                    channels[channel]->resize(size);
-                }
+                for (auto& channel : channels)
+                    channel.resize(size);
+            }
+            
+            /**
+             * Reserve capacity of the buffer in memory to prevent repeated memory allocation
+             * @param channelCount: new number of channels capacity
+             * @param size: new size in samples capacity
+             */
+            void reserve(std::size_t channelCount, std::size_t size)
+            {
+                channels.reserve(channelCount);
+                for (auto& channel : channels)
+                    channel.reserve(size);
             }
             
             /**
@@ -94,8 +91,7 @@ namespace nap
                 channels.clear();
             }
             
-        private:
-            std::vector<std::shared_ptr<SampleBuffer>> channels;
+            std::vector<SampleBuffer> channels;
         };
         
         
@@ -118,5 +114,5 @@ namespace nap
         using DiscreteTimeValue = long;
         
     }
-        
+    
 }

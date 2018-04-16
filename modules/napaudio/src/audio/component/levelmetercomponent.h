@@ -2,9 +2,9 @@
 
 // Nap includes
 #include <component.h>
+#include <audio/utility/safeptr.h>
 
 // Audio includes
-#include <audio/core/audionodeptr.h>
 #include <audio/node/levelmeternode.h>
 #include <audio/component/audiocomponentbase.h>
 #include <audio/node/filternode.h>
@@ -37,7 +37,8 @@ namespace nap
             ControllerValue mCenterFrequency = 10000.f; ///< property: 'CenterFrequency' Center frequency of the frequency band that will be analyzed. Only has effect when mFilterInput = true.
             ControllerValue mBandWidth = 10000.f; ///< property: 'BandWidth' Width in Hz of the frequency band that will be analyzed. Only has effect when mFilterInput = true.
             ControllerValue mFilterGain = 1.0f; ///< property: 'FilterGain' Gain factor of the filtered input signal. Only has effect when mFilterInput = true.
-            
+            int mChannel = 0; ///< property: 'Channel' Channel of the input that will be analyzed.
+
         private:
         };
         
@@ -58,7 +59,7 @@ namespace nap
             /**
              * Returns the current level for a certain channel
              */
-            ControllerValue getLevel(int channel);
+            ControllerValue getLevel();
     
             /**
              * Sets the center frequency in Hz of the band that will be analyzed.
@@ -96,15 +97,22 @@ namespace nap
              */
             ControllerValue getFilterGain() const;
             
-        private:
             /**
-             * Returns the node manager the level meter nodes are registered to.
+             * Connects a different audio component as input to be analyzed.
              */
-            NodeManager& getNodeManager();
+            void setInput(AudioComponentBaseInstance& input);
             
-            nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &LevelMeterComponent::mInput }; // Pointer to component that outputs this components audio input
-            std::vector<NodePtr<LevelMeterNode>> mMeters; // Nodes doing the actual analysis
-            std::vector<NodePtr<FilterNode>> mFilters; // Filters filtering the audio signal for each channel before analysis
+        private:
+            ComponentInstancePtr<AudioComponentBase> mInput = { this, &LevelMeterComponent::mInput }; // Pointer to component that outputs this components audio input
+            SafeOwner<LevelMeterNode> mMeter = nullptr; // Node doing the actual analysis
+            SafeOwner<FilterNode> mFilter = nullptr; // Filter filtering the audio signal for each channel before analysis
+            
+            LevelMeterComponent* mResource = nullptr;
+            AudioService* mAudioService = nullptr;
+            
+            ControllerValue mCenterFrequency = 10000.f; ///< Center frequency of the frequency band that will be analyzed. Only has effect when mFilterInput = true.
+            ControllerValue mBandWidth = 10000.f; ///< 'BandWidth' Width in Hz of the frequency band that will be analyzed. Only has effect when mFilterInput = true.
+            ControllerValue mFilterGain = 1.0f; ///< 'FilterGain' Gain factor of the filtered input signal. Only has effect when mFilterInput = true.
         };
         
     }

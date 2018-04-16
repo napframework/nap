@@ -99,6 +99,16 @@ namespace napkin
 		bool isValid() const;
 
 		/**
+		 * @return true if this property represents an enumeration
+		 */
+		bool isEnum() const;
+
+		/**
+		 * @return true if this property represents a pointer
+		 */
+		bool isPointer() const;
+
+		/**
 		 * @param other The property to compare to
 		 * @return true if the both property paths point to the same property
 		 */

@@ -2,6 +2,7 @@
 
 #include <audio/core/audionode.h>
 #include <audio/utility/linearramper.h>
+#include <audio/utility/safeptr.h>
 
 namespace nap
 {
@@ -62,7 +63,7 @@ namespace nap
             /**
              * Constructor takes the waveform of the oscillator
              */
-            OscillatorNode(NodeManager& aManager, std::shared_ptr<WaveTable>& aWave);
+            OscillatorNode(NodeManager& aManager, SafePtr<WaveTable> aWave);
             
             /**
              * Set the frequency in Hz
@@ -82,21 +83,31 @@ namespace nap
             /**
              * Set a new waveform for the oscillator
              */
-            void setWave(std::shared_ptr<WaveTable>& aWave);
+            void setWave(SafePtr<WaveTable>& aWave);
             
+            /**
+             * Return the frequency in Hz
+             */
             ControllerValue getFrequency() const { return mFrequency; }
+            
+            /**
+             * Return the amplitude of the oscillation
+             */
             ControllerValue getAmplitude() const { return mAmplitude; }
+            
+            /**
+             * Return the phase as a value between 0 and 1. representing a fraction of the current position in the wave table.
+             */
             ControllerValue getPhase() const { return mPhaseOffset / float(mWave->getSize()); }
 
-            InputPin fmInput;
-            OutputPin output = { this };
+            InputPin fmInput; ///< Input pin to control frequency modulation.
+            OutputPin output = { this }; ///< Audio output pin.
 
         private:
             void process() override;
             void sampleRateChanged(float sampleRate) override;
 
-            // WaveTable has to be a shared pointer because audio nodes destruction is always deferred until the next audio callback
-            std::shared_ptr<WaveTable> mWave;
+            SafePtr<WaveTable> mWave = nullptr;
 
             ControllerValue mFrequency = { 0 };
             ControllerValue mAmplitude = { 1.f };
