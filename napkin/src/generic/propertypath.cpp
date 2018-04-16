@@ -66,7 +66,8 @@ rttr::type napkin::PropertyPath::getArrayElementType() const
 		return rttr::type::empty();
 
 	VariantArray array_view = array.create_array_view();
-	auto elmtype = array_view.get_rank_type(array_view.get_rank());
+	auto elmtype = array_view.get_rank_type(1);
+	//auto elmtype = array_view.get_rank_type(array_view.get_rank());
 	return elmtype.is_wrapper() ? elmtype.get_wrapped_type() : elmtype;
 }
 
