@@ -1,6 +1,10 @@
+find_package(rtmidi REQUIRED)
+target_link_libraries(${PROJECT_NAME} rtmidi)
+target_include_directories(${PROJECT_NAME} PUBLIC ${RTMIDI_INCLUDE_DIRS})
+
 # Install rtmidi lib into packaged app
 if(APPLE)
-    install(FILES ${THIRDPARTY_DIR}/rtmidi/lib/librtmidi.4.dylib DESTINATION lib)
+    install(FILES $<TARGET_FILE:rtmidi> DESTINATION lib)
 elseif(UNIX)
     file(GLOB RTMIDI_DYLIBS ${THIRDPARTY_DIR}/rtmidi/lib/librt*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${RTMIDI_DYLIBS} DESTINATION lib)
