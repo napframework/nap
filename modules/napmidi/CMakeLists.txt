@@ -24,7 +24,11 @@ package_module()
 
 # Package rtmidi into platform release
 install(FILES ${THIRDPARTY_DIR}/rtmidi/linux/install/README.md DESTINATION thirdparty/rtmidi)
-if(UNIX AND NOT APPLE)
+if(MSVC)
+    file(GLOB RTMIDI_STATIC_LIBS ${THIRDPARTY_DIR}/rtmidi/bin/msvc/rtmidi*.${CMAKE_STATIC_LIBRARY_SUFFIX})
+    install(FILES ${RTMIDI_STATIC_LIBS}
+            DESTINATION thirdparty/rtmidi/bin)
+elseif(UNIX AND NOT APPLE)
     file(GLOB RTMIDI_DYLIBS ${RTMIDI_DIR}/linux/install/lib/librtmidi${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${RTMIDI_DYLIBS}
             DESTINATION thirdparty/rtmidi/lib)
