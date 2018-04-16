@@ -22,6 +22,7 @@ set(NAP_MODULES
         mod_napmath
         mod_napscene
         mod_napartnet
+        mod_napmidi
         mod_napcameracontrol)
 
 set(UNITTEST_LIBS

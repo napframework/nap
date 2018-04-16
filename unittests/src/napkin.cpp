@@ -1,15 +1,17 @@
 #include "catch.hpp"
-#include "../../apps/etherdream/src/lineblendcomponent.h"
 
 #include <appcontext.h>
 #include <commands.h>
 #include <composition.h>
-#include <ledcolorpalettegrid.h>
 #include <imagelayer.h>
 #include <generic/naputils.h>
 #include <firstpersoncontroller.h>
+#include <transformcomponent.h>
+#include <midiinputport.h>
+#include "testclasses.h"
 
 #define TAG_NAPKIN "[napkin]"
+#define ENTITY_NAME "Entity"
 
 using namespace napkin;
 
@@ -105,75 +107,70 @@ TEST_CASE("Document Signals", TAG_NAPKIN)
 TEST_CASE("Array Value Elements", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
-	auto colors = doc->addObject<nap::WeekVariations>();
-	REQUIRE(colors  != nullptr);
+	auto resource = doc->addObject<TestResource>();
+	REQUIRE(resource  != nullptr);
 
 	// Check invalid nonexistent path
-	PropertyPath nonExistent(*colors, "NonExistent_________");
+	PropertyPath nonExistent(*resource, "NonExistent_________");
 	REQUIRE(!nonExistent.isValid());
 
 	// Grab a valid path
-	PropertyPath variations(*colors, "Variations");
-	REQUIRE(variations.isValid());
+	PropertyPath ints2D(*resource, "Ints2D");
+	REQUIRE(ints2D.isValid());
 
 	// Ensure empty array
-	REQUIRE(variations.getArrayLength() == 0);
+	REQUIRE(ints2D.getArrayLength() == 0);
 
 	// Add an element
 	{
-		auto index = doc->arrayAddValue(variations);
+		auto index = doc->arrayAddValue(ints2D);
 		REQUIRE(index == 0); // The index at which the new element lives
-		REQUIRE(variations.getArrayLength() == 1);
+		REQUIRE(ints2D.getArrayLength() == 1);
+
+		// Verify validity of new element
+		REQUIRE(PropertyPath(*resource, "Ints2D/0").isValid());
+//		 TODO: This should not happen
+//		REQUIRE(!PropertyPath(*resource, "Ints2D/18").isValid());
 	}
 
 	// Add another element
 	{
-		auto index = doc->arrayAddValue(variations);
+		auto index = doc->arrayAddValue(ints2D);
 		REQUIRE(index == 1); // Index should be one
-		REQUIRE(variations.getArrayLength() == 2);
+		REQUIRE(ints2D.getArrayLength() == 2);
+
+		// Verify validity of new element
+		REQUIRE(PropertyPath(*resource, "Ints2D/0").isValid());
+		REQUIRE(PropertyPath(*resource, "Ints2D/1").isValid());
 	}
 
 	// Remove first element
 	{
-		doc->arrayRemoveElement(variations, 0);
-		REQUIRE(variations.getArrayLength() == 1);
+		doc->arrayRemoveElement(ints2D, 0);
+		REQUIRE(ints2D.getArrayLength() == 1);
 	}
 
 	// Remove the second element
 	{
-		doc->arrayRemoveElement(variations, 0);
-		REQUIRE(variations.getArrayLength() == 0);
+		doc->arrayRemoveElement(ints2D, 0);
+		REQUIRE(ints2D.getArrayLength() == 0);
 	}
 }
 
-TEST_CASE("Array add weekcolor", TAG_NAPKIN)
+
+TEST_CASE("Array add string", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
-	auto* col = doc->addObject<nap::WeekVariations>();
-	REQUIRE(col != nullptr);
+	auto midiinput = doc->addObject<nap::MidiInputPort>();
+	REQUIRE(midiinput != nullptr);
+	PropertyPath midiports(*midiinput, "Ports");
+	REQUIRE(midiports.isValid());
+	REQUIRE(midiports.isArray());
+	REQUIRE(!midiports.isPointer());
+	REQUIRE(midiports.getArrayElementType() == RTTI_OF(std::string));
 
-	PropertyPath variations(*col, "Variations");
-	REQUIRE(variations.isValid());
-
-	// Add an element to the array
-	{
-		auto index = doc->arrayAddValue(variations);
-		REQUIRE(index == 0);
-		REQUIRE(variations.getArrayLength() == 1);
-
-		// Verify validity of new element
-		REQUIRE(PropertyPath(*col, "Variations/0").isValid());
-	}
-
-	// Add another value
-	{
-		auto index = doc->arrayAddValue(variations);
-		REQUIRE(index == 1);
-		REQUIRE(variations.getArrayLength() == 2);
-
-		// Verify validity of new element
-		REQUIRE(PropertyPath(*col, "Variations/1").isValid());
-	}
+	auto index = doc->arrayAddValue(midiports);
+	REQUIRE(index == 0);
 }
 
 TEST_CASE("Array Modification Objects", TAG_NAPKIN)
@@ -624,8 +621,6 @@ TEST_CASE("Resource Management", TAG_NAPKIN)
 
 }
 
-#define entityName "Entity"
-
 TEST_CASE("Component to Component pointer", TAG_NAPKIN)
 {
 	auto& ctx = napkin::AppContext::get();
@@ -634,8 +629,8 @@ TEST_CASE("Component to Component pointer", TAG_NAPKIN)
 	auto doc = ctx.newDocument();
 
 	nap::Entity& entity = doc->addEntity();
-	doc->setObjectName(entity, entityName);
-	REQUIRE(entity.mID == entityName);
+	doc->setObjectName(entity, ENTITY_NAME);
+	REQUIRE(entity.mID == ENTITY_NAME);
 
 	auto fpcam = doc->addComponent<nap::FirstPersonController>(entity);
 	REQUIRE(fpcam != nullptr);
@@ -660,7 +655,7 @@ TEST_CASE("Component to Component pointer", TAG_NAPKIN)
 	auto loadedDoc = ctx.loadDocumentFromString(serializedData);
 	REQUIRE(loadedDoc != nullptr);
 
-	auto loadedEntity = loadedDoc->getObject(entityName);
+	auto loadedEntity = loadedDoc->getObject(ENTITY_NAME);
 	REQUIRE(loadedEntity != nullptr);
 }
 
