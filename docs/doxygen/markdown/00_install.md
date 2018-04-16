@@ -23,11 +23,11 @@ The prerequisites installation script is called `check_build_environment` and ca
 
 ## Windows {#setup_build_env_win64}
 
-NAP 0.1.0 supports Windows 10 with Visual Studio 2015.  Although NAP is known to work on other versions of Windows, v10 is the current supported platform.
+NAP $(NAP_VERSION_FULL) supports Windows 10 with Visual Studio 2015.  Although NAP is known to work on other versions of Windows, v10 is the current supported platform.
 
 Follow these steps for a guided installation:
-1. Extract `NAP-0.1.0-Win64.zip` using Explorer (or your preferred tool)
-2. In `NAP-0.1.0-Win64\tools` run `check_build_environment.bat` to guide you through installing prerequisites, following the instructions
+1. Extract `NAP-$(NAP_VERSION_FULL)-Win64.zip` using Explorer (or your preferred tool)
+2. In `NAP-$(NAP_VERSION_FULL)-Win64\tools` run `check_build_environment.bat` to guide you through installing prerequisites, following the instructions
 
 _Manual Dependency Installation_
 
@@ -38,11 +38,11 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 
 ## macOS {#setup_build_env_macos}
 
-NAP 0.1.0 supports macOS High Sierra 10.13.  Although NAP is known to work on other macOS releases, High Sierra is the current supported version.
+NAP $(NAP_VERSION_FULL) supports macOS High Sierra 10.13.  Although NAP is known to work on other macOS releases, High Sierra is the current supported version.
 
 Follow these steps for a guided installation:
-1. Extract the release by double clicking `NAP-0.1.0-macOS.zip` in Finder
-2. In `NAP-0.1.0-macOS/tools` run `check_build_environment` to guide you through installing prerequisites, following the instructions
+1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS.zip` in Finder
+2. In `NAP-$(NAP_VERSION_FULL)-macOS/tools` run `check_build_environment` to guide you through installing prerequisites, following the instructions
 
 _Manual Dependency Installation_
 
@@ -63,7 +63,7 @@ export PATH="/Applications/CMake.app/Contents/bin:$PATH"
 
 ## Linux {#setup_build_env_linux}
 
-NAP 0.1.0 supports Ubuntu Linux 17.10 on x86-64 machines.  Although NAP is known to work on other Ubuntu releases, 17.10 is the current supported version.
+NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 17.10 on x86-64 machines.  Although NAP is known to work on other Ubuntu releases, 17.10 is the current supported version.
 
 Follow these steps for a guided installation:
 1. Extract the release:
@@ -94,14 +94,14 @@ All demonstration projects can be found within the demos folder within the relea
 
 ## Windows {#run_demo_win64}
 
-1. Navigate to `NAP-0.1.0-Win64\demos\helloworld` in Explorer
+1. Navigate to `NAP-$(NAP_VERSION_FULL)-Win64\demos\helloworld` in Explorer
 2. Run `regenerate.bat`
 3. Open the Visual Studio solution which will be generated and shown in Explorer
 4. Click the run button
 
 ## macOS {#run_demo_macos}
 
-1. Navigate to `NAP-0.1.0-macOS/demos/helloworld` in Finder
+1. Navigate to `NAP-$(NAP_VERSION_FULL)-macOS/demos/helloworld` in Finder
 2. Run `regenerate`
 3. Open the Xcode project which will be generated and shown in Finder
 4. Use the Product > Scheme menu or the dropdown and select `helloworld`
