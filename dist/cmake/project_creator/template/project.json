@@ -1,5 +1,5 @@
 {
-    "title": "@PROJECT_NAME_CAMELCASE@",
+    "title": "@PROJECT_NAME_PASCALCASE@",
     "version": "0.1",
     "modules": [
         @MODULE_LIST_SUB_JSON@

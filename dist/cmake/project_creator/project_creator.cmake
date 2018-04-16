@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Verify we have a project name
-if (NOT DEFINED PROJECT_NAME_CAMELCASE)
+if (NOT DEFINED PROJECT_NAME_PASCALCASE)
     message(FATAL_ERROR "No project name")
 endif()
 
@@ -18,7 +18,7 @@ if(DEFINED MODULE_LIST)
 endif ()
 
 # Set lowercase project name, used for a filenames etc
-string(TOLOWER ${PROJECT_NAME_CAMELCASE} PROJECT_NAME_LOWERCASE)
+string(TOLOWER ${PROJECT_NAME_PASCALCASE} PROJECT_NAME_LOWERCASE)
 
 # Setup our paths
 set(TEMPLATE_ROOT ${CMAKE_CURRENT_LIST_DIR}/template)

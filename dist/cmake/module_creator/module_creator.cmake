@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Verify we have a module name
-if (NOT DEFINED MODULE_NAME_CAMELCASE)
+if (NOT DEFINED MODULE_NAME_PASCALCASE)
     message(FATAL_ERROR "No module name")
 endif()
 
 # Set lowercase module name, used for a filenames etc
-string(TOLOWER ${MODULE_NAME_CAMELCASE} MODULE_NAME_LOWERCASE)
+string(TOLOWER ${MODULE_NAME_PASCALCASE} MODULE_NAME_LOWERCASE)
 
 # Setup our paths
 set(TEMPLATE_ROOT ${CMAKE_CURRENT_LIST_DIR}/template)

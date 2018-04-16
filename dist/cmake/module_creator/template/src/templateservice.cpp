@@ -1,5 +1,5 @@
 // Local Includes
-#include "@MODULE_NAME_LOWERCASE@service.h"
+#include "@MODULE_NAME_PASCALCASE@service.h"
 
 // External Includes
 #include <nap/core.h>
@@ -7,23 +7,23 @@
 #include <nap/logger.h>
 #include <iostream>
 
-RTTI_DEFINE_CLASS(nap::@MODULE_NAME_CAMELCASE@Service)
+RTTI_DEFINE_CLASS(nap::@MODULE_NAME_PASCALCASE@Service)
 
 namespace nap
 {
-	bool @MODULE_NAME_CAMELCASE@Service::init(nap::utility::ErrorState& errorState)
+	bool @MODULE_NAME_PASCALCASE@Service::init(nap::utility::ErrorState& errorState)
 	{
-		Logger::info("@MODULE_NAME_CAMELCASE@Service init");
+		Logger::info("@MODULE_NAME_PASCALCASE@Service init");
 		return true;
 	}
 
-	void @MODULE_NAME_CAMELCASE@Service::update(double deltaTime)
+	void @MODULE_NAME_PASCALCASE@Service::update(double deltaTime)
 	{
 		double current_time = getCore().getElapsedTime();
-//		Logger::info("@MODULE_NAME_CAMELCASE@Service update");
+//		Logger::info("@MODULE_NAME_PASCALCASE@Service update");
 	}
 	
-	void @MODULE_NAME_CAMELCASE@Service::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	void @MODULE_NAME_PASCALCASE@Service::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 	}
 }

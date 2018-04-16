@@ -8,7 +8,7 @@
 // Mod nap render includes
 #include <orthocameracomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::@PROJECT_NAME_CAMELCASE@App)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::@PROJECT_NAME_PASCALCASE@App)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -18,7 +18,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool @PROJECT_NAME_CAMELCASE@App::init(utility::ErrorState& error)
+	bool @PROJECT_NAME_PASCALCASE@App::init(utility::ErrorState& error)
 	{
 		// Create render service
 		mRenderService = getCore().getService<RenderService>();
@@ -45,7 +45,7 @@ namespace nap
 	
 	
 	// Called when the window is updating
-	void @PROJECT_NAME_CAMELCASE@App::update(double deltaTime)
+	void @PROJECT_NAME_PASCALCASE@App::update(double deltaTime)
 	{
 		// If any changes are detected, and we are reloading, we need to do this on the correct context
 		mRenderService->getPrimaryWindow().makeCurrent();
@@ -54,7 +54,7 @@ namespace nap
 	
 	
 	// Called when the window is going to render
-	void @PROJECT_NAME_CAMELCASE@App::render()
+	void @PROJECT_NAME_PASCALCASE@App::render()
 	{
 		// Make render window active
 		mRenderService->destroyGLContextResources(mRenderWindows);
@@ -66,31 +66,31 @@ namespace nap
 	/**
 	 * Handles the window event
 	 */
-	void @PROJECT_NAME_CAMELCASE@App::handleWindowEvent(const WindowEvent& windowEvent)
+	void @PROJECT_NAME_PASCALCASE@App::handleWindowEvent(const WindowEvent& windowEvent)
 	{
 		
 	}
 	
 	
-	void @PROJECT_NAME_CAMELCASE@App::windowMessageReceived(WindowEventPtr windowEvent)
+	void @PROJECT_NAME_PASCALCASE@App::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void @PROJECT_NAME_CAMELCASE@App::inputMessageReceived(InputEventPtr inputEvent)
+	void @PROJECT_NAME_PASCALCASE@App::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		
 	}
 
 	
-	void @PROJECT_NAME_CAMELCASE@App::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
+	void @PROJECT_NAME_PASCALCASE@App::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
 	{
 		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	int @PROJECT_NAME_CAMELCASE@App::shutdown()
+	int @PROJECT_NAME_PASCALCASE@App::shutdown()
 	{
 		return 0;
 	}

@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "@PROJECT_NAME_LOWERCASE@app.h"
+#include "@PROJECT_NAME_PASCALCASE@app.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::@PROJECT_NAME_CAMELCASE@App, nap::AppEventHandler> app_runner(core);
+	nap::AppRunner<nap::@PROJECT_NAME_PASCALCASE@App, nap::AppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

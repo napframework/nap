@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import validate_camelcase_name
+from nap_shared import validate_pascalcase_name
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -34,7 +34,7 @@ def create_module(module_name, generate_solution):
         sys.exit(ERROR_EXISTING_MODULE)
 
     # Create module from template
-    cmd = ['cmake', '-DMODULE_NAME_CAMELCASE=%s' % module_name, '-P', 'module_creator.cmake']
+    cmd = ['cmake', '-DMODULE_NAME_PASCALCASE=%s' % module_name, '-P', 'module_creator.cmake']
     if call(cmd, cwd=cmake_template_dir) != 0:
         print("Module creation failed")
         sys.exit(ERROR_CMAKE_CREATION_FAILURE)
@@ -59,13 +59,13 @@ def create_module(module_name, generate_solution):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("CAMEL_CASE_MODULE_NAME", type=str,
-                        help="The module name, in camel case (eg. MyModuleName)")
+    parser.add_argument("PASCAL_CASE_MODULE_NAME", type=str,
+                        help="The module name, in pascal case (eg. MyModuleName)")
     parser.add_argument("-ng", "--no-generate", action="store_true",
                         help="Don't generate the solution for the created module")       
     args = parser.parse_args()
 
-    module_name = args.CAMEL_CASE_MODULE_NAME
+    module_name = args.PASCAL_CASE_MODULE_NAME
 
     # If module name is prefixed with mod_ remove it
     if module_name.startswith('mod_'):
@@ -73,12 +73,12 @@ if __name__ == '__main__':
 
     # Validate module name only includes valid characters.  For now we're only allowing ASCII alphabet, numeric, underscore and dash.
     if re.match(r'^[A-Za-z0-9_-]+$', module_name) == None:
-        print("Error: Please specify module name in CamelCase (ie. with an uppercase letter for each word, starting with the first word) without any special characters")
+        print("Error: Please specify module name in PascalCase (ie. with an uppercase letter for each word, starting with the first word) without any special characters")
         sys.exit(ERROR_INVALID_INPUT)
 
-    # Validate module name is camelcase, only includes valid characters
-    if not validate_camelcase_name(module_name):
-        print("Error: Please specify module name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
+    # Validate module name is pascal case, only includes valid characters
+    if not validate_pascalcase_name(module_name):
+        print("Error: Please specify module name in PascalCase (ie. with an uppercase letter for each word, starting with the first word)")
         sys.exit(ERROR_INVALID_INPUT)
 
     exit_code = create_module(module_name, not args.no_generate)
