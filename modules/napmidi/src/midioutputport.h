@@ -16,6 +16,8 @@ namespace nap {
     public:
         MidiOutputPort() = default;
         MidiOutputPort(MidiService& service);
+
+		virtual ~MidiOutputPort() override;
         
         /**
          * Starts the midi output port.

@@ -39,7 +39,7 @@ namespace nap
 		OSCSender(OSCService& service);
 
 		// Kills connection
-		virtual ~OSCSender();
+		virtual ~OSCSender() override;
 
 		std::string mIPAddress;		///< Property: 'IpAddress' target machine ip address
 		int mPort = 8000;			///< Property: 'Port' target machine port1

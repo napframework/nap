@@ -19,8 +19,6 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 
-		virtual ~Device() override;
-
 		/**
 		 * Start the device. Will be called after init()
 		 *

@@ -14,7 +14,13 @@ RTTI_END_CLASS
 namespace nap
 {
 	EtherDreamDac::EtherDreamDac(EtherDreamService& service) : mService(&service)
-	{}
+	{
+	}
+
+	EtherDreamDac::~EtherDreamDac()
+	{
+		stop();
+	}
 
 	void EtherDreamDac::stop()
 	{
