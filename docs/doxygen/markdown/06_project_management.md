@@ -34,7 +34,7 @@ We'll go over the basic tasks here and then cover some more advanced topics in t
 
 Follow the steps below to create a new project titled MyFirstProject.
 
-Note: You're required to provide the project name in CamelCase so that you get proper case in your class definition for the new project.  The camel case name is also used for the packaged project name.
+Note: You're required to provide the project name in PascalCase so that you get proper case in your class definition for the new project.  The pascal case name is also used for the packaged project name.
 
 1. Open a command prompt
 2. Change into your NAP framework directory
@@ -104,7 +104,7 @@ Project packaging is also accessible from by command prompt in the NAP root via 
 
 Follow the steps below to create a new project titled MyFirstProject.
 
-Note: You're required to provide the project name in CamelCase so that you get proper case in your class definition for the new project.  The camel case name is also used for the packaged project name.
+Note: You're required to provide the project name in PascalCase so that you get proper case in your class definition for the new project.  The pascal case name is also used for the packaged project name.
 
 1. Open a terminal
 2. Change into your NAP framework directory
@@ -174,7 +174,7 @@ Project packaging is also accessible from by command prompt in the NAP root via 
 
 Follow these steps to create a new project titled MyFirstProject.
 
-Note: You're required to provide the project name in CamelCase so that you get proper case in your class definition for the new project.  The camel case name is also used for the packaged project name.
+Note: You're required to provide the project name in PascalCase so that you get proper case in your class definition for the new project.  The pascal case name is also used for the packaged project name.
 
 1. Open a terminal
 2. Change into your NAP framework directory
