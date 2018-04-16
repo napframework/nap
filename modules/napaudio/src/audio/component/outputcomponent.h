@@ -3,9 +3,9 @@
 // Nap includes
 #include <component.h>
 #include <componentptr.h>
+#include <audio/utility/safeptr.h>
 
 // Audio includes
-#include <audio/core/audionodeptr.h>
 #include <audio/node/outputnode.h>
 #include <audio/component/audiocomponentbase.h>
 
@@ -52,9 +52,16 @@ namespace nap
             // Initialize the component
             bool init(utility::ErrorState& errorState) override;
             
+            /**
+             * Connects a different audio component as input to be sent to the audio interface.
+             */
+            void setInput(AudioComponentBaseInstance& input);
+            
         private:
-            std::vector<NodePtr<OutputNode>> mOutputs; // Nodes presenting the audio output to the node manager
+            std::vector<SafeOwner<OutputNode>> mOutputs; // Nodes presenting the audio output to the node manager
             nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &OutputComponent::mInput }; // Pointer to the component whose input will be sent to the output.
+            
+            AudioService* mAudioService = nullptr; // Pointer to the audio service the audio output will be sent to.
         };
 
     }

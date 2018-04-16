@@ -6,6 +6,8 @@
 // Nap includes
 #include <nap/service.h>
 #include <audio/core/audionodemanager.h>
+#include <audio/utility/safeptr.h>
+#include <utility/threading.h>
 
 namespace nap
 {    
@@ -160,6 +162,30 @@ namespace nap
              */
             int getDeviceIndex(const std::string& hostApi, const std::string& device);
             
+			/**
+             * This function is typically called by a hardware callback from the device to perform all the audio processing.
+             * It performs memory management and processes a lockfree event queue before it invokes the @NodeManager::process() to process audio.
+             * @param inputBuffer: an array of float arrays, representing one sample buffer for every channel
+             * @param outputBuffer: an array of float arrays, representing one sample buffer for every channel
+             * @param framesPerBuffer: the number of samples that has to be processed per channel
+             */
+            void onAudioCallback(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer);
+            
+            /**
+             * Enqueue a task to be executed within the process() method for thread safety
+             */
+            void enqueueTask(TaskQueue::Task task) { mNodeManager.enqueueTask(task); }
+            
+            /**
+             * Constructs an object managed by a @SafeOwner that will dispose the object in the AudioService's @DeletionQueue when it is no longer used.
+             */
+            template <typename T, typename... Args>
+            SafeOwner<T> makeSafe(Args&&... args)
+            {
+                auto owner = SafeOwner<T>(mDeletionQueue, new T(std::forward<Args>(args)...));
+                return owner;
+            }
+
 		private:
 			/*
              * Start the audio stream using the default audio devices available on the system.
@@ -169,6 +195,10 @@ namespace nap
 		private:
             NodeManager mNodeManager; // The node manager that performs the audio processing.
 			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
+
+            // DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
+            // Clearing is performed by the NodeManager on the audio callback to make sure the node can not be destructed while it is being processed.
+            DeletionQueue mDeletionQueue;
         };       
     }
 }

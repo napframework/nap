@@ -7,6 +7,8 @@
 
 // Audio includes
 #include "audioservice.h"
+#include <audio/resource/audiobufferresource.h>
+#include <audio/resource/audiofileresource.h>
 
 //#include <audio/core/graph.h>
 //#include <audio/core/voice.h>
@@ -43,13 +45,13 @@ namespace nap
                                  PaStreamCallbackFlags statusFlags,
                                  void *userData )
         {
-            float** out = (float**)outputBuffer;
-            float** in = (float**)inputBuffer;            
-            
-            NodeManager* nodeManager = reinterpret_cast<NodeManager*>(userData);
-            nodeManager->process(in, out, framesPerBuffer);
-            
-            return 0;
+			float** out = (float**)outputBuffer;
+			float** in = (float**)inputBuffer;
+
+			AudioService* service = (AudioService*)userData;
+			service->onAudioCallback(in, out, framesPerBuffer);
+
+			return 0;
         }
 
 
@@ -75,8 +77,8 @@ namespace nap
         
         void AudioService::registerObjectCreators(rtti::Factory& factory)
         {
-//            factory.addObjectCreator(std::make_unique<GraphObjectCreator>(getNodeManager()));
-//            factory.addObjectCreator(std::make_unique<VoiceObjectCreator>(getNodeManager()));
+            factory.addObjectCreator(std::make_unique<AudioBufferResourceObjectCreator>(*this));
+            factory.addObjectCreator(std::make_unique<AudioFileResourceObjectCreator>(*this));
         }
 
         
@@ -139,7 +141,7 @@ namespace nap
 			outputParameters.suggestedLatency = 0;
 			outputParameters.hostApiSpecificStreamInfo = nullptr;
 
-			error = Pa_OpenStream(&mStream, &inputParameters, &outputParameters, configuration->mSampleRate, configuration->mBufferSize, paNoFlag, audioCallback, &mNodeManager);
+			error = Pa_OpenStream(&mStream, &inputParameters, &outputParameters, configuration->mSampleRate, configuration->mBufferSize, paNoFlag, &audioCallback, this);
 			if (error != paNoError)
 			{
 				errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
@@ -168,7 +170,7 @@ namespace nap
 		{
 			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
 
-			auto error = Pa_OpenDefaultStream(&mStream, configuration->mInputChannelCount, configuration->mOutputChannelCount, paFloat32 | paNonInterleaved, configuration->mSampleRate, configuration->mBufferSize, audioCallback, &mNodeManager);
+			auto error = Pa_OpenDefaultStream(&mStream, configuration->mInputChannelCount, configuration->mOutputChannelCount, paFloat32 | paNonInterleaved, configuration->mSampleRate, configuration->mBufferSize, &audioCallback, this);
 			if (error != paNoError)
 			{
 				errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
@@ -315,5 +317,16 @@ namespace nap
 				Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
 			Logger::info("Portaudio terminated");
 		}
+        
+        
+        void AudioService::onAudioCallback(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
+        {
+            // process the node manager
+            mNodeManager.process(inputBuffer, outputBuffer, framesPerBuffer);
+            
+            // clean the trash bin with nodes and resources that are no longer used and scheduled for destruction
+            mDeletionQueue.clear();
+        }
+
     }
 }

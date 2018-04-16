@@ -29,13 +29,13 @@ namespace nap
         }
         
         
-        void EnvelopeGenerator::trigger(std::shared_ptr<Envelope>& envelope, TimeValue totalDuration)
+        void EnvelopeGenerator::trigger(SafePtr<Envelope> envelope, TimeValue totalDuration)
         {
             trigger(envelope, 0, envelope->size() - 1, 0, totalDuration);
         }
 
         
-        void EnvelopeGenerator::trigger(std::shared_ptr<Envelope>& envelope, int startSegment, int endSegment, ControllerValue startValue, TimeValue totalDuration)
+        void EnvelopeGenerator::trigger(SafePtr<Envelope> envelope, int startSegment, int endSegment, ControllerValue startValue, TimeValue totalDuration)
         {
             mEnvelope = envelope;
             mEndSegment = endSegment;
