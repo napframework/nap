@@ -579,7 +579,7 @@
                     "Type": "nap::VideoControlComponent",
                     "mID": "VideoController",
                     "Player": "VideoPlayer",
-                    "MidiInputComponent" : "nap::MidiInputComponent",
+                    "MidiInputComponent": "nap::MidiInputComponent",
                     "FadeTime": 1.5
                 },
                 {
@@ -614,7 +614,9 @@
                     "Ports": [],
                     "Channels": [],
                     "Numbers": [],
-                    "Types": ["noteOn"]
+                    "Types": [
+                        "noteOn"
+                    ]
                 }
             ],
             "Children": [
@@ -1903,7 +1905,7 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Kalvertoren",
-            "Sync": true,
+            "Sync": false,
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
@@ -2042,14 +2044,14 @@
         {
             "Type": "nap::Video",
             "mID": "VideoPlayer",
-            "Path": "video/opening_test2.mp4",
+            "Path": "video/kalvertoren_opening.mp4",
             "Loop": true,
             "Speed": 1.0
         },
         {
             "Type": "nap::WeekColors",
             "mID": "VideoColors",
-            "Palette": "M42 C3 L10 A2 A14 E3 E21 I21 D4 J21 I3 A15 B2",
+            "Palette": "L42 A2 A15 G6 B25 B18 C35 C12 C36 I25 F36 D22 E43",
             "Variations": "VideoVariations"
         },
         {
