@@ -13,6 +13,8 @@ First let's use the NAP build system to create and run a blank app with one empt
 
 The freshly generated project file for your platform will be shown in the file explorer/finder for your OS. You can build and run it using Visual Studio on Windows, XCode on OSX or make on linux.
 
+This is described in more detail in the section [Project management](@ref proj_management).
+
 Defining app logic {#app_logic}
 ==========================
 
