@@ -1,7 +1,7 @@
 set(RTMIDI_DIR ${THIRDPARTY_DIR}/rtmidi)
 set(RTMIDI_INCLUDE_DIRS ${RTMIDI_DIR}/include)
 if (WIN32)
-    set(RTMIDI_LIBS_DIR ${YOCTOPUCE_DIR}/bin)
+    set(RTMIDI_LIBS_DIR ${RTMIDI_DIR}/bin)
     set(RTMIDI_LIBS_RELEASE ${RTMIDI_LIBS_DIR}/bin/rtmidi.lib winmm)
     set(RTMIDI_LIBS_DEBUG ${RTMIDI_LIBS_DIR}/bin/rtmidid.lib winmm)
 elseif(APPLE)
