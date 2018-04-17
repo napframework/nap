@@ -493,11 +493,11 @@ namespace nap
 
 		/**
 		 * Reads packet from the stream and pushes packets onto the packet queue.
-		 * @inAddAudioPackets Set to true to push audio packets on the queue. Note that if this is false, the packets
+		 * @targetState The state for which packets should be pushed onto the packet queue. If null, the packets are pushed for all states. Note that packets
 		 *                    are still read from the stream, but just not pushed onto the queue.
 		 * @return The result from reading packets from the stream. See @EProducePacketResult.
 		 */
-		EProducePacketResult ProducePacket(bool inAddAudioPackets);
+		EProducePacketResult ProducePacket(AVState* targetState);
 
 		/**
 		 * Calling this ensures that the thread is waked properly if in a wait state, and then exited. 
@@ -539,7 +539,12 @@ namespace nap
 		/**
 		 * Finishes the seeking operation and returns back to playing state.
 		 */
-		void finishSeeking();
+		void finishSeeking(AVState& seekState);
+
+		/**
+		 * Set the internal seek target to the specified number of seconds in the timebase of the provided AVState
+		 */
+		void setSeekTarget(AVState& seekState, double seekTargetSecs);
 
 	private:
 		friend class AVState;
@@ -571,6 +576,7 @@ namespace nap
 		
 		AVState					mVideoState;								///< State containing all video decoding
 		AVState					mAudioState;								///< State containing all audio decoding
+		AVState*				mSeekState = nullptr;						///< The AVState that we use to seek against
 		std::thread				mIOThread;									///< IO thread, reads packets and pushed onto frame queue
 
 		bool					mExitIOThreadSignalled = false;				///< If this boolean is set, the IO thread will exit ASAP. This is used internally by exitIOThread and should not be used separately
