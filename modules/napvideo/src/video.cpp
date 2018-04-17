@@ -57,7 +57,7 @@ Streams operate in a certain 'time base'. This is just the frequency in hz, and 
 a proper faction by using av_q2d. Each stream also has a start_time. We use the start time and frequency to convert from seconds to the streams' timebase.
 
 ----------------------------------------------------
-Timing
+Synchronization
 ----------------------------------------------------
 Each stream in a video file (audio, video) has its own timebase and PTS/DTS values. When displaying frames/playing back audio, we need to make sure that these two streams are in 'sync'.
 In order to be able to sync these streams, we maintain a few different 'clocks':
@@ -98,6 +98,17 @@ Because of these reasons, we need to perform the following steps:
 Steps 2 and 3 are performed in a lock-step fashion between the I/O thread and the video decode thread, to make sure that we do not seek any packets ahead. This lock-step
 behavior is accomplished by pushing a single packet on the queue, and then waiting until the decode thread calls avcodec_receive_frame. When avcoded_receive requires 
 another packet, we push another packet on the queue. This way we never push more packets onto the queue than necessary to produce the next frame that we can inspect.
+
+Finally, if there is an audio stream available, we prefer seeking in the audio stream as we're synchronizing video to audio.
+This is important in situations where the audio packets are physically ahead of the video packets. Consider the following packet layout:
+
+Audio PTS: 0	   1 		 2
+           AAAAAAAAAAAAAAAAA AAAAAAAAAA
+Video PTS:                  0 		   1 2
+                            V          V V
+
+In this example, when seeking to video packet with PTS 0, we will start processing audio packets with PTS 2. As we're syncing to the audio clock, 
+this means that all video frames up until time 2 will be dropped.
 */
 
 #include "video.h"
@@ -628,7 +639,10 @@ namespace nap
 				break;
 
 			if (decode_result == AVState::EDecodeFrameResult::EndOfFile)
+			{
+				VIDEO_DEBUG_LOG("EOF for stream %d", mStream);
 				continue;
+			}
 
 			// We calculate when the next frame needs to be displayed. The stream contains PTS information, but there are cases
 			// when there is no PTS available, we need to account for these cases.
@@ -668,8 +682,8 @@ namespace nap
 					break;
 
 				mActiveFrameQueue->push(new_frame);
-				mFrameDataAvailableCondition.notify_one();
-				VIDEO_DEBUG_LOG("push frame: pkt_pos: %d, dts: %d, pts: %d", new_frame.mFrame->pkt_pos, new_frame.mFrame->pkt_dts, new_frame.mFrame->pkt_pts);
+				mFrameDataAvailableCondition.notify_all();
+				VIDEO_DEBUG_LOG("push frame (stream %d): pkt_pos: %d, dts: %d, pts: %d", mStream, new_frame.mFrame->pkt_pos, new_frame.mFrame->pkt_dts, new_frame.mFrame->pkt_pts);
 			}
 		}
 
@@ -859,10 +873,16 @@ namespace nap
 	Frame AVState::popSeekFrame()
 	{
 		std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+
+		VIDEO_DEBUG_LOG("wait for seek frame (stream %d)", mStream);
 		mFrameDataAvailableCondition.wait(lock, [this]()
 		{
-			return mExitDecodeThreadSignalled || !mSeekFrameQueue.empty();
+			bool result = mExitDecodeThreadSignalled || !mSeekFrameQueue.empty();
+			VIDEO_DEBUG_LOG("check seek frame condition: %s", result ? "true" : "false");
+			return result;
 		});
+
+		VIDEO_DEBUG_LOG("finished wait for seek frame");
 
 		if (mExitDecodeThreadSignalled)
 			return Frame();
@@ -997,7 +1017,7 @@ namespace nap
 		AVCodecContext& video_codec_context = mVideoState.getCodecContext();
 		mWidth = video_codec_context.width;
 		mHeight = video_codec_context.height;
-		mDuration = static_cast<double>(mFormatContext->duration / AV_TIME_BASE);
+		mDuration = static_cast<double>((double)mFormatContext->duration / AV_TIME_BASE);
 
 		float yWidth	= video_codec_context.width;
 		float yHeight	= video_codec_context.height;
@@ -1105,13 +1125,8 @@ namespace nap
 
 	void Video::seek(double seconds)
 	{
-		// All timing information is relative to the stream start. If the stream start has no PTS value, we assume zero to be the start
-		double stream_start_time = 0.0;
-		if (mFormatContext->streams[mVideoState.getStream()]->start_time != AV_NOPTS_VALUE)
-			stream_start_time = mFormatContext->streams[mVideoState.getStream()]->start_time *av_q2d(mFormatContext->streams[mVideoState.getStream()]->time_base);
-
-		mSeekTarget = std::round((seconds - stream_start_time) / av_q2d(mFormatContext->streams[mVideoState.getStream()]->time_base));
-		mSeekKeyframeTarget = mSeekTarget;
+		mSeekTarget = -1;
+		mSeekKeyframeTarget = -1;
 		mIOThreadState = IOThreadState::SeekRequest;
 		mSeekTargetSecs = seconds;
 	}
@@ -1162,7 +1177,7 @@ namespace nap
 	}
 
 
-	Video::EProducePacketResult Video::ProducePacket(bool inAddAudioPackets)
+	Video::EProducePacketResult Video::ProducePacket(AVState* targetState)
 	{
 		// Read packets from the stream and push them onto the packet queue
 		PacketWrapper packet;
@@ -1192,7 +1207,7 @@ namespace nap
 		if (mVideoState.matchesStream(*packet.mPacket))
 		{
 			packet_result = EProducePacketResult::GotVideoPacket;
-			if (mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
+			if ((targetState == nullptr || targetState == &mVideoState) && mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
 				packet.mPacket = nullptr;
 		}
 		else if (mAudioState.matchesStream(*packet.mPacket))
@@ -1200,7 +1215,7 @@ namespace nap
 			// Note that audio packets are always consumed to make sure that the stream progresses as it should, 
 			// but they are only added when the client want to push the packets on the queue
 			packet_result = EProducePacketResult::GotAudioPacket;
-			if (inAddAudioPackets && mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
+			if ((targetState == nullptr || targetState == &mAudioState) && mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
 				packet.mPacket = nullptr;
 		}
 
@@ -1208,12 +1223,12 @@ namespace nap
 	}
 
 
-	void Video::finishSeeking()
+	void Video::finishSeeking(AVState& seekState)
 	{
 		// It may be possible that after submitting a single packet, multiple frames are output on the decode thread. This can cause the decode
 		// thread to block waiting for room to be available in the seek frame queue. Therefore we need to drain any additional frames produced.
 		// Here we wait until the decode thread needs a new packet, this guarantees that no additional frames will follow.
-		mVideoState.drainSeekFrameQueue();
+		seekState.drainSeekFrameQueue();
 
 		// PTS could be exactly equal to target PTS, we may have reached EOF. We're done finding out target frame.
 		mIOThreadState = IOThreadState::Playing;
@@ -1222,6 +1237,22 @@ namespace nap
 		mVideoState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
 		if (mAudioState.isValid())
 			mAudioState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
+
+		mSeekState = nullptr;
+	}
+
+
+	void Video::setSeekTarget(AVState& seekState, double seekTargetSecs)
+	{
+		AVStream* stream = mFormatContext->streams[seekState.getStream()];
+
+		// All timing information is relative to the stream start. If the stream start has no PTS value, we assume zero to be the start
+		double stream_start_time = 0.0;
+		if (stream->start_time != AV_NOPTS_VALUE)
+			stream_start_time = stream->start_time * av_q2d(stream->time_base);
+
+		mSeekTarget = std::round((seekTargetSecs - stream_start_time) / av_q2d(stream->time_base));
+		mSeekKeyframeTarget = mSeekTarget;
 	}
 
 
@@ -1234,7 +1265,7 @@ namespace nap
 			case IOThreadState::Playing:
 				{
 					// read a frame from the stream and push a packet in the packet queue
-					EProducePacketResult produce_packet_result = ProducePacket(true);
+					EProducePacketResult produce_packet_result = ProducePacket(nullptr);
 					if (produce_packet_result == EProducePacketResult::EndOfFile)
 					{
 						if (mLoop)
@@ -1290,34 +1321,60 @@ namespace nap
 
 					VIDEO_DEBUG_LOG("ioThread seek to %d", mSeekKeyframeTarget);
 
+					// Use audio state to seek if there is an audio stream, otherwise seek by video (see documentation at top of file for information)
+					mSeekState = mAudioState.isValid() ? &mAudioState : &mVideoState;
+					
+					// We can only determine the seek target in stream units once we know the AVState we'll use to seek
+					bool initialSeek = mSeekTarget == -1;
+					if (initialSeek)
+						setSeekTarget(*mSeekState, mSeekTargetSecs);
+
 					// We can only seek by DTS, but we start out with a target PTS (in stream units). The DTS will be smaller or equal to the PTS. We search
 					// backwards in the stream to the current keyframe target. Later we will test if that keyframes' PTS is actually smaller or equal to the
-					// PTS that we are looking for.
-					int seek_result = av_seek_frame(mFormatContext, mVideoState.getStream(), mSeekKeyframeTarget, AVSEEK_FLAG_BACKWARD);
+					// PTS that we are looking for.					
+					int seek_result = av_seek_frame(mFormatContext, mSeekState->getStream(), mSeekKeyframeTarget, AVSEEK_FLAG_BACKWARD);
+
+					// Seeking can fail for audio streams in some cases. One situation we've encountered was that the audio frames were not marked
+					// as keyframes, so seeking will fail (as we're not using AVSEEK_FLAG_ANY). In these cases we try to fallback on seeking the video 
+					// stream.
+					if (seek_result < 0 && mSeekState == &mAudioState)
+					{
+						mSeekState = &mVideoState;
+
+						// Reset the seek target to use the VideoState
+						if (initialSeek)
+							setSeekTarget(*mSeekState, mSeekTargetSecs);
+
+						seek_result = av_seek_frame(mFormatContext, mSeekState->getStream(), mSeekKeyframeTarget, AVSEEK_FLAG_BACKWARD);
+					}
+
 					if (seek_result < 0)
 					{
+						Logger::error("Failed to seek to %f: %s", mSeekTargetSecs, sErrorToString(seek_result).c_str());
 						setErrorOccurred(sErrorToString(seek_result));
 						return;
 					}
 
 					mIOThreadState = IOThreadState::SeekingStartFrame;
 					break;
-				}
+				} 
 
 			case IOThreadState::SeekingStartFrame:
 				{
+					EProducePacketResult seekPacketType = mSeekState == &mAudioState ? EProducePacketResult::GotAudioPacket : EProducePacketResult::GotVideoPacket;
+
 					// Seeking stage 2: Push packets onto the queue and wait for a single frame to be received. If the PTS of that frame is greater than the PTS
 					// we are looking for, we go back to stage 1 with a new seek (internal) target. Otherwise we continue the seeking process.
 
 					// Receive single frame in lock-step
 					EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
-					while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
+					while (mSeekState->waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
 					{
 						assert(((uint8_t)produce_packet_result & (uint8_t)EProducePacketResult::GotPacket) != 0);
 						do
 						{
-							produce_packet_result = ProducePacket(false);
-						} while (produce_packet_result != EProducePacketResult::GotVideoPacket && produce_packet_result != EProducePacketResult::EndOfFile);
+							produce_packet_result = ProducePacket(mSeekState);
+						} while (produce_packet_result != seekPacketType && produce_packet_result != EProducePacketResult::EndOfFile);
 
 						if (produce_packet_result == EProducePacketResult::Error)
 							return;
@@ -1327,12 +1384,12 @@ namespace nap
 					if (mExitIOThreadSignalled)
 						break;
 
-					Frame seek_frame = mVideoState.popSeekFrame();
+					Frame seek_frame = mSeekState->popSeekFrame();
 					VIDEO_DEBUG_LOG("seek start frame, pop frame: pkt_pos: %d, dts: %d, pts: %d", seek_frame.mFrame->pkt_pos, seek_frame.mFrame->pkt_dts, seek_frame.mFrame->pkt_pts);
 
 					// Test if PTS > frame PTS and start new seek request if so. If this frame does not have a PTS, we don't know what the timestamp is, so we issue a new seek request. 
 					// If we're at the beginning of the stream we never seek back any further
-					if ((seek_frame.mFrame->best_effort_timestamp == AV_NOPTS_VALUE || seek_frame.mFrame->best_effort_timestamp > mSeekTarget) && seek_frame.mFirstPacketDTS != mFormatContext->streams[mVideoState.getStream()]->first_dts)
+					if ((seek_frame.mFrame->best_effort_timestamp == AV_NOPTS_VALUE || seek_frame.mFrame->best_effort_timestamp > mSeekTarget) && seek_frame.mFirstPacketDTS != mFormatContext->streams[mSeekState->getStream()]->first_dts)
 					{
 						mIOThreadState = IOThreadState::SeekRequest;
 						
@@ -1348,26 +1405,28 @@ namespace nap
 					{
 						// If the frame we've found is an exact match with the PTS we're looking for, or we can't search further to the left (because the frame is at the start of the stream),
 						// we finish the seek operation and resume normal play
-						finishSeeking();
+						finishSeeking(*mSeekState);
 					}
 				}
 				break;
 
 			case IOThreadState::SeekingTargetFrame:
 				{
+					EProducePacketResult seekPacketType = mSeekState == &mAudioState ? EProducePacketResult::GotAudioPacket : EProducePacketResult::GotVideoPacket;
+
 					// Seeking stage 3: The current frame PTS lies before the target PTS. Now we continue decoding frames until we decode
 					// a frame that is greater or equal to the target PTS.
 					while (true)
 					{
 						// Receive single frame in lock-step
 						EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
-						while (mVideoState.waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
+						while (mSeekState->waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
 						{
 							assert(((uint8_t)produce_packet_result & (uint8_t)EProducePacketResult::GotPacket) != 0);
 							do
 							{
-								produce_packet_result = ProducePacket(false);
-							} while (produce_packet_result != EProducePacketResult::GotVideoPacket && produce_packet_result != EProducePacketResult::EndOfFile);
+								produce_packet_result = ProducePacket(mSeekState);
+							} while (produce_packet_result != seekPacketType && produce_packet_result != EProducePacketResult::EndOfFile);
 
 							if (produce_packet_result == EProducePacketResult::Error)
 								return;
@@ -1377,11 +1436,11 @@ namespace nap
 						if (mExitIOThreadSignalled)
 							break;
 
-						Frame seek_frame = mVideoState.popSeekFrame();
+						Frame seek_frame = mSeekState->popSeekFrame();
 						if (seek_frame.mFrame->best_effort_timestamp >= mSeekTarget || produce_packet_result == EProducePacketResult::EndOfFile)
 						{
 							// If we've found a matching frame, finish the seek operation and resume normal play
-							finishSeeking();
+							finishSeeking(*mSeekState);
 							break;
 						}
 					}
