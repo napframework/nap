@@ -128,7 +128,7 @@ namespace nap
 		*/
 	}
 
-	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
+	bool ModuleManager::loadModules(std::vector<std::string> moduleNames, utility::ErrorState& error)
 	{
 		/** 
 		 * TODO Discuss changing loadModules to provide these two modes of operation:
@@ -143,6 +143,9 @@ namespace nap
 		if (!buildModuleSearchDirectories(moduleNames, directories, error))
 			return false;
 
+		// Track whether we're loading a specific set of requested modules
+		const bool loadSpecificModules = moduleNames.size() != 0;
+		
 		// Iterate each directory
 		for (const auto& directory : directories) {
 			// Skip directory if it doesn't exist
@@ -163,6 +166,15 @@ namespace nap
 
 				// Ignore non-shared libraries
 				if (utility::getFileExtension(filename) != sharedLibExtension)
+					continue;
+				
+				// Skip unrequested modules if we've been specified a list to load
+				// First get our module name from the filename, removing 'lib' prefix on *nix
+				std::string moduleName = utility::getFileNameWithoutExtension(filename);
+#ifndef _WIN32
+				moduleName = moduleName.substr(3, std::string::npos);
+#endif
+				if (loadSpecificModules && std::find(moduleNames.begin(), moduleNames.end(), moduleName) == moduleNames.end())
 					continue;
 
 				std::string module_path = utility::getAbsolutePath(filename);
@@ -212,10 +224,25 @@ namespace nap
 				module.mDescriptor = descriptor;
 				module.mHandle = module_handle;
 				module.mService = service;
+				
+				// If we're tracking a specific set of modules to load, remove the loaded module from our list.  Used
+				// to report on any missing modules.
+				if (loadSpecificModules)
+					moduleNames.erase(std::remove(moduleNames.begin(), moduleNames.end(), moduleName), moduleNames.end());
 
 				mModules.push_back(module);
 			}
 		}
+
+		// Fail if we haven't managed to load some of our requested modules
+		if (loadSpecificModules && moduleNames.size() > 0)
+		{
+			std::string s;
+			for (const auto &missingModule : moduleNames) s += missingModule + " ";
+			error.fail("Failed to load requested modules: " + s);
+			return false;
+		}
+
 		return true;
 	}
 	
