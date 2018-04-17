@@ -98,6 +98,9 @@ def run(exePath):
 		if(proc.returncode == 0):
 			print("App {0} exited gracefully".format(exePath))
 			break
+		if(proc.returncode == -6):
+			print("Linux is being an ass, exiting...")
+			break
 		print("App {0} Crashed! ReturnCode: {1}".format(exePath, proc.returncode))
 
 	# turn on backup lights
