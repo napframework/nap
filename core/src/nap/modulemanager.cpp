@@ -128,23 +128,18 @@ namespace nap
 		*/
 	}
 
-	bool ModuleManager::loadModules(std::vector<std::string> moduleNames, utility::ErrorState& error)
+	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
-		/** 
-		 * TODO Discuss changing loadModules to provide these two modes of operation:
-		 *   - A standard/project mode where it only loads the modules specified in the provided list and fails if
-		 *     any of those modules couldn't be loaded
-		 *   - A 'load everything' mode for Napkin or sandbox NAP use where no modules are specified and we load 
-		 *     everything we encounter
-		 */
-		
 		// Build a list of directories to search for modules
 		std::vector<std::string> directories;
 		if (!buildModuleSearchDirectories(moduleNames, directories, error))
 			return false;
 
-		// Track whether we're loading a specific set of requested modules
+		// Whether we're loading a specific set of requested modules
 		const bool loadSpecificModules = moduleNames.size() != 0;
+		
+		// Track which modules remain to be loaded
+		std::vector<std::string> remainingModulesToLoad = moduleNames;
 		
 		// Iterate each directory
 		for (const auto& directory : directories) {
@@ -172,9 +167,10 @@ namespace nap
 				// First get our module name from the filename, removing 'lib' prefix on *nix
 				std::string moduleName = utility::getFileNameWithoutExtension(filename);
 #ifndef _WIN32
+				assert(moduleName.substr(0, 3) == "lib");
 				moduleName = moduleName.substr(3, std::string::npos);
 #endif
-				if (loadSpecificModules && std::find(moduleNames.begin(), moduleNames.end(), moduleName) == moduleNames.end())
+				if (loadSpecificModules && std::find(remainingModulesToLoad.begin(), remainingModulesToLoad.end(), moduleName) == remainingModulesToLoad.end())
 					continue;
 
 				std::string module_path = utility::getAbsolutePath(filename);
@@ -228,18 +224,19 @@ namespace nap
 				// If we're tracking a specific set of modules to load, remove the loaded module from our list.  Used
 				// to report on any missing modules.
 				if (loadSpecificModules)
-					moduleNames.erase(std::remove(moduleNames.begin(), moduleNames.end(), moduleName), moduleNames.end());
+					remainingModulesToLoad.erase(std::remove(remainingModulesToLoad.begin(), remainingModulesToLoad.end(), moduleName), remainingModulesToLoad.end());
 
 				mModules.push_back(module);
 			}
 		}
-
+		
 		// Fail if we haven't managed to load some of our requested modules
-		if (loadSpecificModules && moduleNames.size() > 0)
+		if (loadSpecificModules && remainingModulesToLoad.size() > 0)
 		{
-			std::string s;
-			for (const auto &missingModule : moduleNames) s += missingModule + " ";
-			error.fail("Failed to load requested modules: " + s);
+			std::string missingModulesToLog;
+			for (const auto &missingModule : moduleNames)
+				missingModulesToLog += missingModule + " ";
+			error.fail("Failed to load requested modules: " + missingModulesToLog);
 			return false;
 		}
 
