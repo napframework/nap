@@ -17,7 +17,7 @@ if(APPLE)
     add_library(${PROJECT_NAME} SHARED 
         ${SOURCES}
         src/nap/osx/directorywatcher.cpp
-        src/nap/win32/module.cpp)
+        src/nap/osx/module.cpp)
 elseif(MSVC)
     add_library(${PROJECT_NAME} SHARED 
         ${SOURCES}
@@ -31,7 +31,7 @@ elseif(UNIX)
             ${SOURCES}
             ${FILEWATCHER_SOURCES}
             src/nap/linux/directorywatcher.cpp
-	        src/nap/win32/module.cpp)
+	    src/nap/linux/module.cpp)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
