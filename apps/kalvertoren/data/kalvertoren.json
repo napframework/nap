@@ -583,32 +583,6 @@
                     "FadeTime": 0.75
                 },
                 {
-                    "Type": "nap::audio::VideoAudioComponent",
-                    "mID": "VideoAudioComponent",
-                    "Video": "VideoPlayer",
-                    "ChannelCount": 2
-                },
-                {
-                    "Type": "nap::audio::OutputComponent",
-                    "mID": "nap::audio::OutputComponent",
-                    "Input": "VideoAudioComponent",
-                    "Routing": [
-                        0,
-                        1
-                    ]
-                },
-                {
-                    "Type": "nap::audio::LevelMeterComponent",
-                    "mID": "nap::audio::LevelMeterComponent",
-                    "Input": "VideoAudioComponent",
-                    "AnalysisWindowSize": 10.0,
-                    "MeterType": "RMS",
-                    "FilterInput": false,
-                    "CenterFrequency": 10000.0,
-                    "BandWidth": 10000.0,
-                    "Channel": 0
-                },
-                {
                     "Type": "nap::MidiInputComponent",
                     "mID": "nap::MidiInputComponent",
                     "Ports": [],

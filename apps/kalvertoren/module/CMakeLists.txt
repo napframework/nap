@@ -16,7 +16,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napsdlinput mod_napsdlwindow mod_napcameracontrol mod_napapp mod_napartnet mod_napimgui mod_napyoctopuce mod_napvideo mod_napmidi mod_napaudio)
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napsdlinput mod_napsdlwindow mod_napcameracontrol mod_napapp mod_napartnet mod_napimgui mod_napyoctopuce mod_napvideo mod_napmidi)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} nrender)
 
 if (WIN32)
