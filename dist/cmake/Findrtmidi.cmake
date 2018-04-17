@@ -2,8 +2,8 @@ set(RTMIDI_DIR ${THIRDPARTY_DIR}/rtmidi)
 set(RTMIDI_INCLUDE_DIRS ${RTMIDI_DIR}/include)
 if (WIN32)
     set(RTMIDI_LIBS_DIR ${RTMIDI_DIR}/bin)
-    set(RTMIDI_LIBS_RELEASE ${RTMIDI_LIBS_DIR}/bin/rtmidi.lib winmm)
-    set(RTMIDI_LIBS_DEBUG ${RTMIDI_LIBS_DIR}/bin/rtmidid.lib winmm)
+    set(RTMIDI_LIBS_RELEASE ${RTMIDI_LIBS_DIR}/rtmidi.lib winmm)
+    set(RTMIDI_LIBS_DEBUG ${RTMIDI_LIBS_DIR}/rtmidid.lib winmm)
 elseif(APPLE)
     set(RTMIDI_LIBS_DIR ${RTMIDI_DIR}/lib)
     set(RTMIDI_LIBS_RELEASE ${RTMIDI_LIBS_DIR}/librtmidi.4.dylib)
@@ -26,3 +26,10 @@ set_target_properties(rtmidi PROPERTIES
                       IMPORTED_LOCATION_RELEASE ${RTMIDI_LIBS_RELEASE}
                       IMPORTED_LOCATION_DEBUG ${RTMIDI_LIBS_DEBUG}
                       )
+
+if(WIN32)
+    set_target_properties(rtmidi PROPERTIES
+                          IMPORTED_IMPLIB_RELEASE ${RTMIDI_LIBS_RELEASE}
+                          IMPORTED_IMPLIB_DEBUG ${RTMIDI_LIBS_DEBUG}
+                          )
+endif()
