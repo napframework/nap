@@ -1,5 +1,6 @@
 #include "../module.h"
 #include <utility/fileutils.h>
+#include <assert.h>
 
 #include <dlfcn.h> // Posix shared object loading
 
@@ -7,8 +8,6 @@ namespace nap
 {
 	void initModules()
 	{
-		// On windows, disable DLL load failure dialog boxes (we handle the errors ourselves))
-		SetErrorMode(SEM_FAILCRITICALERRORS);
 	}
 
 
