@@ -28,10 +28,14 @@ namespace nap
 		~ModuleManager();
 
 		/**
-		 * Load all modules in the specified list
+		 * Load all modules in the specified list.  Two modes of operationg are provided:
+		 * - If the module list is populated only modules in that list will be loaded and if any cannot be loaded
+		 *   initialization will fail
+		 * - If no module list is provided all encountered modules will be loaded
 		 * @param moduleNames The list of modules to load
+		 * @return Whether we were successfully able load our requested modules
 		 */
-		bool loadModules(std::vector<std::string> moduleNames, utility::ErrorState& error);
+		bool loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error);
 
 	private:
 		/**
