@@ -1,5 +1,5 @@
 find_package(rtmidi REQUIRED)
-if(UNIX AND NOT APPLE)
+if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME} rtmidi)
 endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${RTMIDI_INCLUDE_DIRS})
