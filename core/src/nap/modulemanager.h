@@ -29,9 +29,9 @@ namespace nap
 
 		/**
 		 * Load all modules in the specified list
-		 * @param moduleNames The list of modules to load (temporary?)
+		 * @param moduleNames The list of modules to load
 		 */
-		bool loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error);
+		bool loadModules(std::vector<std::string> moduleNames, utility::ErrorState& error);
 
 	private:
 		/**
