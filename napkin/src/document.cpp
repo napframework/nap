@@ -297,6 +297,8 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 	assert(wrapped_type.can_create_instance());
 
 	Variant new_value;
+	// HACK: In the case of a vector<string>, rttr::type::create() gives us a shared_ptr to a string,
+	// hence, rttr::variant_array_view::insert_value will fail because it expects just a string.
 	if (wrapped_type == RTTI_OF(std::string))
 		new_value = std::string();
 	else
