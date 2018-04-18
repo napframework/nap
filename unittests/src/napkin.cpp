@@ -2,15 +2,8 @@
 
 #include <appcontext.h>
 #include <commands.h>
-#include <composition.h>
-#include <imagelayer.h>
 #include <generic/naputils.h>
 #include <QCoreApplication>
-#include <firstpersoncontroller.h>
-#include <transformcomponent.h>
-#include <midiinputport.h>
-#include <QCoreApplication>
-#include <renderablemeshcomponent.h>
 
 #include "testclasses.h"
 
