@@ -642,7 +642,7 @@ void Document::relativeObjectPathList(const nap::rtti::Object& origin, const nap
 	// Sibling component found? Return only one element
 	if (targetEntity != nullptr && originEntity == targetEntity)
 	{
-		result.push_back("."); // TODO: Probably not necessary
+		result.emplace_back("."); // TODO: Probably not necessary
 		result.push_back(targetComponent->mID);
 		return;
 	}
@@ -652,17 +652,14 @@ void Document::relativeObjectPathList(const nap::rtti::Object& origin, const nap
 	std::deque<std::string> absTargetPath;
 
 	absoluteObjectPathList(*originEntity, absOriginPath);
-	nap::Logger::info(nap::utility::joinString(absOriginPath, "/"));
 	absoluteObjectPathList(*targetComponent, absTargetPath);
-	nap::Logger::info(nap::utility::joinString(absTargetPath, "/"));
 
 	size_t commonidx = findCommonStartingElements(absOriginPath, absTargetPath);
-	size_t origincount = absOriginPath.size() - commonidx;
 	for (size_t i = commonidx, len = absOriginPath.size(); i < len; i++)
-		result.push_back("..");
+		result.emplace_back("..");
 
-	if (result.size() == 0) // Add a period to be consistent with sibling path?
-		result.push_back("."); // TODO: Probably not necessary
+	if (result.empty()) // Add a period to be consistent with sibling path?
+		result.emplace_back("."); // TODO: Probably not necessary
 
 	for (size_t i = commonidx, len=absTargetPath.size(); i<len; i++)
 		result.push_back(absTargetPath[i]);
