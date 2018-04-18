@@ -208,116 +208,116 @@ TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 TEST_CASE("Array Move Element", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
-	auto resource = doc->addObject<nap::Composition>();
+	auto resource = doc->addObject<TestResourceB>();
 	REQUIRE(resource != nullptr);
 
 	// Set up an array with four elements
-	PropertyPath layers(*resource, "Layers");
-	REQUIRE(layers.isValid());
-	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
-	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
-	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
-	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
-	REQUIRE(layers.getArrayLength() == 4);
-	auto layer0 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0);
-	auto layer1 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1);
-	auto layer2 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2);
-	auto layer3 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3);
+	PropertyPath pointers(*resource, "ResPointers");
+	REQUIRE(pointers.isValid());
+	doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));
+	doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));
+	doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));
+	doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));
+	REQUIRE(pointers.getArrayLength() == 4);
+	auto layer0 = doc->arrayGetElement<TestResource*>(pointers, 0);
+	auto layer1 = doc->arrayGetElement<TestResource*>(pointers, 1);
+	auto layer2 = doc->arrayGetElement<TestResource*>(pointers, 2);
+	auto layer3 = doc->arrayGetElement<TestResource*>(pointers, 3);
 	REQUIRE(layer0 != nullptr);
 	REQUIRE(layer1 != nullptr);
 	REQUIRE(layer2 != nullptr);
 	REQUIRE(layer3 != nullptr);
 	// State: 0, 1, 2, 3
 
-	size_t new_index = doc->arrayMoveElement(layers, 2, 1);
+	size_t new_index = doc->arrayMoveElement(pointers, 2, 1);
 	// State: 0, [2], 1, 3
 
 	REQUIRE(new_index == 1);
-	REQUIRE(layers.getArrayLength() == 4);
-	auto variant = doc->arrayGetElement(layers, new_index);
+	REQUIRE(pointers.getArrayLength() == 4);
+	auto variant = doc->arrayGetElement(pointers, new_index);
 	REQUIRE(variant.is_valid());
-	auto vlayer = variant.convert<nap::ImageSequenceLayer*>();
+	auto vlayer = variant.convert<TestResource*>();
 	REQUIRE(vlayer != nullptr);
 
 
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer0);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer2);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer3);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 0) == layer0);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 1) == layer2);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 2) == layer1);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer3);
 
-	doc->arrayMoveElement(layers, 0, 4);
+	doc->arrayMoveElement(pointers, 0, 4);
 	// State: 2, 1, 3, [0]
 
-	REQUIRE(layers.getArrayLength() == 4);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer1);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+	REQUIRE(pointers.getArrayLength() == 4);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 1) == layer1);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer0);
 
-	doc->executeCommand(new ArrayMoveElementCommand(layers, 1, 3));
+	doc->executeCommand(new ArrayMoveElementCommand(pointers, 1, 3));
 	// State: 2, 3, [1], 0
 
-	REQUIRE(layers.getArrayLength() == 4);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer3);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+	REQUIRE(pointers.getArrayLength() == 4);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 1) == layer3);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 2) == layer1);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer0);
 
 	doc->undo();
 	// State: 2, [1], 3, 0
 
-	REQUIRE(layers.getArrayLength() == 4);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer1);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+	REQUIRE(pointers.getArrayLength() == 4);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 1) == layer1);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer0);
 
 	doc->redo();
 	// State: 2, 3, [1], 0
 
-	REQUIRE(layers.getArrayLength() == 4);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer3);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+	REQUIRE(pointers.getArrayLength() == 4);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 1) == layer3);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 2) == layer1);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer0);
 
-	doc->executeCommand(new ArrayMoveElementCommand(layers, 3, 1));
+	doc->executeCommand(new ArrayMoveElementCommand(pointers, 3, 1));
 	// State: 2, [0], 3, 1
 
-	REQUIRE(layers.getArrayLength() == 4);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer0);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer1);
+	REQUIRE(pointers.getArrayLength() == 4);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 1) == layer0);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer1);
 
 	doc->undo();
 	// State: 2, 3, 1, [0]
 
-	REQUIRE(layers.getArrayLength() == 4);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer3);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+	REQUIRE(pointers.getArrayLength() == 4);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 1) == layer3);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 2) == layer1);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer0);
 
 	doc->redo();
 	// State: 2, [0], 3, 1
 
-	REQUIRE(layers.getArrayLength() == 4);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer0);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer1);
+	REQUIRE(pointers.getArrayLength() == 4);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 1) == layer0);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer1);
 
 	doc->undo();
 	// State: 2, 3, 1, [0]
 	doc->undo();
 	// State: 2, [1], 3, 0
 
-	REQUIRE(layers.getArrayLength() == 4);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer1);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
-	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+	REQUIRE(pointers.getArrayLength() == 4);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 1) == layer1);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer0);
 
 }
 
@@ -521,12 +521,12 @@ TEST_CASE("Commands", TAG_NAPKIN)
 
 	// Add a component (crashes OSX?)
 	auto& entity = doc->addEntity();
-	ctx.executeCommand(new AddComponentCommand(entity, RTTI_OF(nap::PerspCameraComponent)));
-	REQUIRE(entity.hasComponent<nap::PerspCameraComponent>());
-	auto component = doc->getComponent(entity, RTTI_OF(nap::PerspCameraComponent));
+	ctx.executeCommand(new AddComponentCommand(entity, RTTI_OF(TestComponent)));
+	REQUIRE(entity.hasComponent<TestComponent>());
+	auto component = doc->getComponent(entity, RTTI_OF(TestComponent));
 	REQUIRE(component != nullptr);
 	ctx.executeCommand(new RemoveComponentCommand(*component));
-	REQUIRE(!entity.hasComponent<nap::PerspCameraComponent>());
+	REQUIRE(!entity.hasComponent<TestComponent>());
 }
 
 TEST_CASE("File Extensions", TAG_NAPKIN)
@@ -620,21 +620,23 @@ TEST_CASE("Component to Component pointer", TAG_NAPKIN)
 	doc->setObjectName(entity, ENTITY_NAME);
 	REQUIRE(entity.mID == ENTITY_NAME);
 
-	auto fpcam = doc->addComponent<nap::FirstPersonController>(entity);
-	REQUIRE(fpcam != nullptr);
-	REQUIRE(!fpcam->mID.empty());
+	// Holds the pointer
+	auto compB = doc->addComponent<TestComponentB>(entity);
+	REQUIRE(compB != nullptr);
+	REQUIRE(!compB->mID.empty());
 
-	auto perspcam = doc->addComponent<nap::PerspCameraComponent>(entity);
-	REQUIRE(perspcam != nullptr);
-	REQUIRE(!fpcam->mID.empty());
+	// Pointee
+	auto comp = doc->addComponent<TestComponent>(entity);
+	REQUIRE(comp != nullptr);
+	REQUIRE(!compB->mID.empty());
 
-	napkin::PropertyPath perspCamPath(*fpcam, "PerspCameraComponent");
-	REQUIRE(perspCamPath.isValid());
+	napkin::PropertyPath pointerPath(*compB, "CompPointer");
+	REQUIRE(pointerPath.isValid());
 
-	perspCamPath.setPointee(perspcam);
+	pointerPath.setPointee(comp);
 
-	auto pointee = perspCamPath.getPointee();
-	REQUIRE(pointee == perspcam);
+	auto pointee = pointerPath.getPointee();
+	REQUIRE(pointee == comp);
 
 	serializedData = ctx.documentToString();
 	nap::Logger::info(serializedData);

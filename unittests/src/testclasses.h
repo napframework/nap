@@ -183,3 +183,19 @@ RTTI_BEGIN_CLASS(TestComponent)
 		RTTI_PROPERTY("Resource",  &TestComponent::mResource,  EPropertyMetaData::Default)
 		RTTI_PROPERTY("Resources", &TestComponent::mResources, EPropertyMetaData::Default)
 RTTI_END_CLASS
+
+/**
+ * TestComponent B (contains pointers to TestComponent
+ */
+class TestComponentB : public TestComponent
+{
+RTTI_ENABLE(TestComponent)
+public:
+	ComponentPtr<TestComponent> 				mCompPointer;
+	std::vector<ComponentPtr<TestComponent>> 	mCompPointers;
+};
+
+RTTI_BEGIN_CLASS(TestComponentB)
+		RTTI_PROPERTY("CompPointer",  &TestComponentB::mCompPointer,  EPropertyMetaData::Default)
+		RTTI_PROPERTY("CompPointers", &TestComponentB::mCompPointers, EPropertyMetaData::Default)
+RTTI_END_CLASS
