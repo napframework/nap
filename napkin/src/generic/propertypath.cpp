@@ -120,8 +120,6 @@ rttr::type napkin::PropertyPath::getWrappedType() const
 		wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 	}
 	return wrapped_type;
-	const auto& type = getType();
-	return type.is_wrapper() ? type.get_wrapped_type() : type;
 }
 
 bool napkin::PropertyPath::isValid() const
