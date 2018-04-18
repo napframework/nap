@@ -194,6 +194,8 @@ namespace nap
 
 	void Core::shutdownServices()
 	{
+		mResourceManager.reset();
+
 		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
 			Service& service = **it;

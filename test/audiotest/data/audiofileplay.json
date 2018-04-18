@@ -27,7 +27,7 @@
 				{					
 					"Type": "nap::audio::PlaybackComponent",
 					"mID": "audioComponent",
-					"ChannelRouting": [ 0 ],
+					"ChannelRouting": [ 0, 1 ],
 					"Buffer": "audioFile",
 					"AutoPlay": "True",
 					"StartPosition": 0,
@@ -42,7 +42,7 @@
 				{
 					"Type": "nap::audio::OutputComponent",
 					"mID": "output",
-					"Routing": [ 0, 0 ],
+					"Routing": [ 0, 1 ],
 					"Input": "audioComponent"
 				}
 

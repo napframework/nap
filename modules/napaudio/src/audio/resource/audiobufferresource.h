@@ -1,9 +1,12 @@
 #pragma once
 
-// nap includes
+// Nap includes
 #include <nap/resource.h>
+#include <audio/utility/safeptr.h>
+#include <rtti/object.h>
+#include <rtti/factory.h>
 
-// audio includes
+// Audio includes
 #include <audio/utility/audiotypes.h>
 
 namespace nap
@@ -12,6 +15,9 @@ namespace nap
     namespace audio
     {
         
+        // Forward declarations
+        class AudioService;
+        
         /**
          * A buffer of multichannel audio data in memory.
          */
@@ -19,7 +25,7 @@ namespace nap
         {
             RTTI_ENABLE(Resource)
         public:
-            AudioBufferResource() = default;
+            AudioBufferResource(AudioService& service);
             
             /**
              * @return: sample rate at which the audio material in the buffer was sampled.
@@ -29,17 +35,17 @@ namespace nap
             /**
              * @return: size of the buffer in samples
              */
-            DiscreteTimeValue getSize() const { return mBuffer.getSize(); }
+            DiscreteTimeValue getSize() const { return mBuffer->getSize(); }
             
             /**
              * @return: number of channels in the buffer
              */
-            unsigned int getChannelCount() const { return mBuffer.getChannelCount(); }
+            unsigned int getChannelCount() const { return mBuffer->getChannelCount(); }
             
             /**
              * @return: access the actual data in the buffer
              */
-            MultiSampleBuffer& getBuffer() { return mBuffer; }
+            SafePtr<MultiSampleBuffer> getBuffer() { return mBuffer.get(); }
             
         protected:
             /**
@@ -49,10 +55,11 @@ namespace nap
 
         private:
             float mSampleRate = 0;
-            MultiSampleBuffer mBuffer;
+            SafeOwner<MultiSampleBuffer> mBuffer = nullptr;
             
         };
         
+        using AudioBufferResourceObjectCreator = rtti::ObjectCreator<AudioBufferResource, AudioService>;
         
     }
     

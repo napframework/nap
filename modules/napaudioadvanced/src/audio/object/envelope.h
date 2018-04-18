@@ -15,53 +15,67 @@ namespace nap
         
         class EnvelopeInstance;
         
+        /**
+         * Audio object resource for an envelope generator.
+         */
         class Envelope : public AudioObject
         {
             RTTI_ENABLE(AudioObject)
         public:
             Envelope() = default;
             
-            EnvelopeGenerator::Envelope mSegments;
+            EnvelopeGenerator::Envelope mSegments; ///< The segments that define the envelope's shape.
             
-            bool mAutoTrigger = false;
+            bool mAutoTrigger = false; ///< If true the envelope will be triggered automatically on initialization
             
         private:
+            // Inherited from AudioObject
             std::unique_ptr<AudioObjectInstance> createInstance();
         };
         
         
+        
+        /**
+         * Instance of an envelope generator.
+         */
         class EnvelopeInstance : public AudioObjectInstance
         {
             RTTI_ENABLE(AudioObjectInstance)
         public:
             EnvelopeInstance(Envelope& resource) : AudioObjectInstance(resource) { }
             
-            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override
-            {
-                mEnvelopeGenerator = std::make_unique<EnvelopeGenerator>(nodeManager);
-                auto resource = rtti_cast<Envelope>(&getResource());
-                if (resource->mAutoTrigger)
-                    mEnvelopeGenerator->trigger(resource->mSegments);
-                return true;
-            }                        
-            
+            // Inherited from AudioObjectInstance
+            bool init(AudioService& audioService, utility::ErrorState& errorState);
             OutputPin& getOutputForChannel(int channel) override { return mEnvelopeGenerator->output; }
             int getChannelCount() const override { return 1; }
             
+            /**
+             * Triggers the envelope to start playing from the start segment.
+             * If @totalDuration does not equal zero the relative durations in the segments will be scaled in order to get the total duration of the envelope to match this parameter.
+             */
             void trigger(TimeValue totalDuration = 0)
             {
-                auto& envelope = rtti_cast<Envelope>(&getResource())->mSegments;
-                mEnvelopeGenerator->trigger(envelope, totalDuration);
+                mEnvelopeGenerator->trigger(mSegments.get(), totalDuration);
             }
             
+            /**
+             * Stops playing the envelope by fading to zero within @rampTime.
+             */
             void stop(TimeValue rampTime) { mEnvelopeGenerator->stop(rampTime); }
             
+            /**
+             * Returns the current output value of the envelope generator.
+             */
             ControllerValue getValue() const { return mEnvelopeGenerator->getValue(); }
-            
+
+            /**
+             * Returns a signal that will be emitted when the total envelope shape has finished and the generator outputs zero again.
+             */
             nap::Signal<EnvelopeGenerator&>& getEnvelopeFinishedSignal() { return mEnvelopeGenerator->envelopeFinishedSignal; }
             
         private:
-            std::unique_ptr<EnvelopeGenerator> mEnvelopeGenerator = nullptr;
+            SafeOwner<EnvelopeGenerator> mEnvelopeGenerator = nullptr;
+            SafeOwner<EnvelopeGenerator::Envelope> mSegments = nullptr;
         };
         
     }
