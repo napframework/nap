@@ -18,7 +18,7 @@
 		{
 			"Type": "nap::audio::AudioFileResource",
 			"mID": "audioFile",
-			"AudioFilePath": "hang.mp3"
+			"AudioFilePath": "hang.wav"
 		},
 
 

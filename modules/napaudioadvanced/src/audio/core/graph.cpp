@@ -9,7 +9,7 @@
 
 // RTTI
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::Graph)
-    RTTI_CONSTRUCTOR(nap::audio::NodeManager&)
+    RTTI_CONSTRUCTOR(nap::audio::AudioService&)
     RTTI_PROPERTY("Objects", &nap::audio::Graph::mObjects, nap::rtti::EPropertyMetaData::Embedded)
     RTTI_PROPERTY("Output", &nap::audio::Graph::mOutput, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -107,7 +107,7 @@ namespace nap
             {
                 // Create instance and initialize
                 auto objectResource = node->mItem.mObject;
-                auto instance = objectResource->instantiate(resource.getNodeManager(), errorState);
+                auto instance = objectResource->instantiate(resource.getAudioService(), errorState);
                 
                 if (instance == nullptr)
                 {

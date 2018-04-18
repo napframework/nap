@@ -6,6 +6,10 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE HEADERS src/*.h)
 file(GLOB_RECURSE RESOURCES resources/*.qrc)
 
+if (MSVC)
+    set(RESOURCES ${RESOURCES} resources/resources.rc)
+endif()
+
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
@@ -19,7 +23,7 @@ add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES
 
 # The NAP modules Napkin needs to link against
 # TODO this needs updating/verifying; can any of these move into NAP_MODULES_USAGE_DEPENDENCIES below? 
-set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo)
+set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio)
 
 # This is the superset of modules that we want to have available to Napkin to run against; just a handy
 # way to ensure they've built
@@ -27,7 +31,6 @@ set(NAP_MODULES_USAGE_DEPENDENCIES
     ${NAP_MODULES_LINK_DEPENDENCIES} 
     mod_napapp 
     mod_napartnet
-    mod_napaudio
     mod_napcameracontrol
     mod_napetherdream
     mod_napimgui
@@ -107,6 +110,7 @@ if(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
     list(APPEND EXTRA_RPATH lib)
 
     foreach(MODULECONFIG Release Debug)
@@ -120,8 +124,9 @@ if(APPLE)
 elseif(UNIX)
     set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FreeImage/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
     list(APPEND EXTRA_RPATH lib)
 
     set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_LINK_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")

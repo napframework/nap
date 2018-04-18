@@ -2,10 +2,13 @@
 
 // Nap includes
 #include <component.h>
+#include <audio/utility/safeptr.h>
 
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
 #include <audio/node/inputnode.h>
+#include <audio/node/gainnode.h>
+#include <audio/node/controlnode.h>
 
 namespace nap
 {
@@ -30,7 +33,8 @@ namespace nap
             
             // Properties
             std::vector<int> mChannels; ///< property: 'Channels' Defines what audio input channels to receive data from. The size of this array determines the number of channels that this component will output.
-            
+            ControllerValue mGain = 1.0; ///< property: 'Gain' Overall gain.
+
         private:
         };
 
@@ -49,11 +53,25 @@ namespace nap
             bool init(utility::ErrorState& errorState) override;
             
             // Inherited from AudioComponentBaseInstance
-            int getChannelCount() const override { return mInputNodes.size(); }
-            OutputPin& getOutputForChannel(int channel) override { return mInputNodes[channel]->audioOutput; }
+            int getChannelCount() const override { return mGainNodes.size(); }
+            OutputPin& getOutputForChannel(int channel) override { return mGainNodes[channel]->audioOutput; }
+            
+            /**
+             * Set the input gain factor of the input signal.
+             */
+            void setGain(ControllerValue gain);
+            
+            /**
+             * @return: Gain factor of the input signal.
+             */
+            ControllerValue getGain() const;
             
         private:
-            std::vector<std::unique_ptr<InputNode>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
+            std::vector<SafeOwner<InputNode>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
+            std::vector<SafeOwner<GainNode>> mGainNodes; // Nodes to control gain level of the input
+            SafeOwner<ControlNode> mGainControl; // Node to control the gain for each channel.
+            
+            ControllerValue mGain = 1; // Gain factor of the output signal.
         };
         
     }

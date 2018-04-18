@@ -21,9 +21,6 @@ namespace nap
             mInternalBufferOffset = 0;
             while (mInternalBufferOffset < framesPerBuffer)
             {
-                // process tasks that are enqueued from outside the audio thread
-                mAudioCallbackTaskQueue.process();
-                
                 for (auto& channelMapping : mOutputMapping)
                     channelMapping.clear();
                 
@@ -41,6 +38,8 @@ namespace nap
                 
                 mInternalBufferOffset += mInternalBufferSize;
                 mSampleTime += mInternalBufferSize;
+                
+                mTaskQueue.process();
             }
         }
         
@@ -93,23 +92,22 @@ namespace nap
         
         void NodeManager::registerRootNode(Node& rootNode)
         {
-            auto rootNodePtr = &rootNode;
-            execute([&, rootNodePtr](){ mRootNodes.emplace(rootNodePtr); });
+            enqueueTask([&](){ mRootNodes.emplace(&rootNode); });
         }
 
         
         void NodeManager::unregisterRootNode(Node& rootNode)
         {
-            auto rootNodePtr = &rootNode;
-            execute([&, rootNodePtr](){ mRootNodes.erase(rootNodePtr); });
+            mRootNodes.erase(&rootNode);
         }
 
         
-        void NodeManager::provideOutputBufferForChannel(SampleBufferPtr buffer, int channel)
+        void NodeManager::provideOutputBufferForChannel(SampleBuffer* buffer, int channel)
         {
             assert(channel < mOutputMapping.size());
             mOutputMapping[channel].emplace_back(buffer);
         }
+        
         
     }
     
