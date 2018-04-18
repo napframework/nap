@@ -732,7 +732,7 @@
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
                     "ShowIndexColors": false,
-                    "BlendToWhite": false,
+                    "BlendToWhite": true,
                     "BlendAxis": 1,
                     "BlendRange": {
                         "x": 0.2750000059604645,
