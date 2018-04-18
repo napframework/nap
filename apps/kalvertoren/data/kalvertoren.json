@@ -566,10 +566,10 @@
                         "y": 7500.0
                     },
                     "LightOutput": {
-                        "x": 0.3,
+                        "x": 0.30000001192092898,
                         "y": 0.75
                     },
-                    "LuxCurve": 0.66,
+                    "LuxCurve": 0.6600000262260437,
                     "SmoothTime": 1.0,
                     "OpeningHours": "OpeningHours",
                     "ClosingHours": "ClosingHours",
@@ -579,7 +579,8 @@
                     "Type": "nap::VideoControlComponent",
                     "mID": "VideoController",
                     "Player": "VideoPlayer",
-                    "FadeTime" : 1.5
+                    "MidiInputComponent": "nap::MidiInputComponent",
+                    "FadeTime": 0.75
                 },
                 {
                     "Type": "nap::audio::VideoAudioComponent",
@@ -604,7 +605,18 @@
                     "MeterType": "RMS",
                     "FilterInput": false,
                     "CenterFrequency": 10000.0,
-                    "BandWidth": 10000.0
+                    "BandWidth": 10000.0,
+                    "Channel": 0
+                },
+                {
+                    "Type": "nap::MidiInputComponent",
+                    "mID": "nap::MidiInputComponent",
+                    "Ports": [],
+                    "Channels": [],
+                    "Numbers": [],
+                    "Types": [
+                        "noteOn"
+                    ]
                 }
             ],
             "Children": [
@@ -763,8 +775,8 @@
                     "VideoRenderer": "RenderVideoComponent",
                     "ColorGrid": "PaletteGrid",
                     "VideoColors": "VideoColors",
-                    "IndexMap" : "IndexMap",
-                    "VideoController" : "../VideoController"
+                    "IndexMap": "IndexMap",
+                    "VideoController": "../VideoController"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -827,8 +839,8 @@
                     "VideoRenderer": "RenderVideoComponent",
                     "ColorGrid": "PaletteGrid",
                     "VideoColors": "VideoColors",
-                    "IndexMap" : "IndexMap",
-                    "VideoController" : "../VideoController"
+                    "IndexMap": "IndexMap",
+                    "VideoController": "../VideoController"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1141,8 +1153,8 @@
                     "VideoRenderer": "RenderVideoComponent",
                     "ColorGrid": "PaletteGrid",
                     "VideoColors": "VideoColors",
-                    "IndexMap" : "IndexMap",
-                    "VideoController" : "../VideoController"
+                    "IndexMap": "IndexMap",
+                    "VideoController": "../VideoController"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
@@ -1206,175 +1218,175 @@
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGC1",
             "BaseFilename": "FINAL/C1_png/C1_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGC2",
             "BaseFilename": "FINAL/C2_png/C2_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGC3",
             "BaseFilename": "FINAL/C3_png/C3_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGC4",
             "BaseFilename": "FINAL/C4_png/C4_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGD1",
             "BaseFilename": "FINAL/D1_png/D1_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGD2",
             "BaseFilename": "FINAL/D2_png/D2_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGD3",
             "BaseFilename": "FINAL/D3_png/D3_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGD4",
             "BaseFilename": "FINAL/D4_png/D4_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGH1",
             "BaseFilename": "FINAL/H1_png/H1_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGH2",
             "BaseFilename": "FINAL/H2_png/H2_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGH3",
             "BaseFilename": "FINAL/H3_png/H3_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGH4",
             "BaseFilename": "FINAL/H4_png/H4_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGM1",
             "BaseFilename": "FINAL/M1_png/M1_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGM1A",
             "BaseFilename": "FINAL/M1A_png/M1A_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGM2",
             "BaseFilename": "FINAL/M2_png/M2_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGM3",
             "BaseFilename": "FINAL/M3_png/M3_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGM4",
             "BaseFilename": "FINAL/M4_png/M4_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGS1",
             "BaseFilename": "FINAL/S1_png/S1_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGS2",
             "BaseFilename": "FINAL/S2_png/S2_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGS3",
             "BaseFilename": "FINAL/S3_png/S3_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGS4",
             "BaseFilename": "FINAL/S4_png/S4_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT1",
             "BaseFilename": "FINAL/T1_png/T1_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT2",
             "BaseFilename": "FINAL/T2_png/T2_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT3",
             "BaseFilename": "FINAL/T3_PNG/T3_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGT4",
             "BaseFilename": "FINAL/T4_png/T4_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGV1",
             "BaseFilename": "FINAL/V1_png/V1_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGV2",
             "BaseFilename": "FINAL/V2_png/V2_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGV3",
             "BaseFilename": "FINAL/V3_png/V3_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::ImageSequenceLayer",
             "mID": "LAAGV4",
             "BaseFilename": "FINAL/V4_png/V4_%02d.png",
-            "FPS": 0.6000000238418579
+            "FPS": 0.016599999740719796
         },
         {
             "Type": "nap::IndexMap",
@@ -1676,6 +1688,12 @@
             "Usage": "Static"
         },
         {
+            "Type": "nap::MidiInputPort",
+            "mID": "MidiInputPort",
+            "Ports": [],
+            "EnableDebugOutput": true
+        },
+        {
             "Type": "nap::OpeningHours",
             "mID": "ClosingHours",
             "Monday": {
@@ -1887,7 +1905,7 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Kalvertoren",
-            "Sync": true,
+            "Sync": false,
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
@@ -2026,14 +2044,14 @@
         {
             "Type": "nap::Video",
             "mID": "VideoPlayer",
-            "Path": "video/opening_test2.mp4",
+            "Path": "video/kalvertoren_opening.mp4",
             "Loop": true,
             "Speed": 1.0
         },
         {
             "Type": "nap::WeekColors",
             "mID": "VideoColors",
-            "Palette": "M42 C3 L10 A2 A14 E3 E21 I21 D4 J21 I3 A15 B2",
+            "Palette": "L42 A2 A15 G6 B25 B18 C35 C12 C36 I25 F36 D22 E43",
             "Variations": "VideoVariations"
         },
         {
@@ -3128,7 +3146,7 @@
             "Username": "admin",
             "Pass": "givemelight",
             "Port": 80,
-            "Enabled": true,
+            "Enabled": false,
             "AllowFailure": true,
             "Sensors": [
                 "LuxSensor3"
@@ -3141,7 +3159,7 @@
             "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 1000,
-            "Log": true
+            "Log": false
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3150,7 +3168,7 @@
             "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 1000,
-            "Log": true
+            "Log": false
         },
         {
             "Type": "nap::YoctoLuxSensor",
@@ -3159,7 +3177,7 @@
             "Retries": 25,
             "BufferSize": 30,
             "DelayTime": 1000,
-            "Log": true
+            "Log": false
         }
     ]
 }

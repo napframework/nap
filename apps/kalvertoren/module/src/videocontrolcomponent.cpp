@@ -7,8 +7,9 @@
 
 // nap::controlvideocomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::VideoControlComponent)
-	RTTI_PROPERTY("Player",		&nap::VideoControlComponent::mVideoPlayer,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FadeTime",	&nap::VideoControlComponent::mFadeTime,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Player",					&nap::VideoControlComponent::mVideoPlayer,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MidiInputComponent",		&nap::VideoControlComponent::mMidiInputComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FadeTime",				&nap::VideoControlComponent::mFadeTime,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::controlvideocomponentInstance run time class definition 
@@ -35,6 +36,10 @@ namespace nap
 		
 		// Store fade time
 		mFadeTime = getComponent<VideoControlComponent>()->mFadeTime;
+
+		// Conenct midi received signal
+		mMidiInputComponent->messageReceived.connect(mMidiReceivedSlot);
+
 		return true;
 	}
 
@@ -74,6 +79,15 @@ namespace nap
 		if (value)
 		{
 			mVideoPlayer->play();
+		}
+	}
+
+
+	void VideoControlComponentInstance::onMidiMessageReceived(const MidiEvent& message)
+	{
+		if (message.getType() == MidiEvent::Type::noteOn)
+		{
+			play(true);
 		}
 	}
 }
