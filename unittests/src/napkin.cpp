@@ -70,14 +70,14 @@ TEST_CASE("Document Management", TAG_NAPKIN)
 	REQUIRE(e.getComponents().size() == 0);
 
 	// Add component to entity
-	auto comp = doc->addComponent<nap::PerspCameraComponent>(e);
+	auto comp = doc->addComponent<TestComponent>(e);
 	REQUIRE(comp != nullptr);
 	REQUIRE(doc->getObjects().size() == 2);
 	REQUIRE(e.getComponents().size() == 1);
 	REQUIRE(doc->getOwner(*comp) == &e);
 
 	// Add another component
-	auto xfcomp = doc->addComponent<nap::TransformComponent>(e);
+	auto xfcomp = doc->addComponent<TestComponent>(e);
 	REQUIRE(xfcomp != nullptr);
 	REQUIRE(doc->getObjects().size() == 3);
 	REQUIRE(e.getComponents().size() == 2);
@@ -112,7 +112,7 @@ TEST_CASE("Array Value Elements", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
 	auto resource = doc->addObject<TestResource>();
-	REQUIRE(resource  != nullptr);
+	REQUIRE(resource != nullptr);
 
 	// Check invalid nonexistent path
 	PropertyPath nonExistent(*resource, "NonExistent_________");
@@ -165,42 +165,42 @@ TEST_CASE("Array Value Elements", TAG_NAPKIN)
 TEST_CASE("Array add string", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
-	auto midiinput = doc->addObject<nap::MidiInputPort>();
+	auto midiinput = doc->addObject<TestResource>();
 	REQUIRE(midiinput != nullptr);
-	PropertyPath midiports(*midiinput, "Ports");
-	REQUIRE(midiports.isValid());
-	REQUIRE(midiports.isArray());
-	REQUIRE(!midiports.isPointer());
-	REQUIRE(midiports.getArrayElementType() == RTTI_OF(std::string));
+	PropertyPath strings(*midiinput, "Strings");
+	REQUIRE(strings.isValid());
+	REQUIRE(strings.isArray());
+	REQUIRE(!strings.isPointer());
+	REQUIRE(strings.getArrayElementType() == RTTI_OF(std::string));
 
-	auto index = doc->arrayAddValue(midiports);
+	auto index = doc->arrayAddValue(strings);
 	REQUIRE(index == 0);
 }
 
 TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
-	auto composition = doc->addObject<nap::Composition>();
-	REQUIRE(composition != nullptr);
-	auto layer = doc->addObject<nap::ImageLayer>();
-	REQUIRE(layer != nullptr);
+	auto resource = doc->addObject<TestResourceB>();
+	REQUIRE(resource != nullptr);
+	auto pointee = doc->addObject<TestResource>();
+	REQUIRE(pointee != nullptr);
 
-	PropertyPath layers(*composition, "Layers");
-	REQUIRE(layers.isValid());
-	REQUIRE(layers.getArrayLength() == 0);
+	PropertyPath respointers(*resource, "ResPointers");
+	REQUIRE(respointers.isValid());
+	REQUIRE(respointers.getArrayLength() == 0);
 
 	// Add the existing layer to the composition
 	{
-		auto index = doc->arrayAddExistingObject(layers, layer);
+		auto index = doc->arrayAddExistingObject(respointers, pointee);
 		REQUIRE(index == 0);
-		REQUIRE(layers.getArrayLength() == 1);
+		REQUIRE(respointers.getArrayLength() == 1);
 	}
 
 	// Add a new layer to the composition
 	{
-		auto index = doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
+		auto index = doc->arrayAddNewObject(respointers, RTTI_OF(TestResource));
 		REQUIRE(index == 1);
-		REQUIRE(layers.getArrayLength() == 2);
+		REQUIRE(respointers.getArrayLength() == 2);
 	}
 
 }
@@ -208,11 +208,11 @@ TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 TEST_CASE("Array Move Element", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
-	auto composition = doc->addObject<nap::Composition>();
-	REQUIRE(composition != nullptr);
+	auto resource = doc->addObject<nap::Composition>();
+	REQUIRE(resource != nullptr);
 
 	// Set up an array with four elements
-	PropertyPath layers(*composition, "Layers");
+	PropertyPath layers(*resource, "Layers");
 	REQUIRE(layers.isValid());
 	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
 	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
@@ -359,12 +359,12 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 		REQUIRE(!invalidPath.isValid());
 	}
 
-	nap::Material mat;
-	mat.mID = "MyMaterial";
+	TestResourceB res;
+	res.mID = "MyResource";
 
 	SECTION("enum")
 	{
-		PropertyPath path(mat, "BlendMode");
+		PropertyPath path(res, "Enum");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isEnum());
 		REQUIRE(!path.isArray());
@@ -375,7 +375,7 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 
 	SECTION("regular pointer")
 	{
-		PropertyPath path(mat, "Shader");
+		PropertyPath path(res, "ResPointer");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
 		REQUIRE(path.isNonEmbeddedPointer());
@@ -384,9 +384,31 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 		REQUIRE(!path.isArray());
 	}
 
+	SECTION("array of regular pointers")
+	{
+		PropertyPath path(res, "ResPointers");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isArray());
+		REQUIRE(path.isPointer());
+		REQUIRE(path.isNonEmbeddedPointer());
+		REQUIRE(!path.isEmbeddedPointer());
+		REQUIRE(!path.isEnum());
+	}
+
+	SECTION("embedded pointer")
+	{
+		PropertyPath path(res, "EmbedPointer");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isPointer());
+		REQUIRE(path.isEmbeddedPointer());
+		REQUIRE(!path.isNonEmbeddedPointer());
+		REQUIRE(!path.isEnum());
+		REQUIRE(!path.isArray());
+	}
+
 	SECTION("array of embedded pointers")
 	{
-		PropertyPath path(mat, "Uniforms");
+		PropertyPath path(res, "EmbedPointers");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isArray());
 		REQUIRE(path.isPointer());
@@ -395,47 +417,20 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 		REQUIRE(!path.isEnum());
 	}
 
-	SECTION("array element")
+	SECTION("array of structs")
 	{
-		nap::UniformVec3 uniform;
-		mat.mUniforms.emplace_back(&uniform);
-		PropertyPath path(mat, "Uniforms/0");
+		TestPropertiesStruct uniform;
+		res.mStructs.emplace_back(uniform);
+		PropertyPath path(res, "Structs");
 		REQUIRE(path.isValid());
-		REQUIRE(!path.isArray());
-		REQUIRE(path.isPointer());
-		REQUIRE(path.isEmbeddedPointer());
+//		REQUIRE(!path.isArray());
+		REQUIRE(!path.isPointer());
+		REQUIRE(!path.isEmbeddedPointer());
 		REQUIRE(!path.isNonEmbeddedPointer());
 		REQUIRE(!path.isEnum());
 	}
 
 }
-//
-//TEST_CASE("Embedded Pointers")
-//{
-//	auto doc = AppContext::get().newDocument();
-//
-//	auto mat = doc->addObject<nap::Material>();
-//	REQUIRE(mat != nullptr);
-//	REQUIRE(doc->getObjects().size() == 1);
-//
-//	PropertyPath uniforms(*mat, "Uniforms");
-//	REQUIRE(uniforms.isValid());
-//
-//	doc->arrayAddNewObject(uniforms, RTTI_OF(nap::UniformVec3));
-//	REQUIRE(doc->getObjects().size() == 2);
-//
-//	PropertyPath uniform(*mat, "Uniforms/0");
-//	REQUIRE(uniform.isValid());
-//	REQUIRE(uniform.isEmbeddedPointer());
-//
-//	auto uniformVec3 = uniform.getPointee();
-//	REQUIRE(uniformVec3->get_type() == RTTI_OF(nap::UniformVec3));
-//	REQUIRE(uniformVec3 != nullptr);
-//
-//	doc->arrayRemoveElement(uniforms, 0);
-//	REQUIRE(doc->getObjects().size() == 1);
-//
-//}
 
 TEST_CASE("Commands", TAG_NAPKIN)
 {
@@ -532,17 +527,6 @@ TEST_CASE("Commands", TAG_NAPKIN)
 	REQUIRE(component != nullptr);
 	ctx.executeCommand(new RemoveComponentCommand(*component));
 	REQUIRE(!entity.hasComponent<nap::PerspCameraComponent>());
-
-	// TODO: Support undo for deletion
-//	doc->undo();
-//	REQUIRE(doc->getObjects().size() == 1);
-//
-//	doc->undo();
-//	REQUIRE(doc->getObjects().size() == 2);
-
-//	ctx.executeCommand(new SetPointerValueCommand())
-//	ctx.executeCommand(new AddEntityToSceneCommand())
-//	ctx.executeCommand(new ArrayAddValueCommand());
 }
 
 TEST_CASE("File Extensions", TAG_NAPKIN)
