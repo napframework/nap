@@ -5,16 +5,8 @@
             "mID": "Bell",
             "Components": [
                 {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "OrthoCam",
-                    "Properties": {
-                        "LeftPlane": 0.0,
-                        "RightPlane": 100.0,
-                        "TopPlane": 100.0,
-                        "BottomPlane": 0.0,
-                        "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 1000.0
-                    }
+                    "Type": "TestComponent",
+                    "mID": "OrthoCam"
                 }
             ],
             "Children": []
@@ -24,26 +16,8 @@
             "mID": "Bike",
             "Components": [
                 {
-                    "Type": "nap::TransformComponent",
-                    "mID": "Transform_3",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
+                    "Type": "TestComponent",
+                    "mID": "Transform_3"
                 }
             ],
             "Children": [
@@ -57,17 +31,8 @@
             "mID": "Cats",
             "Components": [
                 {
-                    "Type": "nap::RotateComponent",
-                    "mID": "Rotate",
-                    "Properties": {
-                        "Axis": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Speed": 0.0,
-                        "Offset": 0.0
-                    }
+                    "Type": "TestComponent",
+                    "mID": "Rotate"
                 }
             ],
             "Children": []
@@ -100,11 +65,11 @@
             "mID": "Handlebars",
             "Components": [
                 {
-                    "Type": "nap::KeyInputComponent",
+                    "Type": "TestComponent",
                     "mID": "KeyInput"
                 },
                 {
-                    "Type": "nap::PointerInputComponent",
+                    "Type": "TestComponent",
                     "mID": "PointerInput"
                 }
             ],
@@ -132,26 +97,8 @@
             "mID": "Wheel",
             "Components": [
                 {
-                    "Type": "nap::TransformComponent",
-                    "mID": "Transform",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
+                    "Type": "TestComponent",
+                    "mID": "Transform"
                 }
             ],
             "Children": []
@@ -161,26 +108,8 @@
             "mID": "Wheel_2",
             "Components": [
                 {
-                    "Type": "nap::TransformComponent",
-                    "mID": "Transform_2",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
+                    "Type": "TestComponent",
+                    "mID": "Transform_2"
                 }
             ],
             "Children": []
