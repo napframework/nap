@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include "utils/catch.hpp"
 
 #include <fstream>
 #include <nap/core.h>
