@@ -1,5 +1,6 @@
 #pragma once
 
+#include <componentptr.h>
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 

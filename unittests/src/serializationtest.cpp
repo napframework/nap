@@ -1,6 +1,6 @@
-#include "catch.hpp"
+#include "utils/catch.hpp"
 
-#include "RTTITestClasses.h"
+#include "utils/RTTITestClasses.h"
 #include <rtti/rtti.h>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
