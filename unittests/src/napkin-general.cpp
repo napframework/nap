@@ -1,12 +1,8 @@
-#include "utils/catch.hpp"
+#include "utils/include.h"
 
 #include <appcontext.h>
 #include <commands.h>
 #include <generic/naputils.h>
-#include <QCoreApplication>
-
-#include "utils/testclasses.h"
-#include "utils/testutils.h"
 
 using namespace napkin;
 
