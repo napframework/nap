@@ -35,14 +35,6 @@ elseif(UNIX)
     file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/lib/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${MPG123_DYLIBS} DESTINATION lib)
 
-    if(APPLE)
-        # Add mpg123 RPATH to built app
-        macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/mpg123/bin) 
-
-        # mpg123 link isn't working unless we get the symlink
-        install(FILES $<TARGET_FILE_DIR:mpg123>/libmpg123.dylib DESTINATION lib)        
-    endif()
-
     # Install portaudio lib into packaged app
     file(GLOB PORTAUDIO_DYLIBS ${THIRDPARTY_DIR}/portaudio/lib/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS} DESTINATION lib)    
