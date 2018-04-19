@@ -9,6 +9,7 @@ from nap_shared import find_module, call_except_on_failure
 # Exit codes
 ERROR_MISSING_PROJECT = 1
 ERROR_INVALID_PROJECT_JSON = 2
+ERROR_INVALID_BUILD_TYPE = 3
 
 # Platform-specific build directories
 if sys.platform == 'darwin':
@@ -52,7 +53,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if sys.platform.startswith('linux'):
-        build_type = args.BUILD_TYPE
+        build_type = args.BUILD_TYPE.lower()
+        if build_type == 'debug':
+            build_type = 'Debug'
+        elif build_type == 'release':
+            build_type = 'Release'
+        else:
+            print("Error: Invalid build type '%s' (valid types are release and debug)" % build_type)
+            sys.exit(ERROR_INVALID_BUILD_TYPE)
+
         print("Using build type '%s'" % build_type)
     else:
         build_type = None
