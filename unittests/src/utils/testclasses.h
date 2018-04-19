@@ -1,7 +1,6 @@
 #pragma once
 
 #include <componentptr.h>
-#include <nap/resource.h>
 #include <nap/resourceptr.h>
 
 enum class TestEnum : int
@@ -55,9 +54,9 @@ RTTI_END_CLASS
 /**
  * Test Resource
  */
-class TestResource : public Resource
+class TestResource : public nap::Resource
 {
-	RTTI_ENABLE(Resource)
+	RTTI_ENABLE(nap::Resource)
 public:
 	TestResource() = default;
 
@@ -117,7 +116,7 @@ RTTI_END_CLASS
  */
 class TestComponentInstance : public nap::ComponentInstance
 {
-	RTTI_ENABLE(ComponentInstance)
+	RTTI_ENABLE(nap::ComponentInstance)
 };
 
 /**
