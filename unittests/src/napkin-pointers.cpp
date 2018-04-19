@@ -55,6 +55,7 @@ TEST_CASE("Pointer 'paths' 2", "napkin-pointers")
 	QApplication app(argc, const_cast<char**>(argv));
 
 	auto doc = napkin::AppContext::get().loadDocument("unit_tests_data/entitystructure.json");
+	REQUIRE(doc != nullptr);
 
 	SECTION("absolute entity paths")
 	{
