@@ -22,8 +22,8 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-set(DEPENDENT_NAP_MODULES napcore mod_napmath mod_napscene)
-target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} yoctopuce)
+set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} yoctopuce)
 
 if (WIN32)
   copy_yoctopuce_dll()
