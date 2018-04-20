@@ -11,6 +11,10 @@
                     "Channels": [],
                     "Numbers": [],
                     "Types": []
+                },
+                {
+                    "Type": "nap::MidiEventQueueComponent",
+                    "mID": "nap::MidiEventQueueComponent"
                 }
             ],
             "Children": []

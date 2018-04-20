@@ -8,6 +8,8 @@
 #include <inputrouter.h>
 #include <imgui/imgui.h>
 
+#include <midieventqueue.h>
+
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OscMidiApp)
@@ -38,6 +40,13 @@ namespace nap
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
+        // Find the main entity
+        mMainEntity = scene->findEntity("main");
+        
+        // Initialized the list of last arrived midi events
+        for (auto i = 0; i < 10; ++i)
+            mMidiEventList.emplace_back(nullptr);
+        
 		return true;
 	}
 	
@@ -46,8 +55,29 @@ namespace nap
 	 */
 	void OscMidiApp::update(double deltaTime)
 	{
+        auto midiQueueComponent = mMainEntity->findComponent<MidiEventQueueComponentInstance>();
+        
+        // Poll the midi event queue for incoming events
+        std::vector<std::unique_ptr<MidiEvent>> queue;
+        if (midiQueueComponent)
+            queue = midiQueueComponent->poll();
+        
+        // Update the list of recent events to be displayed
+        for (auto& event : queue)
+        {
+            for (auto i = mMidiEventList.size() - 1; i > 0; --i)
+                mMidiEventList[i] = std::move(mMidiEventList[i - 1]);
+            mMidiEventList[0] = std::move(event);
+        }
+        
 		// Draw some gui elements
 		ImGui::Begin("Midi");
+        
+        // Draw the list of last arrived events in reversed order
+        for (int i = mMidiEventList.size() - 1; i >= 0; i--)
+            if (mMidiEventList[i] != nullptr)
+                ImGui::Text(mMidiEventList[i]->toString().c_str());
+            
 		ImGui::End();
 	}
 

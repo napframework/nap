@@ -65,11 +65,10 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
-		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
+		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
+        ObjectPtr<EntityInstance> mMainEntity;                          //< The entity containing our midi and osc processing components
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
         
-        Slot<const MidiEvent&> midiEventSlot = { this, &OscMidiApp::onMidiEvent };
-        void onMidiEvent(const MidiEvent&) { }
-        
+        std::vector<std::unique_ptr<MidiEvent>> mMidiEventList;
 	};
 }
