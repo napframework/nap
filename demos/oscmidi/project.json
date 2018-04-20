@@ -12,6 +12,7 @@
         "mod_napmath",
         "mod_napimgui",
         "mod_naposc",
-        "mod_napmidi"
+        "mod_napmidi",
+        "mod_oscmidi"
     ]
 }
