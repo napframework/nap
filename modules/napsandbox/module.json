@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "mod_napinput",
+        "mod_naprender"        
+    ]
+}
