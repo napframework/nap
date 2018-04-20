@@ -8,9 +8,7 @@ using namespace napkin;
 
 TEST_CASE("Commands", "napkin-commands")
 {
-	int argc = 0;
-	char* argv[] = {"app"};
-	QApplication app(argc, const_cast<char**>(argv));
+	RUN_Q_APPLICATION
 
 	auto& ctx = AppContext::get();
 	ctx.newDocument(); // First clear, previous test might have a document

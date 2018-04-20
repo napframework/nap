@@ -4,6 +4,10 @@
 
 #define ENTITY_NAME "Entity"
 
+#define RUN_Q_APPLICATION 	\
+    int argc = 0; 			\
+    char* argv[] = {"app"}; \
+    QCoreApplication app(argc, const_cast<char**>(argv));
 
 /**
  * Used to test if signals are received

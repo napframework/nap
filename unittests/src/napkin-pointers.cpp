@@ -6,9 +6,7 @@ using namespace napkin;
 
 TEST_CASE("Component to Component pointer", "napkin-pointers")
 {
-	int argc = 0;
-	char* argv[] = {"app"};
-	QApplication app(argc, const_cast<char**>(argv));
+    RUN_Q_APPLICATION
 
 	auto& ctx = napkin::AppContext::get();
 	std::string serializedData;
@@ -50,9 +48,7 @@ TEST_CASE("Component to Component pointer", "napkin-pointers")
 
 TEST_CASE("Pointer 'paths' 2", "napkin-pointers")
 {
-	int argc = 0;
-	char* argv[] = {"app"};
-	QApplication app(argc, const_cast<char**>(argv));
+    RUN_Q_APPLICATION
 
 	auto doc = napkin::AppContext::get().loadDocument("unit_tests_data/entitystructure.json");
 	REQUIRE(doc != nullptr);

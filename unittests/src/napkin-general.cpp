@@ -9,10 +9,7 @@ using namespace napkin;
 
 TEST_CASE("File Extensions", "napkin-general")
 {
-	int argc = 0;
-	char* argv[] = {"app"};
-	QApplication app(argc, const_cast<char**>(argv));
-
+	RUN_Q_APPLICATION
 
 	ResourceFactory fact = AppContext::get().getResourceFactory();
 	{
@@ -41,9 +38,7 @@ TEST_CASE("File Extensions", "napkin-general")
 
 TEST_CASE("Resource Management", "napkin-general")
 {
-	int argc = 0;
-	char* argv[] = {"app"};
-	QApplication app(argc, const_cast<char**>(argv));
+    RUN_Q_APPLICATION
 
 	// Assume this test file's directory as the base path
 	QString jsonFile = "objects.json";
