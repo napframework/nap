@@ -6,9 +6,7 @@ using namespace napkin;
 
 TEST_CASE("Document", "napkin-document")
 {
-	int argc = 0;
-	char* argv[] = {"app"};
-	QApplication app(argc, const_cast<char**>(argv));
+    RUN_Q_APPLICATION
 
 	SECTION("general")
 	{

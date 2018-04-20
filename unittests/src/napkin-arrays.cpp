@@ -7,9 +7,7 @@ using namespace napkin;
 
 TEST_CASE("Arrays", "napkin-arrays")
 {
-	int argc = 0;
-	char* argv[] = {"app"};
-	QApplication app(argc, const_cast<char**>(argv));
+	RUN_Q_APPLICATION
 
 	SECTION("Array Value Elements")
 	{
