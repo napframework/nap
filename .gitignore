@@ -66,4 +66,5 @@ packaging_bin
 build_info.json
 build_number.cmake
 cached_project_json.cmake
+cached_module_json.cmake
 NAP-*-*

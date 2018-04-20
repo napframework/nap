@@ -3,6 +3,9 @@ project(mod_napyoctopuce)
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
+# Get our NAP modules dependencies from module.json
+module_json_to_cmake()
+
 find_package(yoctopuce REQUIRED)
 
 # LIBRARY
@@ -21,13 +24,14 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
-
-set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} yoctopuce)
 
 if (WIN32)
   copy_yoctopuce_dll()
 endif()
+
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
 
 # Package into platform release
 if(UNIX)

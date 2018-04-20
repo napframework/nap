@@ -6,6 +6,9 @@ file(GLOB HEADERS src/*.h)
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 
+# Get our NAP modules dependencies from module.json
+module_json_to_cmake()
+
 if(WIN32)
     if(MSVC)
         set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64)
@@ -33,8 +36,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # link with external libs
-set(DEPENDENT_NAP_MODULES mod_napinput)
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} napcore ${DEPENDENT_NAP_MODULES})
+
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
 
 # Package into platform release
 if(UNIX)

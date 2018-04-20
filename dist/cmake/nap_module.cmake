@@ -120,6 +120,9 @@ if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
     include (${MODULE_EXTRA_CMAKE_PATH})
 endif()
 
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
+
 # Find each NAP module
 foreach(NAP_MODULE ${DEPENDENT_MODULES})
     find_nap_module(${NAP_MODULE})

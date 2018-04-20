@@ -233,6 +233,39 @@ macro(project_json_to_cmake)
     include(cached_project_json.cmake)
 endmacro()
 
+# Get our NAP modules dependencies from module.json, populating into DEPENDENT_NAP_MODULES
+macro(module_json_to_cmake)
+    # Use configure_file to result in changes in module.json triggering reconfigure.  Appears to be best current approach.
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/module.json module_json_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/module_json_trigger_dummy.json
+                    ERROR_QUIET)
+
+    # Clear any system Python path settings
+    unset(ENV{PYTHONHOME})
+    unset(ENV{PYTHONPATH})
+
+    # Parse our module.json and import it
+    if(WIN32)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
+    elseif(APPLE)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
+    else()
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+    endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
+    endif()
+
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/module_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR}
+                    RESULT_VARIABLE EXIT_CODE
+                    )
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not parse modules dependencies from module.json (${EXIT_CODE})")
+    endif()
+    include(cached_module_json.cmake)
+    # message("${PROJECT_NAME} DEPENDENT_NAP_MODULES from module.json: ${DEPENDENT_NAP_MODULES}")
+endmacro()
+
 # Add the runtime path for RTTR.  
 # TODO As a lower priority this should get pulled in automatically, need to cleanup.  Jira NAP-108.
 macro(add_macos_rttr_rpath)
@@ -316,3 +349,15 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
         package_project_into_release(${PROJECT_PREFIX}/${PROJECT_NAME})
     endif()
 endfunction() 
+
+# Copy module.json for module to sit alongside module post-build
+macro(copy_module_json_to_bin)
+    set(DEST_FILENAME ${PROJECT_NAME}.json)
+    if(UNIX)
+        set(DEST_FILENAME lib${DEST_FILENAME})
+    endif()
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
+                       COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
+endmacro()

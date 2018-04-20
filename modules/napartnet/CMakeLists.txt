@@ -3,6 +3,9 @@ project(mod_napartnet)
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
+# Get our NAP modules dependencies from module.json
+module_json_to_cmake()
+
 find_package(artnet REQUIRED)
 
 # LIBRARY
@@ -22,7 +25,6 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} artnet)
 
 if(WIN32)
@@ -40,6 +42,9 @@ elseif(UNIX AND NOT APPLE)
             COMMAND ${CMAKE_COMMAND} -E copy "${ARTNET_LIB_FILE}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/libartnet.so.1"
             COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>/libartnet.so.1")
 endif()
+
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
 
 # Package into platform release
 if(UNIX)
