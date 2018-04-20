@@ -361,6 +361,11 @@ macro(package_module)
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
     endif()
 
+    # If the module.json exists package it
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module.json)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/)
+    endif()
+
     # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done done after we 
     # install the target above due to ordering of install_name_tool calling)
     if(UNIX)

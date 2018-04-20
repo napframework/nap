@@ -5,6 +5,9 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
 add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}")
 
+# Get our NAP modules dependencies from module.json
+module_json_to_cmake()
+
 find_package(etherdream REQUIRED)
 
 # LIBRARY
@@ -19,8 +22,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${ETHERDREAM_INCLUDE_DIRS}
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-
-set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} etherdreamlib)
 
 if(WIN32)
@@ -30,6 +31,9 @@ if(WIN32)
     endif()
     copy_etherdream_dll()
 endif()
+
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
 
 # Package into platform release
 if(UNIX)
