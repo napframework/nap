@@ -2,117 +2,17 @@
 #include "modulemanager.h"
 #include "logger.h"
 #include "service.h"
-
-#ifdef _WIN32
-	#define WIN32_LEAN_AND_MEAN
-	#include <windows.h> // Windows dll loading
-#else
-	#include <dlfcn.h> // Posix shared object loading
-#endif
+#include "module.h"
 
 // External Includes
 #include <utility/fileutils.h>
 #include <packaginginfo.h>
 
-namespace
-{
-	// Extension for shared libraries (dependent on platform)
-#ifdef _WIN32
-	static std::string sharedLibExtension = "dll";
-#elif __APPLE__
-	static std::string sharedLibExtension = "dylib";
-#else
-	static std::string sharedLibExtension = "so";
-#endif
-
-
-	/**
-	 * Platform-wrapper function to get the error string for loading a module (if an error was thrown)
-	 * @return The error string
-	 */
-	std::string GetModuleLoadErrrorString()
-	{
-#ifdef _WIN32
-		// Get the error code
-		DWORD error_code = ::GetLastError();
-		if (error_code == 0)
-			return std::string();
-
-		LPSTR messageBuffer = nullptr;
-		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
-
-		std::string message(messageBuffer, size);
-		LocalFree(messageBuffer);
-
-		return message;
-#else
-		return dlerror();
-#endif
-	}
-
-
-	/**
-	 * Platform-wrapper function to load a shared library
-	 * @param modulePath The path to the shared library to load
-	 * @param errorString If the module failed to load, the error string
-	 * @return Handle to the loaded module
-	 */
-	void* LoadModule(const std::string& modulePath, std::string& errorString)
-	{
-		void* result;
-#ifdef _WIN32
-		result = LoadLibraryA(modulePath.c_str());
-#else
-		result = dlopen(modulePath.c_str(), RTLD_LAZY);
-#endif
-
-		// If we failed to load the module, get the error string
-		if (!result)
-			errorString = GetModuleLoadErrrorString();
-
-		return result;
-	}
-
-
-	/**
-	 * Platform-wrapper function to unload a shared library
-	 * @param module The module to load
-	 */
-	void UnloadModule(void* module)
-	{
-#ifdef _WIN32
-		FreeLibrary((HMODULE)module);
-#else
-		dlclose(module);
-#endif
-	}
-
-
-	/**
-	 * Platform-wrapper function to find the address of a symbol in the specified shared library
-	 * @param module Handle to the module to find the symbol in
-	 * @param symbolName Name of the symbol to find
-	 * @return The pointer to the symbol if found, nullptr if not
-	 */
-	void* FindSymbol(void* module, const char* symbolName)
-	{
-#ifdef _WIN32
-		return GetProcAddress((HMODULE)module, symbolName);
-#else
-		return dlsym(module, symbolName);
-#endif
-	}
-}
-
 namespace nap
 {
 	ModuleManager::ModuleManager()
 	{
-#ifdef _WIN32
-		// On windows, disable DLL load failure dialog boxes (we handle the errors ourselves))
-		SetErrorMode(SEM_FAILCRITICALERRORS);
-#endif
+		initModules();
 	}
 
 	ModuleManager::~ModuleManager()
@@ -130,19 +30,17 @@ namespace nap
 
 	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
-		/** 
-		 * TODO Discuss changing loadModules to provide these two modes of operation:
-		 *   - A standard/project mode where it only loads the modules specified in the provided list and fails if
-		 *     any of those modules couldn't be loaded
-		 *   - A 'load everything' mode for Napkin or sandbox NAP use where no modules are specified and we load 
-		 *     everything we encounter
-		 */
-		
 		// Build a list of directories to search for modules
 		std::vector<std::string> directories;
 		if (!buildModuleSearchDirectories(moduleNames, directories, error))
 			return false;
 
+		// Whether we're loading a specific set of requested modules
+		const bool loadSpecificModules = moduleNames.size() != 0;
+		
+		// Track which modules remain to be loaded
+		std::vector<std::string> remainingModulesToLoad = moduleNames;
+		
 		// Iterate each directory
 		for (const auto& directory : directories) {
 			// Skip directory if it doesn't exist
@@ -161,15 +59,22 @@ namespace nap
 				if (utility::dirExists(filename))
 					continue;
 
+
 				// Ignore non-shared libraries
-				if (utility::getFileExtension(filename) != sharedLibExtension)
+				if (!isModule(filename))
+					continue;
+				
+				// Skip unrequested modules if we've been specified a list to load
+				// First get our module name from the filename, removing 'lib' prefix on *nix
+				std::string moduleName = getModuleNameFromPath(filename);
+				if (loadSpecificModules && std::find(remainingModulesToLoad.begin(), remainingModulesToLoad.end(), moduleName) == remainingModulesToLoad.end())
 					continue;
 
 				std::string module_path = utility::getAbsolutePath(filename);
 
 				// Try to load the module
 				std::string error_string;
-				void* module_handle = LoadModule(module_path, error_string);
+				void* module_handle = loadModule(module_path, error_string);
 				if (!module_handle)
 				{
 					Logger::warn("Failed to load module %s: %s", module_path.c_str(), error_string.c_str());
@@ -177,10 +82,10 @@ namespace nap
 				}
 
 				// Find descriptor. If the descriptor wasn't found in the dll, assume it's not actually a nap module and unload it again.
-				ModuleDescriptor* descriptor = (ModuleDescriptor*)FindSymbol(module_handle, "descriptor");
+				ModuleDescriptor* descriptor = (ModuleDescriptor*)findSymbolInModule(module_handle, "descriptor");
 				if (descriptor == nullptr)
 				{
-					UnloadModule(module_handle);
+					unloadModule(module_handle);
 					continue;
 				}
 
@@ -188,7 +93,7 @@ namespace nap
 				if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
 				{
 					Logger::warn("Module %s was built against a different version of NAP (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
-					UnloadModule(module_handle);
+					unloadModule(module_handle);
 					continue;
 				}
 
@@ -199,7 +104,7 @@ namespace nap
 					if (!stype.is_derived_from(RTTI_OF(Service)))
 					{
 						Logger::warn("Module %s service descriptor %s is not a service; skipping", module_path.c_str(), descriptor->mService);
-						UnloadModule(module_handle);
+						unloadModule(module_handle);
 						continue;
 					}
 					service = stype;
@@ -212,10 +117,26 @@ namespace nap
 				module.mDescriptor = descriptor;
 				module.mHandle = module_handle;
 				module.mService = service;
+				
+				// If we're tracking a specific set of modules to load, remove the loaded module from our list.  Used
+				// to report on any missing modules.
+				if (loadSpecificModules)
+					remainingModulesToLoad.erase(std::remove(remainingModulesToLoad.begin(), remainingModulesToLoad.end(), moduleName), remainingModulesToLoad.end());
 
 				mModules.push_back(module);
 			}
 		}
+		
+		// Fail if we haven't managed to load some of our requested modules
+		if (loadSpecificModules && remainingModulesToLoad.size() > 0)
+		{
+			std::string missingModulesToLog;
+			for (const auto &missingModule : moduleNames)
+				missingModulesToLog += missingModule + " ";
+			error.fail("Failed to load requested modules: " + missingModulesToLog);
+			return false;
+		}
+
 		return true;
 	}
 	
