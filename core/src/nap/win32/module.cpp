@@ -65,6 +65,12 @@ namespace nap
 
 	NAPAPI bool isModule(const std::string& path)
 	{
-		return utility::getFileExtension(path) == "dll";
+		return utility::getFileExtension(path) == getModuleExtension();
+	}
+	
+	
+	std::string getModuleExtension()
+	{
+		return "dll";
 	}
 }
