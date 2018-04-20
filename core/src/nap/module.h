@@ -43,4 +43,8 @@ namespace nap
 	 */
 	NAPAPI bool isModule(const std::string& path);
 
+	/**
+	 * @return Module filename extension for platform
+	 */
+	NAPAPI std::string getModuleExtension();
 }
