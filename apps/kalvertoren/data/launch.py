@@ -20,6 +20,7 @@ BACKUP_LIGH_PORT = 6467
 TIME_OFF_CMD = "R\\07\\00!\\001\\01\\01\\a5"
 TIME_ON_CMD = "R\\07\\00!\\001\\01\\01\\a6"
 LIGH_OFF_CMD = "!kunst#"
+LIGH_ON_CMD = "!Dag Verlichting#"
 
 # constructs path and makes sure it is valid
 def constructPath():
@@ -65,6 +66,12 @@ def turnofflights():
 		print("turning off light program: {0}:{1} {2}".format(light_ip, BACKUP_LIGH_PORT, LIGH_OFF_CMD))
 		lsocket.sendto(str.encode(LIGH_OFF_CMD), (light_ip, BACKUP_LIGH_PORT))
 
+# turn the lights on
+def turnonlights():
+	lsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	for light_ip in BACKUP_LIGH_IP:
+		print("turning on light program: {0}:{1} {2}".format(light_ip, BACKUP_LIGH_PORT, LIGH_ON_CMD))
+		lsocket.sendto(str.encode(LIGH_ON_CMD), (light_ip, BACKUP_LIGH_PORT))
 
 # run main call
 def run(exePath):
@@ -103,12 +110,19 @@ def run(exePath):
 			break
 		print("App {0} Crashed! ReturnCode: {1}".format(exePath, proc.returncode))
 
+	time.sleep(2)
+
 	# turn on backup lights
 	try:
 		turnontimer()
 	except Exception as err:
 		print("Unable to turn on timer: {0}".format(err))
 
+	# turn on backup lights
+	try:
+		turnonlights()
+	except Exception as err:
+		print("Unable to turn on lights: {0}".format(err))
 
 if __name__ == "__main__":
 	print(os.path.realpath(__file__))
