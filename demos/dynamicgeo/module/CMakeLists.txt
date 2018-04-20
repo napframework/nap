@@ -18,4 +18,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender)
+set(DEPENDENT_NAP_MODULES mod_naprender)
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})

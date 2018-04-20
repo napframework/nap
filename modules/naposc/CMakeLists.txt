@@ -18,7 +18,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${OSCPACK_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # link libs
-set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene )
+set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${OSCPACK_LIBS_DEBUG} optimized ${OSCPACK_LIBS_RELEASE})
 
 # Package into platform release

@@ -33,7 +33,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # link with external libs
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} napcore mod_napinput)
+set(DEPENDENT_NAP_MODULES mod_napinput)
+target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} napcore ${DEPENDENT_NAP_MODULES})
 
 # Package into platform release
 if(UNIX)
