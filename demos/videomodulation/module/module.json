@@ -1,0 +1,12 @@
+{
+    "dependencies": [
+        "mod_naprender",
+        "mod_napmath",
+        "mod_napinput",
+        "mod_napsdlinput",
+        "mod_napsdlwindow",
+        "mod_napvideo",
+        "mod_napcameracontrol",
+        "mod_napscene"
+    ]
+}
