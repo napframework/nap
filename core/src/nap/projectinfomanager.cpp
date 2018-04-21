@@ -72,7 +72,7 @@ namespace nap
 		for (std::size_t index = 0; index < modules->value.Size(); ++index)
 		{
 			const rapidjson::Value& json_element = modules->value[index];
-			if (!errorState.check(json_element.IsString(), "Entries in 'modules' array in project info field must be an strings"))
+			if (!errorState.check(json_element.IsString(), "Entries in 'modules' array in project info field must be a strings"))
 				return false;
 			
 			result.mModules.push_back(json_element.GetString());
