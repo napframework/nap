@@ -3,13 +3,6 @@
     "version": "0.1",
     "modules": [
         "mod_napartnet",
-        "mod_naprender",
-        "mod_napinput",
-        "mod_napsdlinput",
-        "mod_napsdlwindow",
-        "mod_napapp",
-        "mod_napimgui",
-        "mod_napscene",
-        "mod_napmath"
+        "mod_napapp"
     ]
 }

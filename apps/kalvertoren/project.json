@@ -2,19 +2,6 @@
     "title": "Kalvertoren",
     "version": "0.1",
     "modules": [
-        "mod_napcameracontrol",
-        "mod_napscene",
-        "mod_naprender",
-        "mod_napinput",
-        "mod_napsdlwindow",
-        "mod_napsdlinput",
-        "mod_napapp",
-        "mod_napmath",
-        "mod_napartnet",
-        "mod_napimgui",
-        "mod_napyoctopuce",
-        "mod_napvideo",
-        "mod_napaudio",
-        "mod_napmidi"
+        "mod_napkalvertoren"
     ]
 }

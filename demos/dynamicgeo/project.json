@@ -2,15 +2,8 @@
     "title": "DynamicGeo",
     "version": "0.1",
     "modules": [
-        "mod_naprender",
-        "mod_napinput",
-        "mod_napsdlinput",
-        "mod_napsdlwindow",
-        "mod_napapp",
-        "mod_napcameracontrol",
         "mod_dynamicgeo",
-        "mod_napimgui",
-        "mod_napscene",
-        "mod_napmath"
+        "mod_napapp",
+        "mod_napcameracontrol"
     ]
 }
