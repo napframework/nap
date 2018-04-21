@@ -7,13 +7,6 @@
         "mod_nappython",
         "mod_naposc",
         "mod_napmidi",
-        "mod_napinput",
-        "mod_napsdlinput",
-        "mod_napimgui",
-        "mod_napsdlwindow",
-        "mod_naprender",
-        "mod_napmath",
-        "mod_napscene",
         "mod_napaudio"
     ]
 }
