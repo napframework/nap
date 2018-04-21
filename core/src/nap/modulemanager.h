@@ -83,6 +83,13 @@ namespace nap
 		 * @return Whether the folder name appears to contain a build configuration
 		 */
 		bool folderNameContainsBuildConfiguration(std::string& folderName);
+				
+		bool loadModuleDependenciesFromJSON(std::string& jsonFile, std::vector<std::string>& dependencies, utility::ErrorState& error);
+		
+		bool fetchProjectModuleDependencies(std::vector<std::string>& topLevelProjectModules, std::vector<std::string>& outDependentModules, utility::ErrorState& errorState);
+		
+		bool fetchModuleDependenciesForModules(std::vector<std::string>& searchModules, std::vector<std::string>& totalModules, std::vector<std::string>& outFoundDependencies, utility::ErrorState& errorState);
+
 		
 		using ModuleList = std::vector<Module>;
 		ModuleList mModules;	// The loaded modules
