@@ -415,7 +415,7 @@ namespace nap
 				
 				std::string modulePath = utility::getAbsolutePath(filename);
 				
-				std::string jsonFile = utility::getFileDir(modulePath) + "/" + utility::getFileNameWithoutExtension(modulePath);
+				std::string jsonFile = utility::getFileDir(utility::toComparableFilename(modulePath)) + "/" + utility::getFileNameWithoutExtension(modulePath);
 				jsonFile = jsonFile + ".json";
 
 				std::vector<std::string> dependencies;
