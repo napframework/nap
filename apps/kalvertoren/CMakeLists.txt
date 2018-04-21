@@ -20,7 +20,7 @@ add_dependencies(${PROJECT_NAME} fbxconverter)
 # Even though we're not using our modules here, run the process as a basic validation of the project.json
 project_json_to_cmake()
 
-target_link_libraries(${PROJECT_NAME} mod_napkalvertoren)
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # Package into release, export FBX, other shared source project fixes
