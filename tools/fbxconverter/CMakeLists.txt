@@ -98,3 +98,4 @@ endif()
 install(FILES ${THIRDPARTY_DIR}/tclap-1.2.1/README
               ${THIRDPARTY_DIR}/tclap-1.2.1/COPYING
         DESTINATION thirdparty/tclap)
+install(DIRECTORY ${TCLAP_INCLUDE_DIRS}/tclap/ DESTINATION thirdparty/tclap/include/tclap)
