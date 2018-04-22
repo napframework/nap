@@ -18,7 +18,7 @@ if(WIN32)
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} 
                                -E copy
-                               ${THIRDPARTY_DIR}/libsndfile/libsndfile-1.dll
+                               ${THIRDPARTY_DIR}/libsndfile/bin/libsndfile-1.dll
                                $<TARGET_FILE_DIR:${PROJECT_NAME}> 
                        )
 
@@ -27,7 +27,7 @@ if(WIN32)
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} 
                                -E copy
-                               ${THIRDPARTY_DIR}/portaudio/portaudio_x64.dll
+                               ${THIRDPARTY_DIR}/portaudio/bin/portaudio_x64.dll
                                $<TARGET_FILE_DIR:${PROJECT_NAME}> 
                        )
 elseif(UNIX)
