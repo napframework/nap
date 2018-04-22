@@ -62,8 +62,10 @@ copy_module_json_to_bin()
 # Package into platform release
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/mpg123/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
+    if(NOT APPLE)
+        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
+        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
+    endif()
 endif()    
 package_module()
 
@@ -107,8 +109,12 @@ install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h
               ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
         DESTINATION thirdparty/libsndfile/include)
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/libsndfile/msvc64/
-            DESTINATION thirdparty/libsndfile)
+    file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${LIBSNDFILE_DYLIBS}
+            DESTINATION thirdparty/libsndfile/bin)
+    file(GLOB LIBSNDFILE_IMPLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*.lib)
+    install(FILES ${LIBSNDFILE_IMPLIBS}
+            DESTINATION thirdparty/libsndfile/lib)    
 elseif(UNIX)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
