@@ -376,10 +376,27 @@ macro(copy_module_json_to_bin)
     if(UNIX)
         set(DEST_FILENAME lib${DEST_FILENAME})
     endif()
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
-                       COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
+    
+    if(APPLE)
+        # macOS: Multi build type outputting to LIBRARY_OUTPUT_DIRECTORY
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+    elseif(UNIX)
+        # Linux: Single build type outputting to LIBRARY_OUTPUT_DIRECTORY
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>/${DEST_FILENAME}"
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+
+    else()
+        # Win64: Multi build type outputting to RUNTIME_OUTPUT_DIRECTORY
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+    endif()
 endmacro()
 
 macro(fetch_module_dependencies TOPLEVEL_MODULES)
