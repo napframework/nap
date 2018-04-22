@@ -64,6 +64,7 @@ package_module()
 
 # Package mpg123 into platform release
 install(FILES ${THIRDPARTY_DIR}/mpg123/doc/LICENSE DESTINATION thirdparty/mpg123)
+install(DIRECTORY ${LIBMPG123_INCLUDE_DIR}/ DESTINATION thirdparty/mpg123/include)
 if(WIN32)
     file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/install/msvc/*.dll)
     install(FILES ${MPG123_DYLIBS}
@@ -97,6 +98,9 @@ endif()
 
 # Package libsndfile into platform release
 install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/install/COPYING DESTINATION thirdparty/libsndfile)
+install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h
+              ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
+        DESTINATION thirdparty/libsndfile/include)
 if(WIN32)
     install(DIRECTORY ${THIRDPARTY_DIR}/libsndfile/msvc64/
             DESTINATION thirdparty/libsndfile)
