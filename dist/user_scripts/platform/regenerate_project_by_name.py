@@ -5,11 +5,12 @@ import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_project, call_except_on_failure
+from nap_shared import find_project
 
 # Exit codes
 ERROR_MISSING_MODULE = 1
 ERROR_INVALID_BUILD_TYPE = 2
+ERROR_CONFIGURE_FAILURE = 3
 
 # Platform-specific build directories
 if sys.platform == 'darwin':
@@ -26,18 +27,18 @@ def cmake_reconfigure_project(project_name, build_type, show_solution):
         return ERROR_MISSING_MODULE
 
     if sys.platform.startswith('linux'):    
-        call_except_on_failure(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type])
+        exit_code = call(['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type], cwd=project_path)
 
         # Show in Nautilus?
-        # Seems a bit pointless if we're not opening it in an IDE
+        # Seems a bit pointless if we're not opening it in an IDE from the file browser
         # if show_solution:
         #     call(["nautilus -s %s > /dev/null 2>&1 &" % BUILD_DIR], shell=True)
 
     elif sys.platform == 'darwin':
-        call_except_on_failure(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
+        exit_code = call(['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=project_path)
 
         # Show in Finder
-        if show_solution:
+        if exit_code == 0 and show_solution:
             xcode_solution_path = os.path.join(project_path, BUILD_DIR, '%s.xcodeproj' % project_name)
             call(["open", "-R", xcode_solution_path])
     else:
@@ -47,15 +48,18 @@ def cmake_reconfigure_project(project_name, build_type, show_solution):
             os.makedirs(full_build_dir)
 
         # Generate project
-        call_except_on_failure(project_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
+        exit_code = call(['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'], cwd=project_path)
 
         # Show in Explorer
-        if show_solution:
+        if exit_code == 0 and show_solution:
             msvc_solution_path = os.path.join(project_path, BUILD_DIR, '%s.sln' % project_name)
             call(r'explorer /select,"%s"' % msvc_solution_path)
 
-    print("Solution generated in %s" % os.path.relpath(os.path.join(project_path, BUILD_DIR)))
-    return 0
+    if exit_code == 0:
+        print("Solution generated in %s" % os.path.relpath(os.path.join(project_path, BUILD_DIR)))
+        return 0
+    else:
+        return(ERROR_CONFIGURE_FAILURE)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

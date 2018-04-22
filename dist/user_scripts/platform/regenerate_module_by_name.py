@@ -2,14 +2,15 @@
 import argparse
 import sys
 import os
-from subprocess import Popen
+from subprocess import Popen, call
 
-from nap_shared import find_module, call_except_on_failure
+from nap_shared import find_module
 
 # Exit codes
 ERROR_MISSING_PROJECT = 1
 ERROR_INVALID_PROJECT_JSON = 2
 ERROR_INVALID_BUILD_TYPE = 3
+ERROR_CONFIGURE_FAILURE = 4
 
 # Platform-specific build directories
 if sys.platform == 'darwin':
@@ -30,19 +31,22 @@ def update_module(module_name, build_type):
         return ERROR_MISSING_PROJECT
 
     if sys.platform.startswith('linux'):
-        call_except_on_failure(module_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type])
+        exit_code = call(['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type], cwd=module_path)
     elif sys.platform == 'darwin':
-        call_except_on_failure(module_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
+        exit_code = call(['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=module_path)
     else:
         # Create dir if it doesn't exist
         full_build_dir = os.path.join(module_path, BUILD_DIR)
         if not os.path.exists(full_build_dir):
             os.makedirs(full_build_dir)
 
-        call_except_on_failure(module_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
+        exit_code = call(['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'], cwd=module_path)
 
-    print("Solution generated in %s" % os.path.relpath(os.path.join(module_path, BUILD_DIR)))
-    return(0)
+    if exit_code == 0:
+        print("Solution generated in %s" % os.path.relpath(os.path.join(module_path, BUILD_DIR)))
+        return 0
+    else:
+        return(ERROR_CONFIGURE_FAILURE)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
