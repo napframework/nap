@@ -137,6 +137,15 @@ unset(NAP_MODULES)
 # Set our module output directory
 set_module_output_directories()
 
+# On Windows copy over module.json post-build
+if(WIN32)
+    add_custom_command(
+        TARGET ${MODULE_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/${MODULE_NAME}.json
+        )
+endif()
+
 # On macOS & Linux install module into packaged project
 if (NOT WIN32)
     install(FILES $<TARGET_FILE:${PROJECT_NAME}> DESTINATION lib CONFIGURATIONS Release)
