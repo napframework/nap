@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "@PROJECT_NAME_PASCALCASE@app.h"
+#include "@PROJECT_NAME_LOWERCASE@app.h"
 
 // Nap includes
 #include <nap/core.h>

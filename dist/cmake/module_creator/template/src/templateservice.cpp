@@ -1,5 +1,5 @@
 // Local Includes
-#include "@MODULE_NAME_PASCALCASE@service.h"
+#include "@MODULE_NAME_LOWERCASE@service.h"
 
 // External Includes
 #include <nap/core.h>
