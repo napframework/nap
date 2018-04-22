@@ -32,5 +32,5 @@ package_module()
 # Package oscpack headers into platform release
 install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION thirdparty/oscpack)
 install(FILES ${THIRDPARTY_DIR}/oscpack/README DESTINATION thirdparty/oscpack)
-install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc/ DESTINATION thirdparty/oscpack/osc
+install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc/ DESTINATION thirdparty/oscpack/include/osc
         PATTERN "*.cpp" EXCLUDE)
