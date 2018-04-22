@@ -2,6 +2,6 @@
     "title": "Kalvertoren",
     "version": "0.1",
     "modules": [
-        "mod_napkalvertoren"
+        "mod_kalvertoren"
     ]
 }

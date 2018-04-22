@@ -1,4 +1,4 @@
-project(mod_napkalvertoren)
+project(mod_kalvertoren)
 
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
