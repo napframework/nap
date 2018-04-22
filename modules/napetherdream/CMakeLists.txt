@@ -43,8 +43,11 @@ package_module()
 
 # Package etherdreamlib into platform release
 install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin)
+# Package etherdreamlib headers
+install(DIRECTORY ${ETHERDREAM_INCLUDE_DIRS}/ DESTINATION thirdparty/etherdream/include)    
 if(WIN32)
-    # Install etherdream IMPLIB on Windows
+    # Package etherdream IMPLIB on Windows
     get_target_property(ETHERDREAM_IMPLIB etherdreamlib IMPORTED_IMPLIB_RELEASE)
     install(FILES ${ETHERDREAM_IMPLIB} DESTINATION thirdparty/etherdream/bin)    
+
 endif()

@@ -57,6 +57,7 @@ install(FILES ${THIRDPARTY_DIR}/libartnet/AUTHORS DESTINATION thirdparty/libartn
 install(FILES ${THIRDPARTY_DIR}/libartnet/COPYING DESTINATION thirdparty/libartnet)
 install(FILES ${THIRDPARTY_DIR}/libartnet/README DESTINATION thirdparty/libartnet)
 install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin)
+install(DIRECTORY ${ARTNET_DIR}/artnet DESTINATION thirdparty/libartnet/include)
 if(WIN32)
     install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION thirdparty/libartnet/bin)
 elseif(APPLE)
