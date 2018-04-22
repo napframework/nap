@@ -104,8 +104,12 @@ install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h
               ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
         DESTINATION thirdparty/libsndfile/include)
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/libsndfile/msvc64/
-            DESTINATION thirdparty/libsndfile)
+    file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${LIBSNDFILE_DYLIBS}
+            DESTINATION thirdparty/libsndfile/bin)
+    file(GLOB LIBSNDFILE_IMPLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*.lib)
+    install(FILES ${LIBSNDFILE_IMPLIBS}
+            DESTINATION thirdparty/libsndfile/lib)    
 elseif(UNIX AND NOT APPLE)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
@@ -115,8 +119,10 @@ endif()
 # Package portaudio into platform release
 install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION thirdparty/portaudio)
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/portaudio/msvc64/
-            DESTINATION thirdparty/portaudio)
+    install(FILES ${PORTAUDIO_LIBRARIES}
+            DESTINATION thirdparty/portaudio/lib)
+    install(FILES ${PORTAUDIO_LIBS_RELEASE_DLL}
+            DESTINATION thirdparty/portaudio/bin)
 elseif(UNIX AND NOT APPLE)
     file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS}
