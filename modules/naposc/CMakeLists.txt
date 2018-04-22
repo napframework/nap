@@ -24,8 +24,15 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${O
 # Package into platform release
 package_module()
 
-# Package oscpack headers into platform release
+# Package oscpack into platform release
 install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION thirdparty/oscpack)
 install(FILES ${THIRDPARTY_DIR}/oscpack/README DESTINATION thirdparty/oscpack)
-install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc/ DESTINATION thirdparty/oscpack/osc
+install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc DESTINATION thirdparty/oscpack/include
         PATTERN "*.cpp" EXCLUDE)
+if(MSVC)
+    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/msvc64/ DESTINATION thirdparty/oscpack/lib)
+elseif(APPLE)
+    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/xcode/ DESTINATION thirdparty/oscpack/lib)
+else()
+    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/linux/ DESTINATION thirdparty/oscpack/lib)
+endif()

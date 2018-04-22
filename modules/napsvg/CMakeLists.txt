@@ -28,7 +28,9 @@ target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})
 # Package into platform release
 package_module()
 
-# Package nanosvg license into platform release
+# Package nanosvg into platform release
 install(FILES ${THIRDPARTY_DIR}/nanosvg/LICENSE.txt
               ${THIRDPARTY_DIR}/nanosvg/README.md
-        DESTINATION thirdparty/nanosvg)
+        DESTINATION thirdparty/nanosvg
+        )
+install(DIRECTORY ${NANOSVG_INCLUDE_DIRS}/ DESTINATION thirdparty/nanosvg/include)
