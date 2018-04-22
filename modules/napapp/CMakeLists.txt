@@ -29,4 +29,8 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 copy_module_json_to_bin()
 
 # Package into platform release
+if(APPLE)
+    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+    set(UNIX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
+endif()
 package_module()

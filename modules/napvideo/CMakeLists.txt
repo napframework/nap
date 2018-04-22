@@ -31,6 +31,11 @@ copy_module_json_to_bin()
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/FFmpeg/lib")
 endif()
+if(APPLE)
+    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
+endif()
 package_module()
 
 # Package dependent into release --
