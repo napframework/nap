@@ -402,44 +402,74 @@ macro(copy_module_json_to_bin)
     endif()
 endmacro()
 
+# For the provided top-level modules locate all dependencies and store in NAP_MODULES
+# TOPLEVEL_MODULES: A list of top level modules
 macro(fetch_module_dependencies TOPLEVEL_MODULES)
     set(NEW_MODULES "${TOPLEVEL_MODULES}")
     set(NAP_MODULES "")
 
+    # Iterate until we stop go through a loop with no new dependencies
     while(NEW_MODULES)
+        # Append our new modules to our output list
         list(APPEND NAP_MODULES "${NEW_MODULES}")
+
+        # Set our modules to search on this time
         set(SEARCH_MODULES "${NEW_MODULES}")
+
+        # Clear the new modules list, ready for populating
         set(NEW_MODULES "")
+
+        # Fetch dependencies for our search modules in this iteration
         fetch_module_dependencies_for_modules("${SEARCH_MODULES}" "${NAP_MODULES}")
     endwhile()
-    message(STATUS "Total dependent modules for ${PROJECT_NAME}: ${NAP_MODULES}")
+
+    # message(STATUS "Total dependent modules for ${PROJECT_NAME}: ${NAP_MODULES}")
 endmacro()
 
+# For the provided modules for any immediate dependencies (ie. other NAP modules) which
+# haven't already been found
+# SEARCH_MODULES: The modules to check for dependencies on
+# TOTAL_MODULES: The modules we already have as dependencies
 macro(fetch_module_dependencies_for_modules SEARCH_MODULES TOTAL_MODULES)
+    # Set the location for NAP framework modules
     set(NAP_MODULES_DIR ${NAP_ROOT}/modules/)
+
+    # Set the user modules location
     set(USER_MODULES_DIR ${NAP_ROOT}/user_modules/)
+
     # Workaround for CMake not treating macro argument as proper list variable
     set(TOTAL_MODULES ${TOTAL_MODULES})
+
+    # Loop for each search module
     foreach(SEARCH_MODULE ${SEARCH_MODULES})
+        # Check for a NAP framework module
         if(EXISTS ${NAP_MODULES_DIR}/${SEARCH_MODULE})
             set(FOUND_PATH ${NAP_MODULES_DIR}/${SEARCH_MODULE})
+        # Check for a user module
         elseif(EXISTS ${USER_MODULES_DIR}/${SEARCH_MODULE})
             set(FOUND_PATH ${USER_MODULES_DIR}/${SEARCH_MODULE})
+        # Check for a project module
         elseif(${SEARCH_MODULE} STREQUAL mod_${PROJECT_NAME} AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module)
             set(FOUND_PATH ${CMAKE_CURRENT_SOURCE_DIR}/module)
         else()
             message(FATAL_ERROR "Could not find module ${SEARCH_MODULE}")
         endif()
 
+        # If we found the module directory but there's no module.json, fail
         if(NOT EXISTS ${FOUND_PATH}/module.json)
             message(FATAL_ERROR "Could not find module.json in ${FOUND_PATH}")
         endif()
 
+        # Process the found module.json, making it available to CMake as DEPENDENT_NAP_MODULES
         module_json_in_directory_to_cmake(${FOUND_PATH})
+
+        # Loop over each found dependency
         foreach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})
+            # If we don't already have the module in our previously found dependencies or our newly found dependencies, 
+            # add the new dependency
             if(NOT ${DEPENDENT_MODULE} IN_LIST NEW_MODULES AND NOT ${DEPENDENT_MODULE} IN_LIST TOTAL_MODULES)
                 list(APPEND NEW_MODULES ${DEPENDENT_MODULE})
             endif()
-        endforeach()        
-    endforeach()
+        endforeach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})        
+    endforeach(SEARCH_MODULE ${SEARCH_MODULES})
 endmacro()

@@ -263,7 +263,6 @@ macro(module_json_to_cmake)
         message(FATAL_ERROR "Could not parse modules dependencies from module.json (${EXIT_CODE})")
     endif()
     include(cached_module_json.cmake)
-    # message("${PROJECT_NAME} DEPENDENT_NAP_MODULES from module.json: ${DEPENDENT_NAP_MODULES}")
 endmacro()
 
 # Add the runtime path for RTTR.  
