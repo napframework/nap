@@ -57,10 +57,8 @@ endif()
 # Package into platform release
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/mpg123/lib")
-    if(NOT APPLE)
-        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
-        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
-    endif()
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
 endif()    
 package_module()
 
@@ -109,8 +107,8 @@ if(WIN32)
             DESTINATION thirdparty/libsndfile/bin)
     file(GLOB LIBSNDFILE_IMPLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*.lib)
     install(FILES ${LIBSNDFILE_IMPLIBS}
-            DESTINATION thirdparty/libsndfile/lib)    
-elseif(UNIX AND NOT APPLE)
+            DESTINATION thirdparty/libsndfile/lib)  
+elseif(UNIX)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
             DESTINATION thirdparty/libsndfile/lib)
@@ -118,13 +116,13 @@ endif()
 
 # Package portaudio into platform release
 install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION thirdparty/portaudio)
-install(DIRECTORY ${THIRDPARTY_DIR}/portaudio/linux/install/include DESTINATION thirdparty/portaudio)
+install(DIRECTORY ${PORTAUDIO_INCLUDE_DIR}/ DESTINATION thirdparty/portaudio/include)
 if(WIN32)
     install(FILES ${PORTAUDIO_LIBRARIES}
             DESTINATION thirdparty/portaudio/lib)
     install(FILES ${PORTAUDIO_LIBS_RELEASE_DLL}
             DESTINATION thirdparty/portaudio/bin)
-elseif(UNIX AND NOT APPLE)
+elseif(UNIX)
     file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS}
             DESTINATION thirdparty/portaudio/lib)

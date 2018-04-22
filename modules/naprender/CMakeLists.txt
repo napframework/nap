@@ -24,10 +24,10 @@ target_link_libraries(${PROJECT_NAME} nrender ${DEPENDENT_NAP_MODULES})
 
 # Package into platform release
 if (UNIX)
-    set(UNIX_EXTRA_RPATH "../../../../thirdparty/glew/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/assimp/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/FreeImage/lib")
+    set(UNIX_EXTRA_RPATH ../../../../thirdparty/glew/lib)
+    list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+    list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/assimp/lib)
+    list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
 endif()
 package_module()
 

@@ -36,6 +36,7 @@ endif()
 package_module()
 
 # Package yoctopuce into platform release
+# TODO Package yoctopuce into platform release if we can find it
 install(DIRECTORY ${THIRDPARTY_DIR}/yoctopuce/Sources/ 
         DESTINATION thirdparty/yoctopuce/include
         FILES_MATCHING PATTERN "*.h")
