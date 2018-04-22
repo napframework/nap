@@ -298,10 +298,10 @@ namespace nap
 		outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
 	}
 	
-	bool ModuleManager::loadModuleDependenciesFromJSON(std::string& jsonFile, std::vector<std::string>& dependencies, utility::ErrorState& errorState)
+	
+	bool ModuleManager::loadModuleDependenciesFromJSON(std::string& jsonFile, std::vector<std::string>& outDependencies, utility::ErrorState& errorState)
 	{
-		// Check for our project.json in its normal location, beside the binary
-		std::string projectInfoToRead;
+		// Ensure the JSON file exists
 		if (!utility::fileExists(jsonFile)) {
 			errorState.fail("Couldn't load from " + jsonFile);
 			return false;
@@ -323,9 +323,7 @@ namespace nap
 		in.read(&buffer[0], len);
 		in.close();
 		
-		//if (!deserializeProjectInfoJSON(buffer, result, errorState))
-
-		// Try to parse the json file
+		// Try to parse the JSON file
 		rapidjson::Document document;
 		rapidjson::ParseResult parse_result = document.Parse(buffer.c_str());
 		if (!parse_result)
@@ -338,57 +336,57 @@ namespace nap
 		rapidjson::Value::ConstMemberIterator dependenciesElement = document.FindMember("dependencies");
 		if (!errorState.check(dependenciesElement != document.MemberEnd(), "Unable to find required 'dependencies' module info field"))
 			return false;
-		
 		if (!errorState.check(dependenciesElement->value.IsArray(), "'dependencies' module info field must be an array"))
 			return false;
 		
+		// Populate the output list
 		for (std::size_t index = 0; index < dependenciesElement->value.Size(); ++index)
 		{
 			const rapidjson::Value& json_element = dependenciesElement->value[index];
 			if (!errorState.check(json_element.IsString(), "Entries in 'dependencies' array in module info field must be a strings"))
 				return false;
 			
-			dependencies.push_back(json_element.GetString());
+			outDependencies.push_back(json_element.GetString());
 		}
 		
 		return true;
 	}
 
 	
-	bool ModuleManager::fetchProjectModuleDependencies(std::vector<std::string>& topLevelProjectModules, std::vector<std::string>& outDependentModules, utility::ErrorState& errorState)
+	bool ModuleManager::fetchProjectModuleDependencies(std::vector<std::string>& topLevelProjectModules, std::vector<std::string>& outDependencies, utility::ErrorState& errorState)
 	{
 		// Take the top level modules from project.json as the first modules to work on
 		std::vector<std::string> newModules = topLevelProjectModules;
 		
-		// Work until we find no new dependencies in a loop
+		// Work until we find loop and come across no new dependencies
 		std::vector<std::string> searchModules;
 		while (!newModules.empty())
 		{
 			// Add our new dependencies to our master list
-			outDependentModules.insert(outDependentModules.end(), newModules.begin(), newModules.end());
+			outDependencies.insert(outDependencies.end(), newModules.begin(), newModules.end());
 			
 			// Fetch any new dependencies for the dependencies found in the last loop
 			searchModules = newModules;
 			newModules.clear();
-			if (!fetchModuleDependenciesForModules(searchModules, outDependentModules, newModules, errorState))
+			if (!fetchImmediateModuleDependencies(searchModules, outDependencies, newModules, errorState))
 				return false;
 		}
-		
-		// Add our new dependencies to our master list
-		outDependentModules.insert(outDependentModules.end(), newModules.begin(), newModules.end());
 		
 		return true;
 	}
 
 	
-	bool ModuleManager::fetchModuleDependenciesForModules(std::vector<std::string>& searchModules, std::vector<std::string>& totalModules, std::vector<std::string>& outFoundDependencies, utility::ErrorState& errorState)
+	bool ModuleManager::fetchImmediateModuleDependencies(std::vector<std::string>& searchModules, std::vector<std::string>& previouslyFoundModules, std::vector<std::string>& outDependencies, utility::ErrorState& errorState)
 	{
+		// Based on the modules we're searching on build a set of directories to locate them in
 		std::vector<std::string> directories;
 		if (!buildModuleSearchDirectories(searchModules, directories, errorState))
 			return false;
 		
+		// List of remaining modules to locate dependencies for
 		std::vector<std::string> remainingModulesToFind = searchModules;
 		
+		// Iterate the directories in our search path
 		for (const auto& directory : directories) {
 			// Skip directory if it doesn't exist
 			if (!utility::dirExists(directory))
@@ -397,7 +395,8 @@ namespace nap
 			// Find all files in the specified directory
 			std::vector<std::string> files_in_directory;
 			utility::listDir(directory.c_str(), files_in_directory);
-			
+		
+			// Iterate the files in our search path
 			for (const auto& filename : files_in_directory)
 			{
 				// Ignore directories
@@ -412,15 +411,16 @@ namespace nap
 				std::string moduleName = getModuleNameFromPath(filename);
 				if (std::find(remainingModulesToFind.begin(), remainingModulesToFind.end(), moduleName) == remainingModulesToFind.end())
 					continue;
-				
+
+				// Get the JSON filename for the module
 				std::string modulePath = utility::getAbsolutePath(filename);
-				
 #if defined(_WIN32)
 				std::replace(modulePath.begin(), modulePath.end(), '\\', '/');
 #endif
 				std::string jsonFile = utility::getFileDir(modulePath) + "/" + utility::getFileNameWithoutExtension(modulePath);
 				jsonFile = jsonFile + ".json";
 
+				// Load the dependencies from the JSON file
 				std::vector<std::string> dependencies;
 				if (!loadModuleDependenciesFromJSON(jsonFile, dependencies, errorState))
 					return false;
@@ -429,14 +429,14 @@ namespace nap
 				for (const auto& dependencyModule : dependencies)
 				{
 					// Check if we already had this dependency before listing dependencies for this module
-					bool hadModulePreviously = std::find(totalModules.begin(), totalModules.end(), dependencyModule) != totalModules.end();
+					bool hadModulePreviously = std::find(previouslyFoundModules.begin(), previouslyFoundModules.end(), dependencyModule) != previouslyFoundModules.end();
 
 					// Check if we already had added this dependency as a new dependency
-					bool foundModuleRecently = std::find(outFoundDependencies.begin(), outFoundDependencies.end(), dependencyModule) != outFoundDependencies.end();
+					bool foundModuleRecently = std::find(outDependencies.begin(), outDependencies.end(), dependencyModule) != outDependencies.end();
 					
 					// If we've found a new dependency add it to the list
 					if (!hadModulePreviously && !foundModuleRecently)
-						outFoundDependencies.push_back(dependencyModule);
+						outDependencies.push_back(dependencyModule);
 				}
 				
 				// Remove our handled module from the remaining modules to load dependencies for

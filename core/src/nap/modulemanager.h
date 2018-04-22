@@ -83,13 +83,34 @@ namespace nap
 		 * @return Whether the folder name appears to contain a build configuration
 		 */
 		bool folderNameContainsBuildConfiguration(std::string& folderName);
-				
-		bool loadModuleDependenciesFromJSON(std::string& jsonFile, std::vector<std::string>& dependencies, utility::ErrorState& error);
 		
-		bool fetchProjectModuleDependencies(std::vector<std::string>& topLevelProjectModules, std::vector<std::string>& outDependentModules, utility::ErrorState& errorState);
+		/**
+		 * Load a list of NAP module dependencies from the specifed module JSON file
+		 * @param jsonFile The module.json file to load from
+		 * @param outDependencies The loaded list of dependencies
+		 * @param error The error message when loading fails
+		 * @return If loading failed or succeeded
+		 */
+		bool loadModuleDependenciesFromJSON(std::string& jsonFile, std::vector<std::string>& outDependencies, utility::ErrorState& error);
 		
-		bool fetchModuleDependenciesForModules(std::vector<std::string>& searchModules, std::vector<std::string>& totalModules, std::vector<std::string>& outFoundDependencies, utility::ErrorState& errorState);
+		/**
+		 * For the specified top level NAP modules load a list of all NAP module dependencies
+		 * @param topLevelProjectModules The NAP modules that our project requires, to initiate our search from
+		 * @param outDependencies The loaded list of dependencies
+		 * @param error The error message when the process fails
+		 * @return If the process failed or succeeded
+		 */
+		bool fetchProjectModuleDependencies(std::vector<std::string>& topLevelProjectModules, std::vector<std::string>& outDependencies, utility::ErrorState& errorState);
 
+		/**
+		 * For the specified NAP modules load a list of their immediate NAP module dependencies that we haven't already found
+		 * @param searchModules The set of modules to load immediate dependencies for
+		 * @param previouslyFoundModules A list of NAP module dependencies which we have already found. If any of these modules are encountered they won't be appended to outDependencies.
+		 * @param outDependencies The loaded list of dependencies
+		 * @param error The error message when the process fails
+		 * @return If the process failed or succeeded
+		 */
+		bool fetchImmediateModuleDependencies(std::vector<std::string>& searchModules, std::vector<std::string>& previouslyFoundModules, std::vector<std::string>& outDependencies, utility::ErrorState& errorState);
 		
 		using ModuleList = std::vector<Module>;
 		ModuleList mModules;	// The loaded modules
