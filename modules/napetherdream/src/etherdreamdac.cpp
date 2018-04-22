@@ -14,9 +14,15 @@ RTTI_END_CLASS
 namespace nap
 {
 	EtherDreamDac::EtherDreamDac(EtherDreamService& service) : mService(&service)
-	{}
+	{
+	}
 
 	EtherDreamDac::~EtherDreamDac()
+	{
+		stop();
+	}
+
+	void EtherDreamDac::stop()
 	{
 		// Exit write thread
 		if (mIsRunning)
@@ -45,7 +51,7 @@ namespace nap
 	}
 
 
-	bool EtherDreamDac::init(utility::ErrorState& errorState)
+	bool EtherDreamDac::start(utility::ErrorState& errorState)
 	{
 		assert(mService != nullptr);
 		mIsRunning = false;

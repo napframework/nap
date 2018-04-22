@@ -30,4 +30,5 @@ target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES} nrender)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # Package into release, export FBX, other shared source project fixes
-nap_source_project_packaging_and_shared_postprocessing(TRUE FALSE "examples" TRUE)
+# Note: This is for now packaged along with NAIVI apps into projects so that we have a project to test using mod_nappython
+nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" TRUE)
