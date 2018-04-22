@@ -13,6 +13,7 @@
         "mod_napsdlwindow",
         "mod_naprender",
         "mod_napmath",
-        "mod_napscene"
+        "mod_napscene",
+        "mod_napaudio"
     ]
 }
