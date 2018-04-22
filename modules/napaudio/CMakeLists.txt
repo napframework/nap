@@ -118,6 +118,7 @@ endif()
 
 # Package portaudio into platform release
 install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION thirdparty/portaudio)
+install(DIRECTORY ${THIRDPARTY_DIR}/portaudio/linux/install/include DESTINATION thirdparty/portaudio)
 if(WIN32)
     install(FILES ${PORTAUDIO_LIBRARIES}
             DESTINATION thirdparty/portaudio/lib)
