@@ -68,6 +68,10 @@ if(NOT MODULE_INTO_PROJ)
     endif()
 endif(NOT MODULE_INTO_PROJ)
 
+# Fetch our module dependencies
+module_json_in_directory_to_cmake(${CMAKE_CURRENT_SOURCE_DIR})
+fetch_module_dependencies("${DEPENDENT_NAP_MODULES}")
+
 include_directories(${NAP_ROOT}/include/)
 
 # Add source
@@ -124,11 +128,11 @@ endif()
 copy_module_json_to_bin()
 
 # Find each NAP module
-foreach(NAP_MODULE ${DEPENDENT_MODULES})
+foreach(NAP_MODULE ${NAP_MODULES})
     find_nap_module(${NAP_MODULE})
 endforeach()
-target_link_libraries(${PROJECT_NAME} ${DEPENDENT_MODULES})
-unset(DEPENDENT_MODULES)
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
+unset(NAP_MODULES)
 
 # Set our module output directory
 set_module_output_directories()
@@ -136,6 +140,11 @@ set_module_output_directories()
 # On macOS & Linux install module into packaged project
 if (NOT WIN32)
     install(FILES $<TARGET_FILE:${PROJECT_NAME}> DESTINATION lib CONFIGURATIONS Release)
+    if(UNIX)
+        install(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/lib${PROJECT_NAME}.json DESTINATION lib CONFIGURATIONS Release)
+    else()
+        install(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PROJECT_NAME}.json DESTINATION lib CONFIGURATIONS Release)
+    endif()
 
     # On Linux set our user modules tp use their directory for RPATH when installing
     if(NOT APPLE)
