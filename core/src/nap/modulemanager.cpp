@@ -33,11 +33,6 @@ namespace nap
 
 	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
-		// Build a list of directories to search for modules
-		std::vector<std::string> directories;
-		if (!buildModuleSearchDirectories(moduleNames, directories, error))
-			return false;
-
 		// Whether we're loading a specific set of requested modules
 		const bool loadSpecificModules = moduleNames.size() != 0;
 
@@ -48,6 +43,11 @@ namespace nap
 			if (!fetchProjectModuleDependencies(moduleNames, remainingModulesToLoad, error))
 				return false;
 		}
+		
+		// Build a list of directories to search for modules
+		std::vector<std::string> directories;
+		if (!buildModuleSearchDirectories(remainingModulesToLoad, directories, error))
+			return false;
 		
 		// Iterate each directory
 		for (const auto& directory : directories) {

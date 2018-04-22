@@ -54,12 +54,15 @@ macro(find_nap_module MODULE_NAME)
             if (WIN32)
                 set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.lib)
                 set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.lib)
+                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.json)
             elseif (APPLE)
                 set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.dylib)
                 set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.dylib)
+                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.json)
             elseif (UNIX)
                 set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.so)
                 set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.so)
+                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.json)
             endif()
 
             target_link_libraries(${MODULE_NAME} INTERFACE debug ${${MODULE_NAME}_DEBUG_LIB})
@@ -80,7 +83,8 @@ macro(find_nap_module MODULE_NAME)
 
         # On macOS & Linux install module into packaged project
         if (NOT WIN32)
-            install(FILES ${${MODULE_NAME}_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)    
+            install(FILES ${${MODULE_NAME}_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)
+            install(FILES ${${MODULE_NAME}_MODULE_JSON} DESTINATION lib CONFIGURATIONS Release)
             # On Linux set our modules use their directory for RPATH
             if(NOT APPLE)
                 install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/lib${MODULE_NAME}.so\")
@@ -305,6 +309,42 @@ macro(project_json_to_cmake)
     include(cached_project_json.cmake)
 endmacro()
 
+# Get our NAP modules dependencies from module.json, populating into DEPENDENT_NAP_MODULES
+macro(module_json_to_cmake)
+    module_json_in_directory_to_cmake(${CMAKE_CURRENT_SOURCE_DIR})
+endmacro()
+
+# Get our NAP modules dependencies from module.json in specified directory, populating into DEPENDENT_NAP_MODULES
+macro(module_json_in_directory_to_cmake DIRECTORY)
+    # Use configure_file to result in changes in module.json triggering reconfigure.  Appears to be best current approach.
+    configure_file(${DIRECTORY}/module.json module_json_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/module_json_trigger_dummy.json
+                    ERROR_QUIET)
+
+    # Clear any system Python path settings
+    unset(ENV{PYTHONHOME})
+    unset(ENV{PYTHONPATH})
+
+    # Parse our module.json and import it
+    if(WIN32)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python.exe)
+    elseif(UNIX)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
+    endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}")
+    endif()
+
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/module_info_parse_to_cmake.py ${DIRECTORY}
+                    RESULT_VARIABLE EXIT_CODE
+                    )
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not parse modules dependencies from module.json (${EXIT_CODE})")
+    endif()
+    include(${DIRECTORY}/cached_module_json.cmake)
+    # message("${PROJECT_NAME} DEPENDENT_NAP_MODULES from module.json: ${DEPENDENT_NAP_MODULES}")
+endmacro()
+
 # Build source groups for input files maintaining their folder structure
 # INPUT_FILES: Files to be added to source groups
 # RELATIVE_TO_PATH: The root path against which our relative source group paths will be built
@@ -340,4 +380,46 @@ macro(copy_module_json_to_bin)
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
                        COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
+endmacro()
+
+macro(fetch_module_dependencies TOPLEVEL_MODULES)
+    set(NEW_MODULES "${TOPLEVEL_MODULES}")
+    set(NAP_MODULES "")
+
+    while(NEW_MODULES)
+        list(APPEND NAP_MODULES "${NEW_MODULES}")
+        set(SEARCH_MODULES "${NEW_MODULES}")
+        set(NEW_MODULES "")
+        fetch_module_dependencies_for_modules("${SEARCH_MODULES}" "${NAP_MODULES}")
+    endwhile()
+    message(STATUS "Total dependent modules for ${PROJECT_NAME}: ${NAP_MODULES}")
+endmacro()
+
+macro(fetch_module_dependencies_for_modules SEARCH_MODULES TOTAL_MODULES)
+    set(NAP_MODULES_DIR ${NAP_ROOT}/modules/)
+    set(USER_MODULES_DIR ${NAP_ROOT}/user_modules/)
+    # Workaround for CMake not treating macro argument as proper list variable
+    set(TOTAL_MODULES ${TOTAL_MODULES})
+    foreach(SEARCH_MODULE ${SEARCH_MODULES})
+        if(EXISTS ${NAP_MODULES_DIR}/${SEARCH_MODULE})
+            set(FOUND_PATH ${NAP_MODULES_DIR}/${SEARCH_MODULE})
+        elseif(EXISTS ${USER_MODULES_DIR}/${SEARCH_MODULE})
+            set(FOUND_PATH ${USER_MODULES_DIR}/${SEARCH_MODULE})
+        elseif(${SEARCH_MODULE} STREQUAL mod_${PROJECT_NAME} AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module)
+            set(FOUND_PATH ${CMAKE_CURRENT_SOURCE_DIR}/module)
+        else()
+            message(FATAL_ERROR "Could not find module ${SEARCH_MODULE}")
+        endif()
+
+        if(NOT EXISTS ${FOUND_PATH}/module.json)
+            message(FATAL_ERROR "Could not find module.json in ${FOUND_PATH}")
+        endif()
+
+        module_json_in_directory_to_cmake(${FOUND_PATH})
+        foreach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})
+            if(NOT ${DEPENDENT_MODULE} IN_LIST NEW_MODULES AND NOT ${DEPENDENT_MODULE} IN_LIST TOTAL_MODULES)
+                list(APPEND NEW_MODULES ${DEPENDENT_MODULE})
+            endif()
+        endforeach()        
+    endforeach()
 endmacro()

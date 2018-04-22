@@ -18,6 +18,9 @@ include(${NAP_ROOT}/cmake/dist_shared.cmake)
 # Get our modules list from project.json
 project_json_to_cmake()
 
+# Fetch our module dependencies
+fetch_module_dependencies("${NAP_MODULES}")
+
 # Set our default build type if we haven't specified one (Linux)
 set_default_build_type()
 
