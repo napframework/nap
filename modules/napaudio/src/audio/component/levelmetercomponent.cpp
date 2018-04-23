@@ -38,7 +38,7 @@ namespace nap
             mBandWidth = mResource->mBandWidth;
             mFilterGain = mResource->mFilterGain;
             
-            if (!errorState.check(mResource->mChannel < mInput->getChannelCount(), "LevelMeterComponent: Channel exceeds number of input channels"))
+            if (!errorState.check(mResource->mChannel < mInput->getChannelCount(), "%s: Channel exceeds number of input channels", mResource->mID.c_str()))
                 return false;
             
             mMeter = mAudioService->makeSafe<LevelMeterNode>(mAudioService->getNodeManager());

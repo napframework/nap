@@ -6,7 +6,6 @@
 #include <audio/utility/safeptr.h>
 
 // Audio includes
-#include <audio/node/outputnode.h>
 #include <audio/component/audiocomponentbase.h>
 
 namespace nap
@@ -58,7 +57,7 @@ namespace nap
             void setInput(AudioComponentBaseInstance& input);
             
         private:
-            std::vector<SafeOwner<OutputNode>> mOutputs; // Nodes presenting the audio output to the node manager
+            std::vector<SafeOwner<Node>> mOutputs; // Nodes presenting the audio output to the node manager
             nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &OutputComponent::mInput }; // Pointer to the component whose input will be sent to the output.
             
             AudioService* mAudioService = nullptr; // Pointer to the audio service the audio output will be sent to.
