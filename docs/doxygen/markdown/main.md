@@ -3,7 +3,7 @@ New Amsterdam Platform {#mainpage}
 
 # Description
 
-NAP (New Amsterdam Platform) is a platform that merges game technology with the flexibility of creative coding environments. The end result is a platform that offers both stability, ease of use and freedom. If you want to create dynamic content for high resolution screens or control an entire theatre stage: NAP is the tool for you.
+NAP framework is a platform that merges game technology with the flexibility of creative coding environments. The end result is a platform that offers both stability, ease of use and freedom. If you want to create dynamic content for high resolution screens or control an entire theatre stage: NAP is the tool for you.
 
 NAP provides a single platform where you can use any protocol (such as OSC, Midi or Artnet) in conjunction with a 3D graphics engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of output devices: many speakers, many lights, many lasers, many screens.
 	
