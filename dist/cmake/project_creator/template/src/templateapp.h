@@ -54,7 +54,7 @@ namespace nap
 		/**
 		 *	Shuts down all related functionality
 		 */
-		virtual void shutdown() override;
+		virtual int shutdown() override;
 
 		
 		
