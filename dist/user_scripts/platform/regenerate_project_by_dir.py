@@ -39,11 +39,14 @@ if __name__ == '__main__':
     # If we don't want to show the solution and we weren't not on Linux specify that
     if not show_solution and not sys.platform.startswith('linux'):
         cmd.append('--no-show')
-    clean_exit = call(cmd) == 0
+    exit_code = call(cmd)
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
-    if not clean_exit and not sys.platform.startswith('linux') and not args.no_pause:
+    if exit_code != 0 and not sys.platform.startswith('linux') and not args.no_pause:
         print("Press key to close...")
 
         # Read a char from console
         read_console_char()
+
+    # Expose exit code
+    sys.exit(exit_code)
