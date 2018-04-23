@@ -16,7 +16,7 @@ namespace nap
 {
 	/**
 	 * Initialize all the resources and instances used for drawing
-	 * slowly migrating all functionality to nap
+	 * slowly migrating all functionality to NAP
 	 */
 	bool @PROJECT_NAME_PASCALCASE@App::init(utility::ErrorState& error)
 	{
@@ -27,7 +27,7 @@ namespace nap
 		
 		// Get resource manager service
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("appStructure.json", error))
+		if (!mResourceManager->loadFile("app_structure.json", error))
 			return false;
 
 		mScene = mResourceManager->findObject<Scene>("Scene");
@@ -56,22 +56,14 @@ namespace nap
 	// Called when the window is going to render
 	void @PROJECT_NAME_PASCALCASE@App::render()
 	{
-		// Make render window active
 		mRenderService->destroyGLContextResources(mRenderWindows);
 		RenderWindow* render_window = mRenderWindows[0].get();
 		render_window->makeActive();
+		mRenderService->clearRenderTarget(render_window->getBackbuffer());
+		render_window->swap();		
 	}
 	
 
-	/**
-	 * Handles the window event
-	 */
-	void @PROJECT_NAME_PASCALCASE@App::handleWindowEvent(const WindowEvent& windowEvent)
-	{
-		
-	}
-	
-	
 	void @PROJECT_NAME_PASCALCASE@App::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
@@ -81,12 +73,6 @@ namespace nap
 	void @PROJECT_NAME_PASCALCASE@App::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		
-	}
-
-	
-	void @PROJECT_NAME_PASCALCASE@App::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
