@@ -3,16 +3,6 @@
     "version": "0.1",
     "modules": [
         "mod_videomodulation",
-        "mod_napapp",
-        "mod_napsdlwindow",
-        "mod_napsdlinput",
-        "mod_napinput",
-        "mod_napimgui",
-        "mod_napscene",
-        "mod_naprender",
-        "mod_napvideo",
-        "mod_napcameracontrol",
-        "mod_napmath",
-        "mod_napaudio"
+        "mod_napapp"
     ]
 }

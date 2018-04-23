@@ -13,6 +13,9 @@ source_group("resource" src/audio/resource/*.*)
 source_group("service" src/audio/service/*.*)
 source_group("utility" src/audio/utility/*.*)
 
+# Get our NAP modules dependencies from module.json
+module_json_to_cmake()
+
 set(LIBRARIES napcore portaudio libsndfile libmpg123)
 if(APPLE)
     list(APPEND LIBRARIES "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
@@ -24,7 +27,6 @@ add_library(${PROJECT_NAME} SHARED ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
-set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
@@ -53,6 +55,9 @@ if(WIN32)
 
     copy_files_to_bin(${FILES_TO_COPY})
 endif()
+
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
 
 # Package into platform release
 if(UNIX)

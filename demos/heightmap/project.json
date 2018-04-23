@@ -4,13 +4,6 @@
     "modules": [
         "mod_heightmap",
         "mod_napapp",
-        "mod_napcameracontrol",
-        "mod_napscene",
-        "mod_napsdlwindow",
-        "mod_napsdlinput",
-        "mod_napinput",
-        "mod_napimgui",
-        "mod_naprender",
-        "mod_napmath"
+        "mod_napcameracontrol"
     ]
 }
