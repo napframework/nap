@@ -137,6 +137,15 @@ namespace nap
 		 */
 		template <typename T>
 		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
+
+		/**
+		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
+		 * folders to find the file.
+		 * @param filename File to search for.
+		 * @param foundFilePath The full file path of where the file was found.
+		 * @return true if the file was found, otherwise false.
+		 */
+		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
 	
 	private:
 		/**
