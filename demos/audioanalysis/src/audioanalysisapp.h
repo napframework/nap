@@ -75,8 +75,10 @@ namespace nap
         audio::ControllerValue mAnalysisFrequency = 500.f;              //< Center frequency of the analysis
         audio::ControllerValue mAnalysisBand = 100.f;                   //< Bandwidth of the analysis
         audio::ControllerValue mAnalysisGain = 5.0f;                    //< Factor to gain the analysis input before analyzing
-        std::vector<audio::ControllerValue> mAnalysisPlotValues = { };  //< Output of the analysis will be stored chronologically in this factor, so we can draw a plot of the data
-        
+        std::vector<audio::ControllerValue> mPlotvalues = { };  //< Output of the analysis will be stored chronologically in this factor, so we can draw a plot of the data
+		uint32 mTickSum = 0;
+		uint32 mTickIdx = 0;
+
         enum InputSource {
             EAudioDevice, EAudioFile
         };
