@@ -1,6 +1,6 @@
 {
     "title": "MultiWindow",
-    "version": "0.1",
+    "version": "0.1.0",
     "modules": [
         "mod_napapp",
         "mod_napcameracontrol"

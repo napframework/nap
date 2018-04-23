@@ -1,6 +1,6 @@
 {
     "title": "DynamicGeo",
-    "version": "0.1",
+    "version": "0.1.0",
     "modules": [
         "mod_dynamicgeo",
         "mod_napapp",
