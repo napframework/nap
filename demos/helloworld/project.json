@@ -1,15 +1,8 @@
 {
     "title": "HelloWorld",
-    "version": "0.1",
+    "version": "0.1.0",
     "modules": [
-        "mod_naprender",
-        "mod_napinput",
-        "mod_napsdlinput",
-        "mod_napsdlwindow",
         "mod_napapp",
-        "mod_napcameracontrol",           
-        "mod_napscene",
-        "mod_napmath",
-        "mod_napimgui"
+        "mod_napcameracontrol"
     ]
 }
