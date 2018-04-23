@@ -1384,6 +1384,12 @@ namespace nap
 					if (mExitIOThreadSignalled)
 						break;
 
+					if (produce_packet_result == EProducePacketResult::EndOfFile)
+					{
+						finishSeeking(*mSeekState);
+						break;
+					}
+
 					Frame seek_frame = mSeekState->popSeekFrame();
 					VIDEO_DEBUG_LOG("seek start frame, pop frame: pkt_pos: %d, dts: %d, pts: %d", seek_frame.mFrame->pkt_pos, seek_frame.mFrame->pkt_dts, seek_frame.mFrame->pkt_pts);
 
@@ -1436,8 +1442,14 @@ namespace nap
 						if (mExitIOThreadSignalled)
 							break;
 
+						if (produce_packet_result == EProducePacketResult::EndOfFile)
+						{
+							finishSeeking(*mSeekState);
+							break;
+						}
+
 						Frame seek_frame = mSeekState->popSeekFrame();
-						if (seek_frame.mFrame->best_effort_timestamp >= mSeekTarget || produce_packet_result == EProducePacketResult::EndOfFile)
+						if (seek_frame.mFrame->best_effort_timestamp >= mSeekTarget)
 						{
 							// If we've found a matching frame, finish the seek operation and resume normal play
 							finishSeeking(*mSeekState);
