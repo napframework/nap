@@ -31,7 +31,7 @@ namespace nap
 		*/
 	}
 
-	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
+	bool ModuleManager::loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
 		// Whether we're loading a specific set of requested modules
 		const bool loadSpecificModules = moduleNames.size() != 0;
@@ -50,7 +50,8 @@ namespace nap
 			return false;
 		
 		// Iterate each directory
-		for (const auto& directory : directories) {
+		for (const auto& directory : directories) 
+		{
 			// Skip directory if it doesn't exist
 			if (!utility::dirExists(directory))
 				continue;
@@ -148,11 +149,11 @@ namespace nap
 	}
 	
 
-	bool ModuleManager::buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories, utility::ErrorState& errorState)
+	bool ModuleManager::buildModuleSearchDirectories(const std::vector<std::string>& moduleNames, std::vector<std::string>& searchDirectories, utility::ErrorState& errorState)
 	{
 #ifdef _WIN32
 		// Windows
-		outSearchDirectories.push_back(utility::getExecutableDir());
+		searchDirectories.push_back(utility::getExecutableDir());
 #elif defined(NAP_PACKAGED_BUILD)
 		// Running against released NAP on macOS & Linux
 		const std::string exeDir = utility::getExecutableDir();
@@ -160,12 +161,12 @@ namespace nap
 		// Check if we're running a packaged project (on macOS or Linux)
 		if (utility::fileExists(exeDir + "/lib/libnapcore." + getModuleExtension()))
 		{
-			outSearchDirectories.push_back(exeDir + "/lib");
+			searchDirectories.push_back(exeDir + "/lib");
 		}
 		// If we have no modules requested we're running in a non-project context, eg. napkin
 		else if (moduleNames.size() == 0)
 		{
-			buildPackagedNapNonProjectModulePaths(outSearchDirectories);
+			buildPackagedNapNonProjectModulePaths(searchDirectories);
 		}
 		else {
 			std::vector<std::string> dirParts;
@@ -173,7 +174,7 @@ namespace nap
 			// Check if we can see our build output folder, otherwise we're in an unexpected configuration
 			if (folderNameContainsBuildConfiguration(dirParts.end()[-1]))
 			{
-				buildPackagedNapProjectModulePaths(moduleNames, outSearchDirectories);
+				buildPackagedNapProjectModulePaths(moduleNames, searchDirectories);
 			}
 			else {
 				errorState.fail("Unexpected path configuration found, can't locate modules");
@@ -193,7 +194,7 @@ namespace nap
 			// MacOS & Linux apps in NAP internal source
 			const std::string napRoot = exeDir + "/../../";
 			const std::string full_configuration_name = dirParts.end()[-1];
-			outSearchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
+			searchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
 
 		} else {
 			errorState.fail("Unexpected path configuration found, can't locate modules");
@@ -204,7 +205,7 @@ namespace nap
 	}
 	
 
-	bool ModuleManager::folderNameContainsBuildConfiguration(std::string& folderName)
+	bool ModuleManager::folderNameContainsBuildConfiguration(const std::string& folderName)
 	{
 		std::vector<std::string> configParts;
 		utility::splitString(folderName, '-', configParts);
@@ -231,7 +232,7 @@ namespace nap
 	}
 	
 
-	void ModuleManager::buildPackagedNapNonProjectModulePaths(std::vector<std::string>& outSearchDirectories)
+	void ModuleManager::buildPackagedNapNonProjectModulePaths(std::vector<std::string>& searchDirectories)
 	{
 		// Cater for Napkin running against packaged NAP.  Module names won't be specified.  Let's load everything we can find.
 		
@@ -253,7 +254,7 @@ namespace nap
 			std::string dirName = napRoot + "modules/" + module + "/lib/" + buildType;
 			if (!utility::dirExists(dirName))
 				continue;
-			outSearchDirectories.push_back(dirName);
+			searchDirectories.push_back(dirName);
 			//Logger::info("Adding module search path %s for napkin", dirName.c_str());
 		}
 		
@@ -266,16 +267,16 @@ namespace nap
 			std::string dirName = napRoot + "user_modules/" + module + "/lib/" + buildType;
 			if (!utility::dirExists(dirName))
 				continue;
-			outSearchDirectories.push_back(dirName);
+			searchDirectories.push_back(dirName);
 			//Logger::info("Adding user module search path %s for napkin", dirName.c_str());
 		}
 
 		// Project module
-		outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
+		searchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
 	}
 
 	
-	void ModuleManager::buildPackagedNapProjectModulePaths(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories)
+	void ModuleManager::buildPackagedNapProjectModulePaths(const std::vector<std::string>& moduleNames, std::vector<std::string>& searchDirectories)
 	{
 #ifdef NDEBUG
 		const std::string buildType = "Release";
@@ -289,17 +290,17 @@ namespace nap
 		for (const std::string& module : moduleNames)
 		{
 			// NAP modules
-			outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
+			searchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
 			// User modules
-			outSearchDirectories.push_back(napRoot + "user_modules/" + module + "/lib/" + buildType);
+			searchDirectories.push_back(napRoot + "user_modules/" + module + "/lib/" + buildType);
 		}
 		
 		// Project module
-		outSearchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
+		searchDirectories.push_back(exeDir + "/../../module/lib/" + buildType);
 	}
 	
 	
-	bool ModuleManager::loadModuleDependenciesFromJSON(std::string& jsonFile, std::vector<std::string>& outDependencies, utility::ErrorState& errorState)
+	bool ModuleManager::loadModuleDependenciesFromJSON(const std::string& jsonFile, std::vector<std::string>& dependencies, utility::ErrorState& errorState)
 	{
 		// Ensure the JSON file exists
 		if (!utility::fileExists(jsonFile)) {
@@ -346,14 +347,14 @@ namespace nap
 			if (!errorState.check(json_element.IsString(), "Entries in 'dependencies' array in module info field must be a strings"))
 				return false;
 			
-			outDependencies.push_back(json_element.GetString());
+			dependencies.push_back(json_element.GetString());
 		}
 		
 		return true;
 	}
 
 	
-	bool ModuleManager::fetchProjectModuleDependencies(std::vector<std::string>& topLevelProjectModules, std::vector<std::string>& outDependencies, utility::ErrorState& errorState)
+	bool ModuleManager::fetchProjectModuleDependencies(const std::vector<std::string>& topLevelProjectModules, std::vector<std::string>& dependencies, utility::ErrorState& errorState)
 	{
 		// Take the top level modules from project.json as the first modules to work on
 		std::vector<std::string> newModules = topLevelProjectModules;
@@ -363,12 +364,12 @@ namespace nap
 		while (!newModules.empty())
 		{
 			// Add our new dependencies to our master list
-			outDependencies.insert(outDependencies.end(), newModules.begin(), newModules.end());
+			dependencies.insert(dependencies.end(), newModules.begin(), newModules.end());
 			
 			// Fetch any new dependencies for the dependencies found in the last loop
 			searchModules = newModules;
 			newModules.clear();
-			if (!fetchImmediateModuleDependencies(searchModules, outDependencies, newModules, errorState))
+			if (!fetchImmediateModuleDependencies(searchModules, dependencies, newModules, errorState))
 				return false;
 		}
 		
@@ -376,7 +377,7 @@ namespace nap
 	}
 
 	
-	bool ModuleManager::fetchImmediateModuleDependencies(std::vector<std::string>& searchModules, std::vector<std::string>& previouslyFoundModules, std::vector<std::string>& outDependencies, utility::ErrorState& errorState)
+	bool ModuleManager::fetchImmediateModuleDependencies(const std::vector<std::string>& searchModules, std::vector<std::string>& previouslyFoundModules, std::vector<std::string>& dependencies, utility::ErrorState& errorState)
 	{
 		// Based on the modules we're searching on build a set of directories to locate them in
 		std::vector<std::string> directories;
@@ -432,11 +433,11 @@ namespace nap
 					bool hadModulePreviously = std::find(previouslyFoundModules.begin(), previouslyFoundModules.end(), dependencyModule) != previouslyFoundModules.end();
 
 					// Check if we already had added this dependency as a new dependency
-					bool foundModuleRecently = std::find(outDependencies.begin(), outDependencies.end(), dependencyModule) != outDependencies.end();
+					bool foundModuleRecently = std::find(dependencies.begin(), dependencies.end(), dependencyModule) != dependencies.end();
 					
 					// If we've found a new dependency add it to the list
 					if (!hadModulePreviously && !foundModuleRecently)
-						outDependencies.push_back(dependencyModule);
+						dependencies.push_back(dependencyModule);
 				}
 				
 				// Remove our handled module from the remaining modules to load dependencies for
