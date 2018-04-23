@@ -1,6 +1,6 @@
 {
     "title": "VideoModulation",
-    "version": "0.1",
+    "version": "0.1.0",
     "modules": [
         "mod_videomodulation",
         "mod_napapp"
