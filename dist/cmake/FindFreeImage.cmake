@@ -14,6 +14,7 @@ elseif(APPLE)
         HINTS ${THIRDPARTY_DIR}/FreeImage
     )
     set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include/)
+    set(FREEIMAGE_LIBS_DLL ${FREEIMAGE_DIR}/lib/libfreeimage-3.17.0.dylib)
 elseif(UNIX)
     find_path(
         FREEIMAGE_DIR
