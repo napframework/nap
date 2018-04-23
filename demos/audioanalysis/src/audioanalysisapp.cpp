@@ -65,7 +65,7 @@ namespace nap
         levelMeter->setFilterGain(mAnalysisGain);
         
         // Resize the vector containing the results of the analysis
-        mAnalysisPlotValues.resize(100, 0);
+        mPlotvalues.resize(128, 0);
 
 		return true;
 	}
@@ -88,15 +88,14 @@ namespace nap
         assert(input);
         assert(player);
 
-        // Shift the values in the vector with output values one position to the right, in order to make place for a new value.
-        for (auto i = mAnalysisPlotValues.size() - 1; i > 0; i--)
-            mAnalysisPlotValues[i] = mAnalysisPlotValues[i - 1];
-        // Insert the new output value at the top of the vector.
-        mAnalysisPlotValues[0] = levelMeter->getLevel();
-        
+		// Store new value in array
+		mPlotvalues[mTickIdx] = levelMeter->getLevel();	// save new value so it can be subtracted later		
+		if (++mTickIdx == mPlotvalues.size())			// increment current sample index
+			mTickIdx = 0;
+
 		// Draw some gui elements
 		ImGui::Begin("Audio analysis", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::PlotHistogram("", mAnalysisPlotValues.data(), mAnalysisPlotValues.size(), 0, nullptr, 0.0f, 0.2f, ImVec2(512, 128)); // Plot the output values
+        ImGui::PlotHistogram("", mPlotvalues.data(), mPlotvalues.size(), mTickIdx, nullptr, 0.0f, 0.2f, ImVec2(512, 128)); // Plot the output values
         ImGui::SliderFloat("Filter Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Filter Bandwidth", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Audio Gain", &mAnalysisGain, 0.f, 10.0f, "%.3f", 1.0f);
