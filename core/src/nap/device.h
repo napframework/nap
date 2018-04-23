@@ -12,7 +12,7 @@ namespace nap
 	 * The Device class deals with this case by providing an explicit start/stop virtual, which are called at appropriate times by the ResourceManager.
 	 * It's important that both start & stop can be called multiple times, but note that they will always be called in pairs.
 	 *
-	 * The Device is automatically stopped (by calling stop()) during destruction of the Device.
+	 * The device is not stopped when destroyed. It is important to do that yourself by calling stop() in the destructor of your device 
 	 */
 	class NAPAPI Device : public Resource
 	{
