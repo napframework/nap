@@ -102,7 +102,7 @@ install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/install/COPYING DESTINATION thi
 if(WIN32)
     install(DIRECTORY ${THIRDPARTY_DIR}/libsndfile/msvc64/
             DESTINATION thirdparty/libsndfile)
-elseif(UNIX AND NOT APPLE)
+elseif(UNIX)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
             DESTINATION thirdparty/libsndfile/lib)
@@ -113,7 +113,7 @@ install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION 
 if(WIN32)
     install(DIRECTORY ${THIRDPARTY_DIR}/portaudio/msvc64/
             DESTINATION thirdparty/portaudio)
-elseif(UNIX AND NOT APPLE)
+elseif(UNIX)
     file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS}
             DESTINATION thirdparty/portaudio/lib)
