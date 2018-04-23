@@ -95,15 +95,15 @@ namespace nap
         mAnalysisPlotValues[0] = levelMeter->getLevel();
         
 		// Draw some gui elements
-		ImGui::Begin("Audio analysis");
-        ImGui::PlotLines("", mAnalysisPlotValues.data(), mAnalysisPlotValues.size(), 0, nullptr, 0.0f, 0.2f, ImVec2(0, 200)); // Plot the output values
+		ImGui::Begin("Audio analysis", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::PlotHistogram("", mAnalysisPlotValues.data(), mAnalysisPlotValues.size(), 0, nullptr, 0.0f, 0.2f, ImVec2(512, 128)); // Plot the output values
         ImGui::SliderFloat("Filter Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Filter Bandwidth", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Audio Gain", &mAnalysisGain, 0.f, 10.0f, "%.3f", 1.0f);
         if (ImGui::RadioButton("Audio file input", mInputSource == EAudioFile))
             mInputSource = EAudioFile;
         if (ImGui::RadioButton("Audio device input", mInputSource == EAudioDevice))
-            mInputSource = EAudioDevice;
+            mInputSource = EAudioDevice;	
 		ImGui::End();
         
         if (mInputSource != mCurrentInputSource)
