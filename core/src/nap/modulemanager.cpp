@@ -422,12 +422,12 @@ namespace nap
 				jsonFile = jsonFile + ".json";
 
 				// Load the dependencies from the JSON file
-				std::vector<std::string> dependencies;
-				if (!loadModuleDependenciesFromJSON(jsonFile, dependencies, errorState))
+				std::vector<std::string> dependenciesFromJson;
+				if (!loadModuleDependenciesFromJSON(jsonFile, dependenciesFromJson, errorState))
 					return false;
 
 				// Iterate each dependency for this module
-				for (const auto& dependencyModule : dependencies)
+				for (const auto& dependencyModule : dependenciesFromJson)
 				{
 					// Check if we already had this dependency before listing dependencies for this module
 					bool hadModulePreviously = std::find(previouslyFoundModules.begin(), previouslyFoundModules.end(), dependencyModule) != previouslyFoundModules.end();
