@@ -91,63 +91,63 @@ These Terms of Use constitute an agreement between You and Naivi. These Terms of
 
 	- You: you, being user of the Services
 
-1. Applicability of Terms of Use
+2. Applicability of Terms of Use
 -----------------------
 
-	- 1.1 Your use of the Services is subject to the terms and conditions set forth in these Terms of Use. By installing, using or accessing the Software or the Services or any parts thereof, you accept the terms of these Terms of Use. If you do not accept the terms of these Terms of Use, do not install, use or access the Software or the Services.
+	- 2.1 Your use of the Services is subject to the terms and conditions set forth in these Terms of Use. By installing, using or accessing the Software or the Services or any parts thereof, you accept the terms of these Terms of Use. If you do not accept the terms of these Terms of Use, do not install, use or access the Software or the Services.
 
-	- 1.2 Naivi is entitled to amend the terms of this Terms of Use from time to time. The most recent terms are published on [URL]. Naivi will inform you of such amendments. If You do not accept such amendments, You must notify Naivi thereof in writing within four weeks after the date on which You have been informed of such amendments. Following such notification, Naivi may, in its sole discretion, decide to terminate the agreement with You or to continue the agreement under the former version of the terms thereof. If you do not notify Naivi timely of your non-acceptance, you will be deemed to have accepted the amendments ad will be unconditionally bound to the amended terms of the agreement.
+	- 2.2 Naivi is entitled to amend the terms of this Terms of Use from time to time. The most recent terms are published on [URL]. Naivi will inform you of such amendments. If You do not accept such amendments, You must notify Naivi thereof in writing within four weeks after the date on which You have been informed of such amendments. Following such notification, Naivi may, in its sole discretion, decide to terminate the agreement with You or to continue the agreement under the former version of the terms thereof. If you do not notify Naivi timely of your non-acceptance, you will be deemed to have accepted the amendments ad will be unconditionally bound to the amended terms of the agreement.
 
-2. The Services
+3. The Services
 -----------------------
 
-	- 2.1 The Services will be provided under Naivi’s obligation to perform to its commercially reasonable efforts, and Naivi’s obligations hereunder constitute a “inspanningsverbintenis” pursuant to Dutch law. Nothing herein can be construed as an obligation or a guarantee by Naivi that a certain result will be established or guaranteed. The Services are provided to You ‘as is’. Naivi does not guarantee that the Services will be provided without interruptions, errors or defects or that all errors and defects will always be fixed. Naivi does not make, and disclaim, any and all express or implied warranties, including implied warranties of condition, error-free or uninterrupted use, accuracy of data, compatibility, interoperability, satisfactory quality, fitness for a particular purpose, non-infringement of third party rights or that any errors or defects in the Services will be corrected. 
+	- 3.1 The Services will be provided under Naivi’s obligation to perform to its commercially reasonable efforts, and Naivi’s obligations hereunder constitute a “inspanningsverbintenis” pursuant to Dutch law. Nothing herein can be construed as an obligation or a guarantee by Naivi that a certain result will be established or guaranteed. The Services are provided to You ‘as is’. Naivi does not guarantee that the Services will be provided without interruptions, errors or defects or that all errors and defects will always be fixed. Naivi does not make, and disclaim, any and all express or implied warranties, including implied warranties of condition, error-free or uninterrupted use, accuracy of data, compatibility, interoperability, satisfactory quality, fitness for a particular purpose, non-infringement of third party rights or that any errors or defects in the Services will be corrected. 
 
-	- 2.2 Your use of the Services is at Your sole risk unless set out herein otherwise explicitly.
+	- 3.2 Your use of the Services is at Your sole risk unless set out herein otherwise explicitly.
 
-	- 2.3 Naivi shall at all times be entitled, but will never be obliged, to update, upgrade and/or to adapt the Services, or to change or remove the Services data or information stored through the Services.
+	- 3.3 Naivi shall at all times be entitled, but will never be obliged, to update, upgrade and/or to adapt the Services, or to change or remove the Services data or information stored through the Services.
 
-	- 2.4 You shall be responsible for the data and other results processed by You through the use of the Services. You guarantee that the data and other results are not illegal and do not infringe rights of third parties. You indemnify Naivi against claims by thirds parties, of whatever nature, in relation to this data and other results or the use of the Services.
+	- 3.4 You shall be responsible for the data and other results processed by You through the use of the Services. You guarantee that the data and other results are not illegal and do not infringe rights of third parties. You indemnify Naivi against claims by thirds parties, of whatever nature, in relation to this data and other results or the use of the Services.
 
-3. License
+4. License
 -----------------------
 
-	- 3.1 The Software is licensed, not sold, assigned or transferred. Naivi grants you a personal, non-exclusive license to install,use the Software  and to commercially exploit the applications that you have created by using the Software and Services as provided by or on behalf of Naivi for your personal use solely as set forth in these Terms of Use, any additional terms to be provided with the Software and accompanying documentation.
+	- 4.1 The Software is licensed, not sold, assigned or transferred. Naivi grants you a personal, non-exclusive license to install,use the Software  and to commercially exploit the applications that you have created by using the Software and Services as provided by or on behalf of Naivi for your personal use solely as set forth in these Terms of Use, any additional terms to be provided with the Software and accompanying documentation.
 
-	- 3.2 The rights granted herein are subject to your compliance with these Terms of Use.
+	- 4.2 The rights granted herein are subject to your compliance with these Terms of Use.
 
-	- 3.3 The License is limited to the intellectual property rights of Naivi in the Software and does not include any other rights, including intellectual property rights.
+	- 4.3 The License is limited to the intellectual property rights of Naivi in the Software and does not include any other rights, including intellectual property rights.
 
-	- 3.4 All rights not expressly granted to you herein are reserved by Naivi. Naivi retains all its rights, titles and interest in and to the Software and the Services, including, but not limited to, all copyrights, trademarks, trade secrets, trade names, proprietary rights, patents, titles, computer codes and moral rights whether registered or not and all applications thereof.
+	- 4.4 All rights not expressly granted to you herein are reserved by Naivi. Naivi retains all its rights, titles and interest in and to the Software and the Services, including, but not limited to, all copyrights, trademarks, trade secrets, trade names, proprietary rights, patents, titles, computer codes and moral rights whether registered or not and all applications thereof.
 
-	-3.5 Unless insofar expressly authorized by mandatory legislation, you will not, without prior written consent from Naivi or as set forth herein otherwise: ; (i) distribute, lease, license, sell, rent, lend, convey or otherwise transfer or assign the Software, any copies thereof; (ii) copy, reproduce or distribute the Software in any manner or medium, in whole or in part; (iii) make the Software publicly available or available on a network for use or download by multiple users; (iv) remove, alter, or obscure any product identification, copyright, intellectual property, author attributions, legal notices or other labels of the origin or source in the Software; (v) alter, modify, enhance, or create a derivative work of the Software. 
+	- 4.5 Unless insofar expressly authorized by mandatory legislation, you will not, without prior written consent from Naivi or as set forth herein otherwise: ; (i) distribute, lease, license, sell, rent, lend, convey or otherwise transfer or assign the Software, any copies thereof; (ii) copy, reproduce or distribute the Software in any manner or medium, in whole or in part; (iii) make the Software publicly available or available on a network for use or download by multiple users; (iv) remove, alter, or obscure any product identification, copyright, intellectual property, author attributions, legal notices or other labels of the origin or source in the Software; (v) alter, modify, enhance, or create a derivative work of the Software. 
 
-4. Updates and upgrades
+5. Updates and upgrades
 -----------------------
 
-	- 4.1 Naivi will be entitled, but can never be held, to provide updates and upgrades of the Software. 
+	- 5.1 Naivi will be entitled, but can never be held, to provide updates and upgrades of the Software. 
 
-1. Created Results 
+6. Created Results 
 -----------------------
 
-	- 1.1 The Services may allow you to build your own applications.
+	- 6.1 The Services may allow you to build your own applications.
 
-	- 1.2 If Naivi is of the opinion that your use of the Services may infringe upon any rights of third parties, Naivi may at its sole discretion decide to cease or have ceased your use of the Software or the Services.
+	- 6.2 If Naivi is of the opinion that your use of the Services may infringe upon any rights of third parties, Naivi may at its sole discretion decide to cease or have ceased your use of the Software or the Services.
 
 
-2. Warranties, liability and indemnity
+7. Warranties, liability and indemnity
 -----------------------
 
-	- 2.1 Naivi will not be liable for any damages and losses, including special, incidental, consequential or exemplary damages, including but not limited to loss of opportunity or lost profits, loss of goodwill and property damage and all damages and losses that result from or are connected to software and/or hardware failure or malfunction, that result from or are connected to the License and/or the Services, including the possession, access, use or malfunction of the License and the Services, whether arising in tort (including negligence), contract or otherwise and whether or not Naivi has been advised of the possibility of such damages.
+	- 7.1 Naivi will not be liable for any damages and losses, including special, incidental, consequential or exemplary damages, including but not limited to loss of opportunity or lost profits, loss of goodwill and property damage and all damages and losses that result from or are connected to software and/or hardware failure or malfunction, that result from or are connected to the License and/or the Services, including the possession, access, use or malfunction of the License and the Services, whether arising in tort (including negligence), contract or otherwise and whether or not Naivi has been advised of the possibility of such damages.
 
-	- 2.2 You agree and warrant that your use of the Services will not infringe upon any and all rights of third parties, including but not limited to intellectual property rights, moral rights and privacy rights.
+	- 7.2 You agree and warrant that your use of the Services will not infringe upon any and all rights of third parties, including but not limited to intellectual property rights, moral rights and privacy rights.
 
-	- 2.3 To the fullest extent permitted by law you hereby agree to defend, indemnify and hold harmless Naivi for providing the Services to You from and against all damage, claims, costs, charges and expenses (including attorneys’ fees) arising out of your use of the Services, including but not limited to the creation of works or having works produced.
+	- 7.3 To the fullest extent permitted by law you hereby agree to defend, indemnify and hold harmless Naivi for providing the Services to You from and against all damage, claims, costs, charges and expenses (including attorneys’ fees) arising out of your use of the Services, including but not limited to the creation of works or having works produced.
 
-3. Third party libraries
+8. Third party libraries
 -----------------------
 
-	- 3.1 The Software does not contain or derivative with (any portion) of third party libraries, but the Software is designed to let You work with the following libraries (hereinafter: “Third Party Libraries”). These libraries are owned and operated by other companies with their own terms and provisions, which You can find here: 
+	- 8.1 The Software does not contain or derivative with (any portion) of third party libraries, but the Software is designed to let You work with the following libraries (hereinafter: “Third Party Libraries”). These libraries are owned and operated by other companies with their own terms and provisions, which You can find here: 
 		- assimp: http://assimp.sourceforge.net/main_license.html
 		- ffmpeg: https://www.ffmpeg.org/legal.html
 		- freeimage: http://freeimage.sourceforge.net/license.html
@@ -167,32 +167,32 @@ These Terms of Use constitute an agreement between You and Naivi. These Terms of
 		- sdl2: https://www.libsdl.org/license.php
 		- yoctopuce: https://www.yoctopuce.com/EN/cg.php
 
-	- 3.2 Naivi will not be liable for any damages and losses including special, incidental, consequential or exemplary damages, including but not limited to loss of opportunity or lost profits, loss of goodwill and property damage and all damages and losses that result from or are connected to software and/or hardware failure or malfunction, that result from these Third Party Libraries that work with the Software, including the possession, access, use or malfunction of the Third Party Libraries working with the Software.
+	- 8.2 Naivi will not be liable for any damages and losses including special, incidental, consequential or exemplary damages, including but not limited to loss of opportunity or lost profits, loss of goodwill and property damage and all damages and losses that result from or are connected to software and/or hardware failure or malfunction, that result from these Third Party Libraries that work with the Software, including the possession, access, use or malfunction of the Third Party Libraries working with the Software.
 
-	- 3.3 Naivi cannot provide support for these Third Party Libraries. If you have a question regarding the use of any of these Third Party Libraries, you should contact the Third Party Library itself.
+	- 8.3 Naivi cannot provide support for these Third Party Libraries. If you have a question regarding the use of any of these Third Party Libraries, you should contact the Third Party Library itself.
  
-4. Term and Termination
+9. Term and Termination
 -----------------------
 
-	- 4.1 The term of your License shall commence on the date that you start to download, install or otherwise use the Services, and shall end on the earlier of: (i) the date that you dispose of the Services, (ii) your attempt to circumvent any technical protection measures used in connection with the Services; (iii) your use of the Services in breach of the terms of these Terms of Use otherwise; or (iv) Naivi’s termination of the License.
+	- 9.1 The term of your License shall commence on the date that you start to download, install or otherwise use the Services, and shall end on the earlier of: (i) the date that you dispose of the Services, (ii) your attempt to circumvent any technical protection measures used in connection with the Services; (iii) your use of the Services in breach of the terms of these Terms of Use otherwise; or (iv) Naivi’s termination of the License.
 
-	- 4.2 Promptly upon termination, you must cease all use of the Services and remove and destroy all copies of the Software in your possession or control.
+	- 9.2 Promptly upon termination, you must cease all use of the Services and remove and destroy all copies of the Software in your possession or control.
 
-5. Privacy Policy
+10. Privacy Policy
 -----------------------
 
-	- 5.1 By installing, using or accessing the Software or the Services or any parts thereof, you accept the terms of Naivi’s privacy policy as amended from time to time, which is available at www.napframework.com/contact. Naivi’s privacy policy defines how, why and to which extent Naivi collects and uses personal and non-personal information in relation to Naivi's products and services.
+	- 10.1 By installing, using or accessing the Software or the Services or any parts thereof, you accept the terms of Naivi’s privacy policy as amended from time to time, which is available at www.napframework.com/contact. Naivi’s privacy policy defines how, why and to which extent Naivi collects and uses personal and non-personal information in relation to Naivi's products and services.
 
-6. Miscellaneous
+11. Miscellaneous
 -----------------------
 
-	- 6.1 These Terms of Use represents the complete agreement between you and Naivi in relation to the Software and the Services and supersedes all prior agreements and representations. It may be amended only by a written document executed by you and Naivi.
+	- 11.1 These Terms of Use represents the complete agreement between you and Naivi in relation to the Software and the Services and supersedes all prior agreements and representations. It may be amended only by a written document executed by you and Naivi.
 
-	- 6.2 If any provision of these Terms of Use is held to be illegal, invalid or unenforceable for any reason, such provision shall be reformed only to the extent necessary to make it legal, valid or enforceable and the remaining provisions of these Terms of Use shall not be affected.
+	- 11.2 If any provision of these Terms of Use is held to be illegal, invalid or unenforceable for any reason, such provision shall be reformed only to the extent necessary to make it legal, valid or enforceable and the remaining provisions of these Terms of Use shall not be affected.
 
-	- 6.3 Applicable law and competent court
+	- 11.3 Applicable law and competent court
 
-	- 6.4 To the extent legally permitted these Terms of Use and any agreements and obligations arising therefrom shall be governed by and construed in accordance with the laws of the Netherlands. Any disputes arising under this Terms of Use and any agreements and obligations arising therefrom will be submitted to the jurisdiction of the courts of Amsterdam, the Netherlands.
+	- 11.4 To the extent legally permitted these Terms of Use and any agreements and obligations arising therefrom shall be governed by and construed in accordance with the laws of the Netherlands. Any disputes arising under this Terms of Use and any agreements and obligations arising therefrom will be submitted to the jurisdiction of the courts of Amsterdam, the Netherlands.
 
 If you have any questions concerning these Terms of Use, you may contact info@napframework.com.
 
