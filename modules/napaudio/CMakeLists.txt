@@ -68,7 +68,7 @@ endif()
 package_module()
 
 # Package mpg123 into platform release
-install(FILES ${THIRDPARTY_DIR}/mpg123/doc/LICENSE DESTINATION thirdparty/mpg123)
+install(FILES ${THIRDPARTY_DIR}/mpg123/COPYING DESTINATION thirdparty/mpg123)
 install(DIRECTORY ${LIBMPG123_INCLUDE_DIR}/ DESTINATION thirdparty/mpg123/include)
 if(WIN32)
     file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/install/msvc/*.dll)
