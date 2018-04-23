@@ -3,6 +3,9 @@ if(NOT TARGET mpg123)
 endif()
 target_link_libraries(${PROJECT_NAME} mpg123)
 
+find_package(moodycamel REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
+
 if(WIN32)
     # Add post-build step to set copy mpg123 to bin on Win64
     add_custom_command(TARGET ${PROJECT_NAME}

@@ -1,4 +1,4 @@
-# default moodycamel directory
+# default artnet directory
 find_path(MOODYCAMEL_DIR
           NAMES concurrentqueue.h
           HINTS ${THIRDPARTY_DIR}/moodycamel

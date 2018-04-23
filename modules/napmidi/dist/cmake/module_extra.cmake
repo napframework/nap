@@ -4,6 +4,9 @@ if(NOT WIN32)
 endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${RTMIDI_INCLUDE_DIRS})
 
+find_package(moodycamel REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
+
 # Install rtmidi lib into packaged app
 if(APPLE)
     install(FILES $<TARGET_FILE:rtmidi> DESTINATION lib)
