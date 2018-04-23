@@ -236,9 +236,9 @@ namespace nap
 		
 		/**
 		 * Blocks until the decode thread has called avcoded_receive. This is used to perform lock-step production of packets and frames.
-		 * @return Wether avcoded_receive requires a new packet to be pushed onto the packet queue.
+		 * @return Result of avcoded_receive_frame
 		 */
-		bool waitForReceiveFrame();
+		int waitForReceiveFrame();
 
 		/**
 		 * Consumes all frames in the frame queue until the decode thread needs new packets.
@@ -340,7 +340,7 @@ namespace nap
 		utility::AutoResetEvent		mEndOfFileProcessedEvent;				///< Event that is signaled when EndOfFile packet is consumed by decode thread
 		utility::AutoResetEvent		mSeekStartProcessedEvent;				///< Event that is signaled when seek start packet is consumed by decode thread
 		utility::AutoResetEvent		mReceiveFrameEvent;						///< Event that is signaled when avcodec_receive is called by decode thread
-		bool						mReceiveFrameNeedsPacket = false;		///< Value set when avcoded_receive requires more packet to produce a frame
+		int							mReceiveFrameResult = 0;				///< Value set when avcoded_receive requires more packet to produce a frame
 
 		double						mLastFramePTSSecs = 0.0;				///< The PTS of the last frame in seconds, used to 'guess' the PTS of a new frame if it's unknown.
 		int							mFrameFirstPacketDTS = -INT_MAX;		///< Cached value for the first DTS that was used to produce the current frame
@@ -539,7 +539,7 @@ namespace nap
 		/**
 		 * Finishes the seeking operation and returns back to playing state.
 		 */
-		void finishSeeking(AVState& seekState);
+		void finishSeeking(AVState& seekState, bool shouldDrainFrameQueue);
 
 		/**
 		 * Set the internal seek target to the specified number of seconds in the timebase of the provided AVState

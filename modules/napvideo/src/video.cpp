@@ -457,12 +457,12 @@ namespace nap
 	}
 
 
-	bool AVState::waitForReceiveFrame()
+	int AVState::waitForReceiveFrame()
 	{
 		VIDEO_DEBUG_LOG("waitForPacketProcessed - wait");
 
-		bool result;
-		mReceiveFrameEvent.wait([this, &result](utility::AutoResetEvent::EWaitResult) { result = mReceiveFrameNeedsPacket; });
+		int result;
+		mReceiveFrameEvent.wait([this, &result](utility::AutoResetEvent::EWaitResult) { result = mReceiveFrameResult; });
 
 		VIDEO_DEBUG_LOG("waitForPacketProcessed - wait done");
 
@@ -781,7 +781,7 @@ namespace nap
 				result = avcodec_receive_frame(mCodecContext, &frame);
 
 				VIDEO_DEBUG_LOG("receive_frame - notify %s", getStream() == 0 ? "video" : "audio");
-				mReceiveFrameEvent.set([this, result]() { mReceiveFrameNeedsPacket = (result == AVERROR(EAGAIN)); });
+				mReceiveFrameEvent.set([this, result]() { mReceiveFrameResult = result; });
 				if (result >= 0)
 				{
 					// We have a frame, copy the first DTS that was used to produce this packet (and reset it for the next frame)
@@ -1223,12 +1223,13 @@ namespace nap
 	}
 
 
-	void Video::finishSeeking(AVState& seekState)
+	void Video::finishSeeking(AVState& seekState, bool shouldDrainFrameQueue)
 	{
 		// It may be possible that after submitting a single packet, multiple frames are output on the decode thread. This can cause the decode
 		// thread to block waiting for room to be available in the seek frame queue. Therefore we need to drain any additional frames produced.
 		// Here we wait until the decode thread needs a new packet, this guarantees that no additional frames will follow.
-		seekState.drainSeekFrameQueue();
+		if (shouldDrainFrameQueue)
+			seekState.drainSeekFrameQueue();
 
 		// PTS could be exactly equal to target PTS, we may have reached EOF. We're done finding out target frame.
 		mIOThreadState = IOThreadState::Playing;
@@ -1368,7 +1369,8 @@ namespace nap
 
 					// Receive single frame in lock-step
 					EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
-					while (mSeekState->waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
+					int receive_frame_result = 0;
+					while ((receive_frame_result = mSeekState->waitForReceiveFrame()) == AVERROR(EAGAIN) && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
 					{
 						assert(((uint8_t)produce_packet_result & (uint8_t)EProducePacketResult::GotPacket) != 0);
 						do
@@ -1384,9 +1386,15 @@ namespace nap
 					if (mExitIOThreadSignalled)
 						break;
 
-					if (produce_packet_result == EProducePacketResult::EndOfFile)
+					// receive_frame_result is the result from the decode thread. When eof is reached, it means that all packets up until eof are processed by the decode thread. 
+					// If receive_frame_result is AVERROR(EAGAIN) here, it means we're out of packets to produce while the decode thread still wants more of them. We stop seeking in
+					// those cases as well.
+					if (receive_frame_result == AVERROR_EOF || receive_frame_result == AVERROR(EAGAIN))
 					{
-						finishSeeking(*mSeekState);
+						// When draining the frame queue we will wait for the next receive_frame. If an EOF is encountered, the decode thread will immediately go into receive_frame,
+						// so it is safe to drain the frame queue in that case. In case of AVERROR(EGAIN), the decode thread will already have processed all packets and wait for the next
+						// packet. As there is no more packet that we will push onto the queue, we would hang if we would drain the frame queue, so we skip draining the queue in that case.
+						finishSeeking(*mSeekState, receive_frame_result != AVERROR(EAGAIN));
 						break;
 					}
 
@@ -1411,7 +1419,7 @@ namespace nap
 					{
 						// If the frame we've found is an exact match with the PTS we're looking for, or we can't search further to the left (because the frame is at the start of the stream),
 						// we finish the seek operation and resume normal play
-						finishSeeking(*mSeekState);
+						finishSeeking(*mSeekState, true);
 					}
 				}
 				break;
@@ -1426,7 +1434,8 @@ namespace nap
 					{
 						// Receive single frame in lock-step
 						EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
-						while (mSeekState->waitForReceiveFrame() && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
+						int receive_frame_result = 0;
+						while ((receive_frame_result = mSeekState->waitForReceiveFrame()) == AVERROR(EAGAIN) && produce_packet_result != EProducePacketResult::EndOfFile && !mExitIOThreadSignalled)
 						{
 							assert(((uint8_t)produce_packet_result & (uint8_t)EProducePacketResult::GotPacket) != 0);
 							do
@@ -1442,9 +1451,9 @@ namespace nap
 						if (mExitIOThreadSignalled)
 							break;
 
-						if (produce_packet_result == EProducePacketResult::EndOfFile)
+						if (receive_frame_result == AVERROR_EOF || receive_frame_result == AVERROR(EAGAIN))
 						{
-							finishSeeking(*mSeekState);
+							finishSeeking(*mSeekState, receive_frame_result != AVERROR(EAGAIN));
 							break;
 						}
 
@@ -1452,7 +1461,7 @@ namespace nap
 						if (seek_frame.mFrame->best_effort_timestamp >= mSeekTarget)
 						{
 							// If we've found a matching frame, finish the seek operation and resume normal play
-							finishSeeking(*mSeekState);
+							finishSeeking(*mSeekState, true);
 							break;
 						}
 					}
