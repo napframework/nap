@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::@PROJECT_NAME_PASCALCASE@App, nap::AppEventHandler> app_runner(core);
+	nap::AppRunner<nap::@PROJECT_NAME_PASCALCASE@App, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

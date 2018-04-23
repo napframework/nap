@@ -17,8 +17,6 @@ namespace nap
 		@MODULE_NAME_PASCALCASE@Service(const @MODULE_NAME_PASCALCASE@Service& rhs) = delete;
 		@MODULE_NAME_PASCALCASE@Service& operator=(const @MODULE_NAME_PASCALCASE@Service& rhs) = delete;
 
-	protected:
-		
 		/**
 		 *
 		 */
@@ -35,8 +33,6 @@ namespace nap
 		 *
 		 */
 		virtual void update(double deltaTime) override;
-		
-	private:
 		
 	};
 }

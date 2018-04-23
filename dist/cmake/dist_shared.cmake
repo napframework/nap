@@ -34,7 +34,7 @@ endmacro()
 # extra per-module cmake logic.
 macro(find_nap_module MODULE_NAME)
     if (EXISTS ${NAP_ROOT}/user_modules/${MODULE_NAME}/)
-        message("Module is user module: ${MODULE_NAME}")
+        message(STATUS "Module is user module: ${MODULE_NAME}")
         set(MODULE_INTO_PROJ TRUE)
         add_subdirectory(${NAP_ROOT}/user_modules/${MODULE_NAME} user_modules/${MODULE_NAME})
         unset(MODULE_INTO_PROJ)
