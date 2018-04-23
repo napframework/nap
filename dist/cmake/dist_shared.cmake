@@ -23,7 +23,8 @@ macro(add_project_module)
             add_custom_command(
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mod_${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:mod_${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/module/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/mod_${PROJECT_NAME}.json
             )       
         endif()
     endif()
@@ -43,8 +44,9 @@ macro(find_nap_module MODULE_NAME)
             add_custom_command(
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${MODULE_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-            )       
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:${MODULE_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE_DIR:${MODULE_NAME}>/${MODULE_NAME}.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                )       
         endif()
     elseif (EXISTS ${NAP_ROOT}/modules/${NAP_MODULE}/)
         if(NOT TARGET ${NAP_MODULE})
@@ -54,12 +56,15 @@ macro(find_nap_module MODULE_NAME)
             if (WIN32)
                 set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.lib)
                 set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.lib)
+                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.json)
             elseif (APPLE)
                 set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.dylib)
                 set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.dylib)
+                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.json)
             elseif (UNIX)
                 set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.so)
                 set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.so)
+                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.json)
             endif()
 
             target_link_libraries(${MODULE_NAME} INTERFACE debug ${${MODULE_NAME}_DEBUG_LIB})
@@ -80,7 +85,8 @@ macro(find_nap_module MODULE_NAME)
 
         # On macOS & Linux install module into packaged project
         if (NOT WIN32)
-            install(FILES ${${MODULE_NAME}_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)    
+            install(FILES ${${MODULE_NAME}_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)
+            install(FILES ${${MODULE_NAME}_MODULE_JSON} DESTINATION lib CONFIGURATIONS Release)
             # On Linux set our modules use their directory for RPATH
             if(NOT APPLE)
                 install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/lib${MODULE_NAME}.so\")
@@ -102,8 +108,9 @@ macro(find_nap_module MODULE_NAME)
             add_custom_command(
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-            )
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/                
+                )
         endif()        
     elseif(NOT TARGET ${MODULE_NAME})
         message(FATAL_ERROR "Could not locate module '${MODULE_NAME}'")    
@@ -305,6 +312,42 @@ macro(project_json_to_cmake)
     include(cached_project_json.cmake)
 endmacro()
 
+# Get our NAP modules dependencies from module.json, populating into DEPENDENT_NAP_MODULES
+macro(module_json_to_cmake)
+    module_json_in_directory_to_cmake(${CMAKE_CURRENT_SOURCE_DIR})
+endmacro()
+
+# Get our NAP modules dependencies from module.json in specified directory, populating into DEPENDENT_NAP_MODULES
+macro(module_json_in_directory_to_cmake DIRECTORY)
+    # Use configure_file to result in changes in module.json triggering reconfigure.  Appears to be best current approach.
+    configure_file(${DIRECTORY}/module.json module_json_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/module_json_trigger_dummy.json
+                    ERROR_QUIET)
+
+    # Clear any system Python path settings
+    unset(ENV{PYTHONHOME})
+    unset(ENV{PYTHONPATH})
+
+    # Parse our module.json and import it
+    if(WIN32)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python.exe)
+    elseif(UNIX)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
+    endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}")
+    endif()
+
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/module_info_parse_to_cmake.py ${DIRECTORY}
+                    RESULT_VARIABLE EXIT_CODE
+                    )
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not parse modules dependencies from module.json (${EXIT_CODE})")
+    endif()
+    include(${DIRECTORY}/cached_module_json.cmake)
+    # message("${PROJECT_NAME} DEPENDENT_NAP_MODULES from module.json: ${DEPENDENT_NAP_MODULES}")
+endmacro()
+
 # Build source groups for input files maintaining their folder structure
 # INPUT_FILES: Files to be added to source groups
 # RELATIVE_TO_PATH: The root path against which our relative source group paths will be built
@@ -329,3 +372,104 @@ function(create_hierarchical_source_groups_for_files INPUT_FILES RELATIVE_TO_PAT
         source_group(${GROUP_NAME_PREFIX}${RELATIVE_FILE_DIR} FILES ${input_file})
     endforeach()
 endfunction()
+
+# Copy module.json for module to sit alongside module post-build
+macro(copy_module_json_to_bin)
+    set(DEST_FILENAME ${PROJECT_NAME}.json)
+    if(UNIX)
+        set(DEST_FILENAME lib${DEST_FILENAME})
+    endif()
+    
+    if(APPLE)
+        # macOS: Multi build type outputting to LIBRARY_OUTPUT_DIRECTORY
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+    elseif(UNIX)
+        # Linux: Single build type outputting to LIBRARY_OUTPUT_DIRECTORY
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>/${DEST_FILENAME}"
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+
+    else()
+        # Win64: Multi build type outputting to RUNTIME_OUTPUT_DIRECTORY
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+    endif()
+endmacro()
+
+# For the provided top-level modules locate all dependencies and store in NAP_MODULES
+# TOPLEVEL_MODULES: A list of top level modules
+macro(fetch_module_dependencies TOPLEVEL_MODULES)
+    set(NEW_MODULES "${TOPLEVEL_MODULES}")
+    set(NAP_MODULES "")
+
+    # Iterate until we stop go through a loop with no new dependencies
+    while(NEW_MODULES)
+        # Append our new modules to our output list
+        list(APPEND NAP_MODULES "${NEW_MODULES}")
+
+        # Set our modules to search on this time
+        set(SEARCH_MODULES "${NEW_MODULES}")
+
+        # Clear the new modules list, ready for populating
+        set(NEW_MODULES "")
+
+        # Fetch dependencies for our search modules in this iteration
+        fetch_module_dependencies_for_modules("${SEARCH_MODULES}" "${NAP_MODULES}")
+    endwhile()
+
+    # message(STATUS "Total dependent modules for ${PROJECT_NAME}: ${NAP_MODULES}")
+endmacro()
+
+# For the provided modules for any immediate dependencies (ie. other NAP modules) which
+# haven't already been found
+# SEARCH_MODULES: The modules to check for dependencies on
+# TOTAL_MODULES: The modules we already have as dependencies
+macro(fetch_module_dependencies_for_modules SEARCH_MODULES TOTAL_MODULES)
+    # Set the location for NAP framework modules
+    set(NAP_MODULES_DIR ${NAP_ROOT}/modules/)
+
+    # Set the user modules location
+    set(USER_MODULES_DIR ${NAP_ROOT}/user_modules/)
+
+    # Workaround for CMake not treating macro argument as proper list variable
+    set(TOTAL_MODULES ${TOTAL_MODULES})
+
+    # Loop for each search module
+    foreach(SEARCH_MODULE ${SEARCH_MODULES})
+        # Check for a NAP framework module
+        if(EXISTS ${NAP_MODULES_DIR}/${SEARCH_MODULE})
+            set(FOUND_PATH ${NAP_MODULES_DIR}/${SEARCH_MODULE})
+        # Check for a user module
+        elseif(EXISTS ${USER_MODULES_DIR}/${SEARCH_MODULE})
+            set(FOUND_PATH ${USER_MODULES_DIR}/${SEARCH_MODULE})
+        # Check for a project module
+        elseif(${SEARCH_MODULE} STREQUAL mod_${PROJECT_NAME} AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module)
+            set(FOUND_PATH ${CMAKE_CURRENT_SOURCE_DIR}/module)
+        else()
+            message(FATAL_ERROR "Could not find module ${SEARCH_MODULE}")
+        endif()
+
+        # If we found the module directory but there's no module.json, fail
+        if(NOT EXISTS ${FOUND_PATH}/module.json)
+            message(FATAL_ERROR "Could not find module.json in ${FOUND_PATH}")
+        endif()
+
+        # Process the found module.json, making it available to CMake as DEPENDENT_NAP_MODULES
+        module_json_in_directory_to_cmake(${FOUND_PATH})
+
+        # Loop over each found dependency
+        foreach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})
+            # If we don't already have the module in our previously found dependencies or our newly found dependencies, 
+            # add the new dependency
+            if(NOT ${DEPENDENT_MODULE} IN_LIST NEW_MODULES AND NOT ${DEPENDENT_MODULE} IN_LIST TOTAL_MODULES)
+                list(APPEND NEW_MODULES ${DEPENDENT_MODULE})
+            endif()
+        endforeach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})        
+    endforeach(SEARCH_MODULE ${SEARCH_MODULES})
+endmacro()

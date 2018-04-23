@@ -18,6 +18,7 @@ configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${MODULE_DIR}/CMakeLists.txt @ONL
 configure_file(${TEMPLATE_ROOT}/src/mod_template.cpp ${MODULE_DIR}/src/mod_${MODULE_NAME_LOWERCASE}.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateservice.cpp ${MODULE_DIR}/src/${MODULE_NAME_LOWERCASE}service.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateservice.h ${MODULE_DIR}/src/${MODULE_NAME_LOWERCASE}service.h @ONLY)
+configure_file(${TEMPLATE_ROOT}/module.json ${MODULE_DIR}/module.json @ONLY)
 
 # Create our module directory regenerate shortcut
 if(UNIX)
