@@ -302,6 +302,7 @@ The resource manager does not 'stop' a device when it is destroyed. This occurs 
 
 NAP ships with a couple of devices such as the [OSCReceiver](@ref nap::OSCReceiver), [OSCSender](@ref nap::OSCSender), [ArtnetController](@ref nap::ArtNetController), [EtherDreamDac](@ref nap::EtherDreamDac) etc.
 
+Embedding Objects {#embedding_objects}
 =======================
 
 C++ objects are often embedded into each other. For example:
