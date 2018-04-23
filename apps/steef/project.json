@@ -2,13 +2,6 @@
     "title": "Steef",
     "version": "0.1",
     "modules": [
-        "mod_napmath",
-        "mod_napinput",
-        "mod_napsdlinput",
-        "mod_napsdlwindow",
-        "mod_napapp",
-        "mod_naprender",
-        "mod_napscene",
-        "mod_napimgui"
+        "mod_napapp"
     ]
 }
