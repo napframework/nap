@@ -8,7 +8,7 @@
 
 // Nap includes
 #include <nap/service.h>
-#include <utility/concurrentqueue.h>
+#include <concurrentqueue.h>
 
 // Midi includes
 #include "midievent.h"
