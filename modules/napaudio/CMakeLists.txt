@@ -120,7 +120,7 @@ elseif(UNIX)
 endif()
 
 # Package portaudio into platform release
-install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION thirdparty/portaudio)
+install(FILES ${THIRDPARTY_DIR}/portaudio/linux/LICENSE.txt DESTINATION thirdparty/portaudio)
 install(DIRECTORY ${PORTAUDIO_INCLUDE_DIR}/ DESTINATION thirdparty/portaudio/include)
 if(WIN32)
     install(FILES ${PORTAUDIO_LIBRARIES}
