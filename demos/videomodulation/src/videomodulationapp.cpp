@@ -238,7 +238,7 @@ namespace nap
 			SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
 			Video* current_video = video_selector.getCurrentVideo();
 			float currentTime = current_video->getCurrentTime();
-			if (ImGui::SliderFloat("Current Time", &currentTime, 0.0f, current_video->getDuration(), "%.3fs", 2.0f))
+			if (ImGui::SliderFloat("Current Time", &currentTime, 0.0f, current_video->getDuration(), "%.3fs", 1.0f))
 				current_video->seek(currentTime);
 			ImGui::Text("Total time: %fs", current_video->getDuration());
 		}

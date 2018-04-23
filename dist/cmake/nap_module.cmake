@@ -68,6 +68,10 @@ if(NOT MODULE_INTO_PROJ)
     endif()
 endif(NOT MODULE_INTO_PROJ)
 
+# Fetch our module dependencies
+module_json_in_directory_to_cmake(${CMAKE_CURRENT_SOURCE_DIR})
+fetch_module_dependencies("${DEPENDENT_NAP_MODULES}")
+
 include_directories(${NAP_ROOT}/include/)
 
 # Add source
@@ -75,8 +79,8 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE HEADERS src/*.h src/*.hpp)
 
 # Create IDE groups
-source_group("Headers" FILES ${HEADERS})
-source_group("Sources" FILES ${SOURCES})
+create_hierarchical_source_groups_for_files("${SOURCES}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Sources")
+create_hierarchical_source_groups_for_files("${HEADERS}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Headers")
 
 # Compile target as shared lib
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
@@ -115,24 +119,41 @@ if (MODULE_INTO_PROJ)
 endif()
 
 # Bring in any additional module requirements
-set(MODULE_EXTRA_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/moduleExtra.cmake)
+set(MODULE_EXTRA_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/module_extra.cmake)
 if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
     include (${MODULE_EXTRA_CMAKE_PATH})
 endif()
 
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
+
 # Find each NAP module
-foreach(NAP_MODULE ${DEPENDENT_MODULES})
+foreach(NAP_MODULE ${NAP_MODULES})
     find_nap_module(${NAP_MODULE})
 endforeach()
-target_link_libraries(${PROJECT_NAME} ${DEPENDENT_MODULES})
-unset(DEPENDENT_MODULES)
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
+unset(NAP_MODULES)
 
 # Set our module output directory
 set_module_output_directories()
 
+# On Windows copy over module.json post-build
+if(WIN32)
+    add_custom_command(
+        TARGET ${MODULE_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/${MODULE_NAME}.json
+        )
+endif()
+
 # On macOS & Linux install module into packaged project
 if (NOT WIN32)
     install(FILES $<TARGET_FILE:${PROJECT_NAME}> DESTINATION lib CONFIGURATIONS Release)
+    if(UNIX)
+        install(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/lib${PROJECT_NAME}.json DESTINATION lib CONFIGURATIONS Release)
+    else()
+        install(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PROJECT_NAME}.json DESTINATION lib CONFIGURATIONS Release)
+    endif()
 
     # On Linux set our user modules tp use their directory for RPATH when installing
     if(NOT APPLE)

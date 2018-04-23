@@ -1,3 +1,3 @@
 #include "utility/module.h"
 
-NAP_MODULE("mod_napsvg", "1.0")
+NAP_MODULE("mod_napsvg", "0.1.0")

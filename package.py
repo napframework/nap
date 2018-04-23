@@ -10,14 +10,14 @@ import sys
 from sys import platform
 
 WORKING_DIR = '.'
-BUILD_DIR = 'packagingBuild'
-LIB_DIR = 'packagingLib'
-BIN_DIR = 'packagingBin'
-PACKAGING_DIR = 'packagingStaging'
+BUILD_DIR = 'packaging_build'
+LIB_DIR = 'packaging_lib'
+BIN_DIR = 'packaging_bin'
+PACKAGING_DIR = 'packaging_staging'
 ARCHIVING_DIR = 'archiving'
-BUILDINFO_FILE = 'dist/cmake/buildInfo.json'
+BUILDINFO_FILE = 'dist/cmake/build_info.json'
 BUILD_TYPES = ('Release', 'Debug')
-
+    
 ERROR_PACKAGE_EXISTS = 1
 ERROR_INVALID_VERSION = 2
 
@@ -76,9 +76,10 @@ def clean_the_build():
     print("Cleaning...")
     if platform.startswith('linux'):    
         for build_type in BUILD_TYPES:
-            if os.path.exists(BUILD_DIR + build_type):
-                print("Clean removing %s" % os.path.abspath(BUILD_DIR + build_type))
-                shutil.rmtree(BUILD_DIR + build_type, True)
+            build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
+            if os.path.exists(build_dir_for_type):
+                print("Clean removing %s" % os.path.abspath(build_dir_for_type))
+                shutil.rmtree(build_dir_for_type, True)
     else:
         if os.path.exists(BUILD_DIR):
             print("Clean removing %s" % os.path.abspath(BUILD_DIR))
@@ -97,7 +98,7 @@ def check_for_existing_package(package_path, zip_release):
     # Add extension if zipping
     if zip_release:
         if platform.startswith('linux'):
-            package_path += '.tar.xz'
+            package_path += '.tar.bz2'
         else:
             package_path += '.zip'
 
@@ -111,7 +112,7 @@ def package_for_linux(package_basename, timestamp, git_revision, include_apps, i
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
-        build_dir_for_type = BUILD_DIR + build_type
+        build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
         call(WORKING_DIR, ['cmake', 
                            '-H.', 
                            '-B%s' % build_dir_for_type, 
@@ -128,7 +129,7 @@ def package_for_linux(package_basename, timestamp, git_revision, include_apps, i
 
     # Create archive
     if zip_release:
-        archive_to_linux_tar_xz(package_basename)
+        archive_to_linux_tar_bz2(package_basename)
     else:
         archive_to_timestamped_dir(package_basename)
 
@@ -191,14 +192,14 @@ def package_for_win64(package_basename, timestamp, git_revision, include_apps, i
     else:
         archive_to_timestamped_dir(package_basename)
 
-def archive_to_linux_tar_xz(package_basename):
-    """Create build archive to xz tarball on Linux"""
+def archive_to_linux_tar_bz2(package_basename):
+    """Create build archive to bzipped tarball on Linux"""
 
     shutil.move(PACKAGING_DIR, package_basename)
 
-    package_filename_with_ext = '%s.%s' % (package_basename, 'tar.xz')
+    package_filename_with_ext = '%s.%s' % (package_basename, 'tar.bz2')
     print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
-    call(WORKING_DIR, ['tar', '-cJvf', package_filename_with_ext, package_basename])
+    call(WORKING_DIR, ['tar', '-cjvf', package_filename_with_ext, package_basename])
 
     # Cleanup
     shutil.move(package_basename, PACKAGING_DIR)
