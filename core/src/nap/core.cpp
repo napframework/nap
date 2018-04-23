@@ -28,6 +28,16 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	static const std::string sPossibleProjectParents[] =
+	{
+		"projects",		// User projects against packaged NAP
+		"examples",		// Example projects
+		"demos",		// Demo projects
+		"apps",			// Applications in NAP source
+		"test"			// Old test projects in NAP source
+	};
+
+
 	/**
 	@brief Constructor
 
@@ -64,7 +74,7 @@ namespace nap
 		ProjectInfo projectInfo;
 		if (!runningInNonProjectContext)
 		{
-			if (!loadProjectInfoFromJSON(projectInfo, error))
+			if (!loadProjectInfoFromJSON(*this, projectInfo, error))
 				return false;
 		}
 
@@ -209,10 +219,11 @@ namespace nap
 
 		// If there is a config file, read the service configurations from it.
 		// Note that having a config file is optional, but if there *is* one, it should be valid
-		if (utility::fileExists("config.json"))
+		std::string config_file_path;
+		if (findProjectFilePath("config.json", config_file_path))
 		{
 			rtti::DeserializeResult deserialize_result;
-			if (!rtti::readJSONFile("config.json", mResourceManager->getFactory(), deserialize_result, errorState))
+			if (!rtti::readJSONFile(config_file_path, mResourceManager->getFactory(), deserialize_result, errorState))
 				return false;
 
 			for (auto& object : deserialize_result.mReadObjects)
@@ -495,5 +506,47 @@ namespace nap
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
+	}
+	
+
+	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
+	{
+		// Check for the file in its normal location, beside the binary
+		if (utility::fileExists(filename))
+		{
+			foundFilePath = filename;
+		}
+		else
+		{
+#ifndef NAP_PACKAGED_BUILD
+			// When working against NAP source find our file in the tree structure in the project source.
+			// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
+			// so that we avoid module DLL copying hell.
+
+			const std::string exeDir = utility::getExecutableDir();
+			const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
+			const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+
+			// Iterate possible project locations
+			for (auto& parentPath : sPossibleProjectParents)
+			{
+				std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
+				if (utility::dirExists(testDataPath))
+				{
+					// We found our project folder, now let's verify we have a project.json in there
+					testDataPath += "/";
+					testDataPath += filename;
+					if (utility::fileExists(testDataPath))
+					{
+						foundFilePath = testDataPath;
+						break;
+					}
+				}
+			}
+#endif // NAP_PACKAGED_BUILD
+
+		}
+
+		return !foundFilePath.empty();
 	}
 }
