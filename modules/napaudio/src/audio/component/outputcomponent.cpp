@@ -54,6 +54,7 @@ namespace nap
                 
                 if (channel >= mAudioService->getNodeManager().getOutputChannelCount())
                 {
+                    // If the channel is out of bounds we create a PullNode instead of an OutputNode in order to process the connected DSP branch.
                     auto pullNode = mAudioService->makeSafe<PullNode>(nodeManager);
                     pullNode->audioInput.connect(mInput->getOutputForChannel(resource->mChannelRouting[channel]));
                     mOutputs.emplace_back(std::move(pullNode));

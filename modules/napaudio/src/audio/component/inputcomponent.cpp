@@ -39,6 +39,7 @@ namespace nap
             {
                 if (resource->mChannels[channel] >= nodeManager->getInputChannelCount())
                 {
+                    // The input channel is out of bounds, in case we allow out of bounds channels we create a zero node instead
                     if (audioService->getAllowChannelCountFailure())
                     {
                         auto zeroNode = audioService->makeSafe<ControlNode>(*nodeManager);

@@ -104,7 +104,7 @@ namespace nap
             bool init(nap::utility::ErrorState& errorState) override;
             
             /**
-             * @return: returns wether we will allow input and output channel numbers that exceed the current device's maximum channel counts. If so zero signals will be returned for non-existing input channel numbers.
+             * @return: returns wether we will allow input and output channel numbers that exceed the current device's maximum channel counts. If so zero signals will be returned for non-existing input channel numbers. If not initialization will fail.
              */
             bool getAllowChannelCountFailure() { return getConfiguration<AudioServiceConfiguration>()->mAllowChannelCountFailure; }
             
@@ -204,7 +204,7 @@ namespace nap
             bool startDefaultDevice(utility::ErrorState& errorState);
 		
             /*
-             * Verifies if the ammounts of input and output channels specified are supported on the given devices, and updates them if needed if @mAllowChannelCountFailure is set to true, otherwise returns false and logs a warning.
+             * Verifies if the ammounts of input and output channels specified in the configuration are supported on the given devices. If not and @mAllowChannelCountFailure is set to true, it will use the maximum numbers of channels of the selected devices instead. If @mAllowChannelCountFailure is false initialization will fail.
              */
             bool checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, utility::ErrorState& errorState);
             
