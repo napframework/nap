@@ -7,7 +7,9 @@
 #include <nap/logger.h>
 #include <iostream>
 
-RTTI_DEFINE_CLASS(nap::@MODULE_NAME_PASCALCASE@Service)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::@MODULE_NAME_PASCALCASE@Service)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
 
 namespace nap
 {
