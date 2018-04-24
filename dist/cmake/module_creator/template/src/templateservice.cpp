@@ -17,14 +17,17 @@ namespace nap
 		return true;
 	}
 
+
 	void @MODULE_NAME_PASCALCASE@Service::update(double deltaTime)
 	{
 	}
 	
+
 	void @MODULE_NAME_PASCALCASE@Service::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 	}
 	
+
 	void @MODULE_NAME_PASCALCASE@Service::shutdown()
 	{
 	}
