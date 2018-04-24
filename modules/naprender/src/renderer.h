@@ -14,7 +14,7 @@ namespace nap
 	public:
 		bool mDoubleBuffer = true;		///< Enables / Disabled double buffering
 		bool mEnableMultiSampling = 1;	///< Enables / Disables multi sampling.
-		int  mMultiSampleSamples = 8;	///< Number of samples per pixel when multi sampling is enabled
+		int  mMultiSampleSamples = 4;	///< Number of samples per pixel when multi sampling is enabled
 	};
 
 	/**
