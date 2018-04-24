@@ -2,14 +2,14 @@ Audio {#audio}
 =======================
 
 * [Audio Playback](@ref audio_playback)
-	* [Audio Files](@ref audio_files)
-	* [Playback Component](@ref audio_playback_comp)
-	* [Output Component](@ref audio_output_comp)
-	* [Input Component](@ref audio_input_comp)
+	* [Files](@ref audio_files)
+	* [Playback](@ref audio_playback_comp)
+	* [Output](@ref audio_output_comp)
+	* [Input](@ref audio_input_comp)
 * [Audio Analysis](@ref audio_analysis)
 * [Writing Custom Audio Components](@ref audio_custom)
-	* [Audio Nodes](@ref audio_nodes)
-	* [Audio Components](@ref audio_comps)
+	* [Nodes](@ref audio_nodes)
+	* [Components](@ref audio_comps)
 	* [Thread Safety](@ref audio_thread_safety)
 
 NAP is equipped with a very flexible and modular audio engine that can be used to send or receive audio from a hardware audio interface, open and read audio files and to perform all kinds of DSP processing on audio signals. On top of this engine a few components are offered to guide you with some common audio tasks, such as playing back audio from a file, receiving audio input from an audio device and reading the output level from an audio signal. A more advanced audio module that is tailored to allow you to design and control custom DSP networks dynamically is currently in development.
@@ -18,7 +18,7 @@ Audio Playback {#audio_playback}
 =======================
 A very common audio task is playing back samples from an audio file in order to equip your app with sound. For an example how to do this have a look at the demo "audioplayback" in the demos directory.
 
-Audio Files {#audio_files}
+Files {#audio_files}
 -----------------------
 
 First of all we need a resource that loads an audio file from disk and keeps it in memory. This is the [AudioFileResource](@ref nap::audio::AudioFileResource). Note that all classes and functions in the audio engine are defined within the audio namespace.
@@ -34,7 +34,7 @@ First of all we need a resource that loads an audio file from disk and keeps it 
 
 It is pretty straightforward, the audio file named in AudioFilePath will be loaded into memory on initialization.
 
-Playback Component {#audio_playback_comp}
+Playback {#audio_playback_comp}
 -----------------------
 
 Secondly, we need an entity with a [PlaybackComponent](@ref nap::audio::PlaybackComponent):
@@ -59,7 +59,7 @@ Secondly, we need an entity with a [PlaybackComponent](@ref nap::audio::Playback
 
 The PlaybackComponent offers the functionality to play audio from a buffer resource. (like the [AudioFileResource](@ref nap::audio::AudioFileResource)) As you can see there are a number of parameters available to control the playback. The Buffer points to the resource containing the audio data to be played back. The AutoPlay parameter tells the component to start playback immediately after initialization. The other parameters are pretty self explanatory and can also be modulated on the instance of the component at runtime. Note that all parameters that contain a time value are expressed in milliseconds, because in audio-land we often have to deal with smaller timescales.
 
-Output Component {#audio_output_comp}
+Output {#audio_output_comp}
 -----------------------
 
 This PlaybackComponent on its own does not produce any sound coming out of the speakers. The reason for this is we do not only need to produce an audio signal, we also have to rout it to the audio device. This is done using an [OutputComponent](@ref nap::audio::OutputComponent).
@@ -89,7 +89,7 @@ else {
 }
 ~~~
 
-Input Component {#audio_input_comp}
+Input {#audio_input_comp}
 -----------------------
 
 In many cases we might need to use an audio signal directly from the hardware input of your audio device, such as a microphone input or line in signal. For this case we use [InputComponent](@ref nap::audio::InputComponent):
@@ -128,7 +128,7 @@ Be aware that the component always analyzes one single frequency band on one sin
 Writing Custom Audio Components {#audio_custom}
 =======================
 
-Nodes And The Node Manager {#audio_nodes}
+Nodes {#audio_nodes}
 -----------------------
 
 Behind the audio components described in this chapter runs a very modular open system that is designed to implement all sorts of custom DSP systems for audio purposes. This is the backbone of the NAP audio module. The heart of this system is the [Nodemanager](@ref nap::audio::NodeManager), that lives within the [AudioService](@ref nap::audio::AudioService). The NodeManager processes a collection of [Nodes](@ref nap::audio::Node) that are connected together to form a DSP network. The baseclass of all nodes is [Node](@ref nap::audio::Node). Each node can have a number of [input](@ref nap::audio::InputPin) and [output](@ref nap::audio::OutputPin) pins that can be used to connect nodes. The pins and their connections represent the flow of audio signals within the DSP system. Each Node has a [process()](@ref nap::audio::Node::process) method that defines how the node calculates it's output signals from it's input signals.
