@@ -473,7 +473,20 @@ namespace nap
 		/**
 		 * @return Whether this video has an audio stream.
 		 */
-		bool hasAudio() const					{ return mAudioState.getStream() != -1; }
+		bool hasAudio() const					{ return mAudioState.isValid(); }
+
+		/**
+		 * Set whether audio playback is enabled for the video. If enabled, video will be synced to the audio clock.
+		 * Enabling this requires that somebody calls OnAudioCallback() to advance the audio clock; this is not handled internally.
+		 *
+		 * Note that this can only be changed *before* play() is called!
+		 */
+		void setAudioEnabled(bool enabled) { assert(!isPlaying()); mAudioEnabled = enabled; }
+
+		/**
+		 * Gets whether audio playback is enabled
+		 */
+		bool isAudioEnabled() const { return hasAudio() && mAudioEnabled; }
 
 		/**
 		 * Function that needs to be called by the audio system on a fixed frequency to copy the audio data from the audio
@@ -646,6 +659,7 @@ namespace nap
 		uint8_t*				mCurrentAudioBuffer = nullptr;				///< Pointer to either the buffer in the current audio frame itself, or the resampled audio buffer.
 		uint64_t				mAudioFrameReadOffset = 0;					///< Offset (cursor) into the current audio buffer that is decoded
 		uint64_t				mAudioFrameSize = 0;						///< Size of the current decoded (and possible resampled) audio buffer, in bytes
+		bool					mAudioEnabled = false;						///< Whether audio is enabled or not
 
 		IOThreadState			mIOThreadState = IOThreadState::Playing;	///< FSM state of the I/O thread
 	};
