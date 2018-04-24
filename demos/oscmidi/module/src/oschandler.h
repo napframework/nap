@@ -11,6 +11,9 @@ namespace nap
     class OscHandlerComponentInstance;
     
     
+    /**
+     * Component that handles incoming OSC messages by caching them so the app can poll them
+     */
     class NAPAPI OscHandlerComponent : public Component
     {
         RTTI_ENABLE(Component)
@@ -38,6 +41,9 @@ namespace nap
         // Initialize the component
         bool init(utility::ErrorState& errorState) override;
         
+        /**
+         * Poll the component for received OSC messages
+         */
         std::vector<std::string> poll();
         
     private:

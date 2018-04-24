@@ -8,7 +8,8 @@
 #include <inputrouter.h>
 #include <imgui/imgui.h>
 
-#include <midieventqueue.h>
+#include <midihandler.h>
+#include <oschandler.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -46,8 +47,8 @@ namespace nap
         // Initialized the list of last arrived midi events
         for (auto i = 0; i < 10; ++i)
         {
-            mMidiEventList.emplace_back("");
-            mOscEventList.emplace_back("");
+            mMidiMessageList.emplace_back("");
+            mOscMessageList.emplace_back("");
         }
         
 		return true;
@@ -58,30 +59,33 @@ namespace nap
 	 */
 	void OscMidiApp::update(double deltaTime)
 	{
-        auto midiQueueComponent = mMainEntity->findComponent<MidiLoggerComponentInstance>();
+        auto midiHandler = mMainEntity->findComponent<MidiHandlerComponentInstance>();
         
         // Poll the midi event queue for incoming events
-        std::vector<std::string> queue;
-        if (midiQueueComponent)
-            queue = midiQueueComponent->poll();
+        std::vector<std::string> midiMessages;
+        if (midiHandler)
+            midiMessages = midiHandler->poll();
         
         // Update the list of recent events to be displayed
-        for (auto& event : queue)
+        for (auto& message : midiMessages)
         {
-            for (auto i = mMidiEventList.size() - 1; i > 0; --i)
-                mMidiEventList[i] = mMidiEventList[i - 1];
-            mMidiEventList[0] = event;
+            mMidiMessageList[mMidiMessageListWriteIndex] = message;
+            mMidiMessageListWriteIndex++;
+            if (mMidiMessageListWriteIndex >= mMidiMessageList.size())
+                mMidiMessageListWriteIndex = 0;
         }
         
-		// Draw some gui elements
-		ImGui::Begin("Midi");
-        
-        // Draw the list of last arrived events in reversed order to end with the newest message
-        for (int i = mMidiEventList.size() - 1; i >= 0; i--)
-            if (mMidiEventList[i] != "")
-                ImGui::Text(mMidiEventList[i].c_str());
-            
-		ImGui::End();
+        // Draw some gui elements
+        ImGui::Begin("Midi");
+
+        for (int i = 0; i < mMidiMessageList.size(); i++)
+        {
+            auto index = (mMidiMessageListWriteIndex + i) % mMidiMessageList.size();
+            if (mMidiMessageList[index] != "")
+                ImGui::Text(mMidiMessageList[index].c_str());
+        }
+
+        ImGui::End();
 	}
 
 	

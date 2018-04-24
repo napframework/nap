@@ -69,7 +69,10 @@ namespace nap
         ObjectPtr<EntityInstance> mMainEntity;                          //< The entity containing our midi and osc processing components
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
         
-        std::vector<std::string> mMidiEventList;                        //< List of the last incoming midi events to be displayed
-        std::vector<std::string> mOscEventList;                        //< List of the last incoming OSC events to be displayed
+        std::vector<std::string> mMidiMessageList;                        //< List of the last incoming midi events to be displayed
+        int mMidiMessageListWriteIndex = 0;
+        std::vector<std::string> mOscMessageList;                        //< List of the last incoming OSC events to be displayed
+        int mOscMessageListWriteIndex = 0;
+
 	};
 }
