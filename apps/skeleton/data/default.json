@@ -1,5 +1,6 @@
 {
-  "Objects": [
+  "Objects": 
+  [
     {
       "Type": "nap::RenderWindow",
       "mID": "Window",
@@ -7,6 +8,11 @@
       "Height": 720,
       "Title": "Skeleton",
       "Sync": "false"
+    },
+    {
+      "Type" : "nap::Scene",
+      "mID": "Scene",   
+      "Entities" : []
     }
   ]
 }

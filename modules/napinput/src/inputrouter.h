@@ -38,9 +38,36 @@ namespace nap
 	{
 	public:
 		/**
-		 * Sends event to all entities.
+		 *	Default constructor
+		 */
+		DefaultInputRouter() = default;
+
+		/**
+		 * Constructor that sets the recursive flag
+		 * @param recursive if child entities are taken into consideration
+		 */
+		DefaultInputRouter(bool recursive) : mRecursive(recursive)			{ }
+
+		/**
+		 * Sends event to all entities in the entity list.
+		 * Note that when recursive is set to true child entities are considered as well
+		 * @param event the event to forward to the list of entities
+		 * @param entities the entities to forward the events to
 		 */
 		virtual void routeEvent(const InputEvent& event, const EntityList& entities);
+
+		/**
+		 * @param value If input events are forward recursively to child entities
+		 */
+		void setRecursive(bool value)			{ mRecursive = value; }
+
+		/**
+		 * @return If input events are forwarded recursively to child entities
+		 */
+		bool isRecursive() const				{ return mRecursive; }
+
+	private:
+		bool mRecursive = false;
 	};
 
 
