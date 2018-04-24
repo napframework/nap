@@ -10,7 +10,9 @@ namespace nap
     
     class MidiHandlerComponentInstance;
     
-    
+    /**
+     * Component that handles incoming midi messages by caching them so the app can poll them
+     */
     class NAPAPI MidiHandlerComponent : public Component
     {
         RTTI_ENABLE(Component)
@@ -39,7 +41,7 @@ namespace nap
         bool init(utility::ErrorState& errorState) override;
         
         /**
-         * Polls the component for logged events
+         * Poll the component for received Midi messages
          */
         std::vector<std::string> poll();
         
