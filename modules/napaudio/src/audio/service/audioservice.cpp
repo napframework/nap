@@ -68,7 +68,6 @@ namespace nap
 			Pa_StopStream(mStream);
 			Pa_CloseStream(mStream);
 			mStream = nullptr;
-			Logger::info("Portaudio stopped");
 
             // Uninitialize mpg123 library
             mpg123_exit();
