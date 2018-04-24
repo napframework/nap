@@ -28,18 +28,21 @@ else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 	find_library(FFMPEG_LIBAVCODEC
 		NAMES avcodec
 		PATHS ${THIRDPARTY_DIR}/FFmpeg/lib
+			  ${THIRDPARTY_DIR}/FFmpeg/bin
 		NO_DEFAULT_PATH
 	)
 
 	find_library(FFMPEG_LIBAVFORMAT
 		NAMES avformat
 		PATHS ${THIRDPARTY_DIR}/FFmpeg/lib
+			  ${THIRDPARTY_DIR}/FFmpeg/bin
 		NO_DEFAULT_PATH
 	)
 
 	find_library(FFMPEG_LIBAVUTIL
 		NAMES avutil
 		PATHS ${THIRDPARTY_DIR}/FFmpeg/lib
+			  ${THIRDPARTY_DIR}/FFmpeg/bin
 		NO_DEFAULT_PATH
 	)
 
