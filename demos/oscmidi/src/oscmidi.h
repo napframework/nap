@@ -11,6 +11,9 @@
 #include <app.h>
 #include <nap/signalslot.h>
 
+// Osc includes
+#include <oscsender.h>
+
 // Midi includes
 #include <midievent.h>
 
@@ -20,7 +23,7 @@ namespace nap
 
 	/**
 	 * Demo application that is called from within the main loop
-	 *
+	 * Logs incoming midi and osc messages and allows the user to send a simple OSC value message.
 	 */
 	class OscMidiApp : public App
 	{
@@ -67,6 +70,7 @@ namespace nap
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
         ObjectPtr<EntityInstance> mMainEntity;                          //< The entity containing our midi and osc processing components
+        ObjectPtr<OSCSender> mOscSender;
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
         
         std::vector<std::string> mMidiMessageList;                        //< List of the last incoming midi events to be displayed
@@ -74,5 +78,7 @@ namespace nap
         std::vector<std::string> mOscMessageList;                        //< List of the last incoming OSC events to be displayed
         int mOscMessageListWriteIndex = 0;
 
+        std::array<char, 25> mOscOutputTag;
+        float mOscOutputValue = 1.0;
 	};
 }
