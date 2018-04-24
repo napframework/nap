@@ -1,7 +1,7 @@
 # default oscpack directory
 find_path(OSCPACK_DIR
           NAMES osc/OscTypes.h
-          HINTS ${THIRDPARTY_DIR}/oscpack
+          HINTS ${THIRDPARTY_DIR}/oscpack/include
           )
 
 # include directory is universal

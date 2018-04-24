@@ -9,6 +9,7 @@ Resources {#resources}
 * 	[Linking Media](@ref media)
 *	[Working With Arrays](@ref arrays)
 *	[Structs, Classes and Resources](@ref structs_classes_resources)
+*	[Devices](@ref devices)
 * 	[Embedding Objects](@ref embedding_objects)
 * 	[Embedding Pointers](@ref embedding_pointers)
 
@@ -290,7 +291,16 @@ This might sound confusing but try to follow these rules: Do I need to author (e
 	- Don't expose it to the system
 	- Declare it as a regular C++ class
 
-This diagram doesn't take [components](@ref nap::Component) into account. You can read more about components in a later [section](@ref creating_components). 
+This diagram doesn't take [components](@ref nap::Component) into account. You can read more about components in a later [section](@ref creating_components).
+
+Devices {#devices}
+=======================
+
+A [device](@ref nap::Device) is a special type of resource. You can think of a device as a class that represents and manages the connection to an external piece of hardware (such as a DAC) or a computer. Every device has a [start()](@ref nap::Device::start) and [stop()](@ref nap::Device::stop) method that you can override. Both methods are called by the resource manager at the appropiate time, ie: when the device is created, has changed or is removed from the resource tree.
+
+The resource manager does not 'stop' a device when it is destroyed. This occurs when the application is terminated. <b>It is important to do that yourself by calling stop() in the destructor of your device</b>.
+
+NAP ships with a couple of devices such as the [OSCReceiver](@ref nap::OSCReceiver), [OSCSender](@ref nap::OSCSender), [ArtnetController](@ref nap::ArtNetController), [EtherDreamDac](@ref nap::EtherDreamDac) etc.
 
 Embedding Objects {#embedding_objects}
 =======================

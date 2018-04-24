@@ -1,14 +1,8 @@
 {
     "title": "Tommy",
-    "version": "0.1",
+    "version": "0.1.0",
     "modules": [
-        "mod_naprender",
-        "mod_napmath",
-        "mod_napinput",
-        "mod_napsdlinput",
-        "mod_napsdlwindow",
         "mod_napapp",
-        "mod_napscene",
         "mod_napsandbox",
         "mod_napimgui"
     ]
