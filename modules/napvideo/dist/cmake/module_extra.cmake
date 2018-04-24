@@ -18,11 +18,17 @@ elseif(APPLE)
     macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/FFmpeg/lib) 
 
     # Install FFmpeg into packaged app
-    install(DIRECTORY "${THIRDPARTY_DIR}/FFmpeg/lib/" DESTINATION "lib")
+    install(DIRECTORY ${THIRDPARTY_DIR}/FFmpeg/lib/ DESTINATION lib)
 elseif(UNIX)
     # Install FFmpeg into packaged app
-    install(DIRECTORY "${THIRDPARTY_DIR}/FFmpeg/lib/" DESTINATION "lib")
+    install(DIRECTORY ${THIRDPARTY_DIR}/FFmpeg/lib/ DESTINATION lib)
 endif()
 
-# TODO Install FFmpeg license into packaged app
-# TODO Install FFmpeg source into packaged app to comply with license?!
+# Install FFmpeg license into packaged app
+install(FILES ${THIRDPARTY_DIR}/FFmpeg/COPYING.LGPLv2.1
+              ${THIRDPARTY_DIR}/FFmpeg/COPYING.LGPLv3
+              ${THIRDPARTY_DIR}/FFmpeg/LICENSE.md
+        DESTINATION licenses/FFmpeg
+        )
+# Install FFmpeg source into packaged app to comply with license
+install(FILES ${THIRDPARTY_DIR}/FFmpeg/ffmpeg-3.4.2.tar.xz DESTINATION licenses/FFmpeg)
