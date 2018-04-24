@@ -45,7 +45,10 @@ namespace nap
         
         // Initialized the list of last arrived midi events
         for (auto i = 0; i < 10; ++i)
-            mMidiEventList.emplace_back(nullptr);
+        {
+            mMidiEventList.emplace_back("");
+            mOscEventList.emplace_back("");
+        }
         
 		return true;
 	}
@@ -55,10 +58,10 @@ namespace nap
 	 */
 	void OscMidiApp::update(double deltaTime)
 	{
-        auto midiQueueComponent = mMainEntity->findComponent<MidiEventQueueComponentInstance>();
+        auto midiQueueComponent = mMainEntity->findComponent<MidiLoggerComponentInstance>();
         
         // Poll the midi event queue for incoming events
-        std::vector<std::unique_ptr<MidiEvent>> queue;
+        std::vector<std::string> queue;
         if (midiQueueComponent)
             queue = midiQueueComponent->poll();
         
@@ -66,17 +69,17 @@ namespace nap
         for (auto& event : queue)
         {
             for (auto i = mMidiEventList.size() - 1; i > 0; --i)
-                mMidiEventList[i] = std::move(mMidiEventList[i - 1]);
-            mMidiEventList[0] = std::move(event);
+                mMidiEventList[i] = mMidiEventList[i - 1];
+            mMidiEventList[0] = event;
         }
         
 		// Draw some gui elements
 		ImGui::Begin("Midi");
         
-        // Draw the list of last arrived events in reversed order
+        // Draw the list of last arrived events in reversed order to end with the newest message
         for (int i = mMidiEventList.size() - 1; i >= 0; i--)
-            if (mMidiEventList[i] != nullptr)
-                ImGui::Text(mMidiEventList[i]->toString().c_str());
+            if (mMidiEventList[i] != "")
+                ImGui::Text(mMidiEventList[i].c_str());
             
 		ImGui::End();
 	}

@@ -8,16 +8,16 @@
 namespace nap
 {
     
-    class MidiEventQueueComponentInstance;
+    class MidiHandlerComponentInstance;
     
     
-    class NAPAPI MidiEventQueueComponent : public Component
+    class NAPAPI MidiHandlerComponent : public Component
     {
         RTTI_ENABLE(Component)
-        DECLARE_COMPONENT(MidiEventQueueComponent, MidiEventQueueComponentInstance)
+        DECLARE_COMPONENT(MidiHandlerComponent, MidiHandlerComponentInstance)
         
     public:
-        MidiEventQueueComponent() : Component() { }
+        MidiHandlerComponent() : Component() { }
         
         /**
          * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -29,22 +29,25 @@ namespace nap
     };
 
     
-    class NAPAPI MidiEventQueueComponentInstance : public ComponentInstance
+    class NAPAPI MidiHandlerComponentInstance : public ComponentInstance
     {
         RTTI_ENABLE(ComponentInstance)
     public:
-        MidiEventQueueComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource) { }
+        MidiHandlerComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource) { }
         
         // Initialize the component
         bool init(utility::ErrorState& errorState) override;
         
-        std::vector<std::unique_ptr<MidiEvent>> poll();
+        /**
+         * Polls the component for logged events
+         */
+        std::vector<std::string> poll();
         
     private:
-        Slot<const MidiEvent&> eventReceivedSlot = { this, &MidiEventQueueComponentInstance::onEventReceived };
+        Slot<const MidiEvent&> eventReceivedSlot = { this, &MidiHandlerComponentInstance::onEventReceived };
         void onEventReceived(const MidiEvent&);
         
-        std::vector<std::unique_ptr<MidiEvent>> mReceivedEvents;
+        std::vector<std::string> mReceivedEvents;
     };
         
 }
