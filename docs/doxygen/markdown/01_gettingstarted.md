@@ -1,65 +1,116 @@
 Getting Started {#getting_started}
 =======================
-* [Create a blank app](@ref create_blank_app)
-* [Defining app logic](@ref app_logic)
-* [Defining resources and setting up a scene](@ref defining_resources)
+* [Create a New App](@ref create_blank_app)
+* [App Structure](@ref app_structure)
+* [Adding Resources](@ref defining_resources)
 
-Create a blank app {#create_blank_app}
+Create a New App {#create_blank_app}
 =======================
-First let's use the NAP build system to create and run a blank app with one empty window from scratch.
+Use the NAP build system to create a new application from scratch:
 
-1. In a terminal window, navigate to the directory containing your NAP installation on disk.
-2. Run `tools\create_project NewProjectName` to generate a project file for a blank app template.
+- In a terminal window, navigate to the directory containing your NAP installation on disk.
+- Run `tools\create_project NewProject` to generate a project file for a blank app template.
 
-The freshly generated project file for your platform will be shown in the file explorer/finder for your OS. You can build and run it using Visual Studio on Windows, XCode on macOS or make on Linux.
+After creation your new project is located under the 'projects' folder. You can build and run it using Visual Studio on Windows, XCode on macOS or make on Linux. To learn more about setting up projects, modules and 3rd party dependencies read the [Project Management](@ref project_management) documentation.
 
-This is described in more detail in the section [Project Management](@ref project_management).
-
-Defining app logic {#app_logic}
+App Structure {#app_structure}
 ==========================
 
-The starting point to write the client code defining our application is a specific subclass of the App baseclass. For an example have a look at `helloworldapp.h` and `helloworldapp.cpp` in the helloworld demo’s `src` folder. The HelloWorldApp class overrides certain virtual methods that implement app specific logic.
+There should be a file called 'NewProject.h'. This file contains the application that is run by NAP. Logic of the application if defined in 'NewProject.cpp'. Every NAP application is based on the 'BaseApp' template. For this section we continue by using the 'helloworldapp' as an example.
 
-## The init method
+## Init
 
-The app’s init method is first of all used to load the JSON file and initialize all the objects within the scene. This is performed by an object called ResourceManager that lives inside the nap Core object. The Core object contains the complete NAP system. More information about the Core and the ResourceManager can be found.
-The init method is also used to intialize some of the app class’ members. Some of these members are pointers to services. Services are objects tha cooperate with components to provide them access to certain system devices or hardware funcitonality. More about Services can be read in [Modules & Services](@ref modules_services). As can be seen in `helloworldapp.cpp` pointers to the resource manager and services can be retrieved from the core object.
-
-## The update method
-
-The app's update method is called periodically at the current frame rate. Its parameter `deltaTime` indicates how many seconds have passed since the last update call. Usually it is used to forward input events received from input devices like mouse and keyboard to entities that contain input event handling components. Examples of event handling components are `KeyInputComponent` for keyboard events and `PointerInputComponent` for mouse events. Have a look at how this is done in helloworldapp.cpp:
+The init method is used to initialize your application. The first thing to do is find the resource manager and load a file. This file defines all the data (such as images, 3D meshes, audio files) that your application needs. After successfully loading the JSON file all objects are loaded, initialized and ready to be used. After load we ask the resource manager to find a couple of crucial objects: A camera, the world we want to render and the window that we want to render to:
 
 ~~~{cpp}
-// The default input router forwards messages to key and mouse input components
-// attached to a set of entities.
-nap::DefaultInputRouter input_router;
+bool NewProject::init(utility::ErrorState& error)
+{
+    // Retrieve services
+    mRenderService  = getCore().getService<nap::RenderService>();
+    mSceneService   = getCore().getService<nap::SceneService>();
+    mGuiService     = getCore().getService<nap::IMGuiService>();
 
-// Forward all input events associated with the first window to the listening components
-std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
-mInputService->processEvents(*mRenderWindow, input_router, entities);
+    // Get resource manager and load all our data
+    mResourceManager = getCore().getResourceManager();
+    if (!mResourceManager->loadFile("helloworld.json", error))
+        return false;
+
+    // Find the window to render to
+    mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
+
+    // Find the scene and extract camera for rendering
+    ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+    mCameraEntity = scene->findEntity("Camera");
+
+    // Fetch the entity that is the world
+    mWorldEntity = scene->findEntity("World");
+
+    // All done!
+    return true;
+}
 ~~~
 
-## Immediate GUI
+Take a look at the [system documentation](@ref system) to learn more about the resource manager and core.
 
-NAP uses the powerful ImGUI thirdparty library as a easy to use and effective toolkit to build graphical user interfaces with buttons, sliders, text, etc. ImGUI is an immediate GUI framework. Immediate GUI means that the whole GUI rendered to the screen at framerate, which basically means no extra code is needed to update the status of the GUI with the status of the app. Every GUI element can be displayed and its state being read in a single line of code. Look at the following example:
+## Update
+
+The update method is called every frame. The parameter 'deltaTime' indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering. The update call is also used to forward input events and set-up any gui elements for drawing later on:
 
 ~~~{cpp}
-ImGui::Begin("This is a GUI");
-ImGui::SliderFloat("Drag me!", &mSliderValue, 0, 1.0, "%.3f", 1);
-if (ImGui::Button("Click me!"))
-    doSomething();
-ImGui::End();
+void MyApp::update(double deltaTime)
+{
+    // Setup some gui elements to draw later on
+    ImGui::Begin("Controls");
+    ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+    ImGui::Text("left mouse button to rotate world, right mouse button to zoom");
+    ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+    ImGui::End();
+}
 ~~~
 
-IIf we create a member variable called mSliderValue and put these simple lines of code in our app's update() method we will see a slider with a range from 0 to 1 that controls the variable. If we create a method called doSomethin() this method will be called whenever the button is clicked.
+## Render
 
-Defining resources and setting up a scene {#defining_resources}
+Render is called after update. Use this call to render objects and ui elements to screen or a different target. By default nothing is rendered. You have to tell the renderer what you want to render and where to render it to. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). The example below shows you how to render a sphere with a material to the primary window.
+
+~~~{cpp}
+void MyApp::render()
+{
+    // Activate current window for drawing
+    mRenderWindow->makeActive();
+
+    // Clear back-buffer
+    mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+
+    // Find the camera
+    nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+
+    // Find the world and add as an object to render
+    std::vector<nap::RenderableComponentInstance*> render_comps;
+    nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+    render_comps.emplace_back(&renderable_world);
+
+    // Render the sphere to the main window using a perspective camera
+    mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
+
+    // Draw our gui last!
+    mGuiService->draw();
+
+    // Swap screen buffers
+    mRenderWindow->swap();
+}
+~~~
+
+Adding Resources {#defining_resources}
 =======================
 
-The data folder contains one JSON file with the same name as the app that is vital because it describes the general structure of your application. The JSON file defines an array of objects that can be split up in three different kinds: resources, entities and one scene object. These objects together tell our application what files to load in memory, which objects to create at runtime and how they relate to each other.
-The elements nested in the different objects in the JSON file are used to specify values for their  properties. Properties can have all sorts of types like primitive data types, arrays, nested objects and also pointers to other objects that are defined within the JSON file. Every object of any type always has two properties:
-- the property `Type` that indicates the type of the object we are dealing with and corresponds to the name of the class of the object in the source codes.
-- the property `mID` that can be used to assign a unique ID to an object. The `mID` property among other things is used within the JSON file to assign pointer properties to point to the object in question.
+The data folder contains a .json file with the same name as the app. This file describes the general structure of your app and any additional resources that are required. Objects in this file can be split up into three different types: 
+- Resources: static often read only data such as images, a window, meshes etc.
+- Entities: hold components
+- Components: add functionality to an entity and receive an update call
+
+These objects tell our application which objects to create and how they relate to each other. Every object can carry properties. Properties are attributes that describe how an object behaves or is interpreted. Properties can be anyting such as a: float, string, array of strings, link etc. But two properties are extremely important:
+- `Type`: The name of the class in code
+- `mID`: The unique ID of an object
 
 ## Resources
 
