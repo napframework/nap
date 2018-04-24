@@ -8,8 +8,16 @@
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SceneService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
+
 namespace nap
 {
+	SceneService::SceneService(ServiceConfiguration* configuration) :
+		Service(configuration)
+	{
+	}
 
 	void SceneService::registerObjectCreators(rtti::Factory& factory)
 	{
@@ -40,4 +48,3 @@ namespace nap
 
 }
 
-RTTI_DEFINE_CLASS(nap::SceneService)

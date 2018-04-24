@@ -31,7 +31,7 @@ namespace nap {
         friend class MidiInputComponentInstance;
         
     public:
-        MidiService() = default;
+        MidiService(ServiceConfiguration* configuration);
         
         // Initialization
         bool init(nap::utility::ErrorState& errorState) override;

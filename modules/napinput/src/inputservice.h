@@ -24,7 +24,7 @@ namespace nap
 
 	public:
 		// Default constructor
-		InputService() = default;
+		InputService(ServiceConfiguration* configuration) ;
 
 		// Disable copy
 		InputService(const InputService& that) = delete;
