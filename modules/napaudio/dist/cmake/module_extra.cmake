@@ -50,4 +50,4 @@ endif()
 # Install thirdparty licenses into packaged project
 install(FILES ${THIRDPARTY_DIR}/portaudio/LICENSE.txt DESTINATION licenses/portaudio)
 install(FILES ${THIRDPARTY_DIR}/libsndfile/COPYING DESTINATION licenses/libsndfile)
-install(FILES ${THIRDPARTY_DIR}/mpg123/LICENSE DESTINATION licenses/mpg123)
+install(FILES ${THIRDPARTY_DIR}/mpg123/COPYING DESTINATION licenses/mpg123)
