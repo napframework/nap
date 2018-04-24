@@ -18,12 +18,12 @@ This is described in more detail in the section [Project Management](@ref projec
 Defining app logic {#app_logic}
 ==========================
 
-The starting point to write the client code defining our application is a specific subclass of the App baseclass. For an example have a look at “helloworldapp.h” and “helloworldapp.cpp” in the helloworld demo’s “src” folder. The HelloWorldApp class overrides certain virtual methods that implement app specific logic.
+The starting point to write the client code defining our application is a specific subclass of the App baseclass. For an example have a look at `helloworldapp.h` and `helloworldapp.cpp` in the helloworld demo’s `src` folder. The HelloWorldApp class overrides certain virtual methods that implement app specific logic.
 
 ## The init method
 
 The app’s init method is first of all used to load the JSON file and initialize all the objects within the scene. This is performed by an object called ResourceManager that lives inside the nap Core object. The Core object contains the complete NAP system. More information about the Core and the ResourceManager can be found.
-The init method is also used to intialize some of the app class’ members. Some of these members are pointers to Services. Services are objects tha cooperate with components to provide them access to certain system devices or hardware funcitonality. More about Services can be read in [Modules & Services](@ref modules_services). As can be seen in helloworldapp.cpp pointers to the resourcemanager and services can be retrieved from the core object.
+The init method is also used to intialize some of the app class’ members. Some of these members are pointers to services. Services are objects tha cooperate with components to provide them access to certain system devices or hardware funcitonality. More about Services can be read in [Modules & Services](@ref modules_services). As can be seen in `helloworldapp.cpp` pointers to the resource manager and services can be retrieved from the core object.
 
 ## The update method
 

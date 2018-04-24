@@ -70,7 +70,7 @@ namespace nap
         auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
         
 		// Draw some gui elements to control audio playback
-		ImGui::Begin("Audio Playback");
+		ImGui::Begin("Audio Playback", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         if (!playbackComponent->isPlaying())
         {
             if (ImGui::Button("Play"))

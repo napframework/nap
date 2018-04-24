@@ -6,6 +6,9 @@ file(GLOB HEADERS src/*.h)
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 
+# Get our NAP modules dependencies from module.json
+module_json_to_cmake()
+
 find_package(FFmpeg REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
@@ -14,8 +17,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 target_include_directories(${PROJECT_NAME} PUBLIC src ${FFMPEG_INCLUDE_DIR})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
-
-set(DEPENDENT_NAP_MODULES mod_naprender mod_napaudio)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${FFMPEG_LIBRARIES})
 
 if(WIN32)
@@ -23,9 +24,17 @@ if(WIN32)
     copy_windows_ffmpeg_dlls()
 endif()
 
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
+
 # Package into platform release
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/FFmpeg/lib")
+endif()
+if(APPLE)
+    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
 endif()
 package_module()
 

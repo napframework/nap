@@ -3,15 +3,15 @@
 macro(package_nap)
     # Populate JSON build info
     if(DEFINED NAP_PACKAGED_BUILD)
-        if(EXISTS ${NAP_ROOT}/cmake/buildNumber.cmake)
-            include(${NAP_ROOT}/cmake/buildNumber.cmake)
+        if(EXISTS ${NAP_ROOT}/cmake/build_number.cmake)
+            include(${NAP_ROOT}/cmake/build_number.cmake)
         else()
             set(NAP_BUILD_NUMBER 0)
         endif()
         math(EXPR NAP_BUILD_NUMBER "${NAP_BUILD_NUMBER}+1")
         include(${NAP_ROOT}/cmake/version.cmake)        
-        configure_file(${NAP_ROOT}/cmake/buildInfo.json.in ${NAP_ROOT}/dist/cmake/buildInfo.json @ONLY)
-        configure_file(${NAP_ROOT}/cmake/buildNumber.cmake.in ${NAP_ROOT}/cmake/buildNumber.cmake @ONLY)
+        configure_file(${NAP_ROOT}/cmake/build_info.json.in ${NAP_ROOT}/dist/cmake/build_info.json @ONLY)
+        configure_file(${NAP_ROOT}/cmake/build_number.cmake.in ${NAP_ROOT}/cmake/build_number.cmake @ONLY)
     endif()
 
     # Package shared cmake files
@@ -28,25 +28,29 @@ macro(package_nap)
     install(PROGRAMS ${USER_TOOL_WRAPPERS} DESTINATION tools)
 
     # Package platform tools
-    file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/projectscripts/platform/*py")
+    file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/user_scripts/platform/*py")
     install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
 
     # Package project directory package & regenerate shortcuts
     package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
 
-    # Package checkBuildEnvironment scripts
+    # Package module directory regenerate shortcut
+    package_module_dir_shortcuts("tools/platform/module_dir_shortcuts")
+
+    # Package check_build_environment scripts
     if(APPLE)
-        install(PROGRAMS ${NAP_ROOT}/dist/macos/check_build_environment/checkBuildEnvironment DESTINATION tools)
+        install(PROGRAMS ${NAP_ROOT}/dist/macos/check_build_environment/check_build_environment DESTINATION tools)
     elseif(UNIX)
-        install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/checkBuildEnvironment DESTINATION tools)
+        install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/check_build_environment DESTINATION tools)
+        install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/check_build_environment_worker.py DESTINATION tools/platform)
     else()
-        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/checkBuildEnvironment.bat DESTINATION tools)
-        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/checkBuildEnvironmentContinued.py DESTINATION tools/platform)
+        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/check_build_environment.bat DESTINATION tools)
+        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/check_build_environment_continued.py DESTINATION tools/platform)
     endif()
 
     # Create empty projects and usermodules directories
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
-    install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
+    install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/user_modules)")
 
     # Package thirdparty Python into release
     package_python()
@@ -61,11 +65,16 @@ macro(package_nap)
                       execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/docs/html/ ${CMAKE_INSTALL_PREFIX}/doc)")
     endif()
 
-    # Install IDE templates
+    # Package IDE templates
     if(WIN32)
-        install(DIRECTORY ${NAP_ROOT}/idetemplates/vstemplates/ DESTINATION visualStudioTemplates)
+        install(DIRECTORY ${NAP_ROOT}/ide_templates/visual_studio_templates/ DESTINATION visual_studio_templates)
     elseif(APPLE)
-        install(DIRECTORY ${NAP_ROOT}/idetemplates/xcodetemplates/ DESTINATION xcodeTemplates)
+        install(DIRECTORY ${NAP_ROOT}/ide_templates/xcode_templates/ DESTINATION xcode_templates)
+    endif()
+
+    # Package Windows redistributable help
+    if(WIN32)
+        install(FILES "${NAP_ROOT}/dist/win64/redist_help/Microsoft Visual C++ Redistributable Help.txt" DESTINATION tools/platform)
     endif()
 endmacro()
 
@@ -280,8 +289,8 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                   ")
 endmacro()
 
+# Package project directory package & regenerate shortcuts
 macro(package_project_dir_shortcuts DESTINATION)
-    # Package project directory package & regenerate shortcuts
     if(WIN32)
         install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.bat
                          ${NAP_ROOT}/dist/win64/project_dir_shortcuts/regenerate.bat
@@ -289,6 +298,17 @@ macro(package_project_dir_shortcuts DESTINATION)
     else()
         install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
                          ${NAP_ROOT}/dist/unix/project_dir_shortcuts/regenerate
+                DESTINATION ${DESTINATION})
+    endif()
+endmacro()
+
+# Package module directory regenerate shortcut
+macro(package_module_dir_shortcuts DESTINATION)
+    if(WIN32)
+        install(PROGRAMS ${NAP_ROOT}/dist/win64/module_dir_shortcuts/regenerate.bat
+                DESTINATION ${DESTINATION})
+    else()
+        install(PROGRAMS ${NAP_ROOT}/dist/unix/module_dir_shortcuts/regenerate
                 DESTINATION ${DESTINATION})
     endif()
 endmacro()
@@ -306,13 +326,13 @@ macro(package_project_into_release DEST_DIR)
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt DESTINATION ${DEST_DIR}/module)
     endif()
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/moduleExtra.cmake)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/moduleExtra.cmake DESTINATION ${DEST_DIR}/module)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake DESTINATION ${DEST_DIR}/module)
     endif()   
 
     # Package any project extra cmake
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/projectExtra.cmake)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/projectExtra.cmake DESTINATION ${DEST_DIR})
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/project_extra.cmake)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/project_extra.cmake DESTINATION ${DEST_DIR})
     endif()
 
     # Package our regenerate & package shortcuts into the project directory
@@ -341,6 +361,16 @@ macro(package_module)
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
     endif()
 
+    # Package module.json
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/)
+    if (WIN32)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>/ RENAME ${PROJECT_NAME}.json)
+    elseif(APPLE)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>/ RENAME lib${PROJECT_NAME}.json)
+    else()
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/ RENAME lib${PROJECT_NAME}.json)
+    endif()
+   
     # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done done after we 
     # install the target above due to ordering of install_name_tool calling)
     if(UNIX)

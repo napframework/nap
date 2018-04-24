@@ -16,11 +16,13 @@ list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 if(APPLE)
     add_library(${PROJECT_NAME} SHARED 
         ${SOURCES}
-        src/nap/osx/directorywatcher.cpp)
+        src/nap/osx/directorywatcher.cpp
+        src/nap/osx/module.cpp)
 elseif(MSVC)
     add_library(${PROJECT_NAME} SHARED 
         ${SOURCES}
-        src/nap/win32/directorywatcher.cpp)
+        src/nap/win32/directorywatcher.cpp
+        src/nap/win32/module.cpp)
 elseif(UNIX)
     file(GLOB FILEWATCHER_SOURCES
             src/nap/linux/FileWatcher/*.cpp
@@ -28,7 +30,8 @@ elseif(UNIX)
     add_library(${PROJECT_NAME} SHARED
             ${SOURCES}
             ${FILEWATCHER_SOURCES}
-            src/nap/linux/directorywatcher.cpp)  
+            src/nap/linux/directorywatcher.cpp
+	    src/nap/linux/module.cpp)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
