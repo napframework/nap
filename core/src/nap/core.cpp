@@ -5,12 +5,12 @@
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
 #include "projectinfomanager.h"
+#include "rtti/jsonreader.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
 #include <iostream>
 #include <utility/fileutils.h>
-
 #include <packaginginfo.h>
 
 // Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
@@ -28,6 +28,16 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	static const std::string sPossibleProjectParents[] =
+	{
+		"projects",		// User projects against packaged NAP
+		"examples",		// Example projects
+		"demos",		// Demo projects
+		"apps",			// Applications in NAP source
+		"test"			// Old test projects in NAP source
+	};
+
+
 	/**
 	@brief Constructor
 
@@ -64,7 +74,7 @@ namespace nap
 		ProjectInfo projectInfo;
 		if (!runningInNonProjectContext)
 		{
-			if (!loadProjectInfoFromJSON(projectInfo, error))
+			if (!loadProjectInfoFromJSON(*this, projectInfo, error))
 				return false;
 		}
 
@@ -204,15 +214,68 @@ namespace nap
 
 	bool Core::createServices(utility::ErrorState& errorState)
 	{
-		// First create and add all the services (unsorted)
-		std::vector<Service*> services;
-		for (auto& service : mModuleManager.mModules)
+		using ConfigurationByTypeMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>>;
+		ConfigurationByTypeMap configuration_by_type;
+
+		// If there is a config file, read the service configurations from it.
+		// Note that having a config file is optional, but if there *is* one, it should be valid
+		std::string config_file_path;
+		if (findProjectFilePath("config.json", config_file_path))
 		{
-			if (service.mService == rtti::TypeInfo::empty())
+			rtti::DeserializeResult deserialize_result;
+			if (!rtti::readJSONFile(config_file_path, mResourceManager->getFactory(), deserialize_result, errorState))
+				return false;
+
+			for (auto& object : deserialize_result.mReadObjects)
+			{
+				if (!errorState.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
+					return false;
+
+				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+				configuration_by_type[config->getServiceType()] = std::move(config);
+			}
+		}
+
+		// Gather all service configuration types
+		std::vector<rtti::TypeInfo> service_configuration_types;
+		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), service_configuration_types);
+
+		// For any ServiceConfigurations which weren't present in the config file, construct a default version of it,
+		// so the service doesn't get a nullptr for its ServiceConfiguration if it depends on one
+		for (const rtti::TypeInfo& service_configuration_type : service_configuration_types)
+		{
+			if (service_configuration_type == RTTI_OF(ServiceConfiguration))
 				continue;
 
+			assert(service_configuration_type.is_valid());
+			assert(service_configuration_type.can_create_instance());
+
+			// Construct the service configuration
+			std::unique_ptr<ServiceConfiguration> service_configuration(service_configuration_type.create<ServiceConfiguration>());
+			rtti::TypeInfo serviceType = service_configuration->getServiceType();
+
+			// Insert it in the map if it doesn't exist. Note that if it does exist, the unique_ptr will go out of scope and the default
+			// object will be destroyed
+			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(serviceType);
+			if (pos == configuration_by_type.end())
+				configuration_by_type.insert(std::make_pair(serviceType, std::move(service_configuration)));
+		}
+
+		// First create and add all the services (unsorted)
+		std::vector<Service*> services;
+		for (auto& module : mModuleManager.mModules)
+		{
+			if (module.mService == rtti::TypeInfo::empty())
+				continue;
+
+			// Find the ServiceConfiguration that should be used to construct this service (if any)
+			ServiceConfiguration* configuration = nullptr;
+			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(module.mService);
+			if (pos != configuration_by_type.end())
+				configuration = pos->second.release();
+
 			// Create the service
-			if (!addService(service.mService, services, errorState))
+			if (!addService(module.mService, configuration, services, errorState))
 				return false;
 		}
 
@@ -268,7 +331,7 @@ namespace nap
 
 
 	// Add a new service
-	bool Core::addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& errorState)
+	bool Core::addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState)
 	{
 		assert(type.is_valid());
 		assert(type.can_create_instance());
@@ -285,7 +348,7 @@ namespace nap
 			return false;
 
 		// Add service
-		Service* service = type.create<Service>();
+		Service* service = type.create<Service>({ configuration });
 		service->mCore = this;
 		outServices.emplace_back(service);
         
@@ -443,5 +506,49 @@ namespace nap
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
+	}
+	
+
+	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
+	{
+		const std::string exeDir = utility::getExecutableDir();
+		
+		// Check for the file in its normal location, beside the binary
+		const std::string alongsideBinaryPath = utility::getExecutableDir() + "/" + filename;
+		if (utility::fileExists(alongsideBinaryPath))
+		{
+			foundFilePath = alongsideBinaryPath;
+		}
+		else
+		{
+#ifndef NAP_PACKAGED_BUILD
+			// When working against NAP source find our file in the tree structure in the project source.
+			// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
+			// so that we avoid module DLL copying hell.
+
+			const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
+			const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+
+			// Iterate possible project locations
+			for (auto& parentPath : sPossibleProjectParents)
+			{
+				std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
+				if (utility::dirExists(testDataPath))
+				{
+					// We found our project folder, now let's verify we have a our file in there
+					testDataPath += "/";
+					testDataPath += filename;
+					if (utility::fileExists(testDataPath))
+					{
+						foundFilePath = testDataPath;
+						break;
+					}
+				}
+			}
+#endif // NAP_PACKAGED_BUILD
+
+		}
+
+		return !foundFilePath.empty();
 	}
 }

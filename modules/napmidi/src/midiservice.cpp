@@ -7,11 +7,17 @@
 #include "midioutputport.h"
 #include "midiinputcomponent.h"
 
-RTTI_DEFINE_CLASS(nap::MidiService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
 
 namespace nap
 {
-    
+	MidiService::MidiService(ServiceConfiguration* configuration) :
+		Service(configuration)
+	{
+	}
+
     bool MidiService::init(nap::utility::ErrorState& errorState)
     {
         try {

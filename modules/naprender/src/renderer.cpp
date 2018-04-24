@@ -6,6 +6,12 @@
 
 RTTI_DEFINE_CLASS(nap::Renderer)
 
+RTTI_BEGIN_CLASS(nap::RendererSettings)
+	RTTI_PROPERTY("DoubleBuffer",			&nap::RendererSettings::mDoubleBuffer,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableMultiSampling",	&nap::RendererSettings::mEnableMultiSampling,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MultiSampleSamples",		&nap::RendererSettings::mMultiSampleSamples,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 namespace nap
 {
 	const static int minGLVersionMajor = 3;
@@ -23,15 +29,12 @@ namespace nap
 
 		int  versionMajor = 3;		// Major GL Version
 		int  versionMinor = 2;		// Minor GL Version
-		bool doubleBuffer = true;	// Enables / Disabled double buffering
-		bool debug = false;		// Whether to use the debug version of the OpenGL driver. Provides more debugging output.
-		bool enableMultiSampling = 1;	// Enables / Disables multi sampling.
-		int  multiSampleSamples = 4;	// Number of samples per pixel when multi sampling is enabled
+		bool debug = false;			// Whether to use the debug version of the OpenGL driver. Provides more debugging output.
 	};
 
 
 	// Sets OpenGL attributes
-	void setOpenGLAttributes(const OpenGLAttributes& attributes)
+	void setOpenGLAttributes(const OpenGLAttributes& attributes, const RendererSettings& rendererSettings)
 	{
 		// Set our OpenGL version.
 		// SDL_GL_CONTEXT_CORE gives us only the newer version, deprecated functions are disabled
@@ -58,14 +61,14 @@ namespace nap
 		opengl::setAttribute(SDL_GL_CONTEXT_MINOR_VERSION, cur_minor);
 
 		// Set double buffering
-		int double_buffer = static_cast<int>(attributes.doubleBuffer);
+		int double_buffer = static_cast<int>(rendererSettings.mDoubleBuffer);
 		opengl::setAttribute(SDL_GL_DOUBLEBUFFER, double_buffer);
 
 		// Set multi sample parameters
-		if (attributes.enableMultiSampling)
+		if (rendererSettings.mEnableMultiSampling)
 		{
 			opengl::setAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-			opengl::setAttribute(SDL_GL_MULTISAMPLESAMPLES, attributes.multiSampleSamples);
+			opengl::setAttribute(SDL_GL_MULTISAMPLESAMPLES, rendererSettings.mMultiSampleSamples);
 		}
 
 		// Enable debug
@@ -78,22 +81,19 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	bool Renderer::init(utility::ErrorState& errorState)
+	bool Renderer::init(const RendererSettings& rendererSettings, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(opengl::initVideo(), "Failed to init SDL"))
 			return false;
 
 		// Set GL Attributes for creation of native render window
 		OpenGLAttributes attrs;
-		attrs.doubleBuffer = true;
 		attrs.versionMinor = 3;
 		attrs.versionMajor = 3;
-		attrs.enableMultiSampling = true;
-		attrs.multiSampleSamples = 8;
 #ifdef _DEBUG
 		attrs.debug = true;
 #endif
-		setOpenGLAttributes(attrs);
+		setOpenGLAttributes(attrs, rendererSettings);
 
 		// Create primary window
 		if (!createPrimaryWindow(errorState))
