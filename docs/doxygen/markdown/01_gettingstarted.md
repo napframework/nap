@@ -110,7 +110,7 @@ The data folder contains a .json file with the same name as the app. This file d
 
 These objects tell our application which objects to create and how they relate to each other. Every object can carry properties. Properties are attributes that describe how an object behaves or is interpreted. Properties can be anyting such as a: float, string, array of strings, link etc. But two properties are extremely important:
 - `Type`: The name of the class in code
-- `mID`: The unique ID of an object
+- `mID`: The unique identifier of an object
 
 ## Resources
 
