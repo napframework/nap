@@ -1,12 +1,9 @@
 #include "@PROJECT_NAME_LOWERCASE@app.h"
 
-// Nap includes
-#include <nap/core.h>
+// External Includes
+#include <utility/fileutils.h>
 #include <nap/logger.h>
-#include <inputcomponent.h>
-
-// Mod nap render includes
-#include <orthocameracomponent.h>
+#include <inputrouter.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::@PROJECT_NAME_PASCALCASE@App)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -20,26 +17,33 @@ namespace nap
 	 */
 	bool @PROJECT_NAME_PASCALCASE@App::init(utility::ErrorState& error)
 	{
-		// Create render service
-		mRenderService = getCore().getService<RenderService>();
-		mInputService  = getCore().getService<InputService>();
-		mSceneService  = getCore().getService<SceneService>();
-		
-		// Get resource manager service
+		// Retrieve services
+		mRenderService	= getCore().getService<nap::RenderService>();
+		mSceneService	= getCore().getService<nap::SceneService>();
+		mInputService	= getCore().getService<nap::InputService>();
+		mGuiService		= getCore().getService<nap::IMGuiService>();
+
+		// Fetch the resource manager
 		mResourceManager = getCore().getResourceManager();
+
+		// Fetch the scene
+		mScene = mResourceManager->findObject<Scene>("Scene");
+
+		// Convert our path and load resources from file
 		if (!mResourceManager->loadFile("app_structure.json", error))
 			return false;
 
-		mScene = mResourceManager->findObject<Scene>("Scene");
-		mCameraEntity = mScene->findEntity("CameraEntity");
-		
-		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window"));
+		// Get the render window
+		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
+		if (!error.check(mRenderWindow != nullptr, "unable to find render window with name: %s", "Window"))
+			return false;
 
-		// Set render states
-		RenderState& render_state = mRenderService->getRenderState();
-		render_state.mEnableMultiSampling = true;
-		render_state.mPointSize = 2.0f;
-		
+		// Get the scene that contains our entities and components
+		mScene = mResourceManager->findObject<Scene>("Scene");
+		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
+			return false;
+
+		// All done!
 		return true;
 	}
 	
@@ -47,20 +51,26 @@ namespace nap
 	// Called when the window is updating
 	void @PROJECT_NAME_PASCALCASE@App::update(double deltaTime)
 	{
-		// If any changes are detected, and we are reloading, we need to do this on the correct context
-		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManager->checkForFileChanges();
+		// Use a default input router to forward input events (recursively) to all input components in the default scene
+		nap::DefaultInputRouter input_router(true);
+		mInputService->processEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
 	}
 	
 	
 	// Called when the window is going to render
 	void @PROJECT_NAME_PASCALCASE@App::render()
 	{
+		// Destroy old GL context related resources scheduled for destruction
 		mRenderService->destroyGLContextResources(mRenderWindows);
-		RenderWindow* render_window = mRenderWindows[0].get();
-		render_window->makeActive();
-		mRenderService->clearRenderTarget(render_window->getBackbuffer());
-		render_window->swap();		
+
+		// Clear back-buffer
+		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+
+		// Draw our gui
+		mGuiService->draw();
+
+		// Swap screen buffers
+		mRenderWindow->swap();
 	}
 	
 
@@ -72,7 +82,7 @@ namespace nap
 	
 	void @PROJECT_NAME_PASCALCASE@App::inputMessageReceived(InputEventPtr inputEvent)
 	{
-		
+		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
