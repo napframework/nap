@@ -24,7 +24,6 @@ elseif (UNIX)
     set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/libnaputility.a)
 endif()
 
-
 if (NOT NAPUTILITY_LIBS_DIR)
     message(FATAL_ERROR "Couldn't find NAP utility")
 endif()
