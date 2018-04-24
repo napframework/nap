@@ -11,7 +11,7 @@ Use the NAP build system to create a new application from scratch:
 - In a terminal window, navigate to the directory containing your NAP installation on disk.
 - Run `tools\create_project NewProject` to generate a project file for a blank app template.
 
-After creation your new project is located under the 'projects' folder. You can build and run it using Visual Studio on Windows, XCode on macOS or make on Linux. To learn more about setting up projects, modules and 3rd party dependencies read the [Project Management](@ref project_management) documentation.
+After creation your new project is located under the 'projects' folder. You can build and run it using Visual Studio on Windows, Xcode on macOS or make on Linux. To learn more about setting up projects, modules and 3rd party dependencies read the [Project Management](@ref project_management) documentation.
 
 App Structure {#app_structure}
 ==========================
@@ -54,12 +54,12 @@ Take a look at the [system documentation](@ref system) to learn more about the r
 
 ## Update
 
-The update method is called every frame. The parameter 'deltaTime' indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering. The update call is also used to forward input events and set-up any gui elements for drawing later on:
+The update method is called every frame. The parameter 'deltaTime' indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering. The update call is also used to forward input events and set-up any UI elements for drawing later on:
 
 ~~~{cpp}
 void MyApp::update(double deltaTime)
 {
-    // Setup some gui elements to draw later on
+    // Setup some UI elements to draw later on
     ImGui::Begin("Controls");
     ImGui::Text(utility::getCurrentDateTime().toString().c_str());
     ImGui::Text("left mouse button to rotate world, right mouse button to zoom");
@@ -70,7 +70,7 @@ void MyApp::update(double deltaTime)
 
 ## Render
 
-Render is called after update. Use this call to render objects and ui elements to screen or a different target. By default nothing is rendered. You have to tell the renderer what you want to render and where to render it to. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). The example below shows you how to render a sphere with a material to the primary window.
+Render is called after update. Use this call to render objects and UI elements to screen or a different target. By default nothing is rendered. You have to tell the renderer what you want to render and where to render it to. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). The example below shows you how to render a sphere with a material to the primary window.
 
 ~~~{cpp}
 void MyApp::render()
@@ -84,7 +84,7 @@ void MyApp::render()
     // Find the camera
     nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
 
-    // Find the world and add as an object to render
+    // Find the world and add it as an object to render
     std::vector<nap::RenderableComponentInstance*> render_comps;
     nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
     render_comps.emplace_back(&renderable_world);
@@ -92,7 +92,7 @@ void MyApp::render()
     // Render the sphere to the main window using a perspective camera
     mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
 
-    // Draw our gui last!
+    // Draw our UI last!
     mGuiService->draw();
 
     // Swap screen buffers
@@ -156,7 +156,7 @@ Functionality and behaviour can be assigned to an entity by adding components to
 The RotateComponent takes care of slowly rotating the world entity. It specifies the axis on which to rotate the component and the rotation speed and the offset of the first rotation cycle.
 
 
-## The scene
+## The Scene
 
 Entities with their components describe the types of objects that are available within the app. However we still have to tell what entity or which entities have to be instantiated when the app is started. This is done using one unique object within the JSON file: the scene object of type `nap::Scene`. In this object we define an array containing the mIDs of one or more of the entities that are defined within the JSON file. These are the entities that will be instantiated or “spawned” at the moment the app is started and initialized, along with all their components and child entities recursively. In other words the Scene object defines which are the “root” entities of the app. The scene of the helloworld demo looks like this:
 ```
