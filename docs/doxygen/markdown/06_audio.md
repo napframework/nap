@@ -5,8 +5,8 @@ Audio {#audio}
 	* [Files](@ref audio_files)
 	* [Playback](@ref audio_playback_comp)
 	* [Output](@ref audio_output_comp)
-	* [Input](@ref audio_input_comp)
-* [Audio Analysis](@ref audio_analysis)
+* [Audio Input](@ref audio_input_comp)
+	* [Analysis](@ref audio_analysis)
 * [Writing Custom Audio Components](@ref audio_custom)
 	* [Nodes](@ref audio_nodes)
 	* [Components](@ref audio_comps)
@@ -89,8 +89,8 @@ else {
 }
 ~~~
 
-Input {#audio_input_comp}
------------------------
+Audio Input {#audio_input_comp}
+==========================
 
 In many cases we might need to use an audio signal directly from the hardware input of your audio device, such as a microphone input or line in signal. For this case we use [InputComponent](@ref nap::audio::InputComponent):
 
@@ -104,9 +104,8 @@ In many cases we might need to use an audio signal directly from the hardware in
 
 This component provides us with an audio signal containing the input from hardware channel 0 of our audio device. Note that in NAP (like everywhere else in C++, but possibly unlike most high level audio software) we start counting channel numbers from zero. This component can be used as an input source for the [OutputComponent](@ref nap::audio::OutputComponent) for example, pretty much like the [PlaybackComponent](@ref nap::audio::PlaybackComponent). The reason for this is that they are both derived from [AudioComponentBase](@ref nap::audio::AudioComponentBase). More about this later in [Writing a custom audio component](@ref audio_custom).
 
-
-Audio Analysis {#audio_analysis}
-==========================
+Analysis {#audio_analysis}
+-----------------------
 
 In case you intend to use NAP to render visuals that respond to an audio signal you can use [LevelMeterComponent](@ref nap::audio::LevelMeterComponent). This component, pretty much like the [OutputComponent](@ref nap::audio::OutputComponent), takes its input from a component derived from [AudioComponentBase](@ref nap::audio::AudioComponentBase). Instead of routing the signal to a hardware output though the component makes an analysis of the mean amplitude of the signal. It can be tuned to analyze a certain frequency band and also it's responsiveness can be finetuned. The output level can be requested at any given moment and used as a parameter to render visuals. For an example how this works, have a look at the "audioanalysis" demo:
 
