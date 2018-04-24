@@ -1,5 +1,5 @@
 project(naputility)
-
+find_package(moodycamel REQUIRED)
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
 
@@ -13,7 +13,7 @@ if (MSVC)
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC src ${MOODYCAMEL_INCLUDE_DIRS})
 
 # Package into release build
 if (WIN32)
@@ -26,3 +26,6 @@ endif()
 
 install(DIRECTORY "src/utility/" DESTINATION "include/utility/"
         FILES_MATCHING PATTERN "*.h")
+
+# Package moodycamel into platform release
+install(DIRECTORY ${MOODYCAMEL_INCLUDE_DIRS}/ DESTINATION thirdparty/moodycamel)
