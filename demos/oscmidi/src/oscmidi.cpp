@@ -76,7 +76,7 @@ namespace nap
         }
         
         // Draw some gui elements
-        ImGui::Begin("Midi");
+        ImGui::Begin("Midi input");
 
         for (int i = 0; i < mMidiMessageList.size(); i++)
         {
@@ -86,6 +86,35 @@ namespace nap
         }
 
         ImGui::End();
+        
+        auto oscHandler = mMainEntity->findComponent<OscHandlerComponentInstance>();
+        
+        // Poll the midi event queue for incoming events
+        std::vector<std::string> oscMessages;
+        if (oscHandler)
+            oscMessages = oscHandler->poll();
+        
+        // Update the list of recent events to be displayed
+        for (auto& message : oscMessages)
+        {
+            mOscMessageList[mOscMessageListWriteIndex] = message;
+            mOscMessageListWriteIndex++;
+            if (mOscMessageListWriteIndex >= mOscMessageList.size())
+                mOscMessageListWriteIndex = 0;
+        }
+        
+        // Draw some gui elements
+        ImGui::Begin("OSC input");
+        
+        for (int i = 0; i < mOscMessageList.size(); i++)
+        {
+            auto index = (mOscMessageListWriteIndex + i) % mOscMessageList.size();
+            if (mOscMessageList[index] != "")
+                ImGui::Text(mOscMessageList[index].c_str());
+        }
+        
+        ImGui::End();
+
 	}
 
 	
