@@ -511,10 +511,13 @@ namespace nap
 
 	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
 	{
+		const std::string exeDir = utility::getExecutableDir();
+		
 		// Check for the file in its normal location, beside the binary
-		if (utility::fileExists(filename))
+		const std::string alongsideBinaryPath = utility::getExecutableDir() + "/" + filename;
+		if (utility::fileExists(alongsideBinaryPath))
 		{
-			foundFilePath = filename;
+			foundFilePath = alongsideBinaryPath;
 		}
 		else
 		{
@@ -523,7 +526,6 @@ namespace nap
 			// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
 			// so that we avoid module DLL copying hell.
 
-			const std::string exeDir = utility::getExecutableDir();
 			const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
 			const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
 
@@ -533,7 +535,7 @@ namespace nap
 				std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
 				if (utility::dirExists(testDataPath))
 				{
-					// We found our project folder, now let's verify we have a project.json in there
+					// We found our project folder, now let's verify we have a our file in there
 					testDataPath += "/";
 					testDataPath += filename;
 					if (utility::fileExists(testDataPath))
