@@ -10,11 +10,7 @@ namespace nap
 		RTTI_ENABLE(Service)
 	public:
 		// Default Constructor
-		@MODULE_NAME_PASCALCASE@Service() = default;
-
-		// Disable copy
-		@MODULE_NAME_PASCALCASE@Service(const @MODULE_NAME_PASCALCASE@Service& rhs) = delete;
-		@MODULE_NAME_PASCALCASE@Service& operator=(const @MODULE_NAME_PASCALCASE@Service& rhs) = delete;
+		@MODULE_NAME_PASCALCASE@Service(ServiceConfiguration* configuration) : Service(configuration)	{ }
 
 		/**
 		 * Use this call to register service dependencies
