@@ -6,7 +6,7 @@
 #include <atomic>
 
 // Nap includes
-#include <utility/concurrentqueue.h>
+#include <concurrentqueue.h>
 
 namespace nap
 {

@@ -88,7 +88,7 @@ macro(copy_base_windows_graphics_dlls)
 endmacro()
 
 macro(copy_windows_ffmpeg_dlls)
-    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/bin/*.dll)
+    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin/*.dll)
     copy_files_to_bin(${FFMPEGDLLS})
 endmacro()
 
