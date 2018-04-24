@@ -16,6 +16,8 @@
 
 namespace nap
 {
+	using namespace rtti;
+
 	/**
 	 * Main application that is called from within the main loop
 	 */
