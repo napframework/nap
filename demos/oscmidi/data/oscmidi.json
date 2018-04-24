@@ -38,7 +38,13 @@
             "Type": "nap::OSCReceiver",
             "mID": "OSCReceiver",
             "Port": 7000,
-            "EnableDebugOutput": true
+            "EnableDebugOutput": false
+        },
+        {
+            "Type": "nap::OSCSender",
+            "mID": "OSCSender",
+            "IpAddress": "127.0.0.1",
+            "Port": 7000
         },
         {
             "Type": "nap::RenderWindow",

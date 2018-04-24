@@ -44,18 +44,27 @@ namespace nap
         // Find the main entity
         mMainEntity = scene->findEntity("main");
         
+        // Find the OSC sender
+        mOscSender = mResourceManager->findObject<OSCSender>("OSCSender");
+        
         // Initialized the list of last arrived midi events
-        for (auto i = 0; i < 10; ++i)
+        for (auto i = 0; i < 4; ++i)
         {
             mMidiMessageList.emplace_back("");
             mOscMessageList.emplace_back("");
         }
         
+        std::string temp  = "address";
+        memcpy(mOscOutputTag.data(), temp.c_str(), temp.size());
+        
+
 		return true;
 	}
 	
 	
 	/**
+     * Logs all incoming midi messages and all OSC messages coming in through port 7000.
+     * Also allows the user to send OSC messages to localhost port 7000 so they can be seen in the log.
 	 */
 	void OscMidiApp::update(double deltaTime)
 	{
@@ -75,26 +84,14 @@ namespace nap
                 mMidiMessageListWriteIndex = 0;
         }
         
-        // Draw some gui elements
-        ImGui::Begin("Midi input");
-
-        for (int i = 0; i < mMidiMessageList.size(); i++)
-        {
-            auto index = (mMidiMessageListWriteIndex + i) % mMidiMessageList.size();
-            if (mMidiMessageList[index] != "")
-                ImGui::Text(mMidiMessageList[index].c_str());
-        }
-
-        ImGui::End();
-        
         auto oscHandler = mMainEntity->findComponent<OscHandlerComponentInstance>();
-        
-        // Poll the midi event queue for incoming events
+
+        // Poll the OSC event queue for incoming events
         std::vector<std::string> oscMessages;
         if (oscHandler)
             oscMessages = oscHandler->poll();
-        
-        // Update the list of recent events to be displayed
+
+        // Update the list of recent OSC events to be displayed
         for (auto& message : oscMessages)
         {
             mOscMessageList[mOscMessageListWriteIndex] = message;
@@ -103,14 +100,51 @@ namespace nap
                 mOscMessageListWriteIndex = 0;
         }
         
-        // Draw some gui elements
-        ImGui::Begin("OSC input");
-        
-        for (int i = 0; i < mOscMessageList.size(); i++)
+        // Log all incoming midi messages
+        ImGui::Begin("Midi and OSC demo");
+        ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+        ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+        if (ImGui::CollapsingHeader("Midi input log"))
         {
-            auto index = (mOscMessageListWriteIndex + i) % mOscMessageList.size();
-            if (mOscMessageList[index] != "")
-                ImGui::Text(mOscMessageList[index].c_str());
+            for (int i = 0; i < mMidiMessageList.size(); i++)
+            {
+                auto index = (mMidiMessageListWriteIndex + i) % mMidiMessageList.size();
+                if (mMidiMessageList[index] != "")
+                    ImGui::Text(mMidiMessageList[index].c_str());
+            }
+            for (int i = 0; i < mMidiMessageList.size(); i++)
+                if (mMidiMessageList[i] == "")
+                    ImGui::Text("");
+        }
+        
+        // Log OSC messages coming in through port 7000
+        if (ImGui::CollapsingHeader("OSC input log"))
+        {
+            for (int i = 0; i < mOscMessageList.size(); i++)
+            {
+                auto index = (mOscMessageListWriteIndex + i) % mOscMessageList.size();
+                if (mOscMessageList[index] != "")
+                    ImGui::Text(mOscMessageList[index].c_str());
+            }
+            for (int i = 0; i < mOscMessageList.size(); i++)
+                if (mOscMessageList[i] == "")
+                    ImGui::Text("");
+        }
+        
+        // Allow the user to send an OSC value message to a specified address.
+        if (ImGui::CollapsingHeader("OSC output"))
+        {
+            ImGui::Text("Send an OSC message to localhost port 7000 with the specified address and value");
+            ImGui::InputText("Address", mOscOutputTag.data(), 25);
+            ImGui::SliderFloat("Value", &mOscOutputValue, 0.f, 1.f, "%.3f", 1);
+            if (ImGui::Button("Send"))
+            {
+                std::string address = "/" + std::string(mOscOutputTag.data());
+                OSCEvent event(address);
+                event.addValue<float>(mOscOutputValue);
+                mOscSender->send(event);
+            }
         }
         
         ImGui::End();
