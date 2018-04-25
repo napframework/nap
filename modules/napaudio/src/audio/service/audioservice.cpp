@@ -366,8 +366,11 @@ namespace nap
                 // There is no input device
                 if (configuration->mInputChannelCount > 0)
                 {
-                    if (configuration->mAllowChannelCountFailure)
+                    if (!configuration->mAllowChannelCountFailure)
+                    {
+                        Logger::warn("AudioService: input device not found, initializing without input channels.");
                         mInputChannelCount = 0;
+                    }
                     else {
                         errorState.fail("AudioService: input device not found.");
                         return false;
@@ -403,7 +406,10 @@ namespace nap
                 if (configuration->mOutputChannelCount > 0)
                 {
                     if (configuration->mAllowChannelCountFailure)
+                    {
+                        Logger::warn("AudioService: output device not found, initializing without output channels.");
                         mOutputChannelCount = 0;
+                    }
                     else {
                         errorState.fail("AudioService: output device not found.");
                         return false;
