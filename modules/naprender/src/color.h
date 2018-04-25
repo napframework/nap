@@ -3,6 +3,7 @@
 #include <rtti/rtti.h>
 #include <nap/numeric.h>
 #include <utility/dllexport.h>
+#include <glm/glm.hpp>
 
 namespace nap
 {
@@ -365,6 +366,11 @@ namespace nap
 		 * @return the blue color value
 		 */
 		T getBlue() const														{ return Color<T,3>::getValue(EColorChannel::Blue); }
+
+		/**
+		 *	@return the color as a vec3 (float)
+		 */
+		glm::vec3 toVec3() const;
 	};
 
 
@@ -430,8 +436,12 @@ namespace nap
 		 * @return the alpha color value
 		 */
 		T getAlpha() const														{ return Color<T,4>::getValue(EColorChannel::Alpha); }
-	};
 
+		/**
+		 *	@return the color as a vec4 (float)
+		 */
+		glm::vec4 toVec4() const;
+	};
 
 	/**
 	* Color that has only one value associated with it.
@@ -593,6 +603,29 @@ namespace nap
 			dist += pow(diff,2);
 		}
 		return dist;
+	}
+
+	template<typename T>
+	glm::vec3 nap::RGBColor<T>::toVec3() const
+	{
+		return 
+		{ 
+			(float)(RGBColor<T>::mValues[0]),
+			(float)(RGBColor<T>::mValues[1]),
+			(float)(RGBColor<T>::mValues[2])
+		};
+	};
+
+	template<typename T>
+	glm::vec4 nap::RGBAColor<T>::toVec4() const
+	{
+		return
+		{
+			(float)(RGBColor<T>::mValues[0]),
+			(float)(RGBColor<T>::mValues[1]),
+			(float)(RGBColor<T>::mValues[2]),
+			(float)(RGBColor<T>::mValues[3])
+		};
 	}
 }
 

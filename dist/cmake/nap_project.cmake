@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.5)
 get_filename_component(project_name_from_dir ${CMAKE_SOURCE_DIR} NAME)
 project(${project_name_from_dir})
 
+# Enforce GCC on Linux for now
+if(UNIX AND NOT APPLE)
+    if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        message(FATAL_ERROR "NAP only currently supports GCC on Linux")
+    endif()
+endif()
+
 # Set our install prefix for project packaging
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin_package)
 
