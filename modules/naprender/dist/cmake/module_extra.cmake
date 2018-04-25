@@ -1,7 +1,7 @@
 if(NOT TARGET nrender)
     include(${CMAKE_SOURCE_DIR}/../../cmake/nrender.cmake)
 endif(NOT TARGET nrender)
-target_link_libraries(${PROJECT_NAME} nrender assimp)
+target_link_libraries(${PROJECT_NAME} nrender)
 target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDES})
 
 if(UNIX)
