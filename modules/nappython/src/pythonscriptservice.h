@@ -12,6 +12,8 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
+		PythonScriptService(ServiceConfiguration* configuration);
+
 		bool TryLoad(const std::string& modulePath, pybind11::module& module, utility::ErrorState& errorState);
 
 	private:

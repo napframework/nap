@@ -1276,7 +1276,9 @@ static const unsigned int NunitoSansSemiBold_compressed_data[60436 / 4] =
 };
 
 
-RTTI_DEFINE_CLASS(nap::IMGuiService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
 
 namespace nap
 {
@@ -1358,6 +1360,11 @@ namespace nap
 		style.Colors[ImGuiCol_ModalWindowDarkening]		= IMGUI_NAPBACK;
 	}
 
+
+	IMGuiService::IMGuiService(ServiceConfiguration* configuration) :
+		Service(configuration)
+	{
+	}
 
 	void IMGuiService::draw()
 	{

@@ -313,4 +313,15 @@ namespace opengl
 		return SDL_GetWindowID(window);
 	}
 
+
+	void hideCursor()
+	{
+		SDL_ShowCursor(SDL_DISABLE);
+	}
+
+
+	void showCursor()
+	{
+		SDL_ShowCursor(SDL_ENABLE);
+	}
 }	// opengl

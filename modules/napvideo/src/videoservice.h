@@ -18,7 +18,7 @@ namespace nap
 		RTTI_ENABLE(Service)
 	public:
 		// Default constructor
-		VideoService() = default;
+		VideoService(ServiceConfiguration* configuration);
 
 		// Disable copy
 		VideoService(const VideoService& that) = delete;
