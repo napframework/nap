@@ -6,7 +6,7 @@
 
 #define RUN_Q_APPLICATION 	\
     int argc = 0; 			\
-    char* argv[] = {"app"}; \
+    const char* argv[] = {"app"}; \
     QCoreApplication app(argc, const_cast<char**>(argv));
 
 /**
