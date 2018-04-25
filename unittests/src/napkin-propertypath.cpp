@@ -8,10 +8,17 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 {
     RUN_Q_APPLICATION
 
+	auto doc = AppContext::get().newDocument();
+	auto entity = doc->addObject<nap::Entity>();
+	auto resB = doc->addObject<TestResourceB>();
+	auto res = doc->addObject<TestResourceB>();
+	res->mID = "MyResource";
+
+	// Add a pointer to array of pointers
+	doc->arrayAddExistingObject({*res, "ResPointers"}, resB);
+
 	SECTION("general")
 	{
-		auto doc = AppContext::get().newDocument();
-		auto entity = doc->addObject<nap::Entity>();
 		PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
 		REQUIRE(&nameProp.getObject() == entity);
 		REQUIRE(nameProp.isValid());
@@ -24,12 +31,9 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 		REQUIRE(!invalidPath.isValid());
 	}
 
-	TestResourceB res;
-	res.mID = "MyResource";
-
 	SECTION("enum")
 	{
-		PropertyPath path(res, "Enum");
+		PropertyPath path(*res, "Enum");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isEnum());
 		REQUIRE(!path.isArray());
@@ -40,7 +44,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("regular pointer")
 	{
-		PropertyPath path(res, "ResPointer");
+		PropertyPath path(*res, "ResPointer");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
 		REQUIRE(path.isNonEmbeddedPointer());
@@ -51,7 +55,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("array of regular pointers")
 	{
-		PropertyPath path(res, "ResPointers");
+		PropertyPath path(*res, "ResPointers");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isArray());
 		REQUIRE(path.isPointer());
@@ -60,9 +64,20 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 		REQUIRE(!path.isEnum());
 	}
 
+	SECTION("array element: regular pointer")
+	{
+		PropertyPath path(*res, "ResPointers/0");
+		REQUIRE(path.isValid());
+		REQUIRE(path.isPointer());
+		REQUIRE(path.isNonEmbeddedPointer());
+		REQUIRE(!path.isArray());
+		REQUIRE(!path.isEmbeddedPointer());
+		REQUIRE(!path.isEnum());
+	}
+
 	SECTION("embedded pointer")
 	{
-		PropertyPath path(res, "EmbedPointer");
+		PropertyPath path(*res, "EmbedPointer");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
 		REQUIRE(path.isEmbeddedPointer());
@@ -73,7 +88,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("array of embedded pointers")
 	{
-		PropertyPath path(res, "EmbedPointers");
+		PropertyPath path(*res, "EmbedPointers");
 		REQUIRE(path.isValid());
 		REQUIRE(path.isArray());
 		REQUIRE(path.isPointer());
@@ -85,8 +100,8 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 	SECTION("array of structs")
 	{
 		TestPropertiesStruct uniform;
-		res.mStructs.emplace_back(uniform);
-		PropertyPath path(res, "Structs");
+		res->mStructs.emplace_back(uniform);
+		PropertyPath path(*res, "Structs");
 		REQUIRE(path.isValid());
 //		REQUIRE(!path.isArray());
 		REQUIRE(!path.isPointer());
