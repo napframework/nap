@@ -1,2 +1,0 @@
-# Temporary, until we have module configuration
-set(DEPENDENT_MODULES mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napcameracontrol mod_napsvg mod_napetherdream mod_napcameracontrol)

@@ -543,7 +543,7 @@ bool Document::isPointedToByEmbeddedPointer(const nap::rtti::Object& obj)
 {
 	for (const auto& path : getPointersTo(obj, false, false))
 	{
-		assert(path.isPointer());
+		//assert(path.isPointer());
 		if (path.isEmbeddedPointer())
 			return true;
 	}
