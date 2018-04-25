@@ -24,13 +24,14 @@ namespace nap
     
     bool OscHandlerComponentInstance::init(utility::ErrorState& errorState)
     {
+		mReceivedEvents.reserve(25);
         auto& oscInputComponent = getEntityInstance()->getComponent<OSCInputComponentInstance>();
         oscInputComponent.messageReceived.connect(eventReceivedSlot);
         return true;
     }
     
     
-    const std::queue<std::string>& OscHandlerComponentInstance::getMessages()
+    const std::vector<std::string>& OscHandlerComponentInstance::getMessages()
     {
 		return mReceivedEvents;
     }
@@ -41,11 +42,16 @@ namespace nap
 		// Convert and push back the message
 		std::string message(event.getAddress());
 		for (const auto& argument : event.getArguments())
-			mReceivedEvents.push(message + " " + argument->toString());
+		{
+			// Add
+			mReceivedEvents.emplace_back(message + " " + argument->toString());
 
-		// Max allowed messages is 25
-		if (mReceivedEvents.size() > 25)
-			mReceivedEvents.pop();
+			// Remove first element when out of range
+			if (mReceivedEvents.size() > 25)
+			{
+				mReceivedEvents.erase(mReceivedEvents.begin());
+			}
+		}
     }
 
         

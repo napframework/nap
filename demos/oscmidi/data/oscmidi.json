@@ -43,7 +43,7 @@
         {
             "Type": "nap::OSCSender",
             "mID": "OSCSender",
-            "IpAddress": "127.0.0.1",
+            "IpAddress": "localhost",
             "Port": 7000
         },
         {

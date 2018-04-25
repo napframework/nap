@@ -24,6 +24,7 @@ namespace nap
 	/**
 	 * Demo application that is called from within the main loop
 	 * Logs incoming midi and osc messages and allows the user to send a simple OSC value message.
+	 * To change the computer the osc message is send to change the ip address in the json (defaults to localhost)
 	 */
 	class OscMidiApp : public App
 	{
@@ -63,22 +64,30 @@ namespace nap
 
 	private:
 		// Nap Services
-		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
-		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
-		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
-		InputService* mInputService = nullptr;							//< Input service for processing input
-		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
-		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
-        ObjectPtr<EntityInstance> mMainEntity;                          //< The entity containing our midi and osc processing components
-        ObjectPtr<OSCSender> mOscSender;
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-        
-        std::vector<std::string> mMidiMessageList;                        //< List of the last incoming midi events to be displayed
-        int mMidiMessageListWriteIndex = 0;
-        std::vector<std::string> mOscMessageList;                        //< List of the last incoming OSC events to be displayed
-        int mOscMessageListWriteIndex = 0;
+		RenderService* mRenderService = nullptr;						///< Render Service that handles render calls
+		ResourceManager* mResourceManager = nullptr;					///< Manages all the loaded resources
+		SceneService* mSceneService = nullptr;							///< Manages all the objects in the scene
+		InputService* mInputService = nullptr;							///< Input service for processing input
+		IMGuiService* mGuiService = nullptr;							///< Manages gui related update / draw calls
+		ObjectPtr<RenderWindow> mRenderWindow;							///< Pointer to the render window
+        ObjectPtr<EntityInstance> mMainEntity;                          ///< The entity containing our midi and osc processing components
+        ObjectPtr<OSCSender> mOscSender;								///< The osc send object
+		std::string mOscOutputTag = "address";							///< Buffer to fill in the address name
+        float mOscOutputValue = 1.0;									///< Default OSC output value
 
-        std::array<char, 25> mOscOutputTag;
-        float mOscOutputValue = 1.0;
+		/**
+		 *	Logs the midi messages to the gui
+		 */
+		void showMidiLog();
+
+		/**
+		 *	Logs the osc messages to the gui
+		 */
+		void showOSCLog();
+
+		/**
+		 *	Sends a simple osc message through the gui
+		 */
+		void showSendOSC();
 	};
 }

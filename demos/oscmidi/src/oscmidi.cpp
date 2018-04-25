@@ -46,17 +46,9 @@ namespace nap
         
         // Find the OSC sender
         mOscSender = mResourceManager->findObject<OSCSender>("OSCSender");
-        
-        // Initialized the list of last arrived midi events
-        for (auto i = 0; i < 4; ++i)
-        {
-            mMidiMessageList.emplace_back("");
-            mOscMessageList.emplace_back("");
-        }
-        
-        std::string temp  = "address";
-        memcpy(mOscOutputTag.data(), temp.c_str(), temp.size());
-        
+
+		// Reserve some memory for the osc output tag
+		mOscOutputTag.reserve(512);
 
 		return true;
 	}
@@ -70,9 +62,9 @@ namespace nap
 	{
 		// Find the midi and osc handle components
         auto midi_handler = mMainEntity->findComponent<MidiHandlerComponentInstance>(); 
-        auto osc_handler  = mMainEntity->findComponent<OscHandlerComponentInstance>();
         
         // Log some information to the top of the display
+		ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_FirstUseEver);
         ImGui::Begin("Midi and OSC demo");
         ImGui::Text(utility::getCurrentDateTime().toString().c_str());
         ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
@@ -80,52 +72,27 @@ namespace nap
 		// Display midi input messages
         if (ImGui::CollapsingHeader("Midi input log"))
         {
-			// Get all received osc messages
-			std::queue<std::string> midi_messages = midi_handler->getMessages();
-
-			// Update the list of recent OSC events to be displayed
-			while (!midi_messages.empty())
-			{
-				ImGui::Text(midi_messages.front().c_str());
-				midi_messages.pop();
-			}
+			showMidiLog();
         }
 
 		// Display OSC Input Messages
 		if (ImGui::CollapsingHeader("OSC input log"))
 		{
-			// Get all received osc messages
-			std::queue<std::string> osc_messages = osc_handler->getMessages();
-
-			// Update the list of recent OSC events to be displayed
-			while (!osc_messages.empty())
-			{
-				ImGui::Text(osc_messages.front().c_str());
-				osc_messages.pop();
-			}
+			showOSCLog();
 		}
         
         // Allow the user to send an OSC value message to a specified address.
         if (ImGui::CollapsingHeader("OSC output"))
         {
-            ImGui::Text("Send an OSC message to localhost port 7000 with the specified address and value");
-            ImGui::InputText("Address", mOscOutputTag.data(), 25);
-            ImGui::SliderFloat("Value", &mOscOutputValue, 0.f, 1.f, "%.3f", 1);
-            if (ImGui::Button("Send"))
-            {
-                std::string address = "/" + std::string(mOscOutputTag.data());
-                OSCEvent event(address);
-                event.addValue<float>(mOscOutputValue);
-                mOscSender->send(event);
-            }
+			showSendOSC();
         }
-        
         ImGui::End();
 
 	}
 
 	
 	/**
+	 * Draw the gui + osc / midi messages to screen
 	 */
 	void OscMidiApp::render()
 	{
@@ -186,4 +153,65 @@ namespace nap
 	{
 		return 0;
 	}
+
+
+	void OscMidiApp::showMidiLog()
+	{
+		// Fetch the midi handle component
+		auto midi_handler = mMainEntity->findComponent<MidiHandlerComponentInstance>();
+
+		// Get all received osc messages and convert into a single string
+		std::string msg;
+		for (const auto& message : midi_handler->getMessages())
+			msg += (message + "\n");
+
+		// Backup text
+		char txt[256] = "No Midi Messages Received";
+
+		// If there are no messages display that instead of the received messages
+		char* display_msg = msg.empty() ? txt : &msg[0];
+		size_t display_size = msg.empty() ? 256 : msg.size();
+
+		// Display block of text
+		ImGui::InputTextMultiline("Midi Messages", display_msg, display_size, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 15), ImGuiInputTextFlags_ReadOnly);
+	}
+
+
+	void OscMidiApp::showOSCLog()
+	{
+		// Get the osc handle component
+		auto osc_handler = mMainEntity->findComponent<OscHandlerComponentInstance>();
+
+		// Get all received osc messages and convert into a single string
+		std::string msg;
+		for (const auto& message : osc_handler->getMessages())
+			msg += (message + "\n");
+
+		// Backup text
+		char txt[256] = "No OSC Messages Received";
+
+		// If there are no messages display that instead of the received messages
+		char* display_msg = msg.empty() ? txt : &msg[0];
+		size_t display_size = msg.empty() ? 256 : msg.size();
+
+		// Display block of text
+		ImGui::InputTextMultiline("OSC Messages", display_msg, display_size, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 15), ImGuiInputTextFlags_ReadOnly);
+	}
+
+
+	void OscMidiApp::showSendOSC()
+	{
+		std::string display_string = utility::stringFormat("Send OSC message to: %s, port: %d, with the specified address and value", mOscSender->mIPAddress.c_str(), mOscSender->mPort);
+		ImGui::Text(display_string.c_str());
+		ImGui::InputText("Address", &mOscOutputTag[0], mOscOutputTag.capacity());
+		ImGui::SliderFloat("Value", &mOscOutputValue, 0.f, 1.f, "%.3f", 1);
+		if (ImGui::Button("Send"))
+		{
+			std::string address = "/" + std::string(mOscOutputTag.data());
+			OSCEvent event(address);
+			event.addValue<float>(mOscOutputValue);
+			mOscSender->send(event);
+		}
+	}
+
 }
