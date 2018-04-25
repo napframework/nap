@@ -8,6 +8,13 @@ endif(IMPORTING_PROJECT_MODULE)
 
 project(${MODULE_NAME})
 
+# Enforce GCC on Linux for now
+if(UNIX AND NOT APPLE)
+    if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        message(FATAL_ERROR "NAP only currently supports GCC on Linux")
+    endif()
+endif()
+
 # Support building user modules from their own (build system) project
 if(NOT MODULE_INTO_PROJ)
     get_filename_component(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../ REALPATH)
