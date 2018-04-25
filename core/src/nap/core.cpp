@@ -226,7 +226,7 @@ namespace nap
 		if (findProjectFilePath("config.json", config_file_path))
 		{
 			rtti::DeserializeResult deserialize_result;
-			if (!rtti::readJSONFile(config_file_path, mResourceManager->getFactory(), deserialize_result, errorState))
+			if (!rtti::readJSONFile(config_file_path, rtti::EPropertyValidationMode::DisallowMissingProperties,  mResourceManager->getFactory(), deserialize_result, errorState))
 				return false;
 
 			for (auto& object : deserialize_result.mReadObjects)
