@@ -21,7 +21,7 @@ Project Management {#project_management}
 	*	[Project](@ref custom_cmake_proj)
 	*	[Module](@ref custom_cmake_module)
 	*	[Third Party Dependencies](@ref custom_cmake_thirdparty)
-	*	[Outside The Box](@ref custom_cmake_outside_the_box)
+*   [Project Modules](@ref project_modules)
 
 # Overview {#proj_overview}
 
@@ -55,22 +55,13 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects\m
     "title": "MyFirstProject",
     "version": "0.1",
     "modules": [
-        "mod_naprender",
-        "mod_napmath",
-        "mod_napinput",
-        "mod_napsdlinput",
-        "mod_napsdlwindow",
         "mod_napapp",
-        "mod_napscene",
-        "mod_napimgui",
         "mod_napaudio"
     ]
 }
 ```
 
 To update this list simply add and remove entries to the `modules` list in the JSON.  The module names should match the module directory names in `\modules` and `\user_modules`.
-
-Note: This NAP beta release requires all modules to be listed in the `project.json`, even those you may not be accessing directly.  For example mod_napapp requires mod_napimgui and as a result mod_napimgui must always be listed in `project.json` whenever you're using mod_napapp.  We intend on resolving this in a future release.  See the [list of NAP modules (TODO UPDATE LINK)](@ref project_management) for the inter-module dependencies.
 
 Once you've updated your `project.json` run regenerate.bat within the project folder to update the Visual Studio solution.
 
@@ -125,22 +116,13 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
     "title": "MyFirstProject",
     "version": "0.1",
     "modules": [
-        "mod_naprender",
-        "mod_napmath",
-        "mod_napinput",
-        "mod_napsdlinput",
-        "mod_napsdlwindow",
         "mod_napapp",
-        "mod_napscene",
-        "mod_napimgui",
         "mod_napaudio"
     ]
 }
 ```
 
 To update this list simply add and remove entries to the `modules` list in the JSON.  The module names should match the module directory names in `/modules` and `/user_modules`.
-
-Note: This NAP beta release requires all modules to be listed in the `project.json`, even those you may not be accessing directly.  For example mod_napapp requires mod_napimgui and as a result mod_napimgui must always be listed in `project.json` whenever you're using mod_napapp.  We intend on resolving this in a future release.  See the [list of NAP modules (TODO UPDATE LINK)](@ref project_management) for the inter-module dependencies.
 
 Once you've updated your `project.json` run regenerate within the project folder to update the Xcode project.
 
@@ -195,22 +177,13 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
     "title": "MyFirstProject",
     "version": "0.1",
     "modules": [
-        "mod_naprender",
-        "mod_napmath",
-        "mod_napinput",
-        "mod_napsdlinput",
-        "mod_napsdlwindow",
         "mod_napapp",
-        "mod_napscene",
-        "mod_napimgui",
         "mod_napaudio"
     ]
 }
 ```
 
 To update this list simply add and remove entries to the `modules` list in the JSON.  The module names should match the module directory names in `/modules` and `/user_modules`.
-
-Note: This NAP beta release requires all modules to be listed in the `project.json`, even those you may not be accessing directly.  For example mod_napapp requires mod_napimgui and as a result mod_napimgui must always be listed in `project.json` whenever you're using mod_napapp.  We intend on resolving this in a future release.  See the [list of NAP modules (TODO UPDATE LINK)](@ref project_management) for the inter-module dependencies.
 
 Changes to your `project.json` will be automatically pulled in when you next build the project.
 
@@ -394,10 +367,9 @@ endif()
 
 ```
 
-## Outside The Box {#custom_cmake_outside_the_box}
+## Project Modules {#project_modules}
 
-As mentioned above our focus with the NAP beta has been on providing an easy onboarding experience for users creating projects within the NAP framework.  In future we'd like to put some effort into easing the use of NAP as integrated into pre-existing systems.  Some of that should already be possible, but for now you'll need to do your own build system work to integrate NAP into that project.
+You may have noticed that a number of the demos included with NAP v$(NAP_VERSION_MAJOR) use modules located within the project.  This method of working with modules is a recent internal development and as such isn't a supported approach in the beta.  We recommend instead creating all modules within the user modules directory.
 
-For the adventurous: at a minimum NAP needs to be able to find its modules and NAP always searches for modules (as shared libraries) alongside the executable on Windows and in a directory named `lib` beside the executable on macOS and Linux.  So long as you manage your shared libraries (including RPATH changes on macOS and Linux) it should be possible to use NAP within your projects.
+Watch this space for further developments regarding project modules in a future release.
 
-At this time using NAP in this way is unsupported.
