@@ -49,7 +49,7 @@ namespace nap
         /**
          * @return the most recent osc messages
          */
-        const std::queue<std::string>& getMessages();
+        const std::vector<std::string>& getMessages();
         
     private:
 
@@ -64,7 +64,7 @@ namespace nap
 		 */
         void onEventReceived(const OSCEvent&);
         
-        std::queue<std::string> mReceivedEvents;		///< Holds all the received events
+        std::vector<std::string> mReceivedEvents;		///< Holds all the received events
     };
         
 }

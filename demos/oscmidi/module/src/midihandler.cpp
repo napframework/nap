@@ -24,13 +24,14 @@ namespace nap
     
     bool MidiHandlerComponentInstance::init(utility::ErrorState& errorState)
     {
+		mReceivedEvents.reserve(25);
         auto& midiInputComponent = getEntityInstance()->getComponent<MidiInputComponentInstance>();
         midiInputComponent.messageReceived.connect(eventReceivedSlot);
         return true;
     }
     
     
-    const std::queue<std::string>& MidiHandlerComponentInstance::getMessages()
+    const std::vector<std::string>& MidiHandlerComponentInstance::getMessages()
     {
 		return mReceivedEvents;
     }
@@ -38,8 +39,10 @@ namespace nap
     
     void MidiHandlerComponentInstance::onEventReceived(const MidiEvent& event)
     {
-		mReceivedEvents.push(event.toString());
+		mReceivedEvents.emplace_back(event.toString());
 		if (mReceivedEvents.size() > 25)
-			mReceivedEvents.pop();
+		{
+			mReceivedEvents.erase(mReceivedEvents.begin());
+		}
     }
 }

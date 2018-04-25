@@ -49,7 +49,7 @@ namespace nap
         /**
          * Poll the component for received Midi messages
          */
-        const std::queue<std::string>& getMessages();
+        const std::vector<std::string>& getMessages();
         
     private:
 		/**
@@ -63,7 +63,7 @@ namespace nap
         void onEventReceived(const MidiEvent&);
         
 
-        std::queue<std::string> mReceivedEvents;		///< Contains the latest received events
+        std::vector<std::string> mReceivedEvents;		///< Contains the latest received events
     };
         
 }
