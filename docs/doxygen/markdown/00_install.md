@@ -63,7 +63,7 @@ export PATH="/Applications/CMake.app/Contents/bin:$PATH"
 
 ## Linux {#setup_build_env_linux}
 
-NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 17.10 on x86-64 machines.  Although NAP is known to work on other Ubuntu releases, 17.10 is the current supported version.
+NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 17.10 on x86-64 machines using GCC.  Although NAP is known to work on other Ubuntu releases, 17.10 is the current supported version.
 
 Follow these steps for a guided installation:
 1. Extract the release:

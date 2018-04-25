@@ -1,0 +1,8 @@
+{
+    "title": "LineBlending",
+    "version": "0.1",
+    "modules": [
+        "mod_lineblending",
+        "mod_napapp"
+    ]
+}

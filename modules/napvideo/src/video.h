@@ -135,7 +135,7 @@ namespace nap
 		 * @param video: video to play
 		 * @param maxPacketQueueSize
 		 */
-		AVState(Video& video, int maxPacketQueueSize);
+		AVState(Video& video);
 
 		/**
 		 * Destructor
@@ -225,9 +225,35 @@ namespace nap
 		bool addPacket(AVPacket& packet, const bool& exitIOThreadSignalled);
 
 		/**
+		 * Wait for the frame to be empty
+		 * @param exitIOThreadsignalled When I/O thread is in exit mode, this must be true.
+		 */
+		bool waitForFrameQueueEmpty(bool& exitIOThreadSignalled);
+
+		/**
+		 * Cancel any outstanding waits for the frame queue to be empty
+		 */
+		void cancelWaitForFrameQueueEmpty();
+
+		/**
+		 * Reset the state of the frame queue so that subsequent waits will wait normally
+		 */
+		void resetWaitForFrameQueueEmpty();
+
+		/**
 		 * Blocks until the EOF packet that was added by addEndOfFilePacket is consumed by the decode thread.
 		 */
-		void waitForEndOfFileProcessed();
+		bool waitForEndOfFileProcessed();
+
+		/**
+		 * Cancel any outstanding waits for end of file to be processed
+		 */
+		void cancelWaitForEndOfFileProcessed();
+
+		/**
+		 * Reset the state of the end of file processed event so that subsequent waits will wait normally
+		 */
+		void resetEndOfFileProcessed();
 
 		/**
 		 * Blocks until the 'seek start' packet that was added by addSeekStartPacket is consumed by the decode thread.
@@ -236,9 +262,9 @@ namespace nap
 		
 		/**
 		 * Blocks until the decode thread has called avcoded_receive. This is used to perform lock-step production of packets and frames.
-		 * @return Wether avcoded_receive requires a new packet to be pushed onto the packet queue.
+		 * @return Result of avcoded_receive_frame
 		 */
-		bool waitForReceiveFrame();
+		int waitForReceiveFrame();
 
 		/**
 		 * Consumes all frames in the frame queue until the decode thread needs new packets.
@@ -321,14 +347,13 @@ namespace nap
 		mutable std::mutex			mFrameQueueMutex;						///< Mutex protection for the frame queue
 		std::condition_variable		mFrameDataAvailableCondition;			///< Condition describing whether there is data in the frame queue to process
 		std::condition_variable		mFrameQueueRoomAvailableCondition;		///< Condition describing whether there is still room in the frame queue to add new frames
-		
+		bool						mCancelWaitFrameQueueEmpty = false;		///< Whether the wait for the frame queue to be empty should be cancelled
+
 		// Producer/consumer variables for packet queue:
 		std::queue<AVPacket*>		mPacketQueue;							///< The packet queue as produced by the ioThread and consumed by the decodeThread thread
 		std::mutex					mPacketQueueMutex;						///< Mutex protection for the packet queue
 		std::condition_variable		mPacketAvailableCondition;				///< Condition describing whether there is data in the packet queue to process
-		std::condition_variable		mPacketQueueRoomAvailableCondition;		///< Condition describing whether there is still room in the packet queue to add new packets
-		int							mMaxPacketQueueSize;
-
+		
 		bool						mFinishedProducingFrames = false;		///< If this boolean is set, the decode thread has no more frames to decode, either due to an error or due to an end of stream.
 
 		std::unique_ptr<AVPacket>	mSeekStartPacket;						///< Specific 'command' packet to communicate 'seek start' to decode thread
@@ -340,7 +365,7 @@ namespace nap
 		utility::AutoResetEvent		mEndOfFileProcessedEvent;				///< Event that is signaled when EndOfFile packet is consumed by decode thread
 		utility::AutoResetEvent		mSeekStartProcessedEvent;				///< Event that is signaled when seek start packet is consumed by decode thread
 		utility::AutoResetEvent		mReceiveFrameEvent;						///< Event that is signaled when avcodec_receive is called by decode thread
-		bool						mReceiveFrameNeedsPacket = false;		///< Value set when avcoded_receive requires more packet to produce a frame
+		int							mReceiveFrameResult = 0;				///< Value set when avcoded_receive requires more packet to produce a frame
 
 		double						mLastFramePTSSecs = 0.0;				///< The PTS of the last frame in seconds, used to 'guess' the PTS of a new frame if it's unknown.
 		int							mFrameFirstPacketDTS = -INT_MAX;		///< Cached value for the first DTS that was used to produce the current frame
@@ -448,7 +473,20 @@ namespace nap
 		/**
 		 * @return Whether this video has an audio stream.
 		 */
-		bool hasAudio() const					{ return mAudioState.getStream() != -1; }
+		bool hasAudio() const					{ return mAudioState.isValid(); }
+
+		/**
+		 * Set whether audio playback is enabled for the video. If enabled, video will be synced to the audio clock.
+		 * Enabling this requires that somebody calls OnAudioCallback() to advance the audio clock; this is not handled internally.
+		 *
+		 * Note that this can only be changed *before* play() is called!
+		 */
+		void setAudioEnabled(bool enabled) { assert(!isPlaying()); mAudioEnabled = enabled; }
+
+		/**
+		 * Gets whether audio playback is enabled
+		 */
+		bool isAudioEnabled() const { return hasAudio() && mAudioEnabled; }
 
 		/**
 		 * Function that needs to be called by the audio system on a fixed frequency to copy the audio data from the audio
@@ -474,6 +512,15 @@ namespace nap
 			GotPacket			= GotAudioPacket | GotVideoPacket | GotUnknownPacket,	///< Received either an audio or video packet
 			EndOfFile			= 8,													///< EndOfFile was reached, no packet was pushed
 			Error				= 16													///< An error occurred during stream reading
+		};
+
+		enum class IOThreadState
+		{
+			WaitingForEOF,				///< Waiting for EOF to be processed state
+			Playing,					///< Regular playing state
+			SeekRequest,				///< First stage of seeking, handling the request, finding target to seek to
+			SeekingStartFrame,			///< Second stage of seeking, iterative seeking of start keyframe
+			SeekingTargetFrame			///< Third stage of seeking, decoding up until the target PTS
 		};
 
 		/**
@@ -539,23 +586,38 @@ namespace nap
 		/**
 		 * Finishes the seeking operation and returns back to playing state.
 		 */
-		void finishSeeking(AVState& seekState);
+		void finishSeeking(AVState& seekState, bool shouldDrainFrameQueue);
 
 		/**
 		 * Set the internal seek target to the specified number of seconds in the timebase of the provided AVState
 		 */
 		void setSeekTarget(AVState& seekState, double seekTargetSecs);
 
+		/**
+		 * Set the state of the IO thread
+		 * @param threadState the new io thread state
+		 */
+		void setIOThreadState(IOThreadState threadState);
+
+		/**
+		 * Allocate a packet of specified size. Will block if the max size is reached
+		 * @param inPacketSize The size (in bytes) to allocate.
+		 */
+		bool allocatePacket(uint64_t inPacketSize);
+
+		/**
+		 * Deallocate a packet of specified size
+		 * @param inPacketSize The size (in bytes) to deallocate.
+		 */
+		void deallocatePacket(uint64_t inPacketSize);
+
+		/**
+		 * Clear output textures to black
+		 */
+		void clearTextures();
+
 	private:
 		friend class AVState;
-
-		enum class IOThreadState
-		{
-			Playing,					///< Regular playing state
-			SeekRequest,				///< First stage of seeking, handling the request, finding target to seek to
-			SeekingStartFrame,			///< Second stage of seeking, iterative seeking of start keyframe
-			SeekingTargetFrame			///< Third stage of seeking, decoding up until the target PTS
-		};
 
 		static const double		sClockMax;
 
@@ -569,11 +631,15 @@ namespace nap
 		int						mHeight = 0;								///< Height of the video, in pixels
 		float					mDuration = 0.0f;							///< Duration of the video in seconds
 		double					mSystemClockSecs = sClockMax;				///< Clock that we use to synchronize the video to if there is no audio stream
-		double					mAudioDecodeClockSecs = sClockMax;			///< Clock that indicates up to which time the audio thread has decoded frame
-		double					mAudioClockSecs = sClockMax;				///< Clock that indicates the actual time of the *playing* audio
+		double					mAudioDecodeClockSecs = -1;					///< Clock that indicates up to which time the audio thread has decoded frame
+		double					mAudioClockSecs = -1;						///< Clock that indicates the actual time of the *playing* audio
 
 		std::string				mErrorMessage;								///< If an error occurs, this is the string containing error information. If empty, no error occured.
 		
+		std::mutex				mTotalPacketQueueSizeLock;					///< Lock guarding the current packet queue size
+		std::condition_variable	mPacketQueueRoomAvailableCondition;			///< Condition used to wait for room to be available in the packet queue
+		uint64_t				mTotalPacketQueueSize = 0;					///< Total packet size in use
+
 		AVState					mVideoState;								///< State containing all video decoding
 		AVState					mAudioState;								///< State containing all audio decoding
 		AVState*				mSeekState = nullptr;						///< The AVState that we use to seek against
@@ -593,8 +659,9 @@ namespace nap
 		uint8_t*				mCurrentAudioBuffer = nullptr;				///< Pointer to either the buffer in the current audio frame itself, or the resampled audio buffer.
 		uint64_t				mAudioFrameReadOffset = 0;					///< Offset (cursor) into the current audio buffer that is decoded
 		uint64_t				mAudioFrameSize = 0;						///< Size of the current decoded (and possible resampled) audio buffer, in bytes
+		bool					mAudioEnabled = false;						///< Whether audio is enabled or not
 
-		IOThreadState			mIOThreadState = IOThreadState::Playing;		///< FSM state of the I/O thread
+		IOThreadState			mIOThreadState = IOThreadState::Playing;	///< FSM state of the I/O thread
 	};
 
 	// Object creator used for constructing the the OSC receiver
