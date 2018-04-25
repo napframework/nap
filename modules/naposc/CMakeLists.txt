@@ -27,6 +27,9 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${O
 copy_module_json_to_bin()
 
 # Package into platform release
+if(UNIX)
+    set(UNIX_EXTRA_RPATH ../../../../thirdparty/oscpack/lib)
+endif()
 package_module()
 
 # Package oscpack into platform release

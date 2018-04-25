@@ -53,5 +53,4 @@ if(WIN32)
     # Package etherdream IMPLIB on Windows
     get_target_property(ETHERDREAM_IMPLIB etherdreamlib IMPORTED_IMPLIB_RELEASE)
     install(FILES ${ETHERDREAM_IMPLIB} DESTINATION thirdparty/etherdream/bin)    
-
 endif()
