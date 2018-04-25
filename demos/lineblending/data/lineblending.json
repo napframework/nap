@@ -228,7 +228,8 @@
                     "SelectionComponentTwo": "./SelectionComponentTwo",
                     "Target": "DisplayLine",
                     "BlendValue": 0.5,
-                    "BlendSpeed": 1.0
+                    "BlendSpeed": 1.0,
+                    "Target": "DisplayLine"
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -333,7 +334,7 @@
                     "mID": "nap::LineBlendComponent",
                     "SelectionComponentOne": "SelectionComponentOne",
                     "SelectionComponentTwo": "SelectionComponentTwo",
-                    "Target": "",
+                    "Target": "DisplayLine",
                     "BlendValue": 0.0,
                     "BlendSpeed": 0.0
                 }
