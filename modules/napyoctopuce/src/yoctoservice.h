@@ -18,7 +18,7 @@ namespace nap
 		/**
 		 *	Default constructor
 		 */
-		YoctoService() = default;
+		YoctoService(ServiceConfiguration* configuration);
 
 		/**
 		 *	Explicitly frees the yoctopuce API

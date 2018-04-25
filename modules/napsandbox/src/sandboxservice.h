@@ -15,7 +15,7 @@ namespace nap
 
 	public:
 		// Default constructor
-        SandboxService() = default;
+		SandboxService(ServiceConfiguration* configuration);
 
 		// Disable copy
         SandboxService(const SandboxService& that) = delete;

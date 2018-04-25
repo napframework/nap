@@ -189,4 +189,14 @@ namespace opengl
 	 */
 	uint32_t getWindowId(SDL_Window* window);
 
+	/**
+	 * Hides the mouse cursor
+	 */
+	void hideCursor();
+
+	/**
+	 * Shows the mouse cursor
+	 */
+	void showCursor();
+
 }	// opengl

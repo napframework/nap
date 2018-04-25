@@ -369,4 +369,7 @@ endif()
 
 ## Project Modules {#project_modules}
 
-TODO
+You may have noticed that a number of the demos included with NAP v$(NAP_VERSION_MAJOR) use modules located within the project.  This method of working with modules is a recent internal development and as such isn't a supported approach in the beta.  We recommend instead creating all modules within the user modules directory.
+
+Watch this space for further developments regarding project modules in a future release.
+

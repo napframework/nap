@@ -10,12 +10,15 @@
 #include <iostream>
 #include <mathutils.h>
 
-RTTI_DEFINE_CLASS(nap::ArtNetService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtNetService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
 
 namespace nap
 {
 	// ctor delibarately in cpp for unique_ptr
-	ArtNetService::ArtNetService()
+	ArtNetService::ArtNetService(ServiceConfiguration* configuration) :
+		Service(configuration)
 	{
 	}
 
