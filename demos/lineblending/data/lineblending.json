@@ -228,8 +228,7 @@
                     "SelectionComponentTwo": "./SelectionComponentTwo",
                     "Target": "DisplayLine",
                     "BlendValue": 0.5,
-                    "BlendSpeed": 1.0,
-                    "Target": "DisplayLine"
+                    "BlendSpeed": 1.0
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -328,15 +327,6 @@
                     "Type": "nap::UpdateNormalsComponent",
                     "mID": "UpdateLaserNormalsComponent",
                     "NormalMesh": "NormalsMesh"
-                },
-                {
-                    "Type": "nap::LineBlendComponent",
-                    "mID": "nap::LineBlendComponent",
-                    "SelectionComponentOne": "SelectionComponentOne",
-                    "SelectionComponentTwo": "SelectionComponentTwo",
-                    "Target": "DisplayLine",
-                    "BlendValue": 0.0,
-                    "BlendSpeed": 0.0
                 }
             ],
             "Children": []
