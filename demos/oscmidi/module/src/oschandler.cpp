@@ -30,22 +30,22 @@ namespace nap
     }
     
     
-    std::vector<std::string> OscHandlerComponentInstance::poll()
+    const std::queue<std::string>& OscHandlerComponentInstance::getMessages()
     {
-        std::vector<std::string> result;
-        for (auto& event : mReceivedEvents)
-            result.emplace_back(std::move(event));
-        mReceivedEvents.clear();
-        return result;
+		return mReceivedEvents;
     }
 
     
     void OscHandlerComponentInstance::onEventReceived(const OSCEvent& event)
     {
-        std::string message = event.getAddress();
-        for (const auto& argument : event.getArguments())
-            message.append(" " + argument->toString());
-        mReceivedEvents.emplace_back(message);
+		// Convert and push back the message
+		std::string message(event.getAddress());
+		for (const auto& argument : event.getArguments())
+			mReceivedEvents.push(message + " " + argument->toString());
+
+		// Max allowed messages is 25
+		if (mReceivedEvents.size() > 25)
+			mReceivedEvents.pop();
     }
 
         
