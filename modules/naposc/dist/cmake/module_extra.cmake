@@ -7,5 +7,6 @@ install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION licenses/oscpack)
 
 # Install oscpack shared lib into packaged project for Unix
 if(UNIX)
-    install(FILES ${OSCPACK_LIBS_RELEASE} DESTINATION lib)
+    file(GLOB OSCPACK_DYLIBS ${THIRDPARTY_DIR}/oscpack/lib/liboscpack*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${OSCPACK_DYLIBS} DESTINATION lib)
 endif()
