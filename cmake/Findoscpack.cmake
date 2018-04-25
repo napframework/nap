@@ -11,8 +11,8 @@ elseif(APPLE)
     set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/osx/install/lib/Debug/liboscpack.1.1.0.dylib)
     set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/osx/install/lib/Release/liboscpack.1.1.0.dylib)
 else()
-    set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/linux/liboscpack.so.1.1.0)
-    set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/linux/liboscpack.so.1.1.0)
+    set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/linux/install/lib/liboscpack.so.1.1.0)
+    set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/linux/install/lib/liboscpack.so.1.1.0)
 endif()
 
 # include directory is universal
