@@ -1,3 +1,23 @@
+if(NOT TARGET glm)
+    find_package(glm REQUIRED)
+endif()
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS})
+
+if(NOT TARGET GLEW)
+    find_package(GLEW REQUIRED)
+endif()
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLEW_INCLUDE_DIRS})
+
+if(NOT TARGET assimp)
+    find_package(assimp REQUIRED)
+endif()
+
+# FreeImage
+if(NOT TARGET FreeImage)
+    find_package(FreeImage REQUIRED)
+endif()
+target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
+
 if(NOT TARGET nrender)
     include(${CMAKE_SOURCE_DIR}/../../cmake/nrender.cmake)
 endif(NOT TARGET nrender)
