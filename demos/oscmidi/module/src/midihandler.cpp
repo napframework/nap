@@ -30,20 +30,16 @@ namespace nap
     }
     
     
-    std::vector<std::string> MidiHandlerComponentInstance::poll()
+    const std::queue<std::string>& MidiHandlerComponentInstance::getMessages()
     {
-        std::vector<std::string> result;
-        for (auto& event : mReceivedEvents)
-            result.emplace_back(event);
-        mReceivedEvents.clear();
-        return result;
+		return mReceivedEvents;
     }
 
     
     void MidiHandlerComponentInstance::onEventReceived(const MidiEvent& event)
     {
-        mReceivedEvents.emplace_back(event.toString());
+		mReceivedEvents.push(event.toString());
+		if (mReceivedEvents.size() > 25)
+			mReceivedEvents.pop();
     }
-
-        
 }

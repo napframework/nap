@@ -68,69 +68,42 @@ namespace nap
 	 */
 	void OscMidiApp::update(double deltaTime)
 	{
-        auto midiHandler = mMainEntity->findComponent<MidiHandlerComponentInstance>();
+		// Find the midi and osc handle components
+        auto midi_handler = mMainEntity->findComponent<MidiHandlerComponentInstance>(); 
+        auto osc_handler  = mMainEntity->findComponent<OscHandlerComponentInstance>();
         
-        // Poll the midi event queue for incoming events
-        std::vector<std::string> midiMessages;
-        if (midiHandler)
-            midiMessages = midiHandler->poll();
-        
-        // Update the list of recent events to be displayed
-        for (auto& message : midiMessages)
-        {
-            mMidiMessageList[mMidiMessageListWriteIndex] = message;
-            mMidiMessageListWriteIndex++;
-            if (mMidiMessageListWriteIndex >= mMidiMessageList.size())
-                mMidiMessageListWriteIndex = 0;
-        }
-        
-        auto oscHandler = mMainEntity->findComponent<OscHandlerComponentInstance>();
-
-        // Poll the OSC event queue for incoming events
-        std::vector<std::string> oscMessages;
-        if (oscHandler)
-            oscMessages = oscHandler->poll();
-
-        // Update the list of recent OSC events to be displayed
-        for (auto& message : oscMessages)
-        {
-            mOscMessageList[mOscMessageListWriteIndex] = message;
-            mOscMessageListWriteIndex++;
-            if (mOscMessageListWriteIndex >= mOscMessageList.size())
-                mOscMessageListWriteIndex = 0;
-        }
-        
-        // Log all incoming midi messages
+        // Log some information to the top of the display
         ImGui::Begin("Midi and OSC demo");
         ImGui::Text(utility::getCurrentDateTime().toString().c_str());
         ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
+		// Display midi input messages
         if (ImGui::CollapsingHeader("Midi input log"))
         {
-            for (int i = 0; i < mMidiMessageList.size(); i++)
-            {
-                auto index = (mMidiMessageListWriteIndex + i) % mMidiMessageList.size();
-                if (mMidiMessageList[index] != "")
-                    ImGui::Text(mMidiMessageList[index].c_str());
-            }
-            for (int i = 0; i < mMidiMessageList.size(); i++)
-                if (mMidiMessageList[i] == "")
-                    ImGui::Text("");
+			// Get all received osc messages
+			std::queue<std::string> midi_messages = midi_handler->getMessages();
+
+			// Update the list of recent OSC events to be displayed
+			while (!midi_messages.empty())
+			{
+				ImGui::Text(midi_messages.front().c_str());
+				midi_messages.pop();
+			}
         }
-        
-        // Log OSC messages coming in through port 7000
-        if (ImGui::CollapsingHeader("OSC input log"))
-        {
-            for (int i = 0; i < mOscMessageList.size(); i++)
-            {
-                auto index = (mOscMessageListWriteIndex + i) % mOscMessageList.size();
-                if (mOscMessageList[index] != "")
-                    ImGui::Text(mOscMessageList[index].c_str());
-            }
-            for (int i = 0; i < mOscMessageList.size(); i++)
-                if (mOscMessageList[i] == "")
-                    ImGui::Text("");
-        }
+
+		// Display OSC Input Messages
+		if (ImGui::CollapsingHeader("OSC input log"))
+		{
+			// Get all received osc messages
+			std::queue<std::string> osc_messages = osc_handler->getMessages();
+
+			// Update the list of recent OSC events to be displayed
+			while (!osc_messages.empty())
+			{
+				ImGui::Text(osc_messages.front().c_str());
+				osc_messages.pop();
+			}
+		}
         
         // Allow the user to send an OSC value message to a specified address.
         if (ImGui::CollapsingHeader("OSC output"))

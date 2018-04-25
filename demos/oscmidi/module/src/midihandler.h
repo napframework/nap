@@ -4,14 +4,15 @@
 #include <component.h>
 #include <nap/signalslot.h>
 #include <midievent.h>
+#include <queue>
 
 namespace nap
 {
-    
+    // Forward declare
     class MidiHandlerComponentInstance;
     
     /**
-     * Component that handles incoming midi messages by caching them so the app can poll them
+     * Component that converts incoming midi messages into a string and stores them for display later on.
      */
     class NAPAPI MidiHandlerComponent : public Component
     {
@@ -31,6 +32,11 @@ namespace nap
     };
 
     
+	/**
+	 * Instance part of the midi handler component. This object registers itself to a midi input component
+	 * And transforms incoming messages. In this case this component only converts the message to a string
+	 * that can be used for display later on
+	 */
     class NAPAPI MidiHandlerComponentInstance : public ComponentInstance
     {
         RTTI_ENABLE(ComponentInstance)
@@ -43,13 +49,21 @@ namespace nap
         /**
          * Poll the component for received Midi messages
          */
-        std::vector<std::string> poll();
+        const std::queue<std::string>& getMessages();
         
     private:
+		/**
+		 * Slot connected to the midi received signal on initialization
+		 */
         Slot<const MidiEvent&> eventReceivedSlot = { this, &MidiHandlerComponentInstance::onEventReceived };
+
+		/**
+		 *	Called by the slot when a new midi event is received
+		 */
         void onEventReceived(const MidiEvent&);
         
-        std::vector<std::string> mReceivedEvents;
+
+        std::queue<std::string> mReceivedEvents;		///< Contains the latest received events
     };
         
 }
