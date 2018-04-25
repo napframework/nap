@@ -11,10 +11,15 @@ file(GLOB_RECURSE SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 add_executable(${PROJECT_NAME}_autorun ${SOURCES})
 
+<<<<<<< HEAD
+=======
+set(NAP_MODULES mod_kalvertoren mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napsandbox mod_napvideo mod_napmath mod_napscene mod_napartnet mod_napcameracontrol)
+
 set(UNITTEST_LIBS
-    napkin_lib
-    mod_napscene
     napcore
+    ${NAP_MODULES}
+    napkin_lib
+    nrender
     )
 
 find_package(FFmpeg REQUIRED)

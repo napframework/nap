@@ -18,6 +18,9 @@ include(${NAP_ROOT}/cmake/dist_shared.cmake)
 # Get our modules list from project.json
 project_json_to_cmake()
 
+# Fetch our module dependencies
+fetch_module_dependencies("${NAP_MODULES}")
+
 # Set our default build type if we haven't specified one (Linux)
 set_default_build_type()
 
@@ -73,9 +76,9 @@ file(GLOB_RECURSE HEADERS src/*.h src/*.hpp)
 file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert)
 
 # Create IDE groups
-source_group("Headers" FILES ${HEADERS})
-source_group("Sources" FILES ${SOURCES})
-source_group("Shaders" FILES ${SHADERS})
+create_hierarchical_source_groups_for_files("${SOURCES}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Sources")
+create_hierarchical_source_groups_for_files("${HEADERS}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Headers")
+create_hierarchical_source_groups_for_files("${SHADERS}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Shaders")
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 if (WIN32)
@@ -105,9 +108,9 @@ endforeach()
 
 target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core naputility ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 
-# Include anu extra project CMake logic
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/projectExtra.cmake)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/projectExtra.cmake)
+# Include any extra project CMake logic
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
 endif()
 
 # Copy data to bin post-build
@@ -130,4 +133,9 @@ endif()
 # Package napkin if we're doing a build from againat released NAP or we're packaging a project with napkin
 if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
     include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_project.cmake)
+endif()
+
+# Package redistributable help on Windows
+if(WIN32 AND PROJECT_PACKAGE_BIN_DIR)
+    copy_files_to_bin(${NAP_ROOT}/tools/platform/Microsoft\ Visual\ C++\ Redistributable\ Help.txt)
 endif()

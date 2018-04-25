@@ -82,6 +82,7 @@ elseif(APPLE)
     set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/glew/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
     set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 
@@ -92,3 +93,9 @@ elseif(APPLE)
 elseif(UNIX)
     set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../..")
 endif()
+
+# Add tclap license into release
+install(FILES ${THIRDPARTY_DIR}/tclap-1.2.1/README
+              ${THIRDPARTY_DIR}/tclap-1.2.1/COPYING
+        DESTINATION thirdparty/tclap)
+install(DIRECTORY ${TCLAP_INCLUDE_DIRS}/tclap/ DESTINATION thirdparty/tclap/include/tclap)

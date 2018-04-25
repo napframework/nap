@@ -13,6 +13,9 @@ source_group("resource" src/audio/resource/*.*)
 source_group("service" src/audio/service/*.*)
 source_group("utility" src/audio/utility/*.*)
 
+# Get our NAP modules dependencies from module.json
+module_json_to_cmake()
+
 set(LIBRARIES napcore portaudio libsndfile libmpg123)
 if(APPLE)
     list(APPEND LIBRARIES "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
@@ -24,7 +27,6 @@ add_library(${PROJECT_NAME} SHARED ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
-set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
@@ -54,18 +56,20 @@ if(WIN32)
     copy_files_to_bin(${FILES_TO_COPY})
 endif()
 
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
+
 # Package into platform release
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/mpg123/lib")
-    if(NOT APPLE)
-        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
-        list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
-    endif()
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
+    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
 endif()    
 package_module()
 
 # Package mpg123 into platform release
-install(FILES ${THIRDPARTY_DIR}/mpg123/doc/LICENSE DESTINATION thirdparty/mpg123)
+install(FILES ${THIRDPARTY_DIR}/mpg123/COPYING DESTINATION thirdparty/mpg123)
+install(DIRECTORY ${LIBMPG123_INCLUDE_DIR}/ DESTINATION thirdparty/mpg123/include)
 if(WIN32)
     file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/install/msvc/*.dll)
     install(FILES ${MPG123_DYLIBS}
@@ -99,21 +103,31 @@ endif()
 
 # Package libsndfile into platform release
 install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/install/COPYING DESTINATION thirdparty/libsndfile)
+install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h
+              ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
+        DESTINATION thirdparty/libsndfile/include)
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/libsndfile/msvc64/
-            DESTINATION thirdparty/libsndfile)
-elseif(UNIX AND NOT APPLE)
+    file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${LIBSNDFILE_DYLIBS}
+            DESTINATION thirdparty/libsndfile/bin)
+    file(GLOB LIBSNDFILE_IMPLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*.lib)
+    install(FILES ${LIBSNDFILE_IMPLIBS}
+            DESTINATION thirdparty/libsndfile/lib)  
+elseif(UNIX)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
             DESTINATION thirdparty/libsndfile/lib)
 endif()
 
 # Package portaudio into platform release
-install(FILES ${THIRDPARTY_DIR}/portaudio/linux/install/LICENSE.txt DESTINATION thirdparty/portaudio)
+install(FILES ${THIRDPARTY_DIR}/portaudio/linux/LICENSE.txt DESTINATION thirdparty/portaudio)
+install(DIRECTORY ${PORTAUDIO_INCLUDE_DIR}/ DESTINATION thirdparty/portaudio/include)
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/portaudio/msvc64/
-            DESTINATION thirdparty/portaudio)
-elseif(UNIX AND NOT APPLE)
+    install(FILES ${PORTAUDIO_LIBRARIES}
+            DESTINATION thirdparty/portaudio/lib)
+    install(FILES ${PORTAUDIO_LIBS_RELEASE_DLL}
+            DESTINATION thirdparty/portaudio/bin)
+elseif(UNIX)
     file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS}
             DESTINATION thirdparty/portaudio/lib)
