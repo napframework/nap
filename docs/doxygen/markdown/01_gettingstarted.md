@@ -1,8 +1,8 @@
 Getting Started {#getting_started}
 =======================
 * [Create a New App](@ref create_blank_app)
-* [App Structure](@ref app_structure)
 * [Adding Resources](@ref defining_resources)
+* [App Logic](@ref app_logic)
 
 Create a New App {#create_blank_app}
 =======================
@@ -13,60 +13,121 @@ Use the NAP build system to create a new application from scratch:
 
 After creation your new project is located under the 'projects' folder. You can build and run it using Visual Studio on Windows, Xcode on macOS or make on Linux. To learn more about setting up projects, modules and 3rd party dependencies read the [Project Management](@ref project_management) documentation.
 
-App Structure {#app_structure}
+Adding resources {#defining_resources}
+================
+
+The data folder within your project folder contains a `appstructure.json` file. This file describes the general structure of your app and any additional resources that are required. Objects in this file can be split up into three different types:
+- Resources: static often read only data such as images, a window, meshes etc.
+- Entities: objects that structure functionality by combining a set of components
+- Components: add functionality to an entity and receive an update call
+
+Please refer to [Resource](@ref resources) to learn more about reosurces and to [Scene](@ref scene) for more information on entities and components.
+
+As you can see a blank app already contains a window resource:
+
+```
+{
+    "Type": "nap::RenderWindow",
+    "mID": "Window",
+    "Width": 1280,
+    "Height": 720,
+    "Title": "NewProject",
+    "Sync": "false"
+}
+```
+
+Now add your own resource, for example an audio file on disk:
+
+```
+{
+    "Type": "nap::audio::AudioFileResource",
+    "mID": "audioFile",
+    "AudioFilePath": "myaudiofile.wav"
+}
+```
+Note that the file specified in `AudioFilePath` should be located within the `data` folder in your project folder.
+
+Now add an entity containing two components: an AudioPlaybackComponent to be able to play back the audio file and an OutputComponent to rout the output of the playback to the audio device:
+
+```
+{
+    "Type": "nap::Entity",
+    "mID": "audioEntity",
+    "Components":
+    [
+        {
+            "Type": "nap::audio::PlaybackComponent",
+            "mID": "playbackComponent",
+            "ChannelRouting": [ 0, 1 ],
+            "Buffer": "audioFile",
+            "AutoPlay": "True"
+        },
+
+        {
+            "Type": "nap::audio::OutputComponent",
+            "mID": "output",
+            "Routing": [ 0, 1 ],
+            "Input": "playbackComponent"
+        }
+    ]
+}
+```
+As you see can see the `Buffer` property of the PlaybackComponent points to the audio file resource and the `Input` property of the OutputComponent points to the PlaybackComponent using the `mID` as an identifier.
+
+Now save the JSON file and fire up your app in your IDE of choice and you will see a blank window and hear the audio file being played on the default sound device.
+
+
+App logic {#app_logic}
 ==========================
 
-There should be a file called 'NewProject.h'. This file contains the application that is run by NAP. Logic of the application if defined in 'NewProject.cpp'. Every NAP application is based on the 'BaseApp' template. For this section we continue by using the 'helloworldapp' as an example.
+In your new project there is a file called `newprojectapp.h`. This file contains the class NewProjectApp that contains all logic specific to the app we are building. NewProjectApp is derived from the App base class.
 
 ## Init
 
-The init method is used to initialize your application. The first thing to do is find the resource manager and load a file. This file defines all the data (such as images, 3D meshes, audio files) that your application needs. After successfully loading the JSON file all objects are loaded, initialized and ready to be used. After load we ask the resource manager to find a couple of crucial objects: A camera, the world we want to render and the window that we want to render to:
+In the init method of the NewProjectApp class we can initialize some member variables that we might need later. Declare the following variable on the bottom of the NewProjectApp class header:
 
 ~~~{cpp}
-bool NewProject::init(utility::ErrorState& error)
-{
-    // Retrieve services
-    mRenderService  = getCore().getService<nap::RenderService>();
-    mSceneService   = getCore().getService<nap::SceneService>();
-    mGuiService     = getCore().getService<nap::IMGuiService>();
-
-    // Get resource manager and load all our data
-    mResourceManager = getCore().getResourceManager();
-    if (!mResourceManager->loadFile("helloworld.json", error))
-        return false;
-
-    // Find the window to render to
-    mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
-
-    // Find the scene and extract camera for rendering
-    ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
-    mCameraEntity = scene->findEntity("Camera");
-
-    // Fetch the entity that is the world
-    mWorldEntity = scene->findEntity("World");
-
-    // All done!
-    return true;
-}
+ObjectPtr<Entity> mEntity = nullptr;
 ~~~
 
-Take a look at the [system documentation](@ref system) to learn more about the resource manager and core.
+And add the following line before the last line of the init() method:
+
+~~~{cpp}
+mEntity = mScene->findEntity("audioEntity");
+~~~
+
+We now initialized a pointer to an instance of the entity that we defined before in the app structure. We can use this pointer to manipulate the entity and it's components while the app is running.
 
 ## Update
 
-The update method is called every frame. The parameter 'deltaTime' indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering. The update call is also used to forward input events and set-up any UI elements for drawing later on:
+The update method is called every frame. The parameter 'deltaTime' indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering.
+
+Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to True, the file starts playing automatically on startup. Suppose instead we want to add a button to start and stop the playback at runtime. Set `AutoPlay` to False and add the following lines to the update method:
 
 ~~~{cpp}
-void MyApp::update(double deltaTime)
+auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
+
+// Draw some gui elements to control audio playback
+ImGui::Begin("Audio Playback");
+if (!playbackComponent->isPlaying())
 {
-    // Setup some UI elements to draw later on
-    ImGui::Begin("Controls");
-    ImGui::Text(utility::getCurrentDateTime().toString().c_str());
-    ImGui::Text("left mouse button to rotate world, right mouse button to zoom");
-    ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-    ImGui::End();
+    if (ImGui::Button("Play"))
+        playbackComponent->start(0);
 }
+else {
+    if (ImGui::Button("Stop"))
+        playbackComponent->stop();
+}
+ImGui::End();
 ~~~
+
+Note: to make this work, include the following headers to `newprojectapp.cpp`:
+~~~{cpp}
+#include <audio/component/playbackcomponent.h>
+#include <imgui/imgui.h>
+~~~
+
+When we compile and run the app now we see a buttin to start and stop playback of the audio file.
 
 ## Render
 
@@ -99,82 +160,6 @@ void MyApp::render()
     mRenderWindow->swap();
 }
 ~~~
-
-Adding Resources {#defining_resources}
-=======================
-
-The data folder contains a .json file with the same name as the app. This file describes the general structure of your app and any additional resources that are required. Objects in this file can be split up into three different types: 
-- Resources: static often read only data such as images, a window, meshes etc.
-- Entities: hold components
-- Components: add functionality to an entity and receive an update call
-
-These objects tell our application which objects to create and how they relate to each other. Every object can carry properties. Properties are attributes that describe how an object behaves or is interpreted. Properties can be anyting such as a: float, string, array of strings, link etc. But two properties are extremely important:
-- `Type`: The name of the class in code
-- `mID`: The unique identifier of an object
-
-## Resources
-
-Resources in NAP are objects that usually define input or output interfaces that the application sends or receives data to and from. Common examples are data files read from disk, such as image-, video- or audiofiles. In NAP an app window is also treated as a resource because it can be addressed as an output device to which all sorts of graphical content can be rendered. Have a look at the object of the window object with type `nap::RenderWindow` within the JSON file of the helloworld demo app as an example.
-```
-{
-    "Type" : "nap::RenderWindow",
-    "mID" : "Window0",
-    "Width" : 1280,
-    "Height" : 720,
-    "Title" : "Window 1",
-    "ClearColor": {
-        "x": 0.0666,
-        "y": 0.0784,
-        "z": 0.1490,
-        "w": 1.0
-    }
-}
-```
-
-As you can see the window contains a `Type` and an `mID` and a set of specific properties: the window’s size, title and its background color.
-
-## Entities and components
-
-NAP uses an entity/component system to structure functionality within apps. This pattern has been proven its use in numerous game engines that are popular nowadays. For a detailed discription how entity/component systems work see [Scene](@ref scene). For now it is sufficient to know that entities are empty object shells with a name that can composite different types of behaviour and functionality. Also note that entities are nested objects: apart from components they can also contain  child entities. This is described in detail in [entities](@ref nap::Entity).
-Functionality and behaviour can be assigned to an entity by adding components to the entity’s “Components” array. Components are objects that define one certain type of functionality or behaviour. Components, just like all objects, have a `Type` and `mID` property, but also have their own set of properties that is specific to the behavior or functionality they are adding to the entity. For example have a look at the “World” entity in the “helloworld” demo and look at the `nap::RotateComponent` component that it contains.
-```
-{
-    "Type" : "nap::RotateComponent",
-    "Properties":
-    {
-        "Axis":
-        {
-            "x": 0.0,
-            "y": 1.0,
-            "z": 0.0
-        },
-        "Speed": 0.025,
-        "Offset": 0.65
-    }
-}
-```
-The RotateComponent takes care of slowly rotating the world entity. It specifies the axis on which to rotate the component and the rotation speed and the offset of the first rotation cycle.
-
-
-## The Scene
-
-Entities with their components describe the types of objects that are available within the app. However we still have to tell what entity or which entities have to be instantiated when the app is started. This is done using one unique object within the JSON file: the scene object of type `nap::Scene`. In this object we define an array containing the mIDs of one or more of the entities that are defined within the JSON file. These are the entities that will be instantiated or “spawned” at the moment the app is started and initialized, along with all their components and child entities recursively. In other words the Scene object defines which are the “root” entities of the app. The scene of the helloworld demo looks like this:
-```
-{
-    "Type" : "nap::Scene",
-    "mID": "Scene",
-    "Entities" :
-    [
-        {
-        "Entity" : "World"
-        },
-        {
-        "Entity" : "Camera"
-        }
-    ]
-}
-```
-As we can see, the demo contains a rotating world entity and a camera that is pointed to this world and that is used to render it to the window resource.
 
 
 
