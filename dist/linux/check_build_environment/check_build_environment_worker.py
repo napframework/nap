@@ -75,7 +75,7 @@ def check_compiler():
     """Check that c++ is setup for GCC"""
     
     alternatives_output = call('update-alternatives --query c++ | grep Value')
-    gcc_ok = 'g++' in alternatives_output
+    gcc_ok = '/g++' in alternatives_output
 
     log_test_success('C++ is GCC', gcc_ok)
     return gcc_ok 
@@ -126,7 +126,6 @@ def check_build_environment():
 
     # Check C++ is GCC
     compiler_ok = check_compiler()
-    log_test_success('for GCC C++', compiler_ok)
 
     # Check package patchelf installed
     patchelf_installed = apt_package_installed('patchelf')
@@ -159,7 +158,7 @@ def check_build_environment():
         print("\nWarning: This version of NAP is supported on Ubuntu 17.10.  Other Linux configurations may work but are unsupported.")
 
     if not compiler_ok:
-        print("\nYour C++ compiler is not currently set for GCC. This release of NAP only currently supports GCC.")
+        print("\nYour C++ compiler is not currently set to GCC. This release of NAP only currently supports GCC.")
         return False
 
     # Build apt packages to offer to install
