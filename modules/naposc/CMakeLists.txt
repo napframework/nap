@@ -32,7 +32,9 @@ package_module()
 # Package oscpack into platform release
 install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION thirdparty/oscpack)
 install(FILES ${THIRDPARTY_DIR}/oscpack/README DESTINATION thirdparty/oscpack)
-install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc DESTINATION thirdparty/oscpack/include
+install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc 
+                  ${THIRDPARTY_DIR}/oscpack/ip 
+        DESTINATION thirdparty/oscpack/include
         PATTERN "*.cpp" EXCLUDE)
 if(MSVC)
     install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/msvc64/ DESTINATION thirdparty/oscpack/lib)
