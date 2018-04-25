@@ -9,6 +9,10 @@ set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
 find_package(pybind11 REQUIRED)
 target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
 
+# Find rapidjson
+find_package(rapidjson)
+target_include_directories(${PROJECT_NAME} PUBLIC ${RAPIDJSON_INCLUDE_DIRS})
+
 if (WIN32)
     find_path(
         NAPRTTI_LIBS_DIR
@@ -70,7 +74,7 @@ if (WIN32)
     win64_copy_python_dlls_postbuild()
 endif()
 
-# Install naprtti and RTTR into projects for macOS/Linux
+# Package naprtti and RTTR into projects for macOS/Linux
 if(NOT WIN32)
     install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
     install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
@@ -94,18 +98,21 @@ if(NOT WIN32)
                       ")
     endif()   
 
-    # Install our Python dylib from thirdparty.  Doing this here instead of in mod_nappython as RTTI (and as a result Core)
+    # Package our Python dylib from thirdparty.  Doing this here instead of in mod_nappython as RTTI (and as a result Core)
     # depend on Python. The Python modules however are only installed if we're using mod_nappython as they're not required 
     # for RTTI/Core.
     file(GLOB PYTHON_DYLIBS ${THIRDPARTY_DIR}/python/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PYTHON_DYLIBS} DESTINATION lib/)
 
-    # Install Python license into packaged project
+    # Package Python license into packaged project
     install(FILES ${THIRDPARTY_DIR}/python/LICENSE DESTINATION licenses/python/)    
 endif()
 
-# Install RTTR license into packaged project
+# Package RTTR license into packaged project
 install(FILES ${THIRDPARTY_DIR}/rttr/LICENSE.txt DESTINATION licenses/RTTR/)
 
-# Install pybind license into packaged project
+# Package pybind license into packaged project
 install(FILES ${THIRDPARTY_DIR}/pybind11/LICENSE DESTINATION licenses/pybind11/)
+
+# Package rapidjson license into packaged project
+install(FILES ${THIRDPARTY_DIR}/rapidjson/license.txt DESTINATION licenses/rapidjson)
