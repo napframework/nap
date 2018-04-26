@@ -55,7 +55,7 @@ BaseClass* createTestHierarchy()
 template<typename T>
 nap::rtti::Variant createVariant(T value)
 {
-	return rtti::ObjectPtr<T>(value);
+	return nap::rtti::ObjectPtr<T>(value);
 }
 
 void testObjectPtr()
