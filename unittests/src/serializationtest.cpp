@@ -17,9 +17,7 @@
 #include <rtti/deserializeresult.h>
 #include <iostream>
 
-using namespace nap;
-using namespace rtti;
-using namespace utility;
+using namespace nap::utility;
 
 BaseClass* createTestHierarchy()
 {
@@ -55,16 +53,16 @@ BaseClass* createTestHierarchy()
 
 
 template<typename T>
-rtti::Variant createVariant(T value)
+nap::rtti::Variant createVariant(T value)
 {
 	return rtti::ObjectPtr<T>(value);
 }
 
 void testObjectPtr()
 {
-	typedef rtti::ObjectPtr<BaseClass> BaseClassPtr;
-	typedef rtti::ObjectPtr<DerivedClass> DerivedClassPtr;
-	typedef rtti::ObjectPtr<DerivedClass2> DerivedClass2Ptr;
+	typedef nap::rtti::ObjectPtr<BaseClass> BaseClassPtr;
+	typedef nap::rtti::ObjectPtr<DerivedClass> DerivedClassPtr;
+	typedef nap::rtti::ObjectPtr<DerivedClass2> DerivedClass2Ptr;
 
 	DerivedClassPtr derived = new DerivedClass();
 	BaseClassPtr base = derived;
