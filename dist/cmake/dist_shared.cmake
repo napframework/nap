@@ -15,7 +15,11 @@ macro(add_project_module)
         add_subdirectory(${CMAKE_SOURCE_DIR}/module/ project_module_build/)
         unset(MODULE_INTO_PROJ)
         unset(IMPORTING_PROJECT_MODULE)
+
+        # Add includes
         target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/module/src)
+
+        # Link
         target_link_libraries(${PROJECT_NAME} mod_${PROJECT_NAME})
 
         # On Windows copy over module DLLs post-build
@@ -30,8 +34,8 @@ macro(add_project_module)
     endif()
 endmacro()
 
-# Generic way to import each module for different configurations.  Included is a primitive mechanism for 
-# extra per-module cmake logic.
+# Generic way to import each module for different configurations.  Included is a fairly simple mechanism for 
+# extra per-module CMake logic, to be refined.
 macro(find_nap_module MODULE_NAME)
     if (EXISTS ${NAP_ROOT}/user_modules/${MODULE_NAME}/)
         message(STATUS "Module is user module: ${MODULE_NAME}")
@@ -117,7 +121,8 @@ macro(find_nap_module MODULE_NAME)
     endif()    
 endmacro()
 
-# Export FBX to mesh
+# Export all FBXs in directory to meshes
+# SRCDIR: The directory to import/export in
 macro(export_fbx SRCDIR)
     # Set the binary name
     set(TOOLS_DIR ${NAP_ROOT}/tools)
@@ -130,7 +135,7 @@ macro(export_fbx SRCDIR)
         COMMENT "Exporting FBX in '${SRCDIR}'")
 endmacro()
 
-# Change our project output directories
+# Setup our project output directories
 macro(set_output_directories)
     if (MSVC OR APPLE)
         # Loop over each configuration for multi-configuration systems
@@ -156,7 +161,7 @@ macro(set_output_directories)
     endif()
 endmacro()
 
-# Change our module output directories
+# Setup our module output directories
 macro(set_module_output_directories)
     if (MSVC OR APPLE)
         # Loop over each configuration for multi-configuration systems
@@ -173,16 +178,24 @@ macro(set_module_output_directories)
     endif()
 endmacro()
 
-# macOS: At install time replace a Qt lib install names in specified file
-macro(macos_replace_qt_framework_links_install_time FRAMEWORKS LIB_NAME FILEPATH PATH_PREFIX)
+# macOS: At install time replace Qt framework install names in specified file with new paths built
+# from a path prefix and a full framework lib name sourced from another file
+# FRAMEWORKS: Qt framework names to replace
+# SKIP_FRAMEWORK_NAME: Don't process for this framework in the provided list
+# FILEPATH: The file to update
+# PATH_PREFIX: The new path prefix for the framework
+macro(macos_replace_qt_framework_links_install_time FRAMEWORKS SKIP_FRAMEWORK_NAME FILEPATH PATH_PREFIX)
     foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
-        if(NOT ${QT_LINK_FRAMEWORK} STREQUAL ${LIB_NAME})
+        if(NOT ${QT_LINK_FRAMEWORK} STREQUAL ${SKIP_FRAMEWORK_NAME})
             macos_replace_single_install_name_link_install_time(${QT_LINK_FRAMEWORK} ${FILEPATH} ${PATH_PREFIX})
         endif()
     endforeach()    
 endmacro()
 
-# macOS: At install time replace a single lib install name in the provided file
+# macOS: At install time replace a path prefix of a single lib in the specified file
+# REPLACE_LIB_NAME: Library install name to replace
+# FILEPATH: The file to update
+# PATH_PREFIX: The new path prefix for the framework
 macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEPATH PATH_PREFIX)
     # Change link to dylib
     install(CODE "if(EXISTS ${FILEPATH})
@@ -205,7 +218,12 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                   ")
 endmacro()
 
-# macOS: At post-build replace a Qt lib install names in specified file
+# macOS: Post-build replace Qt framework install names in specified file with new paths built
+# from a path prefix and a full framework lib name mapped from another file
+# FRAMEWORKS: Qt framework names to replace
+# SRC_FILEPATH: The file used to obtain the full framework library name
+# FILEPATH: The file to update
+# PATH_PREFIX: The new path prefix for the framework
 macro(macos_replace_qt_framework_links FRAMEWORKS SRC_FILEPATH FILEPATH PATH_PREFIX)
     foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
         macos_replace_single_install_name_link(${QT_LINK_FRAMEWORK}
@@ -215,7 +233,12 @@ macro(macos_replace_qt_framework_links FRAMEWORKS SRC_FILEPATH FILEPATH PATH_PRE
     endforeach()    
 endmacro()
 
-# macOS: At post-build replace a single lib install name in the provided file
+# macOS: Post-build replace a single lib install name in the specified file with new paths built
+# from a path prefix and a full lib name mapped from another file
+# REPLACE_LIB_NAME: Library install name to replace
+# SRC_FILEPATH: The file used to obtain the full framework library name
+# FILEPATH: The file to update
+# PATH_PREFIX: The new path prefix for the framework
 macro(macos_replace_single_install_name_link REPLACE_LIB_NAME SRC_FILEPATH FILEPATH PATH_PREFIX)
     execute_process(COMMAND sh -c "otool -L ${SRC_FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'"
                     OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
@@ -233,6 +256,7 @@ macro(macos_replace_single_install_name_link REPLACE_LIB_NAME SRC_FILEPATH FILEP
 endmacro()
 
 # Copy files to project binary dir
+# ARGN: Files to copy
 macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
@@ -242,7 +266,7 @@ macro(copy_files_to_bin)
     endforeach()
 endmacro()
 
-# Let find_python find our prepackaged Python in thirdparty
+# Set our environment so that find_package finds our pre-packaged Python in thirdparty
 macro(find_python_in_thirdparty)   
     set(PYTHONLIBS_FOUND 1)
     set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python)
@@ -255,7 +279,7 @@ macro(find_python_in_thirdparty)
     endif()
 endmacro()
 
-# Windows: Copy Python DLLs post-build
+# Windows: Post-build copy Python DLLs into project bin output
 macro(win64_copy_python_dlls_postbuild)
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/*.dll)
     foreach(PYTHON_DLL ${PYTHON_DLLS})
@@ -266,7 +290,7 @@ macro(win64_copy_python_dlls_postbuild)
     endforeach()
 endmacro()
 
-# Windows: Copy modules post-build
+# Windows: Post-build copy Python modules into project bin output
 macro(win64_copy_python_modules_postbuild)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
@@ -274,7 +298,10 @@ macro(win64_copy_python_modules_postbuild)
                        )
 endmacro()
 
-# macOS: Ensure our specified file has provided RPATH in post-build
+# macOS: Post-build ensure our specified file has provided RPATH
+# TARGET_NAME: The target to pin the post-build custom command to
+# FILENAME: File to add ensure has the RPATH
+# PATH_TO_ADD: The path to add
 macro(macos_add_rpath_to_module_post_build TARGET_NAME FILENAME PATH_TO_ADD)
     add_custom_command(TARGET ${TARGET_NAME}
                        POST_BUILD
@@ -373,7 +400,7 @@ function(create_hierarchical_source_groups_for_files INPUT_FILES RELATIVE_TO_PAT
     endforeach()
 endfunction()
 
-# Copy module.json for module to sit alongside module post-build
+# Copy calling module's module.json to sit alongside module post-build
 macro(copy_module_json_to_bin)
     set(DEST_FILENAME ${PROJECT_NAME}.json)
     if(UNIX)

@@ -99,3 +99,10 @@ elseif(APPLE)
 elseif(UNIX)
     install(DIRECTORY ${THIRDPARTY_DIR}/rttr/linux/install/ DESTINATION thirdparty/rttr)
 endif()
+
+# Package rapidjson
+install(FILES ${THIRDPARTY_DIR}/rapidjson/license.txt 
+              ${THIRDPARTY_DIR}/rapidjson/readme.md
+        DESTINATION thirdparty/rapidjson
+        )
+install(DIRECTORY ${THIRDPARTY_DIR}/rapidjson/include DESTINATION thirdparty/rapidjson)

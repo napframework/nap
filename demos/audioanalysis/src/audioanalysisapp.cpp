@@ -94,7 +94,8 @@ namespace nap
 			mTickIdx = 0;
 
 		// Draw some gui elements
-		ImGui::Begin("Audio analysis", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_FirstUseEver);
+		ImGui::Begin("Audio analysis");
         ImGui::PlotHistogram("", mPlotvalues.data(), mPlotvalues.size(), mTickIdx, nullptr, 0.0f, 0.2f, ImVec2(512, 128)); // Plot the output values
         ImGui::SliderFloat("Filter Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Filter Bandwidth", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
