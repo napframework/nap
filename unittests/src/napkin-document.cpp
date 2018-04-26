@@ -90,6 +90,4 @@ TEST_CASE("Document", "napkin-document")
 		REQUIRE(entity != entity2); //
 		REQUIRE(entity->mID != entity2->mID); // Objects must have unique names
 	}
-
-	AppContext::get().destroy();
 }
