@@ -31,7 +31,7 @@ namespace nap {
         
         MidiService& getService() { return *mService; }
         
-        std::string mPortName = 0; /**< The name of the port that midi messages will be sent through by this object */
+        std::string mPortName = ""; /**< The name of the port that midi messages will be sent through by this object */
         
         /**
          * Sends a midi event through this output port.

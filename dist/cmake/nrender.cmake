@@ -16,16 +16,27 @@ find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
 if(NOT TARGET GLEW)
     find_package(GLEW REQUIRED)
 endif()
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLEW_INCLUDE_DIRS})
 
 find_package(OpenGL)
-find_package(glm REQUIRED)
+if(NOT TARGET glm)
+    find_package(glm REQUIRED)
+endif()
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS})
 
 if(NOT TARGET FreeImage)
     find_package(FreeImage REQUIRED)
 endif()
+target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
+
+if(NOT TARGET assimp)
+    find_package(assimp REQUIRED)
+endif()
+target_link_libraries(${PROJECT_NAME} assimp)
 
 set(ENV{SDL2DIR} ${THIRDPARTY_DIR}/SDL2/)
 find_package(SDL2 REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
 
 set(NRENDER_LIBRARIES
     ${SDL2_LIBRARY}

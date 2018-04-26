@@ -161,3 +161,21 @@ TEST_CASE("Safe pointers", "[safepointer]")
     REQUIRE(safePtrCopy == nullptr);
 }
 
+TEST_CASE("Signals and slots", "[signalslot]")
+{
+    int x = 0;
+    nap::Signal<int&> signal;
+
+    nap::Slot<int&> slot = {
+        [](int& x){ x++; }
+    };
+
+    signal.connect(slot);
+    signal(x);
+    REQUIRE(x == 1);
+
+    signal.disconnect(slot);
+    signal(x);
+    REQUIRE(x == 1);
+}
+

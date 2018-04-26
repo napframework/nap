@@ -7,7 +7,7 @@
 #include <osc/OscOutboundPacketStream.h>
 
 RTTI_BEGIN_CLASS(nap::OSCSender)
-RTTI_PROPERTY("IpAddress", &nap::OSCSender::mIPAddress, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("IpAddress", &nap::OSCSender::mIPAddress, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Port", &nap::OSCSender::mPort, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 

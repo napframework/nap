@@ -39,6 +39,10 @@ copy_module_json_to_bin()
 if(UNIX)
     set(UNIX_EXTRA_RPATH ../../../../thirdparty/etherdream/bin)
 endif()
+if(APPLE)
+    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+    set(UNIX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
+endif()    
 package_module()
 
 # Package etherdreamlib into platform release
@@ -49,5 +53,4 @@ if(WIN32)
     # Package etherdream IMPLIB on Windows
     get_target_property(ETHERDREAM_IMPLIB etherdreamlib IMPORTED_IMPLIB_RELEASE)
     install(FILES ${ETHERDREAM_IMPLIB} DESTINATION thirdparty/etherdream/bin)    
-
 endif()
