@@ -3,10 +3,10 @@
 #include <appcontext.h>
 
 using namespace napkin;
-
-TEST_CASE("Document", "napkin-document")
-{
-    RUN_Q_APPLICATION
+//
+//TEST_CASE("Document", "napkin-document")
+//{
+//    RUN_Q_APPLICATION
 //
 //	SECTION("general")
 //	{
@@ -57,37 +57,37 @@ TEST_CASE("Document", "napkin-document")
 //		doc->removeObject(e);
 //		REQUIRE(doc->getObjects().size() == 0);
 //	}
-
-	SECTION("signals")
-	{
-		auto doc = AppContext::get().newDocument();
-		SigCapture sigObjectAdded(doc, &Document::objectAdded);
-		SigCapture sigObjectRemoved(doc, &Document::objectRemoved);
-		SigCapture sigObjectChanged(doc, &Document::objectChanged);
-		SigCapture sigPropertyValueChanged(doc, &Document::propertyValueChanged);
-
-		auto entity = doc->addObject<nap::Entity>();
-		REQUIRE(sigObjectAdded.count() == 1);
-		doc->removeObject(entity->mID);
-		REQUIRE(sigObjectRemoved.count() == 1);
-	}
-
-	SECTION("functions")
-	{
-		auto doc = AppContext::get().newDocument();
-
-		auto entity = doc->addObject<nap::Entity>();
-
-		REQUIRE(entity != nullptr); // Entity cannot be null
-		REQUIRE(!entity->mID.empty()); // Must have a name
-		REQUIRE(doc->getObjects().size() == 1); // Object count must have gone up
-		auto foundEntity = doc->getObject(entity->mID);
-		REQUIRE(foundEntity != nullptr); // Must be able to find this entity
-		REQUIRE(foundEntity == entity); // The entity must match
-
-		auto entity2 = doc->addObject<nap::Entity>();
-		REQUIRE(entity2 != nullptr); // Second entity must not be null
-		REQUIRE(entity != entity2); //
-		REQUIRE(entity->mID != entity2->mID); // Objects must have unique names
-	}
-}
+//
+//	SECTION("signals")
+//	{
+//		auto doc = AppContext::get().newDocument();
+//		SigCapture sigObjectAdded(doc, &Document::objectAdded);
+//		SigCapture sigObjectRemoved(doc, &Document::objectRemoved);
+//		SigCapture sigObjectChanged(doc, &Document::objectChanged);
+//		SigCapture sigPropertyValueChanged(doc, &Document::propertyValueChanged);
+//
+//		auto entity = doc->addObject<nap::Entity>();
+//		REQUIRE(sigObjectAdded.count() == 1);
+//		doc->removeObject(entity->mID);
+//		REQUIRE(sigObjectRemoved.count() == 1);
+//	}
+//
+//	SECTION("functions")
+//	{
+//		auto doc = AppContext::get().newDocument();
+//
+//		auto entity = doc->addObject<nap::Entity>();
+//
+//		REQUIRE(entity != nullptr); // Entity cannot be null
+//		REQUIRE(!entity->mID.empty()); // Must have a name
+//		REQUIRE(doc->getObjects().size() == 1); // Object count must have gone up
+//		auto foundEntity = doc->getObject(entity->mID);
+//		REQUIRE(foundEntity != nullptr); // Must be able to find this entity
+//		REQUIRE(foundEntity == entity); // The entity must match
+//
+//		auto entity2 = doc->addObject<nap::Entity>();
+//		REQUIRE(entity2 != nullptr); // Second entity must not be null
+//		REQUIRE(entity != entity2); //
+//		REQUIRE(entity->mID != entity2->mID); // Objects must have unique names
+//	}
+//}
