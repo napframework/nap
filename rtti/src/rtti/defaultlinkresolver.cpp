@@ -24,11 +24,17 @@ namespace nap
 			return pos->second;
 		}
 
-
+		
 		bool DefaultLinkResolver::sResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 		{
 			DefaultLinkResolver resolver(objects);
 			return resolver.resolveLinks(unresolvedPointers, errorState);
+		}
+		
+
+		LinkResolver::EInvalidLinkBehaviour DefaultLinkResolver::onInvalidLink(const UnresolvedPointer& unresolvedPointer)
+		{
+			return LinkResolver::EInvalidLinkBehaviour::TreatAsError;
 		}
 	}
 }

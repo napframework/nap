@@ -82,11 +82,8 @@ namespace nap
 		if (!determineAndSetWorkingDirectory(error, forcedDataPath))
 			return false;
 
-		// Add resource manager and listen to file changes
-		// This has to be done after the directory is changed, to make sure that the file watcher 
-		// uses the correct directory
+		// Create the resource manager
 		mResourceManager = std::make_unique<ResourceManager>(*this);
-		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 
 		// Load modules
 		if (!mModuleManager.loadModules(projectInfo.mModules, error))
@@ -115,6 +112,7 @@ namespace nap
 
 	bool Core::initializeServices(utility::ErrorState& errorState)
 	{
+		// Initialize all services one by one
 		std::vector<Service*> objects;
 		for (const auto& service : mServices)
 		{
@@ -122,6 +120,11 @@ namespace nap
 			if (!service->init(errorState))
 				return false;
 		}
+
+		// Listen to potential resource file changes and 
+		// forward those to all registered services
+		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
+
 		return true;
 	}
 
@@ -223,7 +226,7 @@ namespace nap
 		if (findProjectFilePath("config.json", config_file_path))
 		{
 			rtti::DeserializeResult deserialize_result;
-			if (!rtti::readJSONFile(config_file_path, mResourceManager->getFactory(), deserialize_result, errorState))
+			if (!rtti::readJSONFile(config_file_path, rtti::EPropertyValidationMode::DisallowMissingProperties,  mResourceManager->getFactory(), deserialize_result, errorState))
 				return false;
 
 			for (auto& object : deserialize_result.mReadObjects)

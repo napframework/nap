@@ -34,6 +34,27 @@ namespace nap
 		std::vector<std::string> splitString(const std::string& string, const char delim);
 
 		/**
+		 * Join a vector of strings using the specified delimiter.
+		 * eg. joinString({"one", "two", "three"}, ", ");
+		 * becomes: "one, two, three"
+		 * @param list The list of strings to join
+		 * @param delim The delimiter to inject between the elements
+		 * @return The joined string.
+		 */
+		template<typename T>
+		std::string joinString(const T& list, const std::string& delim)
+		{
+			std::stringstream ss;
+			for (size_t i=0, len=list.size(); i < len; i++)
+			{
+				if (i > 0)
+					ss << delim;
+				ss << list.at(i);
+			}
+			return ss.str();
+		}
+
+		/**
 		 * Writes a string to an output stream
 		 * @param stream the output stream to write to
 		 * @param text the string to write

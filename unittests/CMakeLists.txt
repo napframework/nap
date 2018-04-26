@@ -3,7 +3,7 @@ project(unittests)
 enable_testing()
 nap_qt_pre()
 
-file(GLOB SOURCES
+file(GLOB_RECURSE SOURCES
      src/*.cpp
      src/*.hpp
      src/*.h)
