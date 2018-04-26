@@ -8,6 +8,7 @@
 #include <utility/fileutils.h>
 #include <utility/datetimeutils.h>
 #include <nap/logger.h>
+#include <nap/signalslot.h>
 
 using namespace nap;
 

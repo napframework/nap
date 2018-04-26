@@ -8,6 +8,9 @@
  *  Distributed under the Boost Software License, Version 1.0. (See accompanying
  *  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  */
+
+#include <appcontext.h>
+
 #ifndef TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 #define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 
@@ -11388,6 +11391,7 @@ int main (int argc, char * argv[]) {
 #endif
 
     int result = Catch::Session().run( argc, argv );
+    napkin::AppContext::destroy();
     return ( result < 0xff ? result : 0xff );
 }
 
@@ -11406,6 +11410,7 @@ int main (int argc, char * const argv[]) {
     [pool drain];
 #endif
 
+    napkin::AppContext::destroy();
     return ( result < 0xff ? result : 0xff );
 }
 
