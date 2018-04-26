@@ -71,6 +71,15 @@ def check_cmake():
     log_test_success('CMake >= 3.5', cmake_ok)
     return cmake_ok
 
+def check_compiler():
+    """Check that c++ is setup for GCC"""
+    
+    alternatives_output = call('update-alternatives --query c++ | grep Value')
+    gcc_ok = alternatives_output == '' or '/g++' in alternatives_output
+
+    log_test_success('C++ is GCC', gcc_ok)
+    return gcc_ok 
+
 def read_yes_no(question):
     """Read a yes/no answer for a question"""
 
@@ -115,6 +124,9 @@ def check_build_environment():
     build_essential_installed = apt_package_installed('build-essential')
     log_test_success('for build-essential package', build_essential_installed)
 
+    # Check C++ is GCC
+    compiler_ok = check_compiler()
+
     # Check package patchelf installed
     patchelf_installed = apt_package_installed('patchelf')
     log_test_success('for patchelf package', patchelf_installed)
@@ -135,7 +147,7 @@ def check_build_environment():
     print("")
 
     # If everything looks good log and exit
-    if distribution_version_ok and build_essential_installed and patchelf_installed and cmake_ok:
+    if distribution_version_ok and build_essential_installed and patchelf_installed and cmake_ok and compiler_ok:
         print("Your build environment appears to be ready for NAP!")
         return False
 
@@ -144,6 +156,10 @@ def check_build_environment():
     # Warn about wrong Ubuntu version
     if not distribution_version_ok:
         print("\nWarning: This version of NAP is supported on Ubuntu 17.10.  Other Linux configurations may work but are unsupported.")
+
+    if not compiler_ok:
+        print("\nYour C++ compiler is not currently set to GCC. This release of NAP only currently supports GCC.")
+        return False
 
     # Build apt packages to offer to install
     packages_to_install = []
