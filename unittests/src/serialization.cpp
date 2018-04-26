@@ -8,7 +8,6 @@
 #include <rtti/jsonwriter.h>
 #include <utility/fileutils.h>
 
-using namespace nap;
 using namespace nap::rtti;
 using namespace nap::utility;
 
@@ -24,7 +23,7 @@ std::string readJSONData(const std::string& filename)
 	return jsonData;
 }
 
-void deserialize(Core& core, const std::string& jsonData, OwnedObjectList& outObjects) {
+void deserialize(nap::Core& core, const std::string& jsonData, OwnedObjectList& outObjects) {
 	ErrorState err;
 
 	auto& factory = core.getResourceManager()->getFactory();
