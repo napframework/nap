@@ -1,0 +1,76 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "main",
+            "Components": [
+                {
+                    "Type": "nap::MidiInputComponent",
+                    "mID": "nap::MidiInputComponent",
+                    "Ports": [],
+                    "Channels": [],
+                    "Numbers": [],
+                    "Types": []
+                },
+                {
+                    "Type": "nap::MidiHandlerComponent",
+                    "mID": "nap::MidiHandlerComponent"
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "nap::OSCInputComponent",
+                    "Addresses": []
+                },
+                {
+                    "Type": "nap::OscHandlerComponent",
+                    "mID": "nap::OscHandlerComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::MidiInputPort",
+            "mID": "MidiInputPort",
+            "Ports": [],
+            "EnableDebugOutput": true
+        },
+        {
+            "Type": "nap::OSCReceiver",
+            "mID": "OSCReceiver",
+            "Port": 7000,
+            "EnableDebugOutput": false
+        },
+        {
+            "Type": "nap::OSCSender",
+            "mID": "OSCSender",
+            "IpAddress": "localhost",
+            "Port": 7000
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Window 1",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "main",
+                    "InstanceProperties": []
+                }
+            ]
+        }
+    ]
+}

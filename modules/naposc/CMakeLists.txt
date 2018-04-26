@@ -27,6 +27,9 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${O
 copy_module_json_to_bin()
 
 # Package into platform release
+if(UNIX)
+    set(UNIX_EXTRA_RPATH ../../../../thirdparty/oscpack/lib)
+endif()
 package_module()
 
 # Package oscpack into platform release
@@ -39,7 +42,7 @@ install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc
 if(MSVC)
     install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/msvc64/ DESTINATION thirdparty/oscpack/lib)
 elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/xcode/ DESTINATION thirdparty/oscpack/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osx/install/lib/ DESTINATION thirdparty/oscpack/lib)
 else()
-    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/linux/ DESTINATION thirdparty/oscpack/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/linux/install/lib/ DESTINATION thirdparty/oscpack/lib)
 endif()

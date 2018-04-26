@@ -1,3 +1,7 @@
+# Find moodycamel
+find_package(moodycamel REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
+
 if (WIN32)
     find_path(
         NAPUTILITY_LIBS_DIR
