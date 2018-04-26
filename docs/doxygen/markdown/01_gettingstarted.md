@@ -16,14 +16,14 @@ After creation your new project is located under the 'projects' folder. You can 
 Adding resources {#defining_resources}
 ================
 
-The data folder within your project folder contains a `appstructure.json` file. This file describes the general structure of your app and any additional resources that are required. Objects in this file can be split up into three different types:
-- Resources: static often read only data such as images, a window, meshes etc.
-- Entities: objects that structure functionality by combining a set of components
-- Components: add functionality to an entity and receive an update call
+The data folder within your project folder contains an `appstructure.json` file. This file describes the general structure of your app and any additional resources that are required. Objects in this file can be split up into three different categories:
+- [Resources](@ref resources): static often read only data such as an image, window, mesh etc.
+- [Entities](@ref scene): objects that structure functionality by combining a set of components
+- [Components](@ref scene): add functionality to an entity and receive an update call
 
-Please refer to [Resource](@ref resources) to learn more about reosurces and to [Scene](@ref scene) for more information on entities and components.
+Refer to the [Resource](@ref resources) and [Scene](@ref scene) documentation for more information.
 
-As you can see a blank app already contains a window resource:
+Every blank app contains a window and a scene:
 
 ```
 {
@@ -36,7 +36,7 @@ As you can see a blank app already contains a window resource:
 }
 ```
 
-Now add your own resource, for example an audio file on disk:
+Now add your own resource, in this case an audio file that is loaded from disk:
 
 ```
 {
@@ -45,9 +45,8 @@ Now add your own resource, for example an audio file on disk:
     "AudioFilePath": "myaudiofile.wav"
 }
 ```
-Note that the file specified in `AudioFilePath` should be located within the `data` folder in your project folder.
 
-Now add an entity containing two components: an AudioPlaybackComponent to be able to play back the audio file and an OutputComponent to rout the output of the playback to the audio device:
+Note that the file specified in `AudioFilePath` should be located within the `data` directory of your project. Continue by adding an entity that holds two components: an [AudioPlaybackComponent](@ref nap::audio::PlaybackComponent) to be able to play back the audio file and an [OutputComponent](@ref nap::audio::OutputComponent) to route the output of the playback to the audio device:
 
 ```
 {
@@ -72,9 +71,8 @@ Now add an entity containing two components: an AudioPlaybackComponent to be abl
     ]
 }
 ```
-As you see can see the `Buffer` property of the PlaybackComponent points to the audio file resource and the `Input` property of the OutputComponent points to the PlaybackComponent using the `mID` as an identifier.
 
-Now save the JSON file and fire up your app in your IDE of choice and you will see a blank window and hear the audio file being played on the default sound device.
+As you see can see the `Buffer` property of the PlaybackComponent points to the audio file resource and the `Input` property of the OutputComponent points to the PlaybackComponent. Both use the `mID` property as an identifier. Now save the JSON file and fire up your app in your IDE of choice and you will see a blank window and hear the audio file being played on the default sound device.
 
 
 App logic {#app_logic}
@@ -102,7 +100,7 @@ We now initialized a pointer to an instance of the entity that we defined before
 
 The update method is called every frame. The parameter 'deltaTime' indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering.
 
-Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to True, the file starts playing automatically on startup. Suppose instead we want to add a button to start and stop the playback at runtime. Set `AutoPlay` to False and add the following lines to the update method:
+Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to 'True', the file starts playing automatically on startup. Suppose instead we want to add a button to start and stop the playback at runtime. Set `AutoPlay` to False and add the following lines to the update method:
 
 ~~~{cpp}
 auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
@@ -122,16 +120,17 @@ ImGui::End();
 ~~~
 
 Note: to make this work, include the following headers to `newprojectapp.cpp`:
+
 ~~~{cpp}
 #include <audio/component/playbackcomponent.h>
 #include <imgui/imgui.h>
 ~~~
 
-When we compile and run the app now we see a buttin to start and stop playback of the audio file.
+When we compile and run the app now we see a button to start and stop playback of the audio file.
 
 ## Render
 
-Render is called after update. Use this call to render objects and UI elements to screen or a different target. By default nothing is rendered. You have to tell the renderer what you want to render and where to render it to. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). The example below shows you how to render a sphere with a material to the primary window.
+Render is called after update. Use this call to render objects and UI elements to screen or a different target. By default nothing is rendered. You have to tell the renderer what you want to render and where to render it to. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). The example below shows you how to render the gui mentioned above to the primary window:
 
 ~~~{cpp}
 void MyApp::render()
@@ -141,17 +140,6 @@ void MyApp::render()
 
     // Clear back-buffer
     mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
-
-    // Find the camera
-    nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
-
-    // Find the world and add it as an object to render
-    std::vector<nap::RenderableComponentInstance*> render_comps;
-    nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-    render_comps.emplace_back(&renderable_world);
-
-    // Render the sphere to the main window using a perspective camera
-    mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
 
     // Draw our UI last!
     mGuiService->draw();
