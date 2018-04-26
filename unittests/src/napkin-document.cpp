@@ -7,56 +7,56 @@ using namespace napkin;
 TEST_CASE("Document", "napkin-document")
 {
     RUN_Q_APPLICATION
-
-	SECTION("general")
-	{
-		auto doc = AppContext::get().newDocument();
-
-		// Must have a default document
-		REQUIRE(doc != nullptr);
-		// Default filename must be empty
-		REQUIRE(doc->getCurrentFilename().isEmpty());
-		// Default document may not have objects
-		REQUIRE(doc->getObjects().size() == 0);
-		// Setting filename must be consistent
-		QString testFilename("TestFilename.ext");
-		doc->setFilename(testFilename);
-		REQUIRE(doc->getCurrentFilename() == testFilename);
-
-		doc = AppContext::get().newDocument();
-
-		REQUIRE(doc->getCurrentFilename().isEmpty());
-		REQUIRE(doc->getObjects().size() == 0);
-
-		// Create entity
-		auto& e = doc->addEntity();
-		REQUIRE(!e.mID.empty());
-		REQUIRE(doc->getObjects().size() == 1);
-		REQUIRE(e.getComponents().size() == 0);
-
-		// Add component to entity
-		auto comp = doc->addComponent<TestComponent>(e);
-		REQUIRE(comp != nullptr);
-		REQUIRE(doc->getObjects().size() == 2);
-		REQUIRE(e.getComponents().size() == 1);
-		REQUIRE(doc->getOwner(*comp) == &e);
-
-		// Add another component
-		auto xfcomp = doc->addComponent<TestComponent>(e);
-		REQUIRE(xfcomp != nullptr);
-		REQUIRE(doc->getObjects().size() == 3);
-		REQUIRE(e.getComponents().size() == 2);
-		REQUIRE(doc->getOwner(*xfcomp) == &e);
-
-		// Remove first component (from entity)
-		doc->removeObject(*comp);
-		REQUIRE(doc->getObjects().size() == 2);
-		REQUIRE(e.getComponents().size() == 1);
-
-		// Remove entity (should also remove component)
-		doc->removeObject(e);
-		REQUIRE(doc->getObjects().size() == 0);
-	}
+//
+//	SECTION("general")
+//	{
+//		auto doc = AppContext::get().newDocument();
+//
+//		// Must have a default document
+//		REQUIRE(doc != nullptr);
+//		// Default filename must be empty
+//		REQUIRE(doc->getCurrentFilename().isEmpty());
+//		// Default document may not have objects
+//		REQUIRE(doc->getObjects().size() == 0);
+//		// Setting filename must be consistent
+//		QString testFilename("TestFilename.ext");
+//		doc->setFilename(testFilename);
+//		REQUIRE(doc->getCurrentFilename() == testFilename);
+//
+//		doc = AppContext::get().newDocument();
+//
+//		REQUIRE(doc->getCurrentFilename().isEmpty());
+//		REQUIRE(doc->getObjects().size() == 0);
+//
+//		// Create entity
+//		auto& e = doc->addEntity();
+//		REQUIRE(!e.mID.empty());
+//		REQUIRE(doc->getObjects().size() == 1);
+//		REQUIRE(e.getComponents().size() == 0);
+//
+//		// Add component to entity
+//		auto comp = doc->addComponent<TestComponent>(e);
+//		REQUIRE(comp != nullptr);
+//		REQUIRE(doc->getObjects().size() == 2);
+//		REQUIRE(e.getComponents().size() == 1);
+//		REQUIRE(doc->getOwner(*comp) == &e);
+//
+//		// Add another component
+//		auto xfcomp = doc->addComponent<TestComponent>(e);
+//		REQUIRE(xfcomp != nullptr);
+//		REQUIRE(doc->getObjects().size() == 3);
+//		REQUIRE(e.getComponents().size() == 2);
+//		REQUIRE(doc->getOwner(*xfcomp) == &e);
+//
+//		// Remove first component (from entity)
+//		doc->removeObject(*comp);
+//		REQUIRE(doc->getObjects().size() == 2);
+//		REQUIRE(e.getComponents().size() == 1);
+//
+//		// Remove entity (should also remove component)
+//		doc->removeObject(e);
+//		REQUIRE(doc->getObjects().size() == 0);
+//	}
 
 	SECTION("signals")
 	{
