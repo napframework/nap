@@ -1,8 +1,10 @@
 #pragma once
 
 #include <QStatusBar>
+#include <QTimer>
 
 #include "actions.h"
+
 #include "appcontext.h"
 #include "generic/basewindow.h"
 #include "panels/apprunnerpanel.h"
@@ -13,6 +15,7 @@
 #include "panels/resourcepanel.h"
 #include "panels/scenepanel.h"
 #include "themeselectionmenu.h"
+#include "generic/errordialog.h"
 
 namespace napkin
 {
@@ -79,6 +82,18 @@ namespace napkin
 		 */
 		void onResourceSelectionChanged(QList<nap::rtti::Object*> objects);
 
+		/**
+		 * Receive messages from the logger
+		 * @param msg The log message being emitted
+		 */
+		void onLog(nap::LogMessage msg);
+
+		/**
+		 * Show a logmessage in the error dialog
+		 * @param msg The message to be displayed
+		 */
+		void showError(nap::LogMessage msg);
+
 	private:
 		ResourcePanel mResourcePanel;	// ResourcePanel
 		HierarchyPanel mHierarchyPanel; // HierarchyPanel
@@ -88,7 +103,8 @@ namespace napkin
 		AppRunnerPanel mAppRunnerPanel; // AppRunnerPanel
 		ThemeSelectionMenu mThemeMenu;  // ThemeSelectionMenu
 		ScenePanel mScenePanel;			// ScenePanel
-
+		ErrorDialog mErrorDialog;       // The error dialog, if there was an error
 		QStatusBar mStatusBar;			// Status bar
+		QTimer mTimer;
 	};
 };

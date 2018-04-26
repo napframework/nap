@@ -113,25 +113,20 @@ std::vector<rttr::type> napkin::getComponentTypes()
 	return ret;
 }
 
-std::vector<rttr::type> napkin::getResourceTypes()
+std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 {
-	rttr::type rootType = RTTI_OF(nap::rtti::Object);
 	nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
-
 	std::vector<rttr::type> ret;
 	std::vector<rttr::type> derived_classes;
+
+	auto rootType = RTTI_OF(nap::rtti::Object);
 	nap::rtti::getDerivedTypesRecursive(rootType, derived_classes);
 	for (const rttr::type& derived : derived_classes)
 	{
-		if (!derived.is_derived_from<nap::Resource>())
-			continue;
-
-		if (derived.is_derived_from<nap::Component>())
-			continue;
-		if (derived.is_derived_from<nap::Entity>())
-			continue;
-
 		if (!factory.canCreate(derived))
+			continue;
+
+		if (predicate != nullptr && !predicate(derived))
 			continue;
 
 		ret.emplace_back(derived);
@@ -147,17 +142,6 @@ nap::rtti::ResolvedPath napkin::resolve(const nap::rtti::Object& obj, nap::rtti:
 	return resolvedPath;
 }
 
-nap::rtti::Object* napkin::getPointee(const PropertyPath& path)
-{
-	auto resolvedPath = path.resolve();
-	auto value = resolvedPath.getValue();
-	auto value_type = value.get_type();
-	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-	bool is_wrapper = wrapped_type != value_type;
-	nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>()
-												: value.get_value<nap::rtti::Object*>();
-	return pointee;
-}
 
 QString napkin::getAbsoluteResourcePath(const QString& relPath, const QString& reference)
 {
@@ -208,5 +192,3 @@ std::string napkin::toURI(const napkin::PropertyPath& path)
 {
 	return NAP_URI_PREFIX + "://" + path.toString();
 }
-
-

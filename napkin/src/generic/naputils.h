@@ -29,6 +29,7 @@ namespace napkin
 		const nap::rtti::TypeInfo& type;
 	};
 
+	using TypePredicate = std::function<bool(const rttr::type& type)>;
 
 	/**
 	 * Filter the provided list of objects
@@ -85,12 +86,7 @@ namespace napkin
 	/**
 	 * @return All nap resource types in the rtti system
 	 */
-	std::vector<rttr::type> getResourceTypes();
-
-	/**
-	 * Given a Pointer Property (or how do you call them), find the object it's pointing to
-	 */
-	nap::rtti::Object* getPointee(const PropertyPath& path);
+	std::vector<rttr::type> getTypes(TypePredicate predicate);
 
 	/**
 	 * Get the reference directory for resources.
