@@ -21,11 +21,3 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
-
-# Package into platform release
-package_module()
-
-# Set packaged Linux RPATH 
-if (UNIX AND NOT APPLE)
-    set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
-endif()
