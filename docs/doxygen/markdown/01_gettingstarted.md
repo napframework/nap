@@ -9,7 +9,7 @@ Create a New App {#create_blank_app}
 Use the NAP build system to create a new application from scratch:
 
 - In a terminal window, navigate to the directory containing your NAP installation on disk.
-- Run `tools\create_project NewProject` to generate a project file for a blank app template.
+- Run `tools\create_project NewProject` to generate a new project for your OS.
 
 After creation your new project is located under the 'projects' folder. You can build and run it using Visual Studio on Windows, Xcode on macOS or make on Linux. To learn more about setting up projects, modules and 3rd party dependencies read the [Project Management](@ref project_management) documentation.
 
@@ -72,7 +72,7 @@ Note that the file specified in `AudioFilePath` should be located within the `da
 }
 ```
 
-As you see can see the `Buffer` property of the PlaybackComponent points to the audio file resource and the `Input` property of the OutputComponent points to the PlaybackComponent. Both use the `mID` property as an identifier. Now save the JSON file and fire up your app in your IDE of choice and you will see a blank window and hear the audio file being played on the default sound device.
+As you see can see the `Buffer` property of the PlaybackComponent points to the audio file resource and the `Input` property of the OutputComponent points to the PlaybackComponent. Both use the `mID` property as an identifier. Now save the JSON file and fire up your app in your IDE of choice. You should see a blank window and hear the audio file being played on the default sound device.
 
 
 App logic {#app_logic}
@@ -82,19 +82,19 @@ In your new project there is a file called `newprojectapp.h`. This file contains
 
 ## Init
 
-In the init method of the NewProjectApp class we can initialize some member variables that we might need later. Declare the following variable on the bottom of the NewProjectApp class header:
+The init method is used to initialize important parts of your application and store references to resources. For this example we need access to the audio entity. To do so, declare the following variable at the bottom of the NewProjectApp class header.
 
 ~~~{cpp}
 ObjectPtr<Entity> mEntity = nullptr;
 ~~~
 
-And add the following line before the last line of the init() method:
+And add the following line to the init() method of your application:
 
 ~~~{cpp}
 mEntity = mScene->findEntity("audioEntity");
 ~~~
 
-We now initialized a pointer to an instance of the entity that we defined before in the app structure. We can use this pointer to manipulate the entity and it's components while the app is running.
+We just initialized a pointer (link) to the audio entity. We can use this pointer to manipulate the entity and it's components while the app is running.
 
 ## Update
 
@@ -103,38 +103,46 @@ The update method is called every frame. The parameter 'deltaTime' indicates how
 Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to 'True', the file starts playing automatically on startup. Suppose instead we want to add a button to start and stop the playback at runtime. Set `AutoPlay` to False and add the following lines to the update method:
 
 ~~~{cpp}
-auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
 
-// Draw some gui elements to control audio playback
-ImGui::Begin("Audio Playback");
-if (!playbackComponent->isPlaying())
+void NewProjectApp::update(double deltaTime)
 {
-    if (ImGui::Button("Play"))
-        playbackComponent->start(0);
+	auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
+
+	// Draw some gui elements to control audio playback
+	ImGui::Begin("Audio Playback");
+	if (!playbackComponent->isPlaying())
+	{
+    	if (ImGui::Button("Play"))
+        	playbackComponent->start(0);
+	}
+	else 
+	{
+    	if (ImGui::Button("Stop"))
+        	playbackComponent->stop();
+	}
+	ImGui::End();
 }
-else {
-    if (ImGui::Button("Stop"))
-        playbackComponent->stop();
-}
-ImGui::End();
 ~~~
 
-Note: to make this work, include the following headers to `newprojectapp.cpp`:
+Note: to make this works, include the following headers to `newprojectapp.cpp`:
 
 ~~~{cpp}
 #include <audio/component/playbackcomponent.h>
 #include <imgui/imgui.h>
 ~~~
 
-When we compile and run the app now we see a button to start and stop playback of the audio file.
+When we compile and run the app we see a button to start and stop playback of the audio file.
 
 ## Render
 
 Render is called after update. Use this call to render objects and UI elements to screen or a different target. By default nothing is rendered. You have to tell the renderer what you want to render and where to render it to. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). The example below shows you how to render the gui mentioned above to the primary window:
 
 ~~~{cpp}
-void MyApp::render()
+void NewProjectApp::render()
 {
+	// Clear opengl context related resources that are not necessary any more
+	mRenderService->destroyGLContextResources({ mRenderWindow });
+
     // Activate current window for drawing
     mRenderWindow->makeActive();
 
