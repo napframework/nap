@@ -344,7 +344,7 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
     endif()
 
     # Package into release build
-    if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR DEFINED PACKAGE_NAIVI_APPS))
+    if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR PACKAGE_NAIVI_APPS))
         package_project_into_release(${PROJECT_PREFIX}/${PROJECT_NAME})
     endif()
 endfunction() 
