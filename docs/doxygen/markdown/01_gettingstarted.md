@@ -100,7 +100,7 @@ We just initialized a pointer (link) to the audio entity. We can use this pointe
 
 The update method is called every frame. The parameter 'deltaTime' indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering.
 
-Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to 'True', the file starts playing automatically on startup. Suppose instead we want to add a button to start and stop the playback at runtime. Set `AutoPlay` to False and add the following lines to the update method:
+Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to 'True', the file starts playing automatically on startup. Suppose we want to add a button to start and stop the playback at runtime. Set `AutoPlay` to False and add the following lines to the update method:
 
 ~~~{cpp}
 
@@ -124,14 +124,14 @@ void NewProjectApp::update(double deltaTime)
 }
 ~~~
 
-Note: to make this works, include the following headers to `newprojectapp.cpp`:
+Note: to make this work add the following includes to `newprojectapp.cpp`:
 
 ~~~{cpp}
 #include <audio/component/playbackcomponent.h>
 #include <imgui/imgui.h>
 ~~~
 
-When we compile and run the app we see a button to start and stop playback of the audio file.
+When we compile and run the app you should see a button to start and stop playback of the audio file.
 
 ## Render
 
