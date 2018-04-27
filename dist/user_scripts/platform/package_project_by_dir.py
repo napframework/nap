@@ -38,8 +38,6 @@ if __name__ == '__main__':
     if args.no_zip:
         cmd.append('--no-zip')
     if not sys.platform.startswith('linux'):
-        if args.no_pause:
-            cmd.append('--no-pause')
         if args.no_show:
             cmd.append('--no-show')
     call(cmd)
