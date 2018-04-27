@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nap/resource.h>
+
 namespace nap {
     
     class NAPAPI ___VARIABLE_className___ : public ___VARIABLE_baseClass___ {
