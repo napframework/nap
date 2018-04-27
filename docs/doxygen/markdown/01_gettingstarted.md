@@ -27,16 +27,25 @@ Every blank app contains a window and a scene:
 
 ```
 {
-    "Type": "nap::RenderWindow",
-    "mID": "Window",
-    "Width": 1280,
-    "Height": 720,
-    "Title": "NewProject",
-    "Sync": "false"
-}
+	"Objects" : 
+	[
+	    {
+      		"Type": "nap::RenderWindow",
+      		"mID": "Window",
+      		"Width": 1280,
+      		"Height": 720,
+      		"Title": "NewProject",
+    	},
+		{
+      		"Type" : "nap::Scene",
+      		"mID": "Scene",   
+      		"Entities" : []
+    	}	
+	]
+} 
 ```
 
-Now add your own resource, in this case an audio file that is loaded from disk:
+Lets add a new resource: an audio file that is loaded from disk. Make sure to add it to the `Objects` array:
 
 ```
 {
@@ -46,7 +55,7 @@ Now add your own resource, in this case an audio file that is loaded from disk:
 }
 ```
 
-Note that the file specified in `AudioFilePath` should be located within the `data` directory of your project. Continue by adding an entity that holds two components: an [AudioPlaybackComponent](@ref nap::audio::PlaybackComponent) to be able to play back the audio file and an [OutputComponent](@ref nap::audio::OutputComponent) to route the output of the playback to the audio device:
+Note that the file specified in `AudioFilePath` should be located within the `data` directory of your project. Continue by adding an entity that holds two components: an [AudioPlaybackComponent](@ref nap::audio::PlaybackComponent) to be able to play back the audio file and an [OutputComponent](@ref nap::audio::OutputComponent) to route the output of the playback component to the audio device. Also this time, make sure to add it to the `Objects` array:
 
 ```
 {
@@ -72,8 +81,25 @@ Note that the file specified in `AudioFilePath` should be located within the `da
 }
 ```
 
-As you see can see the `Buffer` property of the PlaybackComponent points to the audio file resource and the `Input` property of the OutputComponent points to the PlaybackComponent. Both use the `mID` property as an identifier. Now save the JSON file and fire up your app in your IDE of choice. You should see a blank window and hear the audio file being played on the default sound device.
+As you see can see the `Buffer` property of the PlaybackComponent points to the 'audioFile' and the `Input` property of the OutputComponent points to the 'playbackComponent'. Now add the newly created audio entity to the scene. This makes sure the entity is created by the application on startup:
 
+```
+{
+	"Objects" : 
+	[
+		{
+      		"Type" : "nap::Scene",
+      		"mID": "Scene",   
+      		"Entities" : 
+      		[
+      			audioEntity
+      		]
+    	}	
+	]
+} 
+```
+
+Now save the JSON file and fire up your app in your IDE of choice. You should see a blank window and hear the audio file being played on the default sound device.
 
 App logic {#app_logic}
 ==========================
