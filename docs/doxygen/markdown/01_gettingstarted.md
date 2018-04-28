@@ -9,15 +9,15 @@ Create a New App {#create_blank_app}
 Use the NAP build system to create a new application from scratch:
 
 - In a terminal window, navigate to the directory containing your NAP installation on disk.
-- Run `tools\create_project NewProject` to generate a new project for your OS.
+- Run `tools\create_project NewProject` (Windows) or  `./tools/create_project NewProject` (macOS and Linux) to generate a new project for your OS.
 
-After creation your new project is located under the 'projects' folder. You can build and run it using Visual Studio on Windows, Xcode on macOS or make on Linux. To learn more about setting up projects, modules and 3rd party dependencies read the [Project Management](@ref project_management) documentation.
+After creation your new project is located under the `projects` folder. You can build and run it using Visual Studio on Windows, Xcode on macOS or make on Linux. To learn more about setting up projects, modules and 3rd party dependencies read the [Project Management](@ref project_management) documentation.
 
-Adding resources {#defining_resources}
+Adding Resources {#defining_resources}
 ================
 
-The data folder within your project folder contains an `appstructure.json` file. This file describes the general structure of your app and any additional resources that are required. Objects in this file can be split up into three different categories:
-- [Resources](@ref resources): static often read only data such as an image, window, mesh etc.
+The data folder within your project folder contains an `app_structure.json` file. This file describes the general structure of your app and any additional resources that are required. Objects in this file can be split up into three different categories:
+- [Resources](@ref resources): static, often read-only, data such as an image, window, mesh etc.
 - [Entities](@ref scene): objects that structure functionality by combining a set of components
 - [Components](@ref scene): add functionality to an entity and receive an update call
 
@@ -45,7 +45,7 @@ Every blank app contains a window and a scene:
 } 
 ```
 
-Lets add a new resource: an audio file that is loaded from disk. Make sure to add it to the `Objects` array:
+Let's add a new resource: an audio file that is loaded from disk. Make sure to add it to the `Objects` array:
 
 ```
 {
@@ -101,7 +101,7 @@ As you see can see the `Buffer` property of the PlaybackComponent points to the 
 
 Now save the JSON file and fire up your app in your IDE of choice. You should see a blank window and hear the audio file being played on the default sound device.
 
-App logic {#app_logic}
+App Logic {#app_logic}
 ==========================
 
 In your new project there is a file called `newprojectapp.h`. This file contains the class NewProjectApp that contains all logic specific to the app we are building. NewProjectApp is derived from the App base class.
@@ -161,7 +161,7 @@ When we compile and run the app you should see a button to start and stop playba
 
 ## Render
 
-Render is called after update. Use this call to render objects and UI elements to screen or a different target. By default nothing is rendered. You have to tell the renderer what you want to render and where to render it to. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). The example below shows you how to render the gui mentioned above to the primary window:
+Render is called after update. Use this call to render objects and UI elements to screen or a different target. By default nothing is rendered. You have to tell the renderer what you want to render and where to render it to. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). The example below shows you how to render the GUI mentioned above to the primary window:
 
 ~~~{cpp}
 void NewProjectApp::render()

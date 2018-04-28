@@ -14,9 +14,9 @@ Napkin {#napkin}
 What is Napkin? {#what_is_napkin}
 =======================
 
-NAP's main storage format is JSON, which we consider to be quite a readable format. But as projects get larger, it helps to have a more ergonomical view on the data you are managing. Napkin is our json file editor that allows you to change your json files in a more visual manner. Fire up Napkin, launch your NAP application (from within or outside of the editor) and edit your data to see your changes reflected in the running application upon every save. This way you can get near-realtime feedback from even the most invasive structural changes in your app.
+NAP's main storage format is JSON, which we consider to be quite a readable format. But as projects get larger, it helps to have a more ergonomical view on the data you are managing. Napkin is our JSON file editor that allows you to change your JSON files in a more visual manner. Fire up Napkin, launch your NAP application (from within or outside of the editor) and edit your data to see your changes reflected in the running application upon every save. This way you can get near-realtime feedback from even the most invasive structural changes in your app.
 
-Take note that the data files work cross platform and can be shared between Windows, MacOS and Linux.
+Take note that the data files work cross platform and can be shared between Windows, macOS and Linux.
 
 ### Terminology
 The following jargon will be used in this document:
@@ -30,7 +30,7 @@ The following jargon will be used in this document:
 General Structure {#napkin_structure}
 =======================
 
-NAP Projects consist mainly of an executable, one or more Json files and likely a collection of assets like images, sound, 3d models, etc. Napkin runs mostly on the same code as your application, this ensures a solid consistency between what is shown in the editor and your application. 
+NAP Projects consist mainly of an executable, one or more JSON files and likely a collection of assets like images, sound, 3D models, etc. Napkin runs mostly on the same code as your application, this ensures a solid consistency between what is shown in the editor and your application. 
 
 Document Management {#napkin_doc_management}
 -----------------------
@@ -98,7 +98,7 @@ Log {#napkin_log}
 Any information that's interesting during development is being shown here.<br>
 If you're running your application from Napkin, its output will be shown in this log too.
 
-Each message has a Log Level attached that will indicate its severeness:<br>
+Each message has a Log Level attached that will indicate its severity:<br>
 	- `fine` and `debug` messages are usually not that interesting and will not be shown by default, they're mostly for figuring out the more specific details of your application and the editor.<br>
 	- `info` messages communicate a notable state change in the editor or your application.<br>
 	- `warning` indicates you should probably look what is being said.
