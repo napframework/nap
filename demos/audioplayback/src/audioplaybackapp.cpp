@@ -86,6 +86,7 @@ namespace nap
         ImGui::SliderFloat("Fade Out", &mFadeOutTime, 0, 2000, "%.3f", 2);
         ImGui::SliderFloat("Pitch", &mPitch, 0.5, 2, "%.3f", 1);
         ImGui::SliderFloat("Panning", &mPanning, 0.f, 1.f, "%.3f", 1);
+        ImGui::Text("Music: Hang by Breek (www.breek.me)");
 		ImGui::End();
         
         // Apply GUI parameters to audio playback component
