@@ -104,6 +104,7 @@ namespace nap
             mInputSource = EAudioFile;
         if (ImGui::RadioButton("Audio device input", mInputSource == EAudioDevice))
             mInputSource = EAudioDevice;	
+        ImGui::TextDisabled("Music: Hang by Breek (www.breek.me)");
 		ImGui::End();
         
         if (mInputSource != mCurrentInputSource)
