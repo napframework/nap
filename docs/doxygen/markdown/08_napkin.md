@@ -1,6 +1,7 @@
 Napkin {#napkin}
 =======================
 *	[What Is Napkin](@ref what_is_napkin)
+*	[Launching Napkin](@ref launching_napkin)
 *	[General Structure](@ref napkin_structure)
 	* 	[Document Management](@ref napkin_doc_management)
 	*	[Resource Management](@ref napkin_res_management)
@@ -26,6 +27,14 @@ The following jargon will be used in this document:
 	- `CTRL + X` Press the *X* key while holding *CTRL* (on Windows) or *CMD* (the curly symbol on Mac)
 
 ![](@ref content/napkin.png)
+
+Launching Napkin {#launching_napkin}
+=======================
+
+When you build a project Napkin is deployed alongside the project binary within the project's `bin` folder.  For example if you have a project titled NewProject and do a debug build of the project, Napkin will be deployed into the folder `projects/newproject/bin/Clang-x86_64-Debug` (naturally `Clang-x86_64-Debug` will vary depending on your platform).
+
+Napkin is also included with packaged projects and in that case will sit in the root of the created release. See [Project Management](@ref project_management) for further details, including how to disable including Napkin.
+
 
 General Structure {#napkin_structure}
 =======================
