@@ -130,7 +130,7 @@ macro(package_python)
     endif()
 endmacro()
 
-# Package installed QT for distribution with NAP release (for use with Napkin)
+# Package installed Qt for distribution with NAP release (for use with Napkin)
 macro(package_qt)
     set(QT_FRAMEWORKS Core Gui Widgets)
 
@@ -237,59 +237,8 @@ macro(package_qt)
     endif()
 endmacro()
 
-macro(macos_replace_qt_framework_links FRAMEWORKS LIB_NAME LIB_SRC_LOCATION LIB_INSTALL_LOCATION PATH_PREFIX)
-    foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
-        if(NOT Qt${QT_LINK_FRAMEWORK} STREQUAL ${LIB_NAME})
-            execute_process(COMMAND sh -c "otool -L ${LIB_SRC_LOCATION} | grep Qt${QT_LINK_FRAMEWORK} | awk -F'(' '{print $1}'"
-                            OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
-            if(NOT ${REPLACE_INSTALL_NAME} STREQUAL "")
-                # message("Adding install name change in ${QT_INSTALL_FRAMEWORK} for Qt${QT_LINK_FRAMEWORK}")
-                string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
-
-                # Change link to dylib
-                install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                                      -change 
-                                                      ${REPLACE_INSTALL_NAME}
-                                                      ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}
-                                                      ${LIB_INSTALL_LOCATION}
-                                              ERROR_QUIET)")
-            endif()
-        endif()
-    endforeach()    
-endmacro()
-
-
-macro(macos_replace_qt_framework_links_install_time FRAMEWORKS LIB_NAME FILEPATH PATH_PREFIX)
-    foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
-        if(NOT ${QT_LINK_FRAMEWORK} STREQUAL ${LIB_NAME})
-            macos_replace_single_install_name_link_install_time(${QT_LINK_FRAMEWORK} ${FILEPATH} ${PATH_PREFIX})
-        endif()
-    endforeach()    
-endmacro()
-
-macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEPATH PATH_PREFIX)
-    # Change link to dylib
-    install(CODE "if(EXISTS ${FILEPATH})
-                      execute_process(COMMAND sh -c \"otool -L ${FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'\"
-                                      OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
-                      if(NOT \${REPLACE_INSTALL_NAME} STREQUAL \"\")
-                          #message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
-                          # Strip read path
-                          string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)                               
-
-                          # Change link to dylib
-                          execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                                  -change 
-                                                  \${REPLACE_INSTALL_NAME}
-                                                  ${PATH_PREFIX}/${REPLACE_LIB_NAME}
-                                                  ${FILEPATH}
-                                          ERROR_QUIET)
-                      endif()
-                  endif()
-                  ")
-endmacro()
-
 # Package project directory package & regenerate shortcuts
+# DESTINATION: Directory to package into
 macro(package_project_dir_shortcuts DESTINATION)
     if(WIN32)
         install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.bat
@@ -303,6 +252,7 @@ macro(package_project_dir_shortcuts DESTINATION)
 endmacro()
 
 # Package module directory regenerate shortcut
+# DESTINATION: Destination directory
 macro(package_module_dir_shortcuts DESTINATION)
     if(WIN32)
         install(PROGRAMS ${NAP_ROOT}/dist/win64/module_dir_shortcuts/regenerate.bat
@@ -313,6 +263,8 @@ macro(package_module_dir_shortcuts DESTINATION)
     endif()
 endmacro()
 
+# Package project in current CMake source dir into framework release
+# DEST_DIR: Destination directory
 macro(package_project_into_release DEST_DIR)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
             DESTINATION ${DEST_DIR}
@@ -339,7 +291,7 @@ macro(package_project_into_release DEST_DIR)
     package_project_dir_shortcuts(${DEST_DIR})
 endmacro()
 
-# Package module into platform release
+# Package module in current CMake source dir into framework release
 macro(package_module)
     # Package headers
     install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
@@ -383,7 +335,78 @@ macro(package_module)
     endif()
 endmacro()
 
-# Set the packaged RPATH of a module for its dependent modules.
+# macOS: Post-build replace Qt framework install names in specified file with new paths built
+# from a path prefix and a full framework lib name mapped from another file
+# FRAMEWORKS: Qt framework names to replace
+# SKIP_FRAMEWORK_NAME: Don't process for this framework in the provided list
+# LIB_SRC_LOCATION: The file used to obtain the full framework library name
+# LIB_INSTALL_LOCATION: The file to update
+# PATH_PREFIX: The new path prefix for the framework
+macro(macos_replace_qt_framework_links FRAMEWORKS SKIP_FRAMEWORK_NAME LIB_SRC_LOCATION LIB_INSTALL_LOCATION PATH_PREFIX)
+    foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
+        if(NOT Qt${QT_LINK_FRAMEWORK} STREQUAL ${SKIP_FRAMEWORK_NAME})
+            execute_process(COMMAND sh -c "otool -L ${LIB_SRC_LOCATION} | grep Qt${QT_LINK_FRAMEWORK} | awk -F'(' '{print $1}'"
+                            OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
+            if(NOT ${REPLACE_INSTALL_NAME} STREQUAL "")
+                # message("Adding install name change in ${QT_INSTALL_FRAMEWORK} for Qt${QT_LINK_FRAMEWORK}")
+                string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
+
+                # Change link to dylib
+                install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+                                                      -change 
+                                                      ${REPLACE_INSTALL_NAME}
+                                                      ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}
+                                                      ${LIB_INSTALL_LOCATION}
+                                              ERROR_QUIET)")
+            endif()
+        endif()
+    endforeach()    
+endmacro()
+
+# macOS: At install time replace Qt framework install names in specified file with new paths built
+# from a path prefix and a full framework lib name sourced from another file
+# FRAMEWORKS: Qt framework names to replace
+# SKIP_FRAMEWORK_NAME: Don't process for this framework in the provided list
+# FILEPATH: The file to update
+# PATH_PREFIX: The new path prefix for the framework
+macro(macos_replace_qt_framework_links_install_time FRAMEWORKS SKIP_FRAMEWORK_NAME FILEPATH PATH_PREFIX)
+    foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
+        if(NOT ${QT_LINK_FRAMEWORK} STREQUAL ${SKIP_FRAMEWORK_NAME})
+            macos_replace_single_install_name_link_install_time(${QT_LINK_FRAMEWORK} ${FILEPATH} ${PATH_PREFIX})
+        endif()
+    endforeach()    
+endmacro()
+
+# macOS: At install time replace a path prefix of a single lib in the specified file
+# REPLACE_LIB_NAME: Library install name to replace
+# FILEPATH: The file to update
+# PATH_PREFIX: The new path prefix for the framework
+macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEPATH PATH_PREFIX)
+    # Change link to dylib
+    install(CODE "if(EXISTS ${FILEPATH})
+                      execute_process(COMMAND sh -c \"otool -L ${FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'\"
+                                      OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
+                      if(NOT \${REPLACE_INSTALL_NAME} STREQUAL \"\")
+                          #message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
+                          # Strip read path
+                          string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)                               
+
+                          # Change link to dylib
+                          execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+                                                  -change 
+                                                  \${REPLACE_INSTALL_NAME}
+                                                  ${PATH_PREFIX}/${REPLACE_LIB_NAME}
+                                                  ${FILEPATH}
+                                          ERROR_QUIET)
+                      endif()
+                  endif()
+                  ")
+endmacro()
+
+# Unix: Set the packaged RPATH of a module for its dependent modules.
+# DEPENDENT_NAP_MODULES: The modules to setup as dependencies
+# TARGET_NAME: The module name
+# ARGN: Any extra non-NAP-module paths to add
 macro(set_installed_module_rpath_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME)
     set(NAP_ROOT_LOCATION_TO_MODULE "../../../..")
     if(APPLE)
@@ -393,13 +416,18 @@ macro(set_installed_module_rpath_for_dependent_modules DEPENDENT_NAP_MODULES TAR
     endif()
 endmacro()
 
-# Set the packaged RPATH of a Linux binary object for its dependent modules
+# Linux: Set the packaged RPATH of binary object for its dependent modules
+# DEPENDENT_NAP_MODULES: The modules to setup as dependencies
+# TARGET_NAME: The module name
+# NAP_ROOT_LOCATION_TO_ORIGIN: The relative path from the module to NAP root
+# ARGN: Any extra non-NAP-module paths to add
 macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
-    # Add our core lib path first
+    # Add our core paths first
     set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}")
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/python/lib")
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/rttr/bin")    
 
+    # Process any extra paths
     set(EXTRA_PATHS ${ARGN})
     foreach(EXTRA_PATH ${EXTRA_PATHS})
         set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${EXTRA_PATH}")
@@ -414,29 +442,48 @@ macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MO
                                                     INSTALL_RPATH ${BUILT_RPATH})
 endmacro()
 
-# On macOS set the packaged RPATH of a binary object for its dependent modules for a single build configuration
+# macOS: Set the packaged RPATH of a binary object for its dependent modules for a single build configuration
+# CONFIG: The build configuration
+# DEPENDENT_NAP_MODULES: The modules to setup as dependencies
+# OBJECT_FILENAME: The module filename to work on
+# NAP_ROOT_LOCATION_TO_OBJECT: The relative path from the module to NAP root
+# ARGN: Any extra non-NAP-module paths to add
 macro(set_single_config_installed_rpath_on_macos_object_for_dependent_modules CONFIG DEPENDENT_NAP_MODULES OBJECT_FILENAME NAP_ROOT_LOCATION_TO_OBJECT)
+    # Set basic paths
     ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/python/lib")
     ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/rttr/bin")
     ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/lib/${CONFIG}")   
+
+    # Set module paths
     foreach(DEPENDENT_MODULE_NAME ${DEPENDENT_NAP_MODULES})
         ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/modules/${DEPENDENT_MODULE_NAME}/lib/${CONFIG}")
     endforeach()
+
+    # Process any extra paths
     set(EXTRA_PATHS ${ARGN})
     foreach(EXTRA_PATH ${EXTRA_PATHS})
         ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${EXTRA_PATH}")
     endforeach()       
 endmacro()
 
-# On macOS set the packaged RPATH of a module on macOS for its dependent modules
+# macOS: Set the packaged RPATH of a module for its dependent modules
+# DEPENDENT_NAP_MODULES: The modules to setup as dependencies
+# MODULE_NAME: The module to work on
+# NAP_ROOT_LOCATION_TO_MODULE: The relative path from the module to NAP root
+# ARGN: Any extra non-NAP-module paths to add
 macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE)
     foreach(MODULECONFIG Release Debug)
+        # Set basic paths
         ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/python/lib")
         ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/rttr/bin")
         ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/lib/${MODULECONFIG}")
+
+        # Set module paths
         foreach(DEPENDENT_MODULE_NAME ${DEPENDENT_NAP_MODULES})
             ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/modules/${DEPENDENT_MODULE_NAME}/lib/${MODULECONFIG}")
         endforeach()
+
+        # Process any extra paths
         set(EXTRA_PATHS ${ARGN})
         foreach(EXTRA_PATH ${EXTRA_PATHS})
             ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${EXTRA_PATH}")
@@ -444,13 +491,18 @@ macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MO
     endforeach()
 endmacro()
 
-# On macOS ensure the specified module has the provided RPATH for the specified build configuration
+# macOS: Ensure the specified module has the provided RPATH for the specified build configuration
+# MODULE_NAME: The module to work with
+# CONFIG: The build configuration
+# PATH_TO_ADD: The path to check/add
 macro(ensure_macos_module_has_rpath_at_install MODULE_NAME CONFIG PATH_TO_ADD)
     set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/modules/${MODULE_NAME}/lib/${CONFIG}/lib${MODULE_NAME}.dylib)
     ensure_macos_file_has_rpath_at_install(${MODULE_FILENAME} ${PATH_TO_ADD})
 endmacro()
 
-# On macOS ensure the specified binary object has the provided RPATH
+# macOS: Ensure the specified binary object has the provided RPATH
+# FILENAME: The binary object
+# PATH_TO_ADD: The path to check/add
 macro(ensure_macos_file_has_rpath_at_install FILENAME PATH_TO_ADD)
     install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
                                           -add_rpath
