@@ -3,6 +3,7 @@
 #include <QtWidgets/QDialog>
 #include <rtti/object.h>
 #include "filtertreeview.h"
+#include "naputils.h"
 
 namespace napkin
 {
@@ -33,13 +34,12 @@ namespace napkin
 		 */
 		static nap::rtti::Object* getObject(QWidget* parent, const rttr::type& typeConstraint);
 
-
 		/**
-		 * Display a selection dialog with all available types that can be added as a resource.
+		 * Display a selection dialog with all available types, filtered by an optional predicate
 		 * @param parent The widget to attach to
 		 * @return The resulting selected type.
 		 */
-		static nap::rtti::TypeInfo getResourceType(QWidget* parent);
+		static nap::rtti::TypeInfo getType(QWidget* parent, const TypePredicate& predicate = nullptr);
 
 		/**
 		 * Display a selection dialog with all available objects, filtered by type T
@@ -50,7 +50,15 @@ namespace napkin
 		template<typename T>
 		static T* getObject(QWidget* parent) { return rtti_cast<T>(getObject(parent, RTTI_OF(T))); }
 
+		/**
+		 * Override to provide a reasonable size
+		 */
 		QSize sizeHint() const override;
+
+		/**
+		 * @return true if the user choice was confirmed, false if the dialog was dismissed
+		 */
+		bool wasAccepted() const { return mWasAccepted; }
 
 	protected:
 		/**
@@ -67,10 +75,11 @@ namespace napkin
 		void moveSelection(int dir);
 		void confirm();
 
-
+		bool mWasAccepted = false;
 		FilterTreeView mTreeView;
 		QVBoxLayout mLayout;
 		QSize mSize = { 400, 400 };
+
 	};
 
 } // namespace napkin

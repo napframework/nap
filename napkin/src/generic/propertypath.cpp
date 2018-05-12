@@ -1,4 +1,5 @@
 #include "propertypath.h"
+#include "naputils.h"
 
 #include <rtti/object.h>
 #include <rtti/linkresolver.h>
@@ -20,11 +21,8 @@ napkin::PropertyPath::PropertyPath(Object& obj, const Path& path)
 }
 
 napkin::PropertyPath::PropertyPath(Object& obj, const std::string& path)
-		: mObject(&obj), mPath(Path())
+		: mObject(&obj), mPath(Path::fromString(path))
 {
-	std::vector<std::string> split = nap::utility::splitString(path, '/');
-	for (auto part : split)
-		mPath.pushAttribute(part);
 }
 
 rttr::variant napkin::PropertyPath::getValue() const
@@ -45,7 +43,8 @@ rttr::property napkin::PropertyPath::getProperty() const
 
 rttr::type napkin::PropertyPath::getType() const
 {
-	return getProperty().get_type();
+	Variant value = resolve().getValue();
+	return value.get_type();
 }
 
 ResolvedPath napkin::PropertyPath::resolve() const
@@ -56,7 +55,7 @@ ResolvedPath napkin::PropertyPath::resolve() const
 }
 
 
-rttr::type napkin::PropertyPath::getArrayElementType()
+rttr::type napkin::PropertyPath::getArrayElementType() const
 {
 	ResolvedPath resolved_path = resolve();
 	assert(resolved_path.isValid());
@@ -67,8 +66,9 @@ rttr::type napkin::PropertyPath::getArrayElementType()
 		return rttr::type::empty();
 
 	VariantArray array_view = array.create_array_view();
-	auto arrayView = getArrayView();
-	return arrayView.get_rank_type(arrayView.get_rank());
+	auto elmtype = array_view.get_rank_type(1);
+	//auto elmtype = array_view.get_rank_type(array_view.get_rank());
+	return elmtype.is_wrapper() ? elmtype.get_wrapped_type() : elmtype;
 }
 
 size_t napkin::PropertyPath::getArrayLength()const
@@ -87,12 +87,13 @@ size_t napkin::PropertyPath::getArrayLength()const
 	return array_view.get_size();
 }
 
-rttr::variant_array_view napkin::PropertyPath::getArrayView()
+napkin::PropertyPath napkin::PropertyPath::getArrayElement(size_t index) const
 {
-	mResolvedPath = resolve();
-	mVariant = mResolvedPath.getValue();
-	mVariantArray = mVariant.create_array_view();
-	return mVariantArray;
+	if (!isArray())
+		return PropertyPath();
+	auto child_path = getPath();
+	child_path.pushArrayElement(index);
+	return {*mObject, child_path};
 }
 
 
@@ -111,15 +112,7 @@ napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) con
 rttr::type napkin::PropertyPath::getWrappedType() const
 {
 	const auto& type = getType();
-	auto wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
-	if (type.is_array())
-	{
-		nap::rtti::Variant value = getValue();
-		nap::rtti::VariantArray array = value.create_array_view();
-		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
-		wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
-	}
-	return wrapped_type;
+	return type.is_wrapper() ? type.get_wrapped_type() : type;
 }
 
 bool napkin::PropertyPath::isValid() const
@@ -142,33 +135,87 @@ bool napkin::PropertyPath::operator==(const napkin::PropertyPath& other) const
 	return true;
 }
 
-bool napkin::PropertyPath::isEnum() const
+bool napkin::PropertyPath::isArray() const
 {
-	if (!isValid())
-		return false;
-	return getType().is_enumeration();
+	return getType().is_array();
 }
 
 bool napkin::PropertyPath::isPointer() const
 {
-	if (!isValid())
+	if (isArray())
+		return getArrayElementType().is_pointer();
+	return getWrappedType().is_pointer();
+}
+
+bool napkin::PropertyPath::isEmbeddedPointer() const
+{
+	if (!isPointer())
 		return false;
 
-	const auto& type = getType();
-	const nap::rtti::TypeInfo wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
-	// TODO: There must be a less convoluted way.
-	// In the case of array elements, the type will be the array type, not the element type.
-	// For now, grab the array's element type and use that.
-	nap::rtti::TypeInfo wrapped_array_type = rttr::type::empty();
-	if (type.is_array()) {
-		nap::rtti::Variant value = getValue();
-		nap::rtti::VariantArray array = value.create_array_view();
-		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
-		wrapped_array_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
-	}
-
-	return wrapped_type.is_pointer() || wrapped_array_type.is_pointer();
+	return nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded);
 }
+
+bool napkin::PropertyPath::isNonEmbeddedPointer() const
+{
+	if (!isPointer())
+		return false;
+
+	return !nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded);
+}
+
+
+bool napkin::PropertyPath::isEnum() const
+{
+	return getWrappedType().is_enumeration();
+}
+
+Object* napkin::PropertyPath::getPointee() const
+{
+	if (!isPointer())
+		return nullptr;
+
+	ResolvedPath resolvedPath = resolve();
+	auto value = resolvedPath.getValue();
+	auto value_type = value.get_type();
+	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+
+	if(wrapped_type != value_type)
+		return value.extract_wrapped_value().get_value<nap::rtti::Object*>();
+	else
+		return value.get_value<nap::rtti::Object*>();
+}
+
+void napkin::PropertyPath::setPointee(Object* pointee)
+{
+	nap::rtti::ResolvedPath resolved_path = resolve();
+	assert(resolved_path.isValid());
+
+	// TODO: This is a hack to find ComponentPtr/ObjectPtr/EntityPtr method
+	// Someone just needs to add an 'assign' method in the wrong place and it will break.
+	// Also, ObjectPtr's assign method starts with uppercase A
+	rttr::method assign_method = nap::rtti::findMethodRecursive(resolved_path.getType(), "assign");
+	if (assign_method.is_valid())
+	{
+		// Assign the new value to the pointer (note that we're modifying a copy)
+		auto target_value = resolved_path.getValue();
+
+		auto doc = AppContext::get().getDocument(); // TODO: This needs to go, but we need it to get a relative path.
+		std::string path = doc->relativeObjectPath(*mObject, *pointee);
+
+		assign_method.invoke(target_value, path, *pointee);
+
+		// Apply the modified value back to the source property
+		bool value_set = resolved_path.setValue(target_value);
+		assert(value_set);
+	}
+	else
+	{
+		bool value_set = resolved_path.setValue(pointee);
+		assert(value_set);
+	}
+}
+
+
 
 
 

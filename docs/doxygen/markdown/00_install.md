@@ -68,7 +68,7 @@ NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 17.10 on x86-64 machines using GCC
 Follow these steps for a guided installation:
 1. Extract the release:
 ```
-tar Jxvf NAP-0.1.0-Linux.tar.xz
+tar jxvf NAP-0.1.0-Linux.tar.bz2
 ```
 2. Run the `check_build_environment` script to guide you through installing prerequisites, following the instructions:
 ```

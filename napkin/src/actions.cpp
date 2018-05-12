@@ -110,12 +110,15 @@ DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : Action(), mO
 
 void DeleteObjectAction::perform()
 {
-	auto pointers = AppContext::get().getDocument()->getPointersTo(mObject);
+	auto pointers = AppContext::get().getDocument()->getPointersTo(mObject, false, true);
+
 	if (!pointers.empty())
 	{
-		QString message = "The following properties are still pointing to this object";
-		showPropertyListDialog(parentWidget(), pointers, "Cannot delete", message);
-		return;
+		QString message = "The following properties are still pointing to this object,\n"
+			"your data might end up in a broken state.\n\n"
+			"Do you want to delete anyway?";
+		if (!showPropertyListConfirmDialog(parentWidget(), pointers, "Warning", message))
+			return;
 	}
     AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
 }
@@ -131,17 +134,16 @@ void SetThemeAction::perform()
     AppContext::get().getThemeManager().setTheme(mTheme);
 }
 
+AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
+	: Action(), mEntity(entity), mComponentType(type)
+{
+	setText(QString(type.get_name().data()));
+}
+
 void AddComponentAction::perform()
 {
     AppContext::get().getDocument()->addComponent(mEntity, mComponentType);
 }
-
-AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
-        : Action(), mEntity(entity), mComponentType(type)
-{
-    setText(QString(type.get_name().data()));
-}
-
 
 AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
 {

@@ -7,7 +7,7 @@ namespace nap
 {
 
 	LogMessage::LogMessage(const LogLevel& lvl, const std::string& msg)
-		: mLevel(lvl), mMessage(msg), mTimeStamp(utility::getCurrentTime())
+		: mLevel(&lvl), mMessage(msg), mTimeStamp(utility::getCurrentTime())
 	{}
 
 	std::string basicLogMessageFormatter(const LogMessage& msg)
@@ -21,7 +21,7 @@ namespace nap
 	}
 
 	LogHandler::LogHandler()
-		: mLevel(Logger::fineLevel()), mFormatter(&basicLogMessageFormatter)
+		: mLevel(&Logger::fineLevel()), mFormatter(&basicLogMessageFormatter)
 	{
 	}
 
@@ -36,13 +36,13 @@ namespace nap
 		return mFormatter(msg);
 	}
 
-	Logger::Logger() : mLevel(fineLevel())
+	Logger::Logger() : mLevel(&fineLevel())
 	{
 		initialize();
 	}
 
 
-	Logger::Logger(Logger const&) : mLevel(fineLevel())
+	Logger::Logger(Logger const&) : mLevel(&fineLevel())
 	{
 		initialize();
 	}
@@ -110,6 +110,14 @@ namespace nap
 													 prefix.c_str(),
 													 timestamp.c_str());
 		addFileHandler(filename);
+	}
+
+	const LogLevel* Logger::getLevel(const std::string& name)
+	{
+		for (const auto lvl : getLevels())
+			if (lvl->name() == name)
+				return lvl;
+		return nullptr;
 	}
 
 

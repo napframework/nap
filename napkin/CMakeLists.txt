@@ -113,6 +113,11 @@ if(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
     list(APPEND EXTRA_RPATH lib)
 
+    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FreeImage/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/portaudio/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/libsndfile/lib)
+
     foreach(MODULECONFIG Release Debug)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
                                                                                 "${NAP_MODULES_LINK_DEPENDENCIES}" 

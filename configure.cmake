@@ -39,6 +39,8 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
 
+# Export all FBXs in directory to meshes using fbxconverter. Meshes are created in the same directory.
+# SRCDIR: The directory to work in
 macro(export_fbx_in_place SRCDIR)
     if (MSVC OR APPLE)
         set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
@@ -62,6 +64,9 @@ macro(export_fbx_in_place SRCDIR)
                        )
 endmacro()
 
+# Copy directory to project bin output
+# SRCDIR: The source directory
+# DSTDIR: The destination directory without project bin output
 macro(copy_dir_to_bin SRCDIR DSTDIR)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
@@ -69,6 +74,8 @@ macro(copy_dir_to_bin SRCDIR DSTDIR)
                        COMMENT "Copy dir '${SRCDIR}' -> '${DSTDIR}'")
 endmacro()
 
+# Copy files to project bin output
+# ARGN: Files to copy
 macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
@@ -78,6 +85,7 @@ macro(copy_files_to_bin)
     endforeach()
 endmacro()
 
+# Copy Windows SD2 and GLEW DLLs to project bin output
 macro(copy_base_windows_graphics_dlls)
     # Copy over some crap window dlls
     set(FILES_TO_COPY
@@ -87,6 +95,7 @@ macro(copy_base_windows_graphics_dlls)
     copy_files_to_bin(${FILES_TO_COPY})
 endmacro()
 
+# Copy Windows FFmpeg DLLs to project bin output
 macro(copy_windows_ffmpeg_dlls)
     file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin/*.dll)
     copy_files_to_bin(${FFMPEGDLLS})
@@ -182,7 +191,7 @@ macro(set_output_directories)
     endif()
 endmacro()
 
-# Let find_python find our prepackaged Python in thirdparty
+# Let find_python find our prepackaged Python in thirdparty.  Used before a call to find_package(pybind11)
 macro(find_python_in_thirdparty)
     # Set our pre built Python location
     set(PYTHONLIBS_FOUND 1)
@@ -317,6 +326,7 @@ endmacro()
 
 # Run any module post-build logic for set modules
 # Note: Currently unused, leaving as useful draft for potential later use
+# NAP_MODULES: The modules to work with
 macro(include_module_postbuilds_per_project NAP_MODULES)
     foreach(NAP_MODULE ${NAP_MODULES})
         string(SUBSTRING ${NAP_MODULE} 4 -1 SHORT_MODULE_NAME)
@@ -344,7 +354,7 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
     endif()
 
     # Package into release build
-    if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR DEFINED PACKAGE_NAIVI_APPS))
+    if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR PACKAGE_NAIVI_APPS))
         package_project_into_release(${PROJECT_PREFIX}/${PROJECT_NAME})
     endif()
 endfunction() 

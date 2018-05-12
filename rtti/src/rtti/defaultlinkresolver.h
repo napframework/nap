@@ -24,10 +24,11 @@ namespace nap
 
 		private:
 			virtual Object* findTarget(const std::string& targetID) override;
+			virtual EInvalidLinkBehaviour onInvalidLink(const UnresolvedPointer& unresolvedPointer) override;
 
 		private:
 			using ObjectsByIDMap = std::unordered_map<std::string, rtti::Object*>;
-			ObjectsByIDMap mObjectsByID;	// Objects stored by ID, used for lookup
+			ObjectsByIDMap mObjectsByID;	// Objects stored by ID, used for lookup			
 		};
 	}
 }

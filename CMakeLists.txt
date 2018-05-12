@@ -99,7 +99,6 @@ add_subdirectory(napkin)
 # executable targets
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
-add_subdirectory(test/serializationtest)
 add_subdirectory(test/audiotest)
 
 # app targets
@@ -122,6 +121,8 @@ add_subdirectory(demos/videomodulation/module)
 add_subdirectory(demos/blobtrace)
 add_subdirectory(demos/audioanalysis)
 add_subdirectory(demos/audioplayback)
+add_subdirectory(demos/oscmidi)
+add_subdirectory(demos/oscmidi/module)
 add_subdirectory(demos/lineblending)
 add_subdirectory(demos/lineblending/module)
 

@@ -41,8 +41,8 @@ namespace nap
 		// Kills connection
 		virtual ~OSCSender() override;
 
-		std::string mIPAddress;		///< Property: 'IpAddress' target machine ip address
-		int mPort = 8000;			///< Property: 'Port' target machine port1
+		std::string mIPAddress = "127.0.0.1";	///< Property: 'IpAddress' target machine ip address
+		int mPort = 8000;			            ///< Property: 'Port' target machine port1
 
 		/**
 		 * Constructs the host end point and communication socket.

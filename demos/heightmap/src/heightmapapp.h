@@ -76,12 +76,7 @@ namespace nap
 		 *  Forwards the received input event to the input service
 		 */
 		void inputMessageReceived(InputEventPtr inputEvent) override;
-		
-		/**
-		 *	Toggles full screen
-		 */
-		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
-		
+				
 		/**
 		 *	Called when loop finishes
 		 */
@@ -100,8 +95,9 @@ namespace nap
 		ObjectPtr<Material>		mNormalsMaterial = nullptr;			//< Material used to draw the normals
 		ObjectPtr<Material>		mHeightmapMaterial = nullptr;		//< Material used to draw the heightmap
 
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< Pointer to the entity that holds the sphere
+		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;			//< Pointer to the entity that holds the sphere
+		ObjectPtr<ImageFromFile>	mHeightmap = nullptr;			//< Texture used as height map
 
 		// Gui variables
 		float	mBlendValue = 1.0f;									//< Height blend value
@@ -113,6 +109,7 @@ namespace nap
 		RGBColorFloat mValleyColor = { 0.176f, 0.180f, 0.258f };	//< Color of the valley
 		RGBColorFloat mPeakColor =	 { 0.784f, 0.411f, 0.411f };	//< Color of the peak
 		RGBColorFloat mHaloColor =	 { 0.545f, 0.549f, 0.627f };	//< Color of the halo
+		RGBColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69};		//< GUI text highlight color
 
 		// Value Smoother
 		math::FloatSmoothOperator mBlendSmoother = { 1.0f, 0.5f };	//< smooths blend value over time to target value
