@@ -103,7 +103,7 @@ namespace nap
         
         void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
         {
-            mAudioService->enqueueTask([&](){
+            mAudioService->enqueueTask([&, duration](){
                 _start(startPosition, duration);
             });
         }
@@ -192,7 +192,6 @@ namespace nap
         void PlaybackComponentInstance::_start(TimeValue startPosition, TimeValue duration)
         {
             ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
-            mPlaying = true;
             if (duration == 0)
                 mDuration = mResource->mBuffer->getSize();
             else
@@ -204,6 +203,7 @@ namespace nap
                     mBufferPlayers[channel]->play(mResource->mBuffer->getBuffer(), mResource->mChannelRouting[channel], startPosition * mNodeManager->getSamplesPerMillisecond(), actualSpeed);
             }
             applyGain(mFadeInTime);
+            mPlaying = true;
         }
         
     }
