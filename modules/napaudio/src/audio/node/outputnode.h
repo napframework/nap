@@ -19,6 +19,7 @@ namespace nap
          */
         class NAPAPI OutputNode final : public Node
         {
+            RTTI_ENABLE(Node)
         public:
             /**
              * @param nodeManager: The @NodeManager this node provides output to.

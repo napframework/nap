@@ -41,7 +41,7 @@ namespace nap
             RTTI_ENABLE(nap::ComponentInstance)
             
         public:
-            AudioComponentBaseInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource) { }
+            AudioComponentBaseInstance(EntityInstance& entity, Component& resource);
             
             /**
              * Override this method to specify the number of audio channels output by this component.
@@ -62,7 +62,10 @@ namespace nap
             /**
              * Returns the audio service
              */
-            AudioService& getAudioService();
+            AudioService& getAudioService() { return *mAudioService; }
+            
+        private:
+            AudioService* mAudioService = nullptr;
         };
 
     }

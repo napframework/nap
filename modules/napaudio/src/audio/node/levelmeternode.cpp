@@ -32,16 +32,12 @@ namespace nap {
         }
         
         
-        void LevelMeterNode::setAnalysisWindowSize(TimeValue size)
-        {
-            mIndex = 0;
-            mBuffer.resize(getNodeManager().getSamplesPerMillisecond() * size);
-        }
-        
-        
         void LevelMeterNode::process()
         {
             auto inputBuffer = input.pull();
+            
+            if (inputBuffer == nullptr)
+                return;
             
             for (auto& sample : *inputBuffer)
             {

@@ -1,3 +1,7 @@
+# Find moodycamel
+find_package(moodycamel REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
+
 if (WIN32)
     find_path(
         NAPUTILITY_LIBS_DIR
@@ -24,7 +28,6 @@ elseif (UNIX)
     set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/libnaputility.a)
 endif()
 
-
 if (NOT NAPUTILITY_LIBS_DIR)
     message(FATAL_ERROR "Couldn't find NAP utility")
 endif()
@@ -38,3 +41,6 @@ target_link_libraries(naputility INTERFACE debug ${NAPUTILITY_LIBS_DEBUG})
 file(GLOB utility_headers ${CMAKE_CURRENT_LIST_DIR}/../include/utility/*.h)
 target_sources(naputility INTERFACE ${utility_headers})
 source_group(NAP\\Utility FILES ${utility_headers})
+
+# Install moodycamel license into packaged project
+install(FILES ${THIRDPARTY_DIR}/moodycamel/LICENSE.md DESTINATION licenses/moodycamel)

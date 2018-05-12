@@ -12,7 +12,10 @@ namespace napkin
 	class PropertyPath
 	{
 	public:
-		PropertyPath() {}
+		/**
+		 * Create an invalid path.
+		 */
+		PropertyPath() = default;
 
 		/**
 		 * Copy constructor
@@ -76,12 +79,18 @@ namespace napkin
 		 * If this path refers to an array property, get the element type
 		 * If this path does not refer to an array property, return type::empty()
 		 */
-		rttr::type getArrayElementType();
+		rttr::type getArrayElementType() const;
 
 		/**
 		 * If this path refers to an array property, return the length of the array.
 		 */
 		size_t getArrayLength()const;
+
+		/**
+		 * Get the path to an element of the array (if this represents an array)
+		 * @return A path to an element of the array or an invalid path if it cannot be found.
+		 */
+		PropertyPath getArrayElement(size_t index) const;
 
 		/**
 		 * @return Wrapped type
@@ -99,25 +108,52 @@ namespace napkin
 		bool isValid() const;
 
 		/**
+		 * @return true if the property pointed to is representing a pointer
+		 */
+		bool isPointer() const;
+
+		/**
+		 * @return true if the property pointed to is representing an embedded pointer
+		 */
+		bool isEmbeddedPointer() const;
+
+		/**
+		 * @return true if the property pointed to represents a non-embedded pointer
+		 */
+		bool isNonEmbeddedPointer() const;
+
+		/**
+		 * @return true if the property pointed to is representing an enum
+		 */
+		bool isEnum() const;
+
+		/**
+		 * @return true if the property pointed to is an array
+		 */
+		bool isArray() const;
+
+		/**
+		 * If this path refers to a pointer, get the Object it's pointing to.
+		 * @return The object this property is pointing to or nullptr if this path does not represent a pointer.
+		 */
+		nap::rtti::Object* getPointee() const;
+
+		/**
+		 * If this path refers to a pointer, set the Object it's pointing to
+		 * @param pointee The Object this property will be pointing to.
+		 */
+		void setPointee(nap::rtti::Object* pointee);
+
+		/**
 		 * @param other The property to compare to
 		 * @return true if the both property paths point to the same property
 		 */
 		bool operator==(const PropertyPath& other) const;
 
+
 	private:
-		/**
-		 * If this property is an array, get its arrayview
-		 */
-		rttr::variant_array_view getArrayView();
-
-
-
 		nap::rtti::Object* mObject = nullptr;
 		nap::rtti::Path mPath;
-		// Temps
-		nap::rtti::ResolvedPath mResolvedPath;
-		nap::rtti::Variant mVariant;
-		nap::rtti::VariantArray mVariantArray;
 	};
 }
 

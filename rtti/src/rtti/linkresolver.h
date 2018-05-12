@@ -32,12 +32,25 @@ namespace nap
 			bool resolveLinks(const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 
 		protected:
+			enum class EInvalidLinkBehaviour
+			{
+				TreatAsError,		///< When an invalid link is encountered, treat it as an error and do not continue
+				Ignore				///< When an invalid link is encountered, ignore it and continue resolving other links. Note that this leaves the pointer in an unresolved state, meaning it will be a nullptr.
+			};
+
 			/**
 			 * Called by resolveLinks to resolve a target ID to target object. Derived classes should implement this to perform the lookup.
 			 * @param targetID The ID to resolve. This ID could be retrieved straight from deserialization or transformed through the static translateTargetID function on the type.
 			 * @return nullptr if the target could not be resolved, otherwise the resolved target object.
 			 */
 			virtual Object* findTarget(const std::string& targetID) = 0;
+
+			/**
+			 * Called when an invalid link is encountered. The return value determines what kind of behavior to exhibit for an unresolved link.
+			 * @param unresolvedPointer The UnresolvedPointer that could not be resolved. Can be used to notify the user of this event
+			 * @return The behavior to exhibit for an unresolved link
+			 */
+			virtual EInvalidLinkBehaviour onInvalidLink(const UnresolvedPointer& unresolvedPointer) = 0;
 		};
 	}
 }

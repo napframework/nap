@@ -71,7 +71,7 @@ namespace nap
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
         ObjectPtr<audio::AudioBufferResource> mBuffer = nullptr;        //< Pointer to the audio file in memory
-        audio::PlaybackComponentInstance* mPlaybackComponent = nullptr; //< Component that takes care of audio playback
+        ObjectPtr<nap::EntityInstance> mAudioEntity = nullptr;
         audio::TimeValue mStartPosition = 0;                            //< Start position of the playback in ms
         audio::TimeValue mDuration = 0;                                 //< Duration of the playback in ms
         audio::TimeValue mFadeInTime = 0;                               //< Fade in time in ms
