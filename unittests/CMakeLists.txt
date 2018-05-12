@@ -3,7 +3,7 @@ project(unittests)
 enable_testing()
 nap_qt_pre()
 
-file(GLOB SOURCES
+file(GLOB_RECURSE SOURCES
      src/*.cpp
      src/*.hpp
      src/*.h)
@@ -11,7 +11,7 @@ file(GLOB SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 add_executable(${PROJECT_NAME}_autorun ${SOURCES})
 
-set(NAP_MODULES mod_napkalvertoren mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napsandbox mod_napvideo mod_napmath mod_napscene mod_napartnet mod_napcameracontrol)
+set(NAP_MODULES mod_kalvertoren mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napsandbox mod_napvideo mod_napmath mod_napscene mod_napartnet mod_napcameracontrol)
 
 set(UNITTEST_LIBS
     napcore

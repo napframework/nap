@@ -3,6 +3,9 @@ project(mod_napartnet)
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
+# Get our NAP modules dependencies from module.json
+module_json_to_cmake()
+
 find_package(artnet REQUIRED)
 
 # LIBRARY
@@ -22,8 +25,7 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-set(DEPENDENT_NAP_MODULES napcore mod_napmath mod_napscene)
-target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} artnet)
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} artnet)
 
 if(WIN32)
     # Copy artnet DLL to build directory
@@ -41,6 +43,9 @@ elseif(UNIX AND NOT APPLE)
             COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>/libartnet.so.1")
 endif()
 
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
+
 # Package into platform release
 if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/libartnet/bin")
@@ -52,6 +57,7 @@ install(FILES ${THIRDPARTY_DIR}/libartnet/AUTHORS DESTINATION thirdparty/libartn
 install(FILES ${THIRDPARTY_DIR}/libartnet/COPYING DESTINATION thirdparty/libartnet)
 install(FILES ${THIRDPARTY_DIR}/libartnet/README DESTINATION thirdparty/libartnet)
 install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin)
+install(DIRECTORY ${ARTNET_DIR}/artnet DESTINATION thirdparty/libartnet/include)
 if(WIN32)
     install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION thirdparty/libartnet/bin)
 elseif(APPLE)

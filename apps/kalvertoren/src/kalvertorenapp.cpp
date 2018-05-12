@@ -6,6 +6,7 @@
 #include "applybbcolorcomponent.h"
 #include "applycompositioncomponent.h"
 #include "rendercompositioncomponent.h"
+#include "rendervideocomponent.h"
 
 // External Includes
 #include <mathutils.h>
@@ -51,6 +52,7 @@ namespace nap
 		// Entities
 		compositionEntity = scene->findEntity("CompositionEntity");
 		renderCompositionEntity = scene->findEntity("RenderCompositionEntity");
+		renderVideoEntity = scene->findEntity("RenderVideoEntity");
 		displayEntity = scene->findEntity("DisplayEntity");
 		sceneCameraEntity = scene->findEntity("SceneCameraEntity");
 		compositionCameraEntity = scene->findEntity("CompositionCameraEntity");
@@ -98,6 +100,12 @@ namespace nap
 		// Render offscreen surface(s)
 		{
 			renderService->getPrimaryWindow().makeCurrent();
+
+			// Render video
+			RenderVideoComponentInstance& video_render = renderVideoEntity->getComponent<RenderVideoComponentInstance>();
+			video_render.render();
+
+			// Render compositions
 			RenderCompositionComponentInstance& comp_render = renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
 			comp_render.render();
 		}

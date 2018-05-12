@@ -122,20 +122,20 @@ namespace nap
 		if (it != mIndexToPaletteMap.end())
 			return it->second;
 
-		// If the color can't be found we need to look for the upper and lower bounds of the wrapping colors
-		auto upper_it = mIndexToPaletteMap.lower_bound(indexColor);
-		assert(upper_it != mIndexToPaletteMap.end());
 
-		// Get lower bound
-		auto lower_it = upper_it == mIndexToPaletteMap.begin() ? mIndexToPaletteMap.end() : upper_it;
-		--lower_it;
-
-		// Get distance from index to both bounds
-		float d_lower = lower_it->second.mScreenColor.getDistance(indexColor);
-		float d_highr = upper_it->second.mScreenColor.getDistance(indexColor);
-
-		// Select closest
-		return d_lower < d_highr ? lower_it->second : upper_it->second;
+		// Iterate over all the colors and find the closest match
+		float distance = math::max<float>();
+		const LedColorPaletteGrid::PaletteColor* closest_color = nullptr;
+		for (const auto& ccolor : mIndexToPaletteMap)
+		{
+			float cdist = ccolor.first.getDistance(indexColor);
+			if (cdist < distance)
+			{
+				distance = cdist;
+				closest_color = &(ccolor.second);
+			}
+		}
+		return *closest_color;
 	}
 
 

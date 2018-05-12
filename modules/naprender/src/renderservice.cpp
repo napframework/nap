@@ -18,8 +18,22 @@
 #include <sceneservice.h>
 #include <scene.h>
 
+RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
+	RTTI_PROPERTY("Settings",	&nap::RenderServiceConfiguration::mSettings,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
+
 namespace nap
 {
+	RenderService::RenderService(ServiceConfiguration* configuration) :
+		Service(configuration)
+	{
+	}
+
+
 	// Register all object creation functions
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
@@ -254,7 +268,7 @@ namespace nap
 	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{
 		std::unique_ptr<Renderer> renderer = std::make_unique<nap::Renderer>();
-		if (!renderer->init(errorState))
+		if (!renderer->init(getConfiguration<RenderServiceConfiguration>()->mSettings, errorState))
 			return false;
 
 		mRenderer = std::move(renderer);
@@ -387,4 +401,3 @@ namespace nap
 
 } // Renderservice
 
-RTTI_DEFINE_CLASS(nap::RenderService)

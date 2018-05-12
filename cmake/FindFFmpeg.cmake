@@ -33,13 +33,13 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
     else()
         find_path(FFMPEG_AVCODEC_INCLUDE_DIR
                   NAMES libavcodec/avcodec.h
-                  HINTS ${THIRDPARTY_DIR}/ffmpeg/include
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/include
                   )
     endif()
 
     find_library(FFMPEG_LIBAVCODEC
                  NAMES avcodec
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
+                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                        ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
                  NO_DEFAULT_PATH
@@ -47,7 +47,7 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 
     find_library(FFMPEG_LIBAVFORMAT
                  NAMES avformat
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
+                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                        ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
                  NO_DEFAULT_PATH
@@ -55,7 +55,7 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 
     find_library(FFMPEG_LIBAVUTIL
                  NAMES avutil
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
+                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
                        ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
                        ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
                  NO_DEFAULT_PATH
@@ -63,7 +63,10 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 				 
     find_library(FFMPEG_SWRESAMPLE
                  NAMES swresample
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/lib
+                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
+                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib                 
+                 NO_DEFAULT_PATH
                  )				 
 
     if(FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
@@ -77,7 +80,7 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
             ${FFMPEG_LIBAVCODEC}
             ${FFMPEG_LIBAVFORMAT}
             ${FFMPEG_LIBAVUTIL}
-			${FFMPEG_SWRESAMPLE}
+            ${FFMPEG_SWRESAMPLE}
             )
     endif(FFMPEG_FOUND)
 

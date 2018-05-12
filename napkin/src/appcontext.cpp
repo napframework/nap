@@ -1,6 +1,6 @@
 #include "appcontext.h"
 #include "napkinglobals.h"
-
+#include "napkinlinkresolver.h"
 // std
 #include <fstream>
 
@@ -12,7 +12,6 @@
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-#include <rtti/defaultlinkresolver.h>
 #include <nap/logger.h>
 
 // local
@@ -63,9 +62,9 @@ Document* AppContext::newDocument()
 	mDocument = std::make_unique<Document>(getCore());
 	connectDocumentSignals();
 	newDocumentCreated();
-	Document* doc = mDocument.get();
-	documentChanged(doc);
-	return doc;
+
+	documentChanged(mDocument.get());
+	return mDocument.get();
 }
 
 Document* AppContext::loadDocument(const QString& filename)
@@ -75,27 +74,44 @@ Document* AppContext::loadDocument(const QString& filename)
 	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
 
 	ErrorState err;
-
 	nap::rtti::DeserializeResult result;
-	if (!readJSONFile(filename.toStdString(), getCore().getResourceManager()->getFactory(), result, err))
+	std::string buffer;
+	if (!readFileToString(filename.toStdString(), buffer, err))
 	{
-		nap::Logger::fatal(err.toString());
+		nap::Logger::error(err.toString());
 		return nullptr;
 	}
 
-	if (!nap::rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
+	return loadDocumentFromString(buffer, filename);
+}
+
+Document* AppContext::loadDocumentFromString(const std::string& data, const QString& filename)
+{
+	ErrorState err;
+	nap::rtti::DeserializeResult result;
+	auto& factory = getCore().getResourceManager()->getFactory();
+
+	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, factory, result, err))
 	{
-		nap::Logger::fatal("Failed to resolve links: %s", err.toString().c_str());
+		nap::Logger::error(err.toString());
+		return nullptr;
+	}
+
+	if (!NapkinLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
+	{
+		nap::Logger::error("Failed to resolve links: %s", err.toString().c_str());
 		return nullptr;
 	}
 
 	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
+
 	connectDocumentSignals();
 	documentOpened(filename);
 	Document* doc = mDocument.get();
-	documentChanged(doc); // Stack corruption?
+	documentChanged(doc);
 	return doc;
 }
+
 
 void AppContext::saveDocument()
 {
@@ -109,22 +125,13 @@ void AppContext::saveDocument()
 
 void AppContext::saveDocumentAs(const QString& filename)
 {
-	ObjectList objects;
-	for (auto& ob : getDocument()->getObjects())
-	{
-		objects.emplace_back(ob.get());
-	}
 
-	JSONWriter writer;
-	ErrorState err;
-	if (!serializeObjects(objects, writer, err))
-	{
-		nap::Logger::fatal(err.toString());
+	std::string serialized_document = documentToString();
+	if (serialized_document.empty())
 		return;
-	}
 
 	std::ofstream out(filename.toStdString());
-	out << writer.GetJSON();
+	out << serialized_document;
 	out.close();
 
 	getDocument()->setFilename(filename);
@@ -137,6 +144,23 @@ void AppContext::saveDocumentAs(const QString& filename)
 	getUndoStack().setClean();
 	documentChanged(mDocument.get());
 }
+
+std::string AppContext::documentToString() const
+{
+	ObjectList objects;
+	for (auto& ob : getDocument()->getObjects())
+		objects.emplace_back(ob.get());
+
+	JSONWriter writer;
+	ErrorState err;
+	if (!serializeObjects(objects, writer, err))
+	{
+		nap::Logger::fatal(err.toString());
+		return {};
+	}
+	return writer.GetJSON();
+}
+
 
 void AppContext::openRecentDocument()
 {
@@ -247,9 +271,16 @@ Document* AppContext::getDocument()
 	return mDocument.get();
 }
 
+const Document* AppContext::getDocument() const
+{
+	return mDocument.get();
+}
+
 void AppContext::onUndoIndexChanged()
 {
 	documentChanged(mDocument.get());
 }
+
+
 
 

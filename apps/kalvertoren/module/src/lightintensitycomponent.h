@@ -85,10 +85,20 @@ namespace nap
 		void setMasterBrightness(float value);
 
 		/**
+		 *	@return the master (final) output brightness
+		 */
+		float getMasterBrightness() const				{ return mMasterIntensity; }
+
+		/**
 		 * Sets the lux power value for the interpolation curve
 		 * @param value the power value applied to the lux curve
 		 */
 		void setLuxPower(float value)					{ mLuxPower = value; }
+
+		/**
+		 *	@return power of applied lux curve
+		 */
+		float getLuxPower() const						{ return mLuxPower; }
 
 		/**	
 		 * Sets the lux range
@@ -108,16 +118,31 @@ namespace nap
 		void setLightRange(const glm::vec2 range);
 
 		/**
+		 *	@return the light range
+		 */
+		glm::vec2 getLightRange() const					{ return mLightRange; }
+
+		/**
 		 * Sets the influence of the sensors on the system
 		 * @param value the normalized influence value
 		 */
 		void setSensorInfluence(float value);
 
 		/**
+		 *	@return the sensor influence
+		 */
+		float getSensorInfluence() const				{ return mSensorInfluence; }
+
+		/**
 		 * Sets the sensor smooth time in seconds
 		 * @param value smooth time in seconds
 		 */
 		void setSmoothTime(float value);
+
+		/**
+		 *	@return the smooth time
+		 */
+		float getSmoothTime() const						{ return mIntensitySmoother.mSmoothTime; }
 
 		/**
 		 *	@return all the sensors registered to the intensity component

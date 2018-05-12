@@ -5,8 +5,8 @@ if(MSVC OR APPLE)
         # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
         # builds when working in packaging and non-packaging at the same time)
         if(DEFINED NAP_PACKAGED_BUILD)
-            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingBin/${BUILD_CONF})
-            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingLib/${BUILD_CONF})
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${BUILD_CONF})
         else()
             set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
             set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
@@ -25,8 +25,8 @@ else()
     # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
     # builds when working in packaging and non-packaging at the same time)
     if(DEFINED NAP_PACKAGED_BUILD)
-        set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingBin/${BUILD_CONF})
-        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packagingLib/${BUILD_CONF})
+        set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
+        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${BUILD_CONF})
     else()
         set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
         set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
@@ -39,6 +39,8 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
 
+# Export all FBXs in directory to meshes using fbxconverter. Meshes are created in the same directory.
+# SRCDIR: The directory to work in
 macro(export_fbx_in_place SRCDIR)
     if (MSVC OR APPLE)
         set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
@@ -49,7 +51,7 @@ macro(export_fbx_in_place SRCDIR)
     # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't 
     # fall into place
     if(DEFINED NAP_PACKAGED_BUILD)
-        set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/packagingBin/${BUILD_CONF})
+        set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
     else()
         set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF})
     endif()
@@ -62,6 +64,9 @@ macro(export_fbx_in_place SRCDIR)
                        )
 endmacro()
 
+# Copy directory to project bin output
+# SRCDIR: The source directory
+# DSTDIR: The destination directory without project bin output
 macro(copy_dir_to_bin SRCDIR DSTDIR)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
@@ -69,6 +74,8 @@ macro(copy_dir_to_bin SRCDIR DSTDIR)
                        COMMENT "Copy dir '${SRCDIR}' -> '${DSTDIR}'")
 endmacro()
 
+# Copy files to project bin output
+# ARGN: Files to copy
 macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
@@ -78,6 +85,7 @@ macro(copy_files_to_bin)
     endforeach()
 endmacro()
 
+# Copy Windows SD2 and GLEW DLLs to project bin output
 macro(copy_base_windows_graphics_dlls)
     # Copy over some crap window dlls
     set(FILES_TO_COPY
@@ -87,8 +95,9 @@ macro(copy_base_windows_graphics_dlls)
     copy_files_to_bin(${FILES_TO_COPY})
 endmacro()
 
+# Copy Windows FFmpeg DLLs to project bin output
 macro(copy_windows_ffmpeg_dlls)
-    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/bin/*.dll)
+    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin/*.dll)
     copy_files_to_bin(${FFMPEGDLLS})
 endmacro()
 
@@ -182,7 +191,7 @@ macro(set_output_directories)
     endif()
 endmacro()
 
-# Let find_python find our prepackaged Python in thirdparty
+# Let find_python find our prepackaged Python in thirdparty.  Used before a call to find_package(pybind11)
 macro(find_python_in_thirdparty)
     # Set our pre built Python location
     set(PYTHONLIBS_FOUND 1)
@@ -204,8 +213,8 @@ endmacro()
 # Populate modules list from project.json into var NAP_MODULES
 macro(project_json_to_cmake)
     # Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/project.json ProjectJsonTriggerDummy.json)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ProjectJsonTriggerDummy.json
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/project.json project_json_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/project_json_trigger_dummy.json
                     ERROR_QUIET)
 
     # Clear any system Python path settings
@@ -224,13 +233,45 @@ macro(project_json_to_cmake)
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
     endif()
 
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/projectscripts/platform/projectInfoParseToCMake.py ${CMAKE_CURRENT_SOURCE_DIR}
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/project_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR}
                     RESULT_VARIABLE EXIT_CODE
                     )
     if(NOT ${EXIT_CODE} EQUAL 0)
         message(FATAL_ERROR "Could not parse modules from project.json (${EXIT_CODE})")
     endif()
     include(cached_project_json.cmake)
+endmacro()
+
+# Get our NAP modules dependencies from module.json, populating into DEPENDENT_NAP_MODULES
+macro(module_json_to_cmake)
+    # Use configure_file to result in changes in module.json triggering reconfigure.  Appears to be best current approach.
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/module.json module_json_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/module_json_trigger_dummy.json
+                    ERROR_QUIET)
+
+    # Clear any system Python path settings
+    unset(ENV{PYTHONHOME})
+    unset(ENV{PYTHONPATH})
+
+    # Parse our module.json and import it
+    if(WIN32)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
+    elseif(APPLE)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
+    else()
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+    endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
+    endif()
+
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/module_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR}
+                    RESULT_VARIABLE EXIT_CODE
+                    )
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not parse modules dependencies from module.json (${EXIT_CODE})")
+    endif()
+    include(cached_module_json.cmake)
 endmacro()
 
 # Add the runtime path for RTTR.  
@@ -285,10 +326,11 @@ endmacro()
 
 # Run any module post-build logic for set modules
 # Note: Currently unused, leaving as useful draft for potential later use
+# NAP_MODULES: The modules to work with
 macro(include_module_postbuilds_per_project NAP_MODULES)
     foreach(NAP_MODULE ${NAP_MODULES})
         string(SUBSTRING ${NAP_MODULE} 4 -1 SHORT_MODULE_NAME)
-        set(MODULE_POSTBUILD ${NAP_ROOT}/modules/${SHORT_MODULE_NAME}/modulePostBuildPerProject.cmake)
+        set(MODULE_POSTBUILD ${NAP_ROOT}/modules/${SHORT_MODULE_NAME}/module_post_build_per_project.cmake)
         if(EXISTS ${MODULE_POSTBUILD})
             include(${MODULE_POSTBUILD})
         endif()
@@ -312,7 +354,36 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
     endif()
 
     # Package into release build
-    if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR DEFINED PACKAGE_NAIVI_APPS))
+    if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR PACKAGE_NAIVI_APPS))
         package_project_into_release(${PROJECT_PREFIX}/${PROJECT_NAME})
     endif()
 endfunction() 
+
+# Copy module.json for module to sit alongside module post-build
+macro(copy_module_json_to_bin)
+    set(DEST_FILENAME ${PROJECT_NAME}.json)
+    if(UNIX)
+        set(DEST_FILENAME lib${DEST_FILENAME})
+    endif()
+
+    if(APPLE)
+        # macOS: Multi build type outputting to LIBRARY_OUTPUT_DIRECTORY
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+    elseif(UNIX)
+        # Linux: Single build type outputting to LIBRARY_OUTPUT_DIRECTORY
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>/${DEST_FILENAME}"
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+
+    else()
+        # Win64: Multi build type outputting to RUNTIME_OUTPUT_DIRECTORY
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+    endif()
+endmacro()

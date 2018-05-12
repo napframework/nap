@@ -6,7 +6,6 @@
 #include <audio/utility/safeptr.h>
 
 // Audio includes
-#include <audio/node/outputnode.h>
 #include <audio/component/audiocomponentbase.h>
 
 namespace nap
@@ -33,7 +32,7 @@ namespace nap
             // Properties
             nap::ComponentPtr<AudioComponentBase> mInput; ///<  property: 'Input' The component whose audio output to rout to the interface
                         
-            std::vector<int> mChannelRouting = { 0 }; ///< property: 'ChannelRouting' The size of this vector indicates the number of channels this component outputs.
+            std::vector<int> mChannelRouting = { 0 }; ///< property: 'Routing' The size of this vector indicates the number of channels this component outputs.
             ///< Each element in the array represents one output channel on the audio interface.
             ///< The value of the element indicates the channel from the input that will be routed to the corresponding output.
             ///< A value of -1 means no output will be sent to the corresponding channel.
@@ -52,9 +51,16 @@ namespace nap
             // Initialize the component
             bool init(utility::ErrorState& errorState) override;
             
+            /**
+             * Connects a different audio component as input to be sent to the audio interface.
+             */
+            void setInput(AudioComponentBaseInstance& input);
+            
         private:
-            std::vector<SafeOwner<OutputNode>> mOutputs; // Nodes presenting the audio output to the node manager
+            std::vector<SafeOwner<Node>> mOutputs; // Nodes presenting the audio output to the node manager
             nap::ComponentInstancePtr<AudioComponentBase> mInput = { this, &OutputComponent::mInput }; // Pointer to the component whose input will be sent to the output.
+            
+            AudioService* mAudioService = nullptr; // Pointer to the audio service the audio output will be sent to.
         };
 
     }

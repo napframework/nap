@@ -21,7 +21,7 @@ namespace nap
 
 	public:
 		// Default Constructor
-		EtherDreamService();
+		EtherDreamService(ServiceConfiguration* configuration);
 
 	protected:
 		/**

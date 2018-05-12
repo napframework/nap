@@ -74,15 +74,16 @@ namespace nap
 		nap::InputService*									inputService = nullptr;
 
 		rtti::ObjectPtr<nap::RenderWindow>					renderWindow;
-		rtti::ObjectPtr<nap::EntityInstance>					compositionEntity = nullptr;
-		rtti::ObjectPtr<nap::EntityInstance>					sceneCameraEntity = nullptr;
-		rtti::ObjectPtr<nap::EntityInstance>					compositionCameraEntity = nullptr;
-		rtti::ObjectPtr<nap::EntityInstance>					renderCompositionEntity = nullptr;
-		rtti::ObjectPtr<nap::EntityInstance>					defaultInputRouter = nullptr;
-		rtti::ObjectPtr<nap::EntityInstance>					lightEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				compositionEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				compositionCameraEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				renderCompositionEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				renderVideoEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
 		rtti::ObjectPtr<nap::Material>						frameMaterial = nullptr;
 		rtti::ObjectPtr<nap::Material>						vertexMaterial = nullptr;
-		rtti::ObjectPtr<nap::EntityInstance>					displayEntity = nullptr;
+		rtti::ObjectPtr<nap::EntityInstance>				displayEntity = nullptr;
 
 		std::unique_ptr<KalvertorenGui>						mGui;
 

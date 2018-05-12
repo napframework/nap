@@ -20,6 +20,12 @@ message(STATUS "Using NAP Root: ${CMAKE_CURRENT_LIST_DIR}")
 get_filename_component(THIRDPARTY_DIR ../thirdparty REALPATH BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
+# Enforce GCC on Linux for now (when doing packaging build at least)
+if(UNIX AND NOT APPLE)
+    if(DEFINED NAP_PACKAGED_BUILD AND NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        message(FATAL_ERROR "NAP only currently supports GCC on Linux (and this is enforced when doing release builds)")
+    endif()
+endif()
 
 include(cmake/targetarch.cmake)
 target_architecture(ARCH)
@@ -59,7 +65,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include(configure.cmake)
 
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packagingStaging)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging_staging)
 
 if(WIN32)
     if(MINGW)
@@ -93,7 +99,6 @@ add_subdirectory(napkin)
 # executable targets
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
-add_subdirectory(test/serializationtest)
 add_subdirectory(test/audiotest)
 
 # app targets
@@ -116,6 +121,10 @@ add_subdirectory(demos/videomodulation/module)
 add_subdirectory(demos/blobtrace)
 add_subdirectory(demos/audioanalysis)
 add_subdirectory(demos/audioplayback)
+add_subdirectory(demos/oscmidi)
+add_subdirectory(demos/oscmidi/module)
+add_subdirectory(demos/lineblending)
+add_subdirectory(demos/lineblending/module)
 
 # Unit tests
 add_subdirectory(unittests)

@@ -12,8 +12,6 @@ namespace nap
 
         void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
-            mTaskQueue.process();
-            
             // clean the output buffers
             for (auto channel = 0; channel < mOutputChannelCount; ++channel)
                 memset(outputBuffer[channel], 0, sizeof(float) * framesPerBuffer);
@@ -40,6 +38,8 @@ namespace nap
                 
                 mInternalBufferOffset += mInternalBufferSize;
                 mSampleTime += mInternalBufferSize;
+                
+                mTaskQueue.process();
             }
         }
         
@@ -98,7 +98,7 @@ namespace nap
         
         void NodeManager::unregisterRootNode(Node& rootNode)
         {
-            enqueueTask([&](){ mRootNodes.erase(&rootNode); });
+            mRootNodes.erase(&rootNode);
         }
 
         

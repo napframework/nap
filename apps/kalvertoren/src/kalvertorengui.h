@@ -71,6 +71,7 @@ namespace nap
 		utility::DateTime									mDateTime;
 		RGBColor8											mTextColor = { 0xC8, 0x69, 0x69 };
 		float												mDisplaySize = 0.5f;
+		float												mVideoDisplaySize = 0.5f;
 		int													mCompositionCycleMode = 2;
 
 		// Information

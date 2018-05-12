@@ -243,8 +243,12 @@ namespace nap
 		* @param errorState The error state
 		* @return Pointer to the resolved EntityInstance. Null if the path failed to resolve (in which case errorState will contain more information)
 		*/
-		static EntityInstance* sResolveEntityInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetEntityInstancePath, Entity* targetEntityResource,
-			const RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::EntityInstanceMap& entityInstances, utility::ErrorState& errorState)
+		static EntityInstance* sResolveEntityInstancePath(ComponentInstance* sourceComponentInstance,
+														  const std::string& targetEntityInstancePath,
+														  Entity* targetEntityResource,
+														  const RootEntityInstanceMap& rootEntityInstances,
+														  const EntityCreationParameters::EntityInstanceMap& entityInstances,
+														  utility::ErrorState& errorState)
 		{
 			// Split the path into its components
 			std::vector<std::string> path_components;
@@ -269,25 +273,43 @@ namespace nap
 
 		/**
 		 * Resolves a path to a component instance to an actual ComponentInstance.
-		 * @param sourceComponentInstance The component containing the path. If the path is relative, the path will be interpreted relative to this component
-		 * @param targetComponentInstancePath The path (absolute or relative) to the target ComponentInstance
-		 * @param rootEntityInstances All root entities. Used to resolve absolute ComponentInstance paths
-		 * @param componentInstances All ComponentInstnaces. Used to resolve single-element (i.e. direct target ID) paths
+		 *
+		 * @param sourceComponentInstance
+		 * 		The component containing the path.
+		 * 		If the path is relative, the path will be interpreted relative to this component
+		 *
+		 * @param targetComponentInstancePath
+		 * 		The path (absolute or relative) to the target ComponentInstance
+		 *
+		 * @param rootEntityInstances
+		 * 		All root entities. Used to resolve absolute ComponentInstance paths
+		 *
+		 * @param componentInstances All ComponentInstnaces.
+		 * 		Used to resolve single-element (i.e. direct target ID) paths
+		 *
 		 * @param errorState The error state
-		 * @return Pointer to the resolved ComponentInstance. Null if the path failed to resolve (in which case errorState will contain more information)
+		 * @return Pointer to the resolved ComponentInstance.
+		 * 		Null if the path failed to resolve (in which case errorState will contain more information)
 		 */
-		static ComponentInstance* sResolveComponentInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetComponentInstancePath, Component* targetComponentResource,
-			const RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::ComponentInstanceMap& componentInstances, utility::ErrorState& errorState)
+		static ComponentInstance* sResolveComponentInstancePath(ComponentInstance* sourceComponentInstance,
+																const std::string& targetComponentInstancePath,
+																Component* targetComponentResource,
+																const RootEntityInstanceMap& rootEntityInstances,
+																const EntityCreationParameters::ComponentInstanceMap& componentInstances,
+																utility::ErrorState& errorState)
 		{
 			// Split the path into its components
 			std::vector<std::string> path_components;
 			utility::splitString(targetComponentInstancePath, '/', path_components);
 
-			// If the path consists out of a single element, we're linking directly to a specific component so we can just use that
+			// If the path consists of a single element,
+			// we're linking directly to a specific component so we can just use that
 			if (path_components.size() == 1)
 			{
 				EntityCreationParameters::ComponentInstanceMap::const_iterator pos = componentInstances.find(targetComponentResource);
-				if (!errorState.check(pos != componentInstances.end(), "Error resolving component path %s: taret component not found", targetComponentInstancePath.c_str()))
+				if (!errorState.check(pos != componentInstances.end(),
+									  "Error resolving component path %s: taret component not found",
+									  targetComponentInstancePath.c_str()))
 					return nullptr;
 
 				// If we're linking directly to a specific component, ensure there is no ambiguity
@@ -299,16 +321,26 @@ namespace nap
 
 			assert(!path_components.empty());
 
+			// cut off trailing element (the component), result will be the path to the owning Entity
 			std::string entityInstancePath = targetComponentInstancePath.substr(0, targetComponentInstancePath.find_last_of('/'));
-			nap::EntityInstance* target_entity = sResolveEntityInstancePath(sourceComponentInstance, entityInstancePath, rootEntityInstances, errorState);
-			if (!errorState.check(target_entity != nullptr, "Error resolving ComponentPtr with path %s: target entity instance for %s not found", targetComponentInstancePath.c_str(), entityInstancePath.c_str()))
+
+			// find owning Entity
+			nap::EntityInstance* target_entity = sResolveEntityInstancePath(sourceComponentInstance,
+																			entityInstancePath,
+																			rootEntityInstances,
+																			errorState);
+			if (!errorState.check(target_entity != nullptr,
+								  "Error resolving ComponentPtr with path %s: target entity instance for %s not found",
+								  targetComponentInstancePath.c_str(), entityInstancePath.c_str()))
 				return nullptr;
 
-			// Now that we've gone through the path, we know the entity must contain a component with an ID equal to the last element on the path. We look for it here.
+			// Now that we've gone through the path, we know the entity must contain a component with an ID equal
+			// to the last element on the path. We look for it here.
 			assert(target_entity != nullptr);
 			for (ComponentInstance* component : target_entity->getComponents())
 			{
-				// If this ComponentInstance's resource is a clone (for instance properties), we need to check the ID of the original object, 
+				// If this ComponentInstance's resource is a clone (for instance properties),
+				// we need to check the ID of the original object,
 				// since the clone will have a generated ID, which will never match any path.
 				if (component->getComponent()->getOriginalID() == path_components.back())
 					return component;
@@ -320,15 +352,20 @@ namespace nap
 
 
 		/**
-		* This function resolves pointers in a ComponentResource of the types EntityInstancePtr and ComponentInstancePtr. Although the RTTI resource pointers in EntityPtr
-		* and ComponentPtr have already been resolved by the regular RTTI pointer resolving step, this step is meant explicitly to resolve pointers
-		* to instances that are stored internally in the ComponentInstancePtr and EntityInstancePtr.
-		* The resolving step of entities and components is more difficult than regular objects, as the entity/component structure is mirrored into
-		* a resource structure (the static objects from json) and instances (the runtime counterpart of the resources). EntityPtr and ComponentPtr
-		* are pointers that live on the resource object as the resources need to specify what other resource they are pointing to. However, the
-		* instantiated object often needs to point to other instantiated objects. In this function, we fill in the instance pointers in EntityInstancePtr and
-		* ComponentInstancePtr.
-		*/
+		 * This function resolves pointers in a ComponentResource of the types EntityInstancePtr & ComponentInstancePtr.
+		 * Although the RTTI resource pointers in EntityPtr and ComponentPtr have already been resolved by the regular
+		 * RTTI pointer resolving step, this step is meant explicitly to resolve pointers to instances that are stored
+		 * internally in the ComponentInstancePtr and EntityInstancePtr.
+		 *
+		 * The resolving step of entities and components is more difficult than regular objects,
+		 * as the entity/component structure is mirrored into a resource structure
+		 * (the static objects from json) and instances (the runtime counterpart of the resources).
+		 *
+		 * EntityPtr and ComponentPtr are pointers that live on the resource object as the resources need to specify
+		 * what other resource they are pointing to.
+		 * However, the instantiated object often needs to point to other instantiated objects.
+		 * In this function, we fill in the instance pointers in EntityInstancePtr and ComponentInstancePtr.
+		 */
 		static bool sResolveInstancePointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 		{
 			RootEntityInstanceMap root_entity_instances;
