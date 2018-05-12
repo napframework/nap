@@ -39,8 +39,24 @@ namespace nap
             {
                 if (resource->mChannels[channel] >= nodeManager->getInputChannelCount())
                 {
-                    errorState.fail("AudioInputComponent: Input channel out of bounds");
-                    return false;
+                    // The input channel is out of bounds, in case we allow out of bounds channels we create a zero node instead
+                    if (audioService->getAllowChannelCountFailure())
+                    {
+                        auto zeroNode = audioService->makeSafe<ControlNode>(*nodeManager);
+                        zeroNode->setValue(0);
+                        auto gainNode = audioService->makeSafe<GainNode>(*nodeManager);
+                        gainNode->inputs.connect(zeroNode->output);
+                        gainNode->inputs.connect(mGainControl->output);
+                        
+                        mInputNodes.emplace_back(std::move(zeroNode));
+                        mGainNodes.emplace_back(std::move(gainNode));
+                        
+                        continue;
+                    }
+                    else {
+                        errorState.fail("%s: Input channel out of bounds", resource->mID.c_str());
+                        return false;
+                    }
                 }
                 
                 auto inputNode = audioService->makeSafe<InputNode>(*nodeManager);
