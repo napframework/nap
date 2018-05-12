@@ -146,6 +146,7 @@ namespace nap
 
         private:            
             void applyGain(TimeValue rampTime);
+            void _start(TimeValue startPosition, TimeValue duration); // Start playback directly on the current thread
             
             std::vector<SafeOwner<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
             std::vector<SafeOwner<GainNode>> mGainNodes; // Nodes for each channel to gain the signal.

@@ -55,6 +55,12 @@ namespace nap
             int mOutputChannelCount = 2;
             
             /**
+             * If this is set to true, the audio stream will start even if the number of channels specified in @mInputChannelCount and @mOutputChannelCount is not supported.
+             * In this case a zero signal will be used to emulate the input from an unsupported input channel.
+             */
+            bool mAllowChannelCountFailure = true;
+            
+            /**
              * The sample rate the audio stream will run on, the number of samples processed per channel per second.
              */
             float mSampleRate = 44100;
@@ -96,6 +102,11 @@ namespace nap
              * Initializes portaudio.
              */
             bool init(nap::utility::ErrorState& errorState) override;
+            
+            /**
+             * @return: returns wether we will allow input and output channel numbers that exceed the current device's maximum channel counts. If so zero signals will be returned for non-existing input channel numbers. If not initialization will fail.
+             */
+            bool getAllowChannelCountFailure() { return getConfiguration<AudioServiceConfiguration>()->mAllowChannelCountFailure; }
             
 			/**
 			 *	Shutdown portaudio
@@ -192,10 +203,17 @@ namespace nap
              */
             bool startDefaultDevice(utility::ErrorState& errorState);
 		
+            /*
+             * Verifies if the ammounts of input and output channels specified in the configuration are supported on the given devices. If not and @mAllowChannelCountFailure is set to true, it will use the maximum numbers of channels of the selected devices instead. If @mAllowChannelCountFailure is false initialization will fail.
+             */
+            bool checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, utility::ErrorState& errorState);
+            
 		private:
             NodeManager mNodeManager; // The node manager that performs the audio processing.
 			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
-
+            int mInputChannelCount = 1; // The actual input channel count can differ from the one in the configuration in case the configuration value is not supported by the device and mAllowChannelCountFailure is set to true. In this case the maximum amount of the device will be used.
+            int mOutputChannelCount = 2; // The actual output channel count can differ from the one in the configuration in case the configuration value is not supported by the device and mAllowChannelCountFailure is set to true. In this case the maximum amount of the device will be used.
+            
             // DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
             // Clearing is performed by the NodeManager on the audio callback to make sure the node can not be destructed while it is being processed.
             DeletionQueue mDeletionQueue;

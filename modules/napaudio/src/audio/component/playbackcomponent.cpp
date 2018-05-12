@@ -60,7 +60,7 @@ namespace nap
             {
                 if (mResource->mChannelRouting[channel] >= mResource->mBuffer->getChannelCount())
                 {
-                    errorState.fail("Routed channel is out of buffer's channel bounds");
+                    errorState.fail("%s: Routed channel is out of buffer's channel bounds", mResource->mID.c_str());
                     return false;
                 }
                 
@@ -81,11 +81,10 @@ namespace nap
                 mBufferPlayers.emplace_back(std::move(bufferPlayer));
                 mGainNodes.emplace_back(std::move(gain));
                 mGainControls.emplace_back(std::move(gainControl));
-            }
-            
+            }            
             
             if (mResource->mAutoPlay)
-                start(mResource->mStartPosition, mResource->mDuration);
+                _start(mResource->mStartPosition, mResource->mDuration);
             
             return true;
         }
@@ -104,19 +103,8 @@ namespace nap
         
         void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
         {
-            ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
-            mAudioService->enqueueTask([&, actualSpeed, startPosition, duration](){
-                mPlaying = true;
-                if (duration == 0)
-                    mDuration = mResource->mBuffer->getSize();
-                else
-                    mDuration = duration;
-                mCurrentPlayingTime = 0;
-                for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
-                {
-                    mBufferPlayers[channel]->play(mResource->mBuffer->getBuffer(), mResource->mChannelRouting[channel], startPosition * mNodeManager->getSamplesPerMillisecond(), actualSpeed);
-                }
-                applyGain(mFadeInTime);
+            mAudioService->enqueueTask([&, duration](){
+                _start(startPosition, duration);
             });
         }
         
@@ -200,6 +188,23 @@ namespace nap
             }
         }
 
+
+        void PlaybackComponentInstance::_start(TimeValue startPosition, TimeValue duration)
+        {
+            ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
+            if (duration == 0)
+                mDuration = mResource->mBuffer->getSize();
+            else
+                mDuration = duration;
+            mCurrentPlayingTime = 0;
+            for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
+            {
+                if (mBufferPlayers[channel] != nullptr)
+                    mBufferPlayers[channel]->play(mResource->mBuffer->getBuffer(), mResource->mChannelRouting[channel], startPosition * mNodeManager->getSamplesPerMillisecond(), actualSpeed);
+            }
+            applyGain(mFadeInTime);
+            mPlaying = true;
+        }
         
     }
     

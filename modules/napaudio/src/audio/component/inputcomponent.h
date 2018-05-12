@@ -67,7 +67,7 @@ namespace nap
             ControllerValue getGain() const;
             
         private:
-            std::vector<SafeOwner<InputNode>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
+            std::vector<SafeOwner<Node>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
             std::vector<SafeOwner<GainNode>> mGainNodes; // Nodes to control gain level of the input
             SafeOwner<ControlNode> mGainControl; // Node to control the gain for each channel.
             
