@@ -8,9 +8,13 @@
 #include <QProcess>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QPushButton>
 
 #include <appcontext.h>
 #include <mathutils.h>
+#include <standarditemsproperty.h>
+#include <appcontext.h>
+#include <nap/logger.h>
 
 #include "standarditemsproperty.h"
 #include "panels/finderpanel.h"
@@ -122,7 +126,8 @@ bool napkin::directoryContains(const QString& dir, const QString& filename)
 	return absFile.startsWith(absDir);
 }
 
-void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, const QString& title, QString message)
+bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
+										   QString message)
 {
 	QDialog dialog(parent);
 	dialog.setWindowTitle(title);
@@ -152,10 +157,25 @@ void napkin::showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, 
 	finder.setPropertyList(props);
 	layout.addWidget(&finder);
 
-	QDialogButtonBox buttonBox(QDialogButtonBox::Close);
+	QDialogButtonBox buttonBox(QDialogButtonBox::Yes | QDialogButtonBox::No);
 	layout.addWidget(&buttonBox);
 
+	bool yesclicked = false;
+
+	QPushButton* btYes = buttonBox.button(QDialogButtonBox::Yes);
+	dialog.connect(btYes, &QPushButton::clicked, [&dialog, &yesclicked]() {
+		yesclicked = true;
+		dialog.close();
+	});
+
+	QPushButton* btNo = buttonBox.button(QDialogButtonBox::No);
+	dialog.connect(btNo, &QPushButton::clicked, [&dialog, &yesclicked]() {
+		dialog.close();
+	});
+
 	dialog.exec();
+
+	return yesclicked;
 }
 
 bool napkin::revealInFileBrowser(const QString& filename)

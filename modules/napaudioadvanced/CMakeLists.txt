@@ -33,11 +33,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
 
-# Package into platform release
-
- if(APPLE)
-    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
-endif()
-package_module()
+# # Package into platform release
+#  if(APPLE)
+#     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+#     list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
+#     list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
+# endif()
+# package_module()

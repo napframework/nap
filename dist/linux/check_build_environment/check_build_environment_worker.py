@@ -75,7 +75,7 @@ def check_compiler():
     """Check that c++ is setup for GCC"""
     
     alternatives_output = call('update-alternatives --query c++ | grep Value')
-    gcc_ok = '/g++' in alternatives_output
+    gcc_ok = alternatives_output == '' or '/g++' in alternatives_output
 
     log_test_success('C++ is GCC', gcc_ok)
     return gcc_ok 

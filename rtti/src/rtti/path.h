@@ -510,9 +510,10 @@ namespace nap
 		{
 		public:
 			/**
-			 * Get the value of the property pointed to by this path
+			 * Get the value of the property pointed to by this path.
+			 * Note that this returns a *copy* of the value; if you modify it, you need to make sure to call setValue() with the modified value again to apply it to the original object.
 			 *
-			 * @return The value of the property
+			 * @return A copy of the value of the property
 			 */
 			const rtti::Variant getValue() const;
 

@@ -21,5 +21,4 @@ project_json_to_cmake()
 target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES})
 
 # Package into release, export FBX, other shared source project fixes
-# Note: This is for now packaged along with NAIVI apps into projects so that we have a project to test using mod_napmidi
-nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" FALSE)
+nap_source_project_packaging_and_shared_postprocessing(FALSE FALSE "unused" FALSE)
