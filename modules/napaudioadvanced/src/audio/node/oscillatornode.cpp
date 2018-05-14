@@ -114,6 +114,9 @@ namespace nap
             
             for (auto i = 0; i < getBufferSize(); i++)
             {
+                mFrequencyRamper.step();
+                mAmplitudeRamper.step();
+                
                 auto val = mAmplitude * mWave->interpolate(mPhase + mPhaseOffset);   //   calculate new value, use wave as a lookup table
                 if (fmInputBuffer)
                     mPhase += ((*fmInputBuffer)[i] + 1) * mFrequency * mStep;      //   calculate new phase
@@ -124,9 +127,6 @@ namespace nap
                     mPhase -= waveSize;
                 
                 outputBuffer[i] = val;
-                
-                mFrequencyRamper.step();
-                mAmplitudeRamper.step();
             }
         }
 

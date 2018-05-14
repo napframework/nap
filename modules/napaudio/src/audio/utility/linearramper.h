@@ -21,7 +21,10 @@ namespace nap
         template <typename T>
         class LinearRamper {
         public:
-            LinearRamper(T& value) : mValue(value) { }
+            LinearRamper(T& value) : mValue(value)
+            {
+//                mUpToDateFlag.test_and_set();
+            }
             
             /**
              * Start a ramp
@@ -34,25 +37,29 @@ namespace nap
                 
                 mNewStepCount.store(stepCount);
                 mNewDestination.store(destination);
-                
+//                mUpToDateFlag.clear();
+                mUpToDate = false;
+                mIsRamping = true;
             }
             
             void updateRamp()
             {
-                T newDestination = mNewDestination.load();
-                int newStepCount = mNewStepCount.load();
-                
-                if (newDestination != mDestination || newStepCount != mStepCount)
+                if (mUpToDate == false)
                 {
-                    mDestination = newDestination;
-                    mStepCount = newStepCount;
+                    mUpToDate = true;
+                    mDestination = mNewDestination.load();
+                    mStepCount = mNewStepCount.load();
                     
                     // if there are zero steps we reach the destination of the ramp immediately
-                    if (mStepCount == 0)
+                    if (mStepCount <= 0)
                     {
                         mStepCounter = 0;
                         mValue = mDestination;
-                        destinationReachedSignal(mValue);
+                        if (mIsRamping)
+                        {
+                            destinationReachedSignal(mValue);
+                            mIsRamping = false;
+                        }
                         return;
                     }
                     
@@ -74,8 +81,10 @@ namespace nap
                     mStepCounter--;
                     if (mStepCounter <= 0)
                     {
+                        mStepCounter = 0;
                         mValue = mDestination;
                         destinationReachedSignal(mValue);
+                        mIsRamping = false;
                     }
                 }
             }
@@ -87,12 +96,15 @@ namespace nap
             {
                 mNewStepCount.store(0);
                 mNewDestination.store(mValue);
+//                mUpToDateFlag.clear();
+                mUpToDate = false;
+                mIsRamping = false;
             }
             
             /**
              * Returns true when currently playing a ramp
              */
-            bool isRamping() const { return mStepCounter > 0; }
+            bool isRamping() const { return mIsRamping; }
             
             /**
              * Signal emitted when the destination of a ramp has been reached.
@@ -102,6 +114,9 @@ namespace nap
         private:
             std::atomic<T> mNewDestination = { 0 };
             std::atomic<int> mNewStepCount = { 0 };
+//            std::atomic_flag mUpToDateFlag = ATOMIC_FLAG_INIT;
+            std::atomic<bool> mUpToDate = { true };
+            std::atomic<bool> mIsRamping =  { false };
             
             T& mValue; // Value that is being controlled by this object.
             T mIncrement = 0; // Increment value per step of the current ramp.
