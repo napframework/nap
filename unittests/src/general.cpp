@@ -4,6 +4,7 @@
 #include <material.h>
 #include <nap/logger.h>
 #include <audio/utility/safeptr.h>
+#include <audio/utility/linearramper.h>
 #include <generic/propertypath.h>
 #include <utility/fileutils.h>
 #include <utility/datetimeutils.h>
@@ -176,5 +177,23 @@ TEST_CASE("Signals and slots", "[signalslot]")
     signal.disconnect(slot);
     signal(x);
     REQUIRE(x == 1);
+}
+
+TEST_CASE("ramper", "[ramper]")
+{
+    float x = 0;
+    nap::audio::LinearRamper<float> ramper = { x };
+    ramper.ramp(1, 20);
+    ramper.destinationReachedSignal.connect([](float value){
+        REQUIRE(value == 1);
+        nap::Logger::info("end ramp %f", value);
+    });
+    
+    while (ramper.isRamping())
+    {
+        nap::Logger::info("%f", x);
+        ramper.step();
+    }
+    x = 0;
 }
 

@@ -2,6 +2,7 @@
 
 // Std includes
 #include <thread>
+#include <atomic>
 
 // Local includes
 #include "audiotestapp.h"
