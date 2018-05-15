@@ -26,7 +26,7 @@ namespace nap
                 TimeValue mDuration = 0;
                 ControllerValue mDestination = 0;
                 bool mDurationRelative = false; //** this indicates wether the duration of this segment is relative to the total duration of the envelope.
-                ControlNode::RampMode mMode = ControlNode::RampMode::LINEAR; //** This indicates the line shape of the segment
+                RampMode mMode = RampMode::Linear; //** This indicates the line shape of the segment
             };
             using Envelope = std::vector<Segment>;
 

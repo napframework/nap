@@ -11,13 +11,13 @@ namespace nap
         
         void DelayNode::setTime(TimeValue value, TimeValue rampTime)
         {
-            mTimeRamper.ramp(int(value * getNodeManager().getSamplesPerMillisecond()), rampTime * getNodeManager().getSamplesPerMillisecond());
+            mTime.ramp(int(value * getNodeManager().getSamplesPerMillisecond()), rampTime * getNodeManager().getSamplesPerMillisecond());
         }
         
         
         void DelayNode::setDryWet(ControllerValue value, TimeValue rampTime)
         {
-            mDryWetRamper.ramp(value, rampTime * getNodeManager().getSamplesPerMillisecond());
+            mDryWet.ramp(value, rampTime * getNodeManager().getSamplesPerMillisecond());
         }
 
 
@@ -29,16 +29,16 @@ namespace nap
             
             for (auto i = 0; i < outputBuffer.size(); ++i)
             {
-                if (mTimeRamper.isRamping())
-                    delayedSample = mDelay.readInterpolating(mTime);
+                if (mTime.isRamping())
+                    delayedSample = mDelay.readInterpolating(mTime.getValue());
                 else
-                    delayedSample = mDelay.read(mTime);
+                    delayedSample = mDelay.read(mTime.getValue());
                 
                 mDelay.write(inputBuffer[i] + delayedSample * mFeedback);
-                outputBuffer[i] = lerp(inputBuffer[i], delayedSample, mDryWet);
+                outputBuffer[i] = lerp(inputBuffer[i], delayedSample, mDryWet.getValue());
                 
-                mTimeRamper.step();
-                mDryWetRamper.step();
+                mTime.step();
+                mDryWet.step();
             }
         }
 

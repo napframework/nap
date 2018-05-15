@@ -8,57 +8,40 @@ namespace nap
         
         ControlNode::ControlNode(NodeManager& manager) : Node(manager)
         {
-            mLinearRamper.destinationReachedSignal.connect(mDestinationReachedSlot);
-            mExponentialRamper.destinationReachedSignal.connect(mDestinationReachedSlot);
+            mValue.destinationReachedSignal.connect(mDestinationReachedSlot);
         }
         
         
         void ControlNode::setValue(ControllerValue value)
         {
-            mLinearRamper.stop();
-            mExponentialRamper.stop();
-            mValue = value;
+            mValue.setValue(value);
         }
 
         
         ControllerValue ControlNode::getValue() const
         {
             if (mTranslator)
-                return mTranslator->translate(mValue);
+                return mTranslator->translate(mValue.getValue());
             else
-                return mValue;
+                return mValue.getValue();
         }
         
         
         void ControlNode::ramp(ControllerValue destination, TimeValue time, RampMode mode)
         {
-            switch (mode) {
-                case RampMode::LINEAR:
-                    mExponentialRamper.stop();
-                    mLinearRamper.ramp(destination, time * getNodeManager().getSamplesPerMillisecond());
-                    break;
-                    
-                case RampMode::EXPONENTIAL:
-                    mLinearRamper.stop();
-                    mExponentialRamper.ramp(destination, time * getNodeManager().getSamplesPerMillisecond());
-                    break;
-                    
-                default:
-                    break;
-            }
+            mValue.ramp(destination, time * getNodeManager().getSamplesPerMillisecond(), mode);
         }
         
         
         bool ControlNode::isRamping() const
         {
-            return mLinearRamper.isRamping() || mExponentialRamper.isRamping();
+            return mValue.isRamping();
         }
         
         
         void ControlNode::stop()
         {
-            mLinearRamper.stop();
-            mExponentialRamper.stop();
+            mValue.stop();
         }
         
         
@@ -70,17 +53,15 @@ namespace nap
             {
                 for (auto i = 0; i < outputBuffer.size(); ++i)
                 {
-                    mLinearRamper.step();
-                    mExponentialRamper.step();
-                    outputBuffer[i] = mTranslator->translate(mValue);
+                    mValue.step();
+                    outputBuffer[i] = mTranslator->translate(mValue.getValue());
                 }
             }
             else {
                 for (auto i = 0; i < outputBuffer.size(); ++i)
                 {
-                    mLinearRamper.step();
-                    mExponentialRamper.step();
-                    outputBuffer[i] = mValue;
+                    mValue.step();
+                    outputBuffer[i] = mValue.getValue();
                 }
             }
         }

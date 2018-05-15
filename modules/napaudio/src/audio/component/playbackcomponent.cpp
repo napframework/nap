@@ -117,7 +117,7 @@ namespace nap
             mAudioService->enqueueTask([&](){
                 mPlaying = false;
                 for (auto& gainControl : mGainControls)
-                    gainControl->ramp(0, mFadeOutTime, ControlNode::RampMode::EXPONENTIAL);
+                    gainControl->ramp(0, mFadeOutTime, RampMode::Exponential);
             });
         }
         

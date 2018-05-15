@@ -4,8 +4,7 @@
 #include <rtti/rtti.h>
 
 // Audio includes
-#include <audio/utility/linearramper.h>
-#include <audio/utility/exponentialramper.h>
+#include <audio/utility/rampedvalue.h>
 #include <audio/utility/translator.h>
 #include <audio/core/audionode.h>
 #include <audio/core/audionodemanager.h>
@@ -24,9 +23,6 @@ namespace nap
         class NAPAPI ControlNode : public Node
         {
             RTTI_ENABLE(Node)
-            
-        public:
-            enum class RampMode { LINEAR, EXPONENTIAL };
             
         public:
             ControlNode(NodeManager& manager);
@@ -49,12 +45,12 @@ namespace nap
             /**
              * Return the output value bypassing the loopkup translator.
              */
-            ControllerValue getRawValue() const { return mValue; }
+            ControllerValue getRawValue() const { return mValue.getValue(); }
 
             /**
              * Start ramping to @destination over a period of @time, using mode to indicate the type of ramp.
              */
-            void ramp(ControllerValue destination, TimeValue time, RampMode mode = RampMode::LINEAR);
+            void ramp(ControllerValue destination, TimeValue time, RampMode mode = RampMode::Linear);
             
             /**
              * @return: wether the object is currently ramping to a new value.
@@ -88,9 +84,7 @@ namespace nap
             nap::Slot<ControllerValue> mDestinationReachedSlot = { this, &ControlNode::destinationReached };
             void destinationReached(ControllerValue value) { rampFinishedSignal(*this); }
             
-            ControllerValue mValue = 0; // Current output value of the node.
-            LinearRamper<ControllerValue> mLinearRamper = { mValue }; // Helper object to ramp output values linearly from a start to a destination value.
-            ExponentialRamper<ControllerValue> mExponentialRamper = { mValue }; // Helper object to ramp output values from a start to a destination value with an exponantial curve.
+            RampedValue<ControllerValue> mValue = { 0.f }; // Current output value of the node.
             Translator<ControllerValue>* mTranslator = nullptr; // Helper object to apply a translation to the output value.
         };
         

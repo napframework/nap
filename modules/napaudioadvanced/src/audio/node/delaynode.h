@@ -4,7 +4,7 @@
 // Audio includes
 #include <audio/core/audionode.h>
 #include <audio/utility/delay.h>
-#include <audio/utility/linearramper.h>
+#include <audio/utility/rampedvalue.h>
 
 namespace nap
 {
@@ -42,12 +42,12 @@ namespace nap
             /**
              * Return the current delay time.
              */
-            int getTime() const { return mTime; }
+            int getTime() const { return mTime.getValue(); }
             
             /**
              * Return the dry/wet level. 0 means dry, 1. means fully wet.
              */
-            ControllerValue getDryWet() const { return mDryWet; }
+            ControllerValue getDryWet() const { return mDryWet.getValue(); }
             
             /**
              * Returns the feedback amount
@@ -58,12 +58,9 @@ namespace nap
             void process() override;
             
             Delay mDelay;
-            float mTime = 0; // in samples
-            ControllerValue mDryWet = 0.5f;
+            RampedValue<float> mTime = { 0 }; // in samples
+            RampedValue<ControllerValue> mDryWet = { 0.5f };
             ControllerValue mFeedback = 0.f;
-            
-            LinearRamper<float> mTimeRamper = { mTime };
-            LinearRamper<ControllerValue> mDryWetRamper = { mDryWet };
         };
         
     }
