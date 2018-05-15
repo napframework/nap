@@ -75,7 +75,7 @@ namespace nap
 			 * This can be lower than mBufferSize but has to fit within mBufferSize a discrete amount of times.
 			 * Lowering this can improve timing precision in the case that the node manager performs internal event scheduling, however will increase performance load.
 			 */
-			int mInternalBufferSize = 64;
+			int mInternalBufferSize = 256;
 		};
         
         /**

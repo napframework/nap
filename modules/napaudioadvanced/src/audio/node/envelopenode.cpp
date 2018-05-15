@@ -4,9 +4,9 @@
 #include <rtti/rtti.h>
 
 // RTTI
-RTTI_BEGIN_ENUM(nap::audio::ControlNode::RampMode)
-    RTTI_ENUM_VALUE(nap::audio::ControlNode::RampMode::LINEAR, "Linear"),
-    RTTI_ENUM_VALUE(nap::audio::ControlNode::RampMode::EXPONENTIAL, "Exponential")
+RTTI_BEGIN_ENUM(nap::audio::RampMode)
+    RTTI_ENUM_VALUE(nap::audio::RampMode::Linear, "Linear"),
+    RTTI_ENUM_VALUE(nap::audio::RampMode::Exponential, "Exponential")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::audio::EnvelopeGenerator::Segment)

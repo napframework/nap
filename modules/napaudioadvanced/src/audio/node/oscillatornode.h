@@ -1,7 +1,7 @@
 #pragma once
 
 #include <audio/core/audionode.h>
-#include <audio/utility/linearramper.h>
+#include <audio/utility/rampedvalue.h>
 #include <audio/utility/safeptr.h>
 
 namespace nap
@@ -88,12 +88,12 @@ namespace nap
             /**
              * Return the frequency in Hz
              */
-            ControllerValue getFrequency() const { return mFrequency; }
+            ControllerValue getFrequency() const { return mFrequency.getValue(); }
             
             /**
              * Return the amplitude of the oscillation
              */
-            ControllerValue getAmplitude() const { return mAmplitude; }
+            ControllerValue getAmplitude() const { return mAmplitude.getValue(); }
             
             /**
              * Return the phase as a value between 0 and 1. representing a fraction of the current position in the wave table.
@@ -109,10 +109,8 @@ namespace nap
 
             SafePtr<WaveTable> mWave = nullptr;
 
-            ControllerValue mFrequency = { 0 };
-            ControllerValue mAmplitude = { 1.f };
-            LinearRamper<ControllerValue> mFrequencyRamper = { mFrequency };
-            LinearRamper<ControllerValue> mAmplitudeRamper = { mAmplitude };
+            RampedValue<ControllerValue> mFrequency = { 0 };
+            RampedValue<ControllerValue> mAmplitude = { 1.f };
             ControllerValue mStep = 0;
             ControllerValue mPhase = 0;
             ControllerValue mPhaseOffset = 0;
