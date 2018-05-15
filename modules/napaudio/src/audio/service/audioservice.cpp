@@ -105,7 +105,7 @@ namespace nap
             printDevices();
             
             // Initialize the audio device
-			if (configuration->mInternalBufferSize % configuration->mBufferSize != 0)
+			if (configuration->mBufferSize % configuration->mInternalBufferSize != 0)
 			{
 				errorState.fail("AudioService: Internal buffer size does not fit device buffer size");
 				return false;

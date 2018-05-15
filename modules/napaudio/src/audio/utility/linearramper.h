@@ -64,7 +64,10 @@ namespace nap
                     }
                     
                     mStepCounter = mStepCount;
+                    
+                    //--- specific for linear
                     mIncrement = (mDestination - mValue) / T(mStepCount);
+                    //---
                 }
             }
             
@@ -77,12 +80,11 @@ namespace nap
                 
                 if (mStepCounter > 0)
                 {
-                    mValue += mIncrement;
+                    mValue += mIncrement; // specific for linear
                     mStepCounter--;
-                    if (mStepCounter <= 0)
+                    if (mStepCounter == 0)
                     {
-                        mStepCounter = 0;
-                        mValue = mDestination;
+                        mValue = mDestination; // specific for linear
                         destinationReachedSignal(mValue);
                         mIsRamping = false;
                     }
@@ -114,7 +116,6 @@ namespace nap
         private:
             std::atomic<T> mNewDestination = { 0 };
             std::atomic<int> mNewStepCount = { 0 };
-//            std::atomic_flag mUpToDateFlag = ATOMIC_FLAG_INIT;
             std::atomic<bool> mUpToDate = { true };
             std::atomic<bool> mIsRamping =  { false };
             

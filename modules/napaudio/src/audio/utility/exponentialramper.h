@@ -52,7 +52,7 @@ namespace nap
                     // if there are zero steps we reach the destination of the ramp immediately
                     if (mStepCount <= 0)
                     {
-                        mStepCount = 0;
+                        mStepCounter = 0;
                         mValue = mDestination;
                         if (mIsRamping)
                         {
@@ -62,9 +62,9 @@ namespace nap
                         return;
                     }
                     
-                    mDestination = mDestination;
                     mStepCounter = mStepCount;
                     
+                    // --- specific for exponential
                     // avoid divisions by zero by avoiding mValue = 0
                     if (mValue == 0)
                         mValue = mDestination / smallestValue; // this is a 140dB ramp up from mValue to mDestination
@@ -80,6 +80,7 @@ namespace nap
                     
                     // calculate the increment factor
                     mFactor = pow(double(mDestination / mValue), double(1.0 / mStepCount));
+                    // ---
                 }
             }
             
@@ -92,16 +93,20 @@ namespace nap
                 
                 if (mStepCounter > 0)
                 {
-                    mValue *= mFactor;
+                    mValue *= mFactor; // specific for exponential
+                    
                     mStepCounter--;
                     if (mStepCounter == 0)
                     {
+                        // specific for exponential
                         if (mDestinationZero)
                             mValue = 0;
                         else
                             mValue = mDestination;
+                        // specific for exponential
                         
                         destinationReachedSignal(mValue);
+                        mIsRamping = false;
                     }
                 }
             }
