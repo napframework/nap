@@ -80,7 +80,7 @@
 					{
 						"Type": "nap::audio::PolyphonicObject",
 						"Voice": "voice",
-						"VoiceCount": 32
+						"VoiceCount": 400
 					}
 				},
 

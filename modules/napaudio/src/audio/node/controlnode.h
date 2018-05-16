@@ -6,6 +6,7 @@
 // Audio includes
 #include <audio/utility/rampedvalue.h>
 #include <audio/utility/translator.h>
+#include <audio/utility/safeptr.h>
 #include <audio/core/audionode.h>
 #include <audio/core/audionodemanager.h>
 
@@ -65,7 +66,7 @@ namespace nap
             /**
              * Assign a translator to this node to shape the output value.
              */
-            void setTranslator(Translator<ControllerValue>& translator) { mTranslator = &translator; }
+            void setTranslator(SafePtr<Translator<ControllerValue>>& translator) { mTranslator = translator; }
             
             /**
              * @return: wether this node uses a translator lookup table to shape it's output values.
@@ -85,7 +86,7 @@ namespace nap
             void destinationReached(ControllerValue value) { rampFinishedSignal(*this); }
             
             RampedValue<ControllerValue> mValue = { 0.f }; // Current output value of the node.
-            Translator<ControllerValue>* mTranslator = nullptr; // Helper object to apply a translation to the output value.
+            SafePtr<Translator<ControllerValue>> mTranslator = nullptr; // Helper object to apply a translation to the output value.
         };
         
     }

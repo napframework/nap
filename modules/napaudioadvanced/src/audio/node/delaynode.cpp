@@ -25,6 +25,7 @@ namespace nap
         {
             auto& inputBuffer = *input.pull();
             auto& outputBuffer = getOutputBuffer(output);
+            auto feedback = mFeedback.load();
             SampleValue delayedSample = 0;
             
             for (auto i = 0; i < outputBuffer.size(); ++i)
@@ -34,7 +35,7 @@ namespace nap
                 else
                     delayedSample = mDelay.read(mTime.getValue());
                 
-                mDelay.write(inputBuffer[i] + delayedSample * mFeedback);
+                mDelay.write(inputBuffer[i] + delayedSample * feedback);
                 outputBuffer[i] = lerp(inputBuffer[i], delayedSample, mDryWet.getValue());
                 
                 mTime.step();

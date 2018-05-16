@@ -34,6 +34,7 @@ namespace nap {
         
         void LevelMeterNode::process()
         {
+            auto type = mType.load();
             auto inputBuffer = input.pull();
             
             if (inputBuffer == nullptr)
@@ -45,7 +46,7 @@ namespace nap {
                 if (mIndex == mBuffer.size())
                 {
                     mIndex = 0;
-                    switch (mType) {
+                    switch (type) {
                         case PEAK:
                             mValue = calculatePeak();
                             break;

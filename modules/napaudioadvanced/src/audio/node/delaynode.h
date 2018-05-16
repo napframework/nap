@@ -60,7 +60,7 @@ namespace nap
             Delay mDelay;
             RampedValue<float> mTime = { 0 }; // in samples
             RampedValue<ControllerValue> mDryWet = { 0.5f };
-            ControllerValue mFeedback = 0.f;
+            std::atomic<ControllerValue> mFeedback = { 0.f };
         };
         
     }
