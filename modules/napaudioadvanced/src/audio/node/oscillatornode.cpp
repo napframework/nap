@@ -111,17 +111,19 @@ namespace nap
             SampleBuffer* fmInputBuffer = fmInput.pull();
             
             auto waveSize = mWave->getSize();
+            auto step = mStep.load();
+            auto phaseOffset = mPhaseOffset.load();
             
             for (auto i = 0; i < getBufferSize(); i++)
             {
                 mFrequency.step();
                 mAmplitude.step();
                 
-                auto val = mAmplitude.getValue() * mWave->interpolate(mPhase + mPhaseOffset);   //   calculate new value, use wave as a lookup table
+                auto val = mAmplitude.getValue() * mWave->interpolate(mPhase + phaseOffset);   //   calculate new value, use wave as a lookup table
                 if (fmInputBuffer)
-                    mPhase += ((*fmInputBuffer)[i] + 1) * mFrequency.getValue() * mStep;      //   calculate new phase
+                    mPhase += ((*fmInputBuffer)[i] + 1) * mFrequency.getValue() * step;      //   calculate new phase
                 else
-                    mPhase += mFrequency.getValue() * mStep;
+                    mPhase += mFrequency.getValue() * step;
                 
                 if (mPhase > waveSize)
                     mPhase -= waveSize;

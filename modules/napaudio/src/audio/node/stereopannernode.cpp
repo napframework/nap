@@ -9,7 +9,7 @@ namespace nap
         
         StereoPannerNode::StereoPannerNode(NodeManager& manager) : Node(manager)
         {
-            setPanning(mPanning);
+            setPanning(mNewPanning);
         }
         
         
@@ -22,6 +22,10 @@ namespace nap
         
         void StereoPannerNode::process()
         {
+            auto newPanning = mNewPanning.load();
+            if (newPanning != mPanning)
+                setPanning(newPanning);
+            
             auto& leftInputBuffer = *leftInput.pull();
             auto& rightInputBuffer = *rightInput.pull();
             auto& leftOutputBuffer = getOutputBuffer(leftOutput);

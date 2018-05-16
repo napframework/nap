@@ -49,7 +49,7 @@ namespace nap
         private:
             void process() override;
             
-            bool mActive = true;
+            std::atomic<bool> mActive = { true };
         };
         
         

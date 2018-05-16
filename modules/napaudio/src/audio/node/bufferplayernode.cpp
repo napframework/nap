@@ -44,8 +44,13 @@ namespace nap
         {
             auto& outputBuffer = getOutputBuffer(audioOutput);
             
+            auto playing = mPlaying.load();
+            auto channel = mChannel.load();
+            auto position = mPosition.load();
+            auto speed = mSpeed.load();
+                        
             // If we're not playing, fill the buffer with 0's and bail out.
-            if (!mPlaying || mBuffer == nullptr || mChannel >= mBuffer->getChannelCount())
+            if (!playing || mBuffer == nullptr || channel >= mBuffer->getChannelCount())
             {
                 std::memset(outputBuffer.data(), 0, sizeof(SampleValue) * outputBuffer.size());
                 return;
@@ -53,30 +58,32 @@ namespace nap
             
             DiscreteTimeValue flooredPosition;
             SampleValue lastValue, newValue, fractionalPart;
-            SampleBuffer& channelBuffer = (*mBuffer)[mChannel];
+            SampleBuffer& channelBuffer = (*mBuffer)[channel];
             
             // For each sample
             for (auto i = 0; i < outputBuffer.size(); i++)
             {
                 // Have we reached the destination?
-                if (mPosition + 1 >= channelBuffer.size())
+                if (position + 1 >= channelBuffer.size())
                 {
                     outputBuffer[i] = 0;
-                    if (mPlaying)
-                        mPlaying = false;
+                    if (playing)
+                        playing = false;
                 }
                 else {
-                    flooredPosition = DiscreteTimeValue(mPosition);
+                    flooredPosition = DiscreteTimeValue(position);
                     lastValue = channelBuffer[flooredPosition];
                     newValue = channelBuffer[flooredPosition + 1];
                     
-                    fractionalPart = mPosition - flooredPosition;
+                    fractionalPart = position - flooredPosition;
                     
                     outputBuffer[i] = lastValue + (fractionalPart * (newValue - lastValue));
                     
-                    mPosition += mSpeed;
+                    position += speed;
                 }
             }
+            
+            mPlaying.store(playing);
         }
         
     }

@@ -76,10 +76,10 @@ namespace nap
             // Inherited from Node
             void process() override;
   
-            bool mPlaying = false; // Indicates wether the node is currently playing.
-            int mChannel = 0; // The channel within the buffer that is being played bacl/
-            long double mPosition = 0; // Current position of playback in samples within the source buffer.
-            ControllerValue mSpeed = 1.f; // Playback speed as a fraction of the original speed.
+            std::atomic<bool> mPlaying = { false }; // Indicates wether the node is currently playing.
+            std::atomic<int> mChannel = { 0 }; // The channel within the buffer that is being played bacl/
+            std::atomic<long double> mPosition = { 0 }; // Current position of playback in samples within the source buffer.
+            std::atomic<ControllerValue> mSpeed = { 1.f }; // Playback speed as a fraction of the original speed.
             SafePtr<MultiSampleBuffer> mBuffer = nullptr; // Pointer to the buffer with audio material being played back.
         };
         

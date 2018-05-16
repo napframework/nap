@@ -111,9 +111,10 @@ namespace nap
 
             RampedValue<ControllerValue> mFrequency = { 0 };
             RampedValue<ControllerValue> mAmplitude = { 1.f };
-            ControllerValue mStep = 0;
+            std::atomic<ControllerValue> mStep = { 0 };
+            std::atomic<ControllerValue> mPhaseOffset = { 0 };
+            
             ControllerValue mPhase = 0;
-            ControllerValue mPhaseOffset = 0;
         };
     }
 }

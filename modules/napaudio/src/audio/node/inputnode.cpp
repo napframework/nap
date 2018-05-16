@@ -12,9 +12,10 @@ namespace nap
         
         void InputNode::process()
         {
+            auto inputChannel = mInputChannel.load();
             auto& buffer = getOutputBuffer(audioOutput);
             for (auto i = 0; i < buffer.size(); ++i)
-                buffer[i] = getNodeManager().getInputSample(mInputChannel, i);
+                buffer[i] = getNodeManager().getInputSample(inputChannel, i);
         }
 
     }

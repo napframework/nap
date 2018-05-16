@@ -20,7 +20,7 @@ namespace nap
         
         ControllerValue ControlNode::getValue() const
         {
-            if (mTranslator)
+            if (mTranslator != nullptr)
                 return mTranslator->translate(mValue.getValue());
             else
                 return mValue.getValue();
@@ -49,7 +49,7 @@ namespace nap
         {
             auto& outputBuffer = getOutputBuffer(output);
             
-            if (mTranslator)
+            if (mTranslator != nullptr)
             {
                 for (auto i = 0; i < outputBuffer.size(); ++i)
                 {

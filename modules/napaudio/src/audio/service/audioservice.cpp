@@ -62,6 +62,8 @@ namespace nap
         {
             // Initialize mpg123 library
             mpg123_init();
+            
+            checkLockfreeTypes();
         }
 
         
@@ -441,6 +443,35 @@ namespace nap
 
             return true;
         }
+        
+        
+        void AudioService::checkLockfreeTypes()
+        {
+            enum EnumType { a, b, c };
+            std::atomic<bool> boolVar;
+            std::atomic<int> intVar;
+            std::atomic<float> floatVar;
+            std::atomic<double> doubleVar;
+            std::atomic<long> longVar;
+            std::atomic<long double> longDoubleVar;
+            std::atomic<EnumType> enumVar;
+            
+            if (!boolVar.is_lock_free())
+                Logger::warn("%s is not lockfree on current platform", "atomic<bool>");
+            if (!intVar.is_lock_free())
+                Logger::warn("%s is not lockfree on current platform", "atomic<int>");
+            if (!floatVar.is_lock_free())
+                Logger::warn("%s is not lockfree on current platform", "atomic<float>");
+            if (!doubleVar.is_lock_free())
+                Logger::warn("%s is not lockfree on current platform", "atomic<double>");
+            if (!longVar.is_lock_free())
+                Logger::warn("%s is not lockfree on current platform", "atomic<long>");
+            if (!longDoubleVar.is_lock_free())
+                Logger::warn("%s is not lockfree on current platform", "atomic<long double>");
+            if (!enumVar.is_lock_free())
+                Logger::warn("%s is not lockfree on current platform", "atomic enum");
+        }
+
     }
     
 }

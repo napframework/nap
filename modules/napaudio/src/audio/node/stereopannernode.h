@@ -44,6 +44,8 @@ namespace nap
         private:
             void process() override;
             
+            std::atomic<ControllerValue> mNewPanning = { 0.5 };
+            
             ControllerValue mPanning = 0.5f;
             ControllerValue mLeftGain = 0; // Gain factor of the left channel
             ControllerValue mRightGain = 0; // Gain factor of the right channel

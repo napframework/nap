@@ -27,7 +27,7 @@ namespace nap
         void FilterNode::setMode(EMode mode)
         {
             mMode = mode;
-            adjust();
+            mUpToDate = false;
         }
         
         
@@ -36,14 +36,14 @@ namespace nap
             mFrequency = frequency;
             if (mFrequency <= 0)
                 mFrequency = 1;
-            adjust();
+            mUpToDate = false;
         }
 
         
         void FilterNode::setResonance(ControllerValue resonance)
         {
             mResonance = pow(10., - (resonance * 0.1));
-            adjust();
+            mUpToDate = false;
         }
         
         
@@ -52,19 +52,23 @@ namespace nap
             mBand = band;
             if (mBand <= 0)
                 mBand = 1;
-            adjust();
+            mUpToDate = false;
         }
         
         
         void FilterNode::setGain(ControllerValue gain)
         {
             mGain = gain;
-            adjust();
+            mUpToDate = false;
         }
         
         
-        void FilterNode::adjust()
+        void FilterNode::update()
         {
+            if (mUpToDate)
+                return;
+            
+            mUpToDate = true;
             ControllerValue c, d, cSqr, q;
             switch (mMode)
             {
