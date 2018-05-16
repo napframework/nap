@@ -23,7 +23,7 @@ namespace nap
         template <typename T>
         class RampedValue {
         public:
-            static constexpr T smallestValue = 100000.0;
+            static constexpr T smallestFactor = 0.00001f;
 
         public:
             RampedValue(const T& initValue) : mValue(initValue)
@@ -78,12 +78,12 @@ namespace nap
                         case RampMode::Exponential:
                             // avoid divisions by zero by avoiding mValue = 0
                             if (mValue == 0)
-                                mValue = mDestination / smallestValue; // this is a 140dB ramp up from mValue to mDestination
+                                mValue = mDestination * smallestFactor; // this is a 140dB ramp up from mValue to mDestination
                             
                             // avoid divisions by zero by avoiding mDestination = 0
                             if (mDestination == 0)
                             {
-                                mDestination = mValue / smallestValue; // this is a 140 dB ramp down from mValue to mDestination
+                                mDestination = mValue * smallestFactor; // this is a 140 dB ramp down from mValue to mDestination
                                 mDestinationZero = true;
                             }
                             else
