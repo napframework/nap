@@ -9,15 +9,22 @@ namespace nap
     namespace audio
     {
         
+        DelayNode::DelayNode(NodeManager& manager, int delayLineSize) : Node(manager), mDelay(delayLineSize)
+        {
+            mTime.setStepCount(manager.getSamplesPerMillisecond());
+            mDryWet.setStepCount(manager.getSamplesPerMillisecond());
+        }
+        
+        
         void DelayNode::setTime(TimeValue value, TimeValue rampTime)
         {
-            mTime.ramp(int(value * getNodeManager().getSamplesPerMillisecond()), rampTime * getNodeManager().getSamplesPerMillisecond());
+            mTime.setValue(int(value * getNodeManager().getSamplesPerMillisecond()));
         }
         
         
         void DelayNode::setDryWet(ControllerValue value, TimeValue rampTime)
         {
-            mDryWet.ramp(value, rampTime * getNodeManager().getSamplesPerMillisecond());
+            mDryWet.setValue(value);
         }
 
 
@@ -31,15 +38,12 @@ namespace nap
             for (auto i = 0; i < outputBuffer.size(); ++i)
             {
                 if (mTime.isRamping())
-                    delayedSample = mDelay.readInterpolating(mTime.getValue());
+                    delayedSample = mDelay.readInterpolating(mTime.getNextValue());
                 else
-                    delayedSample = mDelay.read(mTime.getValue());
+                    delayedSample = mDelay.read(mTime.getNextValue());
                 
                 mDelay.write(inputBuffer[i] + delayedSample * feedback);
-                outputBuffer[i] = lerp(inputBuffer[i], delayedSample, mDryWet.getValue());
-                
-                mTime.step();
-                mDryWet.step();
+                outputBuffer[i] = lerp(inputBuffer[i], delayedSample, mDryWet.getNextValue());
             }
         }
 

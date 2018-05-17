@@ -14,28 +14,23 @@ namespace nap
         
         void ControlNode::setValue(ControllerValue value)
         {
-            mValue.setValue(value);
+            mValue.ramp(value, 0);
         }
 
         
         ControllerValue ControlNode::getValue() const
         {
+            
             if (mTranslator != nullptr)
-                return mTranslator->translate(mValue.getValue());
+                return mTranslator->translate(mCurrentValue.load());
             else
-                return mValue.getValue();
+                return mCurrentValue.load();
         }
         
         
         void ControlNode::ramp(ControllerValue destination, TimeValue time, RampMode mode)
         {
             mValue.ramp(destination, time * getNodeManager().getSamplesPerMillisecond(), mode);
-        }
-        
-        
-        bool ControlNode::isRamping() const
-        {
-            return mValue.isRamping();
         }
         
         
@@ -53,17 +48,16 @@ namespace nap
             {
                 for (auto i = 0; i < outputBuffer.size(); ++i)
                 {
-                    mValue.step();
-                    outputBuffer[i] = mTranslator->translate(mValue.getValue());
+                    outputBuffer[i] = mTranslator->translate(mValue.getNextValue());
                 }
             }
             else {
                 for (auto i = 0; i < outputBuffer.size(); ++i)
                 {
-                    mValue.step();
-                    outputBuffer[i] = mValue.getValue();
+                    outputBuffer[i] = mValue.getNextValue();
                 }
             }
+            mCurrentValue.store(mValue.getValue());
         }
         
     }

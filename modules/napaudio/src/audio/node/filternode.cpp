@@ -9,6 +9,9 @@ namespace nap
         
         void FilterNode::process()
         {
+            if (mIsDirty.check())
+                update();
+            
             auto& inputBuffer = *audioInput.pull();
             auto& outputBuffer = getOutputBuffer(audioOutput);
             
@@ -27,7 +30,7 @@ namespace nap
         void FilterNode::setMode(EMode mode)
         {
             mMode = mode;
-            mUpToDate = false;
+            mIsDirty.set();
         }
         
         
@@ -36,14 +39,14 @@ namespace nap
             mFrequency = frequency;
             if (mFrequency <= 0)
                 mFrequency = 1;
-            mUpToDate = false;
+            mIsDirty.set();
         }
 
         
         void FilterNode::setResonance(ControllerValue resonance)
         {
             mResonance = pow(10., - (resonance * 0.1));
-            mUpToDate = false;
+            mIsDirty.set();
         }
         
         
@@ -52,23 +55,19 @@ namespace nap
             mBand = band;
             if (mBand <= 0)
                 mBand = 1;
-            mUpToDate = false;
+            mIsDirty.set();
         }
         
         
         void FilterNode::setGain(ControllerValue gain)
         {
             mGain = gain;
-            mUpToDate = false;
+            mIsDirty.set();
         }
         
         
         void FilterNode::update()
         {
-            if (mUpToDate)
-                return;
-            
-            mUpToDate = true;
             ControllerValue c, d, cSqr, q;
             switch (mMode)
             {

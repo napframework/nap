@@ -1,7 +1,7 @@
 #pragma once
 
 #include <audio/core/audionode.h>
-#include <audio/utility/rampedvalue.h>
+#include <audio/utility/linearsmoothedvalue.h>
 #include <audio/utility/safeptr.h>
 
 namespace nap
@@ -85,21 +85,6 @@ namespace nap
              */
             void setWave(SafePtr<WaveTable>& aWave);
             
-            /**
-             * Return the frequency in Hz
-             */
-            ControllerValue getFrequency() const { return mFrequency.getValue(); }
-            
-            /**
-             * Return the amplitude of the oscillation
-             */
-            ControllerValue getAmplitude() const { return mAmplitude.getValue(); }
-            
-            /**
-             * Return the phase as a value between 0 and 1. representing a fraction of the current position in the wave table.
-             */
-            ControllerValue getPhase() const { return mPhaseOffset / float(mWave->getSize()); }
-
             InputPin fmInput; ///< Input pin to control frequency modulation.
             OutputPin output = { this }; ///< Audio output pin.
 
@@ -109,8 +94,9 @@ namespace nap
 
             SafePtr<WaveTable> mWave = nullptr;
 
-            RampedValue<ControllerValue> mFrequency = { 0 };
-            RampedValue<ControllerValue> mAmplitude = { 1.f };
+            LinearSmoothedValue<ControllerValue> mFrequency = { 440, 44 };
+            LinearSmoothedValue<ControllerValue> mAmplitude = { 1.f, 44 };
+            
             std::atomic<ControllerValue> mStep = { 0 };
             std::atomic<ControllerValue> mPhaseOffset = { 0 };
             

@@ -4,7 +4,7 @@
 // Audio includes
 #include <audio/core/audionode.h>
 #include <audio/utility/delay.h>
-#include <audio/utility/rampedvalue.h>
+#include <audio/utility/linearsmoothedvalue.h>
 
 namespace nap
 {
@@ -18,7 +18,7 @@ namespace nap
         class NAPAPI DelayNode : public Node
         {
         public:
-            DelayNode(NodeManager& manager, int delayLineSize = 65536 * 8) : Node(manager), mDelay(delayLineSize) { }
+            DelayNode(NodeManager& manager, int delayLineSize = 65536 * 8);
             
             InputPin input; /**< The audio input receiving the signal to be delayed. */
             OutputPin output = { this }; /**< The audio output with the processed signal. */
@@ -58,8 +58,8 @@ namespace nap
             void process() override;
             
             Delay mDelay;
-            RampedValue<float> mTime = { 0 }; // in samples
-            RampedValue<ControllerValue> mDryWet = { 0.5f };
+            LinearSmoothedValue<float> mTime = { 0, 44 }; // in samples
+            LinearSmoothedValue<ControllerValue> mDryWet = { 0.5f, 44 };
             std::atomic<ControllerValue> mFeedback = { 0.f };
         };
         

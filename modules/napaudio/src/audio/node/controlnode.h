@@ -46,7 +46,7 @@ namespace nap
             /**
              * Return the output value bypassing the loopkup translator.
              */
-            ControllerValue getRawValue() const { return mValue.getValue(); }
+            ControllerValue getRawValue() const { return mCurrentValue; }
 
             /**
              * Start ramping to @destination over a period of @time, using mode to indicate the type of ramp.
@@ -83,9 +83,13 @@ namespace nap
             
             // Slot called internally when the destination of a ramp has been reached.
             nap::Slot<ControllerValue> mDestinationReachedSlot = { this, &ControlNode::destinationReached };
-            void destinationReached(ControllerValue value) { rampFinishedSignal(*this); }
+            void destinationReached(ControllerValue value) {
+                mCurrentValue = value;
+                rampFinishedSignal(*this);
+            }
             
             RampedValue<ControllerValue> mValue = { 0.f }; // Current output value of the node.
+            std::atomic<ControllerValue> mCurrentValue = { 0.f };
             SafePtr<Translator<ControllerValue>> mTranslator = nullptr; // Helper object to apply a translation to the output value.
         };
         
