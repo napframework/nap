@@ -83,6 +83,7 @@ namespace nap
                 }
             }
             
+            mPosition.store(position);
             mPlaying.store(playing);
         }
         

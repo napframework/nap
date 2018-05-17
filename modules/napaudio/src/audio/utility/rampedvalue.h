@@ -5,9 +5,11 @@
 
 // Nap includes
 #include <nap/signalslot.h>
+#include <nap/logger.h>
 
 // Audo includes
 #include <audio/utility/audiotypes.h>
+#include <audio/utility/dirtyflag.h>
 
 namespace nap
 {
@@ -18,7 +20,8 @@ namespace nap
         enum RampMode { Linear, Exponential };
         
         /**
-         * Used to make linear ramps up and down of a value in steps
+         * Used to make linear or exponential ramps up and down of a value in steps.
+         * The length of the ramp and the kind of ramp can be specified for each ramp.
          */
         template <typename T>
         class RampedValue {
@@ -42,15 +45,76 @@ namespace nap
                 mNewStepCount.store(stepCount);
                 mNewDestination.store(destination);
                 mNewRampMode.store(mode);
-                mUpToDate = false;
-                mIsRamping = true;
+                mIsDirty.set();
+            }
+
+            /**
+             * Stop the current ramp.
+             */
+            void stop()
+            {
+                mNewStepCount.store(0);
+                mNewDestination.store(mValue);
+                mIsDirty.set();
             }
             
+            /**
+             * Take the next step in the current ramp.
+             * Should only be called from the audio thread.
+             */
+            T getNextValue()
+            {
+                updateRamp();
+                
+                if (mStepCounter > 0)
+                {
+                    switch (mRampMode) {
+                        case RampMode::Linear:
+                            mValue = mValue + mIncrement;
+                            break;
+                        case RampMode::Exponential:
+                            mValue = mValue * mFactor;
+                            break;
+                    }
+                    mStepCounter--;
+                    if (mStepCounter == 0)
+                    {
+                        if (mRampMode == RampMode::Exponential && mDestinationZero)
+                            mValue = 0;
+                        else
+                            mValue = mDestination;
+                        destinationReachedSignal(mValue);
+                    }
+                }
+                
+                return mValue;
+            }
+            
+            /**
+             * Returns the current value.
+             * Should only be called from the audio thread
+             */
+            T getValue() const
+            {
+                return mValue;
+            }
+            
+            /**
+             * Returns true when currently playing a ramp.
+             * Should only be called from the audio thread.
+             */
+            bool isRamping() const { return mStepCounter > 0; }
+                        
+            /**
+             * Signal emitted when the destination of a ramp has been reached.
+             */
+            nap::Signal<T> destinationReachedSignal;
+            
+        private:
             void updateRamp()
             {
-                if (mUpToDate == false)
+                if (mIsDirty.check())
                 {
-                    mUpToDate = true;
                     mDestination = mNewDestination.load();
                     mStepCount = mNewStepCount.load();
                     mRampMode = mNewRampMode.load();
@@ -60,11 +124,7 @@ namespace nap
                     {
                         mStepCounter = 0;
                         mValue = mDestination;
-                        if (mIsRamping)
-                        {
-                            destinationReachedSignal(mValue);
-                            mIsRamping = false;
-                        }
+                        destinationReachedSignal(mValue);
                         return;
                     }
                     
@@ -96,84 +156,17 @@ namespace nap
                 }
             }
             
-            /**
-             * Take the next step in the current ramp
-             */
-            void step()
-            {
-                updateRamp();
-                
-                if (mStepCounter > 0)
-                {
-                    switch (mRampMode) {
-                        case RampMode::Linear:
-                            mValue = mValue + mIncrement;
-                            break;
-                        case RampMode::Exponential:
-                            mValue = mValue * mFactor;
-                            break;
-                    }
-                    mStepCounter--;
-                    if (mStepCounter == 0)
-                    {
-                        if (mRampMode == RampMode::Exponential && mDestinationZero)
-                            mValue = 0;
-                        else
-                            mValue = mDestination;
-                        destinationReachedSignal(mValue);
-                        mIsRamping = false;
-                    }
-                }
-            }
-            
-            /**
-             * Stop the current ramp
-             */
-            void stop()
-            {
-                mNewStepCount.store(0);
-                mNewDestination.store(mValue);
-                mUpToDate = false;
-                mIsRamping = false;
-            }
-            
-            /**
-             * Returns true when currently playing a ramp
-             */
-            bool isRamping() const { return mIsRamping; }
-            
-            /**
-             * Sets the value immediately if not ramping, otherwise stop the ramp and set in on next step() call.
-             */
-            void setValue(const T& value)
-            {
-                if (mIsRamping)
-                    ramp(value, 0);
-                else
-                    mValue = value;
-            }
-            
-            /**
-             * Returns the current value.
-             */
-            T getValue() const { return mValue; }
-            
-            /**
-             * Signal emitted when the destination of a ramp has been reached.
-             */
-            nap::Signal<T> destinationReachedSignal;
-            
         private:
             std::atomic<T> mNewDestination = { 0 };
             std::atomic<int> mNewStepCount = { 0 };
             std::atomic<RampMode> mNewRampMode = { RampMode::Linear };
-            std::atomic<bool> mUpToDate = { true };
-            std::atomic<bool> mIsRamping =  { false };
+            DirtyFlag mIsDirty;
+
+            T mValue; // Value that is being controlled by this object.
             
-            std::atomic<T> mValue; // Value that is being controlled by this object.
             union {
-                T mIncrement; // Increment value per step of the current ramp.
-                T mFactor; // Factor value per step of the current ramp
+                T mIncrement; // Increment value per step of the current ramp when mode is linear.
+                T mFactor; // Factor value per step of the current ramp when mode is exponential.
             };
             T mDestination = 0; // Destination value of the current ramp.
             int mStepCount = 0; // Number of steps in the ramp.

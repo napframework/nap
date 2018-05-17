@@ -13,11 +13,8 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OscillatorNode)
     RTTI_CONSTRUCTOR(nap::audio::NodeManager&, nap::audio::SafePtr<nap::audio::WaveTable>&)
     RTTI_FUNCTION("setFrequency", &nap::audio::OscillatorNode::setFrequency)
-    RTTI_FUNCTION("getFrequency", &nap::audio::OscillatorNode::getFrequency)
     RTTI_FUNCTION("setAmplitude", &nap::audio::OscillatorNode::setAmplitude)
-    RTTI_FUNCTION("getAmplitude", &nap::audio::OscillatorNode::getAmplitude)
     RTTI_FUNCTION("setPhaseOffset", &nap::audio::OscillatorNode::setPhase)
-    RTTI_FUNCTION("getPhaseOffset", &nap::audio::OscillatorNode::getPhase)
 RTTI_END_CLASS
 
 namespace nap
@@ -101,7 +98,8 @@ namespace nap
             mWave(aWave)
         {
             mStep = mWave->getSize() / getNodeManager().getSampleRate();
-            setFrequency(440);
+            mFrequency.setStepCount(getNodeManager().getSamplesPerMillisecond());
+            mAmplitude.setStepCount(getNodeManager().getSamplesPerMillisecond());
         }
 
         
@@ -116,14 +114,11 @@ namespace nap
             
             for (auto i = 0; i < getBufferSize(); i++)
             {
-                mFrequency.step();
-                mAmplitude.step();
-                
-                auto val = mAmplitude.getValue() * mWave->interpolate(mPhase + phaseOffset);   //   calculate new value, use wave as a lookup table
+                auto val = mAmplitude.getNextValue() * mWave->interpolate(mPhase + phaseOffset);   //   calculate new value, use wave as a lookup table
                 if (fmInputBuffer)
-                    mPhase += ((*fmInputBuffer)[i] + 1) * mFrequency.getValue() * step;      //   calculate new phase
+                    mPhase += ((*fmInputBuffer)[i] + 1) * mFrequency.getNextValue() * step;      //   calculate new phase
                 else
-                    mPhase += mFrequency.getValue() * step;
+                    mPhase += mFrequency.getNextValue() * step;
                 
                 if (mPhase > waveSize)
                     mPhase -= waveSize;
@@ -135,7 +130,7 @@ namespace nap
         
         void OscillatorNode::setAmplitude(ControllerValue amplitude, TimeValue rampTime)
         {
-            mAmplitude.ramp(amplitude, getNodeManager().getSamplesPerMillisecond() * rampTime);
+            mAmplitude.setValue(amplitude);
         }
         
         
@@ -147,7 +142,7 @@ namespace nap
 
         void OscillatorNode::setFrequency(SampleValue frequency, TimeValue rampTime)
         {
-            mFrequency.ramp(frequency, getNodeManager().getSamplesPerMillisecond() * rampTime);
+            mFrequency.setValue(frequency);
         }
         
         
