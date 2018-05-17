@@ -88,6 +88,7 @@ namespace nap
             OutputPin& getOutputForChannel(int channel) override;
             int getChannelCount() const override;
             
+            Slot<VoiceInstance&> voiceFinishedSlot = { this, &PolyphonicObjectInstance::voiceFinished };
             void voiceFinished(VoiceInstance& voice);
             
             std::vector<std::unique_ptr<VoiceInstance>> mVoices;

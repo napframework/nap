@@ -37,10 +37,6 @@ namespace nap
         
         void EnvelopeGenerator::trigger(SafePtr<Envelope> envelope, int startSegment, int endSegment, ControllerValue startValue, TimeValue totalDuration)
         {
-            mEnvelope = envelope;
-            mEndSegment = endSegment;
-            setValue(startValue);
-            
             auto absoluteDuration = 0.f;
             auto relativeDuration = 0.f;
             for (auto i = startSegment; i < endSegment; ++i)
@@ -56,7 +52,11 @@ namespace nap
             if (mTotalRelativeDuration < 0)
                 mTotalRelativeDuration = 0;
             
-            playSegment(startSegment);
+            mNewEnvelope = envelope;
+            mNewEndSegment.store(endSegment);
+            mNewCurrentSegment.store(startSegment - 1);
+            mIsDirty.set();
+            ramp(startValue, 0);
         }
         
         
@@ -69,9 +69,11 @@ namespace nap
         
         void EnvelopeGenerator::playSegment(int index)
         {
-            assert(index < mEnvelope->size());
+            auto envelope = mEnvelope;
+            
+            assert(index < envelope->size());
             mCurrentSegment = index;
-            auto& segment = (*mEnvelope)[index];
+            auto& segment = (*envelope)[index];
             
             if (segment.mDurationRelative)
                 ramp(segment.mDestination, segment.mDuration * mTotalRelativeDuration, segment.mMode);
@@ -82,11 +84,24 @@ namespace nap
         
         void EnvelopeGenerator::rampFinished(ControlNode&)
         {
+            update();
+            
             if (mCurrentSegment < mEndSegment)
                 playSegment(mCurrentSegment + 1);
             else {
                 if (getValue() == 0)
                     envelopeFinishedSignal(*this);
+            }
+        }
+        
+        
+        void EnvelopeGenerator::update()
+        {
+            if (mIsDirty.check())
+            {
+                mEnvelope = mNewEnvelope.get();
+                mCurrentSegment = mNewCurrentSegment.load();
+                mEndSegment = mNewEndSegment.load();
             }
         }
 

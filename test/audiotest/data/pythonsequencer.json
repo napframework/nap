@@ -37,9 +37,9 @@
 							"Destination": "1"
 						},
 						{
-							"Duration": "1000",
+							"Duration": "100",
 							"Destination": "0",
-							"RampMode": "Exponential"
+							"RampMode": "Linear"
 						}
 					]
 				},
@@ -80,7 +80,7 @@
 					{
 						"Type": "nap::audio::PolyphonicObject",
 						"Voice": "voice",
-						"VoiceCount": 400
+						"VoiceCount": 3000
 					}
 				},
 
