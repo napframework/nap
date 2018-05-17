@@ -93,7 +93,6 @@ namespace nap
             
             std::vector<std::unique_ptr<VoiceInstance>> mVoices;
             std::vector<SafeOwner<MixNode>> mMixNodes;
-            std::mutex mMixNodesMutex; /**< To protect mMixNodes */
             
             AudioService* mAudioService = nullptr;
         };
