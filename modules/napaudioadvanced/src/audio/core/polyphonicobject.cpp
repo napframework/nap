@@ -39,7 +39,7 @@ namespace nap
                 mVoices.emplace_back(std::make_unique<VoiceInstance>());
                 if (!mVoices.back()->init(*resource->mVoice, errorState))
                     return false;
-                mVoices.back()->finishedSignal.connect(this, &PolyphonicObjectInstance::voiceFinished);
+                mVoices.back()->finishedSignal.connect(voiceFinishedSlot);
             }
             
             // Create the mix nodes to mix output of all the voices
