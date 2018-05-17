@@ -1,5 +1,8 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 #include <audio/core/audionode.h>
 #include <audio/utility/linearsmoothedvalue.h>
 #include <audio/utility/safeptr.h>

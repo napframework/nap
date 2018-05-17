@@ -1,5 +1,8 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 // Audio includes
 #include <audio/node/controlnode.h>
 #include <audio/utility/safeptr.h>

@@ -1,5 +1,7 @@
 #pragma once
 
+// Std includes
+#include <atomic>
 
 // Audio includes
 #include <audio/core/audionode.h>

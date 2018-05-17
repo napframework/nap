@@ -1,5 +1,8 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 // RTTI includes
 #include <rtti/rtti.h>
 
