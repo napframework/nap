@@ -84,7 +84,7 @@ namespace nap
             }            
             
             if (mResource->mAutoPlay)
-                _start(mResource->mStartPosition, mResource->mDuration);
+                start(mResource->mStartPosition, mResource->mDuration);
             
             return true;
         }
@@ -101,24 +101,14 @@ namespace nap
         }
         
         
-        void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
-        {
-            mAudioService->enqueueTask([&, duration](){
-                _start(startPosition, duration);
-            });
-        }
-        
-        
         void PlaybackComponentInstance::stop()
         {
             if (!mPlaying)
                 return;
             
-            mAudioService->enqueueTask([&](){
-                mPlaying = false;
-                for (auto& gainControl : mGainControls)
-                    gainControl->ramp(0, mFadeOutTime, RampMode::Exponential);
-            });
+            mPlaying = false;
+            for (auto& gainControl : mGainControls)
+                gainControl->ramp(0, mFadeOutTime, RampMode::Linear);
         }
         
         
@@ -126,11 +116,9 @@ namespace nap
         {
             if (gain == mGain)
                 return;
-            mAudioService->enqueueTask([&, gain](){
-                mGain = gain;
-                if (mPlaying)
-                    applyGain(5);
-            });
+            mGain = gain;
+            if (mPlaying)
+                applyGain(5);
         }
         
         
@@ -138,11 +126,9 @@ namespace nap
         {
             if (panning == mStereoPanning)
                 return;
-            mAudioService->enqueueTask([&, panning](){
-                mStereoPanning = panning;
-                if (mPlaying)
-                    applyGain(5);
-            });
+            mStereoPanning = panning;
+            if (mPlaying)
+                applyGain(5);
         }
         
         
@@ -163,12 +149,10 @@ namespace nap
             if (pitch == mPitch)
                 return;
             
-            mAudioService->enqueueTask([&, pitch](){
-                mPitch = pitch;
-                ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
-                for (auto& bufferPlayer : mBufferPlayers)
-                    bufferPlayer->setSpeed(actualSpeed);
-            });
+            mPitch = pitch;
+            ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
+            for (auto& bufferPlayer : mBufferPlayers)
+                bufferPlayer->setSpeed(actualSpeed);
         }
         
         
@@ -189,7 +173,7 @@ namespace nap
         }
 
 
-        void PlaybackComponentInstance::_start(TimeValue startPosition, TimeValue duration)
+        void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
         {
             ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
             if (duration == 0)
