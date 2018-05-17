@@ -26,7 +26,7 @@ namespace nap
         template <typename T>
         class RampedValue {
         public:
-            static constexpr T smallestFactor = 0.00001f;
+            static constexpr T smallestFactor = 0.0001f;
 
         public:
             RampedValue(const T& initValue) : mValue(initValue)

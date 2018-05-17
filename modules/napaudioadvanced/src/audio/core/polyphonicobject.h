@@ -84,6 +84,11 @@ namespace nap
              */
             void stop(VoiceInstance* voice);
             
+            /**
+             * Counts the number of voices that are currently playing.
+             */
+            int getBusyVoiceCount() const;
+            
         private:
             OutputPin& getOutputForChannel(int channel) override;
             int getChannelCount() const override;

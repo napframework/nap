@@ -15,14 +15,14 @@
 				{
 					"Type": "nap::audio::Oscillator",
 					"mID": "oscillatorA",
-					"Amplitude": [ 0.2 ],
+					"Amplitude": [ 1 ],
 					"ChannelCount": 2
 				},
 
 				{
 					"Type": "nap::audio::Oscillator",
 					"mID": "oscillatorB",
-					"Amplitude": [ 0.5 ],
+					"Amplitude": [ 0.1 ],
 					"ChannelCount": 2,
 					"FmInput": "oscillatorA"
 				},
@@ -37,9 +37,9 @@
 							"Destination": "1"
 						},
 						{
-							"Duration": "100",
+							"Duration": "500",
 							"Destination": "0",
-							"RampMode": "Linear"
+							"RampMode": "Exponential"
 						}
 					]
 				},

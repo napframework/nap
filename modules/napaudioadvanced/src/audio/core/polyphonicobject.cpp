@@ -15,6 +15,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::PolyphonicObjectInstance)
     RTTI_FUNCTION("findFreeVoice", &nap::audio::PolyphonicObjectInstance::findFreeVoice)
     RTTI_FUNCTION("play", &nap::audio::PolyphonicObjectInstance::play)
     RTTI_FUNCTION("stop", &nap::audio::PolyphonicObjectInstance::stop)
+    RTTI_FUNCTION("getBusyVoiceCount", &nap::audio::PolyphonicObjectInstance::getBusyVoiceCount)
 RTTI_END_CLASS
 
 namespace nap
@@ -92,6 +93,17 @@ namespace nap
             
             voice->stop();
         }
+        
+        
+        int PolyphonicObjectInstance::getBusyVoiceCount() const
+        {
+            int result = 0;
+            for (auto& voice : mVoices)
+                if (voice->isBusy())
+                    result++;
+            return result;
+        }
+
         
 
         OutputPin& PolyphonicObjectInstance::getOutputForChannel(int channel)
