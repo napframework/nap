@@ -252,9 +252,6 @@
 					"Entity" : "DefaultInputRouterEntity"
 				},
 				{
-					"Entity" : "PigEntity"
-				},
-				{
 					"Entity" : "OrientationEntity"
 				},
 				{
@@ -462,7 +459,7 @@
 					"Path": "scripts/rotating_plane.py"
 				}		
 			]
-		},	
+		},
 
 		{
 			"Type" : "nap::Entity",

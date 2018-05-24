@@ -3,6 +3,8 @@
 #include <QApplication>
 #include <QMimeData>
 
+#include <utility/fileutils.h>
+
 #include "appcontext.h"
 #include "commands.h"
 #include "napkinglobals.h"
@@ -13,7 +15,7 @@
 using namespace nap::rtti;
 
 
-void napkin::InspectorModel::setObject(RTTIObject* object)
+void napkin::InspectorModel::setObject(Object* object)
 {
 	mObject = object;
 
@@ -89,37 +91,76 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		}
 	}
 
+	// File link?
+	auto path_item = dynamic_cast<PropertyPathItem*>(item);
+	if (path_item != nullptr)
+	{
+		const auto& type = path_item->getPath().getType();
+		const auto& prop = path_item->getPath().getProperty();
+		if (type.is_derived_from<std::string>() && nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::FileLink))
+		{
+			bool ok;
+			std::string filename = path_item->getPath().getValue().to_string(&ok);
+			if (nap::utility::fileExists(filename))
+			{
+				menu.addAction("Show file in " + fileBrowserName(), [filename]()
+				{
+					revealInFileBrowser(QString::fromStdString(filename));
+				});
+                menu.addAction("Open in external editor" , [filename]()
+                {
+                    openInExternalEditor(QString::fromStdString(filename));
+                });
+			}
+
+		}
+	}
+
+	// Pointer?
 	auto pointer_item = dynamic_cast<PointerItem*>(item);
 	if (pointer_item != nullptr)
 	{
-		nap::rtti::RTTIObject* pointee = getPointee(pointer_item->getPath());
+		nap::rtti::Object* pointee = pointer_item->getPath().getPointee();
 		QAction* action = menu.addAction("Select Resource", [pointer_item, pointee]
 		{
-			QList<nap::rtti::RTTIObject*> objects = {pointee};
+			QList<nap::rtti::Object*> objects = {pointee};
 			AppContext::get().selectionChanged(objects);
 		});
 		action->setEnabled(pointee != nullptr);
 	}
 
+	// Array item?
 	auto* array_item = dynamic_cast<ArrayPropertyItem*>(item);
 	if (array_item != nullptr)
 	{
 		PropertyPath array_path = array_item->getPath();
-		// Determine the type of the array
-		const nap::rtti::TypeInfo array_type = array_item->getArray().get_rank_type(array_item->getArray().get_rank());
-		const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 
-		if (wrapped_type.is_pointer())
+		if (array_path.isNonEmbeddedPointer())
 		{
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
-			menu.addAction("Add...", [this, array_path, wrapped_type]()
+			menu.addAction("Add...", [this, array_path]()
 			{
-				nap::rtti::RTTIObject* selected_object = FilterPopup::getObject(this, wrapped_type.get_raw_type());
+				nap::rtti::Object* selected_object = FilterPopup::getObject(this, array_path.getArrayElementType());
 				if (selected_object != nullptr)
 					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 			});
 
-		} else
+		}
+		else if (array_path.isEmbeddedPointer())
+		{
+			menu.addAction("Create...", [this, array_path]()
+			{
+				auto type = array_path.getArrayElementType();
+
+				TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
+
+				rttr::type elementType = FilterPopup::getType(this, predicate);
+
+				if (!elementType.empty())
+					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
+			});
+		}
+		else
 		{
 			auto element_type = array_path.getArrayElementType();
 			menu.addAction(QString("Add %1").arg(QString::fromUtf8(element_type.get_name().data())), [array_path]()
@@ -138,7 +179,7 @@ void napkin::InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 }
 
 
-void napkin::InspectorPanel::setObject(RTTIObject* objects)
+void napkin::InspectorPanel::setObject(Object* objects)
 {
 	mModel.setObject(objects);
 	mTreeView.getTreeView().expandAll();
@@ -153,7 +194,7 @@ void napkin::InspectorPanel::rebuild()
 
 void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
-	QList<nap::rtti::RTTIObject*> objects = {&prop.getObject()};
+	QList<nap::rtti::Object*> objects = {&prop.getObject()};
 	AppContext::get().selectionChanged(objects);
 
 
@@ -181,7 +222,7 @@ void napkin::InspectorModel::populateItems()
 		std::string name = prop.get_name().data();
 		QString qName = QString::fromStdString(name);
 
-		nap::rtti::RTTIPath path;
+		nap::rtti::Path path;
 		path.pushAttribute(name);
 
 		auto value = prop.get_value(mObject);
@@ -209,7 +250,7 @@ bool napkin::InspectorModel::setData(const QModelIndex& index, const QVariant& v
 	return QStandardItemModel::setData(index, value, role);
 }
 
-nap::rtti::RTTIObject* napkin::InspectorModel::getObject()
+nap::rtti::Object* napkin::InspectorModel::getObject()
 {
 	return mObject;
 }

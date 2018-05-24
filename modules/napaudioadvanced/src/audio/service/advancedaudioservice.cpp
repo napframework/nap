@@ -13,20 +13,26 @@
 #include <audio/core/graph.h>
 #include <audio/core/voice.h>
 
-RTTI_DEFINE_CLASS(nap::audio::AdvancedAudioService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AdvancedAudioService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
 
 namespace nap
 {
     
     namespace audio
     {
+		AdvancedAudioService::AdvancedAudioService(ServiceConfiguration* configuration) :
+			Service(configuration)
+		{
+		}
         
         void AdvancedAudioService::registerObjectCreators(rtti::Factory& factory)
         {
-            auto nodeManager = &getCore().getService<AudioService>(rtti::ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
-            assert(nodeManager);
-            factory.addObjectCreator(std::make_unique<GraphObjectCreator>(*nodeManager));
-            factory.addObjectCreator(std::make_unique<VoiceObjectCreator>(*nodeManager));
+            auto audioService = getCore().getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            assert(audioService);
+            factory.addObjectCreator(std::make_unique<GraphObjectCreator>(*audioService));
+            factory.addObjectCreator(std::make_unique<VoiceObjectCreator>(*audioService));
         }
         
         
@@ -39,8 +45,7 @@ namespace nap
         bool AdvancedAudioService::init(nap::utility::ErrorState& errorState)
         {
             return true;
-        }
-        
+        }        
 
     }
 }

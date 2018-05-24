@@ -6,6 +6,8 @@
 #include <component.h>
 #include <vector>
 #include <renderablemeshcomponent.h>
+#include <videoaudiocomponent.h>
+
 
 namespace nap
 {
@@ -28,7 +30,7 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		std::vector<ObjectPtr<Video>> mVideoFiles;		///< Property: "Videos" link to videos
+		std::vector<rtti::ObjectPtr<Video>> mVideoFiles;		///< Property: "Videos" link to videos
 		int mIndex = 0;									///< Property: "Index" current video index
 	};
 
@@ -88,5 +90,6 @@ namespace nap
 		int mCurrentIndex = 0;									//< Current video index
 		Video* mCurrentVideo = nullptr;							//< Current playing video
 		RenderableMeshComponentInstance* mVideoMesh = nullptr;	//< Videoplane
+        audio::VideoAudioComponentInstance* mAudioComponent = nullptr;  //< Audio component
 	};
 }

@@ -114,8 +114,6 @@ napkin::FilterTreeView::FilterTreeView()
 	mLayout.setSpacing(0);
 	setLayout(&mLayout);
 
-	mTreeView.setAlternatingRowColors(true);
-
 	mSortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
 	mSortFilter.setFilterKeyColumn(-1); // Filter all columns
 
@@ -246,5 +244,10 @@ void napkin::FilterTreeView::setTopItemSelected()
 	auto rightIndex = model->index(0, model->columnCount() - 1);
 	QItemSelection selection(leftIndex, rightIndex);
 	getSelectionModel()->select(selection, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+}
+
+QWidget& napkin::FilterTreeView::getCornerWidget()
+{
+	return mCornerWidget;
 }
 

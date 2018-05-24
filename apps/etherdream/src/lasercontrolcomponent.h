@@ -20,7 +20,7 @@ namespace nap
 	{
 	public:
 		// property: Render Target
-		nap::ObjectPtr<RenderTarget> mTarget = nullptr;
+		rtti::ObjectPtr<RenderTarget> mTarget = nullptr;
 
 		// property: Laser id
 		int mLaserID = 0;

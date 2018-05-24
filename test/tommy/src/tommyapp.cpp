@@ -45,8 +45,8 @@ namespace nap
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window"));
 
 		// Bind button clicks
-		ObjectPtr<EntityInstance> buttonRightEntity = mScene->findEntity("ButtonRightEntity");
-		ObjectPtr<EntityInstance> buttonLeftEntity = mScene->findEntity("ButtonLeftEntity");
+		rtti::ObjectPtr<EntityInstance> buttonRightEntity = mScene->findEntity("ButtonRightEntity");
+		rtti::ObjectPtr<EntityInstance> buttonLeftEntity = mScene->findEntity("ButtonLeftEntity");
 		buttonRightEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&TommyApp::rightButtonClicked, this, std::placeholders::_1));
 		buttonLeftEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&TommyApp::leftButtonClicked, this, std::placeholders::_1));
 

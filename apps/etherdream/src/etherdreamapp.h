@@ -65,9 +65,9 @@ namespace nap
 		EtherDreamService* mLaserService = nullptr;					// < Laser service
 		OSCService* mOscService = nullptr;							// < Laser DAC
 	
-		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointers to the render window// Laser DAC
-		ObjectPtr<EntityInstance> mLaserController = nullptr;		//< Entity that holds all the lasers to update / draw
-		ObjectPtr<EntityInstance> mLaserCamera = nullptr;			//< Entity that holds the camera that is used to render the laser to a backbuffer
-		ObjectPtr<EntityInstance> mFrameCamera = nullptr;			//< Entity that holds the camera that is used to render all the backbuffers to screen
+		rtti::ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointers to the render window// Laser DAC
+		rtti::ObjectPtr<EntityInstance> mLaserController = nullptr;		//< Entity that holds all the lasers to update / draw
+		rtti::ObjectPtr<EntityInstance> mLaserCamera = nullptr;			//< Entity that holds the camera that is used to render the laser to a backbuffer
+		rtti::ObjectPtr<EntityInstance> mFrameCamera = nullptr;			//< Entity that holds the camera that is used to render all the backbuffers to screen
 	};
 }

@@ -1,8 +1,9 @@
 #pragma once
 
 #include <QtWidgets/QDialog>
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include "filtertreeview.h"
+#include "naputils.h"
 
 namespace napkin
 {
@@ -15,22 +16,13 @@ namespace napkin
 		const rttr::type mBaseType;
 	};
 
-	class FlatTypeModel : public QStandardItemModel
-	{
-	public:
-		FlatTypeModel(const rttr::type& basetype);
-	private:
-		const rttr::type mBaseType;
-
-	};
-
 	/**
 	 * General purpose popup dialog showing a filterable tree.
 	 */
 	class FilterPopup : public QMenu
 	{
 	public:
-		explicit FilterPopup(QWidget* parent);
+		explicit FilterPopup(QWidget* parent, QStandardItemModel& model);
 
 	public:
 
@@ -40,23 +32,14 @@ namespace napkin
 		 * @param typeConstraint The base type to filter by.
 		 * @return The selected object or nullptr if no object was selected
 		 */
-		static nap::rtti::RTTIObject* getObject(QWidget* parent, const rttr::type& typeConstraint);
+		static nap::rtti::Object* getObject(QWidget* parent, const rttr::type& typeConstraint);
 
 		/**
-		 * Display a selection dialog with all available instantiable subtypes of the specified base type.
-		 * @param parent The parent widget to attach to
-		 * @param baseType The base type to constrain the selection to.
-		 * @return The resulting selected type or an empty/invalid type if none was selected.
-		 */
-		static nap::rtti::TypeInfo getDerivedType(QWidget* parent, const rttr::type& baseType);
-
-
-		/**
-		 * Display a selection dialog with all available types that can be added as a resource.
+		 * Display a selection dialog with all available types, filtered by an optional predicate
 		 * @param parent The widget to attach to
 		 * @return The resulting selected type.
 		 */
-		static nap::rtti::TypeInfo getResourceType(QWidget* parent);
+		static nap::rtti::TypeInfo getType(QWidget* parent, const TypePredicate& predicate = nullptr);
 
 		/**
 		 * Display a selection dialog with all available objects, filtered by type T
@@ -66,6 +49,16 @@ namespace napkin
 		 */
 		template<typename T>
 		static T* getObject(QWidget* parent) { return rtti_cast<T>(getObject(parent, RTTI_OF(T))); }
+
+		/**
+		 * Override to provide a reasonable size
+		 */
+		QSize sizeHint() const override;
+
+		/**
+		 * @return true if the user choice was confirmed, false if the dialog was dismissed
+		 */
+		bool wasAccepted() const { return mWasAccepted; }
 
 	protected:
 		/**
@@ -82,9 +75,11 @@ namespace napkin
 		void moveSelection(int dir);
 		void confirm();
 
-
+		bool mWasAccepted = false;
 		FilterTreeView mTreeView;
 		QVBoxLayout mLayout;
+		QSize mSize = { 400, 400 };
+
 	};
 
 } // namespace napkin

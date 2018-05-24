@@ -7,9 +7,9 @@
 #include <ngpumesh.h>
 #include <memory>
 #include <utility/dllexport.h>
-#include <rtti/rttiobject.h>
-#include <nap/objectptr.h>
-#include <nap/configure.h>
+#include <rtti/object.h>
+#include <rtti/objectptr.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -149,8 +149,8 @@ namespace nap
 		opengl::EDrawMode getDrawMode() const { return mDrawMode; }
 
 	public:
-		opengl::EDrawMode	mDrawMode;		///< The draw mode that should be used to draw this shape
-		IndexList			mIndices;		///< Indices into the mesh's vertex data
+		opengl::EDrawMode	mDrawMode;		///< Property: 'DrawMode' The draw mode that should be used to draw this shape
+		IndexList			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};
 
 
@@ -169,14 +169,14 @@ namespace nap
 	{
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
 
-		int						mNumVertices;
-		EMeshDataUsage			mUsage = EMeshDataUsage::Static;
-		VertexAttributeList		mAttributes;
-		std::vector<MeshShape>	mShapes;
+		int						mNumVertices;						///< Property: 'NumVertices' number of mesh vertices
+		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
+		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
+		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
 
 	// ObjectPtr based mesh properties, used in serializable Mesh format (json/binary)
-	using RTTIMeshProperties = MeshProperties<ObjectPtr<BaseVertexAttribute>>;
+	using RTTIMeshProperties = MeshProperties<rtti::ObjectPtr<BaseVertexAttribute>>;
 
 
 	/**
@@ -341,9 +341,9 @@ namespace nap
 	/**
 	 * Base class for each mesh resource. Every derived mesh should provide a MeshInstance class.
 	 */
-	class IMesh : public rtti::RTTIObject
+	class IMesh : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 
 	public:
 		virtual MeshInstance& getMeshInstance() = 0;
@@ -404,7 +404,7 @@ namespace nap
 			return *attribute;
 		}
 
-		RTTIMeshProperties	mProperties;		///< RTTI mesh CPU data
+		RTTIMeshProperties	mProperties;		///< Property: 'Properties' RTTI mesh CPU data
 
 	private:
 		MeshInstance		mMeshInstance;		///< Runtime mesh instance

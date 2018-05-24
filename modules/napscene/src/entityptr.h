@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nap/objectptr.h"
+#include "rtti/objectptr.h"
 #include "entity.h"
 
 namespace nap
@@ -39,7 +39,7 @@ namespace nap
 		 * @param targetID The ID of the target
 		 * @param targetObject The pointer to be assigned
 		 */
-		void assign(const std::string& targetID, rtti::RTTIObject& targetObject)
+		void assign(const std::string& targetID, rtti::Object& targetObject)
 		{
 			mPath = targetID;
 			mResource = rtti_cast<Entity>(&targetObject);
@@ -120,7 +120,7 @@ namespace nap
 		}
 
 	private:
-		ObjectPtr<Entity>	mResource;		///< Pointer to the target resource
+		rtti::ObjectPtr<Entity>	mResource;		///< Pointer to the target resource
 		std::string			mPath;			///< Path in the entity hierarchy, either relative or absolute
 	};
 

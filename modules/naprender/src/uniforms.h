@@ -4,9 +4,10 @@
 #include "nshaderutils.h"
 
 // External Includes
-#include <nap/objectptr.h>
+#include <rtti/objectptr.h>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
+#include <nap/resource.h>
 
 namespace nap
 {
@@ -15,9 +16,9 @@ namespace nap
 	/**
 	 * Base class for all types of uniforms, whether texture or value.
 	 */
-	class NAPAPI Uniform : public rtti::RTTIObject
+	class NAPAPI Uniform : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 
 		/**
@@ -103,19 +104,19 @@ namespace nap
 	public:
 
 		/**
-		* @param value integer value to set.
-		*/
+		 * @param value integer value to set.
+		 */
 		void setValue(float value) { mValue = value; }
 
 		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
+		 * Updates the uniform in the shader.
+		 * @param declaration: the uniform declaration from the shader that is used to set the value.
+		 */
 		virtual void push(const opengl::UniformDeclaration& declaration) const override;
 
 		/**
-		* @return integer GLSL type.
-		*/
+		 * @return integer GLSL type.
+		 */
 		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Float; }
 
 		float mValue = 0.0f;			///< Data storage
@@ -131,19 +132,19 @@ namespace nap
 	public:
 
 		/**
-		* @param value vec4 value to set.
-		*/
+		 * @param value vec4 value to set.
+		 */
 		void setValue(const glm::vec3& value) { mValue = value; }
 
 		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
+		 * Updates the uniform in the shader.
+		 * @param declaration: the uniform declaration from the shader that is used to set the value.
+		 */
 		virtual void push(const opengl::UniformDeclaration& declaration) const override;
 
 		/**
-		* @return vec4 GLSL type.
-		*/
+		 * @return vec4 GLSL type.
+		 */
 		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Vec3; }
 
 		glm::vec3 mValue;		///< Data storage
@@ -159,19 +160,19 @@ namespace nap
 	public:
 
 		/**
-		* @param value vec4 value to set.
-		*/
+		 * @param value vec4 value to set.
+		 */
 		void setValue(const glm::vec4& value)	{ mValue = value; }
 
 		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
+		 * Updates the uniform in the shader.
+		 * @param declaration: the uniform declaration from the shader that is used to set the value.
+		 */
 		virtual void push(const opengl::UniformDeclaration& declaration) const override;
 
 		/**
-		* @return vec4 GLSL type.
-		*/
+		 * @return vec4 GLSL type.
+		 */
 		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Vec4; }
 
 		glm::vec4 mValue;		///< Data storage
@@ -231,6 +232,6 @@ namespace nap
 		*/
 		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Tex2D; }
 
-		ObjectPtr<Texture2D> mTexture = nullptr;		///< Texture to use for this uniform
+		rtti::ObjectPtr<Texture2D> mTexture = nullptr;		///< Texture to use for this uniform
 	};
 }

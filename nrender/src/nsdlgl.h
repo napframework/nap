@@ -75,10 +75,16 @@ namespace opengl
 	void swap(SDL_Window* window);
 
 	/**
-	 * Show or show a window
+	 * Shows a window
 	 * @param show if the window is shown or hidden
 	 */
 	void showWindow(SDL_Window* window, bool show);
+
+	/**
+	 * Makes sure the window is on top and received input focus
+	 * @param window the window to raise
+	 */
+	void raiseWindow(SDL_Window* window);
 
 	/**
 	 * Sets the window to be full screen in desktop mode
@@ -182,5 +188,15 @@ namespace opengl
 	 * @param window, the opengl window to get the id for
 	 */
 	uint32_t getWindowId(SDL_Window* window);
+
+	/**
+	 * Hides the mouse cursor
+	 */
+	void hideCursor();
+
+	/**
+	 * Shows the mouse cursor
+	 */
+	void showCursor();
 
 }	// opengl

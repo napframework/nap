@@ -43,6 +43,9 @@ namespace nap
 	{
 		glm::vec2 laser_frustrum = mOutput->mProperties.mFrustum;
 		mCanvasTransform->setScale(glm::vec3(laser_frustrum.x, laser_frustrum.y, 1.0));
+		mCanvasTransform->setTranslate({ 0.0f,0.0f,0.0f });
+		mCanvasTransform->setUniformScale(1.0f);
+		mCanvasTransform->setRotate(glm::quat());
 	}
 
 

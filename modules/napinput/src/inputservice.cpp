@@ -1,14 +1,22 @@
 /// local includes
-#include <inputservice.h>
+#include "inputservice.h"
 #include "inputevent.h"
 #include "inputrouter.h"
-#include "nap/windowresource.h"
 
-RTTI_BEGIN_CLASS(nap::InputService)
+#include <nap/windowresource.h>
+#include <nap/resource.h>
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InputService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
 namespace nap
 {
+	InputService::InputService(ServiceConfiguration* configuration) :
+		Service(configuration)
+	{
+	}
+
 	void InputService::processEvents(Window& window, InputRouter& inputRouter, const EntityList& entities)
 	{
 		int window_number = static_cast<int>(window.getNumber());

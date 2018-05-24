@@ -2,10 +2,10 @@
 
 // Local Includes
 #include "rtti/rtti.h"
-#include "objectptr.h"
+#include "rtti/objectptr.h"
 #include "utility/dllexport.h"
 #include "directorywatcher.h"
-#include "configure.h"
+#include "numeric.h"
 #include "signalslot.h"
 
 // External Includes
@@ -17,6 +17,7 @@ namespace nap
 {	
 	class Core;
 	class Scene;
+	class Device;
 
 	class RTTIObjectGraphItem;
 	template<typename ITEM> class ObjectGraph;
@@ -25,7 +26,7 @@ namespace nap
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
-	class NAPAPI ResourceManager
+	class NAPAPI ResourceManager final
 	{
 		friend class Core;
 		RTTI_ENABLE()
@@ -62,24 +63,24 @@ namespace nap
 		/**
 		* Find an object by object ID. Returns null if not found.
 		*/
-		const ObjectPtr<rtti::RTTIObject> findObject(const std::string& id);
+		const rtti::ObjectPtr<rtti::Object> findObject(const std::string& id);
 
 		/**
 		* Find an object by object ID. Returns null if not found.
 		*/
 		template<class T>
-		const ObjectPtr<T> findObject(const std::string& id) { return ObjectPtr<T>(findObject(id)); }
+		const rtti::ObjectPtr<T> findObject(const std::string& id) { return rtti::ObjectPtr<T>(findObject(id)); }
 
 		/**
 		* Creates an object and adds it to the manager.
 		*/
-		const ObjectPtr<rtti::RTTIObject> createObject(const rtti::TypeInfo& type);
+		const rtti::ObjectPtr<rtti::Object> createObject(const rtti::TypeInfo& type);
 
 		/**
 		* Creates an object and adds it to the manager.
 		*/
 		template<typename T>
-		const ObjectPtr<T> createObject() { return ObjectPtr<T>(createObject(RTTI_OF(T))); }
+		const rtti::ObjectPtr<T> createObject() { return rtti::ObjectPtr<T>(createObject(RTTI_OF(T))); }
 
 		/**
 		* Function that runs the file monitor to check for changes. If changes are found in files that were loaded by the manager,
@@ -93,8 +94,8 @@ namespace nap
 		rtti::Factory& getFactory();
 
 	private:
-		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;					// Map from object ID to object (non-owned)
-		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::RTTIObject>>;	// Map from object ID to object (owned)
+		using InstanceByIDMap	= std::unordered_map<std::string, rtti::Object*>;					// Map from object ID to object (non-owned)
+		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::Object>>;	// Map from object ID to object (owned)
 		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
 
 		class OverlayLinkResolver;
@@ -106,12 +107,11 @@ namespace nap
 			Error
 		};
 
-		void addObject(const std::string& id, std::unique_ptr<rtti::RTTIObject> object);
+		void addObject(const std::string& id, std::unique_ptr<rtti::Object> object);
 		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
-		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		EFileModified isFileModified(const std::string& modifiedFile);
@@ -123,17 +123,21 @@ namespace nap
 		 * Helper class that patches object pointers back to the objects as present in the resource manager.
 		 * When clear is called, no rollback is performed.
 		 */
-		struct RollbackHelper
+		struct RollbackHelper final
 		{
 		public:
 			RollbackHelper(ResourceManager& service);
 			~RollbackHelper();
 
 			void clear();
+			void addExistingDevice(Device& device);
+			void addNewDevice(Device& device);
 
 		private:
-			ResourceManager& mService;
-			bool mPatchObjects = true;
+			ResourceManager&		mService;
+			std::vector<Device*>	mExistingDevices;			///< This is the list of devices that *already exist* in the ResourceManager which will be updated
+			std::vector<Device*>	mNewDevices;				///< This is the list of devices that have been newly read from the json file, which contain the updated versions of the existing devices
+			bool					mRollbackObjects = true;
 		};
 
 		using ModifiedTimeMap = std::unordered_map<std::string, uint64>;

@@ -241,9 +241,24 @@
                     "Videos": [
                         "StreakVideo",
                         "SnowVideo",
-                        "PeopleVideo"
+                        "PeopleVideo",
+						"SyncTestVideo"
                     ],
                     "Index": 2
+                },
+                {
+                    "Type": "nap::audio::VideoAudioComponent",
+                    "Video": "PeopleVideo",
+                    "mID": "audioComponent"
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "Input": "audioComponent",
+                    "Routing": [ 0 , 1 ]
+                },
+                {
+                    "Type": "nap::audio::LevelMeterComponent",
+                    "Input": "audioComponent"
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -516,6 +531,13 @@
             "Type": "nap::Video",
             "mID": "SnowVideo",
             "Path": "snow.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "SyncTestVideo",
+            "Path": "sound_in_sync_test.avi",
             "Loop": false,
             "Speed": 1.0
         },

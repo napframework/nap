@@ -187,6 +187,12 @@ namespace opengl
 	}
 
 
+	void raiseWindow(SDL_Window* window)
+	{
+		SDL_RaiseWindow(window);
+	}
+
+
 	void setFullscreen(SDL_Window* window, bool value)
 	{
 		// Otherwise set
@@ -307,4 +313,15 @@ namespace opengl
 		return SDL_GetWindowID(window);
 	}
 
+
+	void hideCursor()
+	{
+		SDL_ShowCursor(SDL_DISABLE);
+	}
+
+
+	void showCursor()
+	{
+		SDL_ShowCursor(SDL_ENABLE);
+	}
 }	// opengl

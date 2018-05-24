@@ -6,7 +6,7 @@ namespace nap
 	/** 
 	 * Mapping used to translate from SDL KeyCode to nap KeyCodes
 	 */
-	static std::unordered_map<SDL_Keycode, nap::EKeyCode> SDLToKeyCodeMapping =
+	const static std::unordered_map<SDL_Keycode, nap::EKeyCode> SDLToKeyCodeMapping =
 	{
 		std::make_pair(SDLK_RETURN,					nap::EKeyCode::KEY_RETURN),
 		std::make_pair(SDLK_ESCAPE,					nap::EKeyCode::KEY_ESCAPE),
@@ -247,16 +247,18 @@ namespace nap
 
 
 	// Binds a specific sdl mouse event to a pointer event type
-	static std::unordered_map<Uint32, rtti::TypeInfo> SDLToPointerMapping =
+	const static std::unordered_map<Uint32, rtti::TypeInfo> SDLToMouseMapping =
 	{
 		std::make_pair(SDL_MOUSEBUTTONDOWN, RTTI_OF(nap::PointerPressEvent)),
 		std::make_pair(SDL_MOUSEBUTTONUP,	RTTI_OF(nap::PointerReleaseEvent)),
 		std::make_pair(SDL_MOUSEMOTION,		RTTI_OF(nap::PointerMoveEvent)),
+		std::make_pair(SDL_MOUSEWHEEL,		RTTI_OF(nap::MouseWheelEvent))
+
 	};
 
 
 	// Binds a specific sdl key event to a pointer event type
-	static std::unordered_map<Uint32, rtti::TypeInfo> SDLToKeyMapping = 
+	const static std::unordered_map<Uint32, rtti::TypeInfo> SDLToKeyMapping = 
 	{
 		std::make_pair(SDL_KEYDOWN, RTTI_OF(nap::KeyPressEvent)),
 		std::make_pair(SDL_KEYUP,	RTTI_OF(nap::KeyReleaseEvent)),
@@ -270,8 +272,9 @@ namespace nap
 	{
 		auto pos = SDLToKeyCodeMapping.find(inKey);
 		if (pos == SDLToKeyCodeMapping.end())
+		{
 			return nap::EKeyCode::KEY_UNKNOWN;
-
+		}
 		return pos->second;
 	}
 
@@ -302,7 +305,9 @@ namespace nap
 
 		SDL_Window* window = SDL_GetWindowFromID(window_id);
 		if (window == nullptr)
+		{
 			return nullptr;
+		}
 
 		// If it's a key event, create, map and return
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
@@ -314,25 +319,47 @@ namespace nap
 
 		// If it's a pointer event it generally has a button except for a move operation
 		// That's the reason for the if / else
-		auto inp_it = SDLToPointerMapping.find(sdlEvent.type);
-		if (inp_it != SDLToPointerMapping.end())
+		auto inp_it = SDLToMouseMapping.find(sdlEvent.type);
+		if (inp_it != SDLToMouseMapping.end())
 		{
-			// Get size and invert y coordinate, NAP is always lower left corner based
-			int sx, sy;
-			SDL_GetWindowSize(window, &sx, &sy);
-			int px = sdlEvent.motion.x;
-			int py = sy - 1 - sdlEvent.motion.y;
-
-			PointerEvent* pointer_event = nullptr;
-			if (inp_it->second == RTTI_OF(nap::PointerMoveEvent))
+			InputEvent* mouse_event = nullptr;
+			switch (inp_it->first)
 			{
-				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.xrel, -sdlEvent.motion.yrel, px, py, window_id, 0 });
-			}
-			else
+			case SDL_MOUSEWHEEL:
 			{
-				pointer_event = inp_it->second.create<PointerEvent>({ px, py, toNapMouseButton(sdlEvent.button.button), window_id, 0 });
+				int dix = static_cast<int>(sdlEvent.wheel.x);
+				int diy = static_cast<int>(sdlEvent.wheel.y);
+				mouse_event = inp_it->second.create<InputEvent>({ dix, diy, window_id });
+				break;
 			}
-			return InputEventPtr(pointer_event);
+			case SDL_MOUSEBUTTONUP:
+			case SDL_MOUSEBUTTONDOWN:
+			{
+				// Get position
+				int sx, sy;
+				SDL_GetWindowSize(window, &sx, &sy);
+				int px = sdlEvent.motion.x;
+				int py = sy - 1 - sdlEvent.motion.y;
+				mouse_event = inp_it->second.create<InputEvent>({ px, py, toNapMouseButton(sdlEvent.button.button), window_id, 0 });
+				break;
+			}
+			case SDL_MOUSEMOTION:
+			{
+				// Get position
+				int sx, sy;
+				SDL_GetWindowSize(window, &sx, &sy);
+				int px = static_cast<int>(sdlEvent.motion.x);
+				int py = sy - 1 - static_cast<int>(sdlEvent.motion.y);
+				int rx = static_cast<int>(sdlEvent.motion.xrel);
+				int ry = static_cast<int>(-sdlEvent.motion.yrel);
+				mouse_event = inp_it->second.create<InputEvent>({ rx, ry, px, py, window_id, 0 });
+				break;
+			}
+			default:
+				assert(false);
+				break;
+			}
+			return InputEventPtr(mouse_event);
 		}
 
 		// SDL event could not be mapped to a valid nap input event
@@ -347,16 +374,16 @@ namespace nap
 
 
 
-	bool isPointerEvent(SDL_Event& sdlEvent)
+	bool isMouseEvent(SDL_Event& sdlEvent)
 	{
-		return SDLToPointerMapping.find(sdlEvent.type) != SDLToPointerMapping.end();
+		return SDLToMouseMapping.find(sdlEvent.type) != SDLToMouseMapping.end();
 	}
 
 
 
 	bool isInputEvent(SDL_Event& sdlEvent)
 	{
-		return isKeyEvent(sdlEvent) || isPointerEvent(sdlEvent);
+		return isKeyEvent(sdlEvent) || isMouseEvent(sdlEvent);
 	}
 
 }

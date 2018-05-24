@@ -1,0 +1,7 @@
+{
+    "title": "Steef",
+    "version": "0.1",
+    "modules": [
+        "mod_napapp"
+    ]
+}

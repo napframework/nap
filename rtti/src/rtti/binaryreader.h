@@ -7,8 +7,8 @@
 
 // RTTI includes
 #include <rtti/rtti.h>
-#include <rtti/rttipath.h>
-#include <rtti/rttideserializeresult.h>
+#include <rtti/path.h>
+#include <rtti/deserializeresult.h>
 
 // STL includes
 #include <string>
@@ -22,7 +22,7 @@ namespace nap
 
 	namespace rtti
 	{
-		class RTTIObject;
+		class Object;
 		class Factory;
 
 		/**
@@ -43,7 +43,7 @@ namespace nap
 		 *
 		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 		 */
-		bool NAPAPI deserializeBinary(utility::MemoryStream& stream, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
+		bool NAPAPI deserializeBinary(utility::MemoryStream& stream, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
 
 		/**
 		 * Deserialize a set of objects and their data from the specified file
@@ -54,7 +54,7 @@ namespace nap
 		 *
 		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 		 */
-		bool NAPAPI readBinary(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
+		bool NAPAPI readBinary(const std::string& path, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
 	}
 
 }

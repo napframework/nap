@@ -28,8 +28,8 @@ namespace nap
 		 */
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
-		std::string		mPath;
-		EMeshDataUsage	mUsage = EMeshDataUsage::Static;
+		std::string		mPath;								///< Property: 'Path' path to the file on disk
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' specifies the way the mesh is used, allows the driver to optimize memory if necessary
 
 	private:
 		std::unique_ptr<MeshInstance>		mMeshInstance;

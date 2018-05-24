@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rtti/rtti.h>
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 
 #include "generic/filtertreeview.h"
 #include <QStandardItemModel>

@@ -11,6 +11,8 @@ namespace napkin
 	class LeafFilterProxyModel : public QSortFilterProxyModel
 	{
 	public:
+		using FilterFunction = std::function<bool(const LeafFilterProxyModel& model, int sourceRow, const QModelIndex& sourceParent)>;
+
 		LeafFilterProxyModel();
 
 		/**
@@ -20,9 +22,19 @@ namespace napkin
 		void exemptSourceIndex(QModelIndex sourceIndex);
 
 		/**
+		 * Add a filter to the model
+		 */
+		void addExtraFilter(FilterFunction func);
+
+		/**
 		 * Clear the list of exempted indexes set using exemptSourceIndex()
 		 */
 		void clearExemptions();
+
+		/**
+		 * Forward to Qt's protected invalidateFilter() method.
+		 */
+		void refreshFilter() { invalidateFilter(); }
 
 	protected:
 		bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
@@ -30,6 +42,9 @@ namespace napkin
 	private:
 		bool acceptsAnyChild(int sourceRow, QModelIndex sourceParent) const;
 
+		bool isExempt(int sourceRow, const QModelIndex& sourceParent) const;
+
 		QSet<QModelIndex> mExemptions;
+		QList<FilterFunction> mExtraFilters;
 	};
 };

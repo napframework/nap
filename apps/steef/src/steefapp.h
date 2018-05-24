@@ -70,8 +70,8 @@ namespace nap
 		void updateBackgroundImage();
 		void updateShader();
 		
-		ObjectPtr<ImageFromFile> mVinylLabelImg = nullptr;						//< Vinyl Label Image Resource
-		ObjectPtr<ImageFromFile> mVinylCoverImg = nullptr;						//< Vinyl Cover Image Resource
+		rtti::ObjectPtr<ImageFromFile> mVinylLabelImg = nullptr;		//< Vinyl Label Image Resource
+		rtti::ObjectPtr<ImageFromFile> mVinylCoverImg = nullptr;		//< Vinyl Cover Image Resource
 		
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		ResourceManager*	mResourceManager = nullptr;		//< Manages all the loaded resources
@@ -79,9 +79,9 @@ namespace nap
 		
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		
-		ObjectPtr<RenderWindow>	mRenderWindow = nullptr;				//< Pointer to the spawned render window
-		ObjectPtr<EntityInstance> mModelEntity = nullptr;				//< Pointer to the entity that holds all the vinyl parts
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mBackgroundEntity = nullptr;			//< Pointer to the entity that holds the background image
+		rtti::ObjectPtr<RenderWindow>	mRenderWindow = nullptr;				//< Pointer to the spawned render window
+		rtti::ObjectPtr<EntityInstance> mModelEntity = nullptr;				//< Pointer to the entity that holds all the vinyl parts
+		rtti::ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
+		rtti::ObjectPtr<EntityInstance> mBackgroundEntity = nullptr;			//< Pointer to the entity that holds the background image
 	};
 }

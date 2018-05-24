@@ -1,5 +1,5 @@
 #include "defaultlinkresolver.h"
-#include "rttiobject.h"
+#include "object.h"
 
 namespace nap
 {
@@ -15,7 +15,7 @@ namespace nap
 		/**
 		 * Resolves the target ID to an object, using the ObjectsByID mapping
 		 */
-		RTTIObject* DefaultLinkResolver::findTarget(const std::string& targetID)
+		Object* DefaultLinkResolver::findTarget(const std::string& targetID)
 		{
 			ObjectsByIDMap::iterator pos = mObjectsByID.find(targetID);
 			if (pos == mObjectsByID.end())
@@ -24,11 +24,17 @@ namespace nap
 			return pos->second;
 		}
 
-
+		
 		bool DefaultLinkResolver::sResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 		{
 			DefaultLinkResolver resolver(objects);
 			return resolver.resolveLinks(unresolvedPointers, errorState);
+		}
+		
+
+		LinkResolver::EInvalidLinkBehaviour DefaultLinkResolver::onInvalidLink(const UnresolvedPointer& unresolvedPointer)
+		{
+			return LinkResolver::EInvalidLinkBehaviour::TreatAsError;
 		}
 	}
 }

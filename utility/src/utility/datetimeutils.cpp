@@ -1,10 +1,9 @@
 // Local Includes
 #include "datetimeutils.h"
+#include "stringutils.h"
 
 // External Includes
-#include <ctime>
 #include <assert.h>
-#include <sstream>
 #include <iomanip>
 #include <iostream>
 #include <unordered_map>
@@ -21,7 +20,7 @@ namespace nap
 
 		extern DateTime getCurrentDateTime()
 		{
-			return DateTime(getCurrentTime(), DateTime::ConversionMode::Local);
+			return DateTime(SystemClock::now(), DateTime::ConversionMode::Local);
 		}
 
 
@@ -30,6 +29,30 @@ namespace nap
 			outDateTime.setTimeStamp(getCurrentTime());
 		}
 
+		std::string timeFormat(const SystemTimeStamp& time, const std::string& format)
+		{
+			// TODO: This can be optimized, doing a little too much here now
+			DateTime dt(time);
+			std::string msstring = utility::stringFormat("%03d", dt.getMilliSecond());
+			std::string format_no_ms = utility::replaceAllInstances(format, "%ms", msstring);
+			time_t tt = std::chrono::system_clock::to_time_t(time);
+			char fmtstr[256];
+			std::strftime(fmtstr, sizeof(fmtstr), format_no_ms.c_str(), std::localtime(&tt));
+			return std::string(fmtstr);
+		}
+
+		SystemTimeStamp createTimestamp(int year, int month, int day, int hour, int minute, int second, int millisecond)
+		{
+			std::tm tm{};
+			tm.tm_year = year - 1900;
+			tm.tm_mon = month - 1;
+			tm.tm_mday = day;
+			tm.tm_hour = hour;
+			tm.tm_min = minute;
+			tm.tm_sec = second;
+			time_t time = std::mktime(&tm);
+			return std::chrono::system_clock::from_time_t(time) + std::chrono::milliseconds(millisecond);
+		}
 
 		using DayToStringMap = std::unordered_map<EDay, std::string>;
 		static const DayToStringMap& getDaysToStringMap()

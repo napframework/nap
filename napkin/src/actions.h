@@ -165,7 +165,7 @@ namespace napkin
         /**
          * @param object The object to delete
          */
-		explicit DeleteObjectAction(nap::rtti::RTTIObject& object);
+		explicit DeleteObjectAction(nap::rtti::Object& object);
 
 	private:
 		/**
@@ -174,7 +174,7 @@ namespace napkin
 		void perform() override;
 
 	private:
-		nap::rtti::RTTIObject& mObject;
+		nap::rtti::Object& mObject;
 	};
 
 	/**

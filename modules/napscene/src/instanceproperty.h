@@ -2,9 +2,9 @@
 
 // Local Includes
 #include "componentptr.h"
-#include <rtti/rttiobject.h>
-#include <rtti/rttipath.h>
-#include <nap/objectptr.h>
+#include <rtti/object.h>
+#include <rtti/path.h>
+#include <rtti/objectptr.h>
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -21,7 +21,7 @@ namespace nap
 
 	namespace rtti
 	{
-		class ResolvedRTTIPath;
+		class ResolvedPath;
 	}
 
 	namespace utility
@@ -34,9 +34,9 @@ namespace nap
 	/**
 	 * Base class for all typed instance property values. This represents the value that is applied on a certain property.
 	 */
-	class InstancePropertyValue : public rtti::RTTIObject
+	class InstancePropertyValue : public rtti::Object
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(rtti::Object)
 	public:
 
 		/**
@@ -45,7 +45,7 @@ namespace nap
 		 * @param errorState If function returns false, contains error information if an error occurs, like types that do not match.
 		 * @return True on success, otherwise false.
 		 */
-		virtual bool setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const = 0;
+		virtual bool setValue(rtti::ResolvedPath& resolvedTargetPath, utility::ErrorState& errorState) const = 0;
 	};
 
 	/**
@@ -62,10 +62,10 @@ namespace nap
 		 * @param errorState If function returns false, contains error information if an error occurs, like types that do not match.
 		 * @return True on success, otherwise false.
 		 */
-		virtual bool setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const override;
+		virtual bool setValue(rtti::ResolvedPath& resolvedTargetPath, utility::ErrorState& errorState) const override;
 
 	public:
-		ObjectPtr<RTTIObject>		mValue;		// Pointer override value
+		rtti::ObjectPtr<Object>		mValue;		// Pointer override value
 	};
 
 	/**
@@ -83,7 +83,7 @@ namespace nap
 		 * @param errorState If function returns false, contains error information if an error occurs, like types that do not match.
 		 * @return True on success, otherwise false.
 		 */
-		virtual bool setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const override;
+		virtual bool setValue(rtti::ResolvedPath& resolvedTargetPath, utility::ErrorState& errorState) const override;
 
 	public:
 		ComponentPtr<Component>		mValue;		// Component pointer override value
@@ -105,7 +105,7 @@ namespace nap
 		 * @param errorState If function returns false, contains error information if an error occurs, like types that do not match.
 		 * @return True on success, otherwise false.
 		 */
-		virtual bool setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const override
+		virtual bool setValue(rtti::ResolvedPath& resolvedTargetPath, utility::ErrorState& errorState) const override
 		{
 			rtti::TypeInfo target_type = resolvedTargetPath.getType();
 			if (!errorState.check(target_type == rtti::TypeInfo::get<T>(), "Target value does not match instance property type %s", rtti::TypeInfo::get<T>().get_name().data()))
@@ -131,10 +131,10 @@ namespace nap
 		 * @param errorState If function returns false, contains error information if an error occurs.
 		 * @return True on success, otherwise false.
 		 */
-		bool apply(rtti::RTTIObject& target, utility::ErrorState& errorState) const;
+		bool apply(rtti::Object& target, utility::ErrorState& errorState) const;
 
 		std::string							mPath;			///< RTTI path to the property
-		ObjectPtr<InstancePropertyValue>	mValue;			///< Value to override
+		rtti::ObjectPtr<InstancePropertyValue>	mValue;			///< Value to override
 	};
 
 	/**

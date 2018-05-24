@@ -3,8 +3,8 @@
 #include <QtGui/QStandardItem>
 #include <QtWidgets/QVBoxLayout>
 #include <generic/filtertreeview.h>
-#include <rtti/rttiobject.h>
-#include <rtti/rttipath.h>
+#include <rtti/object.h>
+#include <rtti/path.h>
 
 namespace napkin
 {
