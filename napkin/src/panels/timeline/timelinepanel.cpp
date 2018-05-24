@@ -36,6 +36,14 @@ TimelinePanel::TimelinePanel() : QWidget()
 		mView.setVerticalScroll(value);
 	});
 
+	connect(&mOutline, &TimelineOutline::trackVisibilityChanged, [this]() {
+
+		nap::Logger::info("Track visibility changed");
+		for (auto track : mOutline.getExpandedTracks()) {
+			nap::Logger::info("Track: '%s'", track->name().toStdString().c_str());
+		}
+	});
+
 	int rulerHeight = 30;
 	mRuler.setHeight(rulerHeight);
 	mOutline.setHeaderHeight(rulerHeight);
@@ -59,7 +67,7 @@ void TimelinePanel::showEvent(QShowEvent* event)
 void TimelinePanel::setTimeline(Timeline* timeline)
 {
 	mScene.setTimeline(timeline);
-	mOutline.setModel(timeline);
+	mOutline.setTimeline(timeline);
 }
 
 void TimelinePanel::onTimelineViewTransformed()

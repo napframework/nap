@@ -15,7 +15,8 @@ OutlineTrackItem::OutlineTrackItem(Track& track) : QStandardItem(), mTrack(track
 
 QVariant OutlineTrackItem::data(int role) const
 {
-	if (role == Qt::SizeHintRole) {
+	if (role == Qt::SizeHintRole)
+	{
 		auto size = QStandardItem::data(role).toSize();
 		size.setHeight(track().height());
 		return size;
@@ -42,10 +43,17 @@ void OutlineModel::setTimeline(Timeline* timeline)
 		connect(mTimeline, &Timeline::trackRemoved, this, &OutlineModel::onTrackRemoved);
 	}
 
-	for (auto track : mTimeline->tracks()) {
+	for (auto track : mTimeline->tracks())
+	{
 		onTrackAdded(*track);
 	}
 }
+
+Timeline* OutlineModel::getTimeline() const
+{
+	return mTimeline;
+}
+
 
 OutlineTrackItem* OutlineModel::trackItem(const Track& track) const
 {
@@ -78,20 +86,36 @@ TimelineOutline::TimelineOutline() : QWidget()
 
 	auto& tree = mFilterTree.getTreeView();
 	tree.setHeaderHidden(true);
-	tree.setAlternatingRowColors(true);
+//	tree.setAlternatingRowColors(true);
 	tree.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 	tree.setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
 
 //	connect(tree.verticalScrollBar(), &QScrollBar::valueChanged, this, &TimelineOutline::verticalScrollChanged);
 
+	connect(&tree, &QTreeView::expanded, [this](const QModelIndex& idx)
+	{
+		trackVisibilityChanged();
+	});
+	connect(&tree, &QTreeView::collapsed, [this](const QModelIndex& idx)
+	{
+		trackVisibilityChanged();
+	});
+
+
 	mFilterTree.setModel(&mModel);
 
 }
 
-void TimelineOutline::setModel(Timeline* timeline)
+void TimelineOutline::setTimeline(Timeline* timeline)
 {
 	mModel.setTimeline(timeline);
 }
+
+Timeline* TimelineOutline::getTimeline() const
+{
+	return mModel.getTimeline();
+}
+
 
 void TimelineOutline::onViewResized(const QSize& size)
 {
@@ -113,4 +137,39 @@ void TimelineOutline::setVerticalScroll(int value)
 {
 	mFilterTree.getTreeView().verticalScrollBar()->setValue(value);
 }
+
+
+
+const QList<Track*> TimelineOutline::getExpandedTracks() const
+{
+	QList<Track*> tracks;
+	getExpandedTracks(tracks);
+	return tracks;
+}
+
+void TimelineOutline::getExpandedTracks(QList<Track*>& result, const QModelIndex& parent) const
+{
+	const auto sourcemodel = mFilterTree.getModel();
+	const auto& filtermodel = mFilterTree.getFilterModel();
+
+	for (int row = 0, len = filtermodel.rowCount(parent); row < len; row++)
+	{
+		auto index = filtermodel.index(row, 0, parent);
+		auto srcindex = filtermodel.mapToSource(index);
+
+		auto sourceindex = napkin::findIndexInModel(*sourcemodel, [&srcindex](const QModelIndex& idx)
+		{
+			return idx == srcindex;
+		});
+
+		auto trackitem = dynamic_cast<OutlineTrackItem*>(sourcemodel->itemFromIndex(sourceindex));
+		assert(trackitem != nullptr);
+		result << &trackitem->track();
+
+		if (mFilterTree.getTreeView().isExpanded(index))
+			getExpandedTracks(result, index);
+	}
+
+}
+
 

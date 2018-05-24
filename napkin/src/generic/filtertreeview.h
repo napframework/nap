@@ -66,6 +66,11 @@ namespace napkin
 		/**
 		 * @return The sort/filter model that sits between the user model and the view.
 		 */
+		const LeafFilterProxyModel& getFilterModel() const { return mSortFilter; }
+
+		/**
+		 * @return The sort/filter model that sits between the user model and the view.
+		 */
 		LeafFilterProxyModel& getFilterModel() { return mSortFilter; }
 
 		/**

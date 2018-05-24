@@ -8,11 +8,15 @@ namespace napkin {
 
 	class GridView : public QGraphicsView {
 	Q_OBJECT
-		enum ZoomMode {
+		enum class ZoomMode {
 			IgnoreAspectRatio, KeepAspectRatio, Horizontal, Vertical
 		};
 
-		enum RulerFormat {
+		enum class PanMode {
+			Horizontal, Vertical, Parallax
+		};
+
+		enum class RulerFormat {
 			Float, SMPTE
 		};
 
@@ -58,8 +62,9 @@ namespace napkin {
 		QFont mRulerFont;
 		bool mGridEnabled = true;
 
-		ZoomMode mZoomMode = Horizontal;
-		RulerFormat mRulerFormat = SMPTE;
+		ZoomMode mZoomMode = ZoomMode::Horizontal;
+		PanMode mPanMode = PanMode::Horizontal;
+		RulerFormat mRulerFormat = RulerFormat::SMPTE;
 		qreal mFramerate = 30;
 
 		qreal calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const;
