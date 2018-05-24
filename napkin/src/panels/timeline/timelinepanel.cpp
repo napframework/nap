@@ -37,11 +37,7 @@ TimelinePanel::TimelinePanel() : QWidget()
 	});
 
 	connect(&mOutline, &TimelineOutline::trackVisibilityChanged, [this]() {
-
-		nap::Logger::info("Track visibility changed");
-		for (auto track : mOutline.getExpandedTracks()) {
-			nap::Logger::info("Track: '%s'", track->name().toStdString().c_str());
-		}
+		mScene.setTracksExpanded(mOutline.getExpandedTracks());
 	});
 
 	int rulerHeight = 30;
@@ -52,6 +48,8 @@ TimelinePanel::TimelinePanel() : QWidget()
 	setTimeScale(10);
 
 	demo();
+
+	mScene.setTracksExpanded(mOutline.getExpandedTracks());
 }
 
 void TimelinePanel::setTimeScale(qreal scale)
@@ -98,7 +96,13 @@ void TimelinePanel::demo()
 	{
 		auto track = timeline->addTrack("Second Event Track", nullptr);
 		auto child1 = track->addTrack("A Child Track");
+		child1->addEvent("Pookie", 50, 90);
+		child1->addEvent("Wookie", 100, 140);
+		child1->addEvent("Dookie", 150, 190);
 		auto child2 = track->addTrack("Another Child Track");
+		child2->addEvent("Rob", 50, 90);
+		child2->addEvent("Knob", 100, 140);
+		child2->addEvent("Bob", 150, 190);
 	}
 	{
 		auto track = timeline->addTrack("Track number Three", nullptr);

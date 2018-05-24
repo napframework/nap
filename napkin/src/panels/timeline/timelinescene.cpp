@@ -2,6 +2,9 @@
 #include "eventitem.h"
 #include "trackitem.h"
 
+#include <QList>
+#include <QtDebug>
+
 using namespace napkin;
 
 TimelineScene::TimelineScene() {
@@ -25,20 +28,29 @@ void TimelineScene::setTimeline(Timeline* timeline) {
 	mTimeline->setParent(this);
 
 	for (auto track : mTimeline->tracks())
-		onTrackAdded(*track);
+		addTrack(*track);
 
 	connect(mTimeline, &Timeline::trackAdded, this, &TimelineScene::onTrackAdded);
 	connect(mTimeline, &Timeline::trackRemoved, this, &TimelineScene::onTrackRemoved);
 }
 
+void TimelineScene::onTrackAdded(Track& track)
+{
+	addTrack(track, nullptr);
+}
 
-void TimelineScene::onTrackAdded(Track& track) {
-	auto item = new TrackItem(&mTrackGroup, track);
+void TimelineScene::addTrack(Track& track, TrackItem* parentitem) {
+	QGraphicsItem* parent = parentitem ? parentitem : &mTrackGroup;
+
+	auto item = new TrackItem(parent, track);
 
 	item->setY(item->track().height() * item->track().index());
 
 	for (auto event : track.events())
 		onEventAdded(*event);
+
+	for (auto childtrack : track.childTracks())
+		addTrack(*childtrack);
 
 	connect(&track, &Track::eventAdded, this, &TimelineScene::onEventAdded);
 	connect(&track, &Track::eventRemoved, this, &TimelineScene::onEventRemoved);
@@ -55,18 +67,28 @@ void TimelineScene::onTrackRemoved(Track& track) {
 }
 
 void TimelineScene::onEventAdded(Event& event) {
-	auto item = new EventItem(&mEventGroup, event);
+	auto item = new EventItem(trackItem(event.track()), event);
 
 	item->setX(event.start());
-	item->setY(event.track().index() * event.track().height());
+//	item->setY(event.track().index() * event.track().height());
 }
 
 void TimelineScene::onEventRemoved(Event& event) {
 	auto item = eventItem(event);
-	mEventGroup.removeFromGroup(item);
+	item->setParent(nullptr);
 	removeItem(item);
 }
 
+QList<TrackItem*> TimelineScene::trackItems() const
+{
+	QList<TrackItem*> items;
+	for (auto item : mTrackGroup.childItems()) {
+		auto trackItem = dynamic_cast<TrackItem*>(item);
+		if (nullptr != trackItem)
+			items << trackItem;
+	}
+	return items;
+}
 
 TrackItem* TimelineScene::trackItem(Track& track) {
 	for (auto item : mTrackGroup.childItems()) {
@@ -85,3 +107,21 @@ EventItem* TimelineScene::eventItem(Event& event) {
 	}
 	return nullptr;
 }
+
+void TimelineScene::setTracksExpanded(const QList<Track*> expandedTracks)
+{
+	qreal y = 0;
+
+	for (auto item : trackItems()) {
+		bool visible = expandedTracks.contains(&item->track());
+		item->setVisible(visible);
+		if (visible) {
+			qInfo() << item->track().name();
+			item->setY(y);
+			y += item->track().height();
+			qInfo() << "Height: " << y;
+		}
+	}
+}
+
+
