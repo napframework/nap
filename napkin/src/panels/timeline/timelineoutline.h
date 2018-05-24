@@ -30,6 +30,7 @@ namespace napkin
 		OutlineModel();
 
 		void setTimeline(Timeline* timeline);
+		Timeline* getTimeline() const;
 
 		OutlineTrackItem* trackItem(const Track& track) const;
 
@@ -50,7 +51,8 @@ namespace napkin
 		TimelineOutline();
 		~TimelineOutline() {}
 
-		void setModel(Timeline* timeline);
+		void setTimeline(Timeline* timeline);
+		Timeline* getTimeline() const;
 
 		/**
 		 * Top of treeview in pixels, relative to this widget (the outline)
@@ -59,13 +61,16 @@ namespace napkin
 		void setHeaderHeight(int height);
 
 		int getTrackHeight(const Track& track) const;
+		const QList<Track*> getExpandedTracks() const;
 
 		void setVerticalScroll(int value);
 	Q_SIGNALS:
 		void verticalScrollChanged(int value);
+		void trackVisibilityChanged();
 
 	private:
 		void onViewResized(const QSize& size);
+		void getExpandedTracks(QList<Track*>& result, const QModelIndex& parent = QModelIndex()) const;
 
 		QVBoxLayout mLayout;
 		FilterTreeView mFilterTree;

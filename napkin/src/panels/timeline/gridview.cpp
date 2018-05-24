@@ -107,19 +107,19 @@ void GridView::zoom(const QPointF& delta, const QPointF& pivot)
 	// Translate to zoom around pivot
 	xf.translate(pivot.x(), pivot.y());
 
-	if (mZoomMode == IgnoreAspectRatio)
+	if (mZoomMode == ZoomMode::IgnoreAspectRatio)
 	{
 		xf.scale(delta.x(), delta.y());
 	} else
 	{
 		qreal avg = (delta.x() + delta.y()) / 2;
-		if (mZoomMode == KeepAspectRatio)
+		if (mZoomMode == ZoomMode::KeepAspectRatio)
 		{
 			xf.scale(avg, avg);
-		} else if (mZoomMode == Horizontal)
+		} else if (mZoomMode == ZoomMode::Horizontal)
 		{
 			xf.scale(avg, 1);
-		} else if (mZoomMode == Vertical)
+		} else if (mZoomMode == ZoomMode::Vertical)
 		{
 			xf.scale(1, avg);
 		}
@@ -136,8 +136,8 @@ void GridView::pan(const QPointF& delta)
 {
 	auto xf = transform();
 	auto scale = viewScale();
-	qreal dx = delta.x() / scale.x();
-	qreal dy = delta.y() / scale.y();
+	qreal dx = (mPanMode == PanMode::Vertical) ? 0 : delta.x() / scale.x();
+	qreal dy = (mPanMode == PanMode::Horizontal) ? 0 : delta.y() / scale.y();
 	xf.translate(dx, dy);
 	setTransform(xf);
 	viewTransformed();
@@ -223,9 +223,9 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect)
 				auto pt = mapFromScene(tx, sceneRect.top()) + QPointF(5, 15);
 				if (pt.x() > 20)
 				{
-					if (mRulerFormat == Float)
+					if (mRulerFormat == RulerFormat::Float)
 						painter->drawText(pt, QString::number(tx) + suffix);
-					else if (mRulerFormat == SMPTE)
+					else if (mRulerFormat == RulerFormat::SMPTE)
 						painter->drawText(pt, secondsToSMPTE(tx, mFramerate));
 				}
 			}
