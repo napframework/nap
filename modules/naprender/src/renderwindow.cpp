@@ -41,6 +41,18 @@ namespace nap
 	}
 
 
+	void RenderWindow::show()
+	{
+		mWindow->showWindow();
+	}
+
+
+	void RenderWindow::hide()
+	{
+		mWindow->hideWindow();
+	}
+
+
 	void RenderWindow::setFullscreen(bool value)
 	{
 		mWindow->setFullScreen(value);

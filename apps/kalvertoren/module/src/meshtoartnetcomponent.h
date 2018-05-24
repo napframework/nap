@@ -6,6 +6,7 @@
 // External includes
 #include <component.h>
 #include <artnetcontroller.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -27,10 +28,10 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		//property: Object pointer to the mesh that holds the values we want to convert and send
-		ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;
+		ResourcePtr<ArtnetMeshFromFile> mMesh = nullptr;
 
 		//property: Holds all universes that we want to use
-		std::vector<ObjectPtr<nap::ArtNetController>> mArtnetControllers;
+		std::vector<ResourcePtr<nap::ArtNetController>> mArtnetControllers;
 	};
 
 

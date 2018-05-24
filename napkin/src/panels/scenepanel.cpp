@@ -35,19 +35,19 @@ void napkin::SceneModel::refresh()
 
 }
 
-void napkin::SceneModel::onObjectAdded(nap::rtti::RTTIObject& obj)
+void napkin::SceneModel::onObjectAdded(nap::rtti::Object* obj)
 {
 	// TODO: Don't refresh entire model
 	refresh();
 }
 
-void napkin::SceneModel::onObjectRemoved(nap::rtti::RTTIObject& obj)
+void napkin::SceneModel::onObjectRemoved(nap::rtti::Object* obj)
 {
 	// TODO: Don't refresh entire model
 	refresh();
 }
 
-void napkin::SceneModel::onObjectChanged(nap::rtti::RTTIObject& obj)
+void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
 {
 	// TODO: Don't refresh entire model
 	refresh();
@@ -99,8 +99,7 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 
 	}
 
-	auto add_scene_action = menu.addAction("Add Scene...");
-	connect(add_scene_action, &QAction::triggered, []()
+	menu.addAction("Add Scene", []()
 	{
 		AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Scene)));
 	});

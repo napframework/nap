@@ -9,7 +9,7 @@ namespace nap
 {
 	namespace rtti
 	{
-		class RTTIObject;
+		class Object;
 	}
 
 	/**
@@ -20,9 +20,9 @@ namespace nap
 	class EntityObjectGraphItem
 	{
 	public:
-		using Type = rtti::RTTIObject*;
-		using ClonedResourceMap = std::unordered_map<rtti::RTTIObject*, std::vector<rtti::RTTIObject*>>;
-		using ObjectsByTypeMap = std::unordered_map<rtti::TypeInfo, std::vector<rtti::RTTIObject*>>;
+		using Type = rtti::Object*;
+		using ClonedResourceMap = std::unordered_map<rtti::Object*, std::vector<rtti::Object*>>;
+		using ObjectsByTypeMap = std::unordered_map<rtti::TypeInfo, std::vector<rtti::Object*>>;
 
 		enum class EType : uint8_t
 		{
@@ -34,7 +34,7 @@ namespace nap
 		 * Creates a graph item.
 		 * @param object Object to wrap in the item that is created.
 		 */
-		static const EntityObjectGraphItem create(rtti::RTTIObject* object, const ObjectsByTypeMap& objectsByType, const ClonedResourceMap& clonedResourceMap);
+		static const EntityObjectGraphItem create(rtti::Object* object, const ObjectsByTypeMap& objectsByType, const ClonedResourceMap& clonedResourceMap);
 
 		/**
 		 * @return ID of the item. For objects, the ID is the object ID, for files, it is the filename.
@@ -57,7 +57,7 @@ namespace nap
 		
 		EType						mType;							// Type: file or object
 		std::string					mFilename;						// If type is file, contains filename
-		rtti::RTTIObject*			mObject = nullptr;				// If type is object, contains object pointer
+		rtti::Object*			mObject = nullptr;				// If type is object, contains object pointer
 		const ObjectsByTypeMap*		mObjectsByType = nullptr;		// All objects sorted by type
 		const ClonedResourceMap*	mClonedResourceMap = nullptr;	// All cloned resources
 	};

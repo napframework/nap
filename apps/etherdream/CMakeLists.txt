@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(etherdream)
 
 #add all cpp files to SOURCES
@@ -17,23 +17,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
+# Get our modules list from project.json
+project_json_to_cmake()
+
 # preprocessor
-target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow mod_naposc mod_napsvg mod_napapp)
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-# Copy etherdream DLL
-find_package(etherdream REQUIRED)
-copy_etherdream_dll()
-
-if (WIN32)
-	# Copy freeimage DLL
-	find_package(freeimage REQUIRED)
-	copy_freeimage_dll()
-
-    # Copy over some crap window dlls
-	copy_base_windows_graphics_dlls()
-endif()
-
-# create post build event
-export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" TRUE)

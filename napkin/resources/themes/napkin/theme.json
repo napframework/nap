@@ -1,0 +1,14 @@
+{
+  "name": "Napkin",
+  "stylesheet": "style.qss",
+  "logColors": {
+    "fine": "#73748e",
+    "debug": "#8B8CA0",
+    "info": "#b0b2cb",
+    "warn": "#b9918d",
+    "error": "#C86969",
+    "fatal": "#ff4456"
+  },
+  "fonts": {
+  }
+}

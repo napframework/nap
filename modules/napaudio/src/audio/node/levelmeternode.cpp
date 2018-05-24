@@ -1,5 +1,6 @@
 #include "levelmeternode.h"
 
+#include <audio/service/audioservice.h>
 #include <audio/core/audionodemanager.h>
 
 RTTI_BEGIN_ENUM(nap::audio::LevelMeterNode::Type)
@@ -8,7 +9,6 @@ RTTI_BEGIN_ENUM(nap::audio::LevelMeterNode::Type)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterNode)
-    RTTI_CONSTRUCTOR(nap::audio::NodeManager&)
     RTTI_FUNCTION("getLevel", &nap::audio::LevelMeterNode::getLevel)
 RTTI_END_CLASS
 
@@ -18,10 +18,11 @@ namespace nap {
     
     namespace audio {
         
-        LevelMeterNode::LevelMeterNode(NodeManager& manager, TimeValue analysisWindowSize) : Node(manager)
+        LevelMeterNode::LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize)
+            : Node(nodeManager)
         {
             mBuffer.resize(getNodeManager().getSamplesPerMillisecond() * analysisWindowSize);
-            manager.registerRootNode(*this);
+            getNodeManager().registerRootNode(*this);
         }
         
         
@@ -31,16 +32,12 @@ namespace nap {
         }
         
         
-        void LevelMeterNode::setAnalysisWindowSize(TimeValue size)
-        {
-            mIndex = 0;
-            mBuffer.resize(getNodeManager().getSamplesPerMillisecond() * size);
-        }
-        
-        
         void LevelMeterNode::process()
         {
             auto inputBuffer = input.pull();
+            
+            if (inputBuffer == nullptr)
+                return;
             
             for (auto& sample : *inputBuffer)
             {

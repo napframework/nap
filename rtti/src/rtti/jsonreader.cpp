@@ -1,7 +1,7 @@
 #include "jsonreader.h"
 #include "factory.h"
 #include "utility/errorstate.h"
-#include "rtti/rttiobject.h"
+#include "rtti/object.h"
 
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
@@ -16,16 +16,18 @@ namespace nap
 	{
 		struct ReadState
 		{
-			ReadState(Factory& factory, RTTIDeserializeResult& result) :
+			ReadState(EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result) :
+				mPropertyValidationMode(propertyValidationMode),
 				mFactory(factory),
 				mResult(result)
 			{
 			}
 
-			RTTIPath							mCurrentRTTIPath;
-			Factory&							mFactory;
-			RTTIDeserializeResult&				mResult;
-			std::unordered_set<std::string>		mObjectIDs;
+			EPropertyValidationMode			mPropertyValidationMode;
+			Path							mCurrentRTTIPath;
+			Factory&						mFactory;
+			DeserializeResult&				mResult;
+			std::unordered_set<std::string>	mObjectIDs;
 		};
 
 		static const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated")
@@ -41,9 +43,9 @@ namespace nap
 			return unique_id;
 		}
 
-		static bool readArrayRecursively(rtti::RTTIObject* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState);
+		static bool readArrayRecursively(rtti::Object* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState);
 
-		static rtti::RTTIObject* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
+		static rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
 
 		/**
 		 * Helper function to read a basic JSON type to a C++ type
@@ -87,7 +89,7 @@ namespace nap
 		}
 
 
-		static bool readEmbeddedObject(const rapidjson::Value& jsonValue, ReadState& readState, rtti::RTTIObject*& resultObject, utility::ErrorState& errorState)
+		static bool readEmbeddedObject(const rapidjson::Value& jsonValue, ReadState& readState, rtti::Object*& resultObject, utility::ErrorState& errorState)
 		{
 			resultObject = nullptr;
 
@@ -99,8 +101,8 @@ namespace nap
 			else
 			{
 				// Because we're entering a new embedded object, we need to reset the 'current' RTTIPath to restart with the nested object
-				RTTIPath old_rtti_path = readState.mCurrentRTTIPath;
-				readState.mCurrentRTTIPath = RTTIPath();
+				Path old_rtti_path = readState.mCurrentRTTIPath;
+				readState.mCurrentRTTIPath = Path();
 
 				// Deserialize the nested object
 				resultObject = readObjectRecursive(jsonValue, true, readState, errorState);
@@ -117,7 +119,7 @@ namespace nap
 		/**
 		 * Helper function to recursively read an object (can be a rtti::RTTIObject, nested compound or any other type) from JSON
 		 */
-		static bool readPropertiesRecursive(rtti::RTTIObject* rootObject, rtti::Instance compound, const rapidjson::Value& jsonCompound, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
+		static bool readPropertiesRecursive(rtti::Object* rootObject, rtti::Instance compound, const rapidjson::Value& jsonCompound, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Determine the object type. Note that we want to *most derived type* of the object.
 			rtti::TypeInfo object_type = compound.get_derived_type();
@@ -129,9 +131,9 @@ namespace nap
 				readState.mCurrentRTTIPath.pushAttribute(property.get_name().data());
 
 				// Determine meta-data for the property
-				bool is_required = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Required);
+				bool is_required = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Required) && readState.mPropertyValidationMode == EPropertyValidationMode::DisallowMissingProperties;
 				bool is_file_link = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::FileLink);
-				bool is_object_id = RTTIObject::isIDProperty(compound, property);
+				bool is_object_id = Object::isIDProperty(compound, property);
 
 				// Check whether the property is present in the JSON. If it's not, but the property is required, throw an error
 				rapidjson::Value::ConstMemberIterator json_property = jsonCompound.FindMember(property.get_name().data());
@@ -166,7 +168,7 @@ namespace nap
 				if (wrapped_type.is_pointer())
 				{
 					// Pointer types must point to objects derived from rtti::RTTIObject
-					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
+					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::Object>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
 
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);
@@ -190,7 +192,7 @@ namespace nap
 					if (is_embedded_pointer)
 					{
 						// Read embedded object
-						rtti::RTTIObject* target = nullptr;
+						rtti::Object* target = nullptr;
 						if (!readEmbeddedObject(json_value, readState, target, errorState))
 							return false;
 
@@ -270,7 +272,7 @@ namespace nap
 				if (is_file_link)
 				{
 					FileLink file_link;
-					file_link.mSourceObjectID = compound.try_convert<RTTIObject>()->mID;
+					file_link.mSourceObjectID = compound.try_convert<Object>()->mID;
 					file_link.mTargetFile = property.get_value(compound).get_value<std::string>();
 					readState.mResult.mFileLinks.push_back(file_link);
 				}
@@ -303,7 +305,7 @@ namespace nap
 		/**
 		 * Helper function to recursively read an array (can be an array of basic types, nested compound, or any other type) from JSON
 		 */
-		static bool readArrayRecursively(rtti::RTTIObject* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState)
+		static bool readArrayRecursively(rtti::Object* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Pre-size the array to avoid too many dynamic allocs
 			array.set_size(jsonArray.Size());
@@ -323,7 +325,7 @@ namespace nap
 				if (wrapped_type.is_pointer())
 				{
 					// Pointer types must point to objects derived from rtti::RTTIObject
-					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
+					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::Object>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
 
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);
@@ -345,7 +347,7 @@ namespace nap
 					std::string target_id;
 					if (is_embedded_pointer)
 					{
-						rtti::RTTIObject* target = nullptr;
+						rtti::Object* target = nullptr;
 						if (!readEmbeddedObject(json_element, readState, target, errorState))
 							return false;
 
@@ -401,7 +403,7 @@ namespace nap
 			return true;
 		}
 
-		rtti::RTTIObject* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
+		rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Check whether the object is of a known type
 			rapidjson::Value::ConstMemberIterator type = jsonObject.FindMember("Type");
@@ -418,18 +420,18 @@ namespace nap
 				return nullptr;
 
 			// We only support root-level objects that derive from rtti::RTTIObject (compounds, etc can be of any type)
-			if (!errorState.check(type_info.is_derived_from(RTTI_OF(rtti::RTTIObject)), "Unable to instantiate object %s. Class is not derived from RTTIObject.", typeName))
+			if (!errorState.check(type_info.is_derived_from(RTTI_OF(rtti::Object)), "Unable to instantiate object %s. Class is not derived from RTTIObject.", typeName))
 				return nullptr;
 
 			// Create new instance of the object
-			RTTIObject* object = readState.mFactory.create(type_info);
+			Object* object = readState.mFactory.create(type_info);
 			if (!errorState.check(object != nullptr, "Failed to instantiate object of type %s.", typeName))
 				return nullptr;
 
-			readState.mResult.mReadObjects.push_back(std::unique_ptr<RTTIObject>(object));
+			readState.mResult.mReadObjects.push_back(std::unique_ptr<Object>(object));
 
 			// Recursively read properties, nested compounds, etc
-			rtti::RTTIPath path;
+			rtti::Path path;
 			if (!readPropertiesRecursive(object, *object, jsonObject, isEmbeddedObject, readState, errorState))
 				return nullptr;
 
@@ -453,7 +455,7 @@ namespace nap
 		}
 
 
-		bool deserializeJSON(const std::string& json, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState)
+		bool deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			// Try to parse the json file
 			rapidjson::Document document;
@@ -465,7 +467,7 @@ namespace nap
 			}
 
 			// Read objects
-			ReadState readState(factory, result);
+			ReadState readState(propertyValidationMode, factory, result);
 			rapidjson::Value::ConstMemberIterator objects = document.FindMember("Objects");
 			if (!errorState.check(objects != document.MemberEnd(), "Unable to find required 'Objects' field"))
 				return false;
@@ -483,13 +485,13 @@ namespace nap
 			return true;
 		}
 
-		bool readJSONFile(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState)
+		bool readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			std::string buffer;
 			if (!utility::readFileToString(path, buffer, errorState))
 				return false;
 
-			return deserializeJSON(buffer, factory, result, errorState);
+			return deserializeJSON(buffer, propertyValidationMode, factory, result, errorState);
 		}
 
 	}

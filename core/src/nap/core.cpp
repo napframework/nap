@@ -4,11 +4,19 @@
 #include "logger.h"
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
+#include "projectinfomanager.h"
+#include "rtti/jsonreader.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
 #include <iostream>
 #include <utility/fileutils.h>
+#include <packaginginfo.h>
+
+// Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
+#if defined(__APPLE__) || defined(__unix__)
+	#include <stdlib.h>
+#endif
 
 using namespace std;
 
@@ -20,6 +28,16 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	static const std::string sPossibleProjectParents[] =
+	{
+		"projects",		// User projects against packaged NAP
+		"examples",		// Example projects
+		"demos",		// Demo projects
+		"apps",			// Applications in NAP source
+		"test"			// Old test projects in NAP source
+	};
+
+
 	/**
 	@brief Constructor
 
@@ -35,8 +53,6 @@ namespace nap
 
 	Core::~Core()
 	{
-		mResourceManager->mFileLoadedSignal.disconnect(mFileLoadedSlot);
-
 		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
 		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
 		// Erase it
@@ -44,52 +60,39 @@ namespace nap
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath)
+	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath, bool runningInNonProjectContext)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
+		// Setup our Python environment
+		setupPythonEnvironment();
+		
+		// Load our module names from the project info
+		ProjectInfo projectInfo;
+		if (!runningInNonProjectContext)
+		{
+			if (!loadProjectInfoFromJSON(*this, projectInfo, error))
+				return false;
+		}
+
 		// Find our project data
 		if (!determineAndSetWorkingDirectory(error, forcedDataPath))
 			return false;
 
-		// Add resource manager and listen to file changes
-		// This has to be done after the directory is changed, to make sure that the file watcher 
-		// uses the correct directory
+		// Create the resource manager
 		mResourceManager = std::make_unique<ResourceManager>(*this);
-		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 
-		if (!loadModules(error))
+		// Load modules
+		if (!mModuleManager.loadModules(projectInfo.mModules, error))
 			return false;
-
+		
 		// Create the various services based on their dependencies
 		if (!createServices(error))
 			return false;
 
-		return true;
-	}
-
-
-	bool Core::loadModules(utility::ErrorState& error)
-	{
-		// Load all modules
-		// TODO: This should be correctly resolved, ie: the dll's should always
-		// be in the executable directory
-#ifdef _WIN32
-		mModuleManager.loadModules(utility::getExecutableDir());
-#else
-		// If we have a local lib dir let's presume that's where our modules are meant to be, for now.  Otherwise go hunting higher up where they'll be
-		// normally be built
-		std::string module_dir;
-		if (nap::utility::dirExists(utility::getExecutableDir() + "/lib"))
-			module_dir = utility::getExecutableDir() + "/lib";
-		else
-			module_dir = utility::getExecutableDir() + "/../../lib/" + utility::getFileName(utility::getExecutableDir());
-
-		mModuleManager.loadModules(module_dir);
-#endif // _WIN32
 		return true;
 	}
 
@@ -109,6 +112,7 @@ namespace nap
 
 	bool Core::initializeServices(utility::ErrorState& errorState)
 	{
+		// Initialize all services one by one
 		std::vector<Service*> objects;
 		for (const auto& service : mServices)
 		{
@@ -116,6 +120,11 @@ namespace nap
 			if (!service->init(errorState))
 				return false;
 		}
+
+		// Listen to potential resource file changes and 
+		// forward those to all registered services
+		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
+
 		return true;
 	}
 
@@ -195,6 +204,8 @@ namespace nap
 
 	void Core::shutdownServices()
 	{
+		mResourceManager.reset();
+
 		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
 			Service& service = **it;
@@ -206,15 +217,68 @@ namespace nap
 
 	bool Core::createServices(utility::ErrorState& errorState)
 	{
-		// First create and add all the services (unsorted)
-		std::vector<Service*> services;
-		for (auto& service : mModuleManager.mModules)
+		using ConfigurationByTypeMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>>;
+		ConfigurationByTypeMap configuration_by_type;
+
+		// If there is a config file, read the service configurations from it.
+		// Note that having a config file is optional, but if there *is* one, it should be valid
+		std::string config_file_path;
+		if (findProjectFilePath("config.json", config_file_path))
 		{
-			if (service.mService == rtti::TypeInfo::empty())
+			rtti::DeserializeResult deserialize_result;
+			if (!rtti::readJSONFile(config_file_path, rtti::EPropertyValidationMode::DisallowMissingProperties,  mResourceManager->getFactory(), deserialize_result, errorState))
+				return false;
+
+			for (auto& object : deserialize_result.mReadObjects)
+			{
+				if (!errorState.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
+					return false;
+
+				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+				configuration_by_type[config->getServiceType()] = std::move(config);
+			}
+		}
+
+		// Gather all service configuration types
+		std::vector<rtti::TypeInfo> service_configuration_types;
+		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), service_configuration_types);
+
+		// For any ServiceConfigurations which weren't present in the config file, construct a default version of it,
+		// so the service doesn't get a nullptr for its ServiceConfiguration if it depends on one
+		for (const rtti::TypeInfo& service_configuration_type : service_configuration_types)
+		{
+			if (service_configuration_type == RTTI_OF(ServiceConfiguration))
 				continue;
 
+			assert(service_configuration_type.is_valid());
+			assert(service_configuration_type.can_create_instance());
+
+			// Construct the service configuration
+			std::unique_ptr<ServiceConfiguration> service_configuration(service_configuration_type.create<ServiceConfiguration>());
+			rtti::TypeInfo serviceType = service_configuration->getServiceType();
+
+			// Insert it in the map if it doesn't exist. Note that if it does exist, the unique_ptr will go out of scope and the default
+			// object will be destroyed
+			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(serviceType);
+			if (pos == configuration_by_type.end())
+				configuration_by_type.insert(std::make_pair(serviceType, std::move(service_configuration)));
+		}
+
+		// First create and add all the services (unsorted)
+		std::vector<Service*> services;
+		for (auto& module : mModuleManager.mModules)
+		{
+			if (module.mService == rtti::TypeInfo::empty())
+				continue;
+
+			// Find the ServiceConfiguration that should be used to construct this service (if any)
+			ServiceConfiguration* configuration = nullptr;
+			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(module.mService);
+			if (pos != configuration_by_type.end())
+				configuration = pos->second.release();
+
 			// Create the service
-			if (!addService(service.mService, services, errorState))
+			if (!addService(module.mService, configuration, services, errorState))
 				return false;
 		}
 
@@ -270,7 +334,7 @@ namespace nap
 
 
 	// Add a new service
-	bool Core::addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& errorState)
+	bool Core::addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState)
 	{
 		assert(type.is_valid());
 		assert(type.can_create_instance());
@@ -287,7 +351,7 @@ namespace nap
 			return false;
 
 		// Add service
-		Service* service = type.create<Service>();
+		Service* service = type.create<Service>({ configuration });
 		service->mCore = this;
 		outServices.emplace_back(service);
         
@@ -341,13 +405,32 @@ namespace nap
 			return true;
 		}
 		
-		// Get project name
-		// TODO once we have packaging work merged and we compile into project-specific paths use that folder name instead
-		std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+		// Split up our executable path to scrape our project name
+		std::string exeDir = utility::getExecutableDir();
+		std::vector<std::string> dirParts;
+		utility::splitString(exeDir, '/', dirParts);
 		
 		// Find NAP root.  Looks cludgey but we have control of this, it doesn't change.
-		// TODO add another level to this then when merged with packaging and we have project-specific build paths
-		std::string napRoot = utility::getAbsolutePath("../..");
+		
+		std::string napRoot;
+		std::string projectName;
+#ifdef NAP_PACKAGED_BUILD
+		// We're running from a NAP release
+		if (dirParts.size() >= 3)
+		{
+			// Non-packaged apps against released framework
+			napRoot = utility::getAbsolutePath(exeDir + "/../../../../");
+			projectName = dirParts.end()[-3];
+		}
+		else {
+			errorState.fail("Unexpected path configuration found, could not locate project data");
+			return false;
+		}
+#else // NAP_PACKAGED_BUILD
+		// We're running from NAP source
+		napRoot = utility::getAbsolutePath(exeDir + "/../../");
+		projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+#endif // NAP_PACKAGED_BUILD
 		
 		// Iterate possible project locations
 		std::string possibleProjectParents[] =
@@ -370,5 +453,105 @@ namespace nap
 		
 		errorState.fail("Couldn't find data for project %s", projectName.c_str());
 		return false;
+	}
+
+	
+	void Core::setupPythonEnvironment()
+	{
+#ifdef _WIN32
+		const std::string platformPrefix = "msvc";
+#elif defined(__APPLE__)
+		const std::string platformPrefix = "osx";
+#else // __unix__
+		const std::string platformPrefix = "linux";
+#endif
+
+#ifdef NAP_PACKAGED_BUILD
+		const bool packagedBuild = true;
+#else
+		const bool packagedBuild = false;
+#endif
+
+		const std::string exeDir = utility::getExecutableDir();
+
+#if _WIN32
+		if (packagedBuild)
+		{
+			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
+			const std::string packagedAppPythonPath = exeDir + "/python36.zip";
+			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
+		}
+		else {
+			// Set PYTHONPATH for thirdparty location beside NAP source
+			const std::string napRoot = exeDir + "/../..";
+			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
+			_putenv_s("PYTHONPATH", pythonHome.c_str());
+		}
+#else	
+		if (packagedBuild)
+		{
+			// Check for packaged app modules dir
+			const std::string packagedAppPythonPath = exeDir + "/lib/python3.6";
+			if (utility::dirExists(packagedAppPythonPath)) {
+				setenv("PYTHONHOME", exeDir.c_str(), 1);
+			}
+			else {
+				// Set PYTHONHOME to thirdparty location within packaged NAP release
+				const std::string napRoot = exeDir + "/../../../../";
+				const std::string pythonHome = napRoot + "/thirdparty/python/";
+				setenv("PYTHONHOME", pythonHome.c_str(), 1);
+			}
+		} 
+		else {
+			// set PYTHONHOME for thirdparty location beside NAP source
+			const std::string napRoot = exeDir + "/../../";
+			const std::string pythonHome = napRoot + "/../thirdparty/python/" + platformPrefix + "/install";
+			setenv("PYTHONHOME", pythonHome.c_str(), 1);
+		}
+#endif
+	}
+	
+
+	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
+	{
+		const std::string exeDir = utility::getExecutableDir();
+		
+		// Check for the file in its normal location, beside the binary
+		const std::string alongsideBinaryPath = utility::getExecutableDir() + "/" + filename;
+		if (utility::fileExists(alongsideBinaryPath))
+		{
+			foundFilePath = alongsideBinaryPath;
+		}
+		else
+		{
+#ifndef NAP_PACKAGED_BUILD
+			// When working against NAP source find our file in the tree structure in the project source.
+			// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
+			// so that we avoid module DLL copying hell.
+
+			const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
+			const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+
+			// Iterate possible project locations
+			for (auto& parentPath : sPossibleProjectParents)
+			{
+				std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
+				if (utility::dirExists(testDataPath))
+				{
+					// We found our project folder, now let's verify we have a our file in there
+					testDataPath += "/";
+					testDataPath += filename;
+					if (utility::fileExists(testDataPath))
+					{
+						foundFilePath = testDataPath;
+						break;
+					}
+				}
+			}
+#endif // NAP_PACKAGED_BUILD
+
+		}
+
+		return !foundFilePath.empty();
 	}
 }

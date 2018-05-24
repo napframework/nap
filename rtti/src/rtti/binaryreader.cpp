@@ -2,7 +2,7 @@
 #include "rttibinaryversion.h"
 #include "factory.h"
 #include "utility/errorstate.h"
-#include "rtti/rttiobject.h"
+#include "rtti/object.h"
 #include <fstream>
 #include "rttiutilities.h"
 
@@ -39,7 +39,7 @@ namespace nap
 			return result;
 		}
 
-		static bool deserializePropertiesRecursive(rtti::RTTIObject* object, rtti::Instance compound, const PropertyMetaDataList& compoundPropertyMetaData, utility::MemoryStream& stream, rtti::RTTIPath& rttiPath, 
+		static bool deserializePropertiesRecursive(rtti::Object* object, rtti::Instance compound, const PropertyMetaDataList& compoundPropertyMetaData, utility::MemoryStream& stream, rtti::Path& rttiPath, 
 			UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles,  utility::ErrorState& errorState);
 
 		/**
@@ -142,7 +142,7 @@ namespace nap
 		/**
 		 * Helper function to recursively read an array (can be an array of basic types, nested compound, or any other type) from JSON
 		 */
-		static bool deserializeArrayRecursively(rtti::RTTIObject* rootObject, rtti::VariantArray& array, utility::MemoryStream& stream, rtti::RTTIPath& rttiPath,
+		static bool deserializeArrayRecursively(rtti::Object* rootObject, rtti::VariantArray& array, utility::MemoryStream& stream, rtti::Path& rttiPath,
 			UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState)
 		{
 			uint32_t length;
@@ -178,7 +178,7 @@ namespace nap
 				else if (wrapped_type.is_pointer())
 				{
 					// Pointer types must point to objects derived from rtti::RTTIObject
-					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
+					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::Object>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
 
 					// Determine the target of the pointer
@@ -218,8 +218,8 @@ namespace nap
 		/**
 		 * Helper function to recursively read an object (can be a rtti::RTTIObject, nested compound or any other type) from JSON
 		 */
-		static bool deserializePropertiesRecursive(rtti::RTTIObject* object, rtti::Instance compound, const PropertyMetaDataList& compoundPropertyMetaData, utility::MemoryStream& stream, 
-			rtti::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState)
+		static bool deserializePropertiesRecursive(rtti::Object* object, rtti::Instance compound, const PropertyMetaDataList& compoundPropertyMetaData, utility::MemoryStream& stream, 
+			rtti::Path& rttiPath, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState)
 		{
 			// Determine the object type. Note that we want to *most derived type* of the object.
 			rtti::TypeInfo object_type = compound.get_derived_type();
@@ -264,7 +264,7 @@ namespace nap
 				else if (wrapped_type.is_pointer())
 				{
 					// Pointer types must point to objects derived from rtti::RTTIObject
-					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
+					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::Object>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
 
 					// Determine the target of the pointer
@@ -301,7 +301,7 @@ namespace nap
 				if (metadata.mIsFileLink)
 				{
 					FileLink file_link;
-					file_link.mSourceObjectID = compound.try_convert<RTTIObject>()->mID;
+					file_link.mSourceObjectID = compound.try_convert<Object>()->mID;
 					file_link.mTargetFile = property.get_value(compound).get_value<std::string>();;
 					linkedFiles.push_back(file_link);
 				}
@@ -355,7 +355,7 @@ namespace nap
 			return true;
 		}
 
-		bool deserializeBinary(utility::MemoryStream& stream, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState)
+		bool deserializeBinary(utility::MemoryStream& stream, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			if (!errorState.check(!stream.isDone(), "Can't deserialize from empty stream"))
 				return false;
@@ -384,7 +384,7 @@ namespace nap
 					return false;
 
 				// We only support root-level objects that derive from rtti::RTTIObject (compounds, etc can be of any type)
-				if (!errorState.check(type_info.is_derived_from(RTTI_OF(rtti::RTTIObject)), "Unable to instantiate object %s. Class is not derived from Object.", object_type.c_str()))
+				if (!errorState.check(type_info.is_derived_from(RTTI_OF(rtti::Object)), "Unable to instantiate object %s. Class is not derived from Object.", object_type.c_str()))
 					return false;
 
 				// Check version
@@ -393,11 +393,11 @@ namespace nap
 					return false;
 
 				// Create new instance of the object
-				RTTIObject* object = factory.create(type_info);
-				result.mReadObjects.push_back(std::unique_ptr<RTTIObject>(object));
+				Object* object = factory.create(type_info);
+				result.mReadObjects.push_back(std::unique_ptr<Object>(object));
 
 				// Recursively read properties, nested compounds, etc
-				rtti::RTTIPath path;
+				rtti::Path path;
 				if (!deserializePropertiesRecursive(object, *object, getAllPropertyMetaData(object->get_type()), stream, path, result.mUnresolvedPointers, result.mFileLinks, errorState))
 					return false;
 			}
@@ -405,7 +405,7 @@ namespace nap
 			return true;
 		}
 
-		bool readBinary(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState)
+		bool readBinary(const std::string& path, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			// Open the file
 			std::ifstream file(path, std::ios::in | std::ios::binary);

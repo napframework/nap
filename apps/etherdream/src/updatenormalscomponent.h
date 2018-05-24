@@ -3,6 +3,7 @@
 // External include
 #include <component.h>
 #include <visualizenormalsmesh.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -24,7 +25,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// property: link to the mesh that contains the normals
-		nap::ObjectPtr<nap::VisualizeNormalsMesh> mNormalMesh = nullptr;
+		ResourcePtr<VisualizeNormalsMesh> mNormalMesh = nullptr;
 	};
 
 

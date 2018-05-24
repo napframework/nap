@@ -18,8 +18,22 @@
 #include <sceneservice.h>
 #include <scene.h>
 
+RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
+	RTTI_PROPERTY("Settings",	&nap::RenderServiceConfiguration::mSettings,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_END_CLASS
+
 namespace nap
 {
+	RenderService::RenderService(ServiceConfiguration* configuration) :
+		Service(configuration)
+	{
+	}
+
+
 	// Register all object creation functions
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
@@ -67,7 +81,7 @@ namespace nap
 	}
 	
 
-	ObjectPtr<RenderWindow> RenderService::findWindow(void* nativeWindow) const
+	rtti::ObjectPtr<RenderWindow> RenderService::findWindow(void* nativeWindow) const
 	{
 		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getWindow()->getNativeWindow() == nativeWindow; });
 		if (pos != mWindows.end())
@@ -77,7 +91,7 @@ namespace nap
 	}
 
 
-	ObjectPtr<RenderWindow> RenderService::getWindow(uint id) const
+	rtti::ObjectPtr<RenderWindow> RenderService::getWindow(uint id) const
 	{
 		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getNumber() == id; });
 		if (pos != mWindows.end())
@@ -94,7 +108,7 @@ namespace nap
 
 	void RenderService::addEvent(WindowEventPtr windowEvent)
 	{
-        nap::ObjectPtr<nap::Window> window = getWindow(windowEvent->mWindow);
+        rtti::ObjectPtr<nap::Window> window = getWindow(windowEvent->mWindow);
 		assert (window != nullptr);
 		window->addEvent(std::move(windowEvent));
 	}
@@ -254,7 +268,7 @@ namespace nap
 	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{
 		std::unique_ptr<Renderer> renderer = std::make_unique<nap::Renderer>();
-		if (!renderer->init(errorState))
+		if (!renderer->init(getConfiguration<RenderServiceConfiguration>()->mSettings, errorState))
 			return false;
 
 		mRenderer = std::move(renderer);
@@ -288,7 +302,7 @@ namespace nap
 	}
 
 
-	void RenderService::destroyGLContextResources(const std::vector<ObjectPtr<RenderWindow>>& renderWindows)
+	void RenderService::destroyGLContextResources(const std::vector<rtti::ObjectPtr<RenderWindow>>& renderWindows)
 	{
 		// If there is anything scheduled, destroy
 		if (!mGLContextResourcesToDestroy.empty())
@@ -300,7 +314,7 @@ namespace nap
 
 			// We go over the windows to make the GL context active, and then destroy 
 			// the resources for that context
-			for (const ObjectPtr<RenderWindow>& render_window : renderWindows)
+			for (const rtti::ObjectPtr<RenderWindow>& render_window : renderWindows)
 			{
 				render_window->makeActive();
 				for (auto& resource : mGLContextResourcesToDestroy)
@@ -387,4 +401,3 @@ namespace nap
 
 } // Renderservice
 
-RTTI_DEFINE_CLASS(nap::RenderService)

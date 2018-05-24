@@ -1,0 +1,9 @@
+{
+    "title": "AudioPlayback",
+    "version": "0.1.0",
+    "modules": [
+        "mod_napapp",
+        "mod_napcameracontrol",
+        "mod_napaudio"
+    ]
+}

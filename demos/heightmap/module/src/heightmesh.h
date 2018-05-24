@@ -1,9 +1,10 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <planemesh.h>
 #include <imagefromfile.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -32,7 +33,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Height map Properties
-		nap::ObjectPtr<nap::ImageFromFile> mHeightmap;					///< Property: "Heightmap" image resource
+		ResourcePtr<ImageFromFile> mHeightmap;					///< Property: "Heightmap" image resource
 		float mHeight = 1.0f;									///< Property: "Height" max elevation level applied to the mesh with a pixel value of 1
 
 		/**

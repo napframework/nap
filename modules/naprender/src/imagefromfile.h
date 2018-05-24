@@ -6,10 +6,9 @@
 namespace nap
 {
 	/**
-	 * An image holds both the cpu and gpu data associated
-	 * with a 2d image, resulting in a 2d texture (GPU) and Bitmap (CPU)
-	 * The bitmap is loaded automatically and populates the opengl texture
-	 * with the right data on initialization
+	 * An image from file holds both the cpu and gpu data associated with a 2d image, 
+	 * resulting in a 2d texture (GPU) and Bitmap (CPU)
+	 * The bitmap is loaded automatically and populates the opengl texture with the right data on initialization
 	 */
 	class NAPAPI ImageFromFile : public Image
 	{

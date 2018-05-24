@@ -1,4 +1,4 @@
-#version 150 core
+#version 330 core
 
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
@@ -12,8 +12,7 @@ out vec3 pass_Uvs;
 void main(void)
 {
 	// Calculate position
-//    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
-	gl_Position = vec4(in_Position * 2.0, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
 
 	// Pass uvs 
 	pass_Uvs = in_UV0;

@@ -11,6 +11,7 @@
 #include <mathutils.h>
 #include <selectvideocomponent.h>
 #include <selectvideomeshcomponent.h>
+#include <audio/component/levelmetercomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoModulationApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -36,7 +37,7 @@ namespace nap
 			return false;
 		
 		// Get important entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
 		mBackgroundEntity = scene->findEntity("BackgroundEntity");
 		mVideoEntity = scene->findEntity("VideoEntity");
@@ -55,12 +56,6 @@ namespace nap
 
 		SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
 		mCurrentVideo = video_selector.getIndex();
-
-		// Position window center of screen
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
-		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
-		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
-		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
 		return true;
 	}
@@ -87,11 +82,15 @@ namespace nap
 		MaterialInstance& background_material = mBackgroundEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
 		background_material.getOrCreateUniform<UniformVec3>("colorOne").setValue({ mBackgroundColorOne.getRed(), mBackgroundColorOne.getGreen(), mBackgroundColorOne.getBlue() });
 		background_material.getOrCreateUniform<UniformVec3>("colorTwo").setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
+        
+        auto level = mVideoEntity->getComponent<audio::LevelMeterComponentInstance>().getLevel();
+        // get smoothed level value
+        float smoothedLevel = mSoundLevelSmoother.update(level, deltaTime);
 
 		// Push displacement properties to material
 		MaterialInstance& displaceme_material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement);
-		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness);
+		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement + smoothedLevel * mSoundInfluence);
+		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness + smoothedLevel * mSoundInfluence);
 	}
 	
 	
@@ -226,11 +225,22 @@ namespace nap
 		{
 			ImGui::SliderFloat("Amount", &mDisplacement, 0.0f, 1.0f, "%.3f", 2.0f);
 			ImGui::SliderFloat("Random", &mRandomness, 0.0f, 1.0f, "%.3f", 2.25f);
+            ImGui::SliderFloat("Sound influence", &mSoundInfluence, 0.0f, 4.0f, "%.3f", 1.f);
 		}
 		if (ImGui::CollapsingHeader("Background Colors"))
 		{
 			ImGui::ColorEdit3("Color One", mBackgroundColorOne.getData());
 			ImGui::ColorEdit3("Color Two", mBackgroundColorTwo.getData());
+		}
+		
+		if (ImGui::CollapsingHeader("Playback"))
+		{
+			SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
+			Video* current_video = video_selector.getCurrentVideo();
+			float currentTime = current_video->getCurrentTime();
+			if (ImGui::SliderFloat("Current Time", &currentTime, 0.0f, current_video->getDuration(), "%.3fs", 1.0f))
+				current_video->seek(currentTime);
+			ImGui::Text("Total time: %fs", current_video->getDuration());
 		}
 		
 		ImGui::End();

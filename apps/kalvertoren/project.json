@@ -1,0 +1,7 @@
+{
+    "title": "Kalvertoren",
+    "version": "0.1",
+    "modules": [
+        "mod_kalvertoren"
+    ]
+}

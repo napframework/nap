@@ -3,19 +3,18 @@
 // External Includes
 #include <nshader.h>
 #include <utility/dllexport.h>
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 
 namespace nap
 {
 	/**
-	 * Wraps a shader that can be used as a resource for a material instance
-	 * Note that the shader is not initialized (created) when the resource is created
-	 * this is deferred to actual rendering because of gl initialization
+	 * Resource that loads and compiles a shader from disk using the provided vertex and fragment shader paths.
+	 * A material and material instance link to a shader. The shader is compiled on initialization.
 	 */
-	class NAPAPI Shader : public rtti::RTTIObject
+	class NAPAPI Shader : public Resource
 	{
 		friend class ShaderResourceLoader;
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 
 		/**
@@ -28,8 +27,8 @@ namespace nap
 		 */
 		opengl::Shader& getShader();
 
-		std::string							mVertPath;			///< Property: path to the vertex shader on disk
-		std::string							mFragPath;			///< Property: path to the fragment shader on disk
+		std::string							mVertPath;			///< Property: 'mVertShader' path to the vertex shader on disk
+		std::string							mFragPath;			///< Property: 'mFragShader' path to the fragment shader on disk
 
 	private:
 		// Path to shader on disk

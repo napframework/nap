@@ -1,5 +1,5 @@
 #include "linkresolver.h"
-#include "rttiobject.h"
+#include "object.h"
 #include <utility/errorstate.h>
 
 namespace nap
@@ -10,7 +10,7 @@ namespace nap
 		{
 			for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
 			{
-				ResolvedRTTIPath resolved_path;
+				ResolvedPath resolved_path;
 				if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
 					return false;
 
@@ -26,10 +26,22 @@ namespace nap
 				}
 
 				// Objects in objectsToUpdate have preference over the manager's objects. 
-				RTTIObject* target_object = findTarget(target_id);
+				Object* target_object = findTarget(target_id);
 
-				if (!errorState.check(target_object != nullptr, "Unable to resolve link to object %s from attribute %s", target_id.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
-					return false;
+				if (target_object == nullptr)
+				{
+					if (onInvalidLink(unresolved_pointer) == EInvalidLinkBehaviour::TreatAsError)
+					{
+						errorState.fail("Unable to resolve link to object %s from attribute %s", target_id.c_str(), unresolved_pointer.mRTTIPath.toString().c_str());
+						return false;
+					}
+					else
+					{
+						continue;
+					}
+				}
+
+				assert(target_object != nullptr);
 
 				TypeInfo resolved_path_type = resolved_path.getType();
 				TypeInfo actual_type = resolved_path_type.is_wrapper() ? resolved_path_type.get_wrapped_type() : resolved_path_type;

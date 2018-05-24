@@ -5,6 +5,7 @@
 #include <component.h>
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -26,7 +27,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// Get all the meshes to select from
-		std::vector<ObjectPtr<LedMesh>> mMeshes;
+		std::vector<ResourcePtr<LedMesh>> mMeshes;
 
 		// Renderable mesh component used for rendering one of the selected meshes
 		ComponentPtr<RenderableMeshComponent> mTriangleRenderableMeshComponent;

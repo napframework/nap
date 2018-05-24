@@ -16,7 +16,7 @@ namespace nap
 	class InputRouter;
 
 	/**
-	 * Extracts input events from Window and forwards them to an InputRouter.
+	 * Stores and processes input events.
 	 */
 	class NAPAPI InputService : public Service
 	{
@@ -24,7 +24,7 @@ namespace nap
 
 	public:
 		// Default constructor
-		InputService() = default;
+		InputService(ServiceConfiguration* configuration) ;
 
 		// Disable copy
 		InputService(const InputService& that) = delete;

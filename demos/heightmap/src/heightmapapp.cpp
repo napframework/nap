@@ -9,7 +9,8 @@
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
-#include <imgui/imgui.h>
+#include<imgui/imgui.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -40,6 +41,7 @@ namespace nap
 		mHeightMesh = mResourceManager->findObject<nap::HeightMesh>("HeightMesh");
 		mNormalsMaterial = mResourceManager->findObject<nap::Material>("NormalsMaterial");
 		mHeightmapMaterial = mResourceManager->findObject<nap::Material>("HeightMaterial");
+		mHeightmap = mResourceManager->findObject<nap::ImageFromFile>("HeightMapTexture");
 
 		// Position window
 		glm::ivec2 screen_size = opengl::getScreenSize(0);
@@ -200,12 +202,6 @@ namespace nap
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
-	
-	void HeightmapApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
-	}
-
 
 	int HeightmapApp::shutdown()
 	{
@@ -215,11 +211,21 @@ namespace nap
 
 	void HeightmapApp::updateGui()
 	{
+		// Draw some gui elements
 		ImGui::Begin("Controls");
-		ImGui::Checkbox("Blend Normals", &mBlendNormals);
-		ImGui::Combo("Visualize", &mSelection, "Mesh\0Normals\0Both\0\0");
-		ImGui::SliderFloat("Blend Value", &mBlendValue, 0.0f, 1.0f);
-		ImGui::SliderFloat("Normal Length", &mNormalLength, 0.0f, 1.0f);
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		RGBColorFloat clr = mTextHighlightColor.convert<RGBColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), 1.0f),
+			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		if (ImGui::CollapsingHeader("Blending"))
+		{
+			ImGui::Checkbox("Blend Normals", &mBlendNormals);
+			ImGui::Combo("Visualize", &mSelection, "Mesh\0Normals\0Both\0\0");
+			ImGui::SliderFloat("Blend Value", &mBlendValue, 0.0f, 1.0f);
+			ImGui::SliderFloat("Normal Length", &mNormalLength, 0.0f, 1.0f);
+		}
 		if (ImGui::CollapsingHeader("Colors"))
 		{
 			ImGui::ColorEdit3("Valley Color", mValleyColor.getData());
@@ -227,6 +233,10 @@ namespace nap
 			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
 			ImGui::ColorEdit3("Normal Color", mNormalColor.getData());
 			ImGui::SliderFloat("Normal Opacity", &mNormalOpacity, 0.0f, 1.0f);
+		} 
+		if (ImGui::CollapsingHeader("Height Map"))
+		{
+			ImGui::Image(*mHeightmap, { 256, 256 });
 		}
 		ImGui::End();
 	}

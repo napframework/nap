@@ -97,7 +97,8 @@ namespace napkin
 	 * @param props The properties to display in the dialog
 	 * @param message The custom to display alongside the list of properties
 	 */
-	void showPropertyListDialog(QWidget* parent, QList<PropertyPath> props, const QString& title, QString message);
+	bool showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
+									   QString message);
 
 	/**
 	 * @tparam QEnum The enum type to use
@@ -114,7 +115,18 @@ namespace napkin
 	 * Reveal the given file in Explorer, Finder, Files or whatever the OS' file browser is.
 	 * @param filename The file to show (not open)
 	 */
-	void revealInFileBrowser(const QString& filename);
+	bool revealInFileBrowser(const QString& filename);
+
+    /**
+     * Reveal the given file in an external editor associated with that file extension by the OS.
+     * @param filename The file to open
+     */
+    bool openInExternalEditor(const QString& filename);
+    
+	/**
+	 * @return The name of the OS' default file browser.
+	 */
+	QString fileBrowserName();
 
 	/**
 	 * Get the translation component from a QTransform

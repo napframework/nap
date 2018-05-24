@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <imagefromfile.h>
 #include <rendertexture2d.h>
 
@@ -15,6 +15,16 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
+		/**
+		 *	Constructor
+		 */
+		LayerInstance() = default;
+		
+		/**
+		 * Destructor
+		 */
+		virtual ~LayerInstance();
+
 		/**
 		 * Updates the LayerInstance.
 		 * @param deltaTime Time between frames.
@@ -38,9 +48,9 @@ namespace nap
 	/**
 	 * Base layer
 	 */
-	class NAPAPI Layer : public rtti::RTTIObject
+	class NAPAPI Layer : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		virtual ~Layer();
 

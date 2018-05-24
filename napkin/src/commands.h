@@ -1,7 +1,7 @@
 #pragma once
 
-#include <nap/objectptr.h>
-#include <rtti/rttipath.h>
+#include <rtti/objectptr.h>
+#include <rtti/path.h>
 
 #include <QUndoCommand>
 #include <QtCore/QVariant>
@@ -12,16 +12,17 @@
 
 namespace napkin
 {
-    /**
-     * TODO: To be implemented
-     */
+	/**
+	 * TODO: To be implemented
+	 */
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:
-		AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject* parent = nullptr);
-        /**
-         * Redo
-         */
+		AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent = nullptr);
+
+		/**
+		 * Redo
+		 */
 		void redo() override;
 
 		/**
@@ -34,50 +35,75 @@ namespace napkin
 		std::string mParentName = "";
 	};
 
+	class AddComponentCommand : public QUndoCommand
+	{
+	public:
+		AddComponentCommand(nap::Entity& entity, nap::rtti::TypeInfo type);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const rttr::type mType;
+		std::string mEntityName;
+		std::string mComponentName;
+	};
+
+	class RemoveComponentCommand : public QUndoCommand
+	{
+	public:
+		RemoveComponentCommand(nap::Component& comp);
+		void redo() override;
+		void undo() override;
+	private:
+		std::string mEntityName;
+		std::string mComponentName;
+	};
+
     /**
      * TODO: To be implemented
      */
 	class DeleteObjectCommand : public QUndoCommand
 	{
 	public:
-		DeleteObjectCommand(nap::rtti::RTTIObject& object);
-        /**
-         * Undo
-         */
-        void undo() override;
+		DeleteObjectCommand(nap::rtti::Object& object);
 
-        /**
-         * Redo
-         */
-        void redo() override;
+		/**
+		 * Undo
+		 */
+		void undo() override;
+
+		/**
+		 * Redo
+		 */
+		void redo() override;
 	private:
 		const std::string mObjectName;
 
 	};
 
-    /**
-     * This command sets the value of a property
-     * TODO: This will just set the value, undo cannot be currently made to work with nap.
-     */
+	/**
+	 * This command sets the value of a property
+	 * TODO: This will just set the value, undo cannot be currently made to work with nap.
+	 */
 	class SetValueCommand : public QUndoCommand
 	{
 	public:
-        /**
-         * @param ptr The pointer to the object
-         * @param path The path to the property
-         * @param newValue The new value of the property
-         */
+		/**
+		 * @param ptr The pointer to the object
+		 * @param path The path to the property
+		 * @param newValue The new value of the property
+		 */
 		SetValueCommand(const PropertyPath& propPath, QVariant newValue);
 
-        /**
-         * Undo
-         */
-        void undo() override;
+		/**
+		 * Undo
+		 */
+		void undo() override;
 
-        /**
-         * Redo
-         */
-        void redo() override;
+		/**
+		 * Redo
+		 */
+		void redo() override;
 
 	private:
 		const PropertyPath mPath; // The path to the property
@@ -88,27 +114,27 @@ namespace napkin
 	class SetPointerValueCommand : public QUndoCommand
 	{
 	public:
-        /**
-         * @param ptr The pointer to the object
-         * @param path The path to the property
-         * @param newValue The new value of the property
-         */
-		SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue);
+		/**
+		 * @param ptr The pointer to the object
+		 * @param path The path to the property
+		 * @param newValue The new value of the property
+		 */
+		SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue);
 
-        /**
-         * Undo
-         */
-        void undo() override;
+		/**
+		 * Undo
+		 */
+		void undo() override;
 
-        /**
-         * Redo
-         */
-        void redo() override;
+		/**
+		 * Redo
+		 */
+		void redo() override;
 
 	private:
-		const PropertyPath	mPath;		// The path to the property
+		PropertyPath		mPath;			// The path to the property
 		const std::string	mNewValue;	// The new value
-		std::string	mOldValue;	// The old value
+		std::string			mOldValue;			// The old value
 	};
 
 
@@ -189,13 +215,13 @@ namespace napkin
 		/**
 		 * @param prop The array property to add the element to
 		 */
-		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object, size_t index);
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::Object& object, size_t index);
 
 		/**
 		 * @param prop The array property to add the element to
 		 * @param index The index at which to insert the element
 		 */
-		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object);
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::Object& object);
 
 		void redo() override;
 		void undo() override;

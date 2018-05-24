@@ -1,8 +1,10 @@
 #pragma once
 
-#include <QtWidgets/QWidget>
 #include <cassert>
-#include <QtCore/QSettings>
+#include <memory>
+
+#include <QWidget>
+#include <QSettings>
 
 namespace napkin
 {
@@ -16,8 +18,10 @@ namespace napkin
 	class AutoSettings
 	{
 	public:
-		AutoSettings();
-		~AutoSettings();
+		/**
+		 * Autosettings is a Singleton, get it here.
+		 */
+		static AutoSettings& get();
 
 		/**
 		 * Store the given widget and its children recursively
@@ -44,6 +48,12 @@ namespace napkin
 		void registerStorer(WidgetStorerBase* s);
 
 	private:
+		AutoSettings();
+		AutoSettings(AutoSettings const&);
+		void operator=(AutoSettings const&);
+
+		void registerDefaults();
+
 		void storeRecursive(QWidget& w, QSettings& s) const;
 		void restoreRecursive(QWidget& w, const QSettings& s) const;
 		const QString ensureHasName(QObject& w) const;
@@ -51,7 +61,7 @@ namespace napkin
 
 		WidgetStorerBase* findStorer(const QWidget& w) const;
 
-		QList<WidgetStorerBase*> mStorers;
+		std::vector<std::unique_ptr<WidgetStorerBase>> mStorers;
 	};
 
 	/**
@@ -78,7 +88,7 @@ namespace napkin
 	class WidgetStorer : public WidgetStorerBase
 	{
 	public:
-		WidgetStorer() {}
+		WidgetStorer() = default;
 
 		/**
 		 * Store a widget.

@@ -24,7 +24,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// Property: artnet controller
-		ObjectPtr<nap::ArtNetController> mArtnetController;
+		rtti::ObjectPtr<nap::ArtNetController> mArtnetController;
 
 		// Property: min artnet channel
 		int mMinChannel = 108;

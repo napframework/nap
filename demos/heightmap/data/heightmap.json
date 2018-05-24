@@ -240,7 +240,7 @@
 					"Properties": 
 					{
 						"FieldOfView": 45.0,
-						"NearClippingPlane" : 0.1,
+						"NearClippingPlane" : 3.0,
 						"FarClippingPlane" : 3000.0
 					}
 				},

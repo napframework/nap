@@ -10,10 +10,11 @@
 #include <rtti/pythonmodule.h>
 #include <rtti/linkresolver.h>
 #include <nap/core.h>
+#include <nap/device.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_FUNCTION("findObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManager::*)(const std::string&))&nap::ResourceManager::findObject)
+	RTTI_FUNCTION("findObject", (const nap::rtti::ObjectPtr<nap::rtti::Object> (nap::ResourceManager::*)(const std::string&))&nap::ResourceManager::findObject)
 RTTI_END_CLASS
 
 namespace nap
@@ -38,7 +39,7 @@ namespace nap
 		}
 
 	private:
-		virtual RTTIObject* findTarget(const std::string& targetID) override
+		virtual Object* findTarget(const std::string& targetID) override
 		{
 			// Objects in objectsToUpdate have preference over the manager's objects. 
 			auto object_to_update = mObjectsToUpdate->find(targetID);
@@ -46,6 +47,11 @@ namespace nap
 				return mResourceManager->findObject(targetID).get();
 
 			return object_to_update->second.get();
+		}
+
+		virtual EInvalidLinkBehaviour onInvalidLink(const UnresolvedPointer& unresolvedPointer) override
+		{
+			return LinkResolver::EInvalidLinkBehaviour::TreatAsError;
 		}
 
 	private:
@@ -66,14 +72,39 @@ namespace nap
 
 	ResourceManager::RollbackHelper::~RollbackHelper()
 	{
-		if (mPatchObjects)
-			ObjectPtrManager::get().patchPointers(mService.mObjects);
+		if (!mRollbackObjects)
+			return;
+
+		// For any device that was read from json and has been started, stop it again after a failure
+		for (Device* new_device : mNewDevices)
+			new_device->stop();
+
+		// For any device that was already in the ResourceManager, but has been stopped in preparation of a real-time edit, start them again
+		utility::ErrorState errorState;
+		for (Device* existing_device : mExistingDevices)
+		{
+			bool result = existing_device->start(errorState);
+			assert(result);
+		}
+
+		rtti::ObjectPtrManager::get().patchPointers(mService.mObjects);
 	}
 
 
 	void ResourceManager::RollbackHelper::clear()
 	{
-		mPatchObjects = false;
+		mRollbackObjects = false;
+	}
+
+
+	void ResourceManager::RollbackHelper::addExistingDevice(Device& device)
+	{
+		mExistingDevices.push_back(&device);
+	}
+
+	void ResourceManager::RollbackHelper::addNewDevice(Device& device)
+	{
+		mNewDevices.push_back(&device);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -84,7 +115,7 @@ namespace nap
      * All the edges in the graph are traversed in the incoming direction. Any object that is encountered is added to the set.
      * Finally, all objects that were visited are sorted on graph depth.
  	 */
-	static void sTraverseAndSortIncomingObjects(const std::unordered_map<std::string, rtti::RTTIObject*>& dirtyObjects, const RTTIObjectGraph& objectGraph, std::vector<std::string>& sortedObjects)
+	static void sTraverseAndSortIncomingObjects(const std::unordered_map<std::string, rtti::Object*>& dirtyObjects, const RTTIObjectGraph& objectGraph, std::vector<std::string>& sortedObjects)
 	{
 		// Traverse graph for incoming links and add all of them
 		std::set<RTTIObjectGraph::Node*> nodes;
@@ -147,7 +178,7 @@ namespace nap
 			if (mObjects.find(kvp.first) == mObjects.end())
 				all_objects.push_back(kvp.second.get());
 
-		if (!objectGraph.build(all_objects, [](rtti::RTTIObject* object) { return RTTIObjectGraphItem::create(object); }, errorState))
+		if (!objectGraph.build(all_objects, [](rtti::Object* object) { return RTTIObjectGraphItem::create(object); }, errorState))
 			return false;
 
 		return true;
@@ -162,7 +193,7 @@ namespace nap
 	{
 		// Mark all the objects to update as 'dirty', we need to init() those and 
 		// all the objects that point to them (recursively)
-		std::unordered_map<std::string, nap::RTTIObject*> dirty_nodes;
+		std::unordered_map<std::string, rtti::Object*> dirty_nodes;
 		for (auto& kvp : objectsToUpdate)
 			dirty_nodes.insert(std::make_pair(kvp.first, kvp.second.get()));
 
@@ -181,39 +212,14 @@ namespace nap
 	}
 
 
-	// inits all objects 
-	bool ResourceManager::initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
-	{
-        // Init all objects in the correct order
-        for (const std::string& id : objectsToInit)
-        {
-	        rtti::RTTIObject* object = nullptr;
-        
-	        // We perform lookup by ID. Objects in objectsToUpdate have preference over the manager's objects.
-	        ObjectByIDMap::const_iterator updated_object = objectsToUpdate.find(id);
-	        if (updated_object != objectsToUpdate.end())
-		        object = updated_object->second.get();
-	        else
-		        object = findObject(id).get();
-
-			if (!object->init(errorState)) {
-				Logger::warn("Couldn't initialise object '%s'", id.c_str());
-		        return false;
-			}
-        }
-
-        return true;
-	}
-
-
 	bool ResourceManager::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
 		assert(utility::toComparableFilename(filename) != utility::toComparableFilename(externalChangedFile));
 
 		// Read objects from disk
-		RTTIDeserializeResult read_result;
-		if (!readJSONFile(filename, getFactory(), read_result, errorState))
+		DeserializeResult read_result;
+		if (!readJSONFile(filename, EPropertyValidationMode::DisallowMissingProperties, getFactory(), read_result, errorState))
 			return false;
 
 		// We first gather the objects that require an update. These are the new objects and the changed objects.
@@ -226,7 +232,7 @@ namespace nap
 		// The reason why we cannot first resolve and then compare, is because deciding what to resolve against what objects
 		// depends on the dirty comparison.
 		// Finally, we could improve on the unresolved pointer check if we could introduce actual UnresolvedPointer objects
-		// that the pointers are pointing to after loading. These would hol3d the ID, so that comparisons could be made easier.
+		// that the pointers are pointing to after loading. These would hold the ID, so that comparisons could be made easier.
 		// The reason we don't do this is because it isn't possible to do so in RTTR as it's very strict in it's type safety.
 		ObjectByIDMap objects_to_update;
 		for (auto& read_object : read_result.mReadObjects)
@@ -257,7 +263,7 @@ namespace nap
 
 		// Patch ObjectPtrs so that they point to the updated object instead of the old object. We need to do this before determining
 		// init order, otherwise a part of the graph may still be pointing to the old objects.
-		ObjectPtrManager::get().patchPointers(objects_to_update);
+		rtti::ObjectPtrManager::get().patchPointers(objects_to_update);
 
 		// Build object graph of all the objects in the manager, overlayed by the objects we want to update. Later, we will
 		// performs queries against this graph to determine init order for both resources and entities.
@@ -276,13 +282,12 @@ namespace nap
 		{
 			if (objects_to_update.find(object_to_init) == objects_to_update.end())
 			{
-				RTTIObject* object = findObject(object_to_init).get();
+				Object* object = findObject(object_to_init).get();
 				assert(object);
 
-				std::unique_ptr<RTTIObject> cloned_object = rtti::cloneObject(*object, getFactory());
+				std::unique_ptr<Object> cloned_object = rtti::cloneObject(*object, getFactory());
 				
-				// TEMP HACK: Replace original object in object graph with the cloned version. This fixes problems when real-time editing components. 
-				// This should be replaced with a rebuild of the object graph, but that change is on another branch
+				// Replace original object in object graph with the cloned version. This fixes problems when real-time editing components. 
 				RTTIObjectGraph::Node* originalObjectNode = object_graph.findNode(object->mID);
 				assert(originalObjectNode && originalObjectNode->mItem.mType == RTTIObjectGraphItem::EType::Object);
 
@@ -291,20 +296,57 @@ namespace nap
 			}
 		}
 
-		// Patch again to update pointers to objects that were cloned
-		ObjectPtrManager::get().patchPointers(objects_to_update);
+		// Objects to update contains all objects that will be updated.  We need to go through them and stop any existing devices, 
+		// so that we can start the updated versions of the devices, without the old & new device conflicting with eachother.
+		for (auto& kvp : objects_to_update)
+		{
+			if (!kvp.second->get_type().is_derived_from<Device>())
+				continue;
 
-		// init all objects in the correct order
-		if (!initObjects(objects_to_init, objects_to_update, errorState))
-			return false;
+			// We're only interested in devices which are currently in the resource manager (objects_to_update) also contains new objects.
+			ObjectByIDMap::iterator existing_object = mObjects.find(kvp.first);
+			if (existing_object != mObjects.end())
+			{
+				// Stop the device
+				Device* device = (Device*)(existing_object->second.get());
+				device->stop();
+
+				// Add the stopped device to the rollback helper, so that they're restarted when an error occurs.
+				rollback_helper.addExistingDevice(*device);
+			}
+		}
+
+		// Patch again to update pointers to objects that were cloned
+		rtti::ObjectPtrManager::get().patchPointers(objects_to_update);
+
+		// Init all objects in the correct order and start devices at the same time
+		for (const std::string& id : objects_to_init)
+		{
+			rtti::Object* object = nullptr;
+
+			ObjectByIDMap::const_iterator pos = objects_to_update.find(id);
+			assert(pos != objects_to_update.end());
+			
+			object = pos->second.get();
+			if (!errorState.check(object->init(errorState), "Couldn't initialize object '%s'", id.c_str()))
+				return false;
+
+			// If the object is a device, we also need to start it
+			if (object->get_type().is_derived_from<Device>())				
+			{
+				Device* device = (Device*)object;
+				if (!errorState.check(device->start(errorState), "Couldn't start device '%s'", id.c_str()))
+					return false;
+
+				// We add the started device to the rollback helper, so that they're automatically stopped if an error occurs during init/start of a later object.
+				rollback_helper.addNewDevice(*device);
+			}
+		}
 
 		// In case all init() operations were successful, we can now replace the objects
 		// in the manager by the new objects. This effectively destroys the old objects as well.
 		for (auto& kvp : objects_to_update)
-		{
-			mObjects.erase(kvp.first);
-			mObjects.emplace(std::make_pair(kvp.first, std::move(kvp.second)));
-		}
+			mObjects[kvp.first] = std::move(kvp.second);
 
 		for (const FileLink& file_link : read_result.mFileLinks)
 			addFileLink(filename, file_link.mTargetFile);
@@ -411,18 +453,18 @@ namespace nap
 	}
 
 
-	const ObjectPtr<RTTIObject> ResourceManager::findObject(const std::string& id)
+	const rtti::ObjectPtr<Object> ResourceManager::findObject(const std::string& id)
 	{
 		const auto& it = mObjects.find(id);
 		
 		if (it != mObjects.end())
-			return ObjectPtr<RTTIObject>(it->second.get());
+			return rtti::ObjectPtr<Object>(it->second.get());
 		
 		return nullptr;
 	}
 
 
-	void ResourceManager::addObject(const std::string& id, std::unique_ptr<RTTIObject> object)
+	void ResourceManager::addObject(const std::string& id, std::unique_ptr<Object> object)
 	{
 		assert(mObjects.find(id) == mObjects.end());
 		mObjects.emplace(id, std::move(object));
@@ -456,9 +498,9 @@ namespace nap
 	}
 
 
-	const ObjectPtr<RTTIObject> ResourceManager::createObject(const rtti::TypeInfo& type)
+	const rtti::ObjectPtr<Object> ResourceManager::createObject(const rtti::TypeInfo& type)
 	{
-		if (!type.is_derived_from(RTTI_OF(RTTIObject)))
+		if (!type.is_derived_from(RTTI_OF(Object)))
 		{
 			nap::Logger::warn("unable to create object of type: %s", type.get_name().data());
 			return nullptr;
@@ -471,7 +513,7 @@ namespace nap
 		}
 
 		// Create instance of object
-		RTTIObject* object = rtti_cast<RTTIObject>(getFactory().create(type));
+		Object* object = rtti_cast<Object>(getFactory().create(type));
 
 		// Construct path
 		std::string type_name = type.get_name().data();
@@ -485,9 +527,9 @@ namespace nap
 		}
 
 		object->mID = reso_unique_path;
-		addObject(reso_unique_path, std::unique_ptr<RTTIObject>(object));
+		addObject(reso_unique_path, std::unique_ptr<Object>(object));
 		
-		return ObjectPtr<RTTIObject>(object);
+		return rtti::ObjectPtr<Object>(object);
 	}
 
 }

@@ -8,12 +8,9 @@ import shutil
 WORKING_DIR = '.'
 
 THIRDPARTY = 'thirdparty'
-THIRDPARTY_DIR = '%s/../thirdparty' % WORKING_DIR
-THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/thirdparty.git'
-NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/nap.git'
-NAP_BRANCH = 'build'
 BUILD_DIR = 'build'
 CLEAN_BUILD = False
+LINUX_BUILD_TYPE = 'Debug'
 
 
 def isLocalGitRepo(d):
@@ -39,8 +36,8 @@ def main(targets):
         shutil.rmtree(BUILD_DIR)
 
     # generate solutions
-    if platform in ["linux", "linux2"]:
-        call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR])
+    if platform.startswith('linux'):    
+        call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % LINUX_BUILD_TYPE])
     elif platform == 'darwin':
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
     else:
@@ -54,13 +51,13 @@ def main(targets):
 
     for t in targets:
 
-        if platform in ["linux", "linux2"]:
+        if platform.startswith('linux'):
             # Linux
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['make', t, '-j%s' % cpu_count()])
 
         elif platform == 'darwin':
-            # OSX
+            # macOS
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['xcodebuild', '-project', 'Project.xcodeproj', '-target', t, '-configuration', 'Debug'])
 

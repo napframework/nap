@@ -6,6 +6,12 @@ body{
 	margin: 0;
 	font-size: 12pt;
 }
+
+#top
+{
+	border-top: 5px solid #c86969;
+}
+
 body, table, div, p, dl,
 table.directory, #nav-tree,#nav-tree .label {
 font-family:  'Nunito Sans', sans-serif;
@@ -224,7 +230,7 @@ div.line {
 	-o-transition-duration: 0.5s;
 	transition-property: background-color, box-shadow;
 	transition-duration: 0.5s;
-	font-family:  'Consolas', sans-serif;
+	font-family: 'Consolas', monospace, sans-serif;
 }
 div.line.glow {
 	background-color: blue;
@@ -1350,4 +1356,30 @@ th.markdownTableHeadLeft, th.markdownTableHeadRight, th.markdownTableHeadCenter,
 th.markdownTableHeadCenter, td.markdownTableBodyCenter {
 	text-align: middle;
 	width: 10em;
+}
+svg .graph polygon {
+    fill: transparent;
+}
+svg .node polygon {
+    fill: #8b8ca0;
+    stroke: #52546a;
+    stroke-width: 1px;
+}
+svg .graph .edge polygon{
+    fill: #52546a;
+    stroke: #52546a;
+} 
+svg .graph .edge path {
+    fill: none;
+    stroke: #52546a;
+}
+svg .graph .node text {
+    fill: #111426;
+}
+svg .graph .edge text {
+    fill: #8b8ca0;
+}
+div.contents code {
+    font-size: 0.9rem;
+    color: #c68787;
 }

@@ -3,7 +3,7 @@
 
 // Audio includes
 #include <audio/core/audionode.h>
-#include <audio/node/delay.h>
+#include <audio/utility/delay.h>
 #include <audio/utility/linearramper.h>
 
 namespace nap

@@ -1,7 +1,7 @@
 #include "entityobjectgraphitem.h"
 #include "component.h"
 #include "rtti/rttiutilities.h"
-#include "rtti/rttiobject.h"
+#include "rtti/object.h"
 
 namespace nap
 {
@@ -9,7 +9,7 @@ namespace nap
 	 * Creates a graph item.
 	 * @param object Object to wrap in the item that is created.
 	 */
-	const EntityObjectGraphItem EntityObjectGraphItem::create(rtti::RTTIObject* object, const ObjectsByTypeMap& objectsByType, const ClonedResourceMap& clonedResourceMap)
+	const EntityObjectGraphItem EntityObjectGraphItem::create(rtti::Object* object, const ObjectsByTypeMap& objectsByType, const ClonedResourceMap& clonedResourceMap)
 	{
 		EntityObjectGraphItem item;
 		item.mType = EType::Object;
@@ -55,8 +55,8 @@ namespace nap
 				if (!errorState.check(dependent_component != mObjectsByType->end(), "Component %s was unable to find dependent component of type %s", getID().c_str(), type.get_name().data()))
 					return false;
 
-				const std::vector<rtti::RTTIObject*> components = dependent_component->second;
-				for (rtti::RTTIObject* component : components)
+				const std::vector<rtti::Object*> components = dependent_component->second;
+				for (rtti::Object* component : components)
 				{
 					EntityObjectGraphItem item;
 					item.mType				= EType::Object;
@@ -106,7 +106,7 @@ namespace nap
 				ClonedResourceMap::const_iterator pos = mClonedResourceMap->find(item.mObject);
 				if (pos != item.mClonedResourceMap->end())
 				{
-					for (rtti::RTTIObject* clonedResource : pos->second)
+					for (rtti::Object* clonedResource : pos->second)
 					{
 						EntityObjectGraphItem cloned_item;
 						cloned_item.mType				= EType::Object;

@@ -29,10 +29,10 @@ namespace nap
         }
 
     
-        bool PolyphonicObjectInstance::init(NodeManager& nodeManager, utility::ErrorState& errorState)
+        bool PolyphonicObjectInstance::init(AudioService& audioService, utility::ErrorState& errorState)
         {
             auto resource = rtti_cast<PolyphonicObject>(&getResource());
-            mNodeManager = &nodeManager;
+            mAudioService = &audioService;
             
             for (auto i = 0; i < resource->mVoiceCount; ++i)
             {
@@ -44,7 +44,7 @@ namespace nap
             
             // Create the mix nodes to mix output of all the voices
             for (auto i = 0; i < resource->mVoice->mOutput->getInstance()->getChannelCount(); ++i)
-                mMixNodes.emplace_back(std::make_unique<MixNode>(resource->mVoice->getNodeManager()));
+                mMixNodes.emplace_back(mAudioService->makeSafe<MixNode>(audioService.getNodeManager()));
             
             return true;
         }
@@ -78,7 +78,7 @@ namespace nap
             
             voice->play(duration);
             
-            mNodeManager->execute([&, voice](){
+            mAudioService->enqueueTask([&, voice](){
                 std::lock_guard<std::mutex> lock(mMixNodesMutex);
                 for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
                     mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));
@@ -91,7 +91,7 @@ namespace nap
             if (!voice)
                 return;
             
-            mNodeManager->execute([&](){ voice->stop(); });
+            mAudioService->enqueueTask([&](){ voice->stop(); });
         }
         
 
@@ -115,7 +115,7 @@ namespace nap
             
             for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice.getOutput().getChannelCount()); ++channel)
             {
-                // this function is called from the audio thread, so we don't have to call NodeManager::execute() to schedule disconnection on the audio thread
+                // this function is called from the audio thread, so we don't have to call AudioService::enqueueTask() to schedule disconnection on the audio thread
                 mMixNodes[channel]->inputs.disconnect(voice.getOutput().getOutputForChannel(channel));
             }
             voice.free();

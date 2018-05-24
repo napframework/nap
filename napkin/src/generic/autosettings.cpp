@@ -1,50 +1,54 @@
 #include "autosettings.h"
 
-#include <nap/logger.h>
-
 #include <QMainWindow>
 #include <QAbstractItemView>
 #include <QHeaderView>
 #include <QTreeView>
+#include <QComboBox>
 
 using namespace napkin;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// QMainWindow Storer
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-template<>
-void WidgetStorer<QMainWindow>::store(const QMainWindow& widget, const QString& key, QSettings& s) const
+namespace napkin
 {
-	s.setValue(key + "_GEO", widget.saveGeometry());
-	s.setValue(key + "_STATE", widget.saveState());
-}
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// QMainWindow Storer
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<>
-void WidgetStorer<QMainWindow>::restore(QMainWindow& widget, const QString& key, const QSettings& s) const
-{
-	widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
-	widget.restoreState(s.value(key + "_STATE").toByteArray());
-}
+	template<>
+	void WidgetStorer<QMainWindow>::store(const QMainWindow& widget, const QString& key, QSettings& s) const
+	{
+		s.setValue(key + "_GEO", widget.saveGeometry());
+		s.setValue(key + "_STATE", widget.saveState());
+	}
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// QHeaderView Storer
-////////////////////////////////////////////////////////////////////////////////////////////////////
+	template<>
+	void WidgetStorer<QMainWindow>::restore(QMainWindow& widget, const QString& key, const QSettings& s) const
+	{
+		widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
+		widget.restoreState(s.value(key + "_STATE").toByteArray());
+	}
 
-template<>
-void WidgetStorer<QHeaderView>::store(const QHeaderView& widget, const QString& key, QSettings& s) const
-{
-	s.setValue(key + "_GEO", widget.saveGeometry());
-	s.setValue(key + "_STATE", widget.saveState());
-}
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// QHeaderView Storer
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<>
-void WidgetStorer<QHeaderView>::restore(QHeaderView& widget, const QString& key,
-											  const QSettings& s) const
-{
-	widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
-	widget.restoreState(s.value(key + "_STATE").toByteArray());
-}
+	template<>
+	void WidgetStorer<QHeaderView>::store(const QHeaderView& widget, const QString& key, QSettings& s) const
+	{
+		s.setValue(key + "_GEO", widget.saveGeometry());
+		s.setValue(key + "_STATE", widget.saveState());
+	}
+
+	template<>
+	void WidgetStorer<QHeaderView>::restore(QHeaderView& widget, const QString& key,
+											const QSettings& s) const
+	{
+		widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
+		widget.restoreState(s.value(key + "_STATE").toByteArray());
+	}
+
+} // namespace napkin
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +56,7 @@ void WidgetStorer<QHeaderView>::restore(QHeaderView& widget, const QString& key,
 
 void AutoSettings::registerStorer(WidgetStorerBase* s)
 {
-	mStorers << s;
+	mStorers.emplace_back(std::unique_ptr<WidgetStorerBase>(s));
 }
 
 void AutoSettings::store(QWidget& w) const
@@ -107,22 +111,14 @@ void AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
 
 AutoSettings::AutoSettings()
 {
-	registerStorer(new WidgetStorer<QMainWindow>());
-	registerStorer(new WidgetStorer<QHeaderView>());
-}
-
-AutoSettings::~AutoSettings()
-{
-	for (auto storer : mStorers)
-		delete storer;
-	mStorers.clear();
+	registerDefaults();
 }
 
 WidgetStorerBase* AutoSettings::findStorer(const QWidget& w) const
 {
-	for (auto storer : mStorers)
+	for (const auto& storer : mStorers)
 		if (storer->canStore(w))
-			return storer;
+			return storer.get();
 	return nullptr;
 }
 
@@ -158,5 +154,22 @@ QString AutoSettings::uniqeObjectName(QWidget& w) const
 	}
 
 	return names.join("/");
+}
+
+AutoSettings::AutoSettings(AutoSettings const&)
+{
+	registerDefaults();
+}
+
+void AutoSettings::registerDefaults()
+{
+	registerStorer(new WidgetStorer<QMainWindow>());
+	registerStorer(new WidgetStorer<QHeaderView>());
+}
+
+AutoSettings& AutoSettings::get()
+{
+	static AutoSettings instance;
+	return instance;
 }
 

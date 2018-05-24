@@ -1,10 +1,8 @@
 #pragma once
 
-#include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
-
 #include <RtMidi.h>
-
+#include <nap/device.h>
 #include "midiservice.h"
 
 namespace nap {
@@ -12,20 +10,28 @@ namespace nap {
     /**
      * Opens and manages a midi output port that midi messages can be sent to.
      */
-    class NAPAPI MidiOutputPort : public rtti::RTTIObject
+    class NAPAPI MidiOutputPort : public Device
     {
-        RTTI_ENABLE(rtti::RTTIObject)
-        
+        RTTI_ENABLE(Device)
     public:
         MidiOutputPort() = default;
         MidiOutputPort(MidiService& service);
-        virtual ~MidiOutputPort() = default;
+
+		virtual ~MidiOutputPort() override;
         
-        bool init(utility::ErrorState& errorState) override;
+        /**
+         * Starts the midi output port.
+         */
+        virtual bool start(utility::ErrorState& errorState) override;
+
+        /**
+         * Stops the midi output port.
+         */
+		virtual void stop() override;
         
         MidiService& getService() { return *mService; }
         
-        std::string mPortName = 0; /**< The name of the port that midi messages will be sent through by this object */
+        std::string mPortName = ""; /**< The name of the port that midi messages will be sent through by this object */
         
         /**
          * Sends a midi event through this output port.

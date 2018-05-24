@@ -1,11 +1,12 @@
 #pragma once
 
-#include <rtti/rttideserializeresult.h>
+#include <rtti/deserializeresult.h>
 #include <QtCore/QString>
 #include <entity.h>
 #include <QtWidgets/QUndoCommand>
 #include <nap/core.h>
 #include <generic/propertypath.h>
+#include <deque>
 
 namespace napkin
 {
@@ -18,8 +19,7 @@ namespace napkin
 	public:
 		Document(nap::Core& core) : QObject(), mCore(core)  {}
 
-		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
-				: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects)) {}
+		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects);
 		
 		~Document();
 		
@@ -48,19 +48,24 @@ namespace napkin
 		/**
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
-		nap::rtti::ObjectList getObjectPointers();
+		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
+
+		/**
+		 * @return All the objects (resources?) that are currently loaded.
+		 */
+		nap::rtti::ObjectList getObjectPointers() const;
 
 		/**
 		 * Retrieve an (data) object by name/id
 		 * @param name The name/id of the object to find
 		 * @return The found object or nullptr if none was found
 		 */
-		nap::rtti::RTTIObject* getObject(const std::string& name);
+		nap::rtti::Object* getObject(const std::string& name);
 
 		/**
 		 * Get an object by name and type
 		 */
-		nap::rtti::RTTIObject* getObject(const std::string& name, const rttr::type& type);
+		nap::rtti::Object* getObject(const std::string& name, const rttr::type& type);
 
 		/**
 		 * Get an object by name and type
@@ -70,31 +75,67 @@ namespace napkin
 
 		/**
 		 * Retrieve the parent of the specified Entity
+		 *
+		 * TODO: Move to nap::Entity if possible
+		 *
 		 * @param entity The entity to find the parent from.
 		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
 		 */
-		nap::Entity* getParent(const nap::Entity& entity);
+		nap::Entity* getParent(const nap::Entity& entity) const;
 
 		/**
 		 * Retrieve the Entity the provided Component belongs to.
+		 *
+		 * TODO: Move to nap::Component if possible
+		 *
 		 * @param component The component of which to find the owner.
 		 * @return The owner of the component
 		 */
-		nap::Entity* getOwner(const nap::Component& component);
+		nap::Entity* getOwner(const nap::Component& component) const;
 
 		/**
 		 * Set an object's name. This is similar to setting a value on it's name property,
 		 * but this ensures the object has a unique name.
+		 *
+		 * TODO: Move to nap::rtti::Object if possible
 		 */
-		const std::string& setObjectName(nap::rtti::RTTIObject& object, const std::string& name);
+		const std::string& setObjectName(nap::rtti::Object& object, const std::string& name);
 
 		/**
 		 * Add a component of the specified type to an Entity.
+		 *
+		 * TODO: Move to nap::Entity
+		 *
 		 * @param entity The entity to add the component to.
 		 * @param type The type of the desired component.
 		 * @return The newly created component.
 		 */
 		nap::Component* addComponent(nap::Entity& entity, rttr::type type);
+
+		/**
+		 * Add a component of the specified type to an Entity
+		 * TODO: Move to Entity
+		 * @tparam T The type of the desired component
+		 * @param entity The entity to add the component to.
+		 * @return The newly created component
+		 */
+		template<typename T>
+		T* addComponent(nap::Entity& entity) { return rtti_cast<T>(addComponent(entity, RTTI_OF(T))); }
+
+		/**
+		 * Get an Entity's first component of the given type.
+		 * TODO: Move to Entity
+		 * @param entity The entity that owns the component
+		 * @param componentType The type of component to look for
+		 * @return The component if found, nullptr otherwise
+		 */
+		nap::Component* getComponent(nap::Entity& entity, rttr::type componentType);
+
+		/**
+		 * Remove an Component from an Entity
+		 * @param component The component to remove from the entity.
+		 */
+		void removeComponent(nap::Component& component);
 
 		/**
 		 * Add an object of the specified type.
@@ -103,7 +144,7 @@ namespace napkin
 		 * 	In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::RTTIObject* addObject(rttr::type type, nap::rtti::RTTIObject* parent = nullptr);
+		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject = true);
 
 		/**
 		 * Add an object of the specified type
@@ -112,13 +153,19 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::RTTIObject* parent = nullptr) { return rtti_cast<T>(addObject(RTTI_OF(T), parent)); }
+		T* addObject(nap::rtti::Object* parent = nullptr) { return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, true)); }
 
 		/**
-		 * Obliterate the specified object
+		 * Add and entity to the document
+		 * @return The newly created Entity
+		 */
+		nap::Entity& addEntity();
+
+		/**
+		 * Obliterate the specified object and its dependents
 		 * @param object The object to be deleted.
 		 */
-		void removeObject(nap::rtti::RTTIObject& object);
+		void removeObject(nap::rtti::Object& object);
 
 		/**
 		 * If the object with the specified name was found, nuke it from orbit.
@@ -126,11 +173,26 @@ namespace napkin
 		void removeObject(const std::string& name);
 
 		/**
+		 * Remove an entity from a scene, note that a Scene may contain the same entity multiple times.
+		 * @param scene The Scene to remove the entity from
+		 * @param entity The entity to remove from the scene
+		 */
+		void removeEntityFromScene(nap::Scene& scene, nap::Entity& entity);
+
+		/**
+		 * Add an entity to a scene (at root level)
+		 * @param scene The Scene to add the Entity to
+		 * @param entity The Entity to add to the Scene
+		 * @return the index at which the entity was added
+		 */
+		size_t addEntityToScene(nap::Scene& scene, nap::Entity& entity);
+
+		/**
 		 * Retrieve all properties referring to the given object.
-		 * @param obj The object that is being referred to.
+		 * @param targetObject The object that is being referred to.
 		 * @return A list of properties pointing to the given object.
 		 */
-		QList<PropertyPath> getPointersTo(const nap::rtti::RTTIObject& obj);
+		QList<PropertyPath> getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent);
 
 		/**
 		 * Add an element to an array
@@ -157,7 +219,7 @@ namespace napkin
 		 * @param index The index at which to add the new element
 		 * @return The index at which the element lives.
 		 */
-		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object, size_t index);
+		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::Object* object, size_t index);
 
 		/**
 		 * Add an existing pointer to the end of an array
@@ -166,7 +228,7 @@ namespace napkin
 		 * @param object The object pointer to addd
 		 * @return The index at which the element lives.
 		 */
-		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object);
+		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::Object* object);
 
 		/**
 		 * Create an object of the specified type and add it to the array
@@ -225,6 +287,42 @@ namespace napkin
 		T arrayGetElement(const PropertyPath& path, size_t index) { return arrayGetElement(path, index).convert<T>(); }
 
 		/**
+		 * See if this object is being pointed to by an embedded pointer.
+		 * @param obj The object potentially being pointed to
+		 * @return true if this object is being pointed to by an embedded pointer
+		 */
+		bool isPointedToByEmbeddedPointer(const nap::rtti::Object& obj);
+
+		/**
+		 * Get the absolute path of an object
+		 * @param obj The object to get the path to
+		 */
+		std::string absoluteObjectPath(const nap::rtti::Object& obj) const;
+
+		/**
+		 * Retrieve an absolute object path as a list
+		 * @param obj The object to get the path to
+		 * @param result A list to store the result into
+		 */
+		void absoluteObjectPathList(const nap::rtti::Object& obj, std::deque<std::string>& result) const;
+
+		/**
+		 * Get a relative path from an object to another object as a string
+		 * @param from The starting object
+		 * @param to The object to point to
+		 * @param result The relative path :)
+		 */
+		std::string relativeObjectPath(const nap::rtti::Object& origin, const nap::rtti::Object& target) const;
+
+		/**
+		 * Get a relative path from an object to another object as a list
+		 * @param from The starting object
+		 * @param to The object to point to
+		 * @param result The relative path
+		 */
+		void relativeObjectPathList(const nap::rtti::Object& origin, const nap::rtti::Object& target, std::deque<std::string>& result) const;
+
+		/**
 		 * Execute the specified command and push the provided command onto the undostack.
 		 * @param cmd The command to be executed
 		 */
@@ -260,7 +358,7 @@ namespace napkin
 		 * @param comp
 		 * @param owner
 		 */
-		void componentAdded(nap::Component& comp, nap::Entity& owner);
+		void componentAdded(nap::Component* comp, nap::Entity* owner);
 
 		/**
 		 * Qt Signal
@@ -270,20 +368,20 @@ namespace napkin
 		 * 		This is a notification, not a directive.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object* obj, bool selectNewObject);
 
 		/**
 		 * Qt Signal
 		 * Invoked after an object has changed drastically
 		 */
-		void objectChanged(nap::rtti::RTTIObject& obj);
+		void objectChanged(nap::rtti::Object* obj);
 
 		/**
 		 * Qt Signal
 		 * Invoked just before an object is removed (including Entities)
 		 * @param object The object about to be removed
 		 */
-		void objectRemoved(nap::rtti::RTTIObject& object);
+		void objectRemoved(nap::rtti::Object* object);
 
 		/**
 		 * Qt Signal
@@ -295,17 +393,19 @@ namespace napkin
 
 
 	private:
+
 		/**
 		 * @param suggestedName
 		 * @return
 		 */
-		std::string getUniqueName(const std::string& suggestedName);
+		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object);
 
 
 		nap::Core& mCore;                        // nap's core
 		nap::rtti::OwnedObjectList mObjects;    // The objects in this document
 		QString mCurrentFilename;				// This document's filename
 		QUndoStack mUndoStack;					// This document's undostack
+
 	};
 
 }

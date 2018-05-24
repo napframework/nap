@@ -51,9 +51,10 @@ namespace nap
 		 * Loads all modules in to the core environment and creates all the associated services
 		 * @param error contains the error code when initialization fails
 		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
+		 * @param runningInNonProjectContext indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath=std::string());
+		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath=std::string(), bool runningInNonProjectContext=false);
 		
 		/**
 		* Initializes all registered services
@@ -136,6 +137,15 @@ namespace nap
 		 */
 		template <typename T>
 		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
+
+		/**
+		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
+		 * folders to find the file.
+		 * @param filename File to search for.
+		 * @param foundFilePath The full file path of where the file was found.
+		 * @return true if the file was found, otherwise false.
+		 */
+		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
 	
 	private:
 		/**
@@ -150,21 +160,17 @@ namespace nap
 		/**
 		* Adds a new service of type @type to @outServices
 		* @param type the type of service to add
+		* @param configuration The ServiceConfiguration that should be used to construct the service
 		* @param outServices the list of services the service of @type will be added to
 		* @param errorState in case of a duplicate, contains the error message if the service could not be added
 		* @return if the service was added successfully
 		*/
-		bool addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices,
-						utility::ErrorState& errorState);
-
-		/**
-		 * Load all available modules
-		 */
-		bool loadModules(utility::ErrorState& error);
+		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
-		* Forwards the call to all interested services
+		* Forwards the call to all interested services.
+		* This can only be called when the services have been initialized
 		* @param file the currently loaded resource file
 		*/
 		void resourceFileChanged(const std::string& file);
@@ -181,6 +187,12 @@ namespace nap
 		 * @return if the project data was successfully found and working path set
 		 */
 		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
+		
+		/**
+		 * Setup our Python environment to find Python in thirdparty for NAP release or NAP source,
+		 * or alongside our binary for a packaged project
+		 */
+		void setupPythonEnvironment();
 		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
