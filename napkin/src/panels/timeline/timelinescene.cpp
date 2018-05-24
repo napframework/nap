@@ -3,7 +3,6 @@
 #include "trackitem.h"
 
 #include <QList>
-#include <QtDebug>
 
 using namespace napkin;
 
@@ -116,10 +115,8 @@ void TimelineScene::setTracksExpanded(const QList<Track*> expandedTracks)
 		bool visible = expandedTracks.contains(&item->track());
 		item->setVisible(visible);
 		if (visible) {
-			qInfo() << item->track().name();
 			item->setY(y);
 			y += item->track().height();
-			qInfo() << "Height: " << y;
 		}
 	}
 }
