@@ -14,14 +14,18 @@ namespace napkin {
 		TimelineScene();
 		void setTimeline(Timeline* timeline);
 		Timeline* timeline() const { return mTimeline; }
+		void setTracksExpanded(const QList<Track*> expandedTracks);
 
 	private:
 		void onTrackAdded(Track& track);
+		void addTrack(Track& track, TrackItem* parentitem = nullptr);
 		void onTrackRemoved(Track& track);
 		void onEventAdded(Event& event);
 		void onEventRemoved(Event& event);
 
+		QList<TrackItem*> trackItems() const;
 		TrackItem* trackItem(Track& track);
+
 
 		EventItem* eventItem(Event& event);
 
