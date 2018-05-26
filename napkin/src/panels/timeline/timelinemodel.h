@@ -17,6 +17,7 @@ namespace napkin {
 		Range(const Range& other) : mStart(other.start()), mEnd(other.end()) {}
 		qreal start() const { return mStart; }
 		void setStart(qreal start) { mStart = start; }
+		void moveTo(qreal start) { qreal length = mEnd - mStart; mStart = start; mEnd = mStart + length; }
 		qreal end() const { return mEnd; }
 		void setEnd(qreal end) { mEnd = end; }
 		qreal length() const { return mEnd - mStart; }
@@ -44,6 +45,8 @@ namespace napkin {
 		qreal start() const { return mRange.start(); }
 
 		void setStart(qreal start);
+
+		void moveTo(qreal start);
 
 		qreal end() const { return mRange.end(); }
 
@@ -74,6 +77,8 @@ namespace napkin {
 	public:
 		Track(QObject& parent, const QString& name);
 
+		void setHeight(int height) { mHeight = height; changed(*this); }
+
 		int height() const { return mHeight; }
 
 		const QString& name() const { return mName; }
@@ -86,11 +91,17 @@ namespace napkin {
 
 		const QList<Event*>& events() const { return mEvents; }
 
+		void eventsRecursive(QList<Event*>& events) const;
+
 		Timeline& timeline() const;
 
 		const QList<Track*>& childTracks() const { return mChildren; }
 
+		Track* parentTrack() const;
+
 		int index();
+
+		bool range(qreal& start, qreal& end);
 
 	Q_SIGNALS:
 		void trackAdded(Track& track);
@@ -132,5 +143,4 @@ namespace napkin {
 		QList<Track*> mTracks;
 		int mFramerate = 30;
 	};
-
 }

@@ -1,4 +1,5 @@
 #include "timelinemodel.h"
+#include <QtDebug>
 
 using namespace napkin;
 
@@ -46,8 +47,20 @@ qreal Event::length() const
 	return mRange.length();
 }
 
+void Event::moveTo(qreal start)
+{
+	mRange.moveTo(start);
+	changed(*this);
+}
+
 Track::Track(QObject& parent, const QString& name) : mName(name), QObject(&parent)
-{}
+{
+
+	auto p = parentTrack();
+	if (p) {
+		connect(this, &Track::changed, p, &Track::changed);
+	}
+}
 
 void Track::setName(const QString& name)
 {
@@ -59,7 +72,11 @@ Event* Track::addEvent(const QString& name, qreal start, qreal end)
 {
 	auto event = new Event(*this, name, start, end);
 	mEvents << event;
+	connect(event, &Event::changed, [this](Event& evt) {
+		changed(*this);
+	});
 	eventAdded(*event);
+	changed(*this);
 	return event;
 }
 
@@ -82,7 +99,36 @@ Track* Track::addTrack(const QString& name)
 	auto track = new Track(*this, name);
 	mChildren << track;
 	trackAdded(*track);
+	changed(*this);
 	return track;
+}
+
+Track* Track::parentTrack() const
+{
+	return dynamic_cast<Track*>(parent());
+}
+
+bool Track::range(qreal& start, qreal& end)
+{
+	QList<Event*> allEvents;
+	eventsRecursive(allEvents);
+	if (allEvents.empty()) return false;
+	start = std::numeric_limits<qreal>::max();
+	end   = std::numeric_limits<qreal>::min();
+	for (const auto evt : allEvents)
+	{
+		start = qMin(start, evt->start());
+		end   = qMax(end, evt->end());
+	}
+	return true;
+}
+
+void Track::eventsRecursive(QList<Event*>& events) const
+{
+	for (const auto evt : mEvents)
+		events << evt;
+	for (const auto track : mChildren)
+		track->eventsRecursive(events);
 }
 
 

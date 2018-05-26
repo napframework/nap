@@ -60,7 +60,6 @@ namespace napkin
 		 */
 		void setHeaderHeight(int height);
 
-		int getTrackHeight(const Track& track) const;
 		const QList<Track*> getExpandedTracks() const;
 
 		void setVerticalScroll(int value);

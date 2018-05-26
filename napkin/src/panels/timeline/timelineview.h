@@ -32,7 +32,7 @@ namespace napkin {
 	private:
 		Timeline* timeline() const;
 		const QList<EventItem*> selectedEventItems() const;
-		QMap<EventItem*, QPointF> mSelectedPositions;
+		QMap<BaseEventItem*, QPointF> mSelectedPositions;
 
 	};
 

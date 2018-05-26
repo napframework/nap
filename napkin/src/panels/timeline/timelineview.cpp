@@ -39,7 +39,7 @@ void TimelineView::mousePressEvent(QMouseEvent* event)
 	bool lmb = event->buttons() == Qt::LeftButton;
 
 	auto item = itemAt(event->pos());
-	auto clickedEvent = dynamic_cast<EventItem*>(item);
+	auto clickedEvent = dynamic_cast<BaseEventItem*>(item);
 
 	// Handle selection
 	if (lmb && !alt)
@@ -105,12 +105,14 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event)
 			int track = qRound(newPos.y() / h);
 			auto roundedx = qRound(newPos.x() / framestep) * framestep;
 
-
-			newPos.setY(track * h);
+			newPos.setY(item->pos().y());
+//			newPos.setY(track * h);
 			newPos.setX(roundedx);
 
 			item->setPos(newPos);
 			moveItemToFront(*item);
+			item->event().moveTo(roundedx);
+
 		}
 	}
 

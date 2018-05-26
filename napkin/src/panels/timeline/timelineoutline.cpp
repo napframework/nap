@@ -128,11 +128,6 @@ void TimelineOutline::setHeaderHeight(int height)
 	mFilterTree.getLineEdit().setMaximumHeight(height);
 }
 
-int TimelineOutline::getTrackHeight(const Track& track) const
-{
-	return 0;
-}
-
 void TimelineOutline::setVerticalScroll(int value)
 {
 	mFilterTree.getTreeView().verticalScrollBar()->setValue(value);
