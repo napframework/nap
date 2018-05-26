@@ -30,6 +30,7 @@ TimelinePanel::TimelinePanel() : QWidget()
 
 	// Data
 	mView.setScene(&mScene);
+	connect(&mSplitter, &QSplitter::splitterMoved, this, &TimelinePanel::onTimelineViewTransformed);
 	connect(&mView, &GridView::viewTransformed, this, &TimelinePanel::onTimelineViewTransformed);
 
 	connect(&mOutline, &TimelineOutline::verticalScrollChanged, [this](int value) {
@@ -95,14 +96,15 @@ void TimelinePanel::demo()
 	}
 	{
 		auto track = timeline->addTrack("Second Event Track", nullptr);
+		track->setHeight(20);
 		auto child1 = track->addTrack("A Child Track");
 		child1->addEvent("Pookie", 50, 90);
 		child1->addEvent("Wookie", 100, 140);
 		child1->addEvent("Dookie", 150, 190);
 		auto child2 = track->addTrack("Another Child Track");
-		child2->addEvent("Rob", 50, 90);
-		child2->addEvent("Knob", 100, 140);
-		child2->addEvent("Bob", 150, 190);
+		child2->addEvent("Rob", 20, 65);
+		child2->addEvent("Knob", 70, 115);
+		child2->addEvent("Bob", 120, 135);
 	}
 	{
 		auto track = timeline->addTrack("Track number Three", nullptr);

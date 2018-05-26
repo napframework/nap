@@ -39,9 +39,12 @@ void TimelineScene::onTrackAdded(Track& track)
 }
 
 void TimelineScene::addTrack(Track& track, TrackItem* parentitem) {
-	QGraphicsItem* parent = parentitem ? parentitem : &mTrackGroup;
 
-	auto item = new TrackItem(parent, track);
+	TrackItem* item = nullptr;
+	if (parentitem)
+		item = new TrackItem(parentitem, track);
+	else
+		item = new TrackItem(&mTrackGroup, track);
 
 	item->setY(item->track().height() * item->track().index());
 
@@ -101,7 +104,7 @@ TrackItem* TimelineScene::trackItem(Track& track) {
 EventItem* TimelineScene::eventItem(Event& event) {
 	for (auto item : mEventGroup.childItems()) {
 		auto eventItem = dynamic_cast<EventItem*>(item);
-		if (&eventItem->event() == &event)
+		if (eventItem && &eventItem->event() == &event)
 			return eventItem;
 	}
 	return nullptr;
@@ -119,6 +122,24 @@ void TimelineScene::setTracksExpanded(const QList<Track*> expandedTracks)
 			y += item->track().height();
 		}
 	}
+}
+
+void TimelineScene::setGroupEventsVisible(bool show)
+{
+	mGroupEventsVisible = show;
+}
+
+bool TimelineScene::isGroupEventsVisible() const
+{
+	return mGroupEventsVisible;
+}
+
+BaseEventItem* TimelineScene::groupEvent(const Track& track) const
+{
+	if (!mGroupEventsVisible)
+		return nullptr;
+
+//	BaseEventItem* eventItem = ;
 }
 
 

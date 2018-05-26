@@ -13,6 +13,7 @@ napkin::Ruler::Ruler(QWidget* parent) : QWidget(parent)
 	mFont.setFamily("Monospace");
 	mFont.setStyleHint(QFont::TypeWriter);
 	setHatchFont(mFont);
+
 }
 
 
