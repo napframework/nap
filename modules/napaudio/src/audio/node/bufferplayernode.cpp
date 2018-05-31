@@ -2,6 +2,11 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::BufferPlayerNode)
     RTTI_PROPERTY("audioOutput", &nap::audio::BufferPlayerNode::audioOutput, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_FUNCTION("play", &nap::audio::BufferPlayerNode::play)
+    RTTI_FUNCTION("stop", &nap::audio::BufferPlayerNode::stop)
+    RTTI_FUNCTION("setChannel", &nap::audio::BufferPlayerNode::setChannel)
+    RTTI_FUNCTION("setSpeed", &nap::audio::BufferPlayerNode::setSpeed)
+    RTTI_FUNCTION("setPosition", &nap::audio::BufferPlayerNode::setPosition)
 RTTI_END_CLASS
 
 namespace nap
@@ -10,10 +15,9 @@ namespace nap
     namespace audio
     {
         
-        void BufferPlayerNode::play(SafePtr<MultiSampleBuffer> buffer, int channel, DiscreteTimeValue position, ControllerValue speed)
+        void BufferPlayerNode::play(int channel, DiscreteTimeValue position, ControllerValue speed)
         {
             mPlaying = true;
-            mBuffer = buffer;
             mChannel = channel;
             mPosition = position;
             mSpeed = speed;
@@ -41,6 +45,13 @@ namespace nap
         void BufferPlayerNode::setPosition(DiscreteTimeValue position)
         {
             mPosition = position;
+        }
+        
+        
+        void BufferPlayerNode::setBuffer(SafePtr<MultiSampleBuffer> buffer)
+        {
+            assert(mPlaying == false); // It is not safe to do this while playing back!
+            mBuffer = buffer;
         }
         
         
