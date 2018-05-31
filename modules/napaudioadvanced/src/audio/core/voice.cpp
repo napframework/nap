@@ -36,7 +36,7 @@ namespace nap
                 return false;
             }
             
-            mEnvelope->getEnvelopeFinishedSignal().connect(this, &VoiceInstance::envelopeFinished);
+            mEnvelope->getEnvelopeFinishedSignal().connect(envelopeFinishedSlot);
                         
             return true;
         }

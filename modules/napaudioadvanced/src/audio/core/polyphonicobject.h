@@ -84,15 +84,20 @@ namespace nap
              */
             void stop(VoiceInstance* voice);
             
+            /**
+             * Counts the number of voices that are currently playing.
+             */
+            int getBusyVoiceCount() const;
+            
         private:
             OutputPin& getOutputForChannel(int channel) override;
             int getChannelCount() const override;
             
+            Slot<VoiceInstance&> voiceFinishedSlot = { this, &PolyphonicObjectInstance::voiceFinished };
             void voiceFinished(VoiceInstance& voice);
             
             std::vector<std::unique_ptr<VoiceInstance>> mVoices;
             std::vector<SafeOwner<MixNode>> mMixNodes;
-            std::mutex mMixNodesMutex; /**< To protect mMixNodes */
             
             AudioService* mAudioService = nullptr;
         };

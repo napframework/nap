@@ -14,15 +14,18 @@ namespace nap
     namespace audio
     {
         
+        /**
+         * Multichannel oscillator object.
+         */
         class Oscillator : public MultiChannelObject
         {
             RTTI_ENABLE(MultiChannelObject)
             
         public:
-            int mChannelCount = 1;
-            std::vector<ControllerValue> mFrequency = { 220.f };
-            std::vector<ControllerValue> mAmplitude = { 1.f };
-            ResourcePtr<AudioObject> mFmInput;
+            int mChannelCount = 1; ///< property: 'ChannelCount' indicates number of channels, each channel holds an oscillator node.
+            std::vector<ControllerValue> mFrequency = { 220.f }; ///< property: 'Frequency' array of frequency values that will be mapped on the oscillators on each channel
+            std::vector<ControllerValue> mAmplitude = { 1.f }; ///< property: 'Amplitude' array of amplitude values that will be mapped on the oscillators on each channel
+            ResourcePtr<AudioObject> mFmInput; ///< property: 'FmInput' audio object of which the outputs will modulate the frequencies of the oscillators on each channel.
             
         private:
             SafeOwner<Node> createNode(int channel, AudioService& audioService) override

@@ -208,6 +208,11 @@ namespace nap
              */
             bool checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, utility::ErrorState& errorState);
             
+            /*
+             * Checks wether certain atomic types that are used within the library are lockfree and gives a warning if not.
+             */
+            void checkLockfreeTypes();
+            
 		private:
             NodeManager mNodeManager; // The node manager that performs the audio processing.
 			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.

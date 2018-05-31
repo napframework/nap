@@ -67,6 +67,8 @@ namespace nap
                 auto bufferPlayer = mAudioService->makeSafe<BufferPlayerNode>(*mNodeManager);
                 auto gain = mAudioService->makeSafe<GainNode>(*mNodeManager);
                 auto gainControl = mAudioService->makeSafe<ControlNode>(*mNodeManager);
+                
+                bufferPlayer->setBuffer(mResource->mBuffer->getBuffer());
 
                 gain->inputs.connect(bufferPlayer->audioOutput);
                 gain->inputs.connect(gainControl->output);                
@@ -84,7 +86,7 @@ namespace nap
             }            
             
             if (mResource->mAutoPlay)
-                _start(mResource->mStartPosition, mResource->mDuration);
+                start(mResource->mStartPosition, mResource->mDuration);
             
             return true;
         }
@@ -101,24 +103,14 @@ namespace nap
         }
         
         
-        void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
-        {
-            mAudioService->enqueueTask([&, duration](){
-                _start(startPosition, duration);
-            });
-        }
-        
-        
         void PlaybackComponentInstance::stop()
         {
             if (!mPlaying)
                 return;
             
-            mAudioService->enqueueTask([&](){
-                mPlaying = false;
-                for (auto& gainControl : mGainControls)
-                    gainControl->ramp(0, mFadeOutTime, ControlNode::RampMode::EXPONENTIAL);
-            });
+            mPlaying = false;
+            for (auto& gainControl : mGainControls)
+                gainControl->ramp(0, mFadeOutTime, RampMode::Linear);
         }
         
         
@@ -126,11 +118,9 @@ namespace nap
         {
             if (gain == mGain)
                 return;
-            mAudioService->enqueueTask([&, gain](){
-                mGain = gain;
-                if (mPlaying)
-                    applyGain(5);
-            });
+            mGain = gain;
+            if (mPlaying)
+                applyGain(5);
         }
         
         
@@ -138,11 +128,9 @@ namespace nap
         {
             if (panning == mStereoPanning)
                 return;
-            mAudioService->enqueueTask([&, panning](){
-                mStereoPanning = panning;
-                if (mPlaying)
-                    applyGain(5);
-            });
+            mStereoPanning = panning;
+            if (mPlaying)
+                applyGain(5);
         }
         
         
@@ -163,12 +151,10 @@ namespace nap
             if (pitch == mPitch)
                 return;
             
-            mAudioService->enqueueTask([&, pitch](){
-                mPitch = pitch;
-                ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
-                for (auto& bufferPlayer : mBufferPlayers)
-                    bufferPlayer->setSpeed(actualSpeed);
-            });
+            mPitch = pitch;
+            ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
+            for (auto& bufferPlayer : mBufferPlayers)
+                bufferPlayer->setSpeed(actualSpeed);
         }
         
         
@@ -189,7 +175,7 @@ namespace nap
         }
 
 
-        void PlaybackComponentInstance::_start(TimeValue startPosition, TimeValue duration)
+        void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
         {
             ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
             if (duration == 0)
@@ -200,7 +186,7 @@ namespace nap
             for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
             {
                 if (mBufferPlayers[channel] != nullptr)
-                    mBufferPlayers[channel]->play(mResource->mBuffer->getBuffer(), mResource->mChannelRouting[channel], startPosition * mNodeManager->getSamplesPerMillisecond(), actualSpeed);
+                    mBufferPlayers[channel]->play(mResource->mChannelRouting[channel], startPosition * mNodeManager->getSamplesPerMillisecond(), actualSpeed);
             }
             applyGain(mFadeInTime);
             mPlaying = true;

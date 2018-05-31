@@ -1,5 +1,14 @@
 #include "controlnode.h"
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::ControlNode)
+    RTTI_PROPERTY("output", &nap::audio::ControlNode::output, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_FUNCTION("setValue", &nap::audio::ControlNode::setValue)
+    RTTI_FUNCTION("getValue", &nap::audio::ControlNode::getValue)
+    RTTI_FUNCTION("ramp", &nap::audio::ControlNode::ramp)
+    RTTI_FUNCTION("stop", &nap::audio::ControlNode::stop)
+    RTTI_FUNCTION("isRamping", &nap::audio::ControlNode::isRamping)
+RTTI_END_CLASS
+
 namespace nap
 {
     
@@ -8,57 +17,35 @@ namespace nap
         
         ControlNode::ControlNode(NodeManager& manager) : Node(manager)
         {
-            mLinearRamper.destinationReachedSignal.connect(mDestinationReachedSlot);
-            mExponentialRamper.destinationReachedSignal.connect(mDestinationReachedSlot);
+            mValue.destinationReachedSignal.connect(mDestinationReachedSlot);
         }
         
         
         void ControlNode::setValue(ControllerValue value)
         {
-            mLinearRamper.stop();
-            mExponentialRamper.stop();
-            mValue = value;
+            mValue.ramp(value, 0);
         }
 
         
         ControllerValue ControlNode::getValue() const
         {
-            if (mTranslator)
-                return mTranslator->translate(mValue);
+            
+            if (mTranslator != nullptr)
+                return mTranslator->translate(mCurrentValue.load());
             else
-                return mValue;
+                return mCurrentValue.load();
         }
         
         
         void ControlNode::ramp(ControllerValue destination, TimeValue time, RampMode mode)
         {
-            switch (mode) {
-                case RampMode::LINEAR:
-                    mExponentialRamper.stop();
-                    mLinearRamper.ramp(destination, time * getNodeManager().getSamplesPerMillisecond());
-                    break;
-                    
-                case RampMode::EXPONENTIAL:
-                    mLinearRamper.stop();
-                    mExponentialRamper.ramp(destination, time * getNodeManager().getSamplesPerMillisecond());
-                    break;
-                    
-                default:
-                    break;
-            }
-        }
-        
-        
-        bool ControlNode::isRamping() const
-        {
-            return mLinearRamper.isRamping() || mExponentialRamper.isRamping();
+            mValue.ramp(destination, time * getNodeManager().getSamplesPerMillisecond(), mode);
         }
         
         
         void ControlNode::stop()
         {
-            mLinearRamper.stop();
-            mExponentialRamper.stop();
+            mValue.stop();
         }
         
         
@@ -66,23 +53,20 @@ namespace nap
         {
             auto& outputBuffer = getOutputBuffer(output);
             
-            if (mTranslator)
+            if (mTranslator != nullptr)
             {
                 for (auto i = 0; i < outputBuffer.size(); ++i)
                 {
-                    mLinearRamper.step();
-                    mExponentialRamper.step();
-                    outputBuffer[i] = mTranslator->translate(mValue);
+                    outputBuffer[i] = mTranslator->translate(mValue.getNextValue());
                 }
             }
             else {
                 for (auto i = 0; i < outputBuffer.size(); ++i)
                 {
-                    mLinearRamper.step();
-                    mExponentialRamper.step();
-                    outputBuffer[i] = mValue;
+                    outputBuffer[i] = mValue.getNextValue();
                 }
             }
+            mCurrentValue.store(mValue.getValue());
         }
         
     }
