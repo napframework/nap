@@ -19,6 +19,8 @@ namespace nap
          */
         class NAPAPI InputNode final : public Node
         {
+            RTTI_ENABLE(Node)
+            
             friend class NodeManager;
             
         public:

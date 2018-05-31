@@ -72,6 +72,11 @@ namespace nap
              */
             const std::set<OutputPin*>& getOutputs() { return mOutputs; }
             
+            /**
+             * @return: The node manager that this node is processed on
+             */
+            NodeManager& getNodeManager() { return *mNodeManager; }
+            
         protected:
             /**
              * Called whenever the sample rate that the node system runs on changes.
@@ -95,11 +100,6 @@ namespace nap
              */
             SampleBuffer& getOutputBuffer(OutputPin& output);
             
-            /**
-             * @return: The node manager that this node is processed on
-             */
-            NodeManager& getNodeManager() { return *mNodeManager; }
-
         private:
             /*
              * Override this method to do the actual audio processing and fill the buffers of this node's outputs with new audio data

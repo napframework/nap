@@ -1,5 +1,9 @@
 #include "bufferplayernode.h"
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::BufferPlayerNode)
+    RTTI_PROPERTY("audioOutput", &nap::audio::BufferPlayerNode::audioOutput, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
+
 namespace nap
 {
     
