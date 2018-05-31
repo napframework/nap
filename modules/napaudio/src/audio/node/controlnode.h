@@ -59,7 +59,7 @@ namespace nap
             /**
              * @return: wether the object is currently ramping to a new value.
              */
-            bool isRamping() const;
+            bool isRamping() const { return mValue.isRamping(); }
             
             /**
              * Stops the current ramp (if any) and stays on the current value.

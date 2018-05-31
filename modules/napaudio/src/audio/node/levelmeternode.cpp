@@ -9,6 +9,7 @@ RTTI_BEGIN_ENUM(nap::audio::LevelMeterNode::Type)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterNode)
+    RTTI_PROPERTY("input", &nap::audio::LevelMeterNode::input, nap::rtti::EPropertyMetaData::Embedded)
     RTTI_FUNCTION("getLevel", &nap::audio::LevelMeterNode::getLevel)
 RTTI_END_CLASS
 
