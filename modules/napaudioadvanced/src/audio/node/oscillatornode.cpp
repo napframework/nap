@@ -15,6 +15,8 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OscillatorNode)
     RTTI_FUNCTION("setFrequency", &nap::audio::OscillatorNode::setFrequency)
     RTTI_FUNCTION("setAmplitude", &nap::audio::OscillatorNode::setAmplitude)
     RTTI_FUNCTION("setPhaseOffset", &nap::audio::OscillatorNode::setPhase)
+    RTTI_PROPERTY("fmInput", &nap::audio::OscillatorNode::fmInput, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_PROPERTY("audioOutput", &nap::audio::OscillatorNode::output, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 namespace nap
