@@ -33,12 +33,11 @@ namespace nap
             
             /**
              * Tells the node to start playback
-             * @param buffer: the buffer to play back from
              * @param channel: the channel within the buffer to be played
              * @param position: the starting position in the source buffer in samples
              * @param speed: the playbackspeed, 1.0 means 1 sample per sample, 2 means double speed, etc.
              */
-            void play(SafePtr<MultiSampleBuffer> buffer, int channel = 0, DiscreteTimeValue position = 0, ControllerValue speed = 1.);
+            void play(int channel = 0, DiscreteTimeValue position = 0, ControllerValue speed = 1.);
             
             /**
              * Stops playback
@@ -59,6 +58,11 @@ namespace nap
              * Sets the current channel of playback while playing.
              */
             void setChannel(int channel);
+            
+            /**
+             * Sets the buffer to be played back from. Can't be called while playing!
+             */
+            void setBuffer(SafePtr<MultiSampleBuffer> buffer);
             
             /**
              * @return: the playback speed as a fraction of the original speed of the audio material in the buffer.

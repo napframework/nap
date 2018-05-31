@@ -67,6 +67,8 @@ namespace nap
                 auto bufferPlayer = mAudioService->makeSafe<BufferPlayerNode>(*mNodeManager);
                 auto gain = mAudioService->makeSafe<GainNode>(*mNodeManager);
                 auto gainControl = mAudioService->makeSafe<ControlNode>(*mNodeManager);
+                
+                bufferPlayer->setBuffer(mResource->mBuffer->getBuffer());
 
                 gain->inputs.connect(bufferPlayer->audioOutput);
                 gain->inputs.connect(gainControl->output);                
@@ -184,7 +186,7 @@ namespace nap
             for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
             {
                 if (mBufferPlayers[channel] != nullptr)
-                    mBufferPlayers[channel]->play(mResource->mBuffer->getBuffer(), mResource->mChannelRouting[channel], startPosition * mNodeManager->getSamplesPerMillisecond(), actualSpeed);
+                    mBufferPlayers[channel]->play(mResource->mChannelRouting[channel], startPosition * mNodeManager->getSamplesPerMillisecond(), actualSpeed);
             }
             applyGain(mFadeInTime);
             mPlaying = true;
