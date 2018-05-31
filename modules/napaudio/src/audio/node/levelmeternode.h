@@ -54,7 +54,7 @@ namespace nap
             SampleBuffer mBuffer; // Buffer being analyzed
             std::atomic<float> mValue = { 0 }; // Output level value stored atomically so it can be queried safely from different threads.
             int mIndex = 0; // Current write index of the buffer being analyzed.
-            Type mType = Type::RMS; // Algorithm currently being used to calculate the output level value from one buffer.
+            std::atomic<Type> mType = { Type::RMS }; // Algorithm currently being used to calculate the output level value from one buffer.
             
         };
         
