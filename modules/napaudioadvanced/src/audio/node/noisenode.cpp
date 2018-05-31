@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::NoiseNode)
-    RTTI_PROPERTY("output", &nap::audio::DelayNode::output, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_PROPERTY("audioOutput", &nap::audio::NoiseNode::audioOutput, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 namespace nap
