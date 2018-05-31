@@ -1,6 +1,14 @@
 #include "stereopannernode.h"
 #include <audio/utility/audiofunctions.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::StereoPannerNode)
+    RTTI_PROPERTY("leftInput", &nap::audio::StereoPannerNode::leftInput, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_PROPERTY("rightInput", &nap::audio::StereoPannerNode::rightInput, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_PROPERTY("leftOutput", &nap::audio::StereoPannerNode::leftOutput, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_PROPERTY("rightOutput", &nap::audio::StereoPannerNode::rightOutput, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_FUNCTION("setPanning", &nap::audio::StereoPannerNode::setPanning)
+RTTI_END_CLASS
+
 namespace nap
 {
     

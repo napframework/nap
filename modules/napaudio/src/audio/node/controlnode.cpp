@@ -1,5 +1,14 @@
 #include "controlnode.h"
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::ControlNode)
+    RTTI_PROPERTY("output", &nap::audio::ControlNode::output, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_FUNCTION("setValue", &nap::audio::ControlNode::setValue)
+    RTTI_FUNCTION("getValue", &nap::audio::ControlNode::getValue)
+    RTTI_FUNCTION("ramp", &nap::audio::ControlNode::ramp)
+    RTTI_FUNCTION("stop", &nap::audio::ControlNode::stop)
+    RTTI_FUNCTION("isRamping", &nap::audio::ControlNode::isRamping)
+RTTI_END_CLASS
+
 namespace nap
 {
     

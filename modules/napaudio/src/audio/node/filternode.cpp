@@ -1,5 +1,28 @@
 #include "filternode.h"
 
+RTTI_BEGIN_ENUM(nap::audio::FilterNode::EMode)
+    RTTI_ENUM_VALUE(nap::audio::FilterNode::EMode::LowPass, "LowPass"),
+    RTTI_ENUM_VALUE(nap::audio::FilterNode::EMode::HighPass, "HighPass"),
+    RTTI_ENUM_VALUE(nap::audio::FilterNode::EMode::BandPass, "BandPass"),
+    RTTI_ENUM_VALUE(nap::audio::FilterNode::EMode::LowRes, "LowRes"),
+    RTTI_ENUM_VALUE(nap::audio::FilterNode::EMode::HighRes, "HighRes")
+RTTI_END_ENUM
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::FilterNode)
+    RTTI_PROPERTY("audioInput", &nap::audio::FilterNode::audioInput, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_PROPERTY("audioOutput", &nap::audio::FilterNode::audioOutput, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_FUNCTION("setMode", &nap::audio::FilterNode::setMode)
+    RTTI_FUNCTION("setFrequency", &nap::audio::FilterNode::setFrequency)
+    RTTI_FUNCTION("setResonance", &nap::audio::FilterNode::setResonance)
+    RTTI_FUNCTION("setBand", &nap::audio::FilterNode::setBand)
+    RTTI_FUNCTION("setGain", &nap::audio::FilterNode::setGain)
+    RTTI_FUNCTION("getMode", &nap::audio::FilterNode::getMode)
+    RTTI_FUNCTION("getFrequency", &nap::audio::FilterNode::getFrequency)
+    RTTI_FUNCTION("getResonance", &nap::audio::FilterNode::getResonance)
+    RTTI_FUNCTION("getBand", &nap::audio::FilterNode::getBand)
+    RTTI_FUNCTION("getGain", &nap::audio::FilterNode::getGain)
+RTTI_END_CLASS
+
 namespace nap
 {
     
