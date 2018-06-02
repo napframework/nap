@@ -447,29 +447,33 @@ namespace nap
         
         void AudioService::checkLockfreeTypes()
         {
-            enum EnumType { a, b, c };
-            std::atomic<bool> boolVar;
-            std::atomic<int> intVar;
-            std::atomic<float> floatVar;
-            std::atomic<double> doubleVar;
-            std::atomic<long> longVar;
-            std::atomic<long double> longDoubleVar;
-            std::atomic<EnumType> enumVar;
-            
-            if (!boolVar.is_lock_free())
-                Logger::warn("%s is not lockfree on current platform", "atomic<bool>");
-            if (!intVar.is_lock_free())
-                Logger::warn("%s is not lockfree on current platform", "atomic<int>");
-            if (!floatVar.is_lock_free())
-                Logger::warn("%s is not lockfree on current platform", "atomic<float>");
-            if (!doubleVar.is_lock_free())
-                Logger::warn("%s is not lockfree on current platform", "atomic<double>");
-            if (!longVar.is_lock_free())
-                Logger::warn("%s is not lockfree on current platform", "atomic<long>");
-            if (!longDoubleVar.is_lock_free())
-                Logger::warn("%s is not lockfree on current platform", "atomic<long double>");
-            if (!enumVar.is_lock_free())
-                Logger::warn("%s is not lockfree on current platform", "atomic enum");
+            /**
+             * Currently this is diabled because atomic<T>::is_lock_free is unavailable in gcc < 4.8
+             */
+
+//            enum EnumType { a, b, c };
+//            std::atomic<bool> boolVar;
+//            std::atomic<int> intVar;
+//            std::atomic<float> floatVar;
+//            std::atomic<double> doubleVar;
+//            std::atomic<long> longVar;
+//            std::atomic<long double> longDoubleVar;
+//            std::atomic<EnumType> enumVar;
+//
+//            if (!boolVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<bool>");
+//            if (!intVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<int>");
+//            if (!floatVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<float>");
+//            if (!doubleVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<double>");
+//            if (!longVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<long>");
+//            if (!longDoubleVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<long double>");
+//            if (!enumVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic enum");
         }
 
     }
