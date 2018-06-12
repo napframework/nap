@@ -8,8 +8,9 @@ namespace napkin
 	class TimeDisplay
 	{
 	public:
-		virtual qreal
-		calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const = 0;
+		virtual QString name() const = 0;
+
+		virtual qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const = 0;
 
 		virtual const QString timeToString(qreal interval, qreal time) const = 0;
 
@@ -31,6 +32,8 @@ namespace napkin
 	public:
 		SMPTETimeDisplay(int framerate = 30);
 
+		QString name() const override { return "SMPTE"; };
+
 		void setFramerate(int fps);
 
 		qreal calcStepInterval(qreal windowSize, qreal viewSize, qreal minStepSize) const override;
@@ -44,6 +47,8 @@ namespace napkin
 	class GeneralTimeDisplay : public TimeDisplay
 	{
 	public:
+		QString name() const override { return "General"; };
+
 		qreal calcStepInterval(qreal windowSize, qreal viewSize, qreal minStepSize) const override;
 
 		const QString timeToString(qreal interval, qreal time) const override;
@@ -53,6 +58,8 @@ namespace napkin
 	class FloatTimeDisplay : public TimeDisplay
 	{
 	public:
+		QString name() const override { return "Float"; };
+
 		qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const override;
 
 		const QString timeToString(qreal interval, qreal time) const override;

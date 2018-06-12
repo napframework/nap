@@ -13,6 +13,8 @@ namespace napkin
 	public:
 		Ruler(QWidget* parent = 0);
 
+		void setDisplayFormat(TimeDisplay* fmt) { mTimeConfig = fmt; }
+
 		void setRange(const Range& range);
 
 		void setHeight(int height);
