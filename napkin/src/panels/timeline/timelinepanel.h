@@ -46,6 +46,7 @@ namespace napkin
 
 	private:
 		void onTimelineViewTransformed();
+		QActionGroup& createTimeFormatActionGroup();
 
 		TimelineView mView;
 		TimelineScene mScene;
@@ -57,6 +58,17 @@ namespace napkin
 		QWidget mTimelineWidget;
 		QSplitter mSplitter;
 		Ruler mRuler;
+
+		// Time display
+		SMPTETimeDisplay mTimeDisplaySMPTE;
+		GeneralTimeDisplay mTimeDisplayGeneral;
+		FloatTimeDisplay mTimeDisplayFloat;
+
+		QList<TimeDisplay*> mTimeDisplays = {
+			&mTimeDisplaySMPTE,
+			&mTimeDisplayGeneral,
+			&mTimeDisplayFloat
+		};
 	};
 
 }

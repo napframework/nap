@@ -51,6 +51,9 @@ TimelinePanel::TimelinePanel() : QWidget()
 	demo();
 
 	mScene.setTracksExpanded(mOutline.getExpandedTracks());
+
+
+	createTimeFormatActionGroup();
 }
 
 void TimelinePanel::setTimeScale(qreal scale)
@@ -140,6 +143,19 @@ void TimelinePanel::demo()
 
 	setTimeline(timeline);
 
+}
+
+QActionGroup& TimelinePanel::createTimeFormatActionGroup()
+{
+	auto actionGroupTimeFormat = new QActionGroup(this);
+	for (auto timedisplay : mTimeDisplays) {
+		auto action = actionGroupTimeFormat->addAction(timedisplay->name());
+		connect(action, &QAction::triggered, [this]() {
+			mRuler.setDisplayFormat(timedisplay);
+		});
+	}
+
+	return *actionGroupTimeFormat;
 }
 
 
