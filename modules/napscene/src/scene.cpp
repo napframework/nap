@@ -543,6 +543,15 @@ namespace nap
 		std::unordered_set<std::string>	cloned_component_ids;			// Set used to generate unique IDs for all cloned components
 
 		EntityCreationParameters entityCreationParams(object_graph);
+        
+        // Fill EntityCreationParams.mAllInstancesByID with all existing entities and components in the Scene.
+        // When we spawn entities at runtime after initialization we need this information in order to generate unique mID values.
+        for (auto& entityPair : mEntityInstancesByID)
+        {
+            entityCreationParams.mAllInstancesByID[entityPair.first] = entityPair.second.get();
+            for (auto component : entityPair.second->getComponents())
+                entityCreationParams.mAllInstancesByID[component->mID] = component;
+        }
 
 		// Create clones of all Components in all entities that have InstanceProperties set for them.
 		// Note that while InstanceProperties can only be set on the root Entity, they can still target Components in child entities
