@@ -21,24 +21,22 @@ namespace nap
 		public:
 			virtual rtti::TypeInfo getServiceType() { return RTTI_OF(AudioService); }
 
-            /** 
-             * If true, the default host API, audio input and output device on this system are being used
-             */
-            bool mUseDefaultDevice = true;
-            
             /**
              * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
              * The host API is an audio driver API like Windows MME, ASIO, CoreAudio, Jack, etc.
+             * If left empty the default host API will be used.
              */
             std::string mHostApi = "";
             
             /**
              * Name of the input device being used. Use @AudioService to poll for available devices for a certain host API.
+             * If left empty, the default input device will be used.
              */
             std::string mInputDevice = "";
 
             /** 
              * Name of the output device being used. Use @AudioService to poll for available devices for a certain host API.
+             * If left empty the default output device will be used.
              */
             std::string mOutputDevice = "";
             
@@ -167,11 +165,18 @@ namespace nap
             std::string getDeviceName(unsigned int hostApiIndex, unsigned int deviceIndex);
             
             /**
-             * Returns the device index for a device for a certain host API specified both by name.
+             * Returns the device index for a device specified by name for a given host API .
              * Uses case insensitive search.
              * Returns -1 if the device specified was not found.
              */
-            int getDeviceIndex(const std::string& hostApi, const std::string& device);
+            int getDeviceIndex(int hostApiIndex, const std::string& device);
+            
+            /**
+             * Returns the index for a certain host API specified both by name.
+             * Uses case insensitive search.
+             * Returns -1 if the host api specified was not found.
+             */
+            int getHostApiIndex(const std::string& hostApi);
             
 			/**
              * This function is typically called by a hardware callback from the device to perform all the audio processing.
@@ -198,11 +203,6 @@ namespace nap
             }
 
 		private:
-			/*
-             * Start the audio stream using the default audio devices available on the system.
-             */
-            bool startDefaultDevice(utility::ErrorState& errorState);
-		
             /*
              * Verifies if the ammounts of input and output channels specified in the configuration are supported on the given devices. If not and @mAllowChannelCountFailure is set to true, it will use the maximum numbers of channels of the selected devices instead. If @mAllowChannelCountFailure is false initialization will fail.
              */
