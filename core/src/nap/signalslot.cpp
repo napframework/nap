@@ -1,4 +1,4 @@
-#include <nap/signalslot.h>
+#include "signalslot.h"
 
 #include <nap/logger.h>
 
