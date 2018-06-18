@@ -1,15 +1,22 @@
 #pragma once
 
+// Std includes
 #include <functional>
 #include <set>
 #include <vector>
 #include <memory>
 
+// Pybind11 includes
 #include "pybind11/pybind11.h"
 
 namespace nap
 {
+    
+    // Forward declarations
 	template<typename... Args> class Slot;
+    
+    // This function is a helper to call the logger from cpp in order to avoid a circular dependency between signalslot.h and logger.h
+    void logInfo(const std::string& message);
 
     /**
      * A callable signal to which slots, functions or other signals can be connected to provide loose coupling.
@@ -307,8 +314,15 @@ namespace nap
     {
         Function func = [pythonFunction](Args... args)
         {
-            pythonFunction(pybind11::cast(std::forward<Args>(args)..., std::is_lvalue_reference<Args>::value
-                                          ? pybind11::return_value_policy::reference : pybind11::return_value_policy::automatic_reference)...);
+            try
+            {
+                pythonFunction(pybind11::cast(std::forward<Args>(args)..., std::is_lvalue_reference<Args>::value
+                                              ? pybind11::return_value_policy::reference : pybind11::return_value_policy::automatic_reference)...);
+            }
+            catch (const pybind11::error_already_set& err)
+            {
+                logInfo(std::string("Runtime python error while executing signal: ") + std::string(err.what()));
+            }
         };
         connect(func);
     }
