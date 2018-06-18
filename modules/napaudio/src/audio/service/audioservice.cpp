@@ -26,6 +26,7 @@ RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
     RTTI_PROPERTY("AllowChannelCountFailure", &nap::audio::AudioServiceConfiguration::mAllowChannelCountFailure,    nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleRate",			&nap::audio::AudioServiceConfiguration::mSampleRate,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize",			&nap::audio::AudioServiceConfiguration::mBufferSize,			nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("InternalBufferSize", &nap::audio::AudioServiceConfiguration::mInternalBufferSize,            nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioService)
