@@ -549,7 +549,8 @@
                     "Controller": "Universe7",
                     "MinChannel": 108,
                     "MaxChannel": 288,
-                    "Send": true
+                    "Send": true,
+                    "IntensityComponent": "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::LightIntensityComponent",
@@ -581,32 +582,6 @@
                     "Player": "VideoPlayer",
                     "MidiInputComponent": "nap::MidiInputComponent",
                     "FadeTime": 0.75
-                },
-                {
-                    "Type": "nap::audio::VideoAudioComponent",
-                    "mID": "VideoAudioComponent",
-                    "Video": "VideoPlayer",
-                    "ChannelCount": 2
-                },
-                {
-                    "Type": "nap::audio::OutputComponent",
-                    "mID": "nap::audio::OutputComponent",
-                    "Input": "VideoAudioComponent",
-                    "Routing": [
-                        0,
-                        1
-                    ]
-                },
-                {
-                    "Type": "nap::audio::LevelMeterComponent",
-                    "mID": "nap::audio::LevelMeterComponent",
-                    "Input": "VideoAudioComponent",
-                    "AnalysisWindowSize": 10.0,
-                    "MeterType": "RMS",
-                    "FilterInput": false,
-                    "CenterFrequency": 10000.0,
-                    "BandWidth": 10000.0,
-                    "Channel": 0
                 },
                 {
                     "Type": "nap::MidiInputComponent",
@@ -758,7 +733,7 @@
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
                     "ShowIndexColors": false,
-                    "BlendToWhite": false,
+                    "BlendToWhite": true,
                     "BlendAxis": 1,
                     "BlendRange": {
                         "x": 0.2750000059604645,

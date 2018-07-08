@@ -73,9 +73,6 @@ namespace nap
 		mGui = std::make_unique<KalvertorenGui>(*this);
 		mGui->init();
 
-		// Start logging to directory
-		nap::Logger::logToDirectory(utility::getExecutableDir());
-
 		return true;
 	}
 
