@@ -209,37 +209,33 @@ namespace nap
 				struct timeval tv;
 
 				// wait for timeout (x milliseconds) before timing out read request
-				rtimer.reset();
-				while (rtimer.getTicks() < mActiveTime)
-				{
-					// Setup file socket descriptors
-					FD_ZERO(&rset);
-					FD_SET(mSocketDescriptor, &rset);
-					tv.tv_usec = mActiveTime - ((mActiveTime / 1000) * 1000);
-					tv.tv_sec  = mActiveTime / 1000;
+				// Setup file socket descriptors
+				FD_ZERO(&rset);
+				FD_SET(mSocketDescriptor, &rset);
+				tv.tv_usec = mActiveTime - ((mActiveTime / 1000) * 1000);
+				tv.tv_sec  = mActiveTime / 1000;
 
-					// Wait for reply
-					switch (select(mSocketDescriptor + 1, &rset, NULL, NULL, &tv))
+				// Wait for reply
+				switch (select(mSocketDescriptor + 1, &rset, NULL, NULL, &tv))
+				{
+				case 0:
+				{
+					nap::Logger::warn("Artnet network poll request timed out: %s", mID.c_str());
+					break;
+				}	
+				case -1:
+				{
+					nap::Logger::warn("Artnet network select error: %s", mID.c_str());
+					break;
+				}
+				default:
+				{
+					if (artnet_read(mNode, 0) != 0)
 					{
-					case 0:
-					{
-						nap::Logger::warn("Artnet network poll request timed out: %s", mID.c_str());
-						break;
-					}	
-					case -1:
-					{
-						nap::Logger::warn("Artnet network select error: %s", mID.c_str());
-						break;
+						nap::Logger::warn("Artnet read request failed: %s", mID.c_str());
 					}
-					default:
-					{
-						if (artnet_read(mNode, 0) != 0)
-						{
-							nap::Logger::warn("Artnet read request failed: %s", mID.c_str());
-						}
-						break;
-					}
-					}
+					break;
+				}
 				}
 			}
 
@@ -249,5 +245,6 @@ namespace nap
 			std::chrono::milliseconds comp_time(nap::math::min<uint32>(ntimer.getTicks(), mActiveTime));
 			std::this_thread::sleep_for(wait_time - comp_time);
 		}
+		nap::Logger::info("ended poll task: %s", mID.c_str());
 	}
 }
