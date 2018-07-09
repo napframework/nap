@@ -3,6 +3,8 @@
 // External Includes
 #include <rtti/factory.h>
 #include <nap/device.h>
+#include <future>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -11,8 +13,22 @@ namespace nap
 	class ArtNetService;
 
 	/**
-	 * Creates an ArtNet address mapping so that data can be sent to it.
-	 *
+	 * Mode used by an artnet controller to send data.
+	 * When set to broadcast the message is broadcasted over the network.
+	 * When set to unicast the message is only send to compatible nodes.
+	 * Compatible nodes match the subnet and universe of the controller.
+	 */
+	enum class EArtnetMode : int
+	{
+		Broadcast	= 0,			///< Artnet data is broadcasted over the network
+		Unicast		= 1				///< Artnet data is sent only to compatible nodes that share the same universe and subnet
+	};
+
+
+	/**
+	 * Creates an ArtNet controller node. 
+	 * A controller node is used to convert dmx data into artnet data that is send over the network.
+	 * Every controller node has a subnet and universe associated with it.
 	 * See comments in ArtNetService on addressing on how data is eventually sent over the network.
 	 */
 	class NAPAPI ArtNetController : public Device
@@ -107,24 +123,50 @@ namespace nap
 		 */
 		static const int getMaxUpdateFrequency();
 
+		uint8_t				mSubnet = 0;									///< Subnet, in range from 0 - 15
+		uint8_t				mUniverse = 0;									///< Universe, in range from 0 - 15
+		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Update artnet refresh rate, the default is the maximum refresh rate
+		float				mWaitTime = 2.0f;								///< Number of seconds before the control data is send regardless of changes
+		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Artnet message mode
+		int					mUnicastLimit = 10;								///< Allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
+		float				mTimeOut = 1.0f;								///< Timeout in seconds when polling network for node activity
+		bool				mVerbose;										///< Prints artnet network traffic information to the consolve
+
 	private:
 
+		friend class ArtNetService;
+		
 		/**
 		 * @return libArtNet node, used for sending data
 		 */
 		ArtNetNode getNode() const { return mNode; }
 
-	public:
-		uint8_t				mSubnet = 0;									///< Subnet, in range from 0x0..0xF
-		uint8_t				mUniverse = 0;									///< Universe, in range from 0x0..0xF
-		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Update artnet refresh rate, the default is the maximum refresh rate
-		float				mWaitTime = 2.0f;								///< Number of seconds before the control data is send regardless of changes
+		/**
+		 * Sends out a poll request and reads / interprets node information from the network
+		 * This runs deferred as a task when mode = Unicast
+		 * Ensures the list of available nodes to send data to remains up to date
+		 */
+		void pollAndRead();
 
-	private:
-		friend class ArtNetService;
+		/**
+		 * Sets the time out limit for retrieving node information from the network
+		 * @param timeout the new timeout in seconds
+		 */
+		void setTimeout(uint32 milliseconds);
 
-		ArtNetService*		mService = nullptr;		// ArtNetService
-		ArtNetNode			mNode = nullptr;		// libArtNet node for sending data
+		/**
+		 * Stops the background task from reading Artnet information of the network
+		 * Called automatically when stopping this device.
+		 */
+		void stopPolling();
+
+		ArtNetService*		mService = nullptr;								///< ArtNetService
+		ArtNetNode			mNode = nullptr;								///< libArtNet node for sending data
+		int					mFoundNodes = 0;								///< Total number of artnet nodes found on the network
+		int					mSocketDescriptor = -1;							///< Artnet node socket descriptor
+		std::future<void>	mReadTask;										///< Task that updates available nodes on the network
+		bool				mKeepPolling = true;							///< If the node keeps polling for changes
+		uint32				mActiveTime = 0;								///< Number of milliseconds before poll request times out
 	};
 
 	using ArtNetNodeCreator = rtti::ObjectCreator<ArtNetController, ArtNetService>;
