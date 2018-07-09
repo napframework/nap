@@ -6,7 +6,11 @@
             "Subnet": 0,
             "Universe": 0,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":3
         },
         {
             "Type": "nap::ArtNetController",
@@ -14,7 +18,11 @@
             "Subnet": 0,
             "Universe": 1,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":3
         },
         {
             "Type": "nap::ArtNetController",
@@ -22,7 +30,11 @@
             "Subnet": 0,
             "Universe": 2,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":3
         },
         {
             "Type": "nap::ArtNetController",
@@ -30,7 +42,11 @@
             "Subnet": 0,
             "Universe": 3,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":3
         },
         {
             "Type": "nap::ArtNetController",
@@ -38,7 +54,11 @@
             "Subnet": 0,
             "Universe": 4,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":3
         },
         {
             "Type": "nap::ArtNetController",
@@ -46,7 +66,11 @@
             "Subnet": 0,
             "Universe": 5,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":3
         },
         {
             "Type": "nap::ArtNetController",
@@ -54,7 +78,11 @@
             "Subnet": 0,
             "Universe": 6,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":3
         },
         {
             "Type": "nap::ArtNetController",
@@ -62,7 +90,11 @@
             "Subnet": 0,
             "Universe": 7,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":3
         },
         {
             "Type": "nap::ArtNetController",
@@ -70,7 +102,11 @@
             "Subnet": 0,
             "Universe": 8,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":3
         },
         {
             "Type": "nap::ArtnetMeshFromFile",
