@@ -133,8 +133,8 @@ namespace nap
 		float				mWaitTime = 2.0f;								///< Number of seconds before the control data is send regardless of changes
 		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Artnet message mode
 		int					mUnicastLimit = 10;								///< Allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
-		float				mTimeOut = 1.0f;								///< Timeout in seconds when polling network for node activity
 		bool				mVerbose;										///< Prints artnet network traffic information to the consolve
+		float				mReadTimeout = 2.0f;							///< Poll network read timeout
 
 	private:
 
@@ -150,7 +150,7 @@ namespace nap
 		 * This runs deferred as a task when mode = Unicast
 		 * Ensures the list of available nodes to send data to remains up to date
 		 */
-		void pollAndRead();
+		void exePollTask();
 
 		/**
 		 * Stops the background task from reading Artnet information of the network
@@ -165,6 +165,11 @@ namespace nap
 		void startPolling();
 
 		/**
+		 *	Actually performs the poll request
+		 */
+		void doPoll();
+
+		/**
 		 * Update called by service on main thread
 		 */
 		void update(double deltaTime);
@@ -176,12 +181,11 @@ namespace nap
 
 		// Polling
 		std::future<void>			mReadTask;										///< Task that updates available nodes on the network
-		std::condition_variable		mConditionVar;
-		std::mutex					mPollMutex;
-		nap::utility::SystemTimer	mPollTimer;
-		std::atomic<bool>			mRead = false;									///< Perform a read operation on the main thread
+		std::condition_variable		mConditionVar;									///< Used for telling the polling task to continue
+		std::mutex					mPollMutex;										///< Used for locking critical resources
+		nap::utility::SystemTimer	mPollTimer;										///< Send out a poll request every 3 seconds (as dictated by the artnet standard)
 		bool						mPoll = true;									///< Perform a poll operation on separate thread
-		bool						mExit = false;									///< Cancel all running operations and exit task
+		std::atomic<bool>			mExit = false;									///< Cancel all running operations and exit task
 	};
 
 	using ArtNetNodeCreator = rtti::ObjectCreator<ArtNetController, ArtNetService>;

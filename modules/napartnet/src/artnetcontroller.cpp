@@ -24,8 +24,8 @@ RTTI_BEGIN_CLASS(nap::ArtNetController)
 	RTTI_PROPERTY("Frequency",		&nap::ArtNetController::mUpdateFrequency,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Mode",			&nap::ArtNetController::mMode,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("UnicastLimit",	&nap::ArtNetController::mUnicastLimit,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Timeout",		&nap::ArtNetController::mTimeOut,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Verbose",		&nap::ArtNetController::mVerbose,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Timeout",		&nap::ArtNetController::mReadTimeout,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -79,6 +79,10 @@ namespace nap
 
 		// get the socket descriptor
 		mSocketDescriptor = artnet_get_sd(mNode);
+
+		// Read timeout can't be more than 3 seconds, which is the poll rate
+		// Artnet also specifies that nodes must respond within 3 seconds
+		mReadTimeout = nap::math::min<float>(mReadTimeout, 3.0f);
 
 		// Set the broadcast limit
 		// When in unicast mode spin up an a-sync task to keep track of the
@@ -165,15 +169,80 @@ namespace nap
 
 	void ArtNetController::startPolling()
 	{
+		// Ensure we're not managing an already existing task
+		assert(!mReadTask.valid());
+
 		// Set the poll related variables thread safe
-		std::lock_guard<std::mutex> lock(mPollMutex);
 		mPoll = true;
-		mRead = false;
 		mExit = false;
 		mPollTimer.start();
 
 		// Fire up the reading task
-		mReadTask = std::async(std::launch::async, std::bind(&ArtNetController::pollAndRead, this));
+		mReadTask = std::async(std::launch::async, std::bind(&ArtNetController::exePollTask, this));
+	}
+
+
+	void ArtNetController::doPoll()
+	{
+		if (mVerbose)
+			nap::Logger::info("issuing new poll request: %s", mID.c_str());
+
+		// Actual artnet poll request
+		if (artnet_send_poll(mNode, NULL, ARTNET_TTM_DEFAULT) != 0)
+		{
+			if(mVerbose)
+				nap::Logger::warn("artnet poll request failed: %s", mID.c_str());
+			return;
+		}
+
+		// Initialize file descriptor and timer for select operation
+		fd_set rset;
+		struct timeval tv;
+
+		// Gather network responses based on the last poll request
+		// This gives artnet the chance to update it's node list internally
+		nap::utility::SystemTimer select_timer;
+		select_timer.start();
+		while (select_timer.getElapsedTime() < mReadTimeout)
+		{
+			// If exit was called break out of this loop
+			if(mExit)
+				break;
+
+			// Setup socket descriptor
+			FD_ZERO(&rset);
+			FD_SET(mSocketDescriptor, &rset);
+			tv.tv_usec = 0;
+			tv.tv_sec  = 1;
+			int maxsd = mSocketDescriptor;
+			
+			// Wait for reply
+			switch (select(maxsd + 1, &rset, NULL, NULL, &tv))
+			{
+				case 0:
+				{
+					if (mVerbose)
+						nap::Logger::warn("artnet network poll request timed out: %s", mID.c_str());
+					break;
+				}
+				case -1:
+				{
+					if (mVerbose)
+						nap::Logger::warn("artnet network select error: %s", mID.c_str());
+					break;
+				}
+				default:
+				{
+					// I assume here that reading is thread safe.
+					// The documentation states that only manipulating nodes lists is not thread safe
+					// Leading to the assumption that actually reading a reply is handled internally in a thread safe way
+					// If this is not the case make sure to protect the read here to ensure the list is not whilst sending dmx data. 
+					// Sending is handled inside the artnet service
+					artnet_read(mNode, 0);
+					break;
+				}
+			}
+		}
 	}
 
 
@@ -204,18 +273,9 @@ namespace nap
 		// Read data from socket if required, always do this before issuing a new poll request
 		// Issue that request when time since previous poll exceeds timeout limit
 		{
-			if (mRead)
-			{
-				if (mVerbose)
-					nap::Logger::info("reading node information: %s", mID.c_str());
-				std::lock_guard<std::mutex> lock(mPollMutex);
-				artnet_read(mNode, 0);
-				mRead = false;
-			}
-
 			// Check if we need to perform another poll request
 			// If so notify the task by changing the value and waking it up
-			if (mPollTimer.getElapsedTimeFloat() > mTimeOut)
+			if (mPollTimer.getElapsedTimeFloat() > 3.0f)
 			{
 				std::lock_guard<std::mutex> lock(mPollMutex);
 				mPoll = true;
@@ -226,18 +286,18 @@ namespace nap
 	}
 
 
-	void ArtNetController::pollAndRead()
+	void ArtNetController::exePollTask()
 	{
 		// Acquire network nodes information while running
 		while (true)
 		{
-			// Wait for a poll request, also, don't poll when still having to read
+			// Wait for a poll request
 			// When the device is stopped make sure the task is exited asap 
 			{
 				std::unique_lock<std::mutex> lock(mPollMutex);
 				mConditionVar.wait(lock, [this]()
 				{
-					return ((mPoll && !mRead) || mExit);
+					return (mPoll || mExit);
 				});
 
 				// Exit poll loop when exit has been triggered
@@ -247,60 +307,13 @@ namespace nap
 				}
 			}
 
-			// Perform a new poll
-			{
-				if (mVerbose)
-					nap::Logger::info("issuing new poll request: %s", mID.c_str());
+			// Poll
+			doPoll();
 
-				// Poll other nodes on the network
-				if (artnet_send_poll(mNode, NULL, ARTNET_TTM_DEFAULT) == 0)
-				{
-					// Some select variables
-					fd_set rset;
-					struct timeval tv;
-
-					// wait for timeout (x milliseconds) before timing out read request
-					// Setup file socket descriptors
-					FD_ZERO(&rset);
-					FD_SET(mSocketDescriptor, &rset);
-					tv.tv_usec = int((mTimeOut - float(int(mTimeOut))) * 1000.0f);
-					tv.tv_sec  = static_cast<int>(mTimeOut);
-
-					// Wait for reply
-					switch (select(mSocketDescriptor + 1, &rset, NULL, NULL, &tv))
-					{
-					case 0:
-					{
-						nap::Logger::warn("Artnet network poll request timed out: %s", mID.c_str());
-						break;
-					}
-					case -1:
-					{
-						nap::Logger::warn("Artnet network select error: %s", mID.c_str());
-						break;
-					}
-					default:
-					{
-						// Set the read flag safely, mutex is released when exiting scope
-						std::lock_guard<std::mutex> lock(mPollMutex);
-						mRead = true;
-						break;
-					}
-					}
-				}
-				else
-				{
-					nap::Logger::warn("Artnet poll request failed: %s", mID.c_str());
-				}
-
-				// Set the poll flag to false, forcing next iteration of poll request to wait until 
-				// the main thread signals a new poll request
-				std::lock_guard<std::mutex> lock(mPollMutex);
-				mPoll = false;
-			}
+			// Set the poll flag to false, forcing a wait until a new poll request
+			std::lock_guard<std::mutex> lock(mPollMutex);
+			mPoll = false;
 		}
-
-		if(mVerbose)
-			nap::Logger::info("ended artnet poll task: %s", mID.c_str());
+		nap::Logger::info("ArtNet poll task ended: %s", mID.c_str());
 	}
 }
