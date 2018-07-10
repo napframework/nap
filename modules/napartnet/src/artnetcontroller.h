@@ -185,7 +185,7 @@ namespace nap
 		std::mutex					mPollMutex;										///< Used for locking critical resources
 		nap::utility::SystemTimer	mPollTimer;										///< Send out a poll request every 3 seconds (as dictated by the artnet standard)
 		bool						mPoll = true;									///< Perform a poll operation on separate thread
-		std::atomic<bool>			mExit = false;									///< Cancel all running operations and exit task
+		std::atomic<bool>			mExit = { false };								///< Cancel all running operations and exit task
 	};
 
 	using ArtNetNodeCreator = rtti::ObjectCreator<ArtNetController, ArtNetService>;
