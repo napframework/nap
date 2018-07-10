@@ -53,7 +53,7 @@ namespace nap
 
 		// Create a new artnet (controller) node
 		assert(mNode == nullptr);
-		mNode = artnet_new(NULL, mVerbose ? 1 : 0);
+		mNode = artnet_new(NULL, (mVerbose ? 1 : 0));
 
 		// Add controller
 		if (!mService->addController(*this, errorState))
@@ -198,6 +198,7 @@ namespace nap
 		// Initialize file descriptor and timer for select operation
 		fd_set rset;
 		struct timeval tv;
+		int socket_d = mSocketDescriptor;
 
 		// Gather network responses based on the last poll request
 		// This gives artnet the chance to update it's node list internally
@@ -211,10 +212,10 @@ namespace nap
 
 			// Setup socket descriptor
 			FD_ZERO(&rset);
-			FD_SET(mSocketDescriptor, &rset);
+			FD_SET(socket_d, &rset);
 			tv.tv_usec = 0;
 			tv.tv_sec  = 1;
-			int maxsd = mSocketDescriptor;
+			int maxsd = socket_d;
 			
 			// Wait for reply
 			switch (select(maxsd + 1, &rset, NULL, NULL, &tv))
@@ -238,6 +239,8 @@ namespace nap
 					// Leading to the assumption that actually reading a reply is handled internally in a thread safe way
 					// If this is not the case make sure to protect the read here to ensure the list is not whilst sending dmx data. 
 					// Sending is handled inside the artnet service
+					if(mVerbose)
+						nap::Logger::info("reading node information: %s", mID.c_str());
 					artnet_read(mNode, 0);
 					break;
 				}
