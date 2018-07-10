@@ -6,7 +6,11 @@
             "Subnet": 0,
             "Universe": 0,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":true,
+            "Timeout":2.0
         },
         {
             "Type": "nap::ArtNetController",
@@ -14,7 +18,11 @@
             "Subnet": 0,
             "Universe": 1,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":false,
+            "Timeout":2.0
         },
         {
             "Type": "nap::ArtNetController",
@@ -22,7 +30,11 @@
             "Subnet": 0,
             "Universe": 2,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":false,
+            "Timeout":2.0
         },
         {
             "Type": "nap::ArtNetController",
@@ -30,7 +42,11 @@
             "Subnet": 0,
             "Universe": 3,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":false,
+            "Timeout":2.0
         },
         {
             "Type": "nap::ArtNetController",
@@ -38,7 +54,11 @@
             "Subnet": 0,
             "Universe": 4,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":false,
+            "Timeout":2.0
         },
         {
             "Type": "nap::ArtNetController",
@@ -46,7 +66,11 @@
             "Subnet": 0,
             "Universe": 5,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":false,
+            "Timeout":2.0
         },
         {
             "Type": "nap::ArtNetController",
@@ -54,7 +78,11 @@
             "Subnet": 0,
             "Universe": 6,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":false,
+            "Timeout":2.0
         },
         {
             "Type": "nap::ArtNetController",
@@ -62,7 +90,11 @@
             "Subnet": 0,
             "Universe": 7,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":false,
+            "Timeout":2.0
         },
         {
             "Type": "nap::ArtNetController",
@@ -70,7 +102,11 @@
             "Subnet": 0,
             "Universe": 8,
             "WaitTime": 2.0,
-            "Frequency": 44
+            "Frequency": 44,
+            "Mode":"Unicast",
+            "UnicastLimit":100,
+            "Verbose":false,
+            "Timeout":2.0
         },
         {
             "Type": "nap::ArtnetMeshFromFile",
@@ -549,7 +585,8 @@
                     "Controller": "Universe7",
                     "MinChannel": 108,
                     "MaxChannel": 288,
-                    "Send": true
+                    "Send": true,
+                    "IntensityComponent": "nap::LightIntensityComponent"
                 },
                 {
                     "Type": "nap::LightIntensityComponent",
@@ -581,32 +618,6 @@
                     "Player": "VideoPlayer",
                     "MidiInputComponent": "nap::MidiInputComponent",
                     "FadeTime": 0.75
-                },
-                {
-                    "Type": "nap::audio::VideoAudioComponent",
-                    "mID": "VideoAudioComponent",
-                    "Video": "VideoPlayer",
-                    "ChannelCount": 2
-                },
-                {
-                    "Type": "nap::audio::OutputComponent",
-                    "mID": "nap::audio::OutputComponent",
-                    "Input": "VideoAudioComponent",
-                    "Routing": [
-                        0,
-                        1
-                    ]
-                },
-                {
-                    "Type": "nap::audio::LevelMeterComponent",
-                    "mID": "nap::audio::LevelMeterComponent",
-                    "Input": "VideoAudioComponent",
-                    "AnalysisWindowSize": 10.0,
-                    "MeterType": "RMS",
-                    "FilterInput": false,
-                    "CenterFrequency": 10000.0,
-                    "BandWidth": 10000.0,
-                    "Channel": 0
                 },
                 {
                     "Type": "nap::MidiInputComponent",
@@ -758,7 +769,7 @@
                     "CompositionRenderer": "RenderCompositionComponent",
                     "ColorPaletteComponent": "../ColorPaletteComponent",
                     "ShowIndexColors": false,
-                    "BlendToWhite": false,
+                    "BlendToWhite": true,
                     "BlendAxis": 1,
                     "BlendRange": {
                         "x": 0.2750000059604645,

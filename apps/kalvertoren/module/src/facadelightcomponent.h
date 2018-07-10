@@ -1,8 +1,12 @@
 #pragma once
 
+// Local Includes
+#include "lightintensitycomponent.h"
+
 // External Includes
 #include <component.h>
 #include <artnetcontroller.h>
+#include <componentptr.h>
 
 namespace nap
 {
@@ -25,6 +29,9 @@ namespace nap
 
 		// Property: artnet controller
 		rtti::ObjectPtr<nap::ArtNetController> mArtnetController;
+
+		// Property: light controller
+		ComponentPtr<nap::LightIntensityComponent> mIntensityComponent;
 
 		// Property: min artnet channel
 		int mMinChannel = 108;
@@ -61,11 +68,17 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		/**
+		 *	Resolved component instance pointer
+		 */
+		ComponentInstancePtr<LightIntensityComponent> mIntensityComponent = { this, &FacadeLightComponent::mIntensityComponent };
+
 	private:
 		nap::ArtNetController*	mController = nullptr;
 		int						mMinChannel = 0;
 		int						mMaxChannel = 0;
 		bool					mSend = true;
-		std::vector<uint8_t>	mData;
+		std::vector<uint8_t>	mOpeningData;
+		std::vector<uint8_t>	mClosingData;
 	};
 }
