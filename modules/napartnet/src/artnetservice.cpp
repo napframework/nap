@@ -135,10 +135,18 @@ namespace nap
 			// Calculate update frequency
 			double update_freq = 1.0 / static_cast<double>(math::clamp<int>(controller_data->mController->mUpdateFrequency, 1, 44));
 
-			if ((controller_data->mIsDirty && time_since_last_update >= update_freq) || time_since_last_update >= controller_wait_time)
+			// Update controller node
+			controller.second->mController->update(deltaTime);
+
+			// Check if we need to send dmx data
+			bool refresh = controller_data->mIsDirty && time_since_last_update >= update_freq;
+			bool timeout = time_since_last_update > controller_wait_time;
+			if (refresh || timeout)
 			{
+				// Get artnet node
 				ArtNetNode node = controller.second->mController->getNode();
 
+				// Send dmx info
 				int result = artnet_send_dmx(node, 0, controller_data->mData.size(), controller_data->mData.data());
 				assert(result == ARTNET_EOK);
 

@@ -5,11 +5,15 @@
 #include <nap/device.h>
 #include <future>
 #include <nap/numeric.h>
+#include <condition_variable>
+#include <mutex>
+#include <utility/datetimeutils.h>
 
 namespace nap
 {
 	using ArtNetNode = void*;
-
+	
+	// Forward Declares
 	class ArtNetService;
 
 	/**
@@ -135,7 +139,7 @@ namespace nap
 	private:
 
 		friend class ArtNetService;
-		
+
 		/**
 		 * @return libArtNet node, used for sending data
 		 */
@@ -149,24 +153,35 @@ namespace nap
 		void pollAndRead();
 
 		/**
-		 * Sets the time out limit for retrieving node information from the network
-		 * @param timeout the new timeout in seconds
-		 */
-		void setTimeout(uint32 milliseconds);
-
-		/**
 		 * Stops the background task from reading Artnet information of the network
 		 * Called automatically when stopping this device.
 		 */
 		void stopPolling();
 
-		ArtNetService*		mService = nullptr;								///< ArtNetService
-		ArtNetNode			mNode = nullptr;								///< libArtNet node for sending data
-		int					mFoundNodes = 0;								///< Total number of artnet nodes found on the network
-		int					mSocketDescriptor = -1;							///< Artnet node socket descriptor
-		std::future<void>	mReadTask;										///< Task that updates available nodes on the network
-		bool				mKeepPolling = true;							///< If the node keeps polling for changes
-		uint32				mActiveTime = 0;								///< Number of milliseconds before poll request times out
+		/**
+		 * Starts the background task of polling the network for available artnet node information
+		 * This happens at a fixed interval based on the TimeOut variable
+		 */
+		void startPolling();
+
+		/**
+		 * Update called by service on main thread
+		 */
+		void update(double deltaTime);
+
+		ArtNetService*				mService = nullptr;								///< ArtNetService
+		ArtNetNode					mNode = nullptr;								///< libArtNet node for sending data
+		int							mFoundNodes = 0;								///< Total number of artnet nodes found on the network
+		int							mSocketDescriptor = -1;							///< Artnet node socket descriptor
+
+		// Polling
+		std::future<void>			mReadTask;										///< Task that updates available nodes on the network
+		std::condition_variable		mConditionVar;
+		std::mutex					mPollMutex;
+		nap::utility::SystemTimer	mPollTimer;
+		std::atomic<bool>			mRead = false;									///< Perform a read operation on the main thread
+		bool						mPoll = true;									///< Perform a poll operation on separate thread
+		bool						mExit = false;									///< Cancel all running operations and exit task
 	};
 
 	using ArtNetNodeCreator = rtti::ObjectCreator<ArtNetController, ArtNetService>;
