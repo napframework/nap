@@ -295,7 +295,14 @@ namespace nap
 		while (true)
 		{
 			// Wait for a poll request
-			// When the device is stopped make sure the task is exited asap 
+			if (mVerbose)
+				nap::Logger::info("waiting for artnet poll request");
+			
+			// The conditional variable makes sure the poll only executes
+			// when the main thread tiggers a poll request
+			// If the poll is slower than the main thread, ie:
+			// the main thread issues a poll request before the previous request finishes,
+			// this task waits for the next poll request to come in.
 			{
 				std::unique_lock<std::mutex> lock(mPollMutex);
 				mConditionVar.wait(lock, [this]()
