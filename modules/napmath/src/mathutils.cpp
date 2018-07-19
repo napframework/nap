@@ -199,6 +199,17 @@ namespace nap
 		}
 
 
+		glm::vec3 NAPAPI radians(float roll, float pitch, float yaw)
+		{
+			return
+			{
+				glm::radians(roll),
+				glm::radians(pitch),
+				glm::radians(yaw)
+			};
+		}
+
+
 		glm::vec3 extractPosition(const glm::mat4x4& matrix)
 		{
 			return{ matrix[3][0], matrix[3][1], matrix[3][2] };

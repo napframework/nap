@@ -168,6 +168,16 @@ namespace nap
 		glm::vec3 NAPAPI radians(const glm::vec3& eulerDegrees);
 
 		/**
+		 * Converts an euler rotation in degrees to radians
+		 * The arguments are interpreted as floats
+		 * @param roll the x axis rotation in degrees
+		 * @param pitch the y axis rotation in degrees
+		 * @param yaw the z axis rotation in degrees
+		 * @return the euler rotation in radians
+		 */
+		glm::vec3 NAPAPI radians(float roll, float pitch, float yaw);
+
+		/**
 		 * Extracts the position component from a 4x4 matrix.
 		 * This call assumes the matrix is column major, ie: the outermost array dimension is a column
 		 * @param matrix column major matrix
