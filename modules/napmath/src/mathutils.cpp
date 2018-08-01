@@ -199,7 +199,7 @@ namespace nap
 		}
 
 
-		glm::vec3 NAPAPI radians(float roll, float pitch, float yaw)
+		glm::vec3 radians(float roll, float pitch, float yaw)
 		{
 			return
 			{
@@ -207,6 +207,18 @@ namespace nap
 				glm::radians(pitch),
 				glm::radians(yaw)
 			};
+		}
+
+
+		float radians(float degrees)
+		{
+			return glm::radians(degrees);
+		}
+
+
+		float degrees(float radians)
+		{
+			return glm::degrees(radians);
 		}
 
 

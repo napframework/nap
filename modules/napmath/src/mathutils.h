@@ -178,6 +178,20 @@ namespace nap
 		glm::vec3 NAPAPI radians(float roll, float pitch, float yaw);
 
 		/**
+		 * Converts degrees to radians
+		 * @param degrees angle in degrees
+		 * @return angle as radians
+		 */
+		float NAPAPI radians(float degrees);
+
+		/**
+		 * Converts radians to degrees
+		 * @param radians angle in radians
+		 * @return angle in degrees
+		 */
+		float NAPAPI degrees(float radians);
+
+		/**
 		 * Extracts the position component from a 4x4 matrix.
 		 * This call assumes the matrix is column major, ie: the outermost array dimension is a column
 		 * @param matrix column major matrix
