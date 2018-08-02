@@ -1,0 +1,105 @@
+{
+	"Objects":
+	[
+		{		
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window0",
+			"Width" : 1280,
+			"Height" : 720,
+			"Title" : "Window 1",
+			"Sync" : false,
+			"ClearColor": {
+                "x": 0.0666,
+                "y": 0.0784,
+                "z": 0.1490,
+                "w": 1.0
+            }
+		},
+
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "World"
+				},
+				{
+					"Entity" : "Camera"
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "World",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties":
+					{
+						"Rotate" :
+						{
+							"x" : -90,
+							"y" : 0,
+							"z" : 0
+						}
+					}
+				}		
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "Camera",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"mID" : "PerspCameraComponent",
+					"Properties": 
+					{
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 3.0,
+						"FarClippingPlane" : 3000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 200.0,
+							"y": 150.0,
+							"z": 250.0
+						}
+					}
+				},
+				{
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "nap::OrbitController",
+                    "MovementSpeed": 0.5,
+                    "RotateSpeed": 0.0025,
+                    "PerspCameraComponent": "PerspCameraComponent",
+                    "LookAtPosition" :
+                    {
+                    	"x" : 0.0,
+                    	"y" : 0.0,
+                    	"z" : 0.0
+                    }
+                }
+			]
+		}
+
+	]
+}
