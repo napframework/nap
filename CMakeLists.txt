@@ -106,6 +106,8 @@ add_subdirectory(apps/kalvertoren)
 add_subdirectory(apps/etherdream)
 add_subdirectory(apps/artnetcolor)
 add_subdirectory(apps/skeleton)
+add_subdirectory(apps/atmos)
+add_subdirectory(apps/atmos/module)
 
 # demo targets
 add_subdirectory(demos/helloworld)
