@@ -8,6 +8,7 @@
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
+#include <imguiservice.h>
 #include <app.h>
 
 namespace nap
@@ -90,5 +91,7 @@ namespace nap
 		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;				//< Pointer to the entity that holds the world
 		ObjectPtr<EntityInstance>	mPlaneOneEntity = nullptr;			//< Pointer to the plane one
 		ObjectPtr<EntityInstance>	mPlaneTwoEntity = nullptr;			//< Pointer to plane two
+		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 	};
 }
