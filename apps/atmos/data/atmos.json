@@ -1,83 +1,49 @@
 {
-	"Objects":
-	[
-		{		
-			"Type" : "nap::RenderWindow",
-			"mID" : "Window0",
-			"Width" : 1280,
-			"Height" : 720,
-			"Title" : "Window 1",
-			"Sync" : false,
-			"ClearColor": {
-                "x": 0.0666,
-                "y": 0.0784,
-                "z": 0.1490,
-                "w": 1.0
-            }
-		},
-
-		{
-			"Type" : "nap::Scene",
-			"mID": "Scene",		
-			"Entities" : 
-			[
-				{
-					"Entity" : "World"
-				},
-				{
-					"Entity" : "Camera"
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "World",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties":
-					{
-						"Rotate" :
-						{
-							"x" : -90,
-							"y" : 0,
-							"z" : 0
-						}
-					}
-				}		
-			]
-		},
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "Camera",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::PerspCameraComponent",
-					"mID" : "PerspCameraComponent",
-					"Properties": 
-					{
-						"FieldOfView": 45.0,
-						"NearClippingPlane" : 3.0,
-						"FarClippingPlane" : 3000.0
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 200.0,
-							"y": 150.0,
-							"z": 250.0
-						}
-					}
-				},
-				{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "Camera",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 45.0,
+                        "NearClippingPlane": 3.0,
+                        "FarClippingPlane": 3000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 200.0,
+                            "y": 150.0,
+                            "z": 250.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
                     "Type": "nap::KeyInputComponent",
                     "mID": "nap::KeyInputComponent"
                 },
@@ -89,17 +55,195 @@
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
                     "MovementSpeed": 0.5,
-                    "RotateSpeed": 0.0025,
+                    "RotateSpeed": 0.0024999999441206457,
                     "PerspCameraComponent": "PerspCameraComponent",
-                    "LookAtPosition" :
-                    {
-                    	"x" : 0.0,
-                    	"y" : 0.0,
-                    	"z" : 0.0
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
                     }
                 }
-			]
-		}
-
-	]
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Scan",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "ScanTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 100.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "ScanRenderableMesh",
+                    "Mesh": "MeteorietMesh",
+                    "MaterialInstance": {
+                        "Material": "ScanMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "World",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": -90.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "Scan"
+            ]
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "NormalsMaterial",
+            "Uniforms": [],
+            "Shader": "NormalsShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ScanMaterial",
+            "Uniforms": [],
+            "Shader": "ScanShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normal"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "UV1",
+                    "ShaderAttributeID": "in_UV1"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "MeteorietMesh",
+            "Path": "meteoriet_lp.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "WitkoraalMesh",
+            "Path": "witkoraal_lp.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Window 1",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "World",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "Camera",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "NormalsShader",
+            "mVertShader": "shaders/normals.vert",
+            "mFragShader": "shaders/normals.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "ScanShader",
+            "mVertShader": "shaders/scan.vert",
+            "mFragShader": "shaders/scan.frag"
+        }
+    ]
 }

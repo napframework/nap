@@ -65,6 +65,8 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointer to the render window
 
 		// Entities
-		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance>	mCameraEntity	= nullptr;		//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance>	mWorldEntity	= nullptr;		//< Pointer to the world entity
+		ObjectPtr<EntityInstance>	mScanEntity		= nullptr;		//< Pointer to the scan entity (living under the world)
 	};
 }

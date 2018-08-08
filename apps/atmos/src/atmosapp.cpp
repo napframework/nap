@@ -48,6 +48,8 @@ namespace nap
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mCameraEntity = scene->findEntity("Camera");
+		mWorldEntity = scene->findEntity("World");
+		mScanEntity = scene->findEntity("Scan");
 
 		return true;
 	}
@@ -83,6 +85,9 @@ namespace nap
 
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+
+		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera);
 
 		// Render gui to window
 		mGuiService->draw();
