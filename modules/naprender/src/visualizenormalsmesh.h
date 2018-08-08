@@ -43,7 +43,7 @@ namespace nap
 		ResourcePtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference
 		
 		// property: length of the normals
-		float mNormalLength = 1.0f;													///< Property: 'Length' length of the normals
+		float mNormalLength = 1.0f;												///< Property: 'Length' length of the normals
 
 	protected:
 		std::unique_ptr<MeshInstance> mMeshInstance;
@@ -51,11 +51,14 @@ namespace nap
 		// Position Attribute data
 		nap::Vec3VertexAttribute* mPositionAttr = nullptr;
 
-		// Color Attribute data
-		nap::Vec4VertexAttribute* mColorAttr = nullptr;
-		
+		// 'Tip' vertex attribute data, 1.0 for top vertex of normal, 0.0 for bottom vertex of normal
+		nap::FloatVertexAttribute* mTipAttr = nullptr;
+
 		// UV attribute data
 		std::vector<nap::Vec3VertexAttribute*> mUvAttrs;
+
+		// Color attribute data
+		std::vector<nap::Vec4VertexAttribute*> mColorAttrs;
 
 		/**
 		 * Sets up the mesh based on the reference mesh

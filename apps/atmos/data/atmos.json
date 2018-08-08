@@ -99,8 +99,8 @@
                     "MaterialInstance": {
                         "Material": "ScanMaterial",
                         "Uniforms": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                        "BlendMode": "Opaque",
+                        "DepthMode": "InheritFromBlendMode"
                     },
                     "ClipRect": {
                         "Min": {
@@ -121,7 +121,7 @@
                         "Material": "NormalsMaterial",
                         "Uniforms": [],
                         "BlendMode": "AlphaBlend",
-                        "DepthMode": "InheritFromBlendMode"
+                        "DepthMode": "ReadOnly"
                     },
                     "ClipRect": {
                         "Min": {
@@ -206,7 +206,19 @@
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_2",
                     "Name": "opacity",
-                    "Value": 0.5
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "UniformTexture2D",
+                    "Name": "colorTexture",
+                    "Texture": "ScanColorTexture"
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_3",
+                    "Name": "colorTexScale",
+                    "Value": 10.0
                 }
             ],
             "Shader": "NormalsShader",
@@ -216,8 +228,12 @@
                     "ShaderAttributeID": "in_Position"
                 },
                 {
-                    "MeshAttributeID": "Color0",
-                    "ShaderAttributeID": "in_Color0"
+                    "MeshAttributeID": "Tip",
+                    "ShaderAttributeID": "in_Tip"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
                 }
             ],
             "BlendMode": "NotSet",
@@ -320,7 +336,7 @@
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
             "ReferenceMesh": "MeteorietMesh",
-            "Length": 0.009999999776482582
+            "Length": 0.02500000037252903
         }
     ]
 }

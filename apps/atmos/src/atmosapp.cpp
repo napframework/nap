@@ -83,11 +83,17 @@ namespace nap
 		// Activate current window for drawing
 		mRenderWindow->makeActive();
 
+		glEnable(GL_DEPTH_TEST);   // Enables Depth Testing
+
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
+		std::vector<nap::RenderableComponentInstance*> render_comps;
+		//render_comps.emplace_back(static_cast<nap::RenderableComponentInstance*>(mScanEntity->findComponentByID("ScanNormalRenderableMesh")));
+		mScanEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
+
 		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera);
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
 
 		// Render gui to window
 		mGuiService->draw();
