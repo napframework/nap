@@ -54,6 +54,9 @@ namespace nap
 		// Color Attribute data
 		nap::Vec4VertexAttribute* mColorAttr = nullptr;
 		
+		// UV attribute data
+		std::vector<nap::Vec3VertexAttribute*> mUvAttrs;
+
 		/**
 		 * Sets up the mesh based on the reference mesh
 		 * This call does not initialize the data on the GPU

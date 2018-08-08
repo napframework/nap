@@ -116,7 +116,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "ScanNormalRenderableMesh",
-                    "Mesh": "ScanNormalMesh",
+                    "Mesh": "NormalsMesh",
                     "MaterialInstance": {
                         "Material": "NormalsMaterial",
                         "Uniforms": [],
@@ -237,7 +237,7 @@
                     "Type": "nap::UniformFloat",
                     "mID": "colorTexScale",
                     "Name": "colorTexScale",
-                    "Value": 5.0
+                    "Value": 10.0
                 }
             ],
             "Shader": "ScanShader",
@@ -265,13 +265,13 @@
         {
             "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
-            "Path": "meteoriet_lp.mesh",
+            "Path": "meteoriet.mesh",
             "Usage": "Static"
         },
         {
             "Type": "nap::MeshFromFile",
             "mID": "WitkoraalMesh",
-            "Path": "witkoraal_lp.mesh",
+            "Path": "witkoraal.mesh",
             "Usage": "Static"
         },
         {
@@ -318,9 +318,9 @@
         },
         {
             "Type": "nap::VisualizeNormalsMesh",
-            "mID": "ScanNormalMesh",
+            "mID": "NormalsMesh",
             "ReferenceMesh": "MeteorietMesh",
-            "Length": 0.02500000037252903
+            "Length": 0.009999999776482582
         }
     ]
 }
