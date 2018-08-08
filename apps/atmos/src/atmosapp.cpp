@@ -47,9 +47,9 @@ namespace nap
 
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
-		mCameraEntity = scene->findEntity("Camera");
-		mWorldEntity = scene->findEntity("World");
-		mScanEntity = scene->findEntity("Scan");
+		mCameraEntity = scene->findEntity("CameraEntity");
+		mWorldEntity = scene->findEntity("WorldEntity");
+		mScanEntity = scene->findEntity("ScanEntity");
 
 		return true;
 	}

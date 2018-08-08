@@ -2,7 +2,7 @@
     "Objects": [
         {
             "Type": "nap::Entity",
-            "mID": "Camera",
+            "mID": "CameraEntity",
             "Components": [
                 {
                     "Type": "nap::PerspCameraComponent",
@@ -68,7 +68,7 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "Scan",
+            "mID": "ScanEntity",
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
@@ -76,7 +76,7 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.0,
+                            "y": -25.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -112,13 +112,34 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "ScanNormalRenderableMesh",
+                    "Mesh": "ScanNormalMesh",
+                    "MaterialInstance": {
+                        "Material": "NormalsMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "InheritFromBlendMode"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
                 }
             ],
             "Children": []
         },
         {
             "Type": "nap::Entity",
-            "mID": "World",
+            "mID": "WorldEntity",
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
@@ -130,7 +151,7 @@
                             "z": 0.0
                         },
                         "Rotate": {
-                            "x": -90.0,
+                            "x": 0.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -144,13 +165,50 @@
                 }
             ],
             "Children": [
-                "Scan"
+                "ScanEntity"
             ]
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ScanColorTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/Rock_02_UV_H_CM_1.jpg",
+            "Compressed": false
         },
         {
             "Type": "nap::Material",
             "mID": "NormalsMaterial",
-            "Uniforms": [],
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "color",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat",
+                    "Name": "length",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_2",
+                    "Name": "opacity",
+                    "Value": 0.5
+                }
+            ],
             "Shader": "NormalsShader",
             "VertexAttributeBindings": [
                 {
@@ -162,13 +220,26 @@
                     "ShaderAttributeID": "in_Color0"
                 }
             ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
+            "BlendMode": "NotSet",
+            "DepthMode": "NotSet"
         },
         {
             "Type": "nap::Material",
             "mID": "ScanMaterial",
-            "Uniforms": [],
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "ColorTextureUniform",
+                    "Name": "colorTexture",
+                    "Texture": "ScanColorTexture"
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "colorTexScale",
+                    "Name": "colorTexScale",
+                    "Value": 5.0
+                }
+            ],
             "Shader": "ScanShader",
             "VertexAttributeBindings": [
                 {
@@ -224,11 +295,11 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "World",
+                    "Entity": "WorldEntity",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "Camera",
+                    "Entity": "CameraEntity",
                     "InstanceProperties": []
                 }
             ]
@@ -244,6 +315,12 @@
             "mID": "ScanShader",
             "mVertShader": "shaders/scan.vert",
             "mFragShader": "shaders/scan.frag"
+        },
+        {
+            "Type": "nap::VisualizeNormalsMesh",
+            "mID": "ScanNormalMesh",
+            "ReferenceMesh": "MeteorietMesh",
+            "Length": 0.02500000037252903
         }
     ]
 }
