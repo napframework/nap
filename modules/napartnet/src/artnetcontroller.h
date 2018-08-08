@@ -133,7 +133,7 @@ namespace nap
 		float				mWaitTime = 2.0f;								///< Number of seconds before the control data is send regardless of changes
 		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Artnet message mode
 		int					mUnicastLimit = 10;								///< Allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
-		bool				mVerbose;										///< Prints artnet network traffic information to the consolve
+		bool				mVerbose = false;								///< Prints artnet network traffic information to the consolve
 		float				mReadTimeout = 2.0f;							///< Poll network read timeout
 
 	private:
