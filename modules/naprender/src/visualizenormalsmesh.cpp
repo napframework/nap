@@ -1,6 +1,7 @@
 #include "visualizenormalsmesh.h"
 #include <rtti/rtti.h>
 #include "meshutils.h"
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::VisualizeNormalsMesh)
 	RTTI_PROPERTY("ReferenceMesh", &nap::VisualizeNormalsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
@@ -29,6 +30,23 @@ namespace nap
 		const std::vector<glm::vec3>& ref_normals  = reference_mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()).getData();
 		const std::vector<glm::vec3>& ref_vertices = reference_mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()).getData();
 		
+		// Get reference uvs
+		std::vector<const std::vector<glm::vec3>*> ref_uvs;
+		std::vector<std::vector<glm::vec3>*> tar_uvs;
+		ref_uvs.reserve(mUvAttrs.size());
+		tar_uvs.reserve(mUvAttrs.size());
+
+		// Query uv data
+		for (int i = 0; i < mUvAttrs.size(); i++)
+		{
+			const Vec3VertexAttribute* ref_uv_attr = reference_mesh.findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(i));
+			if (!error.check(ref_uv_attr != nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mReferenceMesh->mID.c_str(), i))
+				return false;
+
+			ref_uvs.emplace_back(&(ref_uv_attr->getData()));
+			tar_uvs.emplace_back(&(mUvAttrs[i]->getData()));
+		}
+
 		// Try to find a color attribute to pass along
 		const Vec4VertexAttribute* ref_color_attr = reference_mesh.findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 		const std::vector<glm::vec4>* ref_colors = ref_color_attr != nullptr ? &(ref_color_attr->getData()) : nullptr;
@@ -69,6 +87,15 @@ namespace nap
 			target_colors[target_idx] = top_color;
 			target_colors[target_idx + 1] = bottom_color;
 
+			// Copy over the uv coordinate for every uv set in the reference mesh
+			int uv_idx = 0;
+			for (auto& uv_attr : mUvAttrs)
+			{
+				(*(tar_uvs[uv_idx]))[target_idx + 0] = (*(ref_uvs[uv_idx]))[i];
+				(*(tar_uvs[uv_idx]))[target_idx + 1] = (*(ref_uvs[uv_idx]))[i];
+				uv_idx++;
+			}
+
 			// Increment write index
 			target_idx += 2;
 		}
@@ -98,6 +125,20 @@ namespace nap
 		// Create color attribute
 		mColorAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0)));
 
+		// Sample all uv sets
+		int uv_idx = 0;
+		while (true)
+		{
+			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx));
+			if (ref_uv_attr != nullptr)
+			{
+				mUvAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx))));
+				uv_idx++;
+				continue;
+			}
+			break;
+		}
+
 		int vertex_count = reference_mesh->getMeshInstance().getNumVertices();
 
 		// Create initial color data
@@ -107,6 +148,11 @@ namespace nap
 		// Create initial position data
 		std::vector<glm::vec3> vertices(vertex_count * 2, { 0.0f, 0.0f, 0.0f });
 		mPositionAttr->setData(vertices);
+
+		// Create initial uv data
+		std::vector<glm::vec3> uvs(vertex_count * 2, { 0.0f, 0.0f, 0.0f });
+		for (auto& uv_attr : mUvAttrs)
+			uv_attr->setData(uvs);
 
 		// Set number of vertices
 		mMeshInstance->setNumVertices(vertex_count * 2);
