@@ -24,6 +24,6 @@ void main()
 
 	float v = 1.0-clamp(passTip, 0.0, 1.0);
 	float m = length;
-	v =  1.0 - (v / (m) * 1.0);
+	v =  pow(1.0 - (v / (m) * 1.0),0.5);
 	out_Color = vec4(tex_color, opacity * v);
 }

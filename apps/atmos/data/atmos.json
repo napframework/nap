@@ -95,7 +95,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "ScanRenderableMesh",
-                    "Mesh": "MeteorietMesh",
+                    "Mesh": "WitkoraalMesh",
                     "MaterialInstance": {
                         "Material": "ScanMaterial",
                         "Uniforms": [],
@@ -120,7 +120,7 @@
                     "MaterialInstance": {
                         "Material": "NormalsMaterial",
                         "Uniforms": [],
-                        "BlendMode": "AlphaBlend",
+                        "BlendMode": "Opaque",
                         "DepthMode": "ReadOnly"
                     },
                     "ClipRect": {
@@ -335,8 +335,8 @@
         {
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
-            "ReferenceMesh": "MeteorietMesh",
-            "Length": 0.02500000037252903
+            "ReferenceMesh": "WitkoraalMesh",
+            "Length": 0.01
         }
     ]
 }

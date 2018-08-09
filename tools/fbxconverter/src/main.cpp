@@ -9,12 +9,13 @@ using namespace nap;
 
 // Note: we don't need to do any wildcard expansion, since the shell does that for us due to a linker option
 // See https://msdn.microsoft.com/en-us/library/8bch7bkk.aspx
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	// Parse commandline
 	CommandLine commandLine;
 	if (!CommandLine::parse(argc, argv, commandLine))
 		return -1;
+
 
 	Logger::setLevel(Logger::debugLevel());
 

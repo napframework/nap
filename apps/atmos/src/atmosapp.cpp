@@ -89,7 +89,7 @@ namespace nap
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
 		std::vector<nap::RenderableComponentInstance*> render_comps;
-		//render_comps.emplace_back(static_cast<nap::RenderableComponentInstance*>(mScanEntity->findComponentByID("ScanNormalRenderableMesh")));
+		//render_comps.emplace_back(mScanEntity->findComponentByID<RenderableComponentInstance>("ScanNormalRenderableMesh", nap::rtti::ETypeCheck::IS_DERIVED_FROM));
 		mScanEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
 		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
