@@ -26,9 +26,9 @@
                     "mID": "nap::TransformComponent_2",
                     "Properties": {
                         "Translate": {
-                            "x": 200.0,
-                            "y": 150.0,
-                            "z": 250.0
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 140.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -54,14 +54,28 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.5,
-                    "RotateSpeed": 0.0024999999441206457,
+                    "MovementSpeed": 0.075,
+                    "RotateSpeed": 0.0014999999441206457,
                     "PerspCameraComponent": "PerspCameraComponent",
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
                     }
+                },
+                {
+                    "Type": "nap::FirstPersonController",
+                    "mID": "FirstPersonController",
+                    "MovementSpeed": 15.0,
+                    "RotateSpeed": 0.001,
+                    "PerspCameraComponent": "PerspCameraComponent"
+                },
+                {
+                    "Type": "nap::ControlSelectComponent",
+                    "mID": "ControlSelector",
+                    "OrbitController": "./nap::OrbitController",
+                    "FirstPersonController": "./FirstPersonController",
+                    "ControlMethod" : "FirstPerson"
                 }
             ],
             "Children": []
