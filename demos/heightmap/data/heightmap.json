@@ -125,10 +125,10 @@
 					"MeshAttributeID": "Position",
 					"ShaderAttributeID": "in_Position"
 				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
-				},
+                {
+                    "MeshAttributeID": "Tip",
+                    "ShaderAttributeID": "in_Tip"
+                },
 				{
 					"MeshAttributeID" : "OriginalPosition",
 					"ShaderAttributeID" : "in_OriginalPosition" 

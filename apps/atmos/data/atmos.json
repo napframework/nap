@@ -121,7 +121,7 @@
                         "Material": "NormalsMaterial",
                         "Uniforms": [],
                         "BlendMode": "Opaque",
-                        "DepthMode": "ReadOnly"
+                        "DepthMode": "InheritFromBlendMode"
                     },
                     "ClipRect": {
                         "Min": {
@@ -133,6 +133,17 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::SelectMeshComponent",
+                    "mID": "SelectMeshComponent",
+                    "Meshes": [
+                        "MeteorietMesh",
+                        "WitkoraalMesh"
+                    ],
+                    "ScanMeshComponent": "./ScanRenderableMesh",
+                    "NormalsMeshComponent": "./ScanNormalRenderableMesh",
+                    "Index": 1
                 }
             ],
             "Children": []
@@ -179,7 +190,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "textures/Rock_02_UV_H_CM_1.jpg",
+            "ImagePath": "textures/Rock_04_UV_H_CM_1.jpg",
             "Compressed": false
         },
         {
@@ -336,7 +347,7 @@
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
             "ReferenceMesh": "WitkoraalMesh",
-            "Length": 0.01
+            "Length": 0.009999999776482582
         }
     ]
 }

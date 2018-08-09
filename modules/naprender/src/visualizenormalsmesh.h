@@ -11,8 +11,13 @@ namespace nap
 	/**
 	 * This mesh builds a line structure based on the vertices of another mesh
 	 * The line structure represents the normals of the reference mesh and can be drawn to screen. 
-	 * The mesh itself carries 2 attributes, position and color, where
-	 * the alpha value = 1 at the beginning of the normal and 0 at the end.
+	 * The mesh itself carries multiple attributes of which 'position' and 'típ' are default.
+	 * Use the tip vertex attribute to identify the bottom / top part of the vertex.
+	 * the tip value = 1 at the beginning of the normal line and 0 at the end.
+	 * This resource also copies the color and uv channels as attributes to both points of the normal line.
+	 * This operator needs a reference mesh to initialize itself, defined by the 'ReferenceMesh' property.
+	 * It is possible to switch the reference mesh at runtime, although discouraged.
+	 * When you switch the reference mesh at runtime make sure the new reference mesh has the same number of attributes!
 	 */
 	class NAPAPI VisualizeNormalsMesh : public IMesh
 	{
@@ -34,16 +39,25 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const override		{ return *mMeshInstance; }
 
 		/**
-		 * Updates the normals based on the data in the reference mesh
-		 * @param push if the new positions should be pushed on to the GPU
-		 */
-		bool updateNormals(utility::ErrorState& error, bool push=true);
+		* Updates the normals based on the data in the reference mesh
+		* @param push if the new positions should be pushed on to the GPU
+		*/
+		bool calculateNormals(utility::ErrorState& error, bool push = true);
 
 		// property: pointer to the IMesh that is used as a reference
-		ResourcePtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference
-		
+		ResourcePtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
+
 		// property: length of the normals
 		float mNormalLength = 1.0f;												///< Property: 'Length' length of the normals
+
+		/**
+		* Set the mesh that is used as a reference to build the normals from. Called on init().
+		* Note that it is not recommended setting this at runtime, if you do, make sure that the mesh
+		* you set has the same number of vertex attributes as the original reference mesh!
+		* This call automatically calls setup, where storage for the CPU side of the buffer is calculated
+		* Call calculateNormals() to actually calculate the normals based on the reference mesh and push the data to the GPU
+		*/
+		bool setReferenceMesh(IMesh& mesh, nap::utility::ErrorState& error);
 
 	protected:
 		std::unique_ptr<MeshInstance> mMeshInstance;
@@ -60,10 +74,19 @@ namespace nap
 		// Color attribute data
 		std::vector<nap::Vec4VertexAttribute*> mColorAttrs;
 
+		// The current reference mesh
+		nap::IMesh* mCurrentReferenceMesh = nullptr;
+
 		/**
-		 * Sets up the mesh based on the reference mesh
+		 * Creates the mesh instance and single shape associated with that mesh instance
+		 * Called during init but can be called in derived classes to create the mesh instance
+		 */
+		bool createMeshInstance(utility::ErrorState& error);
+
+	private:
+		/**
+		 * Creates the normal mesh attributes CPU side based on the currently available reference mesh
 		 * This call does not initialize the data on the GPU
-		 * Use this function to create the mesh and initialize it in a derived class
 		 * @param error contains the error when setup fails
 		 * @return if setup succeeded or not
 		 */
