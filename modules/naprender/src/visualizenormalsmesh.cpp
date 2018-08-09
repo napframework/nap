@@ -12,8 +12,17 @@ namespace nap
 {
 	bool VisualizeNormalsMesh::init(utility::ErrorState& errorState)
 	{
-		if (!setup(errorState))
+		if (!createMeshInstance(errorState))
 			return false;
+
+		if (mReferenceMesh != nullptr)
+		{
+			if (!setReferenceMesh(*mReferenceMesh, errorState))
+				return false;
+
+			if (!calculateNormals(errorState, false))
+				return false;
+		}
 
 		if (!mMeshInstance->init(errorState))
 			return false;
@@ -22,9 +31,11 @@ namespace nap
 	}
 
 
-	bool VisualizeNormalsMesh::updateNormals(utility::ErrorState& error, bool push)
+	bool VisualizeNormalsMesh::calculateNormals(utility::ErrorState& error, bool push)
 	{
-		const nap::MeshInstance& reference_mesh = mReferenceMesh.get()->getMeshInstance();
+		assert(mCurrentReferenceMesh != nullptr);
+
+		const nap::MeshInstance& reference_mesh = mCurrentReferenceMesh->getMeshInstance();
 
 		// Get reference normals and vertices
 		const std::vector<glm::vec3>& ref_normals  = reference_mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()).getData();
@@ -46,7 +57,7 @@ namespace nap
 		for (int i = 0; i < mUvAttrs.size(); i++)
 		{
 			const Vec3VertexAttribute* ref_uv_attr = reference_mesh.findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(i));
-			if (!error.check(ref_uv_attr != nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mReferenceMesh->mID.c_str(), i))
+			if (!error.check(ref_uv_attr != nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mCurrentReferenceMesh->mID.c_str(), i))
 				return false;
 
 			ref_uvs.emplace_back(&(ref_uv_attr->getData()));
@@ -57,7 +68,7 @@ namespace nap
 		for (int i = 0; i < mColorAttrs.size(); i++)
 		{
 			const Vec4VertexAttribute* ref_clr_attr = reference_mesh.findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(i));
-			if (!error.check(ref_clr_attr!= nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mReferenceMesh->mID.c_str(), i))
+			if (!error.check(ref_clr_attr!= nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mCurrentReferenceMesh->mID.c_str(), i))
 				return false;
 
 			ref_clrs.emplace_back(&(ref_clr_attr->getData()));
@@ -118,15 +129,38 @@ namespace nap
 	}
 
 
-	bool VisualizeNormalsMesh::setup(utility::ErrorState& error)
+	bool VisualizeNormalsMesh::setReferenceMesh(IMesh& mesh, nap::utility::ErrorState& error)
 	{
+		mCurrentReferenceMesh = &mesh;
+		if (!setup(error))
+			return false;
+
+		return true;
+	}
+
+
+	bool VisualizeNormalsMesh::createMeshInstance(nap::utility::ErrorState& error)
+	{
+		// Make sure we're not creating a new mesh mesh
+		if (!error.check(mMeshInstance == nullptr, "%s already has a mesh!", mID.c_str()))
+			return false;
+
 		// Create the mesh that will hold the normals
 		mMeshInstance = std::make_unique<MeshInstance>();
 
-		nap::IMesh* reference_mesh = mReferenceMesh.get();
+		// Create shape that holds the normals
+		MeshShape& shape = mMeshInstance->createShape();
+
+		return true;
+	}
+
+
+	bool VisualizeNormalsMesh::setup(utility::ErrorState& error)
+	{
+		assert(mCurrentReferenceMesh != nullptr);
 
 		// Make sure the reference mesh has normals
-		if (reference_mesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()) == nullptr)
+		if (mCurrentReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()) == nullptr)
 			return error.check(false, "reference mesh has no normals");
 
 		// Create position and vertex attribute
@@ -136,10 +170,11 @@ namespace nap
 		mTipAttr = &(mMeshInstance->getOrCreateAttribute<float>("Tip"));
 
 		// Sample all uv sets
+		mUvAttrs.clear();
 		int uv_idx = 0;
 		while (true)
 		{
-			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx));
+			const Vec3VertexAttribute* ref_uv_attr = mCurrentReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx));
 			if (ref_uv_attr != nullptr)
 			{
 				mUvAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx))));
@@ -150,10 +185,11 @@ namespace nap
 		}
 
 		// Sample all color sets
+		mColorAttrs.clear();
 		int clr_idx = 0;
 		while (true)
 		{
-			const Vec4VertexAttribute* ref_clr_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(clr_idx));
+			const Vec4VertexAttribute* ref_clr_attr = mCurrentReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(clr_idx));
 			if (ref_clr_attr != nullptr)
 			{
 				mColorAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(clr_idx))));
@@ -164,7 +200,7 @@ namespace nap
 		}
 
 		// Total number of vertices associated with reference mesh
-		int vertex_count = reference_mesh->getMeshInstance().getNumVertices();
+		int vertex_count = mCurrentReferenceMesh->getMeshInstance().getNumVertices();
 
 		// Create initial position data
 		std::vector<glm::vec3> vertices(vertex_count * 2, { 0.0f, 0.0f, 0.0f });
@@ -187,13 +223,11 @@ namespace nap
 		// Set number of vertices
 		mMeshInstance->setNumVertices(vertex_count * 2);
 
-		// Update normals (ie -> calculate position, clr, tip value etc and push to gpu)
-		updateNormals(error, false);
-
 		// Draw normals as lines
-		MeshShape& shape = mMeshInstance->createShape();
+		MeshShape& shape = mMeshInstance->getShape(0);
 		shape.setDrawMode(opengl::EDrawMode::LINES);
 
+		// Automatically generate indices
 		utility::generateIndices(shape, vertex_count * 2);
 
 		return true;
