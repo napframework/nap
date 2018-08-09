@@ -99,6 +99,7 @@ namespace nap
 		assert(channel >= 0 && channel < pos->second->mData.size());
 
 		pos->second->mData[channel] = channelData;
+        pos->second->mIsDirty = true;
 	}
 
 
