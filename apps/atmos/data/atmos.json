@@ -54,8 +54,8 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.075,
-                    "RotateSpeed": 0.0014999999441206457,
+                    "MovementSpeed": 0.07500000298023224,
+                    "RotateSpeed": 0.0014999998966231943,
                     "PerspCameraComponent": "PerspCameraComponent",
                     "LookAtPosition": {
                         "x": 0.0,
@@ -67,7 +67,7 @@
                     "Type": "nap::FirstPersonController",
                     "mID": "FirstPersonController",
                     "MovementSpeed": 15.0,
-                    "RotateSpeed": 0.001,
+                    "RotateSpeed": 0.0010000000474974514,
                     "PerspCameraComponent": "PerspCameraComponent"
                 },
                 {
@@ -75,7 +75,7 @@
                     "mID": "ControlSelector",
                     "OrbitController": "./nap::OrbitController",
                     "FirstPersonController": "./FirstPersonController",
-                    "ControlMethod" : "FirstPerson"
+                    "ControlMethod": "FirstPerson"
                 }
             ],
             "Children": []
