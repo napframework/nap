@@ -68,11 +68,16 @@ namespace nap
 		// Get camera position uniform
 		RenderableMeshComponentInstance* scan_comp = mScanEntity->findComponentByID<RenderableMeshComponentInstance>("ScanRenderableMesh", nap::rtti::ETypeCheck::IS_DERIVED_FROM);
 		assert(scan_comp != nullptr);
-		nap::UniformVec3& cam_uniform = scan_comp->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("cameraPosition");
+		nap::UniformVec3& scam_uniform = scan_comp->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("cameraPosition");
 		
+		RenderableMeshComponentInstance* normal_comp = mScanEntity->findComponentByID<RenderableMeshComponentInstance>("ScanNormalRenderableMesh", nap::rtti::ETypeCheck::IS_DERIVED_FROM);
+		assert(scan_comp != nullptr);
+		nap::UniformVec3& ncam_uniform = normal_comp->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("cameraPosition");
+
 		// Set camera position uniform in material
 		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		cam_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
+		scam_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
+		ncam_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
 
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
@@ -102,8 +107,8 @@ namespace nap
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
 		std::vector<nap::RenderableComponentInstance*> render_comps;
-		render_comps.emplace_back(mScanEntity->findComponentByID<RenderableComponentInstance>("ScanRenderableMesh", nap::rtti::ETypeCheck::IS_DERIVED_FROM));
-		//mScanEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
+		//render_comps.emplace_back(mScanEntity->findComponentByID<RenderableComponentInstance>("ScanRenderableMesh", nap::rtti::ETypeCheck::IS_DERIVED_FROM));
+		mScanEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
 		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);

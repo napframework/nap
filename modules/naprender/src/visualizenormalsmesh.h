@@ -68,6 +68,9 @@ namespace nap
 		// 'Tip' vertex attribute data, 1.0 for top vertex of normal, 0.0 for bottom vertex of normal
 		nap::FloatVertexAttribute* mTipAttr = nullptr;
 
+		// Normal Attribute data
+		nap::Vec3VertexAttribute* mNormalsAttr = nullptr;
+
 		// UV attribute data
 		std::vector<nap::Vec3VertexAttribute*> mUvAttrs;
 

@@ -40,7 +40,7 @@ namespace nap
 		// Get reference normals and vertices
 		const std::vector<glm::vec3>& ref_normals  = reference_mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()).getData();
 		const std::vector<glm::vec3>& ref_vertices = reference_mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()).getData();
-		
+
 		// Get reference uvs
 		std::vector<const std::vector<glm::vec3>*> ref_uvs;
 		std::vector<std::vector<glm::vec3>*> tar_uvs;
@@ -77,6 +77,7 @@ namespace nap
 
 		// Get single buffers to populate
 		std::vector<glm::vec3>& target_vertices = mPositionAttr->getData();
+		std::vector<glm::vec3>& target_normals = mNormalsAttr->getData();
 		std::vector<float>& target_tips = mTipAttr->getData();
 
 		int vert_count = reference_mesh.getNumVertices();
@@ -91,9 +92,16 @@ namespace nap
 			// Ensure the normal has length
 			assert(glm::length(ref_normal) > 0);
 
+			// Normalize reference normal
+			glm::vec3 nnormal = glm::normalize(ref_normal);
+
 			// Set vertices
 			target_vertices[target_idx] = ref_vertex;
-			target_vertices[target_idx + 1] = ref_vertex + (glm::normalize(ref_normal) * mNormalLength);
+			target_vertices[target_idx + 1] = ref_vertex + (nnormal * mNormalLength);
+
+			// Set normals
+			target_normals[target_idx + 0] = glm::normalize(nnormal);
+			target_normals[target_idx + 1] = glm::normalize(nnormal);
 
 			// Set tip values
 			target_tips[target_idx + 0] = 1.0f;
@@ -169,6 +177,9 @@ namespace nap
 		// Create tip attribute
 		mTipAttr = &(mMeshInstance->getOrCreateAttribute<float>("Tip"));
 
+		// Create normals attribute
+		mNormalsAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()));
+
 		// Sample all uv sets
 		mUvAttrs.clear();
 		int uv_idx = 0;
@@ -205,6 +216,10 @@ namespace nap
 		// Create initial position data
 		std::vector<glm::vec3> vertices(vertex_count * 2, { 0.0f, 0.0f, 0.0f });
 		mPositionAttr->setData(vertices);
+
+		// Create initial normal data
+		std::vector<glm::vec3> normals(vertex_count * 2, { 0.0f,1.0f,0.0f });
+		mNormalsAttr->setData(normals);
 
 		// Create initial tip data
 		std::vector<float> tips(vertex_count * 2, 1.0f);
