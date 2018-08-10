@@ -1,5 +1,8 @@
 #pragma once
 
+// Local Includes
+#include "atmosgui.h"
+
 // Nap includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
@@ -20,6 +23,7 @@ namespace nap
 	class AtmosApp : public App
 	{
 		RTTI_ENABLE(App)
+		friend class KalvertorenGui;
 	public:
 		AtmosApp(nap::Core& core) : App(core)	{ }
 
@@ -68,5 +72,8 @@ namespace nap
 		ObjectPtr<EntityInstance>	mCameraEntity	= nullptr;		//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance>	mWorldEntity	= nullptr;		//< Pointer to the world entity
 		ObjectPtr<EntityInstance>	mScanEntity		= nullptr;		//< Pointer to the scan entity (living under the world)
+
+		// Gui
+		std::unique_ptr<AtmosGui>	mGui = nullptr;
 	};
 }

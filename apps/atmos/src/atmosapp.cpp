@@ -51,6 +51,9 @@ namespace nap
 		mWorldEntity = scene->findEntity("WorldEntity");
 		mScanEntity = scene->findEntity("ScanEntity");
 
+		// Create gui
+		mGui = std::make_unique<AtmosGui>(*this);
+
 		return true;
 	}
 	
@@ -69,6 +72,9 @@ namespace nap
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processEvents(*mRenderWindow, input_router, entities);
+
+		// Upate GUI
+		mGui->update();
 	}
 
 	
@@ -82,8 +88,6 @@ namespace nap
 
 		// Activate current window for drawing
 		mRenderWindow->makeActive();
-
-		glEnable(GL_DEPTH_TEST);   // Enables Depth Testing
 
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
@@ -133,6 +137,12 @@ namespace nap
 			{
 				mRenderWindow->toggleFullscreen();
 			}
+
+			// If 'h' is pressed toggle gui visibility
+			if (press_event->mKey == nap::EKeyCode::KEY_h)
+			{
+				mGui->toggleVisibility();
+			}
 		}
 		mInputService->addEvent(std::move(inputEvent));
 	}
@@ -140,6 +150,7 @@ namespace nap
 
 	int AtmosApp::shutdown()
 	{
+		mGui.reset();
 		return 0;
 	}
 }
