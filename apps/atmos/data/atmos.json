@@ -261,6 +261,10 @@
                     "ShaderAttributeID": "in_UV0"
                 },
                 {
+                    "MeshAttributeID": "UV1",
+                    "ShaderAttributeID": "in_UV1"
+                },
+                {
                     "MeshAttributeID": "Normal",
                     "ShaderAttributeID": "in_Normal"
                 }
@@ -365,6 +369,7 @@
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
             "ReferenceMesh": "WitkoraalMesh",
-            "Length": 0.01        }
+            "Length": 0.009999999776482582
+        }
     ]
 }

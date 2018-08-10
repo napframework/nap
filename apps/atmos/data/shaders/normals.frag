@@ -24,9 +24,9 @@ uniform vec3 		cameraPosition;							//< Camera World Space Position
 // constants
 const vec3			lightPos = vec3(0,100,100);		
 const float 		lightIntensity = 1.0;					
-const float 		specularIntensity = 0.75;				
+const float 		specularIntensity = 0.5;				
 const vec3  		specularColor = vec3(1.0,1.0,1.0);
-const float 		shininess = 10;
+const float 		shininess = 20;
 const float 		ambientIntensity = 0.5f;
 const float			diffuseSpecularInfluence = 0.0;
 const float			diffuseIntensity = 1.0;
@@ -75,7 +75,7 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
     float angle = acos(dot(ws_normal, cro_normal));
 
 	mat3 rotationMatrix = mat3(rotationMatrix(ws_normal, angle));
-	vec3 alt_normal = normalize(mix(rotationMatrix * cro_normal, ws_normal, 0.05));
+	vec3 alt_normal = normalize(mix(rotationMatrix * cro_normal, ws_normal, 0.00));
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = specularIntensity;
@@ -95,6 +95,7 @@ void main()
 {
 	// Get color from texture
 	vec3 tex_color = texture(colorTexture, (passUVs0.xy * colorTexScale)).rgb;
+	tex_color = mix(tex_color, vec3(0.0,0.0,0.0), 0.0);
 
 	// Get shading
 	vec3 lit_color = applyLight(tex_color, passNormal, passPosition);
