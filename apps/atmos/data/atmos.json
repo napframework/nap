@@ -75,7 +75,7 @@
                     "mID": "ControlSelector",
                     "OrbitController": "./nap::OrbitController",
                     "FirstPersonController": "./FirstPersonController",
-                    "ControlMethod": "FirstPerson"
+                    "ControlMethod": "Orbit"
                 }
             ],
             "Children": []
@@ -157,7 +157,7 @@
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
-                    "Index": 1
+                    "Index": 0
                 }
             ],
             "Children": []
@@ -204,7 +204,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "textures/Rock_04_UV_H_CM_1.jpg",
+            "ImagePath": "textures/stone2_3.jpg",
             "Compressed": false
         },
         {
