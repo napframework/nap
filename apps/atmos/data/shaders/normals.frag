@@ -22,12 +22,28 @@ uniform float		colorTexScale;
 uniform vec3 		cameraPosition;							//< Camera World Space Position
 
 // constants
-const vec3			lightPos = vec3(100.0, 150.0, 1.0);		
+const vec3			lightPos = vec3(0,100,100);		
 const float 		lightIntensity = 1.0;					
-const float 		specularIntensity = 1.0;				
-const vec3  		specularColor = vec3(1.0,0.0,0.0);
-const float 		shininess = 30;
+const float 		specularIntensity = 0.75;				
+const vec3  		specularColor = vec3(1.0,1.0,1.0);
+const float 		shininess = 10;
 const float 		ambientIntensity = 0.5f;
+const float			diffuseSpecularInfluence = 0.0;
+const float			diffuseIntensity = 1.0;
+
+
+mat4 rotationMatrix(vec3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+}
 
 
 // Shades a color based on a light, incoming normal and position should be in object space
@@ -51,14 +67,25 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 
 	// diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color * lightIntensity;
+	vec3 diffuse = diffuseCoefficient * diffuseIntensity * color * lightIntensity;
+
+	// Calculate alternative normal for specular
+    vec3 cam_normal = normalize(cameraPosition - ws_position);
+    vec3 cro_normal = normalize(cross(cam_normal, ws_normal));
+    float angle = acos(dot(ws_normal, cro_normal));
+
+	mat3 rotationMatrix = mat3(rotationMatrix(ws_normal, angle));
+	vec3 alt_normal = normalize(mix(rotationMatrix * cro_normal, ws_normal, 0.05));
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = specularIntensity;
 
 	// Compute specularf
-    float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-surfaceToLight, ws_normal)), surfaceToCamera)), shininess);
+    float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-alt_normal, ws_normal)), surfaceToCamera)), shininess);
     vec3 specular = specularCoefficient * specularColor * lightIntensity * spec_intensity;
+
+    // Compensate using tip
+    specular = specular * pow((1.0-passTip),1.0) * mix(1.0, pow(diffuseCoefficient,0.75), diffuseSpecularInfluence);
 
 	//linear color (color before gamma correction)
     return diffuse + specular + ambient;

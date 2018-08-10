@@ -16,11 +16,11 @@ uniform float		colorTexScale;							//< Primage Color Texture Scale
 uniform vec3 		cameraPosition;							//< Camera World Space Position
 
 // constants
-const vec3			lightPos = vec3(100.0, 150.0, 1.0);		
+const vec3			lightPos = vec3(0.0, 100.0, 100.0);		
 const float 		lightIntensity = 1.0;					
 const float 		specularIntensity = 0.25;				
 const vec3  		specularColor = vec3(1.0,1.0,1.0);
-const float 		shininess = 20;
+const float 		shininess = 10;
 const float 		ambientIntensity = 0.5f;
 
 

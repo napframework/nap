@@ -204,7 +204,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "textures/stone_02_1.jpg",
+            "ImagePath": "textures/stone2_3.jpg",
             "Compressed": false
         },
         {
@@ -365,7 +365,6 @@
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
             "ReferenceMesh": "WitkoraalMesh",
-            "Length": 0.009999999776482582
-        }
+            "Length": 0.01        }
     ]
 }
