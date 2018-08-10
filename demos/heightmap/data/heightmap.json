@@ -59,7 +59,7 @@
 			"Type" : "nap::HeightNormals",
 			"mID" : "VisualizeNormalsMesh",
 			"ReferenceMesh" : "HeightMesh",
-			"Length" : 2.0
+			"Length" : 1.0
 		},
 
 		{
