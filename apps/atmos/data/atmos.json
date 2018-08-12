@@ -179,7 +179,7 @@
                         "ImageSingleThr",
                         "ImageSingleFor"
                     ],
-                    "Index": 0
+                    "Index": 1
                 },
                 {
                     "Type": "nap::UpdateMaterialComponent",
@@ -364,7 +364,7 @@
                 {
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D",
-                    "Name": "colorTexture",
+                    "Name": "colorTextureOne",
                     "Texture": "ImageTileableOne"
                 },
                 {
@@ -407,7 +407,7 @@
                 {
                     "Type": "nap::UniformTexture2D",
                     "mID": "ColorTextureUniform",
-                    "Name": "colorTexture",
+                    "Name": "colorTextureOne",
                     "Texture": "ImageTileableOne"
                 },
                 {

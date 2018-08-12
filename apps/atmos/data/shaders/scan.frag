@@ -11,7 +11,8 @@ in mat4 passModelMatrix;	//< modelMatrix
 out vec4 out_Color;
 
 // uniforms
-uniform sampler2D	colorTexture;							//< Primary Color Texture
+uniform sampler2D	colorTextureOne;						//< Primary Color Texture
+uniform sampler2D	colorTextureTwo;
 uniform float		colorTexScale;							//< Primage Color Texture Scale
 uniform vec3 		cameraPosition;							//< Camera World Space Position
 
@@ -62,7 +63,7 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 void main() 
 {	
 	// Get color from texture
-	vec3 tex_color = texture(colorTexture, (passUVs0.xy * colorTexScale)).rgb;
+	vec3 tex_color = texture(colorTextureOne, (passUVs0.xy * colorTexScale)).rgb;
 
 	vec3 lit_color = applyLight(tex_color, passNormal, passPosition);
 

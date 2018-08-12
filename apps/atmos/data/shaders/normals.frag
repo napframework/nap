@@ -17,7 +17,7 @@ uniform float opacity;			//< Opacity
 uniform float length;			//< Normal length
 
 // uniforms
-uniform sampler2D	colorTexture;
+uniform sampler2D	colorTextureOne;
 uniform float		colorTexScale;
 uniform vec3 		cameraPosition;							//< Camera World Space Position
 
@@ -94,7 +94,7 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 void main() 
 {
 	// Get color from texture
-	vec3 tex_color = texture(colorTexture, (passUVs0.xy * colorTexScale)).rgb;
+	vec3 tex_color = texture(colorTextureOne, (passUVs0.xy * colorTexScale)).rgb;
 	tex_color = mix(tex_color, vec3(0.0,0.0,0.0), 0.0);
 
 	// Get shading
