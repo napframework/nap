@@ -21,6 +21,10 @@ out vec3 passNormal;				//< vertex normal in object space
 out vec3 passPosition;				//< vertex position in object space
 out mat4 passModelMatrix;			//< model matrix
 
+const float noiseSpeed = 0.25;
+const float noiseScale = 0.5;
+const float noiseFreq = 10.0;
+
 // Simplex 2D noise
 //
 vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
@@ -52,19 +56,24 @@ float snoise(vec2 v){
   return 130.0 * dot(m, g);
 }
 
+float random (vec2 st) {
+    return fract(sin(dot(st.xy,
+                         vec2(12.9898,78.233)))*
+        43758.5453123);
+}
+
 void main(void)
 {
-	float time_scale = 0.25;
-	float speed = time * time_scale;
+  // Current noise sample time
+	float current_time = time * noiseSpeed;
 
+  // Seed for noise is the 2nd uv texture coordinate
 	vec2 noise_lookup = vec2(in_UV1.x, in_UV1.y);
-	float noise_scale = 0.5;
-  float noise_frequ = 10.0;
 
 	// calculate noise to offset normal
-	float ox = snoise((noise_lookup * noise_frequ) + 00.0 + speed) * noise_scale;
-	float oy = snoise((noise_lookup * noise_frequ) + 10.0 + speed) * noise_scale;
-	float oz = snoise((noise_lookup * noise_frequ) + 20.0 + speed) * noise_scale;
+	float ox = snoise((noise_lookup * noiseFreq) + 00.0 + current_time) * noiseScale;
+	float oy = snoise((noise_lookup * noiseFreq) + 10.0 + current_time) * noiseScale;
+	float oz = snoise((noise_lookup * noiseFreq) + 20.0 + current_time) * noiseScale;
 
 	// Add noise value to normal
 	vec3 displaced_normal = normalize(in_Normal + vec3(ox, oy, oz));
@@ -83,7 +92,7 @@ void main(void)
 
 	// Pass uvs
 	passUVs0 = in_UV0;
-    passUVs1 = in_UV1;
+  passUVs1 = in_UV1;
 
 	// Pass normal in object space
 	passNormal = displaced_normal;
