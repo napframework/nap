@@ -9,24 +9,26 @@ uniform vec3 cameraPosition;		//< Camera World Space Position
 uniform float time;
 
 in vec3	in_Position;				//< Vertex position
-in vec3 in_UV0;						//< First uv coordinate set
-in vec3 in_UV1;						//< Second uv coordinate set
-in float in_Tip;					//< If the vertex is a tip or not
+in vec3 in_UV0;			        //< First uv coordinate set
+in vec3 in_UV1;						  //< Second uv coordinate set
+in float in_Tip;					  //< If the vertex is a tip or not
 in vec3 in_Normal;					//< Normal
 
 out float passTip;
 out vec3 passUVs0;					//< The unwrapped normalized texture
 out vec3 passUVs1;					//< The polar unwrapped texture
 out vec3 passNormal;				//< vertex normal in object space
-out vec3 passPosition;				//< vertex position in object space
-out mat4 passModelMatrix;			//< model matrix
+out vec3 passPosition;		  //< vertex position in object space
+out mat4 passModelMatrix;		//< model matrix
 
 const float noiseSpeed = 0.25;
-const float noiseScale = 0.5;
+const float noiseScale = 0.6;
 const float noiseFreq = 10.0;
+const float noiseRandom = 0.15;
+const float randomLength = 0.5;
+const float lengthScale = 1.0;
 
 // Simplex 2D noise
-//
 vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
 
 float snoise(vec2 v){
@@ -56,10 +58,20 @@ float snoise(vec2 v){
   return 130.0 * dot(m, g);
 }
 
-float random (vec2 st) {
-    return fract(sin(dot(st.xy,
-                         vec2(12.9898,78.233)))*
-        43758.5453123);
+
+float random (vec2 st) 
+{
+  return fract(sin(dot(st.xy, vec2(12.9898,78.233)))*43758.5453123);
+}
+
+
+float fit(float value, float min, float max, float outMin, float outMax)
+{
+  float v = clamp(value, min, max);
+  float m = max - min;
+  if(m==0.0)
+    m = 0.00000001;
+  return (v - min) / (m) * (outMax - outMin) + outMin;
 }
 
 void main(void)
@@ -70,22 +82,39 @@ void main(void)
   // Seed for noise is the 2nd uv texture coordinate
 	vec2 noise_lookup = vec2(in_UV1.x, in_UV1.y);
 
+  // Add some random noise lookup
+  vec2 rand_lookup = vec2(
+    fit(random(noise_lookup + vec2(0.05, 0.075)),0.0,1.0,-1.0,1.0), 
+    fit(random(noise_lookup + vec2(0.10, 0.200)),0.0,1.0,-1.0,1.0));
+  rand_lookup = rand_lookup * noiseRandom;
+
 	// calculate noise to offset normal
-	float ox = snoise((noise_lookup * noiseFreq) + 00.0 + current_time) * noiseScale;
-	float oy = snoise((noise_lookup * noiseFreq) + 10.0 + current_time) * noiseScale;
-	float oz = snoise((noise_lookup * noiseFreq) + 20.0 + current_time) * noiseScale;
+	float ox = snoise(((noise_lookup * noiseFreq)) + rand_lookup + 00.0 + current_time) * noiseScale;
+	float oy = snoise(((noise_lookup * noiseFreq)) + rand_lookup + 10.0 + current_time) * noiseScale;
+	float oz = snoise(((noise_lookup * noiseFreq)) + rand_lookup + 20.0 + current_time) * noiseScale;
+
+  // Prepare some variables used for calculating alternative normal
+  vec3 nnormal = normalize(in_Normal);
+  float normal_length = length(in_Normal);
 
 	// Add noise value to normal
-	vec3 displaced_normal = normalize(in_Normal + vec3(ox, oy, oz));
+	vec3 displaced_normal = normalize(nnormal + vec3(ox, oy, oz));
 
 	// Calculate point origin
-	vec3 point_origin = in_Position + (-1.0 * (normalize(in_Normal) * 0.01));
-	vec3 displ_position = point_origin + (displaced_normal * 0.01);
+	vec3 point_origin = in_Position + (-1.0 * in_Normal);
+	
+  // Get random length number
+  float length = mix(normal_length, length(in_Normal) * random(noise_lookup), randomLength);
+  length = length * lengthScale;
 
+  // Calculate displaced point position
+  vec3 displ_position = point_origin + (displaced_normal * length);
+
+  // Only displace tip of the line
 	vec3 final_pos = mix(in_Position, displ_position, 1.0-in_Tip);
 
 	// Calculate position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(final_pos, 1.0);
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(final_pos, 1.0);
 
 	// Pass color
 	passTip = in_Tip;
