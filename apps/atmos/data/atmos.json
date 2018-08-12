@@ -158,6 +158,36 @@
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
                     "Index": 0
+                },
+                {
+                    "Type": "nap::SelectImageComponent",
+                    "mID": "SelectImageComponentTileable",
+                    "Images": [
+                        "ImageTileableOne",
+                        "ImageTileableTwo",
+                        "ImageTileableThree",
+                        "ImageTileableFour"
+                    ],
+                    "Index": 0
+                },
+                {
+                    "Type": "nap::SelectImageComponent",
+                    "mID": "SelectImageComponentSingle",
+                    "Images": [
+                        "ImageSingleOne",
+                        "ImageSingleTwo",
+                        "ImageSingleThr",
+                        "ImageSingleFor"
+                    ],
+                    "Index": 0
+                },
+                {
+                    "Type": "nap::UpdateMaterialComponent",
+                    "mID": "UpdateMaterialComponent",
+                    "ScanMeshComponent": "./ScanRenderableMesh",
+                    "NormalMeshComponent": "./ScanNormalRenderableMesh",
+                    "TileableImageSelectComponent": "./SelectImageComponentTileable",
+                    "SingleImageSelectComponent": "./SelectImageComponentSingle"
                 }
             ],
             "Children": []
@@ -195,7 +225,63 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "ScanColorTexture",
+            "mID": "ImageSingleFor",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/single/single_for.png",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageSingleOne",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/single/single_one.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageSingleThr",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/single/single_thr.png",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageSingleTwo",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/single/single_two.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileableFour",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -204,7 +290,49 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "textures/stone2_3.jpg",
+            "ImagePath": "textures/tileable/stone_02_1.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileableOne",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/stone2_3.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileableThree",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/Rock_04_UV_H_CM_1.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileableTwo",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/Rock_02_UV_H_CM_1.jpg",
             "Compressed": false
         },
         {
@@ -237,7 +365,7 @@
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D",
                     "Name": "colorTexture",
-                    "Texture": "ScanColorTexture"
+                    "Texture": "ImageTileableOne"
                 },
                 {
                     "Type": "nap::UniformFloat",
@@ -280,7 +408,7 @@
                     "Type": "nap::UniformTexture2D",
                     "mID": "ColorTextureUniform",
                     "Name": "colorTexture",
-                    "Texture": "ScanColorTexture"
+                    "Texture": "ImageTileableOne"
                 },
                 {
                     "Type": "nap::UniformFloat",
