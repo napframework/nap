@@ -23,7 +23,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_2",
+                    "mID": "CameraTransform",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -179,7 +179,7 @@
                         "ImageSingleThr",
                         "ImageSingleFor"
                     ],
-                    "Index": 1
+                    "Index": 0
                 },
                 {
                     "Type": "nap::UpdateMaterialComponent",
@@ -187,7 +187,8 @@
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalMeshComponent": "./ScanNormalRenderableMesh",
                     "TileableImageSelectComponent": "./SelectImageComponentTileable",
-                    "SingleImageSelectComponent": "./SelectImageComponentSingle"
+                    "SingleImageSelectComponent": "./SelectImageComponentSingle",
+                    "CameraTransformComponent": "CameraTransform"
                 }
             ],
             "Children": []
@@ -229,7 +230,7 @@
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
+                "WrapVertical": "MirroredRepeat",
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 20
             },
@@ -243,8 +244,8 @@
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
@@ -257,8 +258,8 @@
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
@@ -271,8 +272,8 @@
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
@@ -348,12 +349,6 @@
                         "y": 1.0,
                         "z": 1.0
                     }
-                },
-                {
-                    "Type": "nap::UniformFloat",
-                    "mID": "UniformFloat",
-                    "Name": "length",
-                    "Value": 1.0
                 },
                 {
                     "Type": "nap::UniformFloat",

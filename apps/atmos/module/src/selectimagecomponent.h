@@ -68,6 +68,16 @@ namespace nap
 		 */
 		const Image& getImage() const;
 
+		/**
+		* @return the number of selectable meshes
+		*/
+		int getCount() const				{ return mImages.size(); }
+
+		/**
+		* @return current mesh index
+		*/
+		int getIndex() const				{ return mCurrentIndex; }
+
 	private:
 		std::vector<Image*> mImages;									//< All Images to select from
 		int mCurrentIndex = 0;										//< Current selection index

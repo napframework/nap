@@ -1,6 +1,9 @@
 // Local Includes
 #include "atmosgui.h"
 #include "atmosapp.h"
+#include "selectmeshcomponent.h"
+#include "selectimagecomponent.h"
+#include "updatematerialcomponent.h"
 
 // External Includes
 #include <imgui/imgui.h>
@@ -68,6 +71,42 @@ namespace nap
 	{
 		// Resets all the tracers
 		ImGui::Begin("Controls");
+
+		// Select mesh slider
+		nap::SelectMeshComponentInstance& mesh_selector = mApp.mScanEntity->getComponent<SelectMeshComponentInstance>();
+		int ci = mesh_selector.getIndex();
+		if (ImGui::SliderInt("Select Mesh", &ci, 0, mesh_selector.getCount() - 1))
+		{
+			mesh_selector.selectMesh(ci);
+		}
+
+		// Select image 1 (tileable) slider
+		nap::SelectImageComponentInstance* img_selector_tileable = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentTileable");
+		assert(img_selector_tileable != nullptr);
+		ci = img_selector_tileable->getIndex();
+		if (ImGui::SliderInt("Select Tileable Texture", &ci, 0, img_selector_tileable->getCount() - 1))
+		{
+			img_selector_tileable->selectImage(ci);
+		}
+
+		// Select image 2 (stretched / single) slider
+		nap::SelectImageComponentInstance* img_selector_single = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentSingle");
+		assert(img_selector_single != nullptr);
+		ci = img_selector_single->getIndex();
+		if (ImGui::SliderInt("Select Stretch Texture", &ci, 0, img_selector_single->getCount() - 1))
+		{
+			img_selector_single->selectImage(ci);
+		}
+
+		// Mix Controls
+		nap::UpdateMaterialComponentInstance& up_mat_comp = mApp.mScanEntity->getComponent<UpdateMaterialComponentInstance>();
+		if (ImGui::CollapsingHeader("Mix"))
+		{
+			ImGui::ColorEdit3("Diffuse Color", up_mat_comp.mDiffuseColor.getData());
+			ImGui::SliderFloat("Texture Blend Value", &(up_mat_comp.mColorTexMix), 0.0f, 1.0f);
+			ImGui::SliderFloat("Diffuse Blend Value", &(up_mat_comp.mDiffuseColorMix), 0.0f, 1.0f);
+		}
+
 		ImGui::End();
 	}
 

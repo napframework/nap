@@ -6,6 +6,8 @@
 #include <component.h>
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
+#include <transformcomponent.h>
+#include <color.h>
 
 namespace nap
 {
@@ -30,6 +32,7 @@ namespace nap
 		ComponentPtr<RenderableMeshComponent> mNormalMeshComponent = nullptr;			///< Property: 'NormalMeshComponent'
 		ComponentPtr<SelectImageComponent> mTileableImageSelectComponent = nullptr;		///< Property: "TileableImageSelectComponent'
 		ComponentPtr<SelectImageComponent> mSingleImageSelectComponent = nullptr;		///< Property: "SingleImageSelectComponent
+		ComponentPtr<TransformComponent> mCameraTransformComponent = nullptr;			///< Property: "CameraTransformComponent"
 	};
 
 
@@ -61,5 +64,29 @@ namespace nap
 		ComponentInstancePtr<RenderableMeshComponent> mNormalsMeshComponent =			{ this, &UpdateMaterialComponent::mNormalMeshComponent };
 		ComponentInstancePtr<SelectImageComponent> mTileableImageSelectComponent =		{ this, &UpdateMaterialComponent::mTileableImageSelectComponent };
 		ComponentInstancePtr<SelectImageComponent> mSingleImageSelectComponent =		{ this, &UpdateMaterialComponent::mSingleImageSelectComponent };
+		ComponentInstancePtr<TransformComponent> mCameraTransform =						{ this, &UpdateMaterialComponent::mCameraTransformComponent };
+
+		// Properties
+		float			mColorTexScaleOne	= 10.0f;
+		float			mColroTexScaleTwo	= 1.0f;
+		float			mColorTexMix		= 0.0f;
+		float			mDiffuseColorMix	= 0.0f;
+		RGBColorFloat	mDiffuseColor		= { 0.0f, 0.0f, 0.0f };
+		glm::vec3		mLightPos			= { 0, 100.0f, 100.0f };
+		float			mLightIntensity		= 1.0f;
+		float			mAmbientIntensity	= 0.5f;
+
+		float			mNormalSpecIntens	= 0.5f;
+		float			mScanSpecIntens		= 0.25f;
+		RGBColorFloat	mNormalSpecColor	= { 1.0f, 1.0f, 1.0f };
+		RGBColorFloat	mScanSpecColor		= { 1.0f, 1.0f, 1.0f };
+		float			mNormalSpecShine	= { 20.0f };
+		float			mScanSpecShine		= { 10.0f };
+
+		float			mWindScale			= 0.6f;
+		float			mWindFreq			= 10.0f;
+		float			mWindRandom			= 0.15f;
+		float			mNormalRandom		= 0.5f;
+		float			mNormalScale		= 1.0f;
 	};
 }

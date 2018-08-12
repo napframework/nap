@@ -23,7 +23,7 @@ namespace nap
 	class AtmosApp : public App
 	{
 		RTTI_ENABLE(App)
-		friend class KalvertorenGui;
+		friend class AtmosGui;
 	public:
 		AtmosApp(nap::Core& core) : App(core)	{ }
 

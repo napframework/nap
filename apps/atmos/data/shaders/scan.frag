@@ -10,19 +10,23 @@ in mat4 passModelMatrix;	//< modelMatrix
 // output
 out vec4 out_Color;
 
-// uniforms
+// shared uniforms
 uniform sampler2D	colorTextureOne;						//< Primary Color Texture
 uniform sampler2D	colorTextureTwo;
-uniform float		colorTexScale;							//< Primage Color Texture Scale
+uniform float		colorTexScaleOne;
+uniform float		colorTexScaleTwo;
+uniform float		colorTexMix;							//< Primage Color Texture Scale
+uniform vec3		diffuseColor;
+uniform float		diffuseColorMix;
 uniform vec3 		cameraPosition;							//< Camera World Space Position
+uniform vec3		lightPos;		
+uniform float 		lightIntensity;		
+uniform float 		ambientIntensity;
 
-// constants
-const vec3			lightPos = vec3(0.0, 100.0, 100.0);		
-const float 		lightIntensity = 1.0;					
-const float 		specularIntensity = 0.25;				
-const vec3  		specularColor = vec3(1.0,1.0,1.0);
-const float 		shininess = 10;
-const float 		ambientIntensity = 0.5f;
+// Unshared uniforms					
+uniform float 		specularIntensity;				
+uniform vec3  		specularColor;
+uniform float 		shininess; 
 
 
 // Shades a color based on a light, incoming normal and position should be in object space
@@ -63,7 +67,12 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 void main() 
 {	
 	// Get color from texture
-	vec3 tex_color = texture(colorTextureOne, (passUVs0.xy * colorTexScale)).rgb;
+	vec3 tex_color_one = texture(colorTextureOne, (passUVs0.xy * colorTexScaleOne)).rgb;
+	vec3 tex_color_two = texture(colorTextureTwo, (passUVs1.xy * colorTexScaleTwo)).rgb;
+
+	// Mix into texture color
+	vec3 tex_color = mix(tex_color_one, tex_color_two, colorTexMix);
+	tex_color = mix(tex_color, diffuseColor, diffuseColorMix);
 
 	vec3 lit_color = applyLight(tex_color, passNormal, passPosition);
 

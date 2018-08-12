@@ -3,10 +3,14 @@
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
-uniform float blendValue;
-uniform float normalBlendValue;
 uniform vec3 cameraPosition;		//< Camera World Space Position
 uniform float time;
+uniform float noiseSpeed;
+uniform float noiseScale;
+uniform float noiseFreq;
+uniform float noiseRandom;
+uniform float randomLength;
+uniform float normalScale;
 
 in vec3	in_Position;				//< Vertex position
 in vec3 in_UV0;			        //< First uv coordinate set
@@ -20,13 +24,6 @@ out vec3 passUVs1;					//< The polar unwrapped texture
 out vec3 passNormal;				//< vertex normal in object space
 out vec3 passPosition;		  //< vertex position in object space
 out mat4 passModelMatrix;		//< model matrix
-
-const float noiseSpeed = 0.25;
-const float noiseScale = 0.6;
-const float noiseFreq = 10.0;
-const float noiseRandom = 0.15;
-const float randomLength = 0.5;
-const float lengthScale = 1.0;
 
 // Simplex 2D noise
 vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
@@ -105,7 +102,7 @@ void main(void)
 	
   // Get random length number
   float length = mix(normal_length, length(in_Normal) * random(noise_lookup), randomLength);
-  length = length * lengthScale;
+  length = length * normalScale;
 
   // Calculate displaced point position
   vec3 displ_position = point_origin + (displaced_normal * length);

@@ -12,24 +12,28 @@ in mat4 passModelMatrix;	//< modelMatrix
 out vec4 out_Color;
 
 // Uniform used for setting color
-uniform vec3 color;				//< Normal color
 uniform float opacity;			//< Opacity
-uniform float length;			//< Normal length
 
-// uniforms
+// shared uniforms
 uniform sampler2D	colorTextureOne;
-uniform float		colorTexScale;
+uniform sampler2D	colorTextureTwo;
+uniform float		colorTexScaleOne;
+uniform float		colorTexScaleTwo;
+uniform float		colorTexMix;
+uniform vec3		diffuseColor;
+uniform float		diffuseColorMix;
 uniform vec3 		cameraPosition;							//< Camera World Space Position
+uniform vec3		lightPos;		
+uniform float 		lightIntensity;		
+uniform float 		ambientIntensity;
 
-// constants
-const vec3			lightPos = vec3(0,100,100);		
-const float 		lightIntensity = 1.0;					
-const float 		specularIntensity = 0.5;				
-const vec3  		specularColor = vec3(1.0,1.0,1.0);
-const float 		shininess = 20;
-const float 		ambientIntensity = 0.5f;
+// Unshared uniforms		
+uniform float 		specularIntensity;		
+uniform vec3  		specularColor;
+uniform float 		shininess;
+
+// Constants
 const float			diffuseSpecularInfluence = 0.0;
-const float			diffuseIntensity = 1.0;
 
 
 mat4 rotationMatrix(vec3 axis, float angle)
@@ -67,7 +71,7 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 
 	// diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * diffuseIntensity * color * lightIntensity;
+	vec3 diffuse = diffuseCoefficient * color * lightIntensity;
 
 	// Calculate alternative normal for specular
     vec3 cam_normal = normalize(cameraPosition - ws_position);
@@ -94,15 +98,19 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 void main() 
 {
 	// Get color from texture
-	vec3 tex_color = texture(colorTextureOne, (passUVs0.xy * colorTexScale)).rgb;
-	tex_color = mix(tex_color, vec3(0.0,0.0,0.0), 0.0);
+	vec3 tex_color_one = texture(colorTextureOne, (passUVs0.xy * colorTexScaleOne)).rgb;
+	vec3 tex_color_two = texture(colorTextureTwo, (passUVs1.xy * colorTexScaleTwo)).rgb;
+
+	// Mix into texture color
+	vec3 tex_color = mix(tex_color_one, tex_color_two, colorTexMix);
+	tex_color = mix(tex_color, diffuseColor, diffuseColorMix);
 
 	// Get shading
 	vec3 lit_color = applyLight(tex_color, passNormal, passPosition);
 
 	// Apply alpha based on tip interpolated tip value
 	float v = 1.0-clamp(passTip, 0.0, 1.0);
-	float m = length;
+	float m = 1.0;
 	v =  pow(1.0 - (v / (m) * 1.0),0.5);
 
 	// Set output color
