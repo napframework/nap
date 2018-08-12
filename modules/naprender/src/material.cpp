@@ -152,6 +152,18 @@ namespace nap
 	}
 
 
+	void MaterialInstance::setBlendMode(EBlendMode blendMode)
+	{
+		mResource->mBlendMode = blendMode;
+	}
+
+	
+	void MaterialInstance::setDepthMode(EDepthMode depthMode)
+	{
+		mResource->mDepthMode = depthMode;
+	}
+
+
 	EDepthMode MaterialInstance::getDepthMode() const
 	{
 		if (mResource->mDepthMode != EDepthMode::NotSet)
