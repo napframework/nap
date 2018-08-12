@@ -93,15 +93,15 @@ namespace nap
 			assert(glm::length(ref_normal) > 0);
 
 			// Normalize reference normal
-			glm::vec3 nnormal = glm::normalize(ref_normal);
+			glm::vec3 nnormal = glm::normalize(ref_normal) * mNormalLength;
 
 			// Set vertices
 			target_vertices[target_idx] = ref_vertex;
-			target_vertices[target_idx + 1] = ref_vertex + (nnormal * mNormalLength);
+			target_vertices[target_idx + 1] = ref_vertex + nnormal;
 
 			// Set normals
-			target_normals[target_idx + 0] = glm::normalize(nnormal);
-			target_normals[target_idx + 1] = glm::normalize(nnormal);
+			target_normals[target_idx + 0] = nnormal;
+			target_normals[target_idx + 1] = nnormal;
 
 			// Set tip values
 			target_tips[target_idx + 0] = 1.0f;
