@@ -53,6 +53,7 @@ namespace nap
 
 		// Create gui
 		mGui = std::make_unique<AtmosGui>(*this);
+		mGui->init();
 
 		return true;
 	}
@@ -90,10 +91,13 @@ namespace nap
 		mRenderWindow->makeActive();
 
 		// Clear back-buffer
+		mRenderWindow->getBackbuffer().setClearColor(mGui->getBackgroundColor());
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
+		// Set draw mode (fill, lines, polygon
+		opengl::setPolygonMode(mGui->getRenderMode());
+
 		std::vector<nap::RenderableComponentInstance*> render_comps;
-		//render_comps.emplace_back(mScanEntity->findComponentByID<RenderableComponentInstance>("ScanRenderableMesh", nap::rtti::ETypeCheck::IS_DERIVED_FROM));
 		mScanEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
 		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();

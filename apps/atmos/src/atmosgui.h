@@ -3,6 +3,7 @@
 // External Includes
 #include <utility/datetimeutils.h>
 #include <color.h>
+#include <nglutils.h>
 
 namespace nap
 {
@@ -36,11 +37,25 @@ namespace nap
 		 */
 		void toggleVisibility();
 
+		/**
+		 *	@return the background color
+		 */
+		const glm::vec4& getBackgroundColor() const			{ return mBackgroundColor; }
+
+		/**
+		 * @return the current draw mode
+		 */
+		opengl::EPolygonMode getRenderMode() const			{ return mRenderMode; }
+
 	private:
-		AtmosApp&			mApp;				///< The actual atmos appliation we build the gui for
-		bool				mHide = false;
-		utility::DateTime	mDateTime;
-		RGBColor8			mTextColor = { 0xC8, 0x69, 0x69 };
+		AtmosApp&				mApp;				///< The actual atmos appliation we build the gui for
+		bool					mHide = false;
+		utility::DateTime		mDateTime;
+		RGBColor8				mTextColor = { 0xC8, 0x69, 0x69 };
+		glm::vec4				mBackgroundColor;
+		bool					mTransparent = false;
+		opengl::EPolygonMode	mRenderMode = opengl::EPolygonMode::Fill;
+		float					mTexPreviewDisplaySize = 1.0f;
 
 		/**
 		 * Shows the controls menu

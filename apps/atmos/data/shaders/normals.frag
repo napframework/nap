@@ -26,15 +26,24 @@ uniform vec3 		cameraPosition;							//< Camera World Space Position
 uniform vec3		lightPos;		
 uniform float 		lightIntensity;		
 uniform float 		ambientIntensity;
+uniform float		preMultiplyTexValue;
 
 // Unshared uniforms		
 uniform float 		specularIntensity;		
 uniform vec3  		specularColor;
 uniform float 		shininess;
+uniform float		diffuseSpecularInfluence;
+uniform float		textureTimeU;
+uniform float		textureTimeV;
 
-// Constants
-const float			diffuseSpecularInfluence = 0.0;
-
+float fit(float value, float min, float max, float outMin, float outMax)
+{
+  float v = clamp(value, min, max);
+  float m = max - min;
+  if(m==0.0)
+    m = 0.00000001;
+  return (v - min) / (m) * (outMax - outMin) + outMin;
+}
 
 mat4 rotationMatrix(vec3 axis, float angle)
 {
@@ -98,8 +107,12 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 void main() 
 {
 	// Get color from texture
+	vec2 tex_time = vec2(textureTimeU, textureTimeV);
 	vec3 tex_color_one = texture(colorTextureOne, (passUVs0.xy * colorTexScaleOne)).rgb;
-	vec3 tex_color_two = texture(colorTextureTwo, (passUVs1.xy * colorTexScaleTwo)).rgb;
+	vec3 tex_color_two = texture(colorTextureTwo, ((passUVs1.xy * colorTexScaleTwo)+tex_time)).rgb;
+
+	vec3 tex_color_mul = tex_color_one *  tex_color_two;
+	tex_color_one = mix(tex_color_one, tex_color_mul, preMultiplyTexValue);  
 
 	// Mix into texture color
 	vec3 tex_color = mix(tex_color_one, tex_color_two, colorTexMix);
@@ -109,9 +122,7 @@ void main()
 	vec3 lit_color = applyLight(tex_color, passNormal, passPosition);
 
 	// Apply alpha based on tip interpolated tip value
-	float v = 1.0-clamp(passTip, 0.0, 1.0);
-	float m = 1.0;
-	v =  pow(1.0 - (v / (m) * 1.0),0.5);
+	float v = fit(1.0-passTip, 0.9,1.0,1.0,0.0);
 
 	// Set output color
 	out_Color = vec4(lit_color, opacity * v);

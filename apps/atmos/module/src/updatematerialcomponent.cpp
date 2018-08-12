@@ -42,6 +42,10 @@ static const std::string sWindRandom		= "noiseRandom";
 static const std::string sNormalRandom		= "randomLength";
 static const std::string sNormalScale		= "normalScale";
 static const std::string sCameraPostion		= "cameraPosition";
+static const std::string sPremultValue		= "preMultiplyTexValue";
+static const std::string sDiffSpecInfluence = "diffuseSpecularInfluence";
+static const std::string sTexTimeU			= "textureTimeU";
+static const std::string sTexTimeV			= "textureTimeV";
 
 namespace nap
 {
@@ -90,6 +94,8 @@ namespace nap
 		// Shared Value
 		//////////////////////////////////////////////////////////////////////////
 
+		mWindTime += (deltaTime * mWindSpeed);
+
 		// Set first texture (tileable)
 		setSharedTexture(sm, nm, mTileableImageSelectComponent->getImage(), sColorTexOneName);
 
@@ -100,7 +106,7 @@ namespace nap
 		setSharedValue<UniformFloat, float>(sm, nm, sColorTexScaleOne, mColorTexScaleOne);
 
 		// Set texture scale two
-		setSharedValue<UniformFloat, float>(sm, nm, sColorTexScaleTwo, mColroTexScaleTwo);
+		setSharedValue<UniformFloat, float>(sm, nm, sColorTexScaleTwo, mColorTexScaleTwo);
 
 		// Set color mix
 		setSharedValue<UniformFloat, float>(sm, nm, sColorTexMix, mColorTexMix);
@@ -110,6 +116,9 @@ namespace nap
 
 		// Set diffuse color mix
 		setSharedValue<UniformFloat, float>(sm, nm, sDiffuseColorMix, mDiffuseColorMix);
+
+		// Set premultiply value
+		setSharedValue<UniformFloat, float>(sm, nm, sPremultValue, mPremultValue);
 
 		// Set light position
 		setSharedValue<UniformVec3, glm::vec3>(sm, nm, sLightPos, mLightPos);
@@ -122,6 +131,12 @@ namespace nap
 
 		// Set camera position
 		setSharedValue<UniformVec3, glm::vec3>(sm, nm, sCameraPostion, math::extractPosition(mCameraTransform->getGlobalTransform()));
+
+		// Set texture u and v time
+		mTexTimeU += (deltaTime * mTextureSpeed.x);
+		mTexTimeV += (deltaTime * mTextureSpeed.y);
+		setSharedValue<UniformFloat, float>(sm, nm, sTexTimeU, mTexTimeU);
+		setSharedValue<UniformFloat, float>(sm, nm, sTexTimeV, mTexTimeV);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Not Shared Values
@@ -143,13 +158,12 @@ namespace nap
 		// Normal shader only values
 		//////////////////////////////////////////////////////////////////////////
 
-		nm.getOrCreateUniform<UniformFloat>(sWindSpeed).setValue(0.25f);
 		nm.getOrCreateUniform<UniformFloat>(sWindScale).setValue(mWindScale);
 		nm.getOrCreateUniform<UniformFloat>(sWindFreq).setValue(mWindFreq);
 		nm.getOrCreateUniform<UniformFloat>(sWindRandom).setValue(mWindRandom);
 		nm.getOrCreateUniform<UniformFloat>(sNormalRandom).setValue(mNormalRandom);
 		nm.getOrCreateUniform<UniformFloat>(sNormalScale).setValue(mNormalScale);
-		nm.getOrCreateUniform<UniformFloat>(sTime).setValue(getEntityInstance()->getCore()->getElapsedTime());
-
+		nm.getOrCreateUniform<UniformFloat>(sTime).setValue(mWindTime);
+		nm.getOrCreateUniform<UniformFloat>(sDiffSpecInfluence).setValue(mDiffuseSpecInfl);
 	}
 }

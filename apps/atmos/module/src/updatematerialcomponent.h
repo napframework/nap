@@ -68,10 +68,14 @@ namespace nap
 
 		// Properties
 		float			mColorTexScaleOne	= 10.0f;
-		float			mColroTexScaleTwo	= 1.0f;
+		float			mColorTexScaleTwo	= 1.0f;
 		float			mColorTexMix		= 0.0f;
 		float			mDiffuseColorMix	= 0.0f;
 		RGBColorFloat	mDiffuseColor		= { 0.0f, 0.0f, 0.0f };
+		float			mPremultValue		= { 0.0f };
+		glm::vec2		mTextureSpeed		= { 0.0f, 0.0f };
+
+		// Light
 		glm::vec3		mLightPos			= { 0, 100.0f, 100.0f };
 		float			mLightIntensity		= 1.0f;
 		float			mAmbientIntensity	= 0.5f;
@@ -83,10 +87,17 @@ namespace nap
 		float			mNormalSpecShine	= { 20.0f };
 		float			mScanSpecShine		= { 10.0f };
 
+		float			mWindSpeed			= 0.25f;
 		float			mWindScale			= 0.6f;
 		float			mWindFreq			= 10.0f;
 		float			mWindRandom			= 0.15f;
 		float			mNormalRandom		= 0.5f;
 		float			mNormalScale		= 1.0f;
+		float			mDiffuseSpecInfl	= 0.0f;			//< Scales specular highlights based on diffuse information
+
+	private:
+		double mWindTime = 0.0;
+		double mTexTimeU = 0.0;
+		double mTexTimeV = 0.0;
 	};
 }

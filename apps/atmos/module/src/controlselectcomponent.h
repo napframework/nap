@@ -66,6 +66,11 @@ namespace nap
 		 */
 		void selectControlMethod(EControlMethod method);
 
+		/**
+		 *	@return the currently selected control method
+		 */
+		EControlMethod getCurrentControlMethod() const { return mControlMethod; }
+
 		ComponentInstancePtr<OrbitController>			mOrbitController =	{ this, &ControlSelectComponent::mOrbitController };
 		ComponentInstancePtr<FirstPersonController>		mFirstPersonController = { this, &ControlSelectComponent::mFirstPersonController };
 		EControlMethod mControlMethod = EControlMethod::Orbit;

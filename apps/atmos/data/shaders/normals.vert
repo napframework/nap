@@ -5,7 +5,6 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 uniform vec3 cameraPosition;		//< Camera World Space Position
 uniform float time;
-uniform float noiseSpeed;
 uniform float noiseScale;
 uniform float noiseFreq;
 uniform float noiseRandom;
@@ -74,7 +73,7 @@ float fit(float value, float min, float max, float outMin, float outMax)
 void main(void)
 {
   // Current noise sample time
-	float current_time = time * noiseSpeed;
+	float current_time = time;
 
   // Seed for noise is the 2nd uv texture coordinate
 	vec2 noise_lookup = vec2(in_UV1.x, in_UV1.y);

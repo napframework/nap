@@ -4,9 +4,12 @@
 #include "selectmeshcomponent.h"
 #include "selectimagecomponent.h"
 #include "updatematerialcomponent.h"
+#include "controlselectcomponent.h"
+#include "rotatecomponent.h"
 
 // External Includes
 #include <imgui/imgui.h>
+#include <imguiutils.h>
 #include <nap/core.h>
 
 namespace nap
@@ -25,7 +28,7 @@ namespace nap
 
 	void AtmosGui::init()
 	{
-
+		mBackgroundColor = mApp.mRenderWindow->getBackbuffer().getClearColor();
 	}
 
 
@@ -72,6 +75,14 @@ namespace nap
 		// Resets all the tracers
 		ImGui::Begin("Controls");
 
+		// Control mode
+		nap::ControlSelectComponentInstance& control_comp = mApp.mCameraEntity->getComponent<ControlSelectComponentInstance>();
+		int cmethod = static_cast<int>(control_comp.getCurrentControlMethod());
+		if (ImGui::Combo("Fly Mode", &cmethod, "Orbit\0FirstPerson\0\0"))
+		{
+			control_comp.selectControlMethod(static_cast<EControlMethod>(cmethod));
+		}
+
 		// Select mesh slider
 		nap::SelectMeshComponentInstance& mesh_selector = mApp.mScanEntity->getComponent<SelectMeshComponentInstance>();
 		int ci = mesh_selector.getIndex();
@@ -98,15 +109,87 @@ namespace nap
 			img_selector_single->selectImage(ci);
 		}
 
+		RotateComponentInstance& rot_comp = mApp.mWorldEntity->getComponent<RotateComponentInstance>();
+		ImGui::SliderFloat("Rotate Speed", &(rot_comp.mProperties.mSpeed), -0.1f, 0.1f);
+
 		// Mix Controls
 		nap::UpdateMaterialComponentInstance& up_mat_comp = mApp.mScanEntity->getComponent<UpdateMaterialComponentInstance>();
-		if (ImGui::CollapsingHeader("Mix"))
+		if (ImGui::CollapsingHeader("Color Mixing"))
 		{
 			ImGui::ColorEdit3("Diffuse Color", up_mat_comp.mDiffuseColor.getData());
+			ImGui::SliderFloat("Premult Blend Value", &(up_mat_comp.mPremultValue), 0.0f, 1.0f);
 			ImGui::SliderFloat("Texture Blend Value", &(up_mat_comp.mColorTexMix), 0.0f, 1.0f);
 			ImGui::SliderFloat("Diffuse Blend Value", &(up_mat_comp.mDiffuseColorMix), 0.0f, 1.0f);
 		}
 
+		// Texture scale
+		if (ImGui::CollapsingHeader("Texture Settings"))
+		{
+			ImGui::SliderFloat("Tileable Scale", &(up_mat_comp.mColorTexScaleOne), 0.01f, 200.0f, "%.3f", 3.0f);
+			ImGui::SliderFloat("Stretch Scale", &(up_mat_comp.mColorTexScaleTwo), 0.01f, 200.0f, "%.3f", 3.0f);
+			ImGui::SliderFloat2("Slide Speed", &(up_mat_comp.mTextureSpeed[0]), -1.0f, 1.0f, "%.3f", 1.5f);
+		}
+
+		// Light controls
+		if (ImGui::CollapsingHeader("Lighting"))
+		{
+			ImGui::SliderFloat3("Light Position", &(up_mat_comp.mLightPos[0]), -300.0f, 300.0f);
+			ImGui::SliderFloat("Light Intensity", &(up_mat_comp.mLightIntensity), 0.00001f, 2.0f);
+			ImGui::SliderFloat("Ambient Intensity", &(up_mat_comp.mAmbientIntensity), 0.00001f, 1.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Hair"))
+		{
+			ImGui::ColorEdit3("Hair Specular Color", up_mat_comp.mNormalSpecColor.getData());
+			ImGui::SliderFloat("Hair Specular Intensity", &(up_mat_comp.mNormalSpecIntens), 0.00001f, 1.0f);
+			ImGui::SliderFloat("Hair Shininess", &(up_mat_comp.mNormalSpecShine), 1.0, 100.0f, "%.3f", 2.0f);
+			ImGui::SliderFloat("Hair Length", &(up_mat_comp.mNormalScale), 0.000001f, 10.0f, "%.3f", 2.0f);
+			ImGui::SliderFloat("Hair Random Length", &(up_mat_comp.mNormalRandom), 0.0f, 1.0f);
+			ImGui::SliderFloat("Hair Diffuse Influence", &(up_mat_comp.mDiffuseSpecInfl), 0.0f, 1.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Mesh"))
+		{
+			ImGui::ColorEdit3("Mesh Specular Color", up_mat_comp.mScanSpecColor.getData());
+			ImGui::SliderFloat("Mesh Specular Intensity", &(up_mat_comp.mScanSpecIntens), 0.00001f, 1.0f);
+			ImGui::SliderFloat("Mesh Shininess", &(up_mat_comp.mScanSpecShine), 1.0, 100.0f, "%.3f", 2.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Wind"))
+		{
+			ImGui::SliderFloat("Wind Speed", &(up_mat_comp.mWindSpeed), 0.0f, 2.5f, "%.3f", 2.0f);
+			ImGui::SliderFloat("Wind Influence", &(up_mat_comp.mWindScale), 0.0f, 1.0f, "%.3f", 1.0f);
+			ImGui::SliderFloat("Wind Frequency", &(up_mat_comp.mWindFreq), 0.0f, 50.0f, "%.3f", 3.0f);
+			ImGui::SliderFloat("Wind Random", &(up_mat_comp.mWindRandom), 0.0f, 1.0f, "%.3f", 2.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Rendering"))
+		{
+			nap::RenderableMeshComponentInstance* normal_render_comp = mApp.mScanEntity->findComponentByID<RenderableMeshComponentInstance>("ScanNormalRenderableMesh");
+			if (ImGui::Checkbox("Use Transparency", &mTransparent))
+			{
+				if (mTransparent)
+				{
+					normal_render_comp->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
+					normal_render_comp->getMaterialInstance().setDepthMode(EDepthMode::ReadOnly);
+				}
+				else
+				{
+					normal_render_comp->getMaterialInstance().setBlendMode(EBlendMode::Opaque);
+					normal_render_comp->getMaterialInstance().setDepthMode(EDepthMode::ReadWrite);
+				}
+			}
+
+			// Render (draw) mode
+			int rmode = static_cast<int>(mRenderMode);
+			if (ImGui::Combo("Render Mode", &rmode, "Point\0Wireframe\0Fill\0\0"))
+			{
+				mRenderMode = static_cast<opengl::EPolygonMode>(rmode);
+			}
+
+			// Background color
+			ImGui::ColorEdit4("Background Color", &(mBackgroundColor[0]));
+		}
 		ImGui::End();
 	}
 
@@ -124,6 +207,20 @@ namespace nap
 		utility::getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
 		ImGui::TextColored(float_clr_gui, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
+		if (ImGui::CollapsingHeader("Texture Preview"))
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth() * mTexPreviewDisplaySize;
+			nap::SelectImageComponentInstance* img_selector_tileable = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentTileable");
+			float ratio_tiled = static_cast<float>(img_selector_tileable->getImage().getWidth()) / static_cast<float>(img_selector_tileable->getImage().getHeight());
+			ImGui::Image(img_selector_tileable->getImage(), { col_width, col_width / ratio_tiled});
+
+			nap::SelectImageComponentInstance* img_selector_single = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentSingle");
+			float ratio_single = static_cast<float>(img_selector_single->getImage().getWidth()) / static_cast<float>(img_selector_single->getImage().getHeight());
+			ImGui::Image(img_selector_single->getImage(), { col_width, col_width / ratio_single });
+
+			ImGui::SliderFloat("Preview Size", &mTexPreviewDisplaySize, 0.0f, 1.0f);
+		}
+		
 		ImGui::End();
 	}
 
