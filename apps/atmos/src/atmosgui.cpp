@@ -136,6 +136,7 @@ namespace nap
 			ImGui::SliderFloat3("Light Position", &(up_mat_comp.mLightPos[0]), -300.0f, 300.0f);
 			ImGui::SliderFloat("Light Intensity", &(up_mat_comp.mLightIntensity), 0.00001f, 2.0f);
 			ImGui::SliderFloat("Ambient Intensity", &(up_mat_comp.mAmbientIntensity), 0.00001f, 1.0f);
+			ImGui::SliderFloat("Diffuse Intensity", &(up_mat_comp.mDiffuseIntensity), 0.00001f, 1.0f);
 		}
 
 		if (ImGui::CollapsingHeader("Hair"))

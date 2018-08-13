@@ -23,6 +23,7 @@ uniform vec3		lightPos;
 uniform float 		lightIntensity;		
 uniform float 		ambientIntensity;
 uniform float		preMultiplyTexValue;
+uniform float		diffuseIntensity;
 
 // Unshared uniforms					
 uniform float 		specularIntensity;				
@@ -52,7 +53,7 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 
 	// diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color * lightIntensity;
+	vec3 diffuse = diffuseCoefficient * color * lightIntensity * diffuseIntensity;
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = specularIntensity;

@@ -79,6 +79,7 @@ namespace nap
 		glm::vec3		mLightPos			= { 0, 100.0f, 100.0f };
 		float			mLightIntensity		= 1.0f;
 		float			mAmbientIntensity	= 0.5f;
+		float			mDiffuseIntensity	= 1.0f;
 
 		float			mNormalSpecIntens	= 0.5f;
 		float			mScanSpecIntens		= 0.25f;

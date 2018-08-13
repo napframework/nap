@@ -46,6 +46,7 @@ static const std::string sPremultValue		= "preMultiplyTexValue";
 static const std::string sDiffSpecInfluence = "diffuseSpecularInfluence";
 static const std::string sTexTimeU			= "textureTimeU";
 static const std::string sTexTimeV			= "textureTimeV";
+static const std::string sDiffuseIntensity	= "diffuseIntensity";
 
 namespace nap
 {
@@ -131,6 +132,9 @@ namespace nap
 
 		// Set camera position
 		setSharedValue<UniformVec3, glm::vec3>(sm, nm, sCameraPostion, math::extractPosition(mCameraTransform->getGlobalTransform()));
+
+		// Diffuse intensity
+		setSharedValue<UniformFloat, float>(sm, nm, sDiffuseIntensity, mDiffuseIntensity);
 
 		// Set texture u and v time
 		mTexTimeU += (deltaTime * mTextureSpeed.x);

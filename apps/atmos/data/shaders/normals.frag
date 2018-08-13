@@ -27,6 +27,7 @@ uniform vec3		lightPos;
 uniform float 		lightIntensity;		
 uniform float 		ambientIntensity;
 uniform float		preMultiplyTexValue;
+uniform float		diffuseIntensity;
 
 // Unshared uniforms		
 uniform float 		specularIntensity;		
@@ -80,7 +81,7 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 
 	// diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color * lightIntensity;
+	vec3 diffuse = diffuseCoefficient * color * lightIntensity * diffuseIntensity;
 
 	// Calculate alternative normal for specular
     vec3 cam_normal = normalize(cameraPosition - ws_position);

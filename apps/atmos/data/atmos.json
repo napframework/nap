@@ -90,7 +90,7 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": -25.0,
+                            "y": 0.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -153,7 +153,9 @@
                     "mID": "SelectMeshComponent",
                     "Meshes": [
                         "MeteorietMesh",
-                        "WitkoraalMesh"
+                        "WitkoraalMesh",
+                        "ZeesterMesh",
+                        "HeleenSteen"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -163,10 +165,27 @@
                     "Type": "nap::SelectImageComponent",
                     "mID": "SelectImageComponentTileable",
                     "Images": [
-                        "ImageTileableOne",
-                        "ImageTileableTwo",
-                        "ImageTileableThree",
-                        "ImageTileableFour"
+                        "ImageTileable01",
+                        "ImageTileable02",
+                        "ImageTileable03",
+                        "ImageTileable04",
+                        "ImageTileable05",
+                        "ImageTileable06",
+                        "ImageTileable07",
+                        "ImageTileable08",
+                        "ImageTileable09",
+                        "ImageTileable10",
+                        "ImageTileable11",
+                        "ImageTileable12",
+                        "ImageTileable13",
+                        "ImageTileable14",
+                        "ImageTileable15",
+                        "ImageTileable16",
+                        "ImageTileable17",
+                        "ImageTileable18",
+                        "ImageTileable19",
+                        "ImageTileable20",
+                        "ImageTileable21"
                     ],
                     "Index": 0
                 },
@@ -174,10 +193,10 @@
                     "Type": "nap::SelectImageComponent",
                     "mID": "SelectImageComponentSingle",
                     "Images": [
-                        "ImageSingleOne",
-                        "ImageSingleTwo",
-                        "ImageSingleThr",
-                        "ImageSingleFor"
+                        "ImageSingle01",
+                        "ImageSingle02",
+                        "ImageSingle03",
+                        "ImageSingle04"
                     ],
                     "Index": 0
                 },
@@ -239,21 +258,7 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "ImageSingleFor",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "MirroredRepeat",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "ImagePath": "textures/single/single_for.png",
-            "Compressed": false
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "ImageSingleOne",
+            "mID": "ImageSingle01",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -267,21 +272,7 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "ImageSingleThr",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "MirroredRepeat",
-                "WrapHorizontal": "MirroredRepeat",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "ImagePath": "textures/single/single_thr.png",
-            "Compressed": false
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "ImageSingleTwo",
+            "mID": "ImageSingle02",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -295,7 +286,7 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "ImageTileableFour",
+            "mID": "ImageSingle03",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -304,12 +295,26 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "textures/tileable/stone_02_1.jpg",
+            "ImagePath": "textures/single/single_thr.png",
             "Compressed": false
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "ImageTileableOne",
+            "mID": "ImageSingle04",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/single/single_for.png",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable01",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -323,7 +328,21 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "ImageTileableThree",
+            "mID": "ImageTileable02",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/Rock_02_UV_H_CM_1.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable03",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -337,7 +356,7 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "ImageTileableTwo",
+            "mID": "ImageTileable04",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -346,7 +365,245 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "ImagePath": "textures/tileable/Rock_02_UV_H_CM_1.jpg",
+            "ImagePath": "textures/tileable/stone_02_1.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable05",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/blue004.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable06",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/blue006.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable07",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/green016.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable08",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/green019.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable09",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/grey008.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable10",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/grey009.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable11",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/misc004.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable12",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/misc005.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable13",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/misc015.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable14",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/misc017.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable15",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/misc019.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable16",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/red004.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable17",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/red007.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable18",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/red009.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable19",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/red014.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable20",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/yellow008.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ImageTileable21",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "textures/tileable/yellow009.jpg",
             "Compressed": false
         },
         {
@@ -373,7 +630,7 @@
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D",
                     "Name": "colorTextureOne",
-                    "Texture": "ImageTileableOne"
+                    "Texture": "ImageTileable01"
                 },
                 {
                     "Type": "nap::UniformFloat",
@@ -416,7 +673,7 @@
                     "Type": "nap::UniformTexture2D",
                     "mID": "ColorTextureUniform",
                     "Name": "colorTextureOne",
-                    "Texture": "ImageTileableOne"
+                    "Texture": "ImageTileable01"
                 },
                 {
                     "Type": "nap::UniformFloat",
@@ -449,6 +706,12 @@
         },
         {
             "Type": "nap::MeshFromFile",
+            "mID": "HeleenSteen",
+            "Path": "heleenhiressteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
             "Path": "meteoriet.mesh",
             "Usage": "Static"
@@ -457,6 +720,12 @@
             "Type": "nap::MeshFromFile",
             "mID": "WitkoraalMesh",
             "Path": "witkoraal.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "ZeesterMesh",
+            "Path": "zeester.mesh",
             "Usage": "Static"
         },
         {
