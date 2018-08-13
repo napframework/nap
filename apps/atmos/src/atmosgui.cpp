@@ -112,6 +112,14 @@ namespace nap
 		RotateComponentInstance& rot_comp = mApp.mWorldEntity->getComponent<RotateComponentInstance>();
 		ImGui::SliderFloat("Rotate Speed", &(rot_comp.mProperties.mSpeed), -0.1f, 0.1f);
 
+		nap::PerspCameraComponentInstance& cam_comp = mApp.mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+		float cfov = cam_comp.getFieldOfView();
+		if (ImGui::SliderFloat("Field Of View", &cfov, 25.0f, 150.0f))
+		{
+			cam_comp.setFieldOfView(cfov);
+		}
+
+
 		// Mix Controls
 		nap::UpdateMaterialComponentInstance& up_mat_comp = mApp.mScanEntity->getComponent<UpdateMaterialComponentInstance>();
 		if (ImGui::CollapsingHeader("Color Mixing"))

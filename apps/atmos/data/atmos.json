@@ -8,7 +8,7 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "PerspCameraComponent",
                     "Properties": {
-                        "FieldOfView": 45.0,
+                        "FieldOfView": 90.0,
                         "NearClippingPlane": 3.0,
                         "FarClippingPlane": 3000.0,
                         "GridDimensions": {
@@ -155,7 +155,8 @@
                         "MeteorietMesh",
                         "WitkoraalMesh",
                         "ZeesterMesh",
-                        "HeleenSteen"
+                        "HeleenSteen",
+                        "PyrietMesh"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -660,6 +661,14 @@
                 {
                     "MeshAttributeID": "Normal",
                     "ShaderAttributeID": "in_Normal"
+                },
+                {
+                    "MeshAttributeID": "Tangent",
+                    "ShaderAttributeID": "in_Tangent"
+                },
+                {
+                    "MeshAttributeID": "Bitangent",
+                    "ShaderAttributeID": "in_Bitangent"
                 }
             ],
             "BlendMode": "NotSet",
@@ -699,6 +708,14 @@
                 {
                     "MeshAttributeID": "UV1",
                     "ShaderAttributeID": "in_UV1"
+                },
+                {
+                    "MeshAttributeID": "Tangent",
+                    "ShaderAttributeID": "in_Tangent"
+                },
+                {
+                    "MeshAttributeID": "Bitangent",
+                    "ShaderAttributeID": "in_Bitangent"
                 }
             ],
             "BlendMode": "Opaque",
@@ -714,6 +731,12 @@
             "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
             "Path": "meteoriet.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "PyrietMesh",
+            "Path": "pyriet.mesh",
             "Usage": "Static"
         },
         {
