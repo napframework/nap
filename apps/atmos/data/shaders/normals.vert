@@ -10,6 +10,8 @@ uniform float noiseFreq;
 uniform float noiseRandom;
 uniform float randomLength;
 uniform float normalScale;
+uniform float rotationValue;
+uniform vec3  rotationAxis;
 
 in vec3	in_Position;				//< Vertex position
 in vec3 in_UV0;			        //< First uv coordinate set
@@ -70,13 +72,40 @@ float fit(float value, float min, float max, float outMin, float outMax)
   return (v - min) / (m) * (outMax - outMin) + outMin;
 }
 
+
+mat4 rotationMatrix(vec3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+}
+
+
 void main(void)
 {
+  // Start by actually rotating the normal based on uv_direction
+  // Get rotation normal
+  vec3 nnormal = normalize(in_Normal);
+  vec3 rot_normal = normalize(cross(nnormal, normalize(rotationAxis)));
+
+  // Get angle to rotate towards inverse normal
+  float angle = acos(dot(nnormal, nnormal *-1.0)) * rotationValue;
+
+  // Rotate normal towards inverse normal based on rotation value
+  mat3 rotationMatrix = mat3(rotationMatrix(rot_normal, angle));
+  nnormal = rotationMatrix * nnormal;
+
   // Current noise sample time
-	float current_time = time;
+  float current_time = time;
 
   // Seed for noise is the 2nd uv texture coordinate
-	vec2 noise_lookup = vec2(in_UV1.x, in_UV1.y);
+  vec2 noise_lookup = vec2(in_UV1.x, in_UV1.y);
 
   // Add some random noise lookup
   vec2 rand_lookup = vec2(
@@ -84,13 +113,13 @@ void main(void)
     fit(random(noise_lookup + vec2(0.10, 0.200)),0.0,1.0,-1.0,1.0));
   rand_lookup = rand_lookup * noiseRandom;
 
-	// calculate noise to offset normal
-	float ox = snoise(((noise_lookup * noiseFreq)) + rand_lookup + 00.0 + current_time) * noiseScale;
-	float oy = snoise(((noise_lookup * noiseFreq)) + rand_lookup + 10.0 + current_time) * noiseScale;
-	float oz = snoise(((noise_lookup * noiseFreq)) + rand_lookup + 20.0 + current_time) * noiseScale;
+  // calculate noise to offset normal
+  float ox = snoise(((noise_lookup * noiseFreq)) + rand_lookup + 00.0 + current_time) * noiseScale;
+  float oy = snoise(((noise_lookup * noiseFreq)) + rand_lookup + 10.0 + current_time) * noiseScale;
+  float oz = snoise(((noise_lookup * noiseFreq)) + rand_lookup + 20.0 + current_time) * noiseScale;
 
   // Prepare some variables used for calculating alternative normal
-  vec3 nnormal = normalize(in_Normal);
+  //vec3 nnormal = normalize(in_Normal) * -1.0;
   float normal_length = length(in_Normal);
 
 	// Add noise value to normal

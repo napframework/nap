@@ -82,6 +82,28 @@ namespace nap
 		 */
 		CameraComponentInstance& getCameraComponent();
 
+		/**
+		 *	@return the camera movement speed
+		 */
+		float getMovementSpeed() const							{ return mMovementSpeed; }
+
+		/**
+		 * Sets the camera movement speed
+		 * @param speed the new movement speed
+		 */
+		void setMovementSpeed(float speed)						{ mMovementSpeed = speed; }
+
+		/**
+		 *	@return current camera rotation speed
+		 */
+		float getRotationSpeed() const							{ return mRotateSpeed; }
+
+		/**
+		 * Sets the current camera rotation speed
+		 * @param speed the new camera rotation speed
+		 */
+		void setRotationSpeed(float speed)						{ mRotateSpeed = speed; }
+
 	private:
 		/**
 		 * Handler for key press events
@@ -120,6 +142,8 @@ namespace nap
 		bool							mMoveDown			= false;		// Whether we're moving down
 		bool							mEnabled			= true;			// Set if enable() is called
 		bool							mMoving				= false;		// Set if left mouse button is held
+		float							mMovementSpeed		= 1.0f;			// Movement Speed
+		float							mRotateSpeed		= 1.0f;			// Rotate Speed
 	};
 
 }

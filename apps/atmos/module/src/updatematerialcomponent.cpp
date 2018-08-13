@@ -47,6 +47,8 @@ static const std::string sDiffSpecInfluence = "diffuseSpecularInfluence";
 static const std::string sTexTimeU			= "textureTimeU";
 static const std::string sTexTimeV			= "textureTimeV";
 static const std::string sDiffuseIntensity	= "diffuseIntensity";
+static const std::string sRotValue			= "rotationValue";
+static const std::string sRotAngle			= "rotationAxis";
 
 namespace nap
 {
@@ -157,6 +159,14 @@ namespace nap
 		// Shininess Intensity
 		sm.getOrCreateUniform<UniformFloat>(sShininess).setValue(mScanSpecShine);
 		nm.getOrCreateUniform<UniformFloat>(sShininess).setValue(mNormalSpecShine);
+
+		// Rotation value for normal
+		sm.getOrCreateUniform<UniformFloat>(sRotValue).setValue(mScanRotValue);
+		nm.getOrCreateUniform<UniformFloat>(sRotValue).setValue(mNormalRotValue);
+
+		// Rotation axis for normal
+		sm.getOrCreateUniform<UniformVec3>(sRotAngle).setValue(mScanRotAngle);
+		nm.getOrCreateUniform<UniformVec3>(sRotAngle).setValue(mNormalRotAngle);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Normal shader only values

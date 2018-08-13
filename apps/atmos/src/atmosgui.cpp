@@ -28,7 +28,13 @@ namespace nap
 
 	void AtmosGui::init()
 	{
+		// Store background color
 		mBackgroundColor = mApp.mRenderWindow->getBackbuffer().getClearColor();
+
+		// Store speed values
+		FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
+		mCamMaxMovSpeed = fps_comp.getMovementSpeed();
+		mCamMaxRotSpeed = fps_comp.getRotationSpeed();
 	}
 
 
@@ -75,14 +81,6 @@ namespace nap
 		// Resets all the tracers
 		ImGui::Begin("Controls");
 
-		// Control mode
-		nap::ControlSelectComponentInstance& control_comp = mApp.mCameraEntity->getComponent<ControlSelectComponentInstance>();
-		int cmethod = static_cast<int>(control_comp.getCurrentControlMethod());
-		if (ImGui::Combo("Fly Mode", &cmethod, "Orbit\0FirstPerson\0\0"))
-		{
-			control_comp.selectControlMethod(static_cast<EControlMethod>(cmethod));
-		}
-
 		// Select mesh slider
 		nap::SelectMeshComponentInstance& mesh_selector = mApp.mScanEntity->getComponent<SelectMeshComponentInstance>();
 		int ci = mesh_selector.getIndex();
@@ -111,14 +109,6 @@ namespace nap
 
 		RotateComponentInstance& rot_comp = mApp.mWorldEntity->getComponent<RotateComponentInstance>();
 		ImGui::SliderFloat("Rotate Speed", &(rot_comp.mProperties.mSpeed), -0.1f, 0.1f);
-
-		nap::PerspCameraComponentInstance& cam_comp = mApp.mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
-		float cfov = cam_comp.getFieldOfView();
-		if (ImGui::SliderFloat("Field Of View", &cfov, 25.0f, 150.0f))
-		{
-			cam_comp.setFieldOfView(cfov);
-		}
-
 
 		// Mix Controls
 		nap::UpdateMaterialComponentInstance& up_mat_comp = mApp.mScanEntity->getComponent<UpdateMaterialComponentInstance>();
@@ -155,6 +145,7 @@ namespace nap
 			ImGui::SliderFloat("Hair Length", &(up_mat_comp.mNormalScale), 0.000001f, 10.0f, "%.3f", 2.0f);
 			ImGui::SliderFloat("Hair Random Length", &(up_mat_comp.mNormalRandom), 0.0f, 1.0f);
 			ImGui::SliderFloat("Hair Diffuse Influence", &(up_mat_comp.mDiffuseSpecInfl), 0.0f, 1.0f);
+			ImGui::SliderFloat("Hair Direction", &(up_mat_comp.mNormalRotValue), 0.0f, 1.0f);
 		}
 
 		if (ImGui::CollapsingHeader("Mesh"))
@@ -162,6 +153,7 @@ namespace nap
 			ImGui::ColorEdit3("Mesh Specular Color", up_mat_comp.mScanSpecColor.getData());
 			ImGui::SliderFloat("Mesh Specular Intensity", &(up_mat_comp.mScanSpecIntens), 0.00001f, 1.0f);
 			ImGui::SliderFloat("Mesh Shininess", &(up_mat_comp.mScanSpecShine), 1.0, 100.0f, "%.3f", 2.0f);
+			ImGui::SliderFloat("Mesh Light Direction", &(up_mat_comp.mScanRotValue), 0.0f, 1.0f);
 		}
 
 		if (ImGui::CollapsingHeader("Wind"))
@@ -170,6 +162,35 @@ namespace nap
 			ImGui::SliderFloat("Wind Influence", &(up_mat_comp.mWindScale), 0.0f, 1.0f, "%.3f", 1.0f);
 			ImGui::SliderFloat("Wind Frequency", &(up_mat_comp.mWindFreq), 0.0f, 50.0f, "%.3f", 3.0f);
 			ImGui::SliderFloat("Wind Random", &(up_mat_comp.mWindRandom), 0.0f, 1.0f, "%.3f", 2.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Camera"))
+		{
+			// Control mode
+			nap::ControlSelectComponentInstance& control_comp = mApp.mCameraEntity->getComponent<ControlSelectComponentInstance>();
+			int cmethod = static_cast<int>(control_comp.getCurrentControlMethod());
+			if (ImGui::Combo("Fly Mode", &cmethod, "Orbit\0FirstPerson\0\0"))
+			{
+				control_comp.selectControlMethod(static_cast<EControlMethod>(cmethod));
+			}
+
+			nap::PerspCameraComponentInstance& cam_comp = mApp.mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+			float cfov = cam_comp.getFieldOfView();
+			if (ImGui::SliderFloat("Field Of View", &cfov, 25.0f, 150.0f))
+			{
+				cam_comp.setFieldOfView(cfov);
+			}
+
+			FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
+			if (ImGui::SliderFloat("Camera Movement Speed", &mCameraMovSpeed, 0.0f, 1.0f))
+			{
+				fps_comp.setMovementSpeed(mCamMaxMovSpeed * mCameraMovSpeed);
+			}
+
+			if (ImGui::SliderFloat("Camera Rotation Speed", &mCameraRotSpeed, 0.0f, 1.0f))
+			{
+				fps_comp.setRotationSpeed(mCamMaxRotSpeed * mCameraRotSpeed);
+			}
 		}
 
 		if (ImGui::CollapsingHeader("Rendering"))
@@ -199,6 +220,7 @@ namespace nap
 			// Background color
 			ImGui::ColorEdit4("Background Color", &(mBackgroundColor[0]));
 		}
+
 		ImGui::End();
 	}
 

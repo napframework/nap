@@ -661,14 +661,6 @@
                 {
                     "MeshAttributeID": "Normal",
                     "ShaderAttributeID": "in_Normal"
-                },
-                {
-                    "MeshAttributeID": "Tangent",
-                    "ShaderAttributeID": "in_Tangent"
-                },
-                {
-                    "MeshAttributeID": "Bitangent",
-                    "ShaderAttributeID": "in_Bitangent"
                 }
             ],
             "BlendMode": "NotSet",

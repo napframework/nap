@@ -87,6 +87,10 @@ namespace nap
 		RGBColorFloat	mScanSpecColor		= { 1.0f, 1.0f, 1.0f };
 		float			mNormalSpecShine	= { 20.0f };
 		float			mScanSpecShine		= { 10.0f };
+		float			mNormalRotValue		= { 0.0f };
+		float			mScanRotValue		= { 0.0f };
+		glm::vec3		mNormalRotAngle		= { 0.0f, 1.0f, 0.0f };
+		glm::vec3		mScanRotAngle		= { 0.0f, 1.0f, 0.0f };
 
 		float			mWindSpeed			= 0.25f;
 		float			mWindScale			= 0.6f;
