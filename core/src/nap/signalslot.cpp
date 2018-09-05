@@ -7,7 +7,7 @@ namespace nap
 {
     
     // This function is a helper to call the logger from cpp in order to avoid a circular dependency between signalslot.h and logger.h
-    void logInfo(const std::string& message)
+    inline void logInfo(const std::string& message)
     {
         std::cout << message << std::endl;
 //        Logger::info(message);
