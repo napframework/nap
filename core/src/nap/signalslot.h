@@ -16,7 +16,7 @@ namespace nap
 	template<typename... Args> class Slot;
     
     // This function is a helper to call the logger from cpp in order to avoid a circular dependency between signalslot.h and logger.h
-    void logInfo(const std::string& message);
+    inline void logInfo(const std::string& message);
 
     /**
      * A callable signal to which slots, functions or other signals can be connected to provide loose coupling.
@@ -321,7 +321,8 @@ namespace nap
             }
             catch (const pybind11::error_already_set& err)
             {
-                logInfo(std::string("Runtime python error while executing signal: ") + std::string(err.what()));
+                auto message = std::string("Runtime python error while executing signal: ") + std::string(err.what());
+                logInfo(message);
             }
         };
         connect(func);
