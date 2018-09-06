@@ -44,8 +44,9 @@ namespace nap
 		for (auto& component : mComponents)
 			component->update(deltaTime);
 
-		for (EntityInstance* child : mChildren)
-			child->update(deltaTime);
+        // We need to work with an integer iterator control variable here because children can be added or removed from the list while iterating the loop.
+        for (auto i = 0; i < mChildren.size(); ++i)
+            mChildren[i]->update(deltaTime);
 	}
 
 
