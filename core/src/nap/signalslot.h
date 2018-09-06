@@ -5,6 +5,7 @@
 #include <set>
 #include <vector>
 #include <memory>
+#include <iostream>
 
 // Pybind11 includes
 #include "pybind11/pybind11.h"
@@ -15,9 +16,6 @@ namespace nap
     // Forward declarations
 	template<typename... Args> class Slot;
     
-    // This function is a helper to call the logger from cpp in order to avoid a circular dependency between signalslot.h and logger.h
-    inline void logInfo(const std::string& message);
-
     /**
      * A callable signal to which slots, functions or other signals can be connected to provide loose coupling.
      * The signal variadic template arguments to be able to work with different sets of arguments.
@@ -322,7 +320,10 @@ namespace nap
             catch (const pybind11::error_already_set& err)
             {
                 auto message = std::string("Runtime python error while executing signal: ") + std::string(err.what());
-                logInfo(message);
+                
+                // TODO It would be preferable to log python error message using the nap logger.
+                // Unfortunately the logger is not accessible in signalslot.h though because it uses Signals itself.
+                std::cout << message << std::endl;
             }
         };
         connect(func);
