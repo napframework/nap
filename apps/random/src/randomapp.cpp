@@ -67,7 +67,7 @@ namespace nap
 
 	void RandomApp::render()
 	{
-		// Clear all unnecessary gl resources
+		// Clear all unnecessary gl resources lala
 		mRenderService->destroyGLContextResources(std::vector<rtti::ObjectPtr<nap::RenderWindow>>({ mRenderWindow }));
 
 		// Make render window active so we can draw to it
