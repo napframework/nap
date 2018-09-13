@@ -14,6 +14,7 @@
 #include <ctime>
 #include <chrono>
 #include <utility/fileutils.h>
+#include <uniforms.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RandomApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -42,6 +43,9 @@ namespace nap
 
 		// All of our entities
 		mScene = mResourceManager->findObject<Scene>("Scene");
+		
+		mCamera = mScene->findEntity("Camera");
+		mPlane = mScene->findEntity("Plane");
 
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -55,13 +59,34 @@ namespace nap
 	void RandomApp::update(double deltaTime)
 	{
 		nap::DefaultInputRouter input_router;
+		nap::RenderableMeshComponentInstance& render_plane = mPlane->getComponent<nap::RenderableMeshComponentInstance>();
 
-		// Update input for first window
-		std::vector<nap::EntityInstance*> input_entities;
-		input_entities.emplace_back(&(mScene->getRootEntity()));
-		mInputService->processEvents(*mRenderWindow, input_router, input_entities);
+		// Forward all input events associated with the first window to the listening components
+		std::vector<nap::EntityInstance*> entities = { mCamera.get() };
+		mInputService->processEvents(*mRenderWindow, input_router, entities);
 
-		// Updat gui here...
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		
+		if (ImGui::CollapsingHeader("Cloud controls"))
+		{
+			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 1.0f);
+
+			nap::UniformFloat& uBrightness = render_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBrightness");
+			ImGui::SliderFloat("Brightness", &(uBrightness.mValue), 0.0f, 1.0f);
+
+			nap::UniformFloat& uContrast = render_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast");
+			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
+		} 
+		ImGui::End();
+
+		nap::UniformFloat& uNoiseZ = render_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uNoiseZ");
+		uNoiseZ.mValue += mNoiseSpeed * (float)deltaTime;
 	}
 
 
@@ -75,6 +100,17 @@ namespace nap
 
 		// Clear
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+
+		nap::RenderableMeshComponentInstance& render_plane = mPlane->getComponent<nap::RenderableMeshComponentInstance>();
+
+		// Find the camera
+		nap::PerspCameraComponentInstance& camera = mCamera->getComponent<nap::PerspCameraComponentInstance>();
+
+		// Find the world and add as an object to render
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		components_to_render.emplace_back(&render_plane);
+
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
 
 		// Draw gui
 		mGuiService->draw();

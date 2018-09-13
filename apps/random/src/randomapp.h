@@ -67,6 +67,12 @@ namespace nap
 		// Resources
 		rtti::ObjectPtr<RenderWindow>						mRenderWindow = nullptr;
 		rtti::ObjectPtr<Scene>								mScene = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mCamera = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mPlane = nullptr;
+		
+		// Initialized Variables
+		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
+		float		mNoiseSpeed = 0.1f;
 
 		/**
 		 * Called when a window event is received
