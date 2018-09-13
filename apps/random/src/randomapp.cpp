@@ -76,6 +76,8 @@ namespace nap
 		if (ImGui::CollapsingHeader("Cloud controls"))
 		{
 			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 1.0f);
+			ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f);
+			ImGui::SliderFloat("Wind Direction", &mWindDirection, 0.0, 360.0);
 
 			nap::UniformFloat& uBrightness = render_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBrightness");
 			ImGui::SliderFloat("Brightness", &(uBrightness.mValue), 0.0f, 1.0f);
@@ -85,8 +87,12 @@ namespace nap
 		} 
 		ImGui::End();
 
-		nap::UniformFloat& uNoiseZ = render_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uNoiseZ");
-		uNoiseZ.mValue += mNoiseSpeed * (float)deltaTime;
+		nap::UniformVec3& uOffset = render_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset");
+		float windDirectionRad = nap::math::radians(mWindDirection);
+		float windDistance = mWindSpeed * (float)deltaTime;
+		uOffset.mValue.x += cos(windDirectionRad) * windDistance;
+		uOffset.mValue.y += sin(windDirectionRad) * windDistance;
+		uOffset.mValue.z += mNoiseSpeed * (float)deltaTime;
 	}
 
 

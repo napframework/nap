@@ -7,7 +7,7 @@ in vec3 passPosition;					//< frag world space position
 // uniforms
 uniform float uBrightness;
 uniform float uContrast;
-uniform float uNoiseZ;
+uniform vec3 uOffset;
 
 // output
 out vec4 out_Color;
@@ -90,8 +90,11 @@ float snoise(vec3 v)
 
 void main() 
 {
+	// initial texture coordinate
+	vec3 position = vec3(passUVs.xy + uOffset.xy, 1.0);
+
 	// calculate noise
-	vec3 noisePosition = vec3(passUVs.xy, uNoiseZ);
+	vec3 noisePosition = vec3(position.xy, uOffset.z);
 	float noise = clamp(snoise(noisePosition), 0.0, 1.0);
 	// if (uInverted) noise = 1.0 - noise;
 

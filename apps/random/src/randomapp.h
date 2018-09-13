@@ -73,6 +73,8 @@ namespace nap
 		// Initialized Variables
 		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
 		float		mNoiseSpeed = 0.1f;
+		float		mWindSpeed = 0.1f;
+		float		mWindDirection = 0.0f;
 
 		/**
 		 * Called when a window event is received

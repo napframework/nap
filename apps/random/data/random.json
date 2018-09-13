@@ -88,12 +88,6 @@
                                 "mID": "uContrast",
                                 "Name": "uContrast",
                                 "Value": 1.0
-                            },
-                            {
-                                "Type": "nap::UniformFloat",
-                                "mID": "uNoiseZ",
-                                "Name": "uNoiseZ",
-                                "Value": 0.0
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -152,10 +146,14 @@
                     "Value": 0.0
                 },
                 {
-                    "Type": "nap::UniformFloat",
-                    "mID": "UniformNoiseZ",
-                    "Name": "uNoiseZ",
-                    "Value": 0.0
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformOffset",
+                    "Name": "uOffset",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
                 }
             ],
             "Shader": "PlaneShader",
