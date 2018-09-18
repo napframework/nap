@@ -68,13 +68,17 @@ namespace nap
 		rtti::ObjectPtr<RenderWindow>						mRenderWindow = nullptr;
 		rtti::ObjectPtr<Scene>								mScene = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mCamera = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mPlane = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mProjectionPlane = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mVisualizationMesh = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrthoCamera = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mRenderTarget = nullptr;
 		
 		// Initialized Variables
 		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
 		float		mNoiseSpeed = 0.1f;
 		float		mWindSpeed = 0.1f;
 		float		mWindDirection = 0.0f;
+		float		mCloudTextureDisplaySize = 1.0f;
 
 		/**
 		 * Called when a window event is received

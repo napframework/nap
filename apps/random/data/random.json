@@ -2,7 +2,112 @@
     "Objects": [
         {
             "Type": "nap::Entity",
-            "mID": "Camera",
+            "mID": "ProjectionCamera",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 1.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "ProjectionPlane",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "ProjectionMesh",
+                    "MaterialInstance": {
+                        "Material": "CloudMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "uBrightness",
+                                "Name": "uBrightness",
+                                "Value": 1.0
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "uContrast",
+                                "Name": "uContrast",
+                                "Value": 1.0
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SceneCamera",
             "Components": [
                 {
                     "Type": "nap::PerspCameraComponent",
@@ -68,28 +173,37 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "Plane",
+            "mID": "VisualizationPlane",
             "Components": [
                 {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_4",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent",
-                    "Mesh": "PlaneMesh",
+                    "mID": "nap::RenderableMeshComponent_2",
+                    "Mesh": "VisualizationMesh",
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformFloat",
-                                "mID": "uBrightness",
-                                "Name": "uBrightness",
-                                "Value": 1.0
-                            },
-                            {
-                                "Type": "nap::UniformFloat",
-                                "mID": "uContrast",
-                                "Name": "uContrast",
-                                "Value": 1.0
-                            }
-                        ],
+                        "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -103,76 +217,13 @@
                             "y": 0.0
                         }
                     }
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "ProjectionCamera",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_3",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "nap::OrthoCameraComponent",
-                    "Properties": {
-                        "LeftPlane": 0.0,
-                        "RightPlane": 100.0,
-                        "TopPlane": 100.0,
-                        "BottomPlane": 0.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 1000.0
-                    }
                 }
             ],
             "Children": []
         },
         {
             "Type": "nap::Material",
-            "mID": "PlaneMaterial",
+            "mID": "CloudMaterial",
             "Uniforms": [
                 {
                     "Type": "nap::UniformFloat",
@@ -197,7 +248,7 @@
                     }
                 }
             ],
-            "Shader": "PlaneShader",
+            "Shader": "CloudShader",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
@@ -212,22 +263,38 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::Material",
+            "mID": "PlaneMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "UniformTexture2D",
+                    "Name": "planeTexture",
+                    "Texture": "ColorTexture"
+                }
+            ],
+            "Shader": "PlaneShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
             "Type": "nap::PlaneMesh",
-            "mID": "PlaneMesh",
+            "mID": "ProjectionMesh",
             "Size": {
-                "x": 1.0,
-                "y": 1.0
+                "x": 1024.0,
+                "y": 1024.0
             },
             "Position": {
-                "x": 0.0,
-                "y": 0.0
+                "x": 512.0,
+                "y": 512.0
             },
             "Rows": 1,
             "Columns": 1
         },
         {
             "Type": "nap::PlaneMesh",
-            "mID": "ProjectionMesh",
+            "mID": "VisualizationMesh",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -257,13 +324,13 @@
             "Parameters": {
                 "MinFilter": "Linear",
                 "MaxFilter": "Linear",
-                "WrapVertical": "Repeat",
-                "WrapHorizontal": "Repeat",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 0
             },
             "Usage": "DynamicRead",
-            "Width": 2048,
-            "Height": 2048,
+            "Width": 1024,
+            "Height": 1024,
             "Format": "RGB8"
         },
         {
@@ -277,8 +344,8 @@
                 "MaxLodLevel": 0
             },
             "Usage": "Static",
-            "Width": 512,
-            "Height": 512,
+            "Width": 1024,
+            "Height": 1024,
             "Format": "Depth"
         },
         {
@@ -302,24 +369,34 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "Camera",
+                    "Entity": "SceneCamera",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "Plane",
+                    "Entity": "ProjectionPlane",
                     "InstanceProperties": []
                 },
                 {
                     "Entity": "ProjectionCamera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "VisualizationPlane",
                     "InstanceProperties": []
                 }
             ]
         },
         {
             "Type": "nap::Shader",
-            "mID": "PlaneShader",
+            "mID": "CloudShader",
             "mVertShader": "shaders/clouds.vert",
             "mFragShader": "shaders/clouds.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "PlaneShader",
+            "mVertShader": "shaders/visualization.vert",
+            "mFragShader": "shaders/visualization.frag"
         }
     ]
 }
