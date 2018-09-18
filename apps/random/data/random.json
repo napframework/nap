@@ -130,6 +130,47 @@
             "Children": []
         },
         {
+            "Type": "nap::Entity",
+            "mID": "ProjectionCamera",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent",
+                    "Properties": {
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Material",
             "mID": "PlaneMaterial",
             "Uniforms": [
@@ -185,6 +226,62 @@
             "Columns": 1
         },
         {
+            "Type": "nap::PlaneMesh",
+            "mID": "ProjectionMesh",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "RenderTarget",
+            "mColorTexture": "ColorTexture",
+            "mDepthTexture": "DepthTexture",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "ColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "Repeat",
+                "WrapHorizontal": "Repeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "DynamicRead",
+            "Width": 2048,
+            "Height": 2048,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "DepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "Repeat",
+                "WrapHorizontal": "Repeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 512,
+            "Height": 512,
+            "Format": "Depth"
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Width": 1280,
@@ -210,6 +307,10 @@
                 },
                 {
                     "Entity": "Plane",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "ProjectionCamera",
                     "InstanceProperties": []
                 }
             ]
