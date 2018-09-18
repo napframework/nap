@@ -173,6 +173,64 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "Video",
+            "Components": [
+                {
+                    "Type": "nap::SelectVideoComponent",
+                    "mID": "nap::SelectVideoComponent",
+                    "Videos": [
+                        "Video1"
+                    ],
+                    "Index": 0
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_3",
+                    "Mesh": "VideoMesh",
+                    "MaterialInstance": {
+                        "Material": "VideoMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_5",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "VisualizationPlane",
             "Components": [
                 {
@@ -270,10 +328,19 @@
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D",
                     "Name": "planeTexture",
-                    "Texture": "ColorTexture"
+                    "Texture": "CloudColorTexture"
                 }
             ],
             "Shader": "PlaneShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "VideoMaterial",
+            "Uniforms": [],
+            "Shader": "VideoShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -294,6 +361,20 @@
         },
         {
             "Type": "nap::PlaneMesh",
+            "mID": "VideoMesh",
+            "Size": {
+                "x": 1920.0,
+                "y": 1080.0
+            },
+            "Position": {
+                "x": 960.0,
+                "y": 540.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::PlaneMesh",
             "mID": "VisualizationMesh",
             "Size": {
                 "x": 1.0,
@@ -308,9 +389,9 @@
         },
         {
             "Type": "nap::RenderTarget",
-            "mID": "RenderTarget",
-            "mColorTexture": "ColorTexture",
-            "mDepthTexture": "DepthTexture",
+            "mID": "CloudRenderTarget",
+            "mColorTexture": "CloudColorTexture",
+            "mDepthTexture": "CloudDepthTexture",
             "mClearColor": {
                 "x": 0.0,
                 "y": 1.0,
@@ -319,10 +400,22 @@
             }
         },
         {
+            "Type": "nap::RenderTarget",
+            "mID": "VideoRenderTarget",
+            "mColorTexture": "VideoColorTexture",
+            "mDepthTexture": "VideoDepthTexture",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0,
+                "w": 0.0
+            }
+        },
+        {
             "Type": "nap::RenderTexture2D",
-            "mID": "ColorTexture",
+            "mID": "CloudColorTexture",
             "Parameters": {
-                "MinFilter": "Linear",
+                "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
@@ -335,17 +428,47 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "DepthTexture",
+            "mID": "CloudDepthTexture",
             "Parameters": {
                 "MinFilter": "Linear",
                 "MaxFilter": "Linear",
-                "WrapVertical": "Repeat",
-                "WrapHorizontal": "Repeat",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 0
             },
             "Usage": "Static",
             "Width": 1024,
             "Height": 1024,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoColorTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "DynamicWrite",
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoDepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1920,
+            "Height": 1080,
             "Format": "Depth"
         },
         {
@@ -383,6 +506,10 @@
                 {
                     "Entity": "VisualizationPlane",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "Video",
+                    "InstanceProperties": []
                 }
             ]
         },
@@ -397,6 +524,19 @@
             "mID": "PlaneShader",
             "mVertShader": "shaders/visualization.vert",
             "mFragShader": "shaders/visualization.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "VideoShader",
+            "mVertShader": "shaders/video.vert",
+            "mFragShader": "shaders/video.frag"
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "Video1",
+            "Path": "snow.mp4",
+            "Loop": true,
+            "Speed": 1.0
         }
     ]
 }

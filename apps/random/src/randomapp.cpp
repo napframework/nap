@@ -43,16 +43,18 @@ namespace nap
 		// Callback when window event is received
 		mRenderWindow->mWindowEvent.connect(std::bind(&RandomApp::handleWindowEvent, this, std::placeholders::_1));
 
-		// Look for render target, used to render clouds to (instead of screen)
-		mRenderTarget = mResourceManager->findObject("RenderTarget");
+		// Look for render targets, used to render into cloud and video textures
+		mCloudRenderTarget = mResourceManager->findObject("CloudRenderTarget");
+		mVideoRenderTarget = mResourceManager->findObject("VideoRenderTarget");
 
 		// All of our entities
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		
-		mCamera = mScene->findEntity("SceneCamera");
+		mSceneCamera = mScene->findEntity("SceneCamera");
 		mProjectionPlane = mScene->findEntity("ProjectionPlane");
 		mOrthoCamera = mScene->findEntity("ProjectionCamera");
 		mVisualizationMesh = mScene->findEntity("VisualizationPlane");
+		mVideo = mScene->findEntity("Video");
 
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -69,7 +71,7 @@ namespace nap
 		nap::RenderableMeshComponentInstance& render_plane = mProjectionPlane->getComponent<nap::RenderableMeshComponentInstance>();
 
 		// Forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { mCamera.get() };
+		std::vector<nap::EntityInstance*> entities = { mSceneCamera.get() };
 		mInputService->processEvents(*mRenderWindow, input_router, entities);
 
 		// Draw some gui elements
@@ -94,10 +96,15 @@ namespace nap
 		} 
 		if (ImGui::CollapsingHeader("Cloud Texture")) 
 		{
-
 			float col_width = ImGui::GetContentRegionAvailWidth() * mCloudTextureDisplaySize;
-			ImGui::Image(mRenderTarget->getColorTexture(), { col_width, col_width });
-			ImGui::SliderFloat("Display Size", &mCloudTextureDisplaySize, 0.0f, 1.0f);
+			ImGui::Image(mCloudRenderTarget->getColorTexture(), { col_width, col_width });
+			ImGui::SliderFloat("Cloud Preview Size", &mCloudTextureDisplaySize, 0.0f, 1.0f);
+		}
+		if (ImGui::CollapsingHeader("Video Texture"))
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth() * mVideoTextureDisplaySize;
+			ImGui::Image(mVideoRenderTarget->getColorTexture(), { col_width, col_width });
+			ImGui::SliderFloat("Video Preview Size", &mVideoTextureDisplaySize, 0.0f, 1.0f);
 		}
 		ImGui::End();
 
@@ -118,28 +125,42 @@ namespace nap
 		// Make render window active so we can use it's context and draw into it
 		mRenderWindow->makeActive();
 		
+		// Get orthographic camera. This camera renders in pixel space, starting at 0,0
+		OrthoCameraComponentInstance& ortho_cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
+
 		// Render clouds into back-buffer (ie: into a separate texture)
 		{
-			mRenderService->clearRenderTarget(mRenderTarget->getTarget());
+			mRenderService->clearRenderTarget(mCloudRenderTarget->getTarget());
 
 			// Find the projection plane and render it to the back-buffer
 			nap::RenderableMeshComponentInstance& render_plane = mProjectionPlane->getComponent<nap::RenderableMeshComponentInstance>();
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			components_to_render.emplace_back(&render_plane);
 
-			// Get orthographic camera. This camera renders in pixel space, starting at 0,0
-			OrthoCameraComponentInstance& ortho_cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
-			mRenderService->renderObjects(mRenderTarget->getTarget(), ortho_cam, components_to_render);
+			// Render clouds plane to clouds texture
+			mRenderService->renderObjects(mCloudRenderTarget->getTarget(), ortho_cam, components_to_render);
 		}
 
-		// We now filled a texture with the cloud data. Now render the visualization mesh
-		// This mesh applies that just filled texture
+		// Render video into back-buffer (ie: video into a separate texture)
+		{
+			mRenderService->clearRenderTarget(mVideoRenderTarget->getTarget());
+
+			// Find the video plane and render it to the back-buffer
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+			components_to_render.emplace_back(&(mVideo->getComponent<nap::RenderableMeshComponentInstance>()));
+
+			// Render video plane to video texture
+			mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, components_to_render);
+		}
+
+		// We have now rendered the clouds and video into separate textures. 
+		// These can be applied to the mesh visualization mesh. This is the mesh that is drawn to screen
 		{
 			// Clear window 
 			mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
 			// Find the scene (perspective camera)
-			nap::PerspCameraComponentInstance& camera = mCamera->getComponent<nap::PerspCameraComponentInstance>();
+			nap::PerspCameraComponentInstance& camera = mSceneCamera->getComponent<nap::PerspCameraComponentInstance>();
 
 			// Find the visualization mesh and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;

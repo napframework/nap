@@ -9,7 +9,8 @@
         "mod_napartnet",
         "mod_napimgui",
         "mod_napyoctopuce",
-        "mod_napmidi"
+        "mod_napmidi",
+        "mod_napvideo"
     ]
 }
 
