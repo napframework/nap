@@ -64,64 +64,23 @@ namespace nap
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 
+		// Create gui
+		mGui = std::make_unique<RandomGui>(*this);
+		mGui->init();
+
 		return true;
 	}
 
 	void RandomApp::update(double deltaTime)
 	{
 		nap::DefaultInputRouter input_router;
-		nap::RenderableMeshComponentInstance& clouds_plane = mClouds->getComponent<nap::RenderableMeshComponentInstance>();
 
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mSceneCamera.get() };
 		mInputService->processEvents(*mRenderWindow, input_router, entities);
 
-		// Draw some gui elements
-		ImGui::Begin("Controls");
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		
-		if (ImGui::CollapsingHeader("Cloud controls"))
-		{
-			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 1.0f);
-			ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f);
-			ImGui::SliderFloat("Wind Direction", &mWindDirection, 0.0, 360.0);
-
-			nap::UniformFloat& uBrightness = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBrightness");
-			ImGui::SliderFloat("Brightness", &(uBrightness.mValue), 0.0f, 1.0f);
-
-			nap::UniformFloat& uContrast = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast");
-			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
-		} 
-		if (ImGui::CollapsingHeader("Cloud Texture")) 
-		{
-			float col_width = ImGui::GetContentRegionAvailWidth() * mCloudTextureDisplaySize;
-			ImGui::Image(mCloudRenderTarget->getColorTexture(), { col_width, col_width });
-			ImGui::SliderFloat("Cloud Preview Size", &mCloudTextureDisplaySize, 0.0f, 1.0f);
-		}
-		if (ImGui::CollapsingHeader("Video Texture"))
-		{
-			float col_width = ImGui::GetContentRegionAvailWidth() * mVideoTextureDisplaySize;
-			ImGui::Image(mVideoRenderTarget->getColorTexture(), { col_width, col_width });
-			ImGui::SliderFloat("Video Preview Size", &mVideoTextureDisplaySize, 0.0f, 1.0f);
-		}
-		if (ImGui::CollapsingHeader("Combination Texture"))
-		{
-			float col_width = ImGui::GetContentRegionAvailWidth() * mCombinationTextureDisplaySize;
-			ImGui::Image(mCombineRenderTarget->getColorTexture(), { col_width, col_width });
-			ImGui::SliderFloat("Combination Preview Size", &mCombinationTextureDisplaySize, 0.0f, 1.0f);
-		}
-		ImGui::End();
-
-		nap::UniformVec3& uOffset = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset");
-		float windDirectionRad = nap::math::radians(mWindDirection);
-		float windDistance = mWindSpeed * (float)deltaTime;
-		uOffset.mValue.x += cos(windDirectionRad) * windDistance;
-		uOffset.mValue.y += sin(windDirectionRad) * windDistance;
-		uOffset.mValue.z += mNoiseSpeed * (float)deltaTime;
+		// Update gui
+		mGui->update(deltaTime);
 	}
 
 
@@ -194,7 +153,7 @@ namespace nap
 		}
 			
 		// Draw gui
-		mGuiService->draw();
+		mGui->draw();
 
 		// Swap to front
 		mRenderWindow->swap();
@@ -208,6 +167,7 @@ namespace nap
 
 	int RandomApp::shutdown()
 	{
+		mGui.reset(nullptr);
 		return 0;
 	}
 

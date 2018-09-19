@@ -1,0 +1,103 @@
+#include "randomgui.h"
+#include "randomapp.h"
+
+// External Includes
+#include <imgui/imgui.h>
+#include <imguiutils.h>
+#include <mathutils.h>
+
+namespace nap
+{
+	void RandomGui::update(double deltaTime)
+	{
+		// Menu
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("Display"))
+			{
+				ImGui::MenuItem("Controls", NULL, &mShowControls);
+				ImGui::MenuItem("Information", NULL, &mShowInfo);
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
+
+		// Show control menu
+		if (mShowControls) 
+			showControlWindow();
+
+		if (mShowInfo)
+			showInfoWindow();
+
+		// Update some shader variables
+		nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::UniformVec3& uOffset = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset");
+		float windDirectionRad = nap::math::radians(mWindDirection);
+		float windDistance = mWindSpeed * (float)deltaTime;
+		uOffset.mValue.x += cos(windDirectionRad) * windDistance;
+		uOffset.mValue.y += sin(windDirectionRad) * windDistance;
+		uOffset.mValue.z += mNoiseSpeed * (float)deltaTime;
+	}
+
+	void RandomGui::init()
+	{
+
+	}
+
+	void RandomGui::draw()
+	{
+		mApp.getCore().getService<IMGuiService>()->draw();
+	}
+
+
+	RandomGui::RandomGui(RandomApp& app) : mApp(app)
+	{
+
+	}
+
+	void RandomGui::showControlWindow()
+	{
+		ImGui::Begin("Controls");
+		if (ImGui::CollapsingHeader("Cloud"))
+		{
+			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 1.0f);
+			ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f);
+			ImGui::SliderFloat("Wind Direction", &mWindDirection, 0.0, 360.0);
+
+			nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::UniformFloat& uBrightness = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBrightness");
+			ImGui::SliderFloat("Brightness", &(uBrightness.mValue), 0.0f, 1.0f);
+
+			nap::UniformFloat& uContrast = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast");
+			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
+		}
+		ImGui::End();
+	}
+
+
+	void RandomGui::showInfoWindow()
+	{
+		ImGui::Begin("Information");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
+		ImGui::SliderFloat("Preview Size", &mTextureDisplaySize, 0.0f, 1.0f);
+		float col_width = ImGui::GetContentRegionAvailWidth() * mTextureDisplaySize;
+		if (ImGui::CollapsingHeader("Cloud Texture"))
+		{
+			ImGui::Image(mApp.mCloudRenderTarget->getColorTexture(),   { col_width, col_width });
+		}
+		if (ImGui::CollapsingHeader("Video Texture"))
+		{
+			ImGui::Image(mApp.mVideoRenderTarget->getColorTexture(), { col_width, col_width });
+		}
+		if (ImGui::CollapsingHeader("Combined Texture"))
+		{
+			ImGui::Image(mApp.mCombineRenderTarget->getColorTexture(), { col_width, col_width });
+		}
+		ImGui::End();
+	}
+
+}

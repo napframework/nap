@@ -1,5 +1,8 @@
 #pragma once
 
+// Local Includes
+#include "randomgui.h"
+
 // External Includes
 #include <app.h>
 #include <sceneservice.h>
@@ -23,6 +26,7 @@ namespace nap
 	class RandomApp : public App
 	{
 		RTTI_ENABLE(App)
+		friend class RandomGui;
 	public:
 		RandomApp(Core& core) : App(core)	{ }
 
@@ -76,15 +80,9 @@ namespace nap
 		rtti::ObjectPtr<RenderTarget>						mCloudRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mVideoRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
-		
-		// Initialized Variables
-		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
-		float		mNoiseSpeed = 0.1f;
-		float		mWindSpeed = 0.1f;
-		float		mWindDirection = 0.0f;
-		float		mCloudTextureDisplaySize = 0.5f;
-		float		mVideoTextureDisplaySize = 0.5f;
-		float		mCombinationTextureDisplaySize = 0.5f;
+
+		// Gui related functionality
+		std::unique_ptr<RandomGui>	mGui = nullptr;
 
 		/**
 		 * Called when a window event is received
