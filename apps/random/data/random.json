@@ -2,7 +2,7 @@
     "Objects": [
         {
             "Type": "nap::ArtnetMeshFromFile",
-            "mID": "ArtnetMeshFromFile",
+            "mID": "LightRig",
             "Path": "demo_rig.mesh",
             "OverrideSubnet": false,
             "Subnet": 0,
@@ -266,7 +266,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_2",
-                    "Mesh": "VisualizationMesh",
+                    "Mesh": "LightRig",
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
                         "Uniforms": [],
@@ -348,7 +348,7 @@
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat",
                     "Name": "blendValue",
-                    "Value": 1.0
+                    "Value": 0.0
                 }
             ],
             "Shader": "PlaneShader",
