@@ -44,17 +44,19 @@ namespace nap
 		mRenderWindow->mWindowEvent.connect(std::bind(&RandomApp::handleWindowEvent, this, std::placeholders::_1));
 
 		// Look for render targets, used to render into cloud and video textures
-		mCloudRenderTarget = mResourceManager->findObject("CloudRenderTarget");
-		mVideoRenderTarget = mResourceManager->findObject("VideoRenderTarget");
+		mCloudRenderTarget   = mResourceManager->findObject("CloudRenderTarget");
+		mVideoRenderTarget   = mResourceManager->findObject("VideoRenderTarget");
+		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
 
 		// All of our entities
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		
 		mSceneCamera = mScene->findEntity("SceneCamera");
-		mProjectionPlane = mScene->findEntity("ProjectionPlane");
+		mClouds = mScene->findEntity("Clouds");
 		mOrthoCamera = mScene->findEntity("ProjectionCamera");
-		mVisualizationMesh = mScene->findEntity("VisualizationPlane");
+		mLightRig = mScene->findEntity("LightRig");
 		mVideo = mScene->findEntity("Video");
+		mCombination = mScene->findEntity("Combination");
 
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -68,7 +70,7 @@ namespace nap
 	void RandomApp::update(double deltaTime)
 	{
 		nap::DefaultInputRouter input_router;
-		nap::RenderableMeshComponentInstance& render_plane = mProjectionPlane->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::RenderableMeshComponentInstance& clouds_plane = mClouds->getComponent<nap::RenderableMeshComponentInstance>();
 
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mSceneCamera.get() };
@@ -88,10 +90,10 @@ namespace nap
 			ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f);
 			ImGui::SliderFloat("Wind Direction", &mWindDirection, 0.0, 360.0);
 
-			nap::UniformFloat& uBrightness = render_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBrightness");
+			nap::UniformFloat& uBrightness = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBrightness");
 			ImGui::SliderFloat("Brightness", &(uBrightness.mValue), 0.0f, 1.0f);
 
-			nap::UniformFloat& uContrast = render_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast");
+			nap::UniformFloat& uContrast = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast");
 			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
 		} 
 		if (ImGui::CollapsingHeader("Cloud Texture")) 
@@ -106,9 +108,15 @@ namespace nap
 			ImGui::Image(mVideoRenderTarget->getColorTexture(), { col_width, col_width });
 			ImGui::SliderFloat("Video Preview Size", &mVideoTextureDisplaySize, 0.0f, 1.0f);
 		}
+		if (ImGui::CollapsingHeader("Combination Texture"))
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth() * mCombinationTextureDisplaySize;
+			ImGui::Image(mCombineRenderTarget->getColorTexture(), { col_width, col_width });
+			ImGui::SliderFloat("Combination Preview Size", &mCombinationTextureDisplaySize, 0.0f, 1.0f);
+		}
 		ImGui::End();
 
-		nap::UniformVec3& uOffset = render_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset");
+		nap::UniformVec3& uOffset = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset");
 		float windDirectionRad = nap::math::radians(mWindDirection);
 		float windDistance = mWindSpeed * (float)deltaTime;
 		uOffset.mValue.x += cos(windDirectionRad) * windDistance;
@@ -133,7 +141,7 @@ namespace nap
 			mRenderService->clearRenderTarget(mCloudRenderTarget->getTarget());
 
 			// Find the projection plane and render it to the back-buffer
-			nap::RenderableMeshComponentInstance& render_plane = mProjectionPlane->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::RenderableMeshComponentInstance& render_plane = mClouds->getComponent<nap::RenderableMeshComponentInstance>();
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			components_to_render.emplace_back(&render_plane);
 
@@ -153,6 +161,21 @@ namespace nap
 			mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, components_to_render);
 		}
 
+		// Render combination texture into back-buffer (ie: video / clouds into separate texture)
+		{
+			mRenderService->clearRenderTarget(mCombineRenderTarget->getTarget());
+
+			// Find the projection plane and render it to the back-buffer
+			nap::RenderableMeshComponentInstance& comb_plane = mCombination->getComponent<nap::RenderableMeshComponentInstance>();
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+			components_to_render.emplace_back(&comb_plane);
+
+			// Render clouds plane to clouds texture
+			mRenderService->renderObjects(mCombineRenderTarget->getTarget(), ortho_cam, components_to_render);
+		}
+
+		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+
 		// We have now rendered the clouds and video into separate textures. 
 		// These can be applied to the mesh visualization mesh. This is the mesh that is drawn to screen
 		{
@@ -164,7 +187,7 @@ namespace nap
 
 			// Find the visualization mesh and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			components_to_render.emplace_back(&(mVisualizationMesh->getComponent<RenderableMeshComponentInstance>()));
+			components_to_render.emplace_back(&(mLightRig->getComponent<RenderableMeshComponentInstance>()));
 
 			// Render visualization mesh
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
