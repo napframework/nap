@@ -103,7 +103,14 @@
                     "Mesh": "ProjectionMesh",
                     "MaterialInstance": {
                         "Material": "CombineMaterial",
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_2",
+                                "Name": "blendValue",
+                                "Value": 0.5
+                            }
+                        ],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },

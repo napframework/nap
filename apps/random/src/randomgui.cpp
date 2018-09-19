@@ -5,6 +5,7 @@
 #include <imgui/imgui.h>
 #include <imguiutils.h>
 #include <mathutils.h>
+#include <selectvideocomponent.h>
 
 namespace nap
 {
@@ -70,6 +71,19 @@ namespace nap
 
 			nap::UniformFloat& uContrast = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast");
 			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
+		}
+		if (ImGui::CollapsingHeader("Video"))
+		{
+			SelectVideoComponentInstance& video_comp = mApp.mVideo->getComponent<SelectVideoComponentInstance>();
+			int idx = video_comp.getIndex();
+			if (ImGui::SliderInt("Selection", &idx, 0, video_comp.getCount()-1))
+				video_comp.selectVideo(idx);
+		}
+		if (ImGui::CollapsingHeader("Mix"))
+		{
+			nap::RenderableMeshComponentInstance& comb_plane = mApp.mCombination->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::UniformFloat& uBlendValue = comb_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("blendValue");
+			ImGui::SliderFloat("Blend Value", &(uBlendValue.mValue), 0.0f, 1.0f);
 		}
 		ImGui::End();
 	}
