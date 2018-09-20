@@ -47,7 +47,17 @@ namespace nap
 
 	void RenderCombinationComponentInstance::update(double deltaTime)
 	{
+		// Copy data back into bitmap after render pass
+		if (mTransferring)
+		{
+#ifndef _DEBUG 
+			mRenderTarget->getColorTexture().endGetData(*mBitmap);
+#else
+			mRenderTarget->getColorTexture().getData(*mBitmap);
+#endif // DEBUG
 
+		}
+		mTransferring = false;
 	}
 
 
@@ -61,6 +71,11 @@ namespace nap
 
 		// Render clouds plane to clouds texture
 		mRenderService->renderObjects(mRenderTarget->getTarget(), orthoCamera, components_to_render);
+		
+#ifndef _DEBUG
+		mRenderTarget->getColorTexture().startGetData();
+#endif // !_DEBUG
+		mTransferring = true;
 	}
 
 }

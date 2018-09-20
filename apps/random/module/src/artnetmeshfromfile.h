@@ -52,11 +52,6 @@ namespace nap
 		nap::VertexAttribute<glm::vec4>& getColorAttribute()						{ return *mColorAttribute; }
 
 		/**
-		 *	@return the artnet color attribute
-		 */
-		nap::VertexAttribute<glm::vec4>& getArtnetColorAttribute()					{ return *mArtnetColorAttribute; }
-
-		/**
 		 *	@return the position attribute
 		 */
 		nap::VertexAttribute<glm::vec3>& getPositionAttribute()						{ return *mPositionAttribute; }
@@ -110,7 +105,6 @@ namespace nap
 		nap::VertexAttribute<int>*			mSubnetAttribute = nullptr;
 		nap::VertexAttribute<glm::vec3>*	mPositionAttribute = nullptr;
 		nap::VertexAttribute<glm::vec3>*	mUVAttribute = nullptr;
-		nap::VertexAttribute<glm::vec4>*	mArtnetColorAttribute = nullptr;
 
 		std::unordered_set<ArtNetController::Address> mAddresses;				///< Contains all the artnet addresses associated with this mesh;
 

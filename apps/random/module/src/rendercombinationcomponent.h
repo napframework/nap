@@ -69,5 +69,6 @@ namespace nap
 		nap::Bitmap* mBitmap = nullptr;
 		nap::RenderableMeshComponentInstance* mRenderableMesh = nullptr;
 		nap::RenderService* mRenderService = nullptr;
+		bool mTransferring = false;
 	};
 }

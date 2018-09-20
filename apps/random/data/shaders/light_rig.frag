@@ -6,9 +6,9 @@ in vec3 passPosition;					//< frag world space position
 in vec3 passNormals;					// Normals
 in mat4 passModelMatrix;				// Matrix
 in vec3 passVert;						// The vertex position
+in vec4 passColor;						// Vertex Color
 
 // uniforms
-uniform sampler2D	combinationTexture;	//< Rendered combination texture
 uniform vec3		cameraLocation;		// World Space location of the camera
 
 // Light Uniforms
@@ -25,7 +25,8 @@ out vec4 out_Color;
 void main() 
 {
 	// initial texture coordinate
-	vec3 color = texture(combinationTexture, passUVs.xy).rgb;
+	float led_intensity = clamp(passColor.r + passColor.g, 0.0, 1.0);
+	vec3 color = vec3(led_intensity, led_intensity, led_intensity);
 
 	//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));

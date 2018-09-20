@@ -45,10 +45,6 @@ namespace nap
 		std::vector<glm::vec4> empty_color_data(mMeshColorAttribute->getCount(), {0.0,0.0,0.0,1.0});
 		mColorAttribute->setData(empty_color_data);
 
-		mArtnetColorAttribute = &mMeshInstance->getOrCreateAttribute<glm::vec4>("ArtnetColor");
-		std::vector<glm::vec4> empty_artnet_data(mMeshInstance->getNumVertices(), { 0.0,0.0,0.0,0.0 });
-		mArtnetColorAttribute->setData(empty_artnet_data);
-
 		// Extract the channels from the color where R = channel, G = universe and B = subnet
 		mChannelAttribute = &mMeshInstance->getOrCreateAttribute<int>("channel");
 		mSubnetAttribute = &mMeshInstance->getOrCreateAttribute<int>("subnet");

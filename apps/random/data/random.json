@@ -26,7 +26,7 @@
             "Width": 1024,
             "Height": 1024,
             "Channels": "RGB",
-            "ColorType" : "Byte"
+            "ColorType": "Byte"
         },
         {
             "Type": "nap::Entity",
@@ -200,6 +200,14 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::ApplyCombinationComponent",
+                    "mID": "nap::ApplyCombinationComponent",
+                    "Bitmap": "CombinationBitmap",
+                    "Mesh": "LightRigMesh",
+                    "Influence": 1.0,
+                    "Brightness": 1.0
                 }
             ],
             "Children": []
@@ -443,16 +451,26 @@
         {
             "Type": "nap::Material",
             "mID": "LightRigMaterial",
-            "Uniforms": [
+            "Uniforms": [],
+            "Shader": "LightRigShader",
+            "VertexAttributeBindings": [
                 {
-                    "Type": "nap::UniformTexture2D",
-                    "mID": "UniformTexture2D_3",
-                    "Name": "combinationTexture",
-                    "Texture": "CombineColorTexture"
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normals"
+                },
+                {
+                    "MeshAttributeID": "Color",
+                    "ShaderAttributeID": "in_Color"
                 }
             ],
-            "Shader": "LightRigShader",
-            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
