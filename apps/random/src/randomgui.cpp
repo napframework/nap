@@ -38,6 +38,13 @@ namespace nap
 		uOffset.mValue.x += cos(windDirectionRad) * windDistance;
 		uOffset.mValue.y += sin(windDirectionRad) * windDistance;
 		uOffset.mValue.z += mNoiseSpeed * (float)deltaTime;
+
+		// Update camera location
+		TransformComponentInstance& cam_xform = mApp.mSceneCamera->getComponent<TransformComponentInstance>();
+		glm::vec3 cam_pos = math::extractPosition(cam_xform.getGlobalTransform());
+		nap::MaterialInstance& rig_material = mApp.mLightRig->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+		nap::UniformVec3& ucam_pos = rig_material.getOrCreateUniform<nap::UniformVec3>("cameraLocation");
+		ucam_pos.setValue(cam_pos);
 	}
 
 	void RandomGui::init()

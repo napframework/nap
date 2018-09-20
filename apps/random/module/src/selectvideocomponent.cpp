@@ -77,6 +77,5 @@ namespace nap
 
 	SelectVideoComponentInstance::~SelectVideoComponentInstance()
 	{
-
 	}
 }
