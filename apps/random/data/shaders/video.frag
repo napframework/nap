@@ -13,6 +13,11 @@ const vec3 offset = vec3(-0.0625, -0.5, -0.5);
 
 out vec4 out_Color;
 
+float toGreyScale(vec3 color)
+{
+	return (color.r * 0.21) + (color.g * 0.72) + (color.b * 0.07);
+}
+
 void main() 
 {
   float y = texture(yTexture, vec2(pass_Uvs.x, 1.0-pass_Uvs.y)).r;
@@ -20,8 +25,8 @@ void main()
   float v = texture(vTexture, vec2(pass_Uvs.x, 1.0-pass_Uvs.y)).r;
   vec3 yuv = vec3(y,u,v);
   yuv += offset;
+
+  vec3 color = vec3(dot(yuv, R_cf), dot(yuv, G_cf), dot(yuv, B_cf));
   out_Color = vec4(0.0, 0.0, 0.0, 1.0);
-  out_Color.r = dot(yuv, R_cf);
-  out_Color.g = dot(yuv, G_cf);
-  out_Color.b = dot(yuv, B_cf);
+  out_Color.r = toGreyScale(color);
 }

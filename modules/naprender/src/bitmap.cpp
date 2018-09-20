@@ -30,7 +30,7 @@ RTTI_BEGIN_CLASS(nap::Bitmap)
 	RTTI_PROPERTY("Width",		&nap::Bitmap::mWidth,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Height",		&nap::Bitmap::mHeight,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Channels",	&nap::Bitmap::mChannels,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Type",		&nap::Bitmap::mType,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ColorType",	&nap::Bitmap::mType,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::BitmapFromFile)

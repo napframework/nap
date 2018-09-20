@@ -17,6 +17,7 @@
 #include <uniforms.h>
 #include <orthocameracomponent.h>
 #include <imguiutils.h>
+#include <rendercombinationcomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RandomApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -95,48 +96,18 @@ namespace nap
 		// Get orthographic camera. This camera renders in pixel space, starting at 0,0
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
-		// Render clouds into back-buffer (ie: into a separate texture)
-		{
-			mRenderService->clearRenderTarget(mCloudRenderTarget->getTarget());
+		// Render clouds
+		renderClouds(ortho_cam);
 
-			// Find the projection plane and render it to the back-buffer
-			nap::RenderableMeshComponentInstance& render_plane = mClouds->getComponent<nap::RenderableMeshComponentInstance>();
-			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			components_to_render.emplace_back(&render_plane);
+		// Render video into back-buffer
+		renderVideo(ortho_cam);
 
-			// Render clouds plane to clouds texture
-			mRenderService->renderObjects(mCloudRenderTarget->getTarget(), ortho_cam, components_to_render);
-		}
-
-		// Render video into back-buffer (ie: video into a separate texture)
-		{
-			mRenderService->clearRenderTarget(mVideoRenderTarget->getTarget());
-
-			// Find the video plane and render it to the back-buffer
-			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			components_to_render.emplace_back(&(mVideo->getComponent<nap::RenderableMeshComponentInstance>()));
-
-			// Render video plane to video texture
-			mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, components_to_render);
-		}
-
-		// Render combination texture into back-buffer (ie: video / clouds into separate texture)
-		{
-			mRenderService->clearRenderTarget(mCombineRenderTarget->getTarget());
-
-			// Find the projection plane and render it to the back-buffer
-			nap::RenderableMeshComponentInstance& comb_plane = mCombination->getComponent<nap::RenderableMeshComponentInstance>();
-			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			components_to_render.emplace_back(&comb_plane);
-
-			// Render clouds plane to clouds texture
-			mRenderService->renderObjects(mCombineRenderTarget->getTarget(), ortho_cam, components_to_render);
-		}
-
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+		// Render combination into back buffer
+		renderCombination(ortho_cam);
 
 		// We have now rendered the clouds and video into separate textures. 
 		// These can be applied to the mesh visualization mesh. This is the mesh that is drawn to screen
+		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 		{
 			// Clear window 
 			mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
@@ -162,6 +133,42 @@ namespace nap
 
 	void RandomApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
+	}
+
+
+	void RandomApp::renderVideo(OrthoCameraComponentInstance& orthoCamera)
+	{
+		mRenderService->clearRenderTarget(mVideoRenderTarget->getTarget());
+
+		// Find the video plane and render it to the back-buffer
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		components_to_render.emplace_back(&(mVideo->getComponent<nap::RenderableMeshComponentInstance>()));
+
+		// Render video plane to video texture
+		mRenderService->renderObjects(mVideoRenderTarget->getTarget(), orthoCamera, components_to_render);
+	}
+
+
+	void RandomApp::renderCombination(OrthoCameraComponentInstance& orthoCamera)
+	{
+		// Render combination texture into back-buffer (ie: video / clouds into separate texture)
+		// Note that this also starts the download of the gpu texture into the bitmap in the background
+		RenderCombinationComponentInstance& render_comp = mCombination->getComponent<RenderCombinationComponentInstance>();
+		render_comp.render(orthoCamera);
+	}
+
+
+	void RandomApp::renderClouds(OrthoCameraComponentInstance& orthoCamera)
+	{
+		mRenderService->clearRenderTarget(mCloudRenderTarget->getTarget());
+
+		// Find the projection plane and render it to the back-buffer
+		nap::RenderableMeshComponentInstance& render_plane = mClouds->getComponent<nap::RenderableMeshComponentInstance>();
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		components_to_render.emplace_back(&render_plane);
+
+		// Render clouds plane to clouds texture
+		mRenderService->renderObjects(mCloudRenderTarget->getTarget(), orthoCamera, components_to_render);
 	}
 
 

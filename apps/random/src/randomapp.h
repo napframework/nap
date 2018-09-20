@@ -20,6 +20,7 @@
 #include <artnetcontroller.h>
 #include <utility/datetimeutils.h>
 #include <scene.h>
+#include <orthocameracomponent.h>
 
 namespace nap
 {
@@ -88,5 +89,20 @@ namespace nap
 		 * Called when a window event is received
 		 */
 		void handleWindowEvent(const WindowEvent& windowEvent);
+
+		/**
+		 *	Renders the video into it's back-buffer
+		 */
+		void renderVideo(OrthoCameraComponentInstance& orthoCamera);
+
+		/**
+		 *	Renders the combination of the video and clouds into it's own back-buffer
+		 */
+		void renderCombination(OrthoCameraComponentInstance& orthoCamera);
+
+		/**
+		 *	Renders the clouds into it's back-buffer
+		 */
+		void renderClouds(OrthoCameraComponentInstance& orthoCamera);
 	};                                                                               
 }
