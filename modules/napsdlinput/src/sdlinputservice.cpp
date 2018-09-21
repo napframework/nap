@@ -4,7 +4,7 @@
 // External includes
 #include <SDL_joystick.h>
 #include <inputservice.h>
-#include <sdl.h>
+#include <SDL.h>
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SDLInputService)
