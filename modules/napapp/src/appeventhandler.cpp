@@ -87,7 +87,15 @@ namespace nap
 
 			if (nap::isControllerEvent(event))
 			{
-				std::cout << "new controller input event!\n";
+				if (event.type == SDL_CONTROLLERAXISMOTION) 
+				{
+					std::cout << event.caxis.value << "\n";
+				}
+				else if (event.type == SDL_CONTROLLERBUTTONDOWN) 
+				{
+					std::cout << event.cbutton.button << "\n";
+				}
+				
 			}
 
 			// Forward if we're not capturing mouse and it's a pointer event
