@@ -386,7 +386,8 @@ namespace nap
 
 	bool isControllerEvent(SDL_Event& sdlEvent)
 	{
-		return (sdlEvent.type == SDL_CONTROLLERBUTTONDOWN ||
-			sdlEvent.type == SDL_CONTROLLERBUTTONUP);
+		return (sdlEvent.type == SDL_CONTROLLERBUTTONDOWN	||
+			sdlEvent.type == SDL_CONTROLLERBUTTONUP		||
+			sdlEvent.type == SDL_CONTROLLERAXISMOTION);
 	}
 }
