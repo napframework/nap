@@ -7,30 +7,48 @@
 
 using namespace nap;
 
-// Note: we don't need to do any wildcard expansion, since the shell does that for us due to a linker option
-// See https://msdn.microsoft.com/en-us/library/8bch7bkk.aspx
-int main(int argc, char *argv[])
+/**
+ * Converts all .fbx files in the command line argument to individual .mesh files 
+ * Results are stored in the specified output directory
+ * Wildcards are allowed, ie: c:\mydir\*.fbx. In that case all .fbx files in 'mydir' are converted
+ * Example: fbxconverter.exe -o c:\outdir c:\mydir\*.fbx c:\otherdir\cube.fbx
+ */
+int main(int argc, char* argv[])
 {
 	// Parse commandline
 	CommandLine commandLine;
 	if (!CommandLine::parse(argc, argv, commandLine))
 		return -1;
 
-
 	Logger::setLevel(Logger::debugLevel());
 
-	// Validate all files are fbx files
+	// Validate all files are fbx files and convert wildcard argument
 	std::vector<std::string> files_to_convert;
 	for (const std::string& file : commandLine.mFilesToConvert)
 	{
-		if (utility::getFileExtension(file) != "fbx")
+		// We should only have fbx files at this point
+		if (!utility::endsWith(file, ".fbx"))
 		{
-			Logger::fatal("Input files %s is not a FBX file", file.c_str());
+			Logger::fatal("Input file %s is not a FBX file", file.c_str());
 			return -1;
 		}
-		
-		if (utility::getFileName(file) != "*.fbx")
-			files_to_convert.push_back(file);
+
+		// Check if the file to convert contains a wildcard, if so expand
+		if (utility::endsWith(file, "*.fbx", false))
+		{
+			std::string fbx_dir = utility::getFileDir(file);
+			std::vector<std::string> outFiles;
+			utility::listDir(fbx_dir.c_str(), outFiles, true);
+			for (const auto& ffile : outFiles)
+			{
+				if (utility::endsWith(ffile, ".fbx", false))
+					files_to_convert.emplace_back(ffile);
+			}
+		}
+		else
+		{
+			files_to_convert.emplace_back(file);
+		}
 	}
 
 	// Determine convert options

@@ -109,7 +109,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "ScanRenderableMesh",
-                    "Mesh": "WitkoraalMesh",
+                    "Mesh": "MeteorietMesh",
                     "MaterialInstance": {
                         "Material": "ScanMaterial",
                         "Uniforms": [],
@@ -152,11 +152,7 @@
                     "Type": "nap::SelectMeshComponent",
                     "mID": "SelectMeshComponent",
                     "Meshes": [
-                        "MeteorietMesh",
-                        "WitkoraalMesh",
-                        "ZeesterMesh",
-                        "HeleenSteen",
-                        "PyrietMesh"
+                        "MeteorietMesh"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -715,32 +711,8 @@
         },
         {
             "Type": "nap::MeshFromFile",
-            "mID": "HeleenSteen",
-            "Path": "heleenhiressteen.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
             "Path": "meteoriet.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "PyrietMesh",
-            "Path": "pyriet.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "WitkoraalMesh",
-            "Path": "witkoraal.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "ZeesterMesh",
-            "Path": "zeester.mesh",
             "Usage": "Static"
         },
         {
@@ -788,7 +760,7 @@
         {
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
-            "ReferenceMesh": "WitkoraalMesh",
+            "ReferenceMesh": "MeteorietMesh",
             "Length": 0.009999999776482582
         }
     ]

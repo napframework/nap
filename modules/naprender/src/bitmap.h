@@ -34,9 +34,9 @@ namespace nap
 		 */
 		enum class EDataType : int
 		{
-			BYTE	= 0,		///< Byte 8 bit
-			USHORT	= 2,		///< Short 16 bit
-			FLOAT	= 3			///< Float 32 bit
+			BYTE		= 0,	
+			USHORT		= 1,	
+			FLOAT		= 2
 		};
 
 		/**
@@ -44,11 +44,11 @@ namespace nap
 		 */
 		enum class EChannels : int
 		{
-			R			= 1,	///< R red component
-			RGB			= 2,	///< RGB red, green and blue component
-			RGBA		= 3,	///< RGBA red, green, blue and alpha component
-			BGR			= 4,	///< BGR blue, green and red component
-			BGRA		= 5		///< BGRA blue, green, red and alpha component
+			R			= 0,	///< R red component
+			RGB			= 1,	///< RGB red, green and blue component
+			RGBA		= 2,	///< RGBA red, green, blue and alpha component
+			BGR			= 3,	///< BGR blue, green and red component
+			BGRA		= 4		///< BGRA blue, green, red and alpha component
 		};
 
 		virtual ~Bitmap();
