@@ -93,7 +93,7 @@ namespace nap
 				}
 				else if (event.type == SDL_CONTROLLERBUTTONDOWN) 
 				{
-					std::cout << event.cbutton.button << "\n";
+					std::cout << (int)(event.cbutton.button) << "\n";
 				}
 				
 			}
