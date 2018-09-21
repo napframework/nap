@@ -3,7 +3,6 @@
 
 // External includes
 #include <SDL_joystick.h>
-#include <SDL_gamecontroller.h>
 #include <inputservice.h>
 #include <sdl.h>
 #include <nap/logger.h>
@@ -25,10 +24,12 @@ namespace nap
 		dependencies.emplace_back(RTTI_OF(nap::InputService));
 	}
 
+
 	bool SDLInputService::init(utility::ErrorState& error)
 	{
 		// Initialize game controller layer from SDL
 		SDL_Init(SDL_INIT_GAMECONTROLLER);
+		SDL_JoystickEventState(SDL_ENABLE);
 
 		SDL_GameController *ctrl =nullptr;
 		SDL_Joystick *joy = nullptr;
@@ -39,14 +40,16 @@ namespace nap
 				const char* controller_name = SDL_GameControllerNameForIndex(i);
 				nap::Logger::info("found compatible game controller: %s", controller_name);
 				ctrl = SDL_GameControllerOpen(i);
-				joy  = SDL_GameControllerGetJoystick(ctrl);
+				mControllers.emplace_back(ctrl);
 			}
 		}
 		return true;
 	}
 
+
 	void SDLInputService::shutdown()
 	{
-
+		for (auto& controller : mControllers)
+			SDL_GameControllerClose(controller);
 	}
 }

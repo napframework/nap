@@ -253,7 +253,6 @@ namespace nap
 		std::make_pair(SDL_MOUSEBUTTONUP,	RTTI_OF(nap::PointerReleaseEvent)),
 		std::make_pair(SDL_MOUSEMOTION,		RTTI_OF(nap::PointerMoveEvent)),
 		std::make_pair(SDL_MOUSEWHEEL,		RTTI_OF(nap::MouseWheelEvent))
-
 	};
 
 
@@ -373,12 +372,10 @@ namespace nap
 	}
 
 
-
 	bool isMouseEvent(SDL_Event& sdlEvent)
 	{
 		return SDLToMouseMapping.find(sdlEvent.type) != SDLToMouseMapping.end();
 	}
-
 
 
 	bool isInputEvent(SDL_Event& sdlEvent)
@@ -386,4 +383,10 @@ namespace nap
 		return isKeyEvent(sdlEvent) || isMouseEvent(sdlEvent);
 	}
 
+
+	bool isControllerEvent(SDL_Event& sdlEvent)
+	{
+		return (sdlEvent.type == SDL_CONTROLLERBUTTONDOWN ||
+			sdlEvent.type == SDL_CONTROLLERBUTTONUP);
+	}
 }
