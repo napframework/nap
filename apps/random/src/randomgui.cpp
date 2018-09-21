@@ -6,6 +6,7 @@
 #include <imguiutils.h>
 #include <mathutils.h>
 #include <selectvideocomponent.h>
+#include <applycombinationcomponent.h>
 
 namespace nap
 {
@@ -73,9 +74,6 @@ namespace nap
 			ImGui::SliderFloat("Wind Direction", &mWindDirection, 0.0, 360.0);
 
 			nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
-			nap::UniformFloat& uBrightness = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBrightness");
-			ImGui::SliderFloat("Brightness", &(uBrightness.mValue), 0.0f, 1.0f);
-
 			nap::UniformFloat& uContrast = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast");
 			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
 		}
@@ -91,6 +89,12 @@ namespace nap
 			nap::RenderableMeshComponentInstance& comb_plane = mApp.mCombination->getComponent<nap::RenderableMeshComponentInstance>();
 			nap::UniformFloat& uBlendValue = comb_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("blendValue");
 			ImGui::SliderFloat("Blend Value", &(uBlendValue.mValue), 0.0f, 1.0f);
+		}
+		if (ImGui::CollapsingHeader("Light Rig"))
+		{
+			nap::ApplyCombinationComponentInstance& comb_comp = mApp.mLightRig->getComponent<ApplyCombinationComponentInstance>();
+			ImGui::SliderFloat("Brightness", &(comb_comp.mBrightness), 0.0f, 1.0f);
+			ImGui::SliderFloat("Influence", &(comb_comp.mInfluence), 0.0f, 1.0f);
 		}
 		ImGui::End();
 	}

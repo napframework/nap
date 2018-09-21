@@ -29,4 +29,5 @@ void main()
   vec3 color = vec3(dot(yuv, R_cf), dot(yuv, G_cf), dot(yuv, B_cf));
   out_Color = vec4(0.0, 0.0, 0.0, 1.0);
   out_Color.r = toGreyScale(color);
+  out_Color.g = toGreyScale(color);
 }

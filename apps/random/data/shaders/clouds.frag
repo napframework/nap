@@ -5,7 +5,6 @@ in vec3 passUVs;						//< frag Uv's
 in vec3 passPosition;					//< frag world space position 
 
 // uniforms
-uniform float uBrightness;
 uniform float uContrast;
 uniform vec3 uOffset;
 
@@ -99,6 +98,6 @@ void main()
 	// if (uInverted) noise = 1.0 - noise;
 
 	// set fragment color
-	float intensity = (1.0 - uContrast) * uBrightness + uContrast * uBrightness * noise;
-	out_Color =  vec4(vec3(1.0, 0.0, 0.0) * intensity, 1.0);
+	float intensity = (1.0 - uContrast) + uContrast * noise;
+	out_Color =  vec4(vec3(1.0, 1.0, 0.0) * intensity, 1.0);
 }

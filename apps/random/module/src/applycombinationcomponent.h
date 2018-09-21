@@ -56,10 +56,11 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		float mBrightness = 1.0f;	///< Overall Output Brightness
+		float mInfluence = 1.0f;	///< Overall Combination Influence
+
 	private:
 		ArtnetMeshFromFile* mMesh = nullptr;
 		Bitmap* mBitmap = nullptr;
-		float mBrightness = 1.0f;
-		float mInfluence = 1.0f;
 	};
 }

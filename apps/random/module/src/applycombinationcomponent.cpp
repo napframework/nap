@@ -3,6 +3,7 @@
 // External Includes
 #include <entity.h>
 #include <triangleiterator.h>
+#include <mathutils.h>
 
 // nap::applycombinationcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyCombinationComponent)
@@ -97,9 +98,9 @@ namespace nap
 
 			// Set the color data used to display the mesh in the viewport
 			glm::vec4 mesh_color = glm::vec4(
-				rgb_colorf.getRed()	  * mBrightness,
-				rgb_colorf.getGreen() * mBrightness,
-				rgb_colorf.getBlue()  * mBrightness,
+				math::lerp(1.0f, rgb_colorf.getRed(),	mInfluence) * mBrightness,
+				math::lerp(1.0f, rgb_colorf.getGreen(), mInfluence) * mBrightness,
+				math::lerp(1.0f, rgb_colorf.getBlue(),	mInfluence) * mBrightness,
 				1.0f);
 
 			triangle.setVertexData(color_data, mesh_color);

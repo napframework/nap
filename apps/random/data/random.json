@@ -41,12 +41,6 @@
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformFloat",
-                                "mID": "uBrightness",
-                                "Name": "uBrightness",
-                                "Value": 1.0
-                            },
-                            {
-                                "Type": "nap::UniformFloat",
                                 "mID": "uContrast",
                                 "Name": "uContrast",
                                 "Value": 1.0
@@ -208,6 +202,14 @@
                     "Mesh": "LightRigMesh",
                     "Influence": 1.0,
                     "Brightness": 1.0
+                },
+                {
+                    "Type": "nap::MeshToArtnetComponent",
+                    "mID": "nap::MeshToArtnetComponent",
+                    "Mesh": "LightRigMesh",
+                    "Controllers": [
+                        "Universe0"
+                    ]
                 }
             ],
             "Children": []
@@ -383,12 +385,6 @@
             "Type": "nap::Material",
             "mID": "CloudMaterial",
             "Uniforms": [
-                {
-                    "Type": "nap::UniformFloat",
-                    "mID": "UniformBrightness",
-                    "Name": "uBrightness",
-                    "Value": 0.0
-                },
                 {
                     "Type": "nap::UniformFloat",
                     "mID": "UniformContrast",
