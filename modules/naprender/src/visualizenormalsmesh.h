@@ -14,7 +14,8 @@ namespace nap
 	 * The mesh itself carries multiple attributes of which 'position' and 'típ' are default.
 	 * Use the tip vertex attribute to identify the bottom / top part of the vertex.
 	 * the tip value = 1 at the beginning of the normal line and 0 at the end.
-	 * This resource also copies the color and uv channels as attributes to both points of the normal line.
+	 * This resource also copies the color, normal and uv channels as attributes to both points of the normal line.
+	 * The normal is scaled based on the normal length property and applied to both vertices of the normal line
 	 * This operator needs a reference mesh to initialize itself, defined by the 'ReferenceMesh' property.
 	 * It is possible to switch the reference mesh at runtime, although discouraged.
 	 * When you switch the reference mesh at runtime make sure the new reference mesh has the same number of attributes!
