@@ -29,6 +29,13 @@ namespace nap
 	bool NAPAPI isMouseEvent(SDL_Event& sdlEvent);
 
 	/**
+	* Utility functions that checks if this is a controller input event (gamepad)
+	* @param sdlEvent the sdlEvent to verify
+	* @return if this sdl event is a controller event
+	*/
+	bool NAPAPI isControllerEvent(SDL_Event& sdlEvent);
+
+	/**
 	 * Utility function that checks if this is an input event (key, mouse)
 	 * @param sdlEvent the sdlEvent to verify
 	 * @return if this sdl event is an input event

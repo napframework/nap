@@ -85,6 +85,11 @@ namespace nap
 			// Process event for imgui
 			ImGui_ImplSdlGL3_ProcessEvent(&event);
 
+			if (nap::isControllerEvent(event))
+			{
+				std::cout << "new controller input event!\n";
+			}
+
 			// Forward if we're not capturing mouse and it's a pointer event
 			if (nap::isMouseEvent(event) && !io.WantCaptureMouse)
 			{

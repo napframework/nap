@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nap/service.h>
+#include <SDL_gamecontroller.h>
 
 namespace nap
 {
@@ -33,5 +34,8 @@ namespace nap
 		 * Closes all open connections to external devices
 		 */
 		virtual void shutdown() override;
+
+	private:
+		std::vector<SDL_GameController*> mControllers;
 	};
 }
