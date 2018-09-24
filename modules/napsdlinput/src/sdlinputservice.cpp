@@ -15,9 +15,7 @@ namespace nap
 {
 
 	SDLInputService::SDLInputService(ServiceConfiguration* configuration) : Service(configuration)
-	{
-
-	}
+	{ }
 
 	void SDLInputService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
@@ -42,6 +40,13 @@ namespace nap
 				ctrl = SDL_GameControllerOpen(i);
 				mControllers.emplace_back(ctrl);
 			}
+			else
+			{
+				const char* joystick_name = SDL_JoystickNameForIndex(i);
+				nap::Logger::info("found compatible joystick device: %s", joystick_name);
+				joy = SDL_JoystickOpen(i);
+				mJoysticks.emplace_back(joy);
+			}
 		}
 		return true;
 	}
@@ -51,5 +56,7 @@ namespace nap
 	{
 		for (auto& controller : mControllers)
 			SDL_GameControllerClose(controller);
+		for (auto& joystick : mJoysticks)
+			SDL_JoystickClose(joystick);
 	}
 }

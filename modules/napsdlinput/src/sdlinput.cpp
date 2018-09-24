@@ -263,13 +263,24 @@ namespace nap
 		std::make_pair(SDL_KEYUP,	RTTI_OF(nap::KeyReleaseEvent)),
 	};
 
+	// Binds specific sdl joystick and controller events to a nap controller event type
+	const static std::unordered_map<Uint32, rtti::TypeInfo> SDLToControllerMapping =
+	{
+		std::make_pair(SDL_CONTROLLERBUTTONDOWN,	RTTI_OF(nap::ControllerButtonPressEvent)),
+		std::make_pair(SDL_CONTROLLERBUTTONUP,		RTTI_OF(nap::ControllerButtonReleaseEvent)),
+		std::make_pair(SDL_CONTROLLERAXISMOTION,	RTTI_OF(nap::ControllerAxisEvent)),
+		std::make_pair(SDL_JOYAXISMOTION,			RTTI_OF(nap::ControllerAxisEvent)),
+		std::make_pair(SDL_JOYBUTTONDOWN,			RTTI_OF(nap::ControllerButtonPressEvent)),
+		std::make_pair(SDL_JOYBUTTONUP,				RTTI_OF(nap::ControllerButtonReleaseEvent))
+	};
+
 
 	/**
 	 * Helper function to convert an SDL KeyCode to nap KeyCode
 	 */
-	nap::EKeyCode toNapKeyCode(SDL_Keycode inKey)
+	static nap::EKeyCode toNapKeyCode(SDL_Keycode key)
 	{
-		auto pos = SDLToKeyCodeMapping.find(inKey);
+		auto pos = SDLToKeyCodeMapping.find(key);
 		if (pos == SDLToKeyCodeMapping.end())
 		{
 			return nap::EKeyCode::KEY_UNKNOWN;
@@ -281,9 +292,9 @@ namespace nap
 	/**
 	 * Helper function to convert an SDL mouse button to nap MouseButton
 	 */
-	nap::EMouseButton toNapMouseButton(uint8_t inButton)
+	static nap::EMouseButton toNapMouseButton(uint8_t button)
 	{
-		switch (inButton)
+		switch (button)
 		{
 			case SDL_BUTTON_LEFT:
 				return EMouseButton::LEFT;
@@ -296,69 +307,197 @@ namespace nap
 		return EMouseButton::UNKNOWN;
 	}
 
+	static nap::EControllerAxis toNapAxis(uint8_t axis)
+	{
+		switch (axis)
+		{
+		case SDL_CONTROLLER_AXIS_LEFTX:
+			return EControllerAxis::LEFT_X;
+		case SDL_CONTROLLER_AXIS_LEFTY:
+			return EControllerAxis::LEFT_Y;
+		case SDL_CONTROLLER_AXIS_RIGHTX:
+			return EControllerAxis::RIGHT_X;
+		case SDL_CONTROLLER_AXIS_RIGHTY:
+			return EControllerAxis::RIGHT_Y;
+		}
+		return EControllerAxis::UNKNOWN;
+	}
+
+	static nap::EControllerButton toNapButton(uint8_t button)
+	{
+		switch (button)
+		{
+		case SDL_CONTROLLER_BUTTON_A:
+			return EControllerButton::A;
+		case SDL_CONTROLLER_BUTTON_B:
+			return EControllerButton::B;
+		case SDL_CONTROLLER_BUTTON_X:
+			return EControllerButton::X;
+		case SDL_CONTROLLER_BUTTON_Y:
+			return EControllerButton::Y;
+		case SDL_CONTROLLER_BUTTON_BACK:
+			return EControllerButton::BACK;
+		case SDL_CONTROLLER_BUTTON_START:
+			return EControllerButton::START;
+		case SDL_CONTROLLER_BUTTON_LEFTSTICK:
+			return EControllerButton::LEFT_STICK;
+		case SDL_CONTROLLER_BUTTON_RIGHTSTICK:
+			return EControllerButton::RIGHT_STICK;
+		case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
+			return EControllerButton::LEFT_SHOULDER;
+		case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+			return EControllerButton::RIGHT_SHOULDER;
+		case SDL_CONTROLLER_BUTTON_DPAD_UP:
+			return EControllerButton::DPAD_UP;
+		case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+			return EControllerButton::DPAD_DOWN;
+		case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+			return EControllerButton::DPAD_RIGHT;
+		case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+			return EControllerButton::DPAD_LEFT;
+		}
+		return EControllerButton::UNKNOWN;
+	}
+
+	static nap::InputEvent* translateMouseEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType) 
+	{
+		// Get window
+		int window_id = static_cast<int>(sdlEvent.window.windowID);
+		SDL_Window* window = SDL_GetWindowFromID(window_id);
+		if (window == nullptr)
+			return nullptr;
+
+		InputEvent* mouse_event = nullptr;
+		switch (sdlType)
+		{
+		case SDL_MOUSEWHEEL:
+		{
+			int dix = static_cast<int>(sdlEvent.wheel.x);
+			int diy = static_cast<int>(sdlEvent.wheel.y);
+			mouse_event = eventType.create<InputEvent>({ dix, diy, window_id });
+			break;
+		}
+		case SDL_MOUSEBUTTONUP:
+		case SDL_MOUSEBUTTONDOWN:
+		{
+			// Get position
+			int sx, sy;
+			SDL_GetWindowSize(window, &sx, &sy);
+			int px = sdlEvent.motion.x;
+			int py = sy - 1 - sdlEvent.motion.y;
+			mouse_event = eventType.create<InputEvent>({ px, py, toNapMouseButton(sdlEvent.button.button), window_id, 0 });
+			break;
+		}
+		case SDL_MOUSEMOTION:
+		{
+			// Get position
+			int sx, sy;
+			SDL_GetWindowSize(window, &sx, &sy);
+			int px = static_cast<int>(sdlEvent.motion.x);
+			int py = sy - 1 - static_cast<int>(sdlEvent.motion.y);
+			int rx = static_cast<int>(sdlEvent.motion.xrel);
+			int ry = static_cast<int>(-sdlEvent.motion.yrel);
+			mouse_event = eventType.create<InputEvent>({ rx, ry, px, py, window_id, 0 });
+			break;
+		}
+		default:
+			assert(false);
+			break;
+		}
+		return mouse_event;
+	}
+
+
+	nap::InputEventPtr NAPAPI translateMouseEvent(SDL_Event& sdlEvent)
+	{
+		// If it's a pointer event it generally has a button except for a move operation
+		auto mouse_it = SDLToMouseMapping.find(sdlEvent.type);
+		assert(mouse_it != SDLToMouseMapping.end());
+		InputEvent* mouse_event = translateMouseEvent(sdlEvent, mouse_it->first, mouse_it->second);
+		return InputEventPtr(mouse_event);
+	}
+
+	static nap::InputEvent* translateControllerEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType)
+	{
+		InputEvent* controller_event = nullptr;
+		switch (sdlType)
+		{
+		case SDL_CONTROLLERAXISMOTION:
+		{
+			int id = static_cast<int>(sdlEvent.caxis.which);
+			nap::EControllerAxis axis = toNapAxis(sdlEvent.caxis.axis);
+			double value = static_cast<double>(sdlEvent.caxis.value);
+			controller_event = eventType.create<InputEvent>({ id, axis, static_cast<int>(axis), value });
+			break;
+		}
+		case SDL_JOYAXISMOTION:
+		{
+			int id = static_cast<int>(sdlEvent.jaxis.which);
+			int axisID = static_cast<int>(sdlEvent.jaxis.axis);
+			double value = static_cast<double>(sdlEvent.jaxis.value);
+			controller_event = eventType.create<InputEvent>({ id, EControllerAxis::UNKNOWN, static_cast<int>(axisID), value });
+			break;
+		}
+		case SDL_CONTROLLERBUTTONDOWN:
+		case SDL_CONTROLLERBUTTONUP:
+		{
+			int id = static_cast<int>(sdlEvent.cbutton.which);
+			nap::EControllerButton btn = toNapButton(sdlEvent.cbutton.button);
+			controller_event = eventType.create<InputEvent>({ id, btn, static_cast<int>(btn) });
+			break;
+		}
+		case SDL_JOYBUTTONDOWN:
+		case SDL_JOYBUTTONUP:
+		{
+			int id = static_cast<int>(sdlEvent.jbutton.which);
+			int btn_id = static_cast<int>(sdlEvent.jbutton.button);
+			controller_event = eventType.create<InputEvent>({ id, nap::EControllerButton::UNKNOWN, btn_id });
+			break;
+		}
+		default:
+			assert(false);
+			break;
+		}
+		return controller_event;
+	}
+
+
+	nap::InputEventPtr NAPAPI translateControllerEvent(SDL_Event& sdlEvent)
+	{
+		// If it's a controller event, create, map and return
+		auto control_it = SDLToControllerMapping.find(sdlEvent.type);
+		assert(control_it != SDLToControllerMapping.end());
+		InputEvent* control_event = translateControllerEvent(sdlEvent, control_it->first, control_it->second);
+		return InputEventPtr(control_event);
+	}
+
 
 	// Translates the SDL event in to a NAP input event
 	nap::InputEventPtr translateInputEvent(SDL_Event& sdlEvent)
 	{
-		int window_id = static_cast<int>(sdlEvent.window.windowID);
-
-		SDL_Window* window = SDL_GetWindowFromID(window_id);
-		if (window == nullptr)
-		{
-			return nullptr;
-		}
-
 		// If it's a key event, create, map and return
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
 		if (key_it != SDLToKeyMapping.end())
 		{
+			int window_id = static_cast<int>(sdlEvent.window.windowID);
 			KeyEvent* key_event = key_it->second.create<KeyEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym), window_id });
 			return InputEventPtr(key_event);
 		}
 
 		// If it's a pointer event it generally has a button except for a move operation
-		// That's the reason for the if / else
-		auto inp_it = SDLToMouseMapping.find(sdlEvent.type);
-		if (inp_it != SDLToMouseMapping.end())
+		auto mouse_it = SDLToMouseMapping.find(sdlEvent.type);
+		if (mouse_it != SDLToMouseMapping.end())
 		{
-			InputEvent* mouse_event = nullptr;
-			switch (inp_it->first)
-			{
-			case SDL_MOUSEWHEEL:
-			{
-				int dix = static_cast<int>(sdlEvent.wheel.x);
-				int diy = static_cast<int>(sdlEvent.wheel.y);
-				mouse_event = inp_it->second.create<InputEvent>({ dix, diy, window_id });
-				break;
-			}
-			case SDL_MOUSEBUTTONUP:
-			case SDL_MOUSEBUTTONDOWN:
-			{
-				// Get position
-				int sx, sy;
-				SDL_GetWindowSize(window, &sx, &sy);
-				int px = sdlEvent.motion.x;
-				int py = sy - 1 - sdlEvent.motion.y;
-				mouse_event = inp_it->second.create<InputEvent>({ px, py, toNapMouseButton(sdlEvent.button.button), window_id, 0 });
-				break;
-			}
-			case SDL_MOUSEMOTION:
-			{
-				// Get position
-				int sx, sy;
-				SDL_GetWindowSize(window, &sx, &sy);
-				int px = static_cast<int>(sdlEvent.motion.x);
-				int py = sy - 1 - static_cast<int>(sdlEvent.motion.y);
-				int rx = static_cast<int>(sdlEvent.motion.xrel);
-				int ry = static_cast<int>(-sdlEvent.motion.yrel);
-				mouse_event = inp_it->second.create<InputEvent>({ rx, ry, px, py, window_id, 0 });
-				break;
-			}
-			default:
-				assert(false);
-				break;
-			}
+			InputEvent* mouse_event = translateMouseEvent(sdlEvent, mouse_it->first, mouse_it->second);
 			return InputEventPtr(mouse_event);
+		}
+
+		// If it's a controller event, create, map and return
+		auto control_it = SDLToControllerMapping.find(sdlEvent.type);
+		if (control_it != SDLToControllerMapping.end())
+		{
+			InputEvent* control_event = translateControllerEvent(sdlEvent, control_it->first, control_it->second);
+			return InputEventPtr(control_event);
 		}
 
 		// SDL event could not be mapped to a valid nap input event
@@ -372,6 +511,17 @@ namespace nap
 	}
 
 
+	nap::InputEventPtr NAPAPI translateKeyEvent(SDL_Event& sdlEvent)
+	{
+		// If it's a key event, create, map and return
+		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
+		assert(key_it != SDLToKeyMapping.end());
+		int window_id = static_cast<int>(sdlEvent.window.windowID);
+		KeyEvent* key_event = key_it->second.create<KeyEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym), window_id });
+		return InputEventPtr(key_event);
+	}
+
+
 	bool isMouseEvent(SDL_Event& sdlEvent)
 	{
 		return SDLToMouseMapping.find(sdlEvent.type) != SDLToMouseMapping.end();
@@ -380,14 +530,14 @@ namespace nap
 
 	bool isInputEvent(SDL_Event& sdlEvent)
 	{
-		return isKeyEvent(sdlEvent) || isMouseEvent(sdlEvent);
+		return isKeyEvent(sdlEvent) 
+			|| isMouseEvent(sdlEvent) 
+			|| isControllerEvent(sdlEvent);
 	}
 
 
 	bool isControllerEvent(SDL_Event& sdlEvent)
 	{
-		return (sdlEvent.type == SDL_CONTROLLERBUTTONDOWN	||
-			sdlEvent.type == SDL_CONTROLLERBUTTONUP		||
-			sdlEvent.type == SDL_CONTROLLERAXISMOTION);
+		return SDLToControllerMapping.find(sdlEvent.type) != SDLToControllerMapping.end();
 	}
 }

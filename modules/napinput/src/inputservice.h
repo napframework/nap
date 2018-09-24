@@ -31,8 +31,9 @@ namespace nap
 		InputService& operator=(const InputService&) = delete;
 		
 		/**
-		 * Extracts input events from Window and forwards them to an InputRouter.
-		 * @param window The window to extract events from. Note: Window::processEvents must be called after this function, as it clears the event queue.
+		 * Forwards all input events, associated with a window, to all input components that are part of the list of entities
+		 * The input router controls how the events are forwarded. A default input router will suffice in most cases
+		 * @param window The window to process the input events for (mouse, keyboard touch etc.)
 		 * @param inputRouter The input router that selects what InputComponents receive input messages.
 		 * @param entities A list of root entities that are used to traverse the entity hierarchy.
 		 */

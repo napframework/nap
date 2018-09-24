@@ -85,33 +85,36 @@ namespace nap
 			// Process event for imgui
 			ImGui_ImplSdlGL3_ProcessEvent(&event);
 
-			if (nap::isControllerEvent(event))
-			{
-				if (event.type == SDL_CONTROLLERAXISMOTION) 
-				{
-					std::cout << event.caxis.value << "\n";
-				}
-				else if (event.type == SDL_CONTROLLERBUTTONDOWN) 
-				{
-					std::cout << (int)(event.cbutton.button) << "\n";
-				}
-				
-			}
-
 			// Forward if we're not capturing mouse and it's a pointer event
-			if (nap::isMouseEvent(event) && !io.WantCaptureMouse)
+			if (nap::isMouseEvent(event))
 			{
-				nap::InputEventPtr input_event = nap::translateInputEvent(event);
-				if (input_event != nullptr)
+				if (!io.WantCaptureMouse)
 				{
-					getApp<App>().inputMessageReceived(std::move(input_event));
+					nap::InputEventPtr input_event = nap::translateMouseEvent(event);
+					if (input_event != nullptr)
+					{
+						getApp<App>().inputMessageReceived(std::move(input_event));
+					}
 				}
 			}
 
 			// Forward if we're not capturing keyboard and it's a key event
-			else if (nap::isKeyEvent(event) && !io.WantCaptureKeyboard)
+			else if (nap::isKeyEvent(event))
 			{
-				nap::InputEventPtr input_event = nap::translateInputEvent(event);
+				if (!io.WantCaptureKeyboard)
+				{
+					nap::InputEventPtr input_event = nap::translateKeyEvent(event);
+					if (input_event != nullptr)
+					{
+						getApp<App>().inputMessageReceived(std::move(input_event));
+					}
+				}
+			}
+
+			// Always forward controller events
+			else if (nap::isControllerEvent(event))
+			{
+				nap::InputEventPtr input_event = nap::translateControllerEvent(event);
 				if (input_event != nullptr)
 				{
 					getApp<App>().inputMessageReceived(std::move(input_event));
@@ -127,7 +130,7 @@ namespace nap
 					getApp<App>().windowMessageReceived(std::move(window_event));
 				}
 			}
-
+				 
 			// Stop if the event tells us to quit
 			else if (event.type == SDL_QUIT)
 			{
