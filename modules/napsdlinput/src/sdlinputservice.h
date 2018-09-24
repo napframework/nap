@@ -2,13 +2,21 @@
 
 #include <nap/service.h>
 #include <SDL_gamecontroller.h>
+#include <SDL_joystick.h>
 
 namespace nap
 {
 	/**
-	 * Service that manages connections to external input devices such as keyboard, mouse and joystick
+	 * Service that manages connections to external input devices such as a keyboard, mouse, joystick and controllers.
 	 * By default all connections to all available devices are opened automatically, ie: 
 	 * all joysticks, game controllers etc. should be available to the system after initialization
+	 *
+	 * A Game Controller is a Joystick that makes use of a pre-defined mapping, ie: LeftTrigger etc.
+	 * Most popular game controllers are supported out of the box such as the xbox live controller etc.
+	 * If a controller isn't supported natively it is considered to be a Joystick where the user has to
+	 * interpret the various buttons.
+	 *
+	 * TODO: Handle Connect / Disconnect
 	 */
 	class NAPAPI SDLInputService : public Service
 	{
@@ -36,6 +44,7 @@ namespace nap
 		virtual void shutdown() override;
 
 	private:
-		std::vector<SDL_GameController*> mControllers;
+		std::vector<SDL_GameController*> mControllers;		///< All available game controllers
+		std::vector<SDL_Joystick*> mJoysticks;				///< All available joysticks
 	};
 }

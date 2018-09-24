@@ -25,8 +25,16 @@ namespace nap
 		InputEventPtrList::iterator input_it = mInputEvents.begin();
 		while (input_it != mInputEvents.end())
 		{
+			// See if it's a window event
+			WindowInputEvent* window_event = rtti_cast<WindowInputEvent>(input_it->get());
+			if (window_event == nullptr)
+			{
+				++input_it;
+				continue;
+			}
+
 			// Skip events not associated with a specific window
-			if ((*input_it)->mWindow != window_number)
+			if (window_event->mWindow != window_number)
 			{
 				++input_it;
 				continue;
