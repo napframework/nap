@@ -318,6 +318,10 @@
                         "y": 0.0,
                         "z": 0.0
                     }
+                },
+                {
+                    "Type": "nap::ControllerInputComponent",
+                    "mID": "nap::ControllerInputComponent"
                 }
             ],
             "Children": []
