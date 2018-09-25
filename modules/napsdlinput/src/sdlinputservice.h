@@ -49,7 +49,6 @@ namespace nap
 		std::vector<SDL_GameController*> mControllers;		///< All available game controllers
 		nap::InputService* mInputService = nullptr;			///< Input service that deals with controller events
 
-
 		// Adds a new controller
 		void addController(int deviceID);
 
