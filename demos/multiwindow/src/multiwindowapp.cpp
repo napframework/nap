@@ -84,12 +84,12 @@ namespace nap
 		
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCameraOne.get() };
-		mInputService->processEvents(*mRenderWindowOne, input_router, entities);
+		mInputService->processWindowEvents(*mRenderWindowOne, input_router, entities);
 
 		// Forward all input events associated with the third window to listening components
 		entities.clear();
 		entities.emplace_back(mPerspectiveCameraTwo.get());
-		mInputService->processEvents(*mRenderWindowThree, input_router, entities);
+		mInputService->processWindowEvents(*mRenderWindowThree, input_router, entities);
 
 		// Center the first plane relative to the orthographic camera
 		// The orthographic camera works in pixel space, therefore we need to move the position

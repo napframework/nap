@@ -5,6 +5,7 @@
 
 #include <nap/windowresource.h>
 #include <nap/resource.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InputService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -15,9 +16,10 @@ namespace nap
 	InputService::InputService(ServiceConfiguration* configuration) :
 		Service(configuration)
 	{
+		mInputEvents.reserve(5000);
 	}
 
-	void InputService::processEvents(Window& window, InputRouter& inputRouter, const EntityList& entities)
+	void InputService::processWindowEvents(Window& window, InputRouter& inputRouter, const EntityList& entities)
 	{
 		int window_number = static_cast<int>(window.getNumber());
 
@@ -25,16 +27,9 @@ namespace nap
 		InputEventPtrList::iterator input_it = mInputEvents.begin();
 		while (input_it != mInputEvents.end())
 		{
-			// See if it's a window event
-			WindowInputEvent* window_event = rtti_cast<WindowInputEvent>(input_it->get());
-			if (window_event == nullptr)
-			{
-				++input_it;
-				continue;
-			}
-
 			// Skip events not associated with a specific window
-			if (window_event->mWindow != window_number)
+			WindowInputEvent* window_event = rtti_cast<WindowInputEvent>(input_it->get());
+			if (window_event == nullptr || window_event->mWindow != window_number)
 			{
 				++input_it;
 				continue;
@@ -50,9 +45,52 @@ namespace nap
 	}
 
 
+	void InputService::processControllerEvents(InputRouter& inputRouter, const EntityList& entities)
+	{
+		// Route event
+		InputEventPtrList::iterator input_it = mInputEvents.begin();
+		while (input_it != mInputEvents.end())
+		{
+			if (!((*input_it)->get_type().is_derived_from(RTTI_OF(nap::ControllerEvent))))
+			{
+				++input_it;
+				continue;
+			}
+
+			// Otherwise perform routing and delete event
+			// The iterator points to a unique ptr that needs to be dereferenced
+			inputRouter.routeEvent(**input_it, entities);
+
+			// Erase and return next valid iterator
+			input_it = mInputEvents.erase(input_it);
+		}
+	}
+
+
+	void InputService::processAllEvents(InputRouter& inputRouter, const EntityList& entities)
+	{
+		// Route window event
+		InputEventPtrList::iterator window_it = mInputEvents.begin();
+		while (window_it != mInputEvents.end())
+		{
+			// The iterator points to a unique ptr that needs to be dereferenced
+			inputRouter.routeEvent(**window_it, entities);
+
+			// Erase and return next valid iterator
+			window_it = mInputEvents.erase(window_it);
+		}
+	}
+
+
 	void InputService::addEvent(InputEventPtr inEvent)
 	{
 		mInputEvents.emplace_back(std::move(inEvent));
+	}
+
+	
+	void InputService::postUpdate(double deltaTime)
+	{
+		mInputEvents.clear();
 	}
 
 }
