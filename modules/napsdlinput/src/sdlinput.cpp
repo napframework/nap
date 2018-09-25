@@ -449,7 +449,8 @@ namespace nap
 			// Don't translate a joystick axis event when the joystick is a controller
 			// SDL generates 2 events for the same device if the device is both a joystick and controller
 			// NAP uses only 1 class for both types of events: ControllerEvent
-			if (SDL_IsGameController(sdlEvent.jbutton.which))
+			SDL_GameController* controller = SDL_GameControllerFromInstanceID(sdlEvent.jbutton.which);
+			if (controller != nullptr)
 				break;
 
 			int id = static_cast<int>(sdlEvent.jaxis.which);
@@ -474,7 +475,8 @@ namespace nap
 			// Don't translate a joystick button event when the joystick is a controller
 			// SDL generates 2 events for the same device if the device is both a joystick and controller
 			// NAP uses only 1 class for both types of events: ControllerEvent
-			if(SDL_IsGameController(sdlEvent.jbutton.which))
+			SDL_GameController* controller = SDL_GameControllerFromInstanceID(sdlEvent.jbutton.which);
+			if(controller != nullptr)
 				break;
 
 			int id = static_cast<int>(sdlEvent.jbutton.which);
