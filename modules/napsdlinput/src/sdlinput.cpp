@@ -408,7 +408,7 @@ namespace nap
 	}
 
 
-	nap::InputEventPtr NAPAPI translateMouseEvent(SDL_Event& sdlEvent)
+	nap::InputEventPtr translateMouseEvent(SDL_Event& sdlEvent)
 	{
 		// If it's a pointer event it generally has a button except for a move operation
 		auto mouse_it = SDLToMouseMapping.find(sdlEvent.type);
@@ -462,7 +462,7 @@ namespace nap
 	}
 
 
-	nap::InputEventPtr NAPAPI translateControllerEvent(SDL_Event& sdlEvent)
+	nap::InputEventPtr translateControllerEvent(SDL_Event& sdlEvent)
 	{
 		// If it's a controller event, create, map and return
 		auto control_it = SDLToControllerMapping.find(sdlEvent.type);
@@ -511,7 +511,7 @@ namespace nap
 	}
 
 
-	nap::InputEventPtr NAPAPI translateKeyEvent(SDL_Event& sdlEvent)
+	nap::InputEventPtr translateKeyEvent(SDL_Event& sdlEvent)
 	{
 		// If it's a key event, create, map and return
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
