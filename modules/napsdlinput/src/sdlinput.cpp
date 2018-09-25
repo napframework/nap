@@ -1,6 +1,9 @@
 #include "sdlinput.h"
 #include "inputevent.h"
 
+// External Includes
+#include <mathutils.h>
+
 namespace nap
 {
 	/** 
@@ -271,7 +274,9 @@ namespace nap
 		std::make_pair(SDL_CONTROLLERAXISMOTION,	RTTI_OF(nap::ControllerAxisEvent)),
 		std::make_pair(SDL_JOYAXISMOTION,			RTTI_OF(nap::ControllerAxisEvent)),
 		std::make_pair(SDL_JOYBUTTONDOWN,			RTTI_OF(nap::ControllerButtonPressEvent)),
-		std::make_pair(SDL_JOYBUTTONUP,				RTTI_OF(nap::ControllerButtonReleaseEvent))
+		std::make_pair(SDL_JOYBUTTONUP,				RTTI_OF(nap::ControllerButtonReleaseEvent)),
+		std::make_pair(SDL_JOYDEVICEREMOVED,		RTTI_OF(nap::ControllerConnectionEvent)),
+		std::make_pair(SDL_JOYDEVICEADDED,			RTTI_OF(nap::ControllerConnectionEvent))
 	};
 
 
@@ -319,6 +324,10 @@ namespace nap
 			return EControllerAxis::RIGHT_X;
 		case SDL_CONTROLLER_AXIS_RIGHTY:
 			return EControllerAxis::RIGHT_Y;
+		case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+			return EControllerAxis::TRIGGER_LEFT;
+		case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+			return EControllerAxis::TRIGGER_RIGHT;
 		}
 		return EControllerAxis::UNKNOWN;
 	}
@@ -429,8 +438,10 @@ namespace nap
 		{
 			int id = static_cast<int>(sdlEvent.caxis.which);
 			nap::EControllerAxis axis = toNapAxis(sdlEvent.caxis.axis);
-			double value = static_cast<double>(sdlEvent.caxis.value);
-			controller_event = eventType.create<InputEvent>({ id, axis, static_cast<int>(axis), value });
+			double v = math::fit<double>((double)(sdlEvent.caxis.value),
+				(double)(SDL_JOYSTICK_AXIS_MIN),
+				(double)(SDL_JOYSTICK_AXIS_MAX), -1.0, 1.0);
+			controller_event = eventType.create<InputEvent>({ id, axis, static_cast<int>(axis), v });
 			break;
 		}
 		case SDL_JOYAXISMOTION:
@@ -443,8 +454,10 @@ namespace nap
 
 			int id = static_cast<int>(sdlEvent.jaxis.which);
 			int axisID = static_cast<int>(sdlEvent.jaxis.axis);
-			double value = static_cast<double>(sdlEvent.jaxis.value);
-			controller_event = eventType.create<InputEvent>({ id, EControllerAxis::UNKNOWN, static_cast<int>(axisID), value });
+			double v = math::fit<double>((double)(sdlEvent.jaxis.value),
+				(double)(SDL_JOYSTICK_AXIS_MIN), 
+				(double)(SDL_JOYSTICK_AXIS_MAX), -1.0, 1.0);
+			controller_event = eventType.create<InputEvent>({ id, EControllerAxis::UNKNOWN, static_cast<int>(axisID), v });
 			break;
 		}
 		case SDL_CONTROLLERBUTTONDOWN:
@@ -467,6 +480,18 @@ namespace nap
 			int id = static_cast<int>(sdlEvent.jbutton.which);
 			int btn_id = static_cast<int>(sdlEvent.jbutton.button);
 			controller_event = eventType.create<InputEvent>({ id, nap::EControllerButton::UNKNOWN, btn_id });
+			break;
+		}
+		case SDL_JOYDEVICEREMOVED:
+		{
+			int id = static_cast<int>(sdlEvent.jdevice.which);
+			controller_event = eventType.create<InputEvent>({ id, false });
+			break;
+		}
+		case SDL_JOYDEVICEADDED:
+		{
+			int id = static_cast<int>(sdlEvent.jdevice.which);
+			controller_event = eventType.create<InputEvent>({ id, true });
 			break;
 		}
 		default:

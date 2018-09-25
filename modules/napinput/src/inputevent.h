@@ -20,6 +20,7 @@ namespace nap
 		RTTI_ENABLE(Event)
 	};
 
+
 	/**
 	 * An input event associated with a specific window
 	 * Most likely mouse, keyboard and touch events
@@ -54,6 +55,7 @@ namespace nap
 		EKeyCode mKey;					///< Associated Key
 	};
 
+
 	/**
 	 *	Key pressed event
 	 */
@@ -66,6 +68,7 @@ namespace nap
 		{ 
 		}
 	};
+
 
 	/**
 	 *	Key released event
@@ -105,6 +108,7 @@ namespace nap
 		int		mId;						///< device id
 	};
 	
+
 	/**
 	 *  Base class for all click related pointer events
 	 */
@@ -121,6 +125,7 @@ namespace nap
 		EMouseButton mButton;				///< clicked mouse button
 	};
 	
+
 	/**
 	 *	Click occurred
 	 */
@@ -134,6 +139,7 @@ namespace nap
 		}
 	};
 	
+
 	/**
 	 *	Click has been released
 	 */
@@ -146,6 +152,7 @@ namespace nap
 		{
 		}
 	};
+
 
 	/**
 	 *	Pointer movement occurred
@@ -164,6 +171,7 @@ namespace nap
 		int mRelX;							///< Horizontal relative movement in pixels
 		int mRelY;							///< Vertical relative movement in pixels
 	};
+
 
 	/**
 	 * Mouse wheel event
@@ -189,7 +197,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Base class for all controller related events
+	 * Base class for all controller (game-pad / joystick) related events
 	 */
 	class NAPAPI ControllerEvent : public InputEvent
 	{
@@ -203,9 +211,10 @@ namespace nap
 
 	/**
 	 * Defines a controller axis event.
-	 * This event can be constructed using a pre-defined axis (when mapping is known),
-	 * or a generic axis id when no axis mapping is available. 
-	 * In that case the axis member is set to be UNKNOWN
+	 * This event is created when an axis on a game controller or joystick changes.
+	 * Use the 'mAxis' variable to retrieve the mapped axis id, ie: LEFT_X or TRIGGER_RIGHT
+	 * If there is no mapping available the 'mAxis' variable is unknown,
+	 * in that case you need to interpret the hardware id stored in 'mAxisID' yourself
 	 */
 	class NAPAPI ControllerAxisEvent : public ControllerEvent
 	{
@@ -224,9 +233,10 @@ namespace nap
 
 	/**
 	 * Defines a controller button event
-	 * This event can be constructed using a pre-defined  button (when mapping is known), 
-	 * or a generic button id when no button mapping is available.
-	 * In that case the button member is set to be UNKNOWN
+	 * This event is created when a button is pressed or released on a game controller or joystick.
+	 * Use the 'mButton member to retrieve the mapped button id, ie: A, B, etc. 
+	 * If there is no mapping available the 'mButton' member is unknown.
+	 * In that case you need to interpret the hardware id of the button stored in the 'mButtonID' variable yourself.
 	 */
 	class NAPAPI ControllerButtonEvent : public ControllerEvent
 	{
@@ -241,8 +251,10 @@ namespace nap
 		int mButtonID = -1;												///< Hardware button id, available when no button mapping is provided (UNKNOWN)
 	};
 
+
 	/**
-	 *	Defines a controller button press event
+	 * Defines a controller button press event
+	 * This event is created when a button on a joystick or controller is pressed
 	 */
 	class NAPAPI ControllerButtonPressEvent : public ControllerButtonEvent
 	{
@@ -252,8 +264,10 @@ namespace nap
 			ControllerButtonEvent(deviceID, button, buttonID) { }
 	};
 
+
 	/**
-	 *	Defines a controller button release event
+	 * Defines a controller button release event
+	 * This event is created when a button on a joystick or controller is released
 	 */
 	class NAPAPI ControllerButtonReleaseEvent : public ControllerButtonEvent
 	{
@@ -262,6 +276,21 @@ namespace nap
 		ControllerButtonReleaseEvent(int deviceID, EControllerButton button, int buttonID) :
 			ControllerButtonEvent(deviceID, button, buttonID) { }
 	};
+
+
+	/**
+	 * Occurs when a controller is disconnected
+	 */
+	class NAPAPI ControllerConnectionEvent : public ControllerEvent
+	{
+		RTTI_ENABLE(ControllerEvent)
+	public:
+		ControllerConnectionEvent(int deviceID, bool status) : 
+			ControllerEvent(deviceID),
+			mStatus(status)				{ }
+		bool mStatus = false;											///< If the controller connected (true) or disconnected (false)
+	};
+
 
 	using InputEventPtr = std::unique_ptr<nap::InputEvent>;
 	using InputEventPtrList = std::vector<InputEventPtr>;

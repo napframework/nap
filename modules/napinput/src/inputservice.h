@@ -4,6 +4,7 @@
 #include <nap/service.h>
 #include <utility/dllexport.h>
 #include <entity.h>
+#include <nap/signalslot.h>
 
 // Local Includes
 #include "inputevent.h"
@@ -76,6 +77,8 @@ namespace nap
 		 * Clears all dangling input events.
 		 */
 		virtual void postUpdate(double deltaTime);
+
+		Signal<const ControllerConnectionEvent&>	controllerConnectionChanged;		///< Signal emitted when a controller is removed or added
 
 	private:
 		InputEventPtrList mInputEvents;			///< All input events
