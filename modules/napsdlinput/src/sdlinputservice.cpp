@@ -72,14 +72,14 @@ namespace nap
 		if (SDL_IsGameController(deviceID))
 		{
 			const char* controller_name = SDL_GameControllerNameForIndex(deviceID);
-			nap::Logger::info("game controller: %d, %s connected", deviceID, controller_name);
+			nap::Logger::info("controller connected: %s, number: %d", deviceID, controller_name);
 			SDL_GameController *ctrl = SDL_GameControllerOpen(deviceID);
 			mControllers.emplace_back(ctrl);
 		}
 		else
 		{
 			const char* joystick_name = SDL_JoystickNameForIndex(deviceID);
-			nap::Logger::info("joystick: %d, %s connected", deviceID, joystick_name);
+			nap::Logger::info("joystick connected: %s, number: %d", deviceID, joystick_name);
 			SDL_Joystick *joy = SDL_JoystickOpen(deviceID);
 			mJoysticks.emplace_back(joy);
 		}
@@ -92,28 +92,8 @@ namespace nap
 		auto found_it = std::find_if(mControllers.begin(), mControllers.end(), [&](auto& controller) {
 			return deviceID == SDL_JoystickInstanceID(controller);
 		});
-
-		// Erase if found
-		if (found_it != mControllers.end())
-		{
-			if (SDL_IsGameController(deviceID))
-			{
-				SDL_GameController* ctrl = SDL_GameControllerFromInstanceID(deviceID);
-				SDL_GameControllerClose(ctrl);
-				const char* controller_name = SDL_GameControllerNameForIndex(deviceID);
-				nap::Logger::info("game controller disconnected", controller_name);
-			}
-			else
-			{
-				SDL_JoystickClose(*found_it);
-				const char* joystick_name = SDL_JoystickNameForIndex(deviceID);
-				nap::Logger::info("joystick disconnected", joystick_name);
-			}
-
-			// Erase from map
-			mControllers.erase(found_it);
-		}
 		*/
+		nap::Logger::info("input device: %d disconnected", deviceID);
 	}
 
 }
