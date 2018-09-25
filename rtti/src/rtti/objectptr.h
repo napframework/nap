@@ -20,7 +20,16 @@ namespace nap
 		class NAPAPI ObjectPtrBase
 		{
 			RTTI_ENABLE()
-        
+
+		public:
+		    /**
+		     * @return the type of the object pointed to
+		     */
+			rttr::type getWrappedType() const
+			{
+				return mPtr->get_type();
+			}
+
 		private:
 			ObjectPtrBase() = default;
         
@@ -31,7 +40,7 @@ namespace nap
 			mPtr(ptr)
 			{
 			}
-        
+
 			/**
 			 * @return RTTIObject pointer.
 			 */
@@ -39,7 +48,7 @@ namespace nap
 			{
 				return mPtr;
 			}
-        
+
 			/**
 			 * @return RTTIObject pointer.
 			 */
@@ -47,7 +56,7 @@ namespace nap
 			{
 				return mPtr;
 			}
-        
+
 			/**
 			 * @param ptr new pointer to set.
 			 */
