@@ -72,14 +72,14 @@ namespace nap
 		if (SDL_IsGameController(deviceID))
 		{
 			const char* controller_name = SDL_GameControllerNameForIndex(deviceID);
-			nap::Logger::info("controller connected: %s, number: %d", deviceID, controller_name);
+			nap::Logger::info("controller connected: %s, number: %d", controller_name, deviceID);
 			SDL_GameController *ctrl = SDL_GameControllerOpen(deviceID);
 			mControllers.emplace_back(ctrl);
 		}
 		else
 		{
 			const char* joystick_name = SDL_JoystickNameForIndex(deviceID);
-			nap::Logger::info("joystick connected: %s, number: %d", deviceID, joystick_name);
+			nap::Logger::info("joystick connected: %s, number: %d", joystick_name, deviceID);
 			SDL_Joystick *joy = SDL_JoystickOpen(deviceID);
 			mJoysticks.emplace_back(joy);
 		}
