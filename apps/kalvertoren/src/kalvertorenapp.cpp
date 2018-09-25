@@ -83,7 +83,7 @@ namespace nap
 		// Update input for first window
 		std::vector<nap::EntityInstance*> entities;
 		entities.push_back(sceneCameraEntity.get());
-		inputService->processEvents(*renderWindow, input_router, entities);
+		inputService->processWindowEvents(*renderWindow, input_router, entities);
 
 		// Update our gui
 		mGui->update(deltaTime);
