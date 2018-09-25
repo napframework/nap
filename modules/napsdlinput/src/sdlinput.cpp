@@ -412,10 +412,13 @@ namespace nap
 	{
 		// If it's a pointer event it generally has a button except for a move operation
 		auto mouse_it = SDLToMouseMapping.find(sdlEvent.type);
-		assert(mouse_it != SDLToMouseMapping.end());
+		if (mouse_it == SDLToMouseMapping.end())
+			return nullptr;
+
 		InputEvent* mouse_event = translateMouseEvent(sdlEvent, mouse_it->first, mouse_it->second);
 		return InputEventPtr(mouse_event);
 	}
+
 
 	static nap::InputEvent* translateControllerEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType)
 	{
@@ -432,6 +435,12 @@ namespace nap
 		}
 		case SDL_JOYAXISMOTION:
 		{
+			// Don't translate a joystick axis event when the joystick is a controller
+			// SDL generates 2 events for the same device if the device is both a joystick and controller
+			// NAP uses only 1 class for both types of events: ControllerEvent
+			if (SDL_IsGameController(sdlEvent.jbutton.which))
+				break;
+
 			int id = static_cast<int>(sdlEvent.jaxis.which);
 			int axisID = static_cast<int>(sdlEvent.jaxis.axis);
 			double value = static_cast<double>(sdlEvent.jaxis.value);
@@ -449,6 +458,12 @@ namespace nap
 		case SDL_JOYBUTTONDOWN:
 		case SDL_JOYBUTTONUP:
 		{
+			// Don't translate a joystick button event when the joystick is a controller
+			// SDL generates 2 events for the same device if the device is both a joystick and controller
+			// NAP uses only 1 class for both types of events: ControllerEvent
+			if(SDL_IsGameController(sdlEvent.jbutton.which))
+				break;
+
 			int id = static_cast<int>(sdlEvent.jbutton.which);
 			int btn_id = static_cast<int>(sdlEvent.jbutton.button);
 			controller_event = eventType.create<InputEvent>({ id, nap::EControllerButton::UNKNOWN, btn_id });
@@ -466,7 +481,9 @@ namespace nap
 	{
 		// If it's a controller event, create, map and return
 		auto control_it = SDLToControllerMapping.find(sdlEvent.type);
-		assert(control_it != SDLToControllerMapping.end());
+		if (control_it == SDLToControllerMapping.end())
+			return nullptr;
+
 		InputEvent* control_event = translateControllerEvent(sdlEvent, control_it->first, control_it->second);
 		return InputEventPtr(control_event);
 	}
@@ -515,7 +532,9 @@ namespace nap
 	{
 		// If it's a key event, create, map and return
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
-		assert(key_it != SDLToKeyMapping.end());
+		if (key_it == SDLToKeyMapping.end())
+			return nullptr;
+
 		int window_id = static_cast<int>(sdlEvent.window.windowID);
 		KeyEvent* key_event = key_it->second.create<KeyEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym), window_id });
 		return InputEventPtr(key_event);

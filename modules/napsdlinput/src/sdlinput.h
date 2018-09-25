@@ -32,7 +32,7 @@ namespace nap
 	 * This call assumes that the given SDL event can be translated into a NAP key event!
 	 * Use isKeyEvent to verify if the events are compatible
 	 * @param sdlEvent the sdl event to translate
-	 * @return a nap key event
+	 * @return a nap key event, nullptr if the event could not be translated
 	 */
 	nap::InputEventPtr NAPAPI translateKeyEvent(SDL_Event& sdlEvent);
 
@@ -48,7 +48,7 @@ namespace nap
 	 * This call assumes that the given SDL event can be translated into a NAP pointer (mouse) event!
 	 * Use isMouseEvent to verify if the events are compatible
 	 * @param sdlEvent the sdl mouse event to translate
-	 * @return a nap pointer event
+	 * @return a nap pointer event, nullptr if the event could not be translated
 	 */
 	nap::InputEventPtr NAPAPI translateMouseEvent(SDL_Event& sdlEvent);
 
@@ -62,9 +62,10 @@ namespace nap
 	/**
 	 * Utility function to translate an SDL event into a NAP controller event
 	 * This call assumes that the given SDL event can be translated into a NAP controller event!
+	 * SDL Joystick and SDL Controller events are considered to be valid
 	 * Use isControllerEvent to verify if the events are compatible
 	 * @param sdlEvent the SDL event to translate, can be from a joystick or controller
- 	 * @return a nap controller event
+ 	 * @return a nap controller event, nullptr if event could not be translated
 	 */
 	nap::InputEventPtr NAPAPI translateControllerEvent(SDL_Event& sdlEvent);
 }

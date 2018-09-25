@@ -32,6 +32,7 @@ namespace nap
 		int mWindow;					///< Window ID
 	};
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// Keyboard Input Events
 	//////////////////////////////////////////////////////////////////////////
@@ -78,6 +79,7 @@ namespace nap
 		{
 		}
 	};
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Mouse Input Events, always associated with a with a window
@@ -181,6 +183,7 @@ namespace nap
 		int mY;
 	};
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// Controller Input Events
 	//////////////////////////////////////////////////////////////////////////
@@ -201,7 +204,7 @@ namespace nap
 	/**
 	 * Defines a controller axis event.
 	 * This event can be constructed using a pre-defined axis (when mapping is known),
-	 * or a generic axis when no mapping is available. 
+	 * or a generic axis id when no axis mapping is available. 
 	 * In that case the axis member is set to be UNKNOWN
 	 */
 	class NAPAPI ControllerAxisEvent : public ControllerEvent
@@ -215,14 +218,14 @@ namespace nap
 			mValue(value) { }
 
 		EControllerAxis mAxis = EControllerAxis::UNKNOWN;				///< Mapped axis, unknown when no mapping is provided
-		int mAxisID = 0;												///< Hardware id associated with the incoming axis, always available
+		int mAxisID = -1;												///< Hardware axis id, available when no button mapping is provided (UNKNOWN)
 		double mValue = 0.0;											///< Axis value ranging from -1.0, 1.0
 	};
 
 	/**
 	 * Defines a controller button event
 	 * This event can be constructed using a pre-defined  button (when mapping is known), 
-	 * or a generic button id when no mapping is available.
+	 * or a generic button id when no button mapping is available.
 	 * In that case the button member is set to be UNKNOWN
 	 */
 	class NAPAPI ControllerButtonEvent : public ControllerEvent
@@ -235,7 +238,7 @@ namespace nap
 			mButtonID(buttonID) { }
 
 		EControllerButton mButton = EControllerButton::UNKNOWN;			///< Mapped button, unknown when no mapping is provided
-		int mButtonID = -1;												///< Hardware button id, always available
+		int mButtonID = -1;												///< Hardware button id, available when no button mapping is provided (UNKNOWN)
 	};
 
 	/**
