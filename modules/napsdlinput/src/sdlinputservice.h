@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nap/service.h>
+#include <inputservice.h>
 #include <SDL_gamecontroller.h>
 #include <SDL_joystick.h>
 
@@ -10,13 +11,13 @@ namespace nap
 	 * Service that manages connections to external input devices such as a keyboard, mouse, joystick and controllers.
 	 * By default all connections to all available devices are opened automatically, ie: 
 	 * all joysticks, game controllers etc. should be available to the system after initialization
+	 * When a controller disconnects it is removed from the system until connected again. 
+	 * This ensures that controllers can be connected / disconnected during sessions.
 	 *
 	 * A Game Controller is a Joystick that makes use of a pre-defined mapping, ie: LeftTrigger etc.
 	 * Most popular game controllers are supported out of the box such as the xbox live controller etc.
 	 * If a controller isn't supported natively it is considered to be a Joystick where the user has to
 	 * interpret the various buttons.
-	 *
-	 * TODO: Handle Connect / Disconnect
 	 */
 	class NAPAPI SDLInputService : public Service
 	{
@@ -44,7 +45,24 @@ namespace nap
 		virtual void shutdown() override;
 
 	private:
+		std::vector<SDL_Joystick*> mJoysticks;				///< All available joystick controllers
 		std::vector<SDL_GameController*> mControllers;		///< All available game controllers
-		std::vector<SDL_Joystick*> mJoysticks;				///< All available joysticks
+		nap::InputService* mInputService = nullptr;			///< Input service that deals with controller events
+
+
+		// Adds a new controller
+		void addController(int deviceID);
+
+		// Removes a controller if registered
+		void removeController(int deviceID);
+
+		/**
+		 * Called by the slot when a controller connection changes, ie: 
+		 * a new controller is added or removed
+		 */
+		void onConnectionChanged(const ControllerConnectionEvent& event);
+
+		// Slot that is called when a controller connection changes
+		NSLOT(mConnectionChanged, const ControllerConnectionEvent&, onConnectionChanged);
 	};
 }

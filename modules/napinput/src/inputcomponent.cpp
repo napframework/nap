@@ -104,6 +104,31 @@ namespace nap
 		else if (event_type == RTTI_OF(nap::ControllerAxisEvent))
 		{
 			const ControllerAxisEvent& axis_event = static_cast<const ControllerAxisEvent&>(inEvent);
+			std::string axis = "";
+			switch (axis_event.mAxis)
+			{
+			case EControllerAxis::LEFT_X:
+				axis = "LeftX";
+				break;
+			case EControllerAxis::LEFT_Y:
+				axis = "LeftY";
+				break;
+			case EControllerAxis::RIGHT_X:
+				axis = "RightX";
+				break;
+			case EControllerAxis::RIGHT_Y:
+				axis = "RightY";
+				break;
+			case EControllerAxis::TRIGGER_LEFT:
+				axis = "TriggerLeft";
+				break;
+			case EControllerAxis::TRIGGER_RIGHT:
+				axis = "TriggerRight";
+				break;
+			}
+
+			std::cout << axis.c_str() << ": " << axis_event.mValue << "\n";
+
 			axisChanged.trigger(axis_event);
 		}
 	}

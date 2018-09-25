@@ -70,20 +70,23 @@ namespace nap
 	void InputService::processAllEvents(InputRouter& inputRouter, const EntityList& entities)
 	{
 		// Route window event
-		InputEventPtrList::iterator window_it = mInputEvents.begin();
-		while (window_it != mInputEvents.end())
+		InputEventPtrList::iterator input_it = mInputEvents.begin();
+		while (input_it != mInputEvents.end())
 		{
+			// Otherwise perform routing and delete event
 			// The iterator points to a unique ptr that needs to be dereferenced
-			inputRouter.routeEvent(**window_it, entities);
+			inputRouter.routeEvent(**input_it, entities);
 
 			// Erase and return next valid iterator
-			window_it = mInputEvents.erase(window_it);
+			input_it = mInputEvents.erase(input_it);
 		}
 	}
 
 
 	void InputService::addEvent(InputEventPtr inEvent)
 	{
+		if (inEvent->get_type() == RTTI_OF(ControllerConnectionEvent))
+			controllerConnectionChanged(static_cast<const ControllerConnectionEvent&>(*inEvent));
 		mInputEvents.emplace_back(std::move(inEvent));
 	}
 
@@ -92,7 +95,6 @@ namespace nap
 	{
 		mInputEvents.clear();
 	}
-
 }
 
 
