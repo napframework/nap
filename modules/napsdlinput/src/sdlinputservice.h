@@ -23,6 +23,22 @@ namespace nap
 	{
 		RTTI_ENABLE(Service)
 	public:
+
+		/**
+		 * Struct used for keeping track of controllers inside the system
+		 */
+		struct SDLController
+		{
+			SDLController(int deviceID, void* controller, bool isJoystick) :
+				mDeviceID(deviceID),
+				mController(controller),
+				mIsJoystick(isJoystick)		{ }
+
+			int		mDeviceID = -1;				///< Physical device id
+			void*	mController = nullptr;		///< Pointer to the controller or joystick
+			bool	mIsJoystick = false;		///< If the controller is a joystick or actual controller
+		};
+
 		// Default constructor
 		SDLInputService(ServiceConfiguration* configuration);
 
@@ -44,9 +60,14 @@ namespace nap
 		 */
 		virtual void shutdown() override;
 
+		/**
+		 * @param number the number of the controller
+		 * @return if the controller is online
+		 */
+		bool isOnline(int number);
+
 	private:
-		std::vector<SDL_Joystick*> mJoysticks;				///< All available joystick controllers
-		std::vector<SDL_GameController*> mControllers;		///< All available game controllers
+		std::unordered_map<int, std::unique_ptr<SDLController>> mSystemControllers;
 		nap::InputService* mInputService = nullptr;			///< Input service that deals with controller events
 
 		// Adds a new controller
