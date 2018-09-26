@@ -1,4 +1,4 @@
-#include "sdlinput.h"
+#include "sdleventconverter.h"
 #include "inputevent.h"
 
 // External Includes
@@ -6,6 +6,10 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Input mappings
+	//////////////////////////////////////////////////////////////////////////
+
 	/** 
 	 * Mapping used to translate from SDL KeyCode to nap KeyCodes
 	 */
@@ -248,6 +252,26 @@ namespace nap
 		std::make_pair(SDLK_SLEEP,					nap::EKeyCode::KEY_SLEEP)
 	};
 
+	// Binds a specific sdl mouse event to a pointer event type
+	static std::unordered_map<Uint32, rtti::TypeInfo> SDLToWindowMapping =
+	{
+		std::make_pair(SDL_WINDOWEVENT_SHOWN,			RTTI_OF(nap::WindowShownEvent)),
+		std::make_pair(SDL_WINDOWEVENT_HIDDEN,			RTTI_OF(nap::WindowHiddenEvent)),
+		std::make_pair(SDL_WINDOWEVENT_MINIMIZED,		RTTI_OF(nap::WindowMinimizedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_MAXIMIZED,		RTTI_OF(nap::WindowMaximizedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_RESTORED,		RTTI_OF(nap::WindowRestoredEvent)),
+		std::make_pair(SDL_WINDOWEVENT_ENTER,			RTTI_OF(nap::WindowEnterEvent)),
+		std::make_pair(SDL_WINDOWEVENT_LEAVE,			RTTI_OF(nap::WindowLeaveEvent)),
+		std::make_pair(SDL_WINDOWEVENT_FOCUS_GAINED,	RTTI_OF(nap::WindowFocusGainedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_FOCUS_LOST,		RTTI_OF(nap::WindowFocusLostEvent)),
+		std::make_pair(SDL_WINDOWEVENT_CLOSE,			RTTI_OF(nap::WindowCloseEvent)),
+		std::make_pair(SDL_WINDOWEVENT_RESIZED,			RTTI_OF(nap::WindowResizedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_MOVED,			RTTI_OF(nap::WindowMovedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_EXPOSED,			RTTI_OF(nap::WindowExposedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_SIZE_CHANGED,	RTTI_OF(nap::WindowResizedEvent)),
+		std::make_pair(SDL_WINDOWEVENT_TAKE_FOCUS,		RTTI_OF(nap::WindowTakeFocusEvent))
+	};
+
 
 	// Binds a specific sdl mouse event to a pointer event type
 	const static std::unordered_map<Uint32, rtti::TypeInfo> SDLToMouseMapping =
@@ -279,6 +303,10 @@ namespace nap
 		std::make_pair(SDL_JOYDEVICEADDED,			RTTI_OF(nap::ControllerConnectionEvent))
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Helper Functions
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Helper function to convert an SDL KeyCode to nap KeyCode
@@ -368,7 +396,12 @@ namespace nap
 		return EControllerButton::UNKNOWN;
 	}
 
-	static nap::InputEvent* translateMouseEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType) 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Static SDL translate functions
+	//////////////////////////////////////////////////////////////////////////
+
+	static nap::InputEvent* translateSDLMouseEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType) 
 	{
 		// Get window
 		int window_id = static_cast<int>(sdlEvent.window.windowID);
@@ -417,26 +450,14 @@ namespace nap
 	}
 
 
-	nap::InputEventPtr translateMouseEvent(SDL_Event& sdlEvent)
-	{
-		// If it's a pointer event it generally has a button except for a move operation
-		auto mouse_it = SDLToMouseMapping.find(sdlEvent.type);
-		if (mouse_it == SDLToMouseMapping.end())
-			return nullptr;
-
-		InputEvent* mouse_event = translateMouseEvent(sdlEvent, mouse_it->first, mouse_it->second);
-		return InputEventPtr(mouse_event);
-	}
-
-
-	static nap::InputEvent* translateControllerEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType)
+	nap::InputEvent* SDLEventConverter::translateSDLControllerEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType)
 	{
 		InputEvent* controller_event = nullptr;
 		switch (sdlType)
 		{
 		case SDL_CONTROLLERAXISMOTION:
 		{
-			int id = static_cast<int>(sdlEvent.caxis.which);
+			int id = mService.getControllerNumber(sdlEvent.caxis.which);
 			nap::EControllerAxis axis = toNapAxis(sdlEvent.caxis.axis);
 			double v = math::fit<double>((double)(sdlEvent.caxis.value),
 				(double)(SDL_JOYSTICK_AXIS_MIN),
@@ -449,11 +470,10 @@ namespace nap
 			// Don't translate a joystick axis event when the joystick is a controller
 			// SDL generates 2 events for the same device if the device is both a joystick and controller
 			// NAP uses only 1 class for both types of events: ControllerEvent
-			SDL_GameController* controller = SDL_GameControllerFromInstanceID(sdlEvent.jbutton.which);
-			if (controller != nullptr)
+			if(mService.isGameController(sdlEvent.jaxis.which))
 				break;
 
-			int id = static_cast<int>(sdlEvent.jaxis.which);
+			int id = mService.getControllerNumber(sdlEvent.jaxis.which);
 			int axisID = static_cast<int>(sdlEvent.jaxis.axis);
 			double v = math::fit<double>((double)(sdlEvent.jaxis.value),
 				(double)(SDL_JOYSTICK_AXIS_MIN), 
@@ -464,7 +484,7 @@ namespace nap
 		case SDL_CONTROLLERBUTTONDOWN:
 		case SDL_CONTROLLERBUTTONUP:
 		{
-			int id = static_cast<int>(sdlEvent.cbutton.which);
+			int id = mService.getControllerNumber(sdlEvent.cbutton.which);
 			nap::EControllerButton btn = toNapButton(sdlEvent.cbutton.button);
 			controller_event = eventType.create<InputEvent>({ id, btn, static_cast<int>(btn) });
 			break;
@@ -474,19 +494,18 @@ namespace nap
 		{
 			// Don't translate a joystick button event when the joystick is a controller
 			// SDL generates 2 events for the same device if the device is both a joystick and controller
-			// NAP uses only 1 class for both types of events: ControllerEvent
-			SDL_GameController* controller = SDL_GameControllerFromInstanceID(sdlEvent.jbutton.which);
-			if(controller != nullptr)
+			// NAP uses only 1 class for both types of events: 
+			if (mService.isGameController(sdlEvent.jbutton.which))
 				break;
 
-			int id = static_cast<int>(sdlEvent.jbutton.which);
+			int id = mService.getControllerNumber(sdlEvent.jbutton.which);
 			int btn_id = static_cast<int>(sdlEvent.jbutton.button);
 			controller_event = eventType.create<InputEvent>({ id, nap::EControllerButton::UNKNOWN, btn_id });
 			break;
 		}
 		case SDL_JOYDEVICEREMOVED:
 		{
-			int id = static_cast<int>(sdlEvent.jdevice.which);
+			int id = mService.getControllerNumber(sdlEvent.jdevice.which);
 			controller_event = eventType.create<InputEvent>({ id, false });
 			break;
 		}
@@ -504,20 +523,36 @@ namespace nap
 	}
 
 
-	nap::InputEventPtr translateControllerEvent(SDL_Event& sdlEvent)
+	//////////////////////////////////////////////////////////////////////////
+	// SDLConverter functions
+	//////////////////////////////////////////////////////////////////////////
+
+	nap::InputEventPtr SDLEventConverter::translateMouseEvent(SDL_Event& sdlEvent)
+	{
+		// If it's a pointer event it generally has a button except for a move operation
+		auto mouse_it = SDLToMouseMapping.find(sdlEvent.type);
+		if (mouse_it == SDLToMouseMapping.end())
+			return nullptr;
+
+		InputEvent* mouse_event = translateSDLMouseEvent(sdlEvent, mouse_it->first, mouse_it->second);
+		return InputEventPtr(mouse_event);
+	}
+
+
+	nap::InputEventPtr SDLEventConverter::translateControllerEvent(SDL_Event& sdlEvent)
 	{
 		// If it's a controller event, create, map and return
 		auto control_it = SDLToControllerMapping.find(sdlEvent.type);
 		if (control_it == SDLToControllerMapping.end())
 			return nullptr;
 
-		InputEvent* control_event = translateControllerEvent(sdlEvent, control_it->first, control_it->second);
+		InputEvent* control_event = translateSDLControllerEvent(sdlEvent, control_it->first, control_it->second);
 		return InputEventPtr(control_event);
 	}
 
 
 	// Translates the SDL event in to a NAP input event
-	nap::InputEventPtr translateInputEvent(SDL_Event& sdlEvent)
+	nap::InputEventPtr SDLEventConverter::translateInputEvent(SDL_Event& sdlEvent)
 	{
 		// If it's a key event, create, map and return
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
@@ -532,7 +567,7 @@ namespace nap
 		auto mouse_it = SDLToMouseMapping.find(sdlEvent.type);
 		if (mouse_it != SDLToMouseMapping.end())
 		{
-			InputEvent* mouse_event = translateMouseEvent(sdlEvent, mouse_it->first, mouse_it->second);
+			InputEvent* mouse_event = translateSDLMouseEvent(sdlEvent, mouse_it->first, mouse_it->second);
 			return InputEventPtr(mouse_event);
 		}
 
@@ -540,7 +575,7 @@ namespace nap
 		auto control_it = SDLToControllerMapping.find(sdlEvent.type);
 		if (control_it != SDLToControllerMapping.end())
 		{
-			InputEvent* control_event = translateControllerEvent(sdlEvent, control_it->first, control_it->second);
+			InputEvent* control_event = translateSDLControllerEvent(sdlEvent, control_it->first, control_it->second);
 			return InputEventPtr(control_event);
 		}
 
@@ -549,13 +584,13 @@ namespace nap
 	}
 
 
-	bool isKeyEvent(SDL_Event& sdlEvent)
+	bool SDLEventConverter::isKeyEvent(SDL_Event& sdlEvent)
 	{
 		return SDLToKeyMapping.find(sdlEvent.type) != SDLToKeyMapping.end();
 	}
 
 
-	nap::InputEventPtr translateKeyEvent(SDL_Event& sdlEvent)
+	nap::InputEventPtr SDLEventConverter::translateKeyEvent(SDL_Event& sdlEvent)
 	{
 		// If it's a key event, create, map and return
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
@@ -568,13 +603,13 @@ namespace nap
 	}
 
 
-	bool isMouseEvent(SDL_Event& sdlEvent)
+	bool SDLEventConverter::isMouseEvent(SDL_Event& sdlEvent)
 	{
 		return SDLToMouseMapping.find(sdlEvent.type) != SDLToMouseMapping.end();
 	}
 
 
-	bool isInputEvent(SDL_Event& sdlEvent)
+	bool SDLEventConverter::isInputEvent(SDL_Event& sdlEvent)
 	{
 		return isKeyEvent(sdlEvent) 
 			|| isMouseEvent(sdlEvent) 
@@ -582,8 +617,44 @@ namespace nap
 	}
 
 
-	bool isControllerEvent(SDL_Event& sdlEvent)
+	bool SDLEventConverter::isControllerEvent(SDL_Event& sdlEvent)
 	{
 		return SDLToControllerMapping.find(sdlEvent.type) != SDLToControllerMapping.end();
+	}
+
+
+	nap::WindowEventPtr SDLEventConverter::translateWindowEvent(SDL_Event& sdlEvent)
+	{
+		// Get the binding and create correct event
+		// If the event can't be located there's no valid event mapping 
+		auto window_it = SDLToWindowMapping.find(sdlEvent.window.event);
+		assert(window_it != SDLToWindowMapping.end());
+
+		int window_id = static_cast<int>(sdlEvent.window.windowID);
+
+		// When destroying a window (for example, during real time editing), we still get events for the destroyed window, after it has already been destroyed
+		// We deal with this by checking if the window ID is still known by SDL itself; if not, we ignore the event.
+		if (SDL_GetWindowFromID(window_id) == nullptr)
+		{
+			return nullptr;
+		}
+
+		// If it's one of the two parameterized constructors, add the arguments
+		rtti::TypeInfo event_type = window_it->second;
+		if (event_type.is_derived_from(RTTI_OF(nap::ParameterizedWindowEvent)))
+		{
+			int d1 = static_cast<int>(sdlEvent.window.data1);
+			int d2 = static_cast<int>(sdlEvent.window.data2);
+			return WindowEventPtr(event_type.create<WindowEvent>({ d1, d2, window_id }));
+		}
+
+		// Create and return correct window event
+		return WindowEventPtr(event_type.create<nap::WindowEvent>({ window_id }));
+	}
+
+
+	bool SDLEventConverter::isWindowEvent(SDL_Event& sdlEvent)
+	{
+		return SDLToWindowMapping.find(sdlEvent.window.event) != SDLToWindowMapping.end();
 	}
 }
