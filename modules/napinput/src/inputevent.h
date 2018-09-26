@@ -285,10 +285,10 @@ namespace nap
 	{
 		RTTI_ENABLE(ControllerEvent)
 	public:
-		ControllerConnectionEvent(int deviceID, bool status) : 
+		ControllerConnectionEvent(int deviceID, bool connected) : 
 			ControllerEvent(deviceID),
-			mStatus(status)				{ }
-		bool mStatus = false;											///< If the controller connected (true) or disconnected (false)
+			mConnected(connected) { }
+		bool mConnected = false;									///< If the controller connected (true) or disconnected (false)
 	};
 
 
