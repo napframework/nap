@@ -1,7 +1,8 @@
 #pragma once
 
-#include <nap/service.h>
+// External Includes
 #include <inputservice.h>
+#include <unordered_map>
 #include <SDL_gamecontroller.h>
 #include <SDL_joystick.h>
 
