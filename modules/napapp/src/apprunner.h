@@ -146,11 +146,16 @@ namespace nap
 		if(!error.check(app.init(error), "unable to initialize application"))
 			return false;
 
+		// Start event handler
+		app_event_handler.start();
+
 		// Pointer to function used inside update call by core
 		std::function<void(double)> update_call = std::bind(&APP::update, mApp.get(), std::placeholders::_1);
 
-		// Start core and begin running
+		// Start core
 		mCore.start();
+
+		// Begin running
 		while (!app.shouldQuit() && !mStop)
 		{
 			// Process app specific messages
@@ -162,6 +167,9 @@ namespace nap
 			// render
 			app.render();
 		}
+
+		// Stop handling events
+		app_event_handler.shutdown();
 
 		// Shutdown
 		mExitCode = app.shutdown();

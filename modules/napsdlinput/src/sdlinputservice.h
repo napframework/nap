@@ -26,17 +26,23 @@ namespace nap
 
 		/**
 		 * Struct used for keeping track of controllers inside the system
+		 * The SDL controller, when constructed, will try to open a connection
+		 * On destruction the controller will close it's connection (if opened)
 		 */
-		struct SDLController
+		struct NAPAPI SDLController
 		{
-			SDLController(int deviceID, void* controller, bool isJoystick) :
-				mDeviceID(deviceID),
-				mController(controller),
-				mIsJoystick(isJoystick)		{ }
+			SDLController(int deviceID);
+			~SDLController()					{ close(); }
 
 			int		mDeviceID = -1;				///< Physical device id
+			int		mInstanceID = -1;			///< Instance id (uuid)
 			void*	mController = nullptr;		///< Pointer to the controller or joystick
 			bool	mIsJoystick = false;		///< If the controller is a joystick or actual controller
+
+			/**
+			 * Closes the connection
+			 */
+			void close();
 		};
 
 		// Default constructor
@@ -61,10 +67,35 @@ namespace nap
 		virtual void shutdown() override;
 
 		/**
+		 * Checks if a physical controller with the given number is connected.
+		 * The number is always associated with a physical joystick or game control device
 		 * @param number the number of the controller
 		 * @return if the controller is online
 		 */
-		bool isOnline(int number);
+		bool isConnected(int controllerNumber);
+
+		/**
+		 * This call can be used to ensure a controller is known to the system using a unique controller id
+		 * The unique controller id is part of SDL controller and joystick events.
+		 * @return if a controller with the given unique id exists
+		 */
+		bool controllerInstanceExists(int instance);
+
+		/**
+		 * Returns the physical controller number based on the given unique identifier.
+		 * This call assumes that a controller with the unique identifier exists!
+		 * @param instance the unique controller instance, part of an SDL controller / joystick event
+		 * @return the physical controller index for the given instance identifier, fails when not available
+		 */
+		int getControllerNumber(int instance);
+
+		/**
+		 * Checks if the controller is a game controller or joystick.
+		 * Note that this call assumes the instance exists!
+		 * @param instance the unique controller instance, part of an sdl controller / joystick event
+		 * @return if the instance is a controller. If not the controller is considered by SDL to be a joystick. 
+		 */
+		bool isGameController(int instance);
 
 	private:
 		std::unordered_map<int, std::unique_ptr<SDLController>> mSystemControllers;

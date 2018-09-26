@@ -42,21 +42,12 @@ namespace nap
 
 	void SDLInputService::shutdown()
 	{
-		for (auto& controller : mSystemControllers)
-		{
-			SDLController& ctrl = *(controller.second);
-			if (ctrl.mIsJoystick)
-				SDL_JoystickClose(reinterpret_cast<SDL_Joystick*>(ctrl.mController));
-			else
-				SDL_GameControllerClose(reinterpret_cast<SDL_GameController*>(ctrl.mController));
-		}
-
 		mSystemControllers.clear();
 		mInputService = nullptr;
 	}
 
 
-	bool SDLInputService::isOnline(int deviceID)
+	bool SDLInputService::isConnected(int deviceID)
 	{
 		for (auto& controller : mSystemControllers)
 		{
@@ -64,6 +55,18 @@ namespace nap
 				return true;
 		}
 		return false;
+	}
+
+
+	int SDLInputService::getControllerNumber(int instance)
+	{
+		return mSystemControllers[instance]->mDeviceID;
+	}
+
+
+	bool SDLInputService::isGameController(int instance)
+	{
+		return !(mSystemControllers[instance]->mIsJoystick);
 	}
 
 
@@ -78,61 +81,81 @@ namespace nap
 
 		// Remove controller
 		removeController(connectEvent.mDeviceID);
-
 	}
 
 
 	void SDLInputService::addController(int deviceID)
 	{
+		// Adding the same controller without disconnecting isn't allowed
+		assert(!isConnected(deviceID));
+
 		// Otherwise add
-		std::unique_ptr<SDLController> uctrl = nullptr;
-		int instance_id = -1;
-
-		if (SDL_IsGameController(deviceID))
-		{
-			const char* controller_name = SDL_GameControllerNameForIndex(deviceID);
-			nap::Logger::info("Game Controller connected: %s, number: %d", controller_name, deviceID);
-			SDL_GameController *ctrl = SDL_GameControllerOpen(deviceID);
-			instance_id = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(ctrl));
-			uctrl = std::make_unique<SDLController>(deviceID, reinterpret_cast<void*>(ctrl), false);
-		}
-		else
-		{
-			const char* joystick_name = SDL_JoystickNameForIndex(deviceID);
-			nap::Logger::info("Joystick connected: %s, number: %d", joystick_name, deviceID);
-			SDL_Joystick *joy = SDL_JoystickOpen(deviceID);
-			instance_id = SDL_JoystickInstanceID(joy);
-			uctrl = std::make_unique<SDLController>(deviceID, reinterpret_cast<void*>(joy), true);
-		}
-
-		mSystemControllers.emplace(std::make_pair(instance_id, std::move(uctrl)));
+		std::unique_ptr<SDLController> uctrl = std::make_unique<SDLController>(deviceID);
+		if (uctrl->mController == nullptr)
+			return;
+		mSystemControllers.emplace(std::make_pair(uctrl->mInstanceID, std::move(uctrl)));
 	}
 
 
 	void SDLInputService::removeController(int deviceID)
 	{
-		// Find controller to close
-		auto it = mSystemControllers.find(deviceID);
-		if (it == mSystemControllers.end())
+		// Find controller based on device id
+		auto it = std::find_if(mSystemControllers.begin(), mSystemControllers.end(), [&](auto& controller)
 		{
-			assert(false);
+			return controller.second->mDeviceID == deviceID;
+		});
+
+		// Delete from map
+		assert(it != mSystemControllers.end());
+		mSystemControllers.erase(it);
+	}
+
+
+	SDLInputService::SDLController::SDLController(int deviceID) : mDeviceID(deviceID)
+	{
+		// Open as game controller connection
+		if (SDL_IsGameController(mDeviceID))
+		{
+			mIsJoystick = false;
+			const char* controller_name = SDL_GameControllerNameForIndex(deviceID);
+			nap::Logger::info("Game Controller: %d connected: %s", deviceID, controller_name);
+			SDL_GameController *ctrl = SDL_GameControllerOpen(deviceID);
+			if (ctrl == nullptr)
+				nap::Logger::warn("Unable to open Game Controller connection: %d", deviceID);
+			else
+				mInstanceID = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(ctrl));
+			mController = ctrl;
 			return;
 		}
 
-		SDLController& ctrl = *(it->second);
-		if (ctrl.mIsJoystick)
-		{
-			SDL_JoystickClose(reinterpret_cast<SDL_Joystick*>(ctrl.mController));
-			nap::Logger::info("Joystick: %d disconnected", ctrl.mDeviceID);
-		}
+		// Otherwise open as joystick connection
+		mIsJoystick = true;
+		const char* joystick_name = SDL_JoystickNameForIndex(deviceID);
+		nap::Logger::info("Joystick: %d connected: %s", deviceID, joystick_name);
+		SDL_Joystick *joy = SDL_JoystickOpen(deviceID);
+		if (joy == nullptr)
+			nap::Logger::warn("Unable to open Joystick connection: %d", deviceID);
 		else
+			mInstanceID = SDL_JoystickInstanceID(joy);
+		mController = joy;
+	}
+
+
+	void SDLInputService::SDLController::close()
+	{
+		// Close and be done with it
+		if (mController == nullptr)
+			return;
+
+		if (mIsJoystick)
 		{
-			SDL_GameControllerClose(reinterpret_cast<SDL_GameController*>(ctrl.mController));
-			nap::Logger::info("Game Controller: %d disconnected", ctrl.mDeviceID);
+			SDL_JoystickClose(reinterpret_cast<SDL_Joystick*>(mController));
+			nap::Logger::info("Joystick: %d disconnected", mDeviceID);
+			return;
 		}
 
-		// Delete from map
-		mSystemControllers.erase(it);
+		SDL_GameControllerClose(reinterpret_cast<SDL_GameController*>(mController));
+		nap::Logger::info("Game Controller: %d disconnected", mDeviceID);
 	}
 
 }

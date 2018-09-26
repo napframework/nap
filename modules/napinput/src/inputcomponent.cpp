@@ -91,12 +91,14 @@ namespace nap
 		{
 			const ControllerButtonPressEvent& press_event = static_cast<const ControllerButtonPressEvent&>(inEvent);
 			pressed.trigger(press_event);
+			std::cout << "button pressed: " << (int)(press_event.mButton) << "\n";
 		}
 
 		else if (event_type == RTTI_OF(nap::ControllerButtonReleaseEvent))
 		{
 			const ControllerButtonReleaseEvent& release_event = static_cast<const ControllerButtonReleaseEvent&>(inEvent);
 			released.trigger(release_event);
+			std::cout << "button released: " << (int)(release_event.mButton) << "\n";
 		}
 
 		else if (event_type == RTTI_OF(nap::ControllerAxisEvent))
