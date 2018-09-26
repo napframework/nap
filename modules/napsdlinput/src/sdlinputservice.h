@@ -10,7 +10,7 @@ namespace nap
 	/**
 	 * Service that manages connections to external input devices such as a keyboard, mouse, joystick and controller.
 	 * By default all connections to all available devices are opened automatically, ie: 
-	 * all joysticks, game controllers etc. should be available to the system after initialization
+	 * all joysticks, game controllers etc. should be available to the system after initialization.
 	 * When a controller disconnects it is removed from the system until connected again. 
 	 * This ensures that controllers can be connected / disconnected during sessions.
 	 *
@@ -72,14 +72,14 @@ namespace nap
 		 * @param number the number of the controller
 		 * @return if the controller is online
 		 */
-		bool isConnected(int controllerNumber);
+		bool isConnected(int controllerNumber) const;
 
 		/**
 		 * This call can be used to ensure a controller is known to the system using a unique controller id
 		 * The unique controller id is part of SDL controller and joystick events.
 		 * @return if a controller with the given unique id exists
 		 */
-		bool controllerInstanceExists(int instance);
+		bool controllerInstanceExists(int instance) const;
 
 		/**
 		 * Returns the physical controller number based on the given unique identifier.
@@ -87,7 +87,7 @@ namespace nap
 		 * @param instance the unique controller instance, part of an SDL controller / joystick event
 		 * @return the physical controller index for the given instance identifier, fails when not available
 		 */
-		int getControllerNumber(int instance);
+		int getControllerNumber(int instance) const;
 
 		/**
 		 * Checks if the controller is a game controller or joystick.
@@ -95,7 +95,7 @@ namespace nap
 		 * @param instance the unique controller instance, part of an sdl controller / joystick event
 		 * @return if the instance is a controller. If not the controller is considered by SDL to be a joystick. 
 		 */
-		bool isGameController(int instance);
+		bool isGameController(int instance) const;
 
 	private:
 		std::unordered_map<int, std::unique_ptr<SDLController>> mSystemControllers;

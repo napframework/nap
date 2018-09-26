@@ -47,7 +47,7 @@ namespace nap
 	}
 
 
-	bool SDLInputService::isConnected(int deviceID)
+	bool SDLInputService::isConnected(int deviceID) const
 	{
 		for (auto& controller : mSystemControllers)
 		{
@@ -58,15 +58,19 @@ namespace nap
 	}
 
 
-	int SDLInputService::getControllerNumber(int instance)
+	int SDLInputService::getControllerNumber(int instance) const
 	{
-		return mSystemControllers[instance]->mDeviceID;
+		auto it = mSystemControllers.find(instance);
+		assert(it != mSystemControllers::end());
+		return it->second->mDeviceID;
 	}
 
 
-	bool SDLInputService::isGameController(int instance)
+	bool SDLInputService::isGameController(int instance) const
 	{
-		return !(mSystemControllers[instance]->mIsJoystick);
+		auto it = mSystemControllers.find(instance);
+		assert(it != mSystemControllers::end());
+		return !(it->second->mIsJoystick);
 	}
 
 

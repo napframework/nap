@@ -45,7 +45,7 @@ namespace nap
 		* @param sdlEvent the sdlEvent to verify
 		* @return if this sdl event is an input event
 		*/
-		bool isInputEvent(SDL_Event& sdlEvent);
+		bool isInputEvent(SDL_Event& sdlEvent) const;
 
 		/**
 		* Utility function to translate a SDL event to a generic nap InputEvent
@@ -59,7 +59,7 @@ namespace nap
 		* @param sdlEvent the sdl event to check
 		* @return if the SDL event is an input event
 		*/
-		bool isKeyEvent(SDL_Event& sdlEvent);
+		bool isKeyEvent(SDL_Event& sdlEvent) const;
 
 		/**
 		* Utility function to translate an SDL event into a NAP key event
@@ -75,7 +75,7 @@ namespace nap
 		* @param sdlEvent the SDL event to verify
 		* @return if the event is a mouse input event
 		*/
-		bool isMouseEvent(SDL_Event& sdlEvent);
+		bool isMouseEvent(SDL_Event& sdlEvent) const;
 
 		/**
 		* Utility function to translate an SDL event into a NAP mouse event
@@ -91,7 +91,7 @@ namespace nap
 		* @param sdlEvent the sdlEvent to verify, both joystick and controller events are considered valid.
 		* @return if this SDL event is a controller compatible event
 		*/
-		bool isControllerEvent(SDL_Event& sdlEvent);
+		bool isControllerEvent(SDL_Event& sdlEvent) const;
 
 		/**
 		* Utility function to translate an SDL event into a NAP controller event
@@ -108,7 +108,7 @@ namespace nap
 	 	 * @param sdlEvent the sdl event to verify
 		 * @return if the sdl event is a window event
 		 */
-		bool isWindowEvent(SDL_Event& sdlEvent);
+		bool isWindowEvent(SDL_Event& sdlEvent) const;
 
 		/**
 		* Utility function to translate an SDL event to a generic nap window event
@@ -121,7 +121,12 @@ namespace nap
 	private:
 		SDLInputService& mService;
 
-		// Utility that translates an sdl joystick or controller event
+		/**
+		 * Utility that translates an sdl joystick or controller event
+		 * @param sdlEvent the SDL event to translate
+		 * @param sdlType the type of the SDL event
+		 * @param eventType the nap input event to create based on the given sdlType
+		 */ 
 		nap::InputEvent* translateSDLControllerEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType);
 	};
 }
