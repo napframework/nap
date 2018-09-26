@@ -44,6 +44,12 @@
                                 "mID": "uContrast",
                                 "Name": "uContrast",
                                 "Value": 1.0
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "uScale",
+                                "Name": "uScale",
+                                "Value": 0.5
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -400,6 +406,12 @@
                         "y": 0.0,
                         "z": 0.0
                     }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformScale",
+                    "Name": "uScale",
+                    "Value": 0.0
                 }
             ],
             "Shader": "CloudShader",

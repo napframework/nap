@@ -75,7 +75,9 @@ namespace nap
 
 			nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
 			nap::UniformFloat& uContrast = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast");
+			nap::UniformFloat& uScale = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uScale");
 			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
+			ImGui::SliderFloat("Scale", &(uScale.mValue), 0.1f, 2.0f);
 		}
 		if (ImGui::CollapsingHeader("Video"))
 		{
