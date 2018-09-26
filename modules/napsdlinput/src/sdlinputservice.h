@@ -8,7 +8,7 @@
 namespace nap
 {
 	/**
-	 * Service that manages connections to external input devices such as a keyboard, mouse, joystick and controllers.
+	 * Service that manages connections to external input devices such as a keyboard, mouse, joystick and controller.
 	 * By default all connections to all available devices are opened automatically, ie: 
 	 * all joysticks, game controllers etc. should be available to the system after initialization
 	 * When a controller disconnects it is removed from the system until connected again. 
