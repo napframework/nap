@@ -128,7 +128,7 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_2",
                                 "Name": "blendValue",
-                                "Value": 0.5
+                                "Value": 0.0
                             }
                         ],
                         "BlendMode": "NotSet",
