@@ -50,6 +50,7 @@ namespace nap
 		float		mTextureDisplaySize = 0.5f;
 		float		mNoiseSpeed = 0.1f;
 		float		mWindSpeed = 0.1f;
+		bool		mCloudsInverted = false;
 
 		// The app used to extract information from
 		RandomApp&	mApp;

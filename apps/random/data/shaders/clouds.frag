@@ -8,6 +8,7 @@ in vec3 passPosition;					//< frag world space position
 uniform float uRotation;
 uniform float uContrast;
 uniform float uScale;
+uniform float uInverted;
 uniform vec3 uOffset;
 
 // output
@@ -132,7 +133,7 @@ void main()
 	// calculate noise
 	vec3 noisePosition = vec3(position.xy, uOffset.z);
 	float noise = clamp(snoise(noisePosition), 0.0, 1.0);
-	// if (uInverted) noise = 1.0 - noise;
+	if (uInverted == 1.0) noise = 1.0 - noise;
 
 	// set fragment color
 	float intensity = (1.0 - uContrast) + uContrast * noise;

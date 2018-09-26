@@ -418,6 +418,12 @@
                     "mID": "UniformRotation",
                     "Name": "uRotation",
                     "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformInverted",
+                    "Name": "uInverted",
+                    "Value": 0.0
                 }
             ],
             "Shader": "CloudShader",

@@ -68,7 +68,7 @@ namespace nap
 	void RandomGui::showControlWindow()
 	{
 		ImGui::Begin("Controls");
-		if (ImGui::CollapsingHeader("Cloud"))
+		if (ImGui::CollapsingHeader("Clouds"))
 		{
 			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 1.0f);
 			ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f);
@@ -80,6 +80,11 @@ namespace nap
 			ImGui::SliderFloat("Wind Direction", &(uRotation.mValue), 0.0f, 360.0f);
 			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
 			ImGui::SliderFloat("Scale", &(uScale.mValue), 0.1f, 2.0f);
+			if (ImGui::Checkbox("Inverted", &mCloudsInverted))
+			{
+				nap::UniformFloat& uInverted = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInverted");
+				uInverted.setValue(mCloudsInverted ? 1.0f : 0.0f);
+			}
 		}
 		if (ImGui::CollapsingHeader("Video"))
 		{
