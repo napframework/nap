@@ -91,44 +91,17 @@ namespace nap
 		{
 			const ControllerButtonPressEvent& press_event = static_cast<const ControllerButtonPressEvent&>(inEvent);
 			pressed.trigger(press_event);
-			std::cout << "pressed: " << (int)press_event.mButton << "\n";
 		}
 
 		else if (event_type == RTTI_OF(nap::ControllerButtonReleaseEvent))
 		{
 			const ControllerButtonReleaseEvent& release_event = static_cast<const ControllerButtonReleaseEvent&>(inEvent);
 			released.trigger(release_event);
-			std::cout << "released: " << (int)release_event.mButton << "\n";
 		}
 
 		else if (event_type == RTTI_OF(nap::ControllerAxisEvent))
 		{
 			const ControllerAxisEvent& axis_event = static_cast<const ControllerAxisEvent&>(inEvent);
-			std::string axis = "";
-			switch (axis_event.mAxis)
-			{
-			case EControllerAxis::LEFT_X:
-				axis = "LeftX";
-				break;
-			case EControllerAxis::LEFT_Y:
-				axis = "LeftY";
-				break;
-			case EControllerAxis::RIGHT_X:
-				axis = "RightX";
-				break;
-			case EControllerAxis::RIGHT_Y:
-				axis = "RightY";
-				break;
-			case EControllerAxis::TRIGGER_LEFT:
-				axis = "TriggerLeft";
-				break;
-			case EControllerAxis::TRIGGER_RIGHT:
-				axis = "TriggerRight";
-				break;
-			}
-
-			std::cout << axis.c_str() << ": " << axis_event.mValue << "\n";
-
 			axisChanged.trigger(axis_event);
 		}
 	}
