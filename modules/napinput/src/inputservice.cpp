@@ -67,6 +67,29 @@ namespace nap
 	}
 
 
+	void InputService::processControllerEvents(int deviceID, InputRouter& inputRouter, const EntityList& entities)
+	{
+		// Route event
+		InputEventPtrList::iterator input_it = mInputEvents.begin();
+		while (input_it != mInputEvents.end())
+		{
+			ControllerEvent* controller_event = rtti_cast<ControllerEvent>(input_it->get());
+			if (controller_event == nullptr || controller_event->mDeviceID != deviceID)
+			{
+				++input_it;
+				continue;
+			}
+
+			// Otherwise perform routing and delete event
+			// The iterator points to a unique ptr that needs to be dereferenced
+			inputRouter.routeEvent(**input_it, entities);
+
+			// Erase and return next valid iterator
+			input_it = mInputEvents.erase(input_it);
+		}
+	}
+
+
 	void InputService::processAllEvents(InputRouter& inputRouter, const EntityList& entities)
 	{
 		// Route window event
