@@ -61,7 +61,7 @@ namespace nap
 	int SDLInputService::getControllerNumber(int instance) const
 	{
 		auto it = mSystemControllers.find(instance);
-		assert(it != mSystemControllers::end());
+		assert(it != mSystemControllers.end());
 		return it->second->mDeviceID;
 	}
 
@@ -69,7 +69,7 @@ namespace nap
 	bool SDLInputService::isGameController(int instance) const
 	{
 		auto it = mSystemControllers.find(instance);
-		assert(it != mSystemControllers::end());
+		assert(it != mSystemControllers.end());
 		return !(it->second->mIsJoystick);
 	}
 
