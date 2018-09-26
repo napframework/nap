@@ -49,7 +49,7 @@ namespace nap
 		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
 		float		mTextureDisplaySize = 0.5f;
 		float		mNoiseSpeed = 0.1f;
-		float		mWindSpeed = 0.1f;
+		float		mWindSpeed = 0.5f;
 		bool		mCloudsInverted = false;
 
 		// The app used to extract information from
