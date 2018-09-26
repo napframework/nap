@@ -77,7 +77,7 @@ namespace nap
 	void SDLInputService::onConnectionChanged(const ControllerConnectionEvent& connectEvent)
 	{
 		// New controller
-		if (connectEvent.mStatus)
+		if (connectEvent.mConnected)
 		{
 			addController(connectEvent.mDeviceID);
 			return;
