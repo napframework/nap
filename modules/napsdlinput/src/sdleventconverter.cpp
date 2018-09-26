@@ -584,7 +584,7 @@ namespace nap
 	}
 
 
-	bool SDLEventConverter::isKeyEvent(SDL_Event& sdlEvent)
+	bool SDLEventConverter::isKeyEvent(SDL_Event& sdlEvent) const
 	{
 		return SDLToKeyMapping.find(sdlEvent.type) != SDLToKeyMapping.end();
 	}
@@ -603,13 +603,13 @@ namespace nap
 	}
 
 
-	bool SDLEventConverter::isMouseEvent(SDL_Event& sdlEvent)
+	bool SDLEventConverter::isMouseEvent(SDL_Event& sdlEvent) const
 	{
 		return SDLToMouseMapping.find(sdlEvent.type) != SDLToMouseMapping.end();
 	}
 
 
-	bool SDLEventConverter::isInputEvent(SDL_Event& sdlEvent)
+	bool SDLEventConverter::isInputEvent(SDL_Event& sdlEvent) const
 	{
 		return isKeyEvent(sdlEvent) 
 			|| isMouseEvent(sdlEvent) 
@@ -617,7 +617,7 @@ namespace nap
 	}
 
 
-	bool SDLEventConverter::isControllerEvent(SDL_Event& sdlEvent)
+	bool SDLEventConverter::isControllerEvent(SDL_Event& sdlEvent) const
 	{
 		return SDLToControllerMapping.find(sdlEvent.type) != SDLToControllerMapping.end();
 	}
@@ -653,7 +653,7 @@ namespace nap
 	}
 
 
-	bool SDLEventConverter::isWindowEvent(SDL_Event& sdlEvent)
+	bool SDLEventConverter::isWindowEvent(SDL_Event& sdlEvent) const
 	{
 		return SDLToWindowMapping.find(sdlEvent.window.event) != SDLToWindowMapping.end();
 	}
