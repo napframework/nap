@@ -5,6 +5,7 @@ in vec3 passUVs;						//< frag Uv's
 in vec3 passPosition;					//< frag world space position 
 
 // uniforms
+uniform float uRotation;
 uniform float uContrast;
 uniform float uScale;
 uniform vec3 uOffset;
@@ -126,7 +127,7 @@ void main()
 	vec3 position = vec3(passUVs.xy + uOffset.xy, 1.0);
 
 	// apply rotation and scaling matrix
-	position *= toCenter * scale(1.0 / vec2(uScale, uScale)) * fromCenter;
+	position *= toCenter * rotate(radians(-uRotation)) * scale(1.0 / vec2(uScale, uScale)) * fromCenter;
 
 	// calculate noise
 	vec3 noisePosition = vec3(position.xy, uOffset.z);

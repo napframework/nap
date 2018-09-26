@@ -33,8 +33,9 @@ namespace nap
 
 		// Update some shader variables
 		nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::UniformFloat& uRotation = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation");
 		nap::UniformVec3& uOffset = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset");
-		float windDirectionRad = nap::math::radians(mWindDirection);
+		float windDirectionRad = nap::math::radians(uRotation.mValue);
 		float windDistance = mWindSpeed * (float)deltaTime;
 		uOffset.mValue.x += cos(windDirectionRad) * windDistance;
 		uOffset.mValue.y += sin(windDirectionRad) * windDistance;
@@ -71,11 +72,12 @@ namespace nap
 		{
 			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 1.0f);
 			ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f);
-			ImGui::SliderFloat("Wind Direction", &mWindDirection, 0.0, 360.0);
 
 			nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::UniformFloat& uRotation = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation");
 			nap::UniformFloat& uContrast = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast");
 			nap::UniformFloat& uScale = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uScale");
+			ImGui::SliderFloat("Wind Direction", &(uRotation.mValue), 0.0f, 360.0f);
 			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
 			ImGui::SliderFloat("Scale", &(uScale.mValue), 0.1f, 2.0f);
 		}
