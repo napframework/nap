@@ -49,14 +49,6 @@ namespace nap
 		void processWindowEvents(Window& window, InputRouter& inputRouter, const EntityList& entities);
 
 		/**
-		 * Forwards all input events associated with all 'game' controllers, to all input components that are part of the list of entities
-		 * The input router controls how the events are forwarded. A default input router will suffice in most cases
-		 * @param inputRouter The input router that selects what InputComponents receive input messages.
-		 * @param entities A list of root entities that are used to traverse the entity hierarchy.
-		 */
-		void processControllerEvents(InputRouter& inputRouter, const EntityList& entities);
-
-		/**
 		* Forwards all input events associated with a specific 'game' controller, to all input components that are part of the list of entities
 		* The input router controls how the events are forwarded. A default input router will suffice in most cases
 		* @param controllerID the game controller id, starting from 0
