@@ -9,14 +9,17 @@
 
 
 QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QString& name, const PropertyPath& path,
-													rttr::property prop, rttr::variant value)
+													rttr::property prop, rttr::variant value, rttr::type displayType)
 {
+	if (!displayType.is_valid())
+		displayType = type;
+
 	QList<QStandardItem*> items;
 	if (type.is_array())
 	{
 		items << new ArrayPropertyItem(name, path, prop, value.create_array_view());
 		items << new EmptyItem();
-		items << new RTTITypeItem(type);
+		items << new RTTITypeItem(displayType);
 	}
 	else if (type.is_associative_container())
 	{
@@ -29,20 +32,20 @@ QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QStri
 		{
 			items << new EmbeddedPointerItem(name, path);
 			items << new EmptyItem();
-			items << new RTTITypeItem(type);
+			items << new RTTITypeItem(displayType);
 		}
 		else
 		{
 			items << new PointerItem(name, path);
 			items << new PointerValueItem(path, type);
-			items << new RTTITypeItem(type);
+			items << new RTTITypeItem(displayType);
 		}
 	}
 	else if (nap::rtti::isPrimitive(type))
 	{
 		items << new PropertyItem(name, path);
 		items << new PropertyValueItem(name, path, type);
-		items << new RTTITypeItem(type);
+		items << new RTTITypeItem(displayType);
 	}
 	else
 	{
@@ -125,8 +128,13 @@ void napkin::ArrayPropertyItem::populateChildren()
 		auto type = array.get_rank_type(array.get_rank());
 		auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : value.get_type();
 
-		appendRow(createPropertyItemRow(wrappedType, name, {mPath.getObject(), path}, property,
-										value));
+		auto displayType = type;
+        if (type.is_wrapper()) {
+            nap::rtti::ObjectPtrBase ptr = value.get_value<nap::rtti::ObjectPtrBase>();
+            displayType = ptr.getWrappedType();
+        }
+
+		appendRow(createPropertyItemRow(wrappedType, name, {mPath.getObject(), path}, property, value, displayType));
 	}
 }
 
