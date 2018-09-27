@@ -31,12 +31,11 @@ namespace napkin
 
 		void setTimeline(Timeline* timeline);
 		Timeline* getTimeline() const;
-
+		Track* track(const QModelIndex& idx);
 		OutlineTrackItem* trackItem(const Track& track) const;
 
 	private:
 		void onTrackAdded(Track& track);
-
 		void onTrackRemoved(Track& track);
 
 		Timeline* mTimeline = nullptr;

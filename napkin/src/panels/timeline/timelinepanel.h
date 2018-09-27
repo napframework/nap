@@ -48,6 +48,8 @@ namespace napkin
 		void onTimelineViewTransformed();
 		QActionGroup& createTimeFormatActionGroup();
 
+		void initOutlineModelHandlers();
+
 		TimelineView mView;
 		TimelineScene mScene;
 

@@ -14,17 +14,12 @@ namespace napkin
 		Ruler(QWidget* parent = 0);
 
 		void setDisplayFormat(TimeDisplay* fmt) { mTimeConfig = fmt; }
-
 		void setRange(const Range& range);
-
 		void setHeight(int height);
 
 	protected:
-
 		void resizeEvent(QResizeEvent* event) override;
-
 		void paintEvent(QPaintEvent* event) override;
-
 		void drawHatches(QPainter& painter, int hatchLength, qreal minStepSize,
 						 bool drawLabels = false) const;
 
