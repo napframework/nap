@@ -1,6 +1,4 @@
-#include <pybind11/pybind11.h>
 #include "object.h"
-#include "pythonmodule.h"
 #include "objectptr.h"
 
 

@@ -31,7 +31,7 @@ namespace nap
             
         private:
             // Inherited from MultiChannelObject
-            SafeOwner<Node> createNode(int channel, AudioService& audioService);
+            SafeOwner<Node> createNode(int channel, AudioService& audioService) override;
             int getChannelCount() const override { return mChannelCount; }
         };
         

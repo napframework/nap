@@ -18,8 +18,7 @@
 
 
 RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
-	RTTI_PROPERTY("UseDefaultDevice",	&nap::audio::AudioServiceConfiguration::mUseDefaultDevice,		nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("HostApi",        &nap::audio::AudioServiceConfiguration::mHostApi,            nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("HostApi",            &nap::audio::AudioServiceConfiguration::mHostApi,            nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("InputDevice",		&nap::audio::AudioServiceConfiguration::mInputDevice,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("OutputDevice",		&nap::audio::AudioServiceConfiguration::mOutputDevice,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("InputChannelCount",	&nap::audio::AudioServiceConfiguration::mInputChannelCount,		nap::rtti::EPropertyMetaData::Default)
@@ -27,6 +26,7 @@ RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
     RTTI_PROPERTY("AllowChannelCountFailure", &nap::audio::AudioServiceConfiguration::mAllowChannelCountFailure,    nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleRate",			&nap::audio::AudioServiceConfiguration::mSampleRate,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize",			&nap::audio::AudioServiceConfiguration::mBufferSize,			nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("InternalBufferSize", &nap::audio::AudioServiceConfiguration::mInternalBufferSize,            nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioService)
@@ -62,6 +62,8 @@ namespace nap
         {
             // Initialize mpg123 library
             mpg123_init();
+            
+            checkLockfreeTypes();
         }
 
         
@@ -105,35 +107,43 @@ namespace nap
             printDevices();
             
             // Initialize the audio device
-			if (configuration->mInternalBufferSize % configuration->mBufferSize != 0)
+			if (configuration->mBufferSize % configuration->mInternalBufferSize != 0)
 			{
 				errorState.fail("AudioService: Internal buffer size does not fit device buffer size");
 				return false;
 			}
             
-			if (configuration->mUseDefaultDevice)
-				return startDefaultDevice(errorState);
+            auto hostApiIndex = -1;
+            if (configuration->mHostApi.empty())
+                hostApiIndex = Pa_GetDefaultHostApi();
+            else
+                hostApiIndex = getHostApiIndex(configuration->mHostApi);
+            if (hostApiIndex < 0)
+            {
+                errorState.fail("Audio host API not found: %s", configuration->mHostApi.c_str());
+                return false;
+            }
 
             auto inputDeviceIndex = -1;
-            if (!configuration->mInputDevice.empty())
+            if (configuration->mInputDevice.empty())
+                inputDeviceIndex = Pa_GetDefaultInputDevice();
+            else
+                inputDeviceIndex = getDeviceIndex(hostApiIndex, configuration->mInputDevice);
+            if (inputDeviceIndex < 0)
             {
-                inputDeviceIndex = getDeviceIndex(configuration->mHostApi, configuration->mInputDevice);
-                if (inputDeviceIndex < 0)
-                {
-                    errorState.fail("Audio input device not found: %s", configuration->mInputDevice.c_str());
-                    return false;
-                }
+                errorState.fail("Audio input device not found: %s", configuration->mInputDevice.c_str());
+                return false;
             }
 
             auto outputDeviceIndex = -1;
-            if (!configuration->mOutputDevice.empty())
+            if (configuration->mOutputDevice.empty())
+                outputDeviceIndex = Pa_GetDefaultOutputDevice();
+            else
+                outputDeviceIndex = getDeviceIndex(hostApiIndex, configuration->mOutputDevice);
+            if (outputDeviceIndex < 0)
             {
-                outputDeviceIndex = getDeviceIndex(configuration->mHostApi, configuration->mOutputDevice);
-                if (outputDeviceIndex < 0)
-                {
-                    errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
-                    return false;
-                }
+                errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
+                return false;
             }
 
             if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, errorState))
@@ -185,59 +195,6 @@ namespace nap
         }
 
 
-		bool AudioService::startDefaultDevice(utility::ErrorState& errorState)
-		{
-			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
-
-            auto inputDeviceIndex = Pa_GetDefaultInputDevice();
-            auto outputDeviceIndex = Pa_GetDefaultOutputDevice();
-            
-            if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, errorState))
-                return false;
-            
-			auto error = Pa_OpenDefaultStream(&mStream, mInputChannelCount, mOutputChannelCount, paFloat32 | paNonInterleaved, configuration->mSampleRate, configuration->mBufferSize, &audioCallback, this);
-			if (error != paNoError)
-			{
-				errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
-				return false;
-			}
-
-			mNodeManager.setInputChannelCount(mInputChannelCount);
-			mNodeManager.setOutputChannelCount(mOutputChannelCount);
-			mNodeManager.setSampleRate(configuration->mSampleRate);
-
-			error = Pa_StartStream(mStream);
-			if (error != paNoError)
-			{
-				errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
-				return false;
-			}
-
-			auto hostApi = getHostApiName(Pa_GetDefaultHostApi());
-
-			// Log the host API, devices, and channel, samplerate and buffersize being used
-			if (mInputChannelCount <= 0)
-			{
-				// no input, only output
-				auto outputDevice = getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultOutputDevice()).name;
-				Logger::info("Portaudio default stream started: %s - %s, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), outputDevice, mOutputChannelCount, int(configuration->mSampleRate), configuration->mBufferSize);
-			}
-			else if (mOutputChannelCount <= 0)
-			{
-				// no output, input only
-				auto inputDevice = getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultInputDevice()).name;
-				Logger::info("Portaudio default stream started: %s - %s, %i inputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice, mInputChannelCount, int(configuration->mSampleRate), configuration->mBufferSize);
-			}
-			else {
-				auto inputDevice = getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultInputDevice()).name;
-				auto outputDevice = getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultOutputDevice()).name;
-				Logger::info("Portaudio default stream started: %s - %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice, outputDevice, mInputChannelCount, mOutputChannelCount, int(configuration->mSampleRate), configuration->mBufferSize);
-			}
-
-			return true;
-		}
-        
-        
         unsigned int AudioService::getHostApiCount()
         {
             return Pa_GetHostApiCount();
@@ -316,22 +273,28 @@ namespace nap
         }
         
         
-        int AudioService::getDeviceIndex(const std::string& hostApi, const std::string& device)
+        int AudioService::getDeviceIndex(int hostApiIndex, const std::string& device)
         {
-            for (auto hostApiIndex = 0; hostApiIndex < getHostApiCount(); ++hostApiIndex)
+            for (auto deviceIndex = 0; deviceIndex < getHostApiInfo(hostApiIndex).deviceCount; ++deviceIndex)
             {
-                auto hostApiInfo = getHostApiInfo(hostApiIndex);
-                if (nap::utility::toLower(hostApi) == nap::utility::toLower(hostApiInfo.name))
-                {
-                    for (auto deviceIndex = 0; deviceIndex < hostApiInfo.deviceCount; ++deviceIndex)
-                    {
-                        auto deviceInfo = getDeviceInfo(hostApiIndex, deviceIndex);
-                        if (nap::utility::toLower(device) == nap::utility::toLower(deviceInfo.name))
-                            return Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, deviceIndex);
-                    }
-                }
+                auto deviceInfo = getDeviceInfo(hostApiIndex, deviceIndex);
+                if (nap::utility::toLower(device) == nap::utility::toLower(deviceInfo.name))
+                    return Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, deviceIndex);
             }
+            
             return -1;
+        }
+        
+        
+        int AudioService::getHostApiIndex(const std::string& hostApi)
+        {
+            auto hostApiIndex = -1;
+            
+            for (auto i = 0; i < getHostApiCount(); ++i)
+                if (nap::utility::toLower(hostApi) == nap::utility::toLower(getHostApiInfo(i).name))
+                    hostApiIndex = i;
+            
+            return hostApiIndex;
         }
 
 
@@ -441,6 +404,39 @@ namespace nap
 
             return true;
         }
+        
+        
+        void AudioService::checkLockfreeTypes()
+        {
+            /**
+             * Currently this is diabled because atomic<T>::is_lock_free is unavailable in gcc < 4.8
+             */
+
+//            enum EnumType { a, b, c };
+//            std::atomic<bool> boolVar;
+//            std::atomic<int> intVar;
+//            std::atomic<float> floatVar;
+//            std::atomic<double> doubleVar;
+//            std::atomic<long> longVar;
+//            std::atomic<long double> longDoubleVar;
+//            std::atomic<EnumType> enumVar;
+//
+//            if (!boolVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<bool>");
+//            if (!intVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<int>");
+//            if (!floatVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<float>");
+//            if (!doubleVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<double>");
+//            if (!longVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<long>");
+//            if (!longDoubleVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic<long double>");
+//            if (!enumVar.is_lock_free())
+//                Logger::warn("%s is not lockfree on current platform", "atomic enum");
+        }
+
     }
     
 }

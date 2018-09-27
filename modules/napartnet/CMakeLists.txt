@@ -25,7 +25,11 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} artnet)
+if(WIN32)
+  target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} artnet Ws2_32.lib)
+else()
+  target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} artnet)
+endif()
 
 if(WIN32)
     # Copy artnet DLL to build directory

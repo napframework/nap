@@ -4,6 +4,9 @@
 #include <set>
 #include <mutex>
 
+// RTTI includes
+#include <rtti/rtti.h>
+
 // Audio includes
 #include <audio/utility/audiotypes.h>
 
@@ -25,6 +28,7 @@ namespace nap
          */
         class NAPAPI InputPinBase
         {
+            RTTI_ENABLE()
         public:
             virtual ~InputPinBase() = default;
             
@@ -47,6 +51,18 @@ namespace nap
              * Returns wether this pin is connected to one or more other pins.
              */
             virtual bool isConnected() const = 0;
+            
+            /**
+             * Enqueues a @connect call the be executed on the audio thread.
+             * This is the connect() function that is exposed to RTTR and to python.
+             */
+            void enqueueConnect(OutputPin& pin);
+
+            /**
+             * Enqueues a @disconnect call the be executed on the audio thread
+             * This is the disconnect() function that is exposed to RTTR and to python.
+             */
+            void enqueueDisconnect(OutputPin& pin);
         };
         
         
@@ -58,6 +74,8 @@ namespace nap
         {
             friend class OutputPin;
             
+            RTTI_ENABLE(InputPinBase)
+
         public:
             InputPin() = default;
             
@@ -112,6 +130,8 @@ namespace nap
          */
         class NAPAPI MultiInputPin final : public InputPinBase
         {
+            RTTI_ENABLE(InputPinBase)
+            
         public:
             MultiInputPin() = default;
             
@@ -158,9 +178,11 @@ namespace nap
         class NAPAPI OutputPin final
         {
             friend class Node;
+            friend class InputPinBase;
             friend class InputPin;
             friend class MultiInputPin;
             
+            RTTI_ENABLE()
         public:
             /**
              * @param parent: the owner node if this output

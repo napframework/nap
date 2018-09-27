@@ -178,3 +178,4 @@ TEST_CASE("Signals and slots", "[signalslot]")
     REQUIRE(x == 1);
 }
 
+

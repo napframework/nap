@@ -1,8 +1,12 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 // Audio includes
 #include <audio/core/audionode.h>
 #include <audio/utility/delay.h>
+#include <audio/utility/dirtyflag.h>
 
 namespace nap
 {
@@ -20,7 +24,9 @@ namespace nap
             enum class EMode { LowPass, HighPass, BandPass, LowRes, HighRes };
             
         public:
-            FilterNode(NodeManager& nodeManager) : Node(nodeManager), mOutput(8), mInput(8) { }
+            FilterNode(NodeManager& nodeManager) : Node(nodeManager), mOutput(8), mInput(8)
+            {
+            }
             
             // Inherited from Node
             void process() override;
@@ -88,13 +94,14 @@ namespace nap
             ControllerValue getGain() const { return mGain; }
 
         private:
-            void adjust();
+            void update();
             
-            EMode mMode = EMode::LowPass;
-            ControllerValue mFrequency = 440.f;
-            ControllerValue mResonance = 0.f;
-            ControllerValue mBand = 100.f;
-            ControllerValue mGain = 1.f;
+            std::atomic<EMode> mMode = { EMode::LowPass };
+            std::atomic<ControllerValue> mFrequency = { 440.f };
+            std::atomic<ControllerValue> mResonance = { 0.f };
+            std::atomic<ControllerValue> mBand = { 100.f };
+            std::atomic<ControllerValue> mGain = { 1.f };
+            DirtyFlag mIsDirty;
             
             // Filter coefficients
             ControllerValue a0, a1, a2, b1, b2;

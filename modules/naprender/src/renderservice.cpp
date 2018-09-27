@@ -106,6 +106,12 @@ namespace nap
 	}
 
 
+	const std::string& RenderService::getPrimaryWindowID() const
+	{
+		return mRenderer->getPrimaryWindowID();
+	}
+
+
 	void RenderService::addEvent(WindowEventPtr windowEvent)
 	{
         rtti::ObjectPtr<nap::Window> window = getWindow(windowEvent->mWindow);

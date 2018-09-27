@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.5)
+project(random)
+
+#add all cpp files to SOURCES
+file(GLOB SOURCES src/*.cpp)
+file(GLOB HEADERS src/*.h)
+file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
+file(GLOB DATA data/*)
+
+# Create IDE groups
+source_group("headers" FILES ${HEADERS})
+source_group("sources" FILES ${SOURCES})
+source_group("shaders" FILES ${SHADERS})
+
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
+add_dependencies(${PROJECT_NAME} fbxconverter)
+
+# Even though we're not using our modules here, run the process as a basic validation of the project.json
+project_json_to_cmake()
+
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
+
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" TRUE)

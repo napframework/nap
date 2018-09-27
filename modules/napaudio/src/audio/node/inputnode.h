@@ -1,5 +1,8 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 // Audio includes
 #include <audio/core/audionode.h>
 
@@ -16,6 +19,8 @@ namespace nap
          */
         class NAPAPI InputNode final : public Node
         {
+            RTTI_ENABLE(Node)
+            
             friend class NodeManager;
             
         public:
@@ -42,7 +47,7 @@ namespace nap
         private:
             void process() override;
             
-            int mInputChannel = 0; // Input channel of the audio interface to receive input data from.
+            std::atomic<int> mInputChannel = { 0 }; // Input channel of the audio interface to receive input data from.
         };
         
         

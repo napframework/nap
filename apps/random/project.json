@@ -1,0 +1,7 @@
+{
+    "title": "Random",
+    "version": "0.1",
+    "modules": [
+        "mod_random"
+    ]
+}

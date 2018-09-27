@@ -35,12 +35,6 @@ namespace nap {
              */
             void setVideo(Video& video);
 
-			/** 
-			 * We need to delete these so that the compiler doesn't try to use them. Otherwise we get compile errors on unique_ptr. Not sure why.
-			 */
-			VideoNode(const VideoNode&) = delete;
-			VideoNode& operator=(const VideoNode&) = delete;
-            
         private:
             // Inherited form Node
             void process() override final;

@@ -9,6 +9,7 @@ RTTI_BEGIN_ENUM(nap::audio::LevelMeterNode::Type)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterNode)
+    RTTI_PROPERTY("input", &nap::audio::LevelMeterNode::input, nap::rtti::EPropertyMetaData::Embedded)
     RTTI_FUNCTION("getLevel", &nap::audio::LevelMeterNode::getLevel)
 RTTI_END_CLASS
 
@@ -34,6 +35,7 @@ namespace nap {
         
         void LevelMeterNode::process()
         {
+            auto type = mType.load();
             auto inputBuffer = input.pull();
             
             if (inputBuffer == nullptr)
@@ -45,7 +47,7 @@ namespace nap {
                 if (mIndex == mBuffer.size())
                 {
                     mIndex = 0;
-                    switch (mType) {
+                    switch (type) {
                         case PEAK:
                             mValue = calculatePeak();
                             break;

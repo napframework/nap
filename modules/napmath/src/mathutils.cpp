@@ -199,6 +199,29 @@ namespace nap
 		}
 
 
+		glm::vec3 radians(float roll, float pitch, float yaw)
+		{
+			return
+			{
+				glm::radians(roll),
+				glm::radians(pitch),
+				glm::radians(yaw)
+			};
+		}
+
+
+		float radians(float degrees)
+		{
+			return glm::radians(degrees);
+		}
+
+
+		float degrees(float radians)
+		{
+			return glm::degrees(radians);
+		}
+
+
 		glm::vec3 extractPosition(const glm::mat4x4& matrix)
 		{
 			return{ matrix[3][0], matrix[3][1], matrix[3][2] };

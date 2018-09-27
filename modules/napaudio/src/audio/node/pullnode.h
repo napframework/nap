@@ -1,5 +1,8 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 // Audio includes
 #include <audio/core/audionode.h>
 
@@ -49,7 +52,7 @@ namespace nap
         private:
             void process() override;
             
-            bool mActive = true;
+            std::atomic<bool> mActive = { true };
         };
         
         

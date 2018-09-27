@@ -73,6 +73,7 @@ namespace nap
 	{
 		if (mVideoPlayer->isPlaying())
 		{
+
 			mVideoPlayer->stop(true);
 		}
 
