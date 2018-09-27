@@ -137,5 +137,5 @@ void main()
 
 	// set fragment color
 	float intensity = (1.0 - uContrast) + uContrast * noise;
-	out_Color =  vec4(vec3(1.0, 0.0, 0.0) * intensity, 1.0);
+	out_Color =  vec4(intensity, 0.0, 0.0, 1.0);
 }
