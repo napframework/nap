@@ -119,9 +119,10 @@ namespace nap
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
 		ImGui::SliderFloat("Preview Size", &mTextureDisplaySize, 0.0f, 1.0f);
 		float col_width = ImGui::GetContentRegionAvailWidth() * mTextureDisplaySize;
-		if (ImGui::CollapsingHeader("Cloud Texture"))
+		if (ImGui::CollapsingHeader("Weather Textures"))
 		{
-			ImGui::Image(mApp.mCloudRenderTarget->getColorTexture(),   { col_width, col_width });
+			ImGui::Image(mApp.mCloudRenderTarget->getColorTexture(), { col_width, col_width });
+			ImGui::Image(mApp.mSunRenderTarget->getColorTexture(), { col_width, col_width });
 		}
 		if (ImGui::CollapsingHeader("Video Texture"))
 		{
