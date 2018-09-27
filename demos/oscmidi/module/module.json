@@ -4,7 +4,6 @@
         "mod_napmath",
         "mod_napinput",
         "mod_napsdlinput",
-        "mod_napsdlwindow",
         "mod_napcameracontrol",
         "mod_napscene",
         "mod_napmidi",
