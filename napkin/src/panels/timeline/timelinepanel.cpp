@@ -57,6 +57,7 @@ TimelinePanel::TimelinePanel() : QWidget()
 	mTimeDisplays.emplace_back(std::make_unique<GeneralTimeDisplay>());
 	mTimeDisplays.emplace_back(std::make_unique<FloatTimeDisplay>());
 
+//    initOutlineModelHandlers();
 	createTimeFormatActionGroup();
 }
 
