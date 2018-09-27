@@ -21,7 +21,7 @@ namespace napkin
 	 * @return a row of items where each item sits in its own column
 	 */
 	QList<QStandardItem*> createPropertyItemRow(rttr::type type, const QString& name, const PropertyPath& path, rttr::property prop,
-													rttr::variant value);
+													rttr::variant value, rttr::type displayType = rttr::type::empty());
 
 	/**
 	 * The base for items that represent a property path
