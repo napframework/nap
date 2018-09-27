@@ -5,24 +5,26 @@
 #include "timelinemodel.h"
 #include "eventitem.h"
 
-namespace napkin {
+namespace napkin
+{
 
 	class TrackItem;
 	class BaseEventItem;
 
-	class TimelineScene : public QGraphicsScene {
+	class TimelineScene : public QGraphicsScene
+	{
 	public:
 		TimelineScene();
 		void setTimeline(Timeline* timeline);
 		Timeline* timeline() const { return mTimeline; }
-		void setTracksExpanded(const QList<Track*> expandedTracks);
+		void setVisibleTracks(const QList<Track*> expandedTracks);
 		void setGroupEventsVisible(bool show);
 		bool isGroupEventsVisible() const;
 
+		void addTrack(Track& track, Track* parentTrack = nullptr);
+		void removeTrack(Track& track);
+
 	private:
-		void onTrackAdded(Track& track);
-		void addTrack(Track& track, TrackItem* parentitem = nullptr);
-		void onTrackRemoved(Track& track);
 		void onEventAdded(Event& event);
 		void onEventRemoved(Event& event);
 

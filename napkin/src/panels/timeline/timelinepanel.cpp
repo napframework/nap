@@ -1,6 +1,7 @@
 #include <nap/logger.h>
 #include <generic/randomnames.h>
 #include "timelinepanel.h"
+#include <QList>
 
 using namespace napkin;
 
@@ -38,7 +39,7 @@ TimelinePanel::TimelinePanel() : QWidget()
 	});
 
 	connect(&mOutline, &TimelineOutline::trackVisibilityChanged, [this]() {
-		mScene.setTracksExpanded(mOutline.getExpandedTracks());
+		mScene.setVisibleTracks(mOutline.getVisibleTracks());
 	});
 
 	int rulerHeight = 30;
@@ -50,8 +51,11 @@ TimelinePanel::TimelinePanel() : QWidget()
 
 	demo();
 
-	mScene.setTracksExpanded(mOutline.getExpandedTracks());
+	mScene.setVisibleTracks(mOutline.getVisibleTracks());
 
+	mTimeDisplays.emplace_back(std::make_unique<SMPTETimeDisplay>());
+	mTimeDisplays.emplace_back(std::make_unique<GeneralTimeDisplay>());
+	mTimeDisplays.emplace_back(std::make_unique<FloatTimeDisplay>());
 
 	createTimeFormatActionGroup();
 }
@@ -84,9 +88,6 @@ void TimelinePanel::onTimelineViewTransformed()
 void TimelinePanel::demo()
 {
 	namegen::NameGen gen;
-
-	int trackCount = 30;
-	int eventCount = 10;
 
 	auto timeline = new Timeline(this);
 
@@ -123,6 +124,9 @@ void TimelinePanel::demo()
 		track->addEvent("90", 90, 100);
 	}
 
+//	int trackCount = 30;
+//	int eventCount = 10;
+//
 //	auto framestep = 1.0 / timeline->framerate();
 //
 //	for (int i = 0; i < trackCount; i++)
@@ -148,10 +152,11 @@ void TimelinePanel::demo()
 QActionGroup& TimelinePanel::createTimeFormatActionGroup()
 {
 	auto actionGroupTimeFormat = new QActionGroup(this);
-	for (auto timedisplay : mTimeDisplays) {
+	for (const auto& timedisplay : mTimeDisplays)
+	{
 		auto action = actionGroupTimeFormat->addAction(timedisplay->name());
-		connect(action, &QAction::triggered, [this]() {
-			mRuler.setDisplayFormat(timedisplay);
+		connect(action, &QAction::triggered, [this, &timedisplay]() {
+			mRuler.setDisplayFormat(timedisplay.get());
 		});
 	}
 

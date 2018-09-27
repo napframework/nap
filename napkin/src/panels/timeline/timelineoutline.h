@@ -59,17 +59,21 @@ namespace napkin
 		 * @return
 		 */
 		void setHeaderHeight(int height);
-
-		const QList<Track*> getExpandedTracks() const;
-
+		const QList<Track*> getVisibleTracks() const;
+		QAbstractItemModel& treeModel() { return mFilterTree.getFilterModel(); }
+		OutlineModel& outlineModel() { return mModel; }
+		Track* track(const QModelIndex& idx);
 		void setVerticalScroll(int value);
+
 	Q_SIGNALS:
 		void verticalScrollChanged(int value);
 		void trackVisibilityChanged();
 
+
 	private:
+		void registerTrackVisibilityHandler();
 		void onViewResized(const QSize& size);
-		void getExpandedTracks(QList<Track*>& result, const QModelIndex& parent = QModelIndex()) const;
+		void getVisibleTracks(QList<Track*>& result, const QModelIndex& parent = QModelIndex()) const;
 
 		QVBoxLayout mLayout;
 		FilterTreeView mFilterTree;

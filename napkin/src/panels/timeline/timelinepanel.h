@@ -59,16 +59,7 @@ namespace napkin
 		QSplitter mSplitter;
 		Ruler mRuler;
 
-		// Time display
-		SMPTETimeDisplay mTimeDisplaySMPTE;
-		GeneralTimeDisplay mTimeDisplayGeneral;
-		FloatTimeDisplay mTimeDisplayFloat;
-
-		QList<TimeDisplay*> mTimeDisplays = {
-			&mTimeDisplaySMPTE,
-			&mTimeDisplayGeneral,
-			&mTimeDisplayFloat
-		};
+		std::vector<std::unique_ptr<TimeDisplay>> mTimeDisplays;
 	};
 
 }
