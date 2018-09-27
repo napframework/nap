@@ -64,7 +64,12 @@ namespace nap
 		/**
 		 * Get the primary window (i.e. the window that was used to init against)
 		 */
-		GLWindow& getPrimaryWindow() { return *mPrimaryWindow; }
+		GLWindow& getPrimaryWindow()						{ return *mPrimaryWindow; }
+
+		/**
+		 *	@return the id (name) of the primary window
+		 */
+		const std::string& getPrimaryWindowID()	const		{ return mPrimaryWindowID; }
 
 	private:
 		std::shared_ptr<GLWindow>	mPrimaryWindow;			///< Primary Window. This always exists for as long as the Renderer exists.

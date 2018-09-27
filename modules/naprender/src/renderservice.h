@@ -184,6 +184,11 @@ namespace nap
 		GLWindow& getPrimaryWindow();
 
 		/**
+		 * @return the id of the primary window
+		 */
+		const std::string& getPrimaryWindowID() const;
+
+		/**
 		 * Add a window event that is processed later, ownership is transferred here
 		 * The window number in the event is used to find the right render window to forward the event to
 		 * @param event the event to add

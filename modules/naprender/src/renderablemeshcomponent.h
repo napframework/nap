@@ -119,12 +119,27 @@ namespace nap
 		void setVisible(bool visible)							{ mVisible = visible; }
 
 		/**
+		 * @return if the mesh is visible or not, default = true
+		 */
+		bool isVisible() const									{ return mVisible; }
+
+		/**
 		* Sets clipping rectangle on this instance.
 		* @param rect Rectangle in pixel coordinates.
 		*/
 		void setClipRect(const math::Rect& rect)				{ mClipRect = rect; }
 
-	private:
+		/**
+		 * @return the clipping rectangle in pixel coordinates
+		 */
+		const math::Rect& getClipRect() const					{ return mClipRect; }
+
+		/**
+		 * @return the transform component instance, used to compose the model matrix
+		 */
+		const TransformComponentInstance& getTransform()		{ return *mTransformComponent; }
+
+	protected:
 		void pushUniforms();
 		void setBlendMode();
 

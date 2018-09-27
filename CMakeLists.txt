@@ -105,8 +105,8 @@ add_subdirectory(test/audiotest)
 add_subdirectory(apps/kalvertoren)
 add_subdirectory(apps/etherdream)
 add_subdirectory(apps/artnetcolor)
-add_subdirectory(apps/steef)
 add_subdirectory(apps/skeleton)
+add_subdirectory(apps/random)
 
 # demo targets
 add_subdirectory(demos/helloworld)
@@ -161,6 +161,7 @@ add_subdirectory(modules/napsandbox)
 
 # app modules
 add_subdirectory(apps/kalvertoren/module)
+add_subdirectory(apps/random/module)
 
 # Packaging
 include(cmake/packaging_macros.cmake)

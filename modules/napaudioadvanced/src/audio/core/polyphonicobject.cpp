@@ -15,6 +15,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::PolyphonicObjectInstance)
     RTTI_FUNCTION("findFreeVoice", &nap::audio::PolyphonicObjectInstance::findFreeVoice)
     RTTI_FUNCTION("play", &nap::audio::PolyphonicObjectInstance::play)
     RTTI_FUNCTION("stop", &nap::audio::PolyphonicObjectInstance::stop)
+    RTTI_FUNCTION("getBusyVoiceCount", &nap::audio::PolyphonicObjectInstance::getBusyVoiceCount)
 RTTI_END_CLASS
 
 namespace nap
@@ -39,7 +40,7 @@ namespace nap
                 mVoices.emplace_back(std::make_unique<VoiceInstance>());
                 if (!mVoices.back()->init(*resource->mVoice, errorState))
                     return false;
-                mVoices.back()->finishedSignal.connect(this, &PolyphonicObjectInstance::voiceFinished);
+                mVoices.back()->finishedSignal.connect(voiceFinishedSlot);
             }
             
             // Create the mix nodes to mix output of all the voices
@@ -79,7 +80,6 @@ namespace nap
             voice->play(duration);
             
             mAudioService->enqueueTask([&, voice](){
-                std::lock_guard<std::mutex> lock(mMixNodesMutex);
                 for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
                     mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));
             });
@@ -91,8 +91,19 @@ namespace nap
             if (!voice)
                 return;
             
-            mAudioService->enqueueTask([&](){ voice->stop(); });
+            voice->stop();
         }
+        
+        
+        int PolyphonicObjectInstance::getBusyVoiceCount() const
+        {
+            int result = 0;
+            for (auto& voice : mVoices)
+                if (voice->isBusy())
+                    result++;
+            return result;
+        }
+
         
 
         OutputPin& PolyphonicObjectInstance::getOutputForChannel(int channel)
@@ -110,8 +121,6 @@ namespace nap
         void PolyphonicObjectInstance::voiceFinished(VoiceInstance& voice)
         {
             assert(voice.getEnvelope().getValue() == 0);
-            
-            std::lock_guard<std::mutex> lock(mMixNodesMutex);
             
             for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice.getOutput().getChannelCount()); ++channel)
             {

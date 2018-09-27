@@ -1,8 +1,12 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 // Audio includes
 #include <audio/node/controlnode.h>
 #include <audio/utility/safeptr.h>
+#include <audio/utility/dirtyflag.h>
 
 namespace nap
 {
@@ -26,7 +30,7 @@ namespace nap
                 TimeValue mDuration = 0;
                 ControllerValue mDestination = 0;
                 bool mDurationRelative = false; //** this indicates wether the duration of this segment is relative to the total duration of the envelope.
-                ControlNode::RampMode mMode = ControlNode::RampMode::LINEAR; //** This indicates the line shape of the segment
+                RampMode mMode = RampMode::Linear; //** This indicates the line shape of the segment
             };
             using Envelope = std::vector<Segment>;
 
@@ -63,13 +67,20 @@ namespace nap
             
         private:
             void playSegment(int index);
+            void update();
             
             nap::Slot<ControlNode&> rampFinishedSlot = { this, &EnvelopeGenerator::rampFinished };
             void rampFinished(ControlNode&);
             
-            int mCurrentSegment = 0;
-            int mEndSegment = 0;
-            SafePtr<Envelope> mEnvelope = nullptr;
+            int mCurrentSegment = { 0 };
+            int mEndSegment = { 0 };
+            Envelope* mEnvelope = nullptr;
+            
+            std::atomic<int> mNewCurrentSegment = { 0 };
+            std::atomic<int> mNewEndSegment = { 0 };
+            SafePtr<Envelope> mNewEnvelope = nullptr;
+            DirtyFlag mIsDirty;
+
             TimeValue mTotalRelativeDuration = 0;
         };
         

@@ -75,7 +75,8 @@ namespace nap
         
         void AudioInputComponentInstance::setGain(ControllerValue gain)
         {
-            getAudioService().enqueueTask([&, gain](){ mGainControl->ramp(gain, 1); });
+            mGainControl->ramp(gain, 1);
+            mGain = gain;
         }
         
         

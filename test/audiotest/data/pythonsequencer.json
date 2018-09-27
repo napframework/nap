@@ -15,14 +15,14 @@
 				{
 					"Type": "nap::audio::Oscillator",
 					"mID": "oscillatorA",
-					"Amplitude": [ 0.2 ],
+					"Amplitude": [ 1 ],
 					"ChannelCount": 2
 				},
 
 				{
 					"Type": "nap::audio::Oscillator",
 					"mID": "oscillatorB",
-					"Amplitude": [ 0.5 ],
+					"Amplitude": [ 0.1 ],
 					"ChannelCount": 2,
 					"FmInput": "oscillatorA"
 				},
@@ -37,7 +37,7 @@
 							"Destination": "1"
 						},
 						{
-							"Duration": "1000",
+							"Duration": "500",
 							"Destination": "0",
 							"RampMode": "Exponential"
 						}
@@ -80,7 +80,7 @@
 					{
 						"Type": "nap::audio::PolyphonicObject",
 						"Voice": "voice",
-						"VoiceCount": 32
+						"VoiceCount": 3000
 					}
 				},
 
