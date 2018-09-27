@@ -85,6 +85,12 @@ void TimelinePanel::onTimelineViewTransformed()
 	mRuler.setRange(mView.getViewRange());
 }
 
+void TimelinePanel::resizeEvent(QResizeEvent* event)
+{
+	QWidget::resizeEvent(event);
+	onTimelineViewTransformed();
+}
+
 
 void TimelinePanel::demo()
 {
@@ -94,13 +100,13 @@ void TimelinePanel::demo()
 
 
 	{
-		auto track = timeline->addTrack("Event Track One", nullptr);
+		auto track = timeline->addTrack("Event Track One");
 		track->addEvent("FirstEvent", 0, 100);
 		track->addEvent("Event Zwei", 100, 150);
 		track->addEvent("Derde Event", 160, 250);
 	}
 	{
-		auto track = timeline->addTrack("Second Event Track", nullptr);
+		auto track = timeline->addTrack("Second Event Track");
 		track->setHeight(20);
 		auto child1 = track->addTrack("A Child Track");
 		child1->addEvent("Pookie", 50, 90);
@@ -112,7 +118,7 @@ void TimelinePanel::demo()
 		child2->addEvent("Bob", 120, 135);
 	}
 	{
-		auto track = timeline->addTrack("Track number Three", nullptr);
+		auto track = timeline->addTrack("Track number Three");
 		track->addEvent("0", 0, 10);
 		track->addEvent("10", 10, 20);
 		track->addEvent("20", 20, 30);
@@ -123,6 +129,14 @@ void TimelinePanel::demo()
 		track->addEvent("70", 70, 80);
 		track->addEvent("80", 80, 90);
 		track->addEvent("90", 90, 100);
+	}
+	{
+		auto extraTrack = timeline->addTrack("Extra Tracks");
+		for (int i=0; i<10; i++) {
+			int offset = 30 * i;
+			auto track = extraTrack->addTrack(QString("Extra Track Whee %1").arg(i));
+			track->addEvent(QString("Empty Event %1").arg(i), offset, 300 + offset);
+		}
 	}
 
 //	int trackCount = 30;
