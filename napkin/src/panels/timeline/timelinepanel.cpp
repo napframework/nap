@@ -31,6 +31,7 @@ TimelinePanel::TimelinePanel() : QWidget()
 
 	// Data
 	mView.setScene(&mScene);
+	mView.setPanBounds(QRectF(0, 0, std::numeric_limits<qreal>::max(), std::numeric_limits<qreal>::max()));
 	connect(&mSplitter, &QSplitter::splitterMoved, this, &TimelinePanel::onTimelineViewTransformed);
 	connect(&mView, &GridView::viewTransformed, this, &TimelinePanel::onTimelineViewTransformed);
 
@@ -45,7 +46,7 @@ TimelinePanel::TimelinePanel() : QWidget()
 	int rulerHeight = 30;
 	mRuler.setHeight(rulerHeight);
 	mOutline.setHeaderHeight(rulerHeight);
-	mView.setGridEnabled(false);
+//	mView.setGridEnabled(false);
 
 	setTimeScale(10);
 
@@ -132,6 +133,7 @@ void TimelinePanel::demo()
 	}
 	{
 		auto extraTrack = timeline->addTrack("Extra Tracks");
+		extraTrack->setHeight(20);
 		for (int i=0; i<10; i++) {
 			int offset = 30 * i;
 			auto track = extraTrack->addTrack(QString("Extra Track Whee %1").arg(i));

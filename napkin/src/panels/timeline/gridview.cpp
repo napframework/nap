@@ -36,6 +36,11 @@ GridView::GridView() : QGraphicsView()
 	viewport()->setMouseTracking(true);
 	mRulerFont.setFamily("monospace");
 	mRulerFont.setPointSize(9);
+
+	mPanBounds.setLeft(std::numeric_limits<qreal>::min());
+	mPanBounds.setTop(std::numeric_limits<qreal>::min());
+	mPanBounds.setRight(std::numeric_limits<qreal>::max());
+	mPanBounds.setBottom(std::numeric_limits<qreal>::max());
 }
 
 
@@ -127,8 +132,10 @@ void GridView::zoom(const QPointF& delta, const QPointF& pivot)
 
 	// Restore after pivot zoom
 	xf.translate(-pivot.x(), -pivot.y());
-	setTransform(xf);
 
+	constrainTransform(xf);
+
+	setTransform(xf);
 	viewTransformed();
 }
 
@@ -139,9 +146,21 @@ void GridView::pan(const QPointF& delta)
 	qreal dx = (mPanMode == PanMode::Vertical) ? 0 : delta.x() / scale.x();
 	qreal dy = (mPanMode == PanMode::Horizontal) ? 0 : delta.y() / scale.y();
 	xf.translate(dx, dy);
+
+	constrainTransform(xf);
+
 	setTransform(xf);
 	viewTransformed();
 }
+
+void GridView::constrainTransform(QTransform& xf)
+{
+	auto p = getTranslation(xf);
+	p.setX(qBound(-mPanBounds.right(), p.x(), -mPanBounds.left()));
+	p.setY(qBound(-mPanBounds.bottom(), p.y(), -mPanBounds.top()));
+	setTranslation(xf, p);
+}
+
 
 void GridView::drawBackground(QPainter* painter, const QRectF& rect)
 {
@@ -440,5 +459,9 @@ void GridView::fitInView(const QRectF& rect, const QMargins& margins,
 void GridView::setGridEnabled(bool enabled)
 {
 	mGridEnabled = enabled;
+}
+void GridView::setPanBounds(const QRectF& rec)
+{
+	mPanBounds = rec;
 }
 
