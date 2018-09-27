@@ -360,7 +360,20 @@
                     "Mesh": "ProjectionMesh",
                     "MaterialInstance": {
                         "Material": "SunMaterial",
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_5",
+                                "Name": "uOuterSize",
+                                "Value": 0.25
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_6",
+                                "Name": "uInnerSize",
+                                "Value": 0.25
+                            }
+                        ],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -553,7 +566,20 @@
         {
             "Type": "nap::Material",
             "mID": "SunMaterial",
-            "Uniforms": [],
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_3",
+                    "Name": "uOuterSize",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_4",
+                    "Name": "uInnerSize",
+                    "Value": 0.0
+                }
+            ],
             "Shader": "SunShader",
             "VertexAttributeBindings": [
                 {

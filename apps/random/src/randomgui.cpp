@@ -86,6 +86,14 @@ namespace nap
 				uInverted.setValue(mCloudsInverted ? 1.0f : 0.0f);
 			}
 		}
+		if (ImGui::CollapsingHeader("Sun"))
+		{
+			nap::RenderableMeshComponentInstance& sun_plane = mApp.mSun->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::UniformFloat& uOuterSize = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize");
+			nap::UniformFloat& uInnerSize = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInnerSize");
+			ImGui::SliderFloat("Outer Size", &(uOuterSize.mValue), 0.1f, 0.5f);
+			ImGui::SliderFloat("Inner Size", &(uInnerSize.mValue), 0.0f, 1.0f);
+		}
 		if (ImGui::CollapsingHeader("Video"))
 		{
 			SelectVideoComponentInstance& video_comp = mApp.mVideo->getComponent<SelectVideoComponentInstance>();
