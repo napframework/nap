@@ -98,9 +98,9 @@ TimelineOutline::TimelineOutline() : QWidget()
 	tree.setHeaderHidden(true);
 //	tree.setAlternatingRowColors(true);
 	tree.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-	tree.setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+//	tree.setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
 
-//	connect(tree.verticalScrollBar(), &QScrollBar::valueChanged, this, &TimelineOutline::verticalScrollChanged);
+	connect(tree.verticalScrollBar(), &QScrollBar::valueChanged, this, &TimelineOutline::verticalScrollChanged);
 
 	mFilterTree.setModel(&mModel);
 	registerTrackVisibilityHandler();
