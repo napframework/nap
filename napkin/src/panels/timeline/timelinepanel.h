@@ -46,6 +46,9 @@ namespace napkin
 
 	private:
 		void onTimelineViewTransformed();
+	protected:
+		void resizeEvent(QResizeEvent* event) override;
+	private:
 		QActionGroup& createTimeFormatActionGroup();
 
 		void initOutlineModelHandlers();
