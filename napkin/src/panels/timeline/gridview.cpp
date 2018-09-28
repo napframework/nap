@@ -161,6 +161,12 @@ void GridView::constrainTransform(QTransform& xf)
 	setTranslation(xf, p);
 }
 
+void GridView::constrainView()
+{
+	auto xf = transform();
+	constrainTransform(xf);
+	setTransform(xf);
+}
 
 void GridView::drawBackground(QPainter* painter, const QRectF& rect)
 {
@@ -380,9 +386,13 @@ void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMar
 
 	xf.reset();
 	setScale(xf, sx, sy);
+	// center
+	xf.translate(viewRect.width() - tx, 0);
 	setTransform(xf);
-	// Use
-	centerOn(tx, ty);
+
+//	// Use
+//	centerOn(tx, ty);
+	constrainView();
 	viewTransformed();
 }
 
@@ -422,7 +432,7 @@ void GridView::setVerticalScroll(int value)
 	auto scroll = getTranslation(mViewTransform);
 	scroll.setY(-value - scene()->sceneRect().top());
 	setTranslation(mViewTransform, scroll);
-	viewTransformed();
+//	viewTransformed();
 }
 
 void GridView::fitInView(const QRectF& rect, const QMargins& margins,
@@ -436,12 +446,13 @@ void GridView::fitInView(const QRectF& rect, const QMargins& margins,
 
 	auto unity = transform().mapRect(QRectF(0, 0, 1, 1));
 
-	scale(1.0/unity.width(), 1.0/unity.height());
+	scale(1.0 / unity.width(), 1.0 / unity.height());
 	auto viewRect = viewport()->rect();
 	auto sceneRect = transform().mapRect(rect);
 	auto xratio = viewRect.width() / (qreal) sceneRect.width();
 	auto yratio = viewRect.height() / (qreal) sceneRect.height();
-	if (flags == Qt::KeepAspectRatio) {
+	if (flags == Qt::KeepAspectRatio)
+	{
 		xratio = yratio = qMin(xratio, yratio);
 	} else if (flags == Qt::KeepAspectRatioByExpanding)
 	{
@@ -463,5 +474,10 @@ void GridView::setGridEnabled(bool enabled)
 void GridView::setPanBounds(const QRectF& rec)
 {
 	mPanBounds = rec;
+}
+void GridView::setPanBounds(qreal left, qreal top, qreal right, qreal bottom)
+{
+	mPanBounds = QRectF(left, top, right, bottom);
+	constrainView();
 }
 

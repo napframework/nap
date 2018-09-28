@@ -197,5 +197,20 @@ Track* TimelineOutline::track(const QModelIndex& idx)
 	return mModel.track(srcIndex);
 }
 
+int TimelineOutline::overflowHeight()
+{
+	return combinedTrackHeight() - mFilterTree.getTreeView().viewport()->height();
+}
+
+int TimelineOutline::combinedTrackHeight()
+{
+	QList<Track*> visibleTracks;
+	getVisibleTracks(visibleTracks);
+	int height = 0;
+	for (auto track : visibleTracks)
+		height += track->height();
+	return height;
+}
+
 
 

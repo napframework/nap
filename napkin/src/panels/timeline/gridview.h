@@ -33,8 +33,10 @@ namespace napkin {
 		void fitInView(const QRectF& rect, const QMargins& margins, bool horizontal, bool vertical);
 		void setVerticalScroll(int value);
 		void setGridEnabled(bool enabled);
+		void setPanBounds(qreal left, qreal top, qreal right, qreal bottom);
 		void setPanBounds(const QRectF& rec);
 		void constrainTransform(QTransform& xf);
+		void constrainView();
 
 		const QPoint& mousePressedPos() const { return mMousePressPos; }
 		const QPoint& mouseLastPos() const { return mMouseLastPos; }
