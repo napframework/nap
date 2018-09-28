@@ -63,6 +63,7 @@ namespace napkin
 		OutlineModel& outlineModel() { return mModel; }
 		Track* track(const QModelIndex& idx);
 		void setVerticalScroll(int value);
+		int overflowHeight();
 
 	Q_SIGNALS:
 		void verticalScrollChanged(int value);
@@ -70,6 +71,7 @@ namespace napkin
 
 
 	private:
+		int combinedTrackHeight();
 		void registerTrackVisibilityHandler();
 		void onViewResized(const QSize& size);
 		void getVisibleTracks(QList<Track*>& result, const QModelIndex& parent = QModelIndex()) const;

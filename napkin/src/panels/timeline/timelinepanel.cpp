@@ -41,6 +41,9 @@ TimelinePanel::TimelinePanel() : QWidget()
 
 	connect(&mOutline, &TimelineOutline::trackVisibilityChanged, [this]() {
 		mScene.setVisibleTracks(mOutline.getVisibleTracks());
+		// Constrain scrolling according to outline
+		int rectHeight = qMax(0, mOutline.overflowHeight());
+		mView.setPanBounds(0, 0, std::numeric_limits<qreal>::infinity(), rectHeight);
 	});
 
 	int rulerHeight = 30;
