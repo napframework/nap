@@ -86,9 +86,7 @@ namespace opengl
 		// structures for VAOs. We first add all vertex buffer, then we render.
 		// (no dynamic adding of vertex buffers).
 		assert(mContextSpecificState.empty());
-
-		auto it = mBindings.find(index);
-		assert(it == mBindings.end());
+		assert(mBindings.find(index) == mBindings.end());
 
 		// Add index
 		mBindings.emplace(std::make_pair(index, &buffer));

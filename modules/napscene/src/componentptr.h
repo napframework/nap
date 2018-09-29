@@ -16,6 +16,8 @@ namespace nap
 		RTTI_ENABLE();
 
 	public:
+        virtual ~ComponentPtrBase() = default;
+        
 		/**
 		 * Convert the full target ID as specified to an ID that can be resolved to an object
 		 *
