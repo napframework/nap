@@ -375,7 +375,6 @@ void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMar
 	if (horizontal)
 	{
 		sx = focusRectView.width() / rec.width();
-		qInfo() << -rec.left();
 		tx = -rec.left() + (margins.left() / sx);
 	}
 	if (vertical)
