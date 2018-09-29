@@ -69,8 +69,8 @@ void napkin::GroupEventItem::onTrackOrEventChanged()
 
 napkin::EventItem::EventItem(QGraphicsItem* parent, napkin::Event& event) : BaseEventItem(parent), mEvent(event)
 {
-	event.connect(&event, &Event::changed, this, &EventItem::onEventChanged);
-	onEventChanged(event);
+	event.connect(&event, &Event::changed, this, &EventItem::updateGeometry);
+	updateGeometry(event);
 
 }
 
@@ -98,8 +98,9 @@ void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 	painter->restore();
 }
 
-void napkin::EventItem::onEventChanged(Event& event)
+void napkin::EventItem::updateGeometry(Event& event)
 {
+	// update geometry based on event length
 	setRect(0, 0, event.length(), event.track().height());
 }
 
