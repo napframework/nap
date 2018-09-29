@@ -1,5 +1,8 @@
 #pragma once
 
+// Local Includes
+#include "randomgui.h"
+
 // External Includes
 #include <app.h>
 #include <sceneservice.h>
@@ -17,12 +20,14 @@
 #include <artnetcontroller.h>
 #include <utility/datetimeutils.h>
 #include <scene.h>
+#include <orthocameracomponent.h>
 
 namespace nap
 {
 	class RandomApp : public App
 	{
 		RTTI_ENABLE(App)
+		friend class RandomGui;
 	public:
 		RandomApp(Core& core) : App(core)	{ }
 
@@ -67,10 +72,37 @@ namespace nap
 		// Resources
 		rtti::ObjectPtr<RenderWindow>						mRenderWindow = nullptr;
 		rtti::ObjectPtr<Scene>								mScene = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mSceneCamera = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mVideo = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mClouds = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mCombination = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrthoCamera = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mCloudRenderTarget = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mVideoRenderTarget = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
+
+		// Gui related functionality
+		std::unique_ptr<RandomGui>	mGui = nullptr;
 
 		/**
 		 * Called when a window event is received
 		 */
 		void handleWindowEvent(const WindowEvent& windowEvent);
+
+		/**
+		 *	Renders the video into it's back-buffer
+		 */
+		void renderVideo(OrthoCameraComponentInstance& orthoCamera);
+
+		/**
+		 *	Renders the combination of the video and clouds into it's own back-buffer
+		 */
+		void renderCombination(OrthoCameraComponentInstance& orthoCamera);
+
+		/**
+		 *	Renders the clouds into it's back-buffer
+		 */
+		void renderClouds(OrthoCameraComponentInstance& orthoCamera);
 	};                                                                               
 }

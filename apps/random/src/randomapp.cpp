@@ -14,6 +14,10 @@
 #include <ctime>
 #include <chrono>
 #include <utility/fileutils.h>
+#include <uniforms.h>
+#include <orthocameracomponent.h>
+#include <imguiutils.h>
+#include <rendercombinationcomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RandomApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -40,14 +44,30 @@ namespace nap
 		// Callback when window event is received
 		mRenderWindow->mWindowEvent.connect(std::bind(&RandomApp::handleWindowEvent, this, std::placeholders::_1));
 
+		// Look for render targets, used to render into cloud and video textures
+		mCloudRenderTarget   = mResourceManager->findObject("CloudRenderTarget");
+		mVideoRenderTarget   = mResourceManager->findObject("VideoRenderTarget");
+		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
+
 		// All of our entities
 		mScene = mResourceManager->findObject<Scene>("Scene");
+		
+		mSceneCamera = mScene->findEntity("SceneCamera");
+		mClouds = mScene->findEntity("Clouds");
+		mOrthoCamera = mScene->findEntity("ProjectionCamera");
+		mLightRig = mScene->findEntity("LightRig");
+		mVideo = mScene->findEntity("Video");
+		mCombination = mScene->findEntity("Combination");
 
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+
+		// Create gui
+		mGui = std::make_unique<RandomGui>(*this);
+		mGui->init();
 
 		return true;
 	}
@@ -56,28 +76,55 @@ namespace nap
 	{
 		nap::DefaultInputRouter input_router;
 
-		// Update input for first window
-		std::vector<nap::EntityInstance*> input_entities;
-		input_entities.emplace_back(&(mScene->getRootEntity()));
-		mInputService->processEvents(*mRenderWindow, input_router, input_entities);
+		// Forward all input events associated with the first window to the listening components
+		std::vector<nap::EntityInstance*> entities = { mSceneCamera.get() };
+		mInputService->processAllEvents(input_router, entities);
 
-		// Updat gui here...
+		// Update gui
+		mGui->update(deltaTime);
 	}
 
 
 	void RandomApp::render()
 	{
-		// Clear all unnecessary gl resources
+		// Clear all unnecessary GL resources
 		mRenderService->destroyGLContextResources(std::vector<rtti::ObjectPtr<nap::RenderWindow>>({ mRenderWindow }));
 
-		// Make render window active so we can draw to it
+		// Make render window active so we can use it's context and draw into it
 		mRenderWindow->makeActive();
+		
+		// Get orthographic camera. This camera renders in pixel space, starting at 0,0
+		OrthoCameraComponentInstance& ortho_cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
-		// Clear
+		// Render clouds
+		renderClouds(ortho_cam);
+
+		// Render video into back-buffer
+		renderVideo(ortho_cam);
+
+		// Render combination into back buffer
+		renderCombination(ortho_cam);
+
+		// We have now rendered the clouds and video into separate textures. 
+		// These can be applied to the mesh visualization mesh. This is the mesh that is drawn to screen
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+		{
+			// Clear window 
+			mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
+			// Find the scene (perspective camera)
+			nap::PerspCameraComponentInstance& camera = mSceneCamera->getComponent<nap::PerspCameraComponentInstance>();
+
+			// Find the visualization mesh and add as an object to render
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+			components_to_render.emplace_back(&(mLightRig->getComponent<RenderableMeshComponentInstance>()));
+
+			// Render visualization mesh
+			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
+		}
+			
 		// Draw gui
-		mGuiService->draw();
+		mGui->draw();
 
 		// Swap to front
 		mRenderWindow->swap();
@@ -89,8 +136,45 @@ namespace nap
 	}
 
 
+	void RandomApp::renderVideo(OrthoCameraComponentInstance& orthoCamera)
+	{
+		mRenderService->clearRenderTarget(mVideoRenderTarget->getTarget());
+
+		// Find the video plane and render it to the back-buffer
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		components_to_render.emplace_back(&(mVideo->getComponent<nap::RenderableMeshComponentInstance>()));
+
+		// Render video plane to video texture
+		mRenderService->renderObjects(mVideoRenderTarget->getTarget(), orthoCamera, components_to_render);
+	}
+
+
+	void RandomApp::renderCombination(OrthoCameraComponentInstance& orthoCamera)
+	{
+		// Render combination texture into back-buffer (ie: video / clouds into separate texture)
+		// Note that this also starts the download of the gpu texture into the bitmap in the background
+		RenderCombinationComponentInstance& render_comp = mCombination->getComponent<RenderCombinationComponentInstance>();
+		render_comp.render(orthoCamera);
+	}
+
+
+	void RandomApp::renderClouds(OrthoCameraComponentInstance& orthoCamera)
+	{
+		mRenderService->clearRenderTarget(mCloudRenderTarget->getTarget());
+
+		// Find the projection plane and render it to the back-buffer
+		nap::RenderableMeshComponentInstance& render_plane = mClouds->getComponent<nap::RenderableMeshComponentInstance>();
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		components_to_render.emplace_back(&render_plane);
+
+		// Render clouds plane to clouds texture
+		mRenderService->renderObjects(mCloudRenderTarget->getTarget(), orthoCamera, components_to_render);
+	}
+
+
 	int RandomApp::shutdown()
 	{
+		mGui.reset(nullptr);
 		return 0;
 	}
 

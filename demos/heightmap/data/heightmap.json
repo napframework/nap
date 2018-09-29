@@ -59,7 +59,7 @@
 			"Type" : "nap::HeightNormals",
 			"mID" : "VisualizeNormalsMesh",
 			"ReferenceMesh" : "HeightMesh",
-			"Length" : 2.0
+			"Length" : 1.0
 		},
 
 		{
@@ -125,10 +125,10 @@
 					"MeshAttributeID": "Position",
 					"ShaderAttributeID": "in_Position"
 				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
-				},
+                {
+                    "MeshAttributeID": "Tip",
+                    "ShaderAttributeID": "in_Tip"
+                },
 				{
 					"MeshAttributeID" : "OriginalPosition",
 					"ShaderAttributeID" : "in_OriginalPosition" 

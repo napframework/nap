@@ -1,0 +1,8 @@
+{
+    "title": "Atmos",
+    "version": "0.1.0",
+    "modules": [
+        "mod_atmos",
+        "mod_napapp"
+    ]
+}

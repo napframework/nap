@@ -38,7 +38,7 @@ namespace nap
 	void UpdateNormalsComponentInstance::update(double deltaTime)
 	{
 		nap::utility::ErrorState error;
-		if (!mNormalMesh->updateNormals(error, true))
+		if (!mNormalMesh->calculateNormals(error, true))
 		{
 			nap::Logger::warn(error.toString());
 		}

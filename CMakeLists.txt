@@ -106,6 +106,7 @@ add_subdirectory(apps/kalvertoren)
 add_subdirectory(apps/etherdream)
 add_subdirectory(apps/artnetcolor)
 add_subdirectory(apps/skeleton)
+add_subdirectory(apps/atmos)
 add_subdirectory(apps/random)
 
 # demo targets
@@ -140,7 +141,6 @@ add_subdirectory(modules/napinput)
 add_subdirectory(modules/naprender)
 add_subdirectory(modules/napmath)
 add_subdirectory(modules/napsdlinput)
-add_subdirectory(modules/napsdlwindow)
 add_subdirectory(modules/napscene)
 add_subdirectory(modules/napcameracontrol)
 add_subdirectory(modules/nappython)
@@ -162,6 +162,7 @@ add_subdirectory(modules/napsandbox)
 # app modules
 add_subdirectory(apps/kalvertoren/module)
 add_subdirectory(apps/random/module)
+add_subdirectory(apps/atmos/module)
 
 # Packaging
 include(cmake/packaging_macros.cmake)
