@@ -147,12 +147,4 @@ bool TimelineScene::isGroupEventsVisible() const
 	return mGroupEventsVisible;
 }
 
-BaseEventItem* TimelineScene::groupEvent(const Track& track) const
-{
-	if (!mGroupEventsVisible)
-		return nullptr;
-
-//	BaseEventItem* eventItem = ;
-}
-
 

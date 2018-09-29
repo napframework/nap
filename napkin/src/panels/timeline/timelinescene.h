@@ -28,8 +28,6 @@ namespace napkin
 		void onEventAdded(Event& event);
 		void onEventRemoved(Event& event);
 
-		BaseEventItem* groupEvent(const Track& track) const;
-
 		QList<TrackItem*> trackItems() const;
 		TrackItem* trackItem(Track& track);
 
