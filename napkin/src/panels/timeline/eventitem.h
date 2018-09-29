@@ -19,8 +19,6 @@ namespace napkin
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
 	protected:
-
-
 		QPen mPenBorder;
 		QPen mPenBorderSelected;
 		QBrush mBrush;
@@ -47,7 +45,7 @@ namespace napkin
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
 	private:
-		void onEventChanged(Event& evt);
+		void updateGeometry(Event& evt);
 
 		Event& mEvent;
 	};
