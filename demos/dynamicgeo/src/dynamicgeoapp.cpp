@@ -57,7 +57,7 @@ namespace nap
 			entities.push_back(mCameraEntity.get());
 
 			Window* window = mRenderWindow.get();
-			mInputService->processEvents(*window, input_router, entities);
+			mInputService->processWindowEvents(*window, input_router, entities);
 		}
 
 		ImGui::Begin("Controls");

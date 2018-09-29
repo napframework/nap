@@ -39,7 +39,6 @@ set(NAP_MODULES_USAGE_DEPENDENCIES
     mod_naposc
     mod_napsandbox
     mod_napsdlinput
-    mod_napsdlwindow
     mod_napsvg
     )
 

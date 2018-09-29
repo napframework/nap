@@ -73,18 +73,27 @@ namespace nap
 		ComponentInstance* findComponent(const std::string& type) const;
         
         /**
-         * Finds the first component with the specified ID.
-         * @param type The type name of the component to find.
+         * Finds the first component with the specified ID as declared in JSON.
+         * @param identifier The name of the component to find.
          * @return The found component. Null if not found.
          */
-        ComponentInstance* findComponentByID(const std::string& mID) const;
+        ComponentInstance* findComponentByID(const std::string& identifier) const;
+
+		/**
+		 * Finds the first component with the specified ID as declared in JSON as type T
+		 * @param identifier The name of the component to find
+		 * @param typeCheck if the component is an exact match or derived from T
+		 * @return The found component. Null if not found or not derived from T
+		 */
+		template<class T >
+		T* findComponentByID(const std::string& identifier, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		* Finds the first component of the specified type. 
 		* @param type The type of the component to find.
 		* @return The found component. Null if not found.
 		*/
-		ComponentInstance* findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
+		ComponentInstance* findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::IS_DERIVED_FROM) const;
 
 		/**
 		* Convenience template function to find the first component of the specified type 
@@ -390,6 +399,15 @@ namespace nap
 	bool EntityInstance::hasComponentsOfType(rtti::ETypeCheck typeCheck) const
 	{
 		return hasComponentsOfType(rtti::TypeInfo::get<T>(), typeCheck);
+	}
+
+	template<class T >
+	T* EntityInstance::findComponentByID(const std::string& identifier, rtti::ETypeCheck typeCheck) const
+	{
+		T* element = rtti_cast<T>(findComponentByID(identifier));
+		if (element == nullptr)
+			return nullptr;
+		return rtti::isTypeMatch(element->get_type(), RTTI_OF(T), typeCheck) ? element : nullptr;
 	}
 
 	template<class T>

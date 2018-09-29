@@ -83,6 +83,17 @@ namespace nap
 		*/
 		void setGridLocation(int row, int column);
 
+		/**
+		 * Sets the fov parameter
+		 * @param fov the new field of view
+		 */
+		void setFieldOfView(float fov);
+
+		/**
+		 * @return current field of view
+		 */
+		float getFieldOfView() const;
+
 	private:
 		/**
 		* Recomputes the projection matrix when requested the next time

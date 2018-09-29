@@ -21,10 +21,18 @@ namespace nap
 		if (!errorState.check(ref_is_height, "Reference mesh needs to be a HeightMesh"))
 			return false;
 
+		// Create the normals mesh instance that we want to populate below
+		if (!createMeshInstance(errorState))
+			return false;
+
 		// Setup default normals visualizer, this will create all the default attributes
 		// we also need for visualization. We only add 2 other ones to correctly blend 
 		// the position of the normals from 0 to 1
-		if (!VisualizeNormalsMesh::setup(errorState))
+		if (!setReferenceMesh(*mReferenceMesh, errorState))
+			return false;
+
+		// Calculate our normals
+		if (!calculateNormals(errorState, false))
 			return false;
 
 		// Get the height mesh, we cast it using rtti_cast, which performs a type
