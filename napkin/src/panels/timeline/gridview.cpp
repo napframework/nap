@@ -364,30 +364,30 @@ void GridView::frameSelected(bool horizontal, bool vertical, QMargins margins)
 
 void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMargins margins)
 {
-	auto viewRect = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
-	auto viewRectScene = mapToScene(viewRect).boundingRect();
+	auto focusRectView = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
 	auto xf = transform();
 	auto origScale = napkin::getScale(xf);
 	qreal sx = origScale.width();
 	qreal sy = origScale.height();
-	qreal tx = viewRectScene.center().x();
-	qreal ty = viewRectScene.center().y();
+	qreal tx = 0;
+	qreal ty = 0;
 
 	if (horizontal)
 	{
-		sx = viewRect.width() / rec.width();
-		tx = rec.center().x();
+		sx = focusRectView.width() / rec.width();
+		qInfo() << -rec.left();
+		tx = -rec.left() + (margins.left() / sx);
 	}
 	if (vertical)
 	{
-		sy = viewRect.height() / rec.height();
-		ty = rec.center().y();
+		sy = focusRectView.height() / rec.height();
+		ty = -rec.top() + (margins.top() / sy);
 	}
 
 	xf.reset();
 	setScale(xf, sx, sy);
 	// center
-	xf.translate(viewRect.width() - tx, 0);
+	xf.translate(tx, ty);
 	setTransform(xf);
 
 //	// Use
