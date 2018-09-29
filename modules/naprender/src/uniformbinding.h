@@ -44,6 +44,9 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 
+        UniformContainer() = default;
+        virtual ~UniformContainer() = default;
+        
 		/**
 		* @return a uniform texture object that can be used to set a texture or value.
 		* If the uniform is not found, returns nullptr.

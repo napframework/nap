@@ -88,8 +88,6 @@ namespace nap
 		if (!mEnabled)
 			return;
 
-		FirstPersonController* resource = getComponent<FirstPersonController>();
-
 		float movement = mMovementSpeed * deltaTime;
 
 		glm::vec3 side(1.0, 0.0, 0.0);

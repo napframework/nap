@@ -108,21 +108,17 @@ namespace nap
 			target_tips[target_idx + 1] = 0.0f;
 
 			// Copy over the uv coordinate for every uv set in the reference mesh
-			int uv_idx = 0;
-			for (auto& uv_attr : mUvAttrs)
+            for (auto uv_idx = 0; uv_idx < mUvAttrs.size(); uv_idx++)
 			{
 				(*(tar_uvs[uv_idx]))[target_idx + 0] = (*(ref_uvs[uv_idx]))[i];
 				(*(tar_uvs[uv_idx]))[target_idx + 1] = (*(ref_uvs[uv_idx]))[i];
-				uv_idx++;
 			}
 
 			// Copy over the color value for every color set in the reference mesh
-			int clr_idx = 0;
-			for (auto& clr_attr : mColorAttrs)
+            for (auto clr_idx = 0; clr_idx < mColorAttrs.size(); clr_idx++)
 			{
 				(*(tar_clrs[clr_idx]))[target_idx + 0] = (*(ref_clrs[clr_idx]))[i];
 				(*(tar_clrs[clr_idx]))[target_idx + 1] = (*(ref_clrs[clr_idx]))[i];
-				clr_idx++;
 			}
 
 			// Increment write index
@@ -157,7 +153,7 @@ namespace nap
 		mMeshInstance = std::make_unique<MeshInstance>();
 
 		// Create shape that holds the normals
-		MeshShape& shape = mMeshInstance->createShape();
+		mMeshInstance->createShape();
 
 		return true;
 	}
