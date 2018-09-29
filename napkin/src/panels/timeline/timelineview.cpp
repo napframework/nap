@@ -95,14 +95,14 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event)
 
 	if (lmb && !alt)
 	{
-		for (auto item : selectedEventItems())
+		for (auto item : selectedItems<EventItem>())
 		{
 			auto oldPos = mSelectedPositions[item];
 			auto newPos = oldPos + dragDelta;
 
-			auto h = item->event().track().height();
+//			auto h = item->event().track().height();
 
-			int track = qRound(newPos.y() / h);
+//			int track = qRound(newPos.y() / h);
 			auto roundedx = qRound(newPos.x() / framestep) * framestep;
 
 			newPos.setY(item->pos().y());
@@ -124,12 +124,12 @@ void TimelineView::mouseReleaseEvent(QMouseEvent* event)
 	GridView::mouseReleaseEvent(event);
 }
 
-const QList<EventItem*> TimelineView::selectedEventItems() const
+const QList<BaseEventItem*> TimelineView::selectedEventItems() const
 {
-	QList<EventItem*> items;
+	QList<BaseEventItem*> items;
 	for (auto m : scene()->selectedItems())
 	{
-		auto eventItem = dynamic_cast<EventItem*>(m);
+		auto eventItem = dynamic_cast<BaseEventItem*>(m);
 		if (eventItem)
 			items << eventItem;
 	}
