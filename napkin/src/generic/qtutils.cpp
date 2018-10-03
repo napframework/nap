@@ -15,6 +15,7 @@
 #include <standarditemsproperty.h>
 #include <appcontext.h>
 #include <nap/logger.h>
+#include <QtGui/QtGui>
 
 #include "standarditemsproperty.h"
 #include "panels/finderpanel.h"
@@ -27,6 +28,21 @@ QColor napkin::lerpCol(const QColor& a, const QColor& b, qreal p)
               nap::math::lerp(a.greenF(), b.greenF(), p),
               nap::math::lerp(a.blueF(), b.blueF(), p));
 	return c;
+}
+
+qreal napkin::roundToInterval(qreal v, qreal step)
+{
+	return qRound(v / step) * step;
+}
+
+qreal napkin::floorToInterval(qreal v, qreal step)
+{
+	return qFloor(v / step) * step;
+}
+
+qreal napkin::ceilToInterval(qreal v, qreal step)
+{
+	return qCeil(v / step) * step;
 }
 
 const QColor& napkin::getSoftForeground()

@@ -24,6 +24,10 @@ namespace napkin
 	 */
 	QColor lerpCol(const QColor& a, const QColor& b, qreal p);
 
+	qreal roundToInterval(qreal v, qreal step);
+	qreal floorToInterval(qreal v, qreal step);
+	qreal ceilToInterval(qreal v, qreal step);
+
 	/**
 	 * @return A dimmed foreground color based on the current QApplication style
 	 */
