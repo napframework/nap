@@ -39,27 +39,43 @@ void TimelineView::mousePressEvent(QMouseEvent* event)
 	bool lmb = event->buttons() == Qt::LeftButton;
 
 	auto item = itemAt(event->pos());
-	auto clickedEvent = dynamic_cast<BaseEventItem*>(item);
+	auto clickedEventItem = dynamic_cast<BaseEventItem*>(item);
+
+	mDragMode = NoDrag;
 
 	// Handle selection
 	if (lmb && !alt)
 	{
-		if (clickedEvent)
+		if (clickedEventItem) // clicked an event
 		{
 			if (shift)
 			{
-				clickedEvent->setSelected(true);
+				// append selection
+				clickedEventItem->setSelected(true);
 			} else if (ctrl)
 			{
-				clickedEvent->setSelected(!clickedEvent->isSelected());
+				// toggle selection
+				clickedEventItem->setSelected(!clickedEventItem->isSelected());
 			} else
 			{
-				if (!clickedEvent->isSelected())
+				// replace select
+				if (!clickedEventItem->isSelected())
 				{
+					// deselect others
 					for (auto m : selectedEventItems())
 						m->setSelected(false);
-					clickedEvent->setSelected(true);
+					clickedEventItem->setSelected(true);
 				}
+			}
+
+			bool leftGrip;
+			auto resizeItem = resizeHandleAt(event->pos(), leftGrip);
+			if (resizeItem)
+			{
+				mDragMode = leftGrip ? DragResizeLeft : DragResizeRight;
+			} else
+			{
+				mDragMode = DragMove;
 			}
 		} else
 		{
@@ -69,11 +85,11 @@ void TimelineView::mousePressEvent(QMouseEvent* event)
 					m->setSelected(false);
 			}
 		}
-		mSelectedPositions.clear();
+		mSelectedRanges.clear();
 		for (auto m : selectedEventItems())
 		{
 			moveItemToFront(*m);
-			mSelectedPositions.insert(m, m->scenePos());
+			mSelectedRanges.insert(m, m->range());
 		}
 
 		return;
@@ -91,32 +107,57 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event)
 	bool lmb = event->buttons() == Qt::LeftButton;
 	auto dragDelta = mapToScene(event->pos()) - mapToScene(mousePressedPos());
 
-	auto framestep = 1.0 / timeline()->framerate();
+	auto frameInterval = 1.0 / timeline()->framerate();
 
 	if (lmb && !alt)
 	{
 		for (auto item : selectedItems<EventItem>())
 		{
-			auto oldPos = mSelectedPositions[item];
-			auto newPos = oldPos + dragDelta;
+			if (mDragMode == DragMove)
+			{
+				Range oldRange = mSelectedRanges[item];
+				Range newRange = oldRange + dragDelta.x();
 
-//			auto h = item->event().track().height();
+				auto roundedStart = roundToInterval(newRange.start(), frameInterval);
+				newRange.moveTo(roundedStart);
 
-//			int track = qRound(newPos.y() / h);
-			auto roundedx = qRound(newPos.x() / framestep) * framestep;
+				item->event().setRange(newRange);
+				moveItemToFront(*item);
+			}
+			else if (mDragMode == DragResizeLeft)
+			{
+				Range range = mSelectedRanges[item];
+				qreal start = roundToInterval(range.start() + dragDelta.x(), frameInterval);
+				if (item->hasMinLength() && start > range.end() - item->minLength())
+					start = floorToInterval(range.end() - item->minLength(), frameInterval);
+				range.setStart(start);
 
-			newPos.setY(item->pos().y());
-//			newPos.setY(track * h);
-			newPos.setX(roundedx);
+				item->event().setRange(range);
+				moveItemToFront(*item);
 
-			item->setPos(newPos);
-			moveItemToFront(*item);
-			item->event().moveTo(roundedx);
+			}
+			else if (mDragMode == DragResizeRight)
+			{
+				Range range = mSelectedRanges[item];
+				qreal end = roundToInterval(range.end() + dragDelta.x(), frameInterval);
+				if (item->hasMinLength() && end < range.start() + item->minLength())
+					end = ceilToInterval(range.start() + item->minLength(), frameInterval);
+				range.setEnd(end);
+
+				item->event().setRange(range);
+				moveItemToFront(*item);
+			}
 
 		}
+	} else
+	{
+		bool left;
+		auto eventItem = resizeHandleAt(event->pos(), left);
+		if (eventItem)
+			setOverrideCursor(left ? mResizeCursorShapeLeft : mResizeCursorShapeRight);
+		else
+			restoreCursor();
 	}
-
-
 }
 
 void TimelineView::mouseReleaseEvent(QMouseEvent* event)
@@ -139,6 +180,45 @@ const QList<BaseEventItem*> TimelineView::selectedEventItems() const
 Timeline* TimelineView::timeline() const
 {
 	return dynamic_cast<TimelineScene*>(scene())->timeline();
+}
+
+void TimelineView::setOverrideCursor(const QCursor& c)
+{
+	if (mCursorOverridden)
+		return;
+	setCursor(c);
+	mCursorOverridden = true;
+}
+
+void TimelineView::restoreCursor()
+{
+	setCursor(mDefaultCursor);
+	mCursorOverridden = false;
+}
+
+BaseEventItem* TimelineView::resizeHandleAt(const QPointF& pos, bool& leftGrip) const
+{
+	auto eventItem = dynamic_cast<BaseEventItem*>(itemAt(pos.toPoint()));
+	if (!eventItem || !eventItem->isResizable())
+		return nullptr;
+
+	auto sceneScale = getScale(transform());
+
+	// position of mouse, relative to item, in scene space
+	auto localPos = mapToScene(pos.toPoint()) - eventItem->scenePos();
+
+	qreal gripWidth = mResizeGripWidth / sceneScale.width();
+	if (localPos.x() <= gripWidth)
+	{
+		leftGrip = true;
+		return eventItem;
+	} else if (localPos.x() > eventItem->range().length() - gripWidth)
+	{
+		leftGrip = false;
+		return eventItem;
+	}
+
+	return nullptr;
 }
 
 

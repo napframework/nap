@@ -17,6 +17,7 @@ namespace napkin {
 		Range(const Range& other) : mStart(other.start()), mEnd(other.end()) {}
 		qreal start() const { return mStart; }
 		void setStart(qreal start) { mStart = start; }
+		void move(qreal delta) { mStart += delta; mEnd += delta; }
 		void moveTo(qreal start) { qreal length = mEnd - mStart; mStart = start; mEnd = mStart + length; }
 		qreal end() const { return mEnd; }
 		void setEnd(qreal end) { mEnd = end; }
@@ -24,7 +25,9 @@ namespace napkin {
 		void set(qreal start, qreal end) { mStart = start; mEnd = end; }
 		void set(const Range& range) { mStart = range.start(); mEnd = range.end(); }
 		bool operator==(const Range& other) const { return mStart == other.start() && mEnd == other.end(); }
+		Range operator+(qreal off) const { return offset(off); }
 		operator const QString() const { return QString("Range(%1, %2)").arg(QString::number(mStart), QString::number(mEnd)); }
+		Range offset(qreal delta) const { Range r(*this); r.move(delta); return r; }
 	private:
 		qreal mStart;
 		qreal mEnd;
@@ -39,29 +42,21 @@ namespace napkin {
 		Event(Track& parent, const QString& name, qreal start, qreal end);
 
 		const QString& name() const { return mName; }
-
 		void setName(const QString& name);
-
 		qreal start() const { return mRange.start(); }
-
 		void setStart(qreal start);
-
 		void moveTo(qreal start);
-
+		void move(qreal delta);
+		void setRange(const Range& range);
 		qreal end() const { return mRange.end(); }
-
 		void setEnd(qreal end);
-
 		qreal length() const;
-
 		const QColor& color() const { return mColor; }
-
 		void setColor(const QColor& col);
-
 		Track& track() const;
-
 		void setTrack(Track& track);
-
+		qreal minLength() const { return 1; }
+		qreal maxLength() const { return -1; }
 	Q_SIGNALS:
 
 		void changed(Event& event);
@@ -76,31 +71,18 @@ namespace napkin {
 	Q_OBJECT
 	public:
 		Track(QObject& parent, const QString& name);
-
 		void setHeight(int height) { mHeight = height; changed(*this); }
-
 		int height() const { return mHeight; }
-
 		const QString& name() const { return mName; }
-
 		void setName(const QString& name);
-
 		Event* addEvent(const QString& name, qreal start, qreal end);
-
 		Track* addTrack(const QString& name);
-
 		const QList<Event*>& events() const { return mEvents; }
-
 		void eventsRecursive(QList<Event*>& events) const;
-
 		Timeline& timeline() const;
-
 		const QList<Track*>& childTracks() const { return mChildren; }
-
 		Track* parentTrack() const;
-
 		int index();
-
 		bool range(qreal& start, qreal& end);
 
 	Q_SIGNALS:
