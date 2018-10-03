@@ -53,6 +53,18 @@ void Event::moveTo(qreal start)
 	changed(*this);
 }
 
+void Event::move(qreal delta)
+{
+	mRange.move(delta);
+	changed(*this);
+}
+
+void Event::setRange(const Range& range)
+{
+	mRange.set(range);
+	changed(*this);
+}
+
 Track::Track(QObject& parent, const QString& name) : mName(name), QObject(&parent)
 {
 

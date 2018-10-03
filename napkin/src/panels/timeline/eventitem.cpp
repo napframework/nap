@@ -1,13 +1,15 @@
 #include "eventitem.h"
 #include <QPainter>
 #include <QGraphicsScene>
-#include <QtGui/QtGui>
+#include <QtGui>
+#include <QApplication>
 
 napkin::BaseEventItem::BaseEventItem(QGraphicsItem* parent)
 		: QObject(), QGraphicsRectItem(parent)
 {
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemIsMovable, true);
+	setAcceptHoverEvents(true);
 	mBrush = QBrush(QColor("#89A"));
 	mBrushSelected = QBrush(QColor("#9AB"));
 
@@ -34,8 +36,23 @@ void napkin::BaseEventItem::paint(QPainter* painter, const QStyleOptionGraphicsI
 
 QRectF napkin::BaseEventItem::boundingRect() const
 {
-	qreal penWidth = pen().width();
 	return rect();
+}
+
+void napkin::BaseEventItem::setRange(const napkin::Range& range)
+{
+	setPos(range.start(), 0);
+	setGeometry(QRectF(0, 0, range.length(), rect().height()));
+}
+
+void napkin::BaseEventItem::setGeometry(const QRectF& rect)
+{
+	setRect(rect);
+}
+
+napkin::Range napkin::BaseEventItem::range() const
+{
+	return Range(pos().x(), pos().x() + rect().width());
 }
 
 napkin::GroupEventItem::GroupEventItem(QGraphicsItem* parent, napkin::Track& track) : BaseEventItem(parent), mTrack(track)
@@ -69,8 +86,8 @@ void napkin::GroupEventItem::onTrackOrEventChanged()
 
 napkin::EventItem::EventItem(QGraphicsItem* parent, napkin::Event& event) : BaseEventItem(parent), mEvent(event)
 {
-	event.connect(&event, &Event::changed, this, &EventItem::updateGeometry);
-	updateGeometry(event);
+	event.connect(&event, &Event::changed, this, &EventItem::updateGeometryFromEvent);
+	updateGeometryFromEvent();
 
 }
 
@@ -98,9 +115,9 @@ void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 	painter->restore();
 }
 
-void napkin::EventItem::updateGeometry(Event& event)
+void napkin::EventItem::updateGeometryFromEvent()
 {
 	// update geometry based on event length
-	setRect(0, 0, event.length(), event.track().height());
+	setPos(mEvent.start(), pos().y());
+	setGeometry(QRectF(0, 0, mEvent.length(), mEvent.track().height()));
 }
-

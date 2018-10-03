@@ -8,11 +8,12 @@
 #include "gridview.h"
 
 
-namespace napkin {
+namespace napkin
+{
 
-	class TimelineView : public GridView {
+	class TimelineView : public GridView
+	{
 	Q_OBJECT
-
 	public:
 		TimelineView();
 		~TimelineView() {}
@@ -20,6 +21,10 @@ namespace napkin {
 		void setTimeScale(qreal scale);
 
 		const Range getViewRange() const;
+
+		enum DragMode {
+			NoDrag, DragMove, DragResizeLeft, DragResizeRight
+		};
 
 	protected:
 		void mousePressEvent(QMouseEvent* event) override;
@@ -32,9 +37,14 @@ namespace napkin {
 	private:
 		Timeline* timeline() const;
 		const QList<BaseEventItem*> selectedEventItems() const;
+		void setOverrideCursor(const QCursor& cursor);
+
+		void restoreCursor();
+		BaseEventItem* resizeHandleAt(const QPointF& pos, bool& leftGrip) const;
 
 		template<typename T>
-		QList<T*> selectedItems() const {
+		QList<T*> selectedItems() const
+		{
 			QList<T*> items;
 			for (auto m : scene()->selectedItems())
 			{
@@ -45,7 +55,13 @@ namespace napkin {
 			return items;
 		}
 
-		QMap<BaseEventItem*, QPointF> mSelectedPositions;
+		QMap<BaseEventItem*, Range> mSelectedRanges;
+		qreal mResizeGripWidth = 10;
+		QCursor mResizeCursorShapeRight = QCursor(Qt::SizeHorCursor);
+		QCursor mResizeCursorShapeLeft = QCursor(Qt::SizeHorCursor);
+		QCursor mDefaultCursor;
+		bool mCursorOverridden = false;
+		DragMode mDragMode = NoDrag;
 
 	};
 
