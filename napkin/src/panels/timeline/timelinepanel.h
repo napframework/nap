@@ -33,7 +33,7 @@ namespace napkin
 	{
 	public:
 		TimelinePanel();
-		~TimelinePanel() {}
+  		~TimelinePanel() {}
 
 		void setTimeScale(qreal scale);
 

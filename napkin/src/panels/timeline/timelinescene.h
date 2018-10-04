@@ -27,12 +27,16 @@ namespace napkin
 	private:
 		void onEventAdded(Event& event);
 		void onEventRemoved(Event& event);
+		void onTickAdded(Tick& tick);
+		void onTickRemoved(Tick& tick);
 
 		QList<TrackItem*> trackItems() const;
 		TrackItem* trackItem(Track& track);
 
 
+
 		EventItem* eventItem(Event& event);
+		TickItem* tickItem(Tick& tick);
 
 		Event* mGroupEvent = nullptr;
 

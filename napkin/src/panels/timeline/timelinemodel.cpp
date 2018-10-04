@@ -84,12 +84,23 @@ Event* Track::addEvent(const QString& name, qreal start, qreal end)
 {
 	auto event = new Event(*this, name, start, end);
 	mEvents << event;
-	connect(event, &Event::changed, [this](Event& evt) {
-		changed(*this);
-	});
+//	connect(event, &Event::changed, [this](Event& evt) {
+//		changed(*this);
+//	});
 	eventAdded(*event);
 	changed(*this);
 	return event;
+}
+
+Tick* Track::addTick(qreal time)
+{
+	auto tick = new Tick(*this, time);
+	mTicks << tick;
+//	connect(tick, &Tick::changed, [this](Tick& tick) {
+//		changed(*this);
+//	});
+	tickAdded(*tick);
+	return tick;
 }
 
 Timeline& Track::timeline() const
@@ -143,6 +154,16 @@ void Track::eventsRecursive(QList<Event*>& events) const
 		track->eventsRecursive(events);
 }
 
+Tick::Tick(Track& parent, qreal time) : mTime(time), QObject(&parent)
+{
+
+}
+
+void Tick::setTime(qreal time)
+{
+	mTime = time;
+	changed(*this);
+}
 
 Track* Timeline::addTrack(const QString& name, Track* parent)
 {

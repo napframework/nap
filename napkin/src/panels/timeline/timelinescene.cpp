@@ -54,11 +54,16 @@ void TimelineScene::addTrack(Track& track, Track* parentTrack)
 	for (auto event : track.events())
 		onEventAdded(*event);
 
+	for (auto tick : track.ticks())
+		onTickAdded(*tick);
+
 	for (auto childtrack : track.childTracks())
 		addTrack(*childtrack);
 
 	connect(&track, &Track::eventAdded, this, &TimelineScene::onEventAdded);
 	connect(&track, &Track::eventRemoved, this, &TimelineScene::onEventRemoved);
+	connect(&track, &Track::tickAdded, this, &TimelineScene::onTickAdded);
+	connect(&track, &Track::tickRemoved, this, &TimelineScene::onTickRemoved);
 
 }
 
@@ -86,6 +91,20 @@ void TimelineScene::onEventRemoved(Event& event)
 	item->setParent(nullptr);
 	removeItem(item);
 }
+
+void TimelineScene::onTickAdded(Tick& tick)
+{
+	auto item = new TickItem(trackItem(tick.track()), tick);
+	item->setX(tick.time());
+}
+
+void TimelineScene::onTickRemoved(Tick& tick)
+{
+	auto item = tickItem(tick);
+	item->setParentItem(nullptr);
+	removeItem(item);
+}
+
 
 QList<TrackItem*> TimelineScene::trackItems() const
 {
@@ -121,6 +140,18 @@ EventItem* TimelineScene::eventItem(Event& event)
 	return nullptr;
 }
 
+TickItem* TimelineScene::tickItem(Tick& tick)
+{
+	for (auto item : mEventGroup.childItems())
+	{
+		auto tickItem = dynamic_cast<TickItem*>(item);
+		if (tickItem && &tickItem->tick() == &tick)
+			return tickItem;
+	}
+	return nullptr;
+}
+
+
 void TimelineScene::setVisibleTracks(const QList<Track*> expandedTracks)
 {
 	qreal y = 0;
@@ -146,5 +177,4 @@ bool TimelineScene::isGroupEventsVisible() const
 {
 	return mGroupEventsVisible;
 }
-
 
