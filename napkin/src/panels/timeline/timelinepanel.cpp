@@ -110,6 +110,13 @@ void TimelinePanel::demo()
 		track->addEvent("Derde Event", 160, 250);
 	}
 	{
+		auto track = timeline->addTrack("Tick Track");
+		track->addTick(0);
+		track->addTick(100);
+		track->addTick(150);
+		track->addTick(200);
+	}
+	{
 		auto track = timeline->addTrack("Second Event Track");
 		track->setHeight(20);
 		auto child1 = track->addTrack("A Child Track");

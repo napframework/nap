@@ -121,3 +121,12 @@ void napkin::EventItem::updateGeometryFromEvent()
 	setPos(mEvent.start(), pos().y());
 	setGeometry(QRectF(0, 0, mEvent.length(), mEvent.track().height()));
 }
+
+napkin::TickItem::TickItem(QGraphicsItem* parent, napkin::Tick& tick) : mTick(tick), QGraphicsPathItem(parent)
+{
+	setHandlesChildEvents(false);
+	QPainterPath path;
+	path.addEllipse(-1, -1, 2, 20);
+	setPath(path);
+}
+

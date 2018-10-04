@@ -22,4 +22,5 @@ namespace napkin {
 		Track& mTrack;
 		GroupEventItem mGroupEventItem;
 	};
+
 }

@@ -67,6 +67,19 @@ namespace napkin {
 		QColor mColor;
 	};
 
+	class Tick : public QObject {
+		Q_OBJECT
+	public:
+		Tick(Track& parent, qreal time);
+		qreal time() const { return mTime; }
+		void setTime(qreal time);
+		Track& track() { return *(Track*) parent(); }
+	Q_SIGNALS:
+		void changed(Tick& tick);
+	private:
+		qreal mTime;
+	};
+
 	class Track : public QObject {
 	Q_OBJECT
 	public:
@@ -76,8 +89,10 @@ namespace napkin {
 		const QString& name() const { return mName; }
 		void setName(const QString& name);
 		Event* addEvent(const QString& name, qreal start, qreal end);
+		Tick* addTick(qreal time);
 		Track* addTrack(const QString& name);
 		const QList<Event*>& events() const { return mEvents; }
+		const QList<Tick*>& ticks() const { return mTicks; }
 		void eventsRecursive(QList<Event*>& events) const;
 		Timeline& timeline() const;
 		const QList<Track*>& childTracks() const { return mChildren; }
@@ -90,13 +105,16 @@ namespace napkin {
 		void trackRemoved(Track& track);
 
 		void eventAdded(Event& event);
+		void tickAdded(Tick& tick);
 		void eventRemoved(Event& event);
+		void tickRemoved(Tick& tick);
 		void changed(Track& track);
 
 
 	private:
 		QString mName;
 		QList<Event*> mEvents;
+		QList<Tick*> mTicks;
 		QList<Track*> mChildren;
 		int mHeight = 30;
 	};
@@ -120,6 +138,7 @@ namespace napkin {
 		void trackRemoved(Track& track);
 		void eventAdded(Event& event);
 		void eventRemoved(Event& event);
+
 
 	private:
 		QList<Track*> mTracks;

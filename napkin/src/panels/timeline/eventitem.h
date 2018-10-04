@@ -62,4 +62,13 @@ namespace napkin
 		Event& mEvent;
 	};
 
+	class TickItem : public QGraphicsPathItem {
+	public:
+		explicit TickItem(QGraphicsItem* parent, Tick& tick);
+		Tick& tick() const { return mTick; }
+	private:
+		Tick& mTick;
+
+	};
+
 }
