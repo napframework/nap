@@ -74,6 +74,7 @@ namespace napkin {
 		qreal time() const { return mTime; }
 		void setTime(qreal time);
 		Track& track() { return *(Track*) parent(); }
+		const QColor color() const { return Qt::red; }
 	Q_SIGNALS:
 		void changed(Tick& tick);
 	private:

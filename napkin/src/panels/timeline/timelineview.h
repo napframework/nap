@@ -36,14 +36,13 @@ namespace napkin
 
 	private:
 		Timeline* timeline() const;
-		const QList<BaseEventItem*> selectedEventItems() const;
 		void setOverrideCursor(const QCursor& cursor);
 
 		void restoreCursor();
 		BaseEventItem* resizeHandleAt(const QPointF& pos, bool& leftGrip) const;
 
 		template<typename T>
-		QList<T*> selectedItems() const
+		const QList<T*> selectedItems() const
 		{
 			QList<T*> items;
 			for (auto m : scene()->selectedItems())
@@ -56,6 +55,7 @@ namespace napkin
 		}
 
 		QMap<BaseEventItem*, Range> mSelectedRanges;
+		QMap<TickItem*, qreal> mSelectedTimes;
 		qreal mResizeGripWidth = 10;
 		QCursor mResizeCursorShapeRight = QCursor(Qt::SizeHorCursor);
 		QCursor mResizeCursorShapeLeft = QCursor(Qt::SizeHorCursor);
