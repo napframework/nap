@@ -156,18 +156,18 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event)
 				auto roundedTime = roundToInterval(newTime, frameInterval);
 
 				tickItem->tick().setTime(roundedTime);
-
-			} else
-			{
-				bool left;
-				auto eventItem = resizeHandleAt(event->pos(), left);
-				if (eventItem)
-					setOverrideCursor(left ? mResizeCursorShapeLeft : mResizeCursorShapeRight);
-				else
-					restoreCursor();
 			}
 		}
+	} else
+	{
+		bool left;
+		auto eventItem = resizeHandleAt(event->pos(), left);
+		if (eventItem)
+			setOverrideCursor(left ? mResizeCursorShapeLeft : mResizeCursorShapeRight);
+		else
+			restoreCursor();
 	}
+
 }
 
 void TimelineView::mouseReleaseEvent(QMouseEvent* event)
