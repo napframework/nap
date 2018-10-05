@@ -4,12 +4,12 @@
 #include <QtGui>
 #include <QApplication>
 
-napkin::BaseEventItem::BaseEventItem(QGraphicsItem* parent)
-		: QObject(), QGraphicsRectItem(parent)
+napkin::TimelineElementItem::TimelineElementItem(QGraphicsItem* parent) : QGraphicsPathItem(parent)
 {
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemIsMovable, true);
 	setAcceptHoverEvents(true);
+
 	mBrush = QBrush(QColor("#89A"));
 	mBrushSelected = QBrush(QColor("#9AB"));
 
@@ -17,6 +17,12 @@ napkin::BaseEventItem::BaseEventItem(QGraphicsItem* parent)
 	mPenBorder.setCosmetic(true);
 	mPenBorderSelected = QPen(Qt::white, 1);
 	mPenBorderSelected.setCosmetic(true);
+}
+
+
+napkin::BaseEventItem::BaseEventItem(QGraphicsItem* parent)
+		: TimelineElementItem(parent)
+{
 }
 
 void napkin::BaseEventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -55,14 +61,25 @@ napkin::Range napkin::BaseEventItem::range() const
 	return Range(pos().x(), pos().x() + rect().width());
 }
 
-napkin::GroupEventItem::GroupEventItem(QGraphicsItem* parent, napkin::Track& track) : BaseEventItem(parent), mTrack(track)
+void napkin::BaseEventItem::setRect(const QRectF& rect) {
+	mRect = rect;
+	QPainterPath p;
+	p.addRect(rect);
+	setPath(p);
+}
+
+napkin::GroupEventItem::GroupEventItem(QGraphicsItem* parent, napkin::Track& track) : BaseEventItem(parent),
+																					  mTrack(track)
 {
-	connect(&track, &Track::changed, [this](Track& track) {
+	connect(&track, &Track::changed, [this](Track& track)
+	{
 		onTrackOrEventChanged();
 	});
 
-	for (auto evt : track.events()) {
-		connect(evt, &Event::changed, [this](Event& evt) {
+	for (auto evt : track.events())
+	{
+		connect(evt, &Event::changed, [this](Event& evt)
+		{
 			onTrackOrEventChanged();
 		});
 	}
@@ -79,7 +96,7 @@ void napkin::GroupEventItem::onTrackOrEventChanged()
 		return;
 
 	qreal length = stop - start;
-	setRect(start, 0, length, mTrack.height());
+	setRect(QRectF(start, 0, length, mTrack.height()));
 	update();
 }
 
@@ -122,11 +139,32 @@ void napkin::EventItem::updateGeometryFromEvent()
 	setGeometry(QRectF(0, 0, mEvent.length(), mEvent.track().height()));
 }
 
-napkin::TickItem::TickItem(QGraphicsItem* parent, napkin::Tick& tick) : mTick(tick), QGraphicsPathItem(parent)
+napkin::TickItem::TickItem(QGraphicsItem* parent, napkin::Tick& tick) : mTick(tick), TimelineElementItem(parent)
 {
+	qreal size = 10;
+	setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+	setFlag(QGraphicsItem::ItemIsSelectable, true);
+	setFlag(QGraphicsItem::ItemIsMovable, true);
 	setHandlesChildEvents(false);
+
 	QPainterPath path;
-	path.addEllipse(-1, -1, 2, 20);
+	path.moveTo(-size, 0);
+	path.lineTo(0, -size);
+	path.lineTo(size, 0);
+	path.lineTo(0, size);
+	path.lineTo(-size, 0);
 	setPath(path);
+
+	connect(&tick, &Tick::changed, this, &TickItem::updateGeometryFromEvent);
+}
+void napkin::TickItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+	painter->setPen(isSelected() ? mPenBorderSelected : mPenBorder);
+	painter->setBrush(isSelected() ? mBrushSelected : mBrush);
+	painter->drawPath(path());
+}
+void napkin::TickItem::updateGeometryFromEvent()
+{
+	setPos(mTick.time(), pos().y());
 }
 

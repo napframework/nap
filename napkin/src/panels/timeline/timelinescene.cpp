@@ -94,8 +94,10 @@ void TimelineScene::onEventRemoved(Event& event)
 
 void TimelineScene::onTickAdded(Tick& tick)
 {
-	auto item = new TickItem(trackItem(tick.track()), tick);
+	auto& track = tick.track();
+	auto item = new TickItem(trackItem(track), tick);
 	item->setX(tick.time());
+	item->setY(track.height() / 2);
 }
 
 void TimelineScene::onTickRemoved(Tick& tick)

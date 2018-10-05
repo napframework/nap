@@ -39,32 +39,33 @@ void TimelineView::mousePressEvent(QMouseEvent* event)
 	bool lmb = event->buttons() == Qt::LeftButton;
 
 	auto item = itemAt(event->pos());
-	auto clickedEventItem = dynamic_cast<BaseEventItem*>(item);
+	auto clickedTimelineItem = dynamic_cast<TimelineElementItem*>(item);
+	auto clickedEvent = dynamic_cast<BaseEventItem*>(item);
 
 	mDragMode = NoDrag;
 
 	// Handle selection
 	if (lmb && !alt)
 	{
-		if (clickedEventItem) // clicked an event
+		if (clickedTimelineItem) // clicked an event
 		{
 			if (shift)
 			{
 				// append selection
-				clickedEventItem->setSelected(true);
+				clickedTimelineItem->setSelected(true);
 			} else if (ctrl)
 			{
 				// toggle selection
-				clickedEventItem->setSelected(!clickedEventItem->isSelected());
+				clickedTimelineItem->setSelected(!clickedTimelineItem->isSelected());
 			} else
 			{
 				// replace select
-				if (!clickedEventItem->isSelected())
+				if (!clickedTimelineItem->isSelected())
 				{
 					// deselect others
-					for (auto m : selectedEventItems())
+					for (auto m : selectedItems<TimelineElementItem>())
 						m->setSelected(false);
-					clickedEventItem->setSelected(true);
+					clickedTimelineItem->setSelected(true);
 				}
 			}
 
@@ -81,15 +82,21 @@ void TimelineView::mousePressEvent(QMouseEvent* event)
 		{
 			if (!shift && !ctrl)
 			{
-				for (auto m : selectedEventItems())
+				for (auto m : selectedItems<TimelineElementItem>())
 					m->setSelected(false);
 			}
 		}
 		mSelectedRanges.clear();
-		for (auto m : selectedEventItems())
+		for (auto m : selectedItems<EventItem>())
 		{
 			moveItemToFront(*m);
 			mSelectedRanges.insert(m, m->range());
+		}
+
+		for (auto m : selectedItems<TickItem>())
+		{
+			moveItemToFront(*m);
+			mSelectedTimes.insert(m, m->tick().time());
 		}
 
 		return;
@@ -111,70 +118,61 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event)
 
 	if (lmb && !alt)
 	{
-		for (auto item : selectedItems<EventItem>())
+		for (auto item : selectedItems<TimelineElementItem>())
 		{
-			if (mDragMode == DragMove)
+			auto eventItem = dynamic_cast<EventItem*>(item);
+			if (eventItem)
 			{
-				Range oldRange = mSelectedRanges[item];
-				Range newRange = oldRange + dragDelta.x();
+				Range range = mSelectedRanges[eventItem];
+				if (mDragMode == DragMove)
+				{
+					range = range.offset(dragDelta.x());
 
-				auto roundedStart = roundToInterval(newRange.start(), frameInterval);
-				newRange.moveTo(roundedStart);
+					auto roundedStart = roundToInterval(range.start(), frameInterval);
+					range.moveTo(roundedStart);
 
-				item->event().setRange(newRange);
-				moveItemToFront(*item);
+				} else if (mDragMode == DragResizeLeft)
+				{
+					qreal start = roundToInterval(range.start() + dragDelta.x(), frameInterval);
+					if (eventItem->hasMinLength() && start > range.end() - eventItem->minLength())
+						start = floorToInterval(range.end() - eventItem->minLength(), frameInterval);
+					range.setStart(start);
+
+				} else if (mDragMode == DragResizeRight)
+				{
+					qreal end = roundToInterval(range.end() + dragDelta.x(), frameInterval);
+					if (eventItem->hasMinLength() && end < range.start() + eventItem->minLength())
+						end = ceilToInterval(range.start() + eventItem->minLength(), frameInterval);
+					range.setEnd(end);
+				}
+				eventItem->event().setRange(range);
 			}
-			else if (mDragMode == DragResizeLeft)
+			auto tickItem = dynamic_cast<TickItem*>(item);
+			if (tickItem)
 			{
-				Range range = mSelectedRanges[item];
-				qreal start = roundToInterval(range.start() + dragDelta.x(), frameInterval);
-				if (item->hasMinLength() && start > range.end() - item->minLength())
-					start = floorToInterval(range.end() - item->minLength(), frameInterval);
-				range.setStart(start);
+				qreal oldTime = mSelectedTimes[tickItem];
+				qreal newTime = oldTime + dragDelta.x();
 
-				item->event().setRange(range);
-				moveItemToFront(*item);
+				auto roundedTime = roundToInterval(newTime, frameInterval);
 
-			}
-			else if (mDragMode == DragResizeRight)
+				tickItem->tick().setTime(roundedTime);
+
+			} else
 			{
-				Range range = mSelectedRanges[item];
-				qreal end = roundToInterval(range.end() + dragDelta.x(), frameInterval);
-				if (item->hasMinLength() && end < range.start() + item->minLength())
-					end = ceilToInterval(range.start() + item->minLength(), frameInterval);
-				range.setEnd(end);
-
-				item->event().setRange(range);
-				moveItemToFront(*item);
+				bool left;
+				auto eventItem = resizeHandleAt(event->pos(), left);
+				if (eventItem)
+					setOverrideCursor(left ? mResizeCursorShapeLeft : mResizeCursorShapeRight);
+				else
+					restoreCursor();
 			}
-
 		}
-	} else
-	{
-		bool left;
-		auto eventItem = resizeHandleAt(event->pos(), left);
-		if (eventItem)
-			setOverrideCursor(left ? mResizeCursorShapeLeft : mResizeCursorShapeRight);
-		else
-			restoreCursor();
 	}
 }
 
 void TimelineView::mouseReleaseEvent(QMouseEvent* event)
 {
 	GridView::mouseReleaseEvent(event);
-}
-
-const QList<BaseEventItem*> TimelineView::selectedEventItems() const
-{
-	QList<BaseEventItem*> items;
-	for (auto m : scene()->selectedItems())
-	{
-		auto eventItem = dynamic_cast<BaseEventItem*>(m);
-		if (eventItem)
-			items << eventItem;
-	}
-	return items;
 }
 
 Timeline* TimelineView::timeline() const
