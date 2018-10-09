@@ -55,8 +55,8 @@ namespace napkin {
 		void setColor(const QColor& col);
 		Track& track() const;
 		void setTrack(Track& track);
-		qreal minLength() const { return 1; }
-		qreal maxLength() const { return -1; }
+		qreal minLength() const;
+		qreal maxLength() const;
 	Q_SIGNALS:
 
 		void changed(Event& event);
@@ -127,12 +127,15 @@ namespace napkin {
 		Timeline(QObject* parent) : QObject(parent) {}
 
 		Track* addTrack(const QString& name, Track* parent = nullptr);
-
 		void removeTrack(Track& track);
-
 		const QList<Track*>& tracks() const { return mTracks; }
 
 		int framerate() const { return mFramerate; }
+
+		qreal minEventLength() const { return mMinEventLength; }
+		void setMinEventLength(qreal len) { mMinEventLength = len; }
+		qreal maxEventLength() const { return mMaxEventLength; }
+		void setMaxEventLength(qreal len) { mMaxEventLength = len; }
 
 	Q_SIGNALS:
 		void trackAdded(Track& track);
@@ -144,5 +147,7 @@ namespace napkin {
 	private:
 		QList<Track*> mTracks;
 		int mFramerate = 30;
+		qreal mMinEventLength = 1;
+		qreal mMaxEventLength = -1;
 	};
 }
