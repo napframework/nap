@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QGraphicsView>
 #include <QGraphicsRectItem>
+#include <QtWidgets/QRubberBand>
 
 namespace napkin {
 
@@ -46,6 +47,11 @@ namespace napkin {
 		void viewTransformed();
 
 	protected:
+		void startRubberBand(const QPoint& pos);
+		void updateRubberBand(const QPoint& pos);
+		void hideRubberBand();
+		bool isRubberBandVisible() const { return mRubberBand.isVisible(); }
+
 		void drawBackground(QPainter* painter, const QRectF& rect) override;
 
 		void mousePressEvent(QMouseEvent* event) override;
@@ -60,10 +66,12 @@ namespace napkin {
 		const QPointF viewScale() const;
 		const QPointF viewPos() const;
 
+
 		QPoint mMouseLastPos;
 		QPoint mMouseDelta;
 		QSize mViewSize;
 		QFont mRulerFont;
+		QRubberBand mRubberBand;
 		bool mGridEnabled = true;
 
 		ZoomMode mZoomMode = ZoomMode::Horizontal;

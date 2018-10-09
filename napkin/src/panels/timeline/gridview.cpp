@@ -27,7 +27,7 @@ QString secondsToSMPTE(qreal seconds, int framerate)
 									  QString::asprintf("%02d", f));
 }
 
-GridView::GridView() : QGraphicsView()
+GridView::GridView() : QGraphicsView(), mRubberBand(QRubberBand::Rectangle, this)
 {
 	setTransformationAnchor(QGraphicsView::NoAnchor);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
@@ -41,6 +41,8 @@ GridView::GridView() : QGraphicsView()
 	mPanBounds.setTop(std::numeric_limits<qreal>::min());
 	mPanBounds.setRight(std::numeric_limits<qreal>::max());
 	mPanBounds.setBottom(std::numeric_limits<qreal>::max());
+
+	mRubberBand.hide();
 }
 
 
@@ -48,6 +50,15 @@ void GridView::mousePressEvent(QMouseEvent* event)
 {
 	mMousePressPos = event->pos();
 	mMouseLastPos = event->pos();
+
+	bool lmb = event->buttons() == Qt::LeftButton;
+	bool mmb = event->buttons() == Qt::MiddleButton;
+	bool rmb = event->buttons() == Qt::RightButton;
+	bool altKey = event->modifiers() == Qt::AltModifier;
+
+	auto clickedItem = itemAt(event->pos());
+	if (lmb && !clickedItem)
+		startRubberBand(event->pos());
 }
 
 void GridView::mouseMoveEvent(QMouseEvent* event)
@@ -71,6 +82,8 @@ void GridView::mouseMoveEvent(QMouseEvent* event)
 		event->accept();
 	}
 
+	updateRubberBand(mousePos);
+
 	mMouseLastPos = mousePos;
 	event->ignore();
 }
@@ -78,6 +91,7 @@ void GridView::mouseMoveEvent(QMouseEvent* event)
 void GridView::mouseReleaseEvent(QMouseEvent* event)
 {
 	QGraphicsView::mouseReleaseEvent(event);
+	hideRubberBand();
 }
 
 void GridView::keyPressEvent(QKeyEvent* event)
@@ -478,5 +492,21 @@ void GridView::setPanBounds(qreal left, qreal top, qreal right, qreal bottom)
 {
 	mPanBounds = QRectF(left, top, right, bottom);
 	constrainView();
+}
+
+void GridView::startRubberBand(const QPoint& pos)
+{
+	mRubberBand.setGeometry(QRect(pos, QSize()));
+	mRubberBand.show();
+}
+
+void GridView::updateRubberBand(const QPoint& pos)
+{
+	mRubberBand.setGeometry(QRect(mMousePressPos, pos).normalized());
+}
+
+void GridView::hideRubberBand()
+{
+	mRubberBand.hide();
 }
 

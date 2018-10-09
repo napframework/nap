@@ -80,11 +80,14 @@ void TimelineView::mousePressEvent(QMouseEvent* event)
 			}
 		} else
 		{
+			// clicked on background
 			if (!shift && !ctrl)
 			{
 				for (auto m : selectedItems<TimelineElementItem>())
 					m->setSelected(false);
 			}
+
+			startRubberBand(event->pos());
 		}
 		mSelectedRanges.clear();
 		for (auto m : selectedItems<EventItem>())
@@ -116,7 +119,10 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event)
 
 	auto frameInterval = 1.0 / timeline()->framerate();
 
-	if (lmb && !alt)
+	if (isRubberBandVisible()) {
+		updateRubberBand(event->pos());
+	}
+	else if (lmb && !alt)
 	{
 		for (auto item : selectedItems<TimelineElementItem>())
 		{
