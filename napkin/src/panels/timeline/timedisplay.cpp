@@ -243,3 +243,34 @@ const QString napkin::FloatTimeDisplay::timeToString(qreal interval, qreal time)
 	return QString::number(time);
 }
 
+qreal napkin::AnimationTimeDisplay::calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const
+{
+	qreal ival;
+	if (INTERVALS_FRAME.contains(mFramerate))
+	{
+		if (calcInterval(windowSize, viewWidth, minStepSize, INTERVALS_FRAME[mFramerate], ival))
+			return ival;
+	}
+
+	if (calcInterval(windowSize, viewWidth, minStepSize, INTERVALS_TIME, ival))
+		return ival;
+
+	return -1;
+}
+const QString napkin::AnimationTimeDisplay::timeToString(qreal interval, qreal time) const
+{
+	if (time == 0)
+		return "0";
+
+	QMapIterator<qreal, QString> iter(TIME_SUFFIXES);
+	iter.toBack();
+	while (iter.hasPrevious()) {
+		iter.previous();
+		if (fmod(time, iter.key()) == 0)
+			return QString::number(time / iter.key()) + iter.value();
+
+		if (interval >= iter.key())
+			return QString("%1%2").arg(QString::number(time / (qreal)iter.key()), iter.value());
+	}
+	return QString::number(time);
+}

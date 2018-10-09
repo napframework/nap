@@ -43,12 +43,11 @@ namespace napkin
 
 	protected:
 		void showEvent(QShowEvent* event) override;
+		void resizeEvent(QResizeEvent* event) override;
 
 	private:
 		void onTimelineViewTransformed();
-	protected:
-		void resizeEvent(QResizeEvent* event) override;
-	private:
+		void setupRulerContextMenu();
 		QActionGroup& createTimeFormatActionGroup();
 
 		void initOutlineModelHandlers();

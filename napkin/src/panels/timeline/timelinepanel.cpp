@@ -60,9 +60,12 @@ TimelinePanel::TimelinePanel() : QWidget()
 	mTimeDisplays.emplace_back(std::make_unique<SMPTETimeDisplay>());
 	mTimeDisplays.emplace_back(std::make_unique<GeneralTimeDisplay>());
 	mTimeDisplays.emplace_back(std::make_unique<FloatTimeDisplay>());
+	mTimeDisplays.emplace_back(std::make_unique<AnimationTimeDisplay>());
 
 //    initOutlineModelHandlers();
 	createTimeFormatActionGroup();
+
+	setupRulerContextMenu();
 }
 
 void TimelinePanel::setTimeScale(qreal scale)
@@ -188,6 +191,18 @@ QActionGroup& TimelinePanel::createTimeFormatActionGroup()
 	}
 
 	return *actionGroupTimeFormat;
+}
+void TimelinePanel::setupRulerContextMenu()
+{
+	for (auto& disp : mTimeDisplays)
+	{
+		auto a = new QAction(disp->name(), &mRuler);
+		connect(a, &QAction::triggered, [this, &disp]() {
+			mRuler.setDisplayFormat(disp.get());
+		});
+		mRuler.addAction(a);
+	}
+	mRuler.setContextMenuPolicy(Qt::ContextMenuPolicy::ActionsContextMenu);
 }
 
 
