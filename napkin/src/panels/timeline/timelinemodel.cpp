@@ -1,5 +1,6 @@
 #include "timelinemodel.h"
 #include <QtDebug>
+#include <cassert>
 
 using namespace napkin;
 
@@ -65,6 +66,16 @@ void Event::setRange(const Range& range)
 	changed(*this);
 }
 
+qreal Event::minLength() const
+{
+	return track().timeline().minEventLength();
+}
+
+qreal Event::maxLength() const
+{
+	return track().timeline().maxEventLength();
+}
+
 Track::Track(QObject& parent, const QString& name) : mName(name), QObject(&parent)
 {
 
@@ -105,11 +116,13 @@ Tick* Track::addTick(qreal time)
 
 Timeline& Track::timeline() const
 {
-	Track* parentTrack = (Track*) parent();
-	if (parentTrack != nullptr)
-		return parentTrack->timeline();
+	auto timeline = dynamic_cast<Timeline*>(parent());
+	if (timeline)
+		return *timeline;
 
-	return *(Timeline*) parent();
+	auto parentTrack = dynamic_cast<Track*>(parent());
+	assert(parentTrack);
+	return parentTrack->timeline();
 }
 
 int Track::index()

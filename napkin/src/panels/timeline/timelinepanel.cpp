@@ -101,7 +101,7 @@ void TimelinePanel::demo()
 	namegen::NameGen gen;
 
 	auto timeline = new Timeline(this);
-
+	timeline->setMinEventLength(1.0/timeline->framerate());
 
 	{
 		auto track = timeline->addTrack("Event Track One");
