@@ -52,7 +52,6 @@ namespace napkin
 		qreal calcStepInterval(qreal windowSize, qreal viewSize, qreal minStepSize) const override;
 
 		const QString timeToString(qreal interval, qreal time) const override;
-
 	};
 
 	class FloatTimeDisplay : public TimeDisplay
@@ -63,6 +62,18 @@ namespace napkin
 		qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const override;
 
 		const QString timeToString(qreal interval, qreal time) const override;
+	};
+
+	class AnimationTimeDisplay : public TimeDisplay
+	{
+	public:
+		AnimationTimeDisplay(int framerate=30) : mFramerate(framerate), TimeDisplay() {}
+		QString name() const override { return "Animation"; };
+		qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const override;
+		const QString timeToString(qreal interval, qreal time) const override;
+		const int framerate() const { return mFramerate; }
+	private:
+		int mFramerate;
 	};
 
 } // namespace napkin

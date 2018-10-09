@@ -118,6 +118,11 @@ void napkin::Ruler::resizeEvent(QResizeEvent* event)
 {
 	update();
 }
+void napkin::Ruler::setDisplayFormat(napkin::TimeDisplay* fmt)
+{
+	mTimeConfig = fmt;
+	update();
+}
 
 
 
