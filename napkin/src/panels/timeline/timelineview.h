@@ -28,16 +28,14 @@ namespace napkin
 
 	protected:
 		void mousePressEvent(QMouseEvent* event) override;
-
 		void mouseMoveEvent(QMouseEvent* event) override;
-
 		void mouseReleaseEvent(QMouseEvent* event) override;
 
 
 	private:
 		Timeline* timeline() const;
 		void setOverrideCursor(const QCursor& cursor);
-
+		void selectItemsInRubberband();
 		void restoreCursor();
 		BaseEventItem* resizeHandleAt(const QPointF& pos, bool& leftGrip) const;
 

@@ -484,10 +484,12 @@ void GridView::setGridEnabled(bool enabled)
 {
 	mGridEnabled = enabled;
 }
+
 void GridView::setPanBounds(const QRectF& rec)
 {
 	mPanBounds = rec;
 }
+
 void GridView::setPanBounds(qreal left, qreal top, qreal right, qreal bottom)
 {
 	mPanBounds = QRectF(left, top, right, bottom);
@@ -509,4 +511,11 @@ void GridView::hideRubberBand()
 {
 	mRubberBand.hide();
 }
+
+const QRect GridView::rubberBandGeo() const
+{
+	return mRubberBand.geometry();
+}
+
+
 

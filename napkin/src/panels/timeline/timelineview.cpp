@@ -178,7 +178,23 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event)
 
 void TimelineView::mouseReleaseEvent(QMouseEvent* event)
 {
+	if (isRubberBandVisible())
+		selectItemsInRubberband();
+
 	GridView::mouseReleaseEvent(event);
+}
+
+void TimelineView::selectItemsInRubberband()
+{
+	for (auto m : selectedItems<TimelineElementItem>())
+		m->setSelected(false);
+
+	QList<TimelineElementItem*> elements;
+	for (auto item : items(rubberBandGeo())) {
+		auto element = dynamic_cast<TimelineElementItem*>(item);
+		if (element)
+			element->setSelected(true);
+	}
 }
 
 Timeline* TimelineView::timeline() const
