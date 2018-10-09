@@ -51,6 +51,7 @@ namespace napkin {
 		void updateRubberBand(const QPoint& pos);
 		void hideRubberBand();
 		bool isRubberBandVisible() const { return mRubberBand.isVisible(); }
+		const QRect rubberBandGeo() const;
 
 		void drawBackground(QPainter* painter, const QRectF& rect) override;
 
