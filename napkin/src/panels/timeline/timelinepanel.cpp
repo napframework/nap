@@ -53,8 +53,6 @@ TimelinePanel::TimelinePanel() : QWidget()
 
 	setTimeScale(10);
 
-	demo();
-
 	mScene.setVisibleTracks(mOutline.getVisibleTracks());
 
 	mTimeDisplays.emplace_back(std::make_unique<SMPTETimeDisplay>());
@@ -66,6 +64,8 @@ TimelinePanel::TimelinePanel() : QWidget()
 	createTimeFormatActionGroup();
 
 	setupRulerContextMenu();
+
+	demo();
 }
 
 void TimelinePanel::setTimeScale(qreal scale)
