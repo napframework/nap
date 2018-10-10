@@ -443,9 +443,9 @@ void GridView::setVerticalScroll(int value)
 {
 	auto mViewTransform = transform();
 	auto scroll = getTranslation(mViewTransform);
-	scroll.setY(-value - scene()->sceneRect().top());
+	scroll.setY(-value );
 	setTranslation(mViewTransform, scroll);
-//	viewTransformed();
+	setTransform(mViewTransform);
 }
 
 void GridView::fitInView(const QRectF& rect, const QMargins& margins,
