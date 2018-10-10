@@ -15,7 +15,7 @@ void nap::LerpEvent::end()
 void nap::LerpEvent::update(double deltaTime)
 {
 	mLocalTime += deltaTime;
-	double t = mLocalTime / (endTime() - startTime());
+	double t = mLocalTime / (mResource.mEndTime - mResource.mStartTime);
 	double targetValue = nap::math::lerp(mStartValue, mEndValue, t);
 	setTargetValue(targetValue);
 }
@@ -38,7 +38,7 @@ void nap::CurveEvent::start()
 
 void nap::CurveEvent::end()
 {
-	double curveValue = mCurveResource.evaluate(endTime());
+	double curveValue = mCurveResource.evaluate(mResource.mEndTime);
 	setTargetValue(curveValue);
 }
 

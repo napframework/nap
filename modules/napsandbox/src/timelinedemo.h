@@ -10,7 +10,7 @@ namespace nap
 	/**
 	 * Reference implementation of a timeline event animating a propert from one value to another
 	 */
-	class LerpEvent : public TimelineEvent
+	class LerpEvent : public TimelineEventInstance
 	{
 	public:
 		void start() override;
@@ -60,7 +60,7 @@ namespace nap
 	/**
 	 * An event that animates a property according to an animation curve. Needs instance replication
 	 */
-	class CurveEvent : public TimelineEvent
+	class CurveEvent : public TimelineEventInstance
 	{
 	public:
 		void start() override;
