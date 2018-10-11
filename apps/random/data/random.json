@@ -209,7 +209,8 @@
                     "Mesh": "LightRigMesh",
                     "Controllers": [
                         "Universe0"
-                    ]
+                    ],
+                    "MinArtnetValue": 45
                 }
             ],
             "Children": []
