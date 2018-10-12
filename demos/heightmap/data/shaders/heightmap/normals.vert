@@ -7,11 +7,11 @@ uniform float blendValue;
 uniform float normalBlendValue;
 
 in vec3	in_Position;
-in vec4 in_Color0;
+in float in_Tip;
 in vec3 in_OriginalPosition;
 in vec3 in_DisplacedPosition;
 
-out vec4 pass_Color;
+out float pass_Tip;
 
 void main(void)
 {
@@ -25,5 +25,5 @@ void main(void)
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(blend_pos, 1.0);
 
 	// Pass color
-	pass_Color = in_Color0;
+	pass_Tip = in_Tip;
 }

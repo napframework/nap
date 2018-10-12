@@ -82,6 +82,6 @@ namespace nap
     {
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
-		mInputService->processEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
     }
 }

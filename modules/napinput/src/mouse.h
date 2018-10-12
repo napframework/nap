@@ -7,11 +7,11 @@ namespace nap
 	/**
 	 * Enum describing a list of all possible mouse buttons
 	 */
-	enum class NAPAPI EMouseButton
+	enum class NAPAPI EMouseButton : int
 	{
-		UNKNOWN,
-		LEFT,
-		MIDDLE,
-		RIGHT
+		UNKNOWN		= -1,
+		LEFT		= 0,
+		MIDDLE		= 2,
+		RIGHT		= 3
 	};
 }

@@ -41,6 +41,9 @@ namespace nap
 		*/
 		BaseColor(int channels, int size) : mChannels(channels), mValueSize(size) { }
 
+        virtual ~BaseColor() = default;
+        
+        
 		bool operator==(const BaseColor& rhs) = delete;
 		bool operator!=(const BaseColor& rhs) = delete;
 

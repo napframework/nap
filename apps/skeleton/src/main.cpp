@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     nap::Core core;
 
     // Create app runner
-    nap::AppRunner<nap::CoreApp, nap::AppEventHandler> appRunner(core);
+    nap::AppRunner<nap::CoreApp, nap::GUIAppEventHandler> appRunner(core);
 
     // Decide which file to load
     if (argc >= 2) {

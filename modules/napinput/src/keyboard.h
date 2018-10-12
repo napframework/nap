@@ -2,15 +2,16 @@
 
 #include <cstdint>
 #include <utility/dllexport.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
 	/**
 	 * Enum describing a list of all possible keys that are supported
 	 */
-	enum class NAPAPI EKeyCode : uint8_t
+	enum class NAPAPI EKeyCode : int
 	{
-		KEY_UNKNOWN,
+		KEY_UNKNOWN = -1,
 		KEY_RETURN,
 		KEY_ESCAPE,
 		KEY_BACKSPACE,

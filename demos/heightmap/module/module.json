@@ -2,7 +2,6 @@
     "dependencies": [
         "mod_naprender",
         "mod_napmath",
-        "mod_napsdlinput",
-        "mod_napsdlwindow"
+        "mod_napsdlinput"
     ]
 }
