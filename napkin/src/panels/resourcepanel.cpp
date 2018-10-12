@@ -1,8 +1,8 @@
 #include <commands.h>
 #include "resourcepanel.h"
 
-#include "generic/filterpopup.h"
-#include "generic/qtutils.h"
+#include <napqt/filterpopup.h>
+#include <napqt/qtutils.h>
 #include "naputils.h"
 #include "standarditemsobject.h"
 

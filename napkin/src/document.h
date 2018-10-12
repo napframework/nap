@@ -1,12 +1,12 @@
 #pragma once
 
-#include <rtti/deserializeresult.h>
-#include <QtCore/QString>
+#include <deque>
 #include <entity.h>
-#include <QtWidgets/QUndoCommand>
 #include <nap/core.h>
 #include <propertypath.h>
-#include <deque>
+#include <QtCore/QString>
+#include <QtWidgets/QUndoCommand>
+#include <rtti/deserializeresult.h>
 
 namespace napkin
 {
@@ -15,19 +15,19 @@ namespace napkin
 	 */
 	class Document : public QObject
 	{
-		Q_OBJECT
+	Q_OBJECT
 	public:
-		Document(nap::Core& core) : QObject(), mCore(core)  {}
+		Document(nap::Core& core) : QObject(), mCore(core) {}
 
 		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects);
-		
+
 		~Document();
-		
+
 		/**
 		 * @return The name of the currently opened file
 		 * or an empty string if no file is open or the data hasn't been saved yet.
 		 */
-		const QString& getCurrentFilename()	{ return mCurrentFilename; }
+		const QString& getCurrentFilename() { return mCurrentFilename; }
 
 		/**
 		 * Set this document's filename
@@ -153,7 +153,10 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr) { return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, true)); }
+		T* addObject(nap::rtti::Object* parent = nullptr)
+		{
+			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, true));
+		}
 
 		/**
 		 * Add and entity to the document
@@ -192,7 +195,8 @@ namespace napkin
 		 * @param targetObject The object that is being referred to.
 		 * @return A list of properties pointing to the given object.
 		 */
-		QList<PropertyPath> getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent);
+		QList<PropertyPath>
+		getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent);
 
 		/**
 		 * Add an element to an array
@@ -320,7 +324,8 @@ namespace napkin
 		 * @param to The object to point to
 		 * @param result The relative path
 		 */
-		void relativeObjectPathList(const nap::rtti::Object& origin, const nap::rtti::Object& target, std::deque<std::string>& result) const;
+		void relativeObjectPathList(const nap::rtti::Object& origin, const nap::rtti::Object& target,
+									std::deque<std::string>& result) const;
 
 		/**
 		 * Execute the specified command and push the provided command onto the undostack.
@@ -403,8 +408,8 @@ namespace napkin
 
 		nap::Core& mCore;                        // nap's core
 		nap::rtti::OwnedObjectList mObjects;    // The objects in this document
-		QString mCurrentFilename;				// This document's filename
-		QUndoStack mUndoStack;					// This document's undostack
+		QString mCurrentFilename;                // This document's filename
+		QUndoStack mUndoStack;                    // This document's undostack
 
 	};
 

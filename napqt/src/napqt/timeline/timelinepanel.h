@@ -1,13 +1,7 @@
 #pragma once
 
-#include "timelinemodel.h"
-#include "timelineview.h"
-#include "timelinescene.h"
-#include "gridview.h"
-#include "timelineoutline.h"
-#include "ruler.h"
-
 #include <cassert>
+#include <memory>
 
 #include <QPaintEvent>
 #include <QPainter>
@@ -21,6 +15,13 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QGraphicsItem>
+
+#include "timelinemodel.h"
+#include "timelineview.h"
+#include "timelinescene.h"
+#include "gridview.h"
+#include "timelineoutline.h"
+#include "ruler.h"
 
 namespace napkin
 {

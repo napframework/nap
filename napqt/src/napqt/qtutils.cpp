@@ -5,12 +5,7 @@
 #include <QProcess>
 #include <QDesktopServices>
 #include <QUrl>
-
-#include <appcontext.h>
-#include <QtGui/QtGui>
-
-
-
+#include <QtGui>
 
 QColor napkin::lerpCol(const QColor& a, const QColor& b, qreal p)
 {

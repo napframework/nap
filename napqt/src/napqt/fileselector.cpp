@@ -1,6 +1,6 @@
-#include <QtWidgets/QAbstractButton>
 #include "fileselector.h"
 
+#include <QAbstractButton>
 
 
 napkin::FileSelector::FileSelector() : QWidget()

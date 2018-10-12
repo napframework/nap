@@ -3,7 +3,6 @@
 #include <QMessageBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QHBoxLayout>
-#include <generic/qtutils.h>
 #include "commands.h"
 #include "naputils.h"
 

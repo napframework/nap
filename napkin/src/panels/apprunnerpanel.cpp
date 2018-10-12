@@ -1,6 +1,7 @@
 #include "apprunnerpanel.h"
 
 #include <nap/logger.h>
+#include <napqt/qtutils.h>
 
 napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 {

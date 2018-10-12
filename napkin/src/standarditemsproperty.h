@@ -2,7 +2,6 @@
 
 #include <QtGui/QStandardItem>
 #include <QtWidgets/QVBoxLayout>
-#include <generic/filtertreeview.h>
 #include <rtti/object.h>
 #include <rtti/path.h>
 #include "propertypath.h"

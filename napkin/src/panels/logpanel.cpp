@@ -1,6 +1,6 @@
 #include "logpanel.h"
 
-#include "generic/autosettings.h"
+#include <napqt/autosettings.h>
 #include <QPainter>
 #include <QScrollBar>
 #include <QSettings>

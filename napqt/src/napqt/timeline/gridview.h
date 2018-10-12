@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QtWidgets/QGraphicsView>
+#include <QGraphicsView>
 #include <QGraphicsRectItem>
-#include <QtWidgets/QRubberBand>
+#include <QRubberBand>
 
 namespace napkin {
 

@@ -10,7 +10,7 @@
 #include "commands.h"
 #include "napkinglobals.h"
 #include "standarditemsproperty.h"
-#include "generic/filterpopup.h"
+#include <napqt/filterpopup.h>
 #include "naputils.h"
 
 using namespace nap::rtti;

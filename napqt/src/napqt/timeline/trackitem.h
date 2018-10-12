@@ -1,8 +1,9 @@
 #pragma once
 
-#include <QtWidgets/QGraphicsItem>
-#include <QtGui/QBrush>
+#include <QGraphicsItem>
+#include <QBrush>
 #include <QPen>
+
 #include "timelinemodel.h"
 #include "eventitem.h"
 

@@ -1,4 +1,5 @@
 #include "errordialog.h"
+
 #include <QPushButton>
 
 ErrorDialog::ErrorDialog(QWidget* parent) : QDialog(parent), mButtonBox(QDialogButtonBox::Close)

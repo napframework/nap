@@ -1,23 +1,23 @@
 #include <QtGui/QtGui>
-#include <standarditemsproperty.h>
 #include <QHBoxLayout>
-#include "naputils.h"
 #include <QPushButton>
-
 #include <QDir>
 #include <QUrl>
+#include <QLabel>
+#include <QDialogButtonBox>
 
 #include <component.h>
 #include <nap/logger.h>
 #include <entity.h>
+#include <standarditemsproperty.h>
 #include <standarditemsobject.h>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QDialogButtonBox>
 #include <panels/finderpanel.h>
 
+#include <napqt/filterpopup.h>
+
+#include "naputils.h"
 #include "napkinglobals.h"
 #include "appcontext.h"
-#include "generic/filterpopup.h"
 
 using namespace nap::rtti;
 using namespace nap::utility;

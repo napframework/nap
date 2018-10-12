@@ -1,7 +1,8 @@
-#include <QtCore/QtMath>
-#include <QtCore/QVector>
-#include <QtCore/QMap>
 #include "timedisplay.h"
+
+#include <QtMath>
+#include <QVector>
+#include <QMap>
 
 namespace napkin
 {

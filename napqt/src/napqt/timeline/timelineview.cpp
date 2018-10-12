@@ -1,9 +1,11 @@
 #include "timelineview.h"
-#include "timelinescene.h"
 
-#include <QtGui/QKeyEvent>
+#include <QKeyEvent>
 #include <QtDebug>
-#include <generic/qtutils.h>
+
+#include <napqt/qtutils.h>
+
+#include "timelinescene.h"
 
 using namespace napkin;
 

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "appcontext.h"
 #include <QDockWidget>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
-#include <QtCore/QSettings>
+#include <QSettings>
 
 namespace napkin
 {

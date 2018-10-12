@@ -6,7 +6,6 @@
 #include <QPainter>
 
 #include "naputils.h"
-#include "generic/filterpopup.h"
 #include "typeconversion.h"
 #include "appcontext.h"
 #include "napkinresources.h"

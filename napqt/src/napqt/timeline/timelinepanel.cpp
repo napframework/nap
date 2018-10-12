@@ -1,7 +1,9 @@
-#include <nap/logger.h>
-#include <generic/randomnames.h>
 #include "timelinepanel.h"
+
 #include <QList>
+
+#include <napqt/randomnames.h>
+#include <napqt/qtutils.h>
 
 using namespace napkin;
 

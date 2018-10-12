@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include <QAbstractItemView>
 #include <QAction>
 #include <QItemSelectionModel>
@@ -9,7 +11,6 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <functional>
 
 #include "leaffilterproxymodel.h"
 

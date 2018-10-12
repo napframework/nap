@@ -1,11 +1,10 @@
+#include <QFontDatabase>
 
-#include "generic/filtertreeview.h"
+#include <utility/fileutils.h>
+
 #include "mainwindow.h"
 #include "napkinresources.h"
 #include "appcontext.h"
-
-#include <QFontDatabase>
-#include <utility/fileutils.h>
 
 using namespace napkin;
 
