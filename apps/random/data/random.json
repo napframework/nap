@@ -271,7 +271,9 @@
                     "MinArtnetValue": 45
                 }
             ],
-            "Children": []
+            "Children": [
+                "Truss"
+            ]
         },
         {
             "Type": "nap::Entity",
@@ -369,7 +371,7 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.1,
+                    "MovementSpeed": 0.10000000149011612,
                     "RotateSpeed": 0.0032999999821186067,
                     "PerspCameraComponent": "PerspCameraComponent",
                     "LookAtPosition": {
@@ -431,6 +433,56 @@
                                 "Value": 0.25
                             }
                         ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Truss",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_8",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_6",
+                    "Mesh": "LightTrussMesh",
+                    "MaterialInstance": {
+                        "Material": "TrussMaterial",
+                        "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -648,6 +700,15 @@
                     "ShaderAttributeID": "in_UV0"
                 }
             ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "TrussMaterial",
+            "Uniforms": [],
+            "Shader": "TrussShader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -935,6 +996,12 @@
             "mID": "SunShader",
             "mVertShader": "shaders/sun.vert",
             "mFragShader": "shaders/sun.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "TrussShader",
+            "mVertShader": "shaders/light_truss.vert",
+            "mFragShader": "shaders/light_truss.frag"
         },
         {
             "Type": "nap::Shader",

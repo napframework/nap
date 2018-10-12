@@ -60,6 +60,7 @@ namespace nap
 		mLightRig = mScene->findEntity("LightRig");
 		mVideo = mScene->findEntity("Video");
 		mCombination = mScene->findEntity("Combination");
+		mTruss = mScene->findEntity("Truss");
 
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -123,6 +124,7 @@ namespace nap
 			// Find the visualization mesh and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			components_to_render.emplace_back(&(mLightRig->getComponent<RenderableMeshComponentInstance>()));
+			components_to_render.emplace_back(&(mTruss->getComponent<RenderableMeshComponentInstance>()));
 
 			// Render visualization mesh
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);

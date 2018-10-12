@@ -12,7 +12,7 @@ in vec4 passColor;						// Vertex Color
 uniform vec3		cameraLocation;		// World Space location of the camera
 
 // Light Uniforms
-const vec3			lightPosition  = vec3(0.0,100.0,-100.0);		// World position of the light
+const vec3			lightPosition  = vec3(0.0,200.0,-100.0);		// World position of the light
 const vec3			lightIntensity = vec3(1.0,1.0,1.0) ;	// Light intensity
 const float			ambientIntensity = 1.0;					// Ambient light intensity
 const float			shininess = 10.0;						// Specular angle shininess
