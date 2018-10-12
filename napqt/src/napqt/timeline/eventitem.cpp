@@ -1,4 +1,5 @@
 #include "eventitem.h"
+
 #include <QPainter>
 #include <QGraphicsScene>
 #include <QtGui>

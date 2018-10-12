@@ -3,7 +3,7 @@
 #include <sceneservice.h>
 #include <standarditemsobject.h>
 #include <commands.h>
-#include <generic/filterpopup.h>
+#include <napqt/filterpopup.h>
 #include <naputils.h>
 
 

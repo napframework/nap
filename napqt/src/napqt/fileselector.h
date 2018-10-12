@@ -3,9 +3,9 @@
 #include <QLineEdit>
 #include <QToolButton>
 #include <QWidget>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QPushButton>
+#include <QFileDialog>
+#include <QHBoxLayout>
+#include <QPushButton>
 
 namespace napkin
 {

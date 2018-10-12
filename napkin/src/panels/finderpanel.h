@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QStandardItemModel>
-#include "generic/filtertreeview.h"
+#include <napqt/filtertreeview.h>
 #include "propertypath.h"
 
 namespace napkin

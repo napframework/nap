@@ -6,7 +6,7 @@
 #include <rtti/object.h>
 
 #include "propertypath.h"
-#include "generic/filtertreeview.h"
+#include <napqt/filtertreeview.h>
 #include "widgetdelegate.h"
 
 namespace napkin

@@ -2,6 +2,7 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsItemGroup>
+
 #include "timelinemodel.h"
 #include "eventitem.h"
 

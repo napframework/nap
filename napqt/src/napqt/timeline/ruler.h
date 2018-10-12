@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QStylePainter>
+
 #include "timelinemodel.h"
 #include "timedisplay.h"
 

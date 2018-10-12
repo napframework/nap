@@ -1,8 +1,9 @@
 #include "timelinescene.h"
-#include "eventitem.h"
-#include "trackitem.h"
 
 #include <QList>
+
+#include "eventitem.h"
+#include "trackitem.h"
 
 using namespace napkin;
 

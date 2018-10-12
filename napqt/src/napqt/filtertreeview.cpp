@@ -1,13 +1,16 @@
 #include "filtertreeview.h"
-#include "qtutils.h"
+
+#include <cassert>
+
 #include <QMenu>
 #include <QTimer>
-#include <assert.h>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QMimeData>
 #include <QtDebug>
+
+#include "qtutils.h"
 
 napkin::FilterTreeView::FilterTreeView(QTreeView* treeview)
 {

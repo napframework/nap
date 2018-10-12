@@ -1,6 +1,7 @@
 #pragma once
 
-#include <QtWidgets/QDialog>
+#include <QDialog>
+
 #include "filtertreeview.h"
 
 namespace napkin

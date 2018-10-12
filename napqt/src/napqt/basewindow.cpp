@@ -1,6 +1,8 @@
 #include "basewindow.h"
-#include "autosettings.h"
 
+#include <QApplication>
+
+#include "autosettings.h"
 
 napkin::BaseWindow::BaseWindow()
 {

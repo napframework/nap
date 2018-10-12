@@ -1,9 +1,10 @@
 #include "gridview.h"
+
 #include <QMouseEvent>
-#include <QtGui/QtGui>
-#include <nap/logger.h>
+#include <QtGui>
 #include <QtDebug>
-#include <generic/qtutils.h>
+
+#include <napqt/qtutils.h>
 
 using namespace napkin;
 

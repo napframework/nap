@@ -3,10 +3,12 @@
 #include <QStatusBar>
 #include <QTimer>
 
-#include "actions.h"
+#include <napqt/basewindow.h>
+#include <napqt/timeline/timelinepanel.h>
+#include <napqt/errordialog.h>
 
+#include "actions.h"
 #include "appcontext.h"
-#include "generic/basewindow.h"
 #include "panels/apprunnerpanel.h"
 #include "panels/hierarchypanel.h"
 #include "panels/historypanel.h"
@@ -14,9 +16,7 @@
 #include "panels/logpanel.h"
 #include "panels/resourcepanel.h"
 #include "panels/scenepanel.h"
-#include "panels/timeline/timelinepanel.h"
 #include "themeselectionmenu.h"
-#include "generic/errordialog.h"
 
 namespace napkin
 {

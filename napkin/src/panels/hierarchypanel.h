@@ -3,7 +3,7 @@
 #include <rtti/rtti.h>
 #include <rtti/object.h>
 
-#include "generic/filtertreeview.h"
+#include <napqt/filtertreeview.h>
 #include <QStandardItemModel>
 #include <QVBoxLayout>
 #include <QWidget>

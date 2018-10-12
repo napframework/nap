@@ -8,9 +8,8 @@
 #include <QMetaEnum>
 #include <QPalette>
 #include <QStandardItemModel>
-
 #include <QTreeView>
-#include <QtWidgets/QGraphicsItem>
+#include <QGraphicsItem>
 
 namespace napkin
 {

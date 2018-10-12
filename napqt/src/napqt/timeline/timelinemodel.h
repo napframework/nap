@@ -2,7 +2,7 @@
 
 #include <QString>
 #include <QObject>
-#include <QtGui/QColor>
+#include <QColor>
 
 namespace napkin {
 

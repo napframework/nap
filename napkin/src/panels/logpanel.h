@@ -8,7 +8,7 @@
 
 #include <nap/logger.h>
 
-#include "generic/filtertreeview.h"
+#include <napqt/filtertreeview.h>
 
 namespace napkin
 {

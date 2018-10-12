@@ -1,4 +1,5 @@
 #include "timelinemodel.h"
+
 #include <QtDebug>
 #include <cassert>
 

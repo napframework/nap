@@ -1,7 +1,7 @@
 #pragma once
 
 #include <standarditemsobject.h>
-#include "generic/filtertreeview.h"
+#include <napqt/filtertreeview.h>
 #include "actions.h"
 
 

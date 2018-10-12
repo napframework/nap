@@ -1,9 +1,11 @@
 #pragma once
 
+#include <QWidget>
 #include <QVBoxLayout>
+#include <QStandardItem>
 
-#include "generic/filtertreeview.h"
-#include "generic/qtutils.h"
+#include <napqt/filtertreeview.h>
+
 #include "timelinemodel.h"
 
 namespace napkin

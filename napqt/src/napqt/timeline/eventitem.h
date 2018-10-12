@@ -1,9 +1,10 @@
 #pragma once
 
+#include <QGraphicsRectItem>
+#include <QPen>
 
 #include "timelinemodel.h"
-#include <QGraphicsRectItem>
-#include <QtGui/QPen>
+
 
 namespace napkin
 {

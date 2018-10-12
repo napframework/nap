@@ -1,7 +1,6 @@
 #include "commands.h"
 
 #include "napkinglobals.h"
-#include "generic/qtutils.h"
 #include "naputils.h"
 #include "standarditemsproperty.h"
 #include "standarditemsgeneric.h"

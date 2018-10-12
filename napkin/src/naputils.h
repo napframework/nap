@@ -8,7 +8,7 @@
 #include <rtti/rttiutilities.h>
 
 #include "propertypath.h"
-#include "generic/qtutils.h"
+#include <napqt/qtutils.h>
 
 /**
  * Show a dialog box containing the given properties and a custom message.

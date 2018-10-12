@@ -47,6 +47,7 @@ add_dependencies(${PROJECT_NAME} ${NAP_MODULES_USAGE_DEPENDENCIES})
 
 set(LIBS
     napcore
+    napqt
     ${NAP_MODULES_LINK_DEPENDENCIES}
     Qt5::Widgets Qt5::Core Qt5::Gui
     )

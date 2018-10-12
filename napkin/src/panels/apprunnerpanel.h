@@ -1,15 +1,15 @@
 #pragma once
 
-#include "appcontext.h"
 #include <QHBoxLayout>
 #include <QProcess>
 #include <QPushButton>
 #include <QSettings>
 #include <QThread>
 #include <QWidget>
-#include <generic/fileselector.h>
-#include <generic/qtutils.h>
 
+#include <napqt/fileselector.h>
+
+#include "appcontext.h"
 
 #define LAST_CORE_APP "lastCoreApp"
 

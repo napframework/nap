@@ -1,9 +1,9 @@
+#include "ruler.h"
+
 #include <QStyleOptionButton>
 #include <QPainter>
 #include <QStylePainter>
 #include <QtGui>
-#include <nap/logger.h>
-#include "ruler.h"
 
 napkin::Ruler::Ruler(QWidget* parent) : QWidget(parent)
 {

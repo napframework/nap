@@ -2,7 +2,7 @@
 
 #include <QtWidgets/QLayout>
 #include <QtWidgets/QWidget>
-#include <generic/filtertreeview.h>
+#include <napqt/filtertreeview.h>
 #include <scene.h>
 
 
