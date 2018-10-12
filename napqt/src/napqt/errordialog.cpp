@@ -2,7 +2,9 @@
 
 #include <QPushButton>
 
-ErrorDialog::ErrorDialog(QWidget* parent) : QDialog(parent), mButtonBox(QDialogButtonBox::Close)
+
+
+napqt::ErrorDialog::ErrorDialog(QWidget* parent) : QDialog(parent), mButtonBox(QDialogButtonBox::Close)
 {
 	setWindowTitle("Error");
 	setLayout(&mLayout);
@@ -20,23 +22,23 @@ ErrorDialog::ErrorDialog(QWidget* parent) : QDialog(parent), mButtonBox(QDialogB
 	});
 }
 
-void ErrorDialog::addMessage(const QString& message)
+void napqt::ErrorDialog::addMessage(const QString& message)
 {
 	mText.append(message + "\n");
 }
 
-void ErrorDialog::closeEvent(QCloseEvent* event)
+void napqt::ErrorDialog::closeEvent(QCloseEvent* event)
 {
 	mText.clear();
 	QDialog::closeEvent(event);
 }
 
-QSize ErrorDialog::sizeHint() const
+QSize napqt::ErrorDialog::sizeHint() const
 {
 	return {600, 300};
 }
 
-void ErrorDialog::showEvent(QShowEvent* event)
+void napqt::ErrorDialog::showEvent(QShowEvent* event)
 {
 	QDialog::showEvent(event);
 }

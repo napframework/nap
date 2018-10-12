@@ -15,7 +15,6 @@
 
 using namespace nap::rtti;
 
-
 void napkin::InspectorModel::setObject(Object* object)
 {
 	mObject = object;
@@ -104,13 +103,13 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 			std::string filename = path_item->getPath().getValue().to_string(&ok);
 			if (nap::utility::fileExists(filename))
 			{
-				menu.addAction("Show file in " + fileBrowserName(), [filename]()
+				menu.addAction("Show file in " + napqt::fileBrowserName(), [filename]()
 				{
-					revealInFileBrowser(QString::fromStdString(filename));
+					napqt::revealInFileBrowser(QString::fromStdString(filename));
 				});
                 menu.addAction("Open in external editor" , [filename]()
                 {
-                    openInExternalEditor(QString::fromStdString(filename));
+					napqt::openInExternalEditor(QString::fromStdString(filename));
                 });
 			}
 
@@ -201,7 +200,7 @@ void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop
 
 
 
-	auto pathItem = findItemInModel(mModel, [prop](QStandardItem* item)
+	auto pathItem = napkin::findItemInModel(mModel, [prop](QStandardItem* item)
 	{
 		auto pitem = dynamic_cast<PropertyPathItem*>(item);
 		if (pitem == nullptr)

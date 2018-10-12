@@ -3,7 +3,7 @@
 #include <QAbstractButton>
 
 
-napkin::FileSelector::FileSelector() : QWidget()
+napqt::FileSelector::FileSelector() : QWidget()
 {
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
@@ -18,27 +18,27 @@ napkin::FileSelector::FileSelector() : QWidget()
 	connect(&mBrowseButton, &QPushButton::clicked, this, &FileSelector::onBrowseButtonClicked);
 }
 
-void napkin::FileSelector::setFileFilter(const QString& filter)
+void napqt::FileSelector::setFileFilter(const QString& filter)
 {
 	mFileFilter = filter;
 }
 
-void napkin::FileSelector::setFilename(const QString& filename)
+void napqt::FileSelector::setFilename(const QString& filename)
 {
 	mLineEdit.setText(filename);
 }
 
-const QString napkin::FileSelector::getFilename()
+const QString napqt::FileSelector::getFilename()
 {
 	return mLineEdit.text().trimmed();
 }
 
-void napkin::FileSelector::onEditingFinished()
+void napqt::FileSelector::onEditingFinished()
 {
 	filenameChanged(getFilename());
 }
 
-void napkin::FileSelector::onBrowseButtonClicked()
+void napqt::FileSelector::onBrowseButtonClicked()
 {
 	QString dir = getFilename().isEmpty() ? "." : QFileInfo(getFilename()).path();
 

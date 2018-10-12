@@ -7,7 +7,7 @@
 #include "timelinemodel.h"
 #include "eventitem.h"
 
-namespace napkin {
+namespace napqt {
 
 	class TrackItem : public QGraphicsItem {
 	public:

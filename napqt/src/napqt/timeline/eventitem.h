@@ -6,7 +6,7 @@
 #include "timelinemodel.h"
 
 
-namespace napkin
+namespace napqt
 {
 
 	class TimelineElementItem : public QObject, public QGraphicsPathItem

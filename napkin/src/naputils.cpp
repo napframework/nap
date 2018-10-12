@@ -127,7 +127,7 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const rttr::type& typeConstraint)
 {
 	FlatObjectModel model(typeConstraint);
-	FilterPopup dialog(parent, model);
+	napqt::FilterPopup dialog(parent, model);
 
 	dialog.exec(QCursor::pos());
 	if (!dialog.wasAccepted())
@@ -150,7 +150,7 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 		model.appendRow(new QStandardItem(typeName));
 	}
 
-	FilterPopup dialog(parent, model);
+	napqt::FilterPopup dialog(parent, model);
 	dialog.exec(QCursor::pos());
 
 	if (!dialog.wasAccepted())

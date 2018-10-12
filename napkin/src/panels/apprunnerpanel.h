@@ -83,7 +83,7 @@ namespace napkin
 		 */
 		void onAppFinished(int exitCode);
 
-		FileSelector mFileSelector; // Widget allowing you to select a file
+		napqt::FileSelector mFileSelector; // Widget allowing you to select a file
 		QHBoxLayout mLayout;		// Layout
 		QPushButton mStartButton;   // Button with "Start" on it
 		QPushButton mStopButton;	// Button with "Stop" on it

@@ -6,7 +6,7 @@
 
 #include <napqt/qtutils.h>
 
-using namespace napkin;
+using namespace napqt;
 
 OutlineTrackItem::OutlineTrackItem(Track& track) : QStandardItem(), mTrack(track)
 {
@@ -60,7 +60,7 @@ Timeline* OutlineModel::getTimeline() const
 
 OutlineTrackItem* OutlineModel::trackItem(const Track& track) const
 {
-	return dynamic_cast<OutlineTrackItem*>(napkin::findItemInModel(*this, [&track](
+	return dynamic_cast<OutlineTrackItem*>(napqt::findItemInModel(*this, [&track](
 			const QStandardItem* item)
 	{
 		auto trackItem = dynamic_cast<const OutlineTrackItem*>(item);
@@ -178,7 +178,7 @@ void TimelineOutline::getVisibleTracks(QList<Track*>& result, const QModelIndex&
 		auto index = filtermodel.index(row, 0, parent);
 		auto srcindex = filtermodel.mapToSource(index);
 
-		auto sourceindex = napkin::findIndexInModel(*sourcemodel,
+		auto sourceindex = napqt::findIndexInModel(*sourcemodel,
 													[&srcindex](const QModelIndex& idx)
 													{
 														return idx == srcindex;

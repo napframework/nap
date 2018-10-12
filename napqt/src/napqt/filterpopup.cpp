@@ -6,7 +6,7 @@
 
 
 
-napkin::FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : QMenu(nullptr)
+napqt::FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : QMenu(nullptr)
 {
 	mTreeView.setModel(&model);
 	setLayout(&mLayout);
@@ -18,13 +18,13 @@ napkin::FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : Q
 	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &FilterPopup::confirm);
 }
 
-void napkin::FilterPopup::showEvent(QShowEvent* event)
+void napqt::FilterPopup::showEvent(QShowEvent* event)
 {
 	QMenu::showEvent(event);
 	mTreeView.getLineEdit().setFocus();
 }
 
-const QString napkin::FilterPopup::fromStringList(QWidget* parent, const QList<QString>& strings)
+const QString napqt::FilterPopup::fromStringList(QWidget* parent, const QList<QString>& strings)
 {
 	QStandardItemModel model;
 	for (const auto& string : strings)
@@ -43,7 +43,7 @@ const QString napkin::FilterPopup::fromStringList(QWidget* parent, const QList<Q
 	return selected->text();
 }
 
-void napkin::FilterPopup::keyPressEvent(QKeyEvent* event)
+void napqt::FilterPopup::keyPressEvent(QKeyEvent* event)
 {
 	QMenu::keyPressEvent(event);
 
@@ -55,14 +55,14 @@ void napkin::FilterPopup::keyPressEvent(QKeyEvent* event)
 		moveSelection(1);
 }
 
-void napkin::FilterPopup::moveSelection(int dir)
+void napqt::FilterPopup::moveSelection(int dir)
 {
 	auto selectedIndexes = mTreeView.getSelectionModel()->selection().indexes();
 	if (selectedIndexes.empty())
 		return;
 
 	int row = selectedIndexes.at(0).row();
-	int newRow = napkin::clamp(row + dir, 0, mTreeView.getModel()->rowCount() - 1);
+	int newRow = napqt::clamp(row + dir, 0, mTreeView.getModel()->rowCount() - 1);
 
 	if (row == newRow)
 		return;
@@ -73,13 +73,13 @@ void napkin::FilterPopup::moveSelection(int dir)
 }
 
 
-void napkin::FilterPopup::confirm()
+void napqt::FilterPopup::confirm()
 {
 	mWasAccepted = true;
 	close();
 }
 
-QSize napkin::FilterPopup::sizeHint() const
+QSize napqt::FilterPopup::sizeHint() const
 {
 	return mSize;
 }

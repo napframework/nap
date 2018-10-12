@@ -108,7 +108,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
 
 LogPanel::LogPanel() : QWidget()
 {
-	AutoSettings::get().registerStorer(new WidgetStorer<LogPanel>());
+	napqt::AutoSettings::get().registerStorer(new napqt::WidgetStorer<LogPanel>());
 
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	setLayout(&mLayout);
@@ -188,7 +188,7 @@ void LogPanel::closeEvent(QCloseEvent* event)
 	QWidget::closeEvent(event);
 }
 
-bool LogPanel::levelFilter(const LeafFilterProxyModel& model, int sourceRow,
+bool LogPanel::levelFilter(const napqt::LeafFilterProxyModel& model, int sourceRow,
 						   const QModelIndex& sourceParent)
 {
 	auto index = mLogModel.index(sourceRow, 0, sourceParent);
@@ -231,13 +231,13 @@ namespace napkin
 {
 
 	template<>
-	void WidgetStorer<LogPanel>::store(const LogPanel& widget, const QString& key, QSettings& s) const
+	void napqt::WidgetStorer<LogPanel>::store(const LogPanel& widget, const QString& key, QSettings& s) const
 	{
 		s.setValue(key + "_LOGLEVEL", widget.getLevelIndex(widget.getCurrentLevel()));
 	}
 
 	template<>
-	void WidgetStorer<LogPanel>::restore(LogPanel& widget, const QString& key,
+	void napqt::WidgetStorer<LogPanel>::restore(LogPanel& widget, const QString& key,
 										 const QSettings& s) const
 	{
 		const auto levels = nap::Logger::getLevels();

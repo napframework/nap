@@ -23,7 +23,7 @@
 #include "timelineoutline.h"
 #include "ruler.h"
 
-namespace napkin
+namespace napqt
 {
 
 

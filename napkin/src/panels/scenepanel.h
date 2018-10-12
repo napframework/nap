@@ -72,7 +72,7 @@ namespace napkin
 
 	private:
 		QVBoxLayout mLayout;		// Layout
-		FilterTreeView mFilterView; // The tree view
+		napqt::FilterTreeView mFilterView; // The tree view
 		SceneModel mModel;		// The model for the treeview
 	};
 }; // napkin

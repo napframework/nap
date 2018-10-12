@@ -6,7 +6,7 @@
 #include <QMenuBar>
 #include <QSettings>
 
-namespace napkin
+namespace napqt
 {
 
 	/**

@@ -6,7 +6,7 @@
 #include <QWidget>
 #include <QSettings>
 
-namespace napkin
+namespace napqt
 {
 	class WidgetStorerBase;
 

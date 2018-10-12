@@ -8,7 +8,7 @@
 #include "gridview.h"
 
 
-namespace napkin
+namespace napqt
 {
 
 	class TimelineView : public GridView

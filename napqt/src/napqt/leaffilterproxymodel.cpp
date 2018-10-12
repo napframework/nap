@@ -1,10 +1,10 @@
 #include "leaffilterproxymodel.h"
 
-using namespace napkin;
+using namespace napqt;
 
 LeafFilterProxyModel::LeafFilterProxyModel() : QSortFilterProxyModel() {}
 
-bool napkin::LeafFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+bool napqt::LeafFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
 	if (isExempt(sourceRow, sourceParent))
 		return true;
@@ -20,7 +20,7 @@ bool napkin::LeafFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelI
 	return acceptsAnyChild(sourceRow, sourceParent);
 }
 
-bool napkin::LeafFilterProxyModel::acceptsAnyChild(int sourceRow, QModelIndex sourceParent) const
+bool napqt::LeafFilterProxyModel::acceptsAnyChild(int sourceRow, QModelIndex sourceParent) const
 {
 	QModelIndex childIndex = sourceModel()->index(sourceRow, 0, sourceParent);
 

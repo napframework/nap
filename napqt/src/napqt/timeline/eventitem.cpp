@@ -5,7 +5,7 @@
 #include <QtGui>
 #include <QApplication>
 
-napkin::TimelineElementItem::TimelineElementItem(QGraphicsItem* parent) : QGraphicsPathItem(parent)
+napqt::TimelineElementItem::TimelineElementItem(QGraphicsItem* parent) : QGraphicsPathItem(parent)
 {
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemIsMovable, true);
@@ -21,12 +21,12 @@ napkin::TimelineElementItem::TimelineElementItem(QGraphicsItem* parent) : QGraph
 }
 
 
-napkin::BaseEventItem::BaseEventItem(QGraphicsItem* parent)
+napqt::BaseEventItem::BaseEventItem(QGraphicsItem* parent)
 		: TimelineElementItem(parent)
 {
 }
 
-void napkin::BaseEventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+void napqt::BaseEventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
 	// Inverse scale
 	auto mtx = painter->matrix();
@@ -41,35 +41,35 @@ void napkin::BaseEventItem::paint(QPainter* painter, const QStyleOptionGraphicsI
 	painter->restore();
 }
 
-QRectF napkin::BaseEventItem::boundingRect() const
+QRectF napqt::BaseEventItem::boundingRect() const
 {
 	return rect();
 }
 
-void napkin::BaseEventItem::setRange(const napkin::Range& range)
+void napqt::BaseEventItem::setRange(const napqt::Range& range)
 {
 	setPos(range.start(), 0);
 	setGeometry(QRectF(0, 0, range.length(), rect().height()));
 }
 
-void napkin::BaseEventItem::setGeometry(const QRectF& rect)
+void napqt::BaseEventItem::setGeometry(const QRectF& rect)
 {
 	setRect(rect);
 }
 
-napkin::Range napkin::BaseEventItem::range() const
+napqt::Range napqt::BaseEventItem::range() const
 {
 	return Range(pos().x(), pos().x() + rect().width());
 }
 
-void napkin::BaseEventItem::setRect(const QRectF& rect) {
+void napqt::BaseEventItem::setRect(const QRectF& rect) {
 	mRect = rect;
 	QPainterPath p;
 	p.addRect(rect);
 	setPath(p);
 }
 
-napkin::GroupEventItem::GroupEventItem(QGraphicsItem* parent, napkin::Track& track) : BaseEventItem(parent),
+napqt::GroupEventItem::GroupEventItem(QGraphicsItem* parent, napqt::Track& track) : BaseEventItem(parent),
 																					  mTrack(track)
 {
 	connect(&track, &Track::changed, [this](Track& track)
@@ -87,7 +87,7 @@ napkin::GroupEventItem::GroupEventItem(QGraphicsItem* parent, napkin::Track& tra
 	onTrackOrEventChanged();
 }
 
-void napkin::GroupEventItem::onTrackOrEventChanged()
+void napqt::GroupEventItem::onTrackOrEventChanged()
 {
 	qreal start;
 	qreal stop;
@@ -102,14 +102,14 @@ void napkin::GroupEventItem::onTrackOrEventChanged()
 }
 
 
-napkin::EventItem::EventItem(QGraphicsItem* parent, napkin::Event& event) : BaseEventItem(parent), mEvent(event)
+napqt::EventItem::EventItem(QGraphicsItem* parent, napqt::Event& event) : BaseEventItem(parent), mEvent(event)
 {
 	event.connect(&event, &Event::changed, this, &EventItem::updateGeometryFromEvent);
 	updateGeometryFromEvent();
 
 }
 
-void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+void napqt::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
 	// Inverse scale
 	auto mtx = painter->matrix();
@@ -133,14 +133,14 @@ void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 	painter->restore();
 }
 
-void napkin::EventItem::updateGeometryFromEvent()
+void napqt::EventItem::updateGeometryFromEvent()
 {
 	// update geometry based on event length
 	setPos(mEvent.start(), pos().y());
 	setGeometry(QRectF(0, 0, mEvent.length(), mEvent.track().height()));
 }
 
-napkin::TickItem::TickItem(QGraphicsItem* parent, napkin::Tick& tick) : mTick(tick), TimelineElementItem(parent)
+napqt::TickItem::TickItem(QGraphicsItem* parent, napqt::Tick& tick) : mTick(tick), TimelineElementItem(parent)
 {
 	qreal size = 10;
 	setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
@@ -158,13 +158,13 @@ napkin::TickItem::TickItem(QGraphicsItem* parent, napkin::Tick& tick) : mTick(ti
 
 	connect(&tick, &Tick::changed, this, &TickItem::updateGeometryFromEvent);
 }
-void napkin::TickItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+void napqt::TickItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
 	painter->setPen(isSelected() ? mPenBorderSelected : mPenBorder);
 	painter->setBrush(isSelected() ? mBrushSelected : mBrush);
 	painter->drawPath(path());
 }
-void napkin::TickItem::updateGeometryFromEvent()
+void napqt::TickItem::updateGeometryFromEvent()
 {
 	setPos(mTick.time(), pos().y());
 }

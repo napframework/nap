@@ -5,7 +5,7 @@
 #include <QStylePainter>
 #include <QtGui>
 
-napkin::Ruler::Ruler(QWidget* parent) : QWidget(parent)
+napqt::Ruler::Ruler(QWidget* parent) : QWidget(parent)
 {
 //	mTimeConfig = new SMPTETimeDisplay();
 //	mTimeConfig = new FloatTimeDisplay();
@@ -18,7 +18,7 @@ napkin::Ruler::Ruler(QWidget* parent) : QWidget(parent)
 }
 
 
-void napkin::Ruler::setRange(const napkin::Range& range)
+void napqt::Ruler::setRange(const napqt::Range& range)
 {
 	if (mRange == range)
 		return;
@@ -27,7 +27,7 @@ void napkin::Ruler::setRange(const napkin::Range& range)
 	update();
 }
 
-void napkin::Ruler::paintEvent(QPaintEvent* event)
+void napqt::Ruler::paintEvent(QPaintEvent* event)
 {
 	QStylePainter painter;
 	painter.begin(this);
@@ -46,7 +46,7 @@ void napkin::Ruler::paintEvent(QPaintEvent* event)
 }
 
 
-void napkin::Ruler::drawHatches(QPainter& painter, int hatchLength, qreal minStepSize, bool drawLabels) const
+void napqt::Ruler::drawHatches(QPainter& painter, int hatchLength, qreal minStepSize, bool drawLabels) const
 {
 	qreal start = mRange.start();
 	qreal end = mRange.end();
@@ -99,13 +99,13 @@ void napkin::Ruler::drawHatches(QPainter& painter, int hatchLength, qreal minSte
 
 
 
-void napkin::Ruler::setHeight(int height)
+void napqt::Ruler::setHeight(int height)
 {
 	setMinimumHeight(height);
 	setMaximumHeight(height);
 }
 
-void napkin::Ruler::setHatchFont(const QFont& font)
+void napqt::Ruler::setHatchFont(const QFont& font)
 {
 	mFont = font;
 
@@ -114,11 +114,11 @@ void napkin::Ruler::setHatchFont(const QFont& font)
 	mTextHeight = metrics.height();
 }
 
-void napkin::Ruler::resizeEvent(QResizeEvent* event)
+void napqt::Ruler::resizeEvent(QResizeEvent* event)
 {
 	update();
 }
-void napkin::Ruler::setDisplayFormat(napkin::TimeDisplay* fmt)
+void napqt::Ruler::setDisplayFormat(napqt::TimeDisplay* fmt)
 {
 	mTimeConfig = fmt;
 	update();
