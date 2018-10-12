@@ -5,7 +5,7 @@
 #include "eventitem.h"
 #include "trackitem.h"
 
-using namespace napkin;
+using namespace napqt;
 
 TimelineScene::TimelineScene()
 {

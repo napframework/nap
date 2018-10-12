@@ -3,7 +3,7 @@
 #include <QtDebug>
 #include <cassert>
 
-using namespace napkin;
+using namespace napqt;
 
 Event::Event(Track& parent, const QString& name, const qreal start, const qreal end)
 		: mName(name), mRange(start, end), QObject(&parent)

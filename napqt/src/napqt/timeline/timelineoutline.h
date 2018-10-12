@@ -8,7 +8,7 @@
 
 #include "timelinemodel.h"
 
-namespace napkin
+namespace napqt
 {
 	class OutlineTrackItem : public QStandardItem
 	{

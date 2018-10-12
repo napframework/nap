@@ -6,7 +6,7 @@
 #include "timelinemodel.h"
 #include "timedisplay.h"
 
-namespace napkin
+namespace napqt
 {
 
 	class Ruler : public QWidget
@@ -36,4 +36,4 @@ namespace napkin
 		QPoint mLabelOffset = {4, 0};
 	};
 
-}// namespace napkin
+}// namespace napqt

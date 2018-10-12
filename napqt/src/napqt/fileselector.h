@@ -7,7 +7,7 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 
-namespace napkin
+namespace napqt
 {
 	/**
 	 * A widget displaying and allowing to change a filename using a textfield and a browse button.

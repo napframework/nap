@@ -4,7 +4,7 @@
 #include <QGraphicsRectItem>
 #include <QRubberBand>
 
-namespace napkin {
+namespace napqt {
 
 
 	class GridView : public QGraphicsView {

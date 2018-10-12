@@ -18,7 +18,7 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 
 	//    mLayout.addStretch(1);
 
-	connect(&mFileSelector, &FileSelector::filenameChanged, this, &AppRunnerPanel::onAppChanged);
+	connect(&mFileSelector, &napqt::FileSelector::filenameChanged, this, &AppRunnerPanel::onAppChanged);
 
 	connect(&mStartButton, &QPushButton::clicked, this, &AppRunnerPanel::onStartApp);
 	connect(&mStopButton, &QPushButton::clicked, this, &AppRunnerPanel::onStopApp);
@@ -95,14 +95,14 @@ void napkin::AppRunnerPanel::onAppStarted()
 
 void napkin::AppRunnerPanel::onAppError(QProcess::ProcessError error)
 {
-	nap::Logger::fatal(QEnumToString(error).toStdString());
+	nap::Logger::fatal(napqt::QEnumToString(error).toStdString());
 	mStartButton.setEnabled(true);
 	mStopButton.setEnabled(false);
 }
 
 void napkin::AppRunnerPanel::onAppState(QProcess::ProcessState state)
 {
-	nap::Logger::info("App State Changed: %s", QEnumToString(state).toStdString().c_str());
+	nap::Logger::info("App State Changed: %s", napqt::QEnumToString(state).toStdString().c_str());
 }
 
 void napkin::AppRunnerPanel::onAppFinished(int exitCode)

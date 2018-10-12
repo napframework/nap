@@ -4,7 +4,7 @@
 #include <QVector>
 #include <QMap>
 
-namespace napkin
+namespace napqt
 {
 
 	static const qreal MILLISECOND = 0.001;
@@ -134,13 +134,13 @@ namespace napkin
 	}
 }
 
-void napkin::TimeDisplay::setHatchSpacing(qreal minor, qreal major)
+void napqt::TimeDisplay::setHatchSpacing(qreal minor, qreal major)
 {
 	mMinorHatchSpacing = minor;
 	mMajorHatchSpacing = major;
 }
 
-qreal napkin::SMPTETimeDisplay::calcStepInterval(qreal windowSize,
+qreal napqt::SMPTETimeDisplay::calcStepInterval(qreal windowSize,
 												 qreal viewSize,
 												 qreal minStepSize) const
 {
@@ -157,7 +157,7 @@ qreal napkin::SMPTETimeDisplay::calcStepInterval(qreal windowSize,
 	return -1;
 }
 
-const QString napkin::SMPTETimeDisplay::timeToString(qreal interval, qreal time) const
+const QString napqt::SMPTETimeDisplay::timeToString(qreal interval, qreal time) const
 {
 	int f = qFloor(fmod(time, 1.0) * mFramerate);
 	int s = qFloor(time);
@@ -172,17 +172,17 @@ const QString napkin::SMPTETimeDisplay::timeToString(qreal interval, qreal time)
 									  QString::asprintf("%02d", f));
 }
 
-napkin::SMPTETimeDisplay::SMPTETimeDisplay(int framerate)
+napqt::SMPTETimeDisplay::SMPTETimeDisplay(int framerate)
 {
 	setFramerate(framerate);
 }
 
-void napkin::SMPTETimeDisplay::setFramerate(int framerate)
+void napqt::SMPTETimeDisplay::setFramerate(int framerate)
 {
 	mFramerate = framerate;
 }
 
-qreal napkin::GeneralTimeDisplay::calcStepInterval(qreal windowSize,
+qreal napqt::GeneralTimeDisplay::calcStepInterval(qreal windowSize,
 												   qreal viewSize,
 												   qreal minStepSize) const
 {
@@ -193,7 +193,7 @@ qreal napkin::GeneralTimeDisplay::calcStepInterval(qreal windowSize,
 	return -1;
 }
 
-const QString napkin::GeneralTimeDisplay::timeToString(qreal interval, qreal time) const
+const QString napqt::GeneralTimeDisplay::timeToString(qreal interval, qreal time) const
 {
 	if (time == 0)
 		return "0";
@@ -212,7 +212,7 @@ const QString napkin::GeneralTimeDisplay::timeToString(qreal interval, qreal tim
 }
 
 
-qreal napkin::FloatTimeDisplay::calcStepInterval(qreal windowSize, qreal viewWidth,
+qreal napqt::FloatTimeDisplay::calcStepInterval(qreal windowSize, qreal viewWidth,
 												 qreal minStepSize) const
 {
 	const qreal ln10 = log(10);
@@ -239,12 +239,12 @@ qreal napkin::FloatTimeDisplay::calcStepInterval(qreal windowSize, qreal viewWid
 	return magMsd * magPow;
 }
 
-const QString napkin::FloatTimeDisplay::timeToString(qreal interval, qreal time) const
+const QString napqt::FloatTimeDisplay::timeToString(qreal interval, qreal time) const
 {
 	return QString::number(time);
 }
 
-qreal napkin::AnimationTimeDisplay::calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const
+qreal napqt::AnimationTimeDisplay::calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const
 {
 	qreal ival;
 	if (INTERVALS_FRAME.contains(mFramerate))
@@ -258,7 +258,7 @@ qreal napkin::AnimationTimeDisplay::calcStepInterval(qreal windowSize, qreal vie
 
 	return -1;
 }
-const QString napkin::AnimationTimeDisplay::timeToString(qreal interval, qreal time) const
+const QString napqt::AnimationTimeDisplay::timeToString(qreal interval, qreal time) const
 {
 	if (time == 0)
 		return "0";

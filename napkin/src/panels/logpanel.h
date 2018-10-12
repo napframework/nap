@@ -58,14 +58,14 @@ namespace napkin
 		/**
 		 * Provide FilterTreeView with a way of filtering log messages based on our level
 		 */
-		bool levelFilter(const LeafFilterProxyModel& model, int sourceRow, const QModelIndex& sourceParent);
+		bool levelFilter(const napqt::LeafFilterProxyModel& model, int sourceRow, const QModelIndex& sourceParent);
 
 		void onLevelChanged(int index);
 		void onDoubleClicked(const QModelIndex& index);
 		void onRowsAboutToBeInserted(const QModelIndex &parent, int first, int last);
 		void onRowInserted(const QModelIndex &parent, int first, int last);
 
-		FilterTreeView mTreeView; 	// Treeview with log entries
+		napqt::FilterTreeView mTreeView; 	// Treeview with log entries
 		QVBoxLayout mLayout;		// The main layout
 		QHBoxLayout mCornerLayout; 	// Layout at the top-right corner
 		QComboBox mFilterCombo;		// Combo containing the log levels to filter on

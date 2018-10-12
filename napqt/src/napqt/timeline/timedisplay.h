@@ -3,7 +3,7 @@
 #include <QString>
 #include <QList>
 
-namespace napkin
+namespace napqt
 {
 	class TimeDisplay
 	{
@@ -76,4 +76,4 @@ namespace napkin
 		int mFramerate;
 	};
 
-} // namespace napkin
+} // namespace napqt

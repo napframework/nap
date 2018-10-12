@@ -27,11 +27,11 @@ namespace napkin
 
 		void setPropertyList(const QList<PropertyPath>& properties);
 
-		FilterTreeView& getTreeView();
+		napqt::FilterTreeView& getTreeView();
 
 	private:
 		QVBoxLayout mLayout;
 		QStandardItemModel mModel;
-		FilterTreeView mTree;
+		napqt::FilterTreeView mTree;
 	};
 }

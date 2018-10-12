@@ -6,9 +6,9 @@
 #include <QTreeView>
 #include <QComboBox>
 
-using namespace napkin;
+using namespace napqt;
 
-namespace napkin
+namespace napqt
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// QMainWindow Storer
@@ -47,7 +47,7 @@ namespace napkin
 		widget.restoreState(s.value(key + "_STATE").toByteArray());
 	}
 
-} // namespace napkin
+} // namespace napqt
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

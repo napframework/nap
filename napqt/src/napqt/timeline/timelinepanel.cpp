@@ -5,7 +5,7 @@
 #include <napqt/randomnames.h>
 #include <napqt/qtutils.h>
 
-using namespace napkin;
+using namespace napqt;
 
 TimelinePanel::TimelinePanel() : QWidget()
 {

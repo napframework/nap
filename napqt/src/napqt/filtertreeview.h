@@ -14,7 +14,7 @@
 
 #include "leaffilterproxymodel.h"
 
-namespace napkin
+namespace napqt
 {
 	/**
 	 * A tree view composing a QTreeView and a filter text field that allows filtering of the tree.

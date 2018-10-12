@@ -3,7 +3,7 @@
 #include <QSortFilterProxyModel>
 #include <QSet>
 
-namespace napkin
+namespace napqt
 {
 	/**
 	 * A variation on QSortFilterProxyModel.

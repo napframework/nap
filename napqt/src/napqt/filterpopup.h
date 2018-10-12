@@ -4,7 +4,7 @@
 
 #include "filtertreeview.h"
 
-namespace napkin
+namespace napqt
 {
 
 	/**
@@ -63,4 +63,4 @@ namespace napkin
 
 	};
 
-} // namespace napkin
+} // namespace napqt

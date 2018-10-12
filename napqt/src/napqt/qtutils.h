@@ -11,7 +11,7 @@
 #include <QTreeView>
 #include <QGraphicsItem>
 
-namespace napkin
+namespace napqt
 {
 	template<typename T, typename U>
 	T lerp(const T& a, const T& b, const U& t)

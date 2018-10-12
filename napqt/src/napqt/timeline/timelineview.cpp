@@ -7,7 +7,7 @@
 
 #include "timelinescene.h"
 
-using namespace napkin;
+using namespace napqt;
 
 
 TimelineView::TimelineView()
