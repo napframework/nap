@@ -13,9 +13,57 @@
             "Timeout": 2.0
         },
         {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe1",
+            "Subnet": 0,
+            "Universe": 1,
+            "WaitTime": 2.0,
+            "Frequency": 44,
+            "Mode": "Broadcast",
+            "UnicastLimit": 10,
+            "Verbose": false,
+            "Timeout": 2.0
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe2",
+            "Subnet": 0,
+            "Universe": 2,
+            "WaitTime": 2.0,
+            "Frequency": 44,
+            "Mode": "Broadcast",
+            "UnicastLimit": 10,
+            "Verbose": false,
+            "Timeout": 2.0
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe3",
+            "Subnet": 0,
+            "Universe": 3,
+            "WaitTime": 2.0,
+            "Frequency": 44,
+            "Mode": "Broadcast",
+            "UnicastLimit": 10,
+            "Verbose": false,
+            "Timeout": 2.0
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe4",
+            "Subnet": 0,
+            "Universe": 4,
+            "WaitTime": 2.0,
+            "Frequency": 44,
+            "Mode": "Broadcast",
+            "UnicastLimit": 10,
+            "Verbose": false,
+            "Timeout": 2.0
+        },
+        {
             "Type": "nap::ArtnetMeshFromFile",
             "mID": "LightRigMesh",
-            "Path": "demo_rig.mesh",
+            "Path": "led_rig.mesh",
             "OverrideSubnet": false,
             "Subnet": 0,
             "ChannelOffset": 0
@@ -214,7 +262,11 @@
                     "mID": "nap::MeshToArtnetComponent",
                     "Mesh": "LightRigMesh",
                     "Controllers": [
-                        "Universe0"
+                        "Universe0",
+                        "Universe1",
+                        "Universe2",
+                        "Universe3",
+                        "Universe4"
                     ],
                     "MinArtnetValue": 45
                 }
@@ -290,8 +342,8 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.0,
-                            "z": 4.0
+                            "y": 100.0,
+                            "z": 100.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -317,7 +369,7 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.032999999821186069,
+                    "MovementSpeed": 0.1,
                     "RotateSpeed": 0.0032999999821186067,
                     "PerspCameraComponent": "PerspCameraComponent",
                     "LookAtPosition": {
@@ -607,6 +659,12 @@
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "LightTrussMesh",
+            "Path": "led_truss.mesh",
+            "Usage": "Static"
         },
         {
             "Type": "nap::PlaneMesh",
