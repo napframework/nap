@@ -189,6 +189,19 @@ namespace nap
 	}
 
 
+	void PerspCameraComponentInstance::setFieldOfView(float fov)
+	{
+		mProperties.mFieldOfView = fov;
+		setDirty();
+	}
+
+
+	float PerspCameraComponentInstance::getFieldOfView() const
+	{
+		return mProperties.mFieldOfView;
+	}
+
+
 	// Computes projection matrix if dirty, otherwise returns the
 	// cached version
 	const glm::mat4& PerspCameraComponentInstance::getProjectionMatrix() const

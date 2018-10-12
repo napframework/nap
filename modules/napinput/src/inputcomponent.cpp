@@ -21,6 +21,14 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerInputComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::ControllerInputComponent)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ControllerInputComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+RTTI_END_CLASS
+
+
 
 namespace nap
 {
@@ -64,11 +72,40 @@ namespace nap
 			return;
 		}
 
-		if (event_type == RTTI_OF(KeyReleaseEvent))
+		else if (event_type == RTTI_OF(KeyReleaseEvent))
 		{
 			const KeyReleaseEvent& release_event = static_cast<const KeyReleaseEvent&>(inEvent);
 			released.trigger(release_event);
 			return;
 		}
 	}
+
+
+	// Controller input forward handling
+	void ControllerInputComponentInstance::trigger(const nap::InputEvent& inEvent)
+	{
+		// Make sure it's a controller event
+		rtti::TypeInfo event_type = inEvent.get_type().get_raw_type();
+
+		if (event_type == RTTI_OF(nap::ControllerButtonPressEvent))
+		{
+			const ControllerButtonPressEvent& press_event = static_cast<const ControllerButtonPressEvent&>(inEvent);
+			pressed.trigger(press_event);
+			std::cout << "button pressed: " << (int)(press_event.mButton) << "\n";
+		}
+
+		else if (event_type == RTTI_OF(nap::ControllerButtonReleaseEvent))
+		{
+			const ControllerButtonReleaseEvent& release_event = static_cast<const ControllerButtonReleaseEvent&>(inEvent);
+			released.trigger(release_event);
+			std::cout << "button released: " << (int)(release_event.mButton) << "\n";
+		}
+
+		else if (event_type == RTTI_OF(nap::ControllerAxisEvent))
+		{
+			const ControllerAxisEvent& axis_event = static_cast<const ControllerAxisEvent&>(inEvent);
+			axisChanged.trigger(axis_event);
+		}
+	}
+
 }

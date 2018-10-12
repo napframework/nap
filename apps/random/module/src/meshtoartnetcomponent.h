@@ -34,6 +34,9 @@ namespace nap
 
 		//property: Holds all universes that we want to use
 		std::vector<ResourcePtr<nap::ArtNetController>> mArtnetControllers;
+
+		// property: Min artnet mapped value
+		int mMinValue = 40;
 	};
 
 
@@ -69,5 +72,8 @@ namespace nap
 
 		// Artnet array data
 		std::vector<uint8> mArtnetData = std::vector<uint8>(2, 0);
+
+		// Minimum mapped artnet value
+		uint8 mMinValue = 0;
 	};
 }

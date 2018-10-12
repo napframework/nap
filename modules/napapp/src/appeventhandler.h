@@ -6,6 +6,7 @@
 // External Includes
 #include <rtti/typeinfo.h>
 #include <nsdlgl.h>
+#include <sdleventconverter.h>
 
 namespace nap
 {
@@ -38,12 +39,23 @@ namespace nap
 		BaseAppEventHandler& operator=(BaseAppEventHandler&&) = delete;
 
 		/**
+		 * Called before running the app loop but after all services have been initialized
+		 * Use this call to initialize functionality before starting the process loop
+		 */
+		virtual void start() 				{ }
+
+		/**
 		 * This is called within the main loop of the app runner to specify
 		 * specific event process behavior. For example, when working with a window
 		 * you might want to check for window or input messages and forward those to the application
 		 * This function is invoked at the beginning of the app loop
 		 */
 		virtual void process()				{ }
+
+		/**
+		 * Called before shutting down all services and exiting the app
+		 */
+		virtual void shutdown()				{ }
 
 		/**
 		 *	Returns the application as an object of type T
@@ -67,10 +79,23 @@ namespace nap
 		AppEventHandler(App& app);
 
 		/**
+		 * This call creates the SDL Input Converter
+		 */
+		virtual void start() override;
+
+		/**
 		 * This call polls SDL for various messages, translates those messages
 		 * in nap events and forwards those to the default nap application
 		 */
 		virtual void process() override;
+
+		/**
+		 * This call deletes the input converter
+		 */
+		virtual void shutdown() override;
+
+	private:
+		std::unique_ptr<SDLEventConverter> mEventConverter = nullptr;
 	};
 
 
@@ -86,11 +111,24 @@ namespace nap
 		GUIAppEventHandler(App& app);
 
 		/**
+		 * This call creates the SDL Input Converter
+		 */
+		virtual void start() override;
+
+		/**
 		 * This call polls the various SDL messages and filters them
 		 * based on GUI activity. If the gui is actively used the events
 		 * are not forwarded to the running app
 		 */
 		virtual void process() override;
+
+		/**
+		 * This call deletes the input converter
+		 */
+		virtual void shutdown() override;
+
+	private:
+		std::unique_ptr<SDLEventConverter> mEventConverter = nullptr;
 	};
 
 

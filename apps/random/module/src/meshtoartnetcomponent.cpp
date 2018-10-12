@@ -11,6 +11,7 @@
 RTTI_BEGIN_CLASS(nap::MeshToArtnetComponent)
 	RTTI_PROPERTY("Mesh",			&nap::MeshToArtnetComponent::mMesh,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Controllers",	&nap::MeshToArtnetComponent::mArtnetControllers,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MinArtnetValue",	&nap::MeshToArtnetComponent::mMinValue,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::meshtoartnetcomponentInstance run time class definition 
@@ -50,6 +51,12 @@ namespace nap
 			if (!errorState.check(mControllers.find(address) != mControllers.end(), "mesh: %s has an artnet address that's not tied to a controller: %s", mMesh->mID.c_str(), this->mID.c_str()))
 				return false;
 		}
+
+		// Copy over min value, ensure value between 0 and 255
+		if (!errorState.check(resource->mMinValue <= math::max<uint8>() && resource->mMinValue >= 0, "Artnet value needs to be between 0 and 255"))
+			return false;
+		mMinValue = static_cast<uint8>(resource->mMinValue);
+
 		return true;
 	}
 
@@ -75,8 +82,12 @@ namespace nap
 			nap::ArtNetController*& controller = mControllers[ArtNetController::createAddress(subnet, universe)];
 
 			// Set data
-			mArtnetData[0] = static_cast<uint8>(artnet_color.r * static_cast<float>(math::max<uint8>()));
-			mArtnetData[1] = static_cast<uint8>(artnet_color.g * static_cast<float>(math::max<uint8>()));
+			float max_artnet_value = static_cast<float>(math::max<uint8>());
+			mArtnetData[0] = artnet_color.r <= nap::math::epsilon<float>() ? 0 :
+				static_cast<uint8>(math::fit<float>(artnet_color.r, 0.0f, 1.0f, (float)mMinValue, max_artnet_value));
+
+			mArtnetData[1] = artnet_color.g <= nap::math::epsilon<float>() ? 0 :
+				static_cast<uint8>(math::fit<float>(artnet_color.g, 0.0f, 1.0f, (float)mMinValue, max_artnet_value));
 
 			// Send to controller
 			controller->send(mArtnetData, channel);

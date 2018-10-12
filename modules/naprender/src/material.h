@@ -80,6 +80,18 @@ namespace nap
 		EBlendMode getBlendMode() const;
 
 		/**
+		 * Sets the blend mode that is used when rendering an object with this material
+		 * @param blendMode the new blend mode
+		 */
+		void setBlendMode(EBlendMode blendMode);
+
+		/**
+		 *	Sets the depth mode used when rendering an object with this material
+		 * @param depthMode the new depth mode
+		 */
+		void setDepthMode(EDepthMode depthMode);
+
+		/**
 		* @return If depth mode was overridden for this material, returns depth mode, otherwise material's depthmode.
 		*/
 		EDepthMode getDepthMode() const;
