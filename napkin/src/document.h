@@ -5,7 +5,7 @@
 #include <entity.h>
 #include <QtWidgets/QUndoCommand>
 #include <nap/core.h>
-#include <generic/propertypath.h>
+#include <propertypath.h>
 #include <deque>
 
 namespace napkin

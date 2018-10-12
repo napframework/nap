@@ -2,7 +2,7 @@
 
 #include <appcontext.h>
 #include <commands.h>
-#include <generic/naputils.h>
+#include <naputils.h>
 
 using namespace napkin;
 

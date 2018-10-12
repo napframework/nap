@@ -5,7 +5,7 @@
 
 #include <QUndoCommand>
 #include <QtCore/QVariant>
-#include <generic/propertypath.h>
+#include <propertypath.h>
 #include <scene.h>
 
 #include "typeconversion.h"

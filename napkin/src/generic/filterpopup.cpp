@@ -1,25 +1,9 @@
 #include "filterpopup.h"
 
 #include <QKeyEvent>
-#include <mathutils.h>
 
-#include "appcontext.h"
-#include "standarditemsobject.h"
 #include "qtutils.h"
-#include "naputils.h"
 
-napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType(baseType)
-{
-	for (auto& object : AppContext::get().getDocument()->getObjects())
-	{
-		if (!object.get()->get_type().is_derived_from(baseType))
-			continue;
-
-		auto item = new ObjectItem(object.get());
-		item->setEditable(false);
-		appendRow(item);
-	}
-}
 
 
 napkin::FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : QMenu(nullptr)
@@ -40,45 +24,24 @@ void napkin::FilterPopup::showEvent(QShowEvent* event)
 	mTreeView.getLineEdit().setFocus();
 }
 
-nap::rtti::Object* napkin::FilterPopup::getObject(QWidget* parent, const rttr::type& typeConstraint)
-{
-	FlatObjectModel model(typeConstraint);
-	FilterPopup dialog(parent, model);
-
-	dialog.exec(QCursor::pos());
-	if (!dialog.wasAccepted())
-		return nullptr;
-
-	auto item = dynamic_cast<ObjectItem*>(dialog.mTreeView.getSelectedItem());
-	if (item != nullptr)
-		return item->getObject();
-
-	return nullptr;
-}
-
-nap::rtti::TypeInfo napkin::FilterPopup::getType(QWidget* parent, const TypePredicate& predicate)
+const QString napkin::FilterPopup::fromStringList(QWidget* parent, const QList<QString>& strings)
 {
 	QStandardItemModel model;
-
-	for (const auto& t : getTypes(predicate))
-	{
-		auto typeName = QString::fromUtf8(t.get_name().data());
-		model.appendRow(new QStandardItem(typeName));
-	}
+	for (const auto& string : strings)
+		model.appendRow(new QStandardItem(string));
 
 	FilterPopup dialog(parent, model);
 	dialog.exec(QCursor::pos());
 
 	if (!dialog.wasAccepted())
-		return rttr::type::empty();
+		return QString();
 
-	auto selected_item = dialog.mTreeView.getSelectedItem();
-	if (selected_item == nullptr)
-		return rttr::type::empty();
+	auto selected = dialog.mTreeView.getSelectedItem();
+	if (selected == nullptr)
+		return QString();
 
-	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
+	return selected->text();
 }
-
 
 void napkin::FilterPopup::keyPressEvent(QKeyEvent* event)
 {
@@ -99,7 +62,7 @@ void napkin::FilterPopup::moveSelection(int dir)
 		return;
 
 	int row = selectedIndexes.at(0).row();
-	int newRow = nap::math::clamp(row + dir, 0, mTreeView.getModel()->rowCount() - 1);
+	int newRow = napkin::clamp(row + dir, 0, mTreeView.getModel()->rowCount() - 1);
 
 	if (row == newRow)
 		return;
@@ -120,6 +83,3 @@ QSize napkin::FilterPopup::sizeHint() const
 {
 	return mSize;
 }
-
-
-

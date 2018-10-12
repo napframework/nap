@@ -55,18 +55,6 @@ namespace napkin
 		 */
 		void closeEvent(QCloseEvent* event) override;
 
-		/**
-		 * Save the user-level application settings
-		 * @param settings The QSettings object to use
-		 */
-		void saveSettings(QSettings& settings);
-
-		/**
-		 * Restore the user-level application settings
-		 * @param settings The QSettings object to use
-		 */
-		void restoreSettings(QSettings& settings);
-
 	private:
 		QMenu* mWindowMenu;
 	};

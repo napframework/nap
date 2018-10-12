@@ -3,7 +3,7 @@
 #include <QStandardItemModel>
 #include <QStyledItemDelegate>
 #include <rttr/type>
-#include <generic/propertypath.h>
+#include <propertypath.h>
 
 namespace napkin
 {

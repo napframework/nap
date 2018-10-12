@@ -3,7 +3,7 @@
 #include "commands.h"
 #include "sceneservice.h"
 #include "generic/qtutils.h"
-#include "generic/naputils.h"
+#include "naputils.h"
 
 napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {

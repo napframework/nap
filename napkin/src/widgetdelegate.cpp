@@ -5,7 +5,7 @@
 #include <QFileDialog>
 #include <QPainter>
 
-#include "generic/naputils.h"
+#include "naputils.h"
 #include "generic/filterpopup.h"
 #include "typeconversion.h"
 #include "appcontext.h"
@@ -170,7 +170,8 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					if (variant.canConvert<PropertyPath>())
 					{
 						auto path = variant.value<PropertyPath>();
-						auto selected = FilterPopup::getObject(AppContext::get().getMainWindow(), wrapped_type);
+						auto selected = napkin::showObjectSelector(AppContext::get().getMainWindow(),
+																		wrapped_type);
 						if (selected != nullptr)
 							model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
 

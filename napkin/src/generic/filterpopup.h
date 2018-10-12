@@ -1,20 +1,10 @@
 #pragma once
 
 #include <QtWidgets/QDialog>
-#include <rtti/object.h>
 #include "filtertreeview.h"
-#include "naputils.h"
 
 namespace napkin
 {
-	class FlatObjectModel : public QStandardItemModel
-	{
-	public:
-		FlatObjectModel(const rttr::type& basetype);
-
-	private:
-		const rttr::type mBaseType;
-	};
 
 	/**
 	 * General purpose popup dialog showing a filterable tree.
@@ -26,29 +16,14 @@ namespace napkin
 
 	public:
 
-		/**
-		 * Display a selection dialog with all available objects, filtered by a base type
-		 * @param parent The parent widget to attach to.
-		 * @param typeConstraint The base type to filter by.
-		 * @return The selected object or nullptr if no object was selected
-		 */
-		static nap::rtti::Object* getObject(QWidget* parent, const rttr::type& typeConstraint);
 
 		/**
-		 * Display a selection dialog with all available types, filtered by an optional predicate
-		 * @param parent The widget to attach to
-		 * @return The resulting selected type.
+		 * Display a selection dialog with the selected strings. The user can filter the list and select an item.
+		 * @param parent The parent widget to attach to
+		 * @param strings The list of strings to choose from
+		 * @return The selected string
 		 */
-		static nap::rtti::TypeInfo getType(QWidget* parent, const TypePredicate& predicate = nullptr);
-
-		/**
-		 * Display a selection dialog with all available objects, filtered by type T
-		 * @tparam T the base type to filter by
-		 * @param parent The parent widget to attach to.
-		 * @return The selected object or nullptr if no object was selected
-		 */
-		template<typename T>
-		static T* getObject(QWidget* parent) { return rtti_cast<T>(getObject(parent, RTTI_OF(T))); }
+		static const QString fromStringList(QWidget* parent, const QList<QString>& strings);
 
 		/**
 		 * Override to provide a reasonable size
@@ -59,6 +34,11 @@ namespace napkin
 		 * @return true if the user choice was confirmed, false if the dialog was dismissed
 		 */
 		bool wasAccepted() const { return mWasAccepted; }
+
+		/**
+		 * @return The item selected by the user
+		 */
+		QStandardItem* getSelectedItem() { return mTreeView.getSelectedItem(); }
 
 	protected:
 		/**

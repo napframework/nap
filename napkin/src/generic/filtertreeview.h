@@ -10,38 +10,12 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <functional>
+#include <napkinfiltertree.h>
 
 #include "leaffilterproxymodel.h"
 
 namespace napkin
 {
-	/**
-	 * Specialize dragging behavior for napkin
-	 */
-	class _FilterTreeView : public QTreeView
-	{
-	public:
-		_FilterTreeView();
-
-	protected:
-		/**
-		 * Override from QTreeView
-		 */
-		void dragEnterEvent(QDragEnterEvent* event) override;
-
-		/**
-		 * Override from QTreeView
-		 */
-		void dragMoveEvent(QDragMoveEvent* event) override;
-
-		/**
-		 * Override from QTreeView
-		 */
-		void dropEvent(QDropEvent* event) override;
-
-	};
-
-
 	/**
 	 * A tree view composing a QTreeView and a filter text field that allows filtering of the tree.
 	 * This widget keeps an internal filter model, so beware when dealing with QModelIndex instances:

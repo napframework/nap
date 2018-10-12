@@ -4,6 +4,7 @@
 #include <standarditemsobject.h>
 #include <commands.h>
 #include <generic/filterpopup.h>
+#include <naputils.h>
 
 
 /**
@@ -90,7 +91,7 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 		auto add_entity_action = menu.addAction("Add Entity...");
 		connect(add_entity_action, &QAction::triggered, [this, scene_item, scene]()
 		{
-			auto entity = FilterPopup::getObject<nap::Entity>(this);
+			auto entity = napkin::showObjectSelector<nap::Entity>(this);
 			if (entity == nullptr)
 				return;
 

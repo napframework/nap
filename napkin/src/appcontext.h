@@ -15,7 +15,7 @@
 
 #include "thememanager.h"
 #include "document.h"
-#include "generic/resourcefactory.h"
+#include "resourcefactory.h"
 
 namespace napkin
 {

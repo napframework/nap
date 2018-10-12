@@ -19,9 +19,9 @@ ErrorDialog::ErrorDialog(QWidget* parent) : QDialog(parent), mButtonBox(QDialogB
 	});
 }
 
-void ErrorDialog::addMessage(nap::LogMessage message)
+void ErrorDialog::addMessage(const QString& message)
 {
-	mText.append(QString::fromStdString(message.text()) + "\n");
+	mText.append(message + "\n");
 }
 
 void ErrorDialog::closeEvent(QCloseEvent* event)

@@ -10,7 +10,7 @@
 #include "napkinglobals.h"
 #include "standarditemsproperty.h"
 #include "generic/filterpopup.h"
-#include "generic/naputils.h"
+#include "naputils.h"
 
 using namespace nap::rtti;
 
@@ -140,7 +140,8 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
 			menu.addAction("Add...", [this, array_path]()
 			{
-				nap::rtti::Object* selected_object = FilterPopup::getObject(this, array_path.getArrayElementType());
+				nap::rtti::Object* selected_object = napkin::showObjectSelector(this,
+																					 array_path.getArrayElementType());
 				if (selected_object != nullptr)
 					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 			});
@@ -154,7 +155,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 
 				TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
 
-				rttr::type elementType = FilterPopup::getType(this, predicate);
+				rttr::type elementType = napkin::showTypeSelector(this, predicate);
 
 				if (!elementType.empty())
 					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
