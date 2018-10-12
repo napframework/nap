@@ -1,5 +1,6 @@
 #include "hierarchypanel.h"
 #include "naputils.h"
+#include "napkinfiltertree.h"
 
 napkin::TypeModel::TypeModel()
 {

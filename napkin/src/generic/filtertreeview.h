@@ -10,7 +10,6 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <functional>
-#include <napkinfiltertree.h>
 
 #include "leaffilterproxymodel.h"
 
@@ -25,7 +24,7 @@ namespace napkin
 	{
 
 	public:
-		FilterTreeView();
+		FilterTreeView(QTreeView* treeView = nullptr);
 
 		/**
 		 * @param model
@@ -50,12 +49,12 @@ namespace napkin
 		/**
 		 * @return The actual QTreeView used by this widget.
 		 */
-		QTreeView& getTreeView() { return mTreeView; }
+		QTreeView& getTreeView() { return *mTreeView; }
 
 		/**
 		 * @return The actual QTreeView used by this widget.
 		 */
-		const QTreeView& getTreeView() const { return mTreeView; }
+		const QTreeView& getTreeView() const { return *mTreeView; }
 
 		/**
 		 * @return The filter line edit at the top
@@ -93,7 +92,7 @@ namespace napkin
 		/**
 		 * @return The selection model used by the tree view.
 		 */
-		QItemSelectionModel* getSelectionModel() const { return mTreeView.selectionModel(); }
+		QItemSelectionModel* getSelectionModel() const { return mTreeView->selectionModel(); }
 
 		/**
 		 * @return The currently selected indexes from the model set by setModel().
@@ -139,9 +138,8 @@ namespace napkin
 		QHBoxLayout mTopLayout; ///< The layout containing the filter input and the corner widget
 		QLineEdit mLineEditFilter; ///< The filter box
 		QWidget mCornerWidget;	///< The [empty] widget at the tip right corner
-		_FilterTreeView mTreeView; ///< Custom treeview to customize behavior for Napkin
+		QTreeView* mTreeView;
 		LeafFilterProxyModel mSortFilter; ///< Sits in between the user model and the tree view
 		std::function<void(QMenu&)> mMenuHookFn = nullptr; ///< Gives subclasses the chance to add to the menu
-		bool mIsItemSelector = false; ///< If this model behaves like a quick list selector
 	};
 };

@@ -4,6 +4,7 @@
 #include <QMimeData>
 
 #include <utility/fileutils.h>
+#include <napkinfiltertree.h>
 
 #include "appcontext.h"
 #include "commands.h"
@@ -48,7 +49,7 @@ Qt::DropActions napkin::InspectorModel::supportedDropActions() const
 }
 
 
-napkin::InspectorPanel::InspectorPanel()
+napkin::InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 {
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);

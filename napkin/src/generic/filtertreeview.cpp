@@ -9,8 +9,14 @@
 #include <QMimeData>
 #include <QtDebug>
 
-napkin::FilterTreeView::FilterTreeView()
+napkin::FilterTreeView::FilterTreeView(QTreeView* treeview)
 {
+	if (treeview == nullptr)
+		treeview = new QTreeView(this);
+
+	mTreeView = treeview;
+	mTreeView->setParent(this);
+
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.setSpacing(0);
 	setLayout(&mLayout);
@@ -23,9 +29,9 @@ napkin::FilterTreeView::FilterTreeView()
 	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
 	mLayout.addWidget(&mLineEditFilter);
 
-	mTreeView.setModel(&mSortFilter);
+	mTreeView->setModel(&mSortFilter);
 
-	mLayout.addWidget(&mTreeView);
+	mLayout.addWidget(mTreeView);
 
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
@@ -93,7 +99,7 @@ void napkin::FilterTreeView::onFilterChanged(const QString& text)
 {
 	mSortFilter.setFilterRegExp(text);
 	mSortFilter.clearExemptions();
-	mTreeView.expandAll();
+	mTreeView->expandAll();
 	setTopItemSelected();
 }
 
@@ -101,13 +107,13 @@ void napkin::FilterTreeView::onFilterChanged(const QString& text)
 void napkin::FilterTreeView::onExpandSelected()
 {
 	for (auto& idx : getSelectedIndexes())
-		expandChildren(&mTreeView, idx, true);
+		expandChildren(mTreeView, idx, true);
 }
 
 void napkin::FilterTreeView::onCollapseSelected()
 {
 	for (auto& idx : getSelectedIndexes())
-		expandChildren(&mTreeView, idx, false);
+		expandChildren(mTreeView, idx, false);
 }
 
 
@@ -129,7 +135,6 @@ void napkin::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 
 void napkin::FilterTreeView::setIsItemSelector(bool b)
 {
-	mIsItemSelector = b;
 	if (b) {
 		setTopItemSelected();
 	}
@@ -137,7 +142,7 @@ void napkin::FilterTreeView::setIsItemSelector(bool b)
 
 void napkin::FilterTreeView::setTopItemSelected()
 {
-	auto model = mTreeView.model();
+	auto model = mTreeView->model();
 	if (model->rowCount() == 0)
 		return;
 
