@@ -1,32 +1,23 @@
 #include "qtutils.h"
 
-#include <QDialogButtonBox>
 #include <QDir>
 #include <QHBoxLayout>
-#include <QLabel>
-#include <QMessageBox>
 #include <QProcess>
 #include <QDesktopServices>
 #include <QUrl>
-#include <QPushButton>
 
 #include <appcontext.h>
-#include <mathutils.h>
-#include <standarditemsproperty.h>
-#include <appcontext.h>
-#include <nap/logger.h>
 #include <QtGui/QtGui>
 
-#include "standarditemsproperty.h"
-#include "panels/finderpanel.h"
+
 
 
 QColor napkin::lerpCol(const QColor& a, const QColor& b, qreal p)
 {
 	QColor c;
-	c.setRgbF(nap::math::lerp(a.redF(), b.redF(), p),
-              nap::math::lerp(a.greenF(), b.greenF(), p),
-              nap::math::lerp(a.blueF(), b.blueF(), p));
+	c.setRgbF(lerp(a.redF(), b.redF(), p),
+              lerp(a.greenF(), b.greenF(), p),
+              lerp(a.blueF(), b.blueF(), p));
 	return c;
 }
 
@@ -140,58 +131,6 @@ bool napkin::directoryContains(const QString& dir, const QString& filename)
 	auto absDir = QDir(dir).canonicalPath();
 	auto absFile = QFileInfo(filename).canonicalFilePath();
 	return absFile.startsWith(absDir);
-}
-
-bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
-										   QString message)
-{
-	QDialog dialog(parent);
-	dialog.setWindowTitle(title);
-
-	QVBoxLayout layout;
-	dialog.setLayout(&layout);
-
-	QLabel label;
-	label.setText(message);
-	layout.addWidget(&label);
-
-	FinderPanel finder;
-	FilterTreeView* tree = &finder.getTreeView();
-
-	// On item double-click, close the dialog and reveal the property
-	finder.connect(&tree->getTreeView(), &QTreeView::doubleClicked,
-				   [tree, &dialog](const QModelIndex& idx)
-	{
-		const auto sourceIndex = tree->getFilterModel().mapToSource(idx);
-		auto item = tree->getModel()->itemFromIndex(sourceIndex);
-		auto propitem = dynamic_cast<PropertyDisplayItem*>(item);
-		assert(propitem);
-		AppContext::get().propertySelectionChanged(propitem->getPath());
-		dialog.close();
-	});
-
-	finder.setPropertyList(props);
-	layout.addWidget(&finder);
-
-	QDialogButtonBox buttonBox(QDialogButtonBox::Yes | QDialogButtonBox::No);
-	layout.addWidget(&buttonBox);
-
-	bool yesclicked = false;
-
-	QPushButton* btYes = buttonBox.button(QDialogButtonBox::Yes);
-	dialog.connect(btYes, &QPushButton::clicked, [&dialog, &yesclicked]() {
-		yesclicked = true;
-		dialog.close();
-	});
-
-	QPushButton* btNo = buttonBox.button(QDialogButtonBox::No);
-	dialog.connect(btNo, &QPushButton::clicked, [&dialog, &yesclicked]() {
-		dialog.close();
-	});
-
-	dialog.exec();
-
-	return yesclicked;
 }
 
 bool napkin::revealInFileBrowser(const QString& filename)

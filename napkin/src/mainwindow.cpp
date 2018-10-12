@@ -31,8 +31,6 @@ void MainWindow::showEvent(QShowEvent* event)
 	if (!QFileInfo::exists(DEFAULT_SETTINGS_FILE))
 		nap::Logger::warn("Settings file not found: %1", DEFAULT_SETTINGS_FILE.toStdString().c_str());
 
-	restoreSettings(defaultSettings);
-
 	BaseWindow::showEvent(event);
 	AppContext::get().restoreUI();
 }
@@ -104,7 +102,7 @@ void MainWindow::addMenu()
 			if (filename.isEmpty())
 				return;
 			QSettings s(filename, QSettings::IniFormat);
-			saveSettings(s);
+
 		});
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), optionsMenu);
@@ -164,7 +162,7 @@ void MainWindow::onLog(nap::LogMessage msg)
 
 void MainWindow::showError(nap::LogMessage msg)
 {
-	mErrorDialog.addMessage(msg);
+	mErrorDialog.addMessage(QString::fromStdString(msg.text()));
 	mErrorDialog.show();
 }
 

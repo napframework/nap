@@ -91,6 +91,7 @@ add_subdirectory(core)
 add_subdirectory(utility)
 add_subdirectory(rtti)
 add_subdirectory(nrender)
+add_subdirectory(napqt)
 
 # tools targets
 add_subdirectory(tools/fbxconverter)

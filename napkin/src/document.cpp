@@ -3,7 +3,7 @@
 #include <nap/logger.h>
 #include <scene.h>
 
-#include "generic/naputils.h"
+#include "naputils.h"
 
 using namespace napkin;
 using namespace nap::rtti;

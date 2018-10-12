@@ -1,5 +1,4 @@
 #include "basewindow.h"
-#include "napkinglobals.h"
 #include "autosettings.h"
 
 
@@ -41,14 +40,3 @@ void napkin::BaseWindow::closeEvent(QCloseEvent* event)
 	QWidget::closeEvent(event);
 }
 
-void napkin::BaseWindow::saveSettings(QSettings& s)
-{
-	s.setValue(settingsKey::WIN_STATE, saveState());
-	s.setValue(settingsKey::WIN_GEO, saveGeometry());
-}
-
-void napkin::BaseWindow::restoreSettings(QSettings& s)
-{
-	restoreGeometry(s.value(settingsKey::WIN_GEO).toByteArray());
-	restoreState(s.value(settingsKey::WIN_STATE).toByteArray());
-}

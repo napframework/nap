@@ -5,6 +5,7 @@
 #include <QtWidgets/QHBoxLayout>
 #include <generic/qtutils.h>
 #include "commands.h"
+#include "naputils.h"
 
 using namespace napkin;
 

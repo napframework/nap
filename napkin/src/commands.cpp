@@ -1,6 +1,6 @@
 #include <nap/logger.h>
 
-#include "generic/naputils.h"
+#include "naputils.h"
 #include "commands.h"
 #include "appcontext.h"
 

@@ -3,7 +3,7 @@
 
 #include "generic/filterpopup.h"
 #include "generic/qtutils.h"
-#include "generic/naputils.h"
+#include "naputils.h"
 #include "standarditemsobject.h"
 
 
@@ -174,7 +174,8 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 			{
 				auto parent = AppContext::get().getMainWindow();
 
-				auto comptype = FilterPopup::getType(parent, [](auto t) {
+				auto comptype = napkin::showTypeSelector(parent, [](auto t)
+				{
 					return t.is_derived_from(RTTI_OF(nap::Component));
 				});
 
@@ -199,7 +200,7 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 			// Resources
 			menu.addAction("Add Resource...", [this]()
 			{
-				auto type = FilterPopup::getType(this, [](auto t)
+				auto type = napkin::showTypeSelector(this, [](auto t)
 				{
 					if (t.is_derived_from(RTTI_OF(nap::Component)))
 						return false;

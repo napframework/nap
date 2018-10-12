@@ -1,7 +1,7 @@
 #include "timelineoutline.h"
 
 #include <QScrollBar>
-
+#include <cassert>
 
 using namespace napkin;
 

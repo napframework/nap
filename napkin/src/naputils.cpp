@@ -1,4 +1,8 @@
+#include <QtGui/QtGui>
+#include <standarditemsproperty.h>
+#include <QHBoxLayout>
 #include "naputils.h"
+#include <QPushButton>
 
 #include <QDir>
 #include <QUrl>
@@ -6,12 +10,18 @@
 #include <component.h>
 #include <nap/logger.h>
 #include <entity.h>
+#include <standarditemsobject.h>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QDialogButtonBox>
+#include <panels/finderpanel.h>
 
 #include "napkinglobals.h"
 #include "appcontext.h"
+#include "generic/filterpopup.h"
 
 using namespace nap::rtti;
 using namespace nap::utility;
+using namespace napkin;
 
 napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
 {
@@ -21,6 +31,20 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
 	//    setBackground(getSoftBackground());
 	refresh();
 }
+
+napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType(baseType)
+{
+	for (auto& object : AppContext::get().getDocument()->getObjects())
+	{
+		if (!object.get()->get_type().is_derived_from(baseType))
+			continue;
+
+		auto item = new ObjectItem(object.get());
+		item->setEditable(false);
+		appendRow(item);
+	}
+}
+
 
 void napkin::RTTITypeItem::refresh()
 {
@@ -99,6 +123,45 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
     return topLevelObjects;
 }
 
+
+nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const rttr::type& typeConstraint)
+{
+	FlatObjectModel model(typeConstraint);
+	FilterPopup dialog(parent, model);
+
+	dialog.exec(QCursor::pos());
+	if (!dialog.wasAccepted())
+		return nullptr;
+
+	auto item = dynamic_cast<ObjectItem*>(dialog.getSelectedItem());
+	if (item != nullptr)
+		return item->getObject();
+
+	return nullptr;
+}
+
+nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
+{
+	QStandardItemModel model;
+
+	for (const auto& t : getTypes(predicate))
+	{
+		auto typeName = QString::fromUtf8(t.get_name().data());
+		model.appendRow(new QStandardItem(typeName));
+	}
+
+	FilterPopup dialog(parent, model);
+	dialog.exec(QCursor::pos());
+
+	if (!dialog.wasAccepted())
+		return rttr::type::empty();
+
+	auto selected_item = dialog.getSelectedItem();
+	if (selected_item == nullptr)
+		return rttr::type::empty();
+
+	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
+}
 
 
 std::vector<rttr::type> napkin::getComponentTypes()
@@ -191,4 +254,56 @@ std::string napkin::toURI(const nap::rtti::Object& object)
 std::string napkin::toURI(const napkin::PropertyPath& path)
 {
 	return NAP_URI_PREFIX + "://" + path.toString();
+}
+
+bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
+										   QString message)
+{
+	QDialog dialog(parent);
+	dialog.setWindowTitle(title);
+
+	QVBoxLayout layout;
+	dialog.setLayout(&layout);
+
+	QLabel label;
+	label.setText(message);
+	layout.addWidget(&label);
+
+	FinderPanel finder;
+	napkin::FilterTreeView* tree = &finder.getTreeView();
+
+	// On item double-click, close the dialog and reveal the property
+	finder.connect(&tree->getTreeView(), &QAbstractItemView::doubleClicked,
+				   [tree, &dialog](const QModelIndex& idx)
+	{
+		const auto sourceIndex = tree->getFilterModel().mapToSource(idx);
+		auto item = tree->getModel()->itemFromIndex(sourceIndex);
+		auto propitem = dynamic_cast<PropertyDisplayItem*>(item);
+		assert(propitem);
+		napkin::AppContext::get().propertySelectionChanged(propitem->getPath());
+		dialog.close();
+	});
+
+	finder.setPropertyList(props);
+	layout.addWidget(&finder);
+
+	QDialogButtonBox buttonBox(QDialogButtonBox::Yes | QDialogButtonBox::No);
+	layout.addWidget(&buttonBox);
+
+	bool yesclicked = false;
+
+	QPushButton* btYes = buttonBox.button(QDialogButtonBox::Yes);
+	dialog.connect(btYes, &QPushButton::clicked, [&dialog, &yesclicked]() {
+		yesclicked = true;
+		dialog.close();
+	});
+
+	QPushButton* btNo = buttonBox.button(QDialogButtonBox::No);
+	dialog.connect(btNo, &QPushButton::clicked, [&dialog, &yesclicked]() {
+		dialog.close();
+	});
+
+	dialog.exec();
+
+	return yesclicked;
 }

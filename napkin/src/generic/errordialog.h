@@ -5,8 +5,6 @@
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
 
-#include <nap/logger.h>
-
 /**
  * A dialog for displaying an annoying error message to the user.
  */
@@ -20,7 +18,7 @@ public:
 	 * Add a message to the dialog
 	 * @param message
 	 */
-	void addMessage(nap::LogMessage message);
+	void addMessage(const QString& message);
 
 	/**
 	 * Overridden to set a reasonable size

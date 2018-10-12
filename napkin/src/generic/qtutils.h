@@ -11,10 +11,15 @@
 
 #include <QTreeView>
 #include <QtWidgets/QGraphicsItem>
-#include "propertypath.h"
 
 namespace napkin
 {
+	template<typename T, typename U>
+	T lerp(const T& a, const T& b, const U& t)
+	{
+		return a + ((b-a) * t);
+	}
+
 	/**
 	 * Mix two colors using a weight.
 	 * @param a The color to mix from
@@ -27,6 +32,19 @@ namespace napkin
 	qreal roundToInterval(qreal v, qreal step);
 	qreal floorToInterval(qreal v, qreal step);
 	qreal ceilToInterval(qreal v, qreal step);
+
+	template<typename T>
+	T clamp(const T& value, const T& min, const T& max)
+	{
+		bool less = min < max;
+		T mn = less ? min : max;
+		T mx = less ? max : min;
+		if (value < mn)
+			return mn;
+		if (value > mx)
+			return mx;
+		return value;
+	}
 
 	/**
 	 * @return A dimmed foreground color based on the current QApplication style
@@ -94,15 +112,6 @@ namespace napkin
 	 */
 	bool directoryContains(const QString& dir, const QString& filename);
 
-
-	/**
-	 * Show a dialog box containing the given properties and a custom message.
-	 * @param parent The parent widget to attach the dialog to
-	 * @param props The properties to display in the dialog
-	 * @param message The custom to display alongside the list of properties
-	 */
-	bool showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
-									   QString message);
 
 	/**
 	 * @tparam QEnum The enum type to use

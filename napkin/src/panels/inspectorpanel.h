@@ -5,7 +5,7 @@
 
 #include <rtti/object.h>
 
-#include "generic/propertypath.h"
+#include "propertypath.h"
 #include "generic/filtertreeview.h"
 #include "widgetdelegate.h"
 

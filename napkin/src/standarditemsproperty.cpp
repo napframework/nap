@@ -2,7 +2,7 @@
 
 #include "napkinglobals.h"
 #include "generic/qtutils.h"
-#include "generic/naputils.h"
+#include "naputils.h"
 #include "standarditemsproperty.h"
 #include "standarditemsgeneric.h"
 #include "appcontext.h"

@@ -8,8 +8,14 @@
 #include <rtti/rttiutilities.h>
 
 #include "propertypath.h"
-#include "qtutils.h"
+#include "generic/qtutils.h"
 
+/**
+ * Show a dialog box containing the given properties and a custom message.
+ * @param parent The parent widget to attach the dialog to
+ * @param props The properties to display in the dialog
+ * @param message The custom to display alongside the list of properties
+ */
 namespace napkin
 {
 
@@ -29,6 +35,16 @@ namespace napkin
 		const nap::rtti::TypeInfo& type;
 	};
 
+	class FlatObjectModel : public QStandardItemModel
+	{
+	public:
+		FlatObjectModel(const rttr::type& basetype);
+
+	private:
+		const rttr::type mBaseType;
+	};
+
+
 	using TypePredicate = std::function<bool(const rttr::type& type)>;
 
 	/**
@@ -38,6 +54,38 @@ namespace napkin
 	 */
 	nap::rtti::ObjectList topLevelObjects(const nap::rtti::ObjectList& objects);
 
+	/**
+	 * Display a selection dialog with all available objects, filtered by a base type
+	 * @param parent The parent widget to attach to.
+	 * @param typeConstraint The base type to filter by.
+	 * @return The selected object or nullptr if no object was selected
+	 */
+	nap::rtti::Object* showObjectSelector(QWidget* parent, const rttr::type& typeConstraint);
+
+	/**
+	 * Display a selection dialog with all available types, filtered by an optional predicate
+	 * @param parent The widget to attach to
+	 * @return The resulting selected type.
+	 */
+	nap::rtti::TypeInfo showTypeSelector(QWidget* parent, const TypePredicate& predicate = nullptr);
+
+	/**
+	 * Display a selection dialog with all available objects, filtered by type T
+	 * @tparam T the base type to filter by
+	 * @param parent The parent widget to attach to.
+	 * @return The selected object or nullptr if no object was selected
+	 */
+	template<typename T>
+	T* showObjectSelector(QWidget* parent) { return rtti_cast<T>(showObjectSelector(parent, RTTI_OF(T))); }
+
+	/**
+	 * Show a dialog box containing the given properties and a custom message.
+	 * @param parent The parent widget to attach the dialog to
+	 * @param props The properties to display in the dialog
+	 * @param message The custom to display alongside the list of properties
+	 */
+	bool showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
+									   QString message);
 
 	/**
 	 * Traverse a model and find the QStandardItem subclass representing the specified object
