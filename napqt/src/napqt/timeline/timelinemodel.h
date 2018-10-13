@@ -124,7 +124,7 @@ namespace napqt {
 	class Timeline : public QObject {
 	Q_OBJECT
 	public:
-		Timeline(QObject* parent) : QObject(parent) {}
+		Timeline(QObject* parent = nullptr) : QObject(parent) {}
 
 		Track* addTrack(const QString& name, Track* parent = nullptr);
 		void removeTrack(Track& track);
