@@ -108,7 +108,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
 
 LogPanel::LogPanel() : QWidget()
 {
-	napqt::AutoSettings::get().registerStorer(new napqt::WidgetStorer<LogPanel>());
+	napqt::AutoSettings::get().registerStorer(std::make_unique<LogPanelWidgetStorer>());
 
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	setLayout(&mLayout);
@@ -222,36 +222,22 @@ int LogPanel::getLevelIndex(const nap::LogLevel& level) const
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// LogPanel Storer
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-namespace napkin
+void LogPanelWidgetStorer::store(const LogPanel& widget, const QString& key, QSettings& s) const
 {
+	s.setValue(key + "_LOGLEVEL", widget.getLevelIndex(widget.getCurrentLevel()));
+}
+void LogPanelWidgetStorer::restore(LogPanel& widget, const QString& key, const QSettings& s) const
+{
+	const auto levels = nap::Logger::getLevels();
+	const auto& defaultLevel = nap::Logger::infoLevel();
+	int defaultIndex = widget.getLevelIndex(defaultLevel);
+	int index = s.value(key + "_LOGLEVEL", defaultIndex).toInt();
 
-	template<>
-	void napqt::WidgetStorer<LogPanel>::store(const LogPanel& widget, const QString& key, QSettings& s) const
+	if (index < 0 || index >= levels.size())
 	{
-		s.setValue(key + "_LOGLEVEL", widget.getLevelIndex(widget.getCurrentLevel()));
+		nap::Logger::warn("Wrong log level in settings (%s), using default", std::to_string(index).c_str());
+		index = defaultIndex;
 	}
 
-	template<>
-	void napqt::WidgetStorer<LogPanel>::restore(LogPanel& widget, const QString& key,
-										 const QSettings& s) const
-	{
-		const auto levels = nap::Logger::getLevels();
-		const auto& defaultLevel = nap::Logger::infoLevel();
-		int defaultIndex = widget.getLevelIndex(defaultLevel);
-		int index = s.value(key + "_LOGLEVEL", defaultIndex).toInt();
-
-		if (index < 0 || index >= levels.size())
-		{
-			nap::Logger::warn("Wrong log level in settings (%s), using default", std::to_string(index).c_str());
-			index = defaultIndex;
-		}
-
-		widget.setCurrentLevel(*levels[index]);
-	}
-
-} // namespace napkin
+	widget.setCurrentLevel(*levels[index]);
+}

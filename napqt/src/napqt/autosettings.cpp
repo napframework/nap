@@ -8,70 +8,24 @@
 
 using namespace napqt;
 
-namespace napqt
+void napqt::AutoSettings::registerStorer(std::unique_ptr<WidgetStorerBase> s)
 {
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	// QMainWindow Storer
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	template<>
-	void WidgetStorer<QMainWindow>::store(const QMainWindow& widget, const QString& key, QSettings& s) const
-	{
-		s.setValue(key + "_GEO", widget.saveGeometry());
-		s.setValue(key + "_STATE", widget.saveState());
-	}
-
-	template<>
-	void WidgetStorer<QMainWindow>::restore(QMainWindow& widget, const QString& key, const QSettings& s) const
-	{
-		widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
-		widget.restoreState(s.value(key + "_STATE").toByteArray());
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	// QHeaderView Storer
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	template<>
-	void WidgetStorer<QHeaderView>::store(const QHeaderView& widget, const QString& key, QSettings& s) const
-	{
-		s.setValue(key + "_GEO", widget.saveGeometry());
-		s.setValue(key + "_STATE", widget.saveState());
-	}
-
-	template<>
-	void WidgetStorer<QHeaderView>::restore(QHeaderView& widget, const QString& key,
-											const QSettings& s) const
-	{
-		widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
-		widget.restoreState(s.value(key + "_STATE").toByteArray());
-	}
-
-} // namespace napqt
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void AutoSettings::registerStorer(WidgetStorerBase* s)
-{
-	mStorers.emplace_back(std::unique_ptr<WidgetStorerBase>(s));
+	mStorers.emplace_back(std::move(s));
 }
 
-void AutoSettings::store(QWidget& w) const
+void napqt::AutoSettings::store(QWidget& w) const
 {
 	QSettings s;
 	storeRecursive(w, s);
 }
 
-void AutoSettings::restore(QWidget& w) const
+void napqt::AutoSettings::restore(QWidget& w) const
 {
 	QSettings s;
 	restoreRecursive(w, s);
 }
 
-void AutoSettings::storeRecursive(QWidget& w, QSettings& s) const
+void napqt::AutoSettings::storeRecursive(QWidget& w, QSettings& s) const
 {
 	auto storer = findStorer(w);
 	if (storer)
@@ -89,7 +43,7 @@ void AutoSettings::storeRecursive(QWidget& w, QSettings& s) const
 	}
 }
 
-void AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
+void napqt::AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
 {
 	auto storer = findStorer(w);
 	if (storer) {
@@ -109,12 +63,12 @@ void AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
 
 
 
-AutoSettings::AutoSettings()
+napqt::AutoSettings::AutoSettings()
 {
 	registerDefaults();
 }
 
-WidgetStorerBase* AutoSettings::findStorer(const QWidget& w) const
+napqt::WidgetStorerBase* napqt::AutoSettings::findStorer(const QWidget& w) const
 {
 	for (const auto& storer : mStorers)
 		if (storer->canStore(w))
@@ -122,7 +76,7 @@ WidgetStorerBase* AutoSettings::findStorer(const QWidget& w) const
 	return nullptr;
 }
 
-const QString AutoSettings::ensureHasName(QObject& w) const
+const QString napqt::AutoSettings::ensureHasName(QObject& w) const
 {
 	if (!w.objectName().isEmpty())
 		return w.objectName();
@@ -142,7 +96,7 @@ const QString AutoSettings::ensureHasName(QObject& w) const
 	return name;
 }
 
-QString AutoSettings::uniqeObjectName(QWidget& w) const
+QString napqt::AutoSettings::uniqeObjectName(QWidget& w) const
 {
 	QStringList names;
 	QObject* current = &w;
@@ -156,20 +110,20 @@ QString AutoSettings::uniqeObjectName(QWidget& w) const
 	return names.join("/");
 }
 
-AutoSettings::AutoSettings(AutoSettings const&)
+napqt::AutoSettings::AutoSettings(AutoSettings const&)
 {
 	registerDefaults();
 }
 
-void AutoSettings::registerDefaults()
+void napqt::AutoSettings::registerDefaults()
 {
-	registerStorer(new WidgetStorer<QMainWindow>());
-	registerStorer(new WidgetStorer<QHeaderView>());
+	registerStorer(std::make_unique<MainWindowWidgetStorer>());
+	registerStorer(std::make_unique<HeaderViewWidgetStorer>());
 }
 
-AutoSettings& AutoSettings::get()
+napqt::AutoSettings& napqt::AutoSettings::get()
 {
-	static AutoSettings instance;
+	static napqt::AutoSettings instance;
 	return instance;
 }
 

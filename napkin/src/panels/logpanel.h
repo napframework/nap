@@ -5,10 +5,12 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QComboBox>
+#include <QSettings>
 
 #include <nap/logger.h>
 
 #include <napqt/filtertreeview.h>
+#include <napqt/autosettings.h>
 
 namespace napkin
 {
@@ -73,5 +75,11 @@ namespace napkin
 		bool wasMaxScroll = true; 	// Whether the scroll view was at max
 	};
 
+	class LogPanelWidgetStorer : public napqt::WidgetStorer<LogPanel>
+	{
+	public:
+		void store(const LogPanel& widget, const QString& key, QSettings& s) const override;
+		void restore(LogPanel& widget, const QString& key, const QSettings& s) const override;
+	};
 
 };
