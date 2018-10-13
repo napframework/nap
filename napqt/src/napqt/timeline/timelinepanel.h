@@ -58,10 +58,10 @@ namespace napqt
 
 		TimelineOutline mOutline;
 
-		QVBoxLayout mLayout;
-		QVBoxLayout mTimelineLayout;
-		QWidget mTimelineWidget;
-		QSplitter mSplitter;
+		QVBoxLayout* mLayout;
+		QVBoxLayout* mTimelineLayout;
+		QWidget* mTimelineWidget;
+		QSplitter* mSplitter;
 		Ruler mRuler;
 
 		std::vector<std::unique_ptr<TimeDisplay>> mTimeDisplays;
