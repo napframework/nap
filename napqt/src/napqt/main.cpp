@@ -5,6 +5,8 @@
 #include "basewindow.h"
 #include "fileselector.h"
 #include "errordialog.h"
+#include "randomnames.h"
+#include "filterpopup.h"
 
 using namespace napqt;
 
@@ -23,9 +25,14 @@ public:
 		mLayout.addWidget(errorButton2);
 		connect(errorButton2, &QPushButton::clicked, this, &DemoPanel::onMultipleErrors);
 
-		auto filterButton = new QPushButton("Filter Popup", this);
-		mLayout.addWidget(filterButton);
+		auto filterLayout = new QHBoxLayout();
+		filterLayout->addWidget(new QLabel("Filter popup:"));
+		filterLayout->addWidget(&mFilterResult, 1);
+		mFilterResult.setPlaceholderText("Select text...");
+		auto filterButton = new QPushButton("...", this);
+		filterLayout->addWidget(filterButton);
 		connect(filterButton, &QPushButton::clicked, this, &DemoPanel::onFilterPopup);
+		mLayout.addLayout(filterLayout);
 
 		auto fileSelector = new FileSelector(this);
 		mLayout.addWidget(fileSelector);
@@ -60,11 +67,20 @@ private:
 	}
 
 	void onFilterPopup() {
+		namegen::NameGen gen;
 
+		QStringList content;
+		for (int i=0; i<100; i++)
+			content << QString::fromStdString(gen.multiple(2, 5));
+
+		auto result = FilterPopup::fromStringList(this, content);
+		if (!result.isEmpty())
+			mFilterResult.setText(result);
 	}
 	QVBoxLayout mLayout;
 	QStringList mErrors;
 	QTimer mErrorTimer;
+	QLineEdit mFilterResult;
 };
 
 class MainWindow : public BaseWindow
