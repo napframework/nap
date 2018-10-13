@@ -83,5 +83,5 @@ namespace napqt
 		OutlineModel mModel;
 	};
 
-} // napkin
+} // napqt
 

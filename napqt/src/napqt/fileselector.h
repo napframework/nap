@@ -16,7 +16,7 @@ namespace napqt
 	{
 		Q_OBJECT
 	public:
-		FileSelector();
+		FileSelector(QWidget* parent = nullptr);
 
 		/**
 		 * Set the file filter to be used in the file selection dialog.

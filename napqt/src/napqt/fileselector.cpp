@@ -3,7 +3,7 @@
 #include <QAbstractButton>
 
 
-napqt::FileSelector::FileSelector() : QWidget()
+napqt::FileSelector::FileSelector(QWidget* parent) : QWidget(parent)
 {
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
