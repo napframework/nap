@@ -10,31 +10,35 @@ using namespace napqt;
 TimelinePanel::TimelinePanel() : QWidget()
 {
 	// Main layout
-	setLayout(&mLayout);
-	mLayout.setContentsMargins(0, 0, 0, 0);
-	mLayout.setSpacing(0);
+	mLayout = new QVBoxLayout(this);
+	setLayout(mLayout);
+	mLayout->setContentsMargins(0, 0, 0, 0);
+	mLayout->setSpacing(0);
 
 	// TimelineOutline
-	mSplitter.addWidget(&mOutline);
+	mSplitter = new QSplitter(this);
+	mSplitter->addWidget(&mOutline);
 
 	// Timeline layout
-	mTimelineLayout.setSpacing(0);
-	mTimelineLayout.setContentsMargins(0, 0, 0, 0);
-	mTimelineLayout.addWidget(&mRuler);
-	mTimelineLayout.addWidget(&mView);
-	mTimelineWidget.setLayout(&mTimelineLayout);
-	mSplitter.addWidget(&mTimelineWidget);
+	mTimelineWidget = new QWidget(mSplitter);
+	mTimelineLayout = new QVBoxLayout();
+	mTimelineLayout->setSpacing(0);
+	mTimelineLayout->setContentsMargins(0, 0, 0, 0);
+	mTimelineLayout->addWidget(&mRuler);
+	mTimelineLayout->addWidget(&mView);
+	mTimelineWidget->setLayout(mTimelineLayout);
+	mSplitter->addWidget(mTimelineWidget);
 
 	// Splitter
-	mSplitter.setSizes({300, 1000});
-	mSplitter.setStretchFactor(0, 0);
-	mSplitter.setStretchFactor(1, 1);
-	mLayout.addWidget(&mSplitter);
+	mSplitter->setSizes({300, 1000});
+	mSplitter->setStretchFactor(0, 0);
+	mSplitter->setStretchFactor(1, 1);
+	mLayout->addWidget(mSplitter);
 
 	// Data
 	mView.setScene(&mScene);
 	mView.setPanBounds(QRectF(0, 0, std::numeric_limits<qreal>::max(), std::numeric_limits<qreal>::max()));
-	connect(&mSplitter, &QSplitter::splitterMoved, this, &TimelinePanel::onTimelineViewTransformed);
+	connect(mSplitter, &QSplitter::splitterMoved, this, &TimelinePanel::onTimelineViewTransformed);
 	connect(&mView, &GridView::viewTransformed, this, &TimelinePanel::onTimelineViewTransformed);
 
 	connect(&mOutline, &TimelineOutline::verticalScrollChanged, [this](int value) {
