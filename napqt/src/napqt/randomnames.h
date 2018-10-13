@@ -2,67 +2,26 @@
 
 #include <string>
 #include <cstdlib>
-#include <chrono>
-#include <random>
 
-namespace namegen {
-	int randint(int n) {
-		return rand() % (n - 1);
-	}
+namespace namegen
+{
+	int randint(int n);
 
-	int randint(int min, int max) {
-		std::random_device seeder;
-		std::mt19937 engine(seeder());
-		std::uniform_int_distribution<int> dist(min, max);
-		return dist(engine);
-	}
+	int randint(int min, int max);
 
-	char randChar(const std::string& str) {
-		int len = str.size();
-		int r = randint(static_cast<int>(len));
-		return str.at(r);
-	}
+	char randChar(const std::string& str);
 
-	bool randBool() {
-		return rand() % 2;
-	}
+	bool randBool();
 
-
-	class NameGen {
+	/**
+	 * Random data generator
+	 */
+	class NameGen
+	{
 	public:
-		NameGen() {
-			auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-					std::chrono::system_clock::now().time_since_epoch());
-			srand(ms.count());
-		}
-
-		std::string multiple(int minLen = 1, int maxLen = 3) {
-			int len = (rand() % maxLen) + minLen;
-			std::string name;
-			for (int i = 0; i < len; i++) {
-				if (i > 0)
-					name += ' ';
-				name += single();
-
-			}
-			return name;
-		}
-
-		std::string single(int minLen = 2, int maxLen = 5) {
-			std::string name;
-			int len = (rand() % maxLen) + minLen;
-
-			bool cons = randBool();
-			for (int i = 0; i < len; i++) {
-				char c = randChar(cons ? consonants : vowels);
-				cons = !cons;
-				if (i == 0)
-					name += std::toupper(c);
-				else
-					name += c;
-			}
-			return name;
-		}
+		NameGen();
+		std::string multiple(int minLen = 1, int maxLen = 3);
+		std::string single(int minLen = 2, int maxLen = 5);
 
 	private:
 		const std::string vowels = "aeiou";
