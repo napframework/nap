@@ -5,6 +5,8 @@
 
 #include <QWidget>
 #include <QSettings>
+#include <QMainWindow>
+#include <QHeaderView>
 
 namespace napqt
 {
@@ -45,7 +47,7 @@ namespace napqt
 		 *
 		 * @param s The storer to register
 		 */
-		void registerStorer(WidgetStorerBase* s);
+		void registerStorer(std::unique_ptr<WidgetStorerBase> s);
 
 	private:
 		AutoSettings();
@@ -89,6 +91,7 @@ namespace napqt
 	{
 	public:
 		WidgetStorer() = default;
+		virtual ~WidgetStorer() {}
 
 		/**
 		 * Store a widget.
@@ -96,7 +99,7 @@ namespace napqt
 		 * @param key A unique string identifying the provided QWidget
 		 * @param s The QSettings instance on which to store the settings
 		 */
-		void store(const T& widget, const QString& key, QSettings& s) const;
+		virtual void store(const T& widget, const QString& key, QSettings& s) const = 0;
 
 		/**
 		 * Restore a widget
@@ -104,7 +107,7 @@ namespace napqt
 		 * @param key A unique string identifying the provided QWidget
 		 * @param s The QSetttings instance to get the settings from
 		 */
-		void restore(T& widget, const QString& key, const QSettings& s) const;
+		virtual void restore(T& widget, const QString& key, const QSettings& s) const = 0;
 
 		void storeWidget(const QWidget& widget, const QString& key, QSettings& s) const override
 		{
@@ -126,5 +129,38 @@ namespace napqt
 		}
 	};
 
+	class MainWindowWidgetStorer : public WidgetStorer<QMainWindow>
+	{
+	public:
+		void store(const QMainWindow& widget, const QString& key, QSettings& s) const override
+		{
+			s.setValue(key + "_GEO", widget.saveGeometry());
+			s.setValue(key + "_STATE", widget.saveState());
+		}
 
+		void restore(QMainWindow& widget, const QString& key, const QSettings& s) const override
+		{
+			widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
+			widget.restoreState(s.value(key + "_STATE").toByteArray());
+
+		}
+	};
+
+
+	class HeaderViewWidgetStorer : public WidgetStorer<QHeaderView>
+	{
+	public:
+		void store(const QHeaderView& widget, const QString& key, QSettings& s) const override
+		{
+			s.setValue(key + "_GEO", widget.saveGeometry());
+			s.setValue(key + "_STATE", widget.saveState());
+		}
+
+		void restore(QHeaderView& widget, const QString& key, const QSettings& s) const override
+		{
+			widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
+			widget.restoreState(s.value(key + "_STATE").toByteArray());
+
+		}
+	};
 }

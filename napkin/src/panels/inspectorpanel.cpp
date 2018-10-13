@@ -200,7 +200,7 @@ void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop
 
 
 
-	auto pathItem = napkin::findItemInModel(mModel, [prop](QStandardItem* item)
+	auto pathItem = napqt::findItemInModel(mModel, [prop](QStandardItem* item)
 	{
 		auto pitem = dynamic_cast<PropertyPathItem*>(item);
 		if (pitem == nullptr)
