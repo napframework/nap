@@ -2,9 +2,10 @@
 
 #include <QWidget>
 #include <QStylePainter>
+#include <napqt/timedisplay.h>
 
 #include "timelinemodel.h"
-#include "timedisplay.h"
+
 
 namespace napqt
 {
@@ -14,7 +15,7 @@ namespace napqt
 	public:
 		Ruler(QWidget* parent = 0);
 
-		void setDisplayFormat(TimeDisplay* fmt);
+		void setDisplayFormat(IntervalDisplay* fmt);
 		void setRange(const Range& range);
 		void setHeight(int height);
 
@@ -30,7 +31,7 @@ namespace napqt
 		Range mRange;
 		int mMinorHatchLength = 4;
 		int mMajorHatchLength = 12;
-		TimeDisplay* mTimeConfig;
+		IntervalDisplay* mTimeConfig;
 		QFont mFont;
 		int mTextHeight;
 		QPoint mLabelOffset = {4, 0};

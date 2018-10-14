@@ -3,6 +3,9 @@
 #include <QGraphicsView>
 #include <QGraphicsRectItem>
 #include <QRubberBand>
+#include <asio/detail/shared_ptr.hpp>
+#include <memory>
+#include "timedisplay.h"
 
 namespace napqt {
 
@@ -35,13 +38,14 @@ namespace napqt {
 		void frameAll(QMargins margins);
 		void frameSelected(QMargins margins);
 		void frameView(const QRectF& rect, QMargins margins);
-		void fitInView(const QRectF& rect, const QMargins& margins, bool horizontal, bool vertical);
 		void setVerticalScroll(int value);
 		void setGridEnabled(bool enabled);
 		void setPanBounds(qreal left, qreal top, qreal right, qreal bottom);
 		void setPanBounds(const QRectF& rec);
 		void constrainTransform(QTransform& xf);
 		void constrainView();
+
+		void setGridIntervalDisplay(std::shared_ptr<IntervalDisplay> horiz, std::shared_ptr<IntervalDisplay> vert);
 
 		const QPoint& mousePressedPos() const { return mMousePressPos; }
 		const QPoint& mouseLastPos() const { return mMouseLastPos; }
@@ -67,6 +71,10 @@ namespace napqt {
 		void keyReleaseEvent(QKeyEvent* event) override;
 		QPoint mMousePressPos;
 	private:
+		void drawHatchesHorizontal(QPainter* painter, const QRectF& rect, qreal minStepSize, const QColor& color,
+										   bool labels);
+		void drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal minStepSize, const QColor& color,
+										 bool labels);
 		QRectF selectedItemsBoundingRect() const;
 		const QPointF viewScale() const;
 		const QPointF viewPos() const;
@@ -78,6 +86,12 @@ namespace napqt {
 		QFont mRulerFont;
 		QRubberBand mRubberBand;
 		bool mGridEnabled = true;
+		bool mDrawLabelsH = true;
+		bool mDrawLabelsV = true;
+		int mGridMinStepSizeHMinor = 30;
+		int mGridMinStepSizeVMinor = 30;
+		int mGridMinStepSizeHMajor = 120;
+		int mGridMinStepSizeVMajor = 120;
 
 		ZoomMode mZoomMode = ZoomMode::Horizontal;
 		PanMode mPanMode = PanMode::Parallax;
@@ -85,7 +99,9 @@ namespace napqt {
 		PanMode mFramePanMode = PanMode::Parallax;
 
 		QRectF mPanBounds;
-		RulerFormat mRulerFormat = RulerFormat::Float;
+		std::shared_ptr<IntervalDisplay> mIvalDisplayHorizontal = nullptr;
+		std::shared_ptr<IntervalDisplay> mIvalDisplayVertical = nullptr;
+
 		qreal mFramerate = 30;
 
 		qreal calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const;
