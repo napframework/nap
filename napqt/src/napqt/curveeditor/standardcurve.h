@@ -2,19 +2,21 @@
 
 #include <memory>
 
-#include "abstractcurve.h"
+#include "abstractcurvemodel.h"
 
 namespace napqt
 {
 	class StandardPoint
 	{
 	public:
-		StandardPoint(qreal t, qreal v, AbstractCurve::InterpolationType interp) : time(t), value(v), interp(interp) {}
-		StandardPoint(const StandardPoint& other) = default;
+		StandardPoint(const QPointF& pos, AbstractCurve::InterpType interp = AbstractCurve::InterpType::Bezier,
+				const QPointF& inTan = QPointF(-0.1, 0), const QPointF& outTan = QPointF(0.1, 0))
+		: pos(pos), interp(interp), inTan(inTan), outTan(outTan) {}
 
-		qreal time;
-		qreal value;
-		AbstractCurve::InterpolationType interp;
+		QPointF pos;
+		QPointF inTan;
+		QPointF outTan;
+		AbstractCurve::InterpType interp;
 	};
 
 	class StandardCurveModel;
@@ -27,14 +29,19 @@ namespace napqt
 
 		int pointCount() const override;
 
+		const QString name() const { return mName; }
+		void setName(const QString& name);
+
 		QVariant data(int index, int role) const override;
 		void setData(int index, int role, QVariant value) override;
 
-		void addPoint(qreal time, qreal value, InterpolationType interp);
+		void addPoint(qreal time, qreal value, InterpType interp = InterpType::Linear);
 		void removePoint(int index);
 
+		StandardCurveModel* model();
 	private:
 		QList<StandardPoint> mPoints;
+		QString mName;
 	};
 
 	class StandardCurveModel : public AbstractCurveModel
@@ -50,6 +57,7 @@ namespace napqt
 		void removeCurve(AbstractCurve* curve);
 		void removeCurve(int index);
 	private:
+		void onCurveChanged(AbstractCurve* curve);
 		QList<AbstractCurve*> mCurves;
 	};
 }
