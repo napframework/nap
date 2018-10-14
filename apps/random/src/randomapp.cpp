@@ -61,6 +61,7 @@ namespace nap
 		mVideo = mScene->findEntity("Video");
 		mCombination = mScene->findEntity("Combination");
 		mTruss = mScene->findEntity("Truss");
+		mBlueprint = mScene->findEntity("Blueprint");
 
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -121,10 +122,9 @@ namespace nap
 			// Find the scene (perspective camera)
 			nap::PerspCameraComponentInstance& camera = mSceneCamera->getComponent<nap::PerspCameraComponentInstance>();
 
-			// Find the visualization mesh and add as an object to render
+			// Find all visualization meshes (truss, leds, outline etc.) and render in one pass
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			components_to_render.emplace_back(&(mLightRig->getComponent<RenderableMeshComponentInstance>()));
-			components_to_render.emplace_back(&(mTruss->getComponent<RenderableMeshComponentInstance>()));
+			mLightRig->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
 
 			// Render visualization mesh
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);

@@ -15,7 +15,7 @@ const vec3			lightPosition  = vec3(0.0,200.0,-100.0);	// World position of the l
 const vec3			lightIntensity = vec3(1.0,1.0,1.0) ;		// Light intensity
 const float			ambientIntensity = 1.0;						// Ambient light intensity
 const float			shininess = 2.0;							// Specular angle shininess
-const float			specularIntensity = 0.8;					// Amount of added specular
+const float			specularIntensity = 0.5;					// Amount of added specular
 
 
 // output

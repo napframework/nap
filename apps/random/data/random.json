@@ -78,6 +78,138 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "Blueprint",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_9",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "BlueprintOutline",
+                "BlueprintSquares"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BlueprintOutline",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_10",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_7",
+                    "Mesh": "BlueprintOutlineMesh",
+                    "MaterialInstance": {
+                        "Material": "BlueprintOutlineMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BlueprintSquares",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_11",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_8",
+                    "Mesh": "BlueprintSquaresMesh",
+                    "MaterialInstance": {
+                        "Material": "BlueprintSquaresMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "Clouds",
             "Components": [
                 {
@@ -272,7 +404,8 @@
                 }
             ],
             "Children": [
-                "Truss"
+                "Truss",
+                "Blueprint"
             ]
         },
         {
@@ -561,6 +694,24 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "BlueprintOutlineMaterial",
+            "Uniforms": [],
+            "Shader": "BlueprintOutlineShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "BlueprintSquaresMaterial",
+            "Uniforms": [],
+            "Shader": "BlueprintSquaresShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "CloudMaterial",
             "Uniforms": [
                 {
@@ -720,6 +871,24 @@
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "BlueprintGroundMesh",
+            "Path": "blueprint_ground.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "BlueprintOutlineMesh",
+            "Path": "blueprint_outline.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "BlueprintSquaresMesh",
+            "Path": "blueprint_squares.mesh",
+            "Usage": "Static"
         },
         {
             "Type": "nap::MeshFromFile",
@@ -972,6 +1141,18 @@
                     "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "BlueprintOutlineShader",
+            "mVertShader": "shaders/blueprint_outline.vert",
+            "mFragShader": "shaders/blueprint_outline.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "BlueprintSquaresShader",
+            "mVertShader": "shaders/blueprint_squares.vert",
+            "mFragShader": "shaders/blueprint_squares.frag"
         },
         {
             "Type": "nap::Shader",

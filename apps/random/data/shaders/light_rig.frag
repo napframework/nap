@@ -25,8 +25,8 @@ out vec4 out_Color;
 void main() 
 {
 	// initial texture coordinate
-	float led_intensity = clamp(passColor.r + passColor.g, 0.0, 1.0) * 1.0;
-	vec3 color = vec3(led_intensity, led_intensity, led_intensity);
+	float led_intensity = 1.0;
+	vec3 color = vec3(passColor.r, passColor.g, 0.0) * led_intensity;
 
 	//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));

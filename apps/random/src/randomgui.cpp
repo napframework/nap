@@ -44,12 +44,15 @@ namespace nap
 		// Update camera location
 		TransformComponentInstance& cam_xform = mApp.mSceneCamera->getComponent<TransformComponentInstance>();
 		glm::vec3 cam_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		nap::MaterialInstance& rig_material = mApp.mLightRig->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		rig_material.getOrCreateUniform<nap::UniformVec3>("cameraLocation").setValue(cam_pos);
 
-		// Also for truss
-		nap::MaterialInstance& truss_material = mApp.mTruss->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		truss_material.getOrCreateUniform<nap::UniformVec3>("cameraLocation").setValue(cam_pos);
+		// Get all renderable meshes under the light rig and set camera location uniform (they should all have one)
+		std::vector<RenderableMeshComponentInstance*> render_meshes;
+		mApp.mLightRig->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(render_meshes);
+		for (auto& rmesh : render_meshes)
+		{
+			nap::MaterialInstance& material = rmesh->getMaterialInstance();
+			material.getOrCreateUniform<nap::UniformVec3>("cameraLocation").setValue(cam_pos);
+		}
 	}
 
 	void RandomGui::init()
