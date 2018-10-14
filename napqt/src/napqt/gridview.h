@@ -9,6 +9,8 @@ namespace napqt {
 
 	class GridView : public QGraphicsView {
 	Q_OBJECT
+
+	public:
 		enum class ZoomMode {
 			IgnoreAspectRatio, KeepAspectRatio, Horizontal, Vertical
 		};
@@ -21,16 +23,18 @@ namespace napqt {
 			Float, SMPTE
 		};
 
-	public:
 		explicit GridView(QWidget* parent=nullptr);
 		~GridView() {}
+
+		void setPanZoomMode(PanMode panMode, ZoomMode zoomMode) { mPanMode=panMode; mZoomMode = zoomMode; }
+		void setFramePanZoomMode(PanMode panMode, ZoomMode zoomMode) { mFramePanMode=panMode; mFrameZoomMode = zoomMode; }
 
 		void pan(const QPointF& delta);
 		void zoom(const QPointF& delta, const QPointF& pivot);
 		void centerView();
-		void frameAll(bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
-		void frameSelected(bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
-		void frameView(const QRectF& rect, bool horizontal, bool vertical, QMargins margins = QMargins(20, 20, 20, 20));
+		void frameAll(QMargins margins);
+		void frameSelected(QMargins margins);
+		void frameView(const QRectF& rect, QMargins margins);
 		void fitInView(const QRectF& rect, const QMargins& margins, bool horizontal, bool vertical);
 		void setVerticalScroll(int value);
 		void setGridEnabled(bool enabled);
@@ -77,8 +81,11 @@ namespace napqt {
 
 		ZoomMode mZoomMode = ZoomMode::Horizontal;
 		PanMode mPanMode = PanMode::Parallax;
+		ZoomMode mFrameZoomMode = ZoomMode::Horizontal;
+		PanMode mFramePanMode = PanMode::Parallax;
+
 		QRectF mPanBounds;
-		RulerFormat mRulerFormat = RulerFormat::SMPTE;
+		RulerFormat mRulerFormat = RulerFormat::Float;
 		qreal mFramerate = 30;
 
 		qreal calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const;
