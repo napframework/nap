@@ -347,20 +347,24 @@ void CurveScene::setModel(AbstractCurveModel* model)
 	if (mModel == model)
 		return;
 
+	// clear out old model
+
 	if (mModel)
 	{
 		disconnect(mModel, &AbstractCurveModel::curvesAdded, this, &CurveScene::onCurvesAdded);
-		disconnect(mModel, &AbstractCurveModel::curvesAdded, this, &CurveScene::onCurvesAdded);
+		disconnect(mModel, &AbstractCurveModel::curvesRemoved, this, &CurveScene::onCurvesRemoved);
 	}
 
 	clear();
+
+	// register new model
 
 	mModel = model;
 
 	if (mModel)
 	{
 		connect(mModel, &AbstractCurveModel::curvesAdded, this, &CurveScene::onCurvesAdded);
-		connect(mModel, &AbstractCurveModel::curvesAdded, this, &CurveScene::onCurvesAdded);
+		connect(mModel, &AbstractCurveModel::curvesRemoved, this, &CurveScene::onCurvesRemoved);
 	}
 
 	QList<int> indices;
@@ -399,7 +403,12 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	setScene(&mCurveScene);
 	setPanZoomMode(PanMode::Parallax, ZoomMode::IgnoreAspectRatio);
 	setFramePanZoomMode(PanMode::Parallax, ZoomMode::IgnoreAspectRatio);
+	setGridIntervalDisplay(std::make_shared<FloatIntervalDisplay>(), std::make_shared<FloatIntervalDisplay>());
+
+	// Flip y axis
+	setVerticalFlipped(true);
 	frameView(QRectF(0, 0, 1, 1), QMargins(10, 10, 10, 10));
-//	setGridIntervalDisplay(stFloatIntervalDisplay(), FloatIntervalDisplay());
+
+
 }
 

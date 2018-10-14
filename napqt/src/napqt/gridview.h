@@ -7,30 +7,47 @@
 #include <memory>
 #include "timedisplay.h"
 
-namespace napqt {
+namespace napqt
+{
 
 
-	class GridView : public QGraphicsView {
+	class GridView : public QGraphicsView
+	{
 	Q_OBJECT
 
 	public:
-		enum class ZoomMode {
+		enum class ZoomMode
+		{
 			IgnoreAspectRatio, KeepAspectRatio, Horizontal, Vertical
 		};
 
-		enum class PanMode {
+		enum class PanMode
+		{
 			Horizontal, Vertical, Parallax
 		};
 
-		enum class RulerFormat {
+		enum class RulerFormat
+		{
 			Float, SMPTE
 		};
 
-		explicit GridView(QWidget* parent=nullptr);
+		explicit GridView(QWidget* parent = nullptr);
 		~GridView() {}
 
-		void setPanZoomMode(PanMode panMode, ZoomMode zoomMode) { mPanMode=panMode; mZoomMode = zoomMode; }
-		void setFramePanZoomMode(PanMode panMode, ZoomMode zoomMode) { mFramePanMode=panMode; mFrameZoomMode = zoomMode; }
+		void setPanZoomMode(PanMode panMode, ZoomMode zoomMode)
+		{
+			mPanMode = panMode;
+			mZoomMode = zoomMode;
+		}
+		void setFramePanZoomMode(PanMode panMode, ZoomMode zoomMode)
+		{
+			mFramePanMode = panMode;
+			mFrameZoomMode = zoomMode;
+		}
+		void setDrawHLabels(bool b) { mDrawLabelsH = b; }
+		void setDrawVLabels(bool b) { mDrawLabelsV = b; }
+		void setDrawHLines(bool b) { mDrawHLines = b; }
+		void setDrawVLines(bool b) { mDrawVLines = b; }
 
 		void pan(const QPointF& delta);
 		void zoom(const QPointF& delta, const QPointF& pivot);
@@ -39,11 +56,12 @@ namespace napqt {
 		void frameSelected(QMargins margins);
 		void frameView(const QRectF& rect, QMargins margins);
 		void setVerticalScroll(int value);
-		void setGridEnabled(bool enabled);
 		void setPanBounds(qreal left, qreal top, qreal right, qreal bottom);
 		void setPanBounds(const QRectF& rec);
 		void constrainTransform(QTransform& xf);
 		void constrainView();
+		void setVerticalFlipped(bool flipped);
+		const bool isVerticalFlipped() const { return mVerticalFlipped; }
 
 		void setGridIntervalDisplay(std::shared_ptr<IntervalDisplay> horiz, std::shared_ptr<IntervalDisplay> vert);
 
@@ -72,13 +90,15 @@ namespace napqt {
 		QPoint mMousePressPos;
 	private:
 		void drawHatchesHorizontal(QPainter* painter, const QRectF& rect, qreal minStepSize, const QColor& color,
-										   bool labels);
+								   bool labels);
 		void drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal minStepSize, const QColor& color,
-										 bool labels);
+								 bool labels);
 		QRectF selectedItemsBoundingRect() const;
 		const QPointF viewScale() const;
 		const QPointF viewPos() const;
+		void applyTransform(const QTransform& xf);
 
+		bool mVerticalFlipped = false;
 
 		QPoint mMouseLastPos;
 		QPoint mMouseDelta;
@@ -88,10 +108,15 @@ namespace napqt {
 		bool mGridEnabled = true;
 		bool mDrawLabelsH = true;
 		bool mDrawLabelsV = true;
+		bool mDrawHLines = true;
+		bool mDrawVLines = true;
 		int mGridMinStepSizeHMinor = 30;
 		int mGridMinStepSizeVMinor = 30;
 		int mGridMinStepSizeHMajor = 120;
 		int mGridMinStepSizeVMajor = 120;
+		bool mDrawHoldout = true;
+		QRectF mHoldoutRect = QRectF(0, 0, 1, 1);
+
 
 		ZoomMode mZoomMode = ZoomMode::Horizontal;
 		PanMode mPanMode = PanMode::Parallax;
