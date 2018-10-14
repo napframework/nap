@@ -9,23 +9,21 @@ in vec3 passVert;						// The vertex position
 
 // uniforms
 uniform vec3		cameraLocation;		// World Space location of the camera
+uniform vec3		color;
+uniform float		shininess;
+uniform float		specularIntensity;
+uniform float		alpha;
 
 // Light Uniforms
 const vec3			lightPosition  = vec3(0.0,200.0,-100.0);	// World position of the light
 const vec3			lightIntensity = vec3(1.0,1.0,1.0) ;		// Light intensity
 const float			ambientIntensity = 1.0;						// Ambient light intensity
-const float			shininess = 3.0;							// Specular angle shininess
-const float			specularIntensity = 0.5;					// Amount of added specular
-const vec3			outlineColor = vec3(0.0,0.0,0.0);
 
 // output
 out vec4 out_Color;
 
 void main() 
 {
-	// initial texture coordinate
-	vec3 color = outlineColor;
-
 	//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
     vec3 normal = normalize(normal_matrix * passNormals);
@@ -61,5 +59,5 @@ void main()
     vec3 linearColor = ambient + specular;
 
 	// set fragment color
-	out_Color =  vec4(linearColor, 0.5);
+	out_Color =  vec4(linearColor, alpha);
 }

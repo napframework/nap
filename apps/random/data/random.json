@@ -142,7 +142,7 @@
                     "MaterialInstance": {
                         "Material": "BlueprintSquaresMaterial",
                         "Uniforms": [],
-                        "BlendMode": "NotSet",
+                        "BlendMode": "AlphaBlend",
                         "DepthMode": "NotSet"
                     },
                     "ClipRect": {
@@ -190,8 +190,19 @@
                     "mID": "nap::RenderableMeshComponent_7",
                     "Mesh": "BlueprintOutlineMesh",
                     "MaterialInstance": {
-                        "Material": "BlueprintOutlineMaterial",
-                        "Uniforms": [],
+                        "Material": "BlueprintSquaresMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec3",
+                                "mID": "UniformVec3_2",
+                                "Name": "color",
+                                "Value": {
+                                    "x": 0.20000000298023225,
+                                    "y": 0.20000000298023225,
+                                    "z": 0.20000000298023225
+                                }
+                            }
+                        ],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -241,8 +252,15 @@
                     "Mesh": "BlueprintSquaresMesh",
                     "MaterialInstance": {
                         "Material": "BlueprintSquaresMaterial",
-                        "Uniforms": [],
-                        "BlendMode": "NotSet",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_9",
+                                "Name": "shininess",
+                                "Value": 1.0
+                            }
+                        ],
+                        "BlendMode": "AlphaBlend",
                         "DepthMode": "NotSet"
                     },
                     "ClipRect": {
@@ -665,7 +683,7 @@
                     "mID": "nap::RenderableMeshComponent_6",
                     "Mesh": "LightTrussMesh",
                     "MaterialInstance": {
-                        "Material": "TrussMaterial",
+                        "Material": "BlueprintSquaresMaterial",
                         "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -745,20 +763,40 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "BlueprintOutlineMaterial",
-            "Uniforms": [],
-            "Shader": "BlueprintOutlineShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
             "mID": "BlueprintSquaresMaterial",
-            "Uniforms": [],
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_7",
+                    "Name": "shininess",
+                    "Value": 3.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_8",
+                    "Name": "specularIntensity",
+                    "Value": 0.5
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "color",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformAlpha",
+                    "Name": "alpha",
+                    "Value": 0.5
+                }
+            ],
             "Shader": "BlueprintSquaresShader",
             "VertexAttributeBindings": [],
-            "BlendMode": "AlphaBlend",
+            "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
         {
@@ -902,15 +940,6 @@
                     "ShaderAttributeID": "in_UV0"
                 }
             ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "TrussMaterial",
-            "Uniforms": [],
-            "Shader": "TrussShader",
-            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -1151,7 +1180,7 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Random",
-            "Sync": false,
+            "Sync": true,
             "ClearColor": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1195,12 +1224,6 @@
         },
         {
             "Type": "nap::Shader",
-            "mID": "BlueprintOutlineShader",
-            "mVertShader": "shaders/blueprint_outline.vert",
-            "mFragShader": "shaders/blueprint_outline.frag"
-        },
-        {
-            "Type": "nap::Shader",
             "mID": "BlueprintSquaresShader",
             "mVertShader": "shaders/blueprint_squares.vert",
             "mFragShader": "shaders/blueprint_squares.frag"
@@ -1228,12 +1251,6 @@
             "mID": "SunShader",
             "mVertShader": "shaders/sun.vert",
             "mFragShader": "shaders/sun.frag"
-        },
-        {
-            "Type": "nap::Shader",
-            "mID": "TrussShader",
-            "mVertShader": "shaders/light_truss.vert",
-            "mFragShader": "shaders/light_truss.frag"
         },
         {
             "Type": "nap::Shader",
