@@ -2,10 +2,11 @@
 
 #include <QGraphicsView>
 
+#include <napqt/gridview.h>
+
 #include "timelinemodel.h"
 #include "eventitem.h"
 #include "trackitem.h"
-#include "gridview.h"
 
 
 namespace napqt

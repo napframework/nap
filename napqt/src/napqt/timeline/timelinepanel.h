@@ -16,10 +16,11 @@
 #include <QWidget>
 #include <QGraphicsItem>
 
+#include <napqt/gridview.h>
+
 #include "timelinemodel.h"
 #include "timelineview.h"
 #include "timelinescene.h"
-#include "gridview.h"
 #include "timelineoutline.h"
 #include "ruler.h"
 
