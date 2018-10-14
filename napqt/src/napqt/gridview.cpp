@@ -297,7 +297,6 @@ void GridView::drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal 
 	// Start offset in view-space (pixels)
 	qreal startOffset = -start * viewScale;
 
-	qInfo() << startOffset;
 	// How much to offset (sub-step) to match scroll
 	qreal localOffset = fmod(startOffset, stepSize);
 
