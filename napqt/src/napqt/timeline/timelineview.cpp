@@ -10,11 +10,16 @@
 using namespace napqt;
 
 
+
+
 TimelineView::TimelineView()
 		: GridView()
 {
 	setPanZoomMode(PanMode::Parallax, ZoomMode::Horizontal);
 	setFramePanZoomMode(PanMode::Horizontal, ZoomMode::Horizontal);
+	setGridIntervalDisplay(std::make_shared<AnimationIntervalDisplay>(), std::make_shared<AnimationIntervalDisplay>());
+	setDrawHLabels(false);
+	setDrawVLines(false);
 }
 
 void TimelineView::setTimeScale(qreal scale)

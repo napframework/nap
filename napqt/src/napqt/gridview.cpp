@@ -155,7 +155,7 @@ void GridView::zoom(const QPointF& delta, const QPointF& pivot)
 
 	constrainTransform(xf);
 
-	setTransform(xf);
+	applyTransform(xf);
 	viewTransformed();
 }
 
@@ -169,7 +169,7 @@ void GridView::pan(const QPointF& delta)
 
 	constrainTransform(xf);
 
-	setTransform(xf);
+	applyTransform(xf);
 	viewTransformed();
 }
 
@@ -183,25 +183,46 @@ void GridView::constrainTransform(QTransform& xf)
 
 void GridView::constrainView()
 {
+	return;
 	auto xf = transform();
-	constrainTransform(xf);
-	setTransform(xf);
+//	constrainTransform(xf);
+	applyTransform(xf);
 }
+
+void GridView::setVerticalFlipped(bool flipped)
+{
+	if (mVerticalFlipped != flipped)
+		scale(1, -1);
+	mVerticalFlipped = flipped;
+
+}
+
 
 void GridView::drawBackground(QPainter* painter, const QRectF& rect)
 {
+
+	auto viewRect = mapToScene(viewport()->rect()).boundingRect();
 	QColor bgCol = palette().background().color();
-	painter->fillRect(rect, bgCol);
-	QColor gridMinorCol = bgCol.darker(110);
-	QColor gridMajorCol = bgCol.darker(150);
+	QColor holdoutCol = mDrawHoldout ? bgCol.darker(110) : bgCol;
+	painter->fillRect(rect, holdoutCol);
+	if (mDrawHoldout)
+		painter->fillRect(mHoldoutRect, bgCol);
+
+
+	QColor gridMinorCol = holdoutCol.darker(110);
+	QColor gridMajorCol = holdoutCol.darker(150);
+
 	if (mGridEnabled)
 	{
-		drawHatchesHorizontal(painter, rect, mGridMinStepSizeHMinor, gridMinorCol, false);
-		drawHatchesVertical(painter, rect, mGridMinStepSizeVMinor, gridMinorCol, false);
-		drawHatchesHorizontal(painter, rect, mGridMinStepSizeHMajor, gridMajorCol, mDrawLabelsH);
-		drawHatchesVertical(painter, rect, mGridMinStepSizeVMajor, gridMajorCol, mDrawLabelsV);
+		if (mDrawHLines)
+			drawHatchesHorizontal(painter, viewRect, mGridMinStepSizeHMinor, gridMinorCol, false);
+		if (mDrawVLines)
+			drawHatchesVertical(painter, viewRect, mGridMinStepSizeVMinor, gridMinorCol, false);
+		if (mDrawHLines)
+			drawHatchesHorizontal(painter, viewRect, mGridMinStepSizeHMajor, gridMajorCol, mDrawLabelsH);
+		if (mDrawVLines)
+			drawHatchesVertical(painter, viewRect, mGridMinStepSizeVMajor, gridMajorCol, mDrawLabelsV);
 	}
-
 
 }
 
@@ -275,6 +296,8 @@ void GridView::drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal 
 	qreal stepSize = viewScale * stepInterval;
 	// Start offset in view-space (pixels)
 	qreal startOffset = -start * viewScale;
+
+	qInfo() << startOffset;
 	// How much to offset (sub-step) to match scroll
 	qreal localOffset = fmod(startOffset, stepSize);
 
@@ -294,6 +317,7 @@ void GridView::drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal 
 	{
 		// floor instead of round, matches QGraphicsView aliasing
 		int y = qFloor(localOffset + (qreal) i * stepSize);
+		qInfo() << y;
 
 		painter->drawLine(0, y, viewWidth, y);
 
@@ -305,7 +329,7 @@ void GridView::drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal 
 			painter->drawText(labelOffsetX, y + labelOffsetY, timestr);
 		}
 	}
-
+//	assert(false);
 	painter->restore();
 }
 
@@ -320,7 +344,7 @@ void GridView::centerView()
 	auto xf = transform();
 	xf.reset();
 	xf.translate(rect().width() / 2, rect().height() / 2);
-	setTransform(xf);
+	applyTransform(xf);
 	viewTransformed();
 }
 
@@ -336,8 +360,15 @@ void GridView::frameSelected(QMargins margins)
 }
 
 
-void GridView::frameView(const QRectF& rec, QMargins margins)
+void GridView::frameView(const QRectF& frameRect, QMargins margins)
 {
+	QRectF rec = frameRect;
+	if (mVerticalFlipped)
+	{
+		qreal bot = rec.bottom();
+		rec.setBottom(rec.top());
+		rec.setTop(bot);
+	}
 	auto focusRectView = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(),
 													 -margins.bottom());
 	auto xf = transform();
@@ -363,7 +394,7 @@ void GridView::frameView(const QRectF& rec, QMargins margins)
 	setScale(xf, sx, sy);
 	// center
 	xf.translate(tx, ty);
-	setTransform(xf);
+	applyTransform(xf);
 
 //	// Use
 //	centerOn(tx, ty);
@@ -382,6 +413,12 @@ const QPointF GridView::viewPos() const
 {
 	auto xf = transform();
 	return QPointF(xf.m31(), xf.m32());
+}
+
+void GridView::applyTransform(const QTransform& xf)
+{
+	auto trans = xf;
+	setTransform(trans);
 }
 
 QRectF GridView::selectedItemsBoundingRect() const
@@ -407,12 +444,7 @@ void GridView::setVerticalScroll(int value)
 	auto scroll = getTranslation(mViewTransform);
 	scroll.setY(-value);
 	setTranslation(mViewTransform, scroll);
-	setTransform(mViewTransform);
-}
-
-void GridView::setGridEnabled(bool enabled)
-{
-	mGridEnabled = enabled;
+	applyTransform(mViewTransform);
 }
 
 void GridView::setPanBounds(const QRectF& rec)
@@ -451,6 +483,5 @@ void GridView::setGridIntervalDisplay(std::shared_ptr<IntervalDisplay> horiz, st
 	mIvalDisplayHorizontal = horiz;
 	mIvalDisplayVertical = vert;
 }
-
 
 

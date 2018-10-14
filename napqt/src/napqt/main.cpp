@@ -107,7 +107,7 @@ public:
 			auto curve = model->addCurve();
 			curve->setName("Fade In");
 			curve->addPoint(0, 0);
-			curve->addPoint(0, 1);
+			curve->addPoint(1, 1);
 		}
 		mCurveView.setModel(model);
 //		{
