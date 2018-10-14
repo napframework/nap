@@ -13,7 +13,8 @@ using namespace napqt;
 TimelineView::TimelineView()
 		: GridView()
 {
-
+	setPanZoomMode(PanMode::Parallax, ZoomMode::Horizontal);
+	setFramePanZoomMode(PanMode::Horizontal, ZoomMode::Horizontal);
 }
 
 void TimelineView::setTimeScale(qreal scale)

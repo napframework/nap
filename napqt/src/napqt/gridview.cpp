@@ -1,5 +1,7 @@
 #include "gridview.h"
 
+#include <cassert>
+
 #include <QMouseEvent>
 #include <QtGui>
 #include <QtDebug>
@@ -38,8 +40,8 @@ GridView::GridView(QWidget* parent) : QGraphicsView(parent), mRubberBand(QRubber
 	mRulerFont.setFamily("monospace");
 	mRulerFont.setPointSize(9);
 
-	mPanBounds.setLeft(std::numeric_limits<qreal>::min());
-	mPanBounds.setTop(std::numeric_limits<qreal>::min());
+	mPanBounds.setLeft(-std::numeric_limits<qreal>::max());
+	mPanBounds.setTop(-std::numeric_limits<qreal>::max());
 	mPanBounds.setRight(std::numeric_limits<qreal>::max());
 	mPanBounds.setBottom(std::numeric_limits<qreal>::max());
 
@@ -104,10 +106,10 @@ void GridView::keyPressEvent(QKeyEvent* event)
 			centerView();
 			break;
 		case Qt::Key_A:
-			frameAll(true, false);
+			frameAll(QMargins());
 			break;
 		case Qt::Key_F:
-			frameSelected(true, false);
+			frameSelected(QMargins());
 			break;
 		default:
 			break;
@@ -366,18 +368,18 @@ void GridView::centerView()
 }
 
 
-void GridView::frameAll(bool horizontal, bool vertical, QMargins margins)
+void GridView::frameAll(QMargins margins)
 {
-	frameView(this->scene()->itemsBoundingRect(), horizontal, vertical, margins);
+	frameView(this->scene()->itemsBoundingRect(), margins);
 }
 
-void GridView::frameSelected(bool horizontal, bool vertical, QMargins margins)
+void GridView::frameSelected(QMargins margins)
 {
-	frameView(selectedItemsBoundingRect(), horizontal, vertical, margins);
+	frameView(selectedItemsBoundingRect(), margins);
 }
 
 
-void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMargins margins)
+void GridView::frameView(const QRectF& rec, QMargins margins)
 {
 	auto focusRectView = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
 	auto xf = transform();
@@ -387,16 +389,17 @@ void GridView::frameView(const QRectF& rec, bool horizontal, bool vertical, QMar
 	qreal tx = 0;
 	qreal ty = 0;
 
-	if (horizontal)
-	{
+	if (mFrameZoomMode == ZoomMode::KeepAspectRatio)
+		assert(false); // TODO: implement
+	if (mFrameZoomMode == ZoomMode::IgnoreAspectRatio || mFrameZoomMode == ZoomMode::Horizontal)
 		sx = focusRectView.width() / rec.width();
-		tx = -rec.left() + (margins.left() / sx);
-	}
-	if (vertical)
-	{
+	if (mFrameZoomMode == ZoomMode::IgnoreAspectRatio || mFrameZoomMode == ZoomMode::Vertical)
 		sy = focusRectView.height() / rec.height();
+
+	if (mFramePanMode == PanMode::Parallax || mFramePanMode == PanMode::Horizontal)
+		tx = -rec.left() + (margins.left() / sx);
+	if (mFramePanMode == PanMode::Parallax || mFramePanMode == PanMode::Vertical)
 		ty = -rec.top() + (margins.top() / sy);
-	}
 
 	xf.reset();
 	setScale(xf, sx, sy);
