@@ -5,9 +5,11 @@
 namespace napqt
 {
 	namespace datarole {
-		const int TIME = 0;
-		const int VALUE = 1;
-		const int INTERP = 2;
+		const int POS = 0;
+		const int IN_TAN = 1;
+		const int OUT_TAN = 2;
+		const int INTERP = 3;
+		const int NAME = 4;
 	}
 
 	class AbstractCurveModel;
@@ -16,18 +18,20 @@ namespace napqt
 	{
 	Q_OBJECT
 	public:
-		enum class InterpolationType
+		enum class InterpType
 		{
-			Stepped, Linear, Bezier
+			Stepped, Linear, Bezier, BSpline
 		};
 
 		explicit AbstractCurve(AbstractCurveModel* parent = nullptr);
 
 		virtual int pointCount() const = 0;
 
+		// Point data
 		virtual QVariant data(int index, int role) const = 0;
 		virtual void setData(int index, int role, QVariant value) = 0;
 	Q_SIGNALS:
+		void changed(AbstractCurve* curve);
 		void pointsChanged(const QList<int> indices);
 		void pointsAdded(const QList<int> indices);
 		void pointsRemoved(const QList<int> indices);
@@ -45,9 +49,10 @@ namespace napqt
 	Q_SIGNALS:
 		void curvesAdded(const QList<int> indices);
 		void curvesRemoved(const QList<int> indices);
+		void curvesChanged(const QList<int> indices);
 	};
 
 
 }
 
-Q_DECLARE_METATYPE(napqt::AbstractCurve::InterpolationType)
+Q_DECLARE_METATYPE(napqt::AbstractCurve::InterpType)

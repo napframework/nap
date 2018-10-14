@@ -1,4 +1,4 @@
-#include "abstractcurve.h"
+#include "abstractcurvemodel.h"
 
 using namespace napqt;
 
