@@ -1,7 +1,10 @@
 
 #include <QApplication>
 #include <QtWidgets/QPushButton>
+
+#include "curveeditor/curveview.h"
 #include "timeline/timelinepanel.h"
+
 #include "basewindow.h"
 #include "fileselector.h"
 #include "errordialog.h"
@@ -91,11 +94,13 @@ public:
 		ErrorDialog::setDefaultParent(this);
 		addDock("Timeline", &mTimelinePanel);
 		addDock("Demo", &mDemoPanel);
+		addDock("Curves", &mCurveView);
 	}
 
 private:
 	TimelinePanel mTimelinePanel;
 	Timeline mTimeline;
+	CurveView mCurveView;
 	DemoPanel mDemoPanel;
 };
 

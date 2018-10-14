@@ -28,7 +28,7 @@ QString secondsToSMPTE(qreal seconds, int framerate)
 									  QString::asprintf("%02d", f));
 }
 
-GridView::GridView() : QGraphicsView(), mRubberBand(QRubberBand::Rectangle, this)
+GridView::GridView(QWidget* parent) : QGraphicsView(parent), mRubberBand(QRubberBand::Rectangle, this)
 {
 	setTransformationAnchor(QGraphicsView::NoAnchor);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);

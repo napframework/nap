@@ -22,7 +22,7 @@ namespace napqt {
 		};
 
 	public:
-		GridView();
+		explicit GridView(QWidget* parent=nullptr);
 		~GridView() {}
 
 		void pan(const QPointF& delta);

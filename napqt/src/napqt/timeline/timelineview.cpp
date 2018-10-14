@@ -13,7 +13,7 @@ using namespace napqt;
 TimelineView::TimelineView()
 		: GridView()
 {
-	setMouseTracking(true);
+
 }
 
 void TimelineView::setTimeScale(qreal scale)
