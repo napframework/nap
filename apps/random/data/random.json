@@ -105,8 +105,59 @@
             ],
             "Children": [
                 "BlueprintOutline",
-                "BlueprintSquares"
+                "BlueprintSquares",
+                "BlueprintGround"
             ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BlueprintGround",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_12",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": -5.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_9",
+                    "Mesh": "BlueprintGroundMesh",
+                    "MaterialInstance": {
+                        "Material": "BlueprintSquaresMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Entity",
@@ -458,7 +509,7 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "PerspCameraComponent",
                     "Properties": {
-                        "FieldOfView": 45.0,
+                        "FieldOfView": 55.0,
                         "NearClippingPlane": 0.10000000149011612,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
