@@ -7,9 +7,9 @@
 
 napqt::Ruler::Ruler(QWidget* parent) : QWidget(parent)
 {
-//	mTimeConfig = new SMPTETimeDisplay();
-//	mTimeConfig = new FloatTimeDisplay();
-	mTimeConfig = new GeneralTimeDisplay();
+//	mTimeConfig = new SMPTEIntervalDisplay();
+//	mTimeConfig = new FloatIntervalDisplay();
+	mTimeConfig = new GeneralTimeIntervalDisplay();
 
 	mFont.setFamily("Monospace");
 	mFont.setStyleHint(QFont::TypeWriter);
@@ -50,11 +50,13 @@ void napqt::Ruler::drawHatches(QPainter& painter, int hatchLength, qreal minStep
 {
 	qreal start = mRange.start();
 	qreal end = mRange.end();
+	int textY = mTextHeight;
 	if (start > end)
 	{
 		start = mRange.end();
 		end = mRange.start();
 	}
+
 	qreal windowSize = end - start; // How much time we're seeing in the view
 
 	qreal viewScale = width() / windowSize;
@@ -75,7 +77,6 @@ void napqt::Ruler::drawHatches(QPainter& painter, int hatchLength, qreal minStep
 		timeOffset++;
 
 	int y = height() - hatchLength;
-	int textY = mTextHeight;
 
 	int stepCount = qCeil(windowSize / stepInterval) + 1;
 	for (int i = 0; i < stepCount; i++)
@@ -118,7 +119,7 @@ void napqt::Ruler::resizeEvent(QResizeEvent* event)
 {
 	update();
 }
-void napqt::Ruler::setDisplayFormat(napqt::TimeDisplay* fmt)
+void napqt::Ruler::setDisplayFormat(napqt::IntervalDisplay* fmt)
 {
 	mTimeConfig = fmt;
 	update();

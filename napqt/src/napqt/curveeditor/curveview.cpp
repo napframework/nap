@@ -399,5 +399,7 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	setScene(&mCurveScene);
 	setPanZoomMode(PanMode::Parallax, ZoomMode::IgnoreAspectRatio);
 	setFramePanZoomMode(PanMode::Parallax, ZoomMode::IgnoreAspectRatio);
+	frameView(QRectF(0, 0, 1, 1), QMargins(10, 10, 10, 10));
+//	setGridIntervalDisplay(stFloatIntervalDisplay(), FloatIntervalDisplay());
 }
 

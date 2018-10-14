@@ -1,4 +1,5 @@
 #include "gridview.h"
+#include "timedisplay.h"
 
 #include <cassert>
 
@@ -32,6 +33,8 @@ QString secondsToSMPTE(qreal seconds, int framerate)
 
 GridView::GridView(QWidget* parent) : QGraphicsView(parent), mRubberBand(QRubberBand::Rectangle, this)
 {
+	mIvalDisplayHorizontal = std::make_shared<FloatIntervalDisplay>();
+	mIvalDisplayVertical = std::make_shared<FloatIntervalDisplay>();
 	setTransformationAnchor(QGraphicsView::NoAnchor);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
 	setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
@@ -187,169 +190,123 @@ void GridView::constrainView()
 
 void GridView::drawBackground(QPainter* painter, const QRectF& rect)
 {
-	painter->fillRect(rect, palette().background().color());
-	if (!mGridEnabled)
-		return;
-
-	auto viewRect = viewport()->rect();
-	auto sceneRect = mapToScene(viewRect).boundingRect();
-	qreal desiredSpacing = 300;
-
-
-	QString suffix;
-
-	// Draw minor lines
+	QColor bgCol = palette().background().color();
+	painter->fillRect(rect, bgCol);
+	QColor gridMinorCol = bgCol.darker(110);
+	QColor gridMajorCol = bgCol.darker(150);
+	if (mGridEnabled)
 	{
-		qreal stepSizeX = calcGridStepTime(desiredSpacing, viewRect.width(), sceneRect.width(), 10);
-		qreal stepSizeY = calcGridStep(desiredSpacing, viewRect.height(), sceneRect.height());
-
-		int xmin = qFloor(sceneRect.left() / stepSizeX);
-		int xmax = qCeil(sceneRect.right() / stepSizeX);
-		int ymin = qFloor(sceneRect.top() / stepSizeY);
-		int ymax = qCeil(sceneRect.bottom() / stepSizeY);
-
-
-		painter->setPen(QPen(Qt::gray, 0, Qt::DotLine));
-		for (int x = xmin; x < xmax; x++)
-		{
-			qreal tx = x * stepSizeX;
-			QPointF p1(tx, sceneRect.top() + 22);
-			QPointF p2(tx, sceneRect.bottom());
-			painter->drawLine(p1, p2);
-		}
-
+		drawHatchesHorizontal(painter, rect, mGridMinStepSizeHMinor, gridMinorCol, false);
+		drawHatchesVertical(painter, rect, mGridMinStepSizeVMinor, gridMinorCol, false);
+		drawHatchesHorizontal(painter, rect, mGridMinStepSizeHMajor, gridMajorCol, mDrawLabelsH);
+		drawHatchesVertical(painter, rect, mGridMinStepSizeVMajor, gridMajorCol, mDrawLabelsV);
 	}
-
-	// Draw lines
-	{
-		qreal stepSizeX = calcGridStepTime(desiredSpacing, viewRect.width(), sceneRect.width(), 150);
-		qreal stepSizeY = calcGridStep(desiredSpacing, viewRect.height(), sceneRect.height());
-
-		int xmin = qFloor(sceneRect.left() / stepSizeX);
-		int xmax = qCeil(sceneRect.right() / stepSizeX);
-		int ymin = qFloor(sceneRect.top() / stepSizeY);
-		int ymax = qCeil(sceneRect.bottom() / stepSizeY);
-
-		painter->setPen(QPen(Qt::gray, 0));
-		if (stepSizeX > 0)
-		{
-			for (int x = xmin; x < xmax; x++)
-			{
-				qreal tx = x * stepSizeX;
-				QPointF p1(tx, sceneRect.top());
-				QPointF p2(tx, sceneRect.bottom());
-				painter->drawLine(p1, p2);
-			}
-		}
-		if (stepSizeY > 0)
-		{
-			for (int y = ymin; y < ymax; y++)
-			{
-				qreal ty = y * stepSizeY;
-				QPointF p1(sceneRect.left(), ty);
-				QPointF p2(sceneRect.right(), ty);
-				painter->drawLine(p1, p2);
-			}
-		}
-
-		// Draw Numbers
-		painter->setFont(mRulerFont);
-
-		painter->save();
-		painter->resetMatrix();
-		if (stepSizeX > 0)
-		{
-			for (int x = xmin; x < xmax; x++)
-			{
-				qreal tx = x * stepSizeX;
-				auto pt = mapFromScene(tx, sceneRect.top()) + QPointF(5, 15);
-				if (pt.x() > 20)
-				{
-					if (mRulerFormat == RulerFormat::Float)
-						painter->drawText(pt, QString::number(tx) + suffix);
-					else if (mRulerFormat == RulerFormat::SMPTE)
-						painter->drawText(pt, secondsToSMPTE(tx, mFramerate));
-				}
-			}
-		}
-		if (stepSizeY > 0)
-		{
-			for (int y = ymin; y < ymax; y++)
-			{
-				qreal ty = y * stepSizeY + 5;
-				auto pt = mapFromScene(sceneRect.left(), ty) + QPointF(5, 15);
-				if (pt.y() > 20)
-				{
-					painter->drawText(pt, QString::number(ty) + suffix);
-				}
-			}
-		}
-
-		painter->restore();
-	}
-
-
-	const int framerate = 30;
-	const qreal frame = 1.0 / framerate;
-	const qreal second = 1;
-	const qreal minute = 60;
-	const qreal hour = minute * 60;
-	const qreal day = hour * 24;
 
 
 }
 
-qreal GridView::calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const
+void GridView::drawHatchesHorizontal(QPainter* painter, const QRectF& rect, qreal minStepSize, const QColor& color,
+									 bool labels)
 {
-	qreal targetSteps = viewWidth / desiredSpacing;
-	qreal estStep = sceneRectWidth / targetSteps;
-	qreal magPow = qPow(10, qFloor(log(estStep) / log(10)));
-	qreal magMsd = qRound(estStep / magPow * 0.5);
+	qreal start = rect.left();
+	qreal end = rect.right();
+	qreal windowSize = end - start; // How much time we're seeing in the view
+	int viewWidth = viewport()->width();
+	int viewHeight = viewport()->height();
+	int labelOffsetX = 4;
+	int labelOffsetY = 20;
 
-	if (magMsd > 5)
-		magMsd = 10;
-	else if (magMsd > 2)
-		magMsd = 5;
-	else if (magMsd > 1)
-		magMsd = 2;
+	auto viewScale = getScale(transform()).width();
 
+	qreal stepInterval = mIvalDisplayHorizontal->calcStepInterval(windowSize, viewWidth, minStepSize);
 
-	return magMsd * magPow;
-}
+	qreal stepSize = viewScale * stepInterval;
+	qreal startOffset = -start * viewScale;
+	qreal localOffset = fmod(startOffset, stepSize);
 
-qreal GridView::calcGridStepTime(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth,
-								 qreal minStepSize) const
-{
-	const qreal intervals[] = {
-			1.0 / mFramerate, // frame
-			1.0, // second
-			2.0,
-			5.0,
-			10.0, // 10 seconds
-			30.0, // 30 seconds
-			60.0, // minute
-			60.0 * 60.0, // hour
-			60.0 * 60.0 * 2,
-			60.0 * 60.0 * 5,
-			60.0 * 60.0 * 10,
-			60.0 * 60.0 * 20,
-			60.0 * 60.0 * 50,
-			60.0 * 60.0 * 100, // hundred hours
-			60.0 * 60.0 * 200,
-			60.0 * 60.0 * 500,
-			60.0 * 60.0 * 1000,
-	};
-	int len = sizeof(intervals) / sizeof(intervals[0]);
+	// Offset in time-space
+	int timeOffset = qFloor(start / stepInterval);
+	if (timeOffset < 0) // Correct for negative values
+		timeOffset++;
 
-	for (int i = 0; i < len; i++)
+	// Start drawing in screenspace
+	painter->save();
+	painter->resetTransform();
+
+	painter->setPen(color);
+
+	int stepCount = qCeil(windowSize / stepInterval) + 1;
+	for (int i = 0; i < stepCount; i++)
 	{
-		qreal ival = intervals[i];
-		qreal steps = sceneRectWidth / ival;
-		qreal stepSize = viewWidth / steps;
-		if (stepSize > minStepSize)
-			return ival;
+		// floor instead of round, matches QGraphicsView aliasing
+		int x = qFloor(localOffset + (qreal) i * stepSize);
+
+		painter->drawLine(x, 0, x, viewHeight);
+
+		if (labels)
+		{
+			qreal time = (timeOffset + i) * stepInterval;
+
+			const QString timestr = mIvalDisplayHorizontal->timeToString(stepInterval, time);
+			painter->drawText(x + labelOffsetX, labelOffsetY, timestr);
+		}
 	}
-	return -1;
+
+	painter->restore();
+}
+void GridView::drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal minStepSize, const QColor& color,
+								   bool labels)
+{
+//	qreal minStepSize = gridMinStepSizeV;
+	qreal start = rect.top();
+	qreal end = rect.bottom();
+	qreal windowSize = end - start; // How much time we're seeing in the view
+	int viewWidth = viewport()->width();
+	int viewHeight = viewport()->height();
+	int labelOffsetX = 4;
+	int labelOffsetY = 20;
+
+	auto viewScale = getScale(transform()).height();
+
+	// Step distance in time-space
+	qreal stepInterval = mIvalDisplayVertical->calcStepInterval(windowSize, viewHeight, minStepSize);
+
+	// Step distance in view-space (pixels)
+	qreal stepSize = viewScale * stepInterval;
+	// Start offset in view-space (pixels)
+	qreal startOffset = -start * viewScale;
+	// How much to offset (sub-step) to match scroll
+	qreal localOffset = fmod(startOffset, stepSize);
+
+	// Offset in time-space
+	int timeOffset = qFloor(start / stepInterval);
+	if (timeOffset < 0) // Correct for negative values
+		timeOffset++;
+
+	// Start drawing in screenspace
+	painter->save();
+	painter->resetTransform();
+
+	painter->setPen(color);
+
+	int stepCount = qCeil(windowSize / stepInterval) + 1;
+	for (int i = 0; i < stepCount; i++)
+	{
+		// floor instead of round, matches QGraphicsView aliasing
+		int y = qFloor(localOffset + (qreal) i * stepSize);
+
+		painter->drawLine(0, y, viewWidth, y);
+
+		if (labels)
+		{
+			qreal time = (timeOffset + i) * stepInterval;
+
+			const QString timestr = mIvalDisplayHorizontal->timeToString(stepInterval, time);
+			painter->drawText(labelOffsetX, y + labelOffsetY, timestr);
+		}
+	}
+
+	painter->restore();
 }
 
 void GridView::wheelEvent(QWheelEvent* event)
@@ -381,7 +338,8 @@ void GridView::frameSelected(QMargins margins)
 
 void GridView::frameView(const QRectF& rec, QMargins margins)
 {
-	auto focusRectView = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
+	auto focusRectView = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(),
+													 -margins.bottom());
 	auto xf = transform();
 	auto origScale = napqt::getScale(xf);
 	qreal sx = origScale.width();
@@ -447,41 +405,9 @@ void GridView::setVerticalScroll(int value)
 {
 	auto mViewTransform = transform();
 	auto scroll = getTranslation(mViewTransform);
-	scroll.setY(-value );
+	scroll.setY(-value);
 	setTranslation(mViewTransform, scroll);
 	setTransform(mViewTransform);
-}
-
-void GridView::fitInView(const QRectF& rect, const QMargins& margins,
-						 bool horizontal, bool vertical)
-{
-	if (!scene() or rect.isNull())
-		return;
-
-//	auto last_scene_roi = rect;
-	auto flags = Qt::KeepAspectRatio;
-
-	auto unity = transform().mapRect(QRectF(0, 0, 1, 1));
-
-	scale(1.0 / unity.width(), 1.0 / unity.height());
-	auto viewRect = viewport()->rect();
-	auto sceneRect = transform().mapRect(rect);
-	auto xratio = viewRect.width() / (qreal) sceneRect.width();
-	auto yratio = viewRect.height() / (qreal) sceneRect.height();
-	if (flags == Qt::KeepAspectRatio)
-	{
-		xratio = yratio = qMin(xratio, yratio);
-	} else if (flags == Qt::KeepAspectRatioByExpanding)
-	{
-		xratio = yratio = qMax(xratio, yratio);
-	}
-	if (!horizontal)
-		xratio = 1;
-	if (!vertical)
-		yratio = 1;
-
-	scale(xratio, yratio);
-	centerOn(rect.center());
 }
 
 void GridView::setGridEnabled(bool enabled)
@@ -519,6 +445,11 @@ void GridView::hideRubberBand()
 const QRect GridView::rubberBandGeo() const
 {
 	return mRubberBand.geometry();
+}
+void GridView::setGridIntervalDisplay(std::shared_ptr<IntervalDisplay> horiz, std::shared_ptr<IntervalDisplay> vert)
+{
+	mIvalDisplayHorizontal = horiz;
+	mIvalDisplayVertical = vert;
 }
 
 

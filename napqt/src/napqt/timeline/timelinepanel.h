@@ -65,7 +65,7 @@ namespace napqt
 		QSplitter* mSplitter;
 		Ruler mRuler;
 
-		std::vector<std::unique_ptr<TimeDisplay>> mTimeDisplays;
+		std::vector<std::unique_ptr<IntervalDisplay>> mTimeDisplays;
 	};
 
 }

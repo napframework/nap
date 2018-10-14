@@ -61,10 +61,10 @@ TimelinePanel::TimelinePanel() : QWidget()
 
 	mScene.setVisibleTracks(mOutline.getVisibleTracks());
 
-	mTimeDisplays.emplace_back(std::make_unique<SMPTETimeDisplay>());
-	mTimeDisplays.emplace_back(std::make_unique<GeneralTimeDisplay>());
-	mTimeDisplays.emplace_back(std::make_unique<FloatTimeDisplay>());
-	mTimeDisplays.emplace_back(std::make_unique<AnimationTimeDisplay>());
+	mTimeDisplays.emplace_back(std::make_unique<SMPTEIntervalDisplay>());
+	mTimeDisplays.emplace_back(std::make_unique<GeneralTimeIntervalDisplay>());
+	mTimeDisplays.emplace_back(std::make_unique<FloatIntervalDisplay>());
+	mTimeDisplays.emplace_back(std::make_unique<AnimationIntervalDisplay>());
 
 //    initOutlineModelHandlers();
 	createTimeFormatActionGroup();

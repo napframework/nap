@@ -5,7 +5,7 @@
 
 namespace napqt
 {
-	class TimeDisplay
+	class IntervalDisplay
 	{
 	public:
 		virtual QString name() const = 0;
@@ -16,21 +16,18 @@ namespace napqt
 
 		void setHatchSpacing(qreal minor, qreal major);
 
-		qreal minorHatchSpacing() const
-		{ return mMinorHatchSpacing; }
-
-		qreal majorHatchSpacing() const
-		{ return mMajorHatchSpacing; }
+		qreal minorHatchSpacing() const { return mMinorHatchSpacing; }
+		qreal majorHatchSpacing() const { return mMajorHatchSpacing; }
 
 	private:
 		qreal mMinorHatchSpacing = 10;
 		qreal mMajorHatchSpacing = 100;
 	};
 
-	class SMPTETimeDisplay : public TimeDisplay
+	class SMPTEIntervalDisplay : public IntervalDisplay
 	{
 	public:
-		SMPTETimeDisplay(int framerate = 30);
+		explicit SMPTEIntervalDisplay(int framerate = 30);
 
 		QString name() const override { return "SMPTE"; };
 
@@ -44,7 +41,7 @@ namespace napqt
 		int mFramerate;
 	};
 
-	class GeneralTimeDisplay : public TimeDisplay
+	class GeneralTimeIntervalDisplay : public IntervalDisplay
 	{
 	public:
 		QString name() const override { return "General"; };
@@ -54,7 +51,7 @@ namespace napqt
 		const QString timeToString(qreal interval, qreal time) const override;
 	};
 
-	class FloatTimeDisplay : public TimeDisplay
+	class FloatIntervalDisplay : public IntervalDisplay
 	{
 	public:
 		QString name() const override { return "Float"; };
@@ -64,10 +61,10 @@ namespace napqt
 		const QString timeToString(qreal interval, qreal time) const override;
 	};
 
-	class AnimationTimeDisplay : public TimeDisplay
+	class AnimationIntervalDisplay : public IntervalDisplay
 	{
 	public:
-		AnimationTimeDisplay(int framerate=30) : mFramerate(framerate), TimeDisplay() {}
+		explicit AnimationIntervalDisplay(int framerate=30) : mFramerate(framerate), IntervalDisplay() {}
 		QString name() const override { return "Animation"; };
 		qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const override;
 		const QString timeToString(qreal interval, qreal time) const override;
