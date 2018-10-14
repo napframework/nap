@@ -317,7 +317,8 @@ void GridView::drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal 
 	{
 		// floor instead of round, matches QGraphicsView aliasing
 		int y = qFloor(localOffset + (qreal) i * stepSize);
-		qInfo() << y;
+		if (mVerticalFlipped)
+			y += viewHeight;
 
 		painter->drawLine(0, y, viewWidth, y);
 
@@ -329,7 +330,7 @@ void GridView::drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal 
 			painter->drawText(labelOffsetX, y + labelOffsetY, timestr);
 		}
 	}
-//	assert(false);
+
 	painter->restore();
 }
 
