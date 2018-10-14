@@ -141,7 +141,18 @@
                     "Mesh": "BlueprintGroundMesh",
                     "MaterialInstance": {
                         "Material": "BlueprintSquaresMaterial",
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec3",
+                                "mID": "UniformVec3_3",
+                                "Name": "color",
+                                "Value": {
+                                    "x": 0.0,
+                                    "y": 0.0,
+                                    "z": 0.0
+                                }
+                            }
+                        ],
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "NotSet"
                     },
@@ -197,10 +208,16 @@
                                 "mID": "UniformVec3_2",
                                 "Name": "color",
                                 "Value": {
-                                    "x": 0.20000000298023225,
-                                    "y": 0.20000000298023225,
-                                    "z": 0.20000000298023225
+                                    "x": 0.5450000166893005,
+                                    "y": 0.5490000247955322,
+                                    "z": 0.6273999810218811
                                 }
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_11",
+                                "Name": "ambientIntensity",
+                                "Value": 0.4000000059604645
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -684,7 +701,30 @@
                     "Mesh": "LightTrussMesh",
                     "MaterialInstance": {
                         "Material": "BlueprintSquaresMaterial",
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_12",
+                                "Name": "ambientIntensity",
+                                "Value": 0.4000000059604645
+                            },
+                            {
+                                "Type": "nap::UniformVec3",
+                                "mID": "UniformVec3_4",
+                                "Name": "color",
+                                "Value": {
+                                    "x": 0.5450000166893005,
+                                    "y": 0.5490000247955322,
+                                    "z": 0.6273999810218811
+                                }
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_13",
+                                "Name": "shininess",
+                                "Value": 5.0
+                            }
+                        ],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -792,6 +832,12 @@
                     "mID": "UniformAlpha",
                     "Name": "alpha",
                     "Value": 0.5
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_10",
+                    "Name": "ambientIntensity",
+                    "Value": 1.0
                 }
             ],
             "Shader": "BlueprintSquaresShader",
@@ -1182,9 +1228,9 @@
             "Title": "Random",
             "Sync": true,
             "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
                 "w": 1.0
             }
         },
