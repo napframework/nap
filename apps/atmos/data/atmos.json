@@ -712,7 +712,7 @@
         {
             "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
-            "Path": "meteoriet.mesh",
+            "Path": "witkoraal_lp.mesh",
             "Usage": "Static"
         },
         {
@@ -730,6 +730,12 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             }
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "ScatterPointsMesh",
+            "ReferenceMesh": "MeteorietMesh",
+            "PointCount": 1000
         },
         {
             "Type": "nap::Scene",
