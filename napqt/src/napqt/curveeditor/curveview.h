@@ -81,8 +81,9 @@ namespace napqt
 	/**
 	 * Non-interactive item to display a single curve segment
 	 */
-	class CurveSegmentItem : public QGraphicsItem
+	class CurveSegmentItem : public QObject, public QGraphicsItem
 	{
+		Q_OBJECT
 	public:
 		CurveSegmentItem();
 		void setPoints(const QPointF (& pts)[4]);
@@ -96,8 +97,12 @@ namespace napqt
 
 		void setFirstPoint(bool b);
 		void setLastPoint(bool b);
+		QPainterPath shape() const override;
 
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+
+	Q_SIGNALS:
+		void handleMoved(HandleItem* handle);
 
 	private:
 		void refreshCurve();
@@ -174,6 +179,10 @@ namespace napqt
 		void setModel(AbstractCurveModel* model) { mCurveScene.setModel(model); }
 		AbstractCurveModel* model() { return mCurveScene.model(); }
 
+	protected:
+		void mousePressEvent(QMouseEvent* event) override;
+		void mouseMoveEvent(QMouseEvent* event) override;
+		void mouseReleaseEvent(QMouseEvent* event) override;
 	private:
 		CurveScene mCurveScene;
 	};

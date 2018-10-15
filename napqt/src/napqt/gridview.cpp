@@ -65,6 +65,8 @@ void GridView::mousePressEvent(QMouseEvent* event)
 	auto clickedItem = itemAt(event->pos());
 	if (lmb && !clickedItem)
 		startRubberBand(event->pos());
+	else
+		QGraphicsView::mousePressEvent(event);
 }
 
 void GridView::mouseMoveEvent(QMouseEvent* event)
@@ -86,6 +88,8 @@ void GridView::mouseMoveEvent(QMouseEvent* event)
 	{
 		zoom(QPointF(1, 1) + QPointF(mMouseDelta) * 0.01, mapToScene(mMousePressPos));
 		event->accept();
+	} else {
+		QGraphicsView::mouseMoveEvent(event);
 	}
 
 	updateRubberBand(mousePos);
