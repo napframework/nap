@@ -128,7 +128,9 @@ void main()
 	vec3 position = vec3(passUVs.xy + uOffset.xy, 1.0);
 
 	// apply rotation and scaling matrix
-	position *= toCenter * rotate(radians(-uRotation)) * scale(1.0 / vec2(uScale, uScale)) * fromCenter;
+	mat3 rotation = rotate(radians(-uRotation));
+	mat3 scaling = scale(1.0 / vec2(uScale, uScale));
+	position *= toCenter * rotation * scaling * fromCenter;
 
 	// calculate noise
 	vec3 noisePosition = vec3(position.xy, uOffset.z);

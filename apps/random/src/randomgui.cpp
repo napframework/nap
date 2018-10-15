@@ -95,12 +95,15 @@ namespace nap
 		if (ImGui::CollapsingHeader("Sun"))
 		{
 			nap::RenderableMeshComponentInstance& sun_plane = mApp.mSun->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::UniformVec3& uOrbitCenter = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter");
 			nap::UniformFloat& uOuterSize = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize");
 			nap::UniformFloat& uInnerSize = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInnerSize");
 			nap::UniformFloat& uStretch = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uStretch");
+			ImGui::SliderFloat("Orbit Center X", &(uOrbitCenter.mValue.x), -5.0f, 5.0f);
+			ImGui::SliderFloat("Orbit Center Y", &(uOrbitCenter.mValue.y), -5.0f, 5.0f);
 			ImGui::SliderFloat("Outer Size", &(uOuterSize.mValue), 0.1f, 0.5f);
 			ImGui::SliderFloat("Inner Size", &(uInnerSize.mValue), 0.0f, 1.0f);
-			ImGui::SliderFloat("Stretch", &(uStretch.mValue), 1.0f, 3.0f);
+			ImGui::SliderFloat("Stretch", &(uStretch.mValue), 1.0f, 5.0f);
 		}
 		if (ImGui::CollapsingHeader("Video"))
 		{

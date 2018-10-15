@@ -656,6 +656,16 @@
                                 "mID": "UniformFloat_11",
                                 "Name": "uStretch",
                                 "Value": 2.0
+                            },
+                            {
+                                "Type": "nap::UniformVec3",
+                                "mID": "UniformVec3_5",
+                                "Name": "uOrbitCenter",
+                                "Value": {
+                                    "x": 0.0,
+                                    "y": 0.5,
+                                    "z": 0.0
+                                }
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -985,6 +995,16 @@
                     "mID": "UniformFloat_10",
                     "Name": "uStretch",
                     "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_6",
+                    "Name": "uOrbitCenter",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
                 }
             ],
             "Shader": "SunShader",
