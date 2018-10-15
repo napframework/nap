@@ -32,7 +32,7 @@ namespace nap
 			return false;
 
 		// Now check for the second color attribute
-		// The Red color represents the group, from 0 to 9
+		// The Red color represents the group, from 0 to 9 as float value 0 to 1
 		assert(mMeshInstance->findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(1)) != nullptr);
 
 		// Get position
