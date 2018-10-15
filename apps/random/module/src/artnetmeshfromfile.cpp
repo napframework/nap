@@ -31,6 +31,10 @@ namespace nap
 		if (!errorState.check(mMeshColorAttribute != nullptr, "unable to find color attribute: %s on mesh: %s", VertexAttributeIDs::GetColorName(0).c_str(), mPath.c_str()))
 			return false;
 
+		// Now check for the second color attribute
+		// The Red color represents the group, from 0 to 9
+		assert(mMeshInstance->findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(1)) != nullptr);
+
 		// Get position
 		mPositionAttribute = mMeshInstance->findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		assert(mPositionAttribute != nullptr);
