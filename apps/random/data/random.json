@@ -215,7 +215,7 @@
                             },
                             {
                                 "Type": "nap::UniformFloat",
-                                "mID": "UniformFloat_11",
+                                "mID": "UniformFloat_2000",
                                 "Name": "ambientIntensity",
                                 "Value": 0.4000000059604645
                             }
@@ -841,7 +841,7 @@
                 },
                 {
                     "Type": "nap::UniformFloat",
-                    "mID": "UniformFloat_10",
+                    "mID": "UniformFloat_2001",
                     "Name": "ambientIntensity",
                     "Value": 1.0
                 }
