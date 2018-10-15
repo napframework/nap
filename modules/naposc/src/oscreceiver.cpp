@@ -13,7 +13,7 @@
 RTTI_BEGIN_CLASS(nap::OSCReceiver)
 	RTTI_PROPERTY("Port",				&nap::OSCReceiver::mPort,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("EnableDebugOutput",	&nap::OSCReceiver::mDebugOutput,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AllowPortReuse",		&nap::OSCReceiver::mAllowReuse,		nap::rtti::EPropertyFileType::Default)
+	RTTI_PROPERTY("AllowPortReuse",		&nap::OSCReceiver::mAllowPortReuse,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -40,7 +40,7 @@ namespace nap
 		mService->registerReceiver(*this);
 
 		// Create the socket
-		mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort), mAllowReuse);
+		mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort), mAllowPortReuse);
 
 		// Create and set the listener
 		mListener = std::make_unique<OSCPacketListener>(*this);
