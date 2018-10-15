@@ -633,6 +633,12 @@
                                 "mID": "UniformFloat_6",
                                 "Name": "uInnerSize",
                                 "Value": 0.25
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_11",
+                                "Name": "uStretch",
+                                "Value": 2.0
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -926,6 +932,12 @@
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_4",
                     "Name": "uInnerSize",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_10",
+                    "Name": "uStretch",
                     "Value": 0.0
                 }
             ],
