@@ -25,6 +25,7 @@ HandleItem::HandleItem() : QObject(), QGraphicsItem()
 {
 	setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
 	setFlag(QGraphicsItem::ItemIsMovable, true);
+	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
 	setSelected(true);
 
@@ -126,6 +127,10 @@ CurveSegmentItem::CurveSegmentItem()
 	mOutTanHandle.setParentItem(this);
 	mInTanLine.setParentItem(this);
 	mOutTanLine.setParentItem(this);
+
+	connect(&mPointHandle, &HandleItem::moved, this, &CurveSegmentItem::handleMoved);
+	connect(&mInTanHandle, &HandleItem::moved, this, &CurveSegmentItem::handleMoved);
+	connect(&mOutTanHandle, &HandleItem::moved, this, &CurveSegmentItem::handleMoved);
 }
 
 void CurveSegmentItem::setPoints(const QPointF (& pts)[4])
@@ -183,6 +188,10 @@ void CurveSegmentItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
 
 	painter->setPen(isSelected() ? mPenSelected : mPen);
 	painter->drawPath(mPath);
+}
+QPainterPath CurveSegmentItem::shape() const
+{
+	return mPath;
 }
 
 
@@ -410,5 +419,22 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	frameView(QRectF(0, 0, 1, 1), QMargins(10, 10, 10, 10));
 
 
+}
+
+
+
+void CurveView::mouseMoveEvent(QMouseEvent* event)
+{
+	GridView::mouseMoveEvent(event);
+}
+
+void CurveView::mousePressEvent(QMouseEvent* event)
+{
+	GridView::mousePressEvent(event);
+}
+
+void CurveView::mouseReleaseEvent(QMouseEvent* event)
+{
+	GridView::mouseReleaseEvent(event);
 }
 
