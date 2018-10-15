@@ -13,11 +13,11 @@ uniform vec3		color;
 uniform float		shininess;
 uniform float		specularIntensity;
 uniform float		alpha;
+uniform float		ambientIntensity;							// Ambient light intensity
 
 // Light Uniforms
 const vec3			lightPosition  = vec3(0.0,200.0,-100.0);	// World position of the light
 const vec3			lightIntensity = vec3(1.0,1.0,1.0) ;		// Light intensity
-const float			ambientIntensity = 1.0;						// Ambient light intensity
 
 // output
 out vec4 out_Color;
