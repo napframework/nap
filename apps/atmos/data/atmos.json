@@ -152,7 +152,7 @@
                     "Type": "nap::SelectMeshComponent",
                     "mID": "SelectMeshComponent",
                     "Meshes": [
-                        "MeteorietMesh"
+                        "ScatterPointsMesh"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -712,7 +712,7 @@
         {
             "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
-            "Path": "witkoraal_lp.mesh",
+            "Path": "witkoraal_scatter.mesh",
             "Usage": "Static"
         },
         {
@@ -735,7 +735,7 @@
             "Type": "nap::ScatterPointsMesh",
             "mID": "ScatterPointsMesh",
             "ReferenceMesh": "MeteorietMesh",
-            "PointCount": 1000
+            "PointCount": 10000
         },
         {
             "Type": "nap::Scene",
@@ -766,7 +766,7 @@
         {
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
-            "ReferenceMesh": "MeteorietMesh",
+            "ReferenceMesh": "ScatterPointsMesh",
             "Length": 0.009999999776482582
         }
     ]

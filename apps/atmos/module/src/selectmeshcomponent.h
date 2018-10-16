@@ -32,7 +32,7 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		std::vector<ResourcePtr<MeshFromFile>>		mMeshes;				///< Property: "Meshes" link to videos
+		std::vector<ResourcePtr<IMesh>>				mMeshes;				///< Property: "Meshes" link to videos
 		nap::ComponentPtr<RenderableMeshComponent>	mScanMeshComponent;		///< Property: "ScanMeshComponent" link to the component that renders the scanned mesh
 		nap::ComponentPtr<RenderableMeshComponent>	mNormalsMeshComponent;	///< Property: "NormalsMeshComponent" link to the component that renders the normals mesh
 		int mIndex = 0;														///< Property: "Index" current video index
