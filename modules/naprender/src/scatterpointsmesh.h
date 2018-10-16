@@ -45,11 +45,17 @@ namespace nap
 		// Sets up the mesh instance based on the total amount of points to scatter
 		bool setup(nap::utility::ErrorState& error);
 
+		// Scatter points
+		bool scatterPoints(nap::utility::ErrorState& error);
+
 		// The actual mesh that contains all the points
 		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;
 
 		// Position Attribute data
 		nap::Vec3VertexAttribute* mPositionAttr = nullptr;
+
+		// Normal attribute data
+		nap::Vec3VertexAttribute* mNormalsAttr = nullptr;
 
 		// UV attribute data
 		std::vector<nap::Vec3VertexAttribute*> mUvAttrs;
