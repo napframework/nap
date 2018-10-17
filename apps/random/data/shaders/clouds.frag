@@ -120,9 +120,9 @@ float snoise(vec3 v)
 void main() 
 {
 	// helper vectors and matrices
-	vec2 center = -vec2(uOffset.xy + 0.5);
-	mat3 toCenter = translate(center);
-	mat3 fromCenter = translate(-center);
+	vec2 center = uOffset.xy + 0.5;
+	mat3 toCenter = translate(-center);
+	mat3 fromCenter = translate(center);
 
 	// initial texture coordinate
 	vec3 position = vec3(passUVs.xy + uOffset.xy, 1.0);
