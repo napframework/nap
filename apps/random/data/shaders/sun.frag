@@ -48,7 +48,7 @@ void main()
 	mat3 toSunCenter = translate(-sunCenter);
 	mat3 fromSunCenter = translate(sunCenter);
 
-	mat3 rotation = rotate(atan(sunToOrbit.y / sunToOrbit.x));
+	mat3 rotation = rotate(-atan(sunToOrbit.y / sunToOrbit.x));
 	mat3 scaling = scale(vec2(1.0 / uStretch, 1.0));
 	vec3 position = vec3(passUVs.xy, 1.0) * toSunCenter * rotation * scaling * fromSunCenter;
 
