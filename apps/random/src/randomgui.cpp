@@ -18,13 +18,13 @@ namespace nap
 	const float RandomGui::guiWindowPadding = 7.0f;
 	const float RandomGui::cloudsScaleMin = 0.1f;
 	const float RandomGui::cloudsScaleMax = 2.0f;
-	const float RandomGui::orbitCenterRange = 2.0f;
-	const float RandomGui::orbitRadiusMin = 0.1f;
-	const float RandomGui::orbitRadiusMax = 5.0f;
-	const float RandomGui::sunSizeMin = 0.1f;
-	const float RandomGui::sunSizeMax = 0.5f;
+	const float RandomGui::orbitCenterRange = 1.5f;
+	const float RandomGui::orbitRadiusMin = 0.5f;
+	const float RandomGui::orbitRadiusMax = 1.5f;
+	const float RandomGui::sunSizeMin = 0.05f;
+	const float RandomGui::sunSizeMax = 0.15f;
 	const float RandomGui::sunStretchMin = 1.0f;
-	const float RandomGui::sunStretchMax = 5.0f;
+	const float RandomGui::sunStretchMax = 10.0f;
 
 	void RandomGui::update(double deltaTime)
 	{

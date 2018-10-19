@@ -707,7 +707,7 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_5",
                                 "Name": "uOuterSize",
-                                "Value": 0.25
+                                "Value": 0.07500000298023224
                             },
                             {
                                 "Type": "nap::UniformFloat",
@@ -719,15 +719,15 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_11",
                                 "Name": "uStretch",
-                                "Value": 2.0
+                                "Value": 5.0
                             },
                             {
                                 "Type": "nap::UniformVec3",
                                 "mID": "UniformVec3_5",
                                 "Name": "uOrbitCenter",
                                 "Value": {
-                                    "x": 0.0,
-                                    "y": 0.0,
+                                    "x": -0.23999999463558198,
+                                    "y": -0.8299999833106995,
                                     "z": 0.0
                                 }
                             },
@@ -735,7 +735,7 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_16",
                                 "Name": "uOrbitRadius",
-                                "Value": 0.5
+                                "Value": 0.8740000128746033
                             },
                             {
                                 "Type": "nap::UniformFloat",
