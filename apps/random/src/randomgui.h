@@ -45,6 +45,11 @@ namespace nap
 		 */
 		void showInfoWindow();
 
+		/**
+		*	Set the position and radius of the orbit circle
+		*/
+		void setOrbitTransform(float *x, float *z, float *radius);
+
 		// Initialized Variables
 		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
 		float		mTextureDisplaySize = 0.5f;

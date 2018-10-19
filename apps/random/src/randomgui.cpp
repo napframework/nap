@@ -35,11 +35,15 @@ namespace nap
 		nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
 		nap::UniformFloat& uRotation = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation");
 		nap::UniformVec3& uOffset = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset");
+		nap::RenderableMeshComponentInstance& sun_plane = mApp.mSun->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::UniformVec3& uOrbitCenter = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter");
+		nap::UniformFloat& uOrbitRadius = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitRadius");
 		float windDirectionRad = nap::math::radians(uRotation.mValue);
 		float windDistance = mWindSpeed * (float)deltaTime;
 		uOffset.mValue.x += cos(windDirectionRad) * windDistance;
 		uOffset.mValue.y += sin(windDirectionRad) * windDistance;
 		uOffset.mValue.z += mNoiseSpeed * (float)deltaTime;
+		setOrbitTransform(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y), &(uOrbitRadius.mValue));
 
 		// Update camera location
 		TransformComponentInstance& cam_xform = mApp.mSceneCamera->getComponent<TransformComponentInstance>();
@@ -96,11 +100,19 @@ namespace nap
 		{
 			nap::RenderableMeshComponentInstance& sun_plane = mApp.mSun->getComponent<nap::RenderableMeshComponentInstance>();
 			nap::UniformVec3& uOrbitCenter = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter");
+			nap::UniformFloat& uOrbitRadius = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitRadius");
+			nap::UniformFloat& uOrbitAngle = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitAngle");
 			nap::UniformFloat& uOuterSize = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize");
 			nap::UniformFloat& uInnerSize = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInnerSize");
 			nap::UniformFloat& uStretch = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uStretch");
-			ImGui::SliderFloat("Orbit Center X", &(uOrbitCenter.mValue.x), -5.0f, 5.0f);
-			ImGui::SliderFloat("Orbit Center Y", &(uOrbitCenter.mValue.y), -5.0f, 5.0f);
+			bool updateOrbitX = ImGui::SliderFloat("Orbit Center X", &(uOrbitCenter.mValue.x), -2.0f, 2.0f);
+			bool updateOrbitY = ImGui::SliderFloat("Orbit Center Y", &(uOrbitCenter.mValue.y), -2.0f, 2.0f);
+			bool updateOrbitRadius = ImGui::SliderFloat("Orbit Radius", &(uOrbitRadius.mValue), 0.5f, 5.0f);
+			if (updateOrbitX || updateOrbitY || updateOrbitRadius)
+			{
+				setOrbitTransform(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y), &(uOrbitRadius.mValue));
+			}
+			ImGui::SliderFloat("Orbit Angle", &(uOrbitAngle.mValue), 0.0f, 360.0f);
 			ImGui::SliderFloat("Outer Size", &(uOuterSize.mValue), 0.1f, 0.5f);
 			ImGui::SliderFloat("Inner Size", &(uInnerSize.mValue), 0.0f, 1.0f);
 			ImGui::SliderFloat("Stretch", &(uStretch.mValue), 1.0f, 5.0f);
@@ -154,4 +166,14 @@ namespace nap
 		ImGui::End();
 	}
 
+	void RandomGui::setOrbitTransform(float *x, float *z, float *radius)
+	{
+		const float correction = 140.0f;
+		nap::TransformComponentInstance& orbit_transform = mApp.mOrbit->getComponent<nap::TransformComponentInstance>();
+		glm::vec3 translate = orbit_transform.getTranslate();
+		translate.x = *x * correction;
+		translate.z = *z * correction;
+		orbit_transform.setTranslate(translate);
+		orbit_transform.setUniformScale(*radius * correction);
+	}
 }

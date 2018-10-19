@@ -77,6 +77,20 @@
             "ColorType": "Byte"
         },
         {
+            "Type": "nap::Circle",
+            "mID": "OrbitCircle",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 0.0,
+                    "w": 1.0
+                }
+            },
+            "Radius": 1.0,
+            "Segments": 100
+        },
+        {
             "Type": "nap::Entity",
             "mID": "Blueprint",
             "Components": [
@@ -496,6 +510,56 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "Orbit",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_13",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 5.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 90.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_10",
+                    "Mesh": "OrbitCircle",
+                    "MaterialInstance": {
+                        "Material": "OrbitMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "ProjectionCamera",
             "Components": [
                 {
@@ -663,9 +727,21 @@
                                 "Name": "uOrbitCenter",
                                 "Value": {
                                     "x": 0.0,
-                                    "y": 0.5,
+                                    "y": 0.0,
                                     "z": 0.0
                                 }
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_16",
+                                "Name": "uOrbitRadius",
+                                "Value": 0.5
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_17",
+                                "Name": "uOrbitAngle",
+                                "Value": 0.0
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -976,6 +1052,24 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "OrbitMaterial",
+            "Uniforms": [],
+            "Shader": "OrbitShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "SunMaterial",
             "Uniforms": [
                 {
@@ -1005,6 +1099,18 @@
                         "y": 0.0,
                         "z": 0.0
                     }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_14",
+                    "Name": "uOrbitRadius",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_15",
+                    "Name": "uOrbitAngle",
+                    "Value": 0.0
                 }
             ],
             "Shader": "SunShader",
@@ -1297,6 +1403,10 @@
                 {
                     "Entity": "Sun",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "Orbit",
+                    "InstanceProperties": []
                 }
             ]
         },
@@ -1323,6 +1433,12 @@
             "mID": "LightRigShader",
             "mVertShader": "shaders/light_rig.vert",
             "mFragShader": "shaders/light_rig.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "OrbitShader",
+            "mVertShader": "shaders/orbit.vert",
+            "mFragShader": "shaders/orbit.frag"
         },
         {
             "Type": "nap::Shader",

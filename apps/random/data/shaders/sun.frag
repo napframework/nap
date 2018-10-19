@@ -6,6 +6,8 @@ in vec3 passPosition;					//< frag world space position
 
 // uniforms
 uniform vec3 uOrbitCenter;
+uniform float uOrbitRadius;
+uniform float uOrbitAngle;
 uniform float uOuterSize;
 uniform float uInnerSize;
 uniform float uStretch;
@@ -42,13 +44,14 @@ mat3 scale(vec2 scale)
 
 void main()
 {
-	vec2 sunCenter = vec2(0.5, 0.5);
-	vec2 sunToOrbit = uOrbitCenter.xy - sunCenter;
+	float orbitAngleRad = radians(uOrbitAngle);
+	vec2 orbitCenter = uOrbitCenter.xy + 0.5;
+	vec2 sunCenter = orbitCenter + vec2(cos(orbitAngleRad) * uOrbitRadius, sin(orbitAngleRad) * uOrbitRadius);
 
 	mat3 toSunCenter = translate(-sunCenter);
 	mat3 fromSunCenter = translate(sunCenter);
 
-	mat3 rotation = rotate(-atan(sunToOrbit.y / sunToOrbit.x));
+	mat3 rotation = rotate(-orbitAngleRad);
 	mat3 scaling = scale(vec2(1.0 / uStretch, 1.0));
 	vec3 position = vec3(passUVs.xy, 1.0) * toSunCenter * rotation * scaling * fromSunCenter;
 

@@ -60,8 +60,7 @@ namespace nap
 		mLightRig = mScene->findEntity("LightRig");
 		mVideo = mScene->findEntity("Video");
 		mCombination = mScene->findEntity("Combination");
-		mTruss = mScene->findEntity("Truss");
-		mBlueprint = mScene->findEntity("Blueprint");
+		mOrbit = mScene->findEntity("Orbit");
 
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -125,6 +124,10 @@ namespace nap
 			// Find all visualization meshes (truss, leds, outline etc.) and render in one pass
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			mLightRig->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
+
+			// Add Orbit to components to render
+			nap::RenderableMeshComponentInstance& render_orbit = mOrbit->getComponent<nap::RenderableMeshComponentInstance>();
+			components_to_render.emplace_back(&render_orbit);
 
 			// Render visualization mesh
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
