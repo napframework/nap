@@ -40,6 +40,8 @@ namespace nap
 
 		// Render window and texture target
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
+		mRenderWindow->setWidth(1920);
+		mRenderWindow->setHeight(1080);
 		
 		// Callback when window event is received
 		mRenderWindow->mWindowEvent.connect(std::bind(&RandomApp::handleWindowEvent, this, std::placeholders::_1));
@@ -143,6 +145,12 @@ namespace nap
 
 	void RandomApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
+		if (windowEvent.get_type().is_derived_from(RTTI_OF(WindowResizedEvent)))
+		{
+			const WindowResizedEvent& res_event = static_cast<const WindowResizedEvent&>(windowEvent);
+			windowSize.x = res_event.mX;
+			windowSize.y = res_event.mY;
+		}
 	}
 
 

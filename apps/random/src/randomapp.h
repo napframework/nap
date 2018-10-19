@@ -88,6 +88,9 @@ namespace nap
 		// Gui related functionality
 		std::unique_ptr<RandomGui>	mGui = nullptr;
 
+		// Store window properties
+		glm::ivec2 windowSize;
+
 		/**
 		 * Called when a window event is received
 		 */

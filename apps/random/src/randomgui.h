@@ -61,11 +61,14 @@ namespace nap
 		RandomApp&	mApp;
 
 		// Window visibility toggles
-		bool		mShowControls = false;		//< If gui controls are shown
-		bool		mShowInfo = false;			//< If gui info is shown
+		bool		mShowControls = true;		//< If gui controls are shown
+		bool		mShowInfo = true;			//< If gui info is shown
 
-		// Define property ranges
+		// Define constant values
 		static const float uvScale;
+		static const float mainMenuHeight;
+		static const float guiWindowWidth;
+		static const float guiWindowPadding;
 		static const float cloudsScaleMin;
 		static const float cloudsScaleMax;
 		static const float orbitCenterRange;

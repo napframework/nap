@@ -10,8 +10,11 @@
 
 namespace nap
 {
-	// Define property ranges
+	// Define constant values
 	const float RandomGui::uvScale = 0.07f;
+	const float RandomGui::mainMenuHeight = 27.0f;
+	const float RandomGui::guiWindowWidth = 320.0f;
+	const float RandomGui::guiWindowPadding = 7.0f;
 	const float RandomGui::cloudsScaleMin = 0.1f;
 	const float RandomGui::cloudsScaleMax = 2.0f;
 	const float RandomGui::orbitCenterRange = 2.0f;
@@ -89,8 +92,11 @@ namespace nap
 
 	void RandomGui::showControlWindow()
 	{
-		ImGui::Begin("Controls");
-		if (ImGui::CollapsingHeader("Clouds"))
+		ImGui::SetNextWindowPos(ImVec2(guiWindowPadding, mainMenuHeight + guiWindowPadding));
+		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - mainMenuHeight - 2.0f * guiWindowPadding));
+		ImGui::Begin("Controls", (bool*)0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+		
+		if (ImGui::CollapsingHeader("Clouds", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 1.0f);
 			ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f);
@@ -108,7 +114,7 @@ namespace nap
 				uInverted.setValue(mCloudsInverted ? 1.0f : 0.0f);
 			}
 		}
-		if (ImGui::CollapsingHeader("Sun"))
+		if (ImGui::CollapsingHeader("Sun", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			nap::RenderableMeshComponentInstance& sun_plane = mApp.mSun->getComponent<nap::RenderableMeshComponentInstance>();
 			nap::UniformVec3& uOrbitCenter = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter");
@@ -129,20 +135,20 @@ namespace nap
 			ImGui::SliderFloat("Inner Size", &(uInnerSize.mValue), 0.0f, 1.0f);
 			ImGui::SliderFloat("Stretch", &(uStretch.mValue), sunStretchMin, sunStretchMax);
 		}
-		if (ImGui::CollapsingHeader("Video"))
+		if (ImGui::CollapsingHeader("Video", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			SelectVideoComponentInstance& video_comp = mApp.mVideo->getComponent<SelectVideoComponentInstance>();
 			int idx = video_comp.getIndex();
 			if (ImGui::SliderInt("Selection", &idx, 0, video_comp.getCount()-1))
 				video_comp.selectVideo(idx);
 		}
-		if (ImGui::CollapsingHeader("Mix"))
+		if (ImGui::CollapsingHeader("Mix", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			nap::RenderableMeshComponentInstance& comb_plane = mApp.mCombination->getComponent<nap::RenderableMeshComponentInstance>();
 			nap::UniformFloat& uBlendValue = comb_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("blendValue");
 			ImGui::SliderFloat("Blend Value", &(uBlendValue.mValue), 0.0f, 1.0f);
 		}
-		if (ImGui::CollapsingHeader("Light Rig"))
+		if (ImGui::CollapsingHeader("Light Rig", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			nap::ApplyCombinationComponentInstance& comb_comp = mApp.mLightRig->getComponent<ApplyCombinationComponentInstance>();
 			ImGui::SliderFloat("Brightness", &(comb_comp.mBrightness), 0.0f, 1.0f);
@@ -154,7 +160,10 @@ namespace nap
 
 	void RandomGui::showInfoWindow()
 	{
-		ImGui::Begin("Information");
+		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(mApp.windowSize.x) - guiWindowWidth - guiWindowPadding, mainMenuHeight + guiWindowPadding));
+		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - mainMenuHeight - 2.0f * guiWindowPadding));
+		ImGui::Begin("Information", (bool*)0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+		
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
@@ -162,16 +171,17 @@ namespace nap
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
 		ImGui::SliderFloat("Preview Size", &mTextureDisplaySize, 0.0f, 1.0f);
 		float col_width = ImGui::GetContentRegionAvailWidth() * mTextureDisplaySize;
-		if (ImGui::CollapsingHeader("Weather Textures"))
+
+		if (ImGui::CollapsingHeader("Weather Textures", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Image(mApp.mCloudRenderTarget->getColorTexture(), { col_width, col_width });
 			ImGui::Image(mApp.mSunRenderTarget->getColorTexture(), { col_width, col_width });
 		}
-		if (ImGui::CollapsingHeader("Video Texture"))
+		if (ImGui::CollapsingHeader("Video Texture", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Image(mApp.mVideoRenderTarget->getColorTexture(), { col_width, col_width });
 		}
-		if (ImGui::CollapsingHeader("Combined Texture"))
+		if (ImGui::CollapsingHeader("Combined Texture", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Image(mApp.mCombineRenderTarget->getColorTexture(), { col_width, col_width });
 		}
