@@ -11,7 +11,8 @@
 namespace nap
 {
 	// Define constant values
-	const float RandomGui::uvScale = 0.07f;
+	const glm::vec2 RandomGui::uvOffset = glm::vec2(6.0f, 2.0f);
+	const float RandomGui::uvScale = 136.0f;
 	const float RandomGui::mainMenuHeight = 27.0f;
 	const float RandomGui::guiWindowWidth = 320.0f;
 	const float RandomGui::guiWindowPadding = 7.0f;
@@ -192,8 +193,8 @@ namespace nap
 	{
 		nap::TransformComponentInstance& orbit_transform = mApp.mOrbit->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 translate = orbit_transform.getTranslate();
-		translate.x = *x * uvScale;
-		translate.z = *z * uvScale;
+		translate.x = uvOffset.x + *x * uvScale;
+		translate.z = uvOffset.y + *z * -uvScale;
 		orbit_transform.setTranslate(translate);
 		orbit_transform.setUniformScale(*radius * uvScale);
 	}

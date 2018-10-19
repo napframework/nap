@@ -65,6 +65,7 @@ namespace nap
 		bool		mShowInfo = true;			//< If gui info is shown
 
 		// Define constant values
+		static const glm::vec2 uvOffset;
 		static const float uvScale;
 		static const float mainMenuHeight;
 		static const float guiWindowWidth;
