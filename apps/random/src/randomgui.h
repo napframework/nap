@@ -63,5 +63,17 @@ namespace nap
 		// Window visibility toggles
 		bool		mShowControls = false;		//< If gui controls are shown
 		bool		mShowInfo = false;			//< If gui info is shown
+
+		// Define property ranges
+		static const float uvScale;
+		static const float cloudsScaleMin;
+		static const float cloudsScaleMax;
+		static const float orbitCenterRange;
+		static const float orbitRadiusMin;
+		static const float orbitRadiusMax;
+		static const float sunSizeMin;
+		static const float sunSizeMax;
+		static const float sunStretchMin;
+		static const float sunStretchMax;
 	};
 }

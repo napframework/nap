@@ -10,6 +10,18 @@
 
 namespace nap
 {
+	// Define property ranges
+	const float RandomGui::uvScale = 0.07f;
+	const float RandomGui::cloudsScaleMin = 0.1f;
+	const float RandomGui::cloudsScaleMax = 2.0f;
+	const float RandomGui::orbitCenterRange = 2.0f;
+	const float RandomGui::orbitRadiusMin = 0.1f;
+	const float RandomGui::orbitRadiusMax = 5.0f;
+	const float RandomGui::sunSizeMin = 0.1f;
+	const float RandomGui::sunSizeMax = 0.5f;
+	const float RandomGui::sunStretchMin = 1.0f;
+	const float RandomGui::sunStretchMax = 5.0f;
+
 	void RandomGui::update(double deltaTime)
 	{
 		// Menu
@@ -89,7 +101,7 @@ namespace nap
 			nap::UniformFloat& uScale = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uScale");
 			ImGui::SliderFloat("Wind Direction", &(uRotation.mValue), 0.0f, 360.0f);
 			ImGui::SliderFloat("Contrast", &(uContrast.mValue), 0.0f, 1.0f);
-			ImGui::SliderFloat("Scale", &(uScale.mValue), 0.1f, 2.0f);
+			ImGui::SliderFloat("Scale", &(uScale.mValue), cloudsScaleMin, cloudsScaleMax);
 			if (ImGui::Checkbox("Inverted", &mCloudsInverted))
 			{
 				nap::UniformFloat& uInverted = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInverted");
@@ -105,17 +117,17 @@ namespace nap
 			nap::UniformFloat& uOuterSize = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize");
 			nap::UniformFloat& uInnerSize = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInnerSize");
 			nap::UniformFloat& uStretch = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uStretch");
-			bool updateOrbitX = ImGui::SliderFloat("Orbit Center X", &(uOrbitCenter.mValue.x), -2.0f, 2.0f);
-			bool updateOrbitY = ImGui::SliderFloat("Orbit Center Y", &(uOrbitCenter.mValue.y), -2.0f, 2.0f);
-			bool updateOrbitRadius = ImGui::SliderFloat("Orbit Radius", &(uOrbitRadius.mValue), 0.5f, 5.0f);
+			bool updateOrbitX = ImGui::SliderFloat("Orbit Center X", &(uOrbitCenter.mValue.x), -orbitCenterRange, orbitCenterRange);
+			bool updateOrbitY = ImGui::SliderFloat("Orbit Center Y", &(uOrbitCenter.mValue.y), -orbitCenterRange, orbitCenterRange);
+			bool updateOrbitRadius = ImGui::SliderFloat("Orbit Radius", &(uOrbitRadius.mValue), orbitRadiusMin, orbitRadiusMax);
 			if (updateOrbitX || updateOrbitY || updateOrbitRadius)
 			{
 				setOrbitTransform(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y), &(uOrbitRadius.mValue));
 			}
 			ImGui::SliderFloat("Orbit Angle", &(uOrbitAngle.mValue), 0.0f, 360.0f);
-			ImGui::SliderFloat("Outer Size", &(uOuterSize.mValue), 0.1f, 0.5f);
+			ImGui::SliderFloat("Outer Size", &(uOuterSize.mValue), sunSizeMin, sunSizeMax);
 			ImGui::SliderFloat("Inner Size", &(uInnerSize.mValue), 0.0f, 1.0f);
-			ImGui::SliderFloat("Stretch", &(uStretch.mValue), 1.0f, 5.0f);
+			ImGui::SliderFloat("Stretch", &(uStretch.mValue), sunStretchMin, sunStretchMax);
 		}
 		if (ImGui::CollapsingHeader("Video"))
 		{
@@ -168,12 +180,11 @@ namespace nap
 
 	void RandomGui::setOrbitTransform(float *x, float *z, float *radius)
 	{
-		const float correction = 140.0f;
 		nap::TransformComponentInstance& orbit_transform = mApp.mOrbit->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 translate = orbit_transform.getTranslate();
-		translate.x = *x * correction;
-		translate.z = *z * correction;
+		translate.x = *x * uvScale;
+		translate.z = *z * uvScale;
 		orbit_transform.setTranslate(translate);
-		orbit_transform.setUniformScale(*radius * correction);
+		orbit_transform.setUniformScale(*radius * uvScale);
 	}
 }
