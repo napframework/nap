@@ -13,7 +13,7 @@ using namespace napqt;
 
 int StandardCurveModel::curveCount() const
 {
-	return static_cast<int>(mCurves.size());
+	return mCurves.size();
 }
 
 AbstractCurve* StandardCurveModel::curve(int index) const
