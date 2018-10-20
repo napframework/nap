@@ -11,11 +11,8 @@ file(GLOB_RECURSE SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 add_executable(${PROJECT_NAME}_autorun ${SOURCES})
 
-set(NAP_MODULES)
-
 set(UNITTEST_LIBS
     napcore
-    ${NAP_MODULES}
     napkin_lib
     nrender
     )
