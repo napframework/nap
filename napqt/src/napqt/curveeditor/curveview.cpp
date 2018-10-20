@@ -312,10 +312,18 @@ void CurveItem::onPointsChanged(QList<int> indices)
 
 void CurveItem::updateSegmentFromPoint(int i)
 {
-	CurveSegmentItem* seg = mSegments[i];
-	seg->updateGeometry();
-	if (!isFirstPoint(segmentIndex(*seg)))
-		prevSegment(*seg)->updateGeometry();
+	CurveSegmentItem& seg = *mSegments[i];
+	seg.updateGeometry();
+	// this handle controls the shape of the previous point too
+	// TODO: this changes when using higher order bsplines
+	if (!isFirstPoint(segmentIndex(seg)))
+		prevSegment(seg)->updateGeometry();
+}
+
+void CurveItem::updateAllSegments()
+{
+	for (int i=0, len=mCurve.pointCount(); i < len; i++)
+		updateSegmentFromPoint(i);
 }
 
 bool CurveItem::isFirstPoint(int i)
@@ -332,19 +340,34 @@ bool CurveItem::isLastPoint(int i)
 
 CurveSegmentItem* CurveItem::nextSegment(const CurveSegmentItem& seg)
 {
-	const auto& sortedIndices = sortPoints();
-	int idx = segmentIndex(seg);
-	int outidx = mUnsortedToSorted[idx + 1];
-	return mSegments[outidx];
+	int unsortedIndex = segmentIndex(seg);
+	return mSegments[nextSegIndex(unsortedIndex)];
 }
 
 CurveSegmentItem* CurveItem::prevSegment(const CurveSegmentItem& seg)
 {
-	const auto& sortedIndices = sortPoints();
-	int idx = segmentIndex(seg);
-	int outidx = mUnsortedToSorted[idx - 1];
-	return mSegments[outidx];
+	int unsortedIndex = segmentIndex(seg);
+	return mSegments[prevSegIndex(unsortedIndex)];
 }
+
+int CurveItem::nextSegIndex(int idx)
+{
+	sortPoints();
+	int sortedIndex = mUnsortedToSorted[idx];
+	int outSortedIndex = sortedIndex + 1;
+	int outidx = mSortedToUnsorted[outSortedIndex];
+	return outidx;
+}
+
+int CurveItem::prevSegIndex(int idx)
+{
+	sortPoints();
+	int sortedIndex = mUnsortedToSorted[idx];
+	int outSortedIndex = sortedIndex - 1;
+	int outidx = mSortedToUnsorted[outSortedIndex];
+	return outidx;
+}
+
 
 void CurveItem::onPointsAdded(const QList<int> indices)
 {
@@ -390,20 +413,19 @@ int CurveItem::segmentIndex(const CurveSegmentItem& item) const
 
 int CurveItem::sortedIndex(const CurveSegmentItem& seg)
 {
-	sortPoints();
-	return mSortedToUnsorted[segmentIndex(seg)];
+	return sortedIndex(segmentIndex(seg));
 }
 
 int CurveItem::sortedIndex(int unsortedIndex)
 {
 	sortPoints();
-	return mSortedToUnsorted[unsortedIndex];
+	return mUnsortedToSorted[unsortedIndex];
 }
 
 int CurveItem::unsortedIndex(int sortedIndex)
 {
 	sortPoints();
-	return mUnsortedToSorted[sortedIndex];
+	return mSortedToUnsorted[sortedIndex];
 }
 
 
@@ -417,26 +439,32 @@ const QVector<int>& CurveItem::sortPoints()
 	if (!mPointOrderDirty)
 		return mSortedToUnsorted;
 
+	int len = mCurve.pointCount();
+
 	mSortedToUnsorted.clear();
-	for (int i = 0, len = mCurve.pointCount(); i < len; i++)
+	for (int i = 0; i < len; i++)
 		mSortedToUnsorted.append(i);
 
-//	qSort(mSortedToUnsorted.begin(), mSortedToUnsorted.end(), [this](const QVariant& a, const QVariant& b)
-//	{
-//		bool ok;
-//		qreal timeA = mCurve.data(a.toInt(&ok), datarole::POS).toPointF().x();
-//		qreal timeB = mCurve.data(a.toInt(&ok), datarole::POS).toPointF().y();
-//		return timeA < timeB;
-//	});
+	std::sort(mSortedToUnsorted.begin(), mSortedToUnsorted.end(), [this](const QVariant& a, const QVariant& b)
+	{
+		bool ok;
+		qreal timeA = mCurve.data(a.toInt(&ok), datarole::POS).toPointF().x();
+		qreal timeB = mCurve.data(b.toInt(&ok), datarole::POS).toPointF().x();
+		return timeA < timeB;
+	});
 
-	mUnsortedToSorted.resize(mSortedToUnsorted.size());
-	for (int i = 0, len = mSortedToUnsorted.size(); i < len; i++)
+	for (int idx : mSortedToUnsorted)
+		qInfo() << idx;
+
+	mUnsortedToSorted.resize(len);
+	for (int i = 0; i < len; i++)
 	{
 		int sortedIndex = mSortedToUnsorted[i];
 		mUnsortedToSorted[sortedIndex] = i;
 	}
 
 	mPointOrderDirty = false;
+	updateAllSegments();
 	return mSortedToUnsorted;
 }
 

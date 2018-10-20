@@ -153,11 +153,14 @@ namespace napqt
 		QRectF boundingRect() const override;
 		CurveSegmentItem* nextSegment(const CurveSegmentItem& seg);
 		CurveSegmentItem* prevSegment(const CurveSegmentItem& seg);
+		int prevSegIndex(int idx);
+		int nextSegIndex(int idx);
 	private:
 		void onPointsChanged(QList<int> indices);
 		void onPointsAdded(QList<int> indices);
 		void onPointsRemoved(QList<int> indices);
 		void updateSegmentFromPoint(int i);
+		void updateAllSegments();
 		bool isFirstPoint(int i);
 		bool isLastPoint(int i);
 		const QVector<int>& sortPoints();
