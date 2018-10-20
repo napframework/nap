@@ -11,7 +11,7 @@ file(GLOB_RECURSE SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 add_executable(${PROJECT_NAME}_autorun ${SOURCES})
 
-set(NAP_MODULES mod_kalvertoren mod_naprender mod_napinput mod_napsdlinput mod_napsdlwindow mod_napsandbox mod_napvideo mod_napmath mod_napscene mod_napartnet mod_napcameracontrol)
+set(NAP_MODULES)
 
 set(UNITTEST_LIBS
     napcore
@@ -19,26 +19,6 @@ set(UNITTEST_LIBS
     napkin_lib
     nrender
     )
-
-find_package(FFmpeg REQUIRED)
-
-if (MSVC)
-    list(APPEND UNITTEST_LIBS
-            ${FREEIMAGE_LIBRARIES}
-            ${FFMPEG_LIBRARIES}
-            )
-elseif (APPLE)
-    list(APPEND UNITTEST_LIBS
-            ${FREEIMAGE_LIBRARIES}
-            ${FFMPEG_LIBRARIES}
-            )
-
-elseif (UNIX)
-    list(APPEND UNITTEST_LIBS
-            ${FREEIMAGE_LIBRARIES}  
-            ${FFMPEG_LIBRARIES}
-            )
-endif ()
 
 target_link_libraries(${PROJECT_NAME} ${UNITTEST_LIBS})
 target_link_libraries(${PROJECT_NAME}_autorun ${UNITTEST_LIBS})
