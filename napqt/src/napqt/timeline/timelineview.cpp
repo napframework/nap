@@ -41,9 +41,9 @@ void TimelineView::mousePressEvent(QMouseEvent* event)
 
 	mMousePressPos = event->pos();
 
-	bool ctrl = event->modifiers() == Qt::ControlModifier;
-	bool shift = event->modifiers() == Qt::ShiftModifier;
-	bool alt = event->modifiers() == Qt::AltModifier;
+	bool mCtrlHeld = event->modifiers() == Qt::ControlModifier;
+	bool mShiftHeld = event->modifiers() == Qt::ShiftModifier;
+	bool mAltHeld = event->modifiers() == Qt::AltModifier;
 	bool lmb = event->buttons() == Qt::LeftButton;
 
 	auto item = itemAt(event->pos());
@@ -53,28 +53,19 @@ void TimelineView::mousePressEvent(QMouseEvent* event)
 	mDragMode = NoDrag;
 
 	// Handle selection
-	if (lmb && !alt)
+	if (lmb && !mAltHeld)
 	{
 		if (clickedTimelineItem) // clicked an event
 		{
-			if (shift)
+			if (mShiftHeld)
 			{
-				// append selection
-				clickedTimelineItem->setSelected(true);
-			} else if (ctrl)
+				addSelection({clickedTimelineItem});
+			} else if (mCtrlHeld)
 			{
-				// toggle selection
-				clickedTimelineItem->setSelected(!clickedTimelineItem->isSelected());
+				toggleSelection({clickedTimelineItem});
 			} else
 			{
-				// replace select
-				if (!clickedTimelineItem->isSelected())
-				{
-					// deselect others
-					for (auto m : selectedItems<TimelineElementItem>())
-						m->setSelected(false);
-					clickedTimelineItem->setSelected(true);
-				}
+				setSelection({clickedTimelineItem});
 			}
 
 			bool leftGrip;
@@ -89,11 +80,8 @@ void TimelineView::mousePressEvent(QMouseEvent* event)
 		} else
 		{
 			// clicked on background
-			if (!shift && !ctrl)
-			{
-				for (auto m : selectedItems<TimelineElementItem>())
-					m->setSelected(false);
-			}
+			if (!mShiftHeld && !mCtrlHeld)
+				clearSelection();
 
 			startRubberBand(event->pos());
 		}
@@ -186,23 +174,13 @@ void TimelineView::mouseMoveEvent(QMouseEvent* event)
 
 void TimelineView::mouseReleaseEvent(QMouseEvent* event)
 {
-	if (isRubberBandVisible())
-		selectItemsInRubberband();
+	if (isRubberBandVisible()) {
+		clearSelection();
+		auto ms = filter<TimelineElementItem>(items(rubberBandGeo()));
+		setSelection(ms);
+	}
 
 	GridView::mouseReleaseEvent(event);
-}
-
-void TimelineView::selectItemsInRubberband()
-{
-	for (auto m : selectedItems<TimelineElementItem>())
-		m->setSelected(false);
-
-	QList<TimelineElementItem*> elements;
-	for (auto item : items(rubberBandGeo())) {
-		auto element = dynamic_cast<TimelineElementItem*>(item);
-		if (element)
-			element->setSelected(true);
-	}
 }
 
 Timeline* TimelineView::timeline() const
