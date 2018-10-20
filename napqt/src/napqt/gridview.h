@@ -88,6 +88,19 @@ namespace napqt
 		void keyPressEvent(QKeyEvent* event) override;
 		void keyReleaseEvent(QKeyEvent* event) override;
 		QPoint mMousePressPos;
+
+		void setSelection(const QList<QGraphicsItem*>& items);
+		void addSelection(const QList<QGraphicsItem*>& items);
+		void removeSelection(const QList<QGraphicsItem*>& items);
+		void toggleSelection(const QList<QGraphicsItem*>& items);
+		void clearSelection();
+
+		template<typename T>
+		const QList<T*> selectedItems() const;
+
+		template<typename O>
+		const QList<QGraphicsItem*> filter(const QList<QGraphicsItem*>& items) const;
+
 	private:
 		void drawHatchesHorizontal(QPainter* painter, const QRectF& rect, qreal minStepSize, const QColor& color,
 								   bool labels);
@@ -134,3 +147,32 @@ namespace napqt
 	};
 
 }
+
+
+template<typename T>
+const QList<T*> napqt::GridView::selectedItems() const
+{
+	QList<T*> items;
+	for (auto m : scene()->selectedItems())
+	{
+		auto eventItem = dynamic_cast<T*>(m);
+		if (eventItem)
+			items << eventItem;
+	}
+	return items;
+}
+
+
+
+template<typename O>
+const QList<QGraphicsItem*> napqt::GridView::filter(const QList<QGraphicsItem*>& items) const
+{
+	QList<QGraphicsItem*> out;
+	for (auto item : items) {
+		auto cast = dynamic_cast<O*>(item);
+		if (cast)
+			out << item;
+	}
+	return out;
+}
+

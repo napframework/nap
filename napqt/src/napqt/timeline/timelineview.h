@@ -36,22 +36,8 @@ namespace napqt
 	private:
 		Timeline* timeline() const;
 		void setOverrideCursor(const QCursor& cursor);
-		void selectItemsInRubberband();
 		void restoreCursor();
 		BaseEventItem* resizeHandleAt(const QPointF& pos, bool& leftGrip) const;
-
-		template<typename T>
-		const QList<T*> selectedItems() const
-		{
-			QList<T*> items;
-			for (auto m : scene()->selectedItems())
-			{
-				auto eventItem = dynamic_cast<T*>(m);
-				if (eventItem)
-					items << eventItem;
-			}
-			return items;
-		}
 
 		QMap<BaseEventItem*, Range> mSelectedRanges;
 		QMap<TickItem*, qreal> mSelectedTimes;
@@ -61,6 +47,10 @@ namespace napqt
 		QCursor mDefaultCursor;
 		bool mCursorOverridden = false;
 		DragMode mDragMode = NoDrag;
+
+		bool mCtrlHeld;
+		bool mShiftHeld;
+		bool mAltHeld;
 
 	};
 

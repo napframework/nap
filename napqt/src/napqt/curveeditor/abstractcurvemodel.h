@@ -30,9 +30,10 @@ namespace napqt
 		// Point data
 		virtual QVariant data(int index, int role) const = 0;
 		virtual void setData(int index, int role, QVariant value) = 0;
+		virtual void movePoints(const QMap<int, QPointF>& positions) = 0;
 	Q_SIGNALS:
 		void changed(AbstractCurve* curve);
-		void pointsChanged(const QList<int> indices);
+		void pointsChanged(QList<int> indices);
 		void pointsAdded(const QList<int> indices);
 		void pointsRemoved(const QList<int> indices);
 	};
@@ -44,7 +45,8 @@ namespace napqt
 		explicit AbstractCurveModel(QObject* parent);
 
 		virtual int curveCount() const = 0;
-		virtual AbstractCurve* curve(int index) = 0;
+		virtual AbstractCurve* curve(int index) const = 0;
+		int curveIndex(AbstractCurve* curve) const;
 
 	Q_SIGNALS:
 		void curvesAdded(const QList<int> indices);

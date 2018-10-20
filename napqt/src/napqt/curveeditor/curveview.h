@@ -7,6 +7,8 @@
 
 namespace napqt
 {
+	class CurveItem;
+	class CurveSegmentItem;
 
 	/**
 	 * Any interactive (movable) handle in the scene
@@ -15,30 +17,35 @@ namespace napqt
 	{
 	Q_OBJECT
 	public:
-		HandleItem();
+		HandleItem(CurveSegmentItem& parent);
 		bool contains(const QPointF& point) const override;
 		QRectF boundingRect() const override;
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
-
-	protected:
-		QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
+		CurveSegmentItem& curveSegmentItem();
+		void setEmitItemChanged(bool b) { mEmitItemChanges = b; }
 
 	Q_SIGNALS:
 		void moved(HandleItem* item);
 		void selected(HandleItem* item);
 
 	protected:
+		QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
 		QPen mPen;
+		QPen mPenSelected;
 		QBrush mBrush;
 		QBrush mBrushSelected;
 
 	private:
+		void updateRect();
+
 		QPainterPath mPath;
 		QRectF mRect;
 		QRectF mHitRect;
 
-		qreal mExtent = 4;
+		qreal mExtent = 2;
+		qreal mExtentSelectd = 2;
 		qreal mHitExtent = 8;
+		bool mEmitItemChanges = true;
 	};
 
 	/**
@@ -47,7 +54,7 @@ namespace napqt
 	class PointHandleItem : public HandleItem
 	{
 	public:
-		PointHandleItem();
+		explicit PointHandleItem(CurveSegmentItem& parent);
 		void setTangentsLocked(bool b) { mTangentsLocked = b; }
 		bool isTangentsLocked() const { return mTangentsLocked; }
 	private:
@@ -60,7 +67,7 @@ namespace napqt
 	class TangentHandleItem : public HandleItem
 	{
 	public:
-		TangentHandleItem();
+		explicit TangentHandleItem(CurveSegmentItem& parent);
 		void setValue(const QPointF& value) { mValue = value; }
 		const QPointF value() const { return mValue; }
 	private:
@@ -73,7 +80,7 @@ namespace napqt
 	class LineItem : public QGraphicsPathItem
 	{
 	public:
-		LineItem();
+		explicit LineItem(QGraphicsItem& parent);
 		void setColor(const QColor& color);
 		void setFromTo(const QPointF& a, const QPointF& b);
 	};
@@ -85,7 +92,8 @@ namespace napqt
 	{
 		Q_OBJECT
 	public:
-		CurveSegmentItem();
+		explicit CurveSegmentItem(CurveItem& curveItem);
+		CurveItem& curveItem() const;
 		void setPoints(const QPointF (& pts)[4]);
 		QRectF boundingRect() const override;
 
@@ -95,21 +103,24 @@ namespace napqt
 		LineItem& inTanLine() { return mInTanLine; }
 		LineItem& outTanLine() { return mOutTanLine; }
 
-		void setFirstPoint(bool b);
-		void setLastPoint(bool b);
 		QPainterPath shape() const override;
-
+		void updateGeometry();
+		void updateHandleVisibility();
+		int index();
+		int orderedIndex();
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
 	Q_SIGNALS:
 		void handleMoved(HandleItem* handle);
 
 	private:
-		void refreshCurve();
+		void onHandleMoved(HandleItem* handle);
+		void onHandleSelected(HandleItem* handle);
+		void setPointsEmitItemChanges(bool b);
 
-		QPointF mPoints[4];
 		QPainterPath mPath;
 		QPainterPath mDebugPath;
+		bool mDrawDebug = false;
 		int mSampleCount = 32;
 		QPen mPen;
 		QPen mPenDebug;
@@ -134,57 +145,67 @@ namespace napqt
 	Q_OBJECT
 	public:
 		CurveItem(QGraphicsItem* parent, AbstractCurve& curve);
-
+		AbstractCurve& curve() { return mCurve; }
+		int segmentIndex(const CurveSegmentItem& seg) const;
+		int sortedIndex(const CurveSegmentItem& seg);
+		int sortedIndex(int unsortedIndex);
+		int unsortedIndex(int sortedIndex);
+		QRectF boundingRect() const override;
+		CurveSegmentItem* nextSegment(const CurveSegmentItem& seg);
 	private:
 		void onPointsChanged(QList<int> indices);
 		void onPointsAdded(QList<int> indices);
 		void onPointsRemoved(QList<int> indices);
-		int segmentIndex(CurveSegmentItem* seg) const;
-		int sortedIndex(CurveSegmentItem* seg);
 		void updateSegmentFromPoint(int i);
-		CurveSegmentItem* nextSegment(int i);
-		const QList<int>& sortedPoints();
+		bool isFirstPoint(int i);
+		bool isLastPoint(int i);
+		const QVector<int>& sortPoints();
 		void setPointOrderDirty();
 		AbstractCurve& mCurve;
 
 		LineItem mInfinityLineNeg;
 		LineItem mInfinityLinePos;
-		QList<CurveSegmentItem*> mSegments;
+		QVector<CurveSegmentItem*> mSegments;
 		bool mPointOrderDirty = true;
-		QList<int> mSortedPoints;
+		QVector<int> mSortedToUnsorted;
+		QVector<int> mUnsortedToSorted;
 	};
 
-	/**
-	 * QGraphicsScene managing all the curves
-	 */
-	class CurveScene : public QGraphicsScene
-	{
-	public:
-		CurveScene();
-		void setModel(AbstractCurveModel* model);
-		AbstractCurveModel* model() { return mModel; }
-	private:
-		void onCurvesAdded(QList<int> indices);
-		void onCurvesRemoved(QList<int> indices);
-
-		AbstractCurveModel* mModel = nullptr;
-		QList<CurveItem*> mCurveItems;
-	};
 
 	class CurveView : public GridView
 	{
 	Q_OBJECT
 	public:
+		enum DragMode {
+			NoDrag, DragMove
+		};
+
+
 		explicit CurveView(QWidget* parent = nullptr);
-		void setModel(AbstractCurveModel* model) { mCurveScene.setModel(model); }
-		AbstractCurveModel* model() { return mCurveScene.model(); }
+		void setModel(AbstractCurveModel* model);
+		AbstractCurveModel* model() { return mModel; }
 
 	protected:
 		void mousePressEvent(QMouseEvent* event) override;
 		void mouseMoveEvent(QMouseEvent* event) override;
 		void mouseReleaseEvent(QMouseEvent* event) override;
+		void selectItemsInRubberband();
+		void movePointHandles(const QList<PointHandleItem*>& items, const QPointF& sceneDelta);
+		void moveTanHandles(const QList<TangentHandleItem*>& items, const QPointF& sceneDelta);
+
 	private:
-		CurveScene mCurveScene;
+		void onCurvesAdded(QList<int> indices);
+		void onCurvesRemoved(QList<int> indices);
+
+		QGraphicsScene mCurveScene;
+		QPoint mLastMousePos;
+		AbstractCurveModel* mModel = nullptr;
+		QList<CurveItem*> mCurveItems;
+
+		bool mCtrlHeld;
+		bool mShiftHeld;
+		bool mAltHeld;
+
 	};
 
 }

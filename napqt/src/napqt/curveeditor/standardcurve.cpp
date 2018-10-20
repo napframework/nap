@@ -2,6 +2,8 @@
 #include "standardcurve.h"
 
 #include <cassert>
+#include <QMap>
+#include <QtDebug>
 
 using namespace napqt;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -14,7 +16,7 @@ int StandardCurveModel::curveCount() const
 	return static_cast<int>(mCurves.size());
 }
 
-AbstractCurve* StandardCurveModel::curve(int index)
+AbstractCurve* StandardCurveModel::curve(int index) const
 {
 	return mCurves.at(index);
 }
@@ -97,7 +99,6 @@ QVariant napqt::StandardCurve::data(int index, int role) const
 void napqt::StandardCurve::setData(int index, int role, QVariant value)
 {
 	auto& p = mPoints[index];
-	bool ok;
 	switch (role)
 	{
 		case datarole::POS:
@@ -116,6 +117,21 @@ void napqt::StandardCurve::setData(int index, int role, QVariant value)
 			break;
 	}
 	pointsChanged({index});
+}
+
+void StandardCurve::movePoints(const QMap<int, QPointF>& positions)
+{
+	QList<int> indexes;
+	auto it = positions.constBegin();
+	while (it != positions.constEnd())
+	{
+		int index = it.key();
+		auto pos = it.value();
+		mPoints[index] = pos;
+		indexes << index;
+		++it;
+	}
+	pointsChanged(indexes);
 }
 
 void napqt::StandardCurve::addPoint(qreal time, qreal value, InterpType interp)

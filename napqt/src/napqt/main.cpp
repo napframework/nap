@@ -106,16 +106,20 @@ public:
 		{
 			auto curve = model->addCurve();
 			curve->setName("Fade In");
-			curve->addPoint(0, 0);
-			curve->addPoint(1, 1);
+			curve->addPoint(0.00, 0.2);
+			curve->addPoint(0.25, 0.2);
+			curve->addPoint(0.50, 0.5);
+			curve->addPoint(0.75, 0.8);
+			curve->addPoint(1.00, 0.8);
 		}
 		mCurveView.setModel(model);
+
 //		{
 //			auto curve = model->addCurve();
 //			curve->setName("Fade Out and In");
-//			curve->addPoint(0, 1, StandardCurve::InterpType::BSpline);
-//			curve->addPoint(0.5, 0, StandardCurve::InterpType::BSpline);
-//			curve->addPoint(1, 1, StandardCurve::InterpType::BSpline);
+//			curve->addPoint(0.0, 1.0, StandardCurve::InterpType::BSpline);
+//			curve->addPoint(0.5, 0.0, StandardCurve::InterpType::BSpline);
+//			curve->addPoint(1.0, 1.0, StandardCurve::InterpType::BSpline);
 //		}
 
 	}

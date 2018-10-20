@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "gridview.h"
 #include "timedisplay.h"
 
@@ -88,7 +90,8 @@ void GridView::mouseMoveEvent(QMouseEvent* event)
 	{
 		zoom(QPointF(1, 1) + QPointF(mMouseDelta) * 0.01, mapToScene(mMousePressPos));
 		event->accept();
-	} else {
+	} else
+	{
 		QGraphicsView::mouseMoveEvent(event);
 	}
 
@@ -482,10 +485,40 @@ const QRect GridView::rubberBandGeo() const
 {
 	return mRubberBand.geometry();
 }
+
 void GridView::setGridIntervalDisplay(std::shared_ptr<IntervalDisplay> horiz, std::shared_ptr<IntervalDisplay> vert)
 {
-	mIvalDisplayHorizontal = horiz;
-	mIvalDisplayVertical = vert;
+	mIvalDisplayHorizontal = std::move(horiz);
+	mIvalDisplayVertical = std::move(vert);
 }
 
+void GridView::setSelection(const QList<QGraphicsItem*>& items)
+{
+	clearSelection();
+	addSelection(items);
+}
 
+void GridView::addSelection(const QList<QGraphicsItem*>& items)
+{
+	for (auto m : items)
+		if (!m->isSelected())
+			m->setSelected(true);
+}
+
+void GridView::removeSelection(const QList<QGraphicsItem*>& items)
+{
+	for (auto m : items)
+		if (m->isSelected())
+			m->setSelected(false);
+}
+
+void GridView::toggleSelection(const QList<QGraphicsItem*>& items)
+{
+	for (auto m : items)
+		m->setSelected(!m->isSelected());
+}
+
+void GridView::clearSelection()
+{
+	removeSelection(scene()->selectedItems());
+}

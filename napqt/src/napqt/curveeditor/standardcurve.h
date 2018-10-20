@@ -37,7 +37,7 @@ namespace napqt
 
 		void addPoint(qreal time, qreal value, InterpType interp = InterpType::Linear);
 		void removePoint(int index);
-
+		void movePoints(const QMap<int, QPointF>& positions) override;
 		StandardCurveModel* model();
 	private:
 		QList<StandardPoint> mPoints;
@@ -51,7 +51,7 @@ namespace napqt
 		explicit StandardCurveModel(QObject* parent = nullptr) : AbstractCurveModel(parent) {}
 
 		int curveCount() const override;
-		AbstractCurve* curve(int index) override;
+		AbstractCurve* curve(int index) const override;
 		int curveIndex(AbstractCurve* curve) const;
 		StandardCurve* addCurve();
 		void removeCurve(AbstractCurve* curve);
