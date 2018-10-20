@@ -13,7 +13,7 @@ macro(nap_qt_pre)
             # If we're doing a platform release let's enforce the an explicit Qt path so that we're
             # certain what we're bundling with the release       
             message(FATAL_ERROR "Please set the QT_DIR environment variable to define the Qt5 version"
-                                "to be installed with the platform release, eg. \"C:/dev/Qt/5.9.1/msvc2015_64\"")              
+                                "to be installed with the platform release, eg. \"C:/dev/Qt/5.9.1/msvc2015_64\"")
         endif()
     endif()
 
@@ -33,14 +33,15 @@ macro(nap_qt_pre)
               # Ensure we're not using Qt from homebrew as we don't know the legal situation with packaging homebrew's packages.
               # Plus Qt's own opensource packages should have wider macOS version support.
               if(EXISTS ${QT_DIR}/INSTALL_RECEIPT.json)
-                  message(FATAL_ERROR "Homebrew's Qt packages aren't allowed due largely to a legal unknown.  Install Qt's own opensource release and point environment variable QT_DIR there.")
+                  message(FATAL_ERROR "Homebrew's Qt packages aren't allowed due largely to a legal unknown.
+                          Install Qt's own opensource release and point environment variable QT_DIR there.")
               endif()
         endif()
 
         # TODO Ensure we're not packaging system Qt on Linux, we only want to use a download from qt.io
 
         # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
-        set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})        
+        set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
     elseif()
         message(WARNING
                 "The QT5 Directory could not be found, "
