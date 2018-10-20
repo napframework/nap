@@ -44,7 +44,7 @@ namespace napqt
 
 		qreal mExtent = 2;
 		qreal mExtentSelectd = 2;
-		qreal mHitExtent = 8;
+		qreal mHitExtent = 4;
 		bool mEmitItemChanges = true;
 	};
 
@@ -152,6 +152,7 @@ namespace napqt
 		int unsortedIndex(int sortedIndex);
 		QRectF boundingRect() const override;
 		CurveSegmentItem* nextSegment(const CurveSegmentItem& seg);
+		CurveSegmentItem* prevSegment(const CurveSegmentItem& seg);
 	private:
 		void onPointsChanged(QList<int> indices);
 		void onPointsAdded(QList<int> indices);

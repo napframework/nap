@@ -195,6 +195,9 @@ QPainterPath CurveSegmentItem::shape() const
 
 void CurveSegmentItem::updateGeometry()
 {
+
+	setPointsEmitItemChanges(false);
+
 	auto& curve = curveItem().curve();
 	int segCount = curve.pointCount();
 	int idx = index();
@@ -237,6 +240,8 @@ void CurveSegmentItem::updateGeometry()
 
 	updateHandleVisibility();
 	QGraphicsItem::update();
+
+	setPointsEmitItemChanges(true);
 }
 
 void CurveSegmentItem::updateHandleVisibility()
@@ -301,16 +306,16 @@ CurveItem::CurveItem(QGraphicsItem* parent, AbstractCurve& curve)
 void CurveItem::onPointsChanged(QList<int> indices)
 {
 	setPointOrderDirty();
-	for (int i = 0, len = indices.size(); i < len; i++)
-		updateSegmentFromPoint(i);
+	for (int idx : reverseSort(indices))
+		updateSegmentFromPoint(idx);
 }
 
 void CurveItem::updateSegmentFromPoint(int i)
 {
 	CurveSegmentItem* seg = mSegments[i];
 	seg->updateGeometry();
-	if (!isLastPoint(segmentIndex(*seg)))
-		nextSegment(*seg)->updateGeometry();
+	if (!isFirstPoint(segmentIndex(*seg)))
+		prevSegment(*seg)->updateGeometry();
 }
 
 bool CurveItem::isFirstPoint(int i)
@@ -330,6 +335,14 @@ CurveSegmentItem* CurveItem::nextSegment(const CurveSegmentItem& seg)
 	const auto& sortedIndices = sortPoints();
 	int idx = segmentIndex(seg);
 	int outidx = mUnsortedToSorted[idx + 1];
+	return mSegments[outidx];
+}
+
+CurveSegmentItem* CurveItem::prevSegment(const CurveSegmentItem& seg)
+{
+	const auto& sortedIndices = sortPoints();
+	int idx = segmentIndex(seg);
+	int outidx = mUnsortedToSorted[idx - 1];
 	return mSegments[outidx];
 }
 
@@ -458,9 +471,9 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 {
 	mMousePressPos = event->pos();
 
-	bool mCtrlHeld = event->modifiers() == Qt::ControlModifier;
-	bool mShiftHeld = event->modifiers() == Qt::ShiftModifier;
-	bool mAltHeld = event->modifiers() == Qt::AltModifier;
+	bool ctrlHeld = event->modifiers() == Qt::ControlModifier;
+	bool shiftHeld = event->modifiers() == Qt::ShiftModifier;
+	bool altHeld = event->modifiers() == Qt::AltModifier;
 	bool lmb = event->buttons() == Qt::LeftButton;
 
 	auto item = itemAt(event->pos());
@@ -469,7 +482,7 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 
 	if (lmb)
 	{
-		if (!mCtrlHeld && !mShiftHeld)
+		if (!ctrlHeld && !shiftHeld)
 		{
 			if (clickedHandle)
 			{
@@ -481,7 +494,7 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 			{
 				startRubberBand(mMousePressPos);
 			}
-		} else if (mShiftHeld)
+		} else if (shiftHeld)
 		{
 			if (clickedHandle)
 			{
@@ -496,8 +509,13 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 
 void CurveView::mouseMoveEvent(QMouseEvent* event)
 {
+	bool ctrlHeld = event->modifiers() == Qt::ControlModifier;
+	bool shiftHeld = event->modifiers() == Qt::ShiftModifier;
+	bool altHeld = event->modifiers() == Qt::AltModifier;
+
 	bool lmb = event->buttons() == Qt::LeftButton;
 	bool mmb = event->buttons() == Qt::MiddleButton;
+
 	if (!isRubberBandVisible())
 	{
 		if (lmb)
@@ -509,7 +527,7 @@ void CurveView::mouseMoveEvent(QMouseEvent* event)
 			movePointHandles(pointHandles, sceneDelta);
 		}
 
-		if (mmb)
+		if (mmb && !altHeld)
 		{
 			auto sceneDelta = mapToScene(event->pos()) - mapToScene(mLastMousePos);
 
