@@ -10,6 +10,16 @@ using namespace napqt;
 
 #define DEFAULT_SCENE_EXTENT 1000
 
+#define COL_POINTHANDLE_FILL 			"#000"
+#define COL_POINTHANDLE_FILL_SELECTED 	"#FFF"
+#define COL_POINTHANDLE_LINE 			"#000"
+#define COL_POINTHANDLE_LINE_SELECTED 	"#000"
+#define COL_TANHANDLE_FILL 				"#F00"
+#define COL_TANHANDLE_FILL_SELECTED 	"#0F0"
+#define COL_TANHANDLE_LINE 				"#0FF"
+#define COL_TANHANDLE_LINE_SELECTED 	"#0FF"
+#define COL_TANLINE 					"#00F"
+#define COL_TANLINE_SELECTED			"#F0F"
 
 QList<int> reverseSort(const QList<int>& ints)
 {
@@ -90,9 +100,9 @@ CurveSegmentItem& HandleItem::curveSegmentItem()
 PointHandleItem::PointHandleItem(CurveSegmentItem& parent) : HandleItem(parent)
 {
 	mPen = QPen(Qt::NoPen);
-	mPenSelected = QPen(QColor("#000"), 0, Qt::SolidLine);
-	mBrush = QBrush("#840");
-	mBrushSelected = QBrush("#FFF");
+	mPenSelected = QPen(QColor(COL_POINTHANDLE_LINE), 0, Qt::SolidLine);
+	mBrush = QBrush(COL_POINTHANDLE_FILL);
+	mBrushSelected = QBrush(COL_POINTHANDLE_FILL_SELECTED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,8 +112,9 @@ PointHandleItem::PointHandleItem(CurveSegmentItem& parent) : HandleItem(parent)
 TangentHandleItem::TangentHandleItem(CurveSegmentItem& parent) : HandleItem(parent)
 {
 	mPen = QPen(Qt::NoPen);
-	mBrush = QBrush("#080");
-	mBrushSelected = QBrush("#0F0");
+	mPenSelected = QPen(QColor(COL_TANHANDLE_LINE), 0, Qt::SolidLine);
+	mBrush = QBrush(COL_TANHANDLE_FILL);
+	mBrushSelected = QBrush(COL_TANHANDLE_FILL_SELECTED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,7 +124,7 @@ TangentHandleItem::TangentHandleItem(CurveSegmentItem& parent) : HandleItem(pare
 LineItem::LineItem(QGraphicsItem& parent) : QGraphicsPathItem(&parent)
 {
 	setZValue(-100);
-	setColor("#F00");
+	setColor(COL_TANLINE);
 }
 
 void LineItem::setColor(const QColor& color)
