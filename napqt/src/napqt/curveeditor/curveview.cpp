@@ -202,20 +202,11 @@ void CurveSegmentItem::updateGeometry()
 
 	bool isLast = orderedIdx == segCount - 1;
 
-	if (isLast)
-		return;
-
-	auto nextSeg = curveItem().nextSegment(*this);
-	auto nextIdx = curveItem().segmentIndex(*nextSeg);
-
 	auto pos = curve.data(idx, datarole::POS).toPointF();
 	auto inTan = curve.data(idx, datarole::IN_TAN).toPointF();
 	auto outTan = curve.data(idx, datarole::OUT_TAN).toPointF();
 	auto interp = curve.data(idx, datarole::INTERP).value<AbstractCurve::InterpType>();
-	auto nextInTan = curve.data(nextIdx, datarole::IN_TAN).toPointF();
-	auto nextPos = curve.data(nextIdx, datarole::POS).toPointF();
 	auto c1 = pos + outTan;
-	auto c2 = nextPos + nextInTan;
 	auto inTanPos = pos + inTan;
 	auto outTanPos = pos + outTan;
 
@@ -229,10 +220,21 @@ void CurveSegmentItem::updateGeometry()
 	mPath = QPainterPath();
 	mDebugPath = QPainterPath();
 
-	// TODO: Calulate debug path
+	if (!isLast)
+	{
+		// Handle anything that needs the next segment/point
+		auto nextSeg = curveItem().nextSegment(*this);
+		auto nextIdx = curveItem().segmentIndex(*nextSeg);
+		auto nextInTan = curve.data(nextIdx, datarole::IN_TAN).toPointF();
+		auto nextPos = curve.data(nextIdx, datarole::POS).toPointF();
+		auto c2 = nextPos + nextInTan;
 
-	mPath.moveTo(pos);
-	mPath.cubicTo(c1, c2, nextPos);
+		// TODO: Calulate debug path
+
+		mPath.moveTo(pos);
+		mPath.cubicTo(c1, c2, nextPos);
+	}
+
 	updateHandleVisibility();
 	QGraphicsItem::update();
 }
@@ -299,7 +301,7 @@ CurveItem::CurveItem(QGraphicsItem* parent, AbstractCurve& curve)
 void CurveItem::onPointsChanged(QList<int> indices)
 {
 	setPointOrderDirty();
-	for (int i = 0, len = mSegments.size(); i < len; i++)
+	for (int i = 0, len = indices.size(); i < len; i++)
 		updateSegmentFromPoint(i);
 }
 
@@ -334,6 +336,7 @@ CurveSegmentItem* CurveItem::nextSegment(const CurveSegmentItem& seg)
 void CurveItem::onPointsAdded(const QList<int> indices)
 {
 	QList < CurveSegmentItem * > segments;
+	int indexCount = indices.size();
 	for (int index : indices)
 	{
 		auto seg = new CurveSegmentItem(*this);
@@ -635,7 +638,6 @@ void CurveView::onCurvesAdded(QList<int> indices)
 {
 	for (int index : indices)
 	{
-		qInfo() << "Insert " << index;
 		auto curve = mModel->curve(index);
 		auto curveItem = new CurveItem(nullptr, *curve);
 		mCurveScene.addItem(curveItem);
