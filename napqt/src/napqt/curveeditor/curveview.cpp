@@ -21,6 +21,11 @@ using namespace napqt;
 #define COL_TANLINE 					"#00F"
 #define COL_TANLINE_SELECTED			"#F0F"
 
+#define ZDEPTH_HANDLES 15000
+#define ZDEPTH_HANDLE_LINES 10000
+#define ZDEPTH_CURVES 5000
+#define ZDEPTH_AUXILIARY 0
+
 QList<int> reverseSort(const QList<int>& ints)
 {
 	auto sortedIndices = ints;
@@ -42,6 +47,7 @@ HandleItem::HandleItem(CurveSegmentItem& parent) : QObject(), QGraphicsItem(&par
 	setFlag(QGraphicsItem::ItemIsMovable, true);
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+	setZValue(ZDEPTH_HANDLES);
 
 	mHitRect.setCoords(-mHitExtent, -mHitExtent, mHitExtent * 2, mHitExtent * 2);
 	updateRect();
@@ -85,6 +91,7 @@ void HandleItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 {
 	painter->setPen(isSelected() ? mPenSelected : mPen);
 	painter->setBrush(isSelected() ? mBrushSelected : mBrush);
+	painter->fillPath(mPath, painter->brush());
 	painter->drawPath(mPath);
 }
 
@@ -123,7 +130,7 @@ TangentHandleItem::TangentHandleItem(CurveSegmentItem& parent) : HandleItem(pare
 
 LineItem::LineItem(QGraphicsItem& parent) : QGraphicsPathItem(&parent)
 {
-	setZValue(-100);
+	setZValue(ZDEPTH_HANDLE_LINES);
 	setColor(COL_TANLINE);
 }
 
@@ -152,7 +159,7 @@ CurveSegmentItem::CurveSegmentItem(CurveItem& curveItem)
 		  mInTanLine(*this),
 		  mOutTanLine(*this)
 {
-	setZValue(-200);
+	setZValue(ZDEPTH_CURVES);
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 
 	mPen = QPen(Qt::blue, 0);
@@ -333,7 +340,7 @@ void CurveItem::updateSegmentFromPoint(int i)
 
 void CurveItem::updateAllSegments()
 {
-	for (int i=0, len=mCurve.pointCount(); i < len; i++)
+	for (int i = 0, len = mCurve.pointCount(); i < len; i++)
 		updateSegmentFromPoint(i);
 }
 
@@ -396,7 +403,7 @@ void CurveItem::onPointsAdded(const QList<int> indices)
 	}
 
 	// Push changes from model too
-	QList<int> idx;
+	QList < int > idx;
 	for (auto seg : segments)
 		idx << segmentIndex(*seg);
 
@@ -493,7 +500,7 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 {
 	setScene(&mCurveScene);
 	mCurveScene.setSceneRect(-DEFAULT_SCENE_EXTENT, -DEFAULT_SCENE_EXTENT,
-				 DEFAULT_SCENE_EXTENT * 2, DEFAULT_SCENE_EXTENT * 2);
+							 DEFAULT_SCENE_EXTENT * 2, DEFAULT_SCENE_EXTENT * 2);
 
 	setPanZoomMode(PanMode::Parallax, ZoomMode::IgnoreAspectRatio);
 	setFramePanZoomMode(PanMode::Parallax, ZoomMode::IgnoreAspectRatio);
@@ -663,7 +670,8 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& handles, const Q
 //		curveItem->curve().movePoints(map[key]);
 //	}
 }
-void CurveView::setModel(AbstractCurveModel* model) {
+void CurveView::setModel(AbstractCurveModel* model)
+{
 	if (mModel == model)
 		return;
 
