@@ -142,6 +142,7 @@ namespace nap
 	{
 	public:
 		LogHandler();
+        virtual ~LogHandler() = default;
 
 		/**
 		 * Let this handler handle a log message. This call must be fast, don't block!

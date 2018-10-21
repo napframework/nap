@@ -1,18 +1,726 @@
 {
-  "Objects": 
-  [
-    {
-      "Type": "nap::RenderWindow",
-      "mID": "Window",
-      "Width": 1280,
-      "Height": 720,
-      "Title": "Random",
-      "Sync": "false"
-    },
-    {
-      "Type" : "nap::Scene",
-      "mID": "Scene",   
-      "Entities" : []
-    }
-  ]
+    "Objects": [
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe0",
+            "Subnet": 0,
+            "Universe": 0,
+            "WaitTime": 2.0,
+            "Frequency": 44,
+            "Mode": "Broadcast",
+            "UnicastLimit": 10,
+            "Verbose": false,
+            "Timeout": 2.0
+        },
+        {
+            "Type": "nap::ArtnetMeshFromFile",
+            "mID": "LightRigMesh",
+            "Path": "demo_rig.mesh",
+            "OverrideSubnet": false,
+            "Subnet": 0,
+            "ChannelOffset": 0
+        },
+        {
+            "Type": "nap::Bitmap",
+            "mID": "CombinationBitmap",
+            "Width": 1024,
+            "Height": 1024,
+            "Channels": "RGB",
+            "ColorType": "Byte"
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Clouds",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "ProjectionMesh",
+                    "MaterialInstance": {
+                        "Material": "CloudMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "uContrast",
+                                "Name": "uContrast",
+                                "Value": 1.0
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Combination",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_4",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_2",
+                    "Mesh": "ProjectionMesh",
+                    "MaterialInstance": {
+                        "Material": "CombineMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_2",
+                                "Name": "blendValue",
+                                "Value": 0.5
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderCombinationComponent",
+                    "mID": "nap::RenderCombinationComponent",
+                    "Target": "CombineRenderTarget",
+                    "Bitmap": "CombinationBitmap"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "LightRig",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_6",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_4",
+                    "Mesh": "LightRigMesh",
+                    "MaterialInstance": {
+                        "Material": "LightRigMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::ApplyCombinationComponent",
+                    "mID": "nap::ApplyCombinationComponent",
+                    "Bitmap": "CombinationBitmap",
+                    "Mesh": "LightRigMesh",
+                    "Influence": 1.0,
+                    "Brightness": 1.0
+                },
+                {
+                    "Type": "nap::MeshToArtnetComponent",
+                    "mID": "nap::MeshToArtnetComponent",
+                    "Mesh": "LightRigMesh",
+                    "Controllers": [
+                        "Universe0"
+                    ],
+                    "MinArtnetValue": 45
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "ProjectionCamera",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 1.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SceneCamera",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 45.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 4.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "nap::OrbitController",
+                    "MovementSpeed": 0.032999999821186069,
+                    "RotateSpeed": 0.0032999999821186067,
+                    "PerspCameraComponent": "PerspCameraComponent",
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::ControllerInputComponent",
+                    "mID": "nap::ControllerInputComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Video",
+            "Components": [
+                {
+                    "Type": "nap::SelectVideoComponent",
+                    "mID": "nap::SelectVideoComponent",
+                    "Videos": [
+                        "Video1",
+                        "Video2"
+                    ],
+                    "Index": 1
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_3",
+                    "Mesh": "VideoMesh",
+                    "MaterialInstance": {
+                        "Material": "VideoMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_5",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "CloudMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformContrast",
+                    "Name": "uContrast",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformOffset",
+                    "Name": "uOffset",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Shader": "CloudShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "CombineMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "UniformTexture2D",
+                    "Name": "cloudTexture",
+                    "Texture": "CloudColorTexture"
+                },
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "UniformTexture2D_2",
+                    "Name": "videoTexture",
+                    "Texture": "VideoColorTexture"
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat",
+                    "Name": "blendValue",
+                    "Value": 0.5
+                }
+            ],
+            "Shader": "CombineShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "LightRigMaterial",
+            "Uniforms": [],
+            "Shader": "LightRigShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normals"
+                },
+                {
+                    "MeshAttributeID": "Color",
+                    "ShaderAttributeID": "in_Color"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "VideoMaterial",
+            "Uniforms": [],
+            "Shader": "VideoShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "ProjectionMesh",
+            "Size": {
+                "x": 1024.0,
+                "y": 1024.0
+            },
+            "Position": {
+                "x": 512.0,
+                "y": 512.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "VideoMesh",
+            "Size": {
+                "x": 1920.0,
+                "y": 1080.0
+            },
+            "Position": {
+                "x": 960.0,
+                "y": 540.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "CloudRenderTarget",
+            "mColorTexture": "CloudColorTexture",
+            "mDepthTexture": "CloudDepthTexture",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "CombineRenderTarget",
+            "mColorTexture": "CombineColorTexture",
+            "mDepthTexture": "CombineDepthTexture",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "VideoRenderTarget",
+            "mColorTexture": "VideoColorTexture",
+            "mDepthTexture": "VideoDepthTexture",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CloudColorTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CloudDepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CombineColorTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "DynamicRead",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CombineDepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoColorTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoDepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Random",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "SceneCamera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "Clouds",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "ProjectionCamera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "Combination",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "Video",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "LightRig",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "CloudShader",
+            "mVertShader": "shaders/clouds.vert",
+            "mFragShader": "shaders/clouds.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "CombineShader",
+            "mVertShader": "shaders/combine.vert",
+            "mFragShader": "shaders/combine.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "LightRigShader",
+            "mVertShader": "shaders/light_rig.vert",
+            "mFragShader": "shaders/light_rig.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "VideoShader",
+            "mVertShader": "shaders/video.vert",
+            "mFragShader": "shaders/video.frag"
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "Video1",
+            "Path": "snow.mp4",
+            "Loop": true,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "Video2",
+            "Path": "streak.mp4",
+            "Loop": true,
+            "Speed": 1.0
+        }
+    ]
 }

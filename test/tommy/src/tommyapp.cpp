@@ -91,7 +91,7 @@ namespace nap
 		entities.push_back(&mScene->getRootEntity());
 			
 		UIInputRouter& router = mUiInputRouter->getComponent<UIInputRouterComponentInstance>().mInputRouter;
-		mInputService->processEvents(*mRenderWindows[0], router, entities);
+		mInputService->processWindowEvents(*mRenderWindows[0], router, entities);
 
 		glm::vec2 window_size = mRenderWindows[0]->getWindow()->getSize();
 			

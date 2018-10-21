@@ -12,6 +12,17 @@ namespace nap
 	class InputService;
 
 	/**
+	* The resource class for the InputComponent.
+	*/
+	class InputComponentInstance;
+	class InputComponent : public Component
+	{
+		RTTI_ENABLE(Component)
+			DECLARE_COMPONENT(InputComponent, InputComponentInstance)
+	};
+
+
+	/**
 	 * Base class for all input components. The trigger function is called when an InputRouter-derived class
 	 * decides to route the input to this specific component.
 	 */
@@ -33,15 +44,19 @@ namespace nap
 	};
 
 
-	/**
-	 * The resource class for the InputComponent.
-	 */
-	class InputComponent : public Component
-	{
-		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(InputComponent, InputComponentInstance)
-	};
+	//////////////////////////////////////////////////////////////////////////
+	// Key Input Component
+	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	* Resource class for KeyInputComponent.
+	*/
+	class KeyInputComponentInstance;
+	class NAPAPI KeyInputComponent : public InputComponent
+	{
+		RTTI_ENABLE(InputComponent)
+			DECLARE_COMPONENT(KeyInputComponent, KeyInputComponentInstance)
+	};
 
 
 	/**
@@ -68,13 +83,18 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// Pointer Input Component
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
- 	 * Resource class for KeyInputComponent.
+	 * Resource class for PointerInputComponent.
 	 */
-	class NAPAPI KeyInputComponent : public InputComponent
+	class PointerInputComponentInstance;
+	class NAPAPI PointerInputComponent : public InputComponent
 	{
 		RTTI_ENABLE(InputComponent)
-		DECLARE_COMPONENT(KeyInputComponent, KeyInputComponentInstance)
+			DECLARE_COMPONENT(PointerInputComponent, PointerInputComponentInstance)
 	};
 
 
@@ -102,13 +122,44 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// Controller Input Component
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Resource class for PointerInputComponent.
+	 * Resource class for ControllerInputComponent
+	 * Receives joystick / controller input.
 	 */
-	class NAPAPI PointerInputComponent : public InputComponent
+	class ControllerInputComponentInstance;
+	class NAPAPI ControllerInputComponent : public InputComponent
 	{
 		RTTI_ENABLE(InputComponent)
-		DECLARE_COMPONENT(PointerInputComponent, PointerInputComponentInstance)
+			DECLARE_COMPONENT(ControllerInputComponent, ControllerInputComponentInstance)
 	};
+
+
+	/**
+	 * Instance component for controller / joystick events
+	 * Register to the various signals to receive controller / joystick events 
+	 */
+	class NAPAPI ControllerInputComponentInstance : public InputComponentInstance
+	{
+		friend class InputService;
+		RTTI_ENABLE(InputComponentInstance)
+
+	public:
+		ControllerInputComponentInstance(EntityInstance& entity, Component& resource) :
+			InputComponentInstance(entity, resource)
+		{
+		}
+
+		Signal<const ControllerButtonPressEvent&>	pressed;		///< Signal emitted when the controller button is pressed
+		Signal<const ControllerButtonReleaseEvent&>	released;		///< Signal emitted when the controller button is released
+		Signal<const ControllerAxisEvent&>			axisChanged;	///< Signal emitted when this component receives axis movement information
+
+	protected:
+		virtual void trigger(const nap::InputEvent& inEvent) override;
+	};
+
 
 }

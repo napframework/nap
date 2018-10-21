@@ -22,6 +22,8 @@ namespace nap
 			RTTI_ENABLE()
 
 		public:
+            virtual ~ObjectPtrBase() = default;
+            
 		    /**
 		     * @return the type of the object pointed to
 		     */
@@ -164,6 +166,12 @@ namespace nap
 		public:
 			ObjectPtr() = default;
 
+            // Dtor
+            virtual ~ObjectPtr() override
+            {
+                ObjectPtrManager::get().remove(*this);
+            }
+            
 			// Regular ptr Ctor
 			ObjectPtr(T* ptr) :
 				ObjectPtrBase(ptr)
@@ -198,12 +206,6 @@ namespace nap
 				Assign(other);
 				other.mPtr = nullptr;
 				return *this;
-			}
-
-			// Dtor
-			~ObjectPtr()
-			{
-				ObjectPtrManager::get().remove(*this);
 			}
 
 			//////////////////////////////////////////////////////////////////////////

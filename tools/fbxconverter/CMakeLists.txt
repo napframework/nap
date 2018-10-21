@@ -12,12 +12,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-if (MSVC)
-	# Link against setargv.obj so that the shell does wildcard expansion for us
-	# See https://msdn.microsoft.com/en-us/library/8bch7bkk.aspx
-	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "setargv.obj")
-endif()
-
 set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
