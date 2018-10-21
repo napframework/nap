@@ -41,6 +41,9 @@ namespace nap
 		*/
 		BaseColor(int channels, int size) : mChannels(channels), mValueSize(size) { }
 
+        virtual ~BaseColor() = default;
+        
+        
 		bool operator==(const BaseColor& rhs) = delete;
 		bool operator!=(const BaseColor& rhs) = delete;
 
@@ -140,9 +143,30 @@ namespace nap
 		static void convertColor(const BaseColor& source, BaseColor& target);
 
 		/**
+		* Converts the color values in source Color to target Color using the given conversion method
+		* It's required that the from color has an equal or higher amount of color channels
+		* Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
+		* The following is also valid: RGBColorData16 to RGBColorFloat or, RGBAColorData8 to RGBColorData16
+		* When converting to and from float colors, normalized color values are used.
+		* Float values that do not fall within the 0-1 range are clamped
+		* When the target does not manage it's own color values, ie:
+		* holds pointers to color values in memory, the values that are pointed to are overridden by the result of the conversion
+		* This makes it possible (for example) to write colors directly in to a bitmap without having
+		* to copy them over.
+		*
+		* This call is faster than the default convertColor method and is recommended to be used in loops!
+		* Make sure to call getConverter() before staring the loop to acquire the right conversion method
+		* 
+		* @param source the color to convert
+		* @param target holds the converted color values
+		* @param converter the method used to convert source color into target color
+		*/
+		static void convertColor(const BaseColor& source, BaseColor& target, const Converter& converter);
+
+		/**
 		 * @return a color converter to convert source color in to target color, nullptr if no such converter exists
 		 * Use this call when dealing with the same color conversion multiple times in, for example, a loop
-		*/
+		 */
 		static Converter getConverter(const BaseColor& source, const BaseColor& target);
 
 	private:

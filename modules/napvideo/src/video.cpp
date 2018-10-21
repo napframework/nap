@@ -1131,7 +1131,8 @@ namespace nap
 
 	void Video::play(double startTimeSecs)
 	{
-		assert(!mPlaying);
+		// Force a stop if video is currently playing
+		stop(true);
 
 		// Reset all state to make sure threads don't immediately exit from a previous 'stop' call
 		mPlaying = true;

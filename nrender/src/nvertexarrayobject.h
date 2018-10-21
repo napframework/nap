@@ -21,6 +21,8 @@ namespace opengl
 	class IGLContextResource
 	{
 	public:
+        virtual ~IGLContextResource() = default;
+        
 		/**
 		 * Used for destruction of a resource that is context dependent.
 		 * @param context: the context to destroy the resource for. This is also the active GL context.
@@ -50,9 +52,8 @@ namespace opengl
 	class VertexArrayObject : public IGLContextResource
 	{
 	public:
-
-		VertexArrayObject() = default;
-		~VertexArrayObject();
+        VertexArrayObject() = default;
+		virtual ~VertexArrayObject() override;
 
 		virtual void destroy(opengl::GLContext context) override;
 
