@@ -63,6 +63,8 @@ namespace nap
 		mVideo = mScene->findEntity("Video");
 		mCombination = mScene->findEntity("Combination");
 		mOrbit = mScene->findEntity("Orbit");
+		mOrbitPath = mScene->findEntity("OrbitPath");
+		mOrbitSun = mScene->findEntity("OrbitSun");
 
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -128,8 +130,10 @@ namespace nap
 			mLightRig->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
 
 			// Add Orbit to components to render
-			nap::RenderableMeshComponentInstance& render_orbit = mOrbit->getComponent<nap::RenderableMeshComponentInstance>();
-			components_to_render.emplace_back(&render_orbit);
+			nap::RenderableMeshComponentInstance& render_orbit_path = mOrbitPath->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::RenderableMeshComponentInstance& render_orbit_sun = mOrbitSun->getComponent<nap::RenderableMeshComponentInstance>();
+			components_to_render.emplace_back(&render_orbit_path);
+			components_to_render.emplace_back(&render_orbit_sun);
 
 			// Render visualization mesh
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);

@@ -80,6 +80,8 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mOrthoCamera = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mOrbit = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrbitPath = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrbitSun = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCloudRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mSunRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mVideoRenderTarget = nullptr;

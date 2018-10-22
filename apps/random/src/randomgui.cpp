@@ -54,12 +54,15 @@ namespace nap
 		nap::RenderableMeshComponentInstance& sun_plane = mApp.mSun->getComponent<nap::RenderableMeshComponentInstance>();
 		nap::UniformVec3& uOrbitCenter = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter");
 		nap::UniformFloat& uOrbitRadius = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitRadius");
+		nap::UniformFloat& uOrbitAngle = sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitAngle");
 		float windDirectionRad = nap::math::radians(uRotation.mValue);
 		float windDistance = mWindSpeed * (float)deltaTime;
 		uOffset.mValue.x += cos(windDirectionRad) * windDistance;
 		uOffset.mValue.y += sin(windDirectionRad) * windDistance;
 		uOffset.mValue.z += mNoiseSpeed * (float)deltaTime;
-		setOrbitTransform(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y), &(uOrbitRadius.mValue));
+		setOrbitPosition(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y));
+		setOrbitPathRadius(&(uOrbitRadius.mValue));
+		setOrbitSunPosition(&(uOrbitAngle.mValue), &(uOrbitRadius.mValue));
 
 		// Update camera location
 		TransformComponentInstance& cam_xform = mApp.mSceneCamera->getComponent<TransformComponentInstance>();
@@ -127,14 +130,16 @@ namespace nap
 			bool updateOrbitX = ImGui::SliderFloat("Orbit Center X", &(uOrbitCenter.mValue.x), -orbitCenterRange, orbitCenterRange);
 			bool updateOrbitY = ImGui::SliderFloat("Orbit Center Y", &(uOrbitCenter.mValue.y), -orbitCenterRange, orbitCenterRange);
 			bool updateOrbitRadius = ImGui::SliderFloat("Orbit Radius", &(uOrbitRadius.mValue), orbitRadiusMin, orbitRadiusMax);
-			if (updateOrbitX || updateOrbitY || updateOrbitRadius)
-			{
-				setOrbitTransform(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y), &(uOrbitRadius.mValue));
-			}
-			ImGui::SliderFloat("Orbit Angle", &(uOrbitAngle.mValue), 0.0f, 360.0f);
+			bool updateOrbitAngle = ImGui::SliderFloat("Orbit Angle", &(uOrbitAngle.mValue), 0.0f, 360.0f);
 			ImGui::SliderFloat("Outer Size", &(uOuterSize.mValue), sunSizeMin, sunSizeMax);
 			ImGui::SliderFloat("Inner Size", &(uInnerSize.mValue), 0.0f, 1.0f);
 			ImGui::SliderFloat("Stretch", &(uStretch.mValue), sunStretchMin, sunStretchMax);
+			if (updateOrbitX || updateOrbitY)
+				setOrbitPosition(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y));
+			if (updateOrbitRadius)
+				setOrbitPathRadius(&(uOrbitRadius.mValue));
+			if (updateOrbitAngle || updateOrbitRadius)
+				setOrbitSunPosition(&(uOrbitAngle.mValue), &(uOrbitRadius.mValue));
 		}
 		if (ImGui::CollapsingHeader("Video", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -189,13 +194,27 @@ namespace nap
 		ImGui::End();
 	}
 
-	void RandomGui::setOrbitTransform(float *x, float *z, float *radius)
+	void RandomGui::setOrbitPosition(float *x, float *z)
 	{
 		nap::TransformComponentInstance& orbit_transform = mApp.mOrbit->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 translate = orbit_transform.getTranslate();
 		translate.x = uvOffset.x + *x * uvScale;
 		translate.z = uvOffset.y + *z * -uvScale;
 		orbit_transform.setTranslate(translate);
-		orbit_transform.setUniformScale(*radius * uvScale);
+	}
+
+	void RandomGui::setOrbitPathRadius(float *radius)
+	{
+		nap::TransformComponentInstance& orbit_path_transform = mApp.mOrbitPath->getComponent<nap::TransformComponentInstance>();
+		orbit_path_transform.setUniformScale(*radius * uvScale);
+	}
+
+	void RandomGui::setOrbitSunPosition(float *angle, float *radius)
+	{
+		nap::TransformComponentInstance& orbit_sun_transform = mApp.mOrbitSun->getComponent<nap::TransformComponentInstance>();
+		glm::vec3 translate = glm::vec3();
+		translate.x = cos(nap::math::radians(-*angle)) * *radius * uvScale;
+		translate.y = sin(nap::math::radians(-*angle)) * *radius * uvScale;
+		orbit_sun_transform.setTranslate(translate);
 	}
 }

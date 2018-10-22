@@ -48,7 +48,9 @@ namespace nap
 		/**
 		*	Set the position and radius of the orbit circle
 		*/
-		void setOrbitTransform(float *x, float *z, float *radius);
+		void setOrbitPosition(float *x, float *z);
+		void setOrbitPathRadius(float *radius);
+		void setOrbitSunPosition(float *angle, float *radius);
 
 		// Initialized Variables
 		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
