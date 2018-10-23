@@ -63,6 +63,7 @@ namespace nap
 		setOrbitPosition(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y));
 		setOrbitPathRadius(&(uOrbitRadius.mValue));
 		setOrbitSunPosition(&(uOrbitAngle.mValue), &(uOrbitRadius.mValue));
+		setOrbitStartEndPosition(&(uOrbitRadius.mValue));
 
 		// Update camera location
 		TransformComponentInstance& cam_xform = mApp.mSceneCamera->getComponent<TransformComponentInstance>();
@@ -130,6 +131,7 @@ namespace nap
 			bool updateOrbitX = ImGui::SliderFloat("Orbit Center X", &(uOrbitCenter.mValue.x), -orbitCenterRange, orbitCenterRange);
 			bool updateOrbitY = ImGui::SliderFloat("Orbit Center Y", &(uOrbitCenter.mValue.y), -orbitCenterRange, orbitCenterRange);
 			bool updateOrbitRadius = ImGui::SliderFloat("Orbit Radius", &(uOrbitRadius.mValue), orbitRadiusMin, orbitRadiusMax);
+			bool updateOrbitStartEnd = ImGui::DragFloat2("Orbit Start / End", mOrbitStartEnd, 1.0f, 0.0f, 360.0f);
 			bool updateOrbitAngle = ImGui::SliderFloat("Orbit Angle", &(uOrbitAngle.mValue), 0.0f, 360.0f);
 			ImGui::SliderFloat("Outer Size", &(uOuterSize.mValue), sunSizeMin, sunSizeMax);
 			ImGui::SliderFloat("Inner Size", &(uInnerSize.mValue), 0.0f, 1.0f);
@@ -140,6 +142,8 @@ namespace nap
 				setOrbitPathRadius(&(uOrbitRadius.mValue));
 			if (updateOrbitAngle || updateOrbitRadius)
 				setOrbitSunPosition(&(uOrbitAngle.mValue), &(uOrbitRadius.mValue));
+			if (updateOrbitStartEnd || updateOrbitRadius)
+				setOrbitStartEndPosition(&(uOrbitRadius.mValue));
 		}
 		if (ImGui::CollapsingHeader("Video", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -216,5 +220,21 @@ namespace nap
 		translate.x = cos(nap::math::radians(-*angle)) * *radius * uvScale;
 		translate.y = sin(nap::math::radians(-*angle)) * *radius * uvScale;
 		orbit_sun_transform.setTranslate(translate);
+	}
+
+	void RandomGui::setOrbitStartEndPosition(float *radius)
+	{
+		nap::TransformComponentInstance& orbit_start_transform = mApp.mOrbitStart->getComponent<nap::TransformComponentInstance>();
+		nap::TransformComponentInstance& orbit_end_transform = mApp.mOrbitEnd->getComponent<nap::TransformComponentInstance>();
+		glm::vec3 start_translate = glm::vec3();
+		glm::vec3 end_translate = glm::vec3();
+		start_translate.x = cos(nap::math::radians(-mOrbitStartEnd[0])) * *radius * uvScale;
+		start_translate.y = sin(nap::math::radians(-mOrbitStartEnd[0])) * *radius * uvScale;
+		end_translate.x = cos(nap::math::radians(-mOrbitStartEnd[1])) * *radius * uvScale;
+		end_translate.y = sin(nap::math::radians(-mOrbitStartEnd[1])) * *radius * uvScale;
+		orbit_start_transform.setRotate(glm::quat(glm::vec3(0.0f, 0.0f, nap::math::radians(-mOrbitStartEnd[0]))));
+		orbit_start_transform.setTranslate(start_translate);
+		orbit_end_transform.setRotate(glm::quat(glm::vec3(0.0f, 0.0f, nap::math::radians(-mOrbitStartEnd[1]))));
+		orbit_end_transform.setTranslate(end_translate);
 	}
 }

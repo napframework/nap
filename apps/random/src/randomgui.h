@@ -51,6 +51,7 @@ namespace nap
 		void setOrbitPosition(float *x, float *z);
 		void setOrbitPathRadius(float *radius);
 		void setOrbitSunPosition(float *angle, float *radius);
+		void setOrbitStartEndPosition(float *radius);
 
 		// Initialized Variables
 		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
@@ -58,6 +59,8 @@ namespace nap
 		float		mNoiseSpeed = 0.1f;
 		float		mWindSpeed = 0.5f;
 		bool		mCloudsInverted = false;
+		float		mOrbitStartEnd[2] = { 40.0f, 115.0f };
+		float		mOrbitProgress = 0.0f;
 
 		// The app used to extract information from
 		RandomApp&	mApp;

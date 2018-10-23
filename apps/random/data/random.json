@@ -537,8 +537,60 @@
             ],
             "Children": [
                 "OrbitSun",
-                "OrbitPath"
+                "OrbitPath",
+                "OrbitStart",
+                "OrbitEnd"
             ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OrbitEnd",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_17",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_13",
+                    "Mesh": "OrbitLine",
+                    "MaterialInstance": {
+                        "Material": "OrbitMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Entity",
@@ -570,6 +622,56 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_10",
                     "Mesh": "OrbitCircle",
+                    "MaterialInstance": {
+                        "Material": "OrbitMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OrbitStart",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_16",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_12",
+                    "Mesh": "OrbitLine",
                     "MaterialInstance": {
                         "Material": "OrbitMaterial",
                         "Uniforms": [],
@@ -974,6 +1076,30 @@
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::Line",
+            "mID": "OrbitLine",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 0.0,
+                    "w": 1.0
+                }
+            },
+            "Start": {
+                "x": -2.5,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "End": {
+                "x": 2.5,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Closed": false,
+            "Vertices": 2
         },
         {
             "Type": "nap::Material",

@@ -64,6 +64,8 @@ namespace nap
 		mCombination = mScene->findEntity("Combination");
 		mOrbit = mScene->findEntity("Orbit");
 		mOrbitPath = mScene->findEntity("OrbitPath");
+		mOrbitStart = mScene->findEntity("OrbitStart");
+		mOrbitEnd = mScene->findEntity("OrbitEnd");
 		mOrbitSun = mScene->findEntity("OrbitSun");
 
 		// Set render states
@@ -131,8 +133,12 @@ namespace nap
 
 			// Add Orbit to components to render
 			nap::RenderableMeshComponentInstance& render_orbit_path = mOrbitPath->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::RenderableMeshComponentInstance& render_orbit_start = mOrbitStart->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::RenderableMeshComponentInstance& render_orbit_end = mOrbitEnd->getComponent<nap::RenderableMeshComponentInstance>();
 			nap::RenderableMeshComponentInstance& render_orbit_sun = mOrbitSun->getComponent<nap::RenderableMeshComponentInstance>();
 			components_to_render.emplace_back(&render_orbit_path);
+			components_to_render.emplace_back(&render_orbit_start);
+			components_to_render.emplace_back(&render_orbit_end);
 			components_to_render.emplace_back(&render_orbit_sun);
 
 			// Render visualization mesh
