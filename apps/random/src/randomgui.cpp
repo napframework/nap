@@ -60,6 +60,9 @@ namespace nap
 		uOffset.mValue.x += cos(windDirectionRad) * windDistance;
 		uOffset.mValue.y += sin(windDirectionRad) * windDistance;
 		uOffset.mValue.z += mNoiseSpeed * (float)deltaTime;
+		uOrbitAngle.setValue(getOrbitAngle());
+
+		// Apply initial values to orbit circle and elements
 		setOrbitPosition(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y));
 		setOrbitPathRadius(&(uOrbitRadius.mValue));
 		setOrbitSunPosition(&(uOrbitAngle.mValue), &(uOrbitRadius.mValue));
@@ -132,16 +135,23 @@ namespace nap
 			bool updateOrbitY = ImGui::SliderFloat("Orbit Center Y", &(uOrbitCenter.mValue.y), -orbitCenterRange, orbitCenterRange);
 			bool updateOrbitRadius = ImGui::SliderFloat("Orbit Radius", &(uOrbitRadius.mValue), orbitRadiusMin, orbitRadiusMax);
 			bool updateOrbitStartEnd = ImGui::DragFloat2("Orbit Start / End", mOrbitStartEnd, 1.0f, 0.0f, 360.0f);
-			bool updateOrbitAngle = ImGui::SliderFloat("Orbit Angle", &(uOrbitAngle.mValue), 0.0f, 360.0f);
+			bool updateOrbitProgress = ImGui::SliderFloat("Orbit Progress", &mOrbitProgress, 0.0f, 1.0f);
 			ImGui::SliderFloat("Outer Size", &(uOuterSize.mValue), sunSizeMin, sunSizeMax);
 			ImGui::SliderFloat("Inner Size", &(uInnerSize.mValue), 0.0f, 1.0f);
 			ImGui::SliderFloat("Stretch", &(uStretch.mValue), sunStretchMin, sunStretchMax);
+
+			if (updateOrbitStartEnd || updateOrbitProgress)
+				uOrbitAngle.setValue(getOrbitAngle());
+
 			if (updateOrbitX || updateOrbitY)
 				setOrbitPosition(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y));
+
 			if (updateOrbitRadius)
 				setOrbitPathRadius(&(uOrbitRadius.mValue));
-			if (updateOrbitAngle || updateOrbitRadius)
+
+			if (updateOrbitStartEnd || updateOrbitProgress || updateOrbitRadius)
 				setOrbitSunPosition(&(uOrbitAngle.mValue), &(uOrbitRadius.mValue));
+
 			if (updateOrbitStartEnd || updateOrbitRadius)
 				setOrbitStartEndPosition(&(uOrbitRadius.mValue));
 		}
@@ -196,6 +206,10 @@ namespace nap
 			ImGui::Image(mApp.mCombineRenderTarget->getColorTexture(), { col_width, col_width });
 		}
 		ImGui::End();
+	}
+
+	float RandomGui::getOrbitAngle() {
+		return mOrbitStartEnd[0] - mOrbitProgress * (mOrbitStartEnd[0] - mOrbitStartEnd[1]);
 	}
 
 	void RandomGui::setOrbitPosition(float *x, float *z)

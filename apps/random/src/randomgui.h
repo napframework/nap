@@ -46,8 +46,9 @@ namespace nap
 		void showInfoWindow();
 
 		/**
-		*	Set the position and radius of the orbit circle
+		*	Utilities to modify the orbit circle and elements
 		*/
+		float getOrbitAngle();
 		void setOrbitPosition(float *x, float *z);
 		void setOrbitPathRadius(float *radius);
 		void setOrbitSunPosition(float *angle, float *radius);
