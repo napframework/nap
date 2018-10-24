@@ -3,8 +3,10 @@
 #include "curvemath.h"
 #include <QtDebug>
 #include <QMap>
+#include <QList>
 #include <cassert>
 #include <QVector>
+#include <QtGui/QtGui>
 
 using namespace napqt;
 
@@ -35,6 +37,26 @@ QList<int> reverseSort(const QList<int>& ints)
 		return b.toInt(&ok) < a.toInt(&ok);
 	});
 	return sortedIndices;
+}
+
+// For aligned tangents, returns the vector for the 'unmoved' (other) handle
+QPointF alignedOppositeTangentVector(TangentHandleItem& handle)
+{
+	// align the angle, but leave the x position
+	// This is the same as Blender's behavior, which is view scale independent.
+	// Maya also matches the vector length, which is view scale dependent.
+	const auto& point = handle.pointHandle();
+	const auto& otherTan = handle.oppositeTanHandle();
+
+	auto localTanPos = handle.pos() - point.pos();
+	auto otherTanPos = otherTan.pos() - point.pos();
+
+	auto a = qAtan2(-localTanPos.y(), -localTanPos.x());
+	auto x = otherTanPos.x();
+	auto h = qTan(a) * x;
+
+	return { otherTan.pos().x(), point.pos().y() + h};
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,6 +123,11 @@ CurveSegmentItem& HandleItem::curveSegmentItem()
 	return *dynamic_cast<CurveSegmentItem*>(parentItem());
 }
 
+const CurveSegmentItem& HandleItem::curveSegmentItem() const
+{
+	return *dynamic_cast<CurveSegmentItem*>(parentItem());
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// PointHandleItem
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,6 +155,13 @@ TangentHandleItem::TangentHandleItem(CurveSegmentItem& parent) : HandleItem(pare
 PointHandleItem& TangentHandleItem::pointHandle()
 {
 	return curveSegmentItem().pointHandle();
+}
+
+TangentHandleItem& TangentHandleItem::oppositeTanHandle()
+{
+	if (isInTangent())
+		return curveSegmentItem().outTanHandle();
+	return curveSegmentItem().inTanHandle();
 }
 
 bool TangentHandleItem::isInTangent()
@@ -218,8 +252,8 @@ void CurveSegmentItem::setOutTanVisible(bool b)
 
 void CurveSegmentItem::setTangentsVisible(bool b)
 {
-	setInTanVisible(b);
-	setOutTanVisible(b);
+	setInTanVisible(b && !isFirstPoint());
+	setOutTanVisible(b && !isLastPoint());
 }
 
 void CurveSegmentItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -390,7 +424,15 @@ bool CurveSegmentItem::isOutTanVisible()
 	return false;
 }
 
+bool CurveSegmentItem::isLastPoint()
+{
+	return curveItem().isLastPoint(index());
+}
 
+bool CurveSegmentItem::isFirstPoint()
+{
+	return curveItem().isFirstPoint(index());
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -726,17 +768,6 @@ void CurveView::mouseReleaseEvent(QMouseEvent* event)
 			{
 				clearSelection();
 				addSelection(tanHandles);
-
-				for (TangentHandleItem* tan : filterT<TangentHandleItem>(scene()->items()))
-				{
-					if (!tanHandles.contains(tan))
-					{
-						if (tan->isInTangent())
-							tan->curveSegmentItem().setInTanVisible(false);
-						else
-							tan->curveSegmentItem().setOutTanVisible(false);
-					}
-				}
 			}
 		}
 		else
@@ -749,7 +780,6 @@ void CurveView::mouseReleaseEvent(QMouseEvent* event)
 		}
 	}
 	mInteractMode = None;
-//	GridView::mouseReleaseEvent(event);
 }
 
 
@@ -780,36 +810,51 @@ void CurveView::movePointHandles(const QList<PointHandleItem*>& handles, const Q
 	}
 }
 
-void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tangents, const QPointF& sceneDelta)
+void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPointF& sceneDelta)
 {
+	if (tans.isEmpty())
+		return;
+
+	QList < TangentHandleItem * > movedTangents;
+	for (TangentHandleItem* tan : tans) {
+		if (tans.contains(&tan->oppositeTanHandle()))
+			continue;
+		movedTangents << tan;
+	}
+
 	QMap<CurveItem*, QList<QMap<int, QPointF>>> tanMap;
-	if (!tangents.isEmpty())
+	for (TangentHandleItem* tangent : movedTangents)
 	{
-		for (TangentHandleItem* tangent : tangents)
+		TangentHandleItem& otherTan = tangent->oppositeTanHandle();
+
+		auto segmentItem = &tangent->curveSegmentItem();
+		auto curveItem = &segmentItem->curveItem();
+		int idx = curveItem->segmentIndex(*segmentItem);
+		auto pos = tangent->pos() + sceneDelta;
+
+		if (!tanMap.contains(curveItem))
 		{
-			auto segmentItem = &tangent->curveSegmentItem();
-			auto curveItem = &segmentItem->curveItem();
-			int idx = curveItem->segmentIndex(*segmentItem);
-			auto pos = tangent->pos() + sceneDelta;
-
-			if (!tanMap.contains(curveItem))
-			{
-				QList < QMap<int, QPointF>>
-				ls;
-				ls << QMap<int, QPointF>();
-				ls << QMap<int, QPointF>();
-				tanMap.insert(curveItem, ls);
-			}
-
-			auto& positions = tanMap[curveItem];
-
-			if (tangent->isInTangent())
-				positions[0][idx] = pos - tangent->pointHandle().pos();
-			else
-			{
-				positions[1][idx] = pos - tangent->pointHandle().pos();
-			}
+			QList < QMap<int, QPointF>>
+			ls;
+			ls << QMap<int, QPointF>();
+			ls << QMap<int, QPointF>();
+			tanMap.insert(curveItem, ls);
 		}
+
+		auto& positions = tanMap[curveItem];
+
+		if (tangent->isInTangent())
+			positions[0][idx] = pos - tangent->pointHandle().pos();
+		else
+			positions[1][idx] = pos - tangent->pointHandle().pos();
+
+		// Move opposite tangent
+		auto otherPos = alignedOppositeTangentVector(*tangent);
+
+		if (otherTan.isInTangent())
+			positions[0][idx] = otherPos - otherTan.pointHandle().pos();
+		else
+			positions[1][idx] = otherPos - otherTan.pointHandle().pos();
 	}
 
 	for (auto& curveItem : tanMap.keys())

@@ -22,6 +22,7 @@ namespace napqt
 		QRectF boundingRect() const override;
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 		CurveSegmentItem& curveSegmentItem();
+		const CurveSegmentItem& curveSegmentItem() const;
 		void setEmitItemChanged(bool b) { mEmitItemChanges = b; }
 
 	Q_SIGNALS:
@@ -71,6 +72,7 @@ namespace napqt
 		void setValue(const QPointF& value) { mValue = value; }
 		const QPointF value() const { return mValue; }
 		PointHandleItem& pointHandle();
+		TangentHandleItem& oppositeTanHandle();
 		bool isInTangent();
 	private:
 		QPointF mValue;
@@ -129,6 +131,8 @@ namespace napqt
 		void updateHandleVisibility();
 		bool isInTanVisible();
 		bool isOutTanVisible();
+		bool isLastPoint();
+		bool isFirstPoint();
 
 		QPainterPath mPath;
 		QPainterPath mDebugPath;
@@ -146,7 +150,6 @@ namespace napqt
 
 		TangentHandleItem* mTangentHandles[2];
 		QGraphicsItem* mTangentItems[4];
-
 	};
 
 	/**
@@ -167,14 +170,14 @@ namespace napqt
 		CurveSegmentItem* prevSegment(const CurveSegmentItem& seg);
 		int prevSegIndex(int idx);
 		int nextSegIndex(int idx);
+		bool isLastPoint(int i);
+		bool isFirstPoint(int i);
 	private:
 		void onPointsChanged(QList<int> indices);
 		void onPointsAdded(QList<int> indices);
 		void onPointsRemoved(QList<int> indices);
 		void updateSegmentFromPoint(int i);
 		void updateAllSegments();
-		bool isFirstPoint(int i);
-		bool isLastPoint(int i);
 		const QVector<int>& sortPoints();
 		void setPointOrderDirty();
 		AbstractCurve& mCurve;
