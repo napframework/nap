@@ -191,8 +191,14 @@ namespace nap
 			nap::TriangleData<glm::vec3> tri_pos = triangle.getVertexData<glm::vec3>(*ref_pos);
 
 			// Extract colors for triangle
-			glm::vec3 bary_coords = math::random<glm::vec3>({ 0.0f, 0.0f, 0.0f }, { 1.0f,1.0f,1.0f });
-			
+			glm::vec2 rand_v = math::random<glm::vec2>({ 0.0f, 0.0f }, {1.0f, 1.0f});
+			if (rand_v.x + rand_v.y >= 1)
+			{
+				rand_v.x = 1.0f - rand_v.x;
+				rand_v.y = 1.0f - rand_v.y;
+			}
+			glm::vec3 bary_coords = { rand_v, 0.0f };
+
 			// New point based on random bary coordinates
 			glm::vec3 point_pos = utility::interpolateVertexAttr(tri_pos, bary_coords);
 			mPositionAttr->getData()[i] = point_pos;
