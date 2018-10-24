@@ -4,9 +4,8 @@
 in float passTip;			// If the fragment is a tip or not
 in vec3 passUVs0;			// The unwrapped normalized texture
 in vec3 passUVs1;			// The polar unwrapped texture
-in vec3 passNormal;			//< frag normal in object space
-in vec3 passPosition;		//< frag position in object space
-in mat4 passModelMatrix;	//< modelMatrix
+in vec3 passNormal;			//< frag normal in world space
+in vec3 passPosition;		//< frag position in world space
 
 // output
 out vec4 out_Color;
@@ -63,39 +62,32 @@ mat4 rotationMatrix(vec3 axis, float angle)
 // Shades a color based on a light, incoming normal and position should be in object space
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 {
-	// Calculate normal to world
-	mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
-	vec3 ws_normal = normalize(normal * normal_matrix);
-
-	// Calculate frag to world
-	vec3 ws_position = vec3(passModelMatrix * vec4(position, 1.0));
-
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(lightPos - ws_position);
+	vec3 surfaceToLight = normalize(lightPos - position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(cameraPosition - ws_position);
+	vec3 surfaceToCamera = normalize(cameraPosition - position);
 
 	// Ambient color
 	vec3 ambient = color * ambientIntensity;
 
 	// diffuse
-    float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
+    float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
 	vec3 diffuse = diffuseCoefficient * color * lightIntensity * diffuseIntensity;
 
 	// Calculate alternative normal for specular
-    vec3 cam_normal = normalize(cameraPosition - ws_position);
-    vec3 cro_normal = normalize(cross(cam_normal, ws_normal));
-    float angle = acos(dot(ws_normal, cro_normal));
+    vec3 cam_normal = normalize(cameraPosition - position);
+    vec3 cro_normal = normalize(cross(cam_normal, normal));
+    float angle = acos(dot(normal, cro_normal));
 
-	mat3 rotationMatrix = mat3(rotationMatrix(ws_normal, angle));
-	vec3 alt_normal = normalize(mix(rotationMatrix * cro_normal, ws_normal, 0.00));
+	mat3 rotationMatrix = mat3(rotationMatrix(normal, angle));
+	vec3 alt_normal = normalize(mix(rotationMatrix * cro_normal, normal, 0.00));
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = specularIntensity;
 
 	// Compute specularf
-    float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-alt_normal, ws_normal)), surfaceToCamera)), shininess);
+    float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-alt_normal, normal)), surfaceToCamera)), shininess);
     vec3 specular = specularCoefficient * specularColor * lightIntensity * spec_intensity;
 
     // Compensate using tip
