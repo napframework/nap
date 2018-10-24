@@ -173,10 +173,10 @@ namespace nap
 
 		// Compute total area of mesh
 		std::vector<float> triangle_areas;
-		//float total_area = utility::computeArea(mReferenceMesh->getMeshInstance(), *ref_pos, triangle_areas);
 		TriangleAreaMap area_map;
 		float total_area = computeArea(area_map);
 
+		// Scatter points randomly
 		for (int i = 0; i < mNumberOfPoints; i++)
 		{
 			// Generate random number for point
@@ -205,19 +205,17 @@ namespace nap
 			}
 
 			// Copy over the uv coordinate for every uv set in the reference mesh
-			int uv_idx = 0;
-			for (auto& uv_attr : mUvAttrs)
+			for (auto uv_attr = 0; uv_attr < mUvAttrs.size(); uv_attr++)
 			{
-				uv_attr->getData()[i] = utility::interpolateVertexAttr(triangle.getVertexData<glm::vec3>(*(ref_uvs[uv_idx])), bary_coords);
-				uv_idx++;
+				mUvAttrs[uv_attr]->getData()[i] = 
+					utility::interpolateVertexAttr(triangle.getVertexData<glm::vec3>(*(ref_uvs[uv_attr])), bary_coords);
 			}
 
 			// Copy over the uv coordinate for every uv set in the reference mesh
-			int clr_idx = 0;
-			for (auto& clr_attr : mColorAttrs)
+			for (auto clr_attr = 0; clr_attr < mColorAttrs.size(); clr_attr++)
 			{
-				clr_attr->getData()[i] = utility::interpolateVertexAttr(triangle.getVertexData<glm::vec4>(*(ref_clrs[clr_idx])), bary_coords);
-				clr_idx++;
+				mColorAttrs[clr_attr]->getData()[i] = 
+					utility::interpolateVertexAttr(triangle.getVertexData<glm::vec4>(*(ref_clrs[clr_attr])), bary_coords);
 			}
 		}
 

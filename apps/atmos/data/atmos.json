@@ -718,8 +718,8 @@
         {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Borderless": false,
             "Resizable": true,
             "Title": "Window 1",
@@ -735,7 +735,7 @@
             "Type": "nap::ScatterPointsMesh",
             "mID": "ScatterPointsMesh",
             "ReferenceMesh": "MeteorietMesh",
-            "PointCount": 10000
+            "PointCount": 1000000
         },
         {
             "Type": "nap::Scene",
