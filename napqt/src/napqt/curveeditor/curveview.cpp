@@ -28,6 +28,8 @@ using namespace napqt;
 #define ZDEPTH_CURVES 5000
 #define ZDEPTH_AUXILIARY 0
 
+#define EPSILON 0.0001
+
 QList<int> reverseSort(const QList<int>& ints)
 {
 	auto sortedIndices = ints;
@@ -38,6 +40,35 @@ QList<int> reverseSort(const QList<int>& ints)
 	});
 	return sortedIndices;
 }
+
+void limitOverhang(qreal& x0, qreal& x1, qreal& x2, qreal& x3)
+{
+	x1 = qMin(x1, x3);
+	x2 = qMax(x2, x0);
+}
+
+// ensure bezier tangents aren't creating overhang (snapping) in the curve
+void limitOverhangQPoints(QPointF& pa, QPointF& pb, QPointF& pc, QPointF& pd)
+{
+	qreal a = pa.x();
+	qreal b = pb.x();
+	qreal c = pc.x();
+	qreal d = pd.x();
+	qreal bb = b;
+	qreal cc = c;
+
+	limitOverhang(a, b, c, d);
+	qreal rb = (b-a)/(bb-a);
+	qreal rc = (c-d)/(cc-d);
+
+	pb.setX(b);
+	pc.setX(c);
+
+	// we limited x, keep the point on the tangent line for c1 continuity
+	pb.setY(((pb.y()-pa.y()) * rb) + pa.y());
+	pc.setY(((pc.y()-pd.y()) * rc) + pd.y());
+}
+
 
 // For aligned tangents, returns the vector for the 'unmoved' (other) handle
 QPointF alignedOppositeTangentVector(TangentHandleItem& handle)
@@ -55,7 +86,7 @@ QPointF alignedOppositeTangentVector(TangentHandleItem& handle)
 	auto x = otherTanPos.x();
 	auto h = qTan(a) * x;
 
-	return { otherTan.pos().x(), point.pos().y() + h};
+	return {otherTan.pos().x(), point.pos().y() + h};
 
 }
 
@@ -324,8 +355,15 @@ void CurveSegmentItem::updateGeometry()
 
 		// TODO: Calulate debug path
 
-		mPath.moveTo(pos);
-		mPath.cubicTo(c1, c2, nextPos);
+		auto a = pos;
+		auto b = c1;
+		auto c = c2;
+		auto d = nextPos;
+
+		limitOverhangQPoints(a, b, c, d);
+
+		mPath.moveTo(a);
+		mPath.cubicTo(b, c, d);
 	}
 
 	updateHandleVisibility();
@@ -337,11 +375,6 @@ void CurveSegmentItem::updateGeometry()
 void CurveSegmentItem::onHandleMoved(HandleItem* handle)
 {
 	handleMoved(handle);
-}
-
-void CurveSegmentItem::onHandleSelected(HandleItem* handle)
-{
-	updateHandleVisibility();
 }
 
 void CurveSegmentItem::setPointsEmitItemChanges(bool b)
@@ -382,47 +415,6 @@ void CurveSegmentItem::onTanHandleSelected(HandleItem* handle)
 		mOutTanLine.setHighlighted(handle->isSelected());
 }
 
-
-bool CurveSegmentItem::isInTanVisible()
-{
-	int orderedIdx = orderedIndex();
-	bool isFirst = orderedIdx == 0;
-
-	if (isFirst)
-		return false;
-
-	if (mInTanHandle.isSelected())
-		return true;
-
-	if (mOutTanHandle.isSelected())
-		return true;
-
-	if (mPointHandle.isSelected())
-		return true;
-
-	return false;
-}
-
-bool CurveSegmentItem::isOutTanVisible()
-{
-	int segCount = curveItem().curve().pointCount();
-	int orderedIdx = orderedIndex();
-	bool isLast = orderedIdx == segCount - 1;
-
-	if (isLast)
-		return false;
-
-	if (mInTanHandle.isSelected())
-		return true;
-
-	if (mOutTanHandle.isSelected())
-		return true;
-
-	if (mPointHandle.isSelected())
-		return true;
-
-	return false;
-}
 
 bool CurveSegmentItem::isLastPoint()
 {
@@ -573,12 +565,6 @@ int CurveItem::sortedIndex(int unsortedIndex)
 {
 	sortPoints();
 	return mUnsortedToSorted[unsortedIndex];
-}
-
-int CurveItem::unsortedIndex(int sortedIndex)
-{
-	sortPoints();
-	return mSortedToUnsorted[sortedIndex];
 }
 
 
@@ -816,7 +802,8 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 		return;
 
 	QList < TangentHandleItem * > movedTangents;
-	for (TangentHandleItem* tan : tans) {
+	for (TangentHandleItem* tan : tans)
+	{
 		if (tans.contains(&tan->oppositeTanHandle()))
 			continue;
 		movedTangents << tan;
@@ -844,10 +831,18 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 		auto& positions = tanMap[curveItem];
 
 		if (tangent->isInTangent())
-			positions[0][idx] = pos - tangent->pointHandle().pos();
-		else
-			positions[1][idx] = pos - tangent->pointHandle().pos();
-
+		{
+			auto p = pos - tangent->pointHandle().pos();
+			if (p.x() > -EPSILON)
+				p.setX(-EPSILON);
+			positions[0][idx] = p;
+		} else
+		{
+			auto p = pos - tangent->pointHandle().pos();
+			if (p.x() < EPSILON)
+				p.setX(EPSILON);
+			positions[1][idx] = p;
+		}
 		// Move opposite tangent
 		auto otherPos = alignedOppositeTangentVector(*tangent);
 
@@ -914,12 +909,3 @@ void CurveView::onCurvesRemoved(QList<int> indices)
 }
 
 
-const QList<TangentHandleItem*> CurveView::tanHandles()
-{
-	return filterT<TangentHandleItem>(scene()->items());
-}
-
-const QList<PointHandleItem*> CurveView::pointHandles()
-{
-	return filterT<PointHandleItem>(scene()->items());
-}
