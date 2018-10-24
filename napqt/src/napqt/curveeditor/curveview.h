@@ -107,8 +107,6 @@ namespace napqt
 		PointHandleItem& pointHandle() { return mPointHandle; }
 		TangentHandleItem& inTanHandle() { return mInTanHandle; }
 		TangentHandleItem& outTanHandle() { return mOutTanHandle; }
-		LineItem& inTanLine() { return mInTanLine; }
-		LineItem& outTanLine() { return mOutTanLine; }
 
 		void setInTanVisible(bool b);
 		void setOutTanVisible(bool b);
@@ -125,12 +123,9 @@ namespace napqt
 
 	private:
 		void onHandleMoved(HandleItem* handle);
-		void onHandleSelected(HandleItem* handle);
 		void setPointsEmitItemChanges(bool b);
 		void onTanHandleSelected(HandleItem* handle);
 		void updateHandleVisibility();
-		bool isInTanVisible();
-		bool isOutTanVisible();
 		bool isLastPoint();
 		bool isFirstPoint();
 
@@ -148,8 +143,6 @@ namespace napqt
 		LineItem mInTanLine;
 		LineItem mOutTanLine;
 
-		TangentHandleItem* mTangentHandles[2];
-		QGraphicsItem* mTangentItems[4];
 	};
 
 	/**
@@ -164,7 +157,6 @@ namespace napqt
 		int segmentIndex(const CurveSegmentItem& seg) const;
 		int sortedIndex(const CurveSegmentItem& seg);
 		int sortedIndex(int unsortedIndex);
-		int unsortedIndex(int sortedIndex);
 		QRectF boundingRect() const override;
 		CurveSegmentItem* nextSegment(const CurveSegmentItem& seg);
 		CurveSegmentItem* prevSegment(const CurveSegmentItem& seg);
@@ -196,7 +188,7 @@ namespace napqt
 	Q_OBJECT
 	public:
 		enum InteractMode {
-			None, Rubberband, RubberbandAdd, DragPoints, Pan, Zoom
+			None, Rubberband, RubberbandAdd, DragPoints, Pan
 		};
 
 
@@ -215,9 +207,6 @@ namespace napqt
 		void onCurvesAdded(QList<int> indices);
 		void onCurvesRemoved(QList<int> indices);
 
-		const QList<TangentHandleItem*> tanHandles();
-		const QList<PointHandleItem*> pointHandles();
-
 
 		QGraphicsScene mCurveScene;
 		QPoint mLastMousePos;
@@ -225,9 +214,6 @@ namespace napqt
 		QList<CurveItem*> mCurveItems;
 
 		InteractMode mInteractMode = None;
-		bool mCtrlHeld;
-		bool mShiftHeld;
-		bool mAltHeld;
 
 	};
 
