@@ -173,7 +173,9 @@ namespace nap
 
 		// Compute total area of mesh
 		std::vector<float> triangle_areas;
-		float total_area = utility::computeArea(mReferenceMesh->getMeshInstance(), *ref_pos, triangle_areas);
+		//float total_area = utility::computeArea(mReferenceMesh->getMeshInstance(), *ref_pos, triangle_areas);
+		TriangleAreaMap area_map;
+		float total_area = computeArea(area_map);
 
 		for (int i = 0; i < mNumberOfPoints; i++)
 		{
@@ -181,26 +183,9 @@ namespace nap
 			// Used for placement
 			float rnumber = math::random<float>(0.0f, total_area);
 
-			// Walk over the triangles and find triangle to scatter point on
-			float current_total = 0.0f;
-			int tri_number = 0;
-
-			// Set attribute data for every point
-			TriangleIterator triangle_it(mReferenceMesh->getMeshInstance());
-			Triangle triangle = triangle_it.next();
-
-			// TODO: Optimize the living hell out of this!!!
-			while (true)
-			{
-				// Check if running total exceeds current random number
-				current_total += triangle_areas[tri_number];
-				if (current_total >= rnumber)
-					break;
-
-				// Otherwise continue
-				tri_number++;
-				triangle = triangle_it.next();
-			}
+			auto it = area_map.lower_bound(rnumber);
+			assert(it != area_map.end());
+			Triangle& triangle = it->second;
 
 			// Extract vertex positions for triangle
 			nap::TriangleData<glm::vec3> tri_pos = triangle.getVertexData<glm::vec3>(*ref_pos);
@@ -239,4 +224,26 @@ namespace nap
 		return mMeshInstance->init(error);
 	}
 
+
+	float ScatterPointsMesh::computeArea(TriangleAreaMap& areaMap)
+	{
+		MeshInstance& mesh = mReferenceMesh->getMeshInstance();
+		const VertexAttribute<glm::vec3>* ref_pos = mesh.findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		assert(ref_pos != nullptr);
+
+		// Clear list
+		areaMap.clear();
+
+		// Iterate and compute area for each triangle in the mesh
+		TriangleIterator iterator(mesh);
+		float total = 0.0f;
+		while (!iterator.isDone())
+		{
+			Triangle triangle = iterator.next();
+			const TriangleData<glm::vec3>& triangleData = triangle.getVertexData<glm::vec3>(*ref_pos);
+			total += utility::computeTriangleArea(triangleData);
+			areaMap.emplace(std::make_pair(total, triangle));
+		}
+		return total;
+	}
 }
