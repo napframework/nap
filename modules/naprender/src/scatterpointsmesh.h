@@ -1,5 +1,6 @@
 #pragma once
 #include "mesh.h"
+#include "triangleiterator.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -47,6 +48,10 @@ namespace nap
 
 		// Scatter points
 		bool scatterPoints(nap::utility::ErrorState& error);
+
+		//Helper function that computes the total visible area of the mesh
+		using TriangleAreaMap = std::map<float, Triangle>;
+		float computeArea(TriangleAreaMap& outMap);
 
 		// The actual mesh that contains all the points
 		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;
