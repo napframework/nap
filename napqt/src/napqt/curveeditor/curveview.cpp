@@ -10,16 +10,16 @@ using namespace napqt;
 
 #define DEFAULT_SCENE_EXTENT 1000
 
-#define COL_POINTHANDLE_FILL 			"#000"
-#define COL_POINTHANDLE_FILL_SELECTED 	"#FFF"
-#define COL_POINTHANDLE_LINE 			"#000"
-#define COL_POINTHANDLE_LINE_SELECTED 	"#000"
-#define COL_TANHANDLE_FILL 				"#F00"
-#define COL_TANHANDLE_FILL_SELECTED 	"#0F0"
-#define COL_TANHANDLE_LINE 				"#0FF"
-#define COL_TANHANDLE_LINE_SELECTED 	"#0FF"
-#define COL_TANLINE 					"#00F"
-#define COL_TANLINE_SELECTED			"#F0F"
+#define COL_POINTHANDLE_FILL            "#000"
+#define COL_POINTHANDLE_FILL_SELECTED    "#FFF"
+#define COL_POINTHANDLE_LINE            "#000"
+#define COL_POINTHANDLE_LINE_SELECTED    "#000"
+#define COL_TANHANDLE_FILL                "#333"
+#define COL_TANHANDLE_FILL_SELECTED    "#0F0"
+#define COL_TANHANDLE_LINE                "#0FF"
+#define COL_TANHANDLE_LINE_SELECTED    "#0FF"
+#define COL_TANLINE                    "#888"
+#define COL_TANLINE_SELECTED            "#F0F"
 
 #define ZDEPTH_HANDLES 15000
 #define ZDEPTH_HANDLE_LINES 10000
@@ -70,7 +70,8 @@ QVariant HandleItem::itemChange(QGraphicsItem::GraphicsItemChange change, const 
 	{
 		if (mEmitItemChanges)
 			moved(this);
-	} else if (change == QGraphicsItem::ItemSelectedHasChanged)
+	}
+	else if (change == QGraphicsItem::ItemSelectedHasChanged)
 	{
 		updateRect();
 		if (mEmitItemChanges)
@@ -124,6 +125,16 @@ TangentHandleItem::TangentHandleItem(CurveSegmentItem& parent) : HandleItem(pare
 	mBrushSelected = QBrush(COL_TANHANDLE_FILL_SELECTED);
 }
 
+PointHandleItem& TangentHandleItem::pointHandle()
+{
+	return curveSegmentItem().pointHandle();
+}
+
+bool TangentHandleItem::isInTangent()
+{
+	return &curveSegmentItem().inTanHandle() == this;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// TangentLineItem
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -131,12 +142,14 @@ TangentHandleItem::TangentHandleItem(CurveSegmentItem& parent) : HandleItem(pare
 LineItem::LineItem(QGraphicsItem& parent) : QGraphicsPathItem(&parent)
 {
 	setZValue(ZDEPTH_HANDLE_LINES);
-	setColor(COL_TANLINE);
+	setHighlighted(false);
 }
 
-void LineItem::setColor(const QColor& color)
+void LineItem::setHighlighted(bool b)
 {
-	setPen(QPen(QBrush(color), 0));
+	mHighlighted = b;
+	QColor col = mHighlighted ? COL_TANLINE_SELECTED : COL_TANLINE;
+	setPen(QPen(QBrush(col), 0));
 }
 
 void LineItem::setFromTo(const QPointF& a, const QPointF& b)
@@ -160,7 +173,7 @@ CurveSegmentItem::CurveSegmentItem(CurveItem& curveItem)
 		  mOutTanLine(*this)
 {
 	setZValue(ZDEPTH_CURVES);
-	setFlag(QGraphicsItem::ItemIsSelectable, true);
+	setFlag(QGraphicsItem::ItemIsSelectable, false);
 
 	mPen = QPen(Qt::blue, 0);
 	mPenDebug = QPen(Qt::gray, 0);
@@ -170,6 +183,13 @@ CurveSegmentItem::CurveSegmentItem(CurveItem& curveItem)
 	connect(&mInTanHandle, &HandleItem::moved, this, &CurveSegmentItem::onHandleMoved);
 	connect(&mOutTanHandle, &HandleItem::moved, this, &CurveSegmentItem::onHandleMoved);
 	connect(&mPointHandle, &HandleItem::selected, this, &CurveSegmentItem::updateHandleVisibility);
+	connect(&mPointHandle, &HandleItem::selected, this, &CurveSegmentItem::updateHandleVisibility);
+
+	connect(&mInTanHandle, &HandleItem::selected, this, &CurveSegmentItem::onTanHandleSelected);
+	connect(&mOutTanHandle, &HandleItem::selected, this, &CurveSegmentItem::onTanHandleSelected);
+
+	setInTanVisible(false);
+	setOutTanVisible(false);
 }
 
 CurveItem& CurveSegmentItem::curveItem() const
@@ -182,6 +202,24 @@ CurveItem& CurveSegmentItem::curveItem() const
 QRectF CurveSegmentItem::boundingRect() const
 {
 	return mPath.boundingRect().united(mDebugPath.boundingRect()).united(childrenBoundingRect());
+}
+
+void CurveSegmentItem::setInTanVisible(bool b)
+{
+	mInTanHandle.setVisible(b);
+	mInTanLine.setVisible(b);
+}
+
+void CurveSegmentItem::setOutTanVisible(bool b)
+{
+	mOutTanHandle.setVisible(b);
+	mOutTanLine.setVisible(b);
+}
+
+void CurveSegmentItem::setTangentsVisible(bool b)
+{
+	setInTanVisible(b);
+	setOutTanVisible(b);
 }
 
 void CurveSegmentItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -262,24 +300,6 @@ void CurveSegmentItem::updateGeometry()
 	setPointsEmitItemChanges(true);
 }
 
-void CurveSegmentItem::updateHandleVisibility()
-{
-	auto& curve = curveItem().curve();
-	int segCount = curve.pointCount();
-	int idx = index();
-	int orderedIdx = orderedIndex();
-
-	bool isLast = orderedIdx == segCount - 1;
-	bool isFirst = orderedIdx == 0;
-
-	bool s = mPointHandle.isSelected();
-
-	mInTanLine.setVisible(!isFirst && s);
-	mInTanHandle.setVisible(!isFirst && s);
-	mOutTanLine.setVisible(!isLast && s);
-	mOutTanHandle.setVisible(!isLast && s);
-}
-
 void CurveSegmentItem::onHandleMoved(HandleItem* handle)
 {
 	handleMoved(handle);
@@ -295,6 +315,79 @@ void CurveSegmentItem::setPointsEmitItemChanges(bool b)
 	mPointHandle.setEmitItemChanged(b);
 	mInTanHandle.setEmitItemChanged(b);
 	mOutTanHandle.setEmitItemChanged(b);
+}
+
+void CurveSegmentItem::updateHandleVisibility()
+{
+
+//	auto& curve = curveItem().curve();
+//	int segCount = curve.pointCount();
+//	int idx = index();
+//	int orderedIdx = orderedIndex();
+//
+//	bool isLast = orderedIdx == segCount - 1;
+//	bool isFirst = orderedIdx == 0;
+//
+//	bool s = mPointHandle.isSelected();
+//	bool anyTanSelected = mInTanHandle.isSelected() || mOutTanHandle.isSelected();
+//
+//	bool inTanVisible = isInTanVisible();
+//	bool outTanVisible = isOutTanVisible();
+//
+//	mInTanLine.setVisible(inTanVisible);
+//	mInTanHandle.setVisible(inTanVisible);
+//	mOutTanLine.setVisible(outTanVisible);
+//	mOutTanHandle.setVisible(outTanVisible);
+}
+
+void CurveSegmentItem::onTanHandleSelected(HandleItem* handle)
+{
+	if (handle == &mInTanHandle)
+		mInTanLine.setHighlighted(handle->isSelected());
+	else if (handle == &mOutTanHandle)
+		mOutTanLine.setHighlighted(handle->isSelected());
+}
+
+
+bool CurveSegmentItem::isInTanVisible()
+{
+	int orderedIdx = orderedIndex();
+	bool isFirst = orderedIdx == 0;
+
+	if (isFirst)
+		return false;
+
+	if (mInTanHandle.isSelected())
+		return true;
+
+	if (mOutTanHandle.isSelected())
+		return true;
+
+	if (mPointHandle.isSelected())
+		return true;
+
+	return false;
+}
+
+bool CurveSegmentItem::isOutTanVisible()
+{
+	int segCount = curveItem().curve().pointCount();
+	int orderedIdx = orderedIndex();
+	bool isLast = orderedIdx == segCount - 1;
+
+	if (isLast)
+		return false;
+
+	if (mInTanHandle.isSelected())
+		return true;
+
+	if (mOutTanHandle.isSelected())
+		return true;
+
+	if (mPointHandle.isSelected())
+		return true;
+
+	return false;
 }
 
 
@@ -521,6 +614,7 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 	bool shiftHeld = event->modifiers() == Qt::ShiftModifier;
 	bool altHeld = event->modifiers() == Qt::AltModifier;
 	bool lmb = event->buttons() == Qt::LeftButton;
+	bool mmb = event->buttons() == Qt::MiddleButton;
 
 	auto item = itemAt(event->pos());
 	auto clickedHandle = dynamic_cast<HandleItem*>(item);
@@ -533,21 +627,33 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 			if (clickedHandle)
 			{
 				setSelection({clickedHandle});
-			} else if (clickedCurve)
-			{
-//				setSelection({clickedCurve});
-			} else
+			}
+			else
 			{
 				startRubberBand(mMousePressPos);
+				mInteractMode = Rubberband;
 			}
-		} else if (shiftHeld)
+		}
+		else if (shiftHeld)
 		{
 			if (clickedHandle)
 			{
 //				addSelection({clickedHandle});
 			}
+			else
+			{
+				startRubberBand(mMousePressPos);
+				mInteractMode = Rubberband;
+			}
 		}
-
+	}
+	else if (mmb)
+	{
+		if (altHeld) {
+			mInteractMode = Pan;
+		} else {
+			mInteractMode = DragPoints;
+		}
 	}
 
 //	GridView::mousePressEvent(event);
@@ -562,24 +668,19 @@ void CurveView::mouseMoveEvent(QMouseEvent* event)
 	bool lmb = event->buttons() == Qt::LeftButton;
 	bool mmb = event->buttons() == Qt::MiddleButton;
 
-	if (!isRubberBandVisible())
+	if (mInteractMode == DragPoints)
 	{
-		if (lmb)
-		{
-			auto sceneDelta = mapToScene(event->pos()) - mapToScene(mLastMousePos);
+		auto sceneDelta = mapToScene(event->pos()) - mapToScene(mLastMousePos);
 
-			auto pointHandles = selectedItems<PointHandleItem>();
-			auto tanHandles = selectedItems<TangentHandleItem>();
+		auto pointHandles = selectedItems<PointHandleItem>();
+		auto tanHandles = selectedItems<TangentHandleItem>();
+		if (!pointHandles.isEmpty())
+		{
 			movePointHandles(pointHandles, sceneDelta);
 		}
-
-		if (mmb && !altHeld)
+		else if (!tanHandles.isEmpty())
 		{
-			auto sceneDelta = mapToScene(event->pos()) - mapToScene(mLastMousePos);
-
-			auto pointHandles = selectedItems<PointHandleItem>();
-			auto tanHandles = selectedItems<TangentHandleItem>();
-			movePointHandles(pointHandles, sceneDelta);
+			moveTanHandles(tanHandles, sceneDelta);
 		}
 	}
 	mLastMousePos = event->pos();
@@ -590,32 +691,40 @@ void CurveView::mouseReleaseEvent(QMouseEvent* event)
 {
 	if (isRubberBandVisible())
 	{
-		selectItemsInRubberband();
+		hideRubberBand();
+		auto rubberItems = items(rubberBandGeo());
+
+		auto pointHandles = filter<PointHandleItem>(rubberItems);
+		auto tanHandles = filter<TangentHandleItem>(rubberItems);
+
+		if (!pointHandles.isEmpty())
+		{
+			for (auto pt : filterT<PointHandleItem>(scene()->items()))
+				pt->curveSegmentItem().setTangentsVisible(false);
+
+			clearSelection();
+			addSelection(pointHandles);
+			for (auto handle : pointHandles)
+				dynamic_cast<PointHandleItem*>(handle)->curveSegmentItem().setTangentsVisible(true);
+		}
+		else if (!tanHandles.isEmpty())
+		{
+			clearSelection();
+			addSelection(tanHandles);
+		}
+		else
+		{
+			clearSelection();
+			for (auto handle : filterT<PointHandleItem>(items()))
+			{
+				handle->curveSegmentItem().setTangentsVisible(false);
+			}
+		}
 	}
-	GridView::mouseReleaseEvent(event);
+	mInteractMode = None;
+//	GridView::mouseReleaseEvent(event);
 }
 
-void CurveView::selectItemsInRubberband()
-{
-	auto rubberItems = items(rubberBandGeo());
-	auto pointHandles = filter<PointHandleItem>(rubberItems);
-	auto tanHandles = filter<TangentHandleItem>(rubberItems);
-	auto handles = filter<HandleItem>(rubberItems);
-	auto curves = filter<CurveItem>(handles);
-	if (!pointHandles.isEmpty())
-	{
-		setSelection(pointHandles);
-	} else if (!tanHandles.isEmpty())
-	{
-		setSelection(tanHandles);
-	} else if (!curves.isEmpty())
-	{
-		setSelection(curves);
-	} else
-	{
-		clearSelection();
-	}
-}
 
 void CurveView::movePointHandles(const QList<PointHandleItem*>& handles, const QPointF& sceneDelta)
 {
@@ -644,31 +753,43 @@ void CurveView::movePointHandles(const QList<PointHandleItem*>& handles, const Q
 	}
 }
 
-void CurveView::moveTanHandles(const QList<TangentHandleItem*>& handles, const QPointF& sceneDelta)
+void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tangents, const QPointF& sceneDelta)
 {
-	QMap<CurveItem*, QMap<int, QPointF>> map;
-	if (!handles.isEmpty())
+	QMap<CurveItem*, QList<QMap<int, QPointF>>> tanMap;
+	if (!tangents.isEmpty())
 	{
-		for (auto handle : handles)
+		for (TangentHandleItem* tangent : tangents)
 		{
-			auto segmentItem = &handle->curveSegmentItem();
+			auto segmentItem = &tangent->curveSegmentItem();
 			auto curveItem = &segmentItem->curveItem();
-
-			if (!map.contains(curveItem))
-				map.insert(curveItem, QMap<int, QPointF>());
-
 			int idx = curveItem->segmentIndex(*segmentItem);
-			auto pos = handle->pos() + sceneDelta;
+			auto pos = tangent->pos() + sceneDelta;
 
-			map[curveItem][idx] = pos;
+			if (!tanMap.contains(curveItem))
+			{
+				QList <QMap<int, QPointF>> ls;
+				ls << QMap<int, QPointF>();
+				ls << QMap<int, QPointF>();
+				tanMap.insert(curveItem, ls);
+			}
+
+			auto& positions = tanMap[curveItem];
+
+			if (tangent->isInTangent())
+				positions[0][idx] = pos - tangent->pointHandle().pos();
+			else
+			{
+				positions[1][idx] = pos - tangent->pointHandle().pos();
+			}
 		}
 	}
-//
-//	for (auto& key : map.keys())
-//	{
-//		CurveItem* curveItem = key;
-//		curveItem->curve().movePoints(map[key]);
-//	}
+
+	for (auto& curveItem : tanMap.keys())
+	{
+		auto tanPosList = tanMap[curveItem];
+		curveItem->curve().moveTangents(tanPosList[0], tanPosList[1]);
+	}
+
 }
 void CurveView::setModel(AbstractCurveModel* model)
 {
@@ -717,4 +838,15 @@ void CurveView::onCurvesRemoved(QList<int> indices)
 		auto curveItem = mCurveItems.takeAt(index);
 		delete curveItem;
 	}
+}
+
+
+const QList<TangentHandleItem*> CurveView::tanHandles()
+{
+	return filterT<TangentHandleItem>(scene()->items());
+}
+
+const QList<PointHandleItem*> CurveView::pointHandles()
+{
+	return filterT<PointHandleItem>(scene()->items());
 }
