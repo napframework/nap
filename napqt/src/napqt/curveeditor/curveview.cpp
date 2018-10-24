@@ -564,9 +564,6 @@ const QVector<int>& CurveItem::sortPoints()
 		return timeA < timeB;
 	});
 
-	for (int idx : mSortedToUnsorted)
-		qInfo() << idx;
-
 	mUnsortedToSorted.resize(len);
 	for (int i = 0; i < len; i++)
 	{
@@ -643,15 +640,18 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 			else
 			{
 				startRubberBand(mMousePressPos);
-				mInteractMode = Rubberband;
+				mInteractMode = RubberbandAdd;
 			}
 		}
 	}
 	else if (mmb)
 	{
-		if (altHeld) {
+		if (altHeld)
+		{
 			mInteractMode = Pan;
-		} else {
+		}
+		else
+		{
 			mInteractMode = DragPoints;
 		}
 	}
@@ -689,7 +689,7 @@ void CurveView::mouseMoveEvent(QMouseEvent* event)
 
 void CurveView::mouseReleaseEvent(QMouseEvent* event)
 {
-	if (isRubberBandVisible())
+	if (mInteractMode == Rubberband || mInteractMode == RubberbandAdd)
 	{
 		hideRubberBand();
 		auto rubberItems = items(rubberBandGeo());
@@ -699,18 +699,45 @@ void CurveView::mouseReleaseEvent(QMouseEvent* event)
 
 		if (!pointHandles.isEmpty())
 		{
-			for (auto pt : filterT<PointHandleItem>(scene()->items()))
-				pt->curveSegmentItem().setTangentsVisible(false);
 
-			clearSelection();
+			if (mInteractMode != RubberbandAdd)
+				clearSelection();
+
+			auto selectedPoints = filterT<PointHandleItem>(scene()->selectedItems());
+
+			for (PointHandleItem* pt : filterT<PointHandleItem>(scene()->items()))
+				if (!selectedPoints.contains(pt))
+					pt->curveSegmentItem().setTangentsVisible(false);
+
 			addSelection(pointHandles);
 			for (auto handle : pointHandles)
 				dynamic_cast<PointHandleItem*>(handle)->curveSegmentItem().setTangentsVisible(true);
 		}
 		else if (!tanHandles.isEmpty())
 		{
-			clearSelection();
-			addSelection(tanHandles);
+			for (PointHandleItem* handle : filterT<PointHandleItem>(scene()->selectedItems()))
+				handle->setSelected(false);
+
+			if (mInteractMode == RubberbandAdd)
+			{
+				addSelection(tanHandles);
+			}
+			else
+			{
+				clearSelection();
+				addSelection(tanHandles);
+
+				for (TangentHandleItem* tan : filterT<TangentHandleItem>(scene()->items()))
+				{
+					if (!tanHandles.contains(tan))
+					{
+						if (tan->isInTangent())
+							tan->curveSegmentItem().setInTanVisible(false);
+						else
+							tan->curveSegmentItem().setOutTanVisible(false);
+					}
+				}
+			}
 		}
 		else
 		{
@@ -767,7 +794,8 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tangents, const 
 
 			if (!tanMap.contains(curveItem))
 			{
-				QList <QMap<int, QPointF>> ls;
+				QList < QMap<int, QPointF>>
+				ls;
 				ls << QMap<int, QPointF>();
 				ls << QMap<int, QPointF>();
 				tanMap.insert(curveItem, ls);
