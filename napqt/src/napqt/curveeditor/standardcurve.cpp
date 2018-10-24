@@ -127,10 +127,40 @@ void StandardCurve::movePoints(const QMap<int, QPointF>& positions)
 	{
 		int index = it.key();
 		auto pos = it.value();
-		mPoints[index] = pos;
+		mPoints[index].pos = pos;
 		indexes << index;
 		++it;
 	}
+	pointsChanged(indexes);
+}
+
+
+void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents)
+{
+	QList<int> indexes;
+
+	auto it = inTangents.constBegin();
+	while (it != inTangents.constEnd())
+	{
+		int index = it.key();
+		auto pos = it.value();
+		mPoints[index].inTan = pos;
+		if (!indexes.contains(index))
+			indexes << index;
+		++it;
+	}
+
+	it = outTangents.constBegin();
+	while (it != outTangents.constEnd())
+	{
+		int index = it.key();
+		auto pos = it.value();
+		mPoints[index].outTan = pos;
+		if (!indexes.contains(index))
+			indexes << index;
+		++it;
+	}
+
 	pointsChanged(indexes);
 }
 

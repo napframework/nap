@@ -38,6 +38,7 @@ namespace napqt
 		void addPoint(qreal time, qreal value, InterpType interp = InterpType::Linear);
 		void removePoint(int index);
 		void movePoints(const QMap<int, QPointF>& positions) override;
+		void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents) override;
 		StandardCurveModel* model();
 	private:
 		QList<StandardPoint> mPoints;

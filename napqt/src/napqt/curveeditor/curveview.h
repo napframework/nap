@@ -70,6 +70,8 @@ namespace napqt
 		explicit TangentHandleItem(CurveSegmentItem& parent);
 		void setValue(const QPointF& value) { mValue = value; }
 		const QPointF value() const { return mValue; }
+		PointHandleItem& pointHandle();
+		bool isInTangent();
 	private:
 		QPointF mValue;
 	};
@@ -81,8 +83,12 @@ namespace napqt
 	{
 	public:
 		explicit LineItem(QGraphicsItem& parent);
-		void setColor(const QColor& color);
+		void setHighlighted(bool b);
 		void setFromTo(const QPointF& a, const QPointF& b);
+	private:
+		QPen mPen;
+		QPen mPenSelected;
+		bool mHighlighted = false;
 	};
 
 	/**
@@ -94,7 +100,6 @@ namespace napqt
 	public:
 		explicit CurveSegmentItem(CurveItem& curveItem);
 		CurveItem& curveItem() const;
-		void setPoints(const QPointF (& pts)[4]);
 		QRectF boundingRect() const override;
 
 		PointHandleItem& pointHandle() { return mPointHandle; }
@@ -103,9 +108,12 @@ namespace napqt
 		LineItem& inTanLine() { return mInTanLine; }
 		LineItem& outTanLine() { return mOutTanLine; }
 
+		void setInTanVisible(bool b);
+		void setOutTanVisible(bool b);
+		void setTangentsVisible(bool b);
+
 		QPainterPath shape() const override;
 		void updateGeometry();
-		void updateHandleVisibility();
 		int index();
 		int orderedIndex();
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
@@ -117,6 +125,10 @@ namespace napqt
 		void onHandleMoved(HandleItem* handle);
 		void onHandleSelected(HandleItem* handle);
 		void setPointsEmitItemChanges(bool b);
+		void onTanHandleSelected(HandleItem* handle);
+		void updateHandleVisibility();
+		bool isInTanVisible();
+		bool isOutTanVisible();
 
 		QPainterPath mPath;
 		QPainterPath mDebugPath;
@@ -180,8 +192,8 @@ namespace napqt
 	{
 	Q_OBJECT
 	public:
-		enum DragMode {
-			NoDrag, DragMove
+		enum InteractMode {
+			None, Rubberband, RubberbandAdd, DragPoints, Pan, Zoom
 		};
 
 
@@ -193,19 +205,23 @@ namespace napqt
 		void mousePressEvent(QMouseEvent* event) override;
 		void mouseMoveEvent(QMouseEvent* event) override;
 		void mouseReleaseEvent(QMouseEvent* event) override;
-		void selectItemsInRubberband();
 		void movePointHandles(const QList<PointHandleItem*>& items, const QPointF& sceneDelta);
-		void moveTanHandles(const QList<TangentHandleItem*>& items, const QPointF& sceneDelta);
+		void moveTanHandles(const QList<TangentHandleItem*>& tangents, const QPointF& sceneDelta);
 
 	private:
 		void onCurvesAdded(QList<int> indices);
 		void onCurvesRemoved(QList<int> indices);
+
+		const QList<TangentHandleItem*> tanHandles();
+		const QList<PointHandleItem*> pointHandles();
+
 
 		QGraphicsScene mCurveScene;
 		QPoint mLastMousePos;
 		AbstractCurveModel* mModel = nullptr;
 		QList<CurveItem*> mCurveItems;
 
+		InteractMode mInteractMode = None;
 		bool mCtrlHeld;
 		bool mShiftHeld;
 		bool mAltHeld;
