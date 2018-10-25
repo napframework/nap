@@ -3,9 +3,9 @@
 #include <QGraphicsView>
 #include <QGraphicsRectItem>
 #include <QRubberBand>
-#include <asio/detail/shared_ptr.hpp>
 #include <memory>
 #include "timedisplay.h"
+#include "autosettings.h"
 
 namespace napqt
 {
@@ -24,11 +24,6 @@ namespace napqt
 		enum class PanMode
 		{
 			Horizontal, Vertical, Parallax
-		};
-
-		enum class RulerFormat
-		{
-			Float, SMPTE
 		};
 
 		explicit GridView(QWidget* parent = nullptr);
@@ -148,6 +143,20 @@ namespace napqt
 		qreal calcGridStepTime(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth, qreal minStepSize) const;
 	};
 
+	class GridViewStorer : public WidgetStorer<GridView>
+	{
+	public:
+		void store(const GridView& widget, const QString& key, QSettings& s) const override
+		{
+			s.setValue(key + "_MATRIX", widget.transform());
+		}
+		void restore(GridView& widget, const QString& key, const QSettings& s) const override
+		{
+			if (s.contains(key + "_MATRIX"))
+				widget.setTransform(s.value(key + "_MATRIX").value<QTransform>());
+		}
+	};
+
 }
 
 
@@ -163,8 +172,6 @@ const QList<T*> napqt::GridView::selectedItems() const
 	}
 	return items;
 }
-
-
 
 template<typename O>
 const QList<QGraphicsItem*> napqt::GridView::filter(const QList<QGraphicsItem*>& items) const
@@ -189,4 +196,5 @@ const QList<O*> napqt::GridView::filterT(const QList<QGraphicsItem*>& items) con
 	}
 	return out;
 }
+
 

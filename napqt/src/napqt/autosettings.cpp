@@ -1,4 +1,5 @@
 #include "autosettings.h"
+#include "gridview.h"
 
 #include <QMainWindow>
 #include <QAbstractItemView>
@@ -117,8 +118,9 @@ napqt::AutoSettings::AutoSettings(AutoSettings const&)
 
 void napqt::AutoSettings::registerDefaults()
 {
-	registerStorer(std::make_unique<MainWindowWidgetStorer>());
-	registerStorer(std::make_unique<HeaderViewWidgetStorer>());
+	registerStorer<MainWindowWidgetStorer>();
+	registerStorer<HeaderViewWidgetStorer>();
+	registerStorer<GridViewStorer>();
 }
 
 napqt::AutoSettings& napqt::AutoSettings::get()
