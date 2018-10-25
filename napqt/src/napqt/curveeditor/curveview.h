@@ -81,16 +81,18 @@ namespace napqt
 	/**
 	 * Non-interactive item to display a curve's tangent line
 	 */
-	class LineItem : public QGraphicsPathItem
+	class TangentLineItem : public QGraphicsPathItem
 	{
 	public:
-		explicit LineItem(QGraphicsItem& parent);
+		explicit TangentLineItem(QGraphicsItem& parent);
 		void setHighlighted(bool b);
 		void setFromTo(const QPointF& a, const QPointF& b);
+		void showLimit(const QPointF& p);
+		void hideLimit();
+
 	private:
-		QPen mPen;
-		QPen mPenSelected;
 		bool mHighlighted = false;
+		QGraphicsEllipseItem mLimitItem;
 	};
 
 	/**
@@ -107,6 +109,7 @@ namespace napqt
 		PointHandleItem& pointHandle() { return mPointHandle; }
 		TangentHandleItem& inTanHandle() { return mInTanHandle; }
 		TangentHandleItem& outTanHandle() { return mOutTanHandle; }
+		TangentLineItem& inTanLine() { return mInTanLine; }
 
 		void setInTanVisible(bool b);
 		void setOutTanVisible(bool b);
@@ -125,14 +128,14 @@ namespace napqt
 		void onHandleMoved(HandleItem* handle);
 		void setPointsEmitItemChanges(bool b);
 		void onTanHandleSelected(HandleItem* handle);
-		void updateHandleVisibility();
 		bool isLastPoint();
 		bool isFirstPoint();
 
 		QPainterPath mPath;
 		QPainterPath mDebugPath;
-		bool mDrawDebug = false;
-		int mSampleCount = 32;
+		bool mDrawDebug = true;
+		bool mDrawQt = false;
+		int mSampleCount = 16;
 		QPen mPen;
 		QPen mPenDebug;
 		QPen mPenSelected;
@@ -140,8 +143,8 @@ namespace napqt
 		PointHandleItem mPointHandle;
 		TangentHandleItem mInTanHandle;
 		TangentHandleItem mOutTanHandle;
-		LineItem mInTanLine;
-		LineItem mOutTanLine;
+		TangentLineItem mInTanLine;
+		TangentLineItem mOutTanLine;
 
 	};
 
@@ -174,8 +177,8 @@ namespace napqt
 		void setPointOrderDirty();
 		AbstractCurve& mCurve;
 
-		LineItem mInfinityLineNeg;
-		LineItem mInfinityLinePos;
+		TangentLineItem mInfinityLineNeg;
+		TangentLineItem mInfinityLinePos;
 		QVector<CurveSegmentItem*> mSegments;
 		bool mPointOrderDirty = true;
 		QVector<int> mSortedToUnsorted;
@@ -188,7 +191,7 @@ namespace napqt
 	Q_OBJECT
 	public:
 		enum InteractMode {
-			None, Rubberband, RubberbandAdd, DragPoints, Pan
+			None, Rubberband, RubberbandAdd, DragPoints, Pan, SelectAdd
 		};
 
 

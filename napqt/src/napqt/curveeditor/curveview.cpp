@@ -30,6 +30,13 @@ using namespace napqt;
 
 #define EPSILON 0.0001
 
+bool fuzzyCompare(const QPointF& a, const QPointF& b)
+{
+	bool xEqual = qFuzzyCompare(a.x(), b.x());
+	bool yEqual = qFuzzyCompare(a.y(), b.y());
+	return xEqual && yEqual;
+}
+
 QList<int> reverseSort(const QList<int>& ints)
 {
 	auto sortedIndices = ints;
@@ -200,29 +207,49 @@ bool TangentHandleItem::isInTangent()
 	return &curveSegmentItem().inTanHandle() == this;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// TangentLineItem
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LineItem::LineItem(QGraphicsItem& parent) : QGraphicsPathItem(&parent)
+TangentLineItem::TangentLineItem(QGraphicsItem& parent) : QGraphicsPathItem(&parent), mLimitItem(this)
 {
 	setZValue(ZDEPTH_HANDLE_LINES);
 	setHighlighted(false);
+
+	qreal limitExtent = 2;
+	mLimitItem.setRect(-limitExtent, -limitExtent, limitExtent * 2, limitExtent * 2);
+	mLimitItem.setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+	mLimitItem.setPen(Qt::NoPen);
+	mLimitItem.setVisible(false);
 }
 
-void LineItem::setHighlighted(bool b)
+void TangentLineItem::setHighlighted(bool b)
 {
 	mHighlighted = b;
 	QColor col = mHighlighted ? COL_TANLINE_SELECTED : COL_TANLINE;
-	setPen(QPen(QBrush(col), 0));
+	QBrush brush = QBrush(col);
+	setPen(QPen(brush, 0));
+	mLimitItem.setBrush(brush);
 }
 
-void LineItem::setFromTo(const QPointF& a, const QPointF& b)
+void TangentLineItem::setFromTo(const QPointF& a, const QPointF& b)
 {
 	QPainterPath p;
 	p.moveTo(a);
 	p.lineTo(b);
 	setPath(p);
+}
+
+void TangentLineItem::showLimit(const QPointF& p)
+{
+	mLimitItem.setVisible(true);
+	mLimitItem.setPos(p);
+}
+
+void TangentLineItem::hideLimit()
+{
+	mLimitItem.setVisible(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -247,8 +274,6 @@ CurveSegmentItem::CurveSegmentItem(CurveItem& curveItem)
 	connect(&mPointHandle, &HandleItem::moved, this, &CurveSegmentItem::onHandleMoved);
 	connect(&mInTanHandle, &HandleItem::moved, this, &CurveSegmentItem::onHandleMoved);
 	connect(&mOutTanHandle, &HandleItem::moved, this, &CurveSegmentItem::onHandleMoved);
-	connect(&mPointHandle, &HandleItem::selected, this, &CurveSegmentItem::updateHandleVisibility);
-	connect(&mPointHandle, &HandleItem::selected, this, &CurveSegmentItem::updateHandleVisibility);
 
 	connect(&mInTanHandle, &HandleItem::selected, this, &CurveSegmentItem::onTanHandleSelected);
 	connect(&mOutTanHandle, &HandleItem::selected, this, &CurveSegmentItem::onTanHandleSelected);
@@ -289,12 +314,15 @@ void CurveSegmentItem::setTangentsVisible(bool b)
 
 void CurveSegmentItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-	painter->setPen(isSelected() ? mPenSelected : mPen);
-	painter->drawPath(mPath);
+	if (mDrawQt)
+	{
+		painter->setPen(isSelected() ? mPenSelected : mPen);
+		painter->drawPath(mPath);
+	}
 
 	if (mDrawDebug)
 	{
-		painter->setPen(mPenDebug);
+		painter->setPen(isSelected() ? mPenSelected : mPen);
 		painter->drawPath(mDebugPath);
 	}
 }
@@ -353,20 +381,37 @@ void CurveSegmentItem::updateGeometry()
 		auto nextPos = curve.data(nextIdx, datarole::POS).toPointF();
 		auto c2 = nextPos + nextInTan;
 
-		// TODO: Calulate debug path
-
 		auto a = pos;
 		auto b = c1;
 		auto c = c2;
 		auto d = nextPos;
 
 		limitOverhangQPoints(a, b, c, d);
+		if (!fuzzyCompare(c1, b))
+			mOutTanLine.showLimit(b);
+		else
+			mOutTanLine.hideLimit();
 
+		if (!fuzzyCompare(c2, c))
+			nextSeg->inTanLine().showLimit(c);
+		else
+			nextSeg->inTanLine().hideLimit();
+
+		// Draw debug path
+		mDebugPath.moveTo(a);
+		for (int i = 1; i <= mSampleCount; i++)
+		{
+			qreal t = i / (qreal) mSampleCount;
+			qreal x = a.x() + (d.x() - a.x()) * t;
+			auto p = evalCurveSegment({a, b, c, d}, x);
+			mDebugPath.lineTo(x, p);
+		}
+
+		// Use Qt's cubic curve
 		mPath.moveTo(a);
 		mPath.cubicTo(b, c, d);
 	}
 
-	updateHandleVisibility();
 	QGraphicsItem::update();
 
 	setPointsEmitItemChanges(true);
@@ -382,29 +427,6 @@ void CurveSegmentItem::setPointsEmitItemChanges(bool b)
 	mPointHandle.setEmitItemChanged(b);
 	mInTanHandle.setEmitItemChanged(b);
 	mOutTanHandle.setEmitItemChanged(b);
-}
-
-void CurveSegmentItem::updateHandleVisibility()
-{
-
-//	auto& curve = curveItem().curve();
-//	int segCount = curve.pointCount();
-//	int idx = index();
-//	int orderedIdx = orderedIndex();
-//
-//	bool isLast = orderedIdx == segCount - 1;
-//	bool isFirst = orderedIdx == 0;
-//
-//	bool s = mPointHandle.isSelected();
-//	bool anyTanSelected = mInTanHandle.isSelected() || mOutTanHandle.isSelected();
-//
-//	bool inTanVisible = isInTanVisible();
-//	bool outTanVisible = isOutTanVisible();
-//
-//	mInTanLine.setVisible(inTanVisible);
-//	mInTanHandle.setVisible(inTanVisible);
-//	mOutTanLine.setVisible(outTanVisible);
-//	mOutTanHandle.setVisible(outTanVisible);
 }
 
 void CurveSegmentItem::onTanHandleSelected(HandleItem* handle)
@@ -628,7 +650,7 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	setVerticalFlipped(true);
 	frameView(QRectF(0, 0, 1, 1), QMargins(10, 10, 10, 10));
 
-
+	setRenderHint(QPainter::Antialiasing, true);
 }
 
 
@@ -653,20 +675,26 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 		{
 			if (clickedPointHandle)
 			{
-				clearSelection();
-				selectPointHandles({clickedPointHandle});
+				if (!clickedPointHandle->isSelected())
+				{
+					clearSelection();
+					selectPointHandles({clickedPointHandle});
+				}
 				mInteractMode = DragPoints;
 			}
 			else if (clickedTanHandle)
 			{
-				for (TangentHandleItem* tan : filterT<TangentHandleItem>(scene()->selectedItems()))
-					if (tan != clickedTanHandle)
-						tan->setSelected(false);
+				if (!clickedTanHandle->isSelected())
+				{
+					for (TangentHandleItem* tan : filterT<TangentHandleItem>(scene()->selectedItems()))
+						if (tan != clickedTanHandle)
+							tan->setSelected(false);
 
-				for (PointHandleItem* handle : filterT<PointHandleItem>(scene()->selectedItems()))
-					handle->setSelected(false);
+					for (PointHandleItem* handle : filterT<PointHandleItem>(scene()->selectedItems()))
+						handle->setSelected(false);
 
-				addSelection({clickedTanHandle});
+					addSelection({clickedTanHandle});
+				}
 				mInteractMode = DragPoints;
 			}
 			else
@@ -679,7 +707,19 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 		{
 			if (clickedPointHandle)
 			{
-//				addSelection({clickedPointHandle});
+				selectPointHandles({clickedPointHandle});
+			}
+			else if (clickedTanHandle)
+			{
+//				for (TangentHandleItem* tan : filterT<TangentHandleItem>(scene()->selectedItems()))
+//					if (tan != clickedTanHandle)
+//						tan->setSelected(false);
+
+				for (PointHandleItem* handle : filterT<PointHandleItem>(scene()->selectedItems()))
+					handle->setSelected(false);
+
+				addSelection({clickedTanHandle});
+				mInteractMode = SelectAdd;
 			}
 			else
 			{
@@ -770,6 +810,10 @@ void CurveView::mouseReleaseEvent(QMouseEvent* event)
 				handle->curveSegmentItem().setTangentsVisible(false);
 			}
 		}
+	}
+	else if (mInteractMode == SelectAdd)
+	{
+
 	}
 	mInteractMode = None;
 }
@@ -927,8 +971,9 @@ void CurveView::selectPointHandles(const QList<PointHandleItem*>& pointHandles)
 		graphicsItems.append(p);
 	}
 
+	auto selectedPoints = filterT<PointHandleItem>(scene()->selectedItems());
 	for (PointHandleItem* pt : filterT<PointHandleItem>(scene()->items()))
-		if (!pointHandles.contains(pt))
+		if (!pointHandles.contains(pt) && !selectedPoints.contains(pt))
 			pt->curveSegmentItem().setTangentsVisible(false);
 
 	addSelection(graphicsItems);
