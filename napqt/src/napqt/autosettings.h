@@ -44,10 +44,11 @@ namespace napqt
 		 * When finding a storer for a particular widget,
 		 * it will do so by iterating through the registered list
 		 * and picking the first compatible type T
-		 *
-		 * @param s The storer to register
 		 */
-		void registerStorer(std::unique_ptr<WidgetStorerBase> s);
+		template<typename T>
+		void registerStorer() {
+			registerStorer(std::make_unique<T>());
+		}
 
 	private:
 		AutoSettings();
@@ -55,6 +56,7 @@ namespace napqt
 		void operator=(AutoSettings const&);
 
 		void registerDefaults();
+		void registerStorer(std::unique_ptr<WidgetStorerBase> s);
 
 		void storeRecursive(QWidget& w, QSettings& s) const;
 		void restoreRecursive(QWidget& w, const QSettings& s) const;
