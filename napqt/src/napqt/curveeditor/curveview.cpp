@@ -6,7 +6,10 @@
 #include <QList>
 #include <cassert>
 #include <QVector>
-#include <QtGui/QtGui>
+#include <QtGui>
+#include <QAction>
+#include <QKeySequence>
+#include <napqt/qtutils.h>
 
 using namespace napqt;
 
@@ -37,16 +40,6 @@ bool fuzzyCompare(const QPointF& a, const QPointF& b)
 	return xEqual && yEqual;
 }
 
-QList<int> reverseSort(const QList<int>& ints)
-{
-	auto sortedIndices = ints;
-	qSort(sortedIndices.begin(), sortedIndices.end(), [](const QVariant& a, const QVariant& b)
-	{
-		bool ok;
-		return b.toInt(&ok) < a.toInt(&ok);
-	});
-	return sortedIndices;
-}
 
 void limitOverhang(qreal& x0, qreal& x1, qreal& x2, qreal& x3)
 {
@@ -568,6 +561,7 @@ void CurveItem::onPointsRemoved(const QList<int> indices)
 		delete seg;
 	}
 	setPointOrderDirty();
+	updateAllSegments();
 }
 
 int CurveItem::segmentIndex(const CurveSegmentItem& item) const
@@ -651,6 +645,8 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	frameView(QRectF(0, 0, 1, 1), QMargins(10, 10, 10, 10));
 
 	setRenderHint(QPainter::Antialiasing, true);
+
+	initActions();
 }
 
 
@@ -726,6 +722,13 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 				startRubberBand(mMousePressPos);
 				mInteractMode = RubberbandAdd;
 			}
+		}
+		else if (ctrlHeld)
+		{
+			auto scenePos = mapToScene(event->pos());
+			auto curveItem = closestCurveItem(event->pos());
+			if (curveItem)
+				curveItem->curve().addPoint(scenePos.x(), scenePos.y());
 		}
 	}
 	else if (mmb)
@@ -938,6 +941,36 @@ void CurveView::setModel(AbstractCurveModel* model)
 	onCurvesAdded(indices);
 }
 
+void CurveView::initActions()
+{
+	auto deleteAction = new QAction("Delete", this);
+	deleteAction->setShortcut(QKeySequence::Delete);
+	deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+	connect(deleteAction, &QAction::triggered, this, &CurveView::deleteSelectedItems);
+	addAction(deleteAction);
+
+
+}
+
+void CurveView::deleteSelectedItems()
+{
+	QMap<int, QList<int>> toDelete;
+	for (PointHandleItem* pointHandle : selectedItems<PointHandleItem>())
+	{
+		auto& curveItem = pointHandle->curveSegmentItem().curveItem();
+		int curveIndex = model()->curveIndex(&curveItem.curve());
+		int pointIndex = pointHandle->curveSegmentItem().index();
+
+		if (!toDelete.contains(curveIndex))
+			toDelete[curveIndex] = QList<int>();
+
+		toDelete[curveIndex].append(pointIndex);
+	}
+
+	for (auto it = toDelete.begin(); it != toDelete.end(); ++it)
+		model()->curve(it.key())->removePoints(it.value());
+
+}
 
 void CurveView::onCurvesAdded(QList<int> indices)
 {
@@ -977,4 +1010,14 @@ void CurveView::selectPointHandles(const QList<PointHandleItem*>& pointHandles)
 			pt->curveSegmentItem().setTangentsVisible(false);
 
 	addSelection(graphicsItems);
+}
+
+CurveItem* CurveView::closestCurveItem(const QPointF& pos)
+{
+	for (auto item : items(pos.x(), pos.y())) {
+		auto segment = dynamic_cast<CurveSegmentItem*>(item);
+		if (segment)
+			return &segment->curveItem();
+	}
+	return nullptr;
 }

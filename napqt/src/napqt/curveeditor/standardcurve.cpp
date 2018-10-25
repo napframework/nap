@@ -4,6 +4,7 @@
 #include <cassert>
 #include <QMap>
 #include <QtDebug>
+#include <napqt/qtutils.h>
 
 using namespace napqt;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,9 +165,9 @@ void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 	pointsChanged(indexes);
 }
 
-void napqt::StandardCurve::addPoint(qreal time, qreal value, InterpType interp)
+void napqt::StandardCurve::addPoint(qreal time, qreal value)
 {
-	mPoints << StandardPoint(QPointF(time, value), interp);
+	mPoints << StandardPoint(QPointF(time, value));
 	pointsAdded({mPoints.size()});
 }
 
@@ -179,4 +180,13 @@ void napqt::StandardCurve::removePoint(int index)
 StandardCurveModel* StandardCurve::model()
 {
 	return dynamic_cast<StandardCurveModel*>(parent());
+}
+
+void StandardCurve::removePoints(const QList<int>& indices)
+{
+	for (int idx : napqt::reverseSort(indices))
+	{
+		mPoints.removeAt(idx);
+	}
+	pointsRemoved(indices);
 }

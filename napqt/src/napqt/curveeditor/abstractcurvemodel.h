@@ -32,6 +32,8 @@ namespace napqt
 		virtual void setData(int index, int role, QVariant value) = 0;
 		virtual void movePoints(const QMap<int, QPointF>& positions) = 0;
 		virtual void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents) = 0;
+		virtual void removePoints(const QList<int>& indices) {}
+		virtual void addPoint(qreal time, qreal value) {}
 	Q_SIGNALS:
 		void changed(AbstractCurve* curve);
 		void pointsChanged(QList<int> indices);
