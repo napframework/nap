@@ -11,6 +11,7 @@
 #include "errordialog.h"
 #include "randomnames.h"
 #include "filterpopup.h"
+#include "autosettings.h"
 
 using namespace napqt;
 
@@ -96,6 +97,7 @@ public:
 		addDock("Timeline", &mTimelinePanel);
 		addDock("Demo", &mDemoPanel);
 		addDock("Curves", &mCurveView);
+		addDock("Curves2", &mCurveView2);
 
 		demoTimeline();
 		demoCurves();
@@ -113,6 +115,7 @@ public:
 			curve->addPoint(0.25, 1.00);
 		}
 		mCurveView.setModel(model);
+		mCurveView2.setModel(model);
 
 //		{
 //			auto curve = model->addCurve();
@@ -206,8 +209,11 @@ private:
 	TimelinePanel mTimelinePanel;
 	Timeline mTimeline;
 	CurveView mCurveView;
+	CurveView mCurveView2;
 	DemoPanel mDemoPanel;
 };
+
+
 
 
 int main(int argc, char* argv[])

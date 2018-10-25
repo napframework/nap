@@ -58,15 +58,15 @@ void limitOverhangQPoints(QPointF& pa, QPointF& pb, QPointF& pc, QPointF& pd)
 	qreal cc = c;
 
 	limitOverhang(a, b, c, d);
-	qreal rb = (b-a)/(bb-a);
-	qreal rc = (c-d)/(cc-d);
+	qreal rb = (b - a) / (bb - a);
+	qreal rc = (c - d) / (cc - d);
 
 	pb.setX(b);
 	pc.setX(c);
 
 	// we limited x, keep the point on the tangent line for c1 continuity
-	pb.setY(((pb.y()-pa.y()) * rb) + pa.y());
-	pc.setY(((pc.y()-pd.y()) * rc) + pd.y());
+	pb.setY(((pb.y() - pa.y()) * rb) + pa.y());
+	pc.setY(((pc.y() - pd.y()) * rc) + pd.y());
 }
 
 
@@ -628,6 +628,7 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	setVerticalFlipped(true);
 	frameView(QRectF(0, 0, 1, 1), QMargins(10, 10, 10, 10));
 
+
 }
 
 
@@ -642,16 +643,31 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 	bool mmb = event->buttons() == Qt::MiddleButton;
 
 	auto item = itemAt(event->pos());
-	auto clickedHandle = dynamic_cast<HandleItem*>(item);
+	auto clickedPointHandle = dynamic_cast<PointHandleItem*>(item);
+	auto clickedTanHandle = dynamic_cast<TangentHandleItem*>(item);
 	auto clickedCurve = dynamic_cast<CurveSegmentItem*>(item);
 
 	if (lmb)
 	{
 		if (!ctrlHeld && !shiftHeld)
 		{
-			if (clickedHandle)
+			if (clickedPointHandle)
 			{
-				setSelection({clickedHandle});
+				clearSelection();
+				selectPointHandles({clickedPointHandle});
+				mInteractMode = DragPoints;
+			}
+			else if (clickedTanHandle)
+			{
+				for (TangentHandleItem* tan : filterT<TangentHandleItem>(scene()->selectedItems()))
+					if (tan != clickedTanHandle)
+						tan->setSelected(false);
+
+				for (PointHandleItem* handle : filterT<PointHandleItem>(scene()->selectedItems()))
+					handle->setSelected(false);
+
+				addSelection({clickedTanHandle});
+				mInteractMode = DragPoints;
 			}
 			else
 			{
@@ -661,9 +677,9 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 		}
 		else if (shiftHeld)
 		{
-			if (clickedHandle)
+			if (clickedPointHandle)
 			{
-//				addSelection({clickedHandle});
+//				addSelection({clickedPointHandle});
 			}
 			else
 			{
@@ -722,24 +738,14 @@ void CurveView::mouseReleaseEvent(QMouseEvent* event)
 		hideRubberBand();
 		auto rubberItems = items(rubberBandGeo());
 
-		auto pointHandles = filter<PointHandleItem>(rubberItems);
+		auto pointHandles = filterT<PointHandleItem>(rubberItems);
 		auto tanHandles = filter<TangentHandleItem>(rubberItems);
 
 		if (!pointHandles.isEmpty())
 		{
-
 			if (mInteractMode != RubberbandAdd)
 				clearSelection();
-
-			auto selectedPoints = filterT<PointHandleItem>(scene()->selectedItems());
-
-			for (PointHandleItem* pt : filterT<PointHandleItem>(scene()->items()))
-				if (!selectedPoints.contains(pt))
-					pt->curveSegmentItem().setTangentsVisible(false);
-
-			addSelection(pointHandles);
-			for (auto handle : pointHandles)
-				dynamic_cast<PointHandleItem*>(handle)->curveSegmentItem().setTangentsVisible(true);
+			selectPointHandles(pointHandles);
 		}
 		else if (!tanHandles.isEmpty())
 		{
@@ -836,7 +842,8 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 			if (p.x() > -EPSILON)
 				p.setX(-EPSILON);
 			positions[0][idx] = p;
-		} else
+		}
+		else
 		{
 			auto p = pos - tangent->pointHandle().pos();
 			if (p.x() < EPSILON)
@@ -898,6 +905,8 @@ void CurveView::onCurvesAdded(QList<int> indices)
 		mCurveItems.insert(index, curveItem);
 	}
 }
+
+
 void CurveView::onCurvesRemoved(QList<int> indices)
 {
 	auto sortedIndexes = reverseSort(indices);
@@ -909,3 +918,18 @@ void CurveView::onCurvesRemoved(QList<int> indices)
 }
 
 
+void CurveView::selectPointHandles(const QList<PointHandleItem*>& pointHandles)
+{
+	QList < QGraphicsItem * > graphicsItems;
+	for (auto p : pointHandles)
+	{
+		p->curveSegmentItem().setTangentsVisible(true);
+		graphicsItems.append(p);
+	}
+
+	for (PointHandleItem* pt : filterT<PointHandleItem>(scene()->items()))
+		if (!pointHandles.contains(pt))
+			pt->curveSegmentItem().setTangentsVisible(false);
+
+	addSelection(graphicsItems);
+}
