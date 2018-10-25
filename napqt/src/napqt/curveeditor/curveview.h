@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QGraphicsScene>
+#include <QAction>
 #include <napqt/gridview.h>
 #include "standardcurve.h"
 
@@ -213,6 +214,7 @@ namespace napqt
 		void onCurvesAdded(QList<int> indices);
 		void onCurvesRemoved(QList<int> indices);
 		void selectPointHandles(const QList<PointHandleItem*>& pointHandles);
+		void onCustomContextMenuRequested(const QPoint& pos);
 
 
 		QGraphicsScene mCurveScene;
@@ -221,6 +223,8 @@ namespace napqt
 		QList<CurveItem*> mCurveItems;
 
 		InteractMode mInteractMode = None;
+
+		QAction mDeleteAction;
 
 	};
 
