@@ -24,6 +24,11 @@ uniform float 		lightIntensity;
 uniform float 		ambientIntensity;
 uniform float		preMultiplyTexValue;
 uniform float		diffuseIntensity;
+uniform float		fogInfluence;
+uniform vec3		fogColor;
+uniform float		fogMin;
+uniform float		fogMax;
+uniform float		fogPower;
 
 // Unshared uniforms					
 uniform float 		specularIntensity;				
@@ -31,6 +36,16 @@ uniform vec3  		specularColor;
 uniform float 		shininess; 
 uniform float		textureTimeU;
 uniform float		textureTimeV;
+
+
+float fit(float value, float min, float max, float outMin, float outMax)
+{
+  float v = clamp(value, min, max);
+  float m = max - min;
+  if(m==0.0)
+    m = 0.00000001;
+  return (v - min) / (m) * (outMax - outMin) + outMin;
+}
 
 // Shades a color based on a light, incoming normal and position should be in object space
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
@@ -81,7 +96,13 @@ void main()
 	vec3 tex_color = mix(tex_color_one, tex_color_two, colorTexMix);
 	tex_color = mix(tex_color, diffuseColor, diffuseColorMix);
 
+	// Apply light
 	vec3 lit_color = applyLight(tex_color, passNormal, passPosition);
+
+	// Apply fog
+	float fog_blend_v = smoothstep(fogMin, fogMax, pow(gl_FragCoord.z,fogPower));
+	vec3 fog_color  = mix(lit_color, fogColor, fog_blend_v);
+	lit_color = mix(lit_color, fog_color, fogInfluence);
 
 	// Set to frag output color
 	out_Color = vec4(lit_color,1.0);

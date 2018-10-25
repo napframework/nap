@@ -35,6 +35,11 @@ namespace nap
 		FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
 		mCamMaxMovSpeed = fps_comp.getMovementSpeed();
 		mCamMaxRotSpeed = fps_comp.getRotationSpeed();
+
+		if (mLinkFogToBackground) {
+			nap::UpdateMaterialComponentInstance& up_mat_comp = mApp.mScanEntity->getComponent<UpdateMaterialComponentInstance>();
+			up_mat_comp.mFogColor = RGBColorFloat(mBackgroundColor.r, mBackgroundColor.g, mBackgroundColor.b);
+		}
 	}
 
 
@@ -61,6 +66,14 @@ namespace nap
 
 		if (showInfo)
 			showInfoWindow();
+
+		// Set fog color if linked
+		if (mLinkFogToBackground && mBackgroundColorDirty)
+		{
+			nap::UpdateMaterialComponentInstance& up_mat_comp = mApp.mScanEntity->getComponent<UpdateMaterialComponentInstance>();
+			up_mat_comp.mFogColor = RGBColorFloat(mBackgroundColor.r, mBackgroundColor.g, mBackgroundColor.b);
+			mBackgroundColorDirty = false;
+		}
 	}
 	
 
@@ -164,6 +177,21 @@ namespace nap
 			ImGui::SliderFloat("Wind Random", &(up_mat_comp.mWindRandom), 0.0f, 1.0f, "%.3f", 2.0f);
 		}
 
+		// Fog
+		if (ImGui::CollapsingHeader("Fog"))
+		{
+			if (ImGui::Checkbox("Link To Background Color", &mLinkFogToBackground))
+					mBackgroundColorDirty = true;
+
+			if(!mLinkFogToBackground)
+				ImGui::ColorEdit3("Fog Color", up_mat_comp.mFogColor.getData());
+				
+			ImGui::SliderFloat("Fog Min", &(up_mat_comp.mFogMin), 0.0f, 1.0f);
+			ImGui::SliderFloat("Fog Max", &(up_mat_comp.mFogMax),0.0f, 1.0f);
+			ImGui::SliderFloat("Fog Power", &(up_mat_comp.mFogPower), 0.01f, 4.0f);
+			ImGui::SliderFloat("Fog Influence", &(up_mat_comp.mFogInfluence),0.0f,1.0f);
+		}
+
 		if (ImGui::CollapsingHeader("Camera"))
 		{
 			// Control mode
@@ -218,7 +246,8 @@ namespace nap
 			}
 
 			// Background color
-			ImGui::ColorEdit4("Background Color", &(mBackgroundColor[0]));
+			if (ImGui::ColorEdit4("Background Color", &(mBackgroundColor[0])))
+				mBackgroundColorDirty = true;
 		}
 
 		ImGui::End();

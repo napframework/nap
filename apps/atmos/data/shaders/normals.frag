@@ -27,6 +27,11 @@ uniform float 		lightIntensity;
 uniform float 		ambientIntensity;
 uniform float		preMultiplyTexValue;
 uniform float		diffuseIntensity;
+uniform vec3		fogColor;
+uniform float		fogMin;
+uniform float		fogMax;
+uniform float		fogInfluence;
+uniform float		fogPower;
 
 // Unshared uniforms		
 uniform float 		specularIntensity;		
@@ -116,6 +121,11 @@ void main()
 
 	// Apply alpha based on tip interpolated tip value
 	float v = fit(1.0-passTip, 0.9,1.0,1.0,0.0);
+
+	// Fog blend value
+	float fog_blend_v = smoothstep(fogMin, fogMax, pow(gl_FragCoord.z,fogPower));
+	vec3 fog_color  = mix(lit_color, fogColor, fog_blend_v);
+	lit_color = mix(lit_color, fog_color, fogInfluence);
 
 	// Set output color
 	out_Color = vec4(lit_color, opacity * v);

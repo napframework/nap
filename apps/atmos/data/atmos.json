@@ -28,7 +28,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 140.0
+                            "z": 75.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -639,6 +639,40 @@
                     "mID": "UniformFloat_3",
                     "Name": "colorTexScale",
                     "Value": 10.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat",
+                    "Name": "fogMin",
+                    "Value": 0.75
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_4",
+                    "Name": "fogMax",
+                    "Value": 0.75
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_5",
+                    "Name": "fogInfluence",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_2",
+                    "Name": "fogColor",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_10",
+                    "Name": "fogPower",
+                    "Value": 2.0
                 }
             ],
             "Shader": "NormalsShader",
@@ -681,7 +715,41 @@
                     "Type": "nap::UniformFloat",
                     "mID": "colorTexScale",
                     "Name": "colorTexScale",
-                    "Value": 10.0
+                    "Value": 0.5
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_6",
+                    "Name": "fogMax",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_7",
+                    "Name": "fogInfluence",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_8",
+                    "Name": "fogMin",
+                    "Value": 0.5
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_3",
+                    "Name": "fogColor",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_9",
+                    "Name": "fogPower",
+                    "Value": 2.0
                 }
             ],
             "Shader": "ScanShader",
@@ -760,9 +828,9 @@
             "Title": "Window 1",
             "Sync": false,
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0,
                 "w": 1.0
             }
         },
