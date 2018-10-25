@@ -1,15 +1,20 @@
-#include <napqt/timeline/eventitem.h>
 #include "curveview.h"
-#include "curvemath.h"
-#include <QtDebug>
-#include <QMap>
-#include <QList>
+
 #include <cassert>
-#include <QVector>
-#include <QtGui>
+
 #include <QAction>
 #include <QKeySequence>
+#include <QList>
+#include <QMap>
+#include <QMenu>
+#include <QtDebug>
+#include <QtGui>
+#include <QVector>
+
 #include <napqt/qtutils.h>
+#include <napqt/timeline/eventitem.h>
+
+#include "curvemath.h"
 
 using namespace napqt;
 
@@ -645,6 +650,9 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	frameView(QRectF(0, 0, 1, 1), QMargins(10, 10, 10, 10));
 
 	setRenderHint(QPainter::Antialiasing, true);
+	setContextMenuPolicy(Qt::CustomContextMenu);
+
+	connect(this, &QWidget::customContextMenuRequested, this, &CurveView::onCustomContextMenuRequested);
 
 	initActions();
 }
@@ -943,13 +951,11 @@ void CurveView::setModel(AbstractCurveModel* model)
 
 void CurveView::initActions()
 {
-	auto deleteAction = new QAction("Delete", this);
-	deleteAction->setShortcut(QKeySequence::Delete);
-	deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	connect(deleteAction, &QAction::triggered, this, &CurveView::deleteSelectedItems);
-	addAction(deleteAction);
-
-
+	mDeleteAction.setText("Delete");
+	mDeleteAction.setShortcut(QKeySequence::Delete);
+	mDeleteAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
+	connect(&mDeleteAction, &QAction::triggered, this, &CurveView::deleteSelectedItems);
+	addAction(&mDeleteAction);
 }
 
 void CurveView::deleteSelectedItems()
@@ -1020,4 +1026,29 @@ CurveItem* CurveView::closestCurveItem(const QPointF& pos)
 			return &segment->curveItem();
 	}
 	return nullptr;
+}
+
+void CurveView::onCustomContextMenuRequested(const QPoint& pos)
+{
+	QMenu menu;
+
+	auto selectedPoints = filterT<PointHandleItem>(scene()->selectedItems());
+	if (!selectedPoints.isEmpty())
+	{
+		menu.addSection("Interpolation");
+		auto linearAction = menu.addAction("Linear");
+		auto bezierAction = menu.addAction("Bezier");
+		auto steppedAction = menu.addAction("Stepped");
+
+		menu.addSection("Tangents");
+		auto alignAction = menu.addAction("Aligned");
+		alignAction->setCheckable(true);
+
+		menu.addSection("Actions");
+		menu.addAction(&mDeleteAction);
+	} else {
+		return;
+	}
+
+	menu.exec(mapToGlobal(pos));
 }
