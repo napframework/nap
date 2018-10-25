@@ -39,6 +39,9 @@ namespace nap
 		 *	Shows the controls window
 		 */
 		void showControlWindow();
+		void showSunControls();
+		void showVideoControls();
+		void showStaticControls();
 
 		/**
 		*	Utilities to modify the orbit circle and elements
@@ -50,6 +53,8 @@ namespace nap
 		void setOrbitStartEndPosition(float *radius);
 
 		// Initialized Variables
+		const char*	mModes[3] = { "Sun", "Video", "Static" };
+		int			mCurrentMode = 0;
 		float		mNoiseSpeed = 0.05f;
 		float		mWindSpeed = 0.1f;
 		bool		mCloudsInverted = false;

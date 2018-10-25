@@ -87,7 +87,48 @@ namespace nap
 		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - 2.0f * guiWindowPadding));
 		ImGui::Begin("Controls", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 		ImGui::Text("left mouse button to rotate, right mouse button to zoom");
+
+		ImGui::ListBox("Lighting Mode", &mCurrentMode, mModes, IM_ARRAYSIZE(mModes));
+
+		switch (mCurrentMode)
+		{
+		case 0:
+			showSunControls();
+			break;
+		case 1:
+			showVideoControls();
+			break;
+		case 2:
+			showStaticControls();
+			break;
+		default:
+			break;
+		}
 		
+		if (ImGui::CollapsingHeader("Mix", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			nap::RenderableMeshComponentInstance& comb_plane = mApp.mCombination->getComponent<nap::RenderableMeshComponentInstance>();
+			nap::UniformFloat& uBlendValue = comb_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("blendValue");
+			ImGui::SliderFloat("Blend Value", &(uBlendValue.mValue), 0.0f, 1.0f);
+		}
+		if (ImGui::CollapsingHeader("Light Rig", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			nap::ApplyCombinationComponentInstance& comb_comp = mApp.mLightRig->getComponent<ApplyCombinationComponentInstance>();
+			ImGui::SliderFloat("Brightness", &(comb_comp.mBrightness), 0.0f, 1.0f);
+			ImGui::SliderFloat("Influence", &(comb_comp.mInfluence), 0.0f, 1.0f);
+		}
+		if (ImGui::CollapsingHeader("Output", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			float avail_width = ImGui::GetContentRegionAvailWidth();
+			ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
+			ImGui::Image(mApp.mCombineRenderTarget->getColorTexture(), { avail_width, avail_width });
+		}
+
+		ImGui::End();
+	}
+
+	void RandomGui::showSunControls()
+	{
 		if (ImGui::CollapsingHeader("Clouds", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 0.25f);
@@ -139,33 +180,22 @@ namespace nap
 			if (updateOrbitStartEnd || updateOrbitRadius)
 				setOrbitStartEndPosition(&(uOrbitRadius.mValue));
 		}
+	}
+
+	void RandomGui::showVideoControls()
+	{
 		if (ImGui::CollapsingHeader("Video", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			SelectVideoComponentInstance& video_comp = mApp.mVideo->getComponent<SelectVideoComponentInstance>();
 			int idx = video_comp.getIndex();
-			if (ImGui::SliderInt("Selection", &idx, 0, video_comp.getCount()-1))
+			if (ImGui::SliderInt("Selection", &idx, 0, video_comp.getCount() - 1))
 				video_comp.selectVideo(idx);
 		}
-		if (ImGui::CollapsingHeader("Mix", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			nap::RenderableMeshComponentInstance& comb_plane = mApp.mCombination->getComponent<nap::RenderableMeshComponentInstance>();
-			nap::UniformFloat& uBlendValue = comb_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("blendValue");
-			ImGui::SliderFloat("Blend Value", &(uBlendValue.mValue), 0.0f, 1.0f);
-		}
-		if (ImGui::CollapsingHeader("Light Rig", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			nap::ApplyCombinationComponentInstance& comb_comp = mApp.mLightRig->getComponent<ApplyCombinationComponentInstance>();
-			ImGui::SliderFloat("Brightness", &(comb_comp.mBrightness), 0.0f, 1.0f);
-			ImGui::SliderFloat("Influence", &(comb_comp.mInfluence), 0.0f, 1.0f);
-		}
-		if (ImGui::CollapsingHeader("Output", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			float avail_width = ImGui::GetContentRegionAvailWidth();
-			ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
-			ImGui::Image(mApp.mCombineRenderTarget->getColorTexture(), { avail_width, avail_width });
-		}
+	}
 
-		ImGui::End();
+	void RandomGui::showStaticControls()
+	{
+
 	}
 
 	float RandomGui::getOrbitAngle() {
