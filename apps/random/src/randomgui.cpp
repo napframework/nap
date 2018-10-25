@@ -13,8 +13,7 @@ namespace nap
 	// Define constant values
 	const glm::vec2 RandomGui::uvOffset = glm::vec2(6.0f, 2.0f);
 	const float RandomGui::uvScale = 136.0f;
-	const float RandomGui::mainMenuHeight = 27.0f;
-	const float RandomGui::guiWindowWidth = 320.0f;
+	const float RandomGui::guiWindowWidth = 400.0f;
 	const float RandomGui::guiWindowPadding = 7.0f;
 	const float RandomGui::cloudsScaleMin = 0.1f;
 	const float RandomGui::cloudsScaleMax = 2.0f;
@@ -28,24 +27,8 @@ namespace nap
 
 	void RandomGui::update(double deltaTime)
 	{
-		// Menu
-		if (ImGui::BeginMainMenuBar())
-		{
-			if (ImGui::BeginMenu("Display"))
-			{
-				ImGui::MenuItem("Controls", NULL, &mShowControls);
-				ImGui::MenuItem("Information", NULL, &mShowInfo);
-				ImGui::EndMenu();
-			}
-			ImGui::EndMainMenuBar();
-		}
-
 		// Show control menu
-		if (mShowControls) 
-			showControlWindow();
-
-		if (mShowInfo)
-			showInfoWindow();
+		showControlWindow();
 
 		// Update some shader variables
 		nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
@@ -62,7 +45,7 @@ namespace nap
 		uOffset.mValue.z += mNoiseSpeed * (float)deltaTime;
 		uOrbitAngle.setValue(getOrbitAngle());
 
-		// Apply initial values to orbit circle and elements
+		// Apply initial values to the orbit circle and elements
 		setOrbitPosition(&(uOrbitCenter.mValue.x), &(uOrbitCenter.mValue.y));
 		setOrbitPathRadius(&(uOrbitRadius.mValue));
 		setOrbitSunPosition(&(uOrbitAngle.mValue), &(uOrbitRadius.mValue));
@@ -100,9 +83,10 @@ namespace nap
 
 	void RandomGui::showControlWindow()
 	{
-		ImGui::SetNextWindowPos(ImVec2(guiWindowPadding, mainMenuHeight + guiWindowPadding));
-		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - mainMenuHeight - 2.0f * guiWindowPadding));
-		ImGui::Begin("Controls", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+		ImGui::SetNextWindowPos(ImVec2(guiWindowPadding, guiWindowPadding));
+		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - 2.0f * guiWindowPadding));
+		ImGui::Begin("Controls", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+		ImGui::Text("left mouse button to rotate, right mouse button to zoom");
 		
 		if (ImGui::CollapsingHeader("Clouds", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -174,37 +158,13 @@ namespace nap
 			ImGui::SliderFloat("Brightness", &(comb_comp.mBrightness), 0.0f, 1.0f);
 			ImGui::SliderFloat("Influence", &(comb_comp.mInfluence), 0.0f, 1.0f);
 		}
-		ImGui::End();
-	}
-
-
-	void RandomGui::showInfoWindow()
-	{
-		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(mApp.windowSize.x) - guiWindowWidth - guiWindowPadding, mainMenuHeight + guiWindowPadding));
-		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - mainMenuHeight - 2.0f * guiWindowPadding));
-		ImGui::Begin("Information", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-		
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
-		ImGui::SliderFloat("Preview Size", &mTextureDisplaySize, 0.0f, 1.0f);
-		float col_width = ImGui::GetContentRegionAvailWidth() * mTextureDisplaySize;
-
-		if (ImGui::CollapsingHeader("Weather Textures", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::CollapsingHeader("Output", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::Image(mApp.mCloudRenderTarget->getColorTexture(), { col_width, col_width });
-			ImGui::Image(mApp.mSunRenderTarget->getColorTexture(), { col_width, col_width });
+			float avail_width = ImGui::GetContentRegionAvailWidth();
+			ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
+			ImGui::Image(mApp.mCombineRenderTarget->getColorTexture(), { avail_width, avail_width });
 		}
-		if (ImGui::CollapsingHeader("Video Texture", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Image(mApp.mVideoRenderTarget->getColorTexture(), { col_width, col_width });
-		}
-		if (ImGui::CollapsingHeader("Combined Texture", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Image(mApp.mCombineRenderTarget->getColorTexture(), { col_width, col_width });
-		}
+
 		ImGui::End();
 	}
 

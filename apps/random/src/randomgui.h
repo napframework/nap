@@ -41,11 +41,6 @@ namespace nap
 		void showControlWindow();
 
 		/**
-		 *	Shows the information window
-		 */
-		void showInfoWindow();
-
-		/**
 		*	Utilities to modify the orbit circle and elements
 		*/
 		float getOrbitAngle();
@@ -55,8 +50,6 @@ namespace nap
 		void setOrbitStartEndPosition(float *radius);
 
 		// Initialized Variables
-		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
-		float		mTextureDisplaySize = 0.5f;
 		float		mNoiseSpeed = 0.1f;
 		float		mWindSpeed = 0.5f;
 		bool		mCloudsInverted = false;
@@ -66,14 +59,9 @@ namespace nap
 		// The app used to extract information from
 		RandomApp&	mApp;
 
-		// Window visibility toggles
-		bool		mShowControls = true;		//< If gui controls are shown
-		bool		mShowInfo = true;			//< If gui info is shown
-
 		// Define constant values
 		static const glm::vec2 uvOffset;
 		static const float uvScale;
-		static const float mainMenuHeight;
 		static const float guiWindowWidth;
 		static const float guiWindowPadding;
 		static const float cloudsScaleMin;
