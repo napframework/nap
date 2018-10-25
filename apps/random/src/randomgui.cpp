@@ -90,8 +90,8 @@ namespace nap
 		
 		if (ImGui::CollapsingHeader("Clouds", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 1.0f);
-			ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f);
+			ImGui::SliderFloat("Noise Speed", &mNoiseSpeed, 0.0f, 0.25f);
+			ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 0.5f);
 
 			nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
 			nap::UniformFloat& uRotation = clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation");

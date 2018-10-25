@@ -323,13 +323,19 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "uContrast",
                                 "Name": "uContrast",
-                                "Value": 1.0
+                                "Value": 0.5
                             },
                             {
                                 "Type": "nap::UniformFloat",
                                 "mID": "uScale",
                                 "Name": "uScale",
                                 "Value": 0.5
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "uRotation",
+                                "Name": "uRotation",
+                                "Value": 165.0
                             }
                         ],
                         "BlendMode": "NotSet",

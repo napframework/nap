@@ -50,8 +50,8 @@ namespace nap
 		void setOrbitStartEndPosition(float *radius);
 
 		// Initialized Variables
-		float		mNoiseSpeed = 0.1f;
-		float		mWindSpeed = 0.5f;
+		float		mNoiseSpeed = 0.05f;
+		float		mWindSpeed = 0.1f;
 		bool		mCloudsInverted = false;
 		float		mOrbitStartEnd[2] = { 40.0f, 115.0f };
 		float		mOrbitProgress = 0.0f;
