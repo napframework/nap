@@ -152,7 +152,12 @@
                     "Type": "nap::SelectMeshComponent",
                     "mID": "SelectMeshComponent",
                     "Meshes": [
-                        "ScatterPointsMesh"
+                        "MeteorietPoints",
+                        "HiressteenPoints",
+                        "WitkoraalPoints",
+                        "ZeesterPoints",
+                        "PyrietPoints",
+                        "OliesteenPoints"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -711,8 +716,38 @@
         },
         {
             "Type": "nap::MeshFromFile",
+            "mID": "HiressteenMesh",
+            "Path": "heleenhiressteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
-            "Path": "witkoraal_scatter.mesh",
+            "Path": "meteoriet.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "OliesteenMesh",
+            "Path": "oliesteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "PyrietMesh",
+            "Path": "pyriet.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "WitkoraalMesh",
+            "Path": "witkoraal.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "ZeesterMesh",
+            "Path": "zeester.mesh",
             "Usage": "Static"
         },
         {
@@ -733,8 +768,38 @@
         },
         {
             "Type": "nap::ScatterPointsMesh",
-            "mID": "ScatterPointsMesh",
+            "mID": "HiressteenPoints",
+            "ReferenceMesh": "HiressteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "MeteorietPoints",
             "ReferenceMesh": "MeteorietMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "OliesteenPoints",
+            "ReferenceMesh": "OliesteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "PyrietPoints",
+            "ReferenceMesh": "PyrietMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "WitkoraalPoints",
+            "ReferenceMesh": "WitkoraalMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "ZeesterPoints",
+            "ReferenceMesh": "ZeesterMesh",
             "PointCount": 1000000
         },
         {
@@ -766,7 +831,7 @@
         {
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
-            "ReferenceMesh": "ScatterPointsMesh",
+            "ReferenceMesh": "MeteorietPoints",
             "Length": 0.009999999776482582
         }
     ]
