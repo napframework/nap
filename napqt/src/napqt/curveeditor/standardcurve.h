@@ -34,8 +34,8 @@ namespace napqt
 
 		QVariant data(int index, int role) const override;
 		void setData(int index, int role, QVariant value) override;
-
-		void addPoint(qreal time, qreal value, InterpType interp = InterpType::Linear);
+		void removePoints(const QList<int>& indices) override;
+		void addPoint(qreal time, qreal value) override;
 		void removePoint(int index);
 		void movePoints(const QMap<int, QPointF>& positions) override;
 		void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents) override;

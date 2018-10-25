@@ -170,6 +170,11 @@ namespace napqt
 	 */
 	void moveItemToFront(QGraphicsItem& item);
 
+	/**
+	 * Reverse sort the list
+	 */
+	QList<int> reverseSort(const QList<int>& ints);
+
 
 }
 

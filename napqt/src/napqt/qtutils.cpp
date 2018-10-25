@@ -203,3 +203,14 @@ void napqt::moveItemToFront(QGraphicsItem& item)
 	item.setZValue(maxZ + 0.001);
 }
 
+QList<int> napqt::reverseSort(const QList<int>& ints)
+{
+	auto sortedIndices = ints;
+	qSort(sortedIndices.begin(), sortedIndices.end(), [](const QVariant& a, const QVariant& b)
+	{
+		bool ok;
+		return b.toInt(&ok) < a.toInt(&ok);
+	});
+	return sortedIndices;
+}
+
