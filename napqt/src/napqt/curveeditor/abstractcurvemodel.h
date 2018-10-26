@@ -10,6 +10,7 @@ namespace napqt
 		const int OUT_TAN = 2;
 		const int INTERP = 3;
 		const int NAME = 4;
+		const int TAN_ALIGNED = 5;
 	}
 
 	class AbstractCurveModel;

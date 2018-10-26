@@ -45,6 +45,18 @@ bool fuzzyCompare(const QPointF& a, const QPointF& b)
 	return xEqual && yEqual;
 }
 
+qreal length(const QPointF& p)
+{
+	return qSqrt(p.x() * p.x() + p.y() * p.y());
+}
+
+QPointF normalize(const QPointF& p)
+{
+	qreal mag = length(p);
+	if (mag == 0)
+		mag = EPSILON;
+	return {p.x() / mag, p.y() / mag};
+}
 
 void limitOverhang(qreal& x0, qreal& x1, qreal& x2, qreal& x3)
 {
@@ -204,6 +216,23 @@ bool TangentHandleItem::isInTangent()
 {
 	return &curveSegmentItem().inTanHandle() == this;
 }
+void TangentHandleItem::updateRect()
+{
+	if (curveSegmentItem().curveItem().curve().data(curveSegmentItem().index(), datarole::TAN_ALIGNED).toBool())
+	{
+		mPath = QPainterPath();
+		auto ext = isSelected() ? mExtentSelectd : mExtent;
+		mRect.setCoords(-ext, -ext, ext * 2, ext * 2);
+		mPath.addEllipse(mRect);
+	}
+	else
+	{
+		mPath = QPainterPath();
+		auto ext = isSelected() ? mExtentSelectd : mExtent;
+		mRect.setCoords(-ext, -ext, ext * 2, ext * 2);
+		mPath.addRect(mRect);
+	}
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -278,6 +307,7 @@ CurveSegmentItem::CurveSegmentItem(CurveItem& curveItem)
 
 	setInTanVisible(false);
 	setOutTanVisible(false);
+
 }
 
 CurveItem& CurveSegmentItem::curveItem() const
@@ -342,7 +372,6 @@ QPainterPath CurveSegmentItem::shape() const
 
 void CurveSegmentItem::updateGeometry()
 {
-
 	setPointsEmitItemChanges(false);
 
 	auto& curve = curveItem().curve();
@@ -362,10 +391,13 @@ void CurveSegmentItem::updateGeometry()
 
 	mPointHandle.setPos(pos);
 	mInTanHandle.setPos(inTanPos);
+	mInTanHandle.updateRect();
 	mOutTanHandle.setPos(outTanPos);
+	mOutTanHandle.updateRect();
 
 	mInTanLine.setFromTo(pos, inTanPos);
 	mOutTanLine.setFromTo(pos, outTanPos);
+
 
 	mPath = QPainterPath();
 	mDebugPath = QPainterPath();
@@ -478,6 +510,7 @@ void CurveItem::onPointsChanged(QList<int> indices)
 void CurveItem::updateSegmentFromPoint(int i)
 {
 	CurveSegmentItem& seg = *mSegments[i];
+
 	seg.updateGeometry();
 	// this handle controls the shape of the previous point too
 	// TODO: this changes when using higher order bsplines
@@ -621,7 +654,6 @@ const QVector<int>& CurveItem::sortPoints()
 	}
 
 	mPointOrderDirty = false;
-	updateAllSegments();
 	return mSortedToUnsorted;
 }
 
@@ -905,13 +937,18 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 				p.setX(EPSILON);
 			positions[1][idx] = p;
 		}
-		// Move opposite tangent
-		auto otherPos = alignedOppositeTangentVector(*tangent);
 
-		if (otherTan.isInTangent())
-			positions[0][idx] = otherPos - otherTan.pointHandle().pos();
-		else
-			positions[1][idx] = otherPos - otherTan.pointHandle().pos();
+		// Move opposite tangent
+		bool aligned = curveItem->curve().data(idx, datarole::TAN_ALIGNED).toBool();
+		if (aligned)
+		{
+			auto otherPos = alignedOppositeTangentVector(*tangent);
+
+			if (otherTan.isInTangent())
+				positions[0][idx] = otherPos - otherTan.pointHandle().pos();
+			else
+				positions[1][idx] = otherPos - otherTan.pointHandle().pos();
+		}
 	}
 
 	for (auto& curveItem : tanMap.keys())
@@ -968,7 +1005,7 @@ void CurveView::deleteSelectedItems()
 		int pointIndex = pointHandle->curveSegmentItem().index();
 
 		if (!toDelete.contains(curveIndex))
-			toDelete[curveIndex] = QList<int>();
+			toDelete[curveIndex] = QList < int > ();
 
 		toDelete[curveIndex].append(pointIndex);
 	}
@@ -1020,7 +1057,8 @@ void CurveView::selectPointHandles(const QList<PointHandleItem*>& pointHandles)
 
 CurveItem* CurveView::closestCurveItem(const QPointF& pos)
 {
-	for (auto item : items(pos.x(), pos.y())) {
+	for (auto item : items(pos.x(), pos.y()))
+	{
 		auto segment = dynamic_cast<CurveSegmentItem*>(item);
 		if (segment)
 			return &segment->curveItem();
@@ -1041,14 +1079,65 @@ void CurveView::onCustomContextMenuRequested(const QPoint& pos)
 		auto steppedAction = menu.addAction("Stepped");
 
 		menu.addSection("Tangents");
+
 		auto alignAction = menu.addAction("Aligned");
 		alignAction->setCheckable(true);
 
+		int alignedCount = 0;
+		int nonAlignedCount = 0;
+		for (PointHandleItem* item : selectedPoints)
+		{
+			bool aligned = item->curveSegmentItem().curveItem().curve().data(item->curveSegmentItem().index(),
+																			 datarole::TAN_ALIGNED).toBool();
+			if (aligned)
+				alignedCount++;
+			else
+				nonAlignedCount++;
+		}
+		alignAction->setChecked(alignedCount > nonAlignedCount);
+
+		connect(alignAction, &QAction::triggered, [this, alignAction]
+		{
+			setTangentsAligned(filterT<PointHandleItem>(scene()->selectedItems()), alignAction->isChecked());
+		});
+
 		menu.addSection("Actions");
 		menu.addAction(&mDeleteAction);
-	} else {
+	}
+	else
+	{
 		return;
 	}
 
 	menu.exec(mapToGlobal(pos));
+}
+
+void CurveView::setTangentsAligned(const QList<PointHandleItem*>& pointHandles, bool aligned)
+{
+	for (PointHandleItem* pt :pointHandles)
+	{
+		int idx = pt->curveSegmentItem().index();
+		auto& curve = pt->curveSegmentItem().curveItem().curve();
+		bool wasAligned = curve.data(idx, datarole::TAN_ALIGNED).toBool();
+		curve.setData(idx, datarole::TAN_ALIGNED, aligned);
+		if (!wasAligned && aligned)
+		{
+			QPointF inTanPos = curve.data(idx, datarole::IN_TAN).toPointF();
+			QPointF outTanPos = curve.data(idx, datarole::OUT_TAN).toPointF();
+			qreal inMag = length(inTanPos);
+			qreal outMag = length(outTanPos);
+			QPointF inVec = normalize(inTanPos);
+			QPointF outVec = normalize(outTanPos);
+
+			QPointF antInPos = -outVec * inMag;
+			QPointF antOutPos = -inVec * outMag;
+
+			auto newInTanPos = lerpPoint(inTanPos, antInPos, 0.5);
+			auto newOutTanPos = lerpPoint(outTanPos, antOutPos, 0.5);
+
+			curve.setData(idx, datarole::IN_TAN, newInTanPos);
+			curve.setData(idx, datarole::OUT_TAN, newOutTanPos);
+
+		}
+	}
 }
