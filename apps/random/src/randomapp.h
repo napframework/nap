@@ -32,12 +32,12 @@ namespace nap
 		RandomApp(Core& core) : App(core)	{ }
 
 		/**
-		 *	Initialize the kalvertoren app and it's resources
+		 *	Initialize the random app and it's resources
 		 */
 		virtual bool init(utility::ErrorState& error) override;
 
 		/**
-		 *	Update the kalvertoren app's resources
+		 *	Update the random app's resources
 		 */
 		virtual void update(double deltaTime) override;
 
