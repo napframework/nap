@@ -1,6 +1,7 @@
 #pragma once
 
-#include <QtCore/QtGlobal>
+#include <QtGlobal>
+#include <QtDebug>
 
 namespace napqt
 {
@@ -58,9 +59,25 @@ namespace napqt
 	 * @return Vertical component of the evaluated curve segment at time x
 	 */
 	template<typename P, typename F>
-	F evalCurveSegment(const P (& pts)[4], F x)
+	F evalCurveSegmentBezier(const P (& pts)[4], F x)
 	{
 		F t = tForX(pts, x);
 		return bezier(pts, t).y();
 	}
+
+	template<typename P, typename F>
+	F evalCurveSegmentLinear(const P (& pts)[4], F x)
+	{
+		const auto& a = pts[0];
+		const auto& b = pts[3];
+		F t = (x - a.x()) / (b.x() - a.x());
+		return lerp(a.y(), b.y(), t);
+	}
+
+	template<typename P, typename F>
+	F evalCurveSegmentStepped(const P (& pts)[4], F x)
+	{
+		return pts[0].y();
+	}
+
 }

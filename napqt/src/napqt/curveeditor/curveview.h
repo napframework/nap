@@ -212,7 +212,11 @@ namespace napqt
 		void onCurvesRemoved(QList<int> indices);
 		void selectPointHandles(const QList<PointHandleItem*>& pointHandles);
 		void onCustomContextMenuRequested(const QPoint& pos);
-		void setTangentsAligned(const QList<PointHandleItem*>& pointHandles, bool aligned);
+		void setSelectedPointInterps(AbstractCurve::InterpType interp);
+		void setSelectedTangentsAligned(bool aligned);
+		void alignTangents(AbstractCurve& curve, int pointIndex);
+		// Get selected points, but also include points associated with tangent handles
+		const QList<PointHandleItem*> pointsFromSelection();
 
 		QGraphicsScene mCurveScene;
 		QPoint mLastMousePos;
@@ -222,6 +226,10 @@ namespace napqt
 		InteractMode mInteractMode = None;
 
 		QAction mDeleteAction;
+		QAction mToggleAlignedAction;
+		QAction mInterpLinearAction;
+		QAction mInterpBezierAction;
+		QAction mInterpSteppedAction;
 
 	};
 

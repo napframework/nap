@@ -18,11 +18,13 @@ namespace napqt
 	class AbstractCurve : public QObject
 	{
 	Q_OBJECT
+	Q_ENUMS(InterpType)
 	public:
-		enum class InterpType
+		enum InterpType
 		{
 			Stepped, Linear, Bezier, BSpline
 		};
+		Q_ENUM(InterpType)
 
 		explicit AbstractCurve(AbstractCurveModel* parent = nullptr);
 
