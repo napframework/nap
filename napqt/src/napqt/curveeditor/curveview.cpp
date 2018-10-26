@@ -336,8 +336,17 @@ void CurveSegmentItem::setOutTanVisible(bool b)
 
 void CurveSegmentItem::setTangentsVisible(bool b)
 {
-	setInTanVisible(b && !isFirstPoint());
-	setOutTanVisible(b && !isLastPoint());
+	bool bb = !isFirstPoint();
+	if (bb)
+	{
+		const auto& prevInterp = curveItem().curve().data(curveItem().prevSegIndex(index()),
+														  datarole::INTERP).value<AbstractCurve::InterpType>();
+		bb = bb && prevInterp == AbstractCurve::InterpType::Bezier;
+	}
+	setInTanVisible(bb && b);
+
+	const auto& interp = curveItem().curve().data(index(), datarole::INTERP).value<AbstractCurve::InterpType>();
+	setOutTanVisible(b && !isLastPoint() && interp == AbstractCurve::InterpType::Bezier);
 }
 
 void CurveSegmentItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -398,6 +407,8 @@ void CurveSegmentItem::updateGeometry()
 	mInTanLine.setFromTo(pos, inTanPos);
 	mOutTanLine.setFromTo(pos, outTanPos);
 
+	if (mPointHandle.isSelected())
+		setTangentsVisible(true);
 
 	mPath = QPainterPath();
 	mDebugPath = QPainterPath();
@@ -433,9 +444,23 @@ void CurveSegmentItem::updateGeometry()
 		{
 			qreal t = i / (qreal) mSampleCount;
 			qreal x = a.x() + (d.x() - a.x()) * t;
-			auto p = evalCurveSegment({a, b, c, d}, x);
-			mDebugPath.lineTo(x, p);
+			qreal v;
+			switch (interp) {
+				case AbstractCurve::InterpType::Bezier:
+					v = evalCurveSegmentBezier({a, b, c, d}, x);
+					break;
+				case AbstractCurve::InterpType::Linear:
+					v = evalCurveSegmentLinear({a, b, c, d}, x);
+					break;
+				case AbstractCurve::InterpType::Stepped:
+					v = evalCurveSegmentStepped({a, b, c, d}, x);
+					break;
+				default:
+					assert(false);
+			}
+			mDebugPath.lineTo(x, v);
 		}
+		mDebugPath.lineTo(d.x(), d.y());
 
 		// Use Qt's cubic curve
 		mPath.moveTo(a);
@@ -654,6 +679,7 @@ const QVector<int>& CurveItem::sortPoints()
 	}
 
 	mPointOrderDirty = false;
+	updateAllSegments();
 	return mSortedToUnsorted;
 }
 
@@ -993,6 +1019,23 @@ void CurveView::initActions()
 	mDeleteAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
 	connect(&mDeleteAction, &QAction::triggered, this, &CurveView::deleteSelectedItems);
 	addAction(&mDeleteAction);
+
+	mInterpBezierAction.setText("Bezier");
+	connect(&mInterpBezierAction, &QAction::triggered,
+			[this]() { setSelectedPointInterps(AbstractCurve::InterpType::Bezier); });
+
+	mInterpLinearAction.setText("Linear");
+	connect(&mInterpLinearAction, &QAction::triggered,
+			[this]() { setSelectedPointInterps(AbstractCurve::InterpType::Linear); });
+
+	mInterpSteppedAction.setText("Stepped");
+	connect(&mInterpSteppedAction, &QAction::triggered,
+			[this]() { setSelectedPointInterps(AbstractCurve::InterpType::Stepped); });
+
+	mToggleAlignedAction.setText("Aligned");
+	mToggleAlignedAction.setCheckable(true);
+	connect(&mToggleAlignedAction, &QAction::triggered,
+			[this]() { setSelectedTangentsAligned(mToggleAlignedAction.isChecked()); });
 }
 
 void CurveView::deleteSelectedItems()
@@ -1071,21 +1114,23 @@ void CurveView::onCustomContextMenuRequested(const QPoint& pos)
 	QMenu menu;
 
 	auto selectedPoints = filterT<PointHandleItem>(scene()->selectedItems());
+	auto selectedTangents = filterT<TangentHandleItem>(scene()->selectedItems());
 	if (!selectedPoints.isEmpty())
 	{
 		menu.addSection("Interpolation");
-		auto linearAction = menu.addAction("Linear");
-		auto bezierAction = menu.addAction("Bezier");
-		auto steppedAction = menu.addAction("Stepped");
+		menu.addAction(&mInterpBezierAction);
+		menu.addAction(&mInterpLinearAction);
+		menu.addAction(&mInterpSteppedAction);
+	}
 
+	if (!selectedTangents.isEmpty() || !selectedPoints.isEmpty())
+	{
 		menu.addSection("Tangents");
-
-		auto alignAction = menu.addAction("Aligned");
-		alignAction->setCheckable(true);
+		menu.addAction(&mToggleAlignedAction);
 
 		int alignedCount = 0;
 		int nonAlignedCount = 0;
-		for (PointHandleItem* item : selectedPoints)
+		for (PointHandleItem* item : pointsFromSelection())
 		{
 			bool aligned = item->curveSegmentItem().curveItem().curve().data(item->curveSegmentItem().index(),
 																			 datarole::TAN_ALIGNED).toBool();
@@ -1094,50 +1139,88 @@ void CurveView::onCustomContextMenuRequested(const QPoint& pos)
 			else
 				nonAlignedCount++;
 		}
-		alignAction->setChecked(alignedCount > nonAlignedCount);
+		mToggleAlignedAction.setChecked(alignedCount > nonAlignedCount);
+	}
 
-		connect(alignAction, &QAction::triggered, [this, alignAction]
-		{
-			setTangentsAligned(filterT<PointHandleItem>(scene()->selectedItems()), alignAction->isChecked());
-		});
-
+	if (!selectedPoints.isEmpty())
+	{
 		menu.addSection("Actions");
 		menu.addAction(&mDeleteAction);
 	}
-	else
-	{
-		return;
-	}
 
-	menu.exec(mapToGlobal(pos));
+	if (!menu.actions().isEmpty())
+		menu.exec(mapToGlobal(pos));
 }
 
-void CurveView::setTangentsAligned(const QList<PointHandleItem*>& pointHandles, bool aligned)
+void CurveView::setSelectedPointInterps(AbstractCurve::InterpType interp)
 {
-	for (PointHandleItem* pt :pointHandles)
+	for (PointHandleItem* pt :pointsFromSelection())
+	{
+		int idx = pt->curveSegmentItem().index();
+		auto& curve = pt->curveSegmentItem().curveItem().curve();
+		auto oldInterp = curve.data(idx, datarole::TAN_ALIGNED).value<AbstractCurve::InterpType>();
+		curve.setData(idx, datarole::INTERP, QVariant::fromValue(interp));
+//		if (oldInterp != interp)
+//		{
+//		}
+	}
+}
+
+
+void CurveView::setSelectedTangentsAligned(bool aligned)
+{
+	for (PointHandleItem* pt :pointsFromSelection())
 	{
 		int idx = pt->curveSegmentItem().index();
 		auto& curve = pt->curveSegmentItem().curveItem().curve();
 		bool wasAligned = curve.data(idx, datarole::TAN_ALIGNED).toBool();
 		curve.setData(idx, datarole::TAN_ALIGNED, aligned);
 		if (!wasAligned && aligned)
+			alignTangents(curve, idx);
+	}
+}
+
+void CurveView::alignTangents(AbstractCurve& curve, int idx)
+{
+	QPointF inTanPos = curve.data(idx, datarole::IN_TAN).toPointF();
+	QPointF outTanPos = curve.data(idx, datarole::OUT_TAN).toPointF();
+	qreal inMag = length(inTanPos);
+	qreal outMag = length(outTanPos);
+	QPointF inVec = normalize(inTanPos);
+	QPointF outVec = normalize(outTanPos);
+
+	QPointF antInPos = -outVec * inMag;
+	QPointF antOutPos = -inVec * outMag;
+
+	auto newInTanPos = lerpPoint(inTanPos, antInPos, 0.5);
+	auto newOutTanPos = lerpPoint(outTanPos, antOutPos, 0.5);
+
+	curve.setData(idx, datarole::IN_TAN, newInTanPos);
+	curve.setData(idx, datarole::OUT_TAN, newOutTanPos);
+}
+
+
+const QList<PointHandleItem*> CurveView::pointsFromSelection()
+{
+	QList < PointHandleItem * > points;
+	for (auto item : scene()->selectedItems())
+	{
+		// If we have a point, include and on to the next
+		auto point = dynamic_cast<PointHandleItem*>(item);
+		if (point && !points.contains(point))
 		{
-			QPointF inTanPos = curve.data(idx, datarole::IN_TAN).toPointF();
-			QPointF outTanPos = curve.data(idx, datarole::OUT_TAN).toPointF();
-			qreal inMag = length(inTanPos);
-			qreal outMag = length(outTanPos);
-			QPointF inVec = normalize(inTanPos);
-			QPointF outVec = normalize(outTanPos);
+			points << point;
+			continue;
+		}
 
-			QPointF antInPos = -outVec * inMag;
-			QPointF antOutPos = -inVec * outMag;
-
-			auto newInTanPos = lerpPoint(inTanPos, antInPos, 0.5);
-			auto newOutTanPos = lerpPoint(outTanPos, antOutPos, 0.5);
-
-			curve.setData(idx, datarole::IN_TAN, newInTanPos);
-			curve.setData(idx, datarole::OUT_TAN, newOutTanPos);
-
+		// No point, get point from selected tangent
+		auto tan = dynamic_cast<TangentHandleItem*>(item);
+		if (tan)
+		{
+			auto pt = &tan->pointHandle();
+			if (!points.contains(pt))
+				points << pt;
 		}
 	}
+	return points;
 }
