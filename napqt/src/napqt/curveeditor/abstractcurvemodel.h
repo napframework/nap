@@ -15,6 +15,9 @@ namespace napqt
 
 	class AbstractCurveModel;
 
+	/**
+	 * Represents a single curve in the curve editor
+	 */
 	class AbstractCurve : public QObject
 	{
 	Q_OBJECT
@@ -22,7 +25,7 @@ namespace napqt
 	public:
 		enum InterpType
 		{
-			Stepped, Linear, Bezier, BSpline
+			Stepped, Linear, Bezier
 		};
 		Q_ENUM(InterpType)
 
@@ -37,13 +40,17 @@ namespace napqt
 		virtual void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents) = 0;
 		virtual void removePoints(const QList<int>& indices) {}
 		virtual void addPoint(qreal time, qreal value) {}
+
 	Q_SIGNALS:
 		void changed(AbstractCurve* curve);
 		void pointsChanged(QList<int> indices);
-		void pointsAdded(const QList<int> indices);
-		void pointsRemoved(const QList<int> indices);
+		void pointsAdded(QList<int> indices);
+		void pointsRemoved(QList<int> indices);
 	};
 
+	/**
+	 * Groups a set of curves for use in a curve editor
+	 */
 	class AbstractCurveModel : public QObject
 	{
 	Q_OBJECT
@@ -55,9 +62,9 @@ namespace napqt
 		int curveIndex(AbstractCurve* curve) const;
 
 	Q_SIGNALS:
-		void curvesAdded(const QList<int> indices);
-		void curvesRemoved(const QList<int> indices);
-		void curvesChanged(const QList<int> indices);
+		void curvesAdded(QList<int> indices);
+		void curvesRemoved(QList<int> indices);
+		void curvesChanged(QList<int> indices);
 	};
 
 
