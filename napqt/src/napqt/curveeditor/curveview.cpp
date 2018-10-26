@@ -708,9 +708,7 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	frameView(QRectF(0, 0, 1, 1), QMargins(10, 10, 10, 10));
 
 	setRenderHint(QPainter::Antialiasing, true);
-	setContextMenuPolicy(Qt::CustomContextMenu);
-
-	connect(this, &QWidget::customContextMenuRequested, this, &CurveView::onCustomContextMenuRequested);
+	setContextMenuPolicy(Qt::NoContextMenu);
 
 	initActions();
 }
@@ -725,6 +723,7 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 	bool altHeld = event->modifiers() == Qt::AltModifier;
 	bool lmb = event->buttons() == Qt::LeftButton;
 	bool mmb = event->buttons() == Qt::MiddleButton;
+	bool rmb = event->buttons() == Qt::RightButton;
 
 	auto item = itemAt(event->pos());
 	auto clickedPointHandle = dynamic_cast<PointHandleItem*>(item);
@@ -807,6 +806,11 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 		{
 			mInteractMode = DragPoints;
 		}
+	}
+	else if (rmb)
+	{
+		if (!shiftHeld && !ctrlHeld && !altHeld)
+			onCustomContextMenuRequested(event->pos());
 	}
 
 //	GridView::mousePressEvent(event);
