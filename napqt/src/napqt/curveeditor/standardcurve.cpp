@@ -92,8 +92,10 @@ QVariant napqt::StandardCurve::data(int index, int role) const
 			return p.outTan;
 		case datarole::INTERP:
 			return QVariant::fromValue(p.interp);
+		case datarole::TAN_ALIGNED:
+			return p.tanAligned;
 		default:
-			return QVariant();
+			assert(false);
 	}
 }
 
@@ -104,18 +106,21 @@ void napqt::StandardCurve::setData(int index, int role, QVariant value)
 	{
 		case datarole::POS:
 			p.pos = value.toPointF();
-			return;
+			break;
 		case datarole::IN_TAN:
 			p.inTan = value.toPointF();
-			return;
+			break;
 		case datarole::OUT_TAN:
 			p.outTan = value.toPointF();
-			return;
+			break;
 		case datarole::INTERP:
 			p.interp = value.value<InterpType>();
-			return;
-		default:
 			break;
+		case datarole::TAN_ALIGNED:
+			p.tanAligned = value.toBool();
+			break;
+		default:
+			assert(false);
 	}
 	pointsChanged({index});
 }

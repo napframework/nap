@@ -28,6 +28,8 @@ namespace napqt
 	 */
 	QColor lerpCol(const QColor& a, const QColor& b, qreal p);
 
+	QPointF lerpPoint(const QPointF& a, const QPointF& b, qreal p);
+
 	qreal roundToInterval(qreal v, qreal step);
 	qreal floorToInterval(qreal v, qreal step);
 	qreal ceilToInterval(qreal v, qreal step);

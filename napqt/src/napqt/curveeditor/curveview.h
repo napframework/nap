@@ -25,6 +25,7 @@ namespace napqt
 		CurveSegmentItem& curveSegmentItem();
 		const CurveSegmentItem& curveSegmentItem() const;
 		void setEmitItemChanged(bool b) { mEmitItemChanges = b; }
+		virtual void updateRect();
 
 	Q_SIGNALS:
 		void moved(HandleItem* item);
@@ -36,18 +37,14 @@ namespace napqt
 		QPen mPenSelected;
 		QBrush mBrush;
 		QBrush mBrushSelected;
-
-	private:
-		void updateRect();
-
 		QPainterPath mPath;
-		QRectF mRect;
-		QRectF mHitRect;
-
 		qreal mExtent = 2;
 		qreal mExtentSelectd = 2;
 		qreal mHitExtent = 4;
 		bool mEmitItemChanges = true;
+		QRectF mRect;
+		QRectF mHitRect;
+
 	};
 
 	/**
@@ -75,6 +72,7 @@ namespace napqt
 		PointHandleItem& pointHandle();
 		TangentHandleItem& oppositeTanHandle();
 		bool isInTangent();
+		void updateRect() override;
 	private:
 		QPointF mValue;
 	};
@@ -146,7 +144,6 @@ namespace napqt
 		TangentHandleItem mOutTanHandle;
 		TangentLineItem mInTanLine;
 		TangentLineItem mOutTanLine;
-
 	};
 
 	/**
@@ -215,7 +212,7 @@ namespace napqt
 		void onCurvesRemoved(QList<int> indices);
 		void selectPointHandles(const QList<PointHandleItem*>& pointHandles);
 		void onCustomContextMenuRequested(const QPoint& pos);
-
+		void setTangentsAligned(const QList<PointHandleItem*>& pointHandles, bool aligned);
 
 		QGraphicsScene mCurveScene;
 		QPoint mLastMousePos;

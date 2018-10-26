@@ -11,9 +11,15 @@ QColor napqt::lerpCol(const QColor& a, const QColor& b, qreal p)
 {
 	QColor c;
 	c.setRgbF(lerp(a.redF(), b.redF(), p),
-              lerp(a.greenF(), b.greenF(), p),
-              lerp(a.blueF(), b.blueF(), p));
+			  lerp(a.greenF(), b.greenF(), p),
+			  lerp(a.blueF(), b.blueF(), p));
 	return c;
+}
+
+QPointF napqt::lerpPoint(const QPointF& a, const QPointF& b, qreal p)
+{
+	return {lerp(a.x(), b.x(), p),
+			lerp(a.y(), b.y(), p)};
 }
 
 qreal napqt::roundToInterval(qreal v, qreal step)
@@ -78,7 +84,8 @@ QModelIndex napqt::findIndexInModel(const QAbstractItemModel& model, ModelIndexF
 {
 	QModelIndex foundIndex;
 
-	traverse(model, [&foundIndex, condition](const QModelIndex& idx) -> bool {
+	traverse(model, [&foundIndex, condition](const QModelIndex& idx) -> bool
+	{
 		if (condition(idx))
 		{
 			foundIndex = idx;
@@ -95,7 +102,8 @@ QStandardItem* napqt::findItemInModel(const QStandardItemModel& model, ModelItem
 {
 	QStandardItem* foundItem = nullptr;
 
-	traverse(model, [&foundItem, condition](QStandardItem* item) -> bool {
+	traverse(model, [&foundItem, condition](QStandardItem* item) -> bool
+	{
 		if (condition(item))
 		{
 			foundItem = item;
@@ -154,7 +162,7 @@ bool napqt::revealInFileBrowser(const QString& filename)
 
 bool napqt::openInExternalEditor(const QString& filename)
 {
-    return QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
+	return QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
 }
 
 

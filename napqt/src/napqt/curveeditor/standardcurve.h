@@ -9,14 +9,24 @@ namespace napqt
 	class StandardPoint
 	{
 	public:
-		StandardPoint(const QPointF& pos, AbstractCurve::InterpType interp = AbstractCurve::InterpType::Bezier,
-				const QPointF& inTan = QPointF(-0.1, 0), const QPointF& outTan = QPointF(0.1, 0))
-		: pos(pos), interp(interp), inTan(inTan), outTan(outTan) {}
+		StandardPoint(
+				const QPointF& pos,
+				AbstractCurve::InterpType interp = AbstractCurve::InterpType::Bezier,
+				const QPointF& inTan = QPointF(-0.1, 0),
+				const QPointF& outTan = QPointF(0.1, 0),
+				bool tanAligned = true)
+				: pos(pos),
+				  interp(interp),
+				  inTan(inTan),
+				  outTan(outTan),
+				  tanAligned(tanAligned)
+				  {}
 
 		QPointF pos;
 		QPointF inTan;
 		QPointF outTan;
 		AbstractCurve::InterpType interp;
+		bool tanAligned;
 	};
 
 	class StandardCurveModel;
