@@ -117,13 +117,14 @@ public:
 		mCurveView.setModel(model);
 		mCurveView2.setModel(model);
 
-//		{
-//			auto curve = model->addCurve();
-//			curve->setName("Fade Out and In");
-//			curve->addPoint(0.0, 1.0, StandardCurve::InterpType::BSpline);
-//			curve->addPoint(0.5, 0.0, StandardCurve::InterpType::BSpline);
-//			curve->addPoint(1.0, 1.0, StandardCurve::InterpType::BSpline);
-//		}
+		{
+			auto curve = model->addCurve();
+			curve->setName("Fade Out and In");
+			curve->addPoint(0.0, 1.0);
+			curve->addPoint(0.5, 0.0);
+			curve->addPoint(1.0, 1.0);
+			
+		}
 
 	}
 
