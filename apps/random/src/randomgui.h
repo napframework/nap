@@ -1,7 +1,5 @@
 #pragma once
 
-#include <color.h>
-
 namespace nap
 {
 	// Forward Declares
