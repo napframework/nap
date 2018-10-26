@@ -27,7 +27,8 @@ def install_dependencies_linux():
         'cmake',
         'build-essential',
         'patchelf',
-        'doxygen'
+        'doxygen',
+	'libglu1-mesa-dev'
     ]
 
     print("Checking dependencies")
