@@ -62,11 +62,6 @@ namespace nap
 		mLightRig = mScene->findEntity("LightRig");
 		mVideo = mScene->findEntity("Video");
 		mCombination = mScene->findEntity("Combination");
-		mOrbit = mScene->findEntity("Orbit");
-		mOrbitPath = mScene->findEntity("OrbitPath");
-		mOrbitStart = mScene->findEntity("OrbitStart");
-		mOrbitEnd = mScene->findEntity("OrbitEnd");
-		mOrbitSun = mScene->findEntity("OrbitSun");
 
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -74,9 +69,9 @@ namespace nap
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 
-		// Create gui
+		// Create Random App components
 		mGui = std::make_unique<RandomGui>(*this);
-		mGui->init();
+		mOrbit = std::make_unique<RandomOrbit>(*mScene);
 
 		return true;
 	}
@@ -127,21 +122,12 @@ namespace nap
 			// Find the scene (perspective camera)
 			nap::PerspCameraComponentInstance& camera = mSceneCamera->getComponent<nap::PerspCameraComponentInstance>();
 
-			// Find all visualization meshes (truss, leds, outline etc.) and render in one pass
+			// Find components to render (Light rig, orbit)
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			mLightRig->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
+			mOrbit->appendRenderableComponents(components_to_render);
 
-			// Add Orbit to components to render
-			nap::RenderableMeshComponentInstance& render_orbit_path = mOrbitPath->getComponent<nap::RenderableMeshComponentInstance>();
-			nap::RenderableMeshComponentInstance& render_orbit_start = mOrbitStart->getComponent<nap::RenderableMeshComponentInstance>();
-			nap::RenderableMeshComponentInstance& render_orbit_end = mOrbitEnd->getComponent<nap::RenderableMeshComponentInstance>();
-			nap::RenderableMeshComponentInstance& render_orbit_sun = mOrbitSun->getComponent<nap::RenderableMeshComponentInstance>();
-			components_to_render.emplace_back(&render_orbit_path);
-			components_to_render.emplace_back(&render_orbit_start);
-			components_to_render.emplace_back(&render_orbit_end);
-			components_to_render.emplace_back(&render_orbit_sun);
-
-			// Render visualization mesh
+			// Render components in one pass
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
 		}
 			

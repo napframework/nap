@@ -910,28 +910,6 @@
                                 "mID": "UniformFloat_11",
                                 "Name": "uStretch",
                                 "Value": 5.0
-                            },
-                            {
-                                "Type": "nap::UniformVec3",
-                                "mID": "UniformVec3_5",
-                                "Name": "uOrbitCenter",
-                                "Value": {
-                                    "x": -0.23999999463558198,
-                                    "y": -0.8299999833106995,
-                                    "z": 0.0
-                                }
-                            },
-                            {
-                                "Type": "nap::UniformFloat",
-                                "mID": "UniformFloat_16",
-                                "Name": "uOrbitRadius",
-                                "Value": 0.8740000128746033
-                            },
-                            {
-                                "Type": "nap::UniformFloat",
-                                "mID": "UniformFloat_17",
-                                "Name": "uOrbitAngle",
-                                "Value": 0.0
                             }
                         ],
                         "BlendMode": "NotSet",

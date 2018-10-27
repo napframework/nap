@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "randomgui.h"
+#include "randomorbit.h"
 
 // External Includes
 #include <app.h>
@@ -69,28 +70,26 @@ namespace nap
 		nap::InputService*									mInputService = nullptr;
 		nap::IMGuiService*									mGuiService = nullptr;
 
-		// Resources
+		// Rendering Objects
 		rtti::ObjectPtr<RenderWindow>						mRenderWindow = nullptr;
-		rtti::ObjectPtr<Scene>								mScene = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mSceneCamera = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mVideo = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mClouds = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mSun = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mCombination = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mOrthoCamera = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mOrbit = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mOrbitPath = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mOrbitStart = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mOrbitEnd = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mOrbitSun = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCloudRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mSunRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mVideoRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
 
-		// Gui related functionality
-		std::unique_ptr<RandomGui>	mGui = nullptr;
+		// Scene Objects
+		rtti::ObjectPtr<Scene>								mScene = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mSceneCamera = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrthoCamera = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mClouds = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mSun = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mVideo = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mCombination = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
+
+		// Random App components
+		std::unique_ptr<RandomGui>							mGui = nullptr;
+		std::unique_ptr<RandomOrbit>						mOrbit = nullptr;
 
 		// Store window properties
 		glm::ivec2 windowSize;
