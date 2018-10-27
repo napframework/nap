@@ -213,6 +213,7 @@ namespace napqt
 		const QRectF frameItemsBoundsSelected() const override;
 		const QRectF frameItemsBounds() const override;
 		const QRectF handleItemBounds(const QList<QGraphicsItem*>& items) const;
+		const QList<QGraphicsItem*> frameableItems(const QList<QGraphicsItem*>& items) const;
 
 		QGraphicsScene mCurveScene;
 		QPoint mLastMousePos;
