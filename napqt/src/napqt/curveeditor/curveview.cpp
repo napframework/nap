@@ -1232,11 +1232,19 @@ void minSeparation(qreal& minVal, qreal& maxVal, qreal minSeparation)
 
 const QRectF CurveView::frameItemsBoundsSelected() const
 {
+	QList < QGraphicsItem * > handles = frameableItems(scene()->selectedItems());
+	if (handles.isEmpty())
+		return frameItemsBounds();
+
+	return handleItemBounds(handles);
+}
+
+const QList<QGraphicsItem*> CurveView::frameableItems(const QList<QGraphicsItem*>& items) const
+{
 	QList < QGraphicsItem * > handles;
 	for (auto item : scene()->selectedItems())
 	{
-		HandleItem* handle = dynamic_cast<HandleItem*>(item);
-
+		auto handle = dynamic_cast<HandleItem*>(item);
 		if (handle)
 		{
 			auto& seg = handle->curveSegmentItem();
@@ -1248,15 +1256,13 @@ const QRectF CurveView::frameItemsBoundsSelected() const
 				handles << &seg.outTanHandle();
 		}
 	}
-	if (handles.isEmpty())
-		return frameItemsBounds();
-
-	return handleItemBounds(handles);
+	return handles;
 }
+
 
 const QRectF CurveView::frameItemsBounds() const
 {
-	auto handles = filter<PointHandleItem>(scene()->items());
+	QList < QGraphicsItem * > handles = frameableItems(scene()->items());
 	if (handles.isEmpty())
 		return {0, 0, 1, 1};
 
