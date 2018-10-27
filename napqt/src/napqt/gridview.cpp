@@ -116,10 +116,10 @@ void GridView::keyPressEvent(QKeyEvent* event)
 			centerView();
 			break;
 		case Qt::Key_A:
-			frameAll(QMargins());
+			frameAll();
 			break;
 		case Qt::Key_F:
-			frameSelected(QMargins());
+			frameSelected();
 			break;
 		default:
 			break;
@@ -356,26 +356,28 @@ void GridView::centerView()
 }
 
 
-void GridView::frameAll(QMargins margins)
+void GridView::frameAll()
 {
-	frameView(this->scene()->itemsBoundingRect(), margins);
-}
-
-void GridView::frameSelected(QMargins margins)
-{
-	frameView(selectedItemsBoundingRect(), margins);
+	frameView(frameItemsBounds());
 }
 
 
-void GridView::frameView(const QRectF& frameRect, QMargins margins)
+void GridView::frameSelected()
 {
+	frameView(frameItemsBoundsSelected());
+}
+
+
+void GridView::frameView(const QRectF& frameRect)
+{
+	const QMargins margins = mFrameMargins;
+
 	QRectF rec = frameRect;
 	if (mVerticalFlipped)
 	{
-		qreal bot = rec.bottom();
-		rec.setBottom(rec.top());
-		rec.setTop(bot);
+		rec = { rec.left(), rec.bottom(), rec.width(), -rec.height() };
 	}
+	// The rectangle in view/pixel-space we want to fit the contents in
 	auto focusRectView = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(),
 													 -margins.bottom());
 	auto xf = transform();
@@ -428,11 +430,11 @@ void GridView::applyTransform(const QTransform& xf)
 	setTransform(trans);
 }
 
-QRectF GridView::selectedItemsBoundingRect() const
+const QRectF GridView::frameItemsBoundsSelected() const
 {
 	auto selection = scene()->selectedItems();
 	if (selection.isEmpty())
-		return scene()->itemsBoundingRect();
+		return frameItemsBounds();
 
 	auto rect = selection[0]->sceneBoundingRect();
 
@@ -443,6 +445,11 @@ QRectF GridView::selectedItemsBoundingRect() const
 		rect = rect.united(selection[i]->sceneBoundingRect());
 
 	return rect;
+}
+
+const QRectF GridView::frameItemsBounds() const
+{
+	return scene()->itemsBoundingRect();
 }
 
 void GridView::setVerticalScroll(int value)
