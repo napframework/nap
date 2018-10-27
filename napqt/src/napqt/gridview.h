@@ -47,9 +47,9 @@ namespace napqt
 		void pan(const QPointF& delta);
 		void zoom(const QPointF& delta, const QPointF& pivot);
 		void centerView();
-		void frameAll(QMargins margins);
-		void frameSelected(QMargins margins);
-		void frameView(const QRectF& rect, QMargins margins);
+		void frameAll();
+		void frameSelected();
+		void frameView(const QRectF& rect);
 		void setVerticalScroll(int value);
 		void setPanBounds(qreal left, qreal top, qreal right, qreal bottom);
 		void setPanBounds(const QRectF& rec);
@@ -63,6 +63,9 @@ namespace napqt
 		const QPoint& mousePressedPos() const { return mMousePressPos; }
 		const QPoint& mouseLastPos() const { return mMouseLastPos; }
 		const QPoint& mouseDelta() const { return mMouseDelta; }
+
+		const QMargins frameMargins() const { return mFrameMargins; }
+		void setFrameMargins(const QMargins& margins) { mFrameMargins = margins; }
 
 	Q_SIGNALS:
 		void viewTransformed();
@@ -103,7 +106,8 @@ namespace napqt
 								   bool labels);
 		void drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal minStepSize, const QColor& color,
 								 bool labels);
-		QRectF selectedItemsBoundingRect() const;
+		virtual const QRectF frameItemsBoundsSelected() const;
+		virtual const QRectF frameItemsBounds() const;
 		const QPointF viewScale() const;
 		const QPointF viewPos() const;
 		void applyTransform(const QTransform& xf);
@@ -126,7 +130,7 @@ namespace napqt
 		int mGridMinStepSizeVMajor = 120;
 		bool mDrawHoldout = true;
 		QRectF mHoldoutRect = QRectF(0, 0, 1, 1);
-
+		QMargins mFrameMargins = { 50, 50, 50, 50 };
 
 		ZoomMode mZoomMode = ZoomMode::Horizontal;
 		PanMode mPanMode = PanMode::Parallax;
@@ -173,24 +177,24 @@ const QList<T*> napqt::GridView::selectedItems() const
 	return items;
 }
 
-template<typename O>
+template<typename T>
 const QList<QGraphicsItem*> napqt::GridView::filter(const QList<QGraphicsItem*>& items) const
 {
 	QList<QGraphicsItem*> out;
 	for (auto item : items) {
-		auto cast = dynamic_cast<O*>(item);
+		auto cast = dynamic_cast<T*>(item);
 		if (cast)
 			out << item;
 	}
 	return out;
 }
 
-template<typename O>
-const QList<O*> napqt::GridView::filterT(const QList<QGraphicsItem*>& items) const
+template<typename T>
+const QList<T*> napqt::GridView::filterT(const QList<QGraphicsItem*>& items) const
 {
-	QList<O*> out;
+	QList<T*> out;
 	for (auto item : items) {
-		auto cast = dynamic_cast<O*>(item);
+		auto cast = dynamic_cast<T*>(item);
 		if (cast)
 			out << cast;
 	}

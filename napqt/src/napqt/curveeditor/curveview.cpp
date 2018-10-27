@@ -111,7 +111,7 @@ QPointF alignedOppositeTangentVector(TangentHandleItem& handle)
 /// CurveItem
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-HandleItem::HandleItem(CurveSegmentItem& parent) : QObject(), QGraphicsItem(&parent)
+HandleItem::HandleItem(CurveSegmentItem& parent) : QObject(), QGraphicsPathItem(&parent)
 {
 	setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
 	setFlag(QGraphicsItem::ItemIsMovable, true);
@@ -119,18 +119,7 @@ HandleItem::HandleItem(CurveSegmentItem& parent) : QObject(), QGraphicsItem(&par
 	setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
 	setZValue(ZDEPTH_HANDLES);
 
-	mHitRect.setCoords(-mHitExtent, -mHitExtent, mHitExtent * 2, mHitExtent * 2);
 	updateRect();
-}
-
-bool HandleItem::contains(const QPointF& point) const
-{
-	return mHitRect.contains(point);
-}
-
-QRectF HandleItem::boundingRect() const
-{
-	return mHitRect;
 }
 
 QVariant HandleItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)
@@ -152,18 +141,19 @@ QVariant HandleItem::itemChange(QGraphicsItem::GraphicsItemChange change, const 
 
 void HandleItem::updateRect()
 {
-	mPath = QPainterPath();
+	QPainterPath path;
 	auto ext = isSelected() ? mExtentSelectd : mExtent;
 	mRect.setCoords(-ext, -ext, ext * 2, ext * 2);
-	mPath.addRect(mRect);
+	path.addRect(mRect);
+	setPath(path);
 }
 
 void HandleItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
 	painter->setPen(isSelected() ? mPenSelected : mPen);
 	painter->setBrush(isSelected() ? mBrushSelected : mBrush);
-	painter->fillPath(mPath, painter->brush());
-	painter->drawPath(mPath);
+	painter->fillPath(path(), painter->brush());
+	painter->drawPath(path());
 }
 
 CurveSegmentItem& HandleItem::curveSegmentItem()
@@ -218,20 +208,19 @@ bool TangentHandleItem::isInTangent()
 }
 void TangentHandleItem::updateRect()
 {
+	QPainterPath path;
+	auto ext = isSelected() ? mExtentSelectd : mExtent;
+	mRect.setCoords(-ext, -ext, ext * 2, ext * 2);
+
 	if (curveSegmentItem().curveItem().curve().data(curveSegmentItem().index(), datarole::TAN_ALIGNED).toBool())
 	{
-		mPath = QPainterPath();
-		auto ext = isSelected() ? mExtentSelectd : mExtent;
-		mRect.setCoords(-ext, -ext, ext * 2, ext * 2);
-		mPath.addEllipse(mRect);
+		path.addEllipse(mRect);
 	}
 	else
 	{
-		mPath = QPainterPath();
-		auto ext = isSelected() ? mExtentSelectd : mExtent;
-		mRect.setCoords(-ext, -ext, ext * 2, ext * 2);
-		mPath.addRect(mRect);
+		path.addRect(mRect);
 	}
+	setPath(path);
 }
 
 
@@ -445,7 +434,8 @@ void CurveSegmentItem::updateGeometry()
 			qreal t = i / (qreal) mSampleCount;
 			qreal x = a.x() + (d.x() - a.x()) * t;
 			qreal v;
-			switch (interp) {
+			switch (interp)
+			{
 				case AbstractCurve::InterpType::Bezier:
 					v = evalCurveSegmentBezier({a, b, c, d}, x);
 					break;
@@ -705,7 +695,7 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 
 	// Flip y axis
 	setVerticalFlipped(true);
-	frameView(QRectF(0, 0, 1, 1), QMargins(10, 10, 10, 10));
+	frameView(QRectF(0, 0, 1, 1));
 
 	setRenderHint(QPainter::Antialiasing, true);
 	setContextMenuPolicy(Qt::NoContextMenu);
@@ -1227,4 +1217,70 @@ const QList<PointHandleItem*> CurveView::pointsFromSelection()
 		}
 	}
 	return points;
+}
+
+void minSeparation(qreal& minVal, qreal& maxVal, qreal minSeparation)
+{
+	qreal dif = qAbs(minVal - maxVal);
+	if (dif < minSeparation)
+	{
+		qreal expand = (minSeparation-dif) / 2;
+		minVal -= expand;
+		maxVal += expand;
+	}
+}
+
+const QRectF CurveView::frameItemsBoundsSelected() const
+{
+	QList<QGraphicsItem*> handles;
+	for (auto item : scene()->selectedItems()) {
+		handles << item;
+		PointHandleItem* pointHandle = dynamic_cast<PointHandleItem*>(item);
+		if (pointHandle) {
+			if (pointHandle->curveSegmentItem().inTanHandle().isVisible())
+				handles << &pointHandle->curveSegmentItem().inTanHandle();
+			if (pointHandle->curveSegmentItem().outTanHandle().isVisible())
+				handles << &pointHandle->curveSegmentItem().outTanHandle();
+		}
+	}
+	if (handles.isEmpty())
+		return frameItemsBounds();
+
+	return handleItemBounds(handles);
+}
+
+const QRectF CurveView::frameItemsBounds() const
+{
+	auto handles = filter<PointHandleItem>(scene()->items());
+	if (handles.isEmpty())
+		return {0, 0, 1, 1};
+
+	return handleItemBounds(handles);
+}
+
+const QRectF CurveView::handleItemBounds(const QList<QGraphicsItem*>& handles) const
+{
+	const qreal minSize = 0.3;
+
+	qreal left = std::numeric_limits<qreal>::infinity();
+	qreal top = -std::numeric_limits<qreal>::infinity();
+	qreal right = -std::numeric_limits<qreal>::infinity();
+	qreal bottom = std::numeric_limits<qreal>::infinity();
+
+	for (const auto h : handles)
+	{
+		left = qMin(left, h->pos().x());
+		top = qMax(top, h->pos().y());
+		right = qMax(right, h->pos().x());
+		bottom = qMin(bottom, h->pos().y());
+	}
+
+	minSeparation(left, right, minSize);
+	minSeparation(bottom, top, minSize);
+	QRectF r;
+	r.setLeft(left);
+	r.setTop(bottom);
+	r.setRight(right);
+	r.setBottom(top);
+	return r;
 }

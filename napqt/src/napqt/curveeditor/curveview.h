@@ -14,13 +14,11 @@ namespace napqt
 	/**
 	 * Any interactive (movable) handle in the scene
 	 */
-	class HandleItem : public QObject, public QGraphicsItem
+	class HandleItem : public QObject, public QGraphicsPathItem
 	{
 	Q_OBJECT
 	public:
 		HandleItem(CurveSegmentItem& parent);
-		bool contains(const QPointF& point) const override;
-		QRectF boundingRect() const override;
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 		CurveSegmentItem& curveSegmentItem();
 		const CurveSegmentItem& curveSegmentItem() const;
@@ -37,14 +35,10 @@ namespace napqt
 		QPen mPenSelected;
 		QBrush mBrush;
 		QBrush mBrushSelected;
-		QPainterPath mPath;
 		qreal mExtent = 2;
 		qreal mExtentSelectd = 2;
-		qreal mHitExtent = 4;
 		bool mEmitItemChanges = true;
 		QRectF mRect;
-		QRectF mHitRect;
-
 	};
 
 	/**
@@ -203,7 +197,6 @@ namespace napqt
 		void mouseReleaseEvent(QMouseEvent* event) override;
 		void movePointHandles(const QList<PointHandleItem*>& items, const QPointF& sceneDelta);
 		void moveTanHandles(const QList<TangentHandleItem*>& tangents, const QPointF& sceneDelta);
-
 	private:
 		CurveItem* closestCurveItem(const QPointF& pos);
 		void initActions();
@@ -217,6 +210,9 @@ namespace napqt
 		void alignTangents(AbstractCurve& curve, int pointIndex);
 		// Get selected points, but also include points associated with tangent handles
 		const QList<PointHandleItem*> pointsFromSelection();
+		const QRectF frameItemsBoundsSelected() const override;
+		const QRectF frameItemsBounds() const override;
+		const QRectF handleItemBounds(const QList<QGraphicsItem*>& items) const;
 
 		QGraphicsScene mCurveScene;
 		QPoint mLastMousePos;
@@ -230,7 +226,6 @@ namespace napqt
 		QAction mInterpLinearAction;
 		QAction mInterpBezierAction;
 		QAction mInterpSteppedAction;
-
 	};
 
 }
