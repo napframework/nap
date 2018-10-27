@@ -1224,7 +1224,7 @@ void minSeparation(qreal& minVal, qreal& maxVal, qreal minSeparation)
 	qreal dif = qAbs(minVal - maxVal);
 	if (dif < minSeparation)
 	{
-		qreal expand = (minSeparation-dif) / 2;
+		qreal expand = (minSeparation - dif) / 2;
 		minVal -= expand;
 		maxVal += expand;
 	}
@@ -1232,15 +1232,20 @@ void minSeparation(qreal& minVal, qreal& maxVal, qreal minSeparation)
 
 const QRectF CurveView::frameItemsBoundsSelected() const
 {
-	QList<QGraphicsItem*> handles;
-	for (auto item : scene()->selectedItems()) {
-		handles << item;
-		PointHandleItem* pointHandle = dynamic_cast<PointHandleItem*>(item);
-		if (pointHandle) {
-			if (pointHandle->curveSegmentItem().inTanHandle().isVisible())
-				handles << &pointHandle->curveSegmentItem().inTanHandle();
-			if (pointHandle->curveSegmentItem().outTanHandle().isVisible())
-				handles << &pointHandle->curveSegmentItem().outTanHandle();
+	QList < QGraphicsItem * > handles;
+	for (auto item : scene()->selectedItems())
+	{
+		HandleItem* handle = dynamic_cast<HandleItem*>(item);
+
+		if (handle)
+		{
+			auto& seg = handle->curveSegmentItem();
+			if (!handles.contains(&seg.pointHandle()))
+				handles << &seg.pointHandle();
+			if (seg.inTanHandle().isVisible() && !handles.contains(&seg.inTanHandle()))
+				handles << &seg.inTanHandle();
+			if (seg.outTanHandle().isVisible() && !handles.contains(&seg.outTanHandle()))
+				handles << &seg.outTanHandle();
 		}
 	}
 	if (handles.isEmpty())
