@@ -29,6 +29,7 @@ namespace nap
 	{
 		RTTI_ENABLE(App)
 		friend class RandomGui;
+		friend class RandomOrbit;
 	public:
 		RandomApp(Core& core) : App(core)	{ }
 

@@ -71,7 +71,7 @@ namespace nap
 
 		// Create Random App components
 		mGui = std::make_unique<RandomGui>(*this);
-		mOrbit = std::make_unique<RandomOrbit>(*mScene);
+		mOrbit = std::make_unique<RandomOrbit>(*this);
 
 		return true;
 	}

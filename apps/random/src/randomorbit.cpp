@@ -5,16 +5,16 @@
 
 namespace nap
 {
-	RandomOrbit::RandomOrbit(Scene& scene)
+	RandomOrbit::RandomOrbit(RandomApp& app) : mApp(app)
 	{
 		// Store scene objects
-		mOrbit = scene.findEntity("Orbit");
-		mOrbitPath = scene.findEntity("OrbitPath");
-		mOrbitStart = scene.findEntity("OrbitStart");
-		mOrbitEnd = scene.findEntity("OrbitEnd");
-		mOrbitSun = scene.findEntity("OrbitSun");
+		mOrbit = mApp.mScene->findEntity("Orbit");
+		mOrbitPath = mApp.mScene->findEntity("OrbitPath");
+		mOrbitStart = mApp.mScene->findEntity("OrbitStart");
+		mOrbitEnd = mApp.mScene->findEntity("OrbitEnd");
+		mOrbitSun = mApp.mScene->findEntity("OrbitSun");
 		
-		// Call an intial update to set properties
+		// Call an intial update to apply properties
 		update();
 	}
 

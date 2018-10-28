@@ -28,9 +28,7 @@ namespace nap
 		void draw();
 
 	private:
-		/**
-		 *	Shows the controls window
-		 */
+		// Show control windows
 		void showControlWindow();
 		void showSunControls();
 		void showVideoControls();

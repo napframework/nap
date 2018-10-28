@@ -1,12 +1,15 @@
 #pragma once
 
+#include <vector>
+#include <glm/glm.hpp>
+#include <rtti/objectptr.h>
+#include <entity.h>
 #include <renderablemeshcomponent.h>
-#include <scene.h>
 
 namespace nap
 {
 	// Forward Declares
-	class RandomOrbit;
+	class RandomApp;
 
 	/**
 	* Handles all orbit related functionality for the random app
@@ -17,10 +20,10 @@ namespace nap
 		/**
 		* Constructor, needs the random app to function
 		*/
-		RandomOrbit(Scene& scene);
+		RandomOrbit(RandomApp& app);
 
 		/**
-		*	Update orbit components
+		*	Update orbit components after properties changed
 		*/
 		void update();
 
@@ -49,5 +52,8 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance>	mOrbitStart = nullptr;
 		rtti::ObjectPtr<EntityInstance>	mOrbitEnd = nullptr;
 		rtti::ObjectPtr<EntityInstance>	mOrbitSun = nullptr;
+
+		// The app used to extract information from
+		RandomApp&	mApp;
 	};
 }
