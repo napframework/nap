@@ -58,4 +58,9 @@ namespace nap
 		*pSunOrbitAngle = mApp.mOrbit->getAngle();
 		*pSunOrbitRadius = mApp.mOrbit->mRadius;
 	}
+
+	void RandomShaders::updateCloudsInverted()
+	{
+		*pCloudsInverted = mCloudsInverted ? 1.0f : 0.0f;
+	}
 }

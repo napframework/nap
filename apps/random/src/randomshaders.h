@@ -23,6 +23,7 @@ namespace nap
 		*/
 		void update(double deltaTime);
 		void updateOrbit();
+		void updateCloudsInverted();
 
 		/**
 		*	Exposed properties for GUI
@@ -40,6 +41,7 @@ namespace nap
 		float*		pSunStretch = NULL;
 		float		mNoiseSpeed = 0.05f;
 		float		mWindSpeed = 0.1f;
+		bool		mCloudsInverted = false;
 
 	private:
 		// The app used to extract information from

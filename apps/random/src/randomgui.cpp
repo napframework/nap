@@ -54,8 +54,8 @@ namespace nap
 			ImGui::SliderFloat("Wind Direction", mApp.mShaders->pCloudsRotation, 0.0f, 360.0f);
 			ImGui::SliderFloat("Contrast", mApp.mShaders->pCloudsContrast, 0.0f, 1.0f);
 			ImGui::SliderFloat("Scale", mApp.mShaders->pCloudsScale, cloudsScaleMin, cloudsScaleMax);
-			if (ImGui::Checkbox("Inverted", &mCloudsInverted))
-				*mApp.mShaders->pCloudsInverted = mCloudsInverted ? 1.0f : 0.0f;
+			if (ImGui::Checkbox("Inverted", &mApp.mShaders->mCloudsInverted))
+				mApp.mShaders->updateCloudsInverted();
 		}
 		if (ImGui::CollapsingHeader("Sun", ImGuiTreeNodeFlags_DefaultOpen))
 		{

@@ -41,7 +41,6 @@ namespace nap
 		// Properties
 		const char*	mModes[3] = { "Sun", "Video", "Static" };
 		int			mCurrentMode = 0;
-		bool		mCloudsInverted = false;
 
 		// Property ranges
 		const float cloudsScaleMin = 0.1f;
