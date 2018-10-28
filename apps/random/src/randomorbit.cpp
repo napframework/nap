@@ -15,10 +15,15 @@ namespace nap
 		mOrbitSun = mApp.mScene->findEntity("OrbitSun");
 		
 		// Call an intial update to apply properties
-		update();
+		updateOrbit();
 	}
 
-	void RandomOrbit::update()
+	void RandomOrbit::update(double deltaTime)
+	{
+
+	}
+
+	void RandomOrbit::updateOrbit()
 	{
 		// Update orbit position
 		nap::TransformComponentInstance& orbit_transform = mOrbit->getComponent<nap::TransformComponentInstance>();

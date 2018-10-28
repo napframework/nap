@@ -25,7 +25,8 @@ namespace nap
 		/**
 		*	Update orbit components after properties changed
 		*/
-		void update();
+		void update(double deltaTime);
+		void updateOrbit();
 
 		/**
 		* Add Renderable Components to provided vector

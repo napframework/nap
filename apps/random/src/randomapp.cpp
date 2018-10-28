@@ -72,6 +72,7 @@ namespace nap
 		// Create Random App components
 		mGui = std::make_unique<RandomGui>(*this);
 		mOrbit = std::make_unique<RandomOrbit>(*this);
+		mShaders = std::make_unique<RandomShaders>(*this);
 
 		return true;
 	}
@@ -84,8 +85,10 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mSceneCamera.get() };
 		mInputService->processAllEvents(input_router, entities);
 
-		// Update gui
+		// Update Random App components
 		mGui->update(deltaTime);
+		mOrbit->update(deltaTime);
+		mShaders->update(deltaTime);
 	}
 
 

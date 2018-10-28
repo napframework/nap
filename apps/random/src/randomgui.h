@@ -29,10 +29,10 @@ namespace nap
 
 	private:
 		// Show control windows
-		void showControlWindow();
 		void showSunControls();
 		void showVideoControls();
 		void showStaticControls();
+		void showOutputControls();
 
 		// Layout sizes
 		const float guiWindowWidth = 400.0f;
@@ -41,8 +41,6 @@ namespace nap
 		// Properties
 		const char*	mModes[3] = { "Sun", "Video", "Static" };
 		int			mCurrentMode = 0;
-		float		mNoiseSpeed = 0.05f;
-		float		mWindSpeed = 0.1f;
 		bool		mCloudsInverted = false;
 
 		// Property ranges
