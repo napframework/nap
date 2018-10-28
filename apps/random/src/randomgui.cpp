@@ -15,10 +15,20 @@ namespace nap
 
 	void RandomGui::update(double deltaTime)
 	{
+		showContentControls();
+		showOutputControls();
+	}
+
+	void RandomGui::draw()
+	{
+		mApp.getCore().getService<IMGuiService>()->draw();
+	}
+
+	void RandomGui::showContentControls()
+	{
 		ImGui::SetNextWindowPos(ImVec2(guiWindowPadding, guiWindowPadding));
 		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - 2.0f * guiWindowPadding));
-		ImGui::Begin("Controls", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		ImGui::Text("left mouse button to rotate, right mouse button to zoom");
+		ImGui::Begin("Content Controls", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 		ImGui::ListBox("Lighting Mode", &mCurrentMode, mModes, IM_ARRAYSIZE(mModes));
 
 		switch (mCurrentMode)
@@ -36,13 +46,24 @@ namespace nap
 			break;
 		}
 
-		showOutputControls();
+		float avail_width = ImGui::GetContentRegionAvailWidth();
+		ImGui::Spacing();
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
+		ImGui::Image(mApp.mCombineRenderTarget->getColorTexture(), { avail_width, avail_width });
 		ImGui::End();
 	}
 
-	void RandomGui::draw()
+	void RandomGui::showOutputControls()
 	{
-		mApp.getCore().getService<IMGuiService>()->draw();
+		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(mApp.windowSize.x) - guiWindowWidth - guiWindowPadding, guiWindowPadding));
+		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - 2.0f * guiWindowPadding));
+		ImGui::Begin("Output Controls", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+		nap::ApplyCombinationComponentInstance& comb_comp = mApp.mLightRig->getComponent<ApplyCombinationComponentInstance>();
+		ImGui::SliderFloat("Brightness", &(comb_comp.mBrightness), 0.0f, 1.0f);
+		ImGui::SliderFloat("Influence", &(comb_comp.mInfluence), 0.0f, 1.0f);
+
+		ImGui::End();
 	}
 
 	void RandomGui::showSunControls()
@@ -88,27 +109,5 @@ namespace nap
 	void RandomGui::showStaticControls()
 	{
 
-	}
-
-	void RandomGui::showOutputControls()
-	{
-		if (ImGui::CollapsingHeader("Mix", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			nap::RenderableMeshComponentInstance& comb_plane = mApp.mCombination->getComponent<nap::RenderableMeshComponentInstance>();
-			nap::UniformFloat& uBlendValue = comb_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("blendValue");
-			ImGui::SliderFloat("Blend Value", &(uBlendValue.mValue), 0.0f, 1.0f);
-		}
-		if (ImGui::CollapsingHeader("Light Rig", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			nap::ApplyCombinationComponentInstance& comb_comp = mApp.mLightRig->getComponent<ApplyCombinationComponentInstance>();
-			ImGui::SliderFloat("Brightness", &(comb_comp.mBrightness), 0.0f, 1.0f);
-			ImGui::SliderFloat("Influence", &(comb_comp.mInfluence), 0.0f, 1.0f);
-		}
-		if (ImGui::CollapsingHeader("Output", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			float avail_width = ImGui::GetContentRegionAvailWidth();
-			ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
-			ImGui::Image(mApp.mCombineRenderTarget->getColorTexture(), { avail_width, avail_width });
-		}
 	}
 }

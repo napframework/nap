@@ -29,10 +29,11 @@ namespace nap
 
 	private:
 		// Show control windows
+		void showContentControls();
+		void showOutputControls();
 		void showSunControls();
 		void showVideoControls();
 		void showStaticControls();
-		void showOutputControls();
 
 		// Layout sizes
 		const float guiWindowWidth = 400.0f;
