@@ -33,14 +33,29 @@ namespace nap
 		float*		pCloudsContrast = NULL;
 		float*		pCloudsScale = NULL;
 		float*		pCloudsInverted = NULL;
+
 		glm::vec3*	pSunOrbitCenter = NULL;
 		float*		pSunOrbitAngle = NULL;
 		float*		pSunOrbitRadius = NULL;
 		float*		pSunOuterSize = NULL;
 		float*		pSunInnerSize = NULL;
 		float*		pSunStretch = NULL;
+
+		const float mCloudsScaleMin = 0.1f;
+		const float mCloudsScaleMax = 2.0f;
+
+		const float	mSunSizeMin = 0.05f;
+		const float	mSunSizeMax = 0.25f;
+		
+		const float	mSunStretchMin = 1.0f;
+		const float	mSunStretchMax = 10.0f;
+
 		float		mNoiseSpeed = 0.05f;
+		const float	mNoiseSpeedMax = 0.25f;
+
 		float		mWindSpeed = 0.1f;
+		const float	mWindSpeedMax = 0.5f;
+
 		bool		mCloudsInverted = false;
 
 	private:

@@ -36,11 +36,14 @@ namespace nap
 		/**
 		*	Exposed properties for GUI
 		*/
-		float getAngle();
-		float mRadius = 0.874f;
-		float mProgress = 0.0f;
-		float mCenter[2] = { -0.24f, -0.83f };
-		float mStartEnd[2] = { 40.0f, 115.0f };
+		float		getAngle();
+		float		mRadius = 0.874f;
+		const float mRadiusMin = 0.5f;
+		const float mRadiusMax = 1.5f;
+		float		mProgress = 0.0f;
+		float		mCenter[2] = { -0.24f, -0.83f };
+		const float mCenterRange = 1.5f;
+		float		mStartEnd[2] = { 40.0f, 115.0f };
 
 	private:
 		// Initialized Variables

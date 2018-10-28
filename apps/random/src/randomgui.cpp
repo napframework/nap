@@ -49,28 +49,28 @@ namespace nap
 	{
 		if (ImGui::CollapsingHeader("Clouds", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::SliderFloat("Noise Speed", &mApp.mShaders->mNoiseSpeed, 0.0f, 0.25f);
-			ImGui::SliderFloat("Wind Speed", &mApp.mShaders->mWindSpeed, 0.0f, 0.5f);
+			ImGui::SliderFloat("Noise Speed", &mApp.mShaders->mNoiseSpeed, 0.0f, mApp.mShaders->mNoiseSpeedMax);
+			ImGui::SliderFloat("Wind Speed", &mApp.mShaders->mWindSpeed, 0.0f, mApp.mShaders->mWindSpeedMax);
 			ImGui::SliderFloat("Wind Direction", mApp.mShaders->pCloudsRotation, 0.0f, 360.0f);
 			ImGui::SliderFloat("Contrast", mApp.mShaders->pCloudsContrast, 0.0f, 1.0f);
-			ImGui::SliderFloat("Scale", mApp.mShaders->pCloudsScale, cloudsScaleMin, cloudsScaleMax);
+			ImGui::SliderFloat("Scale", mApp.mShaders->pCloudsScale, mApp.mShaders->mCloudsScaleMin, mApp.mShaders->mCloudsScaleMax);
 			if (ImGui::Checkbox("Inverted", &mApp.mShaders->mCloudsInverted))
 				mApp.mShaders->updateCloudsInverted();
 		}
 		if (ImGui::CollapsingHeader("Sun", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			bool updateOrbit = false;
-			updateOrbit = ImGui::DragFloat2("Orbit Center", mApp.mOrbit->mCenter, 0.001f, -orbitCenterRange, orbitCenterRange) || updateOrbit;
-			updateOrbit = ImGui::SliderFloat("Orbit Radius", &mApp.mOrbit->mRadius, orbitRadiusMin, orbitRadiusMax) || updateOrbit;
+			updateOrbit = ImGui::DragFloat2("Orbit Center", mApp.mOrbit->mCenter, 0.001f, -mApp.mOrbit->mCenterRange, mApp.mOrbit->mCenterRange) || updateOrbit;
+			updateOrbit = ImGui::SliderFloat("Orbit Radius", &mApp.mOrbit->mRadius, mApp.mOrbit->mRadiusMin, mApp.mOrbit->mRadiusMax) || updateOrbit;
 			updateOrbit = ImGui::DragFloat2("Orbit Start / End", mApp.mOrbit->mStartEnd, 0.1f, 0.0f, 360.0f) || updateOrbit;
 			updateOrbit = ImGui::SliderFloat("Orbit Progress", &mApp.mOrbit->mProgress, 0.0f, 1.0f) || updateOrbit;
 			if (updateOrbit) {
 				mApp.mOrbit->updateOrbit();
 				mApp.mShaders->updateOrbit();
 			}
-			ImGui::SliderFloat("Outer Size", mApp.mShaders->pSunOuterSize, sunSizeMin, sunSizeMax);
+			ImGui::SliderFloat("Outer Size", mApp.mShaders->pSunOuterSize, mApp.mShaders->mSunSizeMin, mApp.mShaders->mSunSizeMax);
 			ImGui::SliderFloat("Inner Size", mApp.mShaders->pSunInnerSize, 0.0f, 1.0f);
-			ImGui::SliderFloat("Stretch", mApp.mShaders->pSunStretch, sunStretchMin, sunStretchMax);
+			ImGui::SliderFloat("Stretch", mApp.mShaders->pSunStretch, mApp.mShaders->mSunStretchMin, mApp.mShaders->mSunStretchMax);
 		}
 	}
 

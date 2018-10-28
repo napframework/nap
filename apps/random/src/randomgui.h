@@ -42,17 +42,6 @@ namespace nap
 		const char*	mModes[3] = { "Sun", "Video", "Static" };
 		int			mCurrentMode = 0;
 
-		// Property ranges
-		const float cloudsScaleMin = 0.1f;
-		const float cloudsScaleMax = 2.0f;
-		const float orbitCenterRange = 1.5f;
-		const float orbitRadiusMin = 0.5f;
-		const float orbitRadiusMax = 1.5f;		
-		const float sunSizeMin = 0.05f;
-		const float sunSizeMax = 0.2f;		
-		const float sunStretchMin = 1.0f;
-		const float sunStretchMax = 10.0f;
-
 		// The app used to extract information from
 		RandomApp&	mApp;
 	};
