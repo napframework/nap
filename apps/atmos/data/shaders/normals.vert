@@ -138,9 +138,6 @@ void main(void)
   // Only displace tip of the line
 	vec3 final_pos = mix(in_Position, displ_position, 1.0-in_Tip);
 
-	// Calculate position
-  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(final_pos, 1.0);
-
 	// Pass color
 	passTip = in_Tip;
 
@@ -148,12 +145,15 @@ void main(void)
 	passUVs0 = in_UV0;
   passUVs1 = in_UV1;
 
+  // Calculate normal to world
+  mat3 normal_matrix = transpose(inverse(mat3(modelMatrix)));
+
 	// Pass normal in object space
-	passNormal = displaced_normal;
+	passNormal =  normalize(displaced_normal * normal_matrix);;
 
 	// Pass position in object space
-	passPosition = final_pos;
+	passPosition = vec3(modelMatrix * vec4(final_pos, 1.0));
 
-	// Pass model matrix for calculations
-	passModelMatrix = modelMatrix;
+    // Calculate position
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(final_pos, 1.0);
 }

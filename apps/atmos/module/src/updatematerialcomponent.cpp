@@ -49,6 +49,11 @@ static const std::string sTexTimeV			= "textureTimeV";
 static const std::string sDiffuseIntensity	= "diffuseIntensity";
 static const std::string sRotValue			= "rotationValue";
 static const std::string sRotAngle			= "rotationAxis";
+static const std::string sFogPower			= "fogPower";
+static const std::string sFogMin			= "fogMin";
+static const std::string sFogMax			= "fogMax";
+static const std::string sFogColor			= "fogColor";
+static const std::string sFogInfluence		= "fogInfluence";
 
 namespace nap
 {
@@ -137,6 +142,13 @@ namespace nap
 
 		// Diffuse intensity
 		setSharedValue<UniformFloat, float>(sm, nm, sDiffuseIntensity, mDiffuseIntensity);
+
+		// Set fog values
+		setSharedValue<UniformFloat, float>(sm, nm, sFogMin, mFogMin);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogMax, mFogMax);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogInfluence, mFogInfluence);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogPower, mFogPower);
+		setSharedValue<UniformVec3,  glm::vec3>(sm, nm, sFogColor, mFogColor.toVec3());
 
 		// Set texture u and v time
 		mTexTimeU += (deltaTime * mTextureSpeed.x);

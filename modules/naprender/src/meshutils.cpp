@@ -216,6 +216,38 @@ namespace nap
 		}
 
 
+		float computeTriangleArea(const TriangleData<glm::vec3>& vertices)
+		{
+			// use Heron's formula
+			float a = glm::length(vertices.first()  - vertices.second());
+			float b = glm::length(vertices.first()  - vertices.third());
+			float c = glm::length(vertices.second() - vertices.third());
+			float s = (a + b + c) / 2.0f;
+			return sqrt(s*(s - a)*(s - b)*(s - c));
+		}
+
+
+		float computeArea(nap::MeshInstance& mesh, const nap::VertexAttribute<glm::vec3>& vertices, std::vector<float>& outList)
+		{
+			// Clear list
+			outList.clear();
+			outList.reserve(utility::getTriangleCount(mesh));
+			
+			// Iterate and compute area for each triangle in the mesh
+			TriangleIterator iterator(mesh);
+			float total = 0.0f;
+			while (!iterator.isDone())
+			{
+				Triangle triangle = iterator.next();
+				const TriangleData<glm::vec3>& triangleData = triangle.getVertexData<glm::vec3>(vertices);
+				float v = computeTriangleArea(triangleData);
+				total += v;
+				outList.emplace_back(v);
+			}
+			return total;
+		}
+
+
 		bool intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const TriangleData<glm::vec3>& vertices, glm::vec3& outCoordinates)
 		{
 			glm::vec3 e1 = vertices.second() - vertices.first();

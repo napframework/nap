@@ -61,7 +61,7 @@ namespace nap
 		bool setReferenceMesh(IMesh& mesh, nap::utility::ErrorState& error);
 
 	protected:
-		std::unique_ptr<MeshInstance> mMeshInstance;
+		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;
 
 		// Position Attribute data
 		nap::Vec3VertexAttribute* mPositionAttr = nullptr;

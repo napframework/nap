@@ -100,6 +100,12 @@ namespace nap
 		float			mNormalScale		= 1.0f;
 		float			mDiffuseSpecInfl	= 0.0f;			//< Scales specular highlights based on diffuse information
 
+		float			mFogMin				= 0.75f;
+		float			mFogMax				= 1.0f;
+		float			mFogInfluence		= 1.0f;
+		RGBColorFloat	mFogColor			= { 1.0f, 1.0f, 1.0f };
+		float			mFogPower			= 2.0f;
+
 	private:
 		double mWindTime = 0.0;
 		double mTexTimeU = 0.0;

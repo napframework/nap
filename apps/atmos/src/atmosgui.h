@@ -60,6 +60,8 @@ namespace nap
 		float					mCameraRotSpeed = 1.0f;
 		float					mCamMaxRotSpeed = 0.0f;
 		float					mCamMaxMovSpeed = 0.0f;
+		bool					mLinkFogToBackground = true;
+		bool					mBackgroundColorDirty = true;
 
 		/**
 		 * Shows the controls menu
