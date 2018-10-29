@@ -308,6 +308,16 @@ namespace nap
 			*/
 			uint32_t getTicks() const;
 
+			/**
+			 * @return elapsed time in milliseconds
+			 */
+			utility::Milliseconds getMillis();
+
+			/**
+			 *	@return elapsed time in nanoseconds
+			 */
+			utility::NanoSeconds getNanos();
+
 		private:
 			// Members
 			std::chrono::time_point<Clock> mStart;
@@ -370,6 +380,24 @@ namespace nap
 			auto elapsed = Clock::now() - mStart;
 			return std::chrono::duration_cast<Milliseconds>(elapsed).count();
 		}
+
+
+		template<typename Clock>
+		utility::Milliseconds nap::utility::Timer<Clock>::getMillis()
+		{
+			auto elapsed = Clock::now() - mStart;
+			return std::chrono::duration_cast<Milliseconds>(elapsed);
+		}
+
+
+
+		template<typename Clock>
+		utility::NanoSeconds nap::utility::Timer<Clock>::getNanos()
+		{
+			auto elapsed = Clock::now() - mStart;
+			return std::chrono::duration_cast<NanoSeconds>(elapsed);
+		}
+
 
 
 		// Return elapsed time in seconds
