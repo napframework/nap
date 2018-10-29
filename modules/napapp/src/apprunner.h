@@ -81,8 +81,11 @@ namespace nap
 		int exitCode() const								{ return mExitCode; }
 
 		/**
-		 * Limits execution speed of the application
-		 * @param fps the new maximum allowed refresh rate in frames per second
+		 * Limits execution speed of the application. 
+		 * This causes the application to sleep in between calls when execution speed exceeds the set framerate.
+		 * The final execution speed may vary from platform to platform, based on the accuracy of the timers,
+		 * but will always be less than the given framerate.
+		 * @param fps the maximum allowed refresh rate in frames per second
 		 */
 		void setFramerate(float fps);
 
@@ -92,10 +95,7 @@ namespace nap
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
 		bool						mStop = false;			// If the runner should stop
 		int							mExitCode = 0;			// Application exit code
-
-		utility::HighResTimeStamp	mNextFrame;				// Holds next computed frame time
-		utility::HighResTimeStamp	mLastFrame;				// Holds previously computed frame time
-		utility::Milliseconds		mWaitTime;				// Holds time to wait in milliseconds
+		utility::Milliseconds		mWaitTime;				// Time to wait in milliseconds based on FPS
 	};
 
 
@@ -171,11 +171,12 @@ namespace nap
 
 		// Begin running
 		utility::HighResolutionTimer timer;
-		utility::Milliseconds next_frame;
+		utility::Milliseconds frame_time;
+		utility::Milliseconds delay_time;
 		while (!app.shouldQuit() && !mStop)
 		{
 			// Get time point for next frame
-			next_frame = timer.getMillis() + mWaitTime;
+			frame_time = timer.getMillis() + mWaitTime;
 			 
 			// Process app specific messages
 			app_event_handler.process();
@@ -187,8 +188,9 @@ namespace nap
 			app.render();
 
 			// Wait before computing next frame based on compute
-			if (mWaitTime.count() > 0)
-				std::this_thread::sleep_for(next_frame - timer.getMillis());
+			delay_time = frame_time - timer.getMillis();
+			if(delay_time.count() > 0)
+				std::this_thread::sleep_for(delay_time);
 		}
 
 		// Stop handling events
