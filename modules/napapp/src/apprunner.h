@@ -85,6 +85,7 @@ namespace nap
 		 * This causes the application to sleep in between calls when execution speed exceeds the set framerate.
 		 * The final execution speed may vary from platform to platform, based on the accuracy of the timers,
 		 * but will always be less than the given framerate.
+		 * Not setting any framerate allows the app to run at full speed (default)
 		 * @param fps the maximum allowed refresh rate in frames per second
 		 */
 		void setFramerate(float fps);
