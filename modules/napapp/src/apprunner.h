@@ -8,7 +8,7 @@
 #include <rtti/typeinfo.h>
 #include <nap/core.h>
 #include <utility/datetimeutils.h>
-#include <iostream>
+#include <thread>
 
 namespace nap
 {
