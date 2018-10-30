@@ -1,5 +1,6 @@
 
 #include "standardcurve.h"
+#include "curvemath.h"
 
 #include <cassert>
 #include <QMap>
@@ -10,7 +11,6 @@ using namespace napqt;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// StandardCurveModel
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 int StandardCurveModel::curveCount() const
 {
@@ -81,18 +81,18 @@ void StandardCurve::setName(const QString& name)
 
 QVariant napqt::StandardCurve::data(int index, int role) const
 {
-	auto& p = mPoints.at(index);
+	auto& p = *mPoints.at(index).get();
 	switch (role)
 	{
-		case datarole::POS:
+		case AbstractCurve::PointDataRole::Pos:
 			return p.pos;
-		case datarole::IN_TAN:
+		case AbstractCurve::PointDataRole::InTangent:
 			return p.inTan;
-		case datarole::OUT_TAN:
+		case AbstractCurve::PointDataRole::OutTangent:
 			return p.outTan;
-		case datarole::INTERP:
+		case AbstractCurve::PointDataRole::Interpolation:
 			return QVariant::fromValue(p.interp);
-		case datarole::TAN_ALIGNED:
+		case AbstractCurve::PointDataRole::AlignedTangents:
 			return p.tanAligned;
 		default:
 			assert(false);
@@ -101,23 +101,23 @@ QVariant napqt::StandardCurve::data(int index, int role) const
 
 void napqt::StandardCurve::setData(int index, int role, QVariant value)
 {
-	auto& p = mPoints[index];
+	auto p = mPoints.at(index).get();
 	switch (role)
 	{
-		case datarole::POS:
-			p.pos = value.toPointF();
+		case AbstractCurve::PointDataRole::Pos:
+			p->pos = value.toPointF();
 			break;
-		case datarole::IN_TAN:
-			p.inTan = value.toPointF();
+		case AbstractCurve::PointDataRole::InTangent:
+			p->inTan = value.toPointF();
 			break;
-		case datarole::OUT_TAN:
-			p.outTan = value.toPointF();
+		case AbstractCurve::PointDataRole::OutTangent:
+			p->outTan = value.toPointF();
 			break;
-		case datarole::INTERP:
-			p.interp = value.value<InterpType>();
+		case AbstractCurve::PointDataRole::Interpolation:
+			p->interp = value.value<InterpType>();
 			break;
-		case datarole::TAN_ALIGNED:
-			p.tanAligned = value.toBool();
+		case AbstractCurve::PointDataRole::AlignedTangents:
+			p->tanAligned = value.toBool();
 			break;
 		default:
 			assert(false);
@@ -133,10 +133,18 @@ void StandardCurve::movePoints(const QMap<int, QPointF>& positions)
 	{
 		int index = it.key();
 		auto pos = it.value();
-		mPoints[index].pos = pos;
+
+		mPoints.at(index)->pos = pos;
+
 		indexes << index;
 		++it;
 	}
+
+	// TODO: Optimize, we only need to update affected points
+	mSortedPoints.clear();
+	for (auto& p : mPoints)
+		mSortedPoints.insert(p->pos.x(), p.get());
+
 	pointsChanged(indexes);
 }
 
@@ -150,7 +158,7 @@ void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 	{
 		int index = it.key();
 		auto pos = it.value();
-		mPoints[index].inTan = pos;
+		mPoints.at(index)->inTan = pos;
 		if (!indexes.contains(index))
 			indexes << index;
 		++it;
@@ -161,7 +169,7 @@ void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 	{
 		int index = it.key();
 		auto pos = it.value();
-		mPoints[index].outTan = pos;
+		mPoints.at(index)->outTan = pos;
 		if (!indexes.contains(index))
 			indexes << index;
 		++it;
@@ -172,13 +180,24 @@ void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 
 void napqt::StandardCurve::addPoint(qreal time, qreal value)
 {
-	mPoints << StandardPoint(QPointF(time, value));
-	pointsAdded({mPoints.size()});
+	int idx = static_cast<int>(mPoints.size());
+
+	std::unique_ptr<StandardPoint> p = std::make_unique<StandardPoint>(QPointF(time, value));
+	auto rawp = p.get();
+	mPoints.emplace_back(std::move(p));
+
+	mSortedPoints.insert(time, rawp);
+
+	pointsAdded({idx});
 }
 
 void napqt::StandardCurve::removePoint(int index)
 {
-	mPoints.removeAt(index);
+	const auto& point = mPoints.at(index);
+	removeFromMapByValue(mSortedPoints, point.get());
+
+	mPoints.erase(mPoints.begin() + index);
+
 	pointsRemoved({index});
 }
 
@@ -191,7 +210,67 @@ void StandardCurve::removePoints(const QList<int>& indices)
 {
 	for (int idx : napqt::reverseSort(indices))
 	{
-		mPoints.removeAt(idx);
+		auto p = mPoints.at(idx).get();
+		removeFromMapByValue(mSortedPoints, p);
+		mPoints.erase(mPoints.begin() + idx);
 	}
+
 	pointsRemoved(indices);
 }
+
+qreal StandardCurve::evaluate(qreal time) const
+{
+	auto first = mSortedPoints.constBegin();
+	if (time < first.key())
+		return first.value()->pos.y();
+
+	auto last = mSortedPoints.constEnd();
+	last--;
+	if (time >= last.key())
+		return last.value()->pos.y();
+
+	StandardPoint* curr = nullptr;
+	StandardPoint* next = nullptr;
+	pointsAtTime(time, curr, next);
+	assert(curr);
+	assert(next);
+
+	auto a = curr->pos;
+	auto b = a + curr->outTan;
+	auto d = next->pos;
+	auto c = d + next->inTan;
+
+	napqt::limitOverhangQPoints(a, b, c, d);
+
+	switch (curr->interp)
+	{
+		case AbstractCurve::InterpType::Bezier:
+			return evalCurveSegmentBezier({a, b, c, d}, time);
+		case AbstractCurve::InterpType::Linear:
+			return evalCurveSegmentLinear({a, b, c, d}, time);
+		case AbstractCurve::InterpType::Stepped:
+			return evalCurveSegmentStepped({a, b, c, d}, time);
+		default:
+			assert(false);
+	}
+
+	return 0;
+}
+
+void StandardCurve::pointsAtTime(qreal time, StandardPoint*& curr, StandardPoint*& next) const
+{
+	auto lastIt = mSortedPoints.constBegin();
+	for (auto it = mSortedPoints.constBegin(); it != mSortedPoints.constEnd(); it++)
+	{
+		if (it.key() >= time)
+		{
+			curr = lastIt.value();
+			next = it.value();
+			return;
+		}
+		lastIt = it;
+	}
+	assert(false);
+}
+
+

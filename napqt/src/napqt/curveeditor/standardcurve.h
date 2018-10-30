@@ -19,8 +19,7 @@ namespace napqt
 				  interp(interp),
 				  inTan(inTan),
 				  outTan(outTan),
-				  tanAligned(tanAligned)
-				  {}
+				  tanAligned(tanAligned) {}
 
 		QPointF pos;
 		QPointF inTan;
@@ -41,7 +40,7 @@ namespace napqt
 
 		const QString name() const { return mName; }
 		void setName(const QString& name);
-
+		qreal evaluate(qreal time) const override;
 		QVariant data(int index, int role) const override;
 		void setData(int index, int role, QVariant value) override;
 		void removePoints(const QList<int>& indices) override;
@@ -51,7 +50,10 @@ namespace napqt
 		void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents) override;
 		StandardCurveModel* model();
 	private:
-		QList<StandardPoint> mPoints;
+		void pointsAtTime(qreal time, StandardPoint*& curr, StandardPoint*& next) const;
+		std::vector<std::unique_ptr<StandardPoint>> mPoints;
+		QMap<qreal, StandardPoint*> mSortedPoints;
+		bool mPointsDirty = true;
 		QString mName;
 	};
 
