@@ -96,7 +96,7 @@ namespace nap
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
 		bool						mStop = false;			// If the runner should stop
 		int							mExitCode = 0;			// Application exit code
-		utility::Milliseconds		mWaitTime;				// Time to wait in milliseconds based on FPS
+		utility::MicroSeconds		mWaitTime;				// Time to wait in milliseconds based on FPS
 	};
 
 
@@ -130,7 +130,7 @@ namespace nap
 		// Create 'm
 		mApp = std::make_unique<APP>(core);
 		mHandler = std::make_unique<HANDLER>(*mApp);
-		mWaitTime = utility::Milliseconds(0);
+		mWaitTime = utility::MicroSeconds(0);
 	}
 
 
@@ -172,12 +172,12 @@ namespace nap
 
 		// Begin running
 		utility::HighResolutionTimer timer;
-		utility::Milliseconds frame_time;
-		utility::Milliseconds delay_time;
+		utility::MicroSeconds frame_time;
+		utility::MicroSeconds delay_time;
 		while (!app.shouldQuit() && !mStop)
 		{
 			// Get time point for next frame
-			frame_time = timer.getMillis() + mWaitTime;
+			frame_time = timer.getMicros() + mWaitTime;
 			 
 			// Process app specific messages
 			app_event_handler.process();
@@ -188,9 +188,11 @@ namespace nap
 			// render
 			app.render();
 
-			// Wait before computing next frame based on compute
-			delay_time = frame_time - timer.getMillis();
-			if(delay_time.count() > 0)
+			// Only sleep when there is at least 1 millisecond that needs to be compensated for
+			// The actual outcome of the sleep call can vary greatly from system to system
+			// And is more accurate with lower framerate limitations
+			delay_time = frame_time - timer.getMicros();
+			if(std::chrono::duration_cast<utility::Milliseconds>(delay_time).count() > 0)
 				std::this_thread::sleep_for(delay_time);
 		}
 
@@ -229,6 +231,6 @@ namespace nap
 	template<typename APP, typename HANDLER>
 	void nap::AppRunner<APP, HANDLER>::setFramerate(float fps)
 	{
-		mWaitTime = utility::Milliseconds(static_cast<long>(1000.0 / static_cast<double>(fps)));
+		mWaitTime = utility::MicroSeconds(static_cast<long>(1000000.0 / static_cast<double>(fps)));
 	}
 }
