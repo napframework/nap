@@ -18,6 +18,7 @@ namespace nap
 		using SystemClock = std::chrono::system_clock;							///< System clock, able to convert time points in to days, seconds etc.
 		using HighResolutionClock = std::chrono::high_resolution_clock;			///< High resolution clock, works with the highest possible precision. Can't convert time points in to days, seconds etc.
 		using Milliseconds = std::chrono::milliseconds;							///< Milliseconds type definition
+		using MicroSeconds = std::chrono::microseconds;							///< Microseconds type definition
 		using NanoSeconds = std::chrono::nanoseconds;							///< Nanoseconds type definition
 		using Seconds = std::chrono::seconds;									///< Seconds type definition
 		using SystemTimeStamp = std::chrono::time_point<SystemClock>;			///< Point in time associated with the SystemClock
@@ -314,6 +315,11 @@ namespace nap
 			utility::Milliseconds getMillis();
 
 			/**
+			 * @return elapsed time in microseconds
+			 */
+			utility::MicroSeconds getMicros();
+
+			/**
 			 *	@return elapsed time in nanoseconds
 			 */
 			utility::NanoSeconds getNanos();
@@ -390,7 +396,6 @@ namespace nap
 		}
 
 
-
 		template<typename Clock>
 		utility::NanoSeconds nap::utility::Timer<Clock>::getNanos()
 		{
@@ -398,6 +403,13 @@ namespace nap
 			return std::chrono::duration_cast<NanoSeconds>(elapsed);
 		}
 
+
+		template<typename Clock>
+		utility::MicroSeconds nap::utility::Timer<Clock>::getMicros()
+		{
+			auto elapsed = Clock::now() - mStart;
+			return std::chrono::duration_cast<MicroSeconds>(elapsed);
+		}
 
 
 		// Return elapsed time in seconds
