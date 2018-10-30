@@ -177,8 +177,10 @@ void TangentHandleItem::updateRect()
 	auto ext = isSelected() ? mExtentSelectd : mExtent;
 	mRect.setCoords(-ext, -ext, ext * 2, ext * 2);
 
-	bool isAligned = curveSegmentItem().pointData(AbstractCurve::PointDataRole::AlignedTangents).toBool();
-	if (isAligned)
+	const auto& curve = curveSegmentItem().curveItem().curve();
+	int idx = curveSegmentItem().index();
+
+	if (curve.tangentsAligned(idx))
 	{
 		path.addEllipse(mRect);
 	}
@@ -277,12 +279,6 @@ QRectF CurveSegmentItem::boundingRect() const
 	return mPath.boundingRect().united(mDebugPath.boundingRect()).united(childrenBoundingRect());
 }
 
-QVariant CurveSegmentItem::pointData(const AbstractCurve::PointDataRole& role) const
-{
-	return curveItem().curve().data(index(), role);
-}
-
-
 void CurveSegmentItem::setInTanVisible(bool b)
 {
 	mInTanHandle.setVisible(b);
@@ -300,14 +296,13 @@ void CurveSegmentItem::setTangentsVisible(bool b)
 	bool bb = !isFirstPoint();
 	if (bb)
 	{
-		const auto& prevInterp = curveItem().curve().data(curveItem().prevSegIndex(index()),
-														  AbstractCurve::PointDataRole::Interpolation).value<AbstractCurve::InterpType>();
+		int prevIndex = curveItem().prevSegIndex(index());
+		const auto& prevInterp = curveItem().curve().interpolation(prevIndex);
 		bb = bb && prevInterp == AbstractCurve::InterpType::Bezier;
 	}
 	setInTanVisible(bb && b);
 
-	const auto& interp = curveItem().curve().data(index(),
-												  AbstractCurve::PointDataRole::Interpolation).value<AbstractCurve::InterpType>();
+	const auto& interp = curveItem().curve().interpolation(index());
 	setOutTanVisible(b && !isLastPoint() && interp == AbstractCurve::InterpType::Bezier);
 }
 
@@ -352,10 +347,11 @@ void CurveSegmentItem::updateGeometry()
 
 	bool isLast = orderedIdx == segCount - 1;
 
-	auto pos = curve.data(idx, AbstractCurve::PointDataRole::Pos).toPointF();
-	auto inTan = curve.data(idx, AbstractCurve::PointDataRole::InTangent).toPointF();
-	auto outTan = curve.data(idx, AbstractCurve::PointDataRole::OutTangent).toPointF();
-	auto interp = curve.data(idx, AbstractCurve::PointDataRole::Interpolation).value<AbstractCurve::InterpType>();
+	const auto pos = curve.pos(idx);
+	const auto inTan = curve.inTangent(idx);
+	const auto outTan = curve.outTangent(idx);
+	const auto interp = curve.interpolation(idx);
+
 	auto c1 = pos + outTan;
 	auto inTanPos = pos + inTan;
 	auto outTanPos = pos + outTan;
@@ -380,8 +376,8 @@ void CurveSegmentItem::updateGeometry()
 		// Handle anything that needs the next segment/point
 		auto nextSeg = curveItem().nextSegment(*this);
 		auto nextIdx = curveItem().segmentIndex(*nextSeg);
-		auto nextInTan = curve.data(nextIdx, AbstractCurve::PointDataRole::InTangent).toPointF();
-		auto nextPos = curve.data(nextIdx, AbstractCurve::PointDataRole::Pos).toPointF();
+		auto nextInTan = curve.inTangent(nextIdx);
+		auto nextPos = curve.pos(nextIdx);
 		auto c2 = nextPos + nextInTan;
 
 		auto a = pos;
@@ -612,12 +608,9 @@ const QVector<int>& CurveItem::sortPoints()
 	for (int i = 0; i < len; i++)
 		mSortedToUnsorted.append(i);
 
-	std::sort(mSortedToUnsorted.begin(), mSortedToUnsorted.end(), [this](const QVariant& a, const QVariant& b)
+	std::sort(mSortedToUnsorted.begin(), mSortedToUnsorted.end(), [this](const int& a, const int& b)
 	{
-		bool ok;
-		qreal timeA = mCurve.data(a.toInt(&ok), AbstractCurve::PointDataRole::Pos).toPointF().x();
-		qreal timeB = mCurve.data(b.toInt(&ok), AbstractCurve::PointDataRole::Pos).toPointF().x();
-		return timeA < timeB;
+		return mCurve.pos(a).x() < mCurve.pos(b).x();
 	});
 
 	mUnsortedToSorted.resize(len);
@@ -918,8 +911,7 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 		}
 
 		// Move opposite tangent
-		bool aligned = curveItem->curve().data(idx, AbstractCurve::PointDataRole::AlignedTangents).toBool();
-		if (aligned)
+		if (curveItem->curve().tangentsAligned(idx))
 		{
 			auto otherPos = alignedOppositeTangentVector(*tangent);
 
@@ -1085,9 +1077,10 @@ void CurveView::onCustomContextMenuRequested(const QPoint& pos)
 		int nonAlignedCount = 0;
 		for (PointHandleItem* item : pointsFromSelection())
 		{
-			bool aligned = item->curveSegmentItem().curveItem().curve().data(item->curveSegmentItem().index(),
-																			 AbstractCurve::PointDataRole::AlignedTangents).toBool();
-			if (aligned)
+			auto& curve = item->curveSegmentItem().curveItem().curve();
+			int idx = item->curveSegmentItem().index();
+
+			if (curve.tangentsAligned(idx))
 				alignedCount++;
 			else
 				nonAlignedCount++;
@@ -1111,9 +1104,8 @@ void CurveView::setSelectedPointInterps(AbstractCurve::InterpType interp)
 	{
 		int idx = pt->curveSegmentItem().index();
 		auto& curve = pt->curveSegmentItem().curveItem().curve();
-		auto oldInterp = curve.data(idx,
-									AbstractCurve::PointDataRole::AlignedTangents).value<AbstractCurve::InterpType>();
-		curve.setData(idx, AbstractCurve::PointDataRole::Interpolation, QVariant::fromValue(interp));
+		auto oldInterp = curve.interpolation(idx);
+		curve.setInterpolation(idx, interp);
 //		if (oldInterp != interp)
 //		{
 //		}
@@ -1127,8 +1119,8 @@ void CurveView::setSelectedTangentsAligned(bool aligned)
 	{
 		int idx = pt->curveSegmentItem().index();
 		auto& curve = pt->curveSegmentItem().curveItem().curve();
-		bool wasAligned = curve.data(idx, AbstractCurve::PointDataRole::AlignedTangents).toBool();
-		curve.setData(idx, AbstractCurve::PointDataRole::AlignedTangents, aligned);
+		bool wasAligned = curve.tangentsAligned(idx);
+		curve.setTangentsAligned(idx, aligned);
 		if (!wasAligned && aligned)
 			alignTangents(curve, idx);
 	}
@@ -1136,12 +1128,12 @@ void CurveView::setSelectedTangentsAligned(bool aligned)
 
 void CurveView::alignTangents(AbstractCurve& curve, int idx)
 {
-	QPointF inTanPos = curve.data(idx, AbstractCurve::PointDataRole::InTangent).toPointF();
-	QPointF outTanPos = curve.data(idx, AbstractCurve::PointDataRole::OutTangent).toPointF();
+	const auto inTanPos = curve.inTangent(idx);
+	const auto outTanPos = curve.outTangent(idx);
 	qreal inMag = length(inTanPos);
 	qreal outMag = length(outTanPos);
-	QPointF inVec = normalize(inTanPos);
-	QPointF outVec = normalize(outTanPos);
+	const auto inVec = normalize(inTanPos);
+	const auto outVec = normalize(outTanPos);
 
 	QPointF antInPos = -outVec * inMag;
 	QPointF antOutPos = -inVec * outMag;
@@ -1149,8 +1141,8 @@ void CurveView::alignTangents(AbstractCurve& curve, int idx)
 	auto newInTanPos = lerpPoint(inTanPos, antInPos, 0.5);
 	auto newOutTanPos = lerpPoint(outTanPos, antOutPos, 0.5);
 
-	curve.setData(idx, AbstractCurve::PointDataRole::InTangent, newInTanPos);
-	curve.setData(idx, AbstractCurve::PointDataRole::OutTangent, newOutTanPos);
+	curve.setInTangent(idx, newInTanPos);
+	curve.setOutTangent(idx, newOutTanPos);
 }
 
 
@@ -1266,19 +1258,21 @@ void CurveView::drawBackground(QPainter* painter, const QRectF& rect)
 	for (int i = 0; i < model()->curveCount(); i++)
 		drawCurve(painter, rect, viewRect, *model()->curve(i), sceneStep);
 }
-void
-CurveView::drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRectF& viewRect, const AbstractCurve& curve,
-					 qreal step)
+void CurveView::drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRectF& viewRect,
+						  const AbstractCurve& curve,
+						  qreal step)
 {
 
-	qreal xmin = dirtyRect.left();
-	qreal xmax = dirtyRect.right() + step;
+	qreal xmin = viewRect.left();
+	qreal xmax = viewRect.right() + step;
+	int steps = qCeil((xmax - xmin) / step);
 
 	QPainterPath path;
 	qreal v = curve.evaluate(xmin);
 	path.moveTo(xmin, v);
-	for (qreal x = xmin; x <= xmax; x += step)
+	for (int i = 0; i < steps; i++)
 	{
+		qreal x = i * step;
 		v = curve.evaluate(x);
 		path.lineTo(x, v);
 	}
