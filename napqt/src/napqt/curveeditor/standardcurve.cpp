@@ -70,59 +70,13 @@ StandardCurve::StandardCurve(StandardCurveModel* parent) : AbstractCurve(parent)
 
 int napqt::StandardCurve::pointCount() const
 {
-	return mPoints.size();
+	return static_cast<int>(mPoints.size());
 }
 
 void StandardCurve::setName(const QString& name)
 {
 	mName = name;
 	changed(this);
-}
-
-QVariant napqt::StandardCurve::data(int index, int role) const
-{
-	auto& p = *mPoints.at(index).get();
-	switch (role)
-	{
-		case AbstractCurve::PointDataRole::Pos:
-			return p.pos;
-		case AbstractCurve::PointDataRole::InTangent:
-			return p.inTan;
-		case AbstractCurve::PointDataRole::OutTangent:
-			return p.outTan;
-		case AbstractCurve::PointDataRole::Interpolation:
-			return QVariant::fromValue(p.interp);
-		case AbstractCurve::PointDataRole::AlignedTangents:
-			return p.tanAligned;
-		default:
-			assert(false);
-	}
-}
-
-void napqt::StandardCurve::setData(int index, int role, QVariant value)
-{
-	auto p = mPoints.at(index).get();
-	switch (role)
-	{
-		case AbstractCurve::PointDataRole::Pos:
-			p->pos = value.toPointF();
-			break;
-		case AbstractCurve::PointDataRole::InTangent:
-			p->inTan = value.toPointF();
-			break;
-		case AbstractCurve::PointDataRole::OutTangent:
-			p->outTan = value.toPointF();
-			break;
-		case AbstractCurve::PointDataRole::Interpolation:
-			p->interp = value.value<InterpType>();
-			break;
-		case AbstractCurve::PointDataRole::AlignedTangents:
-			p->tanAligned = value.toBool();
-			break;
-		default:
-			assert(false);
-	}
-	pointsChanged({index});
 }
 
 void StandardCurve::movePoints(const QMap<int, QPointF>& positions)
@@ -134,7 +88,7 @@ void StandardCurve::movePoints(const QMap<int, QPointF>& positions)
 		int index = it.key();
 		auto pos = it.value();
 
-		mPoints.at(index)->pos = pos;
+		mPoints.at(static_cast<unsigned long>(index))->pos = pos;
 
 		indexes << index;
 		++it;
@@ -158,7 +112,7 @@ void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 	{
 		int index = it.key();
 		auto pos = it.value();
-		mPoints.at(index)->inTan = pos;
+		mPoints.at(static_cast<unsigned long>(index))->inTan = pos;
 		if (!indexes.contains(index))
 			indexes << index;
 		++it;
@@ -169,7 +123,7 @@ void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 	{
 		int index = it.key();
 		auto pos = it.value();
-		mPoints.at(index)->outTan = pos;
+		mPoints.at(static_cast<unsigned long>(index))->outTan = pos;
 		if (!indexes.contains(index))
 			indexes << index;
 		++it;
@@ -193,7 +147,7 @@ void napqt::StandardCurve::addPoint(qreal time, qreal value)
 
 void napqt::StandardCurve::removePoint(int index)
 {
-	const auto& point = mPoints.at(index);
+	const auto& point = mPoints.at(static_cast<unsigned long>(index));
 	removeFromMapByValue(mSortedPoints, point.get());
 
 	mPoints.erase(mPoints.begin() + index);
@@ -210,7 +164,7 @@ void StandardCurve::removePoints(const QList<int>& indices)
 {
 	for (int idx : napqt::reverseSort(indices))
 	{
-		auto p = mPoints.at(idx).get();
+		auto p = mPoints.at(static_cast<unsigned long>(idx)).get();
 		removeFromMapByValue(mSortedPoints, p);
 		mPoints.erase(mPoints.begin() + idx);
 	}
@@ -271,6 +225,60 @@ void StandardCurve::pointsAtTime(qreal time, StandardPoint*& curr, StandardPoint
 		lastIt = it;
 	}
 	assert(false);
+}
+const QPointF StandardCurve::pos(int pointIndex) const
+{
+	return mPoints[pointIndex]->pos;
+}
+
+void StandardCurve::setPos(int pointIndex, const QPointF& pos)
+{
+	mPoints[pointIndex]->pos = pos;
+	pointsChanged({pointIndex});
+}
+
+const QPointF StandardCurve::inTangent(int pointIndex) const
+{
+	return mPoints[pointIndex]->inTan;
+}
+
+void StandardCurve::setInTangent(int pointIndex, const QPointF& tan)
+{
+	mPoints[pointIndex]->inTan = tan;
+	pointsChanged({pointIndex});
+}
+
+const QPointF StandardCurve::outTangent(int pointIndex) const
+{
+	return mPoints[pointIndex]->outTan;
+}
+
+void StandardCurve::setOutTangent(int pointIndex, const QPointF& tan)
+{
+	mPoints[pointIndex]->outTan = tan;
+	pointsChanged({pointIndex});
+}
+
+const AbstractCurve::InterpType StandardCurve::interpolation(int pointIndex) const
+{
+	return mPoints[pointIndex]->interp;
+}
+
+void StandardCurve::setInterpolation(int pointIndex, const AbstractCurve::InterpType& interp)
+{
+	mPoints[pointIndex]->interp = interp;
+	pointsChanged({pointIndex});
+}
+
+const bool StandardCurve::tangentsAligned(int pointIndex) const
+{
+	return mPoints[pointIndex]->tanAligned;
+}
+
+void StandardCurve::setTangentsAligned(int pointIndex, bool b)
+{
+	mPoints[pointIndex]->tanAligned = b;
+	pointsChanged({pointIndex});
 }
 
 

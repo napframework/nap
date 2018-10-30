@@ -16,19 +16,6 @@ namespace napqt
 	Q_OBJECT
 		Q_ENUMS(InterpType)
 	public:
-		enum PointDataRole
-		{
-			Pos = 0,
-			InTangent = 1,
-			OutTangent = 2,
-			Interpolation = 3,
-			Name = 4,
-			AlignedTangents = 5,
-
-			UserRole = 0x0100, // Reserved for user data
-		};
-		Q_ENUM(PointDataRole)
-
 		enum InterpType
 		{
 			Stepped = 0,
@@ -45,9 +32,23 @@ namespace napqt
 
 		virtual qreal evaluate(qreal time) const = 0;
 
+		virtual const QPointF pos(int pointIndex) const = 0;
+		virtual void setPos(int pointIndex, const QPointF& pos) {}
+
+		virtual const QPointF inTangent(int pointIndex) const = 0;
+		virtual void setInTangent(int pointIndex, const QPointF& tan) {}
+
+		virtual const QPointF outTangent(int pointIndex) const = 0;
+		virtual void setOutTangent(int pointIndex, const QPointF& tan) {}
+
+		virtual const InterpType interpolation(int pointIndex) const = 0;
+		virtual void setInterpolation(int pointIndex, const InterpType& interp) {}
+
+		virtual const bool tangentsAligned(int pointIndex) const = 0;
+		virtual void setTangentsAligned(int pointIndex, bool b) {}
+
+
 		// Point data
-		virtual QVariant data(int index, int role) const = 0;
-		virtual void setData(int index, int role, QVariant value) = 0;
 		virtual void movePoints(const QMap<int, QPointF>& positions) = 0;
 		virtual void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents) = 0;
 		virtual void removePoints(const QList<int>& indices) {}

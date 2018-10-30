@@ -41,8 +41,18 @@ namespace napqt
 		const QString name() const { return mName; }
 		void setName(const QString& name);
 		qreal evaluate(qreal time) const override;
-		QVariant data(int index, int role) const override;
-		void setData(int index, int role, QVariant value) override;
+
+		const QPointF pos(int pointIndex) const override;
+		void setPos(int pointIndex, const QPointF& pos) override;
+		const QPointF inTangent(int pointIndex) const override;
+		void setInTangent(int pointIndex, const QPointF& tan) override;
+		const QPointF outTangent(int pointIndex) const override;
+		void setOutTangent(int pointIndex, const QPointF& tan) override;
+		const InterpType interpolation(int pointIndex) const override;
+		void setInterpolation(int pointIndex, const InterpType& interp) override;
+		const bool tangentsAligned(int pointIndex) const override;
+		void setTangentsAligned(int pointIndex, bool b) override;
+
 		void removePoints(const QList<int>& indices) override;
 		void addPoint(qreal time, qreal value) override;
 		void removePoint(int index);

@@ -104,7 +104,7 @@ namespace napqt
 		TangentHandleItem& outTanHandle() { return mOutTanHandle; }
 		TangentLineItem& inTanLine() { return mInTanLine; }
 
-		QVariant pointData(const AbstractCurve::PointDataRole& role) const;
+
 
 		void setInTanVisible(bool b);
 		void setOutTanVisible(bool b);
