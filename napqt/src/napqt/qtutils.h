@@ -177,6 +177,15 @@ namespace napqt
 	 */
 	QList<int> reverseSort(const QList<int>& ints);
 
+	template<typename K, typename V>
+	void removeFromMapByValue(QMap<K, V> map, V element) {
+		for (auto it = map.begin(); it != map.end();)
+			if (it.value() == element)
+				it = map.erase(it);
+			else
+				++it;
+	}
+
 
 }
 

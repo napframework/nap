@@ -3,6 +3,8 @@
 #include <QtGlobal>
 #include <QtDebug>
 
+#include <napqt/qtutils.h>
+
 namespace napqt
 {
 
@@ -79,5 +81,27 @@ namespace napqt
 	{
 		return pts[0].y();
 	}
+
+	/**
+	 * Given 4 points of a cubic bezier curve, adjust x1 and x2 so that only one solution is possible.
+	 * In other words, make sure the curve doesn't overhang
+	 * @param x0 first point
+	 * @param x1 control point 1 (x1 tangent)
+	 * @param x2 control point 2 (x2 tangent)
+	 * @param x3 last point
+	 */
+	void limitOverhang(qreal& x0, qreal& x1, qreal& x2, qreal& x3);
+
+	/**
+	 * Given 4 points of a cubic bezier curve, adjust x1 and x2 so that only one solution is possible.
+	 * In other words, make sure the curve doesn't overhang
+	 * @param x0 first point
+	 * @param x1 control point 1 (x1 tangent)
+	 * @param x2 control point 2 (x2 tangent)
+	 * @param x3 last point
+	 */
+	void limitOverhangQPoints(QPointF& pa, QPointF& pb, QPointF& pc, QPointF& pd);
+
+
 
 }

@@ -4,14 +4,7 @@
 
 namespace napqt
 {
-	namespace datarole {
-		const int POS = 0;
-		const int IN_TAN = 1;
-		const int OUT_TAN = 2;
-		const int INTERP = 3;
-		const int NAME = 4;
-		const int TAN_ALIGNED = 5;
-	}
+
 
 	class AbstractCurveModel;
 
@@ -21,17 +14,36 @@ namespace napqt
 	class AbstractCurve : public QObject
 	{
 	Q_OBJECT
-	Q_ENUMS(InterpType)
+		Q_ENUMS(InterpType)
 	public:
+		enum PointDataRole
+		{
+			Pos = 0,
+			InTangent = 1,
+			OutTangent = 2,
+			Interpolation = 3,
+			Name = 4,
+			AlignedTangents = 5,
+
+			UserRole = 0x0100, // Reserved for user data
+		};
+		Q_ENUM(PointDataRole)
+
 		enum InterpType
 		{
-			Stepped, Linear, Bezier
+			Stepped = 0,
+			Linear = 1,
+			Bezier= 2,
+
+			UserInterp = 0x0100, // Reserved for user interpolation
 		};
 		Q_ENUM(InterpType)
 
 		explicit AbstractCurve(AbstractCurveModel* parent = nullptr);
 
 		virtual int pointCount() const = 0;
+
+		virtual qreal evaluate(qreal time) const = 0;
 
 		// Point data
 		virtual QVariant data(int index, int role) const = 0;

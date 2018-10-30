@@ -105,15 +105,15 @@ public:
 
 	void demoCurves() {
 		auto model = new StandardCurveModel(this);
-		{
-			auto curve = model->addCurve();
-			curve->setName("Fade In");
-			curve->addPoint(0.75, 0.00);
-			curve->addPoint(0.00, 0.25);
-			curve->addPoint(1.00, 0.50);
-			curve->addPoint(0.50, 0.75);
-			curve->addPoint(0.25, 1.00);
-		}
+//		{
+//			auto curve = model->addCurve();
+//			curve->setName("Fade In");
+//			curve->addPoint(0.75, 0.00);
+//			curve->addPoint(0.00, 0.25);
+//			curve->addPoint(1.00, 0.50);
+//			curve->addPoint(0.50, 0.75);
+//			curve->addPoint(0.25, 1.00);
+//		}
 		mCurveView.setModel(model);
 		mCurveView2.setModel(model);
 

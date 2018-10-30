@@ -104,13 +104,15 @@ namespace napqt
 		TangentHandleItem& outTanHandle() { return mOutTanHandle; }
 		TangentLineItem& inTanLine() { return mInTanLine; }
 
+		QVariant pointData(const AbstractCurve::PointDataRole& role) const;
+
 		void setInTanVisible(bool b);
 		void setOutTanVisible(bool b);
 		void setTangentsVisible(bool b);
 
 		QPainterPath shape() const override;
 		void updateGeometry();
-		int index();
+		int index() const;
 		int orderedIndex();
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
@@ -126,7 +128,7 @@ namespace napqt
 
 		QPainterPath mPath;
 		QPainterPath mDebugPath;
-		bool mDrawDebug = true;
+		bool mDrawDebug = false;
 		bool mDrawQt = false;
 		int mSampleCount = 16;
 		QPen mPen;
@@ -192,11 +194,16 @@ namespace napqt
 		AbstractCurveModel* model() { return mModel; }
 
 	protected:
+		void drawBackground(QPainter* painter, const QRectF& rect) override;
+		void drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRectF& rect, const AbstractCurve& curve,
+							   qreal sceneStep);
+
 		void mousePressEvent(QMouseEvent* event) override;
 		void mouseMoveEvent(QMouseEvent* event) override;
 		void mouseReleaseEvent(QMouseEvent* event) override;
 		void movePointHandles(const QList<PointHandleItem*>& items, const QPointF& sceneDelta);
 		void moveTanHandles(const QList<TangentHandleItem*>& tangents, const QPointF& sceneDelta);
+
 	private:
 		CurveItem* closestCurveItem(const QPointF& pos);
 		void initActions();
