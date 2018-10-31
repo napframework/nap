@@ -1372,29 +1372,31 @@ namespace nap
 	}
 
 
-	bool IMGuiService::init(utility::ErrorState& error)
+	bool IMGuiService::setWindow(nap::RenderWindow& window)
 	{
-		// Get our renderer
-		mRenderer = getCore().getService<nap::RenderService>();
-		assert(mRenderer != nullptr);
-		
 		// initialize imgui, only primary window supported for now
-		if (!error.check(ImGui_ImplSdlGL3_Init(mRenderer->getPrimaryWindow().getNativeWindow()), "Unable to initialize ImGui"))
+		if (!ImGui_ImplSdlGL3_Init(window.getWindow()->getNativeWindow()))
 			return false;
 
-		// Push our font
+		// Push default style
+		applyStyle();
+
+		// Add font
 		ImFontConfig font_config;
 		font_config.OversampleH = 8;
 		font_config.OversampleV = 1;
 		ImGuiIO& io = ImGui::GetIO();
 		io.Fonts->AddFontFromMemoryCompressedTTF(NunitoSansSemiBold_compressed_data, NunitoSansSemiBold_compressed_size, 17.0f, &font_config);
 
-		// Create all objects when main context is valid
-		if (!error.check(ImGui_ImplSdlGL3_CreateDeviceObjects(), "Unable to create ImGui devices"))
-			return false;
+		return true;
+	}
 
-		// Apply color palette
-		applyStyle();
+
+	bool IMGuiService::init(utility::ErrorState& error)
+	{
+		// Get our renderer
+		mRenderer = getCore().getService<nap::RenderService>();
+		assert(mRenderer != nullptr);
 
 		return true;
 	}
@@ -1409,13 +1411,23 @@ namespace nap
 
 	void IMGuiService::update(double deltaTime)
 	{
-		mRenderer->getPrimaryWindow().makeCurrent();	
-		ImGui_ImplSdlGL3_NewFrame(mRenderer->getPrimaryWindow().getNativeWindow());
+		//mRenderer->getPrimaryWindow().makeCurrent();	
+		//ImGui_ImplSdlGL3_NewFrame(mRenderer->getPrimaryWindow().getNativeWindow());
 	};
 
 
 	void IMGuiService::shutdown()
 	{
 		ImGui_ImplSdlGL3_Shutdown();
+	}
+
+
+	void IMGuiService::createNewFrame(nap::RenderWindow& window)
+	{
+		window.makeActive();
+
+		// Apply color palette
+		applyStyle();
+		ImGui_ImplSdlGL3_NewFrame(window.getWindow()->getNativeWindow());
 	}
 }

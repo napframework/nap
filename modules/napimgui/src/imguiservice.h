@@ -3,6 +3,7 @@
 // External includes
 #include <nap/service.h>
 #include <utility/dllexport.h>
+#include <renderwindow.h>
 
 namespace nap
 {
@@ -32,6 +33,16 @@ namespace nap
 		 * You need to call this just before swapping buffers for the primary window
 		 */
 		void draw();
+
+		/**
+		 * Sets the GUI window to use
+		 */
+		bool setWindow(nap::RenderWindow& window);
+
+		/**
+		 * Creates a new frame
+		 */
+		void createNewFrame(nap::RenderWindow& window);
 
 	protected:
 		/**
