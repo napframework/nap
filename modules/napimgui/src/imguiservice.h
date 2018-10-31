@@ -4,6 +4,7 @@
 #include <nap/service.h>
 #include <utility/dllexport.h>
 #include <renderwindow.h>
+#include <nsdlgl.h>
 
 namespace nap
 {
@@ -38,11 +39,27 @@ namespace nap
 
 		/**
 		 * Explicitly set the window that is used for drawing the GUI elements
-		 * When no window is specified the system uses the primary window to draw gui elements
+		 * When no window is specified the system uses the primary window to draw GUI elements
 		 * Preferably call this on init() of the application.
 		 * @param window the window to use for drawing the GUI elements
 		 */
 		void setWindow(nap::ResourcePtr<RenderWindow> window);
+
+		/**
+		 * Handles input for gui related tasks, called from the Gui App Event Handler
+		 * This is separate from other input related event handling
+		 */
+		void processInputEvent(opengl::Event& event);
+
+		/**
+		 * @return if the gui is capturing keyboard events
+		 */
+		bool isCapturingKeyboard();
+
+		/**
+		 * @return if the gui is capturing mouse events
+		 */
+		bool isCapturingMouse();
 
 	protected:
 		/**
