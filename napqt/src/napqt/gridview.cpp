@@ -508,8 +508,10 @@ void GridView::setSelection(const QList<QGraphicsItem*>& items)
 void GridView::addSelection(const QList<QGraphicsItem*>& items)
 {
 	for (auto m : items)
+	{
 		if (!m->isSelected())
 			m->setSelected(true);
+	}
 }
 
 void GridView::removeSelection(const QList<QGraphicsItem*>& items)

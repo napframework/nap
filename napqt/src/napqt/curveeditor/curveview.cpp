@@ -23,6 +23,8 @@ using namespace napqt;
 #define COL_TANHANDLE_LINE_SELECTED    "#0FF"
 #define COL_TANLINE                    "#888"
 #define COL_TANLINE_SELECTED            "#F0F"
+#define COL_CURVE_HIGHLIGHT				"#F80"
+#define COL_CURVE_SELECTED				"#FFF"
 
 #define ZDEPTH_HANDLES 15000
 #define ZDEPTH_HANDLE_LINES 10000
@@ -767,9 +769,11 @@ void CurveView::mouseMoveEvent(QMouseEvent* event)
 	bool lmb = event->buttons() == Qt::LeftButton;
 	bool mmb = event->buttons() == Qt::MiddleButton;
 
+	auto scenePos = mapToScene(event->pos());
+
 	if (mInteractMode == DragPoints)
 	{
-		auto sceneDelta = mapToScene(event->pos()) - mapToScene(mLastMousePos);
+		auto sceneDelta = scenePos - mapToScene(mLastMousePos);
 
 		auto pointHandles = selectedItems<PointHandleItem>();
 		auto tanHandles = selectedItems<TangentHandleItem>();
@@ -1277,4 +1281,24 @@ void CurveView::drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRec
 		path.lineTo(x, v);
 	}
 	painter->drawPath(path);
+}
+
+void CurveView::selectCurves(const QList<AbstractCurve*>& curves)
+{
+	QList<QGraphicsItem*> handles;
+	for (auto curve : curves)
+	{
+		auto item = curveItem(*curve);
+		for (auto seg : item->segments()) {
+			handles << &seg->pointHandle();
+		}
+	}
+	setSelection(handles);
+}
+
+CurveItem* CurveView::curveItem(const AbstractCurve& curve) {
+	for (CurveItem* curveItem : mCurveItems)
+		if (&curveItem->curve() == &curve)
+			return curveItem;
+	return nullptr;
 }

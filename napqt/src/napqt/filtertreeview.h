@@ -23,14 +23,14 @@ namespace napqt
 	 */
 	class FilterTreeView : public QWidget
 	{
-
+	Q_OBJECT
 	public:
 		FilterTreeView(QTreeView* treeView = nullptr);
 
 		/**
 		 * @param model
 		 */
-		void setModel(QStandardItemModel* model);
+		void setModel(QAbstractItemModel* model);
 
 		/**
 		 * @return The model set using setModel()
@@ -111,21 +111,24 @@ namespace napqt
 		 */
 		QWidget& getCornerWidget();
 
+	Q_SIGNALS:
+		void doubleClicked(const QModelIndex& idx);
+
 	protected:
-        /**
-         * Invoked when the filter has changed
-         * @param text The filter text
-         */
+		/**
+		 * Invoked when the filter has changed
+		 * @param text The filter text
+		 */
 		void onFilterChanged(const QString& text);
 
-        /**
-         * invoked when the user wants to expand the selection
-         */
+		/**
+		 * invoked when the user wants to expand the selection
+		 */
 		void onExpandSelected();
 
-        /**
-         * invoked when the user wants to collapse the selection
-         */
+		/**
+		 * invoked when the user wants to collapse the selection
+		 */
 		void onCollapseSelected();
 
 		/**
@@ -138,9 +141,10 @@ namespace napqt
 		QVBoxLayout mLayout; ///< The main layout
 		QHBoxLayout mTopLayout; ///< The layout containing the filter input and the corner widget
 		QLineEdit mLineEditFilter; ///< The filter box
-		QWidget mCornerWidget;	///< The [empty] widget at the tip right corner
+		QWidget mCornerWidget;    ///< The [empty] widget at the tip right corner
 		QTreeView* mTreeView;
 		LeafFilterProxyModel mSortFilter; ///< Sits in between the user model and the tree view
 		std::function<void(QMenu&)> mMenuHookFn = nullptr; ///< Gives subclasses the chance to add to the menu
 	};
+
 };

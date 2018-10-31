@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QtWidgets/QPushButton>
 #include <napqt/curveeditor/standardcurve.h>
+#include <napqt/curveeditor/curvepanel.h>
 
 #include "curveeditor/curveview.h"
 #include "timeline/timelinepanel.h"
@@ -82,6 +83,7 @@ private:
 		if (!result.isEmpty())
 			mFilterResult.setText(result);
 	}
+
 	QVBoxLayout mLayout;
 	QStringList mErrors;
 	QTimer mErrorTimer;
@@ -96,8 +98,8 @@ public:
 		ErrorDialog::setDefaultParent(this);
 		addDock("Timeline", &mTimelinePanel);
 		addDock("Demo", &mDemoPanel);
-		addDock("Curves", &mCurveView);
-		addDock("Curves2", &mCurveView2);
+		addDock("CurvesPanel", &mCurvePanel);
+		addDock("CurveView", &mCurveView);
 
 		demoTimeline();
 		demoCurves();
@@ -105,17 +107,17 @@ public:
 
 	void demoCurves() {
 		auto model = new StandardCurveModel(this);
-//		{
-//			auto curve = model->addCurve();
-//			curve->setName("Fade In");
-//			curve->addPoint(0.75, 0.00);
-//			curve->addPoint(0.00, 0.25);
-//			curve->addPoint(1.00, 0.50);
-//			curve->addPoint(0.50, 0.75);
-//			curve->addPoint(0.25, 1.00);
-//		}
+		{
+			auto curve = model->addCurve();
+			curve->setName("Fade In");
+			curve->addPoint(0.75, 0.00);
+			curve->addPoint(0.00, 0.25);
+			curve->addPoint(1.00, 0.50);
+			curve->addPoint(0.50, 0.75);
+			curve->addPoint(0.25, 1.00);
+		}
 		mCurveView.setModel(model);
-		mCurveView2.setModel(model);
+		mCurvePanel.setModel(model);
 
 		{
 			auto curve = model->addCurve();
@@ -123,7 +125,7 @@ public:
 			curve->addPoint(0.0, 1.0);
 			curve->addPoint(0.5, 0.0);
 			curve->addPoint(1.0, 1.0);
-			
+
 		}
 
 	}
@@ -210,7 +212,7 @@ private:
 	TimelinePanel mTimelinePanel;
 	Timeline mTimeline;
 	CurveView mCurveView;
-	CurveView mCurveView2;
+	CurvePanel mCurvePanel;
 	DemoPanel mDemoPanel;
 };
 
