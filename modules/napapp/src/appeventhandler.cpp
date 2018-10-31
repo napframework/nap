@@ -5,7 +5,7 @@
 // External includes
 #include <sdleventconverter.h>
 #include <imgui/imgui.h>
-#include <imgui/imgui_impl_sdl_gl3.h>
+#include <imguiservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseAppEventHandler)
 	RTTI_CONSTRUCTOR(nap::BaseApp&)
@@ -48,27 +48,8 @@ namespace nap
 		assert(input_service);
 		mEventConverter = std::make_unique<SDLEventConverter>(*input_service);
 
-		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
-		ImGuiIO& io = ImGui::GetIO();
-		io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
-		io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
-		io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-		io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
-		io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
-		io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
-		io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
-		io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-		io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-		io.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
-		io.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
-		io.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
-		io.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
-		io.KeyMap[ImGuiKey_A] = SDLK_a;
-		io.KeyMap[ImGuiKey_C] = SDLK_c;
-		io.KeyMap[ImGuiKey_V] = SDLK_v;
-		io.KeyMap[ImGuiKey_X] = SDLK_x;
-		io.KeyMap[ImGuiKey_Y] = SDLK_y;
-		io.KeyMap[ImGuiKey_Z] = SDLK_z;
+		mGuiService = mApp.getCore().getService<IMGuiService>();
+		assert(mGuiService != nullptr);
 	}
 
 
@@ -122,17 +103,14 @@ namespace nap
 		// Poll for events
 		opengl::Event event;
 		while (opengl::pollEvent(event))
-		{
-			// Get the interface
-			ImGuiIO& io = ImGui::GetIO();
-			
+		{			
 			// Process event for imgui
-			ImGui_ImplSdlGL3_ProcessEvent(&event);
+			mGuiService->processInputEvent(event);
 
 			// Forward if we're not capturing mouse and it's a pointer event
 			if (mEventConverter->isMouseEvent(event))
 			{
-				if (!io.WantCaptureMouse)
+				if (!mGuiService->isCapturingMouse())
 				{
 					nap::InputEventPtr input_event = mEventConverter->translateMouseEvent(event);
 					if (input_event != nullptr)
@@ -145,7 +123,7 @@ namespace nap
 			// Forward if we're not capturing keyboard and it's a key event
 			else if (mEventConverter->isKeyEvent(event))
 			{
-				if (!io.WantCaptureKeyboard)
+				if (!mGuiService->isCapturingKeyboard())
 				{
 					nap::InputEventPtr input_event = mEventConverter->translateKeyEvent(event);
 					if (input_event != nullptr)
@@ -190,6 +168,7 @@ namespace nap
 	void GUIAppEventHandler::shutdown()
 	{
 		mEventConverter.reset(nullptr);
+		mGuiService = nullptr;
 	}
 
 }
