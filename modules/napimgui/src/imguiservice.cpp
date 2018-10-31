@@ -530,25 +530,25 @@ namespace nap
 	
 		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
 		ImGuiIO& io = ImGui::GetIO();
-		io.KeyMap[ImGuiKey_Tab] = (int)EKeyCode::KEY_TAB;
-		io.KeyMap[ImGuiKey_LeftArrow] = (int)EKeyCode::KEY_LEFT;
-		io.KeyMap[ImGuiKey_RightArrow] = (int)EKeyCode::KEY_RIGHT;
-		io.KeyMap[ImGuiKey_UpArrow] = (int)EKeyCode::KEY_UP;
-		io.KeyMap[ImGuiKey_DownArrow] = (int)EKeyCode::KEY_DOWN;
-		io.KeyMap[ImGuiKey_PageUp] = (int)EKeyCode::KEY_PAGEUP;
-		io.KeyMap[ImGuiKey_PageDown] = (int)EKeyCode::KEY_PAGEDOWN;
-		io.KeyMap[ImGuiKey_Home] = (int)EKeyCode::KEY_HOME;
-		io.KeyMap[ImGuiKey_End] = (int)EKeyCode::KEY_END;
-		io.KeyMap[ImGuiKey_Delete] = (int)EKeyCode::KEY_DELETE;
-		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
-		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_KP_ENTER;
-		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
-		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
-		io.KeyMap[ImGuiKey_C] = (int)EKeyCode::KEY_c;
-		io.KeyMap[ImGuiKey_V] = (int)EKeyCode::KEY_v;
-		io.KeyMap[ImGuiKey_X] = (int)EKeyCode::KEY_x;
-		io.KeyMap[ImGuiKey_Y] = (int)EKeyCode::KEY_y;
-		io.KeyMap[ImGuiKey_Z] = (int)EKeyCode::KEY_z;
+		io.KeyMap[ImGuiKey_Tab]			= (int)EKeyCode::KEY_TAB;
+		io.KeyMap[ImGuiKey_LeftArrow]	= (int)EKeyCode::KEY_LEFT;
+		io.KeyMap[ImGuiKey_RightArrow]	= (int)EKeyCode::KEY_RIGHT;
+		io.KeyMap[ImGuiKey_UpArrow]		= (int)EKeyCode::KEY_UP;
+		io.KeyMap[ImGuiKey_DownArrow]	= (int)EKeyCode::KEY_DOWN;
+		io.KeyMap[ImGuiKey_PageUp]		= (int)EKeyCode::KEY_PAGEUP;
+		io.KeyMap[ImGuiKey_PageDown]	= (int)EKeyCode::KEY_PAGEDOWN;
+		io.KeyMap[ImGuiKey_Home]		= (int)EKeyCode::KEY_HOME;
+		io.KeyMap[ImGuiKey_End]			= (int)EKeyCode::KEY_END;
+		io.KeyMap[ImGuiKey_Delete]		= (int)EKeyCode::KEY_DELETE;
+		io.KeyMap[ImGuiKey_Backspace]	= (int)EKeyCode::KEY_BACKSPACE;
+		io.KeyMap[ImGuiKey_Enter]		= (int)EKeyCode::KEY_KP_ENTER;
+		io.KeyMap[ImGuiKey_Escape]		= (int)EKeyCode::KEY_ESCAPE;
+		io.KeyMap[ImGuiKey_A]			= (int)EKeyCode::KEY_a;
+		io.KeyMap[ImGuiKey_C]			= (int)EKeyCode::KEY_c;
+		io.KeyMap[ImGuiKey_V]			= (int)EKeyCode::KEY_v;
+		io.KeyMap[ImGuiKey_X]			= (int)EKeyCode::KEY_x;
+		io.KeyMap[ImGuiKey_Y]			= (int)EKeyCode::KEY_y;
+		io.KeyMap[ImGuiKey_Z]			= (int)EKeyCode::KEY_z;
 
 		// initialize IMGUI, most important part here is to assign render callback
 		io.RenderDrawListsFn  = renderDrawLists;
