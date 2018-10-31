@@ -537,7 +537,7 @@ namespace nap
 		{
 		case SDL_TEXTINPUT:
 		{
-			eventType.create<InputEvent>({ sdlEvent.text.text, window_id });
+			key_event = eventType.create<InputEvent>({ std::string(sdlEvent.text.text), window_id });
 			break;
 		}
 		case SDL_KEYDOWN:

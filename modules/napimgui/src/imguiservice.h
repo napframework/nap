@@ -4,7 +4,7 @@
 #include <nap/service.h>
 #include <utility/dllexport.h>
 #include <renderwindow.h>
-#include <nsdlgl.h>
+#include <inputevent.h>
 
 namespace nap
 {
@@ -49,7 +49,7 @@ namespace nap
 		 * Handles input for gui related tasks, called from the Gui App Event Handler
 		 * This is separate from other input related event handling
 		 */
-		void processInputEvent(opengl::Event& event);
+		void processInputEvent(InputEvent& event);
 
 		/**
 		 * @return if the gui is capturing keyboard events

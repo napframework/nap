@@ -97,7 +97,7 @@ namespace nap
 	{
 		RTTI_ENABLE(WindowInputEvent)
 	public:
-		TextInputEvent(const char* text, int window = 0) :
+		TextInputEvent(const std::string& text, int window = 0) :
 			WindowInputEvent(window), mText(text)
 		{
 		}
