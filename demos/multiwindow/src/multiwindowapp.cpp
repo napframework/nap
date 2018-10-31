@@ -63,6 +63,8 @@ namespace nap
 		mPlaneTwoEntity = scene->findEntity("PlaneTwo");
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
+
+		mGuiService->setWindow(*mRenderWindowThree);
 		return true;
 	}
 	
@@ -100,6 +102,8 @@ namespace nap
 		// Do the same for the second plane that is drawn in the third window
 		TransformComponentInstance& plane_xform_two = mPlaneTwoEntity->getComponent<TransformComponentInstance>();
 		positionPlane(*mRenderWindowThree, plane_xform_two);
+
+		mGuiService->createNewFrame(*mRenderWindowThree);
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");
@@ -172,9 +176,6 @@ namespace nap
 
 			// Render the plane with the orthographic to window two
 			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
-
-			// Draw Gui
-			mGuiService->draw();
 		}
 
 		// Render Window Three: Sphere and Texture
@@ -211,6 +212,9 @@ namespace nap
 
 			// Render the plane with the orthographic to window three
 			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), camera, components_to_render);
+
+
+			mGuiService->draw();
 		}
 
 		// We can only render the gui to the primary window for now
@@ -218,9 +222,6 @@ namespace nap
 		// Note that the primary window is not defined by the declaration
 		// of window resources in json! After that swap all the buffers
 		{
-			mRenderService->getPrimaryWindow().makeCurrent();
-			mGuiService->draw();
-
 			// Swap screen buffers
 			mRenderWindowOne->makeActive();
 			mRenderWindowOne->swap();
