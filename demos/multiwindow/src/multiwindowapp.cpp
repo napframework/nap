@@ -64,7 +64,7 @@ namespace nap
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
-		mGuiService->setWindow(*mRenderWindowThree);
+		mGuiService->setWindow(mRenderWindowOne);
 		return true;
 	}
 	
@@ -102,8 +102,6 @@ namespace nap
 		// Do the same for the second plane that is drawn in the third window
 		TransformComponentInstance& plane_xform_two = mPlaneTwoEntity->getComponent<TransformComponentInstance>();
 		positionPlane(*mRenderWindowThree, plane_xform_two);
-
-		mGuiService->createNewFrame(*mRenderWindowThree);
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");
@@ -156,6 +154,9 @@ namespace nap
 
 			// Render the world with the right camera directly to screen
 			mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
+
+			// Draw gui to window one
+			mGuiService->draw();
 		}
 
 		// Render Window Two : Texture
@@ -212,9 +213,6 @@ namespace nap
 
 			// Render the plane with the orthographic to window three
 			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), camera, components_to_render);
-
-
-			mGuiService->draw();
 		}
 
 		// We can only render the gui to the primary window for now
