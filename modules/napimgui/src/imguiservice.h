@@ -12,11 +12,13 @@ namespace nap
 	class GuiWindow;
 
 	/**
-	 * This service manages the global ImGui state
-	 * Note that (for now) GUIS are only available for the primary window
-	 * Make sure to call render() inside the render callback inside your application
-	 * to render the updated GUI to your primary window.
-	 * The service automatically creates a new GUI frame before calling update
+	 * This service manages the global ImGui state.
+	 * Use setWindow() to select the window to draw the GUI on to.
+	 * By default the GUI is drawn to the primary window, as defined by the renderer.
+	 * Make sure to call draw() inside your application to render the gui to the window. 
+	 * When doing so make sure the window that you selected is active, otherwise the GUI will not appear.
+	 * When there is no actively selected window call draw() after making the primary window active.
+	 * The service automatically creates a new GUI frame before calling update.
 	 */
 	class NAPAPI IMGuiService : public Service
 	{
@@ -35,7 +37,10 @@ namespace nap
 		void draw();
 
 		/**
-		 * Sets the GUI window to use
+		 * Explicitly set the window that is used for drawing the GUI elements
+		 * When no window is specified the system uses the primary window to draw gui elements
+		 * Preferably call this on init() of the application.
+		 * @param window the window to use for drawing the GUI elements
 		 */
 		void setWindow(nap::ResourcePtr<RenderWindow> window);
 
@@ -67,6 +72,6 @@ namespace nap
 
 	private:
 		RenderService*				mRenderer = nullptr;			///< The rendered used by IMGUI
-		ResourcePtr<RenderWindow>	mCurrentWindow = nullptr;		///< The currently active render window, nullptr = native window
+		ResourcePtr<RenderWindow>	mUserWindow = nullptr;			///< User selected GUI window, defaults to primary window
 	};
 }
