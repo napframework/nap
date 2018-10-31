@@ -5,9 +5,7 @@
 
 // External Includes
 #include <rtti/typeinfo.h>
-#include <nsdlgl.h>
 #include <sdleventconverter.h>
-#include <imguiservice.h>
 
 namespace nap
 {

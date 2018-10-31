@@ -4,7 +4,6 @@
 
 // External includes
 #include <sdleventconverter.h>
-#include <imgui/imgui.h>
 #include <imguiservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseAppEventHandler)
@@ -104,32 +103,31 @@ namespace nap
 		opengl::Event event;
 		while (opengl::pollEvent(event))
 		{			
-			// Process event for imgui
-			mGuiService->processInputEvent(event);
-
 			// Forward if we're not capturing mouse and it's a pointer event
 			if (mEventConverter->isMouseEvent(event))
 			{
+				nap::InputEventPtr input_event = mEventConverter->translateMouseEvent(event);
+				if (input_event == nullptr)
+					continue;
+
+				mGuiService->processInputEvent(*input_event);
 				if (!mGuiService->isCapturingMouse())
 				{
-					nap::InputEventPtr input_event = mEventConverter->translateMouseEvent(event);
-					if (input_event != nullptr)
-					{
-						getApp<App>().inputMessageReceived(std::move(input_event));
-					}
+					getApp<App>().inputMessageReceived(std::move(input_event));
 				}
 			}
 
 			// Forward if we're not capturing keyboard and it's a key event
 			else if (mEventConverter->isKeyEvent(event))
 			{
+				nap::InputEventPtr input_event = mEventConverter->translateKeyEvent(event);
+				if(input_event == nullptr)
+					continue;
+
+				mGuiService->processInputEvent(*input_event);
 				if (!mGuiService->isCapturingKeyboard())
 				{
-					nap::InputEventPtr input_event = mEventConverter->translateKeyEvent(event);
-					if (input_event != nullptr)
-					{
-						getApp<App>().inputMessageReceived(std::move(input_event));
-					}
+					getApp<App>().inputMessageReceived(std::move(input_event));
 				}
 			}
 

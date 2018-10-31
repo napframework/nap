@@ -17,21 +17,24 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
-// Data
-static double       g_Time = 0.0f;
-static bool         g_MousePressed[3] = { false, false, false };
-static float        g_MouseWheel = 0.0f;
-static GLuint       g_FontTexture = 0;
-static int          g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
-static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;
-static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
-static unsigned int g_VboHandle = 0, g_VaoHandle = 0, g_ElementsHandle = 0;
+// Static data associated with IMGUI: TODO: Use own render classes and remove global state!
+static double       gTime = 0.0f;
+static bool         gMousePressed[3] = { false, false, false };
+static float        gMouseWheel = 0.0f;
+static GLuint       gFontTexture = 0;
+static int          gShaderHandle = 0, gVertHandle = 0, gFragHandle = 0;
+static int          gAttribLocationTex = 0, gAttribLocationProjMtx = 0;
+static int          gAttribLocationPosition = 0, gAttribLocationUV = 0, gAttribLocationColor = 0;
+static unsigned int gVboHandle = 0, gVaoHandle = 0, gElementsHandle = 0;
 
 namespace nap
 {
-	// This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
-	// Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so. 
-	// If text or lines are blurry when integrating ImGui in your engine: in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
+
+	/**
+	 * This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
+	 * Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so.
+	 * If text or lines are blurry when integrating ImGui in your engine: in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
+	 */
 	static void renderDrawLists(ImDrawData* drawData)
 	{
 		// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
@@ -83,10 +86,10 @@ namespace nap
 			{ 0.0f,                  0.0f,                  -1.0f, 0.0f },
 			{ -1.0f,                  1.0f,                   0.0f, 1.0f },
 		};
-		glUseProgram(g_ShaderHandle);
-		glUniform1i(g_AttribLocationTex, 0);
-		glUniformMatrix4fv(g_AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
-		glBindVertexArray(g_VaoHandle);
+		glUseProgram(gShaderHandle);
+		glUniform1i(gAttribLocationTex, 0);
+		glUniformMatrix4fv(gAttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
+		glBindVertexArray(gVaoHandle);
 		glBindSampler(0, 0); // Rely on combined texture/sampler state.
 
 		for (int n = 0; n < drawData->CmdListsCount; n++)
@@ -94,10 +97,10 @@ namespace nap
 			const ImDrawList* cmd_list = drawData->CmdLists[n];
 			const ImDrawIdx* idx_buffer_offset = 0;
 
-			glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
+			glBindBuffer(GL_ARRAY_BUFFER, gVboHandle);
 			glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), (const GLvoid*)cmd_list->VtxBuffer.Data, GL_STREAM_DRAW);
 
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gElementsHandle);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), (const GLvoid*)cmd_list->IdxBuffer.Data, GL_STREAM_DRAW);
 
 			for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
@@ -149,6 +152,10 @@ namespace nap
 	}
 
 
+	/**
+	 * Creates font texture GPU resources
+	 * TODO: Implement using own render objects
+	 */
 	static void createFontsTexture()
 	{
 		// Build texture atlas
@@ -160,21 +167,25 @@ namespace nap
 																  // Upload texture to graphics system
 		GLint last_texture;
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-		glGenTextures(1, &g_FontTexture);
-		glBindTexture(GL_TEXTURE_2D, g_FontTexture);
+		glGenTextures(1, &gFontTexture);
+		glBindTexture(GL_TEXTURE_2D, gFontTexture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 		// Store our identifier
-		io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
+		io.Fonts->TexID = (void *)(intptr_t)gFontTexture;
 
 		// Restore state
 		glBindTexture(GL_TEXTURE_2D, last_texture);
 	}
 
 
+	/**
+	 * Creates all GPU allocated resources
+	 * TODO: Implement using own render objects
+	 */
 	static bool createDeviceObjects()
 	{
 		// Backup GL state
@@ -209,37 +220,37 @@ namespace nap
 			"	Out_Color = Frag_Color * texture( Texture, Frag_UV.st);\n"
 			"}\n";
 
-		g_ShaderHandle = glCreateProgram();
-		g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
-		g_FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
-		glShaderSource(g_FragHandle, 1, &fragment_shader, 0);
-		glCompileShader(g_VertHandle);
-		glCompileShader(g_FragHandle);
-		glAttachShader(g_ShaderHandle, g_VertHandle);
-		glAttachShader(g_ShaderHandle, g_FragHandle);
-		glLinkProgram(g_ShaderHandle);
+		gShaderHandle = glCreateProgram();
+		gVertHandle = glCreateShader(GL_VERTEX_SHADER);
+		gFragHandle = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(gVertHandle, 1, &vertex_shader, 0);
+		glShaderSource(gFragHandle, 1, &fragment_shader, 0);
+		glCompileShader(gVertHandle);
+		glCompileShader(gFragHandle);
+		glAttachShader(gShaderHandle, gVertHandle);
+		glAttachShader(gShaderHandle, gFragHandle);
+		glLinkProgram(gShaderHandle);
 
-		g_AttribLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");
-		g_AttribLocationProjMtx = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
-		g_AttribLocationPosition = glGetAttribLocation(g_ShaderHandle, "Position");
-		g_AttribLocationUV = glGetAttribLocation(g_ShaderHandle, "UV");
-		g_AttribLocationColor = glGetAttribLocation(g_ShaderHandle, "Color");
+		gAttribLocationTex = glGetUniformLocation(gShaderHandle, "Texture");
+		gAttribLocationProjMtx = glGetUniformLocation(gShaderHandle, "ProjMtx");
+		gAttribLocationPosition = glGetAttribLocation(gShaderHandle, "Position");
+		gAttribLocationUV = glGetAttribLocation(gShaderHandle, "UV");
+		gAttribLocationColor = glGetAttribLocation(gShaderHandle, "Color");
 
-		glGenBuffers(1, &g_VboHandle);
-		glGenBuffers(1, &g_ElementsHandle);
+		glGenBuffers(1, &gVboHandle);
+		glGenBuffers(1, &gElementsHandle);
 
-		glGenVertexArrays(1, &g_VaoHandle);
-		glBindVertexArray(g_VaoHandle);
-		glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
-		glEnableVertexAttribArray(g_AttribLocationPosition);
-		glEnableVertexAttribArray(g_AttribLocationUV);
-		glEnableVertexAttribArray(g_AttribLocationColor);
+		glGenVertexArrays(1, &gVaoHandle);
+		glBindVertexArray(gVaoHandle);
+		glBindBuffer(GL_ARRAY_BUFFER, gVboHandle);
+		glEnableVertexAttribArray(gAttribLocationPosition);
+		glEnableVertexAttribArray(gAttribLocationUV);
+		glEnableVertexAttribArray(gAttribLocationColor);
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-		glVertexAttribPointer(g_AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
-		glVertexAttribPointer(g_AttribLocationUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
-		glVertexAttribPointer(g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
+		glVertexAttribPointer(gAttribLocationPosition, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
+		glVertexAttribPointer(gAttribLocationUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
+		glVertexAttribPointer(gAttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
 #undef OFFSETOF
 
 		createFontsTexture();
@@ -253,29 +264,33 @@ namespace nap
 	}
 
 
+	/**
+	 * Deletes all GPU allocated resources
+	 * TODO: Implement using own render objects
+	 */
 	static void invalidateDeviceObjects()
 	{
-		if (g_VaoHandle) glDeleteVertexArrays(1, &g_VaoHandle);
-		if (g_VboHandle) glDeleteBuffers(1, &g_VboHandle);
-		if (g_ElementsHandle) glDeleteBuffers(1, &g_ElementsHandle);
-		g_VaoHandle = g_VboHandle = g_ElementsHandle = 0;
+		if (gVaoHandle) glDeleteVertexArrays(1, &gVaoHandle);
+		if (gVboHandle) glDeleteBuffers(1, &gVboHandle);
+		if (gElementsHandle) glDeleteBuffers(1, &gElementsHandle);
+		gVaoHandle = gVboHandle = gElementsHandle = 0;
 
-		if (g_ShaderHandle && g_VertHandle) glDetachShader(g_ShaderHandle, g_VertHandle);
-		if (g_VertHandle) glDeleteShader(g_VertHandle);
-		g_VertHandle = 0;
+		if (gShaderHandle && gVertHandle) glDetachShader(gShaderHandle, gVertHandle);
+		if (gVertHandle) glDeleteShader(gVertHandle);
+		gVertHandle = 0;
 
-		if (g_ShaderHandle && g_FragHandle) glDetachShader(g_ShaderHandle, g_FragHandle);
-		if (g_FragHandle) glDeleteShader(g_FragHandle);
-		g_FragHandle = 0;
+		if (gShaderHandle && gFragHandle) glDetachShader(gShaderHandle, gFragHandle);
+		if (gFragHandle) glDeleteShader(gFragHandle);
+		gFragHandle = 0;
 
-		if (g_ShaderHandle) glDeleteProgram(g_ShaderHandle);
-		g_ShaderHandle = 0;
+		if (gShaderHandle) glDeleteProgram(gShaderHandle);
+		gShaderHandle = 0;
 
-		if (g_FontTexture)
+		if (gFontTexture)
 		{
-			glDeleteTextures(1, &g_FontTexture);
+			glDeleteTextures(1, &gFontTexture);
 			ImGui::GetIO().Fonts->TexID = 0;
-			g_FontTexture = 0;
+			gFontTexture = 0;
 		}
 	}
 
@@ -296,7 +311,7 @@ namespace nap
 
 	static void newFrame(SDL_Window* window)
 	{
-		if (!g_FontTexture)
+		if (!gFontTexture)
 			createDeviceObjects();
 
 		ImGuiIO& io = ImGui::GetIO();
@@ -312,8 +327,8 @@ namespace nap
 		// Setup time step
 		Uint32	time = SDL_GetTicks();
 		double current_time = time / 1000.0;
-		io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f / 60.0f);
-		g_Time = current_time;
+		io.DeltaTime = gTime > 0.0 ? (float)(current_time - gTime) : (float)(1.0f / 60.0f);
+		gTime = current_time;
 
 		// Setup inputs
 		// (we already got mouse wheel, keyboard keys & characters from SDL_PollEvent())
@@ -324,13 +339,13 @@ namespace nap
 		else
 			io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 
-		io.MouseDown[0] = g_MousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-		io.MouseDown[1] = g_MousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-		io.MouseDown[2] = g_MousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-		g_MousePressed[0] = g_MousePressed[1] = g_MousePressed[2] = false;
+		io.MouseDown[0] = gMousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+		io.MouseDown[1] = gMousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+		io.MouseDown[2] = gMousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
+		gMousePressed[0] = gMousePressed[1] = gMousePressed[2] = false;
 
-		io.MouseWheel = g_MouseWheel;
-		g_MouseWheel = 0.0f;
+		io.MouseWheel = gMouseWheel;
+		gMouseWheel = 0.0f;
 
 		// Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
 		ImGui::NewFrame();
@@ -434,42 +449,59 @@ namespace nap
 	}
 
 
-	void IMGuiService::processInputEvent(opengl::Event& event)
+	void IMGuiService::processInputEvent(InputEvent& event)
 	{
+
 		ImGuiIO& io = ImGui::GetIO();
-		switch (event.type)
+		
+		// Key event
+		if (event.get_type().is_derived_from(RTTI_OF(nap::KeyEvent)))
 		{
-		case SDL_MOUSEWHEEL:
-		{
-			if (event.wheel.y > 0)
-				g_MouseWheel = 1;
-			if (event.wheel.y < 0)
-				g_MouseWheel = -1;
-			break;
-		}
-		case SDL_MOUSEBUTTONDOWN:
-		{
-			if (event.button.button == SDL_BUTTON_LEFT) g_MousePressed[0] = true;
-			if (event.button.button == SDL_BUTTON_RIGHT) g_MousePressed[1] = true;
-			if (event.button.button == SDL_BUTTON_MIDDLE) g_MousePressed[2] = true;
-			break;
-		}
-		case SDL_TEXTINPUT:
-		{
-			io.AddInputCharactersUTF8(event.text.text);
-			break;
-		}
-		case SDL_KEYDOWN:
-		case SDL_KEYUP:
-		{
-			int key = event.key.keysym.sym & ~SDLK_SCANCODE_MASK;
-			io.KeysDown[key]	= (event.type == SDL_KEYDOWN);
+			bool pressed = event.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent));
+			KeyEvent& key_event = static_cast<KeyEvent&>(event);
+			io.KeysDown[(int)(key_event.mKey)] = pressed;
+
+			// TODO: Keep track of modifier states in NAP so we don't directly interface with SDL2 here
+			// Goal is to remove SDL calls from imgui service
 			io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-			io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-			io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-			io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
-			break;
+			io.KeyCtrl	= ((SDL_GetModState() & KMOD_CTRL)	!= 0);
+			io.KeyAlt	= ((SDL_GetModState() & KMOD_ALT)	!= 0);
+			io.KeySuper	= ((SDL_GetModState() & KMOD_GUI)	!= 0);
 		}
+		
+		// Text input event
+		else if (event.get_type().is_derived_from(RTTI_OF(nap::TextInputEvent)))
+		{
+			nap::TextInputEvent& press_event = static_cast<nap::TextInputEvent&>(event);
+			io.AddInputCharactersUTF8(press_event.mText.c_str());
+		}
+		
+		// Mouse wheel event
+		else if (event.get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent)))
+		{
+			nap::MouseWheelEvent& wheel_event = static_cast<nap::MouseWheelEvent&>(event);
+			if (wheel_event.mY > 0)		{ gMouseWheel =  1; }
+			if (wheel_event.mY < -1)	{ gMouseWheel = -1; }
+		}
+
+		// Pointer Event
+		else if (event.get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
+		{
+			nap::PointerPressEvent& press_event = static_cast<nap::PointerPressEvent&>(event);
+			switch (press_event.mButton)
+			{
+			case EMouseButton::LEFT:
+				gMousePressed[0] = true;
+				break;
+			case EMouseButton::MIDDLE:
+				gMousePressed[1] = true;
+				break;
+			case EMouseButton::RIGHT:
+				gMousePressed[2] = true;
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
@@ -496,29 +528,27 @@ namespace nap
 		mRenderer = getCore().getService<nap::RenderService>();
 		assert(mRenderer != nullptr);
 	
-		// Imgui global state object
-		ImGuiIO& io = ImGui::GetIO();
-
 		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
-		io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
-		io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
-		io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-		io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
-		io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
-		io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
-		io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
-		io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-		io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-		io.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
-		io.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
-		io.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
-		io.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
-		io.KeyMap[ImGuiKey_A] = SDLK_a;
-		io.KeyMap[ImGuiKey_C] = SDLK_c;
-		io.KeyMap[ImGuiKey_V] = SDLK_v;
-		io.KeyMap[ImGuiKey_X] = SDLK_x;
-		io.KeyMap[ImGuiKey_Y] = SDLK_y;
-		io.KeyMap[ImGuiKey_Z] = SDLK_z;
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeyMap[ImGuiKey_Tab] = (int)EKeyCode::KEY_TAB;
+		io.KeyMap[ImGuiKey_LeftArrow] = (int)EKeyCode::KEY_LEFT;
+		io.KeyMap[ImGuiKey_RightArrow] = (int)EKeyCode::KEY_RIGHT;
+		io.KeyMap[ImGuiKey_UpArrow] = (int)EKeyCode::KEY_UP;
+		io.KeyMap[ImGuiKey_DownArrow] = (int)EKeyCode::KEY_DOWN;
+		io.KeyMap[ImGuiKey_PageUp] = (int)EKeyCode::KEY_PAGEUP;
+		io.KeyMap[ImGuiKey_PageDown] = (int)EKeyCode::KEY_PAGEDOWN;
+		io.KeyMap[ImGuiKey_Home] = (int)EKeyCode::KEY_HOME;
+		io.KeyMap[ImGuiKey_End] = (int)EKeyCode::KEY_END;
+		io.KeyMap[ImGuiKey_Delete] = (int)EKeyCode::KEY_DELETE;
+		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
+		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_KP_ENTER;
+		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
+		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
+		io.KeyMap[ImGuiKey_C] = (int)EKeyCode::KEY_c;
+		io.KeyMap[ImGuiKey_V] = (int)EKeyCode::KEY_v;
+		io.KeyMap[ImGuiKey_X] = (int)EKeyCode::KEY_x;
+		io.KeyMap[ImGuiKey_Y] = (int)EKeyCode::KEY_y;
+		io.KeyMap[ImGuiKey_Z] = (int)EKeyCode::KEY_z;
 
 		// initialize IMGUI, most important part here is to assign render callback
 		io.RenderDrawListsFn  = renderDrawLists;
