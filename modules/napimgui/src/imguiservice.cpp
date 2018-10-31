@@ -1372,10 +1372,22 @@ namespace nap
 	}
 
 
-	bool IMGuiService::setWindow(nap::RenderWindow& window)
+	void IMGuiService::setWindow(nap::ResourcePtr<RenderWindow> window)
 	{
-		// initialize imgui, only primary window supported for now
-		if (!ImGui_ImplSdlGL3_Init(window.getWindow()->getNativeWindow()))
+		assert(window != nullptr);
+		mCurrentWindow = window;
+		ImGui_ImpSDLGL3_SetWindow(window->getWindow()->getNativeWindow());
+	}
+
+
+	bool IMGuiService::init(utility::ErrorState& error)
+	{
+		// Get our renderer
+		mRenderer = getCore().getService<nap::RenderService>();
+		assert(mRenderer != nullptr);
+
+		// initialize IMGUI, most important part here is to assign render callback
+		if (!ImGui_ImplSdlGL3_Init())
 			return false;
 
 		// Push default style
@@ -1388,15 +1400,8 @@ namespace nap
 		ImGuiIO& io = ImGui::GetIO();
 		io.Fonts->AddFontFromMemoryCompressedTTF(NunitoSansSemiBold_compressed_data, NunitoSansSemiBold_compressed_size, 17.0f, &font_config);
 
-		return true;
-	}
-
-
-	bool IMGuiService::init(utility::ErrorState& error)
-	{
-		// Get our renderer
-		mRenderer = getCore().getService<nap::RenderService>();
-		assert(mRenderer != nullptr);
+		// Set primary window to be default
+		ImGui_ImpSDLGL3_SetWindow(mRenderer->getPrimaryWindow().getNativeWindow());
 
 		return true;
 	}
@@ -1411,23 +1416,21 @@ namespace nap
 
 	void IMGuiService::update(double deltaTime)
 	{
-		//mRenderer->getPrimaryWindow().makeCurrent();	
-		//ImGui_ImplSdlGL3_NewFrame(mRenderer->getPrimaryWindow().getNativeWindow());
+		assert(mCurrentWindow != nullptr);
+		if (mCurrentWindow != nullptr)
+		{
+			mCurrentWindow->makeActive();
+			ImGui_ImplSdlGL3_NewFrame(mCurrentWindow->getWindow()->getNativeWindow());
+			return;
+		}
+
+		mRenderer->getPrimaryWindow().makeCurrent();
+		ImGui_ImplSdlGL3_NewFrame(mRenderer->getPrimaryWindow().getNativeWindow());
 	};
 
 
 	void IMGuiService::shutdown()
 	{
 		ImGui_ImplSdlGL3_Shutdown();
-	}
-
-
-	void IMGuiService::createNewFrame(nap::RenderWindow& window)
-	{
-		window.makeActive();
-
-		// Apply color palette
-		applyStyle();
-		ImGui_ImplSdlGL3_NewFrame(window.getWindow()->getNativeWindow());
 	}
 }

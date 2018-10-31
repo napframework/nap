@@ -289,6 +289,19 @@ bool ImGui_ImplSdlGL3_CreateDeviceObjects()
     return true;
 }
 
+void ImGui_ImpSDLGL3_SetWindow(SDL_Window* window)
+{
+#ifdef _WIN32
+	ImGuiIO& io = ImGui::GetIO();
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWindowWMInfo(window, &wmInfo);
+	io.ImeWindowHandle = wmInfo.info.win.window;
+#else
+	(void)window;
+#endif
+}
+
 void    ImGui_ImplSdlGL3_InvalidateDeviceObjects()
 {
     if (g_VaoHandle) glDeleteVertexArrays(1, &g_VaoHandle);
@@ -315,7 +328,7 @@ void    ImGui_ImplSdlGL3_InvalidateDeviceObjects()
     }
 }
 
-bool    ImGui_ImplSdlGL3_Init(SDL_Window* window)
+bool    ImGui_ImplSdlGL3_Init()
 {
     ImGuiIO& io = ImGui::GetIO();
     io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
@@ -342,15 +355,6 @@ bool    ImGui_ImplSdlGL3_Init(SDL_Window* window)
     io.SetClipboardTextFn = ImGui_ImplSdlGL3_SetClipboardText;
     io.GetClipboardTextFn = ImGui_ImplSdlGL3_GetClipboardText;
     io.ClipboardUserData = NULL;
-
-#ifdef _WIN32
-    SDL_SysWMinfo wmInfo;
-    SDL_VERSION(&wmInfo.version);
-    SDL_GetWindowWMInfo(window, &wmInfo);
-    io.ImeWindowHandle = wmInfo.info.win.window;
-#else
-    (void)window;
-#endif
 
     return true;
 }

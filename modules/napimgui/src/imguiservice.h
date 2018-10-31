@@ -37,12 +37,7 @@ namespace nap
 		/**
 		 * Sets the GUI window to use
 		 */
-		bool setWindow(nap::RenderWindow& window);
-
-		/**
-		 * Creates a new frame
-		 */
-		void createNewFrame(nap::RenderWindow& window);
+		void setWindow(nap::ResourcePtr<RenderWindow> window);
 
 	protected:
 		/**
@@ -71,6 +66,7 @@ namespace nap
 		virtual void shutdown() override;
 
 	private:
-		RenderService*				mRenderer = nullptr;	///< The rendered used by IMGUI
+		RenderService*				mRenderer = nullptr;			///< The rendered used by IMGUI
+		ResourcePtr<RenderWindow>	mCurrentWindow = nullptr;		///< The currently active render window, nullptr = native window
 	};
 }
