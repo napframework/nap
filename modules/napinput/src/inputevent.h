@@ -9,6 +9,7 @@
 #include <rtti/rtti.h>
 #include <nap/numeric.h>
 #include <nap/event.h>
+#include <string.h>
 
 namespace nap
 {
@@ -81,6 +82,27 @@ namespace nap
 			KeyEvent(inKey, window) 
 		{
 		}
+	};
+
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Text input event
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Input event that holds a block of text
+	 */
+	class NAPAPI TextInputEvent : public WindowInputEvent
+	{
+		RTTI_ENABLE(WindowInputEvent)
+	public:
+		TextInputEvent(const char* text, int window = 0) :
+			WindowInputEvent(window), mText(text)
+		{
+		}
+
+		std::string mText;					///< text input
 	};
 
 
