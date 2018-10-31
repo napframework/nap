@@ -79,6 +79,7 @@ namespace napqt
 		StandardCurve* addCurve();
 		void removeCurve(AbstractCurve* curve);
 		void removeCurve(int index);
+
 	private:
 		void onCurveChanged(AbstractCurve* curve);
 		QList<AbstractCurve*> mCurves;

@@ -161,6 +161,7 @@ namespace napqt
 		int nextSegIndex(int idx);
 		bool isLastPoint(int i);
 		bool isFirstPoint(int i);
+		const QVector<CurveSegmentItem*>& segments() { return mSegments; }
 	private:
 		void onPointsChanged(QList<int> indices);
 		void onPointsAdded(QList<int> indices);
@@ -188,10 +189,10 @@ namespace napqt
 			None, Rubberband, RubberbandAdd, DragPoints, Pan, SelectAdd
 		};
 
-
 		explicit CurveView(QWidget* parent = nullptr);
 		void setModel(AbstractCurveModel* model);
 		AbstractCurveModel* model() { return mModel; }
+		void selectCurves(const QList<AbstractCurve*>& curve);
 
 	protected:
 		void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -221,6 +222,7 @@ namespace napqt
 		const QRectF frameItemsBounds() const override;
 		const QRectF handleItemBounds(const QList<QGraphicsItem*>& items) const;
 		const QList<QGraphicsItem*> frameableItems(const QList<QGraphicsItem*>& items) const;
+		CurveItem* curveItem(const AbstractCurve& curve);
 
 		QGraphicsScene mCurveScene;
 		QPoint mLastMousePos;

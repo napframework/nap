@@ -37,10 +37,13 @@ napqt::FilterTreeView::FilterTreeView(QTreeView* treeview)
 	mLayout.addWidget(mTreeView);
 
 	setContextMenuPolicy(Qt::CustomContextMenu);
+
 	connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
+
+	connect(mTreeView, &QTreeView::doubleClicked, this, &FilterTreeView::doubleClicked);
 }
 
-void napqt::FilterTreeView::setModel(QStandardItemModel* model)
+void napqt::FilterTreeView::setModel(QAbstractItemModel* model)
 {
 	mSortFilter.setSourceModel(model);
 }
@@ -105,7 +108,6 @@ void napqt::FilterTreeView::onFilterChanged(const QString& text)
 	mTreeView->expandAll();
 	setTopItemSelected();
 }
-
 
 void napqt::FilterTreeView::onExpandSelected()
 {
