@@ -1375,7 +1375,7 @@ namespace nap
 	void IMGuiService::setWindow(nap::ResourcePtr<RenderWindow> window)
 	{
 		assert(window != nullptr);
-		mCurrentWindow = window;
+		mUserWindow = window;
 		ImGui_ImpSDLGL3_SetWindow(window->getWindow()->getNativeWindow());
 	}
 
@@ -1416,11 +1416,10 @@ namespace nap
 
 	void IMGuiService::update(double deltaTime)
 	{
-		assert(mCurrentWindow != nullptr);
-		if (mCurrentWindow != nullptr)
-		{
-			mCurrentWindow->makeActive();
-			ImGui_ImplSdlGL3_NewFrame(mCurrentWindow->getWindow()->getNativeWindow());
+		if (mUserWindow != nullptr)
+		{	
+			mUserWindow->makeActive();
+			ImGui_ImplSdlGL3_NewFrame(mUserWindow->getWindow()->getNativeWindow());
 			return;
 		}
 
