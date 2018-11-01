@@ -90,5 +90,6 @@ namespace nap
 	private:
 		RenderService*				mRenderer = nullptr;			///< The rendered used by IMGUI
 		ResourcePtr<RenderWindow>	mUserWindow = nullptr;			///< User selected GUI window, defaults to primary window
+		bool						mWindowChanged = true;			///< If the window changed, forces a reconstruction of GUI resources
 	};
 }

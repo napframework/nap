@@ -146,11 +146,44 @@ namespace nap
 
 
 	/**
+	* Deletes all GPU allocated resources
+	* TODO: Implement using own render objects
+	*/
+	static void invalidateDeviceObjects()
+	{
+		if (!gFontTexture)
+			return;
+
+		glDeleteVertexArrays(1, &gVaoHandle);
+		glDeleteBuffers(1, &gVboHandle);
+		glDeleteBuffers(1, &gElementsHandle);
+		gVaoHandle = gVboHandle = gElementsHandle = 0;
+
+		glDetachShader(gShaderHandle, gVertHandle);
+		glDeleteShader(gVertHandle);
+
+		glDetachShader(gShaderHandle, gFragHandle);
+		glDeleteShader(gFragHandle);
+		gFragHandle = 0;
+
+		glDeleteProgram(gShaderHandle);
+		gShaderHandle = 0;
+
+		glDeleteTextures(1, &gFontTexture);
+		ImGui::GetIO().Fonts->TexID = 0;
+		gFontTexture = 0;
+	}
+
+
+	/**
 	 * Creates all GPU allocated resources
 	 * TODO: Implement using own render objects
 	 */
 	static bool createDeviceObjects()
 	{
+		// Invalidate current GL resources
+		invalidateDeviceObjects();
+
 		// Backup GL state
 		GLint last_texture, last_array_buffer, last_vertex_array;
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
@@ -227,37 +260,6 @@ namespace nap
 	}
 
 
-	/**
-	 * Deletes all GPU allocated resources
-	 * TODO: Implement using own render objects
-	 */
-	static void invalidateDeviceObjects()
-	{
-		if (gVaoHandle) glDeleteVertexArrays(1, &gVaoHandle);
-		if (gVboHandle) glDeleteBuffers(1, &gVboHandle);
-		if (gElementsHandle) glDeleteBuffers(1, &gElementsHandle);
-		gVaoHandle = gVboHandle = gElementsHandle = 0;
-
-		if (gShaderHandle && gVertHandle) glDetachShader(gShaderHandle, gVertHandle);
-		if (gVertHandle) glDeleteShader(gVertHandle);
-		gVertHandle = 0;
-
-		if (gShaderHandle && gFragHandle) glDetachShader(gShaderHandle, gFragHandle);
-		if (gFragHandle) glDeleteShader(gFragHandle);
-		gFragHandle = 0;
-
-		if (gShaderHandle) glDeleteProgram(gShaderHandle);
-		gShaderHandle = 0;
-
-		if (gFontTexture)
-		{
-			glDeleteTextures(1, &gFontTexture);
-			ImGui::GetIO().Fonts->TexID = 0;
-			gFontTexture = 0;
-		}
-	}
-
-
 	static void setGuiWindow(SDL_Window* window)
 	{
 #ifdef _WIN32
@@ -272,18 +274,15 @@ namespace nap
 	}
 
 
-	static void newFrame(SDL_Window* window)
+	static void newFrame(GLWindow& window)
 	{
-		if (!gFontTexture)
-			createDeviceObjects();
-
 		ImGuiIO& io = ImGui::GetIO();
 
 		// Setup display size (every frame to accommodate for window resizing)
 		int w, h;
 		int display_w, display_h;
-		SDL_GetWindowSize(window, &w, &h);
-		SDL_GL_GetDrawableSize(window, &display_w, &display_h);
+		SDL_GetWindowSize(window.getNativeWindow(), &w, &h);
+		SDL_GL_GetDrawableSize(window.getNativeWindow(), &display_w, &display_h);
 		io.DisplaySize = ImVec2((float)w, (float)h);
 		io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
 
@@ -291,7 +290,7 @@ namespace nap
 		// (we already got mouse wheel, keyboard keys & characters from SDL_PollEvent())
 		int mx, my;
 		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-		if (SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_FOCUS)
+		if (SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS)
 			io.MousePos = ImVec2((float)mx, (float)my);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
 		else
 			io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
@@ -403,6 +402,7 @@ namespace nap
 		assert(window != nullptr);
 		mUserWindow = window;
 		setGuiWindow(window->getWindow()->getNativeWindow());
+		mWindowChanged = true;
 	}
 
 
@@ -538,15 +538,19 @@ namespace nap
 
 	void IMGuiService::update(double deltaTime)
 	{
-		if (mUserWindow != nullptr)
-		{	
-			mUserWindow->makeActive();
-			newFrame(mUserWindow->getWindow()->getNativeWindow());
-			return;
+		// Activate correct context
+		GLWindow* current_window = mUserWindow != nullptr ? mUserWindow->getWindow() : &(mRenderer->getPrimaryWindow());
+		current_window->makeCurrent();
+
+		// Create new device objects
+		if (mWindowChanged)
+		{
+			createDeviceObjects();
+			mWindowChanged = false;
 		}
 
-		mRenderer->getPrimaryWindow().makeCurrent();
-		newFrame(mRenderer->getPrimaryWindow().getNativeWindow());
+		// Create new GUI frame
+		newFrame(*current_window);
 	};
 
 

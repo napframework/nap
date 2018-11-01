@@ -64,7 +64,7 @@ namespace nap
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
-		mGuiService->selectWindow(mRenderWindowOne);
+		mGuiService->selectWindow(mRenderWindowTwo);
 		return true;
 	}
 	
@@ -154,9 +154,6 @@ namespace nap
 
 			// Render the world with the right camera directly to screen
 			mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
-
-			// Draw gui to window one
-			mGuiService->draw();
 		}
 
 		// Render Window Two : Texture
@@ -177,6 +174,9 @@ namespace nap
 
 			// Render the plane with the orthographic to window two
 			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
+
+			// Draw gui to window one
+			mGuiService->draw();
 		}
 
 		// Render Window Three: Sphere and Texture
