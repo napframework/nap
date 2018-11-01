@@ -63,6 +63,16 @@ namespace opengl
 
 
 	/**
+	 * Enables / Disables opengl Scissor Test
+	 */
+	void enableScissorTest(bool value);
+
+	/**
+	 *	Enables / disables face culling
+	 */
+	void enableFaceCulling(bool value);
+
+	/**
 	 * Enables / Disables opengl multi sampling
 	 * @param value if multi sampling is disabled / enabled
 	 */
