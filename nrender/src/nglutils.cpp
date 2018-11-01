@@ -94,6 +94,18 @@ namespace opengl
 	}
 
 
+	void enableScissorTest(bool value)
+	{
+		enableGLParam(GL_SCISSOR_TEST, value);
+	}
+
+
+	void enableFaceCulling(bool value)
+	{
+		enableGLParam(GL_CULL_FACE, value);
+	}
+
+
 	// Turns multi sampling on / off
 	void enableMultiSampling(bool value)
 	{

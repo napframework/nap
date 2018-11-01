@@ -18,7 +18,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 RTTI_END_CLASS
 
 // Static data associated with IMGUI: TODO: Use own render classes and remove global state!
-static double       gTime = 0.0f;
 static bool         gMousePressed[3] = { false, false, false };
 static float        gMouseWheel = 0.0f;
 static GLuint       gFontTexture = 0;
@@ -39,53 +38,32 @@ namespace nap
 	{
 		// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
 		ImGuiIO& io = ImGui::GetIO();
-		int fb_width = (int)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
+		int fb_width  = (int)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
 		int fb_height = (int)(io.DisplaySize.y * io.DisplayFramebufferScale.y);
 		if (fb_width == 0 || fb_height == 0)
 			return;
+
 		drawData->ScaleClipRects(io.DisplayFramebufferScale);
 
-		// Backup GL state
-		GLenum last_active_texture; glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint*)&last_active_texture);
-		glActiveTexture(GL_TEXTURE0);
-		GLint last_program; glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
-		GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-		GLint last_sampler; glGetIntegerv(GL_SAMPLER_BINDING, &last_sampler);
-		GLint last_array_buffer; glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
-		GLint last_element_array_buffer; glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
-		GLint last_vertex_array; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
-		GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
-		GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
-		GLint last_scissor_box[4]; glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);
-		GLenum last_blend_src_rgb; glGetIntegerv(GL_BLEND_SRC_RGB, (GLint*)&last_blend_src_rgb);
-		GLenum last_blend_dst_rgb; glGetIntegerv(GL_BLEND_DST_RGB, (GLint*)&last_blend_dst_rgb);
-		GLenum last_blend_src_alpha; glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint*)&last_blend_src_alpha);
-		GLenum last_blend_dst_alpha; glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint*)&last_blend_dst_alpha);
-		GLenum last_blend_equation_rgb; glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint*)&last_blend_equation_rgb);
-		GLenum last_blend_equation_alpha; glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint*)&last_blend_equation_alpha);
-		GLboolean last_enable_blend = glIsEnabled(GL_BLEND);
-		GLboolean last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
-		GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
-		GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
-
 		// Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
-		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_SCISSOR_TEST);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		opengl::enableBlending(true);
+		opengl::enableFaceCulling(false);
+		opengl::enableDepthTest(false);
+		opengl::enableScissorTest(true);
+		opengl::setPolygonMode(opengl::EPolygonMode::Fill);
 
 		// Setup viewport, orthographic projection matrix
-		glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
-		const float ortho_projection[4][4] =
-		{
-			{ 2.0f / io.DisplaySize.x, 0.0f,                   0.0f, 0.0f },
-			{ 0.0f,                  2.0f / -io.DisplaySize.y, 0.0f, 0.0f },
-			{ 0.0f,                  0.0f,                  -1.0f, 0.0f },
-			{ -1.0f,                  1.0f,                   0.0f, 1.0f },
+		opengl::setViewport(fb_width, fb_height);
+		glm::mat4 ortho_projection = {
+			{ 2.0f / io.DisplaySize.x,	0.0f,						0.0f,	0.0f },
+			{ 0.0f,						2.0f / -io.DisplaySize.y,	0.0f,	0.0f },
+			{ 0.0f,						0.0f,						-1.0f,	0.0f },
+			{ -1.0f,					1.0f,						0.0f,	1.0f },
 		};
+	
 		glUseProgram(gShaderHandle);
 		glUniform1i(gAttribLocationTex, 0);
 		glUniformMatrix4fv(gAttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
@@ -120,23 +98,8 @@ namespace nap
 			}
 		}
 
-		// Restore modified GL state
-		glUseProgram(last_program);
-		glBindTexture(GL_TEXTURE_2D, last_texture);
-		glBindSampler(0, last_sampler);
-		glActiveTexture(last_active_texture);
-		glBindVertexArray(last_vertex_array);
-		glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
-		glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
-		glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
-		if (last_enable_blend) glEnable(GL_BLEND); else glDisable(GL_BLEND);
-		if (last_enable_cull_face) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
-		if (last_enable_depth_test) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
-		if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST); else glDisable(GL_SCISSOR_TEST);
-		glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
-		glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
-		glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
+		// Restore scissor test
+		opengl::enableScissorTest(false);
 	}
 
 
@@ -164,7 +127,7 @@ namespace nap
 		int width, height;
 		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bits for OpenGL3 demo because it is more likely to be compatible with user's existing shader.
 
-																  // Upload texture to graphics system
+		// Upload texture to graphics system
 		GLint last_texture;
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
 		glGenTextures(1, &gFontTexture);
@@ -324,12 +287,6 @@ namespace nap
 		io.DisplaySize = ImVec2((float)w, (float)h);
 		io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
 
-		// Setup time step
-		Uint32	time = SDL_GetTicks();
-		double current_time = time / 1000.0;
-		io.DeltaTime = gTime > 0.0 ? (float)(current_time - gTime) : (float)(1.0f / 60.0f);
-		gTime = current_time;
-
 		// Setup inputs
 		// (we already got mouse wheel, keyboard keys & characters from SDL_PollEvent())
 		int mx, my;
@@ -441,7 +398,7 @@ namespace nap
 	}
 
 
-	void IMGuiService::setWindow(nap::ResourcePtr<RenderWindow> window)
+	void IMGuiService::selectWindow(nap::ResourcePtr<RenderWindow> window)
 	{
 		assert(window != nullptr);
 		mUserWindow = window;
