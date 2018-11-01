@@ -437,8 +437,7 @@ namespace nap
 		else if (event.get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent)))
 		{
 			nap::MouseWheelEvent& wheel_event = static_cast<nap::MouseWheelEvent&>(event);
-			if (wheel_event.mY > 0)		{ gMouseWheel =  1; }
-			if (wheel_event.mY < -1)	{ gMouseWheel = -1; }
+			gMouseWheel = wheel_event.mY > 0 ? 1 : -1;
 		}
 
 		// Pointer Event
