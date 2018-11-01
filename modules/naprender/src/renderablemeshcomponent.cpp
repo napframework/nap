@@ -234,7 +234,7 @@ namespace nap
 		// If a cliprect was set, enable scissor and set correct values
 		if (mClipRect.hasWidth() && mClipRect.hasHeight())
 		{
-			glEnable(GL_SCISSOR_TEST);
+			opengl::enableScissorTest(false);
 			glScissor(mClipRect.getMin().x, mClipRect.getMin().y, mClipRect.getWidth(), mClipRect.getHeight());
 		}
 
@@ -257,10 +257,8 @@ namespace nap
 		}
 
 		comp_mat->unbind();
-
 		mRenderableMesh.mVAOHandle.get().unbind();
-
-		glDisable(GL_SCISSOR_TEST);
+		opengl::enableScissorTest(false);
 	}
 
 

@@ -64,7 +64,7 @@ namespace nap
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
-		mGuiService->setWindow(mRenderWindowOne);
+		mGuiService->selectWindow(mRenderWindowOne);
 		return true;
 	}
 	

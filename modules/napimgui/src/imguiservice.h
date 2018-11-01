@@ -14,9 +14,9 @@ namespace nap
 
 	/**
 	 * This service manages the global ImGui state.
-	 * Use setWindow() to select the window to draw the GUI on to.
+	 * Use selectWindow() to select the window to draw the GUI on to.
 	 * By default the GUI is drawn to the primary window, as defined by the renderer.
-	 * Make sure to call draw() inside your application to render the gui to the window. 
+	 * Make sure to call draw() inside your application to render the gui to the right window. 
 	 * When doing so make sure the window that you selected is active, otherwise the GUI will not appear.
 	 * When there is no actively selected window call draw() after making the primary window active.
 	 * The service automatically creates a new GUI frame before calling update.
@@ -40,10 +40,10 @@ namespace nap
 		/**
 		 * Explicitly set the window that is used for drawing the GUI elements
 		 * When no window is specified the system uses the primary window to draw GUI elements
-		 * Preferably call this on init() of the application.
+		 * Only set the window on init() of your application.
 		 * @param window the window to use for drawing the GUI elements
 		 */
-		void setWindow(nap::ResourcePtr<RenderWindow> window);
+		void selectWindow(nap::ResourcePtr<RenderWindow> window);
 
 		/**
 		 * Handles input for gui related tasks, called from the Gui App Event Handler
