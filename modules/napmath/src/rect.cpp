@@ -51,13 +51,13 @@ namespace nap
 
 		bool Rect::hasWidth() const
 		{
-			return getWidth() > 0.0f;
+			return getWidth() > math::epsilon<float>();
 		}
 
 
 		bool Rect::hasHeight() const
 		{
-			return getHeight() > 0.0f;
+			return getHeight() > math::epsilon<float>();
 		}
 
 
