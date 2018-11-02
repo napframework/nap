@@ -26,6 +26,8 @@
 
 namespace nap
 {
+	enum class LightingModes { Sun, Video, Static };
+
 	class RandomApp : public App
 	{
 		RTTI_ENABLE(App)
@@ -97,6 +99,10 @@ namespace nap
 
 		// Store window properties
 		glm::ivec2 windowSize;
+
+		// Lighting Modes
+		const char*	mLightingModes[3] = { "Sun", "Video", "Static" };
+		int			mLightingMode = 0;
 
 		/**
 		 * Called when a window event is received

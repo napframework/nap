@@ -128,7 +128,9 @@ namespace nap
 			// Find components to render (Light rig, orbit)
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			mLightRig->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
-			mOrbit->appendRenderableComponents(components_to_render);
+			if (static_cast<LightingModes>(mLightingMode) == LightingModes::Sun) {
+				mOrbit->appendRenderableComponents(components_to_render);
+			}
 
 			// Render components in one pass
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);

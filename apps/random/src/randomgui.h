@@ -39,10 +39,6 @@ namespace nap
 		const float guiWindowWidth = 400.0f;
 		const float guiWindowPadding = 7.0f;
 
-		// Properties
-		const char*	mModes[3] = { "Sun", "Video", "Static" };
-		int			mCurrentMode = 0;
-
 		// The app used to extract information from
 		RandomApp&	mApp;
 	};

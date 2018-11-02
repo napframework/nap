@@ -29,17 +29,17 @@ namespace nap
 		ImGui::SetNextWindowPos(ImVec2(guiWindowPadding, guiWindowPadding));
 		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - 2.0f * guiWindowPadding));
 		ImGui::Begin("Content Controls", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		ImGui::ListBox("Lighting Mode", &mCurrentMode, mModes, IM_ARRAYSIZE(mModes));
+		ImGui::ListBox("Lighting Mode", &mApp.mLightingMode, mApp.mLightingModes, IM_ARRAYSIZE(mApp.mLightingModes));
 
-		switch (mCurrentMode)
+		switch (static_cast<LightingModes>(mApp.mLightingMode))
 		{
-		case 0:
+		case LightingModes::Sun:
 			showSunControls();
 			break;
-		case 1:
+		case LightingModes::Video:
 			showVideoControls();
 			break;
-		case 2:
+		case LightingModes::Static:
 			showStaticControls();
 			break;
 		default:
