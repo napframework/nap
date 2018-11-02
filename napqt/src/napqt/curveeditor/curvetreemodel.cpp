@@ -52,9 +52,9 @@ int CurveTreeModel::rowCount(const QModelIndex& parent) const
 int CurveTreeModel::columnCount(const QModelIndex& parent) const
 {
 	if (!mModel)
-		return 0;
+		return 5;
 
-	return 1;
+	return 5;
 }
 
 QVariant CurveTreeModel::data(const QModelIndex& index, int role) const
@@ -65,10 +65,22 @@ QVariant CurveTreeModel::data(const QModelIndex& index, int role) const
 	switch (role)
 	{
 		case Qt::DisplayRole:
+		case Qt::EditRole:
 			return QString("Curve %1").arg(index.row());
+		case CurveTreeRole::ColorRole:
+			return QColor(Qt::green);
 		default:
 			return QVariant();
 	}
+}
+
+Qt::ItemFlags CurveTreeModel::flags(const QModelIndex& index) const
+{
+	auto flags = QAbstractItemModel::flags(index);
+	flags &= ~Qt::ItemIsSelectable;
+	if (index.column() == 0)
+		flags |= Qt::ItemIsEditable;
+	return flags;
 }
 
 void CurveTreeModel::onCurvesAdded(const QList<int> indexes)
