@@ -2,7 +2,9 @@
 
 #include <QWidget>
 #include <QSplitter>
+#include <QItemDelegate>
 #include <napqt/filtertreeview.h>
+
 #include <napqt/qtutils.h>
 #include "curveview.h"
 #include "curvetreemodel.h"
@@ -11,6 +13,12 @@ namespace napqt
 {
 
 
+	class CurveTreeDelegate : public QItemDelegate
+	{
+	public:
+		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+		QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+	};
 
 	class CurvePanel : public QWidget
 	{
@@ -29,5 +37,6 @@ namespace napqt
 		CurveView mCurveView;
 		FilterTreeView mTreeView;
 		CurveTreeModel mTreeModel;
+		CurveTreeDelegate mDelegate;
 	};
 }
