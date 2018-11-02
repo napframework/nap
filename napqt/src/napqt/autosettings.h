@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QMainWindow>
 #include <QHeaderView>
+#include <QSplitter>
 
 namespace napqt
 {
@@ -50,6 +51,10 @@ namespace napqt
 			registerStorer(std::make_unique<T>());
 		}
 
+		void exclude(QWidget* widget) {
+			mExclusions << widget;
+		}
+
 	private:
 		AutoSettings();
 		AutoSettings(AutoSettings const&);
@@ -66,6 +71,7 @@ namespace napqt
 		WidgetStorerBase* findStorer(const QWidget& w) const;
 
 		std::vector<std::unique_ptr<WidgetStorerBase>> mStorers;
+		QList<QWidget*> mExclusions;
 	};
 
 	/**
@@ -162,7 +168,22 @@ namespace napqt
 		{
 			widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
 			widget.restoreState(s.value(key + "_STATE").toByteArray());
+		}
+	};
 
+	class SplitterStorer : public WidgetStorer<QSplitter>
+	{
+	public:
+		void store(const QSplitter& widget, const QString& key, QSettings& s) const override
+		{
+			s.setValue(key + "_GEO", widget.saveGeometry());
+			s.setValue(key + "_STATE", widget.saveState());
+		}
+
+		void restore(QSplitter& widget, const QString& key, const QSettings& s) const override
+		{
+			widget.restoreGeometry(s.value(key + "_GEO").toByteArray());
+			widget.restoreState(s.value(key + "_STATE").toByteArray());
 		}
 	};
 }

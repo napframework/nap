@@ -49,15 +49,15 @@ void napqt::AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
 	auto storer = findStorer(w);
 	if (storer) {
 		auto key = uniqeObjectName(w);
-//		nap::Logger::debug("Restoring '%s'", key.toStdString().c_str());
-		storer->restoreWidget(w, key, s);
+		if (!mExclusions.contains(&w))
+			storer->restoreWidget(w, key, s);
 	}
 
 
 	for (const auto child : w.children())
 	{
 		auto widget = dynamic_cast<QWidget*>(child);
-		if (widget != nullptr)
+		if (widget != nullptr && !mExclusions.contains(widget))
 			restoreRecursive(*widget, s);
 	}
 }
@@ -120,6 +120,7 @@ void napqt::AutoSettings::registerDefaults()
 {
 	registerStorer<MainWindowWidgetStorer>();
 	registerStorer<HeaderViewWidgetStorer>();
+	registerStorer<SplitterStorer>();
 	registerStorer<GridViewStorer>();
 }
 
@@ -128,4 +129,5 @@ napqt::AutoSettings& napqt::AutoSettings::get()
 	static napqt::AutoSettings instance;
 	return instance;
 }
+
 
