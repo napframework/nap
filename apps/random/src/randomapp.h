@@ -111,11 +111,13 @@ namespace nap
 		LightingModes										mLightingModeEnum = LightingModes::None;
 		LightingModes										mPrevLightingMode;
 		bool												mTransitioningMode = false;
+		float												mTransitioningVelocity = 0.0f;
 
 		/**
 		* Called the lighting mode changed
 		*/
 		void updateLightingMode();
+		void updateLightingModeTransition(double deltaTime);
 
 		/**
 		* Get the appropriate texture for a lighing mode
