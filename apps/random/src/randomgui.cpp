@@ -29,9 +29,8 @@ namespace nap
 		ImGui::SetNextWindowPos(ImVec2(guiWindowPadding, guiWindowPadding));
 		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - 2.0f * guiWindowPadding));
 		ImGui::Begin("Content Controls", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		if (ImGui::ListBox("Lighting Mode", &mApp.mLightingModeInt, mApp.mLightingModes, IM_ARRAYSIZE(mApp.mLightingModes))) {
+		if (ImGui::ListBox("Lighting Mode", &mApp.mLightingModeInt, mApp.mLightingModes, IM_ARRAYSIZE(mApp.mLightingModes)))
 			mApp.updateLightingMode();
-		}
 
 		switch (mApp.mLightingModeEnum)
 		{
@@ -87,7 +86,8 @@ namespace nap
 			updateOrbit = ImGui::SliderFloat("Orbit Radius", &mApp.mOrbit->mRadius, mApp.mOrbit->mRadiusMin, mApp.mOrbit->mRadiusMax) || updateOrbit;
 			updateOrbit = ImGui::DragFloat2("Orbit Start / End", mApp.mOrbit->mStartEnd, 0.1f, 0.0f, 360.0f) || updateOrbit;
 			updateOrbit = ImGui::SliderFloat("Orbit Progress", &mApp.mOrbit->mProgress, 0.0f, 1.0f) || updateOrbit;
-			if (updateOrbit) {
+			if (updateOrbit)
+			{
 				mApp.mOrbit->updateOrbit();
 				mApp.mShaders->updateSunGlareOrbit();
 			}

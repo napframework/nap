@@ -93,9 +93,6 @@ namespace nap
 		mGui->update(deltaTime);
 		mOrbit->update(deltaTime);
 		mShaders->update(deltaTime);
-
-		if (mTransitioningMode)
-			updateLightingModeTransition(deltaTime);
 	}
 
 
@@ -111,9 +108,9 @@ namespace nap
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
 		// Render lighting mode textures into back-buffer
-		if (mLightingModeEnum == LightingModes::Sun || mPrevLightingMode == LightingModes::Sun)
+		if (mLightingModeEnum == LightingModes::Sun || mOldLightingModeEnum == LightingModes::Sun)
 			renderSun(ortho_cam);
-		if (mLightingModeEnum == LightingModes::Video || mPrevLightingMode == LightingModes::Video)
+		if (mLightingModeEnum == LightingModes::Video || mOldLightingModeEnum == LightingModes::Video)
 			renderVideo(ortho_cam);
 
 		// Render combination into back buffer
@@ -132,9 +129,8 @@ namespace nap
 			// Find components to render (Light rig, orbit)
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			mLightRig->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
-			if (mLightingModeEnum == LightingModes::Sun) {
+			if (mLightingModeEnum == LightingModes::Sun)
 				mOrbit->appendRenderableComponents(components_to_render);
-			}
 
 			// Render components in one pass
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
@@ -148,52 +144,32 @@ namespace nap
 	}
 
 
-	void RandomApp::updateLightingMode() {
-		// Store the current lighing mode as enum
-		mTransitioningMode = true;
-		mTransitioningVelocity = 0.0f;
-		mPrevLightingMode = mLightingModeEnum;
+	void RandomApp::updateLightingMode()
+	{
+		// Store the previous and current lighing mode
+		mOldLightingModeEnum = mLightingModeEnum;
 		mLightingModeEnum = static_cast<LightingModes>(mLightingModeInt);
-
-		// Update the uniforms on the combination plane
-		nap::RenderableMeshComponentInstance& combination_plane = mCombination->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformFloat& uBlendValue = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBlendValue");
-		nap::UniformTexture2D& uTextureOne = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureOne");
-		nap::UniformTexture2D& uTextureTwo = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureTwo");
-		uBlendValue.setValue(0.0f);
-		uTextureOne.setTexture(*getTextureForLightingMode(mPrevLightingMode));
-		uTextureTwo.setTexture(*getTextureForLightingMode(mLightingModeEnum));
+		mShaders->startLightingModeTransition(getTextureForLightingMode(mOldLightingModeEnum), getTextureForLightingMode(mLightingModeEnum));
 	}
 
 
-	void RandomApp::updateLightingModeTransition(double deltaTime) {
-		// Smoothly increment the blend uniform value in the combination plane
-		nap::RenderableMeshComponentInstance& combination_plane = mCombination->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformFloat& uBlendValue = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBlendValue");
-		nap::math::smooth(uBlendValue.mValue, 1.0f, mTransitioningVelocity, static_cast<float>(deltaTime), 0.5f, 1000.0f);
-
-		// When the transition is complete, reset the shader values
-		if (uBlendValue.mValue >= 1.0f) {
-			uBlendValue.mValue = 0.0f;
-			mTransitioningMode = false;
-			mPrevLightingMode = LightingModes::None;
-			nap::UniformTexture2D& uTextureOne = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureOne");
-			nap::UniformTexture2D& uTextureTwo = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureTwo");
-			uTextureOne.setTexture(*getTextureForLightingMode(mLightingModeEnum));
-			uTextureTwo.setTexture(*mNoneColorTexture);
-		}
+	void RandomApp::resetOldLightingMode()
+	{
+		// reset the old lighting mode so we don't render unnecessarily
+		mOldLightingModeEnum = LightingModes::None;
 	}
 
 
-	rtti::ObjectPtr<RenderTexture2D> RandomApp::getTextureForLightingMode(LightingModes& lightingMode) {
+	nap::Texture2D& RandomApp::getTextureForLightingMode(LightingModes& lightingMode)
+	{
 		switch (lightingMode)
 		{
 		case LightingModes::Sun:
-			return mSunColorTexture;
+			return *mSunColorTexture;
 		case LightingModes::Video:
-			return mVideoColorTexture;
+			return *mVideoColorTexture;
 		default:
-			return mNoneColorTexture;
+			return *mNoneColorTexture;
 		}
 	}
 

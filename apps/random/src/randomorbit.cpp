@@ -72,7 +72,8 @@ namespace nap
 		renderable_components.emplace_back(&mOrbitSun->getComponent<nap::RenderableMeshComponentInstance>());
 	}
 
-	float RandomOrbit::getAngle() {
+	float RandomOrbit::getAngle()
+	{
 		return mStartEnd[0] - mProgress * (mStartEnd[0] - mStartEnd[1]);
 	}
 }

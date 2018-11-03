@@ -109,20 +109,18 @@ namespace nap
 		const char*											mLightingModes[4] = { "None", "Sun", "Video", "Static" };
 		int													mLightingModeInt = 0;
 		LightingModes										mLightingModeEnum = LightingModes::None;
-		LightingModes										mPrevLightingMode;
-		bool												mTransitioningMode = false;
-		float												mTransitioningVelocity = 0.0f;
+		LightingModes										mOldLightingModeEnum;
 
 		/**
 		* Called the lighting mode changed
 		*/
 		void updateLightingMode();
-		void updateLightingModeTransition(double deltaTime);
+		void resetOldLightingMode();
 
 		/**
 		* Get the appropriate texture for a lighing mode
 		*/
-		rtti::ObjectPtr<RenderTexture2D> getTextureForLightingMode(LightingModes& lightingMode);
+		nap::Texture2D& getTextureForLightingMode(LightingModes& lightingMode);
 
 		/**
 		* Called when a window event is received

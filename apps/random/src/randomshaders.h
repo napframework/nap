@@ -22,6 +22,10 @@ namespace nap
 		*	Update shader uniforms
 		*/
 		void update(double deltaTime);
+		void updateCloudsShader(double deltaTime);
+		void updateCameraLocation();
+		void startLightingModeTransition(nap::Texture2D& oldTexture, nap::Texture2D& newTexture);
+		void updateLightingModeTransition(double deltaTime);
 		void updateSunGlareOrbit();
 		void updateSunCloudsInverted();
 
@@ -57,5 +61,9 @@ namespace nap
 	private:
 		// The app used to extract information from
 		RandomApp&	mApp;
+
+		// Properties for controlling the lighting mode transition
+		bool		mLightingModeTransitionActive = false;
+		float		mLightingModeTransitionVelocity = 0.0f;
 	};
 }
