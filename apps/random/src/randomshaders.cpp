@@ -7,35 +7,35 @@ namespace nap
 {
 	RandomShaders::RandomShaders(RandomApp& app) : mApp(app)
 	{
-		// Store clouds uniform value pointers
-		nap::RenderableMeshComponentInstance& clouds_plane = mApp.mClouds->getComponent<nap::RenderableMeshComponentInstance>();
-		pCloudsOffset = &clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset").mValue;
-		pCloudsRotation = &clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation").mValue;
-		pCloudsContrast = &clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast").mValue;
-		pCloudsScale = &clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uScale").mValue;
-		pCloudsInverted = &clouds_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInverted").mValue;
+		// Store sun-clouds uniform value pointers
+		nap::RenderableMeshComponentInstance& sun_clouds = mApp.mSunClouds->getComponent<nap::RenderableMeshComponentInstance>();
+		pSunCloudsOffset = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset").mValue;
+		pSunCloudsRotation = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation").mValue;
+		pSunCloudsContrast = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast").mValue;
+		pSunCloudsScale = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uScale").mValue;
+		pSunCloudsInverted = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInverted").mValue;
 
-		// Store sun uniform value pointers
-		nap::RenderableMeshComponentInstance& sun_plane = mApp.mSun->getComponent<nap::RenderableMeshComponentInstance>();
-		pSunOrbitCenter = &sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter").mValue;
-		pSunOrbitAngle = &sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitAngle").mValue;
-		pSunOrbitRadius = &sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitRadius").mValue;
-		pSunOuterSize = &sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize").mValue;
-		pSunInnerSize = &sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInnerSize").mValue;
-		pSunStretch = &sun_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uStretch").mValue;
+		// Store sun-glare uniform value pointers
+		nap::RenderableMeshComponentInstance& sun_glare = mApp.mSunGlare->getComponent<nap::RenderableMeshComponentInstance>();
+		pSunGlareOrbitCenter = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter").mValue;
+		pSunGlareOrbitAngle = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitAngle").mValue;
+		pSunGlareOrbitRadius = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitRadius").mValue;
+		pSunGlareOuterSize = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize").mValue;
+		pSunGlareInnerSize = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInnerSize").mValue;
+		pSunGlareStretch = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uStretch").mValue;
 
 		// Call an intial update to apply properties
-		updateOrbit();
+		updateSunGlareOrbit();
 	}
 
 	void RandomShaders::update(double deltaTime)
 	{
 		// Update clouds shader
-		float windDirectionRad = nap::math::radians(*pCloudsRotation);
-		float windDistance = mWindSpeed * (float)deltaTime;
-		pCloudsOffset->x += cos(windDirectionRad) * windDistance;
-		pCloudsOffset->y += sin(windDirectionRad) * windDistance;
-		pCloudsOffset->z += mNoiseSpeed * (float)deltaTime;
+		float windDirectionRad = nap::math::radians(*pSunCloudsRotation);
+		float windDistance = mSunCloudsWindSpeed * (float)deltaTime;
+		pSunCloudsOffset->x += cos(windDirectionRad) * windDistance;
+		pSunCloudsOffset->y += sin(windDirectionRad) * windDistance;
+		pSunCloudsOffset->z += mSunCloudsNoiseSpeed * (float)deltaTime;
 
 		// Update camera location
 		TransformComponentInstance& cam_xform = mApp.mSceneCamera->getComponent<TransformComponentInstance>();
@@ -51,16 +51,16 @@ namespace nap
 		}
 	}
 
-	void RandomShaders::updateOrbit()
+	void RandomShaders::updateSunGlareOrbit()
 	{
-		pSunOrbitCenter->x = mApp.mOrbit->mCenter[0];
-		pSunOrbitCenter->y = mApp.mOrbit->mCenter[1];
-		*pSunOrbitAngle = mApp.mOrbit->getAngle();
-		*pSunOrbitRadius = mApp.mOrbit->mRadius;
+		pSunGlareOrbitCenter->x = mApp.mOrbit->mCenter[0];
+		pSunGlareOrbitCenter->y = mApp.mOrbit->mCenter[1];
+		*pSunGlareOrbitAngle = mApp.mOrbit->getAngle();
+		*pSunGlareOrbitRadius = mApp.mOrbit->mRadius;
 	}
 
-	void RandomShaders::updateCloudsInverted()
+	void RandomShaders::updateSunCloudsInverted()
 	{
-		*pCloudsInverted = mCloudsInverted ? 1.0f : 0.0f;
+		*pSunCloudsInverted = mSunCloudsInverted ? 1.0f : 0.0f;
 	}
 }

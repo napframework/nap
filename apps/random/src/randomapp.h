@@ -77,7 +77,6 @@ namespace nap
 
 		// Rendering Objects
 		rtti::ObjectPtr<RenderWindow>						mRenderWindow = nullptr;
-		rtti::ObjectPtr<RenderTarget>						mCloudRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mSunRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mVideoRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
@@ -86,8 +85,8 @@ namespace nap
 		rtti::ObjectPtr<Scene>								mScene = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mSceneCamera = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mOrthoCamera = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mClouds = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mSun = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mSunClouds = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mSunGlare = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mVideo = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mCombination = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
@@ -115,14 +114,9 @@ namespace nap
 		void renderVideo(OrthoCameraComponentInstance& orthoCamera);
 
 		/**
-		 *	Renders the combination of the video and clouds into it's own back-buffer
+		 *	Renders the combination into it's back-buffer
 		 */
 		void renderCombination(OrthoCameraComponentInstance& orthoCamera);
-
-		/**
-		 *	Renders the clouds into it's back-buffer
-		 */
-		void renderClouds(OrthoCameraComponentInstance& orthoCamera);
 
 		/**
 		*	Renders the sun into it's back-buffer

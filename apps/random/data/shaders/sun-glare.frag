@@ -58,5 +58,5 @@ void main()
 	vec2 offset = position.xy - sunCenter;
 	float innerSize = uInnerSize * uOuterSize;
 	float intensity = 1.0 - clamp((length(offset) - innerSize) / (uOuterSize - innerSize), 0.0, 1.0);
-	out_Color =  vec4(intensity, 0.0, 0.0, 1.0);
+	out_Color =  vec4(1.0, 0.0, 0.0, intensity);
 }

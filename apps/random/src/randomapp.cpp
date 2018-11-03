@@ -47,7 +47,6 @@ namespace nap
 		mRenderWindow->mWindowEvent.connect(std::bind(&RandomApp::handleWindowEvent, this, std::placeholders::_1));
 
 		// Look for render targets, used to render into cloud and video textures
-		mCloudRenderTarget   = mResourceManager->findObject("CloudRenderTarget");
 		mSunRenderTarget     = mResourceManager->findObject("SunRenderTarget");
 		mVideoRenderTarget   = mResourceManager->findObject("VideoRenderTarget");
 		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
@@ -56,8 +55,8 @@ namespace nap
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		
 		mSceneCamera = mScene->findEntity("SceneCamera");
-		mClouds = mScene->findEntity("Clouds");
-		mSun = mScene->findEntity("Sun");
+		mSunClouds = mScene->findEntity("SunClouds");
+		mSunGlare = mScene->findEntity("SunGlare");
 		mOrthoCamera = mScene->findEntity("ProjectionCamera");
 		mLightRig = mScene->findEntity("LightRig");
 		mVideo = mScene->findEntity("Video");
@@ -103,14 +102,20 @@ namespace nap
 		// Get orthographic camera. This camera renders in pixel space, starting at 0,0
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
-		// Render clouds
-		renderClouds(ortho_cam);
-
-		// Render sun
-		renderSun(ortho_cam);
-
-		// Render video into back-buffer
-		renderVideo(ortho_cam);
+		// Render lighting mode textures into back-buffer
+		switch (static_cast<LightingModes>(mLightingMode))
+		{
+		case LightingModes::Sun:
+			renderSun(ortho_cam);
+			break;
+		case LightingModes::Video:
+			renderVideo(ortho_cam);
+			break;
+		case LightingModes::Static:
+			break;
+		default:
+			break;
+		}
 
 		// Render combination into back buffer
 		renderCombination(ortho_cam);
@@ -177,28 +182,14 @@ namespace nap
 	}
 
 
-	void RandomApp::renderClouds(OrthoCameraComponentInstance& orthoCamera)
-	{
-		mRenderService->clearRenderTarget(mCloudRenderTarget->getTarget());
-
-		// Find the projection plane and render it to the back-buffer
-		nap::RenderableMeshComponentInstance& render_plane = mClouds->getComponent<nap::RenderableMeshComponentInstance>();
-		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		components_to_render.emplace_back(&render_plane);
-
-		// Render clouds plane to clouds texture
-		mRenderService->renderObjects(mCloudRenderTarget->getTarget(), orthoCamera, components_to_render);
-	}
-
-
 	void RandomApp::renderSun(OrthoCameraComponentInstance& orthoCamera)
 	{
 		mRenderService->clearRenderTarget(mSunRenderTarget->getTarget());
 
 		// Find the projection plane and render it to the back-buffer
-		nap::RenderableMeshComponentInstance& render_plane = mSun->getComponent<nap::RenderableMeshComponentInstance>();
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		components_to_render.emplace_back(&render_plane);
+		components_to_render.emplace_back(&mSunClouds->getComponent<nap::RenderableMeshComponentInstance>());
+		components_to_render.emplace_back(&mSunGlare->getComponent<nap::RenderableMeshComponentInstance>());
 
 		// Render sun plane to sun texture
 		mRenderService->renderObjects(mSunRenderTarget->getTarget(), orthoCamera, components_to_render);
