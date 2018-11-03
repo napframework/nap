@@ -1139,13 +1139,13 @@
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D",
                     "Name": "uTextureOne",
-                    "Texture": "SunColorTexture"
+                    "Texture": "NoneColorTexture"
                 },
                 {
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D_2",
                     "Name": "uTextureTwo",
-                    "Texture": "VideoColorTexture"
+                    "Texture": "NoneColorTexture"
                 },
                 {
                     "Type": "nap::UniformFloat",
@@ -1441,6 +1441,21 @@
             "Width": 1024,
             "Height": 1024,
             "Format": "Depth"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "NoneColorTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
         },
         {
             "Type": "nap::RenderTexture2D",

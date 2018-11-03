@@ -52,6 +52,7 @@ namespace nap
 		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
 
 		// Look for textures 
+		mNoneColorTexture = mResourceManager->findObject("NoneColorTexture");
 		mSunColorTexture   = mResourceManager->findObject("SunColorTexture");
 		mVideoColorTexture = mResourceManager->findObject("VideoColorTexture");
 
@@ -107,19 +108,10 @@ namespace nap
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
 		// Render lighting mode textures into back-buffer
-		switch (mLightingModeEnum)
-		{
-		case LightingModes::Sun:
+		if (mLightingModeEnum == LightingModes::Sun || mPrevLightingMode == LightingModes::Sun)
 			renderSun(ortho_cam);
-			break;
-		case LightingModes::Video:
+		if (mLightingModeEnum == LightingModes::Video || mPrevLightingMode == LightingModes::Video)
 			renderVideo(ortho_cam);
-			break;
-		case LightingModes::Static:
-			break;
-		default:
-			break;
-		}
 
 		// Render combination into back buffer
 		renderCombination(ortho_cam);
@@ -155,26 +147,27 @@ namespace nap
 
 	void RandomApp::updateLightingMode() {
 		// Store the current lighing mode as enum
+		mTransitioningMode = true;
+		mPrevLightingMode = mLightingModeEnum;
 		mLightingModeEnum = static_cast<LightingModes>(mLightingModeInt);
 
-		// Retrieve the texture uniforms from the combination plane
+		// Update the uniforms on the combination plane
 		nap::RenderableMeshComponentInstance& combination_plane = mCombination->getComponent<nap::RenderableMeshComponentInstance>();
 		nap::UniformTexture2D& uTextureOne = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureOne");
 		nap::UniformTexture2D& uTextureTwo = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureTwo");
+		uTextureOne.mTexture = getTextureForLightingMode(mLightingModeEnum);
+	}
 
-		// Update the combination plane uniforms
+
+	rtti::ObjectPtr<RenderTexture2D> RandomApp::getTextureForLightingMode(LightingModes& lightingMode) {
 		switch (mLightingModeEnum)
 		{
 		case LightingModes::Sun:
-			uTextureOne.mTexture = mSunColorTexture;
-			break;
+			return mSunColorTexture;
 		case LightingModes::Video:
-			uTextureOne.mTexture = mVideoColorTexture;
-			break;
-		case LightingModes::Static:
-			break;
+			return mVideoColorTexture;
 		default:
-			break;
+			return mNoneColorTexture;
 		}
 	}
 
