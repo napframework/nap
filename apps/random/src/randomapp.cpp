@@ -51,6 +51,10 @@ namespace nap
 		mVideoRenderTarget   = mResourceManager->findObject("VideoRenderTarget");
 		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
 
+		// Look for textures 
+		mSunColorTexture   = mResourceManager->findObject("SunColorTexture");
+		mVideoColorTexture = mResourceManager->findObject("VideoColorTexture");
+
 		// All of our entities
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		
@@ -103,7 +107,7 @@ namespace nap
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
 		// Render lighting mode textures into back-buffer
-		switch (static_cast<LightingModes>(mLightingMode))
+		switch (mLightingModeEnum)
 		{
 		case LightingModes::Sun:
 			renderSun(ortho_cam);
@@ -133,7 +137,7 @@ namespace nap
 			// Find components to render (Light rig, orbit)
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			mLightRig->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
-			if (static_cast<LightingModes>(mLightingMode) == LightingModes::Sun) {
+			if (mLightingModeEnum == LightingModes::Sun) {
 				mOrbit->appendRenderableComponents(components_to_render);
 			}
 
@@ -149,6 +153,32 @@ namespace nap
 	}
 
 
+	void RandomApp::updateLightingMode() {
+		// Store the current lighing mode as enum
+		mLightingModeEnum = static_cast<LightingModes>(mLightingModeInt);
+
+		// Retrieve the texture uniforms from the combination plane
+		nap::RenderableMeshComponentInstance& combination_plane = mCombination->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::UniformTexture2D& uTextureOne = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureOne");
+		nap::UniformTexture2D& uTextureTwo = combination_plane.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureTwo");
+
+		// Update the combination plane uniforms
+		switch (mLightingModeEnum)
+		{
+		case LightingModes::Sun:
+			uTextureOne.mTexture = mSunColorTexture;
+			break;
+		case LightingModes::Video:
+			uTextureOne.mTexture = mVideoColorTexture;
+			break;
+		case LightingModes::Static:
+			break;
+		default:
+			break;
+		}
+	}
+
+
 	void RandomApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
 		if (windowEvent.get_type().is_derived_from(RTTI_OF(WindowResizedEvent)))
@@ -157,6 +187,20 @@ namespace nap
 			windowSize.x = res_event.mX;
 			windowSize.y = res_event.mY;
 		}
+	}
+
+
+	void RandomApp::renderSun(OrthoCameraComponentInstance& orthoCamera)
+	{
+		mRenderService->clearRenderTarget(mSunRenderTarget->getTarget());
+
+		// Find the projection plane and render it to the back-buffer
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		components_to_render.emplace_back(&mSunClouds->getComponent<nap::RenderableMeshComponentInstance>());
+		components_to_render.emplace_back(&mSunGlare->getComponent<nap::RenderableMeshComponentInstance>());
+
+		// Render sun plane to sun texture
+		mRenderService->renderObjects(mSunRenderTarget->getTarget(), orthoCamera, components_to_render);
 	}
 
 
@@ -179,20 +223,6 @@ namespace nap
 		// Note that this also starts the download of the gpu texture into the bitmap in the background
 		RenderCombinationComponentInstance& render_comp = mCombination->getComponent<RenderCombinationComponentInstance>();
 		render_comp.render(orthoCamera);
-	}
-
-
-	void RandomApp::renderSun(OrthoCameraComponentInstance& orthoCamera)
-	{
-		mRenderService->clearRenderTarget(mSunRenderTarget->getTarget());
-
-		// Find the projection plane and render it to the back-buffer
-		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		components_to_render.emplace_back(&mSunClouds->getComponent<nap::RenderableMeshComponentInstance>());
-		components_to_render.emplace_back(&mSunGlare->getComponent<nap::RenderableMeshComponentInstance>());
-
-		// Render sun plane to sun texture
-		mRenderService->renderObjects(mSunRenderTarget->getTarget(), orthoCamera, components_to_render);
 	}
 
 

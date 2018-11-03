@@ -340,14 +340,7 @@
                     "Mesh": "ProjectionMesh",
                     "MaterialInstance": {
                         "Material": "CombineMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformFloat",
-                                "mID": "UniformFloat_2",
-                                "Name": "blendValue",
-                                "Value": 0.0
-                            }
-                        ],
+                        "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -1145,26 +1138,20 @@
                 {
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D",
-                    "Name": "sunTexture2",
+                    "Name": "uTextureOne",
                     "Texture": "SunColorTexture"
                 },
                 {
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D_2",
-                    "Name": "videoTexture",
+                    "Name": "uTextureTwo",
                     "Texture": "VideoColorTexture"
                 },
                 {
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat",
-                    "Name": "blendValue",
+                    "Name": "uBlendValue",
                     "Value": 0.0
-                },
-                {
-                    "Type": "nap::UniformTexture2D",
-                    "mID": "UniformTexture2D_3",
-                    "Name": "sunTexture",
-                    "Texture": "SunColorTexture"
                 }
             ],
             "Shader": "CombineShader",
@@ -1544,7 +1531,7 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "Combination",
+                    "Entity": "Sun",
                     "InstanceProperties": []
                 },
                 {
@@ -1552,11 +1539,11 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "LightRig",
+                    "Entity": "Combination",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "Sun",
+                    "Entity": "LightRig",
                     "InstanceProperties": []
                 },
                 {

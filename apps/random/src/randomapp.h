@@ -23,6 +23,7 @@
 #include <utility/datetimeutils.h>
 #include <scene.h>
 #include <orthocameracomponent.h>
+#include <rendertexture2d.h>
 
 namespace nap
 {
@@ -81,6 +82,10 @@ namespace nap
 		rtti::ObjectPtr<RenderTarget>						mVideoRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
 
+		// Texture Objects
+		rtti::ObjectPtr<RenderTexture2D>					mSunColorTexture = nullptr;
+		rtti::ObjectPtr<RenderTexture2D>					mVideoColorTexture = nullptr;
+
 		// Scene Objects
 		rtti::ObjectPtr<Scene>								mScene = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mSceneCamera = nullptr;
@@ -100,13 +105,24 @@ namespace nap
 		glm::ivec2 windowSize;
 
 		// Lighting Modes
-		const char*	mLightingModes[3] = { "Sun", "Video", "Static" };
-		int			mLightingMode = 0;
+		const char*											mLightingModes[3] = { "Sun", "Video", "Static" };
+		int													mLightingModeInt = 0;
+		LightingModes										mLightingModeEnum = LightingModes::Sun;
 
 		/**
-		 * Called when a window event is received
-		 */
+		* Called the lighting mode changed
+		*/
+		void updateLightingMode();
+
+		/**
+		* Called when a window event is received
+		*/
 		void handleWindowEvent(const WindowEvent& windowEvent);
+
+		/**
+		*	Renders the sun into it's back-buffer
+		*/
+		void renderSun(OrthoCameraComponentInstance& orthoCamera);
 
 		/**
 		 *	Renders the video into it's back-buffer
@@ -117,10 +133,5 @@ namespace nap
 		 *	Renders the combination into it's back-buffer
 		 */
 		void renderCombination(OrthoCameraComponentInstance& orthoCamera);
-
-		/**
-		*	Renders the sun into it's back-buffer
-		*/
-		void renderSun(OrthoCameraComponentInstance& orthoCamera);
 	};                                                                               
 }
