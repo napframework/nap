@@ -13,8 +13,6 @@
 #include <triangleiterator.h>
 #include <meshutils.h>
 #include <mathutils.h>
-#include <ft2build.h>
-#include <freetype/freetype.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -28,16 +26,7 @@ namespace nap
 	 * Initialize all the resources and store the objects we need later on
 	 */
 	bool HelloWorldApp::init(utility::ErrorState& error)
-	{
-		FT_Library ft;
-		if (FT_Init_FreeType(&ft))
-			std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-
-		FT_Face face;
-		if (FT_New_Face(ft, "c:/windows/fonts/arial.ttf", 0, &face))
-			std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-
-		
+	{		
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
 		mSceneService	= getCore().getService<nap::SceneService>();
