@@ -32,6 +32,7 @@ if (UNIX)
     list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
     list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/assimp/lib)
     list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
+    list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/freetype/lib)
 endif()
 package_module()
 

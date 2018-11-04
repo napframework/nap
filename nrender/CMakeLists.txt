@@ -45,10 +45,13 @@ elseif(UNIX)
 endif()
 find_package(assimp REQUIRED)
 
+# find other 3rd party packages
 find_package(OpenGL)
 find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
+find_package(freetype REQUIRED)
 
+# get all nrender sources and headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 # compile shared lib as target
@@ -62,6 +65,7 @@ set(INCLUDES
     ${GLEW_INCLUDE_DIR}
     ${FREEIMAGE_INCLUDE_DIRS}
     ${ASSIMP_INCLUDE_DIRS}
+    ${FREETYPE_INCLUDE_DIRS}
     )
 
 set(LIBRARIES
@@ -88,7 +92,7 @@ endif()
 # add to include path and expose to depending projects
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC src ${INCLUDES})
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES} naputility naprtti)
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES} naputility naprtti freetype)
 
 if(MSVC)
     include(GenerateExportheader)
@@ -100,6 +104,9 @@ if(WIN32)
     # Copy freeimage DLL to build directory
     find_package(freeimage REQUIRED)
     copy_freeimage_dll()
+
+    # Copy freetype DLL
+    copy_freetype_dll()
 
     # Copy over Windows graphics DLLs to build directory
     copy_base_windows_graphics_dlls()
@@ -153,6 +160,29 @@ elseif(UNIX)
     install(FILES ${THIRDPARTY_DIR}/FreeImage/linux/install/include/FreeImage.h DESTINATION thirdparty/FreeImage/include)
     file(GLOB FREEIMAGE_DYLIBS ${THIRDPARTY_DIR}/FreeImage/linux/install/lib/*.so*)
     install(FILES ${FREEIMAGE_DYLIBS} DESTINATION thirdparty/FreeImage/lib)
+endif()
+
+# Freetype
+install(FILES ${THIRDPARTY_DIR}/freetype/README DESTINATION thirdparty/freetype)
+install(DIRECTORY ${THIRDPARTY_DIR}/freetype/include/ 
+        DESTINATION thirdparty/freetype/include
+        FILES_MATCHING PATTERN "*.h")
+if(WIN32)
+    install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.dll DESTINATION thirdparty/freetype/bin/release)
+    install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.lib DESTINATION thirdparty/freetype/bin/release)
+    install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Debug/freetyped.dll DESTINATION thirdparty/freetype/bin/debug)
+    install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Debug/freetyped.lib DESTINATION thirdparty/freetype/bin/debug)
+elseif(APPLE)
+    SET(FREETYPE_DYLIB ${THIRDPARTY_DIR}/freetype/osx/libfreetype.dylib)
+    install(FILES ${FREETYPE_DYLIB} DESTINATION thirdparty/freetype/bin)
+
+    # Ensure our yoctopuce install name id is set properly, this is really for intall into packaging
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       PRE_BUILD
+                       COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/freetype.dylib ${FREETYPE_DYLIB}
+                       COMMENT "Setting install name for freetype")   
+else()
+    install(FILES ${THIRDPARTY_DIR}/freetype/linux/libfreetype.so DESTINATION thirdparty/freetype/bin)
 endif()
 
 # GLM
