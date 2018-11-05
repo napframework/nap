@@ -1,7 +1,9 @@
 // Local Includes
 #include "fontservice.h"
+#include "font.h"
 
 // External Includes
+#include <renderservice.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -16,9 +18,11 @@ namespace nap
 	{
 	}
 
+
 	FontService::~FontService()
 	{
-
+		if (mFreetypeLib != nullptr)
+			FT_Done_FreeType(reinterpret_cast<FT_Library>(mFreetypeLib));
 	}
 
 
@@ -37,7 +41,26 @@ namespace nap
 
 	void FontService::shutdown()
 	{
-		if (mFreetypeLib != nullptr) 
-			FT_Done_FreeType(reinterpret_cast<FT_Library>(mFreetypeLib));
+
 	}
+
+
+	void FontService::registerObjectCreators(rtti::Factory& factory)
+	{
+		factory.addObjectCreator(std::make_unique<FontObjectCreator>(*this));
+	}
+
+
+	void FontService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	{
+		dependencies.emplace_back(RTTI_OF(nap::RenderService));
+	}
+
+
+	void* FontService::getHandle() const
+	{
+		assert(mFreetypeLib != nullptr);
+		return mFreetypeLib;
+	}
+
 }

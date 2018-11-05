@@ -5,11 +5,15 @@
 
 namespace nap
 {
+	// Forward Declares
+	class Font;
+
 	/**
 	 * Manages the font rendering library.
 	 */
 	class NAPAPI FontService : public Service
 	{
+		friend class Font;
 		RTTI_ENABLE(Service)
 	public:
 		/**
@@ -32,6 +36,23 @@ namespace nap
 		 *	Shuts down all font related functionality
 		 */
 		virtual void shutdown() override;
+
+		/**
+		* Registers all objects that need a specific way of construction, in this case a font resource
+		* @param factory the factory to register the object creators with
+		*/
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		 * This service depends on the render service for correct order of initialization
+		 */
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies);
+
+		/**
+		 * Returns the handle to the free-type library, only accessible by resources in this module
+		 * @return the handle to the free-type library
+		 */
+		void* getHandle() const;
 
 	private:
 		void* mFreetypeLib = nullptr;		///< Handle to the FreeType library instance
