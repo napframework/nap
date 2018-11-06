@@ -50,6 +50,7 @@ namespace nap
 
 		/**
 		 * Returns the handle to the free-type library, only accessible by resources in this module
+		 * Represents a FT_Library object
 		 * @return the handle to the free-type library
 		 */
 		void* getHandle() const;
