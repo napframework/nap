@@ -60,11 +60,23 @@ namespace nap
 		virtual ~Font();
 
 		/**
-		* Initialize this object after de-serialization
-		* This creates the type face object
-		* @param errorState contains the error message when initialization fails
-		*/
+		 * Initialize this object after de-serialization, creates a new font instance.
+		 * Use the font instance to access all font related information
+		 * @param errorState contains the error message when initialization fails
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Returns the font created on initialization, use this object to access all font related functionality
+		 * @return the font created on initialization
+		 */
+		FontInstance& getFontInstance();
+
+		/**
+		* Returns the font created on initialization, use this object to access all font related functionality
+		* @return the font created on initialization
+		*/
+		const FontInstance& getFontInstance() const;
 
 		FontProperties mProperties;								///< Property: 'Properties' the properties (size, dpi, path) that describe the font
 
@@ -95,7 +107,7 @@ namespace nap
 		/**
 		 * Create the instance based on font properties and a service
 		 */
-		FontInstance(const FontProperties& properties, const FontService& service);
+		FontInstance(const FontService& service);
 
 		/**
 		 *	Destructor
@@ -103,13 +115,15 @@ namespace nap
 		~FontInstance();
 
 		/**
-		 * Creates the actual type-face associated with the font
-		 * Call this after construction of this object or after updating the font properties
-		 * If for some reason construction fails the errorState holds the error code
+		 * Creates the actual type-face associated with the font based on the incoming set of properties.
+		 * Call this after construction or when you want to change the font at run-time.
+		 * If for some reason construction fails the errorState holds the error code.
+		 * The previous type-face, if it exists, is destroyed when a new one is created successfully.
+		 * When creation fails the current type-face remains active.
 		 * @param error contains the error message if construction of the typeface fails
 		 * @return if the typeface could be constructed
 		 */
-		bool create(utility::ErrorState& error);
+		bool create(const FontProperties& properties, utility::ErrorState& error);
 
 		/**
 		 * Allows for changing the size of the font at run-time
@@ -122,7 +136,7 @@ namespace nap
 		bool changeSize(int size, int dpi);
 
 		/**
-		 * @return properties associated with this font
+		 * @return up to date properties associated with this font
 		 */
 		const FontProperties& getProperties() const;
 
@@ -133,14 +147,13 @@ namespace nap
 
 	protected:
 		/**
-		* Returns the handle to the free-type face managed by this resource
-		* Represents a FT_Face object
-		* @return handle to the type face managed by this font
-		*/
+		 * Returns the handle to the free-type face managed by this resource
+		 * Represents a FT_Face object
+		 * @return handle to the type face managed by this font
+		 */
 		void* getFace() const;
 
 	private:
-
 		void* mFace = nullptr;							///< Handle to the free-type face object
 		void* mFreetypeLib = nullptr;					///< Handle to the free-type library
 		FontProperties mProperties = { -1, -1, "" };	///< Describes current font properties
