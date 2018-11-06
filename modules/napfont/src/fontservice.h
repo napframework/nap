@@ -13,7 +13,7 @@ namespace nap
 	 */
 	class NAPAPI FontService : public Service
 	{
-		friend class Font;
+		friend class FontInstance;
 		RTTI_ENABLE(Service)
 	public:
 		/**
