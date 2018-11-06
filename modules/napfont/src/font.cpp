@@ -9,9 +9,9 @@
 
 RTTI_BEGIN_STRUCT(nap::FontProperties)
 	RTTI_VALUE_CONSTRUCTOR(int, int, const std::string&)
-	RTTI_PROPERTY("Font",	&nap::FontProperties::mFont, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Size",	&nap::FontProperties::mSize, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DPI",	&nap::FontProperties::mDPI, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Font",	&nap::FontProperties::mFont,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Size",	&nap::FontProperties::mSize,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DPI",	&nap::FontProperties::mDPI,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 // nap::fontresource run time class definition 
