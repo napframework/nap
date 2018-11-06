@@ -180,7 +180,7 @@ namespace nap
 	FontInstance::~FontInstance()
 	{
 		mFreetypeLib = nullptr;
-		if (mFace != nullptr)
+		if(isValid())
 			FT_Done_Face(toFreetypeFace(mFace));
 		mFace = nullptr;
 	}
