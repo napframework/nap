@@ -132,7 +132,11 @@
         {
             "Type": "nap::Font",
             "mID": "Font",
-            "Font": "fonts/OpenSans-Regular.ttf"
+            "Properties": {
+                "Font": "fonts/OpenSans-Regular.ttf",
+                "Size": 12,
+                "DPI": 96
+            }
         },
         {
             "Type": "nap::ImageFromFile",
