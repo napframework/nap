@@ -95,7 +95,7 @@ namespace nap
 
 	FontInstance::FontInstance(const FontService& service)
 	{
-		// Get handle to freetype lib
+		// Get handle to free-type lib
 		mFreetypeLib = service.mFreetypeLib;
 	}
 
@@ -143,15 +143,9 @@ namespace nap
 		// Store handle
 		mFace = face;
 
-		// Store properties
+		// Store properties and clear cache on next fetch
 		mProperties = properties;
-		
-		/*
-		FT_Load_Glyph(face, 0, FT_LOAD_DEFAULT);
-		FT_Bitmap bitmap = face->glyph->bitmap;
-		FT_Pos height = height = face->glyph->metrics.height / 64;
-		FT_Pos width = face->glyph->metrics.width / 64;
-		*/
+		resetCache();
 
 		return true;
 	}
@@ -168,6 +162,8 @@ namespace nap
 		mProperties.mSize = size;
 		mProperties.mDPI  = dpi;
 
+		// Clear current cache
+		resetCache();
 		return true;
 	}
 
@@ -220,4 +216,11 @@ namespace nap
 		return new_glyph;
 	}
 
+
+	void FontInstance::resetCache()
+	{
+		assert(isValid());
+		mGlyphs.clear();
+		mGlyphs.reserve(toFreetypeFace(mFace)->num_glyphs);
+	}
 }
