@@ -100,10 +100,14 @@ namespace nap
 
 
 	/**
-	 * Runtime version of a font
-	 * Allows for dynamically changing font size and font type
-	 * The instance is created by a Font on initialization
-	 * You can also create a font instance dynamically at run-time
+	 * Runtime version of a font that serves characters.
+	 * Internally the font caches all the requested characters.
+	 * Allows for dynamically changing font size and font type.
+	 * The instance is created by a Font on initialization.
+	 * Use the getGlyphIndex() and getOrCreateGlyph() functions to fetch characters.
+	 * All the characters (glyphs) are managed and therefore owned by this font.
+	 * It is possible to create a font instance dynamically at run-time.
+	 * When you change the font size or font itself the cache is automatically cleared
 	 */
 	class NAPAPI FontInstance final
 	{
@@ -165,7 +169,8 @@ namespace nap
 
 		/**
 		 * Use this to acquire a handle to a glyph of type T that is associated with a specific index.
-		 * The Glyph can't be copied and is owned by this font.
+		 * The Glyph can't be copied and is owned by this font. 
+		 * It's better not to store the handle but ask for one when you need it!
 		 * When the Glyph isn't present it is created and initialized afterwards.
 		 * Use getGlyphIndex() to find the index of a specific character.
 		 * T must be of type Glyph. The font does not handle interleaved Glyph types!
@@ -185,7 +190,6 @@ namespace nap
 		void* getFace() const;
 
 	private:
-
 		/**
 		 * Load a glyph into the glyph slot of this font.
 		 * @param the index of the glyph inside the font
@@ -198,6 +202,12 @@ namespace nap
 		 * @return handle to the copied glyph in memory, nullptr on error
 		 */
 		void* getGlyph();
+
+		/**
+		 * Resets the Glyph cache.
+		 * Occurs when a new face is initialized or the size changes
+		 */
+		void resetCache();
 		
 		void* mFace = nullptr;											///< Handle to the free-type face object
 		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
@@ -238,7 +248,7 @@ namespace nap
 
 		// Add to map
 		T* ptr = new T(glyph_handle, index);
-		mGlyphs.insert(std::make_pair(index, std::move(std::unique_ptr<T>(ptr))));
+		mGlyphs.emplace(std::make_pair(index, std::move(std::unique_ptr<T>(ptr))));
 		return ptr;
 	}
 }
