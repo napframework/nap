@@ -21,14 +21,18 @@ namespace nap
 		// Default construction is not allowed
 		Glyph() = delete;
 
+		/**
+		* Destructor, unloads and destroys the glyph if present
+		*/
+		virtual ~Glyph();
+
 		// Copy is not allowed
 		Glyph(const Glyph& other) = delete;
 		Glyph& operator=(const Glyph&) = delete;
 
-		/**
-		 * Destructor, unloads and destroys the glyph if present
-		 */
-		virtual ~Glyph();
+		// Move is not allowed
+		Glyph(Glyph&& other) = delete;
+		Glyph& operator=(Glyph&& other) = delete;
 
 		/**
 		 * @return the index of the Glyph inside the font
@@ -47,18 +51,6 @@ namespace nap
 		 * @param index the index of the glyph in the type face
 		 */
 		Glyph(void* slot, uint index);
-
-		/**
-		 * Move constructor, can only be invoked by the font instance
-		 * Ensures the other glyph is emptied, ie: has no handle and an invalid index
-		 */
-		Glyph(Glyph&& other);
-
-		/**
-		 * Move assignment operator, can only be invoked by the font instance
-		 * Ensures the other glyph is emptied, ie: has no handle and an invalid index
-		 */
-		Glyph& operator=(Glyph&& other);
 
 	private:
 		void*	mSlot = nullptr;		///< Handle to the Glyph in memory
