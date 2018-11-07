@@ -46,7 +46,7 @@ namespace nap
 		/**
 		 * This service depends on the render service for correct order of initialization
 		 */
-		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies);
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
 
 		/**
 		 * Returns the handle to the free-type library, only accessible by resources in this module
