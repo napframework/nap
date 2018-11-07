@@ -13,6 +13,7 @@
 #include <triangleiterator.h>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <font.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -47,6 +48,12 @@ namespace nap
 		mWorldEntity = scene->findEntity("World");
 		mCameraEntity = scene->findEntity("Camera");
 		mWorldMesh = mResourceManager->findObject("WorldMesh");
+
+		ResourcePtr<nap::Font> mFont = mResourceManager->findObject("Font");
+		for (int i = 0; i < 128; i++)
+		{
+			Glyph* glyph = mFont->getFontInstance().getGlyph(i);
+		}
 
 		return true;
 	}
