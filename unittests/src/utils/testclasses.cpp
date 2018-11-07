@@ -11,6 +11,7 @@ RTTI_END_ENUM
 RTTI_BEGIN_CLASS(TestPropertiesStruct)
         RTTI_PROPERTY("String",  &TestPropertiesStruct::mString,  nap::rtti::EPropertyMetaData::Default)
         RTTI_PROPERTY("Strings", &TestPropertiesStruct::mStrings, nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY_FILELINK("Filename", &TestPropertiesStruct::mFilename, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Font)
         RTTI_PROPERTY("Int",     &TestPropertiesStruct::mInt,     nap::rtti::EPropertyMetaData::Default)
         RTTI_PROPERTY("Ints",    &TestPropertiesStruct::mInts,    nap::rtti::EPropertyMetaData::Default)
         RTTI_PROPERTY("Ints2D",  &TestPropertiesStruct::mInts2D,  nap::rtti::EPropertyMetaData::Default)
