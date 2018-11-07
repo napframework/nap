@@ -58,23 +58,3 @@ namespace nap
 	};
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-// Hashes
-//////////////////////////////////////////////////////////////////////////
-
-namespace std
-{
-	/**
-	 * Enables the use of the glyph inside a hash map
-	 */
-	template <>
-	struct hash<nap::Glyph>
-	{
-		size_t operator()(const nap::Glyph& v) const
-		{
-			return std::hash<nap::uint>()(v.getIndex());
-		}
-	};
-}
-

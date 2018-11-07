@@ -31,13 +31,13 @@ namespace nap
 	 */
 	Glyph::~Glyph()
 	{
-		if(mSlot != nullptr)
-			FT_Done_Glyph(toFreeTypeGlyph(mSlot));
+		assert(mSlot != nullptr);
+		FT_Done_Glyph(toFreeTypeGlyph(mSlot));
 	}
 
 
 	bool Glyph::isValid()
 	{
-		return mIndex != 0 && mSlot != nullptr;
+		return mSlot != nullptr;
 	}
 }
