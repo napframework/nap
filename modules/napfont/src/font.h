@@ -1,8 +1,13 @@
 #pragma once
 
+// Local Includes
+#include "glyph.h"
+
 // External Includes
 #include <nap/resource.h>
 #include <rtti/factory.h>
+#include <unordered_map>
+#include <utility>
 
 // Forward Declares
 namespace nap
@@ -18,7 +23,7 @@ namespace nap
 	 * Simple struct that describes common properties of a font
 	 * This struct can be copied easily and is used by all font related classes
 	 */
-	struct FontProperties
+	struct NAPAPI FontProperties
 	{
 		/**
 		 * Default constructor
@@ -100,7 +105,7 @@ namespace nap
 	 * The instance is created by a Font on initialization
 	 * You can also create a font instance dynamically at run-time
 	 */
-	class FontInstance final
+	class NAPAPI FontInstance final
 	{
 		RTTI_ENABLE()
 	public:
@@ -113,6 +118,12 @@ namespace nap
 		 *	Destructor
 		 */
 		~FontInstance();
+
+		/**
+		 * Font can't be copied!
+		 */
+		FontInstance(const FontInstance& rhs) = delete;
+		FontInstance& operator=(const FontInstance& rhs) = delete;
 
 		/**
 		 * Creates the actual type-face associated with the font based on the incoming set of properties.
@@ -145,6 +156,21 @@ namespace nap
 		 */
 		bool isValid() const;
 
+		/**
+		 *	Get the index of a Glyph inside this font based on a character code
+		 * You can use this index in conjunction with getGlyph()
+		 * @param character the character code, 0 when not identified
+		 */
+		 nap::uint getGlyphIndex(nap::uint character) const;
+
+		/**
+		 * Use this to acquire a handle to a glyph associated with a specific index 
+		 * The handle can be copied, the Glyph itself can not!
+		 * @param index the index of the glyph inside the font
+		 * @return a glyph associated with a specific character, nullptr if not found
+		 */
+		Glyph* getGlyph(nap::uint index);
+
 	protected:
 		/**
 		 * Returns the handle to the free-type face managed by this resource
@@ -154,8 +180,11 @@ namespace nap
 		void* getFace() const;
 
 	private:
-		void* mFace = nullptr;							///< Handle to the free-type face object
-		void* mFreetypeLib = nullptr;					///< Handle to the free-type library
-		FontProperties mProperties = { -1, -1, "" };	///< Describes current font properties
+		void* mFace = nullptr;											///< Handle to the free-type face object
+		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
+		FontProperties mProperties = { -1, -1, "" };					///< Describes current font properties
+
+		using GlyphMap = std::unordered_map<uint, std::unique_ptr<Glyph>>;
+		GlyphMap mGlyphs;												///< All cached glyphs
 	};
 }

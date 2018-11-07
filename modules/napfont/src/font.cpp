@@ -6,6 +6,7 @@
 #include <nap/logger.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_GLYPH_H
 
 RTTI_BEGIN_STRUCT(nap::FontProperties)
 	RTTI_VALUE_CONSTRUCTOR(int, int, const std::string&)
@@ -144,7 +145,7 @@ namespace nap
 
 		// Store properties
 		mProperties = properties;
-
+		
 		/*
 		FT_Load_Glyph(face, 0, FT_LOAD_DEFAULT);
 		FT_Bitmap bitmap = face->glyph->bitmap;
@@ -179,10 +180,14 @@ namespace nap
 
 	FontInstance::~FontInstance()
 	{
-		mFreetypeLib = nullptr;
+		// Remove all cached glyphs
+		mGlyphs.clear();
+
+		// Free type face
 		if(isValid())
 			FT_Done_Face(toFreetypeFace(mFace));
 		mFace = nullptr;
+		mFreetypeLib = nullptr;
 	}
 
 
@@ -191,4 +196,37 @@ namespace nap
 		return mProperties;
 	}
 
+
+	nap::uint FontInstance::getGlyphIndex(nap::uint charCode) const
+	{
+		assert(isValid());
+		return FT_Get_Char_Index(toFreetypeFace(mFace), static_cast<FT_ULong>(charCode));
+	}
+
+
+	nap::Glyph* nap::FontInstance::getGlyph(nap::uint index)
+	{
+		assert(isValid());
+
+		// Try to find a cached Glyph
+		auto it = mGlyphs.find(index);
+		if (it != mGlyphs.end())
+			return it->second.get();
+
+		// Load a new glyph
+		FT_Face face = toFreetypeFace(mFace);
+		if (FT_Load_Glyph(face, index, FT_LOAD_DEFAULT) > 0)
+			return nullptr;
+
+		// Copy handle
+		FT_Glyph  new_glyph;
+		if (FT_Get_Glyph(face->glyph, &new_glyph) > 0)
+			return nullptr;
+
+		// Add to map
+		Glyph* ptr = new Glyph(new_glyph, index);
+		std::unique_ptr<Glyph> rglyph(ptr);
+		mGlyphs.insert(std::make_pair(index, std::move(rglyph)));
+		return ptr;
+	}
 }

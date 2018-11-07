@@ -1,0 +1,88 @@
+#pragma once
+
+#include <nap/numeric.h>
+#include <rtti/typeinfo.h>
+
+namespace nap
+{
+	class FontInstance;
+
+	/**
+	 * Represents a symbol (character) in a font
+	 * This class wraps and manages 1 free-type Glyph character
+	 * The Glyph is destroyed when this object is destructed
+	 */
+	class NAPAPI Glyph
+	{
+		friend FontInstance;
+		RTTI_ENABLE()
+	public:
+		
+		// Default construction is not allowed
+		Glyph() = delete;
+
+		// Copy is not allowed
+		Glyph(const Glyph& other) = delete;
+		Glyph& operator=(const Glyph&) = delete;
+
+		/**
+		 * Destructor, unloads and destroys the glyph if present
+		 */
+		virtual ~Glyph();
+
+		/**
+		 * @return the index of the Glyph inside the font
+		 */
+		uint getIndex() const			{ return mIndex; }
+
+		/**
+		 * @return if the Glyph represents a valid symbol / character
+		 */
+		bool isValid();
+
+	protected:
+		/**
+		 * Only a font instance can create a glyph
+		 * @param handle to the glyph in memory, should be of type FT_Glyph
+		 * @param index the index of the glyph in the type face
+		 */
+		Glyph(void* slot, uint index);
+
+		/**
+		 * Move constructor, can only be invoked by the font instance
+		 * Ensures the other glyph is emptied, ie: has no handle and an invalid index
+		 */
+		Glyph(Glyph&& other);
+
+		/**
+		 * Move assignment operator, can only be invoked by the font instance
+		 * Ensures the other glyph is emptied, ie: has no handle and an invalid index
+		 */
+		Glyph& operator=(Glyph&& other);
+
+	private:
+		void*	mSlot = nullptr;		///< Handle to the Glyph in memory
+		uint	mIndex = 0;				///< Index of the Glyph inside the font
+	};
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Hashes
+//////////////////////////////////////////////////////////////////////////
+
+namespace std
+{
+	/**
+	 * Enables the use of the glyph inside a hash map
+	 */
+	template <>
+	struct hash<nap::Glyph>
+	{
+		size_t operator()(const nap::Glyph& v) const
+		{
+			return std::hash<nap::uint>()(v.getIndex());
+		}
+	};
+}
+
