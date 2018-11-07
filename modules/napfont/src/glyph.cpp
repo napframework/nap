@@ -27,27 +27,6 @@ namespace nap
 
 
 	/**
-	 * Move constructor	
-	 */
-	Glyph::Glyph(Glyph&& other)
-	{
-		mIndex = std::exchange(other.mIndex, 0);
-		mSlot  = std::exchange(other.mSlot, nullptr);
-	}
-
-
-	/**
-	 *	Move assignment operator
-	 */
-	nap::Glyph& Glyph::operator=(Glyph&& other)
-	{
-		mIndex = std::exchange(other.mIndex, 0);
-		mSlot  = std::exchange(other.mSlot, nullptr);
-		return *this;
-	}
-
-
-	/**
 	 * Destructor
 	 */
 	Glyph::~Glyph()

@@ -52,7 +52,7 @@ namespace nap
 		ResourcePtr<nap::Font> mFont = mResourceManager->findObject("Font");
 		for (int i = 0; i < 128; i++)
 		{
-			Glyph* glyph = mFont->getFontInstance().getGlyph(i);
+			Glyph* glyph = mFont->getFontInstance().getOrCreateGlyph<Glyph>(i);
 		}
 
 		return true;

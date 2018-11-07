@@ -204,29 +204,20 @@ namespace nap
 	}
 
 
-	nap::Glyph* nap::FontInstance::getGlyph(nap::uint index)
+	bool FontInstance::loadGlyph(uint index)
 	{
-		assert(isValid());
-
-		// Try to find a cached Glyph
-		auto it = mGlyphs.find(index);
-		if (it != mGlyphs.end())
-			return it->second.get();
-
-		// Load a new glyph
-		FT_Face face = toFreetypeFace(mFace);
-		if (FT_Load_Glyph(face, index, FT_LOAD_DEFAULT) > 0)
-			return nullptr;
-
-		// Copy handle
-		FT_Glyph  new_glyph;
-		if (FT_Get_Glyph(face->glyph, &new_glyph) > 0)
-			return nullptr;
-
-		// Add to map
-		Glyph* ptr = new Glyph(new_glyph, index);
-		std::unique_ptr<Glyph> rglyph(ptr);
-		mGlyphs.insert(std::make_pair(index, std::move(rglyph)));
-		return ptr;
+		if (FT_Load_Glyph(toFreetypeFace(mFace), index, FT_LOAD_DEFAULT) > 0)
+			return false;
+		return true;
 	}
+
+
+	void* nap::FontInstance::getGlyph()
+	{
+		FT_Glyph  new_glyph;
+		if (FT_Get_Glyph(toFreetypeFace(mFace)->glyph, &new_glyph) > 0)
+			return nullptr;
+		return new_glyph;
+	}
+
 }

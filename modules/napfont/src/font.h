@@ -164,12 +164,17 @@ namespace nap
 		 nap::uint getGlyphIndex(nap::uint character) const;
 
 		/**
-		 * Use this to acquire a handle to a glyph associated with a specific index 
-		 * The handle can be copied, the Glyph itself can not!
-		 * @param index the index of the glyph inside the font
-		 * @return a glyph associated with a specific character, nullptr if not found
+		 * Use this to acquire a handle to a glyph of type T that is associated with a specific index.
+		 * The Glyph can't be copied and is owned by this font.
+		 * When the Glyph isn't present it is created and initialized afterwards.
+		 * Use getGlyphIndex() to find the index of a specific character.
+		 * T must be of type Glyph. The font does not handle interleaved Glyph types!
+		 * This means that you cannot associated 2 different types of Glyphs with the same index.
+		 * @param index the index of the glyph inside the font.
+		 * @return a glyph associated with a specific character, nullptr if retrieval fails.
 		 */
-		Glyph* getGlyph(nap::uint index);
+		template<typename T>
+		T* getOrCreateGlyph(nap::uint index);
 
 	protected:
 		/**
@@ -180,6 +185,20 @@ namespace nap
 		void* getFace() const;
 
 	private:
+
+		/**
+		 * Load a glyph into the glyph slot of this font.
+		 * @param the index of the glyph inside the font
+		 * @return if a new glyph is loaded correctly
+		 */
+		bool loadGlyph(uint index);
+
+		/**
+		 * Get a copy of the currently loaded glyph, ready for caching
+		 * @return handle to the copied glyph in memory, nullptr on error
+		 */
+		void* getGlyph();
+		
 		void* mFace = nullptr;											///< Handle to the free-type face object
 		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
 		FontProperties mProperties = { -1, -1, "" };					///< Describes current font properties
@@ -187,4 +206,39 @@ namespace nap
 		using GlyphMap = std::unordered_map<uint, std::unique_ptr<Glyph>>;
 		GlyphMap mGlyphs;												///< All cached glyphs
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	T* nap::FontInstance::getOrCreateGlyph(nap::uint index)
+	{
+		assert(isValid());
+		assert(RTTI_OF(T).is_derived_from(RTTI_OF(Glyph)));
+
+		// Try to find a cached Glyph
+		auto it = mGlyphs.find(index);
+		if (it != mGlyphs.end())
+		{
+			T* c_glyph = rtti_cast<T>(it->second.get());
+			assert(c_glyph != nullptr);
+			return c_glyph;
+		}
+
+		// Load a new glyph
+		if (!loadGlyph(index))
+			return nullptr;
+
+		// Copy handle
+		void* glyph_handle = getGlyph();
+		if (glyph_handle == nullptr)
+			return nullptr;
+
+		// Add to map
+		T* ptr = new T(glyph_handle, index);
+		mGlyphs.insert(std::make_pair(index, std::move(std::unique_ptr<T>(ptr))));
+		return ptr;
+	}
 }
