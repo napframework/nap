@@ -102,12 +102,11 @@ namespace nap
 	/**
 	 * Runtime version of a font that serves characters.
 	 * Internally the font caches all the requested characters.
-	 * Allows for dynamically changing font size and font type.
 	 * The instance is created by a Font on initialization.
 	 * Use the getGlyphIndex() and getOrCreateGlyph() functions to fetch characters.
 	 * All the characters (glyphs) are managed and therefore owned by this font.
 	 * It is possible to create a font instance dynamically at run-time.
-	 * When you change the font size or font itself the cache is automatically cleared
+	 * When you change font properties the cache is automatically cleared
 	 */
 	class NAPAPI FontInstance final
 	{
