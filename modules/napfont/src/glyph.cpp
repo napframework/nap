@@ -8,22 +8,18 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Glyph)
 RTTI_END_CLASS
 
-/**
- * Converts a void pointer into a free type glyph object
- */
-inline static FT_Glyph toFreeTypeGlyph(void* handle)
-{
-	return reinterpret_cast<FT_Glyph>(handle);
-}
-
 
 namespace nap
 {
 	/**
 	 * Constructor
 	 */
-	Glyph::Glyph(void* slot, uint index) : mSlot(slot),
-		mIndex(index)  { }
+	Glyph::Glyph(void* slot, uint index) : mHandle(slot),
+		mIndex(index)  
+	{
+		mAdvance.x = reinterpret_cast<FT_Glyph>(mHandle)->advance.x >> 16;
+		mAdvance.y = reinterpret_cast<FT_Glyph>(mHandle)->advance.y >> 16;
+	}
 
 
 	/**
@@ -31,13 +27,13 @@ namespace nap
 	 */
 	Glyph::~Glyph()
 	{
-		assert(mSlot != nullptr);
-		FT_Done_Glyph(toFreeTypeGlyph(mSlot));
+		assert(mHandle != nullptr);
+		FT_Done_Glyph(reinterpret_cast<FT_Glyph>(mHandle));
 	}
 
 
 	bool Glyph::isValid()
 	{
-		return mSlot != nullptr;
+		return mHandle != nullptr;
 	}
 }

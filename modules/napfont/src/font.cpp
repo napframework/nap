@@ -223,4 +223,10 @@ namespace nap
 		mGlyphs.clear();
 		mGlyphs.reserve(toFreetypeFace(mFace)->num_glyphs);
 	}
+
+
+	int FontInstance::getCount()
+	{
+		return mFace != nullptr ? toFreetypeFace(mFace)->num_glyphs : -1;
+	}
 }
