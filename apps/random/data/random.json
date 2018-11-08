@@ -1196,13 +1196,13 @@
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D",
                     "Name": "uTextureOne",
-                    "Texture": "NoneColorTexture"
+                    "Texture": "OffColorTexture"
                 },
                 {
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D_2",
                     "Name": "uTextureTwo",
-                    "Texture": "NoneColorTexture"
+                    "Texture": "OffColorTexture"
                 },
                 {
                     "Type": "nap::UniformFloat",
@@ -1534,7 +1534,7 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "NoneColorTexture",
+            "mID": "OffColorTexture",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",

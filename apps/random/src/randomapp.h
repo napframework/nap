@@ -27,7 +27,7 @@
 
 namespace nap
 {
-	enum class LightingModes { None, Sun, Video, Static };
+	enum class LightingModes { Off, Sun, Video, Static };
 
 	class RandomApp : public App
 	{
@@ -84,7 +84,7 @@ namespace nap
 		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
 
 		// Texture Objects
-		rtti::ObjectPtr<RenderTexture2D>					mNoneColorTexture = nullptr;
+		rtti::ObjectPtr<RenderTexture2D>					mOffColorTexture = nullptr;
 		rtti::ObjectPtr<RenderTexture2D>					mSunColorTexture = nullptr;
 		rtti::ObjectPtr<RenderTexture2D>					mVideoColorTexture = nullptr;
 		rtti::ObjectPtr<RenderTexture2D>					mStaticColorTexture = nullptr;
@@ -109,9 +109,9 @@ namespace nap
 		glm::ivec2 windowSize;
 
 		// Lighting Modes
-		const char*											mLightingModes[4] = { "None", "Sun", "Video", "Static" };
+		const char*											mLightingModes[4] = { "Off", "Sun", "Video", "Static" };
 		int													mLightingModeInt = 0;
-		LightingModes										mLightingModeEnum = LightingModes::None;
+		LightingModes										mLightingModeEnum = LightingModes::Off;
 		LightingModes										mOldLightingModeEnum;
 
 		/**

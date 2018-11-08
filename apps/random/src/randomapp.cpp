@@ -53,7 +53,7 @@ namespace nap
 		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
 
 		// Look for textures 
-		mNoneColorTexture    = mResourceManager->findObject("NoneColorTexture");
+		mOffColorTexture     = mResourceManager->findObject("OffColorTexture");
 		mSunColorTexture     = mResourceManager->findObject("SunColorTexture");
 		mVideoColorTexture   = mResourceManager->findObject("VideoColorTexture");
 		mStaticColorTexture  = mResourceManager->findObject("StaticColorTexture");
@@ -165,7 +165,7 @@ namespace nap
 	void RandomApp::resetOldLightingMode()
 	{
 		// reset the old lighting mode so we don't render unnecessarily
-		mOldLightingModeEnum = LightingModes::None;
+		mOldLightingModeEnum = LightingModes::Off;
 	}
 
 
@@ -180,7 +180,7 @@ namespace nap
 		case LightingModes::Static:
 			return *mStaticColorTexture;
 		default:
-			return *mNoneColorTexture;
+			return *mOffColorTexture;
 		}
 	}
 
