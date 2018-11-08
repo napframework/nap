@@ -8,6 +8,7 @@
 #include <rtti/factory.h>
 #include <unordered_map>
 #include <utility>
+#include <utility/errorstate.h>
 
 // Forward Declares
 namespace nap
@@ -175,10 +176,17 @@ namespace nap
 		 * T must be of type Glyph. The font does not handle interleaved Glyph types!
 		 * This means that you cannot associated 2 different types of Glyphs with the same index.
 		 * @param index the index of the glyph inside the font.
+		 * @param errorCode contains the error if the glyph could not be created or fetched
 		 * @return a glyph associated with a specific character, nullptr if retrieval fails.
 		 */
 		template<typename T>
-		T* getOrCreateGlyph(nap::uint index);
+		T* getOrCreateGlyph(nap::uint index, utility::ErrorState& errorCode);
+
+		/**
+		 * Returns the number of glyphs in this font, -1 when the font hasn't been created yet
+		 * @return the number of glyphs associated with this font
+		 */
+		int getCount();
 
 	protected:
 		/**
@@ -222,7 +230,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	T* nap::FontInstance::getOrCreateGlyph(nap::uint index)
+	T* nap::FontInstance::getOrCreateGlyph(nap::uint index, utility::ErrorState& errorCode)
 	{
 		assert(isValid());
 		assert(RTTI_OF(T).is_derived_from(RTTI_OF(Glyph)));
@@ -237,17 +245,24 @@ namespace nap
 		}
 
 		// Load a new glyph
-		if (!loadGlyph(index))
+		if (!errorCode.check(loadGlyph(index), "unable to load glyph: %d into memory", index))
 			return nullptr;
 
 		// Copy handle
 		void* glyph_handle = getGlyph();
-		if (glyph_handle == nullptr)
+		if (!errorCode.check(glyph_handle != nullptr, "unable to get handle to glyph: %d", index))
 			return nullptr;
 
-		// Add to map
+		// Create new glyph
 		T* ptr = new T(glyph_handle, index);
-		mGlyphs.emplace(std::make_pair(index, std::move(std::unique_ptr<T>(ptr))));
+		std::unique_ptr<T> uptr(ptr);
+
+		// Initialize, when initialization fails the uptr is destroyed automatically
+		if (!uptr->init(errorCode))
+			return nullptr;
+
+		// Store
+		mGlyphs.emplace(std::make_pair(index, std::move(uptr)));
 		return ptr;
 	}
 }

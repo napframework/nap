@@ -134,7 +134,7 @@
             "mID": "Font",
             "Properties": {
                 "Font": "fonts/OpenSans-Regular.ttf",
-                "Size": 12,
+                "Size": 64,
                 "DPI": 96
             }
         },

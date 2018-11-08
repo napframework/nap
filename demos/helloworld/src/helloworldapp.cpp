@@ -50,10 +50,16 @@ namespace nap
 		mCameraEntity = scene->findEntity("Camera");
 		mWorldMesh = mResourceManager->findObject("WorldMesh");
 
-		ResourcePtr<nap::Font> mFont = mResourceManager->findObject("Font");
-		for (int i = 0; i < 128; i++)
+		mFont = mResourceManager->findObject("Font");
+
+		std::string text = "hellothereWorld";
+		for (int i = 0; i < mFont->getFontInstance().getCount(); i++)
 		{
-			RenderableGlyph* glyph = mFont->getFontInstance().getOrCreateGlyph<RenderableGlyph>(i);
+			RenderableGlyph* glyph = mFont->getFontInstance().getOrCreateGlyph<RenderableGlyph>(i, error);
+			if (glyph == nullptr)
+			{
+				std::cout << error.toString().c_str() << "\n";
+			}
 		}
 
 		return true;
@@ -125,6 +131,13 @@ namespace nap
 		// Find the world and add as an object to render
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
 		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		
+		nap::UniformTexture2D& world_tex = renderable_world.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("inWorldTexture");
+		uint index = mFont->getFontInstance().getGlyphIndex('R');
+		utility::ErrorState error;
+		RenderableGlyph* glyph = mFont->getFontInstance().getOrCreateGlyph<RenderableGlyph>(index, error);
+		world_tex.setTexture(glyph->getTexture());
+		
 		components_to_render.emplace_back(&renderable_world);
 
 		// Find the camera
