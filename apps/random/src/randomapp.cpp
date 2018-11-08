@@ -78,6 +78,10 @@ namespace nap
 		mOrbit = std::make_unique<RandomOrbit>(*this);
 		mShaders = std::make_unique<RandomShaders>(*this);
 
+		// Transition from black to sun mode when the app starts
+		mLightingModeInt = static_cast<int>(LightingModes::Sun);
+		updateLightingMode();
+
 		return true;
 	}
 
