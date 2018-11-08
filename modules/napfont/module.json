@@ -1,6 +1,6 @@
 {
     "dependencies": [
         "mod_napmath",
-        "mod_naprender"
+        "napcore"
     ]
 }
