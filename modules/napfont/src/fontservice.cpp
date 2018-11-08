@@ -3,7 +3,6 @@
 #include "font.h"
 
 // External Includes
-#include <renderservice.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -48,12 +47,6 @@ namespace nap
 	void FontService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<FontObjectCreator>(*this));
-	}
-
-
-	void FontService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
-	{
-		dependencies.emplace_back(RTTI_OF(nap::RenderService));
 	}
 
 

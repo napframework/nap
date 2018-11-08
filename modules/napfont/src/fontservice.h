@@ -44,11 +44,6 @@ namespace nap
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 		/**
-		 * This service depends on the render service for correct order of initialization
-		 */
-		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
-
-		/**
 		 * Returns the handle to the free-type library, only accessible by resources in this module
 		 * Represents a FT_Library object
 		 * @return the handle to the free-type library
