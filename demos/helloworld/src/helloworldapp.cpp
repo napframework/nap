@@ -13,6 +13,7 @@
 #include <triangleiterator.h>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <renderableglyph.h>
 #include <font.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
@@ -52,7 +53,7 @@ namespace nap
 		ResourcePtr<nap::Font> mFont = mResourceManager->findObject("Font");
 		for (int i = 0; i < 128; i++)
 		{
-			Glyph* glyph = mFont->getFontInstance().getOrCreateGlyph<Glyph>(i);
+			RenderableGlyph* glyph = mFont->getFontInstance().getOrCreateGlyph<RenderableGlyph>(i);
 		}
 
 		return true;

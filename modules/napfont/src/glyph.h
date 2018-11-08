@@ -22,8 +22,8 @@ namespace nap
 		Glyph() = delete;
 
 		/**
-		* Destructor, unloads and destroys the glyph if present
-		*/
+		 * Destructor, unloads and destroys the glyph if present
+		 */
 		virtual ~Glyph();
 
 		// Copy is not allowed
@@ -48,7 +48,7 @@ namespace nap
 		/**
 		 * Only a font instance can create a glyph
 		 * @param handle to the glyph in memory, should be of type FT_Glyph
-		 * @param index the index of the glyph in the type face
+		 * @param index the index of the glyph in the font
 		 */
 		Glyph(void* slot, uint index);
 
