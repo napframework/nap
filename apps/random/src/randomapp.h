@@ -80,12 +80,14 @@ namespace nap
 		rtti::ObjectPtr<RenderWindow>						mRenderWindow = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mSunRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mVideoRenderTarget = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mStaticRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
 
 		// Texture Objects
 		rtti::ObjectPtr<RenderTexture2D>					mNoneColorTexture = nullptr;
 		rtti::ObjectPtr<RenderTexture2D>					mSunColorTexture = nullptr;
 		rtti::ObjectPtr<RenderTexture2D>					mVideoColorTexture = nullptr;
+		rtti::ObjectPtr<RenderTexture2D>					mStaticColorTexture = nullptr;
 
 		// Scene Objects
 		rtti::ObjectPtr<Scene>								mScene = nullptr;
@@ -94,6 +96,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance>						mSunClouds = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mSunGlare = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mVideo = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mStatic = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mCombination = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
 
@@ -136,6 +139,11 @@ namespace nap
 		 *	Renders the video into it's back-buffer
 		 */
 		void renderVideo(OrthoCameraComponentInstance& orthoCamera);
+
+		/**
+		*	Renders the static into it's back-buffer
+		*/
+		void renderStatic(OrthoCameraComponentInstance& orthoCamera);
 
 		/**
 		 *	Renders the combination into it's back-buffer

@@ -45,6 +45,8 @@ namespace nap
 		float*		pSunGlareInnerSize = NULL;
 		float*		pSunGlareStretch = NULL;
 
+		float*		pStaticWarmth = NULL;
+
 		float		mSunCloudsNoiseSpeed = 0.05f;
 		const float	mSunCloudsNoiseSpeedMax = 0.25f;
 		float		mSunCloudsWindSpeed = 0.1f;

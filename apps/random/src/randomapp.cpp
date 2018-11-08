@@ -49,12 +49,14 @@ namespace nap
 		// Look for render targets, used to render into cloud and video textures
 		mSunRenderTarget     = mResourceManager->findObject("SunRenderTarget");
 		mVideoRenderTarget   = mResourceManager->findObject("VideoRenderTarget");
+		mStaticRenderTarget  = mResourceManager->findObject("StaticRenderTarget");
 		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
 
 		// Look for textures 
-		mNoneColorTexture = mResourceManager->findObject("NoneColorTexture");
-		mSunColorTexture   = mResourceManager->findObject("SunColorTexture");
-		mVideoColorTexture = mResourceManager->findObject("VideoColorTexture");
+		mNoneColorTexture    = mResourceManager->findObject("NoneColorTexture");
+		mSunColorTexture     = mResourceManager->findObject("SunColorTexture");
+		mVideoColorTexture   = mResourceManager->findObject("VideoColorTexture");
+		mStaticColorTexture  = mResourceManager->findObject("StaticColorTexture");
 
 		// All of our entities
 		mScene = mResourceManager->findObject<Scene>("Scene");
@@ -65,6 +67,7 @@ namespace nap
 		mOrthoCamera = mScene->findEntity("ProjectionCamera");
 		mLightRig = mScene->findEntity("LightRig");
 		mVideo = mScene->findEntity("Video");
+		mStatic = mScene->findEntity("Static");
 		mCombination = mScene->findEntity("Combination");
 
 		// Set render states
@@ -116,6 +119,8 @@ namespace nap
 			renderSun(ortho_cam);
 		if (mLightingModeEnum == LightingModes::Video || mOldLightingModeEnum == LightingModes::Video)
 			renderVideo(ortho_cam);
+		if (mLightingModeEnum == LightingModes::Static || mOldLightingModeEnum == LightingModes::Static)
+			renderStatic(ortho_cam);
 
 		// Render combination into back buffer
 		renderCombination(ortho_cam);
@@ -172,6 +177,8 @@ namespace nap
 			return *mSunColorTexture;
 		case LightingModes::Video:
 			return *mVideoColorTexture;
+		case LightingModes::Static:
+			return *mStaticColorTexture;
 		default:
 			return *mNoneColorTexture;
 		}
@@ -213,6 +220,19 @@ namespace nap
 
 		// Render video plane to video texture
 		mRenderService->renderObjects(mVideoRenderTarget->getTarget(), orthoCamera, components_to_render);
+	}
+
+
+	void RandomApp::renderStatic(OrthoCameraComponentInstance& orthoCamera)
+	{
+		mRenderService->clearRenderTarget(mStaticRenderTarget->getTarget());
+
+		// Find the static plane and render it to the back-buffer
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		components_to_render.emplace_back(&(mStatic->getComponent<nap::RenderableMeshComponentInstance>()));
+
+		// Render static plane to static texture
+		mRenderService->renderObjects(mStaticRenderTarget->getTarget(), orthoCamera, components_to_render);
 	}
 
 

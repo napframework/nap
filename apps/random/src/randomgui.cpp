@@ -110,6 +110,7 @@ namespace nap
 
 	void RandomGui::showStaticControls()
 	{
-
+		if (ImGui::CollapsingHeader("Static", ImGuiTreeNodeFlags_DefaultOpen))
+			ImGui::SliderFloat("Temperature", mApp.mShaders->pStaticWarmth, 0.0f, 1.0f);
 	}
 }

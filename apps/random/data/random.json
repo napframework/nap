@@ -786,6 +786,63 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "Static",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_18",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_14",
+                    "Mesh": "ProjectionMesh",
+                    "MaterialInstance": {
+                        "Material": "StaticMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_16",
+                                "Name": "uWarmth",
+                                "Value": 0.5
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "Sun",
             "Components": [],
             "Children": [
@@ -1205,6 +1262,27 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "StaticMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_2",
+                    "Name": "uWarmth",
+                    "Value": 0.0
+                }
+            ],
+            "Shader": "StaticShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "SunCloudsMaterial",
             "Uniforms": [
                 {
@@ -1390,6 +1468,18 @@
         },
         {
             "Type": "nap::RenderTarget",
+            "mID": "StaticRenderTarget",
+            "mColorTexture": "StaticColorTexture",
+            "mDepthTexture": "StaticDepthTexture",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
             "mID": "SunRenderTarget",
             "mColorTexture": "SunColorTexture",
             "mDepthTexture": "SunDepthTexture",
@@ -1456,6 +1546,36 @@
             "Width": 1024,
             "Height": 1024,
             "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "StaticColorTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "StaticDepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -1564,6 +1684,10 @@
                 {
                     "Entity": "Orbit",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "Static",
+                    "InstanceProperties": []
                 }
             ]
         },
@@ -1590,6 +1714,12 @@
             "mID": "OrbitShader",
             "mVertShader": "shaders/orbit.vert",
             "mFragShader": "shaders/orbit.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "StaticShader",
+            "mVertShader": "shaders/static.vert",
+            "mFragShader": "shaders/static.frag"
         },
         {
             "Type": "nap::Shader",
