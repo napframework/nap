@@ -76,4 +76,22 @@ namespace nap
 	{
 		return mStartEnd[0] - mProgress * (mStartEnd[0] - mStartEnd[1]);
 	}
+
+	float RandomOrbit::getProgressByTime()
+	{
+		utility::DateTime currentDateTime = utility::getCurrentDateTime();
+		int currentYear = currentDateTime.getYear();
+		int currentMonth = static_cast<int>(currentDateTime.getMonth()) + 1;
+		int currentDay = currentDateTime.getDayInTheMonth();
+		utility::SystemTimeStamp currentTime = currentDateTime.getTimeStamp();
+		utility::SystemTimeStamp startTime = utility::createTimestamp(currentYear, currentMonth, currentDay, mStartHour, 0);
+		utility::SystemTimeStamp endTime = utility::createTimestamp(currentYear, currentMonth, currentDay, mEndHour, 0);
+		if (currentTime <= startTime)
+			return 0.0f;
+		if (currentTime >= endTime)
+			return 1.0f;
+		utility::Seconds progress = std::chrono::duration_cast<utility::Seconds>(currentTime - startTime);
+		utility::Seconds range = std::chrono::duration_cast<utility::Seconds>(endTime - startTime);
+		return static_cast<float>(progress.count()) / static_cast<float>(range.count());
+	}
 }

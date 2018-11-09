@@ -27,6 +27,7 @@ namespace nap
 		*/
 		void update(double deltaTime);
 		void updateOrbit();
+		float getProgressByTime();
 
 		/**
 		* Add Renderable Components to provided vector
@@ -44,6 +45,9 @@ namespace nap
 		float		mCenter[2] = { -0.24f, -0.83f };
 		const float mCenterRange = 1.5f;
 		float		mStartEnd[2] = { 40.0f, 115.0f };
+		int			mStartHour = 9;
+		int			mEndHour = 18;
+		bool		mManualProgress = false;
 
 	private:
 		// Initialized Variables

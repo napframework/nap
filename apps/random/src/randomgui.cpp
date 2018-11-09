@@ -81,11 +81,27 @@ namespace nap
 		}
 		if (ImGui::CollapsingHeader("Glare", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			// if we change any properties on the orbit component, make sure
+			// we update its transform components and the sun-glare shader
 			bool updateOrbit = false;
 			updateOrbit = ImGui::DragFloat2("Orbit Center", mApp.mOrbit->mCenter, 0.001f, -mApp.mOrbit->mCenterRange, mApp.mOrbit->mCenterRange) || updateOrbit;
 			updateOrbit = ImGui::SliderFloat("Orbit Radius", &mApp.mOrbit->mRadius, mApp.mOrbit->mRadiusMin, mApp.mOrbit->mRadiusMax) || updateOrbit;
 			updateOrbit = ImGui::DragFloat2("Orbit Start / End", mApp.mOrbit->mStartEnd, 0.1f, 0.0f, 360.0f) || updateOrbit;
-			updateOrbit = ImGui::SliderFloat("Orbit Progress", &mApp.mOrbit->mProgress, 0.0f, 1.0f) || updateOrbit;
+			updateOrbit = ImGui::DragIntRange2("Orbit Hours", &mApp.mOrbit->mStartHour, &mApp.mOrbit->mEndHour, 0.2f, 0, 23) || updateOrbit;
+
+			ImGui::Checkbox("Manual Orbit Progression", &mApp.mOrbit->mManualProgress);
+			if (mApp.mOrbit->mManualProgress)
+			{
+				// if we manually control the orbit progression, update when we drag the slider
+				updateOrbit = ImGui::SliderFloat("Orbit Progress", &mApp.mOrbit->mProgress, 0.0f, 1.0f) || updateOrbit;
+			}
+			else
+			{
+				// otherwise, set the orbit progress by the current time and always update
+				mApp.mOrbit->mProgress = mApp.mOrbit->getProgressByTime();
+				ImGui::ProgressBar(mApp.mOrbit->mProgress, ImVec2(-1, 0), "Orbit Progress");
+				updateOrbit = true;
+			}
 			if (updateOrbit)
 			{
 				mApp.mOrbit->updateOrbit();
