@@ -31,7 +31,6 @@ namespace nap
 	const nap::ControlGroups::ControlGroup* ControlGroups::findGroup(int controlIndex) const
 	{
 		// Find group for index
-		const ControlGroup* found_group = nullptr;
 		for (const auto& group : mControlGroups)
 		{
 			// Check if index is present in this group
@@ -44,5 +43,6 @@ namespace nap
 			if (found_it != group.mControlGroupIndexes.end())
 				return &group;
 		}
+		return nullptr;
 	}
 }
