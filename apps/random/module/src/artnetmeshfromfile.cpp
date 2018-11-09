@@ -33,7 +33,9 @@ namespace nap
 
 		// Now check for the second color attribute
 		// The Red color represents the group, from 0 to 9 as float value 0 to 1
-		assert(mMeshInstance->findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(1)) != nullptr);
+		nap::VertexAttribute<glm::vec4>* index_colors = mMeshInstance->findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(1));
+		if (errorState.check(index_colors == nullptr, "unable to find second color attribute, used to control idividual groups"))
+			return false;
 
 		// Get position
 		mPositionAttribute = mMeshInstance->findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
@@ -71,6 +73,21 @@ namespace nap
 		mUniverseAttribute->setData(universe_data);
 		mSubnetAttribute->setData(subnet_data);
 
+
+		// Create index attribute and fill with bogus data
+		mIndexAttribute = &(mMeshInstance->getOrCreateAttribute<int>("index"));
+		std::vector<int> empty_index_data(index_colors->getCount(), 0);
+		mIndexAttribute->setData(empty_index_data);
+		std::vector<int>& index_data = mIndexAttribute->getData();
+
+		// Map color red back to index and store in index attribute
+		int index_count = 0;
+		for (const auto& index_color : index_colors->getData())
+		{
+			index_data[index_count] = math::min<int>(static_cast<int>(index_color.r * 9.0f), 9);
+			index_count++;
+		}
+
 		// Verify that our triangles all have the same channels as vertex attributes
 		// Also store all the available artnet addresses this mesh hosts
 		TriangleIterator triangle_iterator(*mMeshInstance);
@@ -92,6 +109,12 @@ namespace nap
 			if (subnet_data[triangle.firstIndex()] != subnet_data[triangle.secondIndex()] || subnet_data[triangle.secondIndex()] != subnet_data[triangle.thirdIndex()])
 			{
 				errorState.fail("mesh: %s triangle: %d has inconsistent art net subnet attribute", mPath.c_str(), triangle.getTriangleIndex());
+				return false;
+			}
+
+			if (index_data[triangle.firstIndex()] != index_data[triangle.secondIndex()] || index_data[triangle.secondIndex()] != index_data[triangle.thirdIndex()])
+			{
+				errorState.fail("mesh: %s triangle: %d has inconsistent index attribute", mPath.c_str(), triangle.getTriangleIndex());
 				return false;
 			}
 

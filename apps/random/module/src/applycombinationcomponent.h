@@ -1,8 +1,13 @@
 #pragma once
 
+// Local Includes
+#include "controlgroups.h"
+
+// External Includes
 #include <component.h>
 #include <bitmap.h>
 #include <artnetmeshfromfile.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -29,6 +34,7 @@ namespace nap
 		rtti::ObjectPtr<ArtnetMeshFromFile> mMesh = nullptr;	///< Property: 'Mesh' the mesh that the bitmap is applied to
 		float mBrightness = 1.0f;								///< Property: 'Brightness' Overall LED brightness
 		float mInfluence = 1.0f;								///< Property: 'EffectInfluence' Influence of combination effect on led brightness
+		ResourcePtr<ControlGroups> mControlGroups = nullptr;	///< Property: Pointer to the control groups
 	};
 
 
@@ -62,5 +68,7 @@ namespace nap
 	private:
 		ArtnetMeshFromFile* mMesh = nullptr;
 		Bitmap* mBitmap = nullptr;
+		ControlGroups* mControlGroups = nullptr;
+		std::unordered_map<int, const ControlGroups::ControlGroup*> mControlGroupCache;
 	};
 }

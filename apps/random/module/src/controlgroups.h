@@ -8,28 +8,37 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-
 		struct ControlGroup
 		{
 			ControlGroup() = default;
 
-			ControlGroup(const std::string& name, float brightness, std::vector<int> controlGroupIndexes) :
-				mName(name),
-				mBrightness(brightness),
-				mControlGroupIndexes(controlGroupIndexes) {}
-
-			std::string			mName;
-			float				mBrightness;
-			std::vector<int>	mControlGroupIndexes;
+			std::string			mName;						///< Property: 'Name' the name of the group
+			float				mBrightness;				///< Property: 'Brightness' the final brightness of the group
+			std::vector<int>	mControlGroupIndexes;		///< Property: 'ControlGroupIndexes' artnet group indices associated with this group
 		};
 
 		/**
-		* Creates and inits control group
-		*/
-		virtual bool init(utility::ErrorState& errorState);
+		 * Creates and inits control group
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<ControlGroup>	mControlGroups;
+		/**
+		 * @param index the index of the group you want to fetch
+		 * @return a group associated with a specific index
+		 */
+		const ControlGroup& getGroup(int index) const;
 
-	private:
+		/**
+		 *@return total number of control groups managed by this container
+		 */
+		int getCount() const								{ return mControlGroups.size(); }
+
+		/**
+		 * Finds a group with a specific control group index
+		 * @return the group associated with a s specific control group index, nullptr if not found
+		 */
+		const ControlGroup* findGroup(int controlIndex) const;
+
+		std::vector<ControlGroup>	mControlGroups;			////< Property: 'List of control groups'
 	};
 }

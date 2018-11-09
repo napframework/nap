@@ -455,7 +455,8 @@
                     "Bitmap": "CombinationBitmap",
                     "Mesh": "LightRigMesh",
                     "Influence": 1.0,
-                    "Brightness": 1.0
+                    "Brightness": 1.0,
+                    "ControlGroups": "ControlGroups"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
