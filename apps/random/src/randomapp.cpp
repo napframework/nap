@@ -164,7 +164,8 @@ namespace nap
 
 	void RandomApp::resetOldLightingMode()
 	{
-		// reset the old lighting mode so we don't render unnecessarily
+		// reset the old lighting mode so we don't render
+		// the old mode unnecessarily after the crossfade
 		mOldLightingModeEnum = LightingModes::Off;
 	}
 
