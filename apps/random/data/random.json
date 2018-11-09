@@ -91,6 +91,44 @@
             "Segments": 100
         },
         {
+            "Type": "nap::ControlGroups",
+            "mID": "ControlGroups",
+            "ControlGroups": [
+                {
+                    "Name": "Office front",
+                    "Brightness": 1.0,
+                    "ControlGroupIndexes": [
+                        0,
+                        1
+                    ]
+                },
+                {
+                    "Name": "Office middle",
+                    "Brightness": 1.0,
+                    "ControlGroupIndexes": [
+                        2,
+                        7
+                    ]
+                },
+                {
+                    "Name": "Office back",
+                    "Brightness": 1.0,
+                    "ControlGroupIndexes": [
+                        3,
+                        5,
+                        6
+                    ]
+                },
+                {
+                    "Name": "Meeting room",
+                    "Brightness": 1.0,
+                    "ControlGroupIndexes": [
+                        4
+                    ]
+                }
+            ]
+        },
+        {
             "Type": "nap::Entity",
             "mID": "Blueprint",
             "Components": [
