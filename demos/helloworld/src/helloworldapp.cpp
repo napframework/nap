@@ -4,6 +4,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
+#include <renderabletextcomponent.h>
 #include <orthocameracomponent.h>
 #include <mathutils.h>
 #include <scene.h>
@@ -48,19 +49,11 @@ namespace nap
 
 		mWorldEntity = scene->findEntity("World");
 		mCameraEntity = scene->findEntity("Camera");
+		mTextEntity = scene->findEntity("Text");
+		mTextCam = scene->findEntity("TextCam");
 		mWorldMesh = mResourceManager->findObject("WorldMesh");
 
 		mFont = mResourceManager->findObject("Font");
-
-		std::string text = "hellothereWorld";
-		for (int i = 0; i < mFont->getFontInstance().getCount(); i++)
-		{
-			RenderableGlyph* glyph = mFont->getFontInstance().getOrCreateGlyph<RenderableGlyph>(i, error);
-			if (glyph == nullptr)
-			{
-				std::cout << error.toString().c_str() << "\n";
-			}
-		}
 
 		return true;
 	}
@@ -132,12 +125,15 @@ namespace nap
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
 		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		
+		/*
+		// Font texture test
 		nap::UniformTexture2D& world_tex = renderable_world.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("inWorldTexture");
 		uint index = mFont->getFontInstance().getGlyphIndex('R');
 		utility::ErrorState error;
 		RenderableGlyph* glyph = mFont->getFontInstance().getOrCreateGlyph<RenderableGlyph>(index, error);
 		world_tex.setTexture(glyph->getTexture());
-		
+		*/
+
 		components_to_render.emplace_back(&renderable_world);
 
 		// Find the camera
@@ -145,6 +141,13 @@ namespace nap
 
 		// Render the world with the right camera directly to screen
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
+
+		// Render text
+		nap::OrthoCameraComponentInstance& text_cam = mTextCam->getComponent<nap::OrthoCameraComponentInstance>();
+		components_to_render.clear();
+		RenderableTextComponentInstance& render_text = mTextEntity->getComponent<nap::RenderableTextComponentInstance>();
+		components_to_render.emplace_back(&render_text);
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), text_cam, components_to_render);
 
 		// Draw our gui
 		mGuiService->draw();

@@ -68,6 +68,90 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "Text",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableTextComponent",
+                    "mID": "nap::RenderableTextComponent",
+                    "Text": "I'm so excited, just can't hide it",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TextCam",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_4",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 100.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "World",
             "Components": [
                 {
@@ -133,7 +217,7 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Font": "fonts/OpenSans-Regular.ttf",
+                "Font": "fonts/arial.ttf",
                 "Size": 64,
                 "DPI": 96
             }
@@ -151,6 +235,26 @@
             "Usage": "Static",
             "ImagePath": "world_texture.png",
             "Compressed": false
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "FontMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "textColor",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                }
+            ],
+            "Shader": "FontShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",
@@ -222,8 +326,22 @@
                 {
                     "Entity": "Camera",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "Text",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "TextCam",
+                    "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "FontShader",
+            "mVertShader": "shaders/helloworld/font.vert",
+            "mFragShader": "shaders/helloworld/font.frag"
         },
         {
             "Type": "nap::Shader",

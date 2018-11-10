@@ -82,7 +82,9 @@ namespace nap
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance> mTextCam = nullptr;					//< Pointer to cam that renders text
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
+		ObjectPtr<EntityInstance> mTextEntity = nullptr;
 		ObjectPtr<SphereMesh> mWorldMesh = nullptr;
 		ObjectPtr<Font> mFont = nullptr;	
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color

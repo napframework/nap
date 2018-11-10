@@ -51,7 +51,7 @@ namespace nap
 	Font::~Font()			
 	{
 		// Reset to null, de-allocating the instance
-		mInstance.reset();
+		mInstance.reset(nullptr);
 		mService = nullptr;
 	}
 
@@ -116,20 +116,20 @@ namespace nap
 
 		// Open first face
 		auto fterror = FT_New_Face(toFreetypeLib(mFreetypeLib), properties.mFont.c_str(), 0, &face);
-		if (error.check(fterror == FT_Err_Unknown_File_Format, "unsupported font format"))
+		if (!error.check(fterror != FT_Err_Unknown_File_Format, "unsupported font format"))
 			return false;
 
 		// Other read error occurred
-		if (error.check(fterror != 0, "invalid font, file could not be read or opened"))
+		if (!error.check(fterror == 0, "invalid font, file could not be read or opened"))
 			return false;
 
 		// Make sure a default charmap is selected
-		if (error.check(face->charmap == nullptr, "no default unicode charmap associated with typeface"))
+		if (!error.check(face->charmap != nullptr, "no default unicode charmap associated with typeface"))
 			return false;
 
 		// Set character size
 		fterror = FT_Set_Char_Size(face, 0, properties.mSize * 64, properties.mDPI, properties.mDPI);
-		if (error.check(fterror > 0, "unsupported font size and resolution"))
+		if (!error.check(fterror == 0, "unsupported font size and resolution"))
 			return false;
 
 		// Remove previous typeface if present

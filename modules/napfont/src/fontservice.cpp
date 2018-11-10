@@ -29,7 +29,7 @@ namespace nap
 	{
 		// Init library
 		FT_Library lib;
-		if (error.check(FT_Init_FreeType(&lib) != 0, "Unable to initialize FreeType Library"))
+		if (!error.check(FT_Init_FreeType(&lib) == 0, "Unable to initialize FreeType Library"))
 			return false;
 		
 		// Copy over handle
