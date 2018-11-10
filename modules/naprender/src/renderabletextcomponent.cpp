@@ -1,13 +1,21 @@
+// Local Includes
 #include "renderabletextcomponent.h"
+#include "materialutils.h"
+#include "renderableglyph.h"
 
 // External Includes
 #include <entity.h>
 #include <transformcomponent.h>
+#include <nap/core.h>
+#include <renderservice.h>
+#include <nap/logger.h>
+#include <ndrawutils.h>
 
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableTextComponent)
 	RTTI_PROPERTY("Text",				&nap::RenderableTextComponent::mText,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Font",				&nap::RenderableTextComponent::mFont,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GlyphUniform",		&nap::RenderableTextComponent::mGlyphUniform,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableTextComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -29,6 +37,62 @@ namespace nap
 
 	bool RenderableTextComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Get resource
+		RenderableTextComponent* resource = getComponent<RenderableTextComponent>();
+		
+		// Extract font
+		mFont = &(resource->mFont->getFontInstance());
+
+		// Extract text
+		mText = resource->mText;
+
+		// Extract glyph uniform (texture slot in shader)
+		mGlyphUniform = resource->mGlyphUniform;
+
+		// Fetch transform
+		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
+		assert(mTransform != nullptr);
+
+		// Create material instance
+		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
+			return false;
+		
+		// Ensure the uniform to set the glyph is available on the source material
+		nap::Uniform* glyph_uniform = mMaterialInstance.getMaterial()->findUniform(mGlyphUniform);
+		if (!errorState.check(glyph_uniform != nullptr, 
+			"%s: Unable to bind font character, can't find texture uniform in shader: %s with name: %s", this->mID.c_str(), 
+			mMaterialInstance.getMaterial()->mID.c_str(), mGlyphUniform.c_str() ))
+			return false;
+
+		// Setup the plane
+		mPlane.mRows	= 1;
+		mPlane.mColumns = 1;
+		if (!mPlane.setup(errorState))
+			return false;
+
+		// Make sure we can write to it often 
+		mPlane.getMeshInstance().setUsage(EMeshDataUsage::DynamicWrite);
+
+		// Initilize it 
+		if (!mPlane.init(errorState))
+			return false;
+
+		// Get position attribute buffer, we will update the vertex positions of this plane
+		mPositionAttr = mPlane.getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		if (!errorState.check(mPositionAttr != nullptr, "%s: unable to get plane vertex attribute handle", mID.c_str()))
+			return false;
+
+		// Create a render-able mesh based on our material and plane
+		// Note that this mesh represents a valid binding between mesh and material, when this succeeds the characters can be rendered
+		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
+		VAOHandle handle = render_service->acquireVertexArrayObject(*(mMaterialInstance.getMaterial()), mPlane, errorState);
+
+		if (!errorState.check(handle.isValid(), "Failed to acquire VAO for RenderableTextComponent %s", getComponent()->mID.c_str()))
+			return false;
+
+		// Construct render-able mesh (TODO: Make a factory or something similar to create and verify render-able meshes!
+		mRenderableMesh = RenderableMesh(mPlane, mMaterialInstance, handle);
+
 		return true;
 	}
 
@@ -39,9 +103,129 @@ namespace nap
 	}
 
 
-	void RenderableTextComponentInstance::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableTextComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
+		// Ensure we can render the mesh / material combo
+		if (!mRenderableMesh.isValid())
+		{
+			assert(false);
+			return;
+		}
 
+		// Get global transform
+		const glm::mat4x4& model_matrix = mTransform->getGlobalTransform();
+
+		// Get material to bind
+		Material* comp_mat = mMaterialInstance.getMaterial();
+		comp_mat->bind();
+
+		// Set uniform variables
+		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
+		if (projectionUniform != nullptr)
+			projectionUniform->setValue(projectionMatrix);
+
+		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
+		if (viewUniform != nullptr)
+			viewUniform->setValue(viewMatrix);
+
+		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
+		if (modelUniform != nullptr)
+			modelUniform->setValue(model_matrix);
+
+		// Prepare blending
+		utility::setBlendMode(getMaterialInstance());
+
+		// Bind vertex array object
+		// The VAO handle works for all the registered render contexts
+		mRenderableMesh.mVAOHandle.get().bind();
+
+		// Get plane to draw
+		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
+
+		// Location of active letter
+		float x = 0.0f;
+		float y = 0.0f;
+
+		// Fetch uniform for setting character
+		UniformTexture2D* glyph_uniform = comp_mat->findUniform<UniformTexture2D>(mGlyphUniform);
+		assert(glyph_uniform != nullptr);
+
+		// Get vertex position data (that we update in the loop
+		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
+
+		// GPU mesh representation
+		const opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
+
+		// Handle to the glyph inside the loop
+		RenderableGlyph* render_glyph = nullptr;
+		utility::ErrorState error;
+
+		// Lines / Fill etc.
+		GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
+
+		// Fetch index buffer (holding drawing order
+		const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
+		GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
+
+		// Draw every letter in the text to screen
+		for (const auto& letter : mText)
+		{
+			// Fetch glyph
+			uint gindex  = mFont->getGlyphIndex(letter);
+			render_glyph = mFont->getOrCreateGlyph<RenderableGlyph>(gindex, error);
+			if (render_glyph == nullptr)
+			{
+				nap::Logger::warn("%s: invalid character: %s, %s", mID.c_str(), letter, error.toString().c_str());
+				continue;
+			}
+
+			// Get width and height of character to draw
+			float w = render_glyph->getSize().x;
+			float h = render_glyph->getSize().y;
+
+			// Compute x and y position
+			float xpos = x + render_glyph->getOffsetLeft();
+			float ypos = y - (h - render_glyph->getOffsetTop());
+
+			// Set vertex positions of plane
+			pos_data[0] = { xpos,		ypos,		0.0f };
+			pos_data[1] = { xpos + w,	ypos,		0.0f };
+			pos_data[2] = { xpos,		ypos + h,	0.0f };
+			pos_data[3] = { xpos + w,	ypos + h,	0.0f };
+
+			// Push vertex positions to GPU
+			mesh_instance.update(error);
+
+			// Set texture and push uniforms
+			glyph_uniform->setTexture(render_glyph->getTexture());
+			utility::pushUniforms(mMaterialInstance);
+
+			// Bind and draw all the arrays
+			index_buffer.bind();
+			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
+			index_buffer.unbind();
+
+			// Update x
+			x += render_glyph->getHorizontalAdvance();
+		}
+
+		// Unbind
+		index_buffer.unbind();
+		comp_mat->unbind();
+		mRenderableMesh.mVAOHandle.get().unbind();
+	}
+
+
+	const nap::FontInstance& RenderableTextComponentInstance::getFont() const
+	{
+		assert(mFont != nullptr);
+		return *mFont;
+	}
+
+
+	nap::MaterialInstance& RenderableTextComponentInstance::getMaterialInstance()
+	{
+		return mMaterialInstance;
 	}
 
 }

@@ -18,6 +18,14 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 	public:
 		/**
+		 * Creates and prepares the mesh but doesn't initialize it
+		 * Call this in derived classes that want to work with a grid before initialization
+		 * @param error contains the error code if setup fails
+		 * @return if setup succeeded
+		 */
+		bool setup(utility::ErrorState& error);
+
+		/**
 		 * Creates and initializes the plane as a mesh
 		 * @param errorState contains the error message if the mesh could not be created
 		 * @return if the mesh was successfully created and initialized
@@ -46,13 +54,7 @@ namespace nap
 		int			mColumns = 1;										///< Property: 'Columns' number of columns
 
 	protected:
-		/**
-		 * Creates and prepares the mesh but doesn't initialize it
-		 * Call this in derived classes that want to work with a grid before initialization
-		 * @param error contains the error code if setup fails
-		 * @return if setup succeeded
-		 */
-		bool setup(utility::ErrorState& error);
+
 
 	private:
 		std::unique_ptr<MeshInstance> mMeshInstance;

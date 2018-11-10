@@ -9,9 +9,10 @@ namespace nap
 {
 	// Forward Declares
 	class RenderableMeshComponentInstance;
+	class RenderableTextComponentInstance;
 
 	/**
-	 * Represents the coupling between a mesh and a material. This object can only be created by a RenderableMeshComponentInstance
+	 * Represents the coupling between a mesh and a material. This object can only be created by a RenderableComponent
 	 * This object manages a vertex array object handle that is issued by the render service. 
 	 */
 	class NAPAPI RenderableMesh final
@@ -47,6 +48,7 @@ namespace nap
 
 	private:
 		friend class RenderableMeshComponentInstance;
+		friend class RenderableTextComponentInstance;
 
 		/**
 		 * Constructor.
