@@ -2,7 +2,7 @@
 #include <QApplication>
 #include <QtWidgets/QPushButton>
 #include <napqt/curveeditor/standardcurve.h>
-#include <napqt/curveeditor/curvepanel.h>
+#include <napqt/curveeditor/curvewidget.h>
 
 #include "curveeditor/curveview.h"
 #include "timeline/timelinepanel.h"
@@ -212,7 +212,7 @@ private:
 	TimelinePanel mTimelinePanel;
 	Timeline mTimeline;
 	CurveView mCurveView;
-	CurvePanel mCurvePanel;
+	CurveWidget mCurvePanel;
 	DemoPanel mDemoPanel;
 };
 

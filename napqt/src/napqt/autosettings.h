@@ -51,17 +51,25 @@ namespace napqt
 			registerStorer(std::make_unique<T>());
 		}
 
+		/**
+		 * Exclude the specified widget instance from storing or restoring its settings
+		 * @param widget
+		 */
 		void exclude(QWidget* widget) {
 			mExclusions << widget;
 		}
 
+		/**
+		 * Register a WidgetStorer. Autosettings will automatically recognize and store/restore
+		 * the settings using the provided instance.
+		 */
+		void registerStorer(std::unique_ptr<WidgetStorerBase> s);
 	private:
 		AutoSettings();
 		AutoSettings(AutoSettings const&);
 		void operator=(AutoSettings const&);
 
 		void registerDefaults();
-		void registerStorer(std::unique_ptr<WidgetStorerBase> s);
 
 		void storeRecursive(QWidget& w, QSettings& s) const;
 		void restoreRecursive(QWidget& w, const QSettings& s) const;

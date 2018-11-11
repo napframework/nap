@@ -1,4 +1,4 @@
-#include "curvepanel.h"
+#include "curvewidget.h"
 
 #include <QHeaderView>
 #include <QStylePainter>
@@ -44,7 +44,7 @@ void CurveTreeDelegate::addDelegate(std::shared_ptr<CurveTreeIconDelegate> deleg
 }
 
 
-CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
+CurveWidget::CurveWidget(QWidget* parent) : QWidget(parent)
 {
 	setLayout(&mLayout);
 	mLayout.addWidget(&mSplitter);
@@ -52,7 +52,7 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 	mSplitter.addWidget(&mCurveView);
 	mTreeView.setModel(&mTreeModel);
 
-	connect(&mTreeView, &FilterTreeView::doubleClicked, this, &CurvePanel::onTreeDoubleClicked);
+	connect(&mTreeView, &FilterTreeView::doubleClicked, this, &CurveWidget::onTreeDoubleClicked);
 
 	{
 		auto& tree = mTreeView.getTreeView();
@@ -74,11 +74,11 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 	}
 }
 
-void CurvePanel::setModel(AbstractCurveModel* model)
+void CurveWidget::setModel(AbstractCurveModel* model)
 {
 	mCurveView.setModel(model);
 	mTreeModel.setCurveModel(model);
-	auto header = mTreeView.getTreeView().header();
+//	auto header = mTreeView.getTreeView().header();
 //	header->setStretchLastSection(false);
 //	header->setSectionResizeMode(QHeaderView::Stretch);
 //	header->setSectionResizeMode(0, QHeaderView::Stretch);
@@ -89,7 +89,7 @@ void CurvePanel::setModel(AbstractCurveModel* model)
 //	}
 }
 
-void CurvePanel::onTreeDoubleClicked(const QModelIndex& idx)
+void CurveWidget::onTreeDoubleClicked(const QModelIndex& idx)
 {
 	const auto& sourceIndex = mTreeView.getFilterModel().mapToSource(idx);
 	auto curve = mTreeModel.curveFromIndex(sourceIndex);
