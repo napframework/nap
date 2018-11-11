@@ -28,7 +28,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 140.0
+                            "z": 75.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -152,7 +152,12 @@
                     "Type": "nap::SelectMeshComponent",
                     "mID": "SelectMeshComponent",
                     "Meshes": [
-                        "MeteorietMesh"
+                        "MeteorietPoints",
+                        "HiressteenPoints",
+                        "WitkoraalPoints",
+                        "ZeesterPoints",
+                        "PyrietPoints",
+                        "OliesteenPoints"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -634,6 +639,40 @@
                     "mID": "UniformFloat_3",
                     "Name": "colorTexScale",
                     "Value": 10.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat",
+                    "Name": "fogMin",
+                    "Value": 0.75
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_4",
+                    "Name": "fogMax",
+                    "Value": 0.75
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_5",
+                    "Name": "fogInfluence",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_2",
+                    "Name": "fogColor",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_10",
+                    "Name": "fogPower",
+                    "Value": 2.0
                 }
             ],
             "Shader": "NormalsShader",
@@ -676,7 +715,41 @@
                     "Type": "nap::UniformFloat",
                     "mID": "colorTexScale",
                     "Name": "colorTexScale",
-                    "Value": 10.0
+                    "Value": 0.5
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_6",
+                    "Name": "fogMax",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_7",
+                    "Name": "fogInfluence",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_8",
+                    "Name": "fogMin",
+                    "Value": 0.5
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_3",
+                    "Name": "fogColor",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_9",
+                    "Name": "fogPower",
+                    "Value": 2.0
                 }
             ],
             "Shader": "ScanShader",
@@ -711,25 +784,91 @@
         },
         {
             "Type": "nap::MeshFromFile",
+            "mID": "HiressteenMesh",
+            "Path": "heleenhiressteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
             "Path": "meteoriet.mesh",
             "Usage": "Static"
         },
         {
+            "Type": "nap::MeshFromFile",
+            "mID": "OliesteenMesh",
+            "Path": "oliesteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "PyrietMesh",
+            "Path": "pyriet.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "WitkoraalMesh",
+            "Path": "witkoraal.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "ZeesterMesh",
+            "Path": "zeester.mesh",
+            "Usage": "Static"
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Borderless": false,
             "Resizable": true,
             "Title": "Window 1",
             "Sync": false,
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
             }
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "HiressteenPoints",
+            "ReferenceMesh": "HiressteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "MeteorietPoints",
+            "ReferenceMesh": "MeteorietMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "OliesteenPoints",
+            "ReferenceMesh": "OliesteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "PyrietPoints",
+            "ReferenceMesh": "PyrietMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "WitkoraalPoints",
+            "ReferenceMesh": "WitkoraalMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "ZeesterPoints",
+            "ReferenceMesh": "ZeesterMesh",
+            "PointCount": 1000000
         },
         {
             "Type": "nap::Scene",
@@ -760,7 +899,7 @@
         {
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
-            "ReferenceMesh": "MeteorietMesh",
+            "ReferenceMesh": "MeteorietPoints",
             "Length": 0.009999999776482582
         }
     ]

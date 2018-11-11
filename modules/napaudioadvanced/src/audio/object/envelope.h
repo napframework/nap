@@ -45,7 +45,7 @@ namespace nap
             EnvelopeInstance(Envelope& resource) : AudioObjectInstance(resource) { }
             
             // Inherited from AudioObjectInstance
-            bool init(AudioService& audioService, utility::ErrorState& errorState);
+            bool init(AudioService& audioService, utility::ErrorState& errorState) override;
             OutputPin& getOutputForChannel(int channel) override { return mEnvelopeGenerator->output; }
             int getChannelCount() const override { return 1; }
             
