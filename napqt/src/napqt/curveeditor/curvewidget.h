@@ -11,7 +11,9 @@
 
 namespace napqt
 {
-
+	/**
+	 * This delegate paints a single icon/button in a curve outline row
+	 */
 	class CurveTreeIconDelegate
 	{
 	public:
@@ -21,6 +23,9 @@ namespace napqt
 
 	};
 
+	/**
+	 * This delegate paints multiple icons/buttons in a curve outline row
+	 */
 	class CurveTreeDelegate : public QItemDelegate
 	{
 	public:
@@ -34,12 +39,18 @@ namespace napqt
 		QMargins mIconMargins = {8, 2, 16, 2};
 	};
 
-	class CurvePanel : public QWidget
+	/**
+	 * A widget that allows editing multiple curves
+	 */
+	class CurveWidget : public QWidget
 	{
 	Q_OBJECT
 	public:
-		CurvePanel(QWidget* parent = nullptr);
+		explicit CurveWidget(QWidget* parent = nullptr);
 
+		/**
+		 * Replace the curves in this widget with the ones provided by model.
+		 */
 		void setModel(AbstractCurveModel* model);
 
 

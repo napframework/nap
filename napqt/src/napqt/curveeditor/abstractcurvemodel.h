@@ -72,8 +72,21 @@ namespace napqt
 	public:
 		explicit AbstractCurveModel(QObject* parent);
 
+		/**
+		 * @return The number of curves this model provides
+		 */
 		virtual int curveCount() const = 0;
+
+		/**
+		 * @param index The indes of the curve to be retrieved
+		 * @return The AbstractCurve at the specified index
+		 */
 		virtual AbstractCurve* curve(int index) const = 0;
+
+		/**
+		 * @param curve The curve to find the index of.
+		 * @return The index of the provided curve in this model
+		 */
 		int curveIndex(AbstractCurve* curve) const;
 
 	Q_SIGNALS:

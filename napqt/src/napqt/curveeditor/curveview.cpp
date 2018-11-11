@@ -1251,6 +1251,8 @@ const QRectF CurveView::handleItemBounds(const QList<QGraphicsItem*>& handles) c
 	r.setBottom(top);
 	return r;
 }
+
+
 void CurveView::drawBackground(QPainter* painter, const QRectF& rect)
 {
 	GridView::drawBackground(painter, rect);
@@ -1262,6 +1264,8 @@ void CurveView::drawBackground(QPainter* painter, const QRectF& rect)
 	for (int i = 0; i < model()->curveCount(); i++)
 		drawCurve(painter, rect, viewRect, *model()->curve(i), sceneStep);
 }
+
+
 void CurveView::drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRectF& viewRect,
 						  const AbstractCurve& curve,
 						  qreal step)
