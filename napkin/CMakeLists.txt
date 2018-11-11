@@ -27,25 +27,13 @@ set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_nap
 
 # This is the superset of modules that we want to have available to Napkin to run against; just a handy
 # way to ensure they've built
-set(NAP_MODULES_USAGE_DEPENDENCIES 
-    ${NAP_MODULES_LINK_DEPENDENCIES} 
-    mod_napapp 
-    mod_napartnet
-    mod_napcameracontrol
-    mod_napetherdream
-    mod_napimgui
-    mod_napinput
-    mod_napmidi
-    mod_naposc
-    mod_napsandbox
-    mod_napsdlinput
-    mod_napsvg
-    )
+set(NAP_MODULES_USAGE_DEPENDENCIES ${NAP_MODULES_LINK_DEPENDENCIES})
 
 add_dependencies(${PROJECT_NAME} ${NAP_MODULES_USAGE_DEPENDENCIES})
 
 set(LIBS
     napcore
+    mod_napmath
     napqt
     ${NAP_MODULES_LINK_DEPENDENCIES}
     Qt5::Widgets Qt5::Core Qt5::Gui
