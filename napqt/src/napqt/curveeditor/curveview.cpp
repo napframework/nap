@@ -1274,9 +1274,10 @@ void CurveView::drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRec
 	QPainterPath path;
 	qreal v = curve.evaluate(xmin);
 	path.moveTo(xmin, v);
+
 	for (int i = 0; i < steps; i++)
 	{
-		qreal x = i * step;
+		qreal x = xmin + i * step;
 		v = curve.evaluate(x);
 		path.lineTo(x, v);
 	}
