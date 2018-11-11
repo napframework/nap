@@ -941,7 +941,7 @@ void CurveView::setModel(AbstractCurveModel* model)
 	// clear out old model
 	if (mModel)
 	{
-		disconnect(mModel, &AbstractCurveModel::curvesAdded, this, &CurveView::onCurvesAdded);
+		disconnect(mModel, &AbstractCurveModel::curvesInserted, this, &CurveView::onCurvesAdded);
 		disconnect(mModel, &AbstractCurveModel::curvesRemoved, this, &CurveView::onCurvesRemoved);
 	}
 	mCurveScene.clear();
@@ -950,7 +950,7 @@ void CurveView::setModel(AbstractCurveModel* model)
 	mModel = model;
 	if (mModel)
 	{
-		connect(mModel, &AbstractCurveModel::curvesAdded, this, &CurveView::onCurvesAdded);
+		connect(mModel, &AbstractCurveModel::curvesInserted, this, &CurveView::onCurvesAdded);
 		connect(mModel, &AbstractCurveModel::curvesRemoved, this, &CurveView::onCurvesRemoved);
 	}
 

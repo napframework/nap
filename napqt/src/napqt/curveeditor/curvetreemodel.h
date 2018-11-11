@@ -13,27 +13,26 @@ namespace napqt
 
 	};
 
-	class CurveTreeModel : public QAbstractItemModel
+	class CurveTreeItem : public QObject, public QStandardItem
+	{
+		Q_OBJECT
+	public:
+		CurveTreeItem(AbstractCurve& curve);
+	private:
+		void onCurveChanged(AbstractCurve* curve);
+		AbstractCurve& mCurve;
+	};
+
+	class CurveTreeModel : public QStandardItemModel
 	{
 	Q_OBJECT
 	public:
-		CurveTreeModel(QObject* parent = nullptr) : QAbstractItemModel(parent) {}
-
+		CurveTreeModel(QObject* parent = nullptr) : QStandardItemModel(parent) {}
 		void setCurveModel(AbstractCurveModel* model);
-
 		AbstractCurve* curveFromIndex(const QModelIndex& idx);
 
-		QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
-
-		QModelIndex parent(const QModelIndex& child) const override;
-
-		int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-		int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-		QVariant data(const QModelIndex& index, int role) const override;
-		Qt::ItemFlags flags(const QModelIndex& index) const override;
 	private:
-		void onCurvesAdded(const QList<int> indexes);
-		void onCurvesChanged(const QList<int> indexes);
+		void onCurvesInserted(const QList<int> indexes);
 		void onCurvesRemoved(const QList<int> indexes);
 
 		AbstractCurveModel* mModel = nullptr;

@@ -28,6 +28,8 @@ namespace napqt
 
 		explicit AbstractCurve(AbstractCurveModel* parent = nullptr);
 
+		virtual const QString name() const = 0;
+
 		virtual int pointCount() const = 0;
 
 		virtual qreal evaluate(qreal time) const = 0;
@@ -75,7 +77,7 @@ namespace napqt
 		int curveIndex(AbstractCurve* curve) const;
 
 	Q_SIGNALS:
-		void curvesAdded(QList<int> indices);
+		void curvesInserted(QList<int> indices);
 		void curvesRemoved(QList<int> indices);
 		void curvesChanged(QList<int> indices);
 	};

@@ -38,7 +38,7 @@ namespace napqt
 
 		int pointCount() const override;
 
-		const QString name() const { return mName; }
+		const QString name() const override { return mName; }
 		void setName(const QString& name);
 		qreal evaluate(qreal time) const override;
 
