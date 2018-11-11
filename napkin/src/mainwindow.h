@@ -16,6 +16,7 @@
 #include "panels/logpanel.h"
 #include "panels/resourcepanel.h"
 #include "panels/scenepanel.h"
+#include "panels/curvepanel.h"
 #include "themeselectionmenu.h"
 
 namespace napkin
@@ -96,17 +97,17 @@ namespace napkin
 		void showError(nap::LogMessage msg);
 
 	private:
-		ResourcePanel mResourcePanel;	// ResourcePanel
-		HierarchyPanel mHierarchyPanel; // HierarchyPanel
-		InspectorPanel mInspectorPanel; // InspectorPanel
-		HistoryPanel mHistoryPanel;		// HistoryPanel
-		LogPanel mLogPanel;				// LogPanel
-		AppRunnerPanel mAppRunnerPanel; // AppRunnerPanel
-		ThemeSelectionMenu mThemeMenu;  // ThemeSelectionMenu
-		ScenePanel mScenePanel;			// ScenePanel
-		napqt::TimelinePanel mTimelinePanel; 	// Timeline Panel
-		napqt::ErrorDialog mErrorDialog; 		// Error dialog
-		QStatusBar mStatusBar;			// Status bar
+		ResourcePanel mResourcePanel;
+		HierarchyPanel mHierarchyPanel;
+		InspectorPanel mInspectorPanel;
+		HistoryPanel mHistoryPanel;
+		LogPanel mLogPanel;
+		AppRunnerPanel mAppRunnerPanel;
+		CurvePanel mCurvePanel;
+		ThemeSelectionMenu mThemeMenu;
+		ScenePanel mScenePanel;
+		napqt::ErrorDialog mErrorDialog;
+		QStatusBar mStatusBar;
 		QTimer mTimer;
 	};
 };

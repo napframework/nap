@@ -2,7 +2,9 @@
 
 #include <utility/dllexport.h>
 #include <rtti/rtti.h>
+#include <rtti/object.h>
 #include <glm/glm.hpp>
+#include <nap/resource.h>
 
 #include "curvefunctions.h"
 
@@ -13,22 +15,23 @@ namespace nap
 		/**
 		 * Possible interpolations per curve segment
 		 */
-		enum FCurveInterp {
-			Bezier,
+		enum class NAPAPI FCurveInterp : int {
+			Bezier = 0,
 			Linear,
 			Stepped,
 		};
 
 		/**
-		 * A time/value pair to be used in function curves
+		 * A time/value pair to be used in function curves.
+		 * This is not a regular 2D vector because the components may have different types.
 		 * @tparam T type of the time parameter
 		 * @tparam U type of the value parameter
 		 */
 		template<typename T, typename U>
-		class NAPAPI FComplex
+		struct NAPAPI FComplex
 		{
-			T mTime;
-			U mValue;
+			T mTime; // x-axis value
+			U mValue; // y-axis value
 		};
 
 		/**
@@ -43,7 +46,7 @@ namespace nap
 			FComplex<T, U> mPos;
 			FComplex<T, U> mInTan;
 			FComplex<T, U> mOutTan;
-			FCurveInterp mInterp;
+			FCurveInterp mInterp = FCurveInterp::Bezier;
 
 			// Non-essential to functionality, but necessary for editing
 			bool mTangentsAligned = true;
@@ -71,12 +74,13 @@ namespace nap
 		 * @tparam U type of the value parameter
 		 */
 		template<typename T, typename U>
-		class NAPAPI FCurve
+		class NAPAPI FCurve : public Resource
 		{
+			RTTI_ENABLE(Resource)
 			using Pt = FCurvePoint<T, U>;
 			using Fc = FComplex<T, U>;
-		public:
 
+		public:
 			FCurve() = default;
 			
 			/**
@@ -188,9 +192,7 @@ namespace nap
 		template<typename T, typename U>
 		T FCurve<T, U>::evaluate(const U& time)
 		{
-			// TODO: Optimize or move this call somewhere else
-			sortPoints();
-
+			sortPoints(); // TODO: Optimize or move this call somewhere else
 
 			Pt* firstPoint = mSortedPoints[0];
 			if (time < firstPoint->mPos.mTime)
@@ -214,13 +216,13 @@ namespace nap
 
 			switch (curr->mInterp)
 			{
-				case Bezier:
+				case FCurveInterp::Bezier:
 					evalCurveSegmentBezier({a, b, c, d}, time);
 					break;
-				case Linear:
+				case FCurveInterp::Linear:
 					evalCurveSegmentLinear({a, b, c, d}, time);
 					break;
-				case Stepped:
+				case FCurveInterp::Stepped:
 					evalCurveSegmentStepped({a, b, c, d}, time);
 					break;
 				default:
@@ -233,9 +235,20 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 		// Alias some type specializations
 		//////////////////////////////////////////////////////////////////////////
+
+		using FloatFComplex = FComplex<float, float>;
+		using Vec2FComplex = FComplex<float, glm::vec2>;
+		using Vec3FComplex = FComplex<float, glm::vec3>;
+		using Vec4FComplex = FComplex<float, glm::vec4>;
+
 		using FloatFCurve = FCurve<float, float>;
 		using Vec2FCurve  = FCurve<float, glm::vec2>;
 		using Vec3FCurve  = FCurve<float, glm::vec3>;
 		using Vec4FCurve  = FCurve<float, glm::vec4>;
+
+		using FloatFCurvePoint = FCurvePoint<float, float>;
+		using Vec2FCurvePoint = FCurvePoint<float, glm::vec2>;
+		using Vec3FCurvePoint = FCurvePoint<float, glm::vec3>;
+		using Vec4FCurvePoint = FCurvePoint<float, glm::vec4>;
 	}
 }

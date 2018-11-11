@@ -1256,6 +1256,8 @@ const QRectF CurveView::handleItemBounds(const QList<QGraphicsItem*>& handles) c
 void CurveView::drawBackground(QPainter* painter, const QRectF& rect)
 {
 	GridView::drawBackground(painter, rect);
+	if (mModel == nullptr)
+		return;
 
 	auto viewRect = mapToScene(viewport()->rect()).boundingRect();
 	painter->setPen(QPen(Qt::green, 0));
