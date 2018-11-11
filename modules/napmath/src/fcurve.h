@@ -30,6 +30,8 @@ namespace nap
 		template<typename T, typename U>
 		struct NAPAPI FComplex
 		{
+			FComplex() = default;
+
 			T mTime; // x-axis value
 			U mValue; // y-axis value
 		};
@@ -40,9 +42,10 @@ namespace nap
 		 * @tparam U type of the value parameter
 		 */
 		template<typename T, typename U>
-		class NAPAPI FCurvePoint
+		struct NAPAPI FCurvePoint
 		{
-		public:
+			FCurvePoint() = default;
+
 			FComplex<T, U> mPos;
 			FComplex<T, U> mInTan;
 			FComplex<T, U> mOutTan;
@@ -90,7 +93,9 @@ namespace nap
 			 */
 			T evaluate(const U& t);
 
-
+			/**
+			 * The points that define this curve's shape
+			 */
 			std::vector<FCurvePoint<T, U>> mPoints;
 
 		private:
