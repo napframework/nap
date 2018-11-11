@@ -35,6 +35,9 @@ namespace napkin
 		const nap::rtti::TypeInfo& type;
 	};
 
+	/**
+	 * Flat list of objects
+	 */
 	class FlatObjectModel : public QStandardItemModel
 	{
 	public:
