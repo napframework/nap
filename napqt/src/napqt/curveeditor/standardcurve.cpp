@@ -37,7 +37,7 @@ StandardCurve* StandardCurveModel::addCurve()
 
 	int index = mCurves.size();
 	mCurves << curve;
-	curvesAdded({index});
+	curvesInserted({index});
 	return curve;
 }
 
@@ -66,7 +66,6 @@ StandardCurve::StandardCurve(StandardCurveModel* parent) : AbstractCurve(parent)
 {
 
 }
-
 
 int napqt::StandardCurve::pointCount() const
 {
