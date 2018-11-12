@@ -78,7 +78,7 @@ void StandardCurve::setName(const QString& name)
 	changed(this);
 }
 
-void StandardCurve::movePoints(const QMap<int, QPointF>& positions)
+void StandardCurve::movePoints(const QMap<int, QPointF>& positions, bool finished)
 {
 	QList<int> indexes;
 	auto it = positions.constBegin();
@@ -98,11 +98,11 @@ void StandardCurve::movePoints(const QMap<int, QPointF>& positions)
 	for (auto& p : mPoints)
 		mSortedPoints.insert(p->pos.x(), p.get());
 
-	pointsChanged(indexes);
+	pointsChanged(indexes, false);
 }
 
 
-void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents)
+void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents, bool finished)
 {
 	QList<int> indexes;
 
@@ -128,7 +128,7 @@ void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 		++it;
 	}
 
-	pointsChanged(indexes);
+	pointsChanged(indexes, false);
 }
 
 void napqt::StandardCurve::addPoint(qreal time, qreal value)
@@ -233,7 +233,7 @@ const QPointF StandardCurve::pos(int pointIndex) const
 void StandardCurve::setPos(int pointIndex, const QPointF& pos)
 {
 	mPoints[pointIndex]->pos = pos;
-	pointsChanged({pointIndex});
+	pointsChanged({pointIndex}, false);
 }
 
 const QPointF StandardCurve::inTangent(int pointIndex) const
@@ -244,7 +244,7 @@ const QPointF StandardCurve::inTangent(int pointIndex) const
 void StandardCurve::setInTangent(int pointIndex, const QPointF& tan)
 {
 	mPoints[pointIndex]->inTan = tan;
-	pointsChanged({pointIndex});
+	pointsChanged({pointIndex}, false);
 }
 
 const QPointF StandardCurve::outTangent(int pointIndex) const
@@ -255,7 +255,7 @@ const QPointF StandardCurve::outTangent(int pointIndex) const
 void StandardCurve::setOutTangent(int pointIndex, const QPointF& tan)
 {
 	mPoints[pointIndex]->outTan = tan;
-	pointsChanged({pointIndex});
+	pointsChanged({pointIndex}, false);
 }
 
 const AbstractCurve::InterpType StandardCurve::interpolation(int pointIndex) const
@@ -266,7 +266,7 @@ const AbstractCurve::InterpType StandardCurve::interpolation(int pointIndex) con
 void StandardCurve::setInterpolation(int pointIndex, const AbstractCurve::InterpType& interp)
 {
 	mPoints[pointIndex]->interp = interp;
-	pointsChanged({pointIndex});
+	pointsChanged({pointIndex}, false);
 }
 
 const bool StandardCurve::tangentsAligned(int pointIndex) const
@@ -277,7 +277,7 @@ const bool StandardCurve::tangentsAligned(int pointIndex) const
 void StandardCurve::setTangentsAligned(int pointIndex, bool b)
 {
 	mPoints[pointIndex]->tanAligned = b;
-	pointsChanged({pointIndex});
+	pointsChanged({pointIndex}, false);
 }
 
 

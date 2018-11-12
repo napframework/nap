@@ -35,7 +35,7 @@ namespace nap
 			F t = 0.5;
 			for (int i = 0; i < maxIterations; i++)
 			{
-				auto dx = x - bezier(pts, t).x();
+				auto dx = x - bezier(pts, t).mTime;
 				auto adx = qAbs(dx);
 				if (adx <= threshold)
 					break;
@@ -44,6 +44,12 @@ namespace nap
 				t += (dx > 0) ? depth : -depth;
 			}
 			return t;
+		}
+
+		template <typename T>
+		inline T lerp(const T& a, const T& b, const T& t)
+		{
+			return a + t * (b - a);
 		}
 
 		/**
@@ -58,7 +64,7 @@ namespace nap
 		F evalCurveSegmentBezier(const P (& pts)[4], F x)
 		{
 			F t = tForX(pts, x);
-			return bezier(pts, t).y();
+			return bezier(pts, t).mValue;
 		}
 
 		template<typename P, typename F>
@@ -66,14 +72,14 @@ namespace nap
 		{
 			const auto& a = pts[0];
 			const auto& b = pts[3];
-			F t = (x - a.x()) / (b.x() - a.x());
-			return lerp(a.y(), b.y(), t);
+			F t = (x - a.mTime) / (b.mTime - a.mTime);
+			return lerp(a.mValue, b.mValue, t);
 		}
 
 		template<typename P, typename F>
 		F evalCurveSegmentStepped(const P (& pts)[4], F x)
 		{
-			return pts[0].y();
+			return pts[0].mValue;
 		}
 
 	}

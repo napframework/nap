@@ -224,12 +224,19 @@ namespace napqt
 		const QList<QGraphicsItem*> frameableItems(const QList<QGraphicsItem*>& items) const;
 		CurveItem* curveItem(const AbstractCurve& curve);
 
+		void commitPointEditChanges(bool finished);
+
 		QGraphicsScene mCurveScene;
 		QPoint mLastMousePos;
 		AbstractCurveModel* mModel = nullptr;
 		QList<CurveItem*> mCurveItems;
 
 		InteractMode mInteractMode = None;
+
+		// Currently editing tangent list
+		QMap<CurveItem*, QList<QMap<int, QPointF>>> mTangentEditMap;
+		// Currently editing point list
+		QMap<CurveItem*, QMap<int, QPointF>> mPointEditMap;
 
 		QAction mDeleteAction;
 		QAction mToggleAlignedAction;

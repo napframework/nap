@@ -6,6 +6,7 @@
 #include <QtDebug>
 #include <QtGui>
 #include <QPainter>
+#include <QList>
 
 #include <napqt/qtutils.h>
 
@@ -834,13 +835,18 @@ void CurveView::mouseReleaseEvent(QMouseEvent* event)
 	{
 
 	}
+	else if (mInteractMode == DragPoints)
+	{
+		commitPointEditChanges(true);
+	}
+
 	mInteractMode = None;
 }
 
 
 void CurveView::movePointHandles(const QList<PointHandleItem*>& handles, const QPointF& sceneDelta)
 {
-	QMap<CurveItem*, QMap<int, QPointF>> map;
+	mPointEditMap.clear();
 	if (!handles.isEmpty())
 	{
 		for (auto handle : handles)
@@ -848,21 +854,17 @@ void CurveView::movePointHandles(const QList<PointHandleItem*>& handles, const Q
 			auto segmentItem = &handle->curveSegmentItem();
 			auto curveItem = &segmentItem->curveItem();
 
-			if (!map.contains(curveItem))
-				map.insert(curveItem, QMap<int, QPointF>());
+			if (!mPointEditMap.contains(curveItem))
+				mPointEditMap.insert(curveItem, QMap<int, QPointF>());
 
 			int idx = curveItem->segmentIndex(*segmentItem);
 			auto pos = handle->pos() + sceneDelta;
 
-			map[curveItem][idx] = pos;
+			mPointEditMap[curveItem][idx] = pos;
 		}
 	}
 
-	for (auto& key : map.keys())
-	{
-		CurveItem* curveItem = key;
-		curveItem->curve().movePoints(map[key]);
-	}
+	commitPointEditChanges(false);
 }
 
 void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPointF& sceneDelta)
@@ -870,7 +872,7 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 	if (tans.isEmpty())
 		return;
 
-	QList < TangentHandleItem * > movedTangents;
+	QList<TangentHandleItem*> movedTangents;
 	for (TangentHandleItem* tan : tans)
 	{
 		if (tans.contains(&tan->oppositeTanHandle()))
@@ -878,7 +880,7 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 		movedTangents << tan;
 	}
 
-	QMap<CurveItem*, QList<QMap<int, QPointF>>> tanMap;
+	mTangentEditMap.clear();
 	for (TangentHandleItem* tangent : movedTangents)
 	{
 		TangentHandleItem& otherTan = tangent->oppositeTanHandle();
@@ -888,16 +890,15 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 		int idx = curveItem->segmentIndex(*segmentItem);
 		auto pos = tangent->pos() + sceneDelta;
 
-		if (!tanMap.contains(curveItem))
+		if (!mTangentEditMap.contains(curveItem))
 		{
-			QList < QMap<int, QPointF>>
-			ls;
+			QList <QMap<int, QPointF>> ls;
 			ls << QMap<int, QPointF>();
 			ls << QMap<int, QPointF>();
-			tanMap.insert(curveItem, ls);
+			mTangentEditMap.insert(curveItem, ls);
 		}
 
-		auto& positions = tanMap[curveItem];
+		auto& positions = mTangentEditMap[curveItem];
 
 		if (tangent->isInTangent())
 		{
@@ -926,12 +927,7 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 		}
 	}
 
-	for (CurveItem* curveItem : tanMap.keys())
-	{
-		auto tanPosList = tanMap[curveItem];
-		curveItem->curve().moveTangents(tanPosList[0], tanPosList[1]);
-	}
-
+	commitPointEditChanges(false);
 }
 void CurveView::setModel(AbstractCurveModel* model)
 {
@@ -1308,4 +1304,19 @@ CurveItem* CurveView::curveItem(const AbstractCurve& curve) {
 		if (&curveItem->curve() == &curve)
 			return curveItem;
 	return nullptr;
+}
+
+void CurveView::commitPointEditChanges(bool finished)
+{
+	for (auto& key : mPointEditMap.keys())
+	{
+		CurveItem* curveItem = key;
+		curveItem->curve().movePoints(mPointEditMap[key], finished);
+	}
+
+	for (CurveItem* curveItem : mTangentEditMap.keys())
+	{
+		auto tanPosList = mTangentEditMap[curveItem];
+		curveItem->curve().moveTangents(tanPosList[0], tanPosList[1], finished);
+	}
 }
