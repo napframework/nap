@@ -12,7 +12,7 @@ out vec4 out_Color;
 
 void main() 
 {
-	vec2 uv = vec2(passUVs.x, 1.0-passUVs.y);
+	vec2 uv = vec2(passUVs.x, passUVs.y);
 	float alpha = texture(glyph, uv).r;
     out_Color = vec4(textColor, alpha);
 }

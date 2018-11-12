@@ -69,8 +69,19 @@ namespace nap
 		// Make sure we can write to it often 
 		mPlane.getMeshInstance().setUsage(EMeshDataUsage::DynamicWrite);
 
-		// Initilize it 
-		if (!mPlane.init(errorState))
+		// Update the uv coordinates
+		Vec3VertexAttribute* uv_attr = mPlane.getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		if (!errorState.check(uv_attr != nullptr, "%s: unable to find uv vertex attribute on plane", mID.c_str()))
+			return false;
+
+		// Flip uv y axis (text is rendered flipped)
+		uv_attr->getData()[0].y = 1.0f;
+		uv_attr->getData()[1].y = 1.0f;
+		uv_attr->getData()[2].y = 0.0f;
+		uv_attr->getData()[3].y = 0.0f;
+
+		// Initialize it on the GPU
+		if (!mPlane.getMeshInstance().init(errorState))
 			return false;
 
 		// Get position attribute buffer, we will update the vertex positions of this plane

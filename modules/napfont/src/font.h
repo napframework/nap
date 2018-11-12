@@ -102,7 +102,8 @@ namespace nap
 
 	/**
 	 * Runtime version of a font that serves characters.
-	 * Internally the font caches all the requested characters.
+	 * Internally the font caches all the requested characters and visualization modes.
+	 * A character is called a Glyph and a character visualization mode is a GlyphRepresentation.
 	 * The instance is created by a Font on initialization.
 	 * Use the getGlyphIndex() and getOrCreateGlyph() functions to fetch characters.
 	 * All the characters (glyphs) are managed and therefore owned by this font.
