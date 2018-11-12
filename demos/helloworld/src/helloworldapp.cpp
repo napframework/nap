@@ -50,7 +50,6 @@ namespace nap
 		mWorldEntity = scene->findEntity("World");
 		mCameraEntity = scene->findEntity("Camera");
 		mTextEntity = scene->findEntity("Text");
-		mTextCam = scene->findEntity("TextCam");
 		mWorldMesh = mResourceManager->findObject("WorldMesh");
 
 		mFont = mResourceManager->findObject("Font");
@@ -133,11 +132,8 @@ namespace nap
 		// Render the world with the right camera directly to screen
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
 
-		// Render text
-		nap::OrthoCameraComponentInstance& text_cam = mTextCam->getComponent<nap::OrthoCameraComponentInstance>();
-		components_to_render.clear();
+		// Render text on top of the sphere
 		RenderableTextComponentInstance& render_text = mTextEntity->getComponent<nap::RenderableTextComponentInstance>();
-		math::Rect text_bounds = render_text.getBoundingBox();
 		render_text.draw(
 			{ mRenderWindow->getWidth() / 2, mRenderWindow->getHeight()/2}, 
 			{ mRenderWindow->getBackbuffer() }, 
