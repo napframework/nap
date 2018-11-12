@@ -8,6 +8,7 @@
 #include <rtti/factory.h>
 #include <utility>
 #include <utility/errorstate.h>
+#include <rect.h>
 
 // Forward Declares
 namespace nap
@@ -181,6 +182,15 @@ namespace nap
 		const Glyph* getOrCreateGlyph(nap::uint index, utility::ErrorState& errorCode);
 
 		/**
+		 * Returns the bounding box in pixels associated with a string of text.
+		 * This bounding box tightly wraps the text and includes initial horizontal bearing
+		 * All requested glyphs are cached internally.
+		 * @param text the string of characters to compute the bounding box for
+		 * @param outRect contains the text bounds
+		 */
+		void getBoundingBox(const std::string& text, math::Rect& outRect);
+
+		/**
 		 * Returns the number of glyphs in this font, -1 when the font hasn't been created yet
 		 * @return the number of glyphs associated with this font
 		 */
@@ -234,7 +244,7 @@ namespace nap
 		void* mFace = nullptr;											///< Handle to the free-type face object
 		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
 		FontProperties mProperties = { -1, -1, "" };					///< Describes current font properties
-		std::vector<std::unique_ptr<GlyphCache>> mGlyphs;					///< All cached glyphs
+		mutable std::vector<std::unique_ptr<GlyphCache>> mGlyphs;		///< All cached glyphs
 	};
 
 

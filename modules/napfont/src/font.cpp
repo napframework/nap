@@ -4,6 +4,7 @@
 
 // External Includes
 #include <nap/logger.h>
+#include <mathutils.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
@@ -247,6 +248,60 @@ namespace nap
 	}
 
 
+	void FontInstance::getBoundingBox(const std::string& text, math::Rect& outRect)
+	{
+		// Clear if text is empty
+		if (text.empty())
+		{
+			outRect.mMinPosition = { 0.0f, 0.0f };
+			outRect.mMaxPosition = { 0.0f, 0.0f };
+			return;
+		}
+
+		// Compute bounds
+		FT_BBox ft_box;
+		outRect.mMinPosition = { 0.0f, math::max<float>() };
+		outRect.mMaxPosition = { 0.0f, math::min<float>() };
+		utility::ErrorState error;
+		int idx = 0;
+		for (const auto& letter : text)
+		{
+			const Glyph* glyph = getOrCreateGlyph(getGlyphIndex(letter), error);
+			if (glyph == nullptr)
+			{
+				nap::Logger::warn(error.toString());
+				continue;
+			}
+
+			// Get glyph and glyph bounds
+			FT_Glyph ft_glyph = reinterpret_cast<FT_Glyph>(glyph->getHandle());
+			FT_Glyph_Get_CBox(ft_glyph, FT_GLYPH_BBOX_TRUNCATE, &ft_box);
+			
+			// If it's the first character we want to get the x-offset
+			if (idx == 0)
+			{
+				outRect.mMinPosition.x = static_cast<float>(ft_box.xMin);
+				outRect.mMaxPosition.x = static_cast<float>(ft_box.xMin);
+			}
+
+			// Advance or, when last character, pick width
+			if (idx == (text.size() - 1))
+			{
+				outRect.mMaxPosition.x += static_cast<float>(ft_box.xMax - ft_box.xMin);
+			}
+			else
+			{
+				outRect.mMaxPosition.x += static_cast<float>(glyph->getHorizontalAdvance());
+			}
+
+			// Store limits on Y axis
+			outRect.mMinPosition.y = ft_box.yMin < outRect.mMinPosition.y ? ft_box.yMin : outRect.mMinPosition.y;
+			outRect.mMaxPosition.y = ft_box.yMax > outRect.mMaxPosition.y ? ft_box.yMax : outRect.mMaxPosition.y;
+			idx++;
+		}
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// GlyphCache
 	//////////////////////////////////////////////////////////////////////////
@@ -271,7 +326,7 @@ namespace nap
 	}
 
 
-	const nap::Glyph* nap::FontInstance::getOrCreateGlyph(nap::uint index, utility::ErrorState& errorCode)
+	const Glyph* nap::FontInstance::getOrCreateGlyph(nap::uint index, utility::ErrorState& errorCode)
 	{
 		nap::GlyphCache* cache = getOrCreateGlyphCache(index, errorCode);
 		if (cache == nullptr)
