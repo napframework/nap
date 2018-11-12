@@ -169,7 +169,7 @@ namespace nap
 		const math::Rect& bounds = getBoundingBox();
 
 		// Create projection matrix
-		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)target.getSize().x, 0.0f, (float)target.getSize().y, 0.0f, 1.0f);
+		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)target.getSize().x, 0.0f, (float)target.getSize().y);
 		
 		// Position text
 		glm::ivec2 pos(0.0f, coordinates.y);
