@@ -223,8 +223,8 @@ namespace nap
 		{
 			// Fetch glyph
 			uint gindex = mFont->getGlyphIndex(letter);
-			RenderableGlyph* render_glyph = mFont->getOrCreateGlyph<RenderableGlyph>(gindex, error);
-			if (!error.check(render_glyph != nullptr, "%s: invalid character: %s, %s", mID.c_str(), letter, error.toString().c_str()))
+			RenderableGlyph* render_glyph = mFont->getOrCreateGlyphRepresentation<RenderableGlyph>(gindex, error);
+			if (!error.check(render_glyph != nullptr, "%s: invalid character: %d, %s", mID.c_str(), letter, error.toString().c_str()))
 			{
 				success = false;
 				continue;

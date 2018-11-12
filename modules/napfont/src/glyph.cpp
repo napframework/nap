@@ -5,9 +5,10 @@
 #include FT_GLYPH_H
 
 // RTTI Glyph Definition
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Glyph)
-RTTI_END_CLASS
+RTTI_DEFINE_BASE(nap::Glyph)
 
+// RTTI IGlyph Definition
+RTTI_DEFINE_BASE(nap::IGlyphRepresentation)
 
 namespace nap
 {

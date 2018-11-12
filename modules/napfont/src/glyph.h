@@ -14,7 +14,7 @@ namespace nap
 	 * This class wraps and manages 1 free-type Glyph character
 	 * The Glyph is destroyed when this object is destructed
 	 */
-	class NAPAPI Glyph
+	class NAPAPI Glyph final
 	{
 		friend FontInstance;
 		RTTI_ENABLE()
@@ -26,7 +26,7 @@ namespace nap
 		/**
 		 * Destructor, unloads and destroys the glyph if present
 		 */
-		virtual ~Glyph();
+		~Glyph();
 
 		// Copy is not allowed
 		Glyph(const Glyph& other) = delete;
@@ -56,6 +56,11 @@ namespace nap
 		 */
 		int getVerticalAdvance() const							{ return mAdvance.y; }
 
+		/**
+		 * @return handle to the free-type glyph object. Always of type: FT_Glyph!
+		 */
+		inline void* getHandle() const							{ return mHandle; }
+
 	protected:
 		/**
 		 * Only a font instance can create a glyph
@@ -64,24 +69,64 @@ namespace nap
 		 */
 		Glyph(void* handle, uint index);
 
-		/**
-		 * Offers additional initialization options, implement in derived classes.
-		 * Only a font can initialize a glyph, init() is called directly after construction,
-		 * If initialization fails the Glyph is not added to the cache!
-		 * @param errorCode contains the error if initialization fails
-		 * @return if initialization succeeds
-		 */
-		virtual bool init(utility::ErrorState& errorCode)	{ return true; }
-
-		/**
-		 * @return handle to the free-type glyph object. Always of type: FT_Glyph!
-		 */
-		inline void* getHandle() const						{ return mHandle; }
-
 	private:
 		void*		mHandle = nullptr;			///< Handle to the Glyph in memory
 		uint		mIndex = 0;					///< Index of the Glyph inside the font
 		glm::ivec2	mAdvance = { -1, -1 };		///< Offset in pixels to advance to next glyph
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// IGlyphRepresentation
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Interface to a specific type of Glyph representation.
+	 * This could be an image or 3D mesh constructed from a parent Glyph
+	 * Override the onInit method to create your own Glyph representation
+	 * This class does not own or manage a Glyph, it only allows you to build a representation.
+	 */
+	class NAPAPI IGlyphRepresentation
+	{
+		friend FontInstance;
+		RTTI_ENABLE()
+	public:
+		/**
+		 * Destructor, unloads and destroys the glyph if present
+		 */
+		virtual ~IGlyphRepresentation()							{ }
+
+		/**
+		 * Constructor
+		 */
+		IGlyphRepresentation() = default;
+
+		// Copy is not allowed
+		IGlyphRepresentation(const IGlyphRepresentation& other) = delete;
+		IGlyphRepresentation& operator=(const IGlyphRepresentation&) = delete;
+
+		// Move is not allowed
+		IGlyphRepresentation(IGlyphRepresentation&& other) = delete;
+		IGlyphRepresentation& operator=(IGlyphRepresentation&& other) = delete;
+
+	protected:
+		/**
+		 * Called by the font when a specific Glyph representation is requested
+		 * Simply forwards the call to the derived onInit implementation
+		 * @param glyph the parent glyph, associated with this glyph representation
+		 * @param error contains the error if initialization fails
+		 * @return if initialization succeeded or failed
+		 */
+		bool init(const Glyph& glyph, utility::ErrorState& error)						{ return onInit(glyph, error); }
+
+		/**
+		 * Override this method to implement a specific Glyph representation
+		 * The handle to the parent Glyph can't be copied and is owned by the Font
+		 * @param glyph the parent glyph, associated with this glyph representation
+		 * @param error contains the error if initialization fails
+		 * @return if initialization succeeded or failed
+		 */
+		virtual bool onInit(const Glyph& glyph, utility::ErrorState& error) = 0;
 	};
 }
 

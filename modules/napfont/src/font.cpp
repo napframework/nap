@@ -191,7 +191,7 @@ namespace nap
 	}
 
 
-	void* nap::FontInstance::getGlyph()
+	void* nap::FontInstance::getGlyphHandle()
 	{
 		FT_Glyph  new_glyph;
 		if (FT_Get_Glyph(toFreetypeFace(mFace)->glyph, &new_glyph) > 0)
@@ -211,5 +211,71 @@ namespace nap
 	int FontInstance::getCount()
 	{
 		return mFace != nullptr ? toFreetypeFace(mFace)->num_glyphs : -1;
+	}
+
+
+	GlyphCache* nap::FontInstance::getOrCreateGlyphCache(nap::uint index, utility::ErrorState& errorCode)
+	{
+		// Ensure the index is valid
+		assert(isValid());
+		if (!errorCode.check(index < mGlyphs.size(), "glyph index out of bounds"))
+			return nullptr;
+		
+		// Try to find a cached Glyph
+		std::unique_ptr<GlyphCache>& cache = mGlyphs[index];
+
+		// Parent glyph is part of system
+		if (cache != nullptr)
+			return cache.get();
+
+		// Load a new glyph
+		if (!errorCode.check(loadGlyph(index), "unable to load glyph: %d into memory", index))
+			return nullptr;
+
+		// Copy handle
+		void* glyph_handle = getGlyphHandle();
+		if (!errorCode.check(glyph_handle != nullptr, "unable to get handle to glyph: %d", index))
+			return nullptr;
+
+		// Create new glyph, constructor is protected so new is required
+		Glyph* ptr = new Glyph(glyph_handle, index);
+
+		// Now wrap a Glyph cache around it so we can bind it to various representations
+		GlyphCache* new_cache = new GlyphCache(std::move(std::unique_ptr<Glyph>(ptr)));
+		cache.reset(new_cache);
+		return new_cache;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// GlyphCache
+	//////////////////////////////////////////////////////////////////////////
+
+	GlyphCache::~GlyphCache()
+	{
+		mRepresentations.clear();
+		mGlyph.reset(nullptr);
+	}
+
+
+	void GlyphCache::addRepresentation(std::unique_ptr<IGlyphRepresentation>& representation)
+	{
+		mRepresentations.emplace(std::make_pair(representation->get_type().get_raw_type(), std::move(representation)));
+	}
+
+
+	nap::IGlyphRepresentation* GlyphCache::findRepresentation(const rtti::TypeInfo& type)
+	{
+		auto it = mRepresentations.find(type.get_raw_type());
+		return it != mRepresentations.end() ? it->second.get() : nullptr;
+	}
+
+
+	const nap::Glyph* nap::FontInstance::getOrCreateGlyph(nap::uint index, utility::ErrorState& errorCode)
+	{
+		nap::GlyphCache* cache = getOrCreateGlyphCache(index, errorCode);
+		if (cache == nullptr)
+			return nullptr;
+		return &(cache->getGlyph());
 	}
 }
