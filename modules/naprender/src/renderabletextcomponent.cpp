@@ -1,7 +1,6 @@
 // Local Includes
 #include "renderabletextcomponent.h"
 #include "materialutils.h"
-#include "renderableglyph.h"
 
 // External Includes
 #include <entity.h>
@@ -42,9 +41,6 @@ namespace nap
 		
 		// Extract font
 		mFont = &(resource->mFont->getFontInstance());
-
-		// Extract text
-		mText = resource->mText;
 
 		// Extract glyph uniform (texture slot in shader)
 		mGlyphUniform = resource->mGlyphUniform;
@@ -92,6 +88,10 @@ namespace nap
 
 		// Construct render-able mesh (TODO: Make a factory or something similar to create and verify render-able meshes!
 		mRenderableMesh = RenderableMesh(mPlane, mMaterialInstance, handle);
+
+		// Set text, needs to succeed on initialization
+		if (!setText(resource->mText, errorState))
+			return false;
 
 		return true;
 	}
@@ -156,29 +156,17 @@ namespace nap
 		// GPU mesh representation
 		const opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 
-		// Handle to the glyph inside the loop
-		RenderableGlyph* render_glyph = nullptr;
-		utility::ErrorState error;
-
 		// Lines / Fill etc.
 		GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
 
 		// Fetch index buffer (holding drawing order
 		const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
 		GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
+		nap::utility::ErrorState error;
 
 		// Draw every letter in the text to screen
-		for (const auto& letter : mText)
+		for (auto& render_glyph : mGlyphs)
 		{
-			// Fetch glyph
-			uint gindex  = mFont->getGlyphIndex(letter);
-			render_glyph = mFont->getOrCreateGlyph<RenderableGlyph>(gindex, error);
-			if (render_glyph == nullptr)
-			{
-				nap::Logger::warn("%s: invalid character: %s, %s", mID.c_str(), letter, error.toString().c_str());
-				continue;
-			}
-
 			// Get width and height of character to draw
 			float w = render_glyph->getSize().x;
 			float h = render_glyph->getSize().y;
@@ -220,6 +208,33 @@ namespace nap
 	{
 		assert(mFont != nullptr);
 		return *mFont;
+	}
+
+
+	bool RenderableTextComponentInstance::setText(const std::string& text, utility::ErrorState& error)
+	{
+		// Clear Glyph handles
+		mGlyphs.clear();
+		mGlyphs.reserve(text.size());
+		
+		// Get or create a Glyph for every letter in the text
+		bool success(true);
+		for (const auto& letter : text)
+		{
+			// Fetch glyph
+			uint gindex = mFont->getGlyphIndex(letter);
+			RenderableGlyph* render_glyph = mFont->getOrCreateGlyph<RenderableGlyph>(gindex, error);
+			if (!error.check(render_glyph != nullptr, "%s: invalid character: %s, %s", mID.c_str(), letter, error.toString().c_str()))
+			{
+				success = false;
+				continue;
+			}
+
+			// Store handle
+			mGlyphs.emplace_back(render_glyph);
+		}
+		mText = text;
+		return success;
 	}
 
 

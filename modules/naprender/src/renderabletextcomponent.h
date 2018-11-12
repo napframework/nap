@@ -5,6 +5,7 @@
 #include "material.h"
 #include "renderglobals.h"
 #include "transformcomponent.h"
+#include "renderableglyph.h"
 
 // External Includes
 #include <font.h>
@@ -69,10 +70,12 @@ namespace nap
 		const FontInstance& getFont() const;
 
 		/**
-		 * Set the text to be drawn
-		 * @param text the new line of text to draw
+		 * Set the text to be drawn. Only set or change text on app update, not render.
+		 * @param text the new line of text to draw.
+		 * @param error list of unsupported characters
+		 * @return if all characters in the text are supported and can be drawn.
 		 */
-		void setText(const std::string& text)				{ mText = text; }
+		bool setText(const std::string& text, utility::ErrorState& error);
 
 		/**
 		 * @return the text that is drawn.
@@ -101,5 +104,6 @@ namespace nap
 		TransformComponentInstance* mTransform = nullptr;		///< Transform used to position text
 		RenderableMesh mRenderableMesh;							///< Valid Plane / Material combination
 		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;	///< Handle to the plane vertices
+		std::vector<RenderableGlyph*> mGlyphs;					///< Glyphs associated with the text to render
 	};
 }
