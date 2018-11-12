@@ -246,10 +246,7 @@ namespace nap
 			mGlyphs.emplace_back(render_glyph);
 		}
 		mText = text;
-
-		math::Rect rect;
-		mFont->getBoundingBox(mText, rect);
-
+		mFont->getBoundingBox(mText, mTextBounds);
 		return success;
 	}
 
@@ -260,22 +257,47 @@ namespace nap
 	}
 
 
-	void RenderableTextComponentInstance::draw(glm::ivec2 coordinates, glm::ivec2 targetSize)
+	void RenderableTextComponentInstance::draw(glm::ivec2 coordinates, const opengl::BackbufferRenderTarget& target, EOrientation orientation)
 	{
-		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)targetSize.x, 0.0f, (float)targetSize.y, 0.0f, 1.0f);
+		const math::Rect& bounds = getBoundingBox();
+
+		// Create projection matrix
+		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)target.getSize().x, 0.0f, (float)target.getSize().y, 0.0f, 1.0f);
+		
+		// Position text
+		glm::ivec2 pos(0.0f, coordinates.y);
+		switch (orientation)
+		{
+		case EOrientation::Left:
+		{
+			pos.x = coordinates.x - (int)(bounds.mMinPosition.x);
+			break;
+		}
+		case EOrientation::Center:
+		{
+			pos.x = coordinates.x - (int)(bounds.getWidth()  / 2.0f);
+			break;
+		}
+		case EOrientation::Right:
+		{
+			pos.x = coordinates.x - (int)(bounds.getWidth());
+			break;
+		}
+		default:
+			assert(false);
+		}
+
 		glm::mat4 view_matrix = glm::translate(glm::mat4x4(), 
 		{ 
-			(float)coordinates.x, 
-			(float)coordinates.y, 
+			(float)pos.x, 
+			(float)pos.y, 
 			0.0f });
 		onDraw(view_matrix, proj_matrix);
 	}
 
 
-	math::Rect RenderableTextComponentInstance::getBoundingBox() const
+	const math::Rect& RenderableTextComponentInstance::getBoundingBox() const
 	{ 
-		math::Rect rect;
-		mFont->getBoundingBox(mText, rect);
-		return rect;
+		return mTextBounds;
 	}
 }
