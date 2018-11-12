@@ -283,7 +283,6 @@ namespace nap
 				outRect.mMinPosition.x = static_cast<float>(ft_box.xMin);
 				outRect.mMaxPosition.x = static_cast<float>(ft_box.xMin);
 			}
-
 			// Advance or, when last character, pick width
 			if (idx == (text.size() - 1))
 			{
@@ -293,10 +292,16 @@ namespace nap
 			{
 				outRect.mMaxPosition.x += static_cast<float>(glyph->getHorizontalAdvance());
 			}
-
-			// Store limits on Y axis
-			outRect.mMinPosition.y = ft_box.yMin < outRect.mMinPosition.y ? ft_box.yMin : outRect.mMinPosition.y;
-			outRect.mMaxPosition.y = ft_box.yMax > outRect.mMaxPosition.y ? ft_box.yMax : outRect.mMaxPosition.y;
+			// Store y min using bound comparison
+			if (static_cast<float>(ft_box.yMin) < outRect.mMinPosition.y)
+			{
+				outRect.mMinPosition.y = static_cast<float>(ft_box.yMin);
+			}
+			// Store y max using bound comparison
+			if (static_cast<float>(ft_box.yMax) > outRect.mMaxPosition.y)
+			{
+				outRect.mMaxPosition.y = static_cast<float>(ft_box.yMax);
+			}
 			idx++;
 		}
 	}

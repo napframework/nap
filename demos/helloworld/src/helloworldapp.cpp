@@ -124,15 +124,6 @@ namespace nap
 		// Find the world and add as an object to render
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
 		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		
-		/*
-		// Font texture test
-		nap::UniformTexture2D& world_tex = renderable_world.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("inWorldTexture");
-		uint index = mFont->getFontInstance().getGlyphIndex('R');
-		utility::ErrorState error;
-		RenderableGlyph* glyph = mFont->getFontInstance().getOrCreateGlyph<RenderableGlyph>(index, error);
-		world_tex.setTexture(glyph->getTexture());
-		*/
 
 		components_to_render.emplace_back(&renderable_world);
 
@@ -146,8 +137,8 @@ namespace nap
 		nap::OrthoCameraComponentInstance& text_cam = mTextCam->getComponent<nap::OrthoCameraComponentInstance>();
 		components_to_render.clear();
 		RenderableTextComponentInstance& render_text = mTextEntity->getComponent<nap::RenderableTextComponentInstance>();
-		components_to_render.emplace_back(&render_text);
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), text_cam, components_to_render);
+		math::Rect text_bounds = render_text.getBoundingBox();
+		render_text.draw({ 0, (int)(text_bounds.mMinPosition.y * -1.0f)}, { mRenderWindow->getWidth(), mRenderWindow->getHeight() });
 
 		// Draw our gui
 		mGuiService->draw();

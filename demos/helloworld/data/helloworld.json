@@ -218,7 +218,7 @@
             "mID": "Font",
             "Properties": {
                 "Font": "fonts/arial.ttf",
-                "Size": 32,
+                "Size": 64,
                 "DPI": 96
             }
         },

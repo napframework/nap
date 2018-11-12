@@ -9,6 +9,7 @@
 #include <renderservice.h>
 #include <nap/logger.h>
 #include <ndrawutils.h>
+#include <glm/gtc/matrix_transform.hpp> 
 
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableTextComponent)
@@ -245,6 +246,10 @@ namespace nap
 			mGlyphs.emplace_back(render_glyph);
 		}
 		mText = text;
+
+		math::Rect rect;
+		mFont->getBoundingBox(mText, rect);
+
 		return success;
 	}
 
@@ -254,4 +259,23 @@ namespace nap
 		return mMaterialInstance;
 	}
 
+
+	void RenderableTextComponentInstance::draw(glm::ivec2 coordinates, glm::ivec2 targetSize)
+	{
+		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)targetSize.x, 0.0f, (float)targetSize.y, 0.0f, 1.0f);
+		glm::mat4 view_matrix = glm::translate(glm::mat4x4(), 
+		{ 
+			(float)coordinates.x, 
+			(float)coordinates.y, 
+			0.0f });
+		onDraw(view_matrix, proj_matrix);
+	}
+
+
+	math::Rect RenderableTextComponentInstance::getBoundingBox() const
+	{ 
+		math::Rect rect;
+		mFont->getBoundingBox(mText, rect);
+		return rect;
+	}
 }
