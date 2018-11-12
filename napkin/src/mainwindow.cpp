@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <fcurve.h>
 
 using namespace napkin;
 
@@ -145,6 +146,14 @@ MainWindow::~MainWindow()
 void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
 {
 	mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
+
+	if (!objects.isEmpty()) {
+		auto ob = dynamic_cast<nap::math::FloatFCurve*>(objects.at(0));
+		if (ob) {
+			mCurvePanel.editCurve(ob);
+		}
+	}
+
 }
 
 void MainWindow::onDocumentOpened(const QString filename)

@@ -56,8 +56,8 @@ namespace napqt
 		void removePoints(const QList<int>& indices) override;
 		void addPoint(qreal time, qreal value) override;
 		void removePoint(int index);
-		void movePoints(const QMap<int, QPointF>& positions) override;
-		void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents) override;
+		void movePoints(const QMap<int, QPointF>& positions, bool finished) override;
+		void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents, bool finished) override;
 		StandardCurveModel* model();
 	private:
 		void pointsAtTime(qreal time, StandardPoint*& curr, StandardPoint*& next) const;

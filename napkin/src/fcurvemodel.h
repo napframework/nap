@@ -1,0 +1,58 @@
+#pragma once
+
+#include <napqt/curveeditor/abstractcurvemodel.h>
+#include <fcurve.h>
+#include <QtCore/QPointF>
+#include <QtCore/qmap.h>
+#include "propertypath.h"
+
+
+namespace napkin
+{
+
+	/**
+	 * Adapter between the user interface of the curve editor and the underlying curve data.
+	 */
+	class FCurve : public napqt::AbstractCurve
+	{
+	public:
+		explicit FCurve(nap::math::FloatFCurve& curve);
+
+		nap::math::FloatFCurve& sourceCurve() { return mCurve; }
+		const QString name() const override;
+		int pointCount() const override;
+		qreal evaluate(qreal time) const override;
+		const QPointF pos(int pointIndex) const override;
+		const QPointF inTangent(int pointIndex) const override;
+		const QPointF outTangent(int pointIndex) const override;
+		const napqt::AbstractCurve::InterpType interpolation(int pointIndex) const override;
+		void setInterpolation(int pointIndex, const InterpType& interp) override;
+		const bool tangentsAligned(int pointIndex) const override;
+		void setTangentsAligned(int pointIndex, bool b) override;
+		void movePoints(const QMap<int, QPointF>& positions, bool finished) override;
+		void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents,
+						  bool finished) override;
+		const PropertyPath pointPath(int pointIndex);
+	private:
+		nap::math::FloatFCurve& mCurve;
+		QMap<nap::math::FCurveInterp, napqt::AbstractCurve::InterpType> mInterpMap = {
+				{nap::math::FCurveInterp::Stepped, napqt::AbstractCurve::InterpType::Stepped},
+				{nap::math::FCurveInterp::Linear,  napqt::AbstractCurve::InterpType::Linear},
+				{nap::math::FCurveInterp::Bezier,  napqt::AbstractCurve::InterpType::Bezier},
+		};
+	};
+
+	class FloatFCurveModel : public napqt::AbstractCurveModel
+	{
+	public:
+		explicit FloatFCurveModel(nap::math::FloatFCurve& curve);
+
+		int curveCount() const override;
+		napqt::AbstractCurve* curve(int index) const override;
+		FCurve& curve() { return mCurve; }
+	private:
+		FCurve mCurve;
+
+	};
+
+}

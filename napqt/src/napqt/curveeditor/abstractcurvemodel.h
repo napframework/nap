@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QList>
+#include <QObject>
 
 namespace napqt
 {
@@ -14,7 +15,7 @@ namespace napqt
 	class AbstractCurve : public QObject
 	{
 	Q_OBJECT
-		Q_ENUMS(InterpType)
+	Q_ENUMS(InterpType)
 	public:
 		enum InterpType
 		{
@@ -51,15 +52,41 @@ namespace napqt
 
 
 		// Point data
-		virtual void movePoints(const QMap<int, QPointF>& positions) = 0;
-		virtual void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents) = 0;
+		/**
+		 *
+		 * @param positions
+		 * @param finished
+		 */
+		virtual void movePoints(const QMap<int, QPointF>& positions, bool finished) = 0;
+		virtual void moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents, bool finished) = 0;
 		virtual void removePoints(const QList<int>& indices) {}
 		virtual void addPoint(qreal time, qreal value) {}
 
 	Q_SIGNALS:
+		/**
+		 * Invoked when this curve changes
+		 * @param curve
+		 */
 		void changed(AbstractCurve* curve);
-		void pointsChanged(QList<int> indices);
+
+		/**
+		 * Invoked when the points change. This is called continuously during point dragging, so it gets called often.
+		 * The last invocation in the edit will set finished to true, so the client may commit the changes.
+		 * @param indices The indices of the (unordered) points being changed
+		 * @param finished True when changes in rapid succession are done and this is the last change.
+		 */
+		void pointsChanged(QList<int> indices, bool finished);
+
+		/**
+		 * Invoked when one or more points are added to the curve.
+		 * @param indices The indices at which the points are inserted
+		 */
 		void pointsAdded(QList<int> indices);
+
+		/**
+		 * Invoked when one or more points are deleted from the curve.
+		 * @param indices The incides at which the points are being removed
+		 */
 		void pointsRemoved(QList<int> indices);
 	};
 
@@ -70,7 +97,7 @@ namespace napqt
 	{
 	Q_OBJECT
 	public:
-		explicit AbstractCurveModel(QObject* parent);
+		explicit AbstractCurveModel(QObject* parent = nullptr);
 
 		/**
 		 * @return The number of curves this model provides

@@ -15,7 +15,8 @@ namespace nap
 		/**
 		 * Possible interpolations per curve segment
 		 */
-		enum class NAPAPI FCurveInterp : int {
+		enum class NAPAPI FCurveInterp : int
+		{
 			Bezier = 0,
 			Linear,
 			Stepped,
@@ -31,9 +32,26 @@ namespace nap
 		struct NAPAPI FComplex
 		{
 			FComplex() = default;
+			FComplex(const T& time, const U& value) : mTime(time), mValue(value) {}
 
 			T mTime; // x-axis value
 			U mValue; // y-axis value
+
+
+			FComplex operator+(const FComplex& other) const
+			{
+				return {mTime + other.mTime, mValue + other.mValue};
+			}
+
+			FComplex operator-(const FComplex& other) const
+			{
+				return {mTime - other.mTime, mValue - other.mValue};
+			}
+
+			FComplex operator*(const T& other) const
+			{
+				return {mTime * other, mValue * other};
+			}
 		};
 
 		/**
@@ -44,29 +62,19 @@ namespace nap
 		template<typename T, typename U>
 		struct NAPAPI FCurvePoint
 		{
-			FCurvePoint() = default;
+			using Fc = FComplex<T, U>;
 
-			FComplex<T, U> mPos;
-			FComplex<T, U> mInTan;
-			FComplex<T, U> mOutTan;
+			FCurvePoint() = default;
+			FCurvePoint(const Fc& pos, const Fc& inTan, const Fc& outTan)
+				: mPos(pos), mInTan(inTan), mOutTan(outTan) {}
+
+			Fc mPos;
+			Fc mInTan;
+			Fc mOutTan;
 			FCurveInterp mInterp = FCurveInterp::Bezier;
 
 			// Non-essential to functionality, but necessary for editing
 			bool mTangentsAligned = true;
-		};
-
-		/**
-		 * Compare functor to be used to keep curve points sorted for faster evaluation
-		 * @tparam T type of the time parameter
-		 * @tparam U type of the value parameter
-		 */
-		template<typename T, typename U>
-		struct PointCompare
-		{
-			bool operator()(const FCurvePoint<T, U>& lhs, const FCurvePoint<T, U>& rhs)
-			{
-				return lhs.mPos.mTime < rhs.mPos.mTime;
-			}
 		};
 
 		/**
@@ -79,13 +87,16 @@ namespace nap
 		template<typename T, typename U>
 		class NAPAPI FCurve : public Resource
 		{
-			RTTI_ENABLE(Resource)
+		RTTI_ENABLE(Resource)
 			using Pt = FCurvePoint<T, U>;
 			using Fc = FComplex<T, U>;
 
 		public:
-			FCurve() = default;
-			
+			/**
+			 * Default constructor, creates curve with a 0-1 ramp
+			 */
+			FCurve();
+
 			/**
 			 * Evaluate this curve at time t
 			 * @param t 
@@ -110,7 +121,7 @@ namespace nap
 			 * @param curr
 			 * @param next
 			 */
-			void pointsAtTime(const U& time, Pt*& curr, Pt*& next) const;
+			int pointIndexAtTime(const U& time) const;
 
 			/**
 			 * In case of Bezier interpolation, keep this curve segment from having multiple solutions
@@ -119,7 +130,7 @@ namespace nap
 			 * @param x2
 			 * @param x3
 			 */
-			void limitOverhang(U& x0, U& x1, U& x2, U& x3);
+			void limitOverhang(const U& x0, U& x1, U& x2, const U& x3);
 
 			/**
 			 * In case of Bezier interpolation, keep this curve segment from having multiple solutions
@@ -128,9 +139,9 @@ namespace nap
 			 * @param pc
 			 * @param pd
 			 */
-			void limitOverhangPoints(Fc& pa, Fc& pb, Fc& pc, Fc& pd);
+			void limitOverhangPoints(const Fc& pa, Fc& pb, Fc& pc, const Fc& pd);
 
-			std::set<FCurvePoint<T, U>, PointCompare<T, U>> mSortedPoints;
+			mutable std::vector<FCurvePoint<T, U>> mSortedPoints;
 		};
 
 
@@ -139,7 +150,7 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T, typename U>
-		void FCurve<T, U>::limitOverhangPoints(FCurve::Fc& pa, FCurve::Fc& pb, FCurve::Fc& pc, FCurve::Fc& pd)
+		void FCurve<T, U>::limitOverhangPoints(const FCurve::Fc& pa, FCurve::Fc& pb, FCurve::Fc& pc, const FCurve::Fc& pd)
 		{
 			auto a = pa.mTime;
 			auto b = pb.mTime;
@@ -164,72 +175,71 @@ namespace nap
 		}
 
 		template<typename T, typename U>
-		void FCurve<T, U>::limitOverhang(U& x0, U& x1, U& x2, U& x3)
+		void FCurve<T, U>::limitOverhang(const U& x0, U& x1, U& x2, const U& x3)
 		{
-			x1 = min(x1, x3);
-			x2 = qMax(x2, x0);
+			x1 = std::min(x1, x3);
+			x2 = std::max(x2, x0);
 		}
 
 		template<typename T, typename U>
-		void FCurve<T, U>::pointsAtTime(const U& time, FCurve::Pt*& curr, FCurve::Pt*& next) const
+		int FCurve<T, U>::pointIndexAtTime(const U& time) const
 		{
-			Pt* lastPt = mSortedPoints.cbegin();
-			for (auto pt : mSortedPoints)
-			{
-				if (pt.mPos.mTime > time)
-				{
-					curr = lastPt;
-					next = pt;
-					return;
-				}
-				lastPt = pt;
-			}
+			for (size_t i = 0, len = mSortedPoints.size(); i < len; i++)
+				if (time > mSortedPoints[i].mPos.mTime)
+					return static_cast<int>(i);
 			assert(false);
+			return -1;
 		}
 
 		template<typename T, typename U>
 		void FCurve<T, U>::sortPoints()
 		{
 			mSortedPoints.clear();
-			mSortedPoints.emplace(mPoints);
+			for (int i = 0; i < mPoints.size(); i++)
+				mSortedPoints.emplace_back(mPoints[i]);
+
+			std::sort(mSortedPoints.begin(), mSortedPoints.end(),
+					  [](const FCurvePoint<T, U>& lhs, const FCurvePoint<T, U>& rhs)
+					  {
+						  return lhs.mPos.mTime < rhs.mPos.mTime;
+					  });
 		}
 
 		template<typename T, typename U>
 		T FCurve<T, U>::evaluate(const U& time)
 		{
+			if (mPoints.empty())
+				return T();
+
 			sortPoints(); // TODO: Optimize or move this call somewhere else
 
-			Pt* firstPoint = mSortedPoints[0];
-			if (time < firstPoint->mPos.mTime)
-				return firstPoint->mPos.mValue;
+			const Pt& firstPoint = mSortedPoints[0];
+			if (time < firstPoint.mPos.mTime)
+				return firstPoint.mPos.mValue;
 
-			Pt* lastPoint = mSortedPoints[mSortedPoints.size() - 1];
-			if (time >= lastPoint->mPos.mTime)
-				return lastPoint->mPos.mValue;
+			const Pt& lastPoint = mSortedPoints[mSortedPoints.size() - 1];
+			if (time >= lastPoint.mPos.mTime)
+				return lastPoint.mPos.mValue;
 
-			Pt* curr = nullptr;
-			Pt* next = nullptr;
-			pointsAtTime(time, curr, next);
-			assert(curr);
-			assert(next);
-			auto a = curr->mPos;
-			auto b = a + curr->mOutTan;
-			auto d = next->mPos;
-			auto c = d + next->mInTan;
+			int idx = pointIndexAtTime(time);
+			const Pt& curr = mSortedPoints[idx];
+			const Pt& next = mSortedPoints[idx + 1];
+
+			auto a = curr.mPos;
+			auto b = a + curr.mOutTan;
+			auto d = next.mPos;
+			auto c = d + next.mInTan;
 
 			limitOverhangPoints(a, b, c, d);
 
-			switch (curr->mInterp)
+			switch (curr.mInterp)
 			{
 				case FCurveInterp::Bezier:
-					evalCurveSegmentBezier({a, b, c, d}, time);
-					break;
+					return evalCurveSegmentBezier({a, b, c, d}, time);
 				case FCurveInterp::Linear:
-					evalCurveSegmentLinear({a, b, c, d}, time);
-					break;
+					return evalCurveSegmentLinear({a, b, c, d}, time);
 				case FCurveInterp::Stepped:
-					evalCurveSegmentStepped({a, b, c, d}, time);
-					break;
+					return evalCurveSegmentStepped({a, b, c, d}, time);
 				default:
 					assert(false);
 			}
@@ -255,5 +265,6 @@ namespace nap
 		using Vec2FCurvePoint = FCurvePoint<float, glm::vec2>;
 		using Vec3FCurvePoint = FCurvePoint<float, glm::vec3>;
 		using Vec4FCurvePoint = FCurvePoint<float, glm::vec4>;
+
 	}
 }

@@ -186,6 +186,13 @@ namespace napqt
 				++it;
 	}
 
+	template<typename K, typename V>
+	const K& keyFromValue(const QMap<K, V>& map, const V& value, const K& defaultKey) {
+		for (auto it = map.cbegin(); it != map.cend(); it++)
+			if (it.value() == value)
+				return it.key();
+		return defaultKey;
+	}
 
 }
 
