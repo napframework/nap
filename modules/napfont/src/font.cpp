@@ -151,23 +151,6 @@ namespace nap
 	}
 
 
-	bool FontInstance::changeSize(int size, int dpi)
-	{
-		// Ensure we have a valid face
-		assert(isValid());
-		if (FT_Set_Char_Size(toFreetypeFace(mFace), 0, size * 64, dpi, dpi) > 0)
-			return false;
-
-		// Copy settings
-		mProperties.mSize = size;
-		mProperties.mDPI  = dpi;
-
-		// Clear current cache
-		resetCache();
-		return true;
-	}
-
-
 	bool FontInstance::isValid() const
 	{
 		return mFace != nullptr;
@@ -221,7 +204,7 @@ namespace nap
 	{
 		assert(isValid());
 		mGlyphs.clear();
-		mGlyphs.reserve(toFreetypeFace(mFace)->num_glyphs);
+		mGlyphs.resize(toFreetypeFace(mFace)->num_glyphs);
 	}
 
 
