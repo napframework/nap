@@ -6,7 +6,6 @@
 // External Includes
 #include <nap/resource.h>
 #include <rtti/factory.h>
-#include <unordered_map>
 #include <utility>
 #include <utility/errorstate.h>
 
@@ -107,7 +106,6 @@ namespace nap
 	 * Use the getGlyphIndex() and getOrCreateGlyph() functions to fetch characters.
 	 * All the characters (glyphs) are managed and therefore owned by this font.
 	 * It is possible to create a font instance dynamically at run-time.
-	 * When you change font properties the cache is automatically cleared
 	 */
 	class NAPAPI FontInstance final
 	{
@@ -141,16 +139,6 @@ namespace nap
 		bool create(const FontProperties& properties, utility::ErrorState& error);
 
 		/**
-		 * Allows for changing the size of the font at run-time
-		 * Updates the size and dpi variables and pushes the size changes to the managed typeface
-		 * Call create() before calling this function!
-		 * @param size the new size of the font in em (points)
-		 * @param dpi the dots per inch (resolution) of the monitor
-		 * @return if the new size could be set, ie: is supported by the type face
-		 */
-		bool changeSize(int size, int dpi);
-
-		/**
 		 * @return up to date properties associated with this font
 		 */
 		const FontProperties& getProperties() const;
@@ -161,8 +149,8 @@ namespace nap
 		bool isValid() const;
 
 		/**
-		 *	Get the index of a Glyph inside this font based on a character code
-		 * You can use this index in conjunction with getGlyph()
+		 * Get the index of a Glyph inside this font based on a character code
+		 * Use this index to get a handle to a Glyph using getOrCreateGlyph()
 		 * @param character the character code, 0 when not identified
 		 */
 		 nap::uint getGlyphIndex(nap::uint character) const;
@@ -219,9 +207,7 @@ namespace nap
 		void* mFace = nullptr;											///< Handle to the free-type face object
 		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
 		FontProperties mProperties = { -1, -1, "" };					///< Describes current font properties
-
-		using GlyphMap = std::unordered_map<uint, std::unique_ptr<Glyph>>;
-		GlyphMap mGlyphs;												///< All cached glyphs
+		std::vector<std::unique_ptr<Glyph>> mGlyphs;					///< All cached glyphs
 	};
 
 
@@ -235,11 +221,15 @@ namespace nap
 		assert(isValid());
 		assert(RTTI_OF(T).is_derived_from(RTTI_OF(Glyph)));
 
+		// Ensure the index is valid
+		if (!errorCode.check(index < mGlyphs.size(), "glyph index out of bounds"))
+			return nullptr;
+
 		// Try to find a cached Glyph
-		auto it = mGlyphs.find(index);
-		if (it != mGlyphs.end())
+		std::unique_ptr<Glyph>& glyph = mGlyphs[index];
+		if (glyph != nullptr)
 		{
-			T* c_glyph = rtti_cast<T>(it->second.get());
+			T* c_glyph = rtti_cast<T>(glyph.get());
 			assert(c_glyph != nullptr);
 			return c_glyph;
 		}
@@ -255,14 +245,14 @@ namespace nap
 
 		// Create new glyph
 		T* ptr = new T(glyph_handle, index);
-		std::unique_ptr<T> uptr(ptr);
+		mGlyphs[index].reset(ptr);
 
-		// Initialize, when initialization fails the uptr is destroyed automatically
-		if (!uptr->init(errorCode))
+		// Initialize, destroy unique ptr if initialization fails
+		if (!ptr->init(errorCode))
+		{
+			mGlyphs[index].reset(nullptr);
 			return nullptr;
-
-		// Store
-		mGlyphs.emplace(std::make_pair(index, std::move(uptr)));
+		}
 		return ptr;
 	}
 }
