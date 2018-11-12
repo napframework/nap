@@ -12,14 +12,12 @@ namespace nap
 	/**
 	 * Represents a symbol (character) in a font that can be rendered using OpenGL
 	 * The glyph is rendered to a 2D texture that can be tied to a material
-	 * The stored glyph is converted to a bitmap on initialization and uploaded to the GPU
-	 * The bitmap is deleted after storage on the GPU, the original Glyph remains intact. 
+	 * The glyph is converted to a bitmap on initialization and uploaded to the GPU
+	 * The bitmap is deleted after storage on the GPU.
 	 */
-	class NAPAPI RenderableGlyph : public Glyph
+	class NAPAPI RenderableGlyph : public IGlyphRepresentation
 	{
-		friend FontInstance;
-		RTTI_ENABLE(Glyph)
-
+		RTTI_ENABLE(IGlyphRepresentation)
 	public:
 		/**
 		 * @return size of the glyph in pixels
@@ -61,24 +59,28 @@ namespace nap
 		 */
 		Texture2D& getTexture() { return mTexture; }
 
-	protected:
 		/**
-		 * Constructor, can only be invoked by a FontInstance
-		 * @param slot handle to the Glyph inside the font
-		 * @param index index of the glyph in the font
+		 * @return horizontal glyph advance value in pixels
 		 */
-		RenderableGlyph(void* handle, uint index);
+		int getHorizontalAdvance() const { return mAdvance.x; }
 
+		/**
+		 * @return vertical glyph advance value in pixels
+		 */
+		int getVerticalAdvance() const { return mAdvance.y; }
+
+	protected:
 		/**
 		 * Initializes the OpenGL 2DTexture after construction of this glyph	
 		 * First it converts the freetype glyph into a bitmap. This bitmap is uploaded to the GPU
 		 * @return if the 2DTexture has been initialized correctly
 		 */
-		virtual bool init(utility::ErrorState& errorCode) override;
+		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
 
 	private:
 		Texture2D mTexture;
 		glm::ivec2 mSize	= { -1, -1 };		///< Size of the Glyph in pixels
 		glm::ivec2 mBearing = { -1, -1 };		///< Offset from baseline to left/top of glyph
+		glm::ivec2 mAdvance = { -1, -1 };		///< Offset in pixels to advance to next glyph
 	};
 }

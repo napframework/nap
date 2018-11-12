@@ -21,19 +21,10 @@ namespace nap
 		return reinterpret_cast<FT_Glyph>(handle);
 	}
 
-
-	RenderableGlyph::RenderableGlyph(void* handle, uint index) : Glyph(handle, index)
-	{ }
-
-
-	bool RenderableGlyph::init(utility::ErrorState& errorCode)	
+	bool RenderableGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
 	{
-		// Init base glyph
-		if(!Glyph::init(errorCode))
-			return false;
-
 		// Get handle to the glyph
-		FT_Glyph bitmap = toFreeTypeGlyph(getHandle());
+		FT_Glyph bitmap = toFreeTypeGlyph(glyph.getHandle());
 
 		// Convert to bitmap, this actually replaces the handle underneath
 		// This means that the original pointer to the glyph is still valid!
@@ -71,6 +62,10 @@ namespace nap
 
 		// Clean up bitmap data
 		FT_Done_Glyph(bitmap);
+
+		// Store advance
+		mAdvance.x = glyph.getHorizontalAdvance();
+		mAdvance.y = glyph.getVerticalAdvance();
 
 		return true;
 	}
