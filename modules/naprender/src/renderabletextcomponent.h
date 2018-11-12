@@ -11,6 +11,7 @@
 #include <font.h>
 #include <planemesh.h>
 #include <renderablemesh.h>
+#include <nbackbufferrendertarget.h>
 
 namespace nap
 {
@@ -47,14 +48,24 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableComponentInstance)
 	public:
+
+		/**
+		 * Horizontal text draw orientation, vertical alignment is based on character origin
+		 */
+		enum class EOrientation : int
+		{
+			Left	= 0,		///< Draws text to the right of the horizontal coordinate
+			Center	= 1,		///< Centers the text around the horizontal coordinate
+			Right	= 2			///< Draws the text to the left of the horizontal coordinate
+		};
+
 		RenderableTextComponentInstance(EntityInstance& entity, Component& resource) :
 			RenderableComponentInstance(entity, resource)									{ }
 
 		/**
-		 * Initialize renderabletextcomponentInstance based on the renderabletextcomponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
-		 * @param errorState should hold the error message when initialization fails
-		 * @return if the renderabletextcomponentInstance is initialized successfully
+		 * Initializes the this component.
+		 * @param errorState holds the error message when initialization fails
+		 * @return if the component initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -90,15 +101,16 @@ namespace nap
 		/**
 		 * Draws text into the active target using the provided coordinates in screen space.
 		 * This is a convenience function that calls onDraw using a custom view and projection matrix
-		 * @param coordinates the of the text coordinates in pixel space
-		 * @param targetSize size in pixels of the render target
+		 * @param coordinates the location of the text in screen space
+		 * @param target render target that defines the screen space bounds
+		 * @param orientation how to position the text.
 		 */
-		void draw(glm::ivec2 coordinates, glm::ivec2 targetSize);
+		void draw(glm::ivec2 coordinates, const opengl::BackbufferRenderTarget& target, EOrientation orientation = EOrientation::Left);
 
 		/**
-		 * @return the bounding box of the text to display in pixels
+		 * @return the bounding box of the text in pixels
 		 */
-		math::Rect getBoundingBox() const;
+		const math::Rect& getBoundingBox() const;
 
 	protected:
 		/**
@@ -118,5 +130,6 @@ namespace nap
 		RenderableMesh mRenderableMesh;							///< Valid Plane / Material combination
 		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;	///< Handle to the plane vertices
 		std::vector<RenderableGlyph*> mGlyphs;					///< Glyphs associated with the text to render
+		math::Rect mTextBounds;									///< Bounds of the text in pixels
 	};
 }

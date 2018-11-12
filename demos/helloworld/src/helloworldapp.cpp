@@ -138,7 +138,10 @@ namespace nap
 		components_to_render.clear();
 		RenderableTextComponentInstance& render_text = mTextEntity->getComponent<nap::RenderableTextComponentInstance>();
 		math::Rect text_bounds = render_text.getBoundingBox();
-		render_text.draw({ 0, (int)(text_bounds.mMinPosition.y * -1.0f)}, { mRenderWindow->getWidth(), mRenderWindow->getHeight() });
+		render_text.draw(
+			{ mRenderWindow->getWidth() / 2, mRenderWindow->getHeight()/2}, 
+			{ mRenderWindow->getBackbuffer() }, 
+			RenderableTextComponentInstance::EOrientation::Center);
 
 		// Draw our gui
 		mGuiService->draw();
