@@ -298,7 +298,7 @@ namespace nap
 		* Adds a new glyph representation to the cache.
 		* This cache owns the new representation.
 		*/
-		void addRepresentation(std::unique_ptr<IGlyphRepresentation>& representation);
+		void addRepresentation(std::unique_ptr<IGlyphRepresentation> representation);
 
 	private:
 		std::unique_ptr<Glyph> mGlyph = nullptr;			///< Pointer to parent glyph object
