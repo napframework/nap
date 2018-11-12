@@ -287,7 +287,7 @@ namespace nap
 			assert(false);
 		}
 
-		glm::mat4 view_matrix = glm::translate(glm::mat4x4(), 
+		glm::mat4 view_matrix = glm::translate(identityMatrix, 
 		{ 
 			(float)pos.x, 
 			(float)pos.y, 
