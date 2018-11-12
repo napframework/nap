@@ -318,7 +318,7 @@ namespace nap
 	}
 
 
-	void GlyphCache::addRepresentation(std::unique_ptr<IGlyphRepresentation>& representation)
+	void GlyphCache::addRepresentation(std::unique_ptr<IGlyphRepresentation> representation)
 	{
 		mRepresentations.emplace(std::make_pair(representation->get_type().get_raw_type(), std::move(representation)));
 	}

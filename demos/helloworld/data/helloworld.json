@@ -217,8 +217,8 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Font": "fonts/arial.ttf",
-                "Size": 64,
+                "Font": "fonts/OpenSans-Regular.ttf",
+                "Size": 16,
                 "DPI": 96
             }
         },
