@@ -48,7 +48,8 @@ namespace nap
 
 		// Fetch transform
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
-		assert(mTransform != nullptr);
+		if (!errorState.check(mTransform != nullptr, "Missing transform component"))
+			return false;
 
 		// Create material instance
 		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
@@ -117,102 +118,8 @@ namespace nap
 
 	void RenderableTextComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
-		// Ensure we can render the mesh / material combo
-		if (!mRenderableMesh.isValid())
-		{
-			assert(false);
-			return;
-		}
-
 		// Get global transform
-		const glm::mat4x4& model_matrix = mTransform->getGlobalTransform();
-
-		// Get material to bind
-		Material* comp_mat = mMaterialInstance.getMaterial();
-		comp_mat->bind();
-
-		// Set uniform variables
-		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
-		if (projectionUniform != nullptr)
-			projectionUniform->setValue(projectionMatrix);
-
-		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
-		if (viewUniform != nullptr)
-			viewUniform->setValue(viewMatrix);
-
-		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
-		if (modelUniform != nullptr)
-			modelUniform->setValue(model_matrix);
-
-		// Prepare blending
-		utility::setBlendMode(getMaterialInstance());
-
-		// Bind vertex array object
-		// The VAO handle works for all the registered render contexts
-		mRenderableMesh.mVAOHandle.get().bind();
-
-		// Get plane to draw
-		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
-
-		// Location of active letter
-		float x = 0.0f;
-		float y = 0.0f;
-
-		// Fetch uniform for setting character
-		UniformTexture2D* glyph_uniform = comp_mat->findUniform<UniformTexture2D>(mGlyphUniform);
-		assert(glyph_uniform != nullptr);
-
-		// Get vertex position data (that we update in the loop
-		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
-
-		// GPU mesh representation
-		const opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
-
-		// Lines / Fill etc.
-		GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
-
-		// Fetch index buffer (holding drawing order
-		const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
-		GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
-		nap::utility::ErrorState error;
-
-		// Draw every letter in the text to screen
-		for (auto& render_glyph : mGlyphs)
-		{
-			// Get width and height of character to draw
-			float w = render_glyph->getSize().x;
-			float h = render_glyph->getSize().y;
-
-			// Compute x and y position
-			float xpos = x + render_glyph->getOffsetLeft();
-			float ypos = y - (h - render_glyph->getOffsetTop());
-
-			// Set vertex positions of plane
-			pos_data[0] = { xpos,		ypos,		0.0f };
-			pos_data[1] = { xpos + w,	ypos,		0.0f };
-			pos_data[2] = { xpos,		ypos + h,	0.0f };
-			pos_data[3] = { xpos + w,	ypos + h,	0.0f };
-
-			// Push vertex positions to GPU
-			mesh_instance.update(error);
-
-			// Set texture and push uniforms
-			glyph_uniform->setTexture(render_glyph->getTexture());
-			utility::pushUniforms(mMaterialInstance);
-
-			// Bind and draw all the arrays
-			index_buffer.bind();
-			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-			index_buffer.unbind();
-
-			// Update x
-			x += render_glyph->getHorizontalAdvance();
-		}
-
-		// Unbind
-		index_buffer.unbind();
-		comp_mat->unbind();
-		mRenderableMesh.mVAOHandle.get().unbind();
+		draw(viewMatrix, projectionMatrix, mTransform->getGlobalTransform());
 	}
 
 
@@ -292,7 +199,107 @@ namespace nap
 			(float)pos.x, 
 			(float)pos.y, 
 			0.0f });
-		onDraw(view_matrix, proj_matrix);
+
+		// Draw text in screen space
+		draw(view_matrix, proj_matrix, mTransform->getGlobalTransform());
+	}
+
+
+	void RenderableTextComponentInstance::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, const glm::mat4& modelMatrix)
+	{
+		// Ensure we can render the mesh / material combo
+		if (!mRenderableMesh.isValid())
+		{
+			assert(false);
+			return;
+		}
+
+		// Get material to bind
+		Material* comp_mat = mMaterialInstance.getMaterial();
+		comp_mat->bind();
+
+		// Set uniform variables
+		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
+		if (projectionUniform != nullptr)
+			projectionUniform->setValue(projectionMatrix);
+
+		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
+		if (viewUniform != nullptr)
+			viewUniform->setValue(viewMatrix);
+
+		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
+		if (modelUniform != nullptr)
+			modelUniform->setValue(modelMatrix);
+
+		// Prepare blending
+		utility::setBlendMode(getMaterialInstance());
+
+		// Bind vertex array object
+		// The VAO handle works for all the registered render contexts
+		mRenderableMesh.mVAOHandle.get().bind();
+
+		// Get plane to draw
+		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
+
+		// Location of active letter
+		float x = 0.0f;
+		float y = 0.0f;
+
+		// Fetch uniform for setting character
+		UniformTexture2D* glyph_uniform = comp_mat->findUniform<UniformTexture2D>(mGlyphUniform);
+		assert(glyph_uniform != nullptr);
+
+		// Get vertex position data (that we update in the loop
+		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
+
+		// GPU mesh representation
+		const opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
+
+		// Lines / Fill etc.
+		GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
+
+		// Fetch index buffer (holding drawing order
+		const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
+		GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
+		nap::utility::ErrorState error;
+
+		// Draw every letter in the text to screen
+		for (auto& render_glyph : mGlyphs)
+		{
+			// Get width and height of character to draw
+			float w = render_glyph->getSize().x;
+			float h = render_glyph->getSize().y;
+
+			// Compute x and y position
+			float xpos = x + render_glyph->getOffsetLeft();
+			float ypos = y - (h - render_glyph->getOffsetTop());
+
+			// Set vertex positions of plane
+			pos_data[0] = { xpos,		ypos,		0.0f };
+			pos_data[1] = { xpos + w,	ypos,		0.0f };
+			pos_data[2] = { xpos,		ypos + h,	0.0f };
+			pos_data[3] = { xpos + w,	ypos + h,	0.0f };
+
+			// Push vertex positions to GPU
+			mesh_instance.update(error);
+
+			// Set texture and push uniforms
+			glyph_uniform->setTexture(render_glyph->getTexture());
+			utility::pushUniforms(mMaterialInstance);
+
+			// Bind and draw all the arrays
+			index_buffer.bind();
+			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
+			index_buffer.unbind();
+
+			// Update x
+			x += render_glyph->getHorizontalAdvance();
+		}
+
+		// Unbind
+		index_buffer.unbind();
+		comp_mat->unbind();
+		mRenderableMesh.mVAOHandle.get().unbind();
 	}
 
 
