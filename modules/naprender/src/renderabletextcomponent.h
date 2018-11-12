@@ -87,6 +87,19 @@ namespace nap
 		 */
 		MaterialInstance& getMaterialInstance();
 
+		/**
+		 * Draws text into the active target using the provided coordinates in screen space.
+		 * This is a convenience function that calls onDraw using a custom view and projection matrix
+		 * @param coordinates the of the text coordinates in pixel space
+		 * @param targetSize size in pixels of the render target
+		 */
+		void draw(glm::ivec2 coordinates, glm::ivec2 targetSize);
+
+		/**
+		 * @return the bounding box of the text to display in pixels
+		 */
+		math::Rect getBoundingBox() const;
+
 	protected:
 		/**
 		 * Draws the text to the currently active render target
