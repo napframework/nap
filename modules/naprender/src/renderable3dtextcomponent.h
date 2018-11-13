@@ -13,6 +13,9 @@ namespace nap
 	/**
 	 * Draws flat text in 3D space.
 	 * Use this component when you want to render text at a specific location in the world
+	 * Use the normalize toggle to render the text at the origin of the scene with a unit size of 1.
+	 * When rendering in normalized mode the initial text is used to compute the normalization factor.
+	 * This ensures that when changing text at runtime the size of the letters don't change as well.
 	 * Use the Renderable2DTextComponent to draw text in screen (pixel) space with an orthographic camera.
 	 */
 	class NAPAPI Renderable3DTextComponent : public RenderableTextComponent
@@ -20,12 +23,13 @@ namespace nap
 		RTTI_ENABLE(RenderableTextComponent)
 		DECLARE_COMPONENT(Renderable3DTextComponent, Renderable3DTextComponentInstance)
 	public:
-
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		* @param components the components this object depends on
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
+
+		bool mNormalize = true;		///< Property: 'Normalize' text is rendered at the origin with normalized bounds (-0.5,0.5)
 	};
 
 
@@ -51,6 +55,29 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * Enables or disables normalization. Normalized text is centered around the origin with approx -0.5 / 0.5 bounds
+		 * The normalization factor is based on reference text which can be updated by calling: computeNormalizationFactor()
+		 * This ensures that the text doesn't change size at runtime.
+		 * @param enable disable or enable normalization
+		 * @param referenceText the text used to calculate the normalization factor, can be left empty when disabled
+		 */
+		void normalizeText(bool enable)													{ mNormalize = enable; }
+
+		/**
+		 * @return if the text is drawn normalized, normalized text is 1 unit long and centered around the origin
+		 */
+		bool isNormalized() const														{ return mNormalize; }
+
+		/**
+		 * Calculates normalization factor based on the given reference text.
+		 * This is called automatically on initialization but can be changed at runtime.
+		 * Caching this value ensures that at runtime the size of the text doesn't change when normalization is turned on.
+		 * @param referenceText text used to calculate the normalization factor
+		 * @return if the bounds updated correctly based on the reference text
+		 */
+		bool computeNormalizationFactor(const std::string& referenceText);
+
 	protected:
 		/**
 		 * Draws the text to the currently active render target using the render service.
@@ -63,5 +90,9 @@ namespace nap
 		 * @param projectionMatrix the camera projection matrix, orthographic or perspective
 		 */
 		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+
+	private:
+		bool	mNormalize = true;						///< If the text as a mesh is normalized (-0.5,0.5)
+		float	mNormalizationFactor = 1.0f;			///< Calculated normalization factor based on reference text
 	};
 }

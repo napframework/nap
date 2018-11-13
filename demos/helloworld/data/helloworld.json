@@ -89,7 +89,7 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 1.0
+                        "UniformScale": 2.0
                     }
                 },
                 {
@@ -98,12 +98,25 @@
                     "Text": "Hi There! Welcome to NAP",
                     "Font": "Font2",
                     "GlyphUniform": "glyph",
-                    "Orientation" : "Left",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
                         "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable3DTextComponent",
+                    "mID": "nap::Renderable3DTextComponent",
+                    "Text": "I am some guy",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "NoReadWrite"
                     }
                 }
             ],
@@ -177,7 +190,7 @@
             "mID": "Font",
             "Properties": {
                 "Font": "fonts/Borg.ttf",
-                "Size": 32,
+                "Size": 256,
                 "DPI": 96
             }
         },

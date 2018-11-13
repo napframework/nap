@@ -103,8 +103,9 @@ namespace nap
 		 */
 		const nap::TransformComponentInstance* getTransform() const		{ return mTransform; }
 
-	private:
 		FontInstance* mFont = nullptr;									///< Pointer to the font, set on initialization
+
+	private:
 		std::string mText = "";											///< Text to render
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
