@@ -28,16 +28,16 @@ namespace nap
 	/**
 	 * Runtime version of the Renderable2DTextComponent.
 	 * This component allows you to render a single line of text to screen at a specific location in pixel space.
-	 * Call draw() in the render part of your application to draw the text to a target at a specific location.
+	 * Call draw() in the render part of your application to render text to a specific location on screen or a render-target.
 	 * It is also possible to render the text using RenderService::renderObjects(), this is similar to how meshes are rendered.
-	 * In that case both the camera has an impact on the location of the text. 
+	 * In that case the camera location influences the final location of the text.
 	 * When the parent entity has a transform component attached to it the x/y Translate values are used as text offset in pixel space.
 	 * 2D text cannot be scaled or rotated, this ensures that every Glyph is rendered in it's native resolution.
 	 * When rendering this component through the render interface of the render service it is advised to use an orthographic camera.
 	 */
 	class NAPAPI Renderable2DTextComponentInstance : public RenderableTextComponentInstance
 	{
-		RTTI_ENABLE(ComponentInstance)
+		RTTI_ENABLE(RenderableTextComponentInstance)
 	public:
 		Renderable2DTextComponentInstance(EntityInstance& entity, Component& resource) :
 			RenderableTextComponentInstance(entity, resource)									{ }
