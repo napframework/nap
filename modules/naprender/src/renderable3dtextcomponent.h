@@ -38,8 +38,8 @@ namespace nap
 	 * This component allows you to render a single line of text at a specific location in the world.
 	 * 3D text can only be rendered using the render service, similar to how 3D meshes are rendered.
 	 * The text can be transformed, scaled and rotated. It's best to render 3D text using a perspective camera.
-	 * The font size directly influences the size of the text. 
-	 * Use the bounding box to position and scale the text.
+	 * The font size directly influences the size of the text unless normalization is turned on.
+	 * When normalization is turned on the text is rendered centered on the origin with -0.5-0,5 bounds.
 	 */
 	class NAPAPI Renderable3DTextComponentInstance : public RenderableTextComponentInstance
 	{
