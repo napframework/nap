@@ -183,7 +183,7 @@ namespace nap
 
 		/**
 		 * Returns the bounding box in pixels associated with a string of text.
-		 * This bounding box tightly wraps the text and includes initial horizontal bearing
+		 * This bounding box tightly wraps the text and excludes initial horizontal bearing
 		 * All requested glyphs are cached internally.
 		 * @param text the string of characters to compute the bounding box for
 		 * @param outRect contains the text bounds

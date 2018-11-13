@@ -4,7 +4,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
-#include <renderabletextcomponent.h>
+#include <Renderable2DTextComponent.h>
 #include <orthocameracomponent.h>
 #include <mathutils.h>
 #include <scene.h>
@@ -87,6 +87,7 @@ namespace nap
 		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
 			"left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::SliderInt2("Text Position", &(mTextPos.x), 0, 1920);
 		ImGui::End();
 	}
 
@@ -133,11 +134,10 @@ namespace nap
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
 
 		// Render text on top of the sphere
-		RenderableTextComponentInstance& render_text = mTextEntity->getComponent<nap::RenderableTextComponentInstance>();
+		Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
 		render_text.draw(
-			{ mRenderWindow->getWidth() / 2, mRenderWindow->getHeight()/2}, 
-			{ mRenderWindow->getBackbuffer() }, 
-			RenderableTextComponentInstance::EOrientation::Center);
+			{ mTextPos },
+			{ mRenderWindow->getBackbuffer() });
 
 		// Draw our gui
 		mGuiService->draw();
