@@ -190,7 +190,7 @@
             "mID": "Font",
             "Properties": {
                 "Font": "fonts/Borg.ttf",
-                "Size": 256,
+                "Size": 512,
                 "DPI": 96
             }
         },
@@ -198,8 +198,8 @@
             "Type": "nap::Font",
             "mID": "Font2",
             "Properties": {
-                "Font": "fonts/Borg.ttf",
-                "Size": 128,
+                "Font": "fonts/OpenSans-Regular.ttf",
+                "Size": 64,
                 "DPI": 96
             }
         },

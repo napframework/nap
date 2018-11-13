@@ -39,7 +39,7 @@ namespace nap
 		// Ensure that when we render normalized the scaling factor is up to date.
 		if (isNormalized())
 		{
-			if (!errorState.check(computeNormalizationFactor(getText()), "%s: unable to calculate normalization factor, invalid text", mID.c_str()))
+			if (!errorState.check(computeNormalizationFactor(getText()), "%s: unable to calculate normalization factor, no or invalid text", mID.c_str()))
 				return false;
 		}
 
