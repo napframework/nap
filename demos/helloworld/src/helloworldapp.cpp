@@ -4,7 +4,8 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
-#include <Renderable2DTextComponent.h>
+#include <renderable2dtextcomponent.h>
+#include <renderable3dtextcomponent.h>
 #include <orthocameracomponent.h>
 #include <mathutils.h>
 #include <scene.h>
@@ -138,6 +139,13 @@ namespace nap
 		render_text.draw(
 			{ mTextPos },
 			{ mRenderWindow->getBackbuffer() });
+
+		Renderable3DTextComponentInstance& three_d_render_text = mTextEntity->getComponent<nap::Renderable3DTextComponentInstance>();
+		components_to_render.clear();
+		components_to_render.emplace_back(&three_d_render_text);
+
+		// Render the world with the right camera directly to screen
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
 
 		// Draw our gui
 		mGuiService->draw();
