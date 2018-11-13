@@ -9,10 +9,9 @@
 #include <renderservice.h>
 #include <nap/logger.h>
 #include <ndrawutils.h>
-#include <glm/gtc/matrix_transform.hpp> 
 
 // nap::renderabletextcomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderableTextComponent)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
 	RTTI_PROPERTY("Text",				&nap::RenderableTextComponent::mText,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Font",				&nap::RenderableTextComponent::mFont,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("GlyphUniform",		&nap::RenderableTextComponent::mGlyphUniform,				nap::rtti::EPropertyMetaData::Default)
@@ -21,7 +20,6 @@ RTTI_END_CLASS
 
 // nap::renderabletextcomponentInstance run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -29,12 +27,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void RenderableTextComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
-	{
-		components.emplace_back(RTTI_OF(nap::TransformComponent));
-	}
-
-
 	bool RenderableTextComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get resource
@@ -48,8 +40,6 @@ namespace nap
 
 		// Fetch transform
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransform != nullptr, "Missing transform component"))
-			return false;
 
 		// Create material instance
 		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
@@ -110,19 +100,6 @@ namespace nap
 	}
 
 
-	void RenderableTextComponentInstance::update(double deltaTime)
-	{
-
-	}
-
-
-	void RenderableTextComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
-	{
-		// Get global transform
-		draw(viewMatrix, projectionMatrix, mTransform->getGlobalTransform());
-	}
-
-
 	const nap::FontInstance& RenderableTextComponentInstance::getFont() const
 	{
 		assert(mFont != nullptr);
@@ -161,47 +138,6 @@ namespace nap
 	nap::MaterialInstance& RenderableTextComponentInstance::getMaterialInstance()
 	{
 		return mMaterialInstance;
-	}
-
-
-	void RenderableTextComponentInstance::draw(glm::ivec2 coordinates, const opengl::BackbufferRenderTarget& target, EOrientation orientation)
-	{
-		const math::Rect& bounds = getBoundingBox();
-
-		// Create projection matrix
-		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)target.getSize().x, 0.0f, (float)target.getSize().y);
-		
-		// Position text
-		glm::ivec2 pos(0.0f, coordinates.y);
-		switch (orientation)
-		{
-		case EOrientation::Left:
-		{
-			pos.x = coordinates.x - (int)(bounds.mMinPosition.x);
-			break;
-		}
-		case EOrientation::Center:
-		{
-			pos.x = coordinates.x - (int)(bounds.getWidth()  / 2.0f);
-			break;
-		}
-		case EOrientation::Right:
-		{
-			pos.x = coordinates.x - (int)(bounds.getWidth());
-			break;
-		}
-		default:
-			assert(false);
-		}
-
-		glm::mat4 view_matrix = glm::translate(identityMatrix, 
-		{ 
-			(float)pos.x, 
-			(float)pos.y, 
-			0.0f });
-
-		// Draw text in screen space
-		draw(view_matrix, proj_matrix, mTransform->getGlobalTransform());
 	}
 
 

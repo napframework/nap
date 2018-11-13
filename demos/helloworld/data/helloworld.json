@@ -93,11 +93,12 @@
                     }
                 },
                 {
-                    "Type": "nap::RenderableTextComponent",
+                    "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
-                    "Text": "I'm so excited, just can't hide it",
-                    "Font": "Font",
+                    "Text": "Hi There! Welcome to NAP",
+                    "Font": "Font2",
                     "GlyphUniform": "glyph",
+                    "Orientation" : "Left",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
                         "Uniforms": [],
@@ -175,8 +176,17 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Font": "fonts/OpenSans-Regular.ttf",
+                "Font": "fonts/Borg.ttf",
                 "Size": 32,
+                "DPI": 96
+            }
+        },
+        {
+            "Type": "nap::Font",
+            "mID": "Font2",
+            "Properties": {
+                "Font": "fonts/Borg.ttf",
+                "Size": 128,
                 "DPI": 96
             }
         },
