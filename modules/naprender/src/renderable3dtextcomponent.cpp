@@ -66,6 +66,12 @@ namespace nap
 	}
 
 
+	nap::rtti::TypeInfo Renderable3DTextComponentInstance::getGlyphRepresentationType() const
+	{
+		return RTTI_OF(Renderable2DMipMapGlyph);
+	}
+
+
 	void Renderable3DTextComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		assert(hasTransform());

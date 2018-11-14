@@ -46,7 +46,7 @@ namespace nap
 	public:
 
 		RenderableTextComponentInstance(EntityInstance& entity, Component& resource) :
-			RenderableComponentInstance(entity, resource)									{ }
+			RenderableComponentInstance(entity, resource)				{ }
 
 		/**
 		 * Initializes the this component.
@@ -71,7 +71,7 @@ namespace nap
 		/**
 		 * @return the text that is drawn.
 		 */
-		const std::string& getText() const					{ return mText; }
+		const std::string& getText() const								{ return mText; }
 
 		/**
 		 * @return material used when drawing the text.
@@ -82,6 +82,12 @@ namespace nap
 		 * @return the bounding box of the text in pixels.
 		 */
 		const math::Rect& getBoundingBox() const;
+
+		/**
+		 * Needs to be implemented by derived classes. Returns the type of Glyph to create.
+		 * @return the type of glyph to create, needs to be of type RenderableGlyph
+		 */
+		virtual rtti::TypeInfo getGlyphRepresentationType() const = 0;
 
 	protected:
 		/**
@@ -101,7 +107,7 @@ namespace nap
 		/**
 		 * @return the transform component, nullptr if not initialized or not found
 		 */
-		const nap::TransformComponentInstance* getTransform() const		{ return mTransform; }
+		const nap::TransformComponentInstance* getTransform() const		{ return mTransform; }			
 
 		FontInstance* mFont = nullptr;									///< Pointer to the font, set on initialization
 
