@@ -81,7 +81,7 @@ namespace nap
 		 * Called on initialization. Derived classes should populate these.
 		 * @param outParameters the parameters that are used to create the GPU texture.
 		 */
-		virtual void getTextureParameters(TextureParameters& outParameters) = 0;
+		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) = 0;
 
 	private:
 		Texture2D mTexture;
@@ -104,7 +104,7 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableGlyph)
 	protected:
-		virtual void getTextureParameters(TextureParameters& outParameters) override;
+		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) override;
 	};
 
 
@@ -121,6 +121,6 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableGlyph)
 	protected:
-		virtual void getTextureParameters(TextureParameters& outParameters) override;
+		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) override;
 	};
 }
