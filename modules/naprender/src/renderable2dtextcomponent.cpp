@@ -73,9 +73,10 @@ namespace nap
 	}
 
 
-	nap::rtti::TypeInfo Renderable2DTextComponentInstance::getGlyphRepresentationType() const
+	nap::RenderableGlyph* Renderable2DTextComponentInstance::getRenderableGlyph(uint index, utility::ErrorState& error) const
 	{
-		return RTTI_OF(Renderable2DGlyph);
+		assert(mFont != nullptr);
+		return mFont->getOrCreateGlyphRepresentation<Renderable2DGlyph>(index, error);
 	}
 
 

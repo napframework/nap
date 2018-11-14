@@ -29,7 +29,7 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		bool mNormalize = true;		///< Property: 'Normalize' text is rendered at the origin with normalized bounds (-0.5,0.5)
+		bool	mNormalize = true;	///< Property: 'Normalize' text is rendered at the origin with normalized bounds (-0.5,0.5)
 	};
 
 
@@ -79,11 +79,12 @@ namespace nap
 		bool computeNormalizationFactor(const std::string& referenceText);
 
 		/**
-		 * This component only works with Renderable2DMipMapGlyph representations.
-		 * 
-		 * @return type of Renderable2DGlyph
+		 * Creates a Renderable2DMipMapGlyph for the given index in the font.
+		 * @param index the index to create the renderable glyph for.
+		 * @param error contains the error if the glyph representation could not be created.
+		 * @return the Renderable2DMipMapGlyph glyph for the given character index.
 		 */
-		rtti::TypeInfo getGlyphRepresentationType() const override;
+		virtual RenderableGlyph* getRenderableGlyph(uint index, utility::ErrorState& error) const override;
 
 	protected:
 		/**

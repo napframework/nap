@@ -71,15 +71,15 @@ namespace nap
 
 	protected:
 		/**
-		 * Initializes the OpenGL 2DTexture after construction of this glyph	
-		 * First it converts the freetype glyph into a bitmap. This bitmap is uploaded to the GPU
-		 * @return if the 2DTexture has been initialized correctly
+		 * Initializes the OpenGL 2DTexture after construction of this glyph.	
+		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
+		 * @return if the 2DTexture has been initialized correctly.
 		 */
 		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
 
 		/**
 		 * Called on initialization. Derived classes should populate these.
-		 * @param outParameters the parameters that are used to create the GPU texture
+		 * @param outParameters the parameters that are used to create the GPU texture.
 		 */
 		virtual void getTextureParameters(TextureParameters& outParameters) = 0;
 

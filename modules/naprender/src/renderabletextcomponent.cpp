@@ -48,7 +48,7 @@ namespace nap
 		// Ensure the uniform to set the glyph is available on the source material
 		nap::Uniform* glyph_uniform = mMaterialInstance.getMaterial()->findUniform(mGlyphUniform);
 		if (!errorState.check(glyph_uniform != nullptr, 
-			"%s: Unable to bind font character, can't find texture uniform in shader: %s with name: %s", this->mID.c_str(), 
+			"%s: Unable to bind font character, can't find 2Dtexture uniform in shader: %s with name: %s", this->mID.c_str(), 
 			mMaterialInstance.getMaterial()->mID.c_str(), mGlyphUniform.c_str() ))
 			return false;
 
@@ -109,12 +109,6 @@ namespace nap
 
 	bool RenderableTextComponentInstance::setText(const std::string& text, utility::ErrorState& error)
 	{
-		// Get the type of glyph to create and ensure it's a 2D texture glyph
-		rtti::TypeInfo glyph_type = getGlyphRepresentationType();
-		bool is_render_glyph = glyph_type.is_derived_from(RTTI_OF(RenderableGlyph));
-		if (!error.check(is_render_glyph, "%s is not a 2D renderable glyph", glyph_type.get_name().to_string().c_str()))
-			return false;
-
 		// Clear Glyph handles
 		mGlyphs.clear();
 		mGlyphs.reserve(text.size());
@@ -124,18 +118,17 @@ namespace nap
 		for (const auto& letter : text)
 		{
 			// Fetch glyph.
-			IGlyphRepresentation* glyph = mFont->getOrCreateGlyphRepresentation(mFont->getGlyphIndex(letter), glyph_type, error);
+			RenderableGlyph* glyph = getRenderableGlyph(mFont->getGlyphIndex(letter), error);
 			if (!error.check(glyph != nullptr, "%s: unsupported character: %d, %s", mID.c_str(), letter, error.toString().c_str()))
 			{
 				success = false;
 				continue;
 			}
-
 			// Store handle
-			mGlyphs.emplace_back(rtti_cast<RenderableGlyph>(glyph));
+			mGlyphs.emplace_back(glyph);
 		}
 		mText = text;
-		mFont->getBoundingBox(mText, mTextBounds);
+		mFont->getBoundingBox(mText, mTextBounds);	
 		return success;
 	}
 
@@ -187,8 +180,7 @@ namespace nap
 		float y = 0.0f;
 
 		// Fetch uniform for setting character
-		UniformTexture2D* glyph_uniform = comp_mat->findUniform<UniformTexture2D>(mGlyphUniform);
-		assert(glyph_uniform != nullptr);
+		UniformTexture2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformTexture2D>(mGlyphUniform);
 
 		// Get vertex position data (that we update in the loop
 		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
@@ -225,7 +217,7 @@ namespace nap
 			mesh_instance.update(error);
 
 			// Set texture and push uniforms
-			glyph_uniform->setTexture(render_glyph->getTexture());
+			glyph_uniform.setTexture(render_glyph->getTexture());
 			utility::pushUniforms(mMaterialInstance);
 
 			// Bind and draw all the arrays

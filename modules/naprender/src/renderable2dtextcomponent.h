@@ -92,10 +92,12 @@ namespace nap
 		glm::ivec2 getTextPosition(const glm::ivec2& origin);
 
 		/**
-		 * This component only works with default 2D glyph representations.
-		 * @return type of Renderable2DGlyph
+		 * Creates a Renderable2DGlyph for the given index in the font.
+		 * @param index the index to create the renderable glyph for.
+		 * @param error contains the error if the glyph representation could not be created.
+		 * @return the Renderable2DGlyph glyph for the given character index.
 		 */
-		rtti::TypeInfo getGlyphRepresentationType() const override;
+		virtual RenderableGlyph* getRenderableGlyph(uint index, utility::ErrorState& error) const override;
 
 	private:
 		utility::ETextOrientation mOrientation = utility::ETextOrientation::Left;
