@@ -288,7 +288,7 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Window 1",
-            "Sync": true,
+            "Sync": false,
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
