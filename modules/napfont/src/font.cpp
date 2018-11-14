@@ -315,16 +315,8 @@ namespace nap
 		if (cache == nullptr)
 			return nullptr;
 
-		// Add a new representation
-		return getOrCreateRepresentation(*cache, type, errorCode);
-	}
-
-
-
-	IGlyphRepresentation* FontInstance::getOrCreateRepresentation(GlyphCache& cache, const rtti::TypeInfo& type, utility::ErrorState& errorCode)
-	{
 		// Find requested representation of this glyph
-		nap::IGlyphRepresentation* representation = cache.findRepresentation(type);
+		nap::IGlyphRepresentation* representation = cache->findRepresentation(type);
 		if (representation != nullptr)
 			return representation;
 
@@ -335,11 +327,11 @@ namespace nap
 
 		// Wrap and initialize
 		std::unique_ptr<IGlyphRepresentation> urep(new_rep);
-		if (!urep->init(cache.getGlyph(), errorCode))
+		if (!urep->init(cache->getGlyph(), errorCode))
 			return nullptr;
 
 		// Add to cache
-		cache.addRepresentation(std::move(urep));
+		cache->addRepresentation(std::move(urep));
 		return new_rep;
 	}
 
