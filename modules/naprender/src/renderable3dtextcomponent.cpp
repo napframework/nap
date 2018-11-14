@@ -6,7 +6,7 @@
 
 // nap::Renderable3DTextComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::Renderable3DTextComponent)
-	RTTI_PROPERTY("Normalize", &nap::Renderable3DTextComponent::mNormalize, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Normalize",	&nap::Renderable3DTextComponent::mNormalize,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::Renderable3DTextComponentInstance run time class definition 
@@ -66,9 +66,10 @@ namespace nap
 	}
 
 
-	nap::rtti::TypeInfo Renderable3DTextComponentInstance::getGlyphRepresentationType() const
+	nap::RenderableGlyph* Renderable3DTextComponentInstance::getRenderableGlyph(uint index, utility::ErrorState& error) const
 	{
-		return RTTI_OF(Renderable2DMipMapGlyph);
+		assert(mFont != nullptr);
+		return mFont->getOrCreateGlyphRepresentation<Renderable2DMipMapGlyph>(index, error);
 	}
 
 

@@ -84,10 +84,12 @@ namespace nap
 		const math::Rect& getBoundingBox() const;
 
 		/**
-		 * Needs to be implemented by derived classes. Returns the type of Glyph to create.
-		 * @return the type of glyph to create, needs to be of type RenderableGlyph
-		 */
-		virtual rtti::TypeInfo getGlyphRepresentationType() const = 0;
+		* Needs to be implemented by derived classes. Creates a RenderableGlyph for the given index in the font.
+		* @param index the index to create the renderable glyph for.
+		* @param error contains the error if the glyph representation could not be created.
+		* @return the renderable glyph for the given character index.
+		*/
+		virtual RenderableGlyph* getRenderableGlyph(uint index, utility::ErrorState& error) const = 0;
 
 	protected:
 		/**

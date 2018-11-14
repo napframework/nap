@@ -87,7 +87,7 @@ namespace nap
 	{
 		outParameters.mMaxFilter		= EFilterMode::Linear;
 		outParameters.mMinFilter		= EFilterMode::LinearMipmapLinear;
-		outParameters.mMaxLodLevel		= 20;
+		outParameters.mMaxLodLevel		= 10;
 		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
 		outParameters.mWrapHorizontal	= EWrapMode::ClampToEdge;
 	}
