@@ -10,9 +10,11 @@ namespace nap
 	class FontInstance;
 
 	/**
-	 * Represents a symbol (character) in a font
-	 * This class wraps and manages 1 free-type Glyph character
-	 * The Glyph is destroyed when this object is destructed
+	 * Represents a symbol (character) in a font.
+	 * This class wraps and manages 1 free-type Glyph character and is created by a FontInstance.
+	 * The Glyph is destroyed when this object is destructed.
+	 * Every Glyph can be represented using an IGLyphRepresentation.
+	 * This allows for multiple interpretations of the same Glyph, for example a 2DTexture or 3Dmesh.
 	 */
 	class NAPAPI Glyph final
 	{
@@ -81,10 +83,11 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Interface to a specific type of Glyph representation.
-	 * This could be an image or 3D mesh constructed from a parent Glyph
-	 * Override the onInit method to create your own Glyph representation
+	 * Interface of a specific type of Glyph representation.
+	 * This could be an image or 3D mesh constructed from a parent Glyph.
+	 * Override the onInit method to create your own Glyph representation.
 	 * This class does not own or manage a Glyph, it only allows you to build a representation.
+	 * Glyph representations can only be created by a FontInstance.
 	 */
 	class NAPAPI IGlyphRepresentation
 	{
@@ -111,20 +114,20 @@ namespace nap
 
 	protected:
 		/**
-		 * Called by the font when a specific Glyph representation is requested
-		 * Simply forwards the call to the derived onInit implementation
-		 * @param glyph the parent glyph, associated with this glyph representation
-		 * @param error contains the error if initialization fails
-		 * @return if initialization succeeded or failed
+		 * Called by the font when a specific Glyph representation is requested.
+		 * Simply forwards the call to the derived onInit implementation.
+		 * @param glyph the parent glyph, associated with this glyph representation.
+		 * @param error contains the error if initialization fails.
+		 * @return if initialization succeeded or failed.
 		 */
 		bool init(const Glyph& glyph, utility::ErrorState& error)						{ return onInit(glyph, error); }
 
 		/**
-		 * Override this method to implement a specific Glyph representation
-		 * The handle to the parent Glyph can't be copied and is owned by the Font
-		 * @param glyph the parent glyph, associated with this glyph representation
-		 * @param error contains the error if initialization fails
-		 * @return if initialization succeeded or failed
+		 * Override this method to implement a specific Glyph representation.
+		 * The handle to the parent Glyph can't be copied and is owned by the Font.
+		 * @param glyph the parent glyph, associated with this glyph representation.
+		 * @param error contains the error if initialization fails.
+		 * @return if initialization succeeded or failed.
 		 */
 		virtual bool onInit(const Glyph& glyph, utility::ErrorState& error) = 0;
 	};
