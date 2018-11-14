@@ -239,14 +239,6 @@ namespace nap
 		void resetCache();
 
 		/**
-		 * Gets or creates a new Glyph representation and adds it to the individual glyph cache
-		 * @param cache the cache that manages all the glyph representations.
-		 * @param type the type of glyph representation to create.
-		 * param errorCode contains the error if the glyph representation could not be created.
-		 */
-		IGlyphRepresentation* getOrCreateRepresentation(GlyphCache& cache, const rtti::TypeInfo& type, utility::ErrorState& errorCode);
-
-		/**
 		* Returns a native Glyph cache object that holds a a glyph and the available glyph presentation modes
 		* The Glyph is cached internally, to speed up future requests.
 		* @param index the index of the glyph inside the font.
@@ -268,8 +260,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	* Maps a single glyph to multiple glyph representations
-	* This object is created and managed by a FontInstance
+	* Maps a single glyph to multiple glyph representations.
+	* This object is created and managed by a FontInstance.
 	*/
 	class NAPAPI GlyphCache final
 	{
