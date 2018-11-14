@@ -3,6 +3,7 @@
 
 // External Includes
 #include <nglutils.h>
+#include <mathutils.h>
 #include <ft2build.h>
 #include <bitmap.h>
 #include FT_FREETYPE_H
@@ -85,9 +86,13 @@ namespace nap
 
 	void Renderable2DMipMapGlyph::getTextureParameters(TextureParameters& outParameters)
 	{
+		// Calculate max character lod value based on character dimensions
+		int max_lod = getWidth() > getHeight() ? getWidth() : getHeight();
+		max_lod = int(glm::log2((float)std::max<int>(max_lod,1)));
+
 		outParameters.mMaxFilter		= EFilterMode::Linear;
 		outParameters.mMinFilter		= EFilterMode::LinearMipmapLinear;
-		outParameters.mMaxLodLevel		= 10;
+		outParameters.mMaxLodLevel		= max_lod;
 		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
 		outParameters.mWrapHorizontal	= EWrapMode::ClampToEdge;
 	}
