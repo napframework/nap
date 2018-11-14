@@ -11,6 +11,12 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableGlyph)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::Renderable2DGlyph)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::Renderable2DMipMapGlyph)
+RTTI_END_CLASS
+
 namespace nap
 {
 	/**
@@ -42,11 +48,7 @@ namespace nap
 		mSize.y = bitmap_glyph->bitmap.rows;
 
 		// Set parameters
-		mTexture.mParameters.mMaxLodLevel = 10;
-		mTexture.mParameters.mMaxFilter = EFilterMode::Linear;
-		mTexture.mParameters.mMinFilter = EFilterMode::LinearMipmapLinear;
-		mTexture.mParameters.mWrapVertical = EWrapMode::ClampToEdge;
-		mTexture.mParameters.mWrapVertical = EWrapMode::ClampToEdge;
+		getTextureParameters(mTexture.mParameters);
 
 		// Initialize texture
 		opengl::Texture2DSettings settings;
@@ -69,4 +71,25 @@ namespace nap
 
 		return true;
 	}
+
+
+	void Renderable2DGlyph::getTextureParameters(TextureParameters& outParameters)
+	{
+		outParameters.mMaxFilter		= EFilterMode::Linear;
+		outParameters.mMinFilter		= EFilterMode::Linear;
+		outParameters.mMaxLodLevel		= 0;
+		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
+		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
+	}
+
+
+	void Renderable2DMipMapGlyph::getTextureParameters(TextureParameters& outParameters)
+	{
+		outParameters.mMaxFilter		= EFilterMode::Linear;
+		outParameters.mMinFilter		= EFilterMode::LinearMipmapLinear;
+		outParameters.mMaxLodLevel		= 20;
+		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
+		outParameters.mWrapHorizontal	= EWrapMode::ClampToEdge;
+	}
+
 }

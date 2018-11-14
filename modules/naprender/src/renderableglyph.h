@@ -10,9 +10,9 @@ namespace nap
 	class FontInstance;
 
 	/**
-	 * Represents a symbol (character) in a font that can be rendered using OpenGL
-	 * The glyph is rendered to a 2D texture that can be tied to a material
-	 * The glyph is converted to a bitmap on initialization and uploaded to the GPU
+	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
+	 * The glyph is rendered to a 2D texture that can be tied to a material.
+	 * The glyph is converted to a bitmap on initialization and uploaded to the GPU.
 	 * The bitmap is deleted after storage on the GPU.
 	 */
 	class NAPAPI RenderableGlyph : public IGlyphRepresentation
@@ -77,10 +77,50 @@ namespace nap
 		 */
 		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
 
+		/**
+		 * Called on initialization. Derived classes should populate these.
+		 * @param outParameters the parameters that are used to create the GPU texture
+		 */
+		virtual void getTextureParameters(TextureParameters& outParameters) = 0;
+
 	private:
 		Texture2D mTexture;
 		glm::ivec2 mSize	= { -1, -1 };		///< Size of the Glyph in pixels
 		glm::ivec2 mBearing = { -1, -1 };		///< Offset from baseline to left/top of glyph
 		glm::ivec2 mAdvance = { -1, -1 };		///< Offset in pixels to advance to next glyph
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Renderable2DGlyph
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
+	 * The glyph is rendered to a 2DTexture and has no mipmaps.
+	 * Use this glyph representation when the text does not scale.
+	 */
+	class NAPAPI Renderable2DGlyph : public RenderableGlyph
+	{
+		RTTI_ENABLE(RenderableGlyph)
+	protected:
+		virtual void getTextureParameters(TextureParameters& outParameters) override;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Renderable2DMipMapGlyph
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
+	 * The glyph is rendered to a 2DTexture but has mipmaps.
+	 * Use this glyph when the text is not rendered in the native font resolution (ie: scaled).
+	 */
+	class NAPAPI Renderable2DMipMapGlyph : public RenderableGlyph
+	{
+		RTTI_ENABLE(RenderableGlyph)
+	protected:
+		virtual void getTextureParameters(TextureParameters& outParameters) override;
 	};
 }
