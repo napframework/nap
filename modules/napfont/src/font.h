@@ -173,6 +173,20 @@ namespace nap
 		T* getOrCreateGlyphRepresentation(nap::uint index, utility::ErrorState& errorCode);
 
 		/**
+		 * Use this to acquire a handle to a glyph representation, associated with a character at that index.
+		 * The object can't be copied and is owned by this font.
+		 * When the Glyph isn't present it is created and initialized afterwards.
+		 * Use getGlyphIndex() to find the index of a specific character.
+		 * type must be of type IGlyphRepresentation, multiple representations of every character are allowed.
+		 * This means that you can associate multiple Glyph representations with the same character index.
+		 * @param index the index of the glyph inside the font.
+		 * @param type the type of glyph representation to create.
+		 * @param errorCode contains the error if the glyph could not be created or fetched.
+		 * @return a glyph associated with a specific character, nullptr if retrieval fails.
+		 */
+		IGlyphRepresentation* getOrCreateGlyphRepresentation(nap::uint index, const rtti::TypeInfo& type, utility::ErrorState& errorCode);
+
+		/**
 		 * Returns a native Glyph object that can be represented using a Glyph Representation object.
 		 * The Glyph is cached internally, to speed up future requests.
 		 * @param index the index of the glyph inside the font.
@@ -226,10 +240,11 @@ namespace nap
 
 		/**
 		 * Gets or creates a new Glyph representation and adds it to the individual glyph cache
-		 * @param cache the cache that manages all the glyph representations
+		 * @param cache the cache that manages all the glyph representations.
+		 * @param type the type of glyph representation to create.
+		 * param errorCode contains the error if the glyph representation could not be created.
 		 */
-		template<typename T>
-		T* getOrCreateRepresentation(GlyphCache& cache, utility::ErrorState& errorCode);
+		IGlyphRepresentation* getOrCreateRepresentation(GlyphCache& cache, const rtti::TypeInfo& type, utility::ErrorState& errorCode);
 
 		/**
 		* Returns a native Glyph cache object that holds a a glyph and the available glyph presentation modes
@@ -314,38 +329,8 @@ namespace nap
 	template<typename T>
 	T* nap::FontInstance::getOrCreateGlyphRepresentation(nap::uint index, utility::ErrorState& errorCode)
 	{
-		assert(isValid());
-		assert(RTTI_OF(T).is_derived_from(RTTI_OF(IGlyphRepresentation)));
-
-		// Acquire handle to glyph cache
-		GlyphCache* cache = getOrCreateGlyphCache(index, errorCode);
-		if (cache == nullptr)
-			return nullptr;
-
-		// Add a new representation
-		return getOrCreateRepresentation<T>(*cache, errorCode);
-	}
-
-
-	template<typename T>
-	T* nap::FontInstance::getOrCreateRepresentation(GlyphCache& cache, utility::ErrorState& errorCode)
-	{
-		// Find requested representation of this glyph
-		T* representation = cache.findRepresentation<T>();
-		if (representation != nullptr)
-			return representation;
-
-		// Add new representation and move to unique ptr
-		T* new_rep = new T();
-		std::unique_ptr<IGlyphRepresentation> urep(new_rep);
-
-		// Initialize it
-		if (!urep->init(cache.getGlyph(), errorCode))
-			return nullptr;
-
-		// Add to cache
-		cache.addRepresentation(std::move(urep));
-		return new_rep;
+		IGlyphRepresentation* representation = this->getOrCreateGlyphRepresentation(index, RTTI_OF(T), errorCode);
+		return rtti_cast<T>(representation);
 	}
 
 

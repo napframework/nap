@@ -307,6 +307,43 @@ namespace nap
 	}
 
 
+	IGlyphRepresentation* FontInstance::getOrCreateGlyphRepresentation(nap::uint index, const rtti::TypeInfo& type, utility::ErrorState& errorCode)
+	{
+		assert(isValid());
+		assert(type.is_derived_from(RTTI_OF(IGlyphRepresentation)));
+
+		// Acquire handle to glyph cache
+		GlyphCache* cache = getOrCreateGlyphCache(index, errorCode);
+		if (cache == nullptr)
+			return nullptr;
+
+		// Add a new representation
+		return getOrCreateRepresentation(*cache, type, errorCode);
+	}
+
+
+
+	IGlyphRepresentation* FontInstance::getOrCreateRepresentation(GlyphCache& cache, const rtti::TypeInfo& type, utility::ErrorState& errorCode)
+	{
+		// Find requested representation of this glyph
+		nap::IGlyphRepresentation* representation = cache.findRepresentation(type);
+		if (representation != nullptr)
+			return representation;
+
+		// Add new representation and move to unique ptr
+		IGlyphRepresentation* new_rep = type.create<IGlyphRepresentation>();
+		std::unique_ptr<IGlyphRepresentation> urep(new_rep);
+
+		// Initialize it
+		if (!urep->init(cache.getGlyph(), errorCode))
+			return nullptr;
+
+		// Add to cache
+		cache.addRepresentation(std::move(urep));
+		return new_rep;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// GlyphCache
 	//////////////////////////////////////////////////////////////////////////
