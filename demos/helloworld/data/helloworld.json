@@ -89,14 +89,14 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 2.0
+                        "UniformScale": 1.5
                     }
                 },
                 {
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
                     "Text": "Hi There! Welcome to NAP",
-                    "Font": "Font2",
+                    "Font": "Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -104,20 +104,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
-                    "Orientation": "Left"
-                },
-                {
-                    "Type": "nap::Renderable3DTextComponent",
-                    "mID": "nap::Renderable3DTextComponent",
-                    "Text": "I am some guy",
-                    "Font": "Font",
-                    "GlyphUniform": "glyph",
-                    "MaterialInstance": {
-                        "Material": "FontMaterial",
-                        "Uniforms": [],
-                        "BlendMode": "AlphaBlend",
-                        "DepthMode": "NoReadWrite"
-                    }
+                    "Orientation": "Center"
                 }
             ],
             "Children": []
@@ -189,17 +176,8 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Font": "fonts/Borg.ttf",
-                "Size": 4096,
-                "DPI": 96
-            }
-        },
-        {
-            "Type": "nap::Font",
-            "mID": "Font2",
-            "Properties": {
-                "Font": "fonts/OpenSans-Regular.ttf",
-                "Size": 64,
+                "Font": "fonts/Montserrat-Light.otf",
+                "Size": 36,
                 "DPI": 96
             }
         },
@@ -226,9 +204,9 @@
                     "mID": "UniformVec3",
                     "Name": "textColor",
                     "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0
+                        "x": 0.8588,
+                        "y": 0.8588,
+                        "z": 0.8588
                     }
                 }
             ],

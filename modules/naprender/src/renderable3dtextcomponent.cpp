@@ -61,7 +61,8 @@ namespace nap
 			return false;
 
 		// Calculate normalization factor
-		mNormalizationFactor = 1.0f / bbox.getWidth();
+		float max_size = bbox.getWidth() > bbox.getHeight() ? bbox.getWidth() : bbox.getHeight();
+		mNormalizationFactor = 1.0f / max_size;
 		return true;
 	}
 
@@ -85,7 +86,7 @@ namespace nap
 			glm::vec3 scale(mNormalizationFactor,  mNormalizationFactor, 1.0f);
 			glm::vec3 offset(0.0f, 0.0f, 0.0f);
 			const nap::math::Rect& bbox = getBoundingBox();
-			offset.x = 0.0f - ((scale.x * bbox.getWidth()) / 2.0f);
+			offset.x = 0.0f - ((scale.x * bbox.getWidth())  / 2.0f);
 
 			glm::mat4x4  text_matrix = glm::translate(identityMatrix, offset);
 			text_matrix = glm::scale(text_matrix, scale);

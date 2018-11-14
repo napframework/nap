@@ -87,6 +87,5 @@ namespace nap
 		ObjectPtr<SphereMesh> mWorldMesh = nullptr;						//< World sphere 3D mesh
 		ObjectPtr<Font> mFont = nullptr;								//< Font used for rendering text
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-		glm::ivec2 mTextPos = { 0,0 };
 	};
 }

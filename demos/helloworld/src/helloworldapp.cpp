@@ -88,7 +88,6 @@ namespace nap
 		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
 			"left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::SliderInt2("Text Position", &(mTextPos.x), 0, 1920);
 		ImGui::End();
 	}
 
@@ -100,6 +99,7 @@ namespace nap
 	 * associated with that window. When you have multiple windows and don't activate the right window subsequent
 	 * render calls could end up being associated with the wrong context, resulting in undefined behavior.
 	 * Next we clear the render target, render the object and swap the main window back-buffer.
+	 * In the end we render the text on top of the world. You can change the text at runtime or in the json file.
 	 */
 	void HelloWorldApp::render()
 	{
@@ -137,15 +137,8 @@ namespace nap
 		// Render text on top of the sphere
 		Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
 		render_text.draw(
-			{ mTextPos },
+			{ mRenderWindow->getWidth() / 2, mRenderWindow->getHeight() / 2 },
 			{ mRenderWindow->getBackbuffer() });
-
-		Renderable3DTextComponentInstance& three_d_render_text = mTextEntity->getComponent<nap::Renderable3DTextComponentInstance>();
-		components_to_render.clear();
-		components_to_render.emplace_back(&three_d_render_text);
-
-		// Render the world with the right camera directly to screen
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
 
 		// Draw our gui
 		mGuiService->draw();
