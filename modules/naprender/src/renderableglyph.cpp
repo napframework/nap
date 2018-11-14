@@ -49,7 +49,7 @@ namespace nap
 		mSize.y = bitmap_glyph->bitmap.rows;
 
 		// Set parameters
-		getTextureParameters(mTexture.mParameters);
+		getTextureParameters(mTexture.mParameters, mSize);
 
 		// Initialize texture
 		opengl::Texture2DSettings settings;
@@ -74,7 +74,7 @@ namespace nap
 	}
 
 
-	void Renderable2DGlyph::getTextureParameters(TextureParameters& outParameters)
+	void Renderable2DGlyph::getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize)
 	{
 		outParameters.mMaxFilter		= EFilterMode::Linear;
 		outParameters.mMinFilter		= EFilterMode::Linear;
@@ -84,14 +84,14 @@ namespace nap
 	}
 
 
-	void Renderable2DMipMapGlyph::getTextureParameters(TextureParameters& outParameters)
+	void Renderable2DMipMapGlyph::getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize)
 	{
 		// Calculate max character lod value based on character dimensions
-		int max_lod = getWidth() > getHeight() ? getWidth() : getHeight();
+		int max_lod = charSize.x > charSize.y ? charSize.x : charSize.y;
 		max_lod = int(glm::log2((float)std::max<int>(max_lod,1)));
 
 		outParameters.mMaxFilter		= EFilterMode::Linear;
-		outParameters.mMinFilter		= EFilterMode::LinearMipmapLinear;
+		outParameters.mMinFilter		= max_lod > 0 ? EFilterMode::LinearMipmapLinear : EFilterMode::Linear;
 		outParameters.mMaxLodLevel		= max_lod;
 		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
 		outParameters.mWrapHorizontal	= EWrapMode::ClampToEdge;
