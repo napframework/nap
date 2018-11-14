@@ -78,6 +78,13 @@ namespace nap
 		 */
 		bool computeNormalizationFactor(const std::string& referenceText);
 
+		/**
+		 * This component only works with Renderable2DMipMapGlyph representations.
+		 * 
+		 * @return type of Renderable2DGlyph
+		 */
+		rtti::TypeInfo getGlyphRepresentationType() const override;
+
 	protected:
 		/**
 		 * Draws the text to the currently active render target using the render service.

@@ -309,10 +309,8 @@ namespace nap
 
 	IGlyphRepresentation* FontInstance::getOrCreateGlyphRepresentation(nap::uint index, const rtti::TypeInfo& type, utility::ErrorState& errorCode)
 	{
-		assert(isValid());
-		assert(type.is_derived_from(RTTI_OF(IGlyphRepresentation)));
-
 		// Acquire handle to glyph cache
+		assert(isValid());
 		GlyphCache* cache = getOrCreateGlyphCache(index, errorCode);
 		if (cache == nullptr)
 			return nullptr;
@@ -332,9 +330,11 @@ namespace nap
 
 		// Add new representation and move to unique ptr
 		IGlyphRepresentation* new_rep = type.create<IGlyphRepresentation>();
-		std::unique_ptr<IGlyphRepresentation> urep(new_rep);
+		if (!errorCode.check(new_rep != nullptr, ":%s is not a valid IGlyphRepresentation object", type.get_name().to_string().c_str()))
+			return nullptr;
 
-		// Initialize it
+		// Wrap and initialize
+		std::unique_ptr<IGlyphRepresentation> urep(new_rep);
 		if (!urep->init(cache.getGlyph(), errorCode))
 			return nullptr;
 

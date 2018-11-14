@@ -109,25 +109,30 @@ namespace nap
 
 	bool RenderableTextComponentInstance::setText(const std::string& text, utility::ErrorState& error)
 	{
+		// Get the type of glyph to create and ensure it's a 2D texture glyph
+		rtti::TypeInfo glyph_type = getGlyphRepresentationType();
+		bool is_render_glyph = glyph_type.is_derived_from(RTTI_OF(RenderableGlyph));
+		if (!error.check(is_render_glyph, "%s is not a 2D renderable glyph", glyph_type.get_name().to_string().c_str()))
+			return false;
+
 		// Clear Glyph handles
 		mGlyphs.clear();
 		mGlyphs.reserve(text.size());
-		
+
 		// Get or create a Glyph for every letter in the text
 		bool success(true);
 		for (const auto& letter : text)
 		{
-			// Fetch glyph
-			uint gindex = mFont->getGlyphIndex(letter);
-			RenderableGlyph* render_glyph = mFont->getOrCreateGlyphRepresentation<Renderable2DMipMapGlyph>(gindex, error);
-			if (!error.check(render_glyph != nullptr, "%s: invalid character: %d, %s", mID.c_str(), letter, error.toString().c_str()))
+			// Fetch glyph.
+			IGlyphRepresentation* glyph = mFont->getOrCreateGlyphRepresentation(mFont->getGlyphIndex(letter), glyph_type, error);
+			if (!error.check(glyph != nullptr, "%s: unsupported character: %d, %s", mID.c_str(), letter, error.toString().c_str()))
 			{
 				success = false;
 				continue;
 			}
 
 			// Store handle
-			mGlyphs.emplace_back(render_glyph);
+			mGlyphs.emplace_back(rtti_cast<RenderableGlyph>(glyph));
 		}
 		mText = text;
 		mFont->getBoundingBox(mText, mTextBounds);

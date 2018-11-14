@@ -73,6 +73,12 @@ namespace nap
 	}
 
 
+	nap::rtti::TypeInfo Renderable2DTextComponentInstance::getGlyphRepresentationType() const
+	{
+		return RTTI_OF(Renderable2DGlyph);
+	}
+
+
 	void Renderable2DTextComponentInstance::computeTextModelMatrix(const glm::ivec2& coordinates, glm::mat4x4& outMatrix)
 	{
 		// Get object space position based on orientation of text

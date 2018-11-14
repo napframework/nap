@@ -96,7 +96,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
                     "Text": "Hi There! Welcome to NAP",
-                    "Font": "Font2",
+                    "Font": "Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -109,7 +109,7 @@
                 {
                     "Type": "nap::Renderable3DTextComponent",
                     "mID": "nap::Renderable3DTextComponent",
-                    "Text": "I am some guy",
+                    "Text": "Hi There! Welcome to NAP",
                     "Font": "Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
@@ -190,7 +190,7 @@
             "mID": "Font",
             "Properties": {
                 "Font": "fonts/Borg.ttf",
-                "Size": 512,
+                "Size": 128,
                 "DPI": 96
             }
         },
@@ -288,7 +288,7 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Window 1",
-            "Sync": true,
+            "Sync": false,
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,

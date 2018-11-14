@@ -91,6 +91,12 @@ namespace nap
 		*/
 		glm::ivec2 getTextPosition(const glm::ivec2& origin);
 
+		/**
+		 * This component only works with default 2D glyph representations.
+		 * @return type of Renderable2DGlyph
+		 */
+		rtti::TypeInfo getGlyphRepresentationType() const override;
+
 	private:
 		utility::ETextOrientation mOrientation = utility::ETextOrientation::Left;
 
