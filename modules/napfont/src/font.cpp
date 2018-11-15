@@ -242,7 +242,7 @@ namespace nap
 		Glyph* ptr = new Glyph(glyph_handle, index);
 
 		// Now wrap a Glyph cache around it so we can bind it to various representations
-		GlyphCache* new_cache = new GlyphCache(std::move(std::unique_ptr<Glyph>(ptr)));
+		GlyphCache* new_cache = new GlyphCache(std::unique_ptr<Glyph>(ptr));
 		cache.reset(new_cache);
 		return new_cache;
 	}
