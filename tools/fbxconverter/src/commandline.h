@@ -2,6 +2,7 @@
 
 #include <utility/fileutils.h>
 #undef HAVE_LONG_LONG
+#undef HAVE_CONFIG_H
 #include "tclap/CmdLine.h"
 
 /**
