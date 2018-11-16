@@ -166,18 +166,11 @@ namespace nap
 			modelUniform->setValue(modelMatrix);
 
 		// Prepare blending
-		utility::setBlendMode(getMaterialInstance());
+		utility::setBlendMode(mMaterialInstance);
 
 		// Bind vertex array object
 		// The VAO handle works for all the registered render contexts
 		mRenderableMesh.mVAOHandle.get().bind();
-
-		// Get plane to draw
-		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
-
-		// Location of active letter
-		float x = 0.0f;
-		float y = 0.0f;
 
 		// Fetch uniform for setting character
 		UniformTexture2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformTexture2D>(mGlyphUniform);
@@ -185,8 +178,14 @@ namespace nap
 		// Get vertex position data (that we update in the loop
 		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
 
-		// GPU mesh representation
-		const opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
+		// Get plane to draw
+		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
+
+		// GPU mesh representation of plane
+		opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
+
+		// Get vertex position buffer handle on GPU
+		opengl::VertexAttributeBuffer& pos_gpu_buffer = gpu_mesh.getVertexAttributeBuffer(VertexAttributeIDs::getPositionName());
 
 		// Lines / Fill etc.
 		GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
@@ -195,6 +194,10 @@ namespace nap
 		const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
 		GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 		nap::utility::ErrorState error;
+
+		// Location of active letter
+		float x = 0.0f;
+		float y = 0.0f;
 
 		// Draw every letter in the text to screen
 		for (auto& render_glyph : mGlyphs)
@@ -214,7 +217,7 @@ namespace nap
 			pos_data[3] = { xpos + w,	ypos + h,	0.0f };
 
 			// Push vertex positions to GPU
-			mesh_instance.update(error);
+			pos_gpu_buffer.setData(pos_data.data(), pos_data.size(), pos_data.capacity());
 
 			// Set texture and push uniforms
 			glyph_uniform.setTexture(render_glyph->getTexture());
