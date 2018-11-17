@@ -131,11 +131,11 @@ namespace nap
 		FontInstance& operator=(const FontInstance& rhs) = delete;
 
 		/**
-		 * Creates the actual type-face associated with the font based on the incoming set of properties.
+		 * Creates the actual typeface associated with the font based on the incoming set of properties.
 		 * Call this after construction or when you want to change the font at run-time.
 		 * If for some reason construction fails the errorState holds the error code.
-		 * The previous type-face, if it exists, is destroyed when a new one is created successfully.
-		 * When creation fails the current type-face remains active.
+		 * The previous typeface, if it exists, is destroyed when a new one is created successfully.
+		 * When creation fails the current typeface remains active.
 		 * @param error contains the error message if construction of the typeface fails
 		 * @return if the typeface could be constructed
 		 */
@@ -147,7 +147,7 @@ namespace nap
 		const FontProperties& getProperties() const;
 
 		/**
-		 * @return if this instance hosts a valid type-face
+		 * @return if this instance hosts a valid typeface
 		 */
 		bool isValid() const;
 
