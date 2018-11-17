@@ -40,7 +40,7 @@ namespace nap
 			mDPI(dpi),
 			mFont(font)			{ }
 
-		int mSize	= 12;			///< Property: 'Size' size of the font in em (points)
+		int mSize	= 12;			///< Property: 'Size' size of the font in em
 		int mDPI	= 96;			///< Property: "DPI' dots per inch of the monitor, typically 96 or 72
 		std::string	mFont;			///< Property: 'Font' path to the font on disk
 	};
