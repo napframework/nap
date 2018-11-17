@@ -18,12 +18,20 @@
 
 namespace napkin
 {
+	/**
+	 * A curve editor that allows for editing of a nap::math::FCurve
+	 */
 	class CurvePanel : public QWidget
 	{
 	Q_OBJECT
 	public:
-		CurvePanel(QWidget* parent = nullptr);
+		explicit CurvePanel(QWidget* parent = nullptr);
+		/**
+		 * Set or replace the curve that's currently being edited by this editor.
+		 * @param curve The curve to be edited, ownership is managed by the client code
+		 */
 		void editCurve(nap::math::FloatFCurve* curve);
+
 	private:
 		void onCurveUpdated();
 
