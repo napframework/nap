@@ -12,13 +12,17 @@ namespace napqt
 	class CurveSegmentItem;
 
 	/**
-	 * Any interactive (movable) handle in the scene
+	 * Any interactive (movable) handle in the scene.
+	 * Don't use this directly, but let CurveView manage this.
 	 */
 	class HandleItem : public QObject, public QGraphicsPathItem
 	{
 	Q_OBJECT
 	public:
-		HandleItem(CurveSegmentItem& parent);
+		/**
+		 * @param parent The segment to which this handle will be attached
+		 */
+		explicit HandleItem(CurveSegmentItem& parent);
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 		CurveSegmentItem& curveSegmentItem();
 		const CurveSegmentItem& curveSegmentItem() const;
@@ -26,7 +30,16 @@ namespace napqt
 		virtual void updateRect();
 
 	Q_SIGNALS:
+		/**
+		 * Emitted when this handle has moved
+		 * @param item The handle that has moved
+		 */
 		void moved(HandleItem* item);
+
+		/**
+		 * Emitted when this handle's selection state has changed
+		 * @param item
+		 */
 		void selected(HandleItem* item);
 
 	protected:
@@ -43,19 +56,17 @@ namespace napqt
 
 	/**
 	 * Interactive handle for a curve point
+	 * Don't use this directly, but let CurveView manage this.
 	 */
 	class PointHandleItem : public HandleItem
 	{
 	public:
 		explicit PointHandleItem(CurveSegmentItem& parent);
-		void setTangentsLocked(bool b) { mTangentsLocked = b; }
-		bool isTangentsLocked() const { return mTangentsLocked; }
-	private:
-		bool mTangentsLocked = true;
 	};
 
 	/**
 	 * Interactive handle for a curve tangent
+	 * Don't use this directly, but let CurveView manage this.
 	 */
 	class TangentHandleItem : public HandleItem
 	{
@@ -67,12 +78,14 @@ namespace napqt
 		TangentHandleItem& oppositeTanHandle();
 		bool isInTangent();
 		void updateRect() override;
+
 	private:
 		QPointF mValue;
 	};
 
 	/**
 	 * Non-interactive item to display a curve's tangent line
+	 * Don't use this directly, but let CurveView manage this.
 	 */
 	class TangentLineItem : public QGraphicsPathItem
 	{
@@ -90,6 +103,7 @@ namespace napqt
 
 	/**
 	 * Non-interactive item to display a single curve segment
+	 * Don't use this directly, but let CurveView manage this.
 	 */
 	class CurveSegmentItem : public QObject, public QGraphicsItem
 	{
@@ -103,8 +117,6 @@ namespace napqt
 		TangentHandleItem& inTanHandle() { return mInTanHandle; }
 		TangentHandleItem& outTanHandle() { return mOutTanHandle; }
 		TangentLineItem& inTanLine() { return mInTanLine; }
-
-
 
 		void setInTanVisible(bool b);
 		void setOutTanVisible(bool b);
@@ -144,7 +156,8 @@ namespace napqt
 
 	/**
 	 * QGraphicsItem representing one curve
-	 */
+	 * Don't use this directly, but let CurveView manage this.
+	*/
 	class CurveItem : public QObject, public QGraphicsPathItem
 	{
 	Q_OBJECT
@@ -180,7 +193,10 @@ namespace napqt
 		QVector<int> mUnsortedToSorted;
 	};
 
-
+	/**
+	 * The main view for curve editing.
+	 * It uses an AbstractCurveModel to display and edit the curves.
+	 */
 	class CurveView : public GridView
 	{
 	Q_OBJECT
@@ -190,6 +206,12 @@ namespace napqt
 		};
 
 		explicit CurveView(QWidget* parent = nullptr);
+
+		/**
+		 * Start editing the given AbstractCurveModel in the editor.
+		 *
+		 * @param model The curve that should be edited, provide nullptr to empty the view.
+		 */
 		void setModel(AbstractCurveModel* model);
 		AbstractCurveModel* model() { return mModel; }
 		void selectCurves(const QList<AbstractCurve*>& curve);
@@ -235,6 +257,7 @@ namespace napqt
 
 		// Currently editing tangent list
 		QMap<CurveItem*, QList<QMap<int, QPointF>>> mTangentEditMap;
+
 		// Currently editing point list
 		QMap<CurveItem*, QMap<int, QPointF>> mPointEditMap;
 

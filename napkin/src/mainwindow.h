@@ -4,11 +4,12 @@
 #include <QTimer>
 
 #include <napqt/basewindow.h>
-#include <napqt/timeline/timelinepanel.h>
 #include <napqt/errordialog.h>
 
 #include "actions.h"
 #include "appcontext.h"
+#include "themeselectionmenu.h"
+
 #include "panels/apprunnerpanel.h"
 #include "panels/hierarchypanel.h"
 #include "panels/historypanel.h"
@@ -17,7 +18,6 @@
 #include "panels/resourcepanel.h"
 #include "panels/scenepanel.h"
 #include "panels/curvepanel.h"
-#include "themeselectionmenu.h"
 
 namespace napkin
 {
@@ -34,10 +34,13 @@ namespace napkin
 
 	protected:
 		/**
-		 * Override...
+		 * Override
 		 */
 		void showEvent(QShowEvent* event) override;
 
+		/**
+		 * Override
+		 */
 		void closeEvent(QCloseEvent* event) override;
 
 	private:

@@ -236,10 +236,13 @@ namespace nap
 			{
 				case FCurveInterp::Bezier:
 					return evalCurveSegmentBezier({a, b, c, d}, time);
+
 				case FCurveInterp::Linear:
-					return evalCurveSegmentLinear({a, b, c, d}, time);
+					return evalCurveSegmentLinear(a, d, time);
+
 				case FCurveInterp::Stepped:
-					return evalCurveSegmentStepped({a, b, c, d}, time);
+					return a.mValue;
+
 				default:
 					assert(false);
 			}

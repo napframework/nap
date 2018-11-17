@@ -46,6 +46,9 @@ namespace nap
 			return t;
 		}
 
+		/**
+		 * Linearly interpolate between a and b at time t.
+		 */
 		template <typename T>
 		inline T lerp(const T& a, const T& b, const T& t)
 		{
@@ -53,7 +56,8 @@ namespace nap
 		}
 
 		/**
-		 * Evaluate a curve segment
+		 * Evaluate a curve segment using cubic bezier interpolation
+		 *
 		 * @tparam P 2D point, its components should be of type U
 		 * @tparam F floating point
 		 * @param pts The curve points to evaluate
@@ -67,19 +71,20 @@ namespace nap
 			return bezier(pts, t).mValue;
 		}
 
+		/**
+		 * Evaluate a curve segment using linear interpolation.
+		 *
+		 * @tparam P 2D point, its components should be of type U
+		 * @tparam F floating point
+		 * @param pts The curve points to evaluate
+		 * @param x Time input value in cartesian space
+		 * @return Vertical component of the evaluated curve segment at time x
+		 */
 		template<typename P, typename F>
-		F evalCurveSegmentLinear(const P (& pts)[4], F x)
+		F evalCurveSegmentLinear(const P& a, const P& b, F x)
 		{
-			const auto& a = pts[0];
-			const auto& b = pts[3];
 			F t = (x - a.mTime) / (b.mTime - a.mTime);
 			return lerp(a.mValue, b.mValue, t);
-		}
-
-		template<typename P, typename F>
-		F evalCurveSegmentStepped(const P (& pts)[4], F x)
-		{
-			return pts[0].mValue;
 		}
 
 	}
