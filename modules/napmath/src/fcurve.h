@@ -105,6 +105,11 @@ namespace nap
 			T evaluate(const U& t);
 
 			/**
+			 * Mark curve as dirty and ensure points are sorted on next evaluation
+			 */
+			void invalidate() { mPointsSorted = false; }
+
+			/**
 			 * The points that define this curve's shape
 			 */
 			std::vector<FCurvePoint<T, U>> mPoints;
@@ -142,6 +147,7 @@ namespace nap
 			void limitOverhangPoints(const Fc& pa, Fc& pb, Fc& pc, const Fc& pd);
 
 			mutable std::vector<FCurvePoint<T, U>> mSortedPoints;
+			bool mPointsSorted = false; // keep track point sort state for proper curve eval
 		};
 
 
@@ -211,7 +217,12 @@ namespace nap
 			if (mPoints.empty())
 				return T();
 
-			sortPoints(); // TODO: Optimize or move this call somewhere else
+			// Ensure points are sorted before evaluation
+			if (!mPointsSorted)
+			{
+				sortPoints();
+				mPointsSorted = true;
+			}
 
 			const Pt& firstPoint = mSortedPoints[0];
 			if (time < firstPoint.mPos.mTime)

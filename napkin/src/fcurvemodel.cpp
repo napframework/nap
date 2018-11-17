@@ -74,6 +74,9 @@ void FCurve::movePoints(const QMap<int, QPointF>& positions, bool finished)
 		pos.mValue = static_cast<float>(p.y());
 	}
 	pointsChanged(positions.keys(), finished);
+
+	// Points need to be sorted for proper evaluation
+	mCurve.invalidate();
 }
 
 void FCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents, bool finished)
