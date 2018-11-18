@@ -321,13 +321,23 @@ namespace nap
 		EMeshDataUsage getUsage(EMeshDataUsage inUsage) const					{ return mProperties.mUsage; }
 
 		/**
-		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),
+		 * Pushes all CPU vertex buffers to the GPU. Note that update() is called during init(),
 		 * so this is only required if CPU data is modified after init().
 		 * If there is a mismatch between vertex buffer, an error will be returned.
 		 * @param errorState Contains error information if an error occurred.
 		 * @return True if succeeded, false on error.		 
 		 */
 		bool update(utility::ErrorState& errorState);
+
+		/**
+		 * Push one specific CPU vertex buffer to the GPU.
+		 * Use this when updating only specific vertex attributes at run-time.
+		 * If there is a mismatch between the vertex buffer an error will be returned
+		 * @param attribute the attribute to synchronize.
+		 * @param errorState contains the error when synchronization fails.
+		 * @return if the update succeeded or not.
+ 		 */
+		bool update(nap::BaseVertexAttribute& attribute, utility::ErrorState& errorState);
 
 	protected:
 		bool initGPUData(utility::ErrorState& errorState);

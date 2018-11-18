@@ -175,8 +175,8 @@
         {
             "Type": "nap::Font",
             "mID": "Font",
+            "Font": "fonts/Montserrat-Light.otf",
             "Properties": {
-                "Font": "fonts/Montserrat-Light.otf",
                 "Size": 36,
                 "DPI": 96
             }

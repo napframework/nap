@@ -10,16 +10,16 @@
 #include FT_GLYPH_H
 
 RTTI_BEGIN_STRUCT(nap::FontProperties)
-	RTTI_VALUE_CONSTRUCTOR(int, int, const std::string&)
-	RTTI_PROPERTY("Font",	&nap::FontProperties::mFont,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Size",	&nap::FontProperties::mSize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DPI",	&nap::FontProperties::mDPI,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_VALUE_CONSTRUCTOR(int, int)
+	RTTI_PROPERTY("Size",		&nap::FontProperties::mSize,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DPI",		&nap::FontProperties::mDPI,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 // nap::fontresource run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Font)
 	RTTI_CONSTRUCTOR(nap::FontService&)
-	RTTI_PROPERTY("Properties", &nap::Font::mProperties, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Properties",		&nap::Font::mProperties,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY_FILELINK("Font",	&nap::Font::mFont,			nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Font)
 RTTI_END_CLASS
 
 // nap::fontinstance run time class definition
@@ -72,8 +72,8 @@ namespace nap
 		mInstance = std::make_unique<FontInstance>(*mService);
 
 		// Load typeface
-		nap::Logger::info("loading font: %s", mProperties.mFont.c_str());
-		if (!mInstance->create(mProperties, errorState))
+		nap::Logger::info("loading font: %s", mFont.c_str());
+		if (!mInstance->create(mFont, mProperties, errorState))
 			return false;
 
 		return true;
@@ -107,7 +107,7 @@ namespace nap
 	}
 
 
-	bool FontInstance::create(const FontProperties& properties, utility::ErrorState& error)
+	bool FontInstance::create(const std::string& font, FontProperties& properties, utility::ErrorState& error)
 	{
 		if (!error.check(mFreetypeLib != nullptr, "unable to acquire free-type library handle from service!"))
 			return false;
@@ -116,7 +116,7 @@ namespace nap
 		FT_Face face;
 
 		// Open first face
-		auto fterror = FT_New_Face(toFreetypeLib(mFreetypeLib), properties.mFont.c_str(), 0, &face);
+		auto fterror = FT_New_Face(toFreetypeLib(mFreetypeLib), font.c_str(), 0, &face);
 		if (!error.check(fterror != FT_Err_Unknown_File_Format, "unsupported font format"))
 			return false;
 
@@ -138,7 +138,7 @@ namespace nap
 		{
 			fterror = FT_Done_Face(toFreetypeFace(mFace));
 			if (fterror > 0)
-				nap::Logger::warn("unable to de-allocate type face: %s", properties.mFont.c_str());
+				nap::Logger::warn("unable to de-allocate type face: %s", font.c_str());
 		}
 
 		// Store handle
@@ -146,6 +146,7 @@ namespace nap
 
 		// Store properties and clear cache on next fetch
 		mProperties = properties;
+		mFont = font;
 		resetCache();
 
 		return true;
@@ -212,6 +213,13 @@ namespace nap
 	int FontInstance::getCount()
 	{
 		return mFace != nullptr ? toFreetypeFace(mFace)->num_glyphs : -1;
+	}
+
+
+
+	const std::string& FontInstance::getFont() const
+	{
+		return mFont;
 	}
 
 
