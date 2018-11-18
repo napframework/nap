@@ -217,7 +217,7 @@ namespace nap
 			pos_data[3] = { xpos + w,	ypos + h,	0.0f };
 
 			// Push vertex positions to GPU
-			pos_gpu_buffer.setData(pos_data.data(), pos_data.size(), pos_data.capacity());
+			mesh_instance.update(*mPositionAttr, error);
 
 			// Set texture and push uniforms
 			glyph_uniform.setTexture(render_glyph->getTexture());

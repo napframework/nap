@@ -35,14 +35,12 @@ namespace nap
 		/**
 		 * Value constructor
 		 */
-		FontProperties(int size, int dpi, const std::string& font) :
+		FontProperties(int size, int dpi) :
 			mSize(size),
-			mDPI(dpi),
-			mFont(font)			{ }
+			mDPI(dpi)				{ }
 
 		int mSize	= 12;			///< Property: 'Size' size of the font in em
 		int mDPI	= 96;			///< Property: "DPI' dots per inch of the monitor, typically 96 or 72
-		std::string	mFont;			///< Property: 'Font' path to the font on disk
 	};
 
 
@@ -86,6 +84,7 @@ namespace nap
 		const FontInstance& getFontInstance() const;
 
 		FontProperties mProperties;								///< Property: 'Properties' the properties (size, dpi, path) that describe the font
+		std::string	mFont;										///< Property: 'Font' path to the font on disk
 
 	private:
 		FontService* mService = nullptr;						///< Handle to the service that manages the font library
@@ -136,15 +135,22 @@ namespace nap
 		 * If for some reason construction fails the errorState holds the error code.
 		 * The previous typeface, if it exists, is destroyed when a new one is created successfully.
 		 * When creation fails the current typeface remains active.
+		 * @param font the font file to load.
+		 * @param properties font properties such as the size and resolution.
 		 * @param error contains the error message if construction of the typeface fails
 		 * @return if the typeface could be constructed
 		 */
-		bool create(const FontProperties& properties, utility::ErrorState& error);
+		bool create(const std::string& font, FontProperties& properties, utility::ErrorState& error);
 
 		/**
 		 * @return up to date properties associated with this font
 		 */
 		const FontProperties& getProperties() const;
+
+		/**
+		 * @return the name of the font file loaded from disk
+		 */
+		const std::string& getFont() const;
 
 		/**
 		 * @return if this instance hosts a valid typeface
@@ -250,7 +256,8 @@ namespace nap
 
 		void* mFace = nullptr;											///< Handle to the free-type face object
 		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
-		FontProperties mProperties = { -1, -1, "" };					///< Describes current font properties
+		FontProperties mProperties = { -1, -1 };						///< Describes current font properties
+		std::string mFont;												///< Font that is loaded
 		mutable std::vector<std::unique_ptr<GlyphCache>> mGlyphs;		///< All cached glyphs
 	};
 
