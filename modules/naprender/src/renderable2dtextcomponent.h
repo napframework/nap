@@ -62,18 +62,6 @@ namespace nap
 		void draw(const opengl::BackbufferRenderTarget& target);
 
 		/**
-		* Draws the text to the currently active render target using the render service.
-		* This function is called by the render service when text is rendered with a user defined camera.
-		* In that case the viewMatrix is the world space camera location and the the projection matrix is defined by the camera type.
-		* This can be orthographic or perspective. It is recommended to only use an orthographic camera when rendering 2D text.
-		* The x/y location of the parent entity is taken into account if there is a transform component.
-		* Note that the orientation mode is also taken into account when rendering this way.
-		* @param viewMatrix the camera world space location
-		* @param projectionMatrix the camera projection matrix, orthographic or perspective
-		*/
-		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
-
-		/**
 		 * @return current text draw orientation
 		 */
 		utility::ETextOrientation getOrientation() const					{ return mOrientation; }
@@ -121,6 +109,20 @@ namespace nap
 		 * @return if the camera is an orthographic camera or not.
 		 */
 		virtual bool isSupported(nap::CameraComponentInstance& camera) const override;
+
+	protected:
+		/**
+		 * Draws the text to the currently active render target using the render service.
+		 * This function is called by the render service when text is rendered with a user defined camera.
+		 * In that case the viewMatrix is the world space camera location and the the projection matrix is defined by the camera type.
+		 * You can only use an orthographic camera when rendering 2D text.
+		 * The x/y location of the parent entity is taken into account if there is a transform component.
+		 * Note that the orientation mode is also taken into account when rendering this way.
+		 * @param viewMatrix the camera world space location
+		 * @param projectionMatrix the camera projection matrix, orthographic or perspective
+		 */
+		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+
 
 	private:
 		utility::ETextOrientation mOrientation = utility::ETextOrientation::Left;
