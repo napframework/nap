@@ -23,7 +23,6 @@ namespace nap
 		 */
 		struct NAPAPI FileLink
 		{
-			std::string		mSourceObjectID;	// The ID of the object that has the file link
 			std::string		mTargetFile;		// The path to the file that's being to
 		};
 
