@@ -124,9 +124,18 @@ namespace nap
 		virtual void shutdown() override;
 
 		/**
-		* Returns global render state. Use the fields in this objects to modify the renderstate.
-		*/
-		RenderState& getRenderState()																{ return mRenderState; }
+		 * Returns the global render state that is used for all OpenGL contexts.
+		 * Properties associated with this state (such as the fill mode, point size etc.) are set before rendering a set of objects.
+		 * @return the global render state.
+		 */
+		const RenderState& getRenderState() const																{ return mRenderState; }
+
+		/**
+		 * Sets the global render state. This state is used for all OpenGL contexts and settings are pushed before a render call.
+		 * You can change settings (such as point-size etc.) at runtime, before rendering objects. 
+		 * @param renderState the new state of the renderer to use when rendering objects. 
+		 */
+		void setRenderState(const RenderState& renderState)														{ mRenderState = renderState; }
 
 		/**
 		 * Batches an OpenGL resource that is dependent on GLContext for destruction, to avoid many GL context switches during destruction.

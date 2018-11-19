@@ -51,11 +51,12 @@ namespace nap
 		buttonLeftEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&TommyApp::leftButtonClicked, this, std::placeholders::_1));
 
 		// Set render states
-		RenderState& render_state = mRenderService->getRenderState();
+		RenderState render_state;
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
-		
+		mRenderService->setRenderState(render_state);
+
 		return true;
 	}
 	
