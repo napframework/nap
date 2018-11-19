@@ -407,12 +407,7 @@ namespace nap
 		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		 */
 		template<typename T>
-		const VertexAttribute<T>& GetAttribute(const std::string& id) const
-		{
-			const VertexAttribute<T>* attribute = FindAttribute<T>(id);
-			assert(attribute != nullptr);
-			return *attribute;
-		}
+		const VertexAttribute<T>& GetAttribute(const std::string& id) const;
 
 		RTTIMeshProperties	mProperties;		///< Property: 'Properties' RTTI mesh CPU data
 
@@ -493,5 +488,13 @@ namespace nap
 		return nullptr;
 	}
 
+
+	template<typename T>
+	const VertexAttribute<T>& nap::Mesh::GetAttribute(const std::string& id) const
+	{
+		const VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		assert(attribute != nullptr);
+		return *attribute;
+	}
 } // nap
 
