@@ -64,10 +64,11 @@ namespace nap
 		frameMaterial = resourceManager->findObject<nap::Material>("FrameMaterial");
 
 		// Set render states
-		nap::RenderState& render_state = renderService->getRenderState();
+		nap::RenderState render_state = renderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+		renderService->setRenderState(render_state);
 
 		// Create gui
 		mGui = std::make_unique<KalvertorenGui>(*this);
