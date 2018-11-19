@@ -54,7 +54,7 @@ namespace nap
 		 * @param runningInNonProjectContext indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath=std::string(), bool runningInNonProjectContext=false);
+		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath={}, bool runningInNonProjectContext=false);
 		
 		/**
 		* Initializes all registered services

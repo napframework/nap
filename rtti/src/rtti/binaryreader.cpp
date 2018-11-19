@@ -301,7 +301,6 @@ namespace nap
 				if (metadata.mIsFileLink)
 				{
 					FileLink file_link;
-					file_link.mSourceObjectID = compound.try_convert<Object>()->mID;
 					file_link.mTargetFile = property.get_value(compound).get_value<std::string>();;
 					linkedFiles.push_back(file_link);
 				}

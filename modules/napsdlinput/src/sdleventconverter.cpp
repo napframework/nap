@@ -3,6 +3,7 @@
 
 // External Includes
 #include <mathutils.h>
+#include <SDL_joystick.h>
 
 namespace nap
 {
@@ -589,7 +590,6 @@ namespace nap
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
 		if (key_it != SDLToKeyMapping.end())
 		{
-			int window_id = static_cast<int>(sdlEvent.window.windowID);
 			InputEvent* key_event = translateSDLKeyEvent(sdlEvent, key_it->first, key_it->second);
 			return InputEventPtr(key_event);
 		}
