@@ -2,7 +2,49 @@
     "Objects": [
         {
             "Type": "nap::Entity",
-            "mID": "Camera",
+            "mID": "OrthographicCamera",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 0.0,
+                        "FarClippingPlane": 2.0
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_4",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 1.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PerspectiveCamera",
             "Components": [
                 {
                     "Type": "nap::PerspCameraComponent",
@@ -71,6 +113,24 @@
             "mID": "Text",
             "Components": [
                 {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "nap::RenderableTextComponent",
+                    "Text": "Hi There! Welcome to NAP",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Center"
+                },
+                {
                     "Type": "nap::TransformComponent",
                     "mID": "nap::TransformComponent_3",
                     "Properties": {
@@ -89,22 +149,8 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 1.5
+                        "UniformScale": 1.0
                     }
-                },
-                {
-                    "Type": "nap::Renderable2DTextComponent",
-                    "mID": "nap::RenderableTextComponent",
-                    "Text": "Hi There! Welcome to NAP",
-                    "Font": "Font",
-                    "GlyphUniform": "glyph",
-                    "MaterialInstance": {
-                        "Material": "FontMaterial",
-                        "Uniforms": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "Orientation": "Center"
                 }
             ],
             "Children": []
@@ -175,11 +221,11 @@
         {
             "Type": "nap::Font",
             "mID": "Font",
-            "Font": "fonts/Montserrat-Light.otf",
             "Properties": {
                 "Size": 36,
                 "DPI": 96
-            }
+            },
+            "Font": "fonts/Montserrat-Light.otf"
         },
         {
             "Type": "nap::ImageFromFile",
@@ -204,9 +250,9 @@
                     "mID": "UniformVec3",
                     "Name": "textColor",
                     "Value": {
-                        "x": 0.8588,
-                        "y": 0.8588,
-                        "z": 0.8588
+                        "x": 0.8587999939918518,
+                        "y": 0.8587999939918518,
+                        "z": 0.8587999939918518
                     }
                 }
             ],
@@ -283,11 +329,15 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "Camera",
+                    "Entity": "PerspectiveCamera",
                     "InstanceProperties": []
                 },
                 {
                     "Entity": "Text",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "OrthographicCamera",
                     "InstanceProperties": []
                 }
             ]

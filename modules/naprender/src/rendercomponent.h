@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <component.h>
 #include <utility/dllexport.h>
+#include <cameracomponent.h>
 
 namespace nap
 {
@@ -46,12 +47,20 @@ namespace nap
 		 * Toggles visibility.
 		 * @param visible if this object should be drawn or not
 		 */
-		void setVisible(bool visible)						{ mVisible = visible; }
+		void setVisible(bool visible)												{ mVisible = visible; }
 
 		/**
 		 * @return if the mesh is visible or not, default = true
 		 */
-		bool isVisible() const								{ return mVisible; }
+		bool isVisible() const														{ return mVisible; }
+
+		/**
+		 * Called by the Render Service. By default every camera type is supported
+		 * If your renderable component doesn't support a specific camera return false
+		 * In that case the object won't be rendered.
+		 * @return if the object can be rendered with the given camera
+		 */
+		virtual bool isSupported(nap::CameraComponentInstance& camera) const		{ return true; }
 
 	protected:
 		/**
