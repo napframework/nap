@@ -22,6 +22,7 @@ namespace nap
 
 	public:
 		utility::ETextOrientation mOrientation = utility::ETextOrientation::Left;		///< Property: 'Orientation' Text draw orientation
+		glm::ivec2 mLocation = { 0,0 };													///< Property: 'Location' text location in pixel coordinates
 	};
 
 
@@ -50,16 +51,15 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		* Draws the current text into the active target using the provided coordinates in screen space.
+		* Draws the current text into the active target using the stored coordinates in screen space.
 		* This is a convenience function that calls RenderableTextComponentInstance::draw using a custom view and projection matrix.
 		* These matrices are created based on on the size of your render target.
 		* Only Call this function in the render part of your application. Set text in the update part of your application.
 		* The x and y coordinates of the TransformComponent are used as an offset (in pixels) if the parent entity has a transform component.
 		* When using this function the orientation of the text is taken into account.
-		* @param coordinates the location of the text in screen space, 0,0 = lower left corner
 		* @param target render target that defines the screen space bounds
 		*/
-		void draw(const glm::ivec2& coordinates, const opengl::BackbufferRenderTarget& target);
+		void draw(const opengl::BackbufferRenderTarget& target);
 
 		/**
 		* Draws the text to the currently active render target using the render service.
@@ -85,11 +85,28 @@ namespace nap
 		void setOrientation(utility::ETextOrientation orientation)			{ mOrientation = orientation; }
 
 		/**
-		* Computes the text location based on the given origin, orientation mode and bounding box.
-		* @param origin reference point in 2D space.
-		* @return position of the text based on the given origin, orientation mode and bounding box
+		 * Returns the current text coordinates in screen space. This is not the final position of the text!
+		 * To get the actual start position of the text use getTextPosition()
+		 * The final location is based on the orientation and transformation of this component.
+		 * @return location of the text in screen space pixel coordinates
+		 */
+		const glm::ivec2& getLocation() const								{ return mLocation; }
+
+		/**
+		 * Sets the new text coordinates in screen space. This is not the final position of the text!
+		 * To get the actual start position of the text use getTextPosition()
+		 * The final location is based on the orientation and transformation of this component.
+		 * @param coordinates the new text location in pixel space coordinates
+		 */
+		void setLocation(const glm::ivec2& coordinates)						{ mLocation = coordinates; }
+
+		/**
+		* Returns the text position based on the stored location, orientation mode and text transformation.
+		* The return value is the actual position of the text in the world and most likely screen.
+		* Actual screen space position still depends on camera location, orientation and shader effects.
+		* @return start position of the text based based on stored location, orientation mode and text transformation.
 		*/
-		glm::ivec2 getTextPosition(const glm::ivec2& origin);
+		glm::ivec2 getTextPosition();
 
 		/**
 		 * Creates a Renderable2DGlyph for the given index in the font.
@@ -99,14 +116,21 @@ namespace nap
 		 */
 		virtual RenderableGlyph* getRenderableGlyph(uint index, utility::ErrorState& error) const override;
 
+		/**
+		 * This component can only be rendered with an orthographic camera!
+		 * @return if the camera is an orthographic camera or not.
+		 */
+		virtual bool isSupported(nap::CameraComponentInstance& camera) const override;
+
 	private:
 		utility::ETextOrientation mOrientation = utility::ETextOrientation::Left;
 
 		/**
-		 * Computes object space text matrix based on the given coordinates
-		 * @param coordinates pixel coordinates where the text should be drawn 
+		 * Computes object space text matrix based on the stored coordinates
 		 * @param outMatrix the computed text model matrix
 		 */
-		void computeTextModelMatrix(const glm::ivec2& coordinates, glm::mat4x4& outMatrix);
+		void computeTextModelMatrix(glm::mat4x4& outMatrix);
+
+		glm::ivec2 mLocation = { 0,0 };		///< Text location in pixel coordinates
 	};
 }

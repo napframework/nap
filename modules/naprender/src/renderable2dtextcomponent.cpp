@@ -4,10 +4,12 @@
 #include <entity.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
+#include <orthocameracomponent.h>
 
 // nap::Renderable2DTextComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::Renderable2DTextComponent)
-	RTTI_PROPERTY("Orientation", &nap::Renderable2DTextComponent::mOrientation, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Location", &nap::Renderable2DTextComponent::mLocation, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Orientation",	&nap::Renderable2DTextComponent::mOrientation,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::Renderable2DTextComponentInstance run time class definition 
@@ -29,6 +31,9 @@ namespace nap
 		// Copy orientation
 		setOrientation(getComponent<Renderable2DTextComponent>()->mOrientation);
 
+		// Copy location
+		setLocation(getComponent<Renderable2DTextComponent>()->mLocation);
+
 		return true;
 	}
 
@@ -37,38 +42,52 @@ namespace nap
 	{
 		// Compute model matrix
 		glm::mat4x4 model_matrix;
-		computeTextModelMatrix({0, 0}, model_matrix);
+		computeTextModelMatrix(model_matrix);
+
+		// Compute new view matrix, don't scale or rotate!
+		glm::vec3 cam_pos = math::extractPosition(viewMatrix);
+		glm::mat4x4 view_matrix = glm::translate(identityMatrix, cam_pos);
 
 		// Call base class implementation based on given parameters
-		RenderableTextComponentInstance::draw(viewMatrix, projectionMatrix, model_matrix);
+		RenderableTextComponentInstance::draw(view_matrix, projectionMatrix, model_matrix);
 	}
 
 
-	glm::ivec2 Renderable2DTextComponentInstance::getTextPosition(const glm::ivec2& origin)
+	glm::ivec2 Renderable2DTextComponentInstance::getTextPosition()
 	{
 		// Calculate offset
 		const math::Rect& bounds = getBoundingBox();
-		glm::ivec2 rvalue(0, origin.y);
+		glm::ivec2 rvalue(0, mLocation.y);
 		switch (mOrientation)
 		{
 		case utility::ETextOrientation::Left:
 		{
-			rvalue.x = origin.x - (int)(bounds.mMinPosition.x);
+			rvalue.x = mLocation.x - (int)(bounds.mMinPosition.x);
 			break;
 		}
 		case utility::ETextOrientation::Center:
 		{
-			rvalue.x = origin.x - (int)(bounds.getWidth() / 2.0f);
+			rvalue.x = mLocation.x - (int)(bounds.getWidth() / 2.0f);
 			break;
 		}
 		case utility::ETextOrientation::Right:
 		{
-			rvalue.x = origin.x - (int)(bounds.getWidth());
+			rvalue.x = mLocation.x - (int)(bounds.getWidth());
 			break;
 		}
 		default:
 			assert(false);
 		}
+
+		// Extract component transform (x - y coordinates)
+		glm::vec3 text_xform(0.0f, 0.0f, 0.0f);
+		if (hasTransform())
+		{
+			text_xform = math::extractPosition(getTransform()->getGlobalTransform());
+			rvalue.x += (int)(text_xform.x);
+			rvalue.y += (int)(text_xform.y);
+		}
+
 		return rvalue;
 	}
 
@@ -80,34 +99,35 @@ namespace nap
 	}
 
 
-	void Renderable2DTextComponentInstance::computeTextModelMatrix(const glm::ivec2& coordinates, glm::mat4x4& outMatrix)
+	bool Renderable2DTextComponentInstance::isSupported(nap::CameraComponentInstance& camera) const
+	{
+		return camera.get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance));
+	}
+
+
+	void Renderable2DTextComponentInstance::computeTextModelMatrix(glm::mat4x4& outMatrix)
 	{
 		// Get object space position based on orientation of text
-		glm::ivec2 pos = getTextPosition(coordinates);
-
-		// Extract component transform (x - y coordinates)
-		glm::vec3 text_xform(0.0f, 0.0f, 0.0f);
-		if (hasTransform())
-			text_xform = math::extractPosition(getTransform()->getGlobalTransform());
+		glm::ivec2 pos = getTextPosition();
 
 		// Compose model matrix
 		outMatrix = glm::translate(identityMatrix,
 		{
-			(float)pos.x + text_xform.x,
-			(float)pos.y + text_xform.y,
+			(float)pos.x,
+			(float)pos.y,
 			0.0f
 		});
 	}
 
 
-	void Renderable2DTextComponentInstance::draw(const glm::ivec2& coordinates, const opengl::BackbufferRenderTarget& target)
+	void Renderable2DTextComponentInstance::draw(const opengl::BackbufferRenderTarget& target)
 	{
 		// Create projection matrix
 		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)target.getSize().x, 0.0f, (float)target.getSize().y);
 		
 		// Compute model matrix
 		glm::mat4x4 model_matrix;
-		computeTextModelMatrix(coordinates, model_matrix);
+		computeTextModelMatrix(model_matrix);
 
 		// Draw text in screen space
 		RenderableTextComponentInstance::draw(identityMatrix, proj_matrix, model_matrix);

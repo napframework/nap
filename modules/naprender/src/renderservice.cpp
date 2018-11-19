@@ -245,9 +245,17 @@ namespace nap
 		// Extract view matrix
 		glm::mat4x4 view_matrix = camera.getViewMatrix();
 
-		// Draw
+		// Draw components only when camera is supported
 		for (auto& comp : components_to_render)
+		{
+			if (!comp->isSupported(camera))
+			{
+				nap::Logger::warn("unable to render component: %s, unsupported camera %s", 
+					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
+				continue;
+			}
 			comp->draw(view_matrix, projection_matrix);
+		}
 
 		renderTarget.unbind();
 	}
