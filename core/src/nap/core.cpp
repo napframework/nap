@@ -314,12 +314,12 @@ namespace nap
 
 
 	// Returns service that matches @type
-	Service* Core::getService(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck)
+	Service* Core::getService(const rtti::TypeInfo& type)
 	{
 		// Find service of type
-		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type, typeCheck](const auto& service)
+		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
 		{
-			return rtti::isTypeMatch(service->get_type(), type, typeCheck);
+			return rtti::isTypeMatch(service->get_type(), type, rtti::ETypeCheck::EXACT_MATCH);
 		});
 
 		// Check if found
@@ -329,7 +329,7 @@ namespace nap
 	nap::Service* Core::getService(const std::string& type)
 	{
 		rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(type.c_str());
-		return getService(stype, rtti::ETypeCheck::EXACT_MATCH);
+		return getService(stype);
 	}
 
 
