@@ -32,7 +32,7 @@ namespace nap
         bool LevelMeterComponentInstance::init(utility::ErrorState& errorState)
         {
             mResource = getComponent<LevelMeterComponent>();
-            mAudioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
             
             mCenterFrequency = mResource->mCenterFrequency;
             mBandWidth = mResource->mBandWidth;
