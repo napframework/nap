@@ -76,3 +76,9 @@ elseif(APPLE)
 else()
     install(FILES ${THIRDPARTY_DIR}/freetype/linux/libfreetype.so DESTINATION thirdparty/freetype/bin)
 endif()
+
+if (WIN32)
+    # Install for fbxconverter
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+        CONFIGURATIONS Release)
+endif()
