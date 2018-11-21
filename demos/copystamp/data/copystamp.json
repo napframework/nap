@@ -112,6 +112,17 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::RenderableCopyMeshComponent",
+                    "mID": "nap::RenderableCopyMeshComponent",
+                    "MaterialInstance": {
+                        "Material": "CopyMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "Opaque",
+                        "DepthMode": "NotSet"
+                    },
+                    "ColorUniform": "color"
                 }
             ],
             "Children": []
