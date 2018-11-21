@@ -126,6 +126,8 @@ add_subdirectory(demos/oscmidi)
 add_subdirectory(demos/oscmidi/module)
 add_subdirectory(demos/lineblending)
 add_subdirectory(demos/lineblending/module)
+add_subdirectory(demos/copystamp)
+add_subdirectory(demos/copystamp/module)
 
 # Unit tests
 add_subdirectory(unittests)
