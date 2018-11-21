@@ -149,6 +149,20 @@
             "Usage": "Static"
         },
         {
+            "Type": "nap::PlaneMesh",
+            "mID": "StampPlane",
+            "Size": {
+                "x": 100.0,
+                "y": 100.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Rows": 100,
+            "Columns": 100
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Width": 1280,
