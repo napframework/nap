@@ -77,10 +77,15 @@ namespace nap
 		// Get perspective camera
 		PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
+		mRenderService->setPolygonMode(opengl::EPolygonMode::Fill);
+
 		// Get mesh to render
 		RenderableMeshComponentInstance& mesh = mWorldEntity->getComponent<RenderableMeshComponentInstance>();
 		std::vector<RenderableComponentInstance*> renderable_comps = { &mesh };
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
+
+		// Draw gui
+		mGuiService->draw();
 
 		// Swap screen buffers
 		mRenderWindow->swap();
@@ -130,5 +135,13 @@ namespace nap
 
 	void CopystampApp::updateGui()
 	{
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
 	}
 }
