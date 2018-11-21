@@ -54,13 +54,15 @@ namespace nap
 
 		/**
 		 * Binds the managed vertex array object. Call this before rendering your vertex buffers.
-		 * Only call this when the VAO is considered valid!
+		 * Only call bind when this object is valid! 
+		 * Note that the material and mesh are not bound, only the vertex array object managed internally.
 		 */
 		void bind();
 		
 		/**
 		 * Unbinds the managed vertex array object. Call this after rendering your vertex buffers.
-		 * Only call this when the VAO is considered valid!
+		 * Only call unbind when this object is valid!
+		 * Note that the material and mesh are not unbound, only the vertex array object managed internally.
 		 */
 		void unbind();
 
