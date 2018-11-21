@@ -309,6 +309,12 @@ namespace nap
 	}
 
 
+	void RenderService::setPolygonMode(opengl::EPolygonMode mode)
+	{
+		mRenderState.mPolygonMode = mode;
+	}
+
+
 	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource)
 	{ 
 		if (resource != nullptr)
