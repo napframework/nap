@@ -66,6 +66,7 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointer to the render window
 
 		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;			//< Pointer to the entity that holds the points that are copied onto
 
 		// Updates gui components
 		void updateGui();

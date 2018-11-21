@@ -11,7 +11,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 0.0
+                            "z": 4.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -29,8 +29,8 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.5,
-                    "RotateSpeed": 0.004999999888241291,
+                    "MovementSpeed": 0.009999999776482582,
+                    "RotateSpeed": 0.0024999999441206457,
                     "PerspCameraComponent": "./nap::PerspCameraComponent",
                     "LookAtPosition": {
                         "x": 0.0,
@@ -67,6 +67,76 @@
             "Children": []
         },
         {
+            "Type": "nap::Entity",
+            "mID": "World",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "CopyPig",
+                    "MaterialInstance": {
+                        "Material": "CopyMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "CopyMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "color",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                }
+            ],
+            "Shader": "CopyShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
             "Type": "nap::MeshFromFile",
             "mID": "CopyBox",
             "Path": "box.mesh",
@@ -75,7 +145,7 @@
         {
             "Type": "nap::MeshFromFile",
             "mID": "CopyPig",
-            "Path": "pig_testgeometry_pighead1.mesh",
+            "Path": "pig.mesh",
             "Usage": "Static"
         },
         {
@@ -101,8 +171,18 @@
                 {
                     "Entity": "Camera",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "World",
+                    "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "CopyShader",
+            "mVertShader": "shaders/copy.vert",
+            "mFragShader": "shaders/copy.frag"
         },
         {
             "Type": "nap::SphereMesh",
