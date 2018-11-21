@@ -323,5 +323,19 @@ namespace nap
 				randomInt(min.y, max.y)
 			};
 		}
+
+
+		template<>
+		float abs(float value)
+		{
+			return std::fabs(value);
+		}
+
+
+		template<>
+		int abs(int value)
+		{
+			return std::abs(value);
+		}
 	}
 }
