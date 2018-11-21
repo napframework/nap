@@ -39,6 +39,7 @@ namespace nap
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mCameraEntity = scene->findEntity("Camera");
+		mWorldEntity  = scene->findEntity("World");
 
 		return true;
 	}
@@ -46,6 +47,9 @@ namespace nap
 
 	void CopystampApp::update(double deltaTime)
 	{
+		// Clear opengl context related resources that are not necessary any more
+		mRenderService->destroyGLContextResources({ mRenderWindow });
+
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
@@ -70,13 +74,17 @@ namespace nap
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
-		// Render gui to window
-		// mGuiService->draw();
+		// Get perspective camera
+		PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+
+		// Get mesh to render
+		RenderableMeshComponentInstance& mesh = mWorldEntity->getComponent<RenderableMeshComponentInstance>();
+		std::vector<RenderableComponentInstance*> renderable_comps = { &mesh };
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
 
 		// Swap screen buffers
 		mRenderWindow->swap();
 	}
-	
 	
 
 	/**
