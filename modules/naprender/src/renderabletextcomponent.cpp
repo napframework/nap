@@ -81,16 +81,11 @@ namespace nap
 		if (!errorState.check(mPositionAttr != nullptr, "%s: unable to get plane vertex attribute handle", mID.c_str()))
 			return false;
 
-		// Create a render-able mesh based on our material and plane
-		// Note that this mesh represents a valid binding between mesh and material, when this succeeds the characters can be rendered
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-		VAOHandle handle = render_service->acquireVertexArrayObject(*(mMaterialInstance.getMaterial()), mPlane, errorState);
-
-		if (!errorState.check(handle.isValid(), "Failed to acquire VAO for RenderableTextComponent %s", getComponent()->mID.c_str()))
-			return false;
-
 		// Construct render-able mesh (TODO: Make a factory or something similar to create and verify render-able meshes!
-		mRenderableMesh = RenderableMesh(mPlane, mMaterialInstance, handle);
+		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
+		mRenderableMesh = render_service->createRenderableMesh(mPlane, mMaterialInstance, errorState);
+		if (!mRenderableMesh.isValid())
+			return false;
 
 		// Set text, needs to succeed on initialization
 		if (!setText(resource->mText, errorState))
@@ -170,7 +165,7 @@ namespace nap
 
 		// Bind vertex array object
 		// The VAO handle works for all the registered render contexts
-		mRenderableMesh.mVAOHandle.get().bind();
+		mRenderableMesh.bind();
 
 		// Fetch uniform for setting character
 		UniformTexture2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformTexture2D>(mGlyphUniform);
@@ -235,7 +230,7 @@ namespace nap
 		// Unbind
 		index_buffer.unbind();
 		comp_mat->unbind();
-		mRenderableMesh.mVAOHandle.get().unbind();
+		mRenderableMesh.unbind();
 	}
 
 

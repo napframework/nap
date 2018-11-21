@@ -120,6 +120,16 @@ namespace nap
 	}
 
 
+	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
+	{
+		VAOHandle vao_handle = this->acquireVertexArrayObject(*materialInstance.getMaterial(), mesh, errorState);
+
+		if (!errorState.check(vao_handle.isValid(), "Failed to acquire VAO for mesh: %s in combination with material: %s", mesh.mID.c_str(), materialInstance.getMaterial()->mID.c_str()))
+			return RenderableMesh();
+		return RenderableMesh(mesh, materialInstance, vao_handle);
+	}
+
+
 	void RenderService::processEvents()
 	{
 		for (const auto& window : mWindows)
