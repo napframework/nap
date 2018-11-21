@@ -95,7 +95,7 @@ namespace nap
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
 		// Set draw mode (fill, lines, polygon
-		opengl::setPolygonMode(mGui->getRenderMode());
+		mRenderService->setPolygonMode(mGui->getRenderMode());
 
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		mScanEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);

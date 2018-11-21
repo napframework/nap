@@ -124,6 +124,12 @@ namespace nap
 		virtual void shutdown() override;
 
 		/**
+		 * Changes the polygon draw mode for the next set of draw calls. Updates the render state internally.
+		 * @param mode the polygon mode to use for the next set of draw calls
+		 */
+		void setPolygonMode(opengl::EPolygonMode mode);
+
+		/**
 		 * Returns the global render state that is used for all OpenGL contexts.
 		 * Properties associated with this state (such as the fill mode, point size etc.) are set before rendering a set of objects.
 		 * @return the global render state.

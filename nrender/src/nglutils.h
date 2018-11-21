@@ -13,40 +13,49 @@ namespace opengl
 	using GLContext = void*;
 
 	/**
-	* Clears the back-buffer bit of the currently active context
-	*/
-	void clear(GLuint bit);
+	 * Enum used for specifying polygon mode
+	 */
+	enum class EPolygonMode : std::uint8_t
+	{
+		Point = 0,			///< Render as points
+		Line = 1,			///< Render as lines
+		Fill = 2				///< Render polygons
+	};
 
+	/**
+	 * Clears the back-buffer bit of the currently active context
+	 */
+	void clear(GLuint bit);
 
 	/**
 	 * Clears color buffer of the currently active context
 	 */
 	void clearColor(float r, float g, float b, float a);
 
-
 	/**
 	 * Clears the depth buffer of the currently active context
 	 */
 	void clearDepth();
-
 
 	/**
 	 * Clears the stencil buffer of the currently active context
 	 */
 	void clearStencil();
 
-
 	/**
 	 * Clears the accumulated buffer of the currently active context
 	 */
 	void clearAccumulated();
-
 
 	/**
 	 * Enable / Disable depth test
 	 */
 	void enableDepthTest(bool value);
 
+	/**
+	 * @return if depth testing is enabled	
+	 */
+	bool isDepthTestEnabled();
 
 	/**
 	 * Checks if the specified filter supports mip mapping
@@ -54,13 +63,16 @@ namespace opengl
 	 */
 	bool isMipMap(GLint filterType);
 
-
 	/**
 	 * Enables / Disables opengl alpha blending
 	 * @param value if blending is enabled or disabled
 	 */
 	void enableBlending(bool value);
 
+	/**
+	 * @return if blending is enabled	
+	 */
+	bool isBlendingEnabled();
 
 	/**
 	 * Enables / Disables opengl Scissor Test
@@ -68,9 +80,19 @@ namespace opengl
 	void enableScissorTest(bool value);
 
 	/**
+	 * @return if scissor testing is enabled	
+	 */
+	bool isScissorTestEnabled();
+
+	/**
 	 *	Enables / disables face culling
 	 */
 	void enableFaceCulling(bool value);
+
+	/**
+	 * @return if face culling is enabled	
+	 */
+	bool isFaceCullingEnabled();
 
 	/**
 	 * Enables / Disables opengl multi sampling
@@ -78,18 +100,20 @@ namespace opengl
 	 */
 	void enableMultiSampling(bool value);
 
+	/**
+	 * @return if multi sampling is enabled	
+	 */
+	bool isMultisamplingEnabled();
 
 	/**
 	* force execution of GL commands in finite time
 	*/
 	void flush();
 
-
 	/**
 	* updates the render viewport
 	*/
 	void setViewport(int width, int height);
-
 
 	/**
 	 * Enables / disables line smoothing
@@ -97,23 +121,16 @@ namespace opengl
 	 */
 	void enableLineSmoothing(bool value);
 
-
 	/**
 	 * Sets the line width
 	 * @param value: the line width of rasterized lines
 	 */
 	void setLineWidth(float value);
 
-
 	/**
-	 * Enum used for specifying polygon mode
+	 *	@return the current line width
 	 */
-	enum class EPolygonMode : std::uint8_t
-	{
-		Point	= 0,			///< Render as points
-		Line	= 1,			///< Render as lines
-		Fill	= 2				///< Render polygons
-	};
+	float getLineWidth();
 
 	/**
 	 * Select the polygon rasterization mode
