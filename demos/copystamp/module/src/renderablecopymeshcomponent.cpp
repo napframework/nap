@@ -11,6 +11,9 @@
 
 // nap::renderablecopymeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableCopyMeshComponent)
+	RTTI_PROPERTY("Orient",				&nap::RenderableCopyMeshComponent::mOrient,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Scale",				&nap::RenderableCopyMeshComponent::mScale,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RandomScale",		&nap::RenderableCopyMeshComponent::mRandomScale,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableCopyMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorUniform",		&nap::RenderableCopyMeshComponent::mColorUniform,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TargetMesh",			&nap::RenderableCopyMeshComponent::mTargetMesh,					nap::rtti::EPropertyMetaData::Required)
@@ -88,11 +91,21 @@ namespace nap
 
 		// Store handle to target mesh
 		mTargetMesh = resource->mTargetMesh.get();
-		mTargetVertices = mTargetMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		
+
 		// Ensure the vertices are valid
+		mTargetVertices = mTargetMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		if (!errorState.check(mTargetVertices != nullptr, "%s: unable to find target vertex position attribute", resource->mID.c_str()))
 			return false;
+
+		// Ensure the normals are valid
+		mTargetNormals = mTargetMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		if (!errorState.check(mTargetNormals != nullptr, "%s: unable to find target normal attribute", resource->mID.c_str()))
+			return false;
+
+		// Copy orientation and scale
+		mOrient = resource->mOrient;
+		mScale	= resource->mScale;
+		mRandomScale = resource->mRandomScale;
 
 		return true;
 	}
@@ -129,9 +142,13 @@ namespace nap
 
 		// Get points to copy onto
 		std::vector<glm::vec3>& pos_data = mTargetVertices->getData();
+		std::vector<glm::vec3>& nor_data = mTargetNormals->getData();
 
 		// Fix seed for subsequent random calls
-		math::setRandomSeed(6);
+		math::setRandomSeed(mSeed);
+
+		// Clamp random scale value
+		float rand_scale = math::clamp<float>(mRandomScale, 0.0f, 1.0f);
 
 		// Iterate over every point, construct custom object matrix
 		// And render
@@ -152,12 +169,21 @@ namespace nap
 			// GPU mesh representation of mesh to copy
 			opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 
-			// Get vertex position buffer handle on GPU
-			opengl::VertexAttributeBuffer& pos_gpu_buffer = gpu_mesh.getVertexAttributeBuffer(VertexAttributeIDs::getPositionName());
-
 			// Calculate model matrix
 			glm::mat4x4 object_loc = glm::translate(model_matrix, pos_data[i]);
-			mModelUniform->setValue(object_loc);
+
+			// Orient using normal
+			if (mOrient)
+			{
+				glm::vec3 nor_normal = glm::normalize(nor_data[i]);
+				glm::vec3 rot_normal = glm::cross({ 0,1,0 }, glm::normalize(nor_normal));
+				float rot_value = glm::acos(glm::dot({ 0,1,0 }, nor_normal));
+				object_loc = glm::rotate(object_loc, rot_value, rot_normal);
+			}
+
+			// Add scale and set as object matrix
+			float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
+			mModelUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
 
 			// Push uniforms to gpu
 			utility::pushUniforms(mMaterialInstance);
