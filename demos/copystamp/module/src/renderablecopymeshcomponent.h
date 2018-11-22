@@ -3,13 +3,19 @@
 #include <rendercomponent.h>
 #include <renderablemesh.h>
 #include <rtti/objectptr.h>
+#include <componentptr.h>
+#include <transformcomponent.h>
+#include <color.h>
 
 namespace nap
 {
+	// Forward declare instance part
 	class RenderableCopyMeshComponentInstance;
 
 	/**
-	 *	renderablecopymeshcomponent
+	 * RenderableCopyMeshComponent
+	 * The instance created from this resource draws a randomly selected mesh at every vertex of the target mesh.
+	 * Note that isn't necessarily the fastest way to do this, just a minimal example. Optimize it as you wish. 
 	 */
 	class NAPAPI RenderableCopyMeshComponent : public RenderableComponent
 	{
@@ -18,24 +24,27 @@ namespace nap
 	public:
 
 		/**
-		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
-		* @param components the components this object depends on
-		*/
+		 * This component depends on a transform component
+		 * @param components the components this object depends on
+		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		// Properties
-		bool mOrient = false;									///< Property: 'Orientation' if the models should be rotated towards the normal
-		float mScale = 1.0f;									///< Property: 'Scale' scale of the copied meshes
-		float mRandomScale = 0.0f;								///< Property: 'RandomScale' amount of random scale to apply (0-1)
-		MaterialInstanceResource mMaterialInstanceResource;		///< Property: 'MaterialInstance' the material used to shade the text
-		std::string mColorUniform = "color";					///< Property: 'ColorUniform' name of the color uniform binding (vec3) in the shader
-		std::vector<rtti::ObjectPtr<IMesh>> mCopyMeshes;		///< Property: 'CopyMeshes' list of meshes to copy onto target
-		rtti::ObjectPtr<IMesh> mTargetMesh;						///< Property: 'Target' mesh to copy meshes onto
+		// Component Properties
+		bool mOrient = true;										///< Property: 'Orientation' if the models should be rotated towards the normal
+		float mScale = 1.0f;										///< Property: 'Scale' scale of the copied meshes
+		float mRandomScale = 0.0f;									///< Property: 'RandomScale' amount of random scale to apply (0-1)
+		MaterialInstanceResource mMaterialInstanceResource;			///< Property: 'MaterialInstance' the material used to shade the text
+		std::string mColorUniform = "color";						///< Property: 'ColorUniform' name of the color uniform binding (vec3) in the shader
+		std::vector<rtti::ObjectPtr<IMesh>> mCopyMeshes;			///< Property: 'CopyMeshes' list of meshes to copy onto target
+		rtti::ObjectPtr<IMesh> mTargetMesh;							///< Property: 'Target' mesh to copy meshes onto
+		ComponentPtr<TransformComponent> mCamera;					///< Property: 'Camera' link to camera, used for orientation
 	};
 
 
 	/**
-	 * renderablecopymeshcomponentInstance	
+	 * Custom Renderable Mesh Component
+	 * This component renders a randomly selected mesh at the position of every vertex in the target mesh.
+	 * Look at the onDraw() call to see how this component iterates over every point and renders a mesh at the vertex position.
 	 */
 	class NAPAPI RenderableCopyMeshComponentInstance : public RenderableComponentInstance
 	{
@@ -45,39 +54,41 @@ namespace nap
 			RenderableComponentInstance(entity, resource)									{ }
 
 		/**
-		 * Initialize renderablecopymeshcomponentInstance based on the renderablecopymeshcomponent resource
+		 * Initialize RenderableCopyMeshComponentInstance based on the RenderableCopyMeshComponent resource
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the renderablecopymeshcomponentInstance is initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * update renderablecopymeshcomponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
-		 */
-		virtual void update(double deltaTime) override;
-
-		/**x
-		 * @return material used for rendering the meshes	
+		 * @return material used for rendering the copied meshes	
 		 */
 		MaterialInstance& getMaterial();
 
-		bool	mOrient = false;									///< If copied meshes should be oriented towards the normal
+		/**
+		 * Link to camera, can be used to make the copied meshes look at the camera
+		 */
+		ComponentInstancePtr<TransformComponent> mCamera = { this, &RenderableCopyMeshComponent::mCamera };
+
+		bool	mOrient = true;										///< If copied meshes should be oriented towards the camera
 		float	mScale = 1.0f;										///< Scale of the meshes that are copied
 		float	mRandomScale = 0.0f;								///< Amount of random scale to apply	
 		int		mSeed = 0;											///< Random seed
 
 	protected:
 		/**
-		* Draws the text into to active render target using the provided matrices.
-		* Call this in derived classes based on extracted matrices.
+		* Draws a randomly selected mesh at the position of every vertex in the target mesh.
 		* @param viewMatrix the camera world space location
 		* @param projectionMatrix the camera projection matrix
-		* @param modelMatrix the location of the text in the world
 		*/
 		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
+		/**
+		 * Helper function that is used to extract a specific type of uniform out of a material.
+		 * First it checks if the material actually has (supports) a uniform with the given name.
+		 * If that is the case a new uniform with that name is created that can be used by this component only.
+		 */
 		template<typename T>
 		T* extractUniform(const std::string& name, utility::ErrorState& error);
 
@@ -93,6 +104,7 @@ namespace nap
 		nap::UniformMat4* mProjectionUniform = nullptr;					///< Projection matrix uniform slot
 		nap::UniformMat4* mViewUniform = nullptr;						///< View matrix uniform slot
 		nap::UniformMat4* mModelUniform = nullptr;						///< Model matrix uniform slot
+		std::vector<RGBColorFloat> mColors;								///< All selectable colors 
 	};
 
 

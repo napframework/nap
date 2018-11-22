@@ -17,7 +17,16 @@ namespace nap
 	using namespace rtti;
 
 	/**
-	 * Demo application that is called from within the main loop
+	 * Demo application that is called from within the main loop.
+	 * Note that this demo won't run well on integrated graphics cards!
+	 *
+	 * This demo application shows you how to write a custom nap::RenderableComponent.
+	 * The component in this demo (nap::RenderableCopyMeshComponent) copies 3D meshes onto the vertices of a reference mesh.
+	 * The copy / stamping is handled at render-time, making sure no additional CPU / memory resources are needed.
+	 *
+	 * Change the number of copies by changing the amount of rows / columns in the StampPlane resource (json).
+	 * You can also add more meshes that are copied by editing the CopyMeshes array of the nap::RenderableCopyMeshComponent (json).
+	 * Take a look at the custom nap::RenderableCopyMeshComponent to see how the copy stamping at render-time is actually done.
 	 */
 	class CopystampApp : public App
 	{
@@ -57,13 +66,13 @@ namespace nap
 
 	private:
 		// Nap Services
-		RenderService*			mRenderService = nullptr;			//< Render Service that handles render calls
-		ResourceManager*		mResourceManager = nullptr;			//< Manages all the loaded resources
-		SceneService*			mSceneService = nullptr;			//< Manages all the objects in the scene
-		InputService*			mInputService = nullptr;			//< Input service for processing input
-		IMGuiService*			mGuiService = nullptr;				//< Gui service
+		RenderService*				mRenderService = nullptr;			//< Render Service that handles render calls
+		ResourceManager*			mResourceManager = nullptr;			//< Manages all the loaded resources
+		SceneService*				mSceneService = nullptr;			//< Manages all the objects in the scene
+		InputService*				mInputService = nullptr;			//< Input service for processing input
+		IMGuiService*				mGuiService = nullptr;				//< Gui service
 
-		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointer to the render window
+		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
 
 		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;			//< Pointer to the entity that holds the points that are copied onto
