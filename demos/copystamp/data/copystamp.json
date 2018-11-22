@@ -10,8 +10,8 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.0,
-                            "z": 4.0
+                            "y": -20.0,
+                            "z": 20.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -93,27 +93,6 @@
                     }
                 },
                 {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent",
-                    "Mesh": "CopyPig",
-                    "MaterialInstance": {
-                        "Material": "CopyMaterial",
-                        "Uniforms": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
                     "Type": "nap::RenderableCopyMeshComponent",
                     "mID": "nap::RenderableCopyMeshComponent",
                     "MaterialInstance": {
@@ -123,6 +102,8 @@
                         "DepthMode": "NotSet"
                     },
                     "ColorUniform": "color",
+                    "Scale" : 1.0,
+                    "RandomScale": 0.95,
                     "TargetMesh": "StampPlane",
                     "CopyMeshes": [
                         "CopyBox",
@@ -176,7 +157,7 @@
                 "x": 0.0,
                 "y": 0.0
             },
-            "Rows": 50,
+            "Rows":  50,
             "Columns": 50
         },
         {
@@ -218,9 +199,16 @@
         {
             "Type": "nap::SphereMesh",
             "mID": "CopySphere",
-            "Radius": 0.75,
+            "Radius": 1.0,
             "Rings": 15.0,
             "Sectors": 15.0
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "StampSphere",
+            "Radius": 20.00,
+            "Rings": 25.0,
+            "Sectors": 25.0
         }
     ]
 }

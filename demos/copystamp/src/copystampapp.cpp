@@ -143,6 +143,9 @@ namespace nap
 
 	void CopystampApp::updateGui()
 	{
+		// Get component that copies meshes onto target mesh
+		RenderableCopyMeshComponentInstance& copy_comp = mWorldEntity->getComponent<RenderableCopyMeshComponentInstance>();
+
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
@@ -150,6 +153,13 @@ namespace nap
 		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
 			"left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if(ImGui::CollapsingHeader("Controls"))
+		{
+			ImGui::SliderInt("Random Seed", &(copy_comp.mSeed), 0, 100);
+			ImGui::SliderFloat("Global Scale", &(copy_comp.mScale), 0.0f, 2.0f);
+			ImGui::SliderFloat("Random Scale", &(copy_comp.mRandomScale), 0.0f, 1.0f);
+			ImGui::Checkbox("Orient", &(copy_comp.mOrient));
+		}
 		ImGui::End();
 	}
 }

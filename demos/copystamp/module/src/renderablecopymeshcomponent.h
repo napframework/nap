@@ -24,6 +24,9 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// Properties
+		bool mOrient = false;									///< Property: 'Orientation' if the models should be rotated towards the normal
+		float mScale = 1.0f;									///< Property: 'Scale' scale of the copied meshes
+		float mRandomScale = 0.0f;								///< Property: 'RandomScale' amount of random scale to apply (0-1)
 		MaterialInstanceResource mMaterialInstanceResource;		///< Property: 'MaterialInstance' the material used to shade the text
 		std::string mColorUniform = "color";					///< Property: 'ColorUniform' name of the color uniform binding (vec3) in the shader
 		std::vector<rtti::ObjectPtr<IMesh>> mCopyMeshes;		///< Property: 'CopyMeshes' list of meshes to copy onto target
@@ -59,6 +62,11 @@ namespace nap
 		 */
 		MaterialInstance& getMaterial();
 
+		bool	mOrient = false;									///< If copied meshes should be oriented towards the normal
+		float	mScale = 1.0f;										///< Scale of the meshes that are copied
+		float	mRandomScale = 0.0f;								///< Amount of random scale to apply	
+		int		mSeed = 0;											///< Random seed
+
 	protected:
 		/**
 		* Draws the text into to active render target using the provided matrices.
@@ -80,6 +88,7 @@ namespace nap
 		IMesh* mTargetMesh;												///< Mesh to copy onto
 		std::vector<RenderableMesh> mCopyMeshes;						///< All renderable variants of the mesh to copy
 		Vec3VertexAttribute* mTargetVertices = nullptr;					///< Point positions to copy meshes onto
+		Vec3VertexAttribute* mTargetNormals = nullptr;					///< Point orientation of target mesh
 		nap::UniformVec3* mColorUniform = nullptr;						///< Color uniform slot
 		nap::UniformMat4* mProjectionUniform = nullptr;					///< Projection matrix uniform slot
 		nap::UniformMat4* mViewUniform = nullptr;						///< View matrix uniform slot
