@@ -122,7 +122,13 @@
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
-                    "ColorUniform": "color"
+                    "ColorUniform": "color",
+                    "TargetMesh": "StampPlane",
+                    "CopyMeshes": [
+                        "CopyBox",
+                        "CopySphere",
+                        "CopyPig"
+                    ]
                 }
             ],
             "Children": []
@@ -170,8 +176,8 @@
                 "x": 0.0,
                 "y": 0.0
             },
-            "Rows": 100,
-            "Columns": 100
+            "Rows": 50,
+            "Columns": 50
         },
         {
             "Type": "nap::RenderWindow",
@@ -212,9 +218,9 @@
         {
             "Type": "nap::SphereMesh",
             "mID": "CopySphere",
-            "Radius": 1.0,
-            "Rings": 25.0,
-            "Sectors": 25.0
+            "Radius": 0.75,
+            "Rings": 15.0,
+            "Sectors": 15.0
         }
     ]
 }
