@@ -2,7 +2,6 @@
 
 // External Includes
 #include <entity.h>
-#include <transformcomponent.h>
 #include <renderservice.h>
 #include <nap/core.h>
 #include <materialutils.h>
@@ -16,6 +15,7 @@ RTTI_BEGIN_CLASS(nap::RenderableCopyMeshComponent)
 	RTTI_PROPERTY("RandomScale",		&nap::RenderableCopyMeshComponent::mRandomScale,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableCopyMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorUniform",		&nap::RenderableCopyMeshComponent::mColorUniform,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Camera",				&nap::RenderableCopyMeshComponent::mCamera,						nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("TargetMesh",			&nap::RenderableCopyMeshComponent::mTargetMesh,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CopyMeshes",			&nap::RenderableCopyMeshComponent::mCopyMeshes,					nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -36,6 +36,12 @@ namespace nap
 	}
 
 
+	/**
+	 * Initializes this component. For this component to work a reference mesh + at least one mesh to copy onto it is needed.
+	 * It also makes sure various uniforms (such as color) are present in the material. These uniforms are set when onRender() is called.
+	 * But most importantly: it creates a valid RenderableMesh for every mesh to copy and caches it internally.
+	 * The renderable mesh represents the coupling between a mesh and material. When valid, the mesh can be rendered with the material.
+	 */
 	bool RenderableCopyMeshComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get resource
@@ -92,12 +98,12 @@ namespace nap
 		// Store handle to target mesh
 		mTargetMesh = resource->mTargetMesh.get();
 
-		// Ensure the vertices are valid
+		// Ensure the reference mesh has vertices (position attribute).
 		mTargetVertices = mTargetMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		if (!errorState.check(mTargetVertices != nullptr, "%s: unable to find target vertex position attribute", resource->mID.c_str()))
 			return false;
 
-		// Ensure the normals are valid
+		// Ensure the reference mesh has normals.
 		mTargetNormals = mTargetMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
 		if (!errorState.check(mTargetNormals != nullptr, "%s: unable to find target normal attribute", resource->mID.c_str()))
 			return false;
@@ -107,13 +113,12 @@ namespace nap
 		mScale	= resource->mScale;
 		mRandomScale = resource->mRandomScale;
 
+		// Add the colors that are randomly picked for every mesh that is drawn
+		mColors.emplace_back(RGBColor8(0x5D, 0x5E, 0x73).convert<RGBColorFloat>());
+		mColors.emplace_back(RGBColor8(0x8B, 0x8C, 0xA0).convert<RGBColorFloat>());
+		mColors.emplace_back(RGBColor8(0xC8, 0x69, 0x69).convert<RGBColorFloat>());
+			
 		return true;
-	}
-
-
-	void RenderableCopyMeshComponentInstance::update(double deltaTime)
-	{
-
 	}
 
 
@@ -123,6 +128,11 @@ namespace nap
 	}
 
 
+	/**
+	 * Called by the render service when the app wants to draw this component.
+	 * A randomly selected mesh is rendered at the position of every vertex in the reference mesh.
+	 * You can change the meshes that are copied and the reference mesh in the JSON file.
+	 */
 	void RenderableCopyMeshComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Get global transform
@@ -149,14 +159,19 @@ namespace nap
 
 		// Clamp random scale value
 		float rand_scale = math::clamp<float>(mRandomScale, 0.0f, 1.0f);
+		int max_rand_color = static_cast<int>(mColors.size()) - 1;
 
-		// Iterate over every point, construct custom object matrix
-		// And render
+		// Get camera location
+		glm::vec3 cam_pos = math::extractPosition(mCamera->getGlobalTransform());
+
+		// Iterate over every point, fetch random mesh, construct custom object matrix, set uniforms and render.
 		for (auto i = 0; i < pos_data.size(); i++)
 		{
-			// Pick number
+			// Pick random mesh number
 			int mesh_idx = math::random<int>(0, mCopyMeshes.size() - 1);
-			glm::vec3 color = math::random<glm::vec3>({ 0.0,0.0,0.0 }, { 1.0,1.0,1.0 });
+			
+			// Pick random color for mesh
+			glm::vec3 color = mColors[math::random<int>(0, max_rand_color)].toVec3();
 			mColorUniform->setValue(color);
 
 			// Get the mesh to stamp onto this point and bind
@@ -175,9 +190,10 @@ namespace nap
 			// Orient using normal
 			if (mOrient)
 			{
+				glm::vec3 cam_normal = glm::normalize(cam_pos - pos_data[i]);
 				glm::vec3 nor_normal = glm::normalize(nor_data[i]);
-				glm::vec3 rot_normal = glm::cross({ 0,1,0 }, glm::normalize(nor_normal));
-				float rot_value = glm::acos(glm::dot({ 0,1,0 }, nor_normal));
+				glm::vec3 rot_normal = glm::cross(nor_normal, cam_normal);
+				float rot_value = glm::acos(glm::dot(cam_normal, nor_normal));
 				object_loc = glm::rotate(object_loc, rot_value, rot_normal);
 			}
 
@@ -191,17 +207,19 @@ namespace nap
 			// Iterate over all the shapes and render
 			for (int shape_idx = 0; shape_idx < mesh_instance.getNumShapes(); ++shape_idx)
 			{
+				// Get the shape we want to draw and the index buffer associated with that shape
 				MeshShape& shape = mesh_instance.getShape(shape_idx);
 				const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(shape_idx);
 
 				GLenum draw_mode = getGLMode(shape.getDrawMode());
 				GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 
+				// Bind and draw all the currently attached vbo's based on the shape's indices.
 				index_buffer.bind();
 				glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
 				index_buffer.unbind();
 			}
-			
+			// Unbind this instance
 			render_mesh.unbind();
 		}
 

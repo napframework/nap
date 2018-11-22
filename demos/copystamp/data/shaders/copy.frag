@@ -11,11 +11,11 @@ uniform vec3 		color;
 uniform vec3		cameraLocation;							// World Space location of the camera
 
 // Light Uniforms
-const vec3			lightPosition  = vec3(0.0,100.0,100.0);	// World position of the light
+const vec3			lightPosition  = vec3(50.0,000.0,100.0);	// World position of the light
 const vec3			lightIntensity = vec3(1.0,1.0,1.0) ;	// Light intensity
-const float			ambientIntensity = 0.75;				// Ambient light intensity
+const float			ambientIntensity = 0.5;				// Ambient light intensity
 const float			shininess = 4.0;						// Specular angle shininess
-const float			specularIntensity = 0.5;				// Amount of added specular
+const float			specularIntensity = 0.4;				// Amount of added specular
 
 // output
 out vec4 out_Color;
@@ -51,7 +51,7 @@ void main()
     vec3 specular = specularCoefficient * specularColor * lightIntensity * specularIntensity;
     
 	//linear color (color before gamma correction)
-    vec3 linearColor = ambient + specular;
+    vec3 linearColor = ambient + specular + diffuse;
 
     out_Color = vec4(linearColor, 1.0);
 }

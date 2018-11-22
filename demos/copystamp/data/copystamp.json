@@ -6,7 +6,7 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent",
+                    "mID": "CameraTransform",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -29,7 +29,7 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.009999999776482582,
+                    "MovementSpeed": 0.05,
                     "RotateSpeed": 0.0024999999441206457,
                     "PerspCameraComponent": "./nap::PerspCameraComponent",
                     "LookAtPosition": {
@@ -42,7 +42,7 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "nap::PerspCameraComponent",
                     "Properties": {
-                        "FieldOfView": 50.0,
+                        "FieldOfView": 55.0,
                         "NearClippingPlane": 1.0,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
@@ -103,8 +103,10 @@
                     },
                     "ColorUniform": "color",
                     "Scale" : 1.0,
-                    "RandomScale": 0.95,
+                    "RandomScale": 0.65,
+                    "Orient" : true,
                     "TargetMesh": "StampPlane",
+                    "Camera" : "CameraTransform", 
                     "CopyMeshes": [
                         "CopyBox",
                         "CopySphere",
@@ -157,8 +159,8 @@
                 "x": 0.0,
                 "y": 0.0
             },
-            "Rows":  50,
-            "Columns": 50
+            "Rows":  35,
+            "Columns": 35
         },
         {
             "Type": "nap::RenderWindow",
@@ -199,16 +201,9 @@
         {
             "Type": "nap::SphereMesh",
             "mID": "CopySphere",
-            "Radius": 1.0,
+            "Radius": 0.85,
             "Rings": 15.0,
             "Sectors": 15.0
-        },
-        {
-            "Type": "nap::SphereMesh",
-            "mID": "StampSphere",
-            "Radius": 20.00,
-            "Rings": 25.0,
-            "Sectors": 25.0
         }
     ]
 }
