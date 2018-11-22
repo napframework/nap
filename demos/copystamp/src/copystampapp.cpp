@@ -1,4 +1,5 @@
 #include "copystampapp.h"
+#include "renderablecopymeshcomponent.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -80,8 +81,15 @@ namespace nap
 		mRenderService->setPolygonMode(opengl::EPolygonMode::Fill);
 
 		// Get mesh to render
-		RenderableMeshComponentInstance& mesh = mWorldEntity->getComponent<RenderableMeshComponentInstance>();
-		std::vector<RenderableComponentInstance*> renderable_comps = { &mesh };
+		RenderableCopyMeshComponentInstance& copy_mesh = mWorldEntity->getComponent<RenderableCopyMeshComponentInstance>();
+		
+		// Set camera in shader used by mesh
+		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
+		UniformVec3& cam_loc_uniform = copy_mesh.getMaterial().getOrCreateUniform<UniformVec3>("cameraLocation");
+		cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
+		
+		// Render all copied meshes
+		std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
 
 		// Draw gui

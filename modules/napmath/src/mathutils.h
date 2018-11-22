@@ -116,6 +116,12 @@ namespace nap
 		T random(T min, T max);
 
 		/**
+		 * Sets the seed for all subsequent random calls.
+		 * @param value the new seed value
+		 */
+		void NAPAPI setRandomSeed(int value);
+
+		/**
 		 * Interpolates a value over time to a @target using a dampening model
 		 * @param currentValue the current blend value, often the @return value
 		 * @param targetValue the value to blend to

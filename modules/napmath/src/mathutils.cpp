@@ -7,6 +7,7 @@
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <ctime>
 
 // Specialization of lerping
 namespace nap
@@ -26,6 +27,7 @@ namespace nap
 			{
 				std::random_device r;
 				generator = std::make_unique<std::mt19937>(r());
+				generator->seed(time(0));
 			}
 			return *generator;
 		}
@@ -324,6 +326,12 @@ namespace nap
 			};
 		}
 
+
+		void setRandomSeed(int value)
+		{
+			std::mt19937& generator = getGenerator();
+			generator.seed(value);
+		}
 
 		template<>
 		float abs(float value)
