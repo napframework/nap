@@ -58,6 +58,9 @@ namespace nap
 		mVideoColorTexture   = mResourceManager->findObject("VideoColorTexture");
 		mStaticColorTexture  = mResourceManager->findObject("StaticColorTexture");
 
+		// Look for Control Groups
+		mControlGroups       = mResourceManager->findObject("ControlGroups");
+
 		// All of our entities
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		

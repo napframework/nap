@@ -2,7 +2,6 @@
 
 // Local includes
 #include "artnetmeshfromfile.h"
-#include "controlgroups.h"
 
 // External includes
 #include <component.h>

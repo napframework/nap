@@ -4,6 +4,7 @@
 #include "randomgui.h"
 #include "randomorbit.h"
 #include "randomshaders.h"
+#include "controlgroups.h"
 
 // External Includes
 #include <app.h>
@@ -88,6 +89,9 @@ namespace nap
 		rtti::ObjectPtr<RenderTexture2D>					mSunColorTexture = nullptr;
 		rtti::ObjectPtr<RenderTexture2D>					mVideoColorTexture = nullptr;
 		rtti::ObjectPtr<RenderTexture2D>					mStaticColorTexture = nullptr;
+
+		// Control Groups
+		rtti::ObjectPtr<ControlGroups>						mControlGroups = nullptr;
 
 		// Scene Objects
 		rtti::ObjectPtr<Scene>								mScene = nullptr;
