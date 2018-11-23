@@ -98,7 +98,8 @@ namespace nap
 		// Get mesh to render
 		RenderableCopyMeshComponentInstance& copy_mesh = mWorldEntity->getComponent<RenderableCopyMeshComponentInstance>();
 		
-		// Set camera in shader used by mesh
+		// Set camera location in the shader that draws all the meshes.
+		// The camera location is used for the light computation.
 		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
 		UniformVec3& cam_loc_uniform = copy_mesh.getMaterial().getOrCreateUniform<UniformVec3>("cameraLocation");
 		cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
