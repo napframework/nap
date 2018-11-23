@@ -87,7 +87,7 @@ namespace nap
 	const nap::UniformBinding& UniformContainer::getUniformBinding(const std::string& name) const
 	{
 		auto binding = findUniformBinding(name);
-		assert(v != nullptr);
+		assert(binding != nullptr);
 		return *binding;
 	}
 
