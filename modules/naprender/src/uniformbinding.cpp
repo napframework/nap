@@ -75,6 +75,23 @@ namespace nap
 	}
 
 
+	const nap::UniformBinding* UniformContainer::findUniformBinding(const std::string& name) const
+	{
+		auto it = mUniformValueBindings.find(name);
+		if (it == mUniformValueBindings.end())
+			return nullptr;
+		return &(it->second);
+	}
+
+
+	const nap::UniformBinding& UniformContainer::getUniformBinding(const std::string& name) const
+	{
+		auto binding = findUniformBinding(name);
+		assert(v != nullptr);
+		return *binding;
+	}
+
+
 	Uniform& UniformContainer::AddUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration)
 	{
 		// Create association between uniform and declaration. At the same time, split between textures and values

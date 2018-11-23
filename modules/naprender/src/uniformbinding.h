@@ -37,8 +37,12 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	* Base class for both Material and MaterialInstance. Basic support for uniforms.
-	*/
+	 * Manages uniform values and declarations. A uniform value is always tied to a declaration.
+	 * Multiple uniform values can be associated with the same declaration.
+	 * The uniform declaration is the actual interface to a uniform slot on a shader. 
+	 * The uniform value is the actual value uploaded to that slot.
+	 * Both the Material and MaterialInstance are a uniform container.
+	 */
 	class NAPAPI UniformContainer
 	{
 		RTTI_ENABLE()
@@ -66,6 +70,25 @@ namespace nap
 		*/
 		template<typename T>
 		T& getUniform(const std::string& name);
+
+		/**
+		 * Search for a uniform shader binding with the given name. Use the binding to gain access to the uniform declaration.
+		 * A uniform value binding represents the coupling between a uniform value and GLSL uniform declaration
+		 * The declaration is the interface to the uniform on the shader, where the uniform value is the actual value that is uploaded.
+		 * @param name the name of the uniform to find the binding for.
+		 * @return a uniform value binding with the given name, nullptr if not found.
+		 */
+		const UniformBinding* findUniformBinding(const std::string& name) const;
+
+		/**
+		 * Gets a uniform shader binding with the given name. Use the binding to gain access to the uniform declaration.
+		 * This call asserts if a binding with the given names does not exists.
+		 * A uniform value binding represents the coupling between a uniform value and GLSL uniform declaration
+		 * The declaration is the interface to the uniform on the shader, where the uniform value is the actual value that is uploaded.
+		 * @param name the name of the uniform to find the binding for.
+		 * @return a uniform value binding with the given name.
+		 */
+		const UniformBinding& getUniformBinding(const std::string& name) const;
 
 		/**
 		* @return All texture uniform bindings.
