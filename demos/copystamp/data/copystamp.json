@@ -146,20 +146,8 @@
         },
         {
             "Type": "nap::MeshFromFile",
-            "mID": "CopyDodecahedron",
-            "Path": "dodecahedron.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
             "mID": "CopyOctahedron",
             "Path": "octahedron.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "CopyPig",
-            "Path": "pig.mesh",
             "Usage": "Static"
         },
         {
