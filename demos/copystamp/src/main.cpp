@@ -8,8 +8,8 @@
 #include <apprunner.h>
 
 /**
- * Hello World Demo
- * refer to helloworldapp.h for a more detailed description of the application
+ * Copy Stamp Demo
+ * refer to copystampapp.h for a more detailed description of the application
  */
 int main(int argc, char *argv[])
 {
