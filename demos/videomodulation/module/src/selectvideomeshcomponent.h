@@ -7,6 +7,7 @@
 #include <component.h>
 #include <renderablemesh.h>
 #include <nap/resourceptr.h>
+#include <renderablemeshcomponent.h>
 
 namespace nap
 {

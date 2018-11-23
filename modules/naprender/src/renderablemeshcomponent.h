@@ -98,7 +98,7 @@ namespace nap
 		/**
 		 * @return Currently active mesh that is drawn.
 		 */
-		IMesh& getMesh()										{ return *mRenderableMesh.mMesh; }
+		IMesh& getMesh()										{ return mRenderableMesh.getMesh(); }
 
 		/**
 		 * Returns the runtime version of the mesh that is drawn, part of the original mesh.

@@ -1,0 +1,209 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "Camera",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CameraTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": -20.0,
+                            "z": 20.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "nap::OrbitController",
+                    "MovementSpeed": 0.05,
+                    "RotateSpeed": 0.0024999999441206457,
+                    "PerspCameraComponent": "./nap::PerspCameraComponent",
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "nap::PerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 55.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "World",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableCopyMeshComponent",
+                    "mID": "nap::RenderableCopyMeshComponent",
+                    "MaterialInstance": {
+                        "Material": "CopyMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "Opaque",
+                        "DepthMode": "NotSet"
+                    },
+                    "ColorUniform": "color",
+                    "Scale" : 1.0,
+                    "RandomScale": 0.65,
+                    "Orient" : true,
+                    "TargetMesh": "StampPlane",
+                    "Camera" : "CameraTransform", 
+                    "CopyMeshes": [
+                        "CopyBox",
+                        "CopySphere",
+                        "CopyPig"
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "CopyMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "color",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                }
+            ],
+            "Shader": "CopyShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "CopyBox",
+            "Path": "box.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "CopyPig",
+            "Path": "pig.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "StampPlane",
+            "Size": {
+                "x": 100.0,
+                "y": 100.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Rows":  35,
+            "Columns": 35
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Window 1",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "Camera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "World",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "CopyShader",
+            "mVertShader": "shaders/copy.vert",
+            "mFragShader": "shaders/copy.frag"
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "CopySphere",
+            "Radius": 0.85,
+            "Rings": 15.0,
+            "Sectors": 15.0
+        }
+    ]
+}

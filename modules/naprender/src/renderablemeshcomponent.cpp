@@ -81,12 +81,7 @@ namespace nap
 	RenderableMesh RenderableMeshComponentInstance::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
 		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-		VAOHandle vao_handle = render_service->acquireVertexArrayObject(*materialInstance.getMaterial(), mesh, errorState);
-
-		if (!errorState.check(vao_handle.isValid(), "Failed to acquire VAO for RenderableMeshComponent %s", getComponent()->mID.c_str()))
-			return RenderableMesh();
-
-		return RenderableMesh(mesh, materialInstance, vao_handle);
+		return render_service->createRenderableMesh(mesh, materialInstance, errorState);
 	}
 
 
@@ -140,7 +135,7 @@ namespace nap
 		// Push all shader uniforms
 		pushUniforms();
 
-		mRenderableMesh.mVAOHandle.get().bind();
+		mRenderableMesh.bind();
 
 		// If a cliprect was set, enable scissor and set correct values
 		if (mClipRect.hasWidth() && mClipRect.hasHeight())
@@ -168,13 +163,13 @@ namespace nap
 		}
 
 		comp_mat->unbind();
-		mRenderableMesh.mVAOHandle.get().unbind();
+		mRenderableMesh.unbind();
 		opengl::enableScissorTest(false);
 	}
 
 
 	MaterialInstance& RenderableMeshComponentInstance::getMaterialInstance()
 	{
-		return *mRenderableMesh.mMaterialInstance;
+		return mRenderableMesh.getMaterialInstance();
 	}
 } 
