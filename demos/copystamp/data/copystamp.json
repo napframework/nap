@@ -9,9 +9,9 @@
                     "mID": "CameraTransform",
                     "Properties": {
                         "Translate": {
-                            "x": 0.0,
-                            "y": -20.0,
-                            "z": 20.0
+                            "x": -60.0,
+                            "y": -60.0,
+                            "z": 101.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -29,7 +29,7 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.05,
+                    "MovementSpeed": 0.05000000074505806,
                     "RotateSpeed": 0.0024999999441206457,
                     "PerspCameraComponent": "./nap::PerspCameraComponent",
                     "LookAtPosition": {
@@ -95,6 +95,11 @@
                 {
                     "Type": "nap::RenderableCopyMeshComponent",
                     "mID": "nap::RenderableCopyMeshComponent",
+                    "Orient": false,
+                    "Scale": 1.0,
+                    "RotationSpeed": 2.5,
+                    "RandomScale": 0.8,
+                    "RandomRotation": 0.949999988079071,
                     "MaterialInstance": {
                         "Material": "CopyMaterial",
                         "Uniforms": [],
@@ -102,15 +107,12 @@
                         "DepthMode": "NotSet"
                     },
                     "ColorUniform": "color",
-                    "Scale" : 1.0,
-                    "RandomScale": 0.65,
-                    "Orient" : true,
+                    "Camera": "CameraTransform",
                     "TargetMesh": "StampPlane",
-                    "Camera" : "CameraTransform", 
                     "CopyMeshes": [
                         "CopyBox",
                         "CopySphere",
-                        "CopyPig"
+                        "CopyOctahedron"
                     ]
                 }
             ],
@@ -144,6 +146,18 @@
         },
         {
             "Type": "nap::MeshFromFile",
+            "mID": "CopyDodecahedron",
+            "Path": "dodecahedron.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "CopyOctahedron",
+            "Path": "octahedron.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
             "mID": "CopyPig",
             "Path": "pig.mesh",
             "Usage": "Static"
@@ -152,15 +166,15 @@
             "Type": "nap::PlaneMesh",
             "mID": "StampPlane",
             "Size": {
-                "x": 100.0,
-                "y": 100.0
+                "x": 110.0,
+                "y": 120.0
             },
             "Position": {
                 "x": 0.0,
                 "y": 0.0
             },
-            "Rows":  35,
-            "Columns": 35
+            "Rows": 50,
+            "Columns": 50
         },
         {
             "Type": "nap::RenderWindow",
@@ -201,7 +215,7 @@
         {
             "Type": "nap::SphereMesh",
             "mID": "CopySphere",
-            "Radius": 0.85,
+            "Radius": 1.0,
             "Rings": 15.0,
             "Sectors": 15.0
         }

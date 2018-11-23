@@ -12,7 +12,9 @@
 RTTI_BEGIN_CLASS(nap::RenderableCopyMeshComponent)
 	RTTI_PROPERTY("Orient",				&nap::RenderableCopyMeshComponent::mOrient,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Scale",				&nap::RenderableCopyMeshComponent::mScale,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RotationSpeed",		&nap::RenderableCopyMeshComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RandomScale",		&nap::RenderableCopyMeshComponent::mRandomScale,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RandomRotation",		&nap::RenderableCopyMeshComponent::mRandomRotation,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableCopyMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorUniform",		&nap::RenderableCopyMeshComponent::mColorUniform,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Camera",				&nap::RenderableCopyMeshComponent::mCamera,						nap::rtti::EPropertyMetaData::Required)
@@ -108,10 +110,12 @@ namespace nap
 		if (!errorState.check(mTargetNormals != nullptr, "%s: unable to find target normal attribute", resource->mID.c_str()))
 			return false;
 
-		// Copy orientation and scale
+		// Copy over parameters
 		mOrient = resource->mOrient;
 		mScale	= resource->mScale;
 		mRandomScale = resource->mRandomScale;
+		mRandomRotation = resource->mRandomRotation;
+		mRotationSpeed = resource->mRotationSpeed;
 
 		// Add the colors that are randomly picked for every mesh that is drawn
 		mColors.emplace_back(RGBColor8(0x5D, 0x5E, 0x73).convert<RGBColorFloat>());
@@ -119,6 +123,12 @@ namespace nap
 		mColors.emplace_back(RGBColor8(0xC8, 0x69, 0x69).convert<RGBColorFloat>());
 			
 		return true;
+	}
+
+
+	void RenderableCopyMeshComponentInstance::update(double deltaTime)
+	{
+		mTime += (deltaTime * (double)mRotationSpeed);
 	}
 
 
@@ -157,12 +167,23 @@ namespace nap
 		// Fix seed for subsequent random calls
 		math::setRandomSeed(mSeed);
 
-		// Clamp random scale value
+		// Get randomization scale for various effects
 		float rand_scale = math::clamp<float>(mRandomScale, 0.0f, 1.0f);
+		float rand_rotat = math::clamp<float>(mRandomRotation, 0.0f, 1.0f);
 		int max_rand_color = static_cast<int>(mColors.size()) - 1;
 
 		// Get camera location
 		glm::vec3 cam_pos = math::extractPosition(mCamera->getGlobalTransform());
+
+		// Push all existing uniforms to GPU
+		utility::pushUniforms(mMaterialInstance);
+
+		// Fetch the uniform declarations of the uniform values we want to update in the copy loop
+		// This allows us to only push a specific uniform instead of all uniforms.
+		// Every uniform maps to a declaration, where there can be multiple values associated with a single declaration.
+		// You can look at the uniform declaration as the actual slot on a shader that accepts a value of a specific type.
+		const auto& color_binding = mMaterialInstance.getUniformBinding(mColorUniform->mName);
+		const auto& objec_binding = mMaterialInstance.getUniformBinding(mModelUniform->mName);
 
 		// Iterate over every point, fetch random mesh, construct custom object matrix, set uniforms and render.
 		for (auto i = 0; i < pos_data.size(); i++)
@@ -170,9 +191,10 @@ namespace nap
 			// Pick random mesh number
 			int mesh_idx = math::random<int>(0, mCopyMeshes.size() - 1);
 			
-			// Pick random color for mesh
+			// Pick random color for mesh and push to GPU
 			glm::vec3 color = mColors[math::random<int>(0, max_rand_color)].toVec3();
 			mColorUniform->setValue(color);
+			mColorUniform->push(*color_binding.mDeclaration);
 
 			// Get the mesh to stamp onto this point and bind
 			RenderableMesh& render_mesh = mCopyMeshes[mesh_idx];
@@ -187,7 +209,8 @@ namespace nap
 			// Calculate model matrix
 			glm::mat4x4 object_loc = glm::translate(model_matrix, pos_data[i]);
 
-			// Orient using normal
+			// Orient towards camera using normal or rotate based on time
+			float ftime = math::random<float>(1.0f - rand_rotat, 1.0f) * (float)mTime;
 			if (mOrient)
 			{
 				glm::vec3 cam_normal = glm::normalize(cam_pos - pos_data[i]);
@@ -196,13 +219,15 @@ namespace nap
 				float rot_value = glm::acos(glm::dot(cam_normal, nor_normal));
 				object_loc = glm::rotate(object_loc, rot_value, rot_normal);
 			}
+			else
+			{
+				object_loc = glm::rotate(object_loc, ftime, {0,1,0});
+			}
 
-			// Add scale and set as object matrix
+			// Add scale, set as value and push
 			float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
 			mModelUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
-
-			// Push uniforms to gpu
-			utility::pushUniforms(mMaterialInstance);
+			mModelUniform->push(*objec_binding.mDeclaration);
 
 			// Iterate over all the shapes and render
 			for (int shape_idx = 0; shape_idx < mesh_instance.getNumShapes(); ++shape_idx)

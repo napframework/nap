@@ -174,6 +174,7 @@ namespace nap
 			ImGui::Checkbox("Look At Camera", &(copy_comp.mOrient));
 			ImGui::SliderInt("Random Seed", &(copy_comp.mSeed), 0, 100);
 			ImGui::SliderFloat("Global Scale", &(copy_comp.mScale), 0.0f, 2.0f);
+			ImGui::SliderFloat("Rotation Speed", &(copy_comp.mRotationSpeed), 0.0f, 10.0f);
 			ImGui::SliderFloat("Random Scale", &(copy_comp.mRandomScale), 0.0f, 1.0f);
 		}
 		ImGui::End();
