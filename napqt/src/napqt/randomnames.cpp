@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <random>
+#include <cctype>
 
 int namegen::randint(int n)
 {
@@ -25,7 +26,7 @@ char namegen::randChar(const std::string& str)
 
 bool namegen::randBool()
 {
-	return rand() % 2;
+	return rand() % 2 == 0;
 }
 
 namegen::NameGen::NameGen()
