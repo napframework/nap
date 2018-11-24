@@ -62,15 +62,13 @@ namespace nap
 		template<typename T, typename U>
 		struct NAPAPI FCurvePoint
 		{
-			using Fc = FComplex<T, U>;
-
 			FCurvePoint() = default;
-			FCurvePoint(const Fc& pos, const Fc& inTan, const Fc& outTan)
+			FCurvePoint(const FComplex<T, U>& pos, const FComplex<T, U>& inTan, const FComplex<T, U>& outTan)
 				: mPos(pos), mInTan(inTan), mOutTan(outTan) {}
 
-			Fc mPos;
-			Fc mInTan;
-			Fc mOutTan;
+			FComplex<T, U> mPos;
+			FComplex<T, U> mInTan;
+			FComplex<T, U> mOutTan;
 			FCurveInterp mInterp = FCurveInterp::Bezier;
 
 			// Non-essential to functionality, but necessary for editing
@@ -88,8 +86,6 @@ namespace nap
 		class NAPAPI FCurve : public Resource
 		{
 		RTTI_ENABLE(Resource)
-			using Pt = FCurvePoint<T, U>;
-			using Fc = FComplex<T, U>;
 
 		public:
 			/**
@@ -139,7 +135,7 @@ namespace nap
 			 * @param pc
 			 * @param pd
 			 */
-			void limitOverhangPoints(const Fc& pa, Fc& pb, Fc& pc, const Fc& pd);
+			void limitOverhangPoints(const FComplex<T, U>& pa, FComplex<T, U>& pb, FComplex<T, U>& pc, const FComplex<T, U>& pd);
 
 			mutable std::vector<FCurvePoint<T, U>> mSortedPoints;
 		};
@@ -150,7 +146,7 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T, typename U>
-		void FCurve<T, U>::limitOverhangPoints(const FCurve::Fc& pa, FCurve::Fc& pb, FCurve::Fc& pc, const FCurve::Fc& pd)
+		void FCurve<T, U>::limitOverhangPoints(const FComplex<T, U>& pa, FComplex<T, U>& pb, FComplex<T, U>& pc, const FComplex<T, U>& pd)
 		{
 			auto a = pa.mTime;
 			auto b = pb.mTime;
@@ -161,11 +157,11 @@ namespace nap
 
 			limitOverhang(a, b, c, d);
 
-			// Calculate ratios for both tangents
+			// calculate ratios for both tangents
 			auto rb = (b - a) / (bb - a);
 			auto rc = (c - d) / (cc - d);
 
-			// Apply corrected times
+			// apply corrected times
 			pb.mTime = b;
 			pc.mTime = c;
 
@@ -213,17 +209,17 @@ namespace nap
 
 			sortPoints(); // TODO: Optimize or move this call somewhere else
 
-			const Pt& firstPoint = mSortedPoints[0];
+			const FCurvePoint<T, U>& firstPoint = mSortedPoints[0];
 			if (time < firstPoint.mPos.mTime)
 				return firstPoint.mPos.mValue;
 
-			const Pt& lastPoint = mSortedPoints[mSortedPoints.size() - 1];
+			const FCurvePoint<T, U>& lastPoint = mSortedPoints[mSortedPoints.size() - 1];
 			if (time >= lastPoint.mPos.mTime)
 				return lastPoint.mPos.mValue;
 
 			int idx = pointIndexAtTime(time);
-			const Pt& curr = mSortedPoints[idx];
-			const Pt& next = mSortedPoints[idx + 1];
+			const FCurvePoint<T, U>& curr = mSortedPoints[idx];
+			const FCurvePoint<T, U>& next = mSortedPoints[idx + 1];
 
 			auto a = curr.mPos;
 			auto b = a + curr.mOutTan;
