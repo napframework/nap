@@ -36,9 +36,9 @@ void FCurve::addPoint(qreal time, qreal value)
 	pointsAdded({index});
 }
 
-qreal FCurve::evaluate(qreal time) const
+qreal FCurve::evaluate(qreal t) const
 {
-	return mCurve.evaluate(static_cast<const float&>(time));
+	return mCurve.evaluate(static_cast<const float&>(t));
 }
 
 const QPointF FCurve::pos(int pointIndex) const
@@ -133,7 +133,7 @@ const PropertyPath FCurve::pointPath(int pointIndex)
 }
 
 
-FloatFCurveModel::FloatFCurveModel(nap::math::FloatFCurve& curve) : napqt::AbstractCurveModel(), mCurve(curve) {}
+FloatFCurveModel::FloatFCurveModel(nap::math::FunctionCurve<float, float>& curve) : napqt::AbstractCurveModel(), mCurve(curve) {}
 
 int FloatFCurveModel::curveCount() const
 {
