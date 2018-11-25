@@ -237,7 +237,7 @@ namespace napqt
 		void onCustomContextMenuRequested(const QPoint& pos);
 		void setSelectedPointInterps(AbstractCurve::InterpType interp);
 		void setSelectedTangentsAligned(bool aligned);
-		void alignTangents(AbstractCurve& curve, int pointIndex);
+		void alignTangents(AbstractCurve& curve, int pointIndex, bool finished);
 		// Get selected points, but also include points associated with tangent handles
 		const QList<PointHandleItem*> pointsFromSelection();
 		const QRectF frameItemsBoundsSelected() const override;

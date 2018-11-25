@@ -43,11 +43,8 @@ namespace napqt
 		qreal evaluate(qreal time) const override;
 
 		const QPointF pos(int pointIndex) const override;
-		void setPos(int pointIndex, const QPointF& pos) override;
 		const QPointF inTangent(int pointIndex) const override;
-		void setInTangent(int pointIndex, const QPointF& tan) override;
 		const QPointF outTangent(int pointIndex) const override;
-		void setOutTangent(int pointIndex, const QPointF& tan) override;
 		const InterpType interpolation(int pointIndex) const override;
 		void setInterpolation(int pointIndex, const InterpType& interp) override;
 		const bool tangentsAligned(int pointIndex) const override;

@@ -16,6 +16,26 @@ int FCurve::pointCount() const
 	return static_cast<int>(mCurve.mPoints.size());
 }
 
+void FCurve::removePoints(const QList<int>& indices)
+{
+	QList<int> indicesSorted = indices;
+	qSort(indicesSorted);
+	for (int i = indicesSorted.size() - 1; i >= 0; i--)
+	{
+		mCurve.mPoints.erase(mCurve.mPoints.begin() + i);
+	}
+	mCurve.invalidate();
+	pointsRemoved(indicesSorted);
+}
+
+void FCurve::addPoint(qreal time, qreal value)
+{
+	mCurve.invalidate();
+	int index = static_cast<int>(mCurve.mPoints.size());
+	mCurve.mPoints.emplace_back(nap::math::FCurvePoint<float, float>({time, value}, {-0.1, 0}, {0.1, 0}));
+	pointsAdded({index});
+}
+
 qreal FCurve::evaluate(qreal time) const
 {
 	return mCurve.evaluate(static_cast<const float&>(time));

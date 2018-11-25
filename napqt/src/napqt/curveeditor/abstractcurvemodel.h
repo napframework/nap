@@ -57,13 +57,6 @@ namespace napqt
 		virtual const QPointF pos(int pointIndex) const = 0;
 
 		/**
-		 * The editor will call this whenever a curve point has been changed.
-		 * @param pointIndex The index of the point that was changed.
-		 * @param pos The x-axis (time) and y-axis (value) values of the edited point.
-		 */
-		virtual void setPos(int pointIndex, const QPointF& pos) {}
-
-		/**
 		 * The left tangent of the curve point at the given index, relative to the curve point.
 		 * @param pointIndex The index of the curve point.
 		 * @return The x (time) and y-axis value of the tangent handle, relative to the curve point.
@@ -71,25 +64,11 @@ namespace napqt
 		virtual const QPointF inTangent(int pointIndex) const = 0;
 
 		/**
-		 * The editor will call this whenever a curve point's tangent handle has been changed.
-		 * @param pointIndex The index of the point that was changed.
-		 * @param pos The x-axis (time) and y-axis (value) values of the edited point.
-		 */
-		virtual void setInTangent(int pointIndex, const QPointF& tan) {}
-
-		/**
 		 * The right tangent of the curve point at the given index, relative to the curve point.
 		 * @param pointIndex The index of the curve point.
 		 * @return The x (time) and y-axis value of the tangent handle, relative to the curve point.
 		 */
 		virtual const QPointF outTangent(int pointIndex) const = 0;
-
-		/**
-		 * The editor will call this whenever a curve point's tangent handle has been changed.
-		 * @param pointIndex The index of the point that was changed.
-		 * @param pos The x-axis (time) and y-axis (value) values of the edited point.
-		 */
-		virtual void setOutTangent(int pointIndex, const QPointF& tan) {}
 
 		/**
 		 * The interpolation method used by the segment adjoining the curve point at the given index.
@@ -143,14 +122,14 @@ namespace napqt
 		/**
 		 * Remove the points at the specified indices
 		 */
-		virtual void removePoints(const QList<int>& indices) {}
+		virtual void removePoints(const QList<int>& indices) = 0;
 
 		/**
 		 * Insert a point at the specified index, with the given y-axis value
 		 * @param time The x-axis value of the new point
 		 * @param value The y-axis value of the new point
 		 */
-		virtual void addPoint(qreal time, qreal value) {}
+		virtual void addPoint(qreal time, qreal value) = 0;
 
 	Q_SIGNALS:
 		/**
