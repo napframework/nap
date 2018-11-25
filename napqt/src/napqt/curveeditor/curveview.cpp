@@ -24,8 +24,8 @@ using namespace napqt;
 #define COL_TANHANDLE_LINE_SELECTED    "#0FF"
 #define COL_TANLINE                    "#888"
 #define COL_TANLINE_SELECTED            "#F0F"
-#define COL_CURVE_HIGHLIGHT				"#F80"
-#define COL_CURVE_SELECTED				"#FFF"
+#define COL_CURVE_HIGHLIGHT                "#F80"
+#define COL_CURVE_SELECTED                "#FFF"
 
 #define ZDEPTH_HANDLES 15000
 #define ZDEPTH_HANDLE_LINES 10000
@@ -543,7 +543,6 @@ int CurveItem::prevSegIndex(int idx)
 void CurveItem::onPointsAdded(const QList<int> indices)
 {
 	QList < CurveSegmentItem * > segments;
-	int indexCount = indices.size();
 	for (int index : indices)
 	{
 		auto seg = new CurveSegmentItem(*this);
@@ -872,7 +871,7 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 	if (tans.isEmpty())
 		return;
 
-	QList<TangentHandleItem*> movedTangents;
+	QList < TangentHandleItem * > movedTangents;
 	for (TangentHandleItem* tan : tans)
 	{
 		if (tans.contains(&tan->oppositeTanHandle()))
@@ -892,7 +891,8 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 
 		if (!mTangentEditMap.contains(curveItem))
 		{
-			QList <QMap<int, QPointF>> ls;
+			QList < QMap<int, QPointF>>
+			ls;
 			ls << QMap<int, QPointF>();
 			ls << QMap<int, QPointF>();
 			mTangentEditMap.insert(curveItem, ls);
@@ -1122,11 +1122,11 @@ void CurveView::setSelectedTangentsAligned(bool aligned)
 		bool wasAligned = curve.tangentsAligned(idx);
 		curve.setTangentsAligned(idx, aligned);
 		if (!wasAligned && aligned)
-			alignTangents(curve, idx);
+			alignTangents(curve, idx, true);
 	}
 }
 
-void CurveView::alignTangents(AbstractCurve& curve, int idx)
+void CurveView::alignTangents(AbstractCurve& curve, int idx, bool finished)
 {
 	const auto inTanPos = curve.inTangent(idx);
 	const auto outTanPos = curve.outTangent(idx);
@@ -1141,8 +1141,9 @@ void CurveView::alignTangents(AbstractCurve& curve, int idx)
 	auto newInTanPos = lerpPoint(inTanPos, antInPos, 0.5);
 	auto newOutTanPos = lerpPoint(outTanPos, antOutPos, 0.5);
 
-	curve.setInTangent(idx, newInTanPos);
-	curve.setOutTangent(idx, newOutTanPos);
+	QMap<int, QPointF> inTangents = {{idx, newInTanPos}};
+	QMap<int, QPointF> outTangents = {{idx, newOutTanPos}};
+	curve.moveTangents(inTangents, outTangents, finished);
 }
 
 
@@ -1288,18 +1289,20 @@ void CurveView::drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRec
 
 void CurveView::selectCurves(const QList<AbstractCurve*>& curves)
 {
-	QList<QGraphicsItem*> handles;
+	QList < QGraphicsItem * > handles;
 	for (auto curve : curves)
 	{
 		auto item = curveItem(*curve);
-		for (auto seg : item->segments()) {
+		for (auto seg : item->segments())
+		{
 			handles << &seg->pointHandle();
 		}
 	}
 	setSelection(handles);
 }
 
-CurveItem* CurveView::curveItem(const AbstractCurve& curve) {
+CurveItem* CurveView::curveItem(const AbstractCurve& curve)
+{
 	for (CurveItem* curveItem : mCurveItems)
 		if (&curveItem->curve() == &curve)
 			return curveItem;

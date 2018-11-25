@@ -21,6 +21,8 @@ namespace napkin
 		nap::math::FloatFCurve& sourceCurve() { return mCurve; }
 		const QString name() const override;
 		int pointCount() const override;
+		void removePoints(const QList<int>& indices) override;
+		void addPoint(qreal time, qreal value) override;
 		qreal evaluate(qreal time) const override;
 		const QPointF pos(int pointIndex) const override;
 		const QPointF inTangent(int pointIndex) const override;

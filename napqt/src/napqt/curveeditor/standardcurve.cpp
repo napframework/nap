@@ -230,32 +230,14 @@ const QPointF StandardCurve::pos(int pointIndex) const
 	return mPoints[pointIndex]->pos;
 }
 
-void StandardCurve::setPos(int pointIndex, const QPointF& pos)
-{
-	mPoints[pointIndex]->pos = pos;
-	pointsChanged({pointIndex}, false);
-}
-
 const QPointF StandardCurve::inTangent(int pointIndex) const
 {
 	return mPoints[pointIndex]->inTan;
 }
 
-void StandardCurve::setInTangent(int pointIndex, const QPointF& tan)
-{
-	mPoints[pointIndex]->inTan = tan;
-	pointsChanged({pointIndex}, false);
-}
-
 const QPointF StandardCurve::outTangent(int pointIndex) const
 {
 	return mPoints[pointIndex]->outTan;
-}
-
-void StandardCurve::setOutTangent(int pointIndex, const QPointF& tan)
-{
-	mPoints[pointIndex]->outTan = tan;
-	pointsChanged({pointIndex}, false);
 }
 
 const AbstractCurve::InterpType StandardCurve::interpolation(int pointIndex) const
