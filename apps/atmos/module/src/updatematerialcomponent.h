@@ -102,8 +102,8 @@ namespace nap
 
 		float			mFogMin				= 0.75f;
 		float			mFogMax				= 1.0f;
-		float			mFogInfluence		= 1.0f;
-		RGBColorFloat	mFogColor			= { 1.0f, 1.0f, 1.0f };
+		float			mFogInfluence		= 0.0f;
+		RGBColorFloat	mFogColor			= { 0.0f, 0.0f, 0.0f };
 		float			mFogPower			= 2.0f;
 
 	private:

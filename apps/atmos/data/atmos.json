@@ -656,7 +656,7 @@
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_5",
                     "Name": "fogInfluence",
-                    "Value": 1.0
+                    "Value": 0.0
                 },
                 {
                     "Type": "nap::UniformVec3",
@@ -727,7 +727,7 @@
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_7",
                     "Name": "fogInfluence",
-                    "Value": 1.0
+                    "Value": 0.0
                 },
                 {
                     "Type": "nap::UniformFloat",
