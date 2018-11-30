@@ -54,6 +54,10 @@ static const std::string sFogMin			= "fogMin";
 static const std::string sFogMax			= "fogMax";
 static const std::string sFogColor			= "fogColor";
 static const std::string sFogInfluence		= "fogInfluence";
+static const std::string sVideoTexMix		= "videoColorMix";
+static const std::string sVideoTexScaleOne	= "videoTexScaleOne";
+static const std::string sVidTimeU			= "videoTimeU";
+static const std::string sVidTimeV			= "videoTimeV";
 
 namespace nap
 {
@@ -116,6 +120,9 @@ namespace nap
 		// Set texture scale two
 		setSharedValue<UniformFloat, float>(sm, nm, sColorTexScaleTwo, mColorTexScaleTwo);
 
+		// Set video texture scale
+		setSharedValue<UniformFloat, float>(sm, nm, sVideoTexScaleOne, mVideoTexScaleOne);
+
 		// Set color mix
 		setSharedValue<UniformFloat, float>(sm, nm, sColorTexMix, mColorTexMix);
 
@@ -124,6 +131,9 @@ namespace nap
 
 		// Set diffuse color mix
 		setSharedValue<UniformFloat, float>(sm, nm, sDiffuseColorMix, mDiffuseColorMix);
+
+		// Set video mix
+		setSharedValue<UniformFloat, float>(sm, nm, sVideoTexMix, mVideoTexMix);
 
 		// Set premultiply value
 		setSharedValue<UniformFloat, float>(sm, nm, sPremultValue, mPremultValue);
@@ -155,6 +165,12 @@ namespace nap
 		mTexTimeV += (deltaTime * mTextureSpeed.y);
 		setSharedValue<UniformFloat, float>(sm, nm, sTexTimeU, mTexTimeU);
 		setSharedValue<UniformFloat, float>(sm, nm, sTexTimeV, mTexTimeV);
+
+		// Set video u and v time
+		mVidTimeU += (deltaTime * mVideoTexureSpeed.x);
+		mVidTimeV += (deltaTime * mVideoTexureSpeed.y);
+		setSharedValue<UniformFloat, float>(sm, nm, sVidTimeU, mVidTimeU);
+		setSharedValue<UniformFloat, float>(sm, nm, sVidTimeV, mVidTimeV);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Not Shared Values

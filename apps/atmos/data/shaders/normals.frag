@@ -16,11 +16,14 @@ uniform float opacity;			//< Opacity
 // shared uniforms
 uniform sampler2D	colorTextureOne;
 uniform sampler2D	colorTextureTwo;
+uniform sampler2D	videoTextureOne;
 uniform float		colorTexScaleOne;
 uniform float		colorTexScaleTwo;
+uniform float		videoTexScaleOne;
 uniform float		colorTexMix;
 uniform vec3		diffuseColor;
 uniform float		diffuseColorMix;
+uniform float		videoColorMix;
 uniform vec3 		cameraPosition;							//< Camera World Space Position
 uniform vec3		lightPos;		
 uniform float 		lightIntensity;		
@@ -40,6 +43,8 @@ uniform float 		shininess;
 uniform float		diffuseSpecularInfluence;
 uniform float		textureTimeU;
 uniform float		textureTimeV;
+uniform float		videoTimeU;
+uniform float		videoTimeV;
 
 float fit(float value, float min, float max, float outMin, float outMax)
 {
@@ -106,14 +111,18 @@ void main()
 {
 	// Get color from texture
 	vec2 tex_time = vec2(textureTimeU, textureTimeV);
-	vec3 tex_color_one = texture(colorTextureOne, (passUVs0.xy * colorTexScaleOne)).rgb;
+	vec3 tex_color_one = texture(colorTextureOne, (passUVs0.xy  * colorTexScaleOne)).rgb;
 	vec3 tex_color_two = texture(colorTextureTwo, ((passUVs1.xy * colorTexScaleTwo)+tex_time)).rgb;
+	
+	vec2 vid_time = vec2(videoTimeU, videoTimeV);
+	vec3 vid_color_one = texture(videoTextureOne, ((passUVs1.xy  * videoTexScaleOne)+vid_time)).rgb;
 
 	vec3 tex_color_mul = tex_color_one *  tex_color_two;
 	tex_color_one = mix(tex_color_one, tex_color_mul, preMultiplyTexValue);  
 
 	// Mix into texture color
 	vec3 tex_color = mix(tex_color_one, tex_color_two, colorTexMix);
+	tex_color = mix(tex_color, vid_color_one, videoColorMix);
 	tex_color = mix(tex_color, diffuseColor, diffuseColorMix);
 
 	// Get shading

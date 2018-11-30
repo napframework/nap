@@ -11,6 +11,7 @@
 #include <imgui/imgui.h>
 #include <imguiutils.h>
 #include <nap/core.h>
+#include <selectvideocomponent.h>
 
 namespace nap
 {
@@ -120,6 +121,14 @@ namespace nap
 			img_selector_single->selectImage(ci);
 		}
 
+		// Select video
+		nap::SelectVideoComponentInstance& video_selector = mApp.mVideoEntity->getComponent<SelectVideoComponentInstance>();
+		ci = video_selector.getIndex();
+		if (ImGui::SliderInt("Select Video", &ci, 0, video_selector.getCount() - 1))
+		{
+			video_selector.selectVideo(ci);
+		}
+
 		RotateComponentInstance& rot_comp = mApp.mWorldEntity->getComponent<RotateComponentInstance>();
 		ImGui::SliderFloat("Rotate Speed", &(rot_comp.mProperties.mSpeed), -0.1f, 0.1f);
 
@@ -130,6 +139,7 @@ namespace nap
 			ImGui::ColorEdit3("Diffuse Color", up_mat_comp.mDiffuseColor.getData());
 			ImGui::SliderFloat("Premult Blend Value", &(up_mat_comp.mPremultValue), 0.0f, 1.0f);
 			ImGui::SliderFloat("Texture Blend Value", &(up_mat_comp.mColorTexMix), 0.0f, 1.0f);
+			ImGui::SliderFloat("Video Blend Value", &(up_mat_comp.mVideoTexMix), 0.0f, 1.0f);
 			ImGui::SliderFloat("Diffuse Blend Value", &(up_mat_comp.mDiffuseColorMix), 0.0f, 1.0f);
 		}
 
@@ -138,7 +148,9 @@ namespace nap
 		{
 			ImGui::SliderFloat("Tileable Scale", &(up_mat_comp.mColorTexScaleOne), 0.01f, 200.0f, "%.3f", 3.0f);
 			ImGui::SliderFloat("Stretch Scale", &(up_mat_comp.mColorTexScaleTwo), 0.01f, 200.0f, "%.3f", 3.0f);
-			ImGui::SliderFloat2("Slide Speed", &(up_mat_comp.mTextureSpeed[0]), -1.0f, 1.0f, "%.3f", 1.5f);
+			ImGui::SliderFloat2("Stretch Slide Speed", &(up_mat_comp.mTextureSpeed[0]), -1.0f, 1.0f, "%.3f", 1.5f);
+			ImGui::SliderFloat("Video Scale", &(up_mat_comp.mVideoTexScaleOne), 0.01f, 200.0f, "%.3f", 3.0f);
+			ImGui::SliderFloat2("Video Slide Speed", &(up_mat_comp.mVideoTexureSpeed[0]), -1.0f, 1.0f, "%.3f", 1.5f);
 		}
 
 		// Light controls
@@ -267,20 +279,40 @@ namespace nap
 		utility::getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
 		ImGui::TextColored(float_clr_gui, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
-		if (ImGui::CollapsingHeader("Texture Preview"))
+		if (ImGui::CollapsingHeader("Tiled Texture Preview"))
 		{
 			float col_width = ImGui::GetContentRegionAvailWidth() * mTexPreviewDisplaySize;
 			nap::SelectImageComponentInstance* img_selector_tileable = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentTileable");
 			float ratio_tiled = static_cast<float>(img_selector_tileable->getImage().getWidth()) / static_cast<float>(img_selector_tileable->getImage().getHeight());
-			ImGui::Image(img_selector_tileable->getImage(), { col_width, col_width / ratio_tiled});
-
+			ImGui::TextColored(float_clr_gui, "Selected: ");
+			ImGui::SameLine();
+			ImGui::Text(img_selector_tileable->getImage().mImagePath.c_str());
+			ImGui::Image(img_selector_tileable->getImage(), { col_width, col_width / ratio_tiled });
+			ImGui::SliderFloat("Tiled Preview Size", &mTexPreviewDisplaySize, 0.0f, 1.0f);
+		}
+		if (ImGui::CollapsingHeader("Wrapped Texture Preview"))
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth() * mWraPreviewDisplaySize;
 			nap::SelectImageComponentInstance* img_selector_single = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentSingle");
 			float ratio_single = static_cast<float>(img_selector_single->getImage().getWidth()) / static_cast<float>(img_selector_single->getImage().getHeight());
+			ImGui::TextColored(float_clr_gui, "Selected: ");
+			ImGui::SameLine();
+			ImGui::Text(img_selector_single->getImage().mImagePath.c_str());
 			ImGui::Image(img_selector_single->getImage(), { col_width, col_width / ratio_single });
-
-			ImGui::SliderFloat("Preview Size", &mTexPreviewDisplaySize, 0.0f, 1.0f);
+			ImGui::SliderFloat("Wrapped Preview Size", &mWraPreviewDisplaySize, 0.0f, 1.0f);
 		}
-		
+		if (ImGui::CollapsingHeader("Video Preview"))
+		{
+			SelectVideoComponentInstance& video_comp = mApp.mVideoEntity->getComponent<SelectVideoComponentInstance>();
+			float col_width = ImGui::GetContentRegionAvailWidth() * mVidPreviewDisplaySize;
+			nap::Texture2D& video_tex = mApp.mVideoTarget->getColorTexture();
+			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
+			ImGui::TextColored(float_clr_gui, "Selected: ");
+			ImGui::SameLine();
+			ImGui::Text(video_comp.getCurrentVideo()->mPath.c_str());
+			ImGui::Image(video_tex, { col_width, col_width / ratio_video });
+			ImGui::SliderFloat("Video Preview Size", &mVidPreviewDisplaySize, 0.0f, 1.0f);
+		}
 		ImGui::End();
 	}
 

@@ -216,6 +216,115 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "VideoCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 4.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "VideoEntity",
+            "Components": [],
+            "Children": [
+                "VideoPlaneEntity",
+                "VideoCameraEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "VideoPlaneEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "VideoPlane",
+                    "MaterialInstance": {
+                        "Material": "VideoMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::SelectVideoComponent",
+                    "mID": "nap::SelectVideoComponent",
+                    "Videos": [
+                        "Video1"
+                    ],
+                    "Index": 0
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "WorldEntity",
             "Components": [
                 {
@@ -673,6 +782,24 @@
                     "mID": "UniformFloat_10",
                     "Name": "fogPower",
                     "Value": 2.0
+                },
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "UniformTexture2D_3",
+                    "Name": "videoTextureOne",
+                    "Texture": "VideoColorTexture"
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_13",
+                    "Name": "videoTexScaleOne",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_14",
+                    "Name": "videoColorMix",
+                    "Value": 0.0
                 }
             ],
             "Shader": "NormalsShader",
@@ -750,6 +877,24 @@
                     "mID": "UniformFloat_9",
                     "Name": "fogPower",
                     "Value": 2.0
+                },
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "UniformTexture2D_2",
+                    "Name": "videoTextureOne",
+                    "Texture": "VideoColorTexture"
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_11",
+                    "Name": "videoTexScaleOne",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_12",
+                    "Name": "videoColorMix",
+                    "Value": 0.0
                 }
             ],
             "Shader": "ScanShader",
@@ -779,6 +924,15 @@
                     "ShaderAttributeID": "in_Bitangent"
                 }
             ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "VideoMaterial",
+            "Uniforms": [],
+            "Shader": "VideoShader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -817,6 +971,62 @@
             "mID": "ZeesterMesh",
             "Path": "zeester.mesh",
             "Usage": "Static"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "VideoPlane",
+            "Size": {
+                "x": 2048.0,
+                "y": 2048.0
+            },
+            "Position": {
+                "x": 1024.0,
+                "y": 1024.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "VideoRenderTarget",
+            "mColorTexture": "VideoColorTexture",
+            "mDepthTexture": "VideoDepthTexture",
+            "mClearColor": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 2048,
+            "Height": 2048,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoDepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "MirroredRepeat",
+                "WrapHorizontal": "MirroredRepeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 2048,
+            "Height": 2048,
+            "Format": "Depth"
         },
         {
             "Type": "nap::RenderWindow",
@@ -881,6 +1091,10 @@
                 {
                     "Entity": "CameraEntity",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "VideoEntity",
+                    "InstanceProperties": []
                 }
             ]
         },
@@ -895,6 +1109,19 @@
             "mID": "ScanShader",
             "mVertShader": "shaders/scan.vert",
             "mFragShader": "shaders/scan.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "VideoShader",
+            "mVertShader": "shaders/video.vert",
+            "mFragShader": "shaders/video.frag"
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "Video1",
+            "Path": "streak.mp4",
+            "Loop": false,
+            "Speed": 1.0
         },
         {
             "Type": "nap::VisualizeNormalsMesh",
