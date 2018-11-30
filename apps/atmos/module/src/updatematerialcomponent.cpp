@@ -58,6 +58,8 @@ static const std::string sVideoTexMix		= "videoColorMix";
 static const std::string sVideoTexScaleOne	= "videoTexScaleOne";
 static const std::string sVidTimeU			= "videoTimeU";
 static const std::string sVidTimeV			= "videoTimeV";
+static const std::string svideoContrast		= "videoContrast";
+static const std::string svideoMaskValue	= "videoMaskValue";
 
 namespace nap
 {
@@ -134,6 +136,12 @@ namespace nap
 
 		// Set video mix
 		setSharedValue<UniformFloat, float>(sm, nm, sVideoTexMix, mVideoTexMix);
+
+		// Set video mask value
+		setSharedValue<UniformFloat, float>(sm, nm, svideoMaskValue, mVideoMaskValue);
+
+		// Set video contrast value
+		setSharedValue<UniformFloat, float>(sm, nm, svideoContrast, mVideoContrastValue);
 
 		// Set premultiply value
 		setSharedValue<UniformFloat, float>(sm, nm, sPremultValue, mPremultValue);

@@ -139,6 +139,8 @@ namespace nap
 			ImGui::ColorEdit3("Diffuse Color", up_mat_comp.mDiffuseColor.getData());
 			ImGui::SliderFloat("Premult Blend Value", &(up_mat_comp.mPremultValue), 0.0f, 1.0f);
 			ImGui::SliderFloat("Texture Blend Value", &(up_mat_comp.mColorTexMix), 0.0f, 1.0f);
+			ImGui::SliderFloat("Video Mask Value", &(up_mat_comp.mVideoMaskValue), 0.0f, 1.0f);
+			ImGui::SliderFloat("Video Mask Contrast", &(up_mat_comp.mVideoContrastValue), 0.0f, 2.5f);
 			ImGui::SliderFloat("Video Blend Value", &(up_mat_comp.mVideoTexMix), 0.0f, 1.0f);
 			ImGui::SliderFloat("Diffuse Blend Value", &(up_mat_comp.mDiffuseColorMix), 0.0f, 1.0f);
 		}

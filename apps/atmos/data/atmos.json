@@ -800,6 +800,18 @@
                     "mID": "UniformFloat_14",
                     "Name": "videoColorMix",
                     "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_15",
+                    "Name": "videoContrast",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_16",
+                    "Name": "videoMaskValue",
+                    "Value": 1.0
                 }
             ],
             "Shader": "NormalsShader",
@@ -895,6 +907,18 @@
                     "mID": "UniformFloat_12",
                     "Name": "videoColorMix",
                     "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_17",
+                    "Name": "videoMaskValue",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_18",
+                    "Name": "videoContrast",
+                    "Value": 1.0
                 }
             ],
             "Shader": "ScanShader",
