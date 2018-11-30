@@ -38,6 +38,7 @@ uniform float		videoTimeU;
 uniform float		videoTimeV;
 uniform float		videoContrast;
 uniform float		videoMaskValue;
+uniform vec3		maskColor;
 
 // Unshared uniforms					
 uniform float 		specularIntensity;				
@@ -118,17 +119,17 @@ void main()
 	// First mix the two colors
 	vec3 tex_color = mix(tex_color_one, tex_color_two, colorTexMix);
 
+	// Mix in diffuse
+	tex_color = mix(tex_color, diffuseColor, diffuseColorMix);
+
 	// Mask current pixel value with video greyscale
 	float vid_greyscale = fit(toGreyscale(vid_color_one),0.025,1.0,0.0,1.0);
 	vid_greyscale = applyContrast(vid_greyscale, videoContrast);
-	vec3 tex_color_masked = tex_color * vid_greyscale;
+	vec3 tex_color_masked = mix(maskColor, tex_color * vid_greyscale, vid_greyscale);
 	tex_color = mix(tex_color, tex_color_masked, videoMaskValue);
 
 	// Mix in video
 	tex_color = mix(tex_color, vid_color_one, videoColorMix);
-
-	// Mix in diffuse
-	tex_color = mix(tex_color, diffuseColor, diffuseColorMix);
 
 	// Apply light
 	vec3 lit_color = applyLight(tex_color, passNormal, passPosition);

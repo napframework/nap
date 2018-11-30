@@ -60,6 +60,7 @@ static const std::string sVidTimeU			= "videoTimeU";
 static const std::string sVidTimeV			= "videoTimeV";
 static const std::string svideoContrast		= "videoContrast";
 static const std::string svideoMaskValue	= "videoMaskValue";
+static const std::string smaskColor			= "maskColor";
 
 namespace nap
 {
@@ -160,6 +161,9 @@ namespace nap
 
 		// Diffuse intensity
 		setSharedValue<UniformFloat, float>(sm, nm, sDiffuseIntensity, mDiffuseIntensity);
+
+		// Mask color
+		setSharedValue<UniformVec3, glm::vec3>(sm, nm, smaskColor, mMaskColor.toVec3());
 
 		// Set fog values
 		setSharedValue<UniformFloat, float>(sm, nm, sFogMin, mFogMin);
