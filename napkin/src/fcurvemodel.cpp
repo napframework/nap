@@ -20,7 +20,7 @@ void FCurve::removePoints(const QList<int>& indices)
 	qSort(indicesSorted);
 	for (int i = indicesSorted.size() - 1; i >= 0; i--)
 	{
-		mCurve.mPoints.erase(mCurve.mPoints.begin() + i);
+		mCurve.mPoints.erase(mCurve.mPoints.begin() + indicesSorted[i]);
 	}
 	mCurve.invalidate();
 	pointsRemoved(indicesSorted);
