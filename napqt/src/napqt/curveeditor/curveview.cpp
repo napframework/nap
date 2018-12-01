@@ -735,9 +735,9 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 		else if (ctrlHeld)
 		{
 			auto scenePos = mapToScene(event->pos());
-			auto curveItem = closestCurveItem(event->pos());
-			if (curveItem)
-				curveItem->curve().addPoint(scenePos.x(), scenePos.y());
+			auto curve = closestCurve(event->pos());
+			if (curve)
+				curve->addPoint(scenePos.x(), scenePos.y());
 		}
 	}
 	else if (mmb)
@@ -1043,16 +1043,107 @@ void CurveView::selectPointHandles(const QList<PointHandleItem*>& pointHandles)
 	addSelection(graphicsItems);
 }
 
-CurveItem* CurveView::closestCurveItem(const QPointF& pos)
+AbstractCurve * CurveView::closestCurve(const QPointF &pos)
 {
+    if (model()->curveCount() < 1)
+        return nullptr;
+
+	// First, attempt to get the curve under the mouse cursor
 	for (auto item : items(pos.x(), pos.y()))
 	{
 		auto segment = dynamic_cast<CurveSegmentItem*>(item);
 		if (segment)
-			return &segment->curveItem();
+			return &segment->curveItem().curve();
 	}
-	return nullptr;
+
+	// No curve found at location, find closest point on curves
+	AbstractCurve* closestCurve = nullptr;
+
+	qreal closestDist = std::numeric_limits<qreal>::max();
+	for (int i=0, len=model()->curveCount(); i<len; i++) {
+		const auto curve = model()->curve(i);
+        auto p = closestPointOnCurve(*curve, pos);
+        auto dist = length(p-pos);
+        if (dist < closestDist) {
+            closestDist = dist;
+            closestCurve = curve;
+        }
+	}
+	if (closestCurve)
+	    return closestCurve;
+
+	return model()->curve(0);
 }
+
+
+QPointF CurveView::closestPointOnCurve(const AbstractCurve& curve, const QPointF& pt)
+{
+    auto firstPos = curve.pos(firstPoint(curve));
+    if (pt.x() < firstPos.x())
+    	return {pt.x(), firstPos.y()};
+
+    auto lastPos = curve.pos(lastPoint(curve));
+    if (pt.x() > lastPos.x())
+    	return {pt.x(), lastPos.y()};
+
+    int samples = 32;
+
+    QPointF closestPoint;
+    qreal closestDist = std::numeric_limits<qreal>::max();
+    for (int i=0; i<samples; i++)
+	{
+    	auto t = (qreal) i / (qreal) (samples-1);
+    	auto x = firstPos.x() + (lastPos.x() - firstPos.x()) * t;
+    	auto p = QPointF(x, curve.evaluate(x));
+    	auto dist = length(p - pt);
+    	if (dist < closestDist)
+		{
+    		closestPoint = p;
+    		closestDist = dist;
+		}
+	}
+
+	return closestPoint;
+}
+
+
+int CurveView::firstPoint(const AbstractCurve &curve)
+{
+	int pcount = curve.pointCount();
+	assert(pcount > 0);
+	qreal limit = -std::numeric_limits<qreal>::max();
+	int idx = -1;
+	for (int i=0; i<pcount; i++)
+	{
+		auto x = curve.pos(i).x();
+		if (x < limit)
+        {
+		    idx = i;
+		    limit = x;
+        }
+	}
+	return idx;
+}
+
+
+int CurveView::lastPoint(const AbstractCurve &curve)
+{
+	int pcount = curve.pointCount();
+	assert(pcount > 0);
+	qreal limit = std::numeric_limits<qreal>::max();
+	int idx = -1;
+	for (int i=0; i<pcount; i++)
+	{
+		auto x = curve.pos(i).x();
+		if (x > limit)
+		{
+			idx = i;
+			limit = x;
+		}
+	}
+	return idx;
+}
+
 
 void CurveView::onCustomContextMenuRequested(const QPoint& pos)
 {
@@ -1323,3 +1414,4 @@ void CurveView::commitPointEditChanges(bool finished)
 		curveItem->curve().moveTangents(tanPosList[0], tanPosList[1], finished);
 	}
 }
+
