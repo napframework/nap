@@ -206,7 +206,10 @@ namespace napqt
 		void moveTanHandles(const QList<TangentHandleItem*>& tangents, const QPointF& sceneDelta);
 
 	private:
-		CurveItem* closestCurveItem(const QPointF& pos);
+		AbstractCurve * closestCurve(const QPointF &pos);
+		static QPointF closestPointOnCurve(const AbstractCurve& curve, const QPointF& pt);
+		static int firstPoint(const AbstractCurve& curve);
+		static int lastPoint(const AbstractCurve& curve);
 		void initActions();
 		void deleteSelectedItems();
 		void onCurvesAdded(QList<int> indices);
