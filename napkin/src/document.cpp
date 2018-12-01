@@ -279,6 +279,7 @@ size_t Document::arrayAddValue(const PropertyPath& path, size_t index)
 	resolved_path.setValue(array);
 
 	propertyValueChanged(path);
+	propertyChildInserted(path, index);
 
 	return index;
 }
@@ -315,6 +316,7 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 	resolved_path.setValue(array);
 
 	propertyValueChanged(path);
+	propertyChildInserted(path, index);
 
 	return index;
 }
@@ -349,6 +351,7 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, Object* object
 	assert(value_set);
 
 	propertyValueChanged(path);
+	propertyChildInserted(path, index);
 
 	return index;
 }
@@ -382,6 +385,7 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::Obj
 	assert(value_set);
 
 	propertyValueChanged(path);
+	propertyChildInserted(path, index);
 
 	return index;
 }
@@ -406,6 +410,7 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& typ
 	assert(value_set);
 
 	propertyValueChanged(path);
+	propertyChildInserted(path, index);
 
 	return index;
 }
@@ -428,6 +433,7 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::Ty
 	assert(value_set);
 
 	propertyValueChanged(path);
+	propertyChildInserted(path, index);
 
 	return index;
 }
@@ -455,6 +461,7 @@ void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 		removeObject(*pointee);
 
 	propertyValueChanged(path);
+	propertyChildRemoved(path, index);
 }
 
 size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
@@ -472,6 +479,8 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	bool ok = array.remove_value(fromIndex);
 	assert(ok);
 
+	propertyChildRemoved(path, fromIndex);
+
 	ok = array.insert_value(toIndex, taken_value);
 	assert(ok);
 
@@ -479,6 +488,8 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	assert(ok);
 
 	propertyValueChanged(path);
+
+	propertyChildInserted(path, toIndex);
 
 	return toIndex;
 }

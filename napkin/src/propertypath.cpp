@@ -36,6 +36,13 @@ void napkin::PropertyPath::setValue(rttr::variant value)
 	assert(success);
 }
 
+napkin::PropertyPath napkin::PropertyPath::getParent() const
+{
+	auto path = mPath;
+	path.popBack();
+	return { *mObject, path };
+}
+
 rttr::property napkin::PropertyPath::getProperty() const
 {
 	return resolve().getProperty();
