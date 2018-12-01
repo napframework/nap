@@ -253,8 +253,14 @@ namespace nap
 			int pointIndexAtTime(const T& t) const
 			{
 				for (size_t i = 0, len = mSortedPoints.size(); i < len; i++)
-					if (t > mSortedPoints[i].mPos.mTime)
-						return static_cast<int>(i);
+				{
+					if (t < mSortedPoints[i].mPos.mTime)
+					{
+						if (i ==0)
+							return 0;
+						return static_cast<int>(i - 1);
+					}
+				}
 				assert(false);
 				return -1;
 			}
