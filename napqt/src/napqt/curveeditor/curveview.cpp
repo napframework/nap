@@ -1111,7 +1111,7 @@ int CurveView::firstPoint(const AbstractCurve &curve)
 {
 	int pcount = curve.pointCount();
 	assert(pcount > 0);
-	qreal limit = -std::numeric_limits<qreal>::max();
+	qreal limit = std::numeric_limits<qreal>::max();
 	int idx = -1;
 	for (int i=0; i<pcount; i++)
 	{
@@ -1122,6 +1122,7 @@ int CurveView::firstPoint(const AbstractCurve &curve)
 		    limit = x;
         }
 	}
+	assert(idx >= 0);
 	return idx;
 }
 
@@ -1130,7 +1131,7 @@ int CurveView::lastPoint(const AbstractCurve &curve)
 {
 	int pcount = curve.pointCount();
 	assert(pcount > 0);
-	qreal limit = std::numeric_limits<qreal>::max();
+	qreal limit = -std::numeric_limits<qreal>::max();
 	int idx = -1;
 	for (int i=0; i<pcount; i++)
 	{
