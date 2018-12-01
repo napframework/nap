@@ -265,6 +265,22 @@ namespace napkin
 		void propertyValueChanged(const PropertyPath path);
 
 		/**
+		 * Qt Signal
+		 * Invoked just after a property child has been inserted
+		 * @param path The path to the parent of the newly added child
+		 * @param childIndex The index of the newly added child
+		 */
+		void propertyChildInserted(const PropertyPath& parentPath, size_t childIndex);
+
+		/**
+		 * Qt Signal
+		 * Invoked just after a property child has been removed
+		 * @param path The path to the parent of the newly added child
+		 * @param childIndex The index of the child that was removed
+		 */
+		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
+
+		/**
 		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread
 		 * @param msg The log message being handled
 		 */

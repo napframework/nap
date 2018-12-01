@@ -46,6 +46,11 @@ namespace napkin
 		void setValue(rttr::variant value);
 
 		/**
+		 * Get the parent of this path
+		 */
+		PropertyPath getParent() const;
+
+		/**
 		 * @return The property this path points to
 		 */
 		rttr::property getProperty() const;

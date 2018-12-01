@@ -6,8 +6,6 @@
 #include <glm/glm.hpp>
 #include <nap/resource.h>
 
-#include "curvefunctions.h"
-
 namespace nap
 {
 	namespace math
@@ -160,7 +158,6 @@ namespace nap
             /**
              * Evaluate a clamped bezier curve at time t
              */
-            template<typename T, typename V>
             FComplex<T, V>  bezier(const FComplex<T, V> (& pts)[4], T t)
             {
                 T u = 1 - t;
@@ -182,8 +179,7 @@ namespace nap
              * @param maxIterations Max number of tries to get to the desired precision
              * @return
              */
-            template<typename P, typename T>
-            T tForX(const P (& pts)[4], T x, T threshold = 0.0001, int maxIterations = 100)
+            T tForX(const FComplex<T, V> (& pts)[4], T x, T threshold = 0.0001, int maxIterations = 100)
             {
                 T depth = 0.5;
                 T t = 0.5;
@@ -200,7 +196,6 @@ namespace nap
                 return t;
             }
 
-            template <typename T, typename V>
             inline V lerp(const V& a, const V& b, const T& t)
             {
                 return a + t * (b - a);
@@ -214,15 +209,13 @@ namespace nap
              * @param x Time input value in cartesian space
              * @return Vertical component of the evaluated curve segment at time x
              */
-            template<typename T, typename V>
             V evalCurveSegmentBezier(const nap::math::FComplex<T, V> (& pts)[4], T x)
             {
                 T t = tForX(pts, x);
                 return bezier(pts, t).mValue;
             }
 
-            template<typename P, typename T>
-            V evalCurveSegmentLinear(const P (& pts)[4], T x)
+            V evalCurveSegmentLinear(const FComplex<T, V> (& pts)[4], T x)
             {
                 const auto& a = pts[0];
                 const auto& b = pts[3];
@@ -230,8 +223,7 @@ namespace nap
                 return lerp(a.mValue, b.mValue, t);
             }
 
-            template<typename P, typename T>
-            V evalCurveSegmentStepped(const P (& pts)[4], T x)
+            V evalCurveSegmentStepped(const FComplex<T, V>(& pts)[4], T x)
             {
                 return pts[0].mValue;
             }
@@ -287,7 +279,7 @@ namespace nap
 			 * @param pc
 			 * @param pd
 			 */
-			void limitOverhangPoints(const Fc& pa, Fc& pb, Fc& pc, const Fc& pd);
+			void limitOverhangPoints(const FComplex<T, V>& pa, FComplex<T, V>& pb, FComplex<T, V>& pc, const FComplex<T, V>& pd)
 			{
 				auto a = pa.mTime;
 				auto b = pb.mTime;
@@ -311,113 +303,11 @@ namespace nap
 				pc.mValue = ((pc.mValue - pd.mValue) * rc) + pd.mValue;
 			}
 
-			mutable std::vector<FCurvePoint<T, U>> mSortedPoints;
+			mutable std::vector<FCurvePoint<T, V>> mSortedPoints;
 			bool mPointsSorted = false; // keep track point sort state for proper curve eval
 
 		};
 
-
-		//////////////////////////////////////////////////////////////////////////
-		// Template definitions
-		//////////////////////////////////////////////////////////////////////////
-
-		template<typename T, typename U>
-		void FCurve<T, U>::limitOverhangPoints(const FCurve::Fc& pa, FCurve::Fc& pb, FCurve::Fc& pc, const FCurve::Fc& pd)
-		{
-			auto a = pa.mTime;
-			auto b = pb.mTime;
-			auto c = pc.mTime;
-			auto d = pd.mTime;
-			auto bb = b;
-			auto cc = c;
-
-				limitOverhang(a, b, c, d);
-
-				// calculate ratios for both tangents
-				auto rb = (b - a) / (bb - a);
-				auto rc = (c - d) / (cc - d);
-
-				// apply corrected times
-				pb.mTime = b;
-				pc.mTime = c;
-
-				// we limited time, keep the value on the tangent line for c1 continuity
-				pb.mValue = ((pb.mValue - pa.mValue) * rb) + pa.mValue;
-				pc.mValue = ((pc.mValue - pd.mValue) * rc) + pd.mValue;
-			}
-
-		template<typename T, typename U>
-		void FCurve<T, U>::limitOverhang(const U& x0, U& x1, U& x2, const U& x3)
-		{
-			x1 = std::min(x1, x3);
-			x2 = std::max(x2, x0);
-		}
-
-		template<typename T, typename U>
-		int FCurve<T, U>::pointIndexAtTime(const U& time) const
-		{
-			for (size_t i = 0, len = mSortedPoints.size(); i < len; i++)
-				if (time > mSortedPoints[i].mPos.mTime)
-					return static_cast<int>(i);
-			assert(false);
-			return -1;
-		}
-
-		template<typename T, typename U>
-		void FCurve<T, U>::sortPoints()
-		{
-			mSortedPoints.clear();
-			for (int i = 0; i < mPoints.size(); i++)
-				mSortedPoints.emplace_back(mPoints[i]);
-
-			std::sort(mSortedPoints.begin(), mSortedPoints.end(),
-					  [](const FCurvePoint<T, U>& lhs, const FCurvePoint<T, U>& rhs)
-					  {
-						  return lhs.mPos.mTime < rhs.mPos.mTime;
-					  });
-		}
-
-		template<typename T, typename U>
-		T FCurve<T, U>::evaluate(const U& time)
-		{
-			if (mPoints.empty())
-				return T();
-
-			sortPoints(); // TODO: Optimize or move this call somewhere else
-
-			const Pt& firstPoint = mSortedPoints[0];
-			if (time < firstPoint.mPos.mTime)
-				return firstPoint.mPos.mValue;
-
-			const Pt& lastPoint = mSortedPoints[mSortedPoints.size() - 1];
-			if (time >= lastPoint.mPos.mTime)
-				return lastPoint.mPos.mValue;
-
-			int idx = pointIndexAtTime(time);
-			const Pt& curr = mSortedPoints[idx];
-			const Pt& next = mSortedPoints[idx + 1];
-
-			auto a = curr.mPos;
-			auto b = a + curr.mOutTan;
-			auto d = next.mPos;
-			auto c = d + next.mInTan;
-
-			limitOverhangPoints(a, b, c, d);
-
-			switch (curr.mInterp)
-			{
-				case FCurveInterp::Bezier:
-					return evalCurveSegmentBezier({a, b, c, d}, time);
-				case FCurveInterp::Linear:
-					return evalCurveSegmentLinear({a, b, c, d}, time);
-				case FCurveInterp::Stepped:
-					return evalCurveSegmentStepped({a, b, c, d}, time);
-				default:
-					assert(false);
-			}
-
-			return 0;
-		}
 
 		//////////////////////////////////////////////////////////////////////////
 		// Alias some type specializations

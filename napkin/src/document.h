@@ -391,11 +391,25 @@ namespace napkin
 		/**
 		 * Qt Signal
 		 * Invoked just after a property's value has changed
-		 * @param object The object that has the changed property
 		 * @param path The path to the property that has changed
 		 */
 		void propertyValueChanged(const PropertyPath& path);
 
+		/**
+		 * Qt Signal
+		 * Invoked just after a property child has been inserted
+		 * @param path The path to the parent of the newly added child
+		 * @param childIndex The index of the newly added child
+		 */
+		void propertyChildInserted(const PropertyPath& parentPath, size_t childIndex);
+
+		/**
+		 * Qt Signal
+		 * Invoked just after a property child has been removed
+		 * @param path The path to the parent of the newly added child
+		 * @param childIndex The index of the child that was removed
+		 */
+		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
 
 	private:
 

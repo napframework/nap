@@ -16,14 +16,16 @@ namespace napkin
 	class FCurve : public napqt::AbstractCurve
 	{
 	public:
-		explicit FCurve(nap::math::FunctionCurve<float, float>& curve);
+		explicit FCurve(nap::math::FunctionCurve<float, float>& curve) :
+				AbstractCurve(),
+				mCurve(curve) {}
 
 		nap::math::FunctionCurve<float, float>& sourceCurve() { return mCurve; }
 		const QString name() const override;
 		int pointCount() const override;
 		void removePoints(const QList<int>& indices) override;
 		void addPoint(qreal time, qreal value) override;
-		qreal evaluate(qreal time) const override;
+		qreal evaluate(qreal t) const override;
 		const QPointF pos(int pointIndex) const override;
 		const QPointF inTangent(int pointIndex) const override;
 		const QPointF outTangent(int pointIndex) const override;
@@ -36,6 +38,8 @@ namespace napkin
 						  bool finished) override;
 		const PropertyPath pointPath(int pointIndex);
 	private:
+		void setComplexValue(nap::math::FComplex<float, float>& c, const QPointF& p);
+
 		nap::math::FunctionCurve<float, float>& mCurve;
 		QMap<nap::math::FCurveInterp, napqt::AbstractCurve::InterpType> mInterpMap = {
 				{nap::math::FCurveInterp::Stepped, napqt::AbstractCurve::InterpType::Stepped},

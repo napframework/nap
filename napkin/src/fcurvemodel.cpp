@@ -4,8 +4,6 @@
 using namespace napkin;
 
 
-FCurve::FCurve(nap::math::FloatFCurve& curve) : AbstractCurve(), mCurve(curve) {}
-
 const QString FCurve::name() const
 {
 	return QString::fromStdString(mCurve.mID);
@@ -30,9 +28,9 @@ void FCurve::removePoints(const QList<int>& indices)
 
 void FCurve::addPoint(qreal time, qreal value)
 {
-	mCurve.invalidate();
 	int index = static_cast<int>(mCurve.mPoints.size());
 	mCurve.mPoints.emplace_back(nap::math::FCurvePoint<float, float>({time, value}, {-0.1, 0}, {0.1, 0}));
+	mCurve.invalidate();
 	pointsAdded({index});
 }
 
@@ -88,15 +86,18 @@ void FCurve::movePoints(const QMap<int, QPointF>& positions, bool finished)
 {
 	for (auto it = positions.begin(); it != positions.end(); it++)
 	{
-		auto& pos = mCurve.mPoints[it.key()].mPos;
-		const auto& p = it.value();
-		pos.mTime = static_cast<float>(p.x());
-		pos.mValue = static_cast<float>(p.y());
+		setComplexValue(mCurve.mPoints[it.key()].mPos, it.value());
 	}
 	pointsChanged(positions.keys(), finished);
 
 	// Points need to be sorted for proper evaluation
 	mCurve.invalidate();
+}
+
+void FCurve::setComplexValue(nap::math::FComplex<float, float>& c, const QPointF& p)
+{
+	c.mTime = static_cast<float>(p.x());
+	c.mValue = static_cast<float>(p.y());
 }
 
 void FCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents, bool finished)
@@ -105,20 +106,15 @@ void FCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, 
 	for (auto it = inTangents.begin(); it != inTangents.end(); it++)
 	{
 		int index = it.key();
-		auto& tan = mCurve.mPoints[index].mInTan;
-		const auto& p = it.value();
-		tan.mTime = static_cast<float>(p.x());
-		tan.mValue = static_cast<float>(p.y());
+		setComplexValue(mCurve.mPoints[index].mInTan, it.value());
+
 		if (!changed.contains(index))
 			changed << index;
 	}
 	for (auto it = outTangents.begin(); it != outTangents.end(); it++)
 	{
 		int index = it.key();
-		auto& tan = mCurve.mPoints[index].mOutTan;
-		const auto& p = it.value();
-		tan.mTime = static_cast<float>(p.x());
-		tan.mValue = static_cast<float>(p.y());
+		setComplexValue(mCurve.mPoints[index].mOutTan, it.value());
 		if (!changed.contains(index))
 			changed << index;
 	}

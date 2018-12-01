@@ -200,6 +200,8 @@ void AppContext::connectDocumentSignals()
 	connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
 	connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
 	connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
+	connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
+	connect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
 	connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
 }
 
