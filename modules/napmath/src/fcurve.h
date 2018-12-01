@@ -6,8 +6,6 @@
 #include <glm/glm.hpp>
 #include <nap/resource.h>
 
-#include "curvefunctions.h"
-
 namespace nap
 {
 	namespace math

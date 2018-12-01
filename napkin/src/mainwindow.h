@@ -38,6 +38,9 @@ namespace napkin
 		 */
 		void showEvent(QShowEvent* event) override;
 
+		/**
+		 * Override
+		 */
 		void closeEvent(QCloseEvent* event) override;
 
 	private:
