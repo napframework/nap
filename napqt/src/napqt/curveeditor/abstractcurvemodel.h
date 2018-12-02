@@ -18,7 +18,7 @@ namespace napqt
 	Q_OBJECT
 	Q_ENUMS(InterpType)
 	public:
-		enum InterpType
+		enum InterpType : int
 		{
 			Stepped = 0,
 			Linear = 1,

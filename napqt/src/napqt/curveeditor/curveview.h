@@ -138,10 +138,6 @@ namespace napqt
 		bool isLastPoint();
 		bool isFirstPoint();
 
-		QPainterPath mPath;
-		QPainterPath mDebugPath;
-		bool mDrawDebug = true;
-		bool mDrawQt = false;
 		int mSampleCount = 16;
 		QPen mPen;
 		QPen mPenDebug;
