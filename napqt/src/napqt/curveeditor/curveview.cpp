@@ -279,7 +279,7 @@ CurveItem& CurveSegmentItem::curveItem() const
 
 QRectF CurveSegmentItem::boundingRect() const
 {
-	return mPath.boundingRect().united(mDebugPath.boundingRect()).united(childrenBoundingRect());
+	return path().boundingRect().united(childrenBoundingRect());
 }
 
 void CurveSegmentItem::setInTanVisible(bool b)
@@ -311,17 +311,8 @@ void CurveSegmentItem::setTangentsVisible(bool b)
 
 void CurveSegmentItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-	if (mDrawQt)
-	{
-		painter->setPen(isSelected() ? mPenSelected : mPen);
-		painter->drawPath(mPath);
-	}
-
-	if (mDrawDebug)
-	{
-		painter->setPen(isSelected() ? mPenSelected : mPen);
-		painter->drawPath(mDebugPath);
-	}
+	painter->setPen(isSelected() ? mPenSelected : mPen);
+	painter->drawPath(path());
 }
 
 int CurveSegmentItem::index() const
@@ -336,7 +327,7 @@ int CurveSegmentItem::orderedIndex()
 
 QPainterPath CurveSegmentItem::shape() const
 {
-	return mPath;
+	return path();
 }
 
 void CurveSegmentItem::updateGeometry()
@@ -371,8 +362,7 @@ void CurveSegmentItem::updateGeometry()
 	if (mPointHandle.isSelected())
 		setTangentsVisible(true);
 
-	mPath = QPainterPath();
-	mDebugPath = QPainterPath();
+	QPainterPath path;
 
 	if (!isLast)
 	{
@@ -400,22 +390,19 @@ void CurveSegmentItem::updateGeometry()
 			nextSeg->inTanLine().hideLimit();
 
 		// Draw debug path
-		mDebugPath.moveTo(a);
+		path.moveTo(a);
 		for (int i = 1; i <= mSampleCount; i++)
 		{
 			qreal t = i / (qreal) mSampleCount;
 			qreal x = a.x() + (d.x() - a.x()) * t;
 			qreal v = curve.evaluate(x);
-			mDebugPath.lineTo(x, v);
+			path.lineTo(x, v);
 		}
-		mDebugPath.lineTo(d.x(), d.y());
+		path.lineTo(d.x(), d.y());
 
-		// Use Qt's cubic curve
-		mPath.moveTo(a);
-		mPath.cubicTo(b, c, d);
 
-		setPath(mPath);
 	}
+	setPath(path);
 	setPointsEmitItemChanges(true);
 }
 
@@ -475,6 +462,7 @@ CurveItem::CurveItem(QGraphicsItem* parent, AbstractCurve& curve)
 void CurveItem::onPointsChanged(QList<int> indices)
 {
 	setPointOrderDirty();
+	updateAllSegments();
 	for (int idx : reverseSort(indices))
 		updateSegmentFromPoint(idx);
 }
