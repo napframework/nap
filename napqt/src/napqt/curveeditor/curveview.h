@@ -2,7 +2,11 @@
 
 #include <QGraphicsScene>
 #include <QAction>
+#include <QVBoxLayout>
+#include <QToolBar>
+
 #include <napqt/gridview.h>
+#include <QtWidgets/QDoubleSpinBox>
 #include "standardcurve.h"
 
 
@@ -211,6 +215,15 @@ namespace napqt
 		void setModel(AbstractCurveModel* model);
 		AbstractCurveModel* model() { return mModel; }
 		void selectCurves(const QList<AbstractCurve*>& curve);
+		QMap<AbstractCurve*, QList<int>> selectedPoints();
+
+		void setSelectedPointTimes(qreal t);
+		void setSelectedPointValues(qreal v);
+
+		QList<QAction*> interpActions();
+
+	Q_SIGNALS:
+		void selectionChanged(QMap<AbstractCurve*, QList<int>> points);
 
 	protected:
 		void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -265,6 +278,27 @@ namespace napqt
 		QAction mInterpLinearAction;
 		QAction mInterpBezierAction;
 		QAction mInterpSteppedAction;
+
+	};
+
+
+	class CurveEditor : public QWidget
+	{
+	Q_OBJECT
+	public:
+		CurveEditor(QWidget* parent = nullptr);
+
+		void setModel(AbstractCurveModel* model);
+
+	private:
+		void onSelectionChanged(QMap<AbstractCurve*, QList<int>> points);
+
+		QVBoxLayout mLayout;
+		CurveView mCurveView;
+		QToolBar mToolBar;
+		QDoubleSpinBox mTimeSpinbox;
+		QDoubleSpinBox mValueSpinbox;
+
 	};
 
 }

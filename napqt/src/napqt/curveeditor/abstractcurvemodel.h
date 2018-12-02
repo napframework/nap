@@ -191,6 +191,12 @@ namespace napqt
 		 */
 		int curveIndex(AbstractCurve* curve) const;
 
+		/**
+		 * Move the provided points to the provided values
+		 * @param values
+		 */
+		virtual void movePoints(QMap<AbstractCurve*, QMap<int, QPointF>> values) = 0;
+
 	Q_SIGNALS:
 		/**
 		 * Invoked when any curves have been inserted into the model.

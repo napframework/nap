@@ -139,7 +139,7 @@ public:
 	}
 
 private:
-	CurveView mCurveView;
+	CurveEditor mCurveView;
 	CurveWidget mCurvePanel;
 	DemoPanel mDemoPanel;
 };

@@ -394,13 +394,16 @@ void CurveSegmentItem::updateGeometry()
 			nextSeg->inTanLine().hideLimit();
 
 		// Draw debug path
-		if (interp == AbstractCurve::InterpType::Stepped) {
+		if (interp == AbstractCurve::InterpType::Stepped)
+		{
 			// Interpolated stepped looks a little weird when interpolated (ramp at last segment) at lower
 			// sample rate. Draw as if samples are infinitely small.
 			path.moveTo(a);
 			path.lineTo(d.x(), a.y());
 			path.lineTo(d);
-		} else {
+		}
+		else
+		{
 			path.moveTo(a);
 			for (int i = 1; i <= mSampleCount; i++)
 			{
@@ -463,7 +466,7 @@ CurveItem::CurveItem(QGraphicsItem* parent, AbstractCurve& curve)
 	connect(&curve, &AbstractCurve::pointsAdded, this, &CurveItem::onPointsAdded);
 	connect(&curve, &AbstractCurve::pointsRemoved, this, &CurveItem::onPointsRemoved);
 
-	QList < int > indices;
+	QList<int> indices;
 	for (int i = 0, len = curve.pointCount(); i < len; i++)
 		indices << i;
 	onPointsAdded(indices);
@@ -543,7 +546,7 @@ int CurveItem::prevSegIndex(int idx)
 
 void CurveItem::onPointsAdded(const QList<int> indices)
 {
-	QList < CurveSegmentItem * > segments;
+	QList<CurveSegmentItem*> segments;
 	for (int index : indices)
 	{
 		auto seg = new CurveSegmentItem(*this);
@@ -556,7 +559,7 @@ void CurveItem::onPointsAdded(const QList<int> indices)
 	}
 
 	// Push changes from model too
-	QList < int > idx;
+	QList<int> idx;
 	for (auto seg : segments)
 		idx << segmentIndex(*seg);
 
@@ -655,6 +658,8 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	setContextMenuPolicy(Qt::NoContextMenu);
 
 	initActions();
+
+	connect(&mCurveScene, &QGraphicsScene::selectionChanged, [this]() { selectionChanged(selectedPoints()); });
 }
 
 
@@ -871,7 +876,7 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 	if (tans.isEmpty())
 		return;
 
-	QList < TangentHandleItem * > movedTangents;
+	QList<TangentHandleItem*> movedTangents;
 	for (TangentHandleItem* tan : tans)
 	{
 		if (tans.contains(&tan->oppositeTanHandle()))
@@ -891,8 +896,7 @@ void CurveView::moveTanHandles(const QList<TangentHandleItem*>& tans, const QPoi
 
 		if (!mTangentEditMap.contains(curveItem))
 		{
-			QList < QMap<int, QPointF>>
-			ls;
+			QList<QMap<int, QPointF>> ls;
 			ls << QMap<int, QPointF>();
 			ls << QMap<int, QPointF>();
 			mTangentEditMap.insert(curveItem, ls);
@@ -951,7 +955,7 @@ void CurveView::setModel(AbstractCurveModel* model)
 	}
 
 	// populate with new data
-	QList < int > indices;
+	QList<int> indices;
 	for (int i = 0, len = mModel->curveCount(); i < len; i++)
 		indices << i;
 	onCurvesAdded(indices);
@@ -993,7 +997,7 @@ void CurveView::deleteSelectedItems()
 		int pointIndex = pointHandle->curveSegmentItem().index();
 
 		if (!toDelete.contains(curveIndex))
-			toDelete[curveIndex] = QList < int > ();
+			toDelete[curveIndex] = QList<int>();
 
 		toDelete[curveIndex].append(pointIndex);
 	}
@@ -1028,7 +1032,7 @@ void CurveView::onCurvesRemoved(QList<int> indices)
 
 void CurveView::selectPointHandles(const QList<PointHandleItem*>& pointHandles)
 {
-	QList < QGraphicsItem * > graphicsItems;
+	QList<QGraphicsItem*> graphicsItems;
 	for (auto p : pointHandles)
 	{
 		p->curveSegmentItem().setTangentsVisible(true);
@@ -1043,10 +1047,10 @@ void CurveView::selectPointHandles(const QList<PointHandleItem*>& pointHandles)
 	addSelection(graphicsItems);
 }
 
-AbstractCurve * CurveView::closestCurve(const QPointF &pos)
+AbstractCurve* CurveView::closestCurve(const QPointF& pos)
 {
-    if (model()->curveCount() < 1)
-        return nullptr;
+	if (model()->curveCount() < 1)
+		return nullptr;
 
 	// First, attempt to get the curve under the mouse cursor
 	for (auto item : items(pos.x(), pos.y()))
@@ -1060,17 +1064,19 @@ AbstractCurve * CurveView::closestCurve(const QPointF &pos)
 	AbstractCurve* closestCurve = nullptr;
 
 	qreal closestDist = std::numeric_limits<qreal>::max();
-	for (int i=0, len=model()->curveCount(); i<len; i++) {
+	for (int i = 0, len = model()->curveCount(); i < len; i++)
+	{
 		const auto curve = model()->curve(i);
-        auto p = closestPointOnCurve(*curve, pos);
-        auto dist = length(p-pos);
-        if (dist < closestDist) {
-            closestDist = dist;
-            closestCurve = curve;
-        }
+		auto p = closestPointOnCurve(*curve, pos);
+		auto dist = length(p - pos);
+		if (dist < closestDist)
+		{
+			closestDist = dist;
+			closestCurve = curve;
+		}
 	}
 	if (closestCurve)
-	    return closestCurve;
+		return closestCurve;
 
 	return model()->curve(0);
 }
@@ -1078,28 +1084,28 @@ AbstractCurve * CurveView::closestCurve(const QPointF &pos)
 
 QPointF CurveView::closestPointOnCurve(const AbstractCurve& curve, const QPointF& pt)
 {
-    auto firstPos = curve.pos(firstPoint(curve));
-    if (pt.x() < firstPos.x())
-    	return {pt.x(), firstPos.y()};
+	auto firstPos = curve.pos(firstPoint(curve));
+	if (pt.x() < firstPos.x())
+		return {pt.x(), firstPos.y()};
 
-    auto lastPos = curve.pos(lastPoint(curve));
-    if (pt.x() > lastPos.x())
-    	return {pt.x(), lastPos.y()};
+	auto lastPos = curve.pos(lastPoint(curve));
+	if (pt.x() > lastPos.x())
+		return {pt.x(), lastPos.y()};
 
-    int samples = 32;
+	int samples = 32;
 
-    QPointF closestPoint;
-    qreal closestDist = std::numeric_limits<qreal>::max();
-    for (int i=0; i<samples; i++)
+	QPointF closestPoint;
+	qreal closestDist = std::numeric_limits<qreal>::max();
+	for (int i = 0; i < samples; i++)
 	{
-    	auto t = (qreal) i / (qreal) (samples-1);
-    	auto x = firstPos.x() + (lastPos.x() - firstPos.x()) * t;
-    	auto p = QPointF(x, curve.evaluate(x));
-    	auto dist = length(p - pt);
-    	if (dist < closestDist)
+		auto t = (qreal) i / (qreal) (samples - 1);
+		auto x = firstPos.x() + (lastPos.x() - firstPos.x()) * t;
+		auto p = QPointF(x, curve.evaluate(x));
+		auto dist = length(p - pt);
+		if (dist < closestDist)
 		{
-    		closestPoint = p;
-    		closestDist = dist;
+			closestPoint = p;
+			closestDist = dist;
 		}
 	}
 
@@ -1107,33 +1113,33 @@ QPointF CurveView::closestPointOnCurve(const AbstractCurve& curve, const QPointF
 }
 
 
-int CurveView::firstPoint(const AbstractCurve &curve)
+int CurveView::firstPoint(const AbstractCurve& curve)
 {
 	int pcount = curve.pointCount();
 	assert(pcount > 0);
 	qreal limit = std::numeric_limits<qreal>::max();
 	int idx = -1;
-	for (int i=0; i<pcount; i++)
+	for (int i = 0; i < pcount; i++)
 	{
 		auto x = curve.pos(i).x();
 		if (x < limit)
-        {
-		    idx = i;
-		    limit = x;
-        }
+		{
+			idx = i;
+			limit = x;
+		}
 	}
 	assert(idx >= 0);
 	return idx;
 }
 
 
-int CurveView::lastPoint(const AbstractCurve &curve)
+int CurveView::lastPoint(const AbstractCurve& curve)
 {
 	int pcount = curve.pointCount();
 	assert(pcount > 0);
 	qreal limit = -std::numeric_limits<qreal>::max();
 	int idx = -1;
-	for (int i=0; i<pcount; i++)
+	for (int i = 0; i < pcount; i++)
 	{
 		auto x = curve.pos(i).x();
 		if (x > limit)
@@ -1238,7 +1244,7 @@ void CurveView::alignTangents(AbstractCurve& curve, int idx, bool finished)
 
 const QList<PointHandleItem*> CurveView::pointsFromSelection()
 {
-	QList < PointHandleItem * > points;
+	QList<PointHandleItem*> points;
 	for (auto item : scene()->selectedItems())
 	{
 		// If we have a point, include and on to the next
@@ -1274,7 +1280,7 @@ void minSeparation(qreal& minVal, qreal& maxVal, qreal minSeparation)
 
 const QRectF CurveView::frameItemsBoundsSelected() const
 {
-	QList < QGraphicsItem * > handles = frameableItems(scene()->selectedItems());
+	QList<QGraphicsItem*> handles = frameableItems(scene()->selectedItems());
 	if (handles.isEmpty())
 		return frameItemsBounds();
 
@@ -1283,7 +1289,7 @@ const QRectF CurveView::frameItemsBoundsSelected() const
 
 const QList<QGraphicsItem*> CurveView::frameableItems(const QList<QGraphicsItem*>& items) const
 {
-	QList < QGraphicsItem * > handles;
+	QList<QGraphicsItem*> handles;
 	for (auto item : scene()->selectedItems())
 	{
 		auto handle = dynamic_cast<HandleItem*>(item);
@@ -1304,7 +1310,7 @@ const QList<QGraphicsItem*> CurveView::frameableItems(const QList<QGraphicsItem*
 
 const QRectF CurveView::frameItemsBounds() const
 {
-	QList < QGraphicsItem * > handles = frameableItems(scene()->items());
+	QList<QGraphicsItem*> handles = frameableItems(scene()->items());
 	if (handles.isEmpty())
 		return {0, 0, 1, 1};
 
@@ -1379,7 +1385,7 @@ void CurveView::drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRec
 
 void CurveView::selectCurves(const QList<AbstractCurve*>& curves)
 {
-	QList < QGraphicsItem * > handles;
+	QList<QGraphicsItem*> handles;
 	for (auto curve : curves)
 	{
 		auto item = curveItem(*curve);
@@ -1389,6 +1395,59 @@ void CurveView::selectCurves(const QList<AbstractCurve*>& curves)
 		}
 	}
 	setSelection(handles);
+}
+
+QMap<AbstractCurve*, QList<int>> CurveView::selectedPoints()
+{
+	QMap<AbstractCurve*, QList<int>> curvePoints;
+
+	for (auto sel : pointsFromSelection())
+	{
+		auto curve = &sel->curveSegmentItem().curveItem().curve();
+		if (!curvePoints.contains(curve))
+			curvePoints[curve] = QList<int>();
+
+		curvePoints[curve].append(sel->curveSegmentItem().index());
+	}
+	return curvePoints;
+}
+
+void CurveView::setSelectedPointTimes(qreal t)
+{
+	QMap<AbstractCurve*, QMap<int, QPointF>> values;
+	for (auto sel : pointsFromSelection())
+	{
+		auto& segItem = sel->curveSegmentItem();
+		auto curve = &segItem.curveItem().curve();
+		int idx = segItem.index();
+
+		if (!values.contains(curve))
+			values[curve] = QMap<int, QPointF>();
+
+		auto& pt = curve->pos(idx);
+
+		values[curve][sel->curveSegmentItem().index()] = { t, pt.y() };
+	}
+	mModel->movePoints(values);
+}
+
+void CurveView::setSelectedPointValues(qreal v)
+{
+	QMap<AbstractCurve*, QMap<int, QPointF>> values;
+	for (auto sel : pointsFromSelection())
+	{
+		auto& segItem = sel->curveSegmentItem();
+		auto curve = &segItem.curveItem().curve();
+		int idx = segItem.index();
+
+		if (!values.contains(curve))
+			values[curve] = QMap<int, QPointF>();
+
+		auto& pt = curve->pos(idx);
+
+		values[curve][sel->curveSegmentItem().index()] = { pt.x(), v };
+	}
+	mModel->movePoints(values);
 }
 
 CurveItem* CurveView::curveItem(const AbstractCurve& curve)
@@ -1414,3 +1473,72 @@ void CurveView::commitPointEditChanges(bool finished)
 	}
 }
 
+QList<QAction*> CurveView::interpActions()
+{
+	QList<QAction*> actions;
+	actions << &mInterpLinearAction;
+	actions << &mInterpSteppedAction;
+	actions << &mInterpBezierAction;
+	return actions;
+}
+
+CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
+{
+	setLayout(&mLayout);
+	mLayout.setSpacing(0);
+	mLayout.setContentsMargins(0, 0, 0, 0);
+	mLayout.addWidget(&mToolBar);
+	mLayout.addWidget(&mCurveView);
+
+	mToolBar.addWidget(&mTimeSpinbox);
+	mTimeSpinbox.setEnabled(false);
+
+	mToolBar.addWidget(&mValueSpinbox);
+	mValueSpinbox.setEnabled(false);
+
+	for (const auto action : mCurveView.interpActions())
+	{
+		mToolBar.addAction(action);
+		action->setEnabled(false);
+	}
+
+	connect(&mCurveView, &CurveView::selectionChanged, this, &CurveEditor::onSelectionChanged);
+	connect(&mTimeSpinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double t) {
+		mCurveView.setSelectedPointTimes(t);
+	});
+	connect(&mValueSpinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double v) {
+		mCurveView.setSelectedPointValues(v);
+	});
+}
+
+
+void CurveEditor::setModel(AbstractCurveModel* model)
+{
+	mCurveView.setModel(model);
+}
+
+
+void CurveEditor::onSelectionChanged(QMap<AbstractCurve*, QList<int>> points)
+{
+	bool hasPointSelection = !points.isEmpty();
+
+	mTimeSpinbox.setEnabled(hasPointSelection);
+	mValueSpinbox.setEnabled(hasPointSelection);
+	for (const auto action : mCurveView.interpActions())
+		action->setEnabled(hasPointSelection);
+
+	if (!hasPointSelection)
+		return;
+
+	if (points.size() == 1 && points.first().size() == 1)
+	{
+		auto curve = points.firstKey();
+		int idx = points.first()[0];
+		auto pt = curve->pos(idx);
+
+		mTimeSpinbox.setValue(pt.x());
+		mValueSpinbox.setValue(pt.y());
+
+		return;
+	}
+}
