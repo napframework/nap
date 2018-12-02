@@ -109,26 +109,25 @@ namespace nap
 					mPointsSorted = true;
 				}
 
-				const FCurvePoint<T, V>& firstPoint = mSortedPoints[0];
-				if (t < firstPoint.mPos.mTime)
-					return firstPoint.mPos.mValue;
+				const FCurvePoint<T, V>* firstPoint = mSortedPoints[0];
+				if (t < firstPoint->mPos.mTime)
+					return firstPoint->mPos.mValue;
 
-				const FCurvePoint<T, V>& lastPoint = mSortedPoints[mSortedPoints.size() - 1];
-				if (t >= lastPoint.mPos.mTime)
-					return lastPoint.mPos.mValue;
+				const FCurvePoint<T, V>* lastPoint = mSortedPoints[mSortedPoints.size() - 1];
+				if (t >= lastPoint->mPos.mTime)
+					return lastPoint->mPos.mValue;
 
 				int idx = pointIndexAtTime(t);
-				const FCurvePoint<T, V>& curr = mSortedPoints[idx];
-				const FCurvePoint<T, V>& next = mSortedPoints[idx + 1];
+				const FCurvePoint<T, V>* curr = mSortedPoints[idx];
+				const FCurvePoint<T, V>* next = mSortedPoints[idx + 1];
 
-				auto a = curr.mPos;
-				auto b = a + curr.mOutTan;
-				auto d = next.mPos;
-				auto c = d + next.mInTan;
+				auto a = curr->mPos;
+				auto b = a + curr->mOutTan;
+				auto d = next->mPos;
+				auto c = d + next->mInTan;
 
 				limitOverhangPoints(a, b, c, d);
-
-				switch (curr.mInterp)
+				switch (curr->mInterp)
 				{
 					case FCurveInterp::Bezier:
 						return evalCurveSegmentBezier({a, b, c, d}, t);
@@ -235,12 +234,12 @@ namespace nap
 			{
 				mSortedPoints.clear();
 				for (int i = 0; i < mPoints.size(); i++)
-					mSortedPoints.emplace_back(mPoints[i]);
+					mSortedPoints.emplace_back(&mPoints[i]);
 
 				std::sort(mSortedPoints.begin(), mSortedPoints.end(),
-						  [](const FCurvePoint<T, V>& lhs, const FCurvePoint<T, V>& rhs)
+						  [](const FCurvePoint<T, V>* lhs, const FCurvePoint<T, V>* rhs)
 						  {
-							  return lhs.mPos.mTime < rhs.mPos.mTime;
+							  return lhs->mPos.mTime < rhs->mPos.mTime;
 						  });
 			}
 
@@ -254,7 +253,7 @@ namespace nap
 			{
 				for (size_t i = 0, len = mSortedPoints.size(); i < len; i++)
 				{
-					if (t < mSortedPoints[i].mPos.mTime)
+					if (t < mSortedPoints[i]->mPos.mTime)
 					{
 						if (i ==0)
 							return 0;
@@ -309,7 +308,8 @@ namespace nap
 				pc.mValue = ((pc.mValue - pd.mValue) * rc) + pd.mValue;
 			}
 
-			mutable std::vector<FCurvePoint<T, V>> mSortedPoints;
+			// sorted pointers to the original (unsorted) points in mPoints
+			mutable std::vector<FCurvePoint<T, V>*> mSortedPoints;
 			bool mPointsSorted = false; // keep track point sort state for proper curve eval
 
 		};

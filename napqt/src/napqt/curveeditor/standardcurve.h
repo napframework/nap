@@ -40,6 +40,9 @@ namespace napqt
 
 		const QString name() const override { return mName; }
 		void setName(const QString& name);
+
+		const QColor color() const override;
+
 		qreal evaluate(qreal time) const override;
 
 		const QPointF pos(int pointIndex) const override;

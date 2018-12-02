@@ -262,4 +262,9 @@ void StandardCurve::setTangentsAligned(int pointIndex, bool b)
 	pointsChanged({pointIndex}, false);
 }
 
+const QColor StandardCurve::color() const
+{
+	return Qt::yellow;
+}
+
 
