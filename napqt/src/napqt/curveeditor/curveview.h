@@ -105,7 +105,7 @@ namespace napqt
 	 * Non-interactive item to display a single curve segment
 	 * Don't use this directly, but let CurveView manage this.
 	 */
-	class CurveSegmentItem : public QObject, public QGraphicsItem
+	class CurveSegmentItem : public QObject, public QGraphicsPathItem
 	{
 		Q_OBJECT
 	public:
@@ -140,7 +140,7 @@ namespace napqt
 
 		QPainterPath mPath;
 		QPainterPath mDebugPath;
-		bool mDrawDebug = false;
+		bool mDrawDebug = true;
 		bool mDrawQt = false;
 		int mSampleCount = 16;
 		QPen mPen;
