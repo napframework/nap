@@ -36,6 +36,11 @@ namespace napqt
 		virtual const QString name() const = 0;
 
 		/**
+		 * @return The display color of this curve in the editor.
+		 */
+		virtual const QColor color() const = 0;
+
+		/**
 		 * @return The number of points that define this curve.
 		 */
 		virtual int pointCount() const = 0;

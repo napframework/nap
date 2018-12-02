@@ -19,11 +19,11 @@ using namespace napqt;
 #define COL_POINTHANDLE_LINE            "#000"
 #define COL_POINTHANDLE_LINE_SELECTED    "#000"
 #define COL_TANHANDLE_FILL                "#333"
-#define COL_TANHANDLE_FILL_SELECTED    "#0F0"
+#define COL_TANHANDLE_FILL_SELECTED    "#FFF"
 #define COL_TANHANDLE_LINE                "#0FF"
 #define COL_TANHANDLE_LINE_SELECTED    "#0FF"
 #define COL_TANLINE                    "#888"
-#define COL_TANLINE_SELECTED            "#F0F"
+#define COL_TANLINE_SELECTED            "#DDD"
 #define COL_CURVE_HIGHLIGHT                "#F80"
 #define COL_CURVE_SELECTED                "#FFF"
 
@@ -335,6 +335,9 @@ void CurveSegmentItem::updateGeometry()
 	setPointsEmitItemChanges(false);
 
 	auto& curve = curveItem().curve();
+
+	mPen.setColor(curve.color());
+
 	int segCount = curve.pointCount();
 	int idx = index();
 	int orderedIdx = orderedIndex();
@@ -345,6 +348,7 @@ void CurveSegmentItem::updateGeometry()
 	const auto inTan = curve.inTangent(idx);
 	const auto outTan = curve.outTangent(idx);
 	const auto interp = curve.interpolation(idx);
+
 
 	auto c1 = pos + outTan;
 	auto inTanPos = pos + inTan;
@@ -390,17 +394,23 @@ void CurveSegmentItem::updateGeometry()
 			nextSeg->inTanLine().hideLimit();
 
 		// Draw debug path
-		path.moveTo(a);
-		for (int i = 1; i <= mSampleCount; i++)
-		{
-			qreal t = i / (qreal) mSampleCount;
-			qreal x = a.x() + (d.x() - a.x()) * t;
-			qreal v = curve.evaluate(x);
-			path.lineTo(x, v);
+		if (interp == AbstractCurve::InterpType::Stepped) {
+			// Interpolated stepped looks a little weird when interpolated (ramp at last segment) at lower
+			// sample rate. Draw as if samples are infinitely small.
+			path.moveTo(a);
+			path.lineTo(d.x(), a.y());
+			path.lineTo(d);
+		} else {
+			path.moveTo(a);
+			for (int i = 1; i <= mSampleCount; i++)
+			{
+				qreal t = i / (qreal) mSampleCount;
+				qreal x = a.x() + (d.x() - a.x()) * t;
+				qreal v = curve.evaluate(x);
+				path.lineTo(x, v);
+			}
+			path.lineTo(d.x(), d.y());
 		}
-		path.lineTo(d.x(), d.y());
-
-
 	}
 	setPath(path);
 	setPointsEmitItemChanges(true);
@@ -463,8 +473,6 @@ void CurveItem::onPointsChanged(QList<int> indices)
 {
 	setPointOrderDirty();
 	updateAllSegments();
-	for (int idx : reverseSort(indices))
-		updateSegmentFromPoint(idx);
 }
 
 void CurveItem::updateSegmentFromPoint(int i)
@@ -476,12 +484,18 @@ void CurveItem::updateSegmentFromPoint(int i)
 	// TODO: this changes when using higher order bsplines
 	if (!isFirstPoint(segmentIndex(seg)))
 		prevSegment(seg)->updateGeometry();
+	update();
 }
 
 void CurveItem::updateAllSegments()
 {
 	for (int i = 0, len = mCurve.pointCount(); i < len; i++)
 		updateSegmentFromPoint(i);
+	update();
+	if (scene())
+	{
+		scene()->update();
+	}
 }
 
 bool CurveItem::isFirstPoint(int i)

@@ -22,6 +22,7 @@ namespace napkin
 
 		nap::math::FunctionCurve<float, float>& sourceCurve() { return mCurve; }
 		const QString name() const override;
+		const QColor color() const override;
 		int pointCount() const override;
 		void removePoints(const QList<int>& indices) override;
 		void addPoint(qreal time, qreal value) override;

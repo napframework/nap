@@ -128,6 +128,11 @@ const PropertyPath FCurve::pointPath(int pointIndex)
 	return {sourceCurve(), pointPath};
 }
 
+const QColor FCurve::color() const
+{
+	return Qt::yellow;
+}
+
 
 FloatFCurveModel::FloatFCurveModel(nap::math::FunctionCurve<float, float>& curve) : napqt::AbstractCurveModel(), mCurve(curve) {}
 
