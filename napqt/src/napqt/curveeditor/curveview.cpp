@@ -244,7 +244,7 @@ void TangentLineItem::hideLimit()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 CurveSegmentItem::CurveSegmentItem(CurveItem& curveItem)
-		: QObject(), QGraphicsItem(&curveItem),
+		: QObject(), QGraphicsPathItem(&curveItem),
 		  mPointHandle(*this),
 		  mInTanHandle(*this),
 		  mOutTanHandle(*this),
@@ -413,10 +413,9 @@ void CurveSegmentItem::updateGeometry()
 		// Use Qt's cubic curve
 		mPath.moveTo(a);
 		mPath.cubicTo(b, c, d);
+
+		setPath(mPath);
 	}
-
-	QGraphicsItem::update();
-
 	setPointsEmitItemChanges(true);
 }
 
@@ -623,7 +622,6 @@ const QVector<int>& CurveItem::sortPoints()
 	}
 
 	mPointOrderDirty = false;
-	updateAllSegments();
 	return mSortedToUnsorted;
 }
 
@@ -1192,15 +1190,12 @@ void CurveView::onCustomContextMenuRequested(const QPoint& pos)
 
 void CurveView::setSelectedPointInterps(AbstractCurve::InterpType interp)
 {
-	for (PointHandleItem* pt :pointsFromSelection())
+	for (auto pt :pointsFromSelection())
 	{
-		int idx = pt->curveSegmentItem().index();
-		auto& curve = pt->curveSegmentItem().curveItem().curve();
-		auto oldInterp = curve.interpolation(idx);
+		auto& segitem = pt->curveSegmentItem();
+		int idx = segitem.index();
+		auto& curve = segitem.curveItem().curve();
 		curve.setInterpolation(idx, interp);
-//		if (oldInterp != interp)
-//		{
-//		}
 	}
 }
 
@@ -1345,6 +1340,7 @@ const QRectF CurveView::handleItemBounds(const QList<QGraphicsItem*>& handles) c
 void CurveView::drawBackground(QPainter* painter, const QRectF& rect)
 {
 	GridView::drawBackground(painter, rect);
+	return;
 	if (mModel == nullptr)
 		return;
 
