@@ -79,7 +79,7 @@ namespace napqt
 		StandardCurve* addCurve();
 		void removeCurve(AbstractCurve* curve);
 		void removeCurve(int index);
-
+		void movePoints(QMap<AbstractCurve*, QMap<int, QPointF>> values) override;
 	private:
 		void onCurveChanged(AbstractCurve* curve);
 		QList<AbstractCurve*> mCurves;
