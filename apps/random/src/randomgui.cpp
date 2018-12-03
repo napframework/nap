@@ -105,8 +105,7 @@ namespace nap
 		ImGui::Begin("Information");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
 		ImGui::SliderFloat("Preview Size", &mTextureDisplaySize, 0.0f, 1.0f);
 		float col_width = ImGui::GetContentRegionAvailWidth() * mTextureDisplaySize;

@@ -314,15 +314,13 @@ namespace nap
 	{
 
 		// GUI Colors
-		RGBColorFloat float_clr = mTextColor.convert<RGBColorFloat>();
-		ImVec4 float_clr_gui = { float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f };
-
 		ImGui::Begin("Information");
 		ImGui::Spacing();
 		utility::getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
 		ImGui::Text("Week %02d", mDateTime.getWeek());
-		ImGui::TextColored(float_clr_gui, "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		RGBColorFloat float_clr = mTextColor.convert<RGBColorFloat>();
+		ImGui::TextColored(float_clr, "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Spacing();
 
 		if (ImGui::CollapsingHeader("Sensor Status"))

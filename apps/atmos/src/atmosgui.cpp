@@ -257,16 +257,14 @@ namespace nap
 	void AtmosGui::showInfoWindow()
 	{
 		// Color used for highlights
-		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
-		ImVec4 float_clr_gui = { text_color[0], text_color[1], text_color[2], 1.0f };
-
 		mApp.getCore().getFramerate();
 
 		ImGui::Begin("Information");
 		ImGui::Spacing();
 		utility::getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
-		ImGui::TextColored(float_clr_gui, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
+		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
+		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
 		if (ImGui::CollapsingHeader("Texture Preview"))
 		{
 			float col_width = ImGui::GetContentRegionAvailWidth() * mTexPreviewDisplaySize;
