@@ -342,7 +342,7 @@ namespace nap
 			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
 
 			// plot lux history
-			ImGui::TextColored(float_clr_gui, "Lux Sensor Average");
+			ImGui::TextColored(float_clr, "Lux Sensor Average");
 			ImGui::Text(utility::stringFormat("%f", light_comp.getLuxAverage()).c_str());
 			ImGui::SliderFloat("Sample Interval (sec)", &mLuxSampleTime, 0.0f, 100.0f, "%.3f", 2.0f);
 			glm::vec2 lux_range = light_comp.getLuxRange();
@@ -350,7 +350,7 @@ namespace nap
 			ImGui::PlotHistogram("Sensor History", mLuxValues.data(), mLuxValues.size(), mLuxIdx, NULL, mLuxDisplayBounds.x, mLuxDisplayBounds.y, ImVec2(0, 80));
 
 			// plot brightness history
-			ImGui::TextColored(float_clr_gui, "Output Brightness");
+			ImGui::TextColored(float_clr, "Output Brightness");
 			ImGui::Text(utility::stringFormat("%f", light_comp.getBrightness()).c_str());
 			ImGui::PlotHistogram("Brightness History", mBrightnessValues.data(), mBrightnessValues.size(), mBrightnessIdx, NULL, 0.0f, 1.0f, ImVec2(0, 80));
 		}
@@ -361,13 +361,13 @@ namespace nap
 			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
 			OpeningTime opening_time, closing_time;
 			light_comp.getOpeningTimes(utility::getCurrentDateTime(), opening_time, closing_time);
-			ImGui::TextColored(float_clr_gui, "Opening Hours:");
+			ImGui::TextColored(float_clr, "Opening Hours:");
 			ImGui::SameLine();
 			ImGui::Text(utility::stringFormat("%02d:%02d", opening_time.mHour, opening_time.mMinute).c_str());
-			ImGui::TextColored(float_clr_gui, "Closing Hours:");
+			ImGui::TextColored(float_clr, "Closing Hours:");
 			ImGui::SameLine();
 			ImGui::Text(utility::stringFormat("%02d:%02d", closing_time.mHour, closing_time.mMinute).c_str());
-			ImGui::TextColored(float_clr_gui, "Stores: ");
+			ImGui::TextColored(float_clr, "Stores: ");
 			ImGui::SameLine();
 			ImGui::Text(light_comp.isOpen() ? "Open" : "Closed");
 		}
@@ -376,13 +376,13 @@ namespace nap
 		{
 			CompositionComponentInstance& composition_comp = mApp.compositionEntity->getComponent<CompositionComponentInstance>();
 
-			ImGui::TextColored(float_clr_gui, "Current: ");
+			ImGui::TextColored(float_clr, "Current: ");
 			ImGui::SameLine();
 			ImGui::Text(composition_comp.getSelection().getName().c_str());
-			ImGui::TextColored(float_clr_gui, "Type: ");
+			ImGui::TextColored(float_clr, "Type: ");
 			ImGui::SameLine();
 			ImGui::Text(composition_comp.getSelection().getMode() == CompositionPlayMode::Length ? "Length" : "Sequence");
-			ImGui::TextColored(float_clr_gui, "Status: ");
+			ImGui::TextColored(float_clr, "Status: ");
 			ImGui::SameLine();
 			switch (composition_comp.getSelection().getStatus())
 			{
@@ -402,10 +402,10 @@ namespace nap
 		if (ImGui::CollapsingHeader("Colors"))
 		{
 			ColorPaletteComponentInstance& palette_comp = mApp.compositionEntity->getComponent<ColorPaletteComponentInstance>();
-			ImGui::TextColored(float_clr_gui, "Selected Week: ");
+			ImGui::TextColored(float_clr, "Selected Week: ");
 			ImGui::SameLine();
 			ImGui::Text(utility::stringFormat("%d", palette_comp.getSelectedWeek()+1).c_str());
-			ImGui::TextColored(float_clr_gui, "Palette Index: ");
+			ImGui::TextColored(float_clr, "Palette Index: ");
 			ImGui::SameLine();
 			ImGui::Text(utility::stringFormat("%d", palette_comp.getVariation()).c_str());
 		}
@@ -444,7 +444,7 @@ namespace nap
 				std::vector<std::string> parts;
 				utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
 
-				ImGui::TextColored(float_clr_gui, parts.back().c_str());
+				ImGui::TextColored(float_clr, parts.back().c_str());
 				ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
 				const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
 
