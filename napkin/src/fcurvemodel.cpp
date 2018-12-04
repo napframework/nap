@@ -29,7 +29,7 @@ void FCurve::removePoints(const QList<int>& indices)
 void FCurve::addPoint(qreal time, qreal value)
 {
 	int index = static_cast<int>(mCurve.mPoints.size());
-	mCurve.mPoints.emplace_back(nap::math::FCurvePoint<float, float>({time, value}, {-0.1, 0}, {0.1, 0}));
+	mCurve.mPoints.emplace_back(nap::math::FCurvePoint<float, float>({static_cast<float>(time), static_cast<float>(value)}, {-0.1f, 0}, {0.1f, 0}));
 	mCurve.invalidate();
 	pointsAdded({index});
 }
