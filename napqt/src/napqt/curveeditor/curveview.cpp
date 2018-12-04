@@ -10,6 +10,8 @@
 
 #include <napqt/qtutils.h>
 
+#include "napqt-resources.h"
+
 using namespace napqt;
 
 #define DEFAULT_SCENE_EXTENT 1000
@@ -970,21 +972,36 @@ void CurveView::initActions()
 	addAction(&mDeleteAction);
 
 	mInterpBezierAction.setText("Bezier");
+	mInterpBezierAction.setIcon(QIcon(napqt::QRC_ICONS_CURVEINTERP_BEZIER));
 	connect(&mInterpBezierAction, &QAction::triggered,
 			[this]() { setSelectedPointInterps(AbstractCurve::InterpType::Bezier); });
 
 	mInterpLinearAction.setText("Linear");
+	mInterpLinearAction.setIcon(QIcon(napqt::QRC_ICONS_CURVEINTERP_LINEAR));
 	connect(&mInterpLinearAction, &QAction::triggered,
 			[this]() { setSelectedPointInterps(AbstractCurve::InterpType::Linear); });
 
 	mInterpSteppedAction.setText("Stepped");
+	QIcon icon(napqt::QRC_ICONS_CURVEINTERP_STEPPED);
+	mInterpSteppedAction.setIcon(icon);
 	connect(&mInterpSteppedAction, &QAction::triggered,
 			[this]() { setSelectedPointInterps(AbstractCurve::InterpType::Stepped); });
 
-	mToggleAlignedAction.setText("Aligned");
-	mToggleAlignedAction.setCheckable(true);
-	connect(&mToggleAlignedAction, &QAction::triggered,
-			[this]() { setSelectedTangentsAligned(mToggleAlignedAction.isChecked()); });
+	mSetTangentsAlignedAction.setText("Aligned");
+	mSetTangentsAlignedAction.setIcon(QIcon(napqt::QRC_ICONS_TANGENTS_ALIGNED));
+	connect(&mSetTangentsAlignedAction, &QAction::triggered,
+			[this]() { setSelectedTangentsAligned(true); });
+	
+	mSetTangentsBrokenAction.setText("Broken");
+	mSetTangentsBrokenAction.setIcon(QIcon(napqt::QRC_ICONS_TANGENTS_BROKEN));
+	connect(&mSetTangentsBrokenAction, &QAction::triggered,
+			[this]() { setSelectedTangentsAligned(false); });
+
+	mFlattenTangentsAction.setText("Flatten Tangents");
+	mFlattenTangentsAction.setIcon(QIcon(napqt::QRC_ICONS_TANGENTS_FLAT));
+	connect(&mFlattenTangentsAction, &QAction::triggered,
+			[this]() { setSelectedTangentsFlat(); });
+	
 }
 
 void CurveView::deleteSelectedItems()
@@ -1169,21 +1186,9 @@ void CurveView::onCustomContextMenuRequested(const QPoint& pos)
 	if (!selectedTangents.isEmpty() || !selectedPoints.isEmpty())
 	{
 		menu.addSection("Tangents");
-		menu.addAction(&mToggleAlignedAction);
-
-		int alignedCount = 0;
-		int nonAlignedCount = 0;
-		for (PointHandleItem* item : pointsFromSelection())
-		{
-			auto& curve = item->curveSegmentItem().curveItem().curve();
-			int idx = item->curveSegmentItem().index();
-
-			if (curve.tangentsAligned(idx))
-				alignedCount++;
-			else
-				nonAlignedCount++;
-		}
-		mToggleAlignedAction.setChecked(alignedCount > nonAlignedCount);
+		menu.addAction(&mSetTangentsAlignedAction);
+		menu.addAction(&mSetTangentsBrokenAction);
+		menu.addAction(&mFlattenTangentsAction);
 	}
 
 	if (!selectedPoints.isEmpty())
@@ -1220,6 +1225,19 @@ void CurveView::setSelectedTangentsAligned(bool aligned)
 			alignTangents(curve, idx, true);
 	}
 }
+
+void CurveView::setSelectedTangentsFlat()
+{
+	for (auto pt : pointsFromSelection())
+	{
+		int idx = pt->curveSegmentItem().index();
+		auto& curve = pt->curveSegmentItem().curveItem().curve();
+		auto inTan = curve.inTangent(idx);
+		auto outTan = curve.outTangent(idx);
+		curve.moveTangents({{idx, {inTan.x(), 0}}}, {{idx, {outTan.x(), 0}}}, true);
+	}
+}
+
 
 void CurveView::alignTangents(AbstractCurve& curve, int idx, bool finished)
 {
@@ -1482,6 +1500,15 @@ QList<QAction*> CurveView::interpActions()
 	return actions;
 }
 
+QList<QAction*> CurveView::tangentActions()
+{
+	QList<QAction*> actions;
+	actions << &mSetTangentsAlignedAction;
+	actions << &mSetTangentsBrokenAction;
+	actions << &mFlattenTangentsAction;
+	return actions;
+}
+
 CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
 {
 	setLayout(&mLayout);
@@ -1496,17 +1523,27 @@ CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
 	mToolBar.addWidget(&mValueSpinbox);
 	mValueSpinbox.setEnabled(false);
 
+	mToolBar.addSeparator();
+
 	for (const auto action : mCurveView.interpActions())
 	{
 		mToolBar.addAction(action);
 		action->setEnabled(false);
 	}
 
+	mToolBar.addSeparator();
+
+	for (const auto action : mCurveView.tangentActions())
+	{
+		mToolBar.addAction(action);
+		action->setEnabled(false);
+	}
+
 	connect(&mCurveView, &CurveView::selectionChanged, this, &CurveEditor::onSelectionChanged);
-	connect(&mTimeSpinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double t) {
+	connect(&mTimeSpinbox, &FloatLineEdit::valueChanged, [this](qreal t) {
 		mCurveView.setSelectedPointTimes(t);
 	});
-	connect(&mValueSpinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double v) {
+	connect(&mValueSpinbox, &FloatLineEdit::valueChanged, [this](qreal v) {
 		mCurveView.setSelectedPointValues(v);
 	});
 }
@@ -1514,7 +1551,22 @@ CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
 
 void CurveEditor::setModel(AbstractCurveModel* model)
 {
-	mCurveView.setModel(model);
+	if (mCurveModel)
+	{
+	}
+
+	mCurveModel = model;
+	mCurveView.setModel(mCurveModel);
+
+	if (mCurveModel)
+	{
+		for (int i=0, len=mCurveModel->curveCount(); i < len; i++)
+		{
+			connect(model->curve(i), &AbstractCurve::pointsChanged, [this](auto indices, bool finished) {
+				onPointsChanged();
+			});
+		}
+	}
 }
 
 
@@ -1526,19 +1578,41 @@ void CurveEditor::onSelectionChanged(QMap<AbstractCurve*, QList<int>> points)
 	mValueSpinbox.setEnabled(hasPointSelection);
 	for (const auto action : mCurveView.interpActions())
 		action->setEnabled(hasPointSelection);
+	for (const auto action : mCurveView.tangentActions())
+		action->setEnabled(hasPointSelection);
 
-	if (!hasPointSelection)
-		return;
+	mTimeSpinbox.blockSignals(true);
+	mValueSpinbox.blockSignals(true);
 
-	if (points.size() == 1 && points.first().size() == 1)
+	mTimeSpinbox.setIndeterminate(true);
+	mValueSpinbox.setIndeterminate(true);
+
+	if (hasPointSelection)
 	{
-		auto curve = points.firstKey();
-		int idx = points.first()[0];
-		auto pt = curve->pos(idx);
+		bool singlePoint = points.size() == 1 && points.first().size() == 1;
+		if (singlePoint)
+		{
+			auto curve = points.firstKey();
+			int idx = points.first()[0];
+			auto pt = curve->pos(idx);
 
-		mTimeSpinbox.setValue(pt.x());
-		mValueSpinbox.setValue(pt.y());
-
-		return;
+			mTimeSpinbox.setValue(pt.x());
+			mValueSpinbox.setValue(pt.y());
+			mTimeSpinbox.setIndeterminate(false);
+			mValueSpinbox.setIndeterminate(false);
+		}
 	}
+	else
+	{
+		mTimeSpinbox.setValue(0);
+		mValueSpinbox.setValue(0);
+	}
+
+	mTimeSpinbox.blockSignals(false);
+	mValueSpinbox.blockSignals(false);
+}
+
+void CurveEditor::onPointsChanged()
+{
+	onSelectionChanged(mCurveView.selectedPoints());
 }

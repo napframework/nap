@@ -8,7 +8,7 @@
 #include "naputils.h"
 #include "typeconversion.h"
 #include "appcontext.h"
-#include "napkinresources.h"
+#include "napkin-resources.h"
 
 using namespace napkin;
 

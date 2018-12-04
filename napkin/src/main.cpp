@@ -3,7 +3,7 @@
 #include <utility/fileutils.h>
 
 #include "mainwindow.h"
-#include "napkinresources.h"
+#include "napkin-resources.h"
 #include "appcontext.h"
 
 using namespace napkin;

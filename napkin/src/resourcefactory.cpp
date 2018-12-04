@@ -6,7 +6,7 @@
 #include <entity.h>
 #include <scene.h>
 
-#include "napkinresources.h"
+#include "napkin-resources.h"
 
 extern "C" {
 	#include <libavformat/avformat.h>
