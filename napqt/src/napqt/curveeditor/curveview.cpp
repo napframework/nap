@@ -954,13 +954,13 @@ void CurveView::setModel(AbstractCurveModel* model)
 	{
 		connect(mModel, &AbstractCurveModel::curvesInserted, this, &CurveView::onCurvesAdded);
 		connect(mModel, &AbstractCurveModel::curvesRemoved, this, &CurveView::onCurvesRemoved);
-	}
 
-	// populate with new data
-	QList<int> indices;
-	for (int i = 0, len = mModel->curveCount(); i < len; i++)
-		indices << i;
-	onCurvesAdded(indices);
+		// populate with new data
+		QList<int> indices;
+		for (int i = 0, len = mModel->curveCount(); i < len; i++)
+			indices << i;
+		onCurvesAdded(indices);
+	}
 }
 
 void CurveView::initActions()

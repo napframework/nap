@@ -147,6 +147,8 @@ void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
 {
 	mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
 
+	mCurvePanel.editCurve(nullptr);
+
 	if (!objects.isEmpty()) {
 		auto ob = dynamic_cast<nap::math::FloatFCurve*>(objects.at(0));
 		if (ob) {
