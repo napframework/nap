@@ -57,6 +57,7 @@ namespace napkin
 		int curveCount() const override;
 		napqt::AbstractCurve* curve(int index) const override;
 		FCurve& curve() { return mCurve; }
+		void movePoints(QMap<napqt::AbstractCurve*, QMap<int, QPointF>> values) override;
 	private:
 		FCurve mCurve;
 

@@ -9,7 +9,7 @@ _RESOURCE_DIR = '../resources'
 _INKSCAPE = None
 _FFMPEG = None
 
-_BASENAME = 'napkin'
+_BASENAME = 'napqt'
 
 
 def findAppInWindows(appexe):

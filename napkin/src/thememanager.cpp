@@ -12,7 +12,7 @@
 #include <utility/fileutils.h>
 
 #include "appcontext.h"
-#include "napkinresources.h"
+#include "napkin-resources.h"
 #include "napkinglobals.h"
 
 using namespace napkin;

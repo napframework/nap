@@ -145,3 +145,9 @@ napqt::AbstractCurve* FloatFCurveModel::curve(int index) const
 {
 	return const_cast<FCurve*>(&mCurve);
 }
+
+void FloatFCurveModel::movePoints(QMap<napqt::AbstractCurve*, QMap<int, QPointF>> values)
+{
+	for (auto curve : values.keys())
+		curve->movePoints(values[curve], true);
+}

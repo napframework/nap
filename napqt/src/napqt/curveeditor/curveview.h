@@ -7,6 +7,7 @@
 
 #include <napqt/gridview.h>
 #include <QtWidgets/QDoubleSpinBox>
+#include <napqt/floatlineedit.h>
 #include "standardcurve.h"
 
 
@@ -221,6 +222,7 @@ namespace napqt
 		void setSelectedPointValues(qreal v);
 
 		QList<QAction*> interpActions();
+		QList<QAction*> tangentActions();
 
 	Q_SIGNALS:
 		void selectionChanged(QMap<AbstractCurve*, QList<int>> points);
@@ -249,6 +251,7 @@ namespace napqt
 		void onCustomContextMenuRequested(const QPoint& pos);
 		void setSelectedPointInterps(AbstractCurve::InterpType interp);
 		void setSelectedTangentsAligned(bool aligned);
+		void setSelectedTangentsFlat();
 		void alignTangents(AbstractCurve& curve, int pointIndex, bool finished);
 		// Get selected points, but also include points associated with tangent handles
 		const QList<PointHandleItem*> pointsFromSelection();
@@ -274,11 +277,12 @@ namespace napqt
 		QMap<CurveItem*, QMap<int, QPointF>> mPointEditMap;
 
 		QAction mDeleteAction;
-		QAction mToggleAlignedAction;
+		QAction mSetTangentsAlignedAction;
+		QAction mSetTangentsBrokenAction;
 		QAction mInterpLinearAction;
 		QAction mInterpBezierAction;
 		QAction mInterpSteppedAction;
-
+		QAction mFlattenTangentsAction;
 	};
 
 
@@ -292,13 +296,14 @@ namespace napqt
 
 	private:
 		void onSelectionChanged(QMap<AbstractCurve*, QList<int>> points);
+		void onPointsChanged();
 
 		QVBoxLayout mLayout;
 		CurveView mCurveView;
 		QToolBar mToolBar;
-		QDoubleSpinBox mTimeSpinbox;
-		QDoubleSpinBox mValueSpinbox;
-
+		FloatLineEdit mTimeSpinbox;
+		FloatLineEdit mValueSpinbox;
+		AbstractCurveModel* mCurveModel = nullptr;
 	};
 
 }
