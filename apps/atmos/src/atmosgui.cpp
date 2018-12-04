@@ -272,22 +272,20 @@ namespace nap
 	void AtmosGui::showInfoWindow()
 	{
 		// Color used for highlights
-		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
-		ImVec4 float_clr_gui = { text_color[0], text_color[1], text_color[2], 1.0f };
-
 		mApp.getCore().getFramerate();
 
 		ImGui::Begin("Information");
 		ImGui::Spacing();
 		utility::getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
-		ImGui::TextColored(float_clr_gui, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
-		if (ImGui::CollapsingHeader("Tiled Texture Preview"))
+		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
+		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
+		if (ImGui::CollapsingHeader("Texture Preview"))
 		{
 			float col_width = ImGui::GetContentRegionAvailWidth() * mTexPreviewDisplaySize;
 			nap::SelectImageComponentInstance* img_selector_tileable = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentTileable");
 			float ratio_tiled = static_cast<float>(img_selector_tileable->getImage().getWidth()) / static_cast<float>(img_selector_tileable->getImage().getHeight());
-			ImGui::TextColored(float_clr_gui, "Selected: ");
+			ImGui::TextColored(text_color, "Selected: ");
 			ImGui::SameLine();
 			ImGui::Text(img_selector_tileable->getImage().mImagePath.c_str());
 			ImGui::Image(img_selector_tileable->getImage(), { col_width, col_width / ratio_tiled });
@@ -298,7 +296,7 @@ namespace nap
 			float col_width = ImGui::GetContentRegionAvailWidth() * mWraPreviewDisplaySize;
 			nap::SelectImageComponentInstance* img_selector_single = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentSingle");
 			float ratio_single = static_cast<float>(img_selector_single->getImage().getWidth()) / static_cast<float>(img_selector_single->getImage().getHeight());
-			ImGui::TextColored(float_clr_gui, "Selected: ");
+			ImGui::TextColored(text_color, "Selected: ");
 			ImGui::SameLine();
 			ImGui::Text(img_selector_single->getImage().mImagePath.c_str());
 			ImGui::Image(img_selector_single->getImage(), { col_width, col_width / ratio_single });
@@ -310,7 +308,7 @@ namespace nap
 			float col_width = ImGui::GetContentRegionAvailWidth() * mVidPreviewDisplaySize;
 			nap::Texture2D& video_tex = mApp.mVideoTarget->getColorTexture();
 			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
-			ImGui::TextColored(float_clr_gui, "Selected: ");
+			ImGui::TextColored(text_color, "Selected: ");
 			ImGui::SameLine();
 			ImGui::Text(video_comp.getCurrentVideo()->mPath.c_str());
 			ImGui::Image(video_tex, { col_width, col_width / ratio_video });
