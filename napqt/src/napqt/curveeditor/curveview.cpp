@@ -1084,6 +1084,9 @@ AbstractCurve* CurveView::closestCurve(const QPointF& pos)
 	for (int i = 0, len = model()->curveCount(); i < len; i++)
 	{
 		const auto curve = model()->curve(i);
+		if (curve->pointCount() == 0)
+			continue;
+
 		auto p = closestPointOnCurve(*curve, pos);
 		auto dist = length(p - pos);
 		if (dist < closestDist)
@@ -1366,38 +1369,60 @@ const QRectF CurveView::handleItemBounds(const QList<QGraphicsItem*>& handles) c
 void CurveView::drawBackground(QPainter* painter, const QRectF& rect)
 {
 	GridView::drawBackground(painter, rect);
-	return;
+
 	if (mModel == nullptr)
 		return;
 
 	auto viewRect = mapToScene(viewport()->rect()).boundingRect();
-	painter->setPen(QPen(Qt::green, 0));
+	painter->setPen(QPen(Qt::gray, 0, Qt::DashLine));
 	qreal viewStep = 3;
 	qreal sceneStep = viewStep / getScale(transform()).width();
 	for (int i = 0; i < model()->curveCount(); i++)
-		drawCurve(painter, rect, viewRect, *model()->curve(i), sceneStep);
+		drawCurveExtrapolation(painter, rect, viewRect, *model()->curve(i), sceneStep);
 }
 
 
-void CurveView::drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRectF& viewRect,
-						  const AbstractCurve& curve,
-						  qreal step)
+void CurveView::drawCurveExtrapolation(QPainter* painter, const QRectF& dirtyRect, const QRectF& viewRect,
+									   const AbstractCurve& curve,
+									   qreal step)
 {
-
 	qreal xmin = viewRect.left();
 	qreal xmax = viewRect.right() + step;
-	int steps = qCeil((xmax - xmin) / step);
+
+	int pointCount = curve.pointCount();
 
 	QPainterPath path;
-	qreal v = curve.evaluate(xmin);
-	path.moveTo(xmin, v);
 
-	for (int i = 0; i < steps; i++)
+	if (pointCount == 0)
 	{
-		qreal x = xmin + i * step;
-		v = curve.evaluate(x);
-		path.lineTo(x, v);
+		path.moveTo(xmin, 0);
+		path.lineTo(xmax, 0);
 	}
+	else if (pointCount == 1)
+	{
+		auto y = curve.pos(0).y();
+		path.moveTo(xmin, y);
+		path.lineTo(xmax, y);
+	}
+	else
+	{
+		QPointF firstPos(std::numeric_limits<qreal>::max(), 0);
+		QPointF lastPos(-std::numeric_limits<qreal>::max(), 0);
+		for (int i=0; i < pointCount; i++)
+		{
+			auto pos = curve.pos(i);
+			if (pos.x() < firstPos.x())
+				firstPos = pos;
+			if (pos.x() > lastPos.x())
+				lastPos = pos;
+		}
+
+		path.moveTo(xmin, firstPos.y());
+		path.lineTo(firstPos);
+		path.moveTo(lastPos);
+		path.lineTo(xmax, lastPos.y());
+	}
+
 	painter->drawPath(path);
 }
 

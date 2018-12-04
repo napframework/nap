@@ -254,8 +254,9 @@ namespace napqt
 
 	protected:
 		void drawBackground(QPainter* painter, const QRectF& rect) override;
-		void drawCurve(QPainter* painter, const QRectF& dirtyRect, const QRectF& rect, const AbstractCurve& curve,
-							   qreal sceneStep);
+		void drawCurveExtrapolation(QPainter* painter, const QRectF& dirtyRect, const QRectF& viewRect,
+									const AbstractCurve& curve,
+									qreal step);
 
 		void mousePressEvent(QMouseEvent* event) override;
 		void mouseMoveEvent(QMouseEvent* event) override;
