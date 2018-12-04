@@ -18,7 +18,7 @@ namespace napqt
 
 	/**
 	 * Any interactive (movable) handle in the scene.
-	 * Don't use this directly, but let CurveView manage this.
+	 * For internal use. Don't use this directly, but let CurveView manage this.
 	 */
 	class HandleItem : public QObject, public QGraphicsPathItem
 	{
@@ -61,7 +61,7 @@ namespace napqt
 
 	/**
 	 * Interactive handle for a curve point
-	 * Don't use this directly, but let CurveView manage this.
+	 * For internal use. Don't use this directly, but let CurveView manage this.
 	 */
 	class PointHandleItem : public HandleItem
 	{
@@ -71,7 +71,7 @@ namespace napqt
 
 	/**
 	 * Interactive handle for a curve tangent
-	 * Don't use this directly, but let CurveView manage this.
+	 * For internal use. Don't use this directly, but let CurveView manage this.
 	 */
 	class TangentHandleItem : public HandleItem
 	{
@@ -90,7 +90,7 @@ namespace napqt
 
 	/**
 	 * Non-interactive item to display a curve's tangent line
-	 * Don't use this directly, but let CurveView manage this.
+	 * For internal use. Don't use this directly, but let CurveView manage this.
 	 */
 	class TangentLineItem : public QGraphicsPathItem
 	{
@@ -108,7 +108,7 @@ namespace napqt
 
 	/**
 	 * Non-interactive item to display a single curve segment
-	 * Don't use this directly, but let CurveView manage this.
+	 * For internal use. Don't use this directly, but let CurveView manage this.
 	 */
 	class CurveSegmentItem : public QObject, public QGraphicsPathItem
 	{
