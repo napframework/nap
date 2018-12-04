@@ -1565,12 +1565,23 @@ CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
 	}
 
 	connect(&mCurveView, &CurveView::selectionChanged, this, &CurveEditor::onSelectionChanged);
-	connect(&mTimeSpinbox, &FloatLineEdit::valueChanged, [this](qreal t) {
-		mCurveView.setSelectedPointTimes(t);
-	});
-	connect(&mValueSpinbox, &FloatLineEdit::valueChanged, [this](qreal v) {
-		mCurveView.setSelectedPointValues(v);
-	});
+	connect(&mTimeSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onTimeChanged);
+	connect(&mValueSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onValueChanged);
+}
+
+void CurveEditor::onTimeChanged(qreal t) {
+	mCurveView.setSelectedPointTimes(t);
+}
+
+void CurveEditor::onValueChanged(qreal v) {
+	mCurveView.setSelectedPointValues(v);
+}
+
+
+CurveEditor::~CurveEditor() {
+	disconnect(&mCurveView, &CurveView::selectionChanged, this, &CurveEditor::onSelectionChanged);
+	disconnect(&mTimeSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onTimeChanged);
+	disconnect(&mValueSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onValueChanged);
 }
 
 
@@ -1641,3 +1652,5 @@ void CurveEditor::onPointsChanged()
 {
 	onSelectionChanged(mCurveView.selectedPoints());
 }
+
+

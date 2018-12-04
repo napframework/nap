@@ -327,6 +327,8 @@ namespace napqt
 		 */
 		CurveEditor(QWidget* parent = nullptr);
 
+		~CurveEditor();
+
 		/**
 		 * Start editing the curve.
 		 * @param model The curve model that holds the curve. Changes will be applied to this model.
@@ -335,6 +337,9 @@ namespace napqt
 		void setModel(AbstractCurveModel* model);
 
 	private:
+	    void onTimeChanged(qreal t);
+	    void onValueChanged(qreal v);
+
 		void onSelectionChanged(QMap<AbstractCurve*, QList<int>> points);
 		void onPointsChanged();
 
