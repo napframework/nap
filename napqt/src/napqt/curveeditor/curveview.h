@@ -195,17 +195,13 @@ namespace napqt
 	};
 
 	/**
-	 * The main view for curve editing.
+	 * The main view for curve editing. It's just a bare curve editor, when a toolbar is needed, use CurveEditor
 	 * It uses an AbstractCurveModel to display and edit the curves.
 	 */
 	class CurveView : public GridView
 	{
 	Q_OBJECT
 	public:
-		enum InteractMode {
-			None, Rubberband, RubberbandAdd, DragPoints, Pan, SelectAdd
-		};
-
 		explicit CurveView(QWidget* parent = nullptr);
 
 		/**
@@ -214,14 +210,43 @@ namespace napqt
 		 * @param model The curve that should be edited, provide nullptr to empty the view.
 		 */
 		void setModel(AbstractCurveModel* model);
+
+		/**
+		 * @return The curve [model] that is currently being edited by this curve view.
+		 */
 		AbstractCurveModel* model() { return mModel; }
+
+		/**
+		 * Set the current selection to the provided curves.
+		 * @param curve The curves to select. These must be provided in the model set using setModel()
+		 */
 		void selectCurves(const QList<AbstractCurve*>& curve);
+
+		/**
+		 * @return The currently selected curve point indexes in the editor and their associated curves.
+		 */
 		QMap<AbstractCurve*, QList<int>> selectedPoints();
 
+		/**
+		 * Set the time of all selected points to t.
+		 * @param t The time to set on the selected points
+		 */
 		void setSelectedPointTimes(qreal t);
+
+		/**
+		 * Set the value of all selected points to v.
+		 * @param v The value to set on the selected curve points.
+		 */
 		void setSelectedPointValues(qreal v);
 
+		/**
+		 * @return All interpolation changing actions available for this curve view.
+		 */
 		QList<QAction*> interpActions();
+
+		/**
+		 * @return All tangent changing actions available for this curve view.
+		 */
 		QList<QAction*> tangentActions();
 
 	Q_SIGNALS:
@@ -239,6 +264,10 @@ namespace napqt
 		void moveTanHandles(const QList<TangentHandleItem*>& tangents, const QPointF& sceneDelta);
 
 	private:
+		enum InteractMode {
+			None, Rubberband, RubberbandAdd, DragPoints, Pan, SelectAdd
+		};
+
 		AbstractCurve * closestCurve(const QPointF &pos);
 		static QPointF closestPointOnCurve(const AbstractCurve& curve, const QPointF& pt);
 		static int firstPoint(const AbstractCurve& curve);
@@ -285,13 +314,23 @@ namespace napqt
 		QAction mFlattenTangentsAction;
 	};
 
-
+	/**
+	 * A curve editor widget with a toolbar that allows for editing curves
+	 */
 	class CurveEditor : public QWidget
 	{
 	Q_OBJECT
 	public:
+		/**
+		 * @param parent See QWidget constructor
+		 */
 		CurveEditor(QWidget* parent = nullptr);
 
+		/**
+		 * Start editing the curve.
+		 * @param model The curve model that holds the curve. Changes will be applied to this model.
+		 * 			Provide nullptr to clear.
+		 */
 		void setModel(AbstractCurveModel* model);
 
 	private:
