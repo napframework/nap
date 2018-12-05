@@ -82,26 +82,49 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 {
 	auto item = mFilterView.getSelectedItem();
 
-	auto scene_item = dynamic_cast<SceneItem*>(item);
-	if (scene_item != nullptr)
 	{
-		auto scene = rtti_cast<nap::Scene>(scene_item->getObject());
-		assert(scene->get_type().is_derived_from<nap::Scene>());
-
-		auto add_entity_action = menu.addAction("Add Entity...");
-		connect(add_entity_action, &QAction::triggered, [this, scene_item, scene]()
+		auto sceneItem = dynamic_cast<SceneItem*>(item);
+		if (sceneItem)
 		{
-			auto entity = napkin::showObjectSelector<nap::Entity>(this);
-			if (entity == nullptr)
-				return;
+			auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
+			assert(scene->get_type().is_derived_from<nap::Scene>());
 
-			AppContext::get().executeCommand(new AddEntityToSceneCommand(*scene, *entity));
-		});
+			auto addEntityAction = menu.addAction("Add Entity...");
+			connect(addEntityAction, &QAction::triggered, [this, sceneItem, scene]()
+			{
+				auto entity = napkin::showObjectSelector<nap::Entity>(this);
+				if (!entity)
+					return;
 
+				AppContext::get().executeCommand(new AddEntityToSceneCommand(*scene, *entity));
+			});
+
+
+		}
 	}
 
-	menu.addAction("Add Scene", []()
+	auto entityInstanceItem = dynamic_cast<EntityInstanceItem*>(item);
+	if (entityInstanceItem)
 	{
-		AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Scene)));
-	});
+		auto sceneItem = dynamic_cast<SceneItem*>(entityInstanceItem->parent());
+
+		if (sceneItem)
+		{
+			auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
+			assert(scene);
+			auto entity = rtti_cast<nap::Entity>(entityInstanceItem->getObject());
+			assert(entity);
+
+			auto removeEntityAction = menu.addAction("Delete Instance");
+			connect(removeEntityAction, &QAction::triggered, [this, scene, entity]
+			{
+				AppContext::get().executeCommand(new RemoveEntityFromSceneCommand(*scene, *entity));
+			});
+		}
+	}
+
+//	menu.addAction("Add Scene", []()
+//	{
+//		AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Scene)));
+//	});
 }
