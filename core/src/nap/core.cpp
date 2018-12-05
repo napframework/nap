@@ -518,40 +518,39 @@ namespace nap
 		
 		// Check for the file in its normal location, beside the binary
 		const std::string alongsideBinaryPath = utility::getExecutableDir() + "/" + filename;
+		nap::Logger::debug("Looking for '%s'...", alongsideBinaryPath.c_str());
 		if (utility::fileExists(alongsideBinaryPath))
 		{
 			foundFilePath = alongsideBinaryPath;
+			return true;
 		}
-		else
-		{
 #ifndef NAP_PACKAGED_BUILD
-			// When working against NAP source find our file in the tree structure in the project source.
-			// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
-			// so that we avoid module DLL copying hell.
+		// When working against NAP source find our file in the tree structure in the project source.
+		// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
+		// so that we avoid module DLL copying hell.
 
-			const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
-			const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+		const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
+		const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
 
-			// Iterate possible project locations
-			for (auto& parentPath : sPossibleProjectParents)
+		// Iterate possible project locations
+		for (auto& parentPath : sPossibleProjectParents)
+		{
+			std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
+			nap::Logger::debug("Looking for project.json in '%s'...", testDataPath.c_str());
+			if (!utility::dirExists(testDataPath))
+				continue;
+
+			// We found our project folder, now let's verify we have a our file in there
+			testDataPath += "/";
+			testDataPath += filename;
+			nap::Logger::debug("Looking for '%s'...", testDataPath.c_str());
+			if (utility::fileExists(testDataPath))
 			{
-				std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
-				if (utility::dirExists(testDataPath))
-				{
-					// We found our project folder, now let's verify we have a our file in there
-					testDataPath += "/";
-					testDataPath += filename;
-					if (utility::fileExists(testDataPath))
-					{
-						foundFilePath = testDataPath;
-						break;
-					}
-				}
+				foundFilePath = testDataPath;
+				return true;
 			}
-#endif // NAP_PACKAGED_BUILD
-
 		}
-
-		return !foundFilePath.empty();
+#endif // NAP_PACKAGED_BUILD
+		return false;
 	}
 }
