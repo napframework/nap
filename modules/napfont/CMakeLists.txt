@@ -36,7 +36,7 @@ copy_module_json_to_bin()
 
 # Package into platform release
 if(UNIX)
-    set(UNIX_EXTRA_RPATH "../../../../thirdparty/freetype/bin")
+    set(UNIX_EXTRA_RPATH "../../../../thirdparty/freetype/lib")
 endif()
 package_module()
 
@@ -50,31 +50,18 @@ install(DIRECTORY ${THIRDPARTY_DIR}/freetype/include/
         DESTINATION thirdparty/freetype/include
         FILES_MATCHING PATTERN "*.h")
 
-if(WIN32)
+if(MSVC)
     install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.dll DESTINATION thirdparty/freetype/bin/release)
     install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.lib DESTINATION thirdparty/freetype/bin/release)
     install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Debug/freetyped.dll DESTINATION thirdparty/freetype/bin/debug)
     install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Debug/freetyped.lib DESTINATION thirdparty/freetype/bin/debug)
 elseif(APPLE)
-    SET(FREETYPE_DYLIB ${THIRDPARTY_DIR}/freetype/osx/libfreetype.dylib)
-    install(FILES ${FREETYPE_DYLIB} DESTINATION thirdparty/freetype/bin)
-
-    # Ensure our freetype install name id is set properly, this is really for intall into packaging
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       PRE_BUILD
-                       COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libfreetype.dylib ${FREETYPE_DYLIB}
-                       COMMENT "Setting install name for freetype")
-
-    foreach(build_type Release Debug)
-        install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                                              -add_rpath
-                                              @loader_path/../../../../thirdparty/freetype/bin
-                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napfont/lib/${build_type}/mod_napfont.dylib
-                                      ERROR_QUIET
-                                      )")
-    endforeach()    
-else()
-    install(FILES ${THIRDPARTY_DIR}/freetype/linux/libfreetype.so DESTINATION thirdparty/freetype/bin)
+    install(FILES ${THIRDPARTY_DIR}/freetype/osx/libfreetype.6.16.0.dylib 
+        DESTINATION thirdparty/freetype/lib)
+elseif(UNIX)
+    file(GLOB RTFREETYPE_LIBS ${THIRDPARTY_DIR}/freetype/linux/libfreetype${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${RTFREETYPE_LIBS}
+            DESTINATION thirdparty/freetype/lib)
 endif()
 
 if (WIN32)
