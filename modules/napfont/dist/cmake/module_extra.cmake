@@ -11,7 +11,9 @@ if(WIN32)
                                $<TARGET_FILE:freetype>
                                $<TARGET_FILE_DIR:${PROJECT_NAME}> 
                        )
+elseif(APPLE)
+    install(FILES $<TARGET_FILE:freetype> DESTINATION lib)  
 elseif(UNIX)
-    # Install yoctopuce lib into packaged app
-    install(FILES $<TARGET_FILE:freetype> DESTINATION lib)
+    file(GLOB RTFREETYPE_LIBS ${THIRDPARTY_DIR}/freetype/lib/libfree*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${RTFREETYPE_LIBS} DESTINATION lib)
 endif()
