@@ -56,8 +56,9 @@ if(MSVC)
     install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Debug/freetyped.dll DESTINATION thirdparty/freetype/bin/debug)
     install(FILES ${THIRDPARTY_DIR}/freetype/msvc/Debug/freetyped.lib DESTINATION thirdparty/freetype/bin/debug)
 elseif(APPLE)
-    install(FILES ${THIRDPARTY_DIR}/freetype/osx/libfreetype.6.16.0.dylib 
-        DESTINATION thirdparty/freetype/lib)
+    file(GLOB RTFREETYPE_LIBS ${THIRDPARTY_DIR}/freetype/osx/libfreetype*${CMAKE_SHARED_LIBRARY_SUFFIX})
+    install(FILES ${RTFREETYPE_LIBS}
+            DESTINATION thirdparty/freetype/lib)
 elseif(UNIX)
     file(GLOB RTFREETYPE_LIBS ${THIRDPARTY_DIR}/freetype/linux/libfreetype${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${RTFREETYPE_LIBS}
