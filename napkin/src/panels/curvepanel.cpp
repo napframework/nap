@@ -15,6 +15,9 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, [this](const PropertyPath path)
 	{
+		if (!mCurveModel)
+			return;
+
 		if (!mListenForPropertyChanges)
 			return;
 
