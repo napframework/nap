@@ -64,7 +64,7 @@ else()
 endif()
 
 
-# Copy the etherdream dynamic linked lib into the build directory
+# Copy the freetype dynamic linked lib into the build directory
 macro(copy_freetype_dll)
     add_custom_command(
             TARGET ${PROJECT_NAME}
