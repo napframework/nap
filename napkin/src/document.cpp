@@ -254,6 +254,7 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 	auto& v = scene.mEntities;
 	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity== &entity; };
 	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
+	objectChanged(&scene);
 }
 
 

@@ -191,15 +191,38 @@ void AddEntityToSceneCommand::undo()
 
 void AddEntityToSceneCommand::redo()
 {
-	auto scene = AppContext::get().getDocument()->getObject<nap::Scene>(mSceneID);
+	auto doc = AppContext::get().getDocument();
+	auto scene = doc->getObject<nap::Scene>(mSceneID);
 	assert(scene != nullptr);
-	auto entity = AppContext::get().getDocument()->getObject<nap::Entity>(mEntityID);
+	auto entity = doc->getObject<nap::Entity>(mEntityID);
 	assert(entity != nullptr);
 
-	auto doc = AppContext::get().getDocument();
 	mIndex = doc->addEntityToScene(*scene, *entity);
 
 }
+
+RemoveEntityFromSceneCommand::RemoveEntityFromSceneCommand(nap::Scene& scene, nap::Entity& entity)
+	: mSceneID(scene.mID), mEntityID(entity.mID), QUndoCommand()
+{
+	setText(QString("Remove Entity '%1' from Scene '%2'").arg(QString::fromStdString(mEntityID),
+															  QString::fromStdString(mSceneID)));
+}
+
+void RemoveEntityFromSceneCommand::redo()
+{
+	auto doc = AppContext::get().getDocument();
+	auto scene = doc->getObject<nap::Scene>(mSceneID);
+	assert(scene != nullptr);
+	auto entity = doc->getObject<nap::Entity>(mEntityID);
+	assert(entity != nullptr);
+	doc->removeEntityFromScene(*scene, *entity);
+	// TODO: Store index and support undo
+}
+void RemoveEntityFromSceneCommand::undo()
+{
+	nap::Logger::fatal("Undo not supported yet");
+}
+
 
 ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop, size_t index)
 		: mPath(prop), mIndex(index), QUndoCommand()

@@ -155,6 +155,17 @@ namespace napkin
 		size_t mIndex;
 	};
 
+	class RemoveEntityFromSceneCommand : public QUndoCommand
+	{
+	public:
+		RemoveEntityFromSceneCommand(nap::Scene& scene, nap::Entity& entity);
+		void redo() override;
+		void undo() override;
+	private:
+		const std::string mSceneID;
+		const std::string mEntityID;
+		size_t mIndex;
+	};
 
 	/**
 	 * Add an element to an array
