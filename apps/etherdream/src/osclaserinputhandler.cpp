@@ -32,7 +32,7 @@ namespace nap
 		if (!errorState.check(mRotateComponent != nullptr, "missing rotate component"))
 			return false;
 
-		mInputComponent = getEntityInstance()->findComponent<nap::OSCInputComponentInstance>(rtti::ETypeCheck::IS_DERIVED_FROM);
+		mInputComponent = getEntityInstance()->findComponent<nap::OSCInputComponentInstance>();
 		if (!errorState.check(mInputComponent != nullptr, "missing osc input component"))
 			return false;
 

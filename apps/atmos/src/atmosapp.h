@@ -12,6 +12,7 @@
 #include <inputservice.h>
 #include <app.h>
 #include <smoothdamp.h>
+#include <rendertarget.h>
 
 namespace nap
 {
@@ -59,19 +60,22 @@ namespace nap
 
 	private:
 		// Nap Services
-		RenderService*			mRenderService = nullptr;			//< Render Service that handles render calls
-		ResourceManager*		mResourceManager = nullptr;			//< Manages all the loaded resources
-		SceneService*			mSceneService = nullptr;			//< Manages all the objects in the scene
-		InputService*			mInputService = nullptr;			//< Input service for processing input
-		IMGuiService*			mGuiService = nullptr;				//< Gui service
+		RenderService*		mRenderService = nullptr;					//< Render Service that handles render calls
+		ResourceManager*	mResourceManager = nullptr;					//< Manages all the loaded resources
+		SceneService*		mSceneService = nullptr;					//< Manages all the objects in the scene
+		InputService*		mInputService = nullptr;					//< Input service for processing input
+		IMGuiService*		mGuiService = nullptr;						//< Gui service
 
 		// Objects
-		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointer to the render window
+		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
+		ObjectPtr<RenderTarget>		mVideoTarget  = nullptr;			//< Pointer to the video render target
 
 		// Entities
-		ObjectPtr<EntityInstance>	mCameraEntity	= nullptr;		//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance>	mWorldEntity	= nullptr;		//< Pointer to the world entity
-		ObjectPtr<EntityInstance>	mScanEntity		= nullptr;		//< Pointer to the scan entity (living under the world)
+		ObjectPtr<EntityInstance>	mCameraEntity		= nullptr;		//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance>	mWorldEntity		= nullptr;		//< Pointer to the world entity
+		ObjectPtr<EntityInstance>	mScanEntity			= nullptr;		//< Pointer to the scan entity (living under the world)
+		ObjectPtr<EntityInstance>	mVideoEntity		= nullptr;		///< Pointer to the video entity
+		ObjectPtr<EntityInstance>	mVideoCameraEntity	= nullptr;		///< Pointer to the camera that renders the video
 
 		// Gui
 		std::unique_ptr<AtmosGui>	mGui = nullptr;

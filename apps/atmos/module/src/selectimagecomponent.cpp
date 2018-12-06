@@ -60,14 +60,14 @@ namespace nap
 	}
 
 
-	nap::Image& SelectImageComponentInstance::getImage()
+	nap::ImageFromFile& SelectImageComponentInstance::getImage()
 	{
 		assert(mCurrentImage != nullptr);
 		return *mCurrentImage;
 	}
 
 
-	const nap::Image& SelectImageComponentInstance::getImage() const
+	const nap::ImageFromFile& SelectImageComponentInstance::getImage() const
 	{
 		assert(mCurrentImage != nullptr);
 		return *mCurrentImage;

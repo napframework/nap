@@ -126,6 +126,8 @@ add_subdirectory(demos/oscmidi)
 add_subdirectory(demos/oscmidi/module)
 add_subdirectory(demos/lineblending)
 add_subdirectory(demos/lineblending/module)
+add_subdirectory(demos/copystamp)
+add_subdirectory(demos/copystamp/module)
 
 # Unit tests
 add_subdirectory(unittests)
@@ -155,6 +157,7 @@ add_subdirectory(modules/napapp)
 add_subdirectory(modules/napimgui)
 add_subdirectory(modules/napmidi)
 add_subdirectory(modules/napyoctopuce)
+add_subdirectory(modules/napfont)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)

@@ -14,14 +14,16 @@ namespace nap
 		/**
 		 * This constructor allows the socket to receive OSC messages from any computer in the network
 		 * @param port the port to listen to for OSC messages
+		 * @param allowReuse enables or disables multiple listeners for a single port on the same network interface
 		 */
-		OSCReceivingSocket(int port);
+		OSCReceivingSocket(int port, bool allowReuse);
 
 		/**
 		 * Constructor
 		 * @param network location to listen to for messages
+		 * @param allowReuse enables or disables multiple listeners for a single port on the same network interface
 		 */
-		OSCReceivingSocket(const IpEndpointName& localEndpoint);
+		OSCReceivingSocket(const IpEndpointName& localEndpoint, bool allowReuse);
 
 		/**
 		 *	Unbinds the listener

@@ -99,6 +99,22 @@ namespace nap
 		void NAPAPI computeConnectivity(const nap::MeshInstance& mesh, MeshConnectivityMap& outConnectivityMap);
 
 		/**
+		 * @param vertices the triangle vertex position data
+		 * @return the area of a triangle
+		 */
+		float NAPAPI computeTriangleArea(const TriangleData<glm::vec3>& vertices);
+
+		/**
+		 * Computes the area of every triangle in the mesh and stores the results in outList. The total is returned
+		 * This call assumes the mesh has position vertex attribute data!
+		 * @param mesh the mesh that contains the triangles
+		 * @param vertices the mesh vertex positions
+		 * @param outList a vector that contains the individual area of every triangle in the mesh
+		 * @return the total area of the mesh
+		 */
+		float NAPAPI computeArea(nap::MeshInstance& mesh, const nap::VertexAttribute<glm::vec3>& vertices, std::vector<float>& outList);
+
+		/**
 		* Calculates the intersection of a ray and a triangle in 3 dimensions
 		* Based on the Möller–Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 		* Back-facing triangles relative to the ray direction are not considered

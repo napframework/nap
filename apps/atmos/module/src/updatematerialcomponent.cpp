@@ -49,6 +49,18 @@ static const std::string sTexTimeV			= "textureTimeV";
 static const std::string sDiffuseIntensity	= "diffuseIntensity";
 static const std::string sRotValue			= "rotationValue";
 static const std::string sRotAngle			= "rotationAxis";
+static const std::string sFogPower			= "fogPower";
+static const std::string sFogMin			= "fogMin";
+static const std::string sFogMax			= "fogMax";
+static const std::string sFogColor			= "fogColor";
+static const std::string sFogInfluence		= "fogInfluence";
+static const std::string sVideoTexMix		= "videoColorMix";
+static const std::string sVideoTexScaleOne	= "videoTexScaleOne";
+static const std::string sVidTimeU			= "videoTimeU";
+static const std::string sVidTimeV			= "videoTimeV";
+static const std::string svideoContrast		= "videoContrast";
+static const std::string svideoMaskValue	= "videoMaskValue";
+static const std::string smaskColor			= "maskColor";
 
 namespace nap
 {
@@ -111,6 +123,9 @@ namespace nap
 		// Set texture scale two
 		setSharedValue<UniformFloat, float>(sm, nm, sColorTexScaleTwo, mColorTexScaleTwo);
 
+		// Set video texture scale
+		setSharedValue<UniformFloat, float>(sm, nm, sVideoTexScaleOne, mVideoTexScaleOne);
+
 		// Set color mix
 		setSharedValue<UniformFloat, float>(sm, nm, sColorTexMix, mColorTexMix);
 
@@ -119,6 +134,15 @@ namespace nap
 
 		// Set diffuse color mix
 		setSharedValue<UniformFloat, float>(sm, nm, sDiffuseColorMix, mDiffuseColorMix);
+
+		// Set video mix
+		setSharedValue<UniformFloat, float>(sm, nm, sVideoTexMix, mVideoTexMix);
+
+		// Set video mask value
+		setSharedValue<UniformFloat, float>(sm, nm, svideoMaskValue, mVideoMaskValue);
+
+		// Set video contrast value
+		setSharedValue<UniformFloat, float>(sm, nm, svideoContrast, mVideoContrastValue);
 
 		// Set premultiply value
 		setSharedValue<UniformFloat, float>(sm, nm, sPremultValue, mPremultValue);
@@ -138,11 +162,27 @@ namespace nap
 		// Diffuse intensity
 		setSharedValue<UniformFloat, float>(sm, nm, sDiffuseIntensity, mDiffuseIntensity);
 
+		// Mask color
+		setSharedValue<UniformVec3, glm::vec3>(sm, nm, smaskColor, mMaskColor.toVec3());
+
+		// Set fog values
+		setSharedValue<UniformFloat, float>(sm, nm, sFogMin, mFogMin);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogMax, mFogMax);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogInfluence, mFogInfluence);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogPower, mFogPower);
+		setSharedValue<UniformVec3,  glm::vec3>(sm, nm, sFogColor, mFogColor.toVec3());
+
 		// Set texture u and v time
 		mTexTimeU += (deltaTime * mTextureSpeed.x);
 		mTexTimeV += (deltaTime * mTextureSpeed.y);
 		setSharedValue<UniformFloat, float>(sm, nm, sTexTimeU, mTexTimeU);
 		setSharedValue<UniformFloat, float>(sm, nm, sTexTimeV, mTexTimeV);
+
+		// Set video u and v time
+		mVidTimeU += (deltaTime * mVideoTexureSpeed.x);
+		mVidTimeV += (deltaTime * mVideoTexureSpeed.y);
+		setSharedValue<UniformFloat, float>(sm, nm, sVidTimeU, mVidTimeU);
+		setSharedValue<UniformFloat, float>(sm, nm, sVidTimeV, mVidTimeV);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Not Shared Values

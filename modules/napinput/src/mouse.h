@@ -11,7 +11,7 @@ namespace nap
 	{
 		UNKNOWN		= -1,
 		LEFT		= 0,
-		MIDDLE		= 2,
-		RIGHT		= 3
+		MIDDLE		= 1,
+		RIGHT		= 2
 	};
 }

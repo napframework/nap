@@ -3,14 +3,16 @@
 namespace nap
 {
 
-	OSCReceivingSocket::OSCReceivingSocket(const IpEndpointName& localEndpoint)
+	OSCReceivingSocket::OSCReceivingSocket(const IpEndpointName& localEndpoint, bool allowReuse)
 	{
+		SetAllowReuse(allowReuse);
 		Bind(localEndpoint);
 	}
 
 
-	OSCReceivingSocket::OSCReceivingSocket(int port)
+	OSCReceivingSocket::OSCReceivingSocket(int port, bool allowReuse)
 	{
+		SetAllowReuse(allowReuse);
 		Bind(IpEndpointName(IpEndpointName::ANY_ADDRESS, port));
 	}
 

@@ -10,6 +10,7 @@
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
 #include <visualizenormalsmesh.h>
+#include <scatterpointsmesh.h>
 
 namespace nap
 {
@@ -32,10 +33,10 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		std::vector<ResourcePtr<MeshFromFile>>		mMeshes;				///< Property: "Meshes" link to videos
-		nap::ComponentPtr<RenderableMeshComponent>	mScanMeshComponent;		///< Property: "ScanMeshComponent" link to the component that renders the scanned mesh
-		nap::ComponentPtr<RenderableMeshComponent>	mNormalsMeshComponent;	///< Property: "NormalsMeshComponent" link to the component that renders the normals mesh
-		int mIndex = 0;														///< Property: "Index" current video index
+		std::vector<ResourcePtr<ScatterPointsMesh>>		mMeshes;					///< Property: "Meshes" link to videos
+		nap::ComponentPtr<RenderableMeshComponent>		mScanMeshComponent;			///< Property: "ScanMeshComponent" link to the component that renders the scanned mesh
+		nap::ComponentPtr<RenderableMeshComponent>		mNormalsMeshComponent;		///< Property: "NormalsMeshComponent" link to the component that renders the normals mesh
+		int mIndex = 0;																///< Property: "Index" current video index
 	};
 
 
@@ -74,7 +75,7 @@ namespace nap
 		/**
 		 * @return the number of selectable meshes
 		 */
-		int getCount() const											{ return mMeshes.size(); }
+		int getCount() const											{ return mScanMeshes.size(); }
 
 		/**
 		 * @return current mesh index
@@ -87,7 +88,8 @@ namespace nap
 		VisualizeNormalsMesh* getNormalsMesh();
 
 	private:
-		std::vector<RenderableMesh> mMeshes;									//< All meshes to select from
+		std::vector<RenderableMesh> mScanMeshes;									//< All meshes to select from
+		std::vector<ScatterPointsMesh*> mPointMeshes;							//< All original point scatter meshes
 		int mCurrentIndex = 0;													//< Current video index
 		RenderableMesh* mCurrentMesh = nullptr;									//< Current selected mesh
 		VisualizeNormalsMesh* mNormalsMesh = nullptr;							//< Mesh that visualizes the normals

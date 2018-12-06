@@ -49,18 +49,6 @@
             "Timeout": 2.0
         },
         {
-            "Type": "nap::ArtNetController",
-            "mID": "Universe4",
-            "Subnet": 0,
-            "Universe": 4,
-            "WaitTime": 2.0,
-            "Frequency": 44,
-            "Mode": "Broadcast",
-            "UnicastLimit": 10,
-            "Verbose": false,
-            "Timeout": 2.0
-        },
-        {
             "Type": "nap::ArtnetMeshFromFile",
             "mID": "LightRigMesh",
             "Path": "led_rig.mesh",
@@ -107,7 +95,7 @@
                     "Brightness": 1.0,
                     "ControlGroupIndexes": [
                         2,
-                        7
+                        6
                     ]
                 },
                 {
@@ -115,15 +103,8 @@
                     "Brightness": 1.0,
                     "ControlGroupIndexes": [
                         3,
-                        5,
-                        6
-                    ]
-                },
-                {
-                    "Name": "Meeting room",
-                    "Brightness": 1.0,
-                    "ControlGroupIndexes": [
-                        4
+                        4,
+                        5
                     ]
                 }
             ]
@@ -492,8 +473,7 @@
                         "Universe0",
                         "Universe1",
                         "Universe2",
-                        "Universe3",
-                        "Universe4"
+                        "Universe3"
                     ],
                     "MinArtnetValue": 45
                 }

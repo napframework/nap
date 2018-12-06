@@ -74,6 +74,11 @@ namespace nap
 		bool initFromBitmap(const Bitmap& bitmap, bool compressed, utility::ErrorState& errorState);
 
 		/**
+		 * @return the Texture2D parameters that describe, clamping, interpolation etc.
+		 */
+		const nap::TextureParameters& geParameters() const { return mParameters; }
+
+		/**
 		 * @return size of the texture, in texels.
 		 */
 		const glm::vec2 getSize() const; 

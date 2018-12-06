@@ -40,14 +40,15 @@ namespace nap
 		// Using the render component
 		for (auto& mesh : resource->mMeshes)
 		{
-			RenderableMesh render_mesh = mScanMeshComponent->createRenderableMesh(*mesh, errorState);
+			RenderableMesh render_mesh = mScanMeshComponent->createRenderableMesh(*(mesh->mReferenceMesh), errorState);
 			if (!render_mesh.isValid())
 				return false;
-			mMeshes.emplace_back(render_mesh);
+			mScanMeshes.emplace_back(render_mesh);
+			mPointMeshes.emplace_back(mesh.get());
 		}
 
 		// Make sure we have some videos
-		if (!errorState.check(mMeshes.size() > 0, "No mesh files to select"))
+		if (!errorState.check(mScanMeshes.size() > 0, "No mesh files to select"))
 			return false;
 
 		// Make sure the mesh component that works with the normals is indeed a normals mesh
@@ -72,18 +73,20 @@ namespace nap
 
 	void SelectMeshComponentInstance::selectMesh(int index)
 	{
-		mCurrentIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
-		mCurrentMesh = &mMeshes[mCurrentIndex];
+		// Get current mesh based on new index
+		mCurrentIndex = math::clamp<int>(index, 0, mScanMeshes.size() - 1);
+		mCurrentMesh = &mScanMeshes[mCurrentIndex];
 		
 		// Set the new mesh
 		mScanMeshComponent->setMesh(*mCurrentMesh);
 
+		// Get the mesh used to compute the normals
 		VisualizeNormalsMesh* normals_mesh = getNormalsMesh();
 		assert(normals_mesh != nullptr);
 		
+		// Set and update normals
 		nap::utility::ErrorState error;
-		normals_mesh->setReferenceMesh(mCurrentMesh->getMesh(), error);
-
+		normals_mesh->setReferenceMesh(*(mPointMeshes[mCurrentIndex]), error);
 		normals_mesh->calculateNormals(error, true);
 	}
 

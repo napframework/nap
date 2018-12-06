@@ -25,18 +25,9 @@ namespace nap
 		{
 			opengl::enableMultiSampling(targetRenderState.mEnableMultiSampling);
 		}
-		if (targetRenderState.mLineWidth != mLineWidth)
-		{
-			opengl::setLineWidth(targetRenderState.mLineWidth);
-		}
-		if (targetRenderState.mPointSize != mPointSize)
-		{
-			opengl::setPointSize(targetRenderState.mPointSize);
-		}
-		if (targetRenderState.mPolygonMode != mPolygonMode)
-		{
-			opengl::setPolygonMode(targetRenderState.mPolygonMode);
-		}
+		opengl::setLineWidth(targetRenderState.mLineWidth);
+		opengl::setPointSize(targetRenderState.mPointSize);
+		opengl::setPolygonMode(targetRenderState.mPolygonMode);
 		*this = targetRenderState;
 	}
 }
