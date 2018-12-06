@@ -42,7 +42,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 1.3300000429153443
+                            "z": 4.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -176,6 +176,11 @@
                         },
                         "UniformScale": 0.10000000149011612
                     }
+                },
+                {
+                    "Type": "nap::AnimatorComponent",
+                    "mID": "nap::AnimatorComponent",
+                    "Curve": "FloatFCurve"
                 }
             ],
             "Children": []
@@ -489,6 +494,60 @@
             "mID": "NormalsMesh",
             "ReferenceMesh": "DisplayLine",
             "Length": 0.05000000074505806
+        },
+        {
+            "Type": "nap::math::FloatFCurve",
+            "mID": "FloatFCurve",
+            "Points": [
+                {
+                    "Position": {
+                        "Time": 0.0,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": -0.39344850182533266
+                    },
+                    "OutTangent": {
+                        "Time": 0.1714281588792801,
+                        "Value": 0.6838493347167969
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 1.0,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.00009999999747378752,
+                        "Value": 0.5910652279853821
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": -591.0652465820313
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.6261913180351257,
+                        "Value": 0.9072166681289673
+                    },
+                    "InTangent": {
+                        "Time": -0.2785716652870178,
+                        "Value": -0.05931698903441429
+                    },
+                    "OutTangent": {
+                        "Time": 0.22142881155014039,
+                        "Value": 0.04988093301653862
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                }
+            ]
         }
     ]
 }

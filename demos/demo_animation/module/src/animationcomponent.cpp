@@ -23,13 +23,18 @@ namespace nap
 
 	bool AnimatorComponentInstance::init(utility::ErrorState& errorState)
 	{
+		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 		return true;
 	}
 
 
 	void AnimatorComponentInstance::update(double deltaTime)
 	{
+		auto animator = getComponent<AnimatorComponent>();
+		float y = animator->mCurve.get()->evaluate(mLocalTime);
+		glm::vec3 pos(0, y, 0);
+		mTransform->setTranslate(pos);
 
-//		ComponentInstance::update(deltaTime);
+		mLocalTime = fmod(mLocalTime + deltaTime, 1);
 	}
 }
