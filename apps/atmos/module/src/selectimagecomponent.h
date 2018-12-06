@@ -1,7 +1,7 @@
 #pragma once
 
 #include <component.h>
-#include <image.h>
+#include <imagefromfile.h>
 #include <nap/resourceptr.h>
 
 namespace nap
@@ -17,8 +17,8 @@ namespace nap
 		DECLARE_COMPONENT(SelectImageComponent, SelectImageComponentInstance)
 	public:
 
-		std::vector<ResourcePtr<Image>> mImages;	///< Property: 'Images' list of selectable images
-		int mIndex = 0;								///< Property: 'Index' current selected image
+		std::vector<ResourcePtr<ImageFromFile>> mImages;	///< Property: 'Images' list of selectable images
+		int mIndex = 0;										///< Property: 'Index' current selected image
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -61,12 +61,12 @@ namespace nap
 		/**
 		 * @return the currently selected image
 		 */
-		Image& getImage();
+		ImageFromFile& getImage();
 		
 		/**
 		 *	@return the currently selected image
 		 */
-		const Image& getImage() const;
+		const ImageFromFile& getImage() const;
 
 		/**
 		* @return the number of selectable meshes
@@ -79,8 +79,8 @@ namespace nap
 		int getIndex() const				{ return mCurrentIndex; }
 
 	private:
-		std::vector<Image*> mImages;									//< All Images to select from
+		std::vector<ImageFromFile*> mImages;						//< All Images to select from
 		int mCurrentIndex = 0;										//< Current selection index
-		Image* mCurrentImage = nullptr;								//< Current image
+		ImageFromFile* mCurrentImage = nullptr;						//< Current image
 	};
 }

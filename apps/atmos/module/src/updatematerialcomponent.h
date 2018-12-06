@@ -69,11 +69,17 @@ namespace nap
 		// Properties
 		float			mColorTexScaleOne	= 10.0f;
 		float			mColorTexScaleTwo	= 1.0f;
+		float			mVideoTexScaleOne	= 1.0f;
 		float			mColorTexMix		= 0.0f;
+		float			mVideoTexMix		= 0.0f;
 		float			mDiffuseColorMix	= 0.0f;
 		RGBColorFloat	mDiffuseColor		= { 0.0f, 0.0f, 0.0f };
 		float			mPremultValue		= { 0.0f };
 		glm::vec2		mTextureSpeed		= { 0.0f, 0.0f };
+		glm::vec2		mVideoTexureSpeed	= { 0.0f, 0.0f };
+		float			mVideoMaskValue		= 1.0f;
+		float			mVideoContrastValue = 1.0f;
+		RGBColorFloat	mMaskColor			= { 0.0f, 0.0f, 0.0f };
 
 		// Light
 		glm::vec3		mLightPos			= { 0, 100.0f, 100.0f };
@@ -110,5 +116,7 @@ namespace nap
 		double mWindTime = 0.0;
 		double mTexTimeU = 0.0;
 		double mTexTimeV = 0.0;
+		double mVidTimeU = 0.0;
+		double mVidTimeV = 0.0;
 	};
 }

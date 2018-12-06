@@ -13,11 +13,14 @@ out vec4 out_Color;
 // shared uniforms
 uniform sampler2D	colorTextureOne;						//< Primary Color Texture
 uniform sampler2D	colorTextureTwo;
+uniform sampler2D	videoTextureOne;
 uniform float		colorTexScaleOne;
 uniform float		colorTexScaleTwo;
+uniform float		videoTexScaleOne;
 uniform float		colorTexMix;							//< Primage Color Texture Scale
 uniform vec3		diffuseColor;
 uniform float		diffuseColorMix;
+uniform float		videoColorMix;
 uniform vec3 		cameraPosition;							//< Camera World Space Position
 uniform vec3		lightPos;		
 uniform float 		lightIntensity;		
@@ -29,13 +32,30 @@ uniform vec3		fogColor;
 uniform float		fogMin;
 uniform float		fogMax;
 uniform float		fogPower;
+uniform float		textureTimeU;
+uniform float		textureTimeV;
+uniform float		videoTimeU;
+uniform float		videoTimeV;
+uniform float		videoContrast;
+uniform float		videoMaskValue;
+uniform vec3		maskColor;
 
 // Unshared uniforms					
 uniform float 		specularIntensity;				
 uniform vec3  		specularColor;
 uniform float 		shininess; 
-uniform float		textureTimeU;
-uniform float		textureTimeV;
+
+
+float toGreyscale(vec3 color)
+{
+	return (color.r * 0.2126) + (color.g * 0.7152) + (color.b * 0.0722);
+}
+
+
+float applyContrast(float value, float contrast)
+{
+	return clamp((value - 0.5) * contrast + 0.5,0,1);
+}
 
 
 float fit(float value, float min, float max, float outMin, float outMax)
@@ -89,12 +109,27 @@ void main()
 	vec3 tex_color_one = texture(colorTextureOne, (passUVs0.xy * colorTexScaleOne)).rgb;
 	vec3 tex_color_two = texture(colorTextureTwo, ((passUVs1.xy * colorTexScaleTwo)+tex_time)).rgb;
 
+	// Get video color
+	vec2 vid_time = vec2(videoTimeU, videoTimeV);
+	vec3 vid_color_one = texture(videoTextureOne, ((passUVs1.xy  * videoTexScaleOne)+vid_time)).rgb;
+
 	vec3 tex_color_mul = tex_color_one *  tex_color_two;
 	tex_color_one = mix(tex_color_one, tex_color_mul, preMultiplyTexValue);  
 
-	// Mix into texture color
+	// First mix the two colors
 	vec3 tex_color = mix(tex_color_one, tex_color_two, colorTexMix);
+
+	// Mix in diffuse
 	tex_color = mix(tex_color, diffuseColor, diffuseColorMix);
+
+	// Mask current pixel value with video greyscale
+	float vid_greyscale = fit(toGreyscale(vid_color_one),0.025,1.0,0.0,1.0);
+	vid_greyscale = applyContrast(vid_greyscale, videoContrast);
+	vec3 tex_color_masked = mix(maskColor, tex_color * vid_greyscale, vid_greyscale);
+	tex_color = mix(tex_color, tex_color_masked, videoMaskValue);
+
+	// Mix in video
+	tex_color = mix(tex_color, vid_color_one, videoColorMix);
 
 	// Apply light
 	vec3 lit_color = applyLight(tex_color, passNormal, passPosition);
