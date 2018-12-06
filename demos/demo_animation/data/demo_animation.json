@@ -1,0 +1,494 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Circle",
+            "mID": "Circle",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Radius": 0.5,
+            "Segments": 100
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Camera",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerpectiveCamera",
+                    "Properties": {
+                        "FieldOfView": 45.0,
+                        "NearClippingPlane": 0.5,
+                        "FarClippingPlane": 100.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 1.3300000429153443
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "nap::OrbitController",
+                    "MovementSpeed": 0.010999999940395356,
+                    "RotateSpeed": 0.0032999999821186067,
+                    "PerspCameraComponent": "PerpectiveCamera",
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CanvasEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "CanvasMesh",
+                    "MaterialInstance": {
+                        "Material": "CanvasMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "ReadOnly"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Sphere",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_2",
+                    "Mesh": "SphereMesh",
+                    "MaterialInstance": {
+                        "Material": "CanvasMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 0.10000000149011612
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Hexagon",
+            "mID": "Hexagon",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Radius": 0.5
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "CanvasImage",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "laser_canvas.png",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::Line",
+            "mID": "DisplayLine",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Start": {
+                "x": -0.5,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "End": {
+                "x": 0.5,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Closed": false,
+            "Vertices": 500
+        },
+        {
+            "Type": "nap::Line",
+            "mID": "SingleLine",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Start": {
+                "x": 0.5,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "End": {
+                "x": -0.5,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Closed": false,
+            "Vertices": 2
+        },
+        {
+            "Type": "nap::LineFromFile",
+            "mID": "LogoFromFile",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "File": "logo.svg",
+            "Units": "px",
+            "DPI": 96.0,
+            "Tolerance": 1.0,
+            "Normalize": true,
+            "Scale": 1.0,
+            "FlipHorizontal": false,
+            "FlipVertical": true,
+            "LineIndex": 0
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "BallMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "inCameraPosition",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 4.0
+                    }
+                }
+            ],
+            "Shader": "BallShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normals"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "CanvasMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "nap::UniformTexture2D",
+                    "Name": "mCanvas",
+                    "Texture": "CanvasImage"
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "nap::UniformVec3",
+                    "Name": "mColor",
+                    "Value": {
+                        "x": 0.32100000977516177,
+                        "y": 0.32899999618530276,
+                        "z": 0.41499999165534975
+                    }
+                }
+            ],
+            "Shader": "CanvasShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "NormalsMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec4",
+                    "mID": "nap::UniformVec4",
+                    "Name": "mColor",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0,
+                        "w": 1.0
+                    }
+                }
+            ],
+            "Shader": "NormalsShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Tip",
+                    "ShaderAttributeID": "in_Tip"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                }
+            ],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "CanvasMesh",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::Rectangle",
+            "mID": "Rectangle",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Dimensions": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Window 1",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "Camera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "Sphere",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "BallShader",
+            "mVertShader": "shaders/ball.vert",
+            "mFragShader": "shaders/ball.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "CanvasShader",
+            "mVertShader": "shaders/canvas.vert",
+            "mFragShader": "shaders/canvas.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "NormalsShader",
+            "mVertShader": "shaders/normals.vert",
+            "mFragShader": "shaders/normals.frag"
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "SphereMesh",
+            "Radius": 1.0,
+            "Rings": 50.0,
+            "Sectors": 50.0
+        },
+        {
+            "Type": "nap::TriangleLine",
+            "mID": "TriangleLine",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "Radius": 0.5
+        },
+        {
+            "Type": "nap::VisualizeNormalsMesh",
+            "mID": "NormalsMesh",
+            "ReferenceMesh": "DisplayLine",
+            "Length": 0.05000000074505806
+        }
+    ]
+}
