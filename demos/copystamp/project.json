@@ -1,0 +1,9 @@
+{
+    "title": "CopyStamp",
+    "version": "0.1.0",
+    "modules": [
+        "mod_copystamp",
+        "mod_napapp",
+        "mod_napcameracontrol"
+    ]
+}

@@ -53,6 +53,7 @@ namespace nap
 	public:
 		int mPort = 7000;				///< Property: 'Port' The port that is opened and used to receive osc messages
 		bool mDebugOutput = false;		///< Property: 'EnableDebugOutput' when enabled this objects prints all received osc messages
+		bool mAllowPortReuse = false;	///< Property: 'AllowPortReuse' enables / disables multiple listeners for a single port on the same network interface
 
 		/**
 		 * Adds an event to the queue

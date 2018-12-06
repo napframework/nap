@@ -5,11 +5,13 @@
 
 // External Includes
 #include <rtti/typeinfo.h>
-#include <nsdlgl.h>
 #include <sdleventconverter.h>
 
 namespace nap
 {
+	// Forward Declares
+	class IMGuiService;
+
 	/**
 	 * Helper object that allows for custom app processing behavior inside the AppRunner update loop
 	 */
@@ -129,6 +131,7 @@ namespace nap
 
 	private:
 		std::unique_ptr<SDLEventConverter> mEventConverter = nullptr;
+		IMGuiService* mGuiService = nullptr;
 	};
 
 

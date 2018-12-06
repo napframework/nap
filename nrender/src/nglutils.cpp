@@ -65,6 +65,12 @@ namespace opengl
 	}
 
 
+	bool isDepthTestEnabled()
+	{
+		return glIsEnabled(GL_DEPTH_TEST) == GL_TRUE;
+	}
+
+
 	//force execution of GL commands in finite time
 	void flush()
 	{
@@ -94,10 +100,46 @@ namespace opengl
 	}
 
 
+	bool isBlendingEnabled()
+	{
+		return glIsEnabled(GL_BLEND) == GL_TRUE;
+	}
+
+
+	void enableScissorTest(bool value)
+	{
+		enableGLParam(GL_SCISSOR_TEST, value);
+	}
+
+
+	bool isScissorTestEnabled()
+	{
+		return glIsEnabled(GL_SCISSOR_TEST) == GL_TRUE;
+	}
+
+
+	void enableFaceCulling(bool value)
+	{
+		enableGLParam(GL_CULL_FACE, value);
+	}
+
+
+	bool isFaceCullingEnabled()
+	{
+		return glIsEnabled(GL_CULL_FACE) == GL_TRUE;
+	}
+
+
 	// Turns multi sampling on / off
 	void enableMultiSampling(bool value)
 	{
 		enableGLParam(GL_MULTISAMPLE_ARB, value);
+	}
+
+
+	bool isMultisamplingEnabled()
+	{
+		return glIsEnabled(GL_MULTISAMPLE_ARB) == GL_TRUE;
 	}
 
 
@@ -127,6 +169,13 @@ namespace opengl
 		glLineWidth(value);
 	}
 
+
+	float getLineWidth()
+	{
+		float v;
+		glGetFloatv(GL_LINE_WIDTH, &v);
+		return v;
+	}
 
 	// Mode to use when drawing polygons
 	void setPolygonMode(EPolygonMode mode)

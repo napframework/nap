@@ -63,6 +63,8 @@ namespace nap
 		mPlaneTwoEntity = scene->findEntity("PlaneTwo");
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
+
+		mGuiService->selectWindow(mRenderWindowTwo);
 		return true;
 	}
 	
@@ -105,8 +107,7 @@ namespace nap
 		ImGui::Begin("Controls");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}
@@ -173,7 +174,7 @@ namespace nap
 			// Render the plane with the orthographic to window two
 			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
 
-			// Draw Gui
+			// Draw gui to window one
 			mGuiService->draw();
 		}
 
@@ -218,9 +219,6 @@ namespace nap
 		// Note that the primary window is not defined by the declaration
 		// of window resources in json! After that swap all the buffers
 		{
-			mRenderService->getPrimaryWindow().makeCurrent();
-			mGuiService->draw();
-
 			// Swap screen buffers
 			mRenderWindowOne->makeActive();
 			mRenderWindowOne->swap();

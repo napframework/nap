@@ -218,10 +218,17 @@ namespace nap
 	template<typename T>
 	T& MaterialInstance::getOrCreateUniform(const std::string& name)
 	{
+		// Find the uniform based on name
 		T* existing = findUniform<T>(name);
 		if (existing != nullptr)
 			return *existing;
 		
-		return static_cast<T&>(createUniform(name));
+		// Create the uniform if it can't be found
+		Uniform& new_uniform = createUniform(name);
+
+		// If the cast fails it means the requested uniform types do not match!
+		T* cast_uniform = rtti_cast<T>(&new_uniform);
+		assert(cast_uniform != nullptr);
+		return *cast_uniform;
 	}
 }
