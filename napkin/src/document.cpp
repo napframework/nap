@@ -90,8 +90,19 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 Object* Document::addObject(rttr::type type, Object* parent, bool selectNewObject)
 {
 	Factory& factory = mCore.getResourceManager()->getFactory();
-	assert(factory.canCreate(type));
-	assert(type.is_derived_from<Object>());
+
+	if (!type.is_derived_from<Object>())
+	{
+		nap::Logger::error("Cannot create object of type: %s, type does not derive from",
+				type.get_name().data(), RTTI_OF(Object).get_name().data());
+		return nullptr;
+	}
+
+	if (!factory.canCreate(type))
+	{
+		nap::Logger::error("Cannot create object of type: %s", type.get_name().data());
+		return nullptr;
+	}
 
 	// Strip off namespace prefixes when creating new objects
 	std::string base_name = type.get_name().data();
@@ -393,7 +404,7 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::Obj
 
 
 
-size_t Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, size_t index)
+int Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, size_t index)
 {
 	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
@@ -402,6 +413,11 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& typ
 	VariantArray array_view = array.create_array_view();
 
 	Object* new_object = addObject(type, nullptr, false);
+	if (!new_object)
+	{
+		nap::Logger::error("Did not create object at: %s", path.toString().c_str());
+		return 0;
+	}
 
 	assert(index <= array_view.get_size());
 	bool inserted = array_view.insert_value(index, new_object);

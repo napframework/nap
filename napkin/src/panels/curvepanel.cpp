@@ -34,6 +34,9 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, [this](const PropertyPath path, size_t index)
 	{
+		if (!mCurveModel)
+			return;
+
 		if (!mListenForPropertyChanges)
 			return;
 
@@ -47,6 +50,9 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 
 	connect(&AppContext::get(), &AppContext::propertyChildRemoved, [this](const PropertyPath path, size_t index)
 	{
+		if (!mCurveModel)
+			return;
+
 		if (!mListenForPropertyChanges)
 			return;
 
