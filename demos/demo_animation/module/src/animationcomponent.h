@@ -1,6 +1,8 @@
 #pragma once
 
 #include <fcurve.h>
+#include <nap/resourceptr.h>
+#include <transformcomponent.h>
 #include "component.h"
 #include "mesh.h"
 
@@ -25,7 +27,7 @@ namespace nap
 		}
 
 	public:
-		nap::math::FloatFCurve mCurve;
+		nap::ResourcePtr<nap::math::FloatFCurve> mCurve;
 	};
 
 
@@ -42,6 +44,10 @@ namespace nap
 		bool init(utility::ErrorState& errorState) override;
 
 		void update(double deltaTime) override;
+
+	private:
+		float mLocalTime = 0; // animation time
+		TransformComponentInstance* mTransform = nullptr; // la forme de trans
 
 	};
 }
