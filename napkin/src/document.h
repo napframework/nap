@@ -242,7 +242,7 @@ namespace napkin
 		 * @param index The index at which to add the new element
 		 * @return The index of the inserted object
 		 */
-		size_t arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, size_t index);
+		int arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, size_t index);
 
 		/**
 		 * Create an object of the specified type and add it to the end of the array
