@@ -121,15 +121,7 @@ namespace nap
 	template<typename T>
 	T* UniformContainer::findUniform(const std::string& name)
 	{
-		UniformTextureBindings::iterator texture_binding = mUniformTextureBindings.find(name);
-		if (texture_binding != mUniformTextureBindings.end() && texture_binding->second.mUniform->get_type() == RTTI_OF(T))
-			return (T*)texture_binding->second.mUniform.get();
-
-		UniformValueBindings::iterator value_binding = mUniformValueBindings.find(name);
-		if (value_binding != mUniformValueBindings.end() && value_binding->second.mUniform->get_type() == RTTI_OF(T))
-			return (T*)value_binding->second.mUniform.get();
-
-		return nullptr;
+		return rtti_cast<T>(findUniform(name));
 	}
 
 
