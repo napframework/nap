@@ -3,6 +3,7 @@
 // External Includes
 #include <entity.h>
 #include <nap/logger.h>
+#include <utility/stringutils.h>
 
 // nap::randomoschandler run time class definition 
 RTTI_BEGIN_CLASS(nap::RandomOSCHandler)
@@ -34,6 +35,9 @@ namespace nap
 		// Connect osc received signal to our slot that forward the input to the handleMessageReceived Function
 		mOSCInputComponent->messageReceived.connect(eventReceivedSlot);
 
+		// Populate our map of callbacks
+		mOscEventFuncs.emplace(std::make_pair("brightness", &RandomOSCHandlerInstance::updateBrightness));
+
 		return true;
 	}
 
@@ -46,9 +50,26 @@ namespace nap
 
 	void RandomOSCHandlerInstance::onEventReceived(const nap::OSCEvent& oscEvent)
 	{
-		float v =  oscEvent[0].asFloat();
-		mApplyCombinationComponent->mBrightness = v;
-		//nap::Logger::info("wooop: %f", v);
+		std::vector<std::string> addressParts;
+		utility::splitString(oscEvent.getAddress(), '/', addressParts);
+		assert(addressParts.size() > 1);
+		assert(addressParts.front() == "light-grid");
+
+		addressParts.erase(addressParts.begin());
+
+		auto it = mOscEventFuncs.find(addressParts[1]);
+		if (it == mOscEventFuncs.end())
+		{
+			nap::Logger::warn("unknown osc event: %s", oscEvent.getAddress().c_str());
+			return;
+		}
+
+		// Call found callback
+		addressParts.erase(addressParts.begin(), addressParts.begin() + 2);
+		(this->*(it->second))(oscEvent, addressParts);
 	}
 
+	void RandomOSCHandlerInstance::updateBrightness(const OSCEvent& event, const std::vector<std::string>& args) {
+
+	}
 }

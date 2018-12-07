@@ -38,8 +38,7 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		RandomOSCHandlerInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)									{ }
+		RandomOSCHandlerInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource) { }
 
 		/**
 		 * Initialize randomoschandlerInstance based on the randomoschandler resource
@@ -66,6 +65,11 @@ namespace nap
 		 * @param OSCEvent the new osc event
 		 */
 		void onEventReceived(const OSCEvent&);
+		void updateBrightness(const OSCEvent& event, const std::vector<std::string>& args);
+
+		// This map holds all the various callbacks based on id
+		typedef void (RandomOSCHandlerInstance::*OscEventFunc)(const OSCEvent&, const std::vector<std::string>& args);
+		std::unordered_map<std::string, OscEventFunc> mOscEventFuncs;
 
 		/**
 		 * Slot that is connected to the osc input component that receives new messages
