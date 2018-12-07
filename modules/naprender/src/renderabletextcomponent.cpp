@@ -190,6 +190,14 @@ namespace nap
 		GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 		nap::utility::ErrorState error;
 
+		// Get uniforms to push in loop
+		const nap::UniformBinding& glyph_binding = mMaterialInstance.getUniformBinding(glyph_uniform.mName);
+		int texture_unit = utility::getTextureUnit(mMaterialInstance, glyph_uniform);
+		assert(texture_unit > -1);
+
+		// Push all uniforms now
+		utility::pushUniforms(mMaterialInstance);
+
 		// Location of active letter
 		float x = 0.0f;
 		float y = 0.0f;
@@ -216,7 +224,7 @@ namespace nap
 
 			// Set texture and push uniforms
 			glyph_uniform.setTexture(render_glyph->getTexture());
-			utility::pushUniforms(mMaterialInstance);
+			glyph_uniform.push(*glyph_binding.mDeclaration, texture_unit);
 
 			// Bind and draw all the arrays
 			index_buffer.bind();

@@ -19,5 +19,14 @@ namespace nap
 		 * @param materialInstance the material to set the blend mode in OpenGL for
 		 */
 		void NAPAPI setBlendMode(nap::MaterialInstance& materialInstance);
+
+		/**
+		 * Locates the texture unit that is associated with a specific uniform in a material
+		 * You use this index when updating a single texture uniform on the GPU.
+		 * This unit is required when calling tex_uniform.push().
+		 * @param uniform the texture uniform to find the texture unit number for.
+		 * @return the texture unit associated with a specific texture uniform in a material, -1 if not found
+		 */
+		int NAPAPI getTextureUnit(nap::MaterialInstance& materialInstance, nap::UniformTexture& uniform);
 	}
 }
