@@ -4,7 +4,6 @@
 #include <entity.h>
 #include <renderservice.h>
 #include <nap/core.h>
-#include <materialutils.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
 
@@ -148,9 +147,8 @@ namespace nap
 		// Get global transform
 		const glm::mat4x4& model_matrix = mTransform->getGlobalTransform();
 
-		// Get material to bind
-		Material* comp_mat = mMaterialInstance.getMaterial();
-		comp_mat->bind();
+		// Bind material
+		mMaterialInstance.bind();
 
 		// Set non changing uniforms
 		mViewUniform->setValue(viewMatrix);
@@ -158,7 +156,7 @@ namespace nap
 		mColorUniform->setValue({ 1.0,0.0,0.0 });
 
 		// Prepare blending
-		utility::setBlendMode(mMaterialInstance);
+		mMaterialInstance.pushBlendMode();
 
 		// Get points to copy onto
 		std::vector<glm::vec3>& pos_data = mTargetVertices->getData();
@@ -176,7 +174,7 @@ namespace nap
 		glm::vec3 cam_pos = math::extractPosition(mCamera->getGlobalTransform());
 
 		// Push all existing uniforms to GPU
-		utility::pushUniforms(mMaterialInstance);
+		mMaterialInstance.pushUniforms();
 
 		// Fetch the uniform declarations of the uniform values we want to update in the copy loop
 		// This allows us to only push a specific uniform instead of all uniforms.
@@ -249,7 +247,7 @@ namespace nap
 		}
 
 		// Unbind material
-		comp_mat->unbind();
+		mMaterialInstance.unbind();
 	}
 
 }
