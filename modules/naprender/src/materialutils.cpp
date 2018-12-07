@@ -136,5 +136,42 @@ namespace nap
 			}
 		}
 
+
+		int getTextureUnit(nap::MaterialInstance& materialInstance, nap::UniformTexture& uniform)
+		{
+			int texture_unit = 0;
+			std::unordered_set<std::string> instance_bindings;
+			Material* material = materialInstance.getMaterial();
+
+			// Iterate over all material instance texture bindings
+			// If the texture uniform matches the requested uniform it is considered to be at that location
+			// If not the location is incremented until a match is found
+			const UniformTextureBindings& instance_texture_bindings = materialInstance.getTextureBindings();
+			for (auto& kvp : instance_texture_bindings)
+			{
+				nap::Uniform* uniform_tex = kvp.second.mUniform.get();
+				if (uniform_tex == &uniform)
+					return texture_unit;
+				texture_unit++;
+				instance_bindings.insert(kvp.first);
+			}
+
+			// Iterate over all source material bindings
+			// If the texture uniform matches the requested uniform it is considered to be at that location
+			// If not, there is no valid texture binding associated with the given uniform
+			for (auto& kvp : material->getTextureBindings())
+			{
+				if (instance_bindings.find(kvp.first) == instance_bindings.end())
+				{
+					nap::Uniform* uniform_tex = kvp.second.mUniform.get();
+					if (uniform_tex == &uniform)
+						return texture_unit;
+					texture_unit++;
+				}
+			}
+
+			// No texture binding associated with the given uniform
+			return -1;
+		}
 	}
 }
