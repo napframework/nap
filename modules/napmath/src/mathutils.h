@@ -50,7 +50,8 @@ namespace nap
 		T max(T left, T right);
 
 		/**
-		 *	Rounds down a value
+		 * Rounds down a value
+		 * @return floored value of T
 		 */
 		template<typename T>
 		T floor(T value);
@@ -66,6 +67,12 @@ namespace nap
 		 */
 		template<typename T>
 		T power(T value, T exp);
+
+		/**
+		 * @return absolute value of T
+		 */
+		template<typename T>
+		T abs(T value);
 
 		/**
 		 * @return epsilon of T
@@ -107,6 +114,12 @@ namespace nap
 		 */
 		template<typename T>
 		T random(T min, T max);
+
+		/**
+		 * Sets the seed for all subsequent random calls.
+		 * @param value the new seed value
+		 */
+		void NAPAPI setRandomSeed(int value);
 
 		/**
 		 * Interpolates a value over time to a @target using a dampening model
@@ -353,5 +366,11 @@ namespace nap
 
 		template<>
 		NAPAPI glm::ivec4 random(glm::ivec4 min, glm::ivec4 max);
+
+		template<>
+		NAPAPI float abs(float value);
+
+		template<>
+		NAPAPI int abs(int value);
 	}
 }

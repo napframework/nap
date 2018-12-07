@@ -55,7 +55,7 @@ namespace nap
 		nap::InputEventPtr translateInputEvent(SDL_Event& sdlEvent);
 
 		/**
-		* Utility function that checks if this is a key input event
+		* Utility function that checks if this is a key input event (key press down/up or text input)
 		* @param sdlEvent the sdl event to check
 		* @return if the SDL event is an input event
 		*/

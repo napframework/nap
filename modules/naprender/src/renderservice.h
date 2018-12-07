@@ -6,6 +6,7 @@
 #include <nap/windowevent.h>
 #include <nopengl.h>
 #include <thread>
+#include <renderablemesh.h>
 
 // Local Includes
 #include "renderer.h"
@@ -124,9 +125,24 @@ namespace nap
 		virtual void shutdown() override;
 
 		/**
-		* Returns global render state. Use the fields in this objects to modify the renderstate.
-		*/
-		RenderState& getRenderState()																{ return mRenderState; }
+		 * Changes the polygon draw mode for the next set of draw calls. Updates the render state internally.
+		 * @param mode the polygon mode to use for the next set of draw calls
+		 */
+		void setPolygonMode(opengl::EPolygonMode mode);
+
+		/**
+		 * Returns the global render state that is used for all OpenGL contexts.
+		 * Properties associated with this state (such as the fill mode, point size etc.) are set before rendering a set of objects.
+		 * @return the global render state.
+		 */
+		const RenderState& getRenderState() const																{ return mRenderState; }
+
+		/**
+		 * Sets the global render state. This state is used for all OpenGL contexts and settings are pushed before a render call.
+		 * You can change settings (such as point-size etc.) at runtime, before rendering objects. 
+		 * @param renderState the new state of the renderer to use when rendering objects. 
+		 */
+		void setRenderState(const RenderState& renderState)														{ mRenderState = renderState; }
 
 		/**
 		 * Batches an OpenGL resource that is dependent on GLContext for destruction, to avoid many GL context switches during destruction.
@@ -139,17 +155,6 @@ namespace nap
  		 * @param renderWindows: all render windows that are active, as they hold the GL contexts.
 		 */
 		void destroyGLContextResources(const std::vector<rtti::ObjectPtr<RenderWindow>>& renderWindows);
-
-		/**
-		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
-		* combinations, and it hands out reference counted handles to the VAOs that are stored internally. When the refcount of the handle reaches 
-		* zero, the VAO is removed from the RenderService's map and it will be queued for destruction.
-		* @param material: Material to acquire the VAO for.
-		* @param meshResource: mesh to acquire the VAO for.
-		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
-		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
-		*/
-		VAOHandle acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState);
 
 		/**
 		 * Add a new window for the specified resource
@@ -194,6 +199,18 @@ namespace nap
 		 * @param event the event to add
 		 */
 		void addEvent(WindowEventPtr windowEvent);
+
+		/**
+		* Creates a renderable mesh that represents the coupling between a mesh and material that can be rendered to screen.
+		* Internally the renderable mesh manages a vertex array object that is issued by the render service.
+		* This function should be called from on initialization of components that work with meshes and materials: ie: all types of RenderableComponent. 
+		* The result should be validated by calling RenderableMesh.isValid(). Invalid mesh / material representations can't be rendered together.
+		* @param mesh The mesh that is used in the mesh-material combination.
+		* @param materialInstance The material instance that is used in the mesh-material combination.
+		* @param errorState If this function returns an invalid renderable mesh, the error state contains error information.
+		* @return A RenderableMesh object that can be used in setMesh calls. Check isValid on the object to see if creation succeeded or failed.
+		*/
+		RenderableMesh createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
 	protected:
 		/**
@@ -264,9 +281,20 @@ namespace nap
 		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
 
 		/**
-		* Processes all window related events for all available windows
-		*/
+		 * Processes all window related events for all available windows
+		 */
 		void processEvents();
+
+		/**
+		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
+		* combinations, and it hands out reference counted handles to the VAOs that are stored internally. When the refcount of the handle reaches
+		* zero, the VAO is removed from the RenderService's map and it will be queued for destruction.
+		* @param material: Material to acquire the VAO for.
+		* @param meshResource: mesh to acquire the VAO for.
+		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
+		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
+		*/
+		VAOHandle acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState);
 
 		/**
 		* Helper struct to refcount opengl VAOs.

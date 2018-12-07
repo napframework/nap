@@ -51,10 +51,11 @@ namespace nap
 		mDefaultInputRouter			= mScene->findEntity("DefaultInputRouterEntity");
 		
 		// Set render states
-		nap::RenderState& render_state = mRenderService->getRenderState();
+		nap::RenderState render_state;
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+		mRenderService->setRenderState(render_state);
 
 		rtti::ObjectPtr<RenderWindow> window = mRenderService->getWindow(1);
 

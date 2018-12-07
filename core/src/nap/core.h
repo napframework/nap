@@ -54,7 +54,7 @@ namespace nap
 		 * @param runningInNonProjectContext indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath=std::string(), bool runningInNonProjectContext=false);
+		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath={}, bool runningInNonProjectContext=false);
 		
 		/**
 		* Initializes all registered services
@@ -123,7 +123,7 @@ namespace nap
 		* @param type the type of service to get
 		* @return the service if found, otherwise nullptr
 		*/
-		Service* getService(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
+		Service* getService(const rtti::TypeInfo& type);
 
 		/**
 		 * Searches for a service based on type name, searches for an exact match.
@@ -136,7 +136,7 @@ namespace nap
 		 *  @return a service of type T, returns nullptr if that service can't be found
 		 */
 		template <typename T>
-		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
+		T* getService();
 
 		/**
 		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
@@ -232,8 +232,8 @@ namespace nap
 // Searches for a service of type T in the services and returns it,
 // returns nullptr if none found
 template <typename T>
-T* nap::Core::getService(rtti::ETypeCheck typeCheck)
+T* nap::Core::getService()
 {
-	Service* new_service = getService(RTTI_OF(T), typeCheck);
+	Service* new_service = getService(RTTI_OF(T));
 	return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
 }

@@ -120,6 +120,16 @@ namespace nap
 	}
 
 
+	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
+	{
+		VAOHandle vao_handle = this->acquireVertexArrayObject(*materialInstance.getMaterial(), mesh, errorState);
+
+		if (!errorState.check(vao_handle.isValid(), "Failed to acquire VAO for mesh: %s in combination with material: %s", mesh.mID.c_str(), materialInstance.getMaterial()->mID.c_str()))
+			return RenderableMesh();
+		return RenderableMesh(mesh, materialInstance, vao_handle);
+	}
+
+
 	void RenderService::processEvents()
 	{
 		for (const auto& window : mWindows)
@@ -245,9 +255,17 @@ namespace nap
 		// Extract view matrix
 		glm::mat4x4 view_matrix = camera.getViewMatrix();
 
-		// Draw
+		// Draw components only when camera is supported
 		for (auto& comp : components_to_render)
+		{
+			if (!comp->isSupported(camera))
+			{
+				nap::Logger::warn("unable to render component: %s, unsupported camera %s", 
+					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
+				continue;
+			}
 			comp->draw(view_matrix, projection_matrix);
+		}
 
 		renderTarget.unbind();
 	}
@@ -298,6 +316,12 @@ namespace nap
 	void RenderService::resourcesLoaded()
 	{
 		opengl::flush();
+	}
+
+
+	void RenderService::setPolygonMode(opengl::EPolygonMode mode)
+	{
+		mRenderState.mPolygonMode = mode;
 	}
 
 

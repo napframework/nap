@@ -4,6 +4,8 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
+#include <renderable2dtextcomponent.h>
+#include <renderable3dtextcomponent.h>
 #include <orthocameracomponent.h>
 #include <mathutils.h>
 #include <scene.h>
@@ -13,6 +15,8 @@
 #include <triangleiterator.h>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <renderableglyph.h>
+#include <font.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -26,7 +30,7 @@ namespace nap
 	 * Initialize all the resources and store the objects we need later on
 	 */
 	bool HelloWorldApp::init(utility::ErrorState& error)
-	{
+	{		
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
 		mSceneService	= getCore().getService<nap::SceneService>();
@@ -41,12 +45,16 @@ namespace nap
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 
-		// Find the world and camera entities
+		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
+		// Fetch world and text
 		mWorldEntity = scene->findEntity("World");
-		mCameraEntity = scene->findEntity("Camera");
-		mWorldMesh = mResourceManager->findObject("WorldMesh");
+		mTextEntity = scene->findEntity("Text");
+
+		// Fetch the two different cameras
+		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
+		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
 
 		return true;
 	}
@@ -71,15 +79,14 @@ namespace nap
 		nap::DefaultInputRouter input_router;
 		
 		// Forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
+		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}
@@ -91,7 +98,8 @@ namespace nap
 	 * make the main window active, this makes sure that all subsequent render calls are 
 	 * associated with that window. When you have multiple windows and don't activate the right window subsequent
 	 * render calls could end up being associated with the wrong context, resulting in undefined behavior.
-	 * Next we clear the render target, render the object and swap the main window back-buffer.
+	 * Next we clear the render target, render the world and after that the text. 
+	 * Finally we swap the main window back-buffer, making sure the rendered image is blitted to screen.
 	 */
 	void HelloWorldApp::render()
 	{
@@ -101,7 +109,7 @@ namespace nap
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
 
-		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
+		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform.setValue(global_pos);
 
@@ -117,13 +125,31 @@ namespace nap
 		// Find the world and add as an object to render
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
 		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+
 		components_to_render.emplace_back(&renderable_world);
 
-		// Find the camera
-		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+		// Find the perspective camera
+		nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
 
 		// Render the world with the right camera directly to screen
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
+
+		// Clear list of components to render
+		components_to_render.clear();
+
+		// Render text on top of the sphere
+		Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+
+		// Find the orthographic camera (2D text can only be rendered with an orthographic camera)
+		nap::OrthoCameraComponentInstance& ortho_camera = mOrthographicCamEntity->getComponent<nap::OrthoCameraComponentInstance>();
+
+		// Center text
+		render_text.setLocation({ mRenderWindow->getWidth() / 2, mRenderWindow->getHeight() / 2 });
+
+		// Render text on top of sphere using render service
+		// Alternatively you can use: render_text.draw(const opengl::BackbufferRenderTarget& target) directly
+		components_to_render.emplace_back(&render_text);
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), ortho_camera, components_to_render);
 
 		// Draw our gui
 		mGuiService->draw();

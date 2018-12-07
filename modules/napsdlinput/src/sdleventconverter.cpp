@@ -3,6 +3,7 @@
 
 // External Includes
 #include <mathutils.h>
+#include <SDL_joystick.h>
 
 namespace nap
 {
@@ -286,8 +287,9 @@ namespace nap
 	// Binds a specific sdl key event to a pointer event type
 	const static std::unordered_map<Uint32, rtti::TypeInfo> SDLToKeyMapping = 
 	{
-		std::make_pair(SDL_KEYDOWN, RTTI_OF(nap::KeyPressEvent)),
-		std::make_pair(SDL_KEYUP,	RTTI_OF(nap::KeyReleaseEvent)),
+		std::make_pair(SDL_KEYDOWN,		RTTI_OF(nap::KeyPressEvent)),
+		std::make_pair(SDL_KEYUP,		RTTI_OF(nap::KeyReleaseEvent)),
+		std::make_pair(SDL_TEXTINPUT,	RTTI_OF(nap::TextInputEvent))
 	};
 
 	// Binds specific sdl joystick and controller events to a nap controller event type
@@ -523,6 +525,36 @@ namespace nap
 	}
 
 
+	static nap::InputEvent* translateSDLKeyEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType)
+	{
+		// Get window
+		int window_id = static_cast<int>(sdlEvent.window.windowID);
+		SDL_Window* window = SDL_GetWindowFromID(window_id);
+		if (window == nullptr)
+			return nullptr;
+
+		InputEvent* key_event = nullptr;
+		switch (sdlType)
+		{
+		case SDL_TEXTINPUT:
+		{
+			key_event = eventType.create<InputEvent>({ std::string(sdlEvent.text.text), window_id });
+			break;
+		}
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+		{
+			key_event = eventType.create<InputEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym), window_id });
+			break;
+		}
+		default:
+			break;
+		}
+
+		return key_event;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// SDLConverter functions
 	//////////////////////////////////////////////////////////////////////////
@@ -558,8 +590,7 @@ namespace nap
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
 		if (key_it != SDLToKeyMapping.end())
 		{
-			int window_id = static_cast<int>(sdlEvent.window.windowID);
-			KeyEvent* key_event = key_it->second.create<KeyEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym), window_id });
+			InputEvent* key_event = translateSDLKeyEvent(sdlEvent, key_it->first, key_it->second);
 			return InputEventPtr(key_event);
 		}
 
@@ -597,8 +628,7 @@ namespace nap
 		if (key_it == SDLToKeyMapping.end())
 			return nullptr;
 
-		int window_id = static_cast<int>(sdlEvent.window.windowID);
-		KeyEvent* key_event = key_it->second.create<KeyEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym), window_id });
+		InputEvent* key_event = translateSDLKeyEvent(sdlEvent, key_it->first, key_it->second);
 		return InputEventPtr(key_event);
 	}
 

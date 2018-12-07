@@ -33,7 +33,8 @@ napkin::ResourceFactory::ResourceFactory()
 			{EPropertyFileType::Python,			"Python Files",     {"py"}},
 			{EPropertyFileType::Mesh,			"NAP Mesh Files",   {"mesh"}},
 			{EPropertyFileType::Video,			"Video Files",      getVideoExtensions()},
-			{EPropertyFileType::ImageSequence,	"Image Sequence",	getImageExtensions()}
+			{EPropertyFileType::ImageSequence,	"Image Sequence",	getImageExtensions()},
+			{EPropertyFileType::Font,			"True Type Font",	getFontExtensions() }
 	};
 }
 
@@ -114,4 +115,14 @@ const QStringList napkin::ResourceFactory::getVideoExtensions()
 		}
 	}
 	return mVideoExtensions;
+}
+
+
+const QStringList napkin::ResourceFactory::getFontExtensions()
+{
+	if (mFontExtensions.isEmpty())
+	{
+		mFontExtensions << "ttf" << "ttc" << "otf" << "otc" << "pfa" << "pfb";
+	}
+	return mFontExtensions;
 }

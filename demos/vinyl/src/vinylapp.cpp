@@ -57,11 +57,12 @@ namespace nap
 		mCameraEntity = scene->findEntity("CameraEntity");
 		
 		// Set render states
-		nap::RenderState& render_state = mRenderService->getRenderState();
+		nap::RenderState render_state;
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
-		
+		mRenderService->setRenderState(render_state);
+
 		return true;
 	}
 	
