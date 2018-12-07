@@ -7,5 +7,20 @@ namespace nap
 		mMaterialInstance(&materialInstance),
         mMesh(&mesh),
         mVAOHandle(vaoHandle) { }
+
+
+	void RenderableMesh::bind()
+	{
+		assert(mVAOHandle.isValid());
+		mVAOHandle.get().bind();
+	}
+
+
+	void RenderableMesh::unbind()
+	{
+		assert(mVAOHandle.isValid());
+		mVAOHandle.get().unbind();
+	}
+
 }
 

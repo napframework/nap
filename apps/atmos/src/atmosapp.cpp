@@ -38,6 +38,7 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
+		mVideoTarget  = mResourceManager->findObject<nap::RenderTarget>("VideoRenderTarget");
 
 		// Position window
 		glm::ivec2 screen_size = opengl::getScreenSize(0);
@@ -50,6 +51,8 @@ namespace nap
 		mCameraEntity = scene->findEntity("CameraEntity");
 		mWorldEntity = scene->findEntity("WorldEntity");
 		mScanEntity = scene->findEntity("ScanEntity");
+		mVideoEntity = scene->findEntity("VideoPlaneEntity");
+		mVideoCameraEntity = scene->findEntity("VideoCameraEntity");
 
 		// Create gui
 		mGui = std::make_unique<AtmosGui>(*this);
@@ -90,24 +93,37 @@ namespace nap
 		// Activate current window for drawing
 		mRenderWindow->makeActive();
 
-		// Clear back-buffer
-		mRenderWindow->getBackbuffer().setClearColor(mGui->getBackgroundColor());
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+		// Render video into back-buffer
+		{
+			mRenderService->clearRenderTarget(mVideoTarget->getTarget());
+			mRenderService->setPolygonMode(opengl::EPolygonMode::Fill);
+			std::vector<nap::RenderableComponentInstance*> render_comps;
+			mVideoEntity->getComponentsOfType<RenderableComponentInstance>(render_comps);
+			nap::OrthoCameraComponentInstance& video_cam = mVideoCameraEntity->getComponent<nap::OrthoCameraComponentInstance>();
+			mRenderService->renderObjects(mVideoTarget->getTarget(), video_cam, render_comps);
+		}
 
-		// Set draw mode (fill, lines, polygon
-		opengl::setPolygonMode(mGui->getRenderMode());
+		// Render meshes etc. to main window
+		{
+			// Clear back-buffer
+			mRenderWindow->getBackbuffer().setClearColor(mGui->getBackgroundColor());
+			mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
-		std::vector<nap::RenderableComponentInstance*> render_comps;
-		mScanEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
+			// Set draw mode (fill, lines, polygon
+			mRenderService->setPolygonMode(mGui->getRenderMode());
 
-		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
+			std::vector<nap::RenderableComponentInstance*> render_comps;
+			mScanEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
-		// Render gui to window
-		mGuiService->draw();
+			nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// Render gui to window
+			mGuiService->draw();
+
+			// Swap screen buffers
+			mRenderWindow->swap();
+		}
 	}
 	
 	

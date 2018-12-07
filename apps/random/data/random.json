@@ -49,18 +49,6 @@
             "Timeout": 2.0
         },
         {
-            "Type": "nap::ArtNetController",
-            "mID": "Universe4",
-            "Subnet": 0,
-            "Universe": 4,
-            "WaitTime": 2.0,
-            "Frequency": 44,
-            "Mode": "Broadcast",
-            "UnicastLimit": 10,
-            "Verbose": false,
-            "Timeout": 2.0
-        },
-        {
             "Type": "nap::ArtnetMeshFromFile",
             "mID": "LightRigMesh",
             "Path": "led_rig.mesh",
@@ -71,8 +59,8 @@
         {
             "Type": "nap::Bitmap",
             "mID": "CombinationBitmap",
-            "Width": 1024,
-            "Height": 1024,
+            "Width": 256,
+            "Height": 256,
             "Channels": "RGB",
             "ColorType": "Byte"
         },
@@ -107,7 +95,7 @@
                     "Brightness": 1.0,
                     "ControlGroupIndexes": [
                         2,
-                        7
+                        6
                     ]
                 },
                 {
@@ -115,15 +103,8 @@
                     "Brightness": 1.0,
                     "ControlGroupIndexes": [
                         3,
-                        5,
-                        6
-                    ]
-                },
-                {
-                    "Name": "Meeting room",
-                    "Brightness": 1.0,
-                    "ControlGroupIndexes": [
-                        4
+                        4,
+                        5
                     ]
                 }
             ]
@@ -492,8 +473,7 @@
                         "Universe0",
                         "Universe1",
                         "Universe2",
-                        "Universe3",
-                        "Universe4"
+                        "Universe3"
                     ],
                     "MinArtnetValue": 45
                 }
@@ -878,7 +858,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_14",
-                    "Mesh": "ProjectionMesh",
+                    "Mesh": "StaticMesh",
                     "MaterialInstance": {
                         "Material": "StaticMaterial",
                         "Uniforms": [
@@ -922,7 +902,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
-                    "Mesh": "ProjectionMesh",
+                    "Mesh": "StaticMesh",
                     "MaterialInstance": {
                         "Material": "SunCloudsMaterial",
                         "Uniforms": [
@@ -1013,7 +993,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_5",
-                    "Mesh": "ProjectionMesh",
+                    "Mesh": "StaticMesh",
                     "MaterialInstance": {
                         "Material": "SunGlareMaterial",
                         "Uniforms": [
@@ -1495,11 +1475,26 @@
             "Type": "nap::OSCReceiver",
             "mID": "OSCReceiver",
             "Port": 7000,
-            "EnableDebugOutput": true
+            "EnableDebugOutput": true,
+            "AllowPortReuse": false
         },
         {
             "Type": "nap::PlaneMesh",
             "mID": "ProjectionMesh",
+            "Size": {
+                "x": 256.0,
+                "y": 256.0
+            },
+            "Position": {
+                "x": 128.0,
+                "y": 128.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "StaticMesh",
             "Size": {
                 "x": 1024.0,
                 "y": 1024.0
@@ -1577,15 +1572,15 @@
             "Type": "nap::RenderTexture2D",
             "mID": "CombineColorTexture",
             "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
+                "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 0
             },
             "Usage": "DynamicRead",
-            "Width": 1024,
-            "Height": 1024,
+            "Width": 256,
+            "Height": 256,
             "Format": "RGB8"
         },
         {
@@ -1599,15 +1594,15 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
+            "Width": 256,
+            "Height": 256,
             "Format": "Depth"
         },
         {
             "Type": "nap::RenderTexture2D",
             "mID": "OffColorTexture",
             "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
+                "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
@@ -1622,7 +1617,7 @@
             "Type": "nap::RenderTexture2D",
             "mID": "StaticColorTexture",
             "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
+                "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
@@ -1656,7 +1651,7 @@
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 0
+                "MaxLodLevel": 10
             },
             "Usage": "Static",
             "Width": 1024,
@@ -1686,7 +1681,7 @@
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 0
+                "MaxLodLevel": 10
             },
             "Usage": "Static",
             "Width": 1920,

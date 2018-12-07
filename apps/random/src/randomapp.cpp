@@ -74,10 +74,11 @@ namespace nap
 		mCombination = mScene->findEntity("Combination");
 
 		// Set render states
-		nap::RenderState& render_state = mRenderService->getRenderState();
+		nap::RenderState render_state;
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+		mRenderService->setRenderState(render_state);
 
 		// Create Random App components
 		mGui = std::make_unique<RandomGui>(*this);

@@ -34,7 +34,7 @@ namespace nap
 		// Now check for the second color attribute
 		// The Red color represents the group, from 0 to 9 as float value 0 to 1
 		nap::VertexAttribute<glm::vec4>* index_colors = mMeshInstance->findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(1));
-		if (errorState.check(index_colors == nullptr, "unable to find second color attribute, used to control idividual groups"))
+		if (!errorState.check(index_colors != nullptr, "unable to find second color attribute, used to control individual groups"))
 			return false;
 
 		// Get position

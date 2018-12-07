@@ -51,10 +51,11 @@ namespace nap
 		mRenderWindow->mWindowEvent.connect(mWindowEventSlot);
 
 		// Set render states
-		RenderState& render_state = mRenderService->getRenderState();
+		RenderState render_state = mRenderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+		mRenderService->setRenderState(render_state);
 
 		// Sample white values
 		std::vector<nap::SelectColorComponentInstance*> comps;

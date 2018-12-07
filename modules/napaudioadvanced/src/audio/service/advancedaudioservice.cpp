@@ -29,7 +29,7 @@ namespace nap
         
         void AdvancedAudioService::registerObjectCreators(rtti::Factory& factory)
         {
-            auto audioService = getCore().getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            auto audioService = getCore().getService<AudioService>();
             assert(audioService);
             factory.addObjectCreator(std::make_unique<GraphObjectCreator>(*audioService));
             factory.addObjectCreator(std::make_unique<VoiceObjectCreator>(*audioService));
