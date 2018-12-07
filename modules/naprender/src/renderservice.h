@@ -38,12 +38,14 @@ namespace nap
 	};
 
 	/**
-	 * Main interface for 3D rendering operations.
-	 * The main function of this service is to initialize the render back-end, create and manage vertex array objects and
-	 * provide an interface to render objects to a specific target (screen or back-buffer).
+	 * Main interface for 2D and 3D rendering operations.
+	 * This service initializes the render back-end, manages all vertex array buffers, can be used to create RenderableMesh objects and
+	 * provides an interface to render objects to a specific target (screen or back-buffer).
 	 * Vertex array object management is handled completely by this service. As a user you only work
 	 * with the render interface to render a set of render-able components to a target using a camera.
-	 * The service is shut down automatically on exit. Including the destruction of windows and left over resources.
+	 * The service is shut down automatically on exit, and deatroys all windows and left over resources.
+	 * When rendering geometry using (most) renderObjects() the service automatically sorts your selection based on the blend mode of the material.
+	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
 	 */
 	class NAPAPI RenderService : public Service
 	{
@@ -72,7 +74,7 @@ namespace nap
 		/**
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
-		 *
+		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
@@ -90,7 +92,7 @@ namespace nap
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects)
-		 *
+		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to @renderTarget
