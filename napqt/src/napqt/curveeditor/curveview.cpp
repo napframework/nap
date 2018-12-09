@@ -739,7 +739,7 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 				mInteractMode = RubberbandAdd;
 			}
 		}
-		else if (ctrlHeld)
+		else if (ctrlHeld && model())
 		{
 			auto scenePos = mapToScene(event->pos());
 			auto curve = closestCurve(event->pos());
@@ -1066,6 +1066,9 @@ void CurveView::selectPointHandles(const QList<PointHandleItem*>& pointHandles)
 
 AbstractCurve* CurveView::closestCurve(const QPointF& pos)
 {
+	if (!model())
+		return nullptr;
+
 	if (model()->curveCount() < 1)
 		return nullptr;
 
