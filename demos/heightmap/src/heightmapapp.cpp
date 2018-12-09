@@ -215,8 +215,7 @@ namespace nap
 		ImGui::Begin("Controls");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
 		RGBColorFloat clr = mTextHighlightColor.convert<RGBColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), 1.0f),
-			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		if (ImGui::CollapsingHeader("Blending"))

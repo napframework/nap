@@ -162,7 +162,8 @@ namespace nap
 			Mesh			= 5,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
 			Video			= 6,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
 			ImageSequence	= 7,	///< Points to a an image sequence, must be used with EPropertyMetaData::FileLink
-            Audio           = 8		///< Points to an audio file, must be used with EPropertyMetaData::FileLink
+            Audio           = 8,	///< Points to an audio file, must be used with EPropertyMetaData::FileLink
+			Font			= 9		///< Points to a true type font, must be used with EPropertyMetaData::FileLink
 		};
 
 		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)

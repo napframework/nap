@@ -56,6 +56,8 @@ namespace nap
 		bool					mTransparent = false;
 		opengl::EPolygonMode	mRenderMode = opengl::EPolygonMode::Fill;
 		float					mTexPreviewDisplaySize = 1.0f;
+		float					mWraPreviewDisplaySize = 1.0f;
+		float					mVidPreviewDisplaySize = 1.0f;
 		float					mCameraMovSpeed = 1.0f;
 		float					mCameraRotSpeed = 1.0f;
 		float					mCamMaxRotSpeed = 0.0f;

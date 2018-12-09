@@ -49,6 +49,11 @@ namespace napkin {
          */
         const QStringList getVideoExtensions();
 
+		/**
+		 * Retrieve all extensions defined by freetype
+		 */
+		const QStringList getFontExtensions();
+
     private:
         /**
          * Given a (string) property, return the type of file it points to.
@@ -64,5 +69,6 @@ namespace napkin {
 
         QStringList mImageExtensions;
         QStringList mVideoExtensions;
+		QStringList mFontExtensions;
     };
 }

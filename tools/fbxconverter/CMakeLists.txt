@@ -12,7 +12,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene mod_napfont)
 target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
 if(APPLE)
@@ -69,6 +69,7 @@ if (WIN32)
                   ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
                   ${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll
                   ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll
+                  ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.dll
                   ${PYTHON_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
 elseif(APPLE)
@@ -77,6 +78,7 @@ elseif(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/glew/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/freetype/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
     set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 

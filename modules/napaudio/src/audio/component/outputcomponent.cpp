@@ -30,7 +30,7 @@ namespace nap
         {
             OutputComponent* resource = getComponent<OutputComponent>();
             
-            mAudioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
             auto& nodeManager = mAudioService->getNodeManager();
             
             auto channelCount = resource->mChannelRouting.size();

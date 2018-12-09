@@ -53,7 +53,7 @@ namespace nap
             mFadeOutTime = mResource->mFadeOutTime;
             mPitch = mResource->mPitch;
             
-            mAudioService = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
             mNodeManager = &mAudioService->getNodeManager();
             
             for (auto channel = 0; channel < mResource->mChannelRouting.size(); ++channel)

@@ -150,18 +150,35 @@ namespace nap
 			}
 		}
 
+		// Synchronize mesh attributes
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
 			vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
-
+		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
+		{
 			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mProperties.mShapes[shapeIndex].getIndices());
+		}
 
 		return true;
 	}
+
+
+	bool MeshInstance::update(nap::BaseVertexAttribute& attribute, utility::ErrorState& errorState)
+	{
+		opengl::VertexAttributeBuffer& gpu_buffer = mGPUMesh->getVertexAttributeBuffer(attribute.mAttributeID);
+		if (!errorState.check(attribute.getCount() == mProperties.mNumVertices,
+			"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", attribute.mAttributeID.c_str(), attribute.getCount(), mProperties.mNumVertices))
+		{
+			return false;
+		}
+		gpu_buffer.setData(attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
+		return true;
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 
