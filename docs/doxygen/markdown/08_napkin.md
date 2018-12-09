@@ -105,7 +105,8 @@ Controls:
 - `F` to frame the selected handles inside the view (if no handles are selected, frame all)
 - `A` to frame the entire curve inside the view
 
-Use the buttons in the toolbar or `RMB` in the curve view to change the interpolation of segments
+Use the buttons in the toolbar or `RMB` in the curve view to change the interpolation of segments.
+
 Tangent handles can be "broken" for discontinuous curves or "aligned" for c2 continuous curves.
 
 Because of the one-dimensional evaluation nature of function curves, the editor will keep you from creating curves with "overhang" (ie. curves that have multiple solutions). 
