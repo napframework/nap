@@ -45,10 +45,12 @@ elseif(UNIX)
 endif()
 find_package(assimp REQUIRED)
 
+# find other 3rd party packages
 find_package(OpenGL)
 find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
 
+# get all nrender sources and headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 # compile shared lib as target

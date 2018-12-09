@@ -21,11 +21,11 @@ namespace nap
 			std::vector<InputComponentInstance*> input_components;
 			if (mRecursive)
 			{
-				entity->getComponentsOfTypeRecursive<InputComponentInstance>(input_components, rtti::ETypeCheck::IS_DERIVED_FROM);
+				entity->getComponentsOfTypeRecursive<InputComponentInstance>(input_components);
 			}
 			else
 			{
-				entity->getComponentsOfType<InputComponentInstance>(input_components, rtti::ETypeCheck::IS_DERIVED_FROM);
+				entity->getComponentsOfType<InputComponentInstance>(input_components);
 			}
 
 			// Trigger all found components

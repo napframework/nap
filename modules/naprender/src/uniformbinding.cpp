@@ -63,15 +63,37 @@ namespace nap
 
 	Uniform* UniformContainer::findUniform(const std::string& name)
 	{
-		UniformTextureBindings::iterator texture_binding = mUniformTextureBindings.find(name);
+		auto texture_binding = mUniformTextureBindings.find(name);
 		if (texture_binding != mUniformTextureBindings.end())
 			return texture_binding->second.mUniform.get();
 
-		UniformValueBindings::iterator value_binding = mUniformValueBindings.find(name);
+		auto value_binding = mUniformValueBindings.find(name);
 		if (value_binding != mUniformValueBindings.end())
 			return value_binding->second.mUniform.get();
 
 		return nullptr;
+	}
+
+
+	const nap::UniformBinding* UniformContainer::findUniformBinding(const std::string& name) const
+	{
+		auto value_it = mUniformValueBindings.find(name);
+		if (value_it != mUniformValueBindings.end())
+			return &(value_it->second);
+
+		auto text_it = mUniformTextureBindings.find(name);
+		if (text_it != mUniformTextureBindings.end())
+			return &(text_it->second);
+
+		return nullptr;
+	}
+
+
+	const nap::UniformBinding& UniformContainer::getUniformBinding(const std::string& name) const
+	{
+		auto binding = findUniformBinding(name);
+		assert(binding != nullptr);
+		return *binding;
 	}
 
 

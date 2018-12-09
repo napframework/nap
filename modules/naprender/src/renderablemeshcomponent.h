@@ -24,12 +24,9 @@ namespace nap
 		DECLARE_COMPONENT(RenderableMeshComponent, RenderableMeshComponentInstance)
 	public:
 		/**
-		* RenderableMesh uses transform to position itself in the world.
+		* RenderableMesh uses a transform to position itself in the world.
 		*/
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.push_back(RTTI_OF(TransformComponent));
-		}
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		/**
 		* @return Mesh resource.
@@ -94,39 +91,25 @@ namespace nap
 		void setMesh(const RenderableMesh& mesh);
 
 		/**
-		* Renders the model from the ModelResource, using the material on the ModelResource.
-		*/
-		virtual void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
-
-		/**
-		* @return MaterialInstance for this component.
-		*/
+		 * @return current material used when drawing the mesh.
+		 */
 		MaterialInstance& getMaterialInstance();
 
 		/**
-		* @return Currently active mesh.
-		*/
-		IMesh& getMesh()										{ return *mRenderableMesh.mMesh; }
+		 * @return Currently active mesh that is drawn.
+		 */
+		IMesh& getMesh()										{ return mRenderableMesh.getMesh(); }
 
 		/**
-		* @return Currently active mesh instance.
-		*/
+		 * Returns the runtime version of the mesh that is drawn, part of the original mesh.
+		 * @return the mesh instance that is drawn
+		 */
 		MeshInstance& getMeshInstance()							{ return getMesh().getMeshInstance(); }
 
 		/**
-		* Toggles visibility.
-		*/
-		void setVisible(bool visible)							{ mVisible = visible; }
-
-		/**
-		 * @return if the mesh is visible or not, default = true
+		 * Sets clipping rectangle on this instance.
+		 * @param rect Rectangle in pixel coordinates.
 		 */
-		bool isVisible() const									{ return mVisible; }
-
-		/**
-		* Sets clipping rectangle on this instance.
-		* @param rect Rectangle in pixel coordinates.
-		*/
 		void setClipRect(const math::Rect& rect)				{ mClipRect = rect; }
 
 		/**
@@ -140,13 +123,14 @@ namespace nap
 		const TransformComponentInstance& getTransform()		{ return *mTransformComponent; }
 
 	protected:
-		void pushUniforms();
-		void setBlendMode();
+		/**
+		 * Renders the model from the ModelResource, using the material on the ModelResource.
+	 	 */
+		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		TransformComponentInstance*				mTransformComponent;	// Cached pointer to transform
 		MaterialInstance						mMaterialInstance;		// The MaterialInstance as created from the resource. 
-		bool									mVisible = true;		// Whether this instance is visible or not
 		math::Rect								mClipRect;				// Clipping rectangle for this instance, in pixel coordinates
 		RenderableMesh							mRenderableMesh;		// The currently active renderable mesh, either set during init() or set by setMesh.
 	};

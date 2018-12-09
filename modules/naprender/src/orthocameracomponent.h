@@ -54,6 +54,11 @@ namespace nap
 		OrthoCameraProperties mProperties;		///< Property:'Properties' the camera settings
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// OrthoCameraComponentInstance
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * An orthographic camera. The space that the camera is operating depends on the mode that is set. 
 	 * By default this camera operates in pixel space. Use setMode to change the space that the camera is operating in.

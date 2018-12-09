@@ -68,7 +68,7 @@ namespace nap
 		// Calculate average
 		if (mBlendDiffs.size() > 4)
 			mBlendDiffs.erase(mBlendDiffs.begin());
-		mBlendDiffs.emplace_back(abs(current_diff));
+		mBlendDiffs.emplace_back(math::abs<float>(current_diff));
 
 		// Calculate threshold based on last changed values and give it some slack
 		float threshold = (std::accumulate(mBlendDiffs.begin(), mBlendDiffs.end(), 0.0f) / static_cast<float>(mBlendDiffs.size())) * 5.0f;

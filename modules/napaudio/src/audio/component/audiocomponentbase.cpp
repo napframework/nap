@@ -24,7 +24,7 @@ namespace nap
         
         AudioComponentBaseInstance::AudioComponentBaseInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource)
         {
-            mAudioService = entity.getCore()->getService<AudioService>(rtti::ETypeCheck::EXACT_MATCH);
+            mAudioService = entity.getCore()->getService<AudioService>();
         }
         
         
