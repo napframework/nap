@@ -7,18 +7,29 @@ uniform mat4 modelMatrix;
 in vec3	in_Position;
 in vec3	in_UV0;
 in vec4 in_Color0;
+in vec3 in_Normal;
 
-out vec3 pass_Uvs;
-out vec4 pass_Color;
+// Output to fragment shader
+out vec3 passUVs;					//< vetex uv's
+out vec3 passNormal;				//< vertex normal in object space
+out vec3 passPosition;				//< vertex position in object space
+out mat4 passModelMatrix;			//< model matrix
+out vec2 passColor;
 
 void main(void)
 {
-	// Calculate position
+	// Calculate frag position
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
 
-	// Pass uvs
-	pass_Uvs = in_UV0;
+    // Pass normal in object space
+	passNormal = in_Normal;
 
-	// Pass color
-	pass_Color = in_Color0;
+	// Pass position in object space
+	passPosition = in_Position;
+
+	// Pass model matrix for blob light calculations
+	passModelMatrix = modelMatrix;
+
+	// Forward uvs to fragment shader
+	passUVs = in_UV0;
 }

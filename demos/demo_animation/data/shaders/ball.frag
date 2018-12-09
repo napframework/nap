@@ -1,6 +1,6 @@
-#version 150
+#version 330
 
-// vertex shader input  
+// vertex shader input
 in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in object space
 in vec3 passPosition;					//< frag position in object space
@@ -11,6 +11,11 @@ uniform vec3 	inCameraPosition;		//< Camera World Space Position
 
 // output
 out vec4 out_Color;
+
+// uniforms
+uniform sampler2D	mCanvas;
+uniform vec3		mColor;
+
 
 const vec3		lightPos = vec3(0.0, 20.0, 10.0);
 const float 	lightIntensity = 1.0;
@@ -23,20 +28,6 @@ const vec3		colorOne = vec3(0.784, 0.411, 0.411);
 const vec3		colorThr = vec3(0.176, 0.180, 0.258);
 const vec3		colorFor = vec3(0.321, 0.329, 0.415);
 const float		uvOffset = 0.015;
-
-// Maps a value to a new range
-float fit(float value, float inMin, float inMax, float outMin, float outMax, bool doClamp)
-{
-	float v = value;
-	if(doClamp)
-		v = clamp(v, inMin, inMax);
-
-	float m = inMax - inMin;
-	if(m == 0.0)
-		m = 0.00001;
-	return (v - inMin) / (m) * (outMax - outMin) + outMin;
-}
-
 
 // Shades a color based on a light, incoming normal and position should be in object space
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
@@ -72,19 +63,13 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
     return diffuse + specular + ambient;
 }
 
-
-// Computes a blob in uv space together with a mouse cursor
-// Normals are faked because the blob is computed using a function
-// We therefore can approximate the normals by taking multiple samples
 void main()
 {
-	// Blend between two colors based on returned sin value
-	vec3 color = colorOne;
+	vec2 uvs = vec2(passUVs.x, passUVs.y);
+//	vec4 canvas_color = texture(mCanvas, uvs);
+    vec3 col = vec3(1.0, 0.5, 0.0);
+	vec3 output_color = applyLight(col, passNormal, passPosition);
 
-	// Apply lights and specular
-	vec3 lit_color = applyLight(color, passNormal, passPosition);
-
-	// Set fragment color output
-	out_Color =  vec4(lit_color,1.0);
-	out_Color = vec4(1.0, 0.0, 0.0, 1.0);
+	out_Color =  vec4(output_color.rgb, 1.0);
+//    out_Color = output_color;
 }

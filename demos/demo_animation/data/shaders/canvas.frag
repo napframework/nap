@@ -18,4 +18,5 @@ void main()
 	vec3 output_color = canvas_color.rgb * mColor;
 
 	out_Color =  vec4(output_color.rgb, canvas_color.a);
+
 }
