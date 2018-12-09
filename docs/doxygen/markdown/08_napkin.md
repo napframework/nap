@@ -98,6 +98,7 @@ When a FCurve resource is selected in the Resources panel, the Curve panel allow
 Controls:
 - `LMB` on curve points or tangent handles to select them
 - `SHIFT + LMB` on curve points to add them to the selection
+- `CTRL + LMB` add a point on the curve at the clicked location
 - `LMB + drag` in the background to rubberband select point handles or tangent handles
 - `ALT + MMB` pan the view
 - `ALT + RMB` to zoom the view
