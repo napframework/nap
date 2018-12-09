@@ -90,7 +90,7 @@ You can quickly start/stop your application here.<br>
 Use the file field to browse to your executable. When you run your application through Napkin, its log messages will be forwarded into the log view.<br>
 If your application logs object names in the proper format, you can double-click log messages with that link in the Log panel and it will highlight the appropriate object/property in the editor.  
  
-Curve {#napkin_curveeditor
+Curve {#napkin_curveeditor}
 -----------------------
 ![](@ref content/napkin-panel-curve.png)
 When a FCurve resource is selected in the Resources panel, the Curve panel allows for visual editing of that function curve.
