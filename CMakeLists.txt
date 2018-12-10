@@ -95,7 +95,7 @@ add_subdirectory(qt)
 
 # tools targets
 add_subdirectory(tools/fbxconverter)
-add_subdirectory(napkin)
+add_subdirectory(tools/napkin)
 
 # executable targets
 add_subdirectory(test/render)
