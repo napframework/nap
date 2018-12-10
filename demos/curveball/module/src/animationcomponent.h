@@ -3,16 +3,17 @@
 #include <fcurve.h>
 #include <nap/resourceptr.h>
 #include <transformcomponent.h>
-#include "component.h"
-#include "mesh.h"
 
 namespace nap
 {
 	// Forward declares
 	class TransformComponent;
 	class AnimatorComponentInstance;
-	class ParticleMesh;
-
+	
+	/**
+	 * Resource part of the Component.
+	 * The instance sets the y value of a transform based on the value evaluated from a curve resource.
+	 */
 	class AnimatorComponent : public Component
 	{
 		RTTI_ENABLE(Component)
@@ -32,8 +33,9 @@ namespace nap
 
 
 	/**
-	 * Runtime particle emitter component
-	 */
+	* Instance part of the Component.
+	* Updates the y value of a transform based on the value evaluated from a curve resource.
+	*/
 	class AnimatorComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
@@ -41,13 +43,29 @@ namespace nap
 		// Default constructor
 		AnimatorComponentInstance(EntityInstance& entity, Component& resource);
 
+		/**
+		 * Called on initialization of this component
+		 * Fetches the transform and curve resource needed by the update call
+		 * @param errorState contains the error if initialization fails
+		 */
 		bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * Called every frame by the app loop
+		 * @param deltaTime time in between frames in seconds
+		 */
 		void update(double deltaTime) override;
 
+		/**
+		 * @return the current value of the sampled curve
+		 */
+		float getCurveValue() const							{ return mCurveValue; }
+
 	private:
-		float mLocalTime = 0; // animation time
-		TransformComponentInstance* mTransform = nullptr; // la forme de trans
+		float mLocalTime  = 0.0f;							///< Local Animation time
+		float mCurveValue = 0.0f;							///< Current Curve Value
+		TransformComponentInstance* mTransform = nullptr;	///< Transform component of the sphere
+		math::FloatFCurve* mCurve = nullptr;				///< Pointer to the curve we want to sample
 
 	};
 }
