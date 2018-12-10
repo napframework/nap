@@ -2,7 +2,7 @@
     "title": "Animation",
     "version": "0.1",
     "modules": [
-        "mod_demo_animation",
+        "mod_curveball",
         "mod_napapp"
     ]
 }

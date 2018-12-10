@@ -42,10 +42,10 @@ namespace napkin
 		void setComplexValue(nap::math::FComplex<float, float>& c, const QPointF& p);
 
 		nap::math::FunctionCurve<float, float>& mCurve;
-		QMap<nap::math::FCurveInterp, napqt::AbstractCurve::InterpType> mInterpMap = {
-				{nap::math::FCurveInterp::Stepped, napqt::AbstractCurve::InterpType::Stepped},
-				{nap::math::FCurveInterp::Linear,  napqt::AbstractCurve::InterpType::Linear},
-				{nap::math::FCurveInterp::Bezier,  napqt::AbstractCurve::InterpType::Bezier},
+		QMap<nap::math::ECurveInterp, napqt::AbstractCurve::InterpType> mInterpMap = {
+				{nap::math::ECurveInterp::Stepped, napqt::AbstractCurve::InterpType::Stepped},
+				{nap::math::ECurveInterp::Linear,  napqt::AbstractCurve::InterpType::Linear},
+				{nap::math::ECurveInterp::Bezier,  napqt::AbstractCurve::InterpType::Bezier},
 		};
 	};
 

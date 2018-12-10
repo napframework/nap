@@ -1,4 +1,4 @@
-#include "animationapp.h"
+#include "curveballapp.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -15,7 +15,7 @@
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AnimationApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CurveballApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -24,7 +24,7 @@ namespace nap
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
-	bool AnimationApp::init(utility::ErrorState& error)
+	bool CurveballApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -32,9 +32,9 @@ namespace nap
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 
-		// Get resource manager and load
+		// Get resource manager and load curveball json file
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("demo_animation.json", error))
+		if (!mResourceManager->loadFile("curveball.json", error))
 			return false;
 
 		// Extract loaded resources
@@ -55,7 +55,7 @@ namespace nap
 	* to the input components of a set of entities, in this case our camera.
 	* After that we setup the gui.
 	*/
-	void AnimationApp::update(double deltaTime)
+	void CurveballApp::update(double deltaTime)
 	{
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
@@ -64,6 +64,14 @@ namespace nap
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
+
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
 	}
 
 	
@@ -72,7 +80,7 @@ namespace nap
 	 * All the objects in the scene are rendered at once including the line + normals and canvas
 	 * This demo doesn't require special render steps
 	 */
-	void AnimationApp::render()
+	void CurveballApp::render()
 	{
 		// Clear opengl context related resources that are not necessary any more
 		mRenderService->destroyGLContextResources({ mRenderWindow });
@@ -101,7 +109,7 @@ namespace nap
 	 * On the next update the render service automatically processes all window events. 
 	 * If you want to listen to specific events associated with a window it's best to listen to a window's mWindowEvent signal
 	 */
-	void AnimationApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void CurveballApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
@@ -111,7 +119,7 @@ namespace nap
 	 * Called by the app loop. It's best to forward messages to the input service for further processing later on
 	 * In this case we also check if we need to toggle full-screen or exit the running app
 	 */
-	void AnimationApp::inputMessageReceived(InputEventPtr inputEvent)
+	void CurveballApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		// Escape the loop when esc is pressed
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
@@ -131,7 +139,7 @@ namespace nap
 	}
 
 
-	int AnimationApp::shutdown()
+	int CurveballApp::shutdown()
 	{
 		return 0;
 	}

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(demo_animation)
+project(curveball)
 
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)

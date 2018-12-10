@@ -2,10 +2,10 @@
 
 using namespace nap::math;
 
-RTTI_BEGIN_ENUM(nap::math::FCurveInterp)
-	RTTI_ENUM_VALUE(nap::math::FCurveInterp::Linear,   "Linear"),
-	RTTI_ENUM_VALUE(nap::math::FCurveInterp::Stepped,  "Stepped"),
-	RTTI_ENUM_VALUE(nap::math::FCurveInterp::Bezier,   "Bezier")
+RTTI_BEGIN_ENUM(nap::math::ECurveInterp)
+	RTTI_ENUM_VALUE(nap::math::ECurveInterp::Linear,   "Linear"),
+	RTTI_ENUM_VALUE(nap::math::ECurveInterp::Stepped,  "Stepped"),
+	RTTI_ENUM_VALUE(nap::math::ECurveInterp::Bezier,   "Bezier")
 RTTI_END_ENUM
 
 RTTI_BEGIN_STRUCT(nap::math::FloatFComplex)
