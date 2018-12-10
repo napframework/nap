@@ -1,4 +1,4 @@
-project(mod_demo_animation)
+project(mod_curveball)
 
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)

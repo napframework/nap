@@ -1,14 +1,14 @@
 
 // Local Includes
-#include "animationapp.h"
+#include "curveballapp.h"
 
 // Nap includes
 #include <nap/logger.h>
 #include <apprunner.h>
 
 /**
- * Hello World Demo
- * refer to helloworldapp.h for a more detailed description of the application
+ * Curveball Demo.
+ * Refer to curveballapp.h for a more detailed description of the application.
  */
 int main(int argc, char *argv[])
 {
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner using default event handler
-	nap::AppRunner<nap::AnimationApp, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::CurveballApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

@@ -65,7 +65,7 @@ const napqt::AbstractCurve::InterpType FCurve::interpolation(int pointIndex) con
 
 void FCurve::setInterpolation(int pointIndex, const napqt::AbstractCurve::InterpType& interp)
 {
-	nap::math::FCurveInterp destInterp = napqt::keyFromValue(mInterpMap, interp, nap::math::FCurveInterp::Bezier);
+	nap::math::ECurveInterp destInterp = napqt::keyFromValue(mInterpMap, interp, nap::math::ECurveInterp::Bezier);
 	mCurve.mPoints[pointIndex].mInterp = destInterp;
 	pointsChanged({pointIndex}, true);
 }

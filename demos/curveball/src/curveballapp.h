@@ -10,21 +10,23 @@
 #include <inputservice.h>
 #include <imguiservice.h>
 #include <app.h>
-#include <spheremesh.h>
+#include <spheremesh.h>	
 
 namespace nap
 {
 	using namespace rtti;
 
 	/**
-	 * This demonstrates the use of nap function curves as an animation driver
-	 *
+	 * This demo demonstrates how to use a Curve (resource) to animate a sphere.
+	 * Use Napkin (our editor) to update or alter the various points of the curve.
+	 * Edits to the curve in Napkin are directly applied to the animation of the sphere in the live running demo!
+	 * Curve edits are stored in the curveball.json file and applied immediately when the file is saved.
 	 */
-	class AnimationApp : public App
+	class CurveballApp : public App
 	{
 		RTTI_ENABLE(App)
 	public:
-		AnimationApp(nap::Core& core) : App(core)	{ }
+		CurveballApp(nap::Core& core) : App(core)	{ }
 
 		/**
 		 *	Initialize app specific data structures
@@ -65,15 +67,6 @@ namespace nap
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mLineEntity = nullptr;				//< Pointer to the entity that holds the sphere
-		ObjectPtr<EntityInstance> mLaserEntity = nullptr;				//< Pointer to the entity that represents the laser canvas
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-
-		// Colors
-		RGBColorFloat mColorTwo = { 0.784f, 0.411f, 0.411f };			//< Line first color	
-		RGBColorFloat mColorOne = { 1.0f, 1.0f, 1.0f };					//< Line second color
-		float mBlendSpeed = 1.0f;										//< Line blend speed
-		float mLineSize = 0.5f;											//< Size of the line (normalized)
-		glm::vec2 mLinePosition = { 0.5f, 0.5f };						//< Position of the line relative to canvas
 	};
 }
