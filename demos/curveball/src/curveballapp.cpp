@@ -86,7 +86,7 @@ namespace nap
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform.setValue(global_pos);
 
-		// Find the animtion uniform in the material of the plane.
+		// Find the animation uniform in the material of the plane.
 		nap::RenderableMeshComponentInstance& plane_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		nap::UniformFloat& animator_uniform = plane_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("animationValue");
 
