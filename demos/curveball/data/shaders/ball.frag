@@ -12,11 +12,6 @@ uniform vec3 	inCameraPosition;		//< Camera World Space Position
 // output
 out vec4 out_Color;
 
-// uniforms
-uniform sampler2D	mCanvas;
-uniform vec3		mColor;
-
-
 const vec3		lightPos = vec3(0.0, 20.0, 10.0);
 const float 	lightIntensity = 1.0;
 const float 	specularIntensity = 0.5;
@@ -28,6 +23,7 @@ const vec3		colorOne = vec3(0.784, 0.411, 0.411);
 const vec3		colorThr = vec3(0.176, 0.180, 0.258);
 const vec3		colorFor = vec3(0.321, 0.329, 0.415);
 const float		uvOffset = 0.015;
+const vec3		ballColor = vec3(0.784, 0.411, 0.411);
 
 // Shades a color based on a light, incoming normal and position should be in object space
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
@@ -66,10 +62,8 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 void main()
 {
 	vec2 uvs = vec2(passUVs.x, passUVs.y);
-//	vec4 canvas_color = texture(mCanvas, uvs);
-    vec3 col = vec3(1.0, 0.5, 0.0);
+    vec3 col = ballColor;
 	vec3 output_color = applyLight(col, passNormal, passPosition);
 
 	out_Color =  vec4(output_color.rgb, 1.0);
-//    out_Color = output_color;
 }

@@ -1,4 +1,6 @@
+// Local Includes
 #include "curveballapp.h"
+#include "animationcomponent.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -45,6 +47,8 @@ namespace nap
 
 		// Find the entities we're interested in
 		mCameraEntity = scene->findEntity("Camera");
+		mSphereEntity = scene->findEntity("Sphere");
+		mPlaneEntity = scene->findEntity("Plane");
 		return true;
 	}
 	
@@ -65,20 +69,37 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Draw some gui elements
+		// Setup some gui elements to be drawn later
 		ImGui::Begin("Controls");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
+
+		// Find the camera location uniform in the material of the sphere
+		nap::RenderableMeshComponentInstance& sphere_mesh = mSphereEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::UniformVec3& cam_loc_uniform = sphere_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
+
+		// Set it to the current camera location
+		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
+		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
+		cam_loc_uniform.setValue(global_pos);
+
+		// Find the animtion uniform in the material of the plane.
+		nap::RenderableMeshComponentInstance& plane_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::UniformFloat& animator_uniform = plane_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("animationValue");
+
+		// Set it to the current animation value of the sphere.
+		nap::AnimatorComponentInstance& animator_comp = mSphereEntity->getComponent<nap::AnimatorComponentInstance>();
+		animator_uniform.setValue(animator_comp.getCurveValue());
 	}
 
 	
 	/**
 	 * Render loop is rather straight forward. 
-	 * All the objects in the scene are rendered at once including the line + normals and canvas
-	 * This demo doesn't require special render steps
+	 * All the objects in the scene are rendered at once including the sphere and plane.
+	 * This demo doesn't require special render steps.
 	 */
 	void CurveballApp::render()
 	{
