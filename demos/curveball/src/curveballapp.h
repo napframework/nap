@@ -21,6 +21,7 @@ namespace nap
 	 * Use Napkin (our editor) to update or alter the various points of the curve.
 	 * Edits to the curve in Napkin are directly applied to the animation of the sphere in the live running demo!
 	 * Curve edits are stored in the curveball.json file and applied immediately when the file is saved.
+	 * The component inside mod_curveball actually animates the sphere based on the value read from the curve.
 	 */
 	class CurveballApp : public App
 	{
