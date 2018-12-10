@@ -37,6 +37,7 @@ namespace nap
 
 		// Populate our map of callbacks
 		mOscEventFuncs.emplace(std::make_pair("brightness", &RandomOSCHandlerInstance::updateBrightness));
+		mOscEventFuncs.emplace(std::make_pair("control-group-brightness", &RandomOSCHandlerInstance::updateControlGroupBrightness));
 
 		return true;
 	}
@@ -52,12 +53,12 @@ namespace nap
 	{
 		std::vector<std::string> addressParts;
 		utility::splitString(oscEvent.getAddress(), '/', addressParts);
-		assert(addressParts.size() > 1);
-		assert(addressParts.front() == "light-grid");
+		assert(addressParts.size() > 2);
+		assert(addressParts[1] == "light-grid");
 
-		addressParts.erase(addressParts.begin());
+		addressParts.erase(addressParts.begin(), addressParts.begin() + 2);
 
-		auto it = mOscEventFuncs.find(addressParts[1]);
+		auto it = mOscEventFuncs.find(addressParts[0]);
 		if (it == mOscEventFuncs.end())
 		{
 			nap::Logger::warn("unknown osc event: %s", oscEvent.getAddress().c_str());
@@ -65,11 +66,15 @@ namespace nap
 		}
 
 		// Call found callback
-		addressParts.erase(addressParts.begin(), addressParts.begin() + 2);
+		addressParts.erase(addressParts.begin());
 		(this->*(it->second))(oscEvent, addressParts);
 	}
 
-	void RandomOSCHandlerInstance::updateBrightness(const OSCEvent& event, const std::vector<std::string>& args) {
+	void RandomOSCHandlerInstance::updateBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args) {
+		mApplyCombinationComponent->mBrightness = oscEvent[0].asFloat();
+	}
+
+	void RandomOSCHandlerInstance::updateControlGroupBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args) {
 
 	}
 }
