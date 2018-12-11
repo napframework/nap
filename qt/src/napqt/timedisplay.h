@@ -3,74 +3,78 @@
 #include <QString>
 #include <QList>
 
-namespace napqt
+namespace nap
 {
-	class IntervalDisplay
+	namespace qt
 	{
-	public:
-		virtual QString name() const = 0;
+		class IntervalDisplay
+		{
+		public:
+			virtual QString name() const = 0;
 
-		virtual qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const = 0;
+			virtual qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const = 0;
 
-		virtual const QString timeToString(qreal interval, qreal time) const = 0;
+			virtual const QString timeToString(qreal interval, qreal time) const = 0;
 
-		void setHatchSpacing(qreal minor, qreal major);
+			void setHatchSpacing(qreal minor, qreal major);
 
-		qreal minorHatchSpacing() const { return mMinorHatchSpacing; }
-		qreal majorHatchSpacing() const { return mMajorHatchSpacing; }
+			qreal minorHatchSpacing() const { return mMinorHatchSpacing; }
+			qreal majorHatchSpacing() const { return mMajorHatchSpacing; }
 
-	private:
-		qreal mMinorHatchSpacing = 10;
-		qreal mMajorHatchSpacing = 100;
-	};
+		private:
+			qreal mMinorHatchSpacing = 10;
+			qreal mMajorHatchSpacing = 100;
+		};
 
-	class SMPTEIntervalDisplay : public IntervalDisplay
-	{
-	public:
-		explicit SMPTEIntervalDisplay(int framerate = 30);
+		class SMPTEIntervalDisplay : public IntervalDisplay
+		{
+		public:
+			explicit SMPTEIntervalDisplay(int framerate = 30);
 
-		QString name() const override { return "SMPTE"; };
+			QString name() const override { return "SMPTE"; };
 
-		void setFramerate(int fps);
+			void setFramerate(int fps);
 
-		qreal calcStepInterval(qreal windowSize, qreal viewSize, qreal minStepSize) const override;
+			qreal calcStepInterval(qreal windowSize, qreal viewSize, qreal minStepSize) const override;
 
-		const QString timeToString(qreal interval, qreal time) const override;
+			const QString timeToString(qreal interval, qreal time) const override;
 
-	private:
-		int mFramerate;
-	};
+		private:
+			int mFramerate;
+		};
 
-	class GeneralTimeIntervalDisplay : public IntervalDisplay
-	{
-	public:
-		QString name() const override { return "General"; };
+		class GeneralTimeIntervalDisplay : public IntervalDisplay
+		{
+		public:
+			QString name() const override { return "General"; };
 
-		qreal calcStepInterval(qreal windowSize, qreal viewSize, qreal minStepSize) const override;
+			qreal calcStepInterval(qreal windowSize, qreal viewSize, qreal minStepSize) const override;
 
-		const QString timeToString(qreal interval, qreal time) const override;
-	};
+			const QString timeToString(qreal interval, qreal time) const override;
+		};
 
-	class FloatIntervalDisplay : public IntervalDisplay
-	{
-	public:
-		QString name() const override { return "Float"; };
+		class FloatIntervalDisplay : public IntervalDisplay
+		{
+		public:
+			QString name() const override { return "Float"; };
 
-		qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const override;
+			qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const override;
 
-		const QString timeToString(qreal interval, qreal time) const override;
-	};
+			const QString timeToString(qreal interval, qreal time) const override;
+		};
 
-	class AnimationIntervalDisplay : public IntervalDisplay
-	{
-	public:
-		explicit AnimationIntervalDisplay(int framerate=30) : mFramerate(framerate), IntervalDisplay() {}
-		QString name() const override { return "Animation"; };
-		qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const override;
-		const QString timeToString(qreal interval, qreal time) const override;
-		const int framerate() const { return mFramerate; }
-	private:
-		int mFramerate;
-	};
+		class AnimationIntervalDisplay : public IntervalDisplay
+		{
+		public:
+			explicit AnimationIntervalDisplay(int framerate = 30) : mFramerate(framerate), IntervalDisplay() {}
+			QString name() const override { return "Animation"; };
+			qreal calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const override;
+			const QString timeToString(qreal interval, qreal time) const override;
+			const int framerate() const { return mFramerate; }
+		private:
+			int mFramerate;
+		};
 
-} // namespace napqt
+	} // namespace qt
+	
+} // namespace nap

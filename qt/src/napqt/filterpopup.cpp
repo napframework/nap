@@ -4,9 +4,9 @@
 
 #include "qtutils.h"
 
+using namespace nap::qt;
 
-
-napqt::FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : QMenu(nullptr)
+FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : QMenu(nullptr)
 {
 	mTreeView.setModel(&model);
 	setLayout(&mLayout);
@@ -18,13 +18,13 @@ napqt::FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : QM
 	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &FilterPopup::confirm);
 }
 
-void napqt::FilterPopup::showEvent(QShowEvent* event)
+void FilterPopup::showEvent(QShowEvent* event)
 {
 	QMenu::showEvent(event);
 	mTreeView.getLineEdit().setFocus();
 }
 
-const QString napqt::FilterPopup::fromStringList(QWidget* parent, const QList<QString>& strings)
+const QString FilterPopup::fromStringList(QWidget* parent, const QList<QString>& strings)
 {
 	QStandardItemModel model;
 	for (const auto& string : strings)
@@ -43,7 +43,7 @@ const QString napqt::FilterPopup::fromStringList(QWidget* parent, const QList<QS
 	return selected->text();
 }
 
-void napqt::FilterPopup::keyPressEvent(QKeyEvent* event)
+void FilterPopup::keyPressEvent(QKeyEvent* event)
 {
 	QMenu::keyPressEvent(event);
 
@@ -55,14 +55,14 @@ void napqt::FilterPopup::keyPressEvent(QKeyEvent* event)
 		moveSelection(1);
 }
 
-void napqt::FilterPopup::moveSelection(int dir)
+void FilterPopup::moveSelection(int dir)
 {
 	auto selectedIndexes = mTreeView.getSelectionModel()->selection().indexes();
 	if (selectedIndexes.empty())
 		return;
 
 	int row = selectedIndexes.at(0).row();
-	int newRow = napqt::clamp(row + dir, 0, mTreeView.getModel()->rowCount() - 1);
+	int newRow = clamp(row + dir, 0, mTreeView.getModel()->rowCount() - 1);
 
 	if (row == newRow)
 		return;
@@ -73,13 +73,13 @@ void napqt::FilterPopup::moveSelection(int dir)
 }
 
 
-void napqt::FilterPopup::confirm()
+void FilterPopup::confirm()
 {
 	mWasAccepted = true;
 	close();
 }
 
-QSize napqt::FilterPopup::sizeHint() const
+QSize FilterPopup::sizeHint() const
 {
 	return mSize;
 }

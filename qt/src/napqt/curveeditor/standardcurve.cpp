@@ -7,7 +7,8 @@
 #include <QtDebug>
 #include <napqt/qtutils.h>
 
-using namespace napqt;
+using namespace nap::qt;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// StandardCurveModel
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +75,7 @@ StandardCurve::StandardCurve(StandardCurveModel* parent) : AbstractCurve(parent)
 
 }
 
-int napqt::StandardCurve::pointCount() const
+int nap::qt::StandardCurve::pointCount() const
 {
 	return static_cast<int>(mPoints.size());
 }
@@ -138,7 +139,7 @@ void StandardCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 	pointsChanged(indexes, false);
 }
 
-void napqt::StandardCurve::addPoint(qreal time, qreal value)
+void nap::qt::StandardCurve::addPoint(qreal time, qreal value)
 {
 	int idx = static_cast<int>(mPoints.size());
 
@@ -151,7 +152,7 @@ void napqt::StandardCurve::addPoint(qreal time, qreal value)
 	pointsAdded({idx});
 }
 
-void napqt::StandardCurve::removePoint(int index)
+void nap::qt::StandardCurve::removePoint(int index)
 {
 	const auto& point = mPoints.at(static_cast<unsigned long>(index));
 	removeFromMapByValue(mSortedPoints, point.get());
@@ -168,7 +169,7 @@ StandardCurveModel* StandardCurve::model()
 
 void StandardCurve::removePoints(const QList<int>& indices)
 {
-	for (int idx : napqt::reverseSort(indices))
+	for (int idx : nap::qt::reverseSort(indices))
 	{
 		auto p = mPoints.at(static_cast<unsigned long>(idx)).get();
 		removeFromMapByValue(mSortedPoints, p);
@@ -200,7 +201,7 @@ qreal StandardCurve::evaluate(qreal time) const
 	auto d = next->pos;
 	auto c = d + next->inTan;
 
-	napqt::limitOverhangQPoints(a, b, c, d);
+	nap::qt::limitOverhangQPoints(a, b, c, d);
 
 	switch (curr->interp)
 	{

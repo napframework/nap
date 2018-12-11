@@ -38,7 +38,7 @@ namespace napkin
 
 	private:
 		QVBoxLayout mLayout;	  // Layout
-		napqt::FilterTreeView mTreeView; // TreeView
+		nap::qt::FilterTreeView mTreeView; // TreeView
 		TypeModel mModel;		  // The model
 	};
 };

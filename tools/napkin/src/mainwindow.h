@@ -25,7 +25,7 @@ namespace napkin
 	 * The main application window. It will spawn and keep all the application's panels.
 	 * Our application's data is managed by AppContext.
 	 */
-	class MainWindow : public napqt::BaseWindow
+	class MainWindow : public nap::qt::BaseWindow
 	{
 		Q_OBJECT
 	public:
@@ -109,7 +109,7 @@ namespace napkin
 		CurvePanel mCurvePanel;
 		ThemeSelectionMenu mThemeMenu;
 		ScenePanel mScenePanel;
-		napqt::ErrorDialog mErrorDialog;
+		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;
 	};

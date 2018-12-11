@@ -1,6 +1,6 @@
 #include "abstractcurvemodel.h"
 
-using namespace napqt;
+using namespace nap::qt;
 
 AbstractCurve::AbstractCurve(AbstractCurveModel* parent) : QObject(parent)
 {

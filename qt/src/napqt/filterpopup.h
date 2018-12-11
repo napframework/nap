@@ -4,63 +4,67 @@
 
 #include "filtertreeview.h"
 
-namespace napqt
+namespace nap
 {
-
-	/**
-	 * General purpose popup dialog showing a filterable tree.
-	 */
-	class FilterPopup : public QMenu
+	namespace qt
 	{
-	public:
-		explicit FilterPopup(QWidget* parent, QStandardItemModel& model);
-
-	public:
-
 
 		/**
-		 * Display a selection dialog with the selected strings. The user can filter the list and select an item.
-		 * @param parent The parent widget to attach to
-		 * @param strings The list of strings to choose from
-		 * @return The selected string
+		 * General purpose popup dialog showing a filterable tree.
 		 */
-		static const QString fromStringList(QWidget* parent, const QList<QString>& strings);
+		class FilterPopup : public QMenu
+		{
+		public:
+			explicit FilterPopup(QWidget* parent, QStandardItemModel& model);
 
-		/**
-		 * Override to provide a reasonable size
-		 */
-		QSize sizeHint() const override;
+		public:
 
-		/**
-		 * @return true if the user choice was confirmed, false if the dialog was dismissed
-		 */
-		bool wasAccepted() const { return mWasAccepted; }
 
-		/**
-		 * @return The item selected by the user
-		 */
-		QStandardItem* getSelectedItem() { return mTreeView.getSelectedItem(); }
+			/**
+			 * Display a selection dialog with the selected strings. The user can filter the list and select an item.
+			 * @param parent The parent widget to attach to
+			 * @param strings The list of strings to choose from
+			 * @return The selected string
+			 */
+			static const QString fromStringList(QWidget* parent, const QList<QString>& strings);
 
-	protected:
-		/**
-		 * Set focus etc
-		 */
-		void showEvent(QShowEvent* event) override;
+			/**
+			 * Override to provide a reasonable size
+			 */
+			QSize sizeHint() const override;
 
-		/**
-		 * Capture keyboard for confirmation etc
-		 */
-		void keyPressEvent(QKeyEvent* event) override;
+			/**
+			 * @return true if the user choice was confirmed, false if the dialog was dismissed
+			 */
+			bool wasAccepted() const { return mWasAccepted; }
 
-	private:
-		void moveSelection(int dir);
-		void confirm();
+			/**
+			 * @return The item selected by the user
+			 */
+			QStandardItem* getSelectedItem() { return mTreeView.getSelectedItem(); }
 
-		bool mWasAccepted = false;
-		FilterTreeView mTreeView;
-		QVBoxLayout mLayout;
-		QSize mSize = { 400, 400 };
+		protected:
+			/**
+			 * Set focus etc
+			 */
+			void showEvent(QShowEvent* event) override;
 
-	};
+			/**
+			 * Capture keyboard for confirmation etc
+			 */
+			void keyPressEvent(QKeyEvent* event) override;
 
-} // namespace napqt
+		private:
+			void moveSelection(int dir);
+			void confirm();
+
+			bool mWasAccepted = false;
+			FilterTreeView mTreeView;
+			QVBoxLayout mLayout;
+			QSize mSize = {400, 400};
+
+		};
+
+	} // namespace qt
+
+} // namespace nap

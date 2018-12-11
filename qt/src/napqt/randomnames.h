@@ -3,6 +3,9 @@
 #include <string>
 #include <cstdlib>
 
+/**
+ * Random generation for testing purposes
+ */
 namespace namegen
 {
 	int randint(int n);

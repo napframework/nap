@@ -1,12 +1,12 @@
 #include "curvemath.h"
 
-void napqt::limitOverhang(qreal& x0, qreal& x1, qreal& x2, qreal& x3)
+void nap::qt::limitOverhang(qreal& x0, qreal& x1, qreal& x2, qreal& x3)
 {
 	x1 = qMin(x1, x3);
 	x2 = qMax(x2, x0);
 }
 
-void napqt::limitOverhangQPoints(QPointF& pa, QPointF& pb, QPointF& pc, QPointF& pd)
+void nap::qt::limitOverhangQPoints(QPointF& pa, QPointF& pb, QPointF& pc, QPointF& pd)
 {
 	qreal a = pa.x();
 	qreal b = pb.x();

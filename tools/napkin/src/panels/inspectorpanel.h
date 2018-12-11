@@ -132,7 +132,7 @@ namespace napkin
 
 	private:
 		InspectorModel mModel;					   // The model for the view
-		napqt::FilterTreeView mTreeView;	       // A tree view
+		nap::qt::FilterTreeView mTreeView;	       // A tree view
 		QVBoxLayout mLayout;					   // The main layout
 		PropertyValueItemDelegate mWidgetDelegate; // Display a different editor based on the property type
 	};

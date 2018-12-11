@@ -103,13 +103,13 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 			std::string filename = path_item->getPath().getValue().to_string(&ok);
 			if (nap::utility::fileExists(filename))
 			{
-				menu.addAction("Show file in " + napqt::fileBrowserName(), [filename]()
+				menu.addAction("Show file in " + nap::qt::fileBrowserName(), [filename]()
 				{
-					napqt::revealInFileBrowser(QString::fromStdString(filename));
+					nap::qt::revealInFileBrowser(QString::fromStdString(filename));
 				});
                 menu.addAction("Open in external editor" , [filename]()
                 {
-					napqt::openInExternalEditor(QString::fromStdString(filename));
+					nap::qt::openInExternalEditor(QString::fromStdString(filename));
                 });
 			}
 
@@ -200,7 +200,7 @@ void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop
 
 
 
-	auto pathItem = napqt::findItemInModel(mModel, [prop](QStandardItem* item)
+	auto pathItem = nap::qt::findItemInModel(mModel, [prop](QStandardItem* item)
 	{
 		auto pitem = dynamic_cast<PropertyPathItem*>(item);
 		if (pitem == nullptr)

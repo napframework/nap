@@ -4,145 +4,144 @@
 #include <QVector>
 #include <QMap>
 
-namespace napqt
+using namespace nap::qt;
+
+static const qreal MILLISECOND = 0.001;
+static const qreal SECOND = 1.0;
+static const qreal MINUTE = SECOND * 60;
+static const qreal HOUR = MINUTE * 60;
+static const qreal DAY = HOUR * 24;
+static const qreal WEEK = DAY * 7;
+static const qreal YEAR = WEEK * 52;
+
+static const qreal FRAME_12 = 1.0 / 12.0;
+static const qreal FRAME_24 = 1.0 / 24.0;
+static const qreal FRAME_25 = 1.0 / 25.0;
+static const qreal FRAME_30 = 1.0 / 30.0;
+static const qreal FRAME_60 = 1.0 / 12.0;
+
+static const QMap<int, QVector<qreal>> INTERVALS_FRAME = {
+		{12, {
+					 FRAME_12,
+					 FRAME_12 * 2,
+					 FRAME_12 * 6
+			 }},
+		{24, {
+					 FRAME_24,
+					 FRAME_24 * 2,
+					 FRAME_24 * 6,
+					 FRAME_24 * 12,
+			 }},
+		{25, {
+					 FRAME_25,
+					 FRAME_25 * 5,
+			 }},
+		{30, {
+					 FRAME_30,
+					 FRAME_30 * 2,
+					 FRAME_30 * 5,
+					 FRAME_30 * 15,
+			 }},
+		{60, {
+					 FRAME_60,
+					 FRAME_60 * 2,
+					 FRAME_60 * 5,
+					 FRAME_60 * 15,
+					 FRAME_60 * 30,
+			 }},
+};
+
+static const QVector<qreal> INTERVALS_SMPTE = {
+		SECOND,
+		SECOND * 2,
+		SECOND * 5,
+		SECOND * 10,
+		SECOND * 20,
+		SECOND * 30,
+		MINUTE,
+		MINUTE * 2,
+		MINUTE * 5,
+		MINUTE * 10,
+		MINUTE * 15,
+		MINUTE * 30,
+		HOUR,
+		HOUR * 2,
+		HOUR * 5,
+		HOUR * 10,
+		HOUR * 20,
+		HOUR * 50,
+		HOUR * 100,
+};
+
+static const QVector<qreal> INTERVALS_TIME = {
+		MILLISECOND,
+		MILLISECOND * 2,
+		MILLISECOND * 5,
+		MILLISECOND * 10,
+		MILLISECOND * 20,
+		MILLISECOND * 50,
+		MILLISECOND * 100,
+		MILLISECOND * 200,
+		MILLISECOND * 500,
+		SECOND,
+		SECOND * 2,
+		SECOND * 5,
+		SECOND * 10,
+		SECOND * 30,
+		MINUTE,
+		MINUTE * 2,
+		MINUTE * 5,
+		MINUTE * 10,
+		MINUTE * 15,
+		MINUTE * 20,
+		MINUTE * 30,
+		HOUR,
+		HOUR * 2,
+		HOUR * 3,
+		HOUR * 6,
+		HOUR * 12,
+		DAY,
+		WEEK,
+		WEEK * 4,
+		YEAR,
+};
+
+static const QMap<qreal, QString> TIME_SUFFIXES = {
+		{MILLISECOND, "ms"},
+		{SECOND,      "s"},
+		{MINUTE,      "m"},
+		{HOUR,        "h"},
+		{DAY,         "d"},
+		{WEEK,        "w"},
+		{YEAR,        "yr"},
+};
+
+bool calcInterval(const qreal windowSize, const qreal viewSize, const qreal minStepSize,
+				  const QVector<qreal>& intervals, qreal& outValue)
 {
-
-	static const qreal MILLISECOND = 0.001;
-	static const qreal SECOND = 1.0;
-	static const qreal MINUTE = SECOND * 60;
-	static const qreal HOUR = MINUTE * 60;
-	static const qreal DAY = HOUR * 24;
-	static const qreal WEEK = DAY * 7;
-	static const qreal YEAR = WEEK * 52;
-
-	static const qreal FRAME_12 = 1.0 / 12.0;
-	static const qreal FRAME_24 = 1.0 / 24.0;
-	static const qreal FRAME_25 = 1.0 / 25.0;
-	static const qreal FRAME_30 = 1.0 / 30.0;
-	static const qreal FRAME_60 = 1.0 / 12.0;
-
-	static const QMap<int, QVector<qreal>> INTERVALS_FRAME = {
-			{12, {
-						 FRAME_12,
-						 FRAME_12 * 2,
-						 FRAME_12 * 6
-				 }},
-			{24, {
-						 FRAME_24,
-						 FRAME_24 * 2,
-						 FRAME_24 * 6,
-						 FRAME_24 * 12,
-				 }},
-			{25, {
-						 FRAME_25,
-						 FRAME_25 * 5,
-				 }},
-			{30, {
-						 FRAME_30,
-						 FRAME_30 * 2,
-						 FRAME_30 * 5,
-						 FRAME_30 * 15,
-				 }},
-			{60, {
-						 FRAME_60,
-						 FRAME_60 * 2,
-						 FRAME_60 * 5,
-						 FRAME_60 * 15,
-						 FRAME_60 * 30,
-				 }},
-	};
-
-	static const QVector<qreal> INTERVALS_SMPTE = {
-			SECOND,
-			SECOND * 2,
-			SECOND * 5,
-			SECOND * 10,
-			SECOND * 20,
-			SECOND * 30,
-			MINUTE,
-			MINUTE * 2,
-			MINUTE * 5,
-			MINUTE * 10,
-			MINUTE * 15,
-			MINUTE * 30,
-			HOUR,
-			HOUR * 2,
-			HOUR * 5,
-			HOUR * 10,
-			HOUR * 20,
-			HOUR * 50,
-			HOUR * 100,
-	};
-
-	static const QVector<qreal> INTERVALS_TIME = {
-			MILLISECOND,
-			MILLISECOND * 2,
-			MILLISECOND * 5,
-			MILLISECOND * 10,
-			MILLISECOND * 20,
-			MILLISECOND * 50,
-			MILLISECOND * 100,
-			MILLISECOND * 200,
-			MILLISECOND * 500,
-			SECOND,
-			SECOND * 2,
-			SECOND * 5,
-			SECOND * 10,
-			SECOND * 30,
-			MINUTE,
-			MINUTE * 2,
-			MINUTE * 5,
-			MINUTE * 10,
-			MINUTE * 15,
-			MINUTE * 20,
-			MINUTE * 30,
-			HOUR,
-			HOUR * 2,
-			HOUR * 3,
-			HOUR * 6,
-			HOUR * 12,
-			DAY,
-			WEEK,
-			WEEK * 4,
-			YEAR,
-	};
-
-	static const QMap<qreal, QString> TIME_SUFFIXES = {
-			{MILLISECOND, "ms"},
-			{SECOND, "s"},
-			{MINUTE, "m"},
-			{HOUR, "h"},
-			{DAY, "d"},
-			{WEEK, "w"},
-			{YEAR, "yr"},
-	};
-
-	bool calcInterval(const qreal windowSize, const qreal viewSize, const qreal minStepSize,
-					  const QVector<qreal>& intervals, qreal& outValue)
+	for (const auto& ival : intervals)
 	{
-		for (const auto& ival : intervals)
+		qreal steps = windowSize / ival;
+		qreal stepSize = viewSize / steps;
+		if (stepSize > minStepSize)
 		{
-			qreal steps = windowSize / ival;
-			qreal stepSize = viewSize / steps;
-			if (stepSize > minStepSize)
-			{
-				outValue = ival;
-				return true;
-			}
+			outValue = ival;
+			return true;
 		}
-		return false;
 	}
+	return false;
 }
 
-void napqt::IntervalDisplay::setHatchSpacing(qreal minor, qreal major)
+
+void IntervalDisplay::setHatchSpacing(qreal minor, qreal major)
 {
 	mMinorHatchSpacing = minor;
 	mMajorHatchSpacing = major;
 }
 
-qreal napqt::SMPTEIntervalDisplay::calcStepInterval(qreal windowSize,
-												 qreal viewSize,
-												 qreal minStepSize) const
+qreal SMPTEIntervalDisplay::calcStepInterval(qreal windowSize,
+													  qreal viewSize,
+													  qreal minStepSize) const
 {
 	qreal ival;
 	if (INTERVALS_FRAME.contains(mFramerate))
@@ -157,7 +156,7 @@ qreal napqt::SMPTEIntervalDisplay::calcStepInterval(qreal windowSize,
 	return -1;
 }
 
-const QString napqt::SMPTEIntervalDisplay::timeToString(qreal interval, qreal time) const
+const QString SMPTEIntervalDisplay::timeToString(qreal interval, qreal time) const
 {
 	int f = qFloor(fmod(time, 1.0) * mFramerate);
 	int s = qFloor(time);
@@ -172,19 +171,19 @@ const QString napqt::SMPTEIntervalDisplay::timeToString(qreal interval, qreal ti
 									  QString::asprintf("%02d", f));
 }
 
-napqt::SMPTEIntervalDisplay::SMPTEIntervalDisplay(int framerate)
+SMPTEIntervalDisplay::SMPTEIntervalDisplay(int framerate)
 {
 	setFramerate(framerate);
 }
 
-void napqt::SMPTEIntervalDisplay::setFramerate(int framerate)
+void SMPTEIntervalDisplay::setFramerate(int framerate)
 {
 	mFramerate = framerate;
 }
 
-qreal napqt::GeneralTimeIntervalDisplay::calcStepInterval(qreal windowSize,
-												   qreal viewSize,
-												   qreal minStepSize) const
+qreal GeneralTimeIntervalDisplay::calcStepInterval(qreal windowSize,
+															qreal viewSize,
+															qreal minStepSize) const
 {
 	qreal ival;
 	if (calcInterval(windowSize, viewSize, minStepSize, INTERVALS_TIME, ival))
@@ -193,27 +192,28 @@ qreal napqt::GeneralTimeIntervalDisplay::calcStepInterval(qreal windowSize,
 	return -1;
 }
 
-const QString napqt::GeneralTimeIntervalDisplay::timeToString(qreal interval, qreal time) const
+const QString GeneralTimeIntervalDisplay::timeToString(qreal interval, qreal time) const
 {
 	if (time == 0)
 		return "0";
 
 	QMapIterator<qreal, QString> iter(TIME_SUFFIXES);
 	iter.toBack();
-	while (iter.hasPrevious()) {
+	while (iter.hasPrevious())
+	{
 		iter.previous();
 		if (fmod(time, iter.key()) == 0)
 			return QString::number(time / iter.key()) + iter.value();
 
 		if (interval >= iter.key())
-			return QString("%1%2").arg(QString::number(time / (qreal)iter.key()), iter.value());
+			return QString("%1%2").arg(QString::number(time / (qreal) iter.key()), iter.value());
 	}
 	return QString::number(time);
 }
 
 
-qreal napqt::FloatIntervalDisplay::calcStepInterval(qreal windowSize, qreal viewWidth,
-												 qreal minStepSize) const
+qreal FloatIntervalDisplay::calcStepInterval(qreal windowSize, qreal viewWidth,
+													  qreal minStepSize) const
 {
 	const qreal ln10 = log(10);
 
@@ -239,12 +239,12 @@ qreal napqt::FloatIntervalDisplay::calcStepInterval(qreal windowSize, qreal view
 	return magMsd * magPow;
 }
 
-const QString napqt::FloatIntervalDisplay::timeToString(qreal interval, qreal time) const
+const QString FloatIntervalDisplay::timeToString(qreal interval, qreal time) const
 {
 	return QString::number(time);
 }
 
-qreal napqt::AnimationIntervalDisplay::calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const
+qreal AnimationIntervalDisplay::calcStepInterval(qreal windowSize, qreal viewWidth, qreal minStepSize) const
 {
 	qreal ival;
 	if (INTERVALS_FRAME.contains(mFramerate))
@@ -258,20 +258,22 @@ qreal napqt::AnimationIntervalDisplay::calcStepInterval(qreal windowSize, qreal 
 
 	return -1;
 }
-const QString napqt::AnimationIntervalDisplay::timeToString(qreal interval, qreal time) const
+
+const QString AnimationIntervalDisplay::timeToString(qreal interval, qreal time) const
 {
 	if (time == 0)
 		return "0";
 
 	QMapIterator<qreal, QString> iter(TIME_SUFFIXES);
 	iter.toBack();
-	while (iter.hasPrevious()) {
+	while (iter.hasPrevious())
+	{
 		iter.previous();
 		if (fmod(time, iter.key()) == 0)
 			return QString::number(time / iter.key()) + iter.value();
 
 		if (interval >= iter.key())
-			return QString("%1%2").arg(QString::number(time / (qreal)iter.key()), iter.value());
+			return QString("%1%2").arg(QString::number(time / (qreal) iter.key()), iter.value());
 	}
 	return QString::number(time);
 }

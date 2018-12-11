@@ -6,55 +6,60 @@
 #include <QMenuBar>
 #include <QSettings>
 
-namespace napqt
+namespace nap
 {
-
-	/**
-	 * Extension of QMainWindow, automatically saves and restores many windowsettings.
-	 */
-	class BaseWindow : public QMainWindow
+	namespace qt
 	{
-	public:
-		/**
-		 * Constructor
-		 */
-		BaseWindow();
 
 		/**
-		 * Destructor
+		 * Extension of QMainWindow, automatically saves and restores many windowsettings.
 		 */
-		virtual ~BaseWindow()
+		class BaseWindow : public QMainWindow
 		{
-		}
+		public:
+			/**
+			 * Constructor
+			 */
+			BaseWindow();
 
-		/**
-		 * @return The QMenu that contains the list of available windows
-		 */
-		QMenu* getWindowMenu()
-		{
-			return mWindowMenu;
-		}
+			/**
+			 * Destructor
+			 */
+			virtual ~BaseWindow()
+			{
+			}
 
-		/**
-		 * Add a QWidget to this window, display it as a dockwidget and add a toggle menuitem to the menubar
-		 * @param name The name and title of the specified widget.
-		 * @param widget The widget to be added as a dockwidget.
-		 * @param area The initial area to stick the the dock into.
-		 */
-		QDockWidget* addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area = Qt::TopDockWidgetArea);
+			/**
+			 * @return The QMenu that contains the list of available windows
+			 */
+			QMenu* getWindowMenu()
+			{
+				return mWindowMenu;
+			}
 
-	protected:
-		/**
-		 * Override from QMainWindow
-		 */
-		void showEvent(QShowEvent* event) override;
+			/**
+			 * Add a QWidget to this window, display it as a dockwidget and add a toggle menuitem to the menubar
+			 * @param name The name and title of the specified widget.
+			 * @param widget The widget to be added as a dockwidget.
+			 * @param area The initial area to stick the the dock into.
+			 */
+			QDockWidget* addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area = Qt::TopDockWidgetArea);
 
-		/**
-		 * Override from QMainWindow
-		 */
-		void closeEvent(QCloseEvent* event) override;
+		protected:
+			/**
+			 * Override from QMainWindow
+			 */
+			void showEvent(QShowEvent* event) override;
 
-	private:
-		QMenu* mWindowMenu;
-	};
-};
+			/**
+			 * Override from QMainWindow
+			 */
+			void closeEvent(QCloseEvent* event) override;
+
+		private:
+			QMenu* mWindowMenu;
+		};
+
+	} // namespace qt
+
+} // namespace nap

@@ -1,7 +1,7 @@
 #include "utils/include.h"
 #include <napqt/curveeditor/standardcurve.h>
 
-using namespace napqt;
+using namespace nap::qt;
 
 TEST_CASE("CurveEditor")
 {

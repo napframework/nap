@@ -7,26 +7,26 @@
 #include <QTreeView>
 #include <QComboBox>
 
-using namespace napqt;
+using namespace nap::qt;
 
-void napqt::AutoSettings::registerStorer(std::unique_ptr<WidgetStorerBase> s)
+void AutoSettings::registerStorer(std::unique_ptr<WidgetStorerBase> s)
 {
 	mStorers.emplace_back(std::move(s));
 }
 
-void napqt::AutoSettings::store(QWidget& w) const
+void AutoSettings::store(QWidget& w) const
 {
 	QSettings s;
 	storeRecursive(w, s);
 }
 
-void napqt::AutoSettings::restore(QWidget& w) const
+void AutoSettings::restore(QWidget& w) const
 {
 	QSettings s;
 	restoreRecursive(w, s);
 }
 
-void napqt::AutoSettings::storeRecursive(QWidget& w, QSettings& s) const
+void AutoSettings::storeRecursive(QWidget& w, QSettings& s) const
 {
 	auto storer = findStorer(w);
 	if (storer)
@@ -44,7 +44,7 @@ void napqt::AutoSettings::storeRecursive(QWidget& w, QSettings& s) const
 	}
 }
 
-void napqt::AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
+void AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
 {
 	auto storer = findStorer(w);
 	if (storer) {
@@ -64,12 +64,12 @@ void napqt::AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
 
 
 
-napqt::AutoSettings::AutoSettings()
+AutoSettings::AutoSettings()
 {
 	registerDefaults();
 }
 
-napqt::WidgetStorerBase* napqt::AutoSettings::findStorer(const QWidget& w) const
+WidgetStorerBase* AutoSettings::findStorer(const QWidget& w) const
 {
 	for (const auto& storer : mStorers)
 		if (storer->canStore(w))
@@ -77,7 +77,7 @@ napqt::WidgetStorerBase* napqt::AutoSettings::findStorer(const QWidget& w) const
 	return nullptr;
 }
 
-const QString napqt::AutoSettings::ensureHasName(QObject& w) const
+const QString AutoSettings::ensureHasName(QObject& w) const
 {
 	if (!w.objectName().isEmpty())
 		return w.objectName();
@@ -97,7 +97,7 @@ const QString napqt::AutoSettings::ensureHasName(QObject& w) const
 	return name;
 }
 
-QString napqt::AutoSettings::uniqeObjectName(QWidget& w) const
+QString AutoSettings::uniqeObjectName(QWidget& w) const
 {
 	QStringList names;
 	QObject* current = &w;
@@ -111,12 +111,12 @@ QString napqt::AutoSettings::uniqeObjectName(QWidget& w) const
 	return names.join("/");
 }
 
-napqt::AutoSettings::AutoSettings(AutoSettings const&)
+AutoSettings::AutoSettings(AutoSettings const&)
 {
 	registerDefaults();
 }
 
-void napqt::AutoSettings::registerDefaults()
+void AutoSettings::registerDefaults()
 {
 	registerStorer<MainWindowWidgetStorer>();
 	registerStorer<HeaderViewWidgetStorer>();
@@ -124,9 +124,9 @@ void napqt::AutoSettings::registerDefaults()
 	registerStorer<GridViewStorer>();
 }
 
-napqt::AutoSettings& napqt::AutoSettings::get()
+AutoSettings& AutoSettings::get()
 {
-	static napqt::AutoSettings instance;
+	static AutoSettings instance;
 	return instance;
 }
 

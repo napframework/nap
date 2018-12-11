@@ -26,7 +26,7 @@ void napkin::FinderPanel::setPropertyList(const QList<napkin::PropertyPath>& pro
 		mModel.appendRow(new PropertyDisplayItem(prop));
 }
 
-napqt::FilterTreeView& FinderPanel::getTreeView()
+nap::qt::FilterTreeView& FinderPanel::getTreeView()
 {
 	return mTree;
 }

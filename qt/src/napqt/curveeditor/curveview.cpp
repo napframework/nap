@@ -12,7 +12,7 @@
 
 #include "napqt-resources.h"
 
-using namespace napqt;
+using namespace nap::qt;
 
 #define DEFAULT_SCENE_EXTENT 1000
 
@@ -972,33 +972,33 @@ void CurveView::initActions()
 	addAction(&mDeleteAction);
 
 	mInterpBezierAction.setText("Bezier");
-	mInterpBezierAction.setIcon(QIcon(napqt::QRC_ICONS_CURVEINTERP_BEZIER));
+	mInterpBezierAction.setIcon(QIcon(nap::qt::QRC_ICONS_CURVEINTERP_BEZIER));
 	connect(&mInterpBezierAction, &QAction::triggered,
 			[this]() { setSelectedPointInterps(AbstractCurve::InterpType::Bezier); });
 
 	mInterpLinearAction.setText("Linear");
-	mInterpLinearAction.setIcon(QIcon(napqt::QRC_ICONS_CURVEINTERP_LINEAR));
+	mInterpLinearAction.setIcon(QIcon(nap::qt::QRC_ICONS_CURVEINTERP_LINEAR));
 	connect(&mInterpLinearAction, &QAction::triggered,
 			[this]() { setSelectedPointInterps(AbstractCurve::InterpType::Linear); });
 
 	mInterpSteppedAction.setText("Stepped");
-	QIcon icon(napqt::QRC_ICONS_CURVEINTERP_STEPPED);
+	QIcon icon(nap::qt::QRC_ICONS_CURVEINTERP_STEPPED);
 	mInterpSteppedAction.setIcon(icon);
 	connect(&mInterpSteppedAction, &QAction::triggered,
 			[this]() { setSelectedPointInterps(AbstractCurve::InterpType::Stepped); });
 
 	mSetTangentsAlignedAction.setText("Aligned");
-	mSetTangentsAlignedAction.setIcon(QIcon(napqt::QRC_ICONS_TANGENTS_ALIGNED));
+	mSetTangentsAlignedAction.setIcon(QIcon(nap::qt::QRC_ICONS_TANGENTS_ALIGNED));
 	connect(&mSetTangentsAlignedAction, &QAction::triggered,
 			[this]() { setSelectedTangentsAligned(true); });
 	
 	mSetTangentsBrokenAction.setText("Broken");
-	mSetTangentsBrokenAction.setIcon(QIcon(napqt::QRC_ICONS_TANGENTS_BROKEN));
+	mSetTangentsBrokenAction.setIcon(QIcon(nap::qt::QRC_ICONS_TANGENTS_BROKEN));
 	connect(&mSetTangentsBrokenAction, &QAction::triggered,
 			[this]() { setSelectedTangentsAligned(false); });
 
 	mFlattenTangentsAction.setText("Flatten Tangents");
-	mFlattenTangentsAction.setIcon(QIcon(napqt::QRC_ICONS_TANGENTS_FLAT));
+	mFlattenTangentsAction.setIcon(QIcon(nap::qt::QRC_ICONS_TANGENTS_FLAT));
 	connect(&mFlattenTangentsAction, &QAction::triggered,
 			[this]() { setSelectedTangentsFlat(); });
 	

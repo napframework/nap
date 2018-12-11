@@ -1,7 +1,7 @@
 #include "curvetreemodel.h"
 
 
-using namespace napqt;
+using namespace nap::qt;
 
 CurveTreeItem::CurveTreeItem(AbstractCurve& curve) : QObject(), QStandardItem(), mCurve(curve)
 {
@@ -53,8 +53,10 @@ void CurveTreeModel::onCurvesRemoved(const QList<int> indexes)
 	for (int i : reverseSort(indexes))
 		removeRow(i);
 }
+
 AbstractCurve* CurveTreeModel::curveFromIndex(const QModelIndex& idx)
 {
 	assert(idx.model() == this);
 	return mModel->curve(idx.row());
 }
+
