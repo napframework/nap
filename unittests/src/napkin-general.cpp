@@ -2,7 +2,7 @@
 
 #include <appcontext.h>
 #include <commands.h>
-#include <generic/naputils.h>
+#include <naputils.h>
 
 using namespace napkin;
 
@@ -78,11 +78,11 @@ TEST_CASE("Resource Management", "napkin-general")
 	REQUIRE(absShaderPath.toStdString() == absShaderFilePath.toStdString());
 
 	// Check if dir contains path
-	REQUIRE(directoryContains(resourcedir, absShaderPath));
-	REQUIRE(directoryContains(resourcedir, absJsonFilePath));
-	REQUIRE(directoryContains(resourcedir + "/shaders", absShaderPath));
+	REQUIRE(nap::qt::directoryContains(resourcedir, absShaderPath));
+	REQUIRE(nap::qt::directoryContains(resourcedir, absJsonFilePath));
+	REQUIRE(nap::qt::directoryContains(resourcedir + "/shaders", absShaderPath));
 	// or not
-	REQUIRE(!directoryContains(absShaderPath, resourcedir));
+	REQUIRE(!nap::qt::directoryContains(absShaderPath, resourcedir));
 
 }
 

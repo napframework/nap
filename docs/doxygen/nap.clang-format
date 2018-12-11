@@ -864,7 +864,8 @@ EXCLUDE                = ..\..\napkin \
                          ..\..\ide_templates\visual_studio_templates \
                          ..\..\ide_templates\xcode_templates \
                          "..\..\ide_templates\xcode_templates\Nap component.xctemplate" \
-                         "..\..\ide_templates\xcode_templates\Nap class.xctemplate"
+                         "..\..\ide_templates\xcode_templates\Nap class.xctemplate" \
+                         ..\..\qt
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
