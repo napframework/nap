@@ -653,7 +653,7 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	setGridIntervalDisplay(std::make_shared<FloatIntervalDisplay>(), std::make_shared<FloatIntervalDisplay>());
 
 	// Flip y axis
-	// setVerticalFlipped(true);
+	 setVerticalFlipped(true);
 	frameView(QRectF(0, 0, 1, 1));
 
 	setRenderHint(QPainter::Antialiasing, true);
@@ -709,7 +709,7 @@ void CurveView::mousePressEvent(QMouseEvent* event)
 				}
 				mInteractMode = DragPoints;
 			}
-			else
+			else if (!altHeld)
 			{
 				startRubberBand(mMousePressPos);
 				mInteractMode = Rubberband;

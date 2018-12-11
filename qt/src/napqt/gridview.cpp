@@ -88,7 +88,7 @@ void GridView::mouseMoveEvent(QMouseEvent* event)
 		event->accept();
 	} else if (altKey && rmb)
 	{
-		zoom(QPointF(1, 1) + QPointF(mMouseDelta) * 0.01, mapToScene(mMousePressPos));
+		zoom(QPointF(1, 1) + QPointF(mMouseDelta.x(), -mMouseDelta.y()) * 0.01, mapToScene(mMousePressPos));
 		event->accept();
 	} else
 	{
@@ -133,7 +133,6 @@ void GridView::keyReleaseEvent(QKeyEvent* event)
 
 void GridView::zoom(const QPointF& delta, const QPointF& pivot)
 {
-
 	auto xf = transform();
 
 	// Translate to zoom around pivot
