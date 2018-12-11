@@ -148,8 +148,7 @@ namespace nap
 			qreal mFramerate = 30;
 
 			qreal calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const;
-			qreal
-			calcGridStepTime(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth, qreal minStepSize) const;
+			qreal calcGridStepTime(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth, qreal minStepSize) const;
 		};
 
 		class GridViewStorer : public WidgetStorer<GridView>

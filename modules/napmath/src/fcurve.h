@@ -158,6 +158,7 @@ namespace nap
 
 			/**
 			 * linear interpolate value a to b using a value of t (0-1)
+			 *
 			 * @param a the first input value
 			 * @param b the second input value
 			 * @param t the interpolation value (0-1)
@@ -166,6 +167,7 @@ namespace nap
 
             /**
              * Evaluate a curve segment using cubic bezier interpolation
+             *
              * @tparam P 2D point, its components should be of type U
              * @tparam T floating point
              * @param pts The curve points to evaluate
@@ -176,6 +178,7 @@ namespace nap
 
 			/**
 			 * Evaluate a curve segment using linear interpolation
+			 *
 			 * @tparam P 2D point, its components should be of type U
 			 * @tparam T floating point
 			 * @param pts The curve points to evaluate
@@ -186,6 +189,7 @@ namespace nap
 
 			/**
 			 * Evaluate a curve segment using stepped interpolation
+			 *
 			 * @tparam P 2D point, its components should be of type U
 			 * @tparam T floating point
 			 * @param pts The curve points to evaluate
@@ -200,13 +204,15 @@ namespace nap
 			void sortPoints();
 
 			/**
-			 * Grab the two points on either side of time
+			 * Grab the index of the point before or on time t
+			 *
 			 * @param t the time of the point index
 			 */
 			int pointIndexAtTime(const T& t) const;
 
 			/**
-			 * In case of Bezier interpolation, keep this curve segment from having multiple solutions
+			 * In case of Bezier interpolation, keep this curve segment from having multiple solutions,
+			 *
 			 * @param x0 time 0 of curve segment
 			 * @param x1 time 1 of curve segment
 			 * @param x2 time 2 of curve segment
@@ -216,6 +222,7 @@ namespace nap
 
 			/**
 			 * In case of Bezier interpolation, keep this curve segment from having multiple solutions
+			 *
 			 * @param pa point 0 of curve segment
 			 * @param pb point 1 of curve segment
 			 * @param pc point 2 of curve segment
