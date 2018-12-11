@@ -16,7 +16,7 @@
 #include "filterpopup.h"
 #include "autosettings.h"
 
-using namespace napqt;
+using namespace nap::qt;
 
 /**
  * Simple demo panel including features of napqt

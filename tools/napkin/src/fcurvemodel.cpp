@@ -57,15 +57,15 @@ const QPointF FCurve::outTangent(int pointIndex) const
 	return {tan.mTime, tan.mValue};
 }
 
-const napqt::AbstractCurve::InterpType FCurve::interpolation(int pointIndex) const
+const nap::qt::AbstractCurve::InterpType FCurve::interpolation(int pointIndex) const
 {
 	const auto& interp = mCurve.mPoints[pointIndex].mInterp;
 	return mInterpMap[interp];
 }
 
-void FCurve::setInterpolation(int pointIndex, const napqt::AbstractCurve::InterpType& interp)
+void FCurve::setInterpolation(int pointIndex, const nap::qt::AbstractCurve::InterpType& interp)
 {
-	nap::math::ECurveInterp destInterp = napqt::keyFromValue(mInterpMap, interp, nap::math::ECurveInterp::Bezier);
+	nap::math::ECurveInterp destInterp = nap::qt::keyFromValue(mInterpMap, interp, nap::math::ECurveInterp::Bezier);
 	mCurve.mPoints[pointIndex].mInterp = destInterp;
 	pointsChanged({pointIndex}, true);
 }
@@ -134,19 +134,19 @@ const QColor FCurve::color() const
 }
 
 
-FloatFCurveModel::FloatFCurveModel(nap::math::FunctionCurve<float, float>& curve) : napqt::AbstractCurveModel(), mCurve(curve) {}
+FloatFCurveModel::FloatFCurveModel(nap::math::FunctionCurve<float, float>& curve) : nap::qt::AbstractCurveModel(), mCurve(curve) {}
 
 int FloatFCurveModel::curveCount() const
 {
 	return 1;
 }
 
-napqt::AbstractCurve* FloatFCurveModel::curve(int index) const
+nap::qt::AbstractCurve* FloatFCurveModel::curve(int index) const
 {
 	return const_cast<FCurve*>(&mCurve);
 }
 
-void FloatFCurveModel::movePoints(QMap<napqt::AbstractCurve*, QMap<int, QPointF>> values)
+void FloatFCurveModel::movePoints(QMap<nap::qt::AbstractCurve*, QMap<int, QPointF>> values)
 {
 	for (auto curve : values.keys())
 		curve->movePoints(values[curve], true);

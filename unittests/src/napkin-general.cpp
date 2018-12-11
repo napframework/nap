@@ -78,11 +78,11 @@ TEST_CASE("Resource Management", "napkin-general")
 	REQUIRE(absShaderPath.toStdString() == absShaderFilePath.toStdString());
 
 	// Check if dir contains path
-	REQUIRE(napqt::directoryContains(resourcedir, absShaderPath));
-	REQUIRE(napqt::directoryContains(resourcedir, absJsonFilePath));
-	REQUIRE(napqt::directoryContains(resourcedir + "/shaders", absShaderPath));
+	REQUIRE(nap::qt::directoryContains(resourcedir, absShaderPath));
+	REQUIRE(nap::qt::directoryContains(resourcedir, absJsonFilePath));
+	REQUIRE(nap::qt::directoryContains(resourcedir + "/shaders", absShaderPath));
 	// or not
-	REQUIRE(!napqt::directoryContains(absShaderPath, resourcedir));
+	REQUIRE(!nap::qt::directoryContains(absShaderPath, resourcedir));
 
 }
 

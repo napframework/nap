@@ -246,7 +246,7 @@ void AppContext::handleURI(const QString& uri)
 	QRegularExpression filelink("file:\\/\\/(.+)");
 	match = filelink.match(uri);
 	if (match.hasMatch()) {
-		napqt::revealInFileBrowser(QString::fromStdString(fromLocalURI(uri.toStdString())));
+		nap::qt::revealInFileBrowser(QString::fromStdString(fromLocalURI(uri.toStdString())));
 	}
 }
 

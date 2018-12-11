@@ -5,7 +5,7 @@
 #include <napqt/qtutils.h>
 
 using namespace napkin;
-using namespace napqt;
+using namespace nap::qt;
 
 CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 {
@@ -109,7 +109,7 @@ void CurvePanel::editCurve(nap::math::FloatFCurve* curve)
 	connect(&mCurveModel->curve(), &napkin::FCurve::pointsRemoved, [this](QList<int> pointIndexes)
 	{
 		mListenForPropertyChanges = false;
-		for (int index : napqt::reverseSort(pointIndexes))
+		for (int index : nap::qt::reverseSort(pointIndexes))
 		{
 			AppContext::get().propertyChildRemoved(mCurveModel->curve().pointPath(index).getParent(), index);
 			AppContext::get().propertyValueChanged(mCurveModel->curve().pointPath(index));

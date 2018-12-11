@@ -127,7 +127,7 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const rttr::type& typeConstraint)
 {
 	FlatObjectModel model(typeConstraint);
-	napqt::FilterPopup dialog(parent, model);
+	nap::qt::FilterPopup dialog(parent, model);
 
 	dialog.exec(QCursor::pos());
 	if (!dialog.wasAccepted())
@@ -150,7 +150,7 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 		model.appendRow(new QStandardItem(typeName));
 	}
 
-	napqt::FilterPopup dialog(parent, model);
+	nap::qt::FilterPopup dialog(parent, model);
 	dialog.exec(QCursor::pos());
 
 	if (!dialog.wasAccepted())
@@ -270,7 +270,7 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 	layout.addWidget(&label);
 
 	FinderPanel finder;
-	napqt::FilterTreeView* tree = &finder.getTreeView();
+	nap::qt::FilterTreeView* tree = &finder.getTreeView();
 
 	// On item double-click, close the dialog and reveal the property
 	finder.connect(&tree->getTreeView(), &QAbstractItemView::doubleClicked,

@@ -1,6 +1,8 @@
 #include "floatlineedit.h"
 
-napqt::FloatLineEdit::FloatLineEdit(QWidget* parent) : QLineEdit(parent)
+using namespace nap::qt;
+
+FloatLineEdit::FloatLineEdit(QWidget* parent) : QLineEdit(parent)
 {
 	setValidator(&mDoubleValidator);
 	connect(this, &QLineEdit::editingFinished, [this]() {
@@ -9,7 +11,7 @@ napqt::FloatLineEdit::FloatLineEdit(QWidget* parent) : QLineEdit(parent)
 	setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
 }
 
-void napqt::FloatLineEdit::setIndeterminate(bool b) {
+void FloatLineEdit::setIndeterminate(bool b) {
 	mIsIntederminate = b;
 	if (mIsIntederminate)
 		setText("-");
@@ -18,13 +20,13 @@ void napqt::FloatLineEdit::setIndeterminate(bool b) {
 	update();
 }
 
-void napqt::FloatLineEdit::setValue(qreal value) {
+void FloatLineEdit::setValue(qreal value) {
 	mValue = value;
 	if (!mIsIntederminate)
 		setText(QString::number(value));
 }
 
-qreal napqt::FloatLineEdit::value() const {
+qreal FloatLineEdit::value() const {
 	bool ok;
 	qreal val = text().toDouble(&ok);
 	if (!ok)

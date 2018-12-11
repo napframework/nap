@@ -13,7 +13,7 @@ namespace napkin
 	/**
 	 * Adapter between the user interface of the curve editor and the underlying curve data.
 	 */
-	class FCurve : public napqt::AbstractCurve
+	class FCurve : public nap::qt::AbstractCurve
 	{
 	public:
 		explicit FCurve(nap::math::FunctionCurve<float, float>& curve) :
@@ -30,7 +30,7 @@ namespace napkin
 		const QPointF pos(int pointIndex) const override;
 		const QPointF inTangent(int pointIndex) const override;
 		const QPointF outTangent(int pointIndex) const override;
-		const napqt::AbstractCurve::InterpType interpolation(int pointIndex) const override;
+		const nap::qt::AbstractCurve::InterpType interpolation(int pointIndex) const override;
 		void setInterpolation(int pointIndex, const InterpType& interp) override;
 		const bool tangentsAligned(int pointIndex) const override;
 		void setTangentsAligned(int pointIndex, bool b) override;
@@ -42,22 +42,22 @@ namespace napkin
 		void setComplexValue(nap::math::FComplex<float, float>& c, const QPointF& p);
 
 		nap::math::FunctionCurve<float, float>& mCurve;
-		QMap<nap::math::ECurveInterp, napqt::AbstractCurve::InterpType> mInterpMap = {
-				{nap::math::ECurveInterp::Stepped, napqt::AbstractCurve::InterpType::Stepped},
-				{nap::math::ECurveInterp::Linear,  napqt::AbstractCurve::InterpType::Linear},
-				{nap::math::ECurveInterp::Bezier,  napqt::AbstractCurve::InterpType::Bezier},
+		QMap<nap::math::ECurveInterp, nap::qt::AbstractCurve::InterpType> mInterpMap = {
+				{nap::math::ECurveInterp::Stepped, nap::qt::AbstractCurve::InterpType::Stepped},
+				{nap::math::ECurveInterp::Linear,  nap::qt::AbstractCurve::InterpType::Linear},
+				{nap::math::ECurveInterp::Bezier,  nap::qt::AbstractCurve::InterpType::Bezier},
 		};
 	};
 
-	class FloatFCurveModel : public napqt::AbstractCurveModel
+	class FloatFCurveModel : public nap::qt::AbstractCurveModel
 	{
 	public:
 		explicit FloatFCurveModel(nap::math::FunctionCurve<float, float>& curve);
 
 		int curveCount() const override;
-		napqt::AbstractCurve* curve(int index) const override;
+		nap::qt::AbstractCurve* curve(int index) const override;
 		FCurve& curve() { return mCurve; }
-		void movePoints(QMap<napqt::AbstractCurve*, QMap<int, QPointF>> values) override;
+		void movePoints(QMap<nap::qt::AbstractCurve*, QMap<int, QPointF>> values) override;
 	private:
 		FCurve mCurve;
 

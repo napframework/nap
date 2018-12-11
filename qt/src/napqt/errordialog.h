@@ -7,66 +7,71 @@
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
 
-namespace napqt
+namespace nap
 {
-	/**
-	 * A dialog for displaying an annoying error message to the user.
-	 * You can show this dialog yourself or use the static convenience method showMessage(),
-	 * when using the latter method, make sure to attach to dialog to a window using setDefaultParent()
-	 */
-	class ErrorDialog : public QDialog
+
+	namespace qt
 	{
-	Q_OBJECT
-	public:
-		explicit ErrorDialog(QWidget* parent);
-
 		/**
-		 * Add a message to the dialog
-		 * @param message
+		 * A dialog for displaying an annoying error message to the user.
+		 * You can show this dialog yourself or use the static convenience method showMessage(),
+		 * when using the latter method, make sure to attach to dialog to a window using setDefaultParent()
 		 */
-		void addMessage(const QString& message);
+		class ErrorDialog : public QDialog
+		{
+		Q_OBJECT
+		public:
+			explicit ErrorDialog(QWidget* parent);
 
-		/**
-		 * When set to true, all messages will be removed from this dialog upon close.
-		 */
-		void setClearOnClose(bool b) { mClearOnClose = b; }
+			/**
+			 * Add a message to the dialog
+			 * @param message
+			 */
+			void addMessage(const QString& message);
 
-		/**
-		 * When true, this dialog will remove all messages when closing.
-		 */
-		bool isClearOnClose() const { return mClearOnClose; }
+			/**
+			 * When set to true, all messages will be removed from this dialog upon close.
+			 */
+			void setClearOnClose(bool b) { mClearOnClose = b; }
 
-		/**
-		 * Overridden to set a reasonable size
-		 * @return Preferred size of the error dialog
-		 */
-		QSize sizeHint() const override;
+			/**
+			 * When true, this dialog will remove all messages when closing.
+			 */
+			bool isClearOnClose() const { return mClearOnClose; }
 
-		/**
-		 * Display the error dialog and show the provided message.
-		 * @param message The message to be shown (or added) to the error dialog
-		 */
-		static void showMessage(const QString& message);
+			/**
+			 * Overridden to set a reasonable size
+			 * @return Preferred size of the error dialog
+			 */
+			QSize sizeHint() const override;
 
-		/**
-		 * When using the static showMessage(QString), this parent will be used to attach the dialog to.
-		 * @param parent Most likely the main window
-		 */
-		static void setDefaultParent(QWidget* parent);
+			/**
+			 * Display the error dialog and show the provided message.
+			 * @param message The message to be shown (or added) to the error dialog
+			 */
+			static void showMessage(const QString& message);
 
-	protected:
-		void closeEvent(QCloseEvent* event) override;
-		void showEvent(QShowEvent* event) override;
+			/**
+			 * When using the static showMessage(QString), this parent will be used to attach the dialog to.
+			 * @param parent Most likely the main window
+			 */
+			static void setDefaultParent(QWidget* parent);
 
-	private:
-		static ErrorDialog& instance();
+		protected:
+			void closeEvent(QCloseEvent* event) override;
+			void showEvent(QShowEvent* event) override;
 
-		QVBoxLayout mLayout;
-		QTextBrowser mText;
-		QDialogButtonBox mButtonBox;
-		bool mClearOnClose = true;
-		static QWidget* mParent;
-		static std::shared_ptr<ErrorDialog> mInstance; // used when using static methods
-	};
+		private:
+			static ErrorDialog& instance();
 
-}
+			QVBoxLayout mLayout;
+			QTextBrowser mText;
+			QDialogButtonBox mButtonBox;
+			bool mClearOnClose = true;
+			static QWidget* mParent;
+			static std::shared_ptr<ErrorDialog> mInstance; // used when using static methods
+		};
+
+	} // namespace qt
+
+} // namespace nap

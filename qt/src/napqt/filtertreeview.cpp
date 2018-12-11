@@ -12,7 +12,9 @@
 
 #include "qtutils.h"
 
-napqt::FilterTreeView::FilterTreeView(QTreeView* treeview)
+using namespace nap::qt;
+
+FilterTreeView::FilterTreeView(QTreeView* treeview)
 {
 	if (treeview == nullptr)
 		treeview = new QTreeView(this);
@@ -43,17 +45,17 @@ napqt::FilterTreeView::FilterTreeView(QTreeView* treeview)
 	connect(mTreeView, &QTreeView::doubleClicked, this, &FilterTreeView::doubleClicked);
 }
 
-void napqt::FilterTreeView::setModel(QAbstractItemModel* model)
+void FilterTreeView::setModel(QAbstractItemModel* model)
 {
 	mSortFilter.setSourceModel(model);
 }
 
-QStandardItemModel* napqt::FilterTreeView::getModel() const
+QStandardItemModel* FilterTreeView::getModel() const
 {
 	return dynamic_cast<QStandardItemModel*>(mSortFilter.sourceModel());
 }
 
-void napqt::FilterTreeView::selectAndReveal(QStandardItem* item)
+void FilterTreeView::selectAndReveal(QStandardItem* item)
 {
 	if (item == nullptr)
 		return;
@@ -77,7 +79,7 @@ void napqt::FilterTreeView::selectAndReveal(QStandardItem* item)
 }
 
 
-QStandardItem* napqt::FilterTreeView::getSelectedItem()
+QStandardItem* FilterTreeView::getSelectedItem()
 {
 	for (auto idx : getSelectedIndexes())
 		return getModel()->itemFromIndex(idx);
@@ -85,7 +87,7 @@ QStandardItem* napqt::FilterTreeView::getSelectedItem()
 }
 
 
-QList<QStandardItem*> napqt::FilterTreeView::getSelectedItems() const
+QList<QStandardItem*> FilterTreeView::getSelectedItems() const
 {
 	QList<QStandardItem*> ret;
 	for (auto idx : getSelectedIndexes())
@@ -93,7 +95,7 @@ QList<QStandardItem*> napqt::FilterTreeView::getSelectedItems() const
 	return ret;
 }
 
-QList<QModelIndex> napqt::FilterTreeView::getSelectedIndexes() const
+QList<QModelIndex> FilterTreeView::getSelectedIndexes() const
 {
 	QList<QModelIndex> ret;
 	for (auto idx : getSelectionModel()->selectedRows())
@@ -101,7 +103,7 @@ QList<QModelIndex> napqt::FilterTreeView::getSelectedIndexes() const
 	return ret;
 }
 
-void napqt::FilterTreeView::onFilterChanged(const QString& text)
+void FilterTreeView::onFilterChanged(const QString& text)
 {
 	mSortFilter.setFilterRegExp(text);
 	mSortFilter.clearExemptions();
@@ -109,20 +111,20 @@ void napqt::FilterTreeView::onFilterChanged(const QString& text)
 	setTopItemSelected();
 }
 
-void napqt::FilterTreeView::onExpandSelected()
+void FilterTreeView::onExpandSelected()
 {
 	for (auto& idx : getSelectedIndexes())
 		expandChildren(mTreeView, idx, true);
 }
 
-void napqt::FilterTreeView::onCollapseSelected()
+void FilterTreeView::onCollapseSelected()
 {
 	for (auto& idx : getSelectedIndexes())
 		expandChildren(mTreeView, idx, false);
 }
 
 
-void napqt::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
+void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 {
 	QMenu menu;
 
@@ -138,14 +140,14 @@ void napqt::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 	menu.exec(mapToGlobal(pos));
 }
 
-void napqt::FilterTreeView::setIsItemSelector(bool b)
+void FilterTreeView::setIsItemSelector(bool b)
 {
 	if (b) {
 		setTopItemSelected();
 	}
 }
 
-void napqt::FilterTreeView::setTopItemSelected()
+void FilterTreeView::setTopItemSelected()
 {
 	auto model = mTreeView->model();
 	if (model->rowCount() == 0)
@@ -157,7 +159,7 @@ void napqt::FilterTreeView::setTopItemSelected()
 	getSelectionModel()->select(selection, QItemSelectionModel::SelectionFlag::ClearAndSelect);
 }
 
-QWidget& napqt::FilterTreeView::getCornerWidget()
+QWidget& FilterTreeView::getCornerWidget()
 {
 	return mCornerWidget;
 }

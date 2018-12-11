@@ -34,7 +34,7 @@ namespace napkin
 
 	private:
 		QVBoxLayout mLayout;
-		napqt::CurveEditor mCurveView;
+		nap::qt::CurveEditor mCurveView;
 		std::shared_ptr<FloatFCurveModel> mCurveModel = nullptr;
 		bool mListenForCurveChanges = true;
 		bool mListenForPropertyChanges = true;

@@ -108,7 +108,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
 
 LogPanel::LogPanel() : QWidget()
 {
-	napqt::AutoSettings::get().registerStorer(std::make_unique<LogPanelWidgetStorer>());
+	nap::qt::AutoSettings::get().registerStorer(std::make_unique<LogPanelWidgetStorer>());
 
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	setLayout(&mLayout);
@@ -188,7 +188,7 @@ void LogPanel::closeEvent(QCloseEvent* event)
 	QWidget::closeEvent(event);
 }
 
-bool LogPanel::levelFilter(const napqt::LeafFilterProxyModel& model, int sourceRow,
+bool LogPanel::levelFilter(const nap::qt::LeafFilterProxyModel& model, int sourceRow,
 						   const QModelIndex& sourceParent)
 {
 	auto index = mLogModel.index(sourceRow, 0, sourceParent);

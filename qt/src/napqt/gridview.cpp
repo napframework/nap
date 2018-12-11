@@ -11,7 +11,7 @@
 
 #include <napqt/qtutils.h>
 
-using namespace napqt;
+using namespace nap::qt;
 
 QPointF mul(const QPointF& a, const QPointF& b)
 {
@@ -381,7 +381,7 @@ void GridView::frameView(const QRectF& frameRect)
 	auto focusRectView = viewport()->rect().adjusted(margins.left(), margins.top(), -margins.right(),
 													 -margins.bottom());
 	auto xf = transform();
-	auto origScale = napqt::getScale(xf);
+	auto origScale = getScale(xf);
 	qreal sx = origScale.width();
 	qreal sy = origScale.height();
 	qreal tx = 0;

@@ -102,7 +102,7 @@ namespace napkin
 	{
 		T* foundItem = nullptr;
 
-		napqt::findIndexInModel(model, [&model, &foundItem, &obj](const QModelIndex& idx) -> bool {
+		nap::qt::findIndexInModel(model, [&model, &foundItem, &obj](const QModelIndex& idx) -> bool {
 			QStandardItem* item = model.itemFromIndex(idx);
 			if (item == nullptr)
 				return false;

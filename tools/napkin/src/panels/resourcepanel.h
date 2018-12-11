@@ -136,6 +136,6 @@ namespace napkin
 	private:
 		QVBoxLayout mLayout;	  // Layout
 		ResourceModel mModel;	 // Model
-		napqt::FilterTreeView mTreeView; // Treeview
+		nap::qt::FilterTreeView mTreeView; // Treeview
 	};
 }

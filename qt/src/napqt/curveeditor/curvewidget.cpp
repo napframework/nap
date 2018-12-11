@@ -5,7 +5,7 @@
 #include <QtDebug>
 
 
-using namespace napqt;
+using namespace nap::qt;
 
 void CurveTreeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {

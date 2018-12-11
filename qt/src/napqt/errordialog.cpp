@@ -2,7 +2,7 @@
 
 #include <QPushButton>
 
-using namespace napqt;
+using namespace nap::qt;
 
 QWidget* ErrorDialog::mParent = nullptr;
 std::shared_ptr<ErrorDialog> ErrorDialog::mInstance = nullptr;
@@ -13,7 +13,7 @@ void ErrorDialog::setDefaultParent(QWidget* parent)
 }
 
 
-napqt::ErrorDialog::ErrorDialog(QWidget* parent) : QDialog(parent), mButtonBox(QDialogButtonBox::Close)
+ErrorDialog::ErrorDialog(QWidget* parent) : QDialog(parent), mButtonBox(QDialogButtonBox::Close)
 {
 	setWindowTitle("Error");
 	setLayout(&mLayout);
@@ -32,29 +32,29 @@ napqt::ErrorDialog::ErrorDialog(QWidget* parent) : QDialog(parent), mButtonBox(Q
 	});
 }
 
-void napqt::ErrorDialog::addMessage(const QString& message)
+void ErrorDialog::addMessage(const QString& message)
 {
 	mText.append(message);
 }
 
-void napqt::ErrorDialog::closeEvent(QCloseEvent* event)
+void ErrorDialog::closeEvent(QCloseEvent* event)
 {
 	if (mClearOnClose)
 		mText.clear();
 	QDialog::closeEvent(event);
 }
 
-QSize napqt::ErrorDialog::sizeHint() const
+QSize ErrorDialog::sizeHint() const
 {
 	return {600, 300};
 }
 
-void napqt::ErrorDialog::showEvent(QShowEvent* event)
+void ErrorDialog::showEvent(QShowEvent* event)
 {
 	QDialog::showEvent(event);
 }
 
-void napqt::ErrorDialog::showMessage(const QString& message)
+void ErrorDialog::showMessage(const QString& message)
 {
 	ErrorDialog& dialog = instance();
 	dialog.addMessage(message);

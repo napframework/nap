@@ -193,7 +193,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					if (!filename.isEmpty())
 					{
 						// Make relative if inside resource dir
-						if (napqt::directoryContains(getResourceReferencePath(), filename))
+						if (nap::qt::directoryContains(getResourceReferencePath(), filename))
 							filename = getRelativeResourcePath(filename);
 
 						model->setData(index, filename);
