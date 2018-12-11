@@ -76,7 +76,7 @@ void CurvePanel::editCurve(nap::math::FloatFCurve* curve)
 
 	mCurveModel = std::make_shared<FloatFCurveModel>(*curve);
 
-	connect(&mCurveModel->curve(), &napkin::FCurve::pointsChanged, [this](QList<int> pointIndexes, bool finished)
+	connect(&mCurveModel->curve(), &napkin::FCurveAdapter::pointsChanged, [this](QList<int> pointIndexes, bool finished)
 	{
 		if (!mListenForCurveChanges)
 			return;
@@ -91,7 +91,7 @@ void CurvePanel::editCurve(nap::math::FloatFCurve* curve)
 		mListenForPropertyChanges = true;
 	});
 
-	connect(&mCurveModel->curve(), &napkin::FCurve::pointsAdded, [this](QList<int> pointIndexes)
+	connect(&mCurveModel->curve(), &napkin::FCurveAdapter::pointsAdded, [this](QList<int> pointIndexes)
 	{
 		if (!mListenForCurveChanges)
 			return;
@@ -106,7 +106,7 @@ void CurvePanel::editCurve(nap::math::FloatFCurve* curve)
 		mListenForPropertyChanges = true;
 	});
 
-	connect(&mCurveModel->curve(), &napkin::FCurve::pointsRemoved, [this](QList<int> pointIndexes)
+	connect(&mCurveModel->curve(), &napkin::FCurveAdapter::pointsRemoved, [this](QList<int> pointIndexes)
 	{
 		mListenForPropertyChanges = false;
 		for (int index : nap::qt::reverseSort(pointIndexes))

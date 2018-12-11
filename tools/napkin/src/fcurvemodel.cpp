@@ -4,17 +4,17 @@
 using namespace napkin;
 
 
-const QString FCurve::name() const
+const QString FCurveAdapter::name() const
 {
 	return QString::fromStdString(mCurve.mID);
 }
 
-int FCurve::pointCount() const
+int FCurveAdapter::pointCount() const
 {
 	return static_cast<int>(mCurve.mPoints.size());
 }
 
-void FCurve::removePoints(const QList<int>& indices)
+void FCurveAdapter::removePoints(const QList<int>& indices)
 {
 	QList<int> indicesSorted = indices;
 	qSort(indicesSorted);
@@ -26,7 +26,7 @@ void FCurve::removePoints(const QList<int>& indices)
 	pointsRemoved(indicesSorted);
 }
 
-void FCurve::addPoint(qreal time, qreal value)
+void FCurveAdapter::addPoint(qreal time, qreal value)
 {
 	int index = static_cast<int>(mCurve.mPoints.size());
 	mCurve.mPoints.emplace_back(nap::math::FCurvePoint<float, float>({static_cast<float>(time), static_cast<float>(value)}, {-0.1f, 0}, {0.1f, 0}));
@@ -34,55 +34,55 @@ void FCurve::addPoint(qreal time, qreal value)
 	pointsAdded({index});
 }
 
-qreal FCurve::evaluate(qreal t) const
+qreal FCurveAdapter::evaluate(qreal t) const
 {
 	return mCurve.evaluate(static_cast<const float&>(t));
 }
 
-const QPointF FCurve::pos(int pointIndex) const
+const QPointF FCurveAdapter::pos(int pointIndex) const
 {
 	const auto& pos = mCurve.mPoints[pointIndex].mPos;
 	return {pos.mTime, pos.mValue};
 }
 
-const QPointF FCurve::inTangent(int pointIndex) const
+const QPointF FCurveAdapter::inTangent(int pointIndex) const
 {
 	const auto& tan = mCurve.mPoints[pointIndex].mInTan;
 	return {tan.mTime, tan.mValue};
 }
 
-const QPointF FCurve::outTangent(int pointIndex) const
+const QPointF FCurveAdapter::outTangent(int pointIndex) const
 {
 	const auto& tan = mCurve.mPoints[pointIndex].mOutTan;
 	return {tan.mTime, tan.mValue};
 }
 
-const nap::qt::AbstractCurve::InterpType FCurve::interpolation(int pointIndex) const
+const nap::qt::AbstractCurve::InterpType FCurveAdapter::interpolation(int pointIndex) const
 {
 	const auto& interp = mCurve.mPoints[pointIndex].mInterp;
 	return mInterpMap[interp];
 }
 
-void FCurve::setInterpolation(int pointIndex, const nap::qt::AbstractCurve::InterpType& interp)
+void FCurveAdapter::setInterpolation(int pointIndex, const nap::qt::AbstractCurve::InterpType& interp)
 {
 	nap::math::ECurveInterp destInterp = nap::qt::keyFromValue(mInterpMap, interp, nap::math::ECurveInterp::Bezier);
 	mCurve.mPoints[pointIndex].mInterp = destInterp;
 	pointsChanged({pointIndex}, true);
 }
 
-const bool FCurve::tangentsAligned(int pointIndex) const
+const bool FCurveAdapter::tangentsAligned(int pointIndex) const
 {
 	return mCurve.mPoints[pointIndex].mTangentsAligned;
 }
 
-void FCurve::setTangentsAligned(int pointIndex, bool b)
+void FCurveAdapter::setTangentsAligned(int pointIndex, bool b)
 {
 	mCurve.mPoints[pointIndex].mTangentsAligned = b;
 	pointsChanged({pointIndex}, true);
 }
 
 
-void FCurve::movePoints(const QMap<int, QPointF>& positions, bool finished)
+void FCurveAdapter::movePoints(const QMap<int, QPointF>& positions, bool finished)
 {
 	for (auto it = positions.begin(); it != positions.end(); it++)
 	{
@@ -94,13 +94,13 @@ void FCurve::movePoints(const QMap<int, QPointF>& positions, bool finished)
 	mCurve.invalidate();
 }
 
-void FCurve::setComplexValue(nap::math::FComplex<float, float>& c, const QPointF& p)
+void FCurveAdapter::setComplexValue(nap::math::FComplex<float, float>& c, const QPointF& p)
 {
 	c.mTime = static_cast<float>(p.x());
 	c.mValue = static_cast<float>(p.y());
 }
 
-void FCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents, bool finished)
+void FCurveAdapter::moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, QPointF>& outTangents, bool finished)
 {
 	QList<int> changed;
 	for (auto it = inTangents.begin(); it != inTangents.end(); it++)
@@ -122,19 +122,19 @@ void FCurve::moveTangents(const QMap<int, QPointF>& inTangents, const QMap<int, 
 	pointsChanged(changed, finished);
 }
 
-const PropertyPath FCurve::pointPath(int pointIndex)
+const PropertyPath FCurveAdapter::pointPath(int pointIndex)
 {
 	std::string pointPath = QString("Points/%1").arg(pointIndex).toStdString();
 	return {sourceCurve(), pointPath};
 }
 
-const QColor FCurve::color() const
+const QColor FCurveAdapter::color() const
 {
-	return Qt::yellow;
+	return Qt::green;
 }
 
 
-FloatFCurveModel::FloatFCurveModel(nap::math::FunctionCurve<float, float>& curve) : nap::qt::AbstractCurveModel(), mCurve(curve) {}
+FloatFCurveModel::FloatFCurveModel(nap::math::FCurve<float, float>& curve) : nap::qt::AbstractCurveModel(), mCurve(curve) {}
 
 int FloatFCurveModel::curveCount() const
 {
@@ -143,7 +143,7 @@ int FloatFCurveModel::curveCount() const
 
 nap::qt::AbstractCurve* FloatFCurveModel::curve(int index) const
 {
-	return const_cast<FCurve*>(&mCurve);
+	return const_cast<FCurveAdapter*>(&mCurve);
 }
 
 void FloatFCurveModel::movePoints(QMap<nap::qt::AbstractCurve*, QMap<int, QPointF>> values)
