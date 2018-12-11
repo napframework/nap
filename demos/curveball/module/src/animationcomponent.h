@@ -20,7 +20,7 @@ namespace nap
 		DECLARE_COMPONENT(AnimatorComponent, AnimatorComponentInstance)
 
 		/**
-		 * The particle component needs a transform
+		 * This component uses a transform
 		 */
 		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
