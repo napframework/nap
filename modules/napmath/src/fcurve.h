@@ -17,7 +17,7 @@ namespace nap
 		{
 			Bezier = 0,				///< Bezier style interpolation
 			Linear,					///< Linear style interpolation
-			Stepped					///< Stepped interpolated: 0,1,2 etc.
+			Stepped					///< Stepped interpolated (hold previous value until next curve point
 		};
 
 
@@ -30,7 +30,16 @@ namespace nap
 		template<typename T, typename V>
 		struct FComplex
 		{
+			/**
+			 * Cfreate a time/value pair with time at 0 and default values for V
+			 */
 			FComplex() = default;
+
+			/**
+			 * Create a time/value pair
+			 * @param t the time
+			 * @param value the value
+			 */
 			FComplex(const T& t, const V& value) : mTime(t), mValue(value) {}
 
 			T mTime;	///<  Time mapped to the x axis
@@ -61,13 +70,23 @@ namespace nap
 		template<typename T, typename V>
 		struct FCurvePoint
 		{
+			/**
+			 * Create a point at time 0 and zeroed values. Tangents have reasonable default values.
+			 */
 			FCurvePoint() = default;
+
+			/**
+			 *
+			 * @param pos Position of the handle
+			 * @param inTan Left tangent position, relative to point position
+			 * @param outTan Right tangent position, relative to point position
+			 */
 			FCurvePoint(const FComplex<T, V>& pos, const FComplex<T, V>& inTan, const FComplex<T, V>& outTan)
 				: mPos(pos), mInTan(inTan), mOutTan(outTan) {}
 
-			FComplex<T, V> mPos;
-			FComplex<T, V> mInTan;
-			FComplex<T, V> mOutTan;
+			FComplex<T, V> mPos;		///< Position of the handle
+			FComplex<T, V> mInTan;		///< Left tangent position, relative to mPos
+			FComplex<T, V> mOutTan;		///< Right tangent position, relative to mPos
 			ECurveInterp mInterp = ECurveInterp::Bezier;
 
 			bool mTangentsAligned = true;	///< Non-essential to functionality, but necessary for editing
@@ -80,19 +99,26 @@ namespace nap
 
 		/**
 		 * A 1-D curve that can be used to map one value to another.
-		 * This resource can be used to animate a single value over time.
+		 * This resource can be used to animate a value over time.
+		 * The times and values of this curve are unbounded.
 		 * @param T type of the time parameter
 		 * @param V type of the value parameter
 		 */
 		template<typename T, typename V>
-		class FunctionCurve : public Resource
+		class FCurve : public Resource
 		{
 		RTTI_ENABLE(Resource)
 		public:
 			/**
-			 * Default constructor, creates curve with a 0-1 ramp
+			 * Default constructor
 			 */
-			FunctionCurve();
+			FCurve();
+
+			/**
+			 * Destructor
+			 */
+			~FCurve() override { mSortedPoints.clear(); }
+
 
 			/**
 			 * Evaluate this curve at time t
@@ -131,7 +157,7 @@ namespace nap
             T tForX(const FComplex<T, V> (& pts)[4], T x, T threshold = 0.0001, int maxIterations = 100);
 
 			/**
-			 * linear interpolates value a to b using a value of t (0-1)
+			 * linear interpolate value a to b using a value of t (0-1)
 			 * @param a the first input value
 			 * @param b the second input value
 			 * @param t the interpolation value (0-1)
@@ -139,7 +165,7 @@ namespace nap
             V lerp(const V& a, const V& b, const T& t);
 
             /**
-             * Evaluate a curve segment using bezier interpolation
+             * Evaluate a curve segment using cubic bezier interpolation
              * @tparam P 2D point, its components should be of type U
              * @tparam T floating point
              * @param pts The curve points to evaluate
@@ -175,27 +201,25 @@ namespace nap
 
 			/**
 			 * Grab the two points on either side of time
-			 * @param t
-			 * @param curr
-			 * @param next
+			 * @param t the time of the point index
 			 */
 			int pointIndexAtTime(const T& t) const;
 
 			/**
 			 * In case of Bezier interpolation, keep this curve segment from having multiple solutions
-			 * @param x0
-			 * @param x1
-			 * @param x2
-			 * @param x3
+			 * @param x0 time 0 of curve segment
+			 * @param x1 time 1 of curve segment
+			 * @param x2 time 2 of curve segment
+			 * @param x3 time 3 of curve segment
 			 */
 			void limitOverhang(const T& x0, T& x1, T& x2, const T& x3);
 
 			/**
 			 * In case of Bezier interpolation, keep this curve segment from having multiple solutions
-			 * @param pa
-			 * @param pb
-			 * @param pc
-			 * @param pd
+			 * @param pa point 0 of curve segment
+			 * @param pb point 1 of curve segment
+			 * @param pc point 2 of curve segment
+			 * @param pd point 3 of curve segment
 			 */
 			void limitOverhangPoints(const FComplex<T, V>& pa, FComplex<T, V>& pb, FComplex<T, V>& pc, const FComplex<T, V>& pd);
 
@@ -213,10 +237,10 @@ namespace nap
 		using Vec3FComplex		= FComplex<float, glm::vec3>;
 		using Vec4FComplex		= FComplex<float, glm::vec4>;
 
-		using FloatFCurve		= FunctionCurve<float, float>;
-		using Vec2FCurve		= FunctionCurve<float, glm::vec2>;
-		using Vec3FCurve		= FunctionCurve<float, glm::vec3>;
-		using Vec4FCurve		= FunctionCurve<float, glm::vec4>;
+		using FloatFCurve		= FCurve<float, float>;
+		using Vec2FCurve		= FCurve<float, glm::vec2>;
+		using Vec3FCurve		= FCurve<float, glm::vec3>;
+		using Vec4FCurve		= FCurve<float, glm::vec4>;
 
 		using FloatFCurvePoint	= FCurvePoint<float, float>;
 		using Vec2FCurvePoint	= FCurvePoint<float, glm::vec2>;
@@ -227,10 +251,10 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 		// explicit MSVC template specialization exports
 		//////////////////////////////////////////////////////////////////////////
-		template class NAPAPI FunctionCurve<float, float>;
-		template class NAPAPI FunctionCurve<float, glm::vec2>;
-		// template class NAPAPI FunctionCurve<float, glm::vec3>;
-		// template class NAPAPI FunctionCurve<float, glm::vec4>;
+		template class NAPAPI FCurve<float, float>;
+		template class NAPAPI FCurve<float, glm::vec2>;
+		// template class NAPAPI FCurve<float, glm::vec3>;
+		// template class NAPAPI FCurve<float, glm::vec4>;
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -238,7 +262,7 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T, typename V>
-		V nap::math::FunctionCurve<T, V>::evaluate(const T& t)
+		V nap::math::FCurve<T, V>::evaluate(const T& t)
 		{
 			if (mPoints.empty())
 				return V();
@@ -284,7 +308,7 @@ namespace nap
 		}
 
 		template<typename T, typename V>
-		nap::math::FComplex<T, V> nap::math::FunctionCurve<T, V>::bezier(const FComplex<T, V>(&pts)[4], T t)
+		nap::math::FComplex<T, V> nap::math::FCurve<T, V>::bezier(const FComplex<T, V>(&pts)[4], T t)
 		{
 			T u = 1 - t;
 			T a = u * u * u;
@@ -296,7 +320,7 @@ namespace nap
 
 
 		template<typename T, typename V>
-		T nap::math::FunctionCurve<T, V>::tForX(const FComplex<T, V>(&pts)[4], T x, T threshold /*= 0.0001*/, int maxIterations /*= 100*/)
+		T nap::math::FCurve<T, V>::tForX(const FComplex<T, V>(&pts)[4], T x, T threshold /*= 0.0001*/, int maxIterations /*= 100*/)
 		{
 			T depth = 0.5;
 			T t = 0.5;
@@ -314,20 +338,20 @@ namespace nap
 		}
 
 		template<typename T, typename V>
-		V nap::math::FunctionCurve<T, V>::lerp(const V& a, const V& b, const T& t)
+		V nap::math::FCurve<T, V>::lerp(const V& a, const V& b, const T& t)
 		{
 			return a + t * (b - a);
 		}
 
 		template<typename T, typename V>
-		V nap::math::FunctionCurve<T, V>::evalCurveSegmentBezier(const nap::math::FComplex<T, V>(&pts)[4], T x)
+		V nap::math::FCurve<T, V>::evalCurveSegmentBezier(const nap::math::FComplex<T, V>(&pts)[4], T x)
 		{
 			T t = tForX(pts, x);
 			return bezier(pts, t).mValue;
 		}
 
 		template<typename T, typename V>
-		V nap::math::FunctionCurve<T, V>::evalCurveSegmentLinear(const FComplex<T, V>(&pts)[4], T x)
+		V nap::math::FCurve<T, V>::evalCurveSegmentLinear(const FComplex<T, V>(&pts)[4], T x)
 		{
 			const auto& a = pts[0];
 			const auto& b = pts[3];
@@ -337,13 +361,13 @@ namespace nap
 
 
 		template<typename T, typename V>
-		V nap::math::FunctionCurve<T, V>::evalCurveSegmentStepped(const FComplex<T, V>(&pts)[4], T x)
+		V nap::math::FCurve<T, V>::evalCurveSegmentStepped(const FComplex<T, V>(&pts)[4], T x)
 		{
 			return pts[0].mValue;
 		}
 
 		template<typename T, typename V>
-		void nap::math::FunctionCurve<T, V>::sortPoints()
+		void nap::math::FCurve<T, V>::sortPoints()
 		{
 			mSortedPoints.clear();
 			for (int i = 0; i < mPoints.size(); i++)
@@ -357,7 +381,7 @@ namespace nap
 		}
 
 		template<typename T, typename V>
-		int nap::math::FunctionCurve<T, V>::pointIndexAtTime(const T& t) const
+		int nap::math::FCurve<T, V>::pointIndexAtTime(const T& t) const
 		{
 			for (size_t i = 0, len = mSortedPoints.size(); i < len; i++)
 			{
@@ -373,14 +397,14 @@ namespace nap
 		}
 
 		template<typename T, typename V>
-		void nap::math::FunctionCurve<T, V>::limitOverhang(const T& x0, T& x1, T& x2, const T& x3)
+		void nap::math::FCurve<T, V>::limitOverhang(const T& x0, T& x1, T& x2, const T& x3)
 		{
 			x1 = std::min(x1, x3);
 			x2 = std::max(x2, x0);
 		}
 
 		template<typename T, typename V>
-		void nap::math::FunctionCurve<T, V>::limitOverhangPoints(const FComplex<T, V>& pa, FComplex<T, V>& pb, FComplex<T, V>& pc, const FComplex<T, V>& pd)
+		void nap::math::FCurve<T, V>::limitOverhangPoints(const FComplex<T, V>& pa, FComplex<T, V>& pb, FComplex<T, V>& pc, const FComplex<T, V>& pd)
 		{
 			auto a = pa.mTime;
 			auto b = pb.mTime;
