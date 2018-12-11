@@ -24,8 +24,8 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
         COMMENT "Copy Resources")
 
-#add_executable(${PROJECT_NAME}_demo ${SOURCES})
-#target_include_directories(${PROJECT_NAME}_demo PUBLIC src test)
-#target_link_libraries(${PROJECT_NAME}_demo ${QT_LIBS} ${OPENGL_LIBRARIES})
+add_executable(${PROJECT_NAME}_demo ${SOURCES})
+target_include_directories(${PROJECT_NAME}_demo PUBLIC src test)
+target_link_libraries(${PROJECT_NAME}_demo ${QT_LIBS} ${OPENGL_LIBRARIES})
 
 nap_qt_post(${PROJECT_NAME})
