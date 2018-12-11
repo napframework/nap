@@ -27,7 +27,7 @@ RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParticleEmitterComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&) 
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 namespace nap
@@ -45,7 +45,7 @@ namespace nap
 	/**
 	 * Randomizes a value based on a deviation from that value
 	 * @param baseValue the default value
-	 * @param variation the amount that value is allowed to deviate from it's original value 
+	 * @param variation the amount that value is allowed to deviate from it's original value
 	 */
 	template<typename T>
 	static T particleRand(T baseValue, T variation)
@@ -74,7 +74,7 @@ namespace nap
 			Vec3VertexAttribute& uv_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
 			Vec4VertexAttribute& color_attribute = mMeshInstance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 			FloatVertexAttribute& id_attribute = mMeshInstance.getOrCreateAttribute<float>("pid");
-			
+
 			MeshShape& shape = mMeshInstance.createShape();
 
 			// Reserve CPU memory for all the particle geometry necessary to create
@@ -110,7 +110,7 @@ namespace nap
 
 	bool ParticleEmitterComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// initialize base class 
+		// initialize base class
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
 
@@ -128,7 +128,7 @@ namespace nap
 
 		// Calculate the amount of time it takes within a second to spawn a new particle
 		mSpawntime = static_cast<double>(1.0f / getComponent<ParticleEmitterComponent>()->mSpawnRate);
-		
+
 		// This ensures a particle is spawned immediately
 		mTimeSinceLastSpawn = mSpawntime;
 
@@ -149,7 +149,7 @@ namespace nap
 			// Calculate number of particles to spawn
 			int pcount = static_cast<int>(std::round(mTimeSinceLastSpawn / mSpawntime));
 			assert(pcount != 0);
-			
+
 			// Create a new particle and add to our list of particles
 			for (int i = 0; i < pcount; i++)
 			{
@@ -207,7 +207,7 @@ namespace nap
 		// When the mesh is updated on the gpu it knows the amount of data to upload
 		int num_vertices = mParticles.size() * 4;
 		mesh_instance.setNumVertices(num_vertices);
-		
+
 		// Get the attributes we want to modify
 		Vec3VertexAttribute& position_attribute = mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		Vec3VertexAttribute& uv_attribute		= mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
@@ -217,12 +217,12 @@ namespace nap
 		// Clear all of 'm
 		position_attribute.clear();
 		uv_attribute.clear();
-		color_attribute.clear();		
+		color_attribute.clear();
 		id_attribute.clear();
-		
+
 		MeshShape& shape = mesh_instance.getShape(0);
 		shape.clearIndices();
-		
+
 		// Build the mesh based on the amount of particles
 		unsigned int cur_num_vertices = 0;
 		for (Particle& particle : mParticles)
@@ -272,9 +272,9 @@ namespace nap
 			// Push particle color
 			glm::vec4 colors[] =
 			{
-				particle.mColor, 
-				particle.mColor, 
-				particle.mColor, 
+				particle.mColor,
+				particle.mColor,
+				particle.mColor,
 				particle.mColor
 			};
 

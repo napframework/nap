@@ -4,7 +4,7 @@
 #include <material.h>
 #include <nap/logger.h>
 #include <audio/utility/safeptr.h>
-#include <generic/propertypath.h>
+#include <propertypath.h>
 #include <utility/fileutils.h>
 #include <utility/datetimeutils.h>
 #include <nap/logger.h>
