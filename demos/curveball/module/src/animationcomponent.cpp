@@ -28,6 +28,7 @@ namespace nap
 
 		// Fetch curve resource we want to evaluate every frame
 		mCurve = getComponent<AnimatorComponent>()->mCurve.get();
+
 		return true;
 	}
 
