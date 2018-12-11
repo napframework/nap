@@ -48,4 +48,4 @@ Packaging NAP requires that your Qt version is a build from [qt.io](http://downl
 
 ## Want to know more?
 
-Take a look at our high level [documentation](https://www.napframework.com/doxygen/index.html) or [downoad](https://www.napframework.com) the latest version of NAP right now!	
+Take a look at our high level [documentation](https://www.napframework.com/doxygen/index.html) or [download](https://www.napframework.com) the latest version of NAP right now!	
