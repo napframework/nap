@@ -30,7 +30,7 @@ RTTI_DEFINE_BASE(nap::math::Vec2FCurvePoint);
 RTTI_DEFINE_BASE(nap::math::Vec3FCurvePoint);
 RTTI_DEFINE_BASE(nap::math::Vec4FCurvePoint);
 
-#define DEFAULT_TAN_OFFSET 0.1f
+const static float defaultTanOffset = 0.1f;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DEFAULT CURVE CONSTRUCTORS
@@ -39,8 +39,8 @@ RTTI_DEFINE_BASE(nap::math::Vec4FCurvePoint);
 
 template<>
 FCurve<float, float>::FCurve() {
-	mPoints.emplace_back(FCurvePoint<float, float>({0.0f, 0.0f}, {-DEFAULT_TAN_OFFSET, 0.0f}, {DEFAULT_TAN_OFFSET, 0.0f}));
-	mPoints.emplace_back(FCurvePoint<float, float>({1.0f, 1.0f}, {-DEFAULT_TAN_OFFSET, 0.0f}, {DEFAULT_TAN_OFFSET, 0.0f}));
+	mPoints.emplace_back(FCurvePoint<float, float>({0.0f, 0.0f}, {-defaultTanOffset, 0.0f}, {defaultTanOffset, 0.0f}));
+	mPoints.emplace_back(FCurvePoint<float, float>({1.0f, 1.0f}, {-defaultTanOffset, 0.0f}, {defaultTanOffset, 0.0f}));
 }
 
 
@@ -48,7 +48,7 @@ template<>
 Vec2FCurve::FCurve() {
 	glm::vec2 nil(0.0f, 0.0f);
 	glm::vec2 one(1.0f, 1.0f);
-	mPoints.emplace_back(FCurvePoint<float, glm::vec2>({0.0f, nil}, {-DEFAULT_TAN_OFFSET, nil}, {DEFAULT_TAN_OFFSET, nil}));
-	mPoints.emplace_back(FCurvePoint<float, glm::vec2>({0.0f, one}, {-DEFAULT_TAN_OFFSET, nil}, {DEFAULT_TAN_OFFSET, nil}));
+	mPoints.emplace_back(FCurvePoint<float, glm::vec2>({0.0f, nil}, {-defaultTanOffset, nil}, {defaultTanOffset, nil}));
+	mPoints.emplace_back(FCurvePoint<float, glm::vec2>({0.0f, one}, {-defaultTanOffset, nil}, {defaultTanOffset, nil}));
 }
 
