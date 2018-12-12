@@ -8,6 +8,7 @@
 // nap::randomoschandler run time class definition 
 RTTI_BEGIN_CLASS(nap::RandomOSCHandler)
 	RTTI_PROPERTY("CombinationComponent", &nap::RandomOSCHandler::mCombinationComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("UpdateMaterialComponent", &nap::RandomOSCHandler::mUpdateMaterialComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ControlGroups", &nap::RandomOSCHandler::mControlGroups, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -42,6 +43,7 @@ namespace nap
 		// Populate our map of callbacks
 		mOscEventFuncs.emplace(std::make_pair("brightness", &RandomOSCHandlerInstance::updateBrightness));
 		mOscEventFuncs.emplace(std::make_pair("control-group-brightness", &RandomOSCHandlerInstance::updateControlGroupBrightness));
+		mOscEventFuncs.emplace(std::make_pair("static-temperature", &RandomOSCHandlerInstance::updateStaticTemperature));
 
 		return true;
 	}
@@ -82,5 +84,9 @@ namespace nap
 		int controlGroupIndex = std::stoi(args[0]) - 1;
 		ControlGroups::ControlGroup* controlGroup = mControlGroups->getGroup(controlGroupIndex);
 		controlGroup->mBrightness = oscEvent[0].asFloat();
+	}
+
+	void RandomOSCHandlerInstance::updateStaticTemperature(const OSCEvent& oscEvent, const std::vector<std::string>& args) {
+		*mUpdateMaterialComponent->getStaticWarmthPtr() = oscEvent[0].asFloat();
 	}
 }
