@@ -397,6 +397,11 @@
                     "mID": "nap::RandomOSCHandler",
                     "CombinationComponent": "./LightRig/nap::ApplyCombinationComponent",
                     "ControlGroups": "ControlGroups"
+                },
+                {
+                    "Type": "nap::UpdateMaterialComponent",
+                    "mID": "nap::UpdateMaterialComponent",
+                    "StaticMeshComponent": "./Static/StaticMeshComponent"
                 }
             ],
             "Children": [
@@ -858,7 +863,7 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent_14",
+                    "mID": "nap::StaticMeshComponent",
                     "Mesh": "StaticMesh",
                     "MaterialInstance": {
                         "Material": "StaticMaterial",

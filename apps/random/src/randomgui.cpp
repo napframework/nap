@@ -1,5 +1,6 @@
 #include "randomgui.h"
 #include "randomapp.h"
+#include "updatematerialcomponent.h"
 
 #include <imgui/imgui.h>
 #include <imguiutils.h>
@@ -140,6 +141,9 @@ namespace nap
 	void RandomGui::showStaticControls()
 	{
 		if (ImGui::CollapsingHeader("Static", ImGuiTreeNodeFlags_DefaultOpen))
-			ImGui::SliderFloat("Temperature", mApp.mShaders->pStaticWarmth, 0.0f, 1.0f);
+		{
+			UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
+			ImGui::SliderFloat("Temperature", updateMaterial.getStaticWarmthPtr(), 0.0f, 1.0f);
+		}
 	}
 }

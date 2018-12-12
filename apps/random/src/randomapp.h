@@ -103,6 +103,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance>						mStatic = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mCombination = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mController = nullptr;
 
 		// Random App components
 		std::unique_ptr<RandomGui>							mGui = nullptr;

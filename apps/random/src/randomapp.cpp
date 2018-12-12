@@ -72,6 +72,7 @@ namespace nap
 		mVideo = mScene->findEntity("Video");
 		mStatic = mScene->findEntity("Static");
 		mCombination = mScene->findEntity("Combination");
+		mController = mScene->findEntity("Controller");
 
 		// Set render states
 		nap::RenderState render_state;

@@ -24,10 +24,6 @@ namespace nap
 		pSunGlareInnerSize = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInnerSize").mValue;
 		pSunGlareStretch = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uStretch").mValue;
 
-		// Store static uniform value pointers
-		nap::RenderableMeshComponentInstance& static_plane = mApp.mStatic->getComponent<nap::RenderableMeshComponentInstance>();
-		pStaticWarmth = &static_plane.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWarmth").mValue;
-
 		// Call an intial update to apply properties
 		updateSunGlareOrbit();
 	}
