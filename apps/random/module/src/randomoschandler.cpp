@@ -8,6 +8,7 @@
 // nap::randomoschandler run time class definition 
 RTTI_BEGIN_CLASS(nap::RandomOSCHandler)
 	RTTI_PROPERTY("CombinationComponent", &nap::RandomOSCHandler::mCombinationComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ControlGroups", &nap::RandomOSCHandler::mControlGroups, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::randomoschandlerInstance run time class definition 
@@ -28,6 +29,9 @@ namespace nap
 
 	bool RandomOSCHandlerInstance::init(utility::ErrorState& errorState)
 	{
+		// Copy over control groups
+		mControlGroups = getComponent<RandomOSCHandler>()->mControlGroups.get();
+
 		// Get the osc input component, should be there because this guy depends on it
 		mOSCInputComponent = &(getEntityInstance()->getComponent<OSCInputComponentInstance>());
 		assert(mOSCInputComponent != nullptr);
@@ -75,6 +79,8 @@ namespace nap
 	}
 
 	void RandomOSCHandlerInstance::updateControlGroupBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args) {
-
+		int controlGroupIndex = std::stoi(args[0]) - 1;
+		ControlGroups::ControlGroup* controlGroup = mControlGroups->getGroup(controlGroupIndex);
+		controlGroup->mBrightness = oscEvent[0].asFloat();
 	}
 }

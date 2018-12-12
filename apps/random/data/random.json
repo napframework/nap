@@ -395,7 +395,8 @@
                 {
                     "Type": "nap::RandomOSCHandler",
                     "mID": "nap::RandomOSCHandler",
-                    "CombinationComponent": "./LightRig/nap::ApplyCombinationComponent"
+                    "CombinationComponent": "./LightRig/nap::ApplyCombinationComponent",
+                    "ControlGroups": "ControlGroups"
                 }
             ],
             "Children": [

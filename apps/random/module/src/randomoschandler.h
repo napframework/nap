@@ -2,11 +2,13 @@
 
 // Local Includes
 #include "applycombinationcomponent.h"
+#include "controlgroups.h"
 
 // External Includes
 #include <oscinputcomponent.h>
 #include <nap/signalslot.h>
 #include <componentptr.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -28,6 +30,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		ComponentPtr<ApplyCombinationComponent> mCombinationComponent;	///< Property: 'CombinationComponent' link to the combination component
+		ResourcePtr<ControlGroups> mControlGroups = nullptr;			///< Property: Pointer to the control groups
 	};
 
 
@@ -59,6 +62,7 @@ namespace nap
 
 	private:
 		OSCInputComponentInstance* mOSCInputComponent = nullptr;				///< Handle to the component that receives the incoming osc messages
+		ControlGroups* mControlGroups = nullptr;
 		
 		/**
 		 * Called when the slot above is send a new message
