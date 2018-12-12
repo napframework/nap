@@ -21,10 +21,10 @@ namespace nap
 		return true;
 	}
 
-	const nap::ControlGroups::ControlGroup& ControlGroups::getGroup(int index) const
+	nap::ControlGroups::ControlGroup* ControlGroups::getGroup(int index)
 	{
 		assert(index < mControlGroups.size());
-		return mControlGroups[index];
+		return &mControlGroups[index];
 	}
 
 

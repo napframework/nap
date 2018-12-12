@@ -26,7 +26,7 @@ namespace nap
 		 * @param index the index of the group you want to fetch
 		 * @return a group associated with a specific index
 		 */
-		const ControlGroup& getGroup(int index) const;
+		ControlGroup* getGroup(int index);
 
 		/**
 		 *@return total number of control groups managed by this container
