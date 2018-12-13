@@ -82,15 +82,11 @@ namespace nap
 		MaterialInstance& background_material = mBackgroundEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
 		background_material.getOrCreateUniform<UniformVec3>("colorOne").setValue({ mBackgroundColorOne.getRed(), mBackgroundColorOne.getGreen(), mBackgroundColorOne.getBlue() });
 		background_material.getOrCreateUniform<UniformVec3>("colorTwo").setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
-        
-        auto level = mVideoEntity->getComponent<audio::LevelMeterComponentInstance>().getLevel();
-        // get smoothed level value
-        float smoothedLevel = mSoundLevelSmoother.update(level, deltaTime);
 
 		// Push displacement properties to material
 		MaterialInstance& displaceme_material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement + smoothedLevel * mSoundInfluence);
-		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness + smoothedLevel * mSoundInfluence);
+		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement);
+		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness);
 	}
 	
 	
@@ -225,7 +221,6 @@ namespace nap
 		{
 			ImGui::SliderFloat("Amount", &mDisplacement, 0.0f, 1.0f, "%.3f", 2.0f);
 			ImGui::SliderFloat("Random", &mRandomness, 0.0f, 1.0f, "%.3f", 2.25f);
-            ImGui::SliderFloat("Sound influence", &mSoundInfluence, 0.0f, 4.0f, "%.3f", 1.f);
 		}
 		if (ImGui::CollapsingHeader("Background Colors"))
 		{
