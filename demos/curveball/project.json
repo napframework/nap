@@ -1,6 +1,6 @@
 {
-    "title": "Animation",
-    "version": "0.1",
+    "title": "Curveball",
+    "version": "0.2.0",
     "modules": [
         "mod_curveball",
         "mod_napapp"
