@@ -52,7 +52,7 @@ namespace nap
 		 * @param deltaTime time in between frames in seconds
 		 */
 		virtual void update(double deltaTime) override;
-		void updateClouds(double deltaTime);
+		void updateSunClouds(double deltaTime);
 
 		// Pointers to the run time Component Instances, set during de-serialization
 		ComponentInstancePtr<RenderableMeshComponent> mSunCloudsMeshComponent = { this, &UpdateMaterialComponent::mSunCloudsMeshComponent };
@@ -67,10 +67,13 @@ namespace nap
 		// Exposed properties for GUI
 		float		mSunCloudsNoiseSpeed = 0.025f;
 		const float	mSunCloudsNoiseSpeedMax = 0.25f;
+
 		float		mSunCloudsWindSpeed = 0.05f;
 		const float	mSunCloudsWindSpeedMax = 0.5f;
+
 		const float mSunCloudsScaleMin = 0.1f;
 		const float mSunCloudsScaleMax = 2.0f;
+
 		bool		mSunCloudsInverted = false;
 	};
 }

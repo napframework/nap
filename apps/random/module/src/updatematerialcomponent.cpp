@@ -37,11 +37,11 @@ namespace nap
 	{
 
 		// Update clouds shader
-		updateClouds(deltaTime);
+		updateSunClouds(deltaTime);
 	}
 
 
-	void UpdateMaterialComponentInstance::updateClouds(double deltaTime)
+	void UpdateMaterialComponentInstance::updateSunClouds(double deltaTime)
 	{
 		// Set inverted property on shader in case the mSunCloudsInverted boolean changed
 		mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInverted").mValue = mSunCloudsInverted ? 1.0f : 0.0f;
