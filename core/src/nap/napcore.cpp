@@ -7,5 +7,5 @@ PYBIND11_EMBEDDED_MODULE(nap, module)
 	python_module.invoke(module);
 }
 
-NAP_MODULE("napcore", "1.0")
+NAP_MODULE("napcore", "0.2.0")
 
