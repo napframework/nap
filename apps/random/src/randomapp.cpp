@@ -73,6 +73,10 @@ namespace nap
 		mStatic = mScene->findEntity("Static");
 		mCombination = mScene->findEntity("Combination");
 		mController = mScene->findEntity("Controller");
+		mOrbitPath = mScene->findEntity("OrbitPath");
+		mOrbitStart = mScene->findEntity("OrbitStart");
+		mOrbitEnd = mScene->findEntity("OrbitEnd");
+		mOrbitSun = mScene->findEntity("OrbitSun");
 
 		// Set render states
 		nap::RenderState render_state;
@@ -144,7 +148,12 @@ namespace nap
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			mLightRig->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
 			if (mLightingModeEnum == LightingModes::Sun)
-				mOrbit->appendRenderableComponents(components_to_render);
+			{
+				components_to_render.emplace_back(&mOrbitPath->getComponent<nap::RenderableMeshComponentInstance>());
+				components_to_render.emplace_back(&mOrbitStart->getComponent<nap::RenderableMeshComponentInstance>());
+				components_to_render.emplace_back(&mOrbitEnd->getComponent<nap::RenderableMeshComponentInstance>());
+				components_to_render.emplace_back(&mOrbitSun->getComponent<nap::RenderableMeshComponentInstance>());
+			}
 
 			// Render components in one pass
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);

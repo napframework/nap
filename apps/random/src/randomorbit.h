@@ -30,11 +30,6 @@ namespace nap
 		float getProgressByTime();
 
 		/**
-		* Add Renderable Components to provided vector
-		*/
-		void appendRenderableComponents(std::vector<nap::RenderableComponentInstance*>& renderable_components);
-
-		/**
 		*	Exposed properties for GUI
 		*/
 		float		getAngle();

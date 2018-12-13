@@ -64,14 +64,6 @@ namespace nap
 		));
 	}
 
-	void RandomOrbit::appendRenderableComponents(std::vector<nap::RenderableComponentInstance*>& renderable_components)
-	{
-		renderable_components.emplace_back(&mOrbitPath->getComponent<nap::RenderableMeshComponentInstance>());
-		renderable_components.emplace_back(&mOrbitStart->getComponent<nap::RenderableMeshComponentInstance>());
-		renderable_components.emplace_back(&mOrbitEnd->getComponent<nap::RenderableMeshComponentInstance>());
-		renderable_components.emplace_back(&mOrbitSun->getComponent<nap::RenderableMeshComponentInstance>());
-	}
-
 	float RandomOrbit::getAngle()
 	{
 		return mStartEnd[0] - mProgress * (mStartEnd[0] - mStartEnd[1]);
