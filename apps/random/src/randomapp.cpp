@@ -73,6 +73,7 @@ namespace nap
 		mStatic = mScene->findEntity("Static");
 		mCombination = mScene->findEntity("Combination");
 		mController = mScene->findEntity("Controller");
+		mOrbit = mScene->findEntity("Orbit");
 		mOrbitPath = mScene->findEntity("OrbitPath");
 		mOrbitStart = mScene->findEntity("OrbitStart");
 		mOrbitEnd = mScene->findEntity("OrbitEnd");
@@ -87,7 +88,6 @@ namespace nap
 
 		// Create Random App components
 		mGui = std::make_unique<RandomGui>(*this);
-		mOrbit = std::make_unique<RandomOrbit>(*this);
 		mShaders = std::make_unique<RandomShaders>(*this);
 
 		// Transition from black to sun mode when the app starts
@@ -107,7 +107,6 @@ namespace nap
 
 		// Update Random App components
 		mGui->update(deltaTime);
-		mOrbit->update(deltaTime);
 		mShaders->update(deltaTime);
 	}
 

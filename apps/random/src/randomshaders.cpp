@@ -2,6 +2,7 @@
 #include "randomapp.h"
 
 #include <mathutils.h>
+#include <orbitcomponent.h>
 
 namespace nap
 {
@@ -80,9 +81,10 @@ namespace nap
 
 	void RandomShaders::updateSunGlareOrbit()
 	{
-		pSunGlareOrbitCenter->x = mApp.mOrbit->mCenter[0];
-		pSunGlareOrbitCenter->y = mApp.mOrbit->mCenter[1];
-		*pSunGlareOrbitAngle = mApp.mOrbit->getAngle();
-		*pSunGlareOrbitRadius = mApp.mOrbit->mRadius;
+		OrbitComponentInstance& orbit = mApp.mOrbit->getComponent<OrbitComponentInstance>();
+		pSunGlareOrbitCenter->x = orbit.mCenter[0];
+		pSunGlareOrbitCenter->y = orbit.mCenter[1];
+		*pSunGlareOrbitAngle = orbit.getAngle();
+		*pSunGlareOrbitRadius = orbit.mRadius;
 	}
 }

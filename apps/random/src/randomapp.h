@@ -2,7 +2,6 @@
 
 // Local Includes
 #include "randomgui.h"
-#include "randomorbit.h"
 #include "randomshaders.h"
 #include "controlgroups.h"
 
@@ -34,7 +33,6 @@ namespace nap
 	{
 		RTTI_ENABLE(App)
 		friend class RandomGui;
-		friend class RandomOrbit;
 		friend class RandomShaders;
 	public:
 		RandomApp(Core& core) : App(core)	{ }
@@ -104,6 +102,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance>						mCombination = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mController = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrbit = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mOrbitPath = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mOrbitStart = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mOrbitEnd = nullptr;
@@ -111,7 +110,6 @@ namespace nap
 
 		// Random App components
 		std::unique_ptr<RandomGui>							mGui = nullptr;
-		std::unique_ptr<RandomOrbit>						mOrbit = nullptr;
 		std::unique_ptr<RandomShaders>						mShaders = nullptr;
 
 		// Store window properties
