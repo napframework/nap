@@ -83,15 +83,15 @@ namespace nap
 
 	void RandomGui::showSunControls()
 	{
+		UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
 		if (ImGui::CollapsingHeader("Clouds", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::SliderFloat("Noise Speed", &mApp.mShaders->mSunCloudsNoiseSpeed, 0.0f, mApp.mShaders->mSunCloudsNoiseSpeedMax);
-			ImGui::SliderFloat("Wind Speed", &mApp.mShaders->mSunCloudsWindSpeed, 0.0f, mApp.mShaders->mSunCloudsWindSpeedMax);
-			ImGui::SliderFloat("Wind Direction", mApp.mShaders->pSunCloudsRotation, 0.0f, 360.0f);
-			ImGui::SliderFloat("Contrast", mApp.mShaders->pSunCloudsContrast, 0.0f, 1.0f);
-			ImGui::SliderFloat("Scale", mApp.mShaders->pSunCloudsScale, mApp.mShaders->mSunCloudsScaleMin, mApp.mShaders->mSunCloudsScaleMax);
-			if (ImGui::Checkbox("Inverted", &mApp.mShaders->mSunCloudsInverted))
-				mApp.mShaders->updateSunCloudsInverted();
+			ImGui::SliderFloat("Noise Speed", &updateMaterial.mSunCloudsNoiseSpeed, 0.0f, updateMaterial.mSunCloudsNoiseSpeedMax);
+			ImGui::SliderFloat("Wind Speed", &updateMaterial.mSunCloudsWindSpeed, 0.0f, updateMaterial.mSunCloudsWindSpeedMax);
+			ImGui::SliderFloat("Wind Direction", updateMaterial.getSunCloudsRotationPtr(), 0.0f, 360.0f);
+			ImGui::SliderFloat("Contrast", updateMaterial.getSunCloudsContrastPtr(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Scale", updateMaterial.getSunCloudsScalePtr(), updateMaterial.mSunCloudsScaleMin, updateMaterial.mSunCloudsScaleMax);
+			ImGui::Checkbox("Inverted", &updateMaterial.mSunCloudsInverted);
 		}
 		if (ImGui::CollapsingHeader("Glare", ImGuiTreeNodeFlags_DefaultOpen))
 		{

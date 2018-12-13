@@ -24,7 +24,9 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ComponentPtr<RenderableMeshComponent> mStaticMeshComponent;	///< Property: 'StaticMeshComponent' link to the static mesh component
+		ComponentPtr<RenderableMeshComponent> mSunCloudsMeshComponent;	///< Property: 'SunCloudsMeshComponent' link to the sun clouds mesh component
+		ComponentPtr<RenderableMeshComponent> mSunGlareMeshComponent;	///< Property: 'SunGlareMeshComponent' link to the sun glare mesh component
+		ComponentPtr<RenderableMeshComponent> mStaticMeshComponent;		///< Property: 'StaticMeshComponent' link to the static mesh component
 	};
 
 
@@ -50,13 +52,25 @@ namespace nap
 		 * @param deltaTime time in between frames in seconds
 		 */
 		virtual void update(double deltaTime) override;
+		void updateClouds(double deltaTime);
 
-		// Pointer to the run time Static Mesh Component Instance, set during de-serialization
+		// Pointers to the run time Component Instances, set during de-serialization
+		ComponentInstancePtr<RenderableMeshComponent> mSunCloudsMeshComponent = { this, &UpdateMaterialComponent::mSunCloudsMeshComponent };
+		ComponentInstancePtr<RenderableMeshComponent> mSunGlareMeshComponent = { this, &UpdateMaterialComponent::mSunGlareMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent> mStaticMeshComponent = { this, &UpdateMaterialComponent::mStaticMeshComponent };
 
+		float* getSunCloudsRotationPtr();
+		float* getSunCloudsContrastPtr();
+		float* getSunCloudsScalePtr();
 		float* getStaticWarmthPtr();
 
-	private:
-
+		// Exposed properties for GUI
+		float		mSunCloudsNoiseSpeed = 0.025f;
+		const float	mSunCloudsNoiseSpeedMax = 0.25f;
+		float		mSunCloudsWindSpeed = 0.05f;
+		const float	mSunCloudsWindSpeedMax = 0.5f;
+		const float mSunCloudsScaleMin = 0.1f;
+		const float mSunCloudsScaleMax = 2.0f;
+		bool		mSunCloudsInverted = false;
 	};
 }

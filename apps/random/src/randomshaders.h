@@ -22,36 +22,20 @@ namespace nap
 		*	Update shader uniforms
 		*/
 		void update(double deltaTime);
-		void updateCloudsShader(double deltaTime);
 		void updateCameraLocation();
 		void startLightingModeTransition(nap::Texture2D& oldTexture, nap::Texture2D& newTexture);
 		void updateLightingModeTransition(double deltaTime);
 		void updateSunGlareOrbit();
-		void updateSunCloudsInverted();
 
 		/**
 		*	Exposed properties for GUI
 		*/
-		glm::vec3*	pSunCloudsOffset = NULL;
-		float*		pSunCloudsRotation = NULL;
-		float*		pSunCloudsContrast = NULL;
-		float*		pSunCloudsScale = NULL;
-		float*		pSunCloudsInverted = NULL;
-
 		glm::vec3*	pSunGlareOrbitCenter = NULL;
 		float*		pSunGlareOrbitAngle = NULL;
 		float*		pSunGlareOrbitRadius = NULL;
 		float*		pSunGlareOuterSize = NULL;
 		float*		pSunGlareInnerSize = NULL;
 		float*		pSunGlareStretch = NULL;
-
-		float		mSunCloudsNoiseSpeed = 0.025f;
-		const float	mSunCloudsNoiseSpeedMax = 0.25f;
-		float		mSunCloudsWindSpeed = 0.05f;
-		const float	mSunCloudsWindSpeedMax = 0.5f;
-		const float mSunCloudsScaleMin = 0.1f;
-		const float mSunCloudsScaleMax = 2.0f;
-		bool		mSunCloudsInverted = false;
 
 		const float	mSunGlareSizeMin = 0.05f;
 		const float	mSunGlareSizeMax = 0.25f;		

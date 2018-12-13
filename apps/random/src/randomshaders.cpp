@@ -7,14 +7,6 @@ namespace nap
 {
 	RandomShaders::RandomShaders(RandomApp& app) : mApp(app)
 	{
-		// Store sun-clouds uniform value pointers
-		nap::RenderableMeshComponentInstance& sun_clouds = mApp.mSunClouds->getComponent<nap::RenderableMeshComponentInstance>();
-		pSunCloudsOffset = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset").mValue;
-		pSunCloudsRotation = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation").mValue;
-		pSunCloudsContrast = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uContrast").mValue;
-		pSunCloudsScale = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uScale").mValue;
-		pSunCloudsInverted = &sun_clouds.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInverted").mValue;
-
 		// Store sun-glare uniform value pointers
 		nap::RenderableMeshComponentInstance& sun_glare = mApp.mSunGlare->getComponent<nap::RenderableMeshComponentInstance>();
 		pSunGlareOrbitCenter = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter").mValue;
@@ -34,22 +26,10 @@ namespace nap
 		if (mLightingModeTransitionActive)
 			updateLightingModeTransition(deltaTime);
 
-		// Update clouds shader
-		updateCloudsShader(deltaTime);
-
 		// Update camera location
 		updateCameraLocation();
 	}
 
-	void RandomShaders::updateCloudsShader(double deltaTime)
-	{
-		// Apply wind and noise forces to cloud shader
-		float windDirectionRad = nap::math::radians(*pSunCloudsRotation);
-		float windDistance = mSunCloudsWindSpeed * (float)deltaTime;
-		pSunCloudsOffset->x += cos(windDirectionRad) * windDistance;
-		pSunCloudsOffset->y += sin(windDirectionRad) * windDistance;
-		pSunCloudsOffset->z += mSunCloudsNoiseSpeed * (float)deltaTime;
-	}
 
 	void RandomShaders::updateCameraLocation()
 	{
@@ -104,10 +84,5 @@ namespace nap
 		pSunGlareOrbitCenter->y = mApp.mOrbit->mCenter[1];
 		*pSunGlareOrbitAngle = mApp.mOrbit->getAngle();
 		*pSunGlareOrbitRadius = mApp.mOrbit->mRadius;
-	}
-
-	void RandomShaders::updateSunCloudsInverted()
-	{
-		*pSunCloudsInverted = mSunCloudsInverted ? 1.0f : 0.0f;
 	}
 }

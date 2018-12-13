@@ -402,6 +402,8 @@
                 {
                     "Type": "nap::UpdateMaterialComponent",
                     "mID": "nap::UpdateMaterialComponent",
+                    "SunCloudsMeshComponent": "./Sun/SunClouds/nap::SunCloudsMeshComponent",
+                    "SunGlareMeshComponent": "./Sun/SunGlare/nap::SunGlareMeshComponent",
                     "StaticMeshComponent": "./Static/nap::StaticMeshComponent"
                 }
             ],
@@ -908,7 +910,7 @@
             "Components": [
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent",
+                    "mID": "nap::SunCloudsMeshComponent",
                     "Mesh": "StaticMesh",
                     "MaterialInstance": {
                         "Material": "SunCloudsMaterial",
@@ -999,7 +1001,7 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent_5",
+                    "mID": "nap::SunGlareMeshComponent",
                     "Mesh": "StaticMesh",
                     "MaterialInstance": {
                         "Material": "SunGlareMaterial",
