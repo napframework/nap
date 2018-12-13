@@ -10,7 +10,7 @@ namespace nap
 	class UpdateMaterialComponentInstance;
 
 	/**
-	 * 
+	 * UpdateMaterialComponent
 	 */
 	class NAPAPI UpdateMaterialComponent : public Component
 	{
@@ -37,8 +37,7 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		UpdateMaterialComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)									{ }
+		UpdateMaterialComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource) { }
 
 		/**
 		 * Initialize UpdateMaterialComponentInstance based on the UpdateMaterialComponent resource
@@ -59,12 +58,12 @@ namespace nap
 		ComponentInstancePtr<RenderableMeshComponent> mSunGlareMeshComponent = { this, &UpdateMaterialComponent::mSunGlareMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent> mStaticMeshComponent = { this, &UpdateMaterialComponent::mStaticMeshComponent };
 
+		// Exposed properties for GUI
 		float* getSunCloudsRotationPtr();
 		float* getSunCloudsContrastPtr();
 		float* getSunCloudsScalePtr();
 		float* getStaticWarmthPtr();
 
-		// Exposed properties for GUI
 		float		mSunCloudsNoiseSpeed = 0.025f;
 		const float	mSunCloudsNoiseSpeedMax = 0.25f;
 
