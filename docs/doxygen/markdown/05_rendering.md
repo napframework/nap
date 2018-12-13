@@ -618,7 +618,7 @@ Mesh 			| Shader 			|
 :-------------: | :-------------:	|
 Position 		| in_Position		|
 Normal 			| in_Normal			|
-Tangent 		| in_Bitangent 		|
+Tangent 		| in_Tangent 		|
 Bitangent 		| in_Bitangent		|
 UV0 			| in_UV0			|
 UV1 			| in_UV1			|
