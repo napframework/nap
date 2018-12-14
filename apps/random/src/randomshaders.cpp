@@ -8,17 +8,7 @@ namespace nap
 {
 	RandomShaders::RandomShaders(RandomApp& app) : mApp(app)
 	{
-		// Store sun-glare uniform value pointers
-		nap::RenderableMeshComponentInstance& sun_glare = mApp.mSunGlare->getComponent<nap::RenderableMeshComponentInstance>();
-		pSunGlareOrbitCenter = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter").mValue;
-		pSunGlareOrbitAngle = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitAngle").mValue;
-		pSunGlareOrbitRadius = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitRadius").mValue;
-		pSunGlareOuterSize = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize").mValue;
-		pSunGlareInnerSize = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInnerSize").mValue;
-		pSunGlareStretch = &sun_glare.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uStretch").mValue;
 
-		// Call an intial update to apply properties
-		updateSunGlareOrbit();
 	}
 
 	void RandomShaders::update(double deltaTime)
@@ -77,14 +67,5 @@ namespace nap
 			mLightingModeTransitionActive = false;
 			mApp.resetOldLightingMode();
 		}
-	}
-
-	void RandomShaders::updateSunGlareOrbit()
-	{
-		OrbitComponentInstance& orbit = mApp.mOrbit->getComponent<OrbitComponentInstance>();
-		pSunGlareOrbitCenter->x = orbit.mCenter[0];
-		pSunGlareOrbitCenter->y = orbit.mCenter[1];
-		*pSunGlareOrbitAngle = orbit.getAngle();
-		*pSunGlareOrbitRadius = orbit.mRadius;
 	}
 }

@@ -25,22 +25,6 @@ namespace nap
 		void updateCameraLocation();
 		void startLightingModeTransition(nap::Texture2D& oldTexture, nap::Texture2D& newTexture);
 		void updateLightingModeTransition(double deltaTime);
-		void updateSunGlareOrbit();
-
-		/**
-		*	Exposed properties for GUI
-		*/
-		glm::vec3*	pSunGlareOrbitCenter = NULL;
-		float*		pSunGlareOrbitAngle = NULL;
-		float*		pSunGlareOrbitRadius = NULL;
-		float*		pSunGlareOuterSize = NULL;
-		float*		pSunGlareInnerSize = NULL;
-		float*		pSunGlareStretch = NULL;
-
-		const float	mSunGlareSizeMin = 0.05f;
-		const float	mSunGlareSizeMax = 0.25f;		
-		const float	mSunGlareStretchMin = 1.0f;
-		const float	mSunGlareStretchMax = 10.0f;
 
 	private:
 		// The app used to extract information from

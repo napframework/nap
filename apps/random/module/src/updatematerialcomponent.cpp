@@ -9,6 +9,7 @@ RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
 	RTTI_PROPERTY("SunCloudsMeshComponent", &nap::UpdateMaterialComponent::mSunCloudsMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SunGlareMeshComponent", &nap::UpdateMaterialComponent::mSunGlareMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("StaticMeshComponent", &nap::UpdateMaterialComponent::mStaticMeshComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("OrbitComponent", &nap::UpdateMaterialComponent::mOrbitComponent, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::UpdateMaterialComponentInstance run time class definition 
@@ -29,13 +30,15 @@ namespace nap
 
 	bool UpdateMaterialComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Call an intial update to apply properties
+		updateSunGlareOrbit();
+
 		return true;
 	}
 
 
 	void UpdateMaterialComponentInstance::update(double deltaTime)
 	{
-
 		// Update clouds shader
 		updateSunClouds(deltaTime);
 	}
@@ -56,6 +59,16 @@ namespace nap
 	}
 
 
+	void UpdateMaterialComponentInstance::updateSunGlareOrbit()
+	{
+		mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitAngle").mValue = mOrbitComponent->getAngle();
+		mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOrbitRadius").mValue = mOrbitComponent->mRadius;
+		glm::vec3* sunGlareOrbitCenter = &mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter").mValue;
+		sunGlareOrbitCenter->x = mOrbitComponent->mCenter[0];
+		sunGlareOrbitCenter->y = mOrbitComponent->mCenter[1];
+	}
+
+
 	float* UpdateMaterialComponentInstance::getSunCloudsRotationPtr()
 	{
 		return &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation").mValue;
@@ -71,6 +84,24 @@ namespace nap
 	float* UpdateMaterialComponentInstance::getSunCloudsScalePtr()
 	{
 		return &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uScale").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getSunGlareOuterSizePtr()
+	{
+		return &mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getSunGlareInnerSizePtr()
+	{
+		return &mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInnerSize").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getSunGlareStretchPtr()
+	{
+		return &mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uStretch").mValue;
 	}
 
 

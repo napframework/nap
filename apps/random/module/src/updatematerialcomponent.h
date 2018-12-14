@@ -3,6 +3,7 @@
 // External Includes
 #include <component.h>
 #include <componentptr.h>
+#include <orbitcomponent.h>
 #include <renderablemeshcomponent.h>
 
 namespace nap
@@ -24,9 +25,10 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ComponentPtr<RenderableMeshComponent> mSunCloudsMeshComponent;	///< Property: 'SunCloudsMeshComponent' link to the sun clouds mesh component
-		ComponentPtr<RenderableMeshComponent> mSunGlareMeshComponent;	///< Property: 'SunGlareMeshComponent' link to the sun glare mesh component
-		ComponentPtr<RenderableMeshComponent> mStaticMeshComponent;		///< Property: 'StaticMeshComponent' link to the static mesh component
+		ComponentPtr<RenderableMeshComponent>	mSunCloudsMeshComponent;	///< Property: 'SunCloudsMeshComponent' link to the sun clouds mesh component
+		ComponentPtr<RenderableMeshComponent>	mSunGlareMeshComponent;		///< Property: 'SunGlareMeshComponent' link to the sun glare mesh component
+		ComponentPtr<RenderableMeshComponent>	mStaticMeshComponent;		///< Property: 'StaticMeshComponent' link to the static mesh component
+		ComponentPtr<OrbitComponent>			mOrbitComponent;			///< Property: 'OrbitComponent' link to the orbit component
 	};
 
 
@@ -52,16 +54,21 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 		void updateSunClouds(double deltaTime);
+		void updateSunGlareOrbit();
 
 		// Pointers to the run time Component Instances, set during de-serialization
-		ComponentInstancePtr<RenderableMeshComponent> mSunCloudsMeshComponent = { this, &UpdateMaterialComponent::mSunCloudsMeshComponent };
-		ComponentInstancePtr<RenderableMeshComponent> mSunGlareMeshComponent = { this, &UpdateMaterialComponent::mSunGlareMeshComponent };
-		ComponentInstancePtr<RenderableMeshComponent> mStaticMeshComponent = { this, &UpdateMaterialComponent::mStaticMeshComponent };
+		ComponentInstancePtr<RenderableMeshComponent>	mSunCloudsMeshComponent = { this, &UpdateMaterialComponent::mSunCloudsMeshComponent };
+		ComponentInstancePtr<RenderableMeshComponent>	mSunGlareMeshComponent = { this, &UpdateMaterialComponent::mSunGlareMeshComponent };
+		ComponentInstancePtr<RenderableMeshComponent>	mStaticMeshComponent = { this, &UpdateMaterialComponent::mStaticMeshComponent };
+		ComponentInstancePtr<OrbitComponent>			mOrbitComponent = { this, &UpdateMaterialComponent::mOrbitComponent };
 
 		// Exposed properties for GUI
 		float* getSunCloudsRotationPtr();
 		float* getSunCloudsContrastPtr();
 		float* getSunCloudsScalePtr();
+		float* getSunGlareOuterSizePtr();
+		float* getSunGlareInnerSizePtr();
+		float* getSunGlareStretchPtr();
 		float* getStaticWarmthPtr();
 
 		float		mSunCloudsNoiseSpeed = 0.025f;
@@ -74,5 +81,11 @@ namespace nap
 		const float mSunCloudsScaleMax = 2.0f;
 
 		bool		mSunCloudsInverted = false;
+
+		const float	mSunGlareSizeMin = 0.05f;
+		const float	mSunGlareSizeMax = 0.25f;
+
+		const float	mSunGlareStretchMin = 1.0f;
+		const float	mSunGlareStretchMax = 10.0f;
 	};
 }

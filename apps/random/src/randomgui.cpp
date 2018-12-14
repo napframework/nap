@@ -121,11 +121,11 @@ namespace nap
 			if (updateOrbit)
 			{
 				orbit.updateOrbit();
-				mApp.mShaders->updateSunGlareOrbit();
+				updateMaterial.updateSunGlareOrbit();
 			}
-			ImGui::SliderFloat("Outer Size", mApp.mShaders->pSunGlareOuterSize, mApp.mShaders->mSunGlareSizeMin, mApp.mShaders->mSunGlareSizeMax);
-			ImGui::SliderFloat("Inner Size", mApp.mShaders->pSunGlareInnerSize, 0.0f, 1.0f);
-			ImGui::SliderFloat("Stretch", mApp.mShaders->pSunGlareStretch, mApp.mShaders->mSunGlareStretchMin, mApp.mShaders->mSunGlareStretchMax);
+			ImGui::SliderFloat("Outer Size", updateMaterial.getSunGlareOuterSizePtr(), updateMaterial.mSunGlareSizeMin, updateMaterial.mSunGlareSizeMax);
+			ImGui::SliderFloat("Inner Size", updateMaterial.getSunGlareInnerSizePtr(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Stretch", updateMaterial.getSunGlareStretchPtr(), updateMaterial.mSunGlareStretchMin, updateMaterial.mSunGlareStretchMax);
 		}
 	}
 
