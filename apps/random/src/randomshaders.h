@@ -22,7 +22,6 @@ namespace nap
 		*	Update shader uniforms
 		*/
 		void update(double deltaTime);
-		void updateCameraLocation();
 		void startLightingModeTransition(nap::Texture2D& oldTexture, nap::Texture2D& newTexture);
 		void updateLightingModeTransition(double deltaTime);
 

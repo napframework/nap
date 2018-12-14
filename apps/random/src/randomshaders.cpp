@@ -16,26 +16,6 @@ namespace nap
 		// Update lighting mode transition if active
 		if (mLightingModeTransitionActive)
 			updateLightingModeTransition(deltaTime);
-
-		// Update camera location
-		updateCameraLocation();
-	}
-
-
-	void RandomShaders::updateCameraLocation()
-	{
-		// Retrieve camera location
-		TransformComponentInstance& cam_xform = mApp.mSceneCamera->getComponent<TransformComponentInstance>();
-		glm::vec3 cam_pos = math::extractPosition(cam_xform.getGlobalTransform());
-
-		// Get all renderable meshes under the light rig and set camera location uniform (they should all have one)
-		std::vector<RenderableMeshComponentInstance*> render_meshes;
-		mApp.mLightRig->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(render_meshes);
-		for (auto& rmesh : render_meshes)
-		{
-			nap::MaterialInstance& material = rmesh->getMaterialInstance();
-			material.getOrCreateUniform<nap::UniformVec3>("cameraLocation").setValue(cam_pos);
-		}
 	}
 
 	void RandomShaders::startLightingModeTransition(nap::Texture2D& oldTexture, nap::Texture2D& newTexture)

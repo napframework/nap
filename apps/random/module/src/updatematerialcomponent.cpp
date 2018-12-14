@@ -6,10 +6,12 @@
 
 // nap::UpdateMaterialComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
+	RTTI_PROPERTY("CameraTransformComponent", &nap::UpdateMaterialComponent::mCameraTransformComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SunCloudsMeshComponent", &nap::UpdateMaterialComponent::mSunCloudsMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SunGlareMeshComponent", &nap::UpdateMaterialComponent::mSunGlareMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("StaticMeshComponent", &nap::UpdateMaterialComponent::mStaticMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OrbitComponent", &nap::UpdateMaterialComponent::mOrbitComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LightRigEntity", &nap::UpdateMaterialComponent::mLightRigEntity, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::UpdateMaterialComponentInstance run time class definition 
@@ -41,6 +43,25 @@ namespace nap
 	{
 		// Update clouds shader
 		updateSunClouds(deltaTime);
+
+		// Update camera location
+		updateCameraLocation();
+	}
+
+
+	void UpdateMaterialComponentInstance::updateCameraLocation()
+	{
+		// Retrieve camera location
+		glm::vec3 cam_pos = math::extractPosition(mCameraTransformComponent->getGlobalTransform());
+
+		// Get all renderable meshes under the light rig and set camera location uniform (they should all have one)
+		std::vector<RenderableMeshComponentInstance*> render_meshes;
+		mLightRigEntity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(render_meshes);
+		for (auto& rmesh : render_meshes)
+		{
+			nap::MaterialInstance& material = rmesh->getMaterialInstance();
+			material.getOrCreateUniform<nap::UniformVec3>("cameraLocation").setValue(cam_pos);
+		}
 	}
 
 

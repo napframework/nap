@@ -402,10 +402,12 @@
                 {
                     "Type": "nap::UpdateMaterialComponent",
                     "mID": "nap::UpdateMaterialComponent",
+                    "CameraTransformComponent": "./SceneCamera/nap::SceneCameraTransformComponent",
                     "SunCloudsMeshComponent": "./Sun/SunClouds/nap::SunCloudsMeshComponent",
                     "SunGlareMeshComponent": "./Sun/SunGlare/nap::SunGlareMeshComponent",
                     "StaticMeshComponent": "./Static/nap::StaticMeshComponent",
-                    "OrbitComponent": "./Orbit/nap::OrbitComponent"
+                    "OrbitComponent": "./Orbit/nap::OrbitComponent",
+                    "LightRigEntity": "LightRig"
                 }
             ],
             "Children": [
@@ -801,7 +803,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_2",
+                    "mID": "nap::SceneCameraTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,

@@ -3,7 +3,9 @@
 // External Includes
 #include <component.h>
 #include <componentptr.h>
+#include <entityptr.h>
 #include <orbitcomponent.h>
+#include <transformcomponent.h>
 #include <renderablemeshcomponent.h>
 
 namespace nap
@@ -25,10 +27,12 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
+		ComponentPtr<TransformComponent>		mCameraTransformComponent;	///< Property: 'CameraTransformComponent' link to the camera transform component
 		ComponentPtr<RenderableMeshComponent>	mSunCloudsMeshComponent;	///< Property: 'SunCloudsMeshComponent' link to the sun clouds mesh component
 		ComponentPtr<RenderableMeshComponent>	mSunGlareMeshComponent;		///< Property: 'SunGlareMeshComponent' link to the sun glare mesh component
 		ComponentPtr<RenderableMeshComponent>	mStaticMeshComponent;		///< Property: 'StaticMeshComponent' link to the static mesh component
 		ComponentPtr<OrbitComponent>			mOrbitComponent;			///< Property: 'OrbitComponent' link to the orbit component
+		EntityPtr								mLightRigEntity;			///< Property: 'LightRigEntity' link to the light rig entity
 	};
 
 
@@ -53,14 +57,17 @@ namespace nap
 		 * @param deltaTime time in between frames in seconds
 		 */
 		virtual void update(double deltaTime) override;
+		void updateCameraLocation();
 		void updateSunClouds(double deltaTime);
 		void updateSunGlareOrbit();
 
 		// Pointers to the run time Component Instances, set during de-serialization
+		ComponentInstancePtr<TransformComponent>		mCameraTransformComponent = { this, &UpdateMaterialComponent::mCameraTransformComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mSunCloudsMeshComponent = { this, &UpdateMaterialComponent::mSunCloudsMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mSunGlareMeshComponent = { this, &UpdateMaterialComponent::mSunGlareMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mStaticMeshComponent = { this, &UpdateMaterialComponent::mStaticMeshComponent };
 		ComponentInstancePtr<OrbitComponent>			mOrbitComponent = { this, &UpdateMaterialComponent::mOrbitComponent };
+		EntityInstancePtr								mLightRigEntity = { this, &UpdateMaterialComponent::mLightRigEntity };
 
 		// Exposed properties for GUI
 		float* getSunCloudsRotationPtr();
