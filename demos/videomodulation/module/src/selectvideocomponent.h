@@ -86,10 +86,10 @@ namespace nap
 		int getIndex() const									{ return mCurrentIndex; }
 
 	private:
-		std::vector<Video*> mVideos;							//< All video files from loaded resource
-		int mCurrentIndex = 0;									//< Current video index
-		Video* mCurrentVideo = nullptr;							//< Current playing video
-		RenderableMeshComponentInstance* mVideoMesh = nullptr;	//< Videoplane
+		std::vector<Video*> mVideos;									//< All video files from loaded resource
+		int mCurrentIndex = 0;											//< Current video index
+		Video* mCurrentVideo = nullptr;									//< Current playing video
+		RenderableMeshComponentInstance* mVideoMesh = nullptr;			//< Video plane mesh
         audio::VideoAudioComponentInstance* mAudioComponent = nullptr;  //< Audio component
 	};
 }
