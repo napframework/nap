@@ -1,10 +1,11 @@
 #pragma once
 
+// External includes
 #include <rtti/typeinfo.h>
-#include <utility/errorstate.h>
 #include <inputevent.h>
-#include <nap/windowevent.h>
+#include <utility/errorstate.h>
 #include <nap/core.h>
+#include <nap/windowevent.h>
 
 namespace nap
 {

@@ -3,7 +3,8 @@
         "mod_naprender",
         "mod_napmath",
         "mod_napsdlinput",
-        "mod_napcameracontrol",
-        "mod_napvideo"
+        "mod_napvideo",
+        "mod_napscene",
+        "mod_napcameracontrol"
     ]
 }
