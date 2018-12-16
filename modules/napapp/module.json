@@ -1,11 +1,7 @@
 {
     "dependencies": [
-        "mod_naprender",
-        "mod_napfont",
-        "mod_napsdlinput",
-        "mod_napimgui",
-        "mod_napinput",
         "mod_napscene",
-        "mod_napmath"                 
+        "mod_napmath",
+        "mod_napinput"           
     ]
 }

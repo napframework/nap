@@ -125,7 +125,7 @@ namespace nap
 		assert(RTTI_OF(APP).is_derived_from(RTTI_OF(BaseApp)));
 
 		// Ensure the handler is an app event handler
-		assert(RTTI_OF(HANDLER).is_derived_from(RTTI_OF(BaseAppEventHandler)));
+		assert(RTTI_OF(HANDLER).is_derived_from(RTTI_OF(AppEventHandler)));
 
 		// Create 'm
 		mApp = std::make_unique<APP>(core);
@@ -138,7 +138,7 @@ namespace nap
 	bool nap::AppRunner<APP, HANDLER>::start(utility::ErrorState& error)
 	{
 		nap::BaseApp& app = getApp();
-		nap::BaseAppEventHandler& app_event_handler = getHandler();
+		nap::AppEventHandler& app_event_handler = getHandler();
 
 		// Initialize engine
 		if (!mCore.initializeEngine(error))

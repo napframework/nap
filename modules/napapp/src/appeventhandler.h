@@ -5,17 +5,14 @@
 
 // External Includes
 #include <rtti/typeinfo.h>
-#include <sdleventconverter.h>
 
 namespace nap
 {
-	// Forward Declares
-	class IMGuiService;
-
 	/**
-	 * Helper object that allows for custom app processing behavior inside the AppRunner update loop
+	 * Helper object that allows for custom app processing behavior inside the AppRunner update loop.
+	 * By default this object does nothing. Override the various methods to add process logic.
 	 */
-	class NAPAPI BaseAppEventHandler
+	class NAPAPI AppEventHandler
 	{
 		RTTI_ENABLE()
 	public:
@@ -23,22 +20,22 @@ namespace nap
 		 * Constructor
 		 * @param app the app this event handler works with when processing messages
 		 */
-		BaseAppEventHandler(BaseApp& app);
+		AppEventHandler(BaseApp& app);
 
 		// Default Destructor
-		virtual ~BaseAppEventHandler() = default;
+		virtual ~AppEventHandler() = default;
 
 		/**
 		 * Copy is not allowed
 		 */
-		BaseAppEventHandler(BaseAppEventHandler&) = delete;
-		BaseAppEventHandler& operator=(const BaseAppEventHandler&) = delete;
+		AppEventHandler(AppEventHandler&) = delete;
+		AppEventHandler& operator=(const AppEventHandler&) = delete;
 
 		/**
 		 * Move is not allowed
 		 */
-		BaseAppEventHandler(BaseAppEventHandler&&) = delete;
-		BaseAppEventHandler& operator=(BaseAppEventHandler&&) = delete;
+		AppEventHandler(AppEventHandler&&) = delete;
+		AppEventHandler& operator=(AppEventHandler&&) = delete;
 
 		/**
 		 * Called before running the app loop but after all services have been initialized
@@ -70,77 +67,12 @@ namespace nap
 	};
 
 
-	/**
-	 * Default application event handler.
-	 * Forwards key, mouse and window events to the running application
-	 */
-	class NAPAPI AppEventHandler : public BaseAppEventHandler
-	{
-		RTTI_ENABLE(BaseAppEventHandler)
-	public:
-		AppEventHandler(App& app);
-
-		/**
-		 * This call creates the SDL Input Converter
-		 */
-		virtual void start() override;
-
-		/**
-		 * This call polls SDL for various messages, translates those messages
-		 * in nap events and forwards those to the default nap application
-		 */
-		virtual void process() override;
-
-		/**
-		 * This call deletes the input converter
-		 */
-		virtual void shutdown() override;
-
-	private:
-		std::unique_ptr<SDLEventConverter> mEventConverter = nullptr;
-	};
-
-
-	/**
-	 * Application event handler that is designed to work with applications that host a graphical user interface.
-	 * This class checks if the user is interacting with a GUI element, if so, 
-	 * no input events are forwarded to the application.
-	 */
-	class NAPAPI GUIAppEventHandler : public BaseAppEventHandler
-	{
-		RTTI_ENABLE(BaseAppEventHandler)
-	public:
-		GUIAppEventHandler(App& app);
-
-		/**
-		 * This call creates the SDL Input Converter
-		 */
-		virtual void start() override;
-
-		/**
-		 * This call polls the various SDL messages and filters them
-		 * based on GUI activity. If the gui is actively used the events
-		 * are not forwarded to the running app
-		 */
-		virtual void process() override;
-
-		/**
-		 * This call deletes the input converter
-		 */
-		virtual void shutdown() override;
-
-	private:
-		std::unique_ptr<SDLEventConverter> mEventConverter = nullptr;
-		IMGuiService* mGuiService = nullptr;
-	};
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// Template definitions
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	T& nap::BaseAppEventHandler::getApp()
+	T& nap::AppEventHandler::getApp()
 	{
 		assert(mApp.get_type().is_derived_from(RTTI_OF(T)));
 		return static_cast<T&>(mApp);
