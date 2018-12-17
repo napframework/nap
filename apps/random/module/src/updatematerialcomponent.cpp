@@ -7,6 +7,7 @@
 // nap::UpdateMaterialComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
 	RTTI_PROPERTY("CameraTransformComponent", &nap::UpdateMaterialComponent::mCameraTransformComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CombinationMeshComponent", &nap::UpdateMaterialComponent::mCombinationMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SunCloudsMeshComponent", &nap::UpdateMaterialComponent::mSunCloudsMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SunGlareMeshComponent", &nap::UpdateMaterialComponent::mSunGlareMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("StaticMeshComponent", &nap::UpdateMaterialComponent::mStaticMeshComponent, nap::rtti::EPropertyMetaData::Required)
@@ -87,6 +88,12 @@ namespace nap
 		glm::vec3* sunGlareOrbitCenter = &mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOrbitCenter").mValue;
 		sunGlareOrbitCenter->x = mOrbitComponent->mCenter[0];
 		sunGlareOrbitCenter->y = mOrbitComponent->mCenter[1];
+	}
+
+
+	float* UpdateMaterialComponentInstance::getCombinationBlendValuePtr()
+	{
+		return &mCombinationMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBlendValue").mValue;
 	}
 
 

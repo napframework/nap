@@ -28,6 +28,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		ComponentPtr<TransformComponent>		mCameraTransformComponent;	///< Property: 'CameraTransformComponent' link to the camera transform component
+		ComponentPtr<RenderableMeshComponent>	mCombinationMeshComponent;	///< Property: 'CombinationMeshComponent' link to the combination mesh component
 		ComponentPtr<RenderableMeshComponent>	mSunCloudsMeshComponent;	///< Property: 'SunCloudsMeshComponent' link to the sun clouds mesh component
 		ComponentPtr<RenderableMeshComponent>	mSunGlareMeshComponent;		///< Property: 'SunGlareMeshComponent' link to the sun glare mesh component
 		ComponentPtr<RenderableMeshComponent>	mStaticMeshComponent;		///< Property: 'StaticMeshComponent' link to the static mesh component
@@ -63,6 +64,7 @@ namespace nap
 
 		// Pointers to the run time Component Instances, set during de-serialization
 		ComponentInstancePtr<TransformComponent>		mCameraTransformComponent = { this, &UpdateMaterialComponent::mCameraTransformComponent };
+		ComponentInstancePtr<RenderableMeshComponent>	mCombinationMeshComponent = { this, &UpdateMaterialComponent::mCombinationMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mSunCloudsMeshComponent = { this, &UpdateMaterialComponent::mSunCloudsMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mSunGlareMeshComponent = { this, &UpdateMaterialComponent::mSunGlareMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mStaticMeshComponent = { this, &UpdateMaterialComponent::mStaticMeshComponent };
@@ -70,6 +72,7 @@ namespace nap
 		EntityInstancePtr								mLightRigEntity = { this, &UpdateMaterialComponent::mLightRigEntity };
 
 		// Exposed properties for GUI
+		float* getCombinationBlendValuePtr();
 		float* getSunCloudsRotationPtr();
 		float* getSunCloudsContrastPtr();
 		float* getSunCloudsScalePtr();

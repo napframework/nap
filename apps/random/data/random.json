@@ -355,7 +355,7 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent_2",
+                    "mID": "nap::CombinationMeshComponent",
                     "Mesh": "ProjectionMesh",
                     "MaterialInstance": {
                         "Material": "CombineMaterial",
@@ -403,6 +403,7 @@
                     "Type": "nap::UpdateMaterialComponent",
                     "mID": "nap::UpdateMaterialComponent",
                     "CameraTransformComponent": "./SceneCamera/nap::SceneCameraTransformComponent",
+                    "CombinationMeshComponent": "./Combination/nap::CombinationMeshComponent",
                     "SunCloudsMeshComponent": "./Sun/SunClouds/nap::SunCloudsMeshComponent",
                     "SunGlareMeshComponent": "./Sun/SunGlare/nap::SunGlareMeshComponent",
                     "StaticMeshComponent": "./Static/nap::StaticMeshComponent",
