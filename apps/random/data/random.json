@@ -409,6 +409,15 @@
                     "StaticMeshComponent": "./Static/nap::StaticMeshComponent",
                     "OrbitComponent": "./Orbit/nap::OrbitComponent",
                     "LightRigEntity": "LightRig"
+                },
+                {
+                    "Type": "nap::LightingModeComponent",
+                    "mID": "nap::LightingModeComponent",
+                    "UpdateMaterialComponent": "./nap::UpdateMaterialComponent",
+                    "OffColorTexture": "OffColorTexture",
+                    "SunColorTexture": "SunColorTexture",
+                    "VideoColorTexture": "VideoColorTexture",
+                    "StaticColorTexture": "StaticColorTexture"
                 }
             ],
             "Children": [

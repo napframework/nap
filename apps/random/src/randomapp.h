@@ -2,8 +2,6 @@
 
 // Local Includes
 #include "randomgui.h"
-#include "randomshaders.h"
-#include "controlgroups.h"
 
 // External Includes
 #include <app.h>
@@ -24,16 +22,14 @@
 #include <scene.h>
 #include <orthocameracomponent.h>
 #include <rendertexture2d.h>
+#include <controlgroups.h>
 
 namespace nap
 {
-	enum class LightingModes { Off, Sun, Video, Static };
-
 	class RandomApp : public App
 	{
 		RTTI_ENABLE(App)
 		friend class RandomGui;
-		friend class RandomShaders;
 	public:
 		RandomApp(Core& core) : App(core)	{ }
 
@@ -82,12 +78,6 @@ namespace nap
 		rtti::ObjectPtr<RenderTarget>						mStaticRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
 
-		// Texture Objects
-		rtti::ObjectPtr<RenderTexture2D>					mOffColorTexture = nullptr;
-		rtti::ObjectPtr<RenderTexture2D>					mSunColorTexture = nullptr;
-		rtti::ObjectPtr<RenderTexture2D>					mVideoColorTexture = nullptr;
-		rtti::ObjectPtr<RenderTexture2D>					mStaticColorTexture = nullptr;
-
 		// Control Groups
 		rtti::ObjectPtr<ControlGroups>						mControlGroups = nullptr;
 
@@ -108,29 +98,11 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance>						mOrbitEnd = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mOrbitSun = nullptr;
 
-		// Random App components
+		// Random GUI
 		std::unique_ptr<RandomGui>							mGui = nullptr;
-		std::unique_ptr<RandomShaders>						mShaders = nullptr;
 
 		// Store window properties
 		glm::ivec2 windowSize;
-
-		// Lighting Modes
-		const char*											mLightingModes[4] = { "Off", "Sun", "Video", "Static" };
-		int													mLightingModeInt = 0;
-		LightingModes										mLightingModeEnum = LightingModes::Off;
-		LightingModes										mOldLightingModeEnum;
-
-		/**
-		* Called the lighting mode changed
-		*/
-		void updateLightingMode();
-		void resetOldLightingMode();
-
-		/**
-		* Get the appropriate texture for a lighing mode
-		*/
-		nap::Texture2D& getTextureForLightingMode(LightingModes& lightingMode);
 
 		/**
 		* Called when a window event is received

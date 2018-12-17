@@ -18,6 +18,7 @@
 #include <orthocameracomponent.h>
 #include <imguiutils.h>
 #include <rendercombinationcomponent.h>
+#include <lightingmodecomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RandomApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -52,12 +53,6 @@ namespace nap
 		mStaticRenderTarget  = mResourceManager->findObject("StaticRenderTarget");
 		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
 
-		// Look for textures 
-		mOffColorTexture     = mResourceManager->findObject("OffColorTexture");
-		mSunColorTexture     = mResourceManager->findObject("SunColorTexture");
-		mVideoColorTexture   = mResourceManager->findObject("VideoColorTexture");
-		mStaticColorTexture  = mResourceManager->findObject("StaticColorTexture");
-
 		// Look for Control Groups
 		mControlGroups       = mResourceManager->findObject("ControlGroups");
 
@@ -86,13 +81,8 @@ namespace nap
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 		mRenderService->setRenderState(render_state);
 
-		// Create Random App components
+		// Create Random GUI
 		mGui = std::make_unique<RandomGui>(*this);
-		mShaders = std::make_unique<RandomShaders>(*this);
-
-		// Transition from black to sun mode when the app starts
-		mLightingModeInt = static_cast<int>(LightingModes::Sun);
-		updateLightingMode();
 
 		return true;
 	}
@@ -107,7 +97,6 @@ namespace nap
 
 		// Update Random App components
 		mGui->update(deltaTime);
-		mShaders->update(deltaTime);
 	}
 
 
@@ -122,12 +111,15 @@ namespace nap
 		// Get orthographic camera. This camera renders in pixel space, starting at 0,0
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
 
+		// Get Lighting Mode Component
+		LightingModeComponentInstance& lightingModeComponent = mController->getComponent<LightingModeComponentInstance>();
+
 		// Render lighting mode textures into back-buffer
-		if (mLightingModeEnum == LightingModes::Sun || mOldLightingModeEnum == LightingModes::Sun)
+		if (lightingModeComponent.isLightingModeRendered(LightingModes::Sun))
 			renderSun(ortho_cam);
-		if (mLightingModeEnum == LightingModes::Video || mOldLightingModeEnum == LightingModes::Video)
+		if (lightingModeComponent.isLightingModeRendered(LightingModes::Video))
 			renderVideo(ortho_cam);
-		if (mLightingModeEnum == LightingModes::Static || mOldLightingModeEnum == LightingModes::Static)
+		if (lightingModeComponent.isLightingModeRendered(LightingModes::Static))
 			renderStatic(ortho_cam);
 
 		// Render combination into back buffer
@@ -146,7 +138,7 @@ namespace nap
 			// Find components to render (Light rig, orbit)
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			mLightRig->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
-			if (mLightingModeEnum == LightingModes::Sun)
+			if (lightingModeComponent.isLightingModeSelected(LightingModes::Sun))
 			{
 				components_to_render.emplace_back(&mOrbitPath->getComponent<nap::RenderableMeshComponentInstance>());
 				components_to_render.emplace_back(&mOrbitStart->getComponent<nap::RenderableMeshComponentInstance>());
@@ -163,39 +155,6 @@ namespace nap
 
 		// Swap to front
 		mRenderWindow->swap();
-	}
-
-
-	void RandomApp::updateLightingMode()
-	{
-		// Store the previous and current lighing mode
-		mOldLightingModeEnum = mLightingModeEnum;
-		mLightingModeEnum = static_cast<LightingModes>(mLightingModeInt);
-		mShaders->startLightingModeTransition(getTextureForLightingMode(mOldLightingModeEnum), getTextureForLightingMode(mLightingModeEnum));
-	}
-
-
-	void RandomApp::resetOldLightingMode()
-	{
-		// reset the old lighting mode so we don't render
-		// the old mode unnecessarily after the crossfade
-		mOldLightingModeEnum = LightingModes::Off;
-	}
-
-
-	nap::Texture2D& RandomApp::getTextureForLightingMode(LightingModes& lightingMode)
-	{
-		switch (lightingMode)
-		{
-		case LightingModes::Sun:
-			return *mSunColorTexture;
-		case LightingModes::Video:
-			return *mVideoColorTexture;
-		case LightingModes::Static:
-			return *mStaticColorTexture;
-		default:
-			return *mOffColorTexture;
-		}
 	}
 
 

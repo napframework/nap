@@ -91,6 +91,13 @@ namespace nap
 	}
 
 
+	void UpdateMaterialComponentInstance::setCombinationTextures(nap::Texture2D& textureOne, nap::Texture2D& textureTwo)
+	{
+		mCombinationMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureOne").setTexture(textureOne);
+		mCombinationMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("uTextureTwo").setTexture(textureTwo);
+	}
+
+
 	float* UpdateMaterialComponentInstance::getCombinationBlendValuePtr()
 	{
 		return &mCombinationMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBlendValue").mValue;

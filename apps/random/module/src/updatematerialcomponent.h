@@ -72,6 +72,7 @@ namespace nap
 		EntityInstancePtr								mLightRigEntity = { this, &UpdateMaterialComponent::mLightRigEntity };
 
 		// Exposed properties for GUI
+		void setCombinationTextures(nap::Texture2D& textureOne, nap::Texture2D& textureTwo);
 		float* getCombinationBlendValuePtr();
 		float* getSunCloudsRotationPtr();
 		float* getSunCloudsContrastPtr();

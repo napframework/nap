@@ -7,6 +7,7 @@
 #include <applycombinationcomponent.h>
 #include <updatematerialcomponent.h>
 #include <orbitcomponent.h>
+#include <lightingmodecomponent.h>
 
 namespace nap
 {
@@ -28,13 +29,14 @@ namespace nap
 
 	void RandomGui::showContentControls()
 	{
+		LightingModeComponentInstance& lightingModeComponent = mApp.mController->getComponent<LightingModeComponentInstance>();
 		ImGui::SetNextWindowPos(ImVec2(guiWindowPadding, guiWindowPadding));
 		ImGui::SetNextWindowSize(ImVec2(guiWindowWidth, static_cast<float>(mApp.windowSize.y) - 2.0f * guiWindowPadding));
 		ImGui::Begin("Content Controls", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		if (ImGui::ListBox("Lighting Mode", &mApp.mLightingModeInt, mApp.mLightingModes, IM_ARRAYSIZE(mApp.mLightingModes)))
-			mApp.updateLightingMode();
+		if (ImGui::ListBox("Lighting Mode", &lightingModeComponent.mLightingModeInt, lightingModeComponent.mLightingModes, IM_ARRAYSIZE(lightingModeComponent.mLightingModes)))
+			lightingModeComponent.startLightingModeTransition();
 
-		switch (mApp.mLightingModeEnum)
+		switch (lightingModeComponent.mLightingModeEnum)
 		{
 		case LightingModes::Sun:
 			showSunControls();
