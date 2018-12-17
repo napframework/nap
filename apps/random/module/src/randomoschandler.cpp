@@ -76,17 +76,20 @@ namespace nap
 		(this->*(it->second))(oscEvent, addressParts);
 	}
 
-	void RandomOSCHandlerInstance::updateBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args) {
+	void RandomOSCHandlerInstance::updateBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args)
+	{
 		mApplyCombinationComponent->mBrightness = oscEvent[0].asFloat();
 	}
 
-	void RandomOSCHandlerInstance::updateControlGroupBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args) {
+	void RandomOSCHandlerInstance::updateControlGroupBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args)
+	{
 		int controlGroupIndex = std::stoi(args[0]) - 1;
 		ControlGroups::ControlGroup* controlGroup = mControlGroups->getGroup(controlGroupIndex);
 		controlGroup->mBrightness = oscEvent[0].asFloat();
 	}
 
-	void RandomOSCHandlerInstance::updateStaticTemperature(const OSCEvent& oscEvent, const std::vector<std::string>& args) {
+	void RandomOSCHandlerInstance::updateStaticTemperature(const OSCEvent& oscEvent, const std::vector<std::string>& args)
+	{
 		*mUpdateMaterialComponent->getStaticWarmthPtr() = oscEvent[0].asFloat();
 	}
 }
