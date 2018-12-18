@@ -1,7 +1,12 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 // Audio includes
 #include <audio/node/controlnode.h>
+#include <audio/utility/safeptr.h>
+#include <audio/utility/dirtyflag.h>
 
 namespace nap
 {
@@ -25,7 +30,7 @@ namespace nap
                 TimeValue mDuration = 0;
                 ControllerValue mDestination = 0;
                 bool mDurationRelative = false; //** this indicates wether the duration of this segment is relative to the total duration of the envelope.
-                ControlNode::RampMode mMode = ControlNode::RampMode::LINEAR; //** This indicates the line shape of the segment
+                RampMode mMode = RampMode::Linear; //** This indicates the line shape of the segment
             };
             using Envelope = std::vector<Segment>;
 
@@ -37,7 +42,7 @@ namespace nap
              * @param totalDuration: if this value is greater than the total of all durations of segments that have durationRelative = false
                  the resting time wille be divided over the segments with durationRelative = true, using their duration values as denominator.
              */
-            void trigger(Envelope& envelope, TimeValue totalDuration = 0);
+            void trigger(SafePtr<Envelope> envelope, TimeValue totalDuration = 0);
             
             /**
              * Triggers a section of an envelope.
@@ -48,7 +53,7 @@ namespace nap
              * @param totalDuration: if this value is greater than the total of all durations of segments that have durationRelative = false
              the resting time wille be divided over the segments with durationRelative = true, using their duration values as denominator.
              */
-            void trigger(Envelope& envelope, int startSegment, int endSegment, ControllerValue startValue = 0, TimeValue totalDuration = 0);
+            void trigger(SafePtr<Envelope> envelope, int startSegment, int endSegment, ControllerValue startValue = 0, TimeValue totalDuration = 0);
             
             /**
              * Stops playback of the envelope generator by fading the signal out to zero in @rampTime milliseconds.
@@ -62,13 +67,20 @@ namespace nap
             
         private:
             void playSegment(int index);
+            void update();
             
             nap::Slot<ControlNode&> rampFinishedSlot = { this, &EnvelopeGenerator::rampFinished };
             void rampFinished(ControlNode&);
             
-            int mCurrentSegment = 0;
-            int mEndSegment = 0;
+            int mCurrentSegment = { 0 };
+            int mEndSegment = { 0 };
             Envelope* mEnvelope = nullptr;
+            
+            std::atomic<int> mNewCurrentSegment = { 0 };
+            std::atomic<int> mNewEndSegment = { 0 };
+            SafePtr<Envelope> mNewEnvelope = nullptr;
+            DirtyFlag mIsDirty;
+
             TimeValue mTotalRelativeDuration = 0;
         };
         

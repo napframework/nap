@@ -5,7 +5,7 @@
 #include "renderablemesh.h"
 
 // External Includes
-#include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 #include <transformcomponent.h>
 #include <rect.h>
 
@@ -14,20 +14,19 @@ namespace nap
 	class RenderableMeshComponentInstance;
 	
 	/**
-	* Resource class for RenderableMeshResource. Hold static data as read from file.
-	*/
+	 * Resource part of the component used for managing and rendering a mesh.
+	 * The link to the mesh and clipping rectangle (property) are optional. You can set the mesh at runtime if necessary
+	 * The material is required. 
+	 */
 	class NAPAPI RenderableMeshComponent : public RenderableComponent
 	{
 		RTTI_ENABLE(RenderableComponent)
 		DECLARE_COMPONENT(RenderableMeshComponent, RenderableMeshComponentInstance)
 	public:
 		/**
-		* RenderableMesh uses transform to position itself in the world.
+		* RenderableMesh uses a transform to position itself in the world.
 		*/
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.push_back(RTTI_OF(TransformComponent));
-		}
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		/**
 		* @return Mesh resource.
@@ -35,9 +34,9 @@ namespace nap
 		IMesh& getMeshResource()			{ return *mMesh; }
 
 	public:
-		rtti::ObjectPtr<IMesh>					mMesh;								///< Resource to render
-		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
-		math::Rect							mClipRect;							///< Clipping rectangle, in pixel coordinates
+		ResourcePtr<IMesh>					mMesh;								///< Property: 'Mesh' Resource to render
+		MaterialInstanceResource			mMaterialInstanceResource;			///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
+		math::Rect							mClipRect;							///< Property: 'ClipRect' Optional clipping rectangle, in pixel coordinates
 	};
 
 
@@ -92,44 +91,46 @@ namespace nap
 		void setMesh(const RenderableMesh& mesh);
 
 		/**
-		* Renders the model from the ModelResource, using the material on the ModelResource.
-		*/
-		virtual void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
-
-		/**
-		* @return MaterialInstance for this component.
-		*/
+		 * @return current material used when drawing the mesh.
+		 */
 		MaterialInstance& getMaterialInstance();
 
 		/**
-		* @return Currently active mesh.
-		*/
-		IMesh& getMesh()										{ return *mRenderableMesh.mMesh; }
+		 * @return Currently active mesh that is drawn.
+		 */
+		IMesh& getMesh()										{ return mRenderableMesh.getMesh(); }
 
 		/**
-		* @return Currently active mesh instance.
-		*/
+		 * Returns the runtime version of the mesh that is drawn, part of the original mesh.
+		 * @return the mesh instance that is drawn
+		 */
 		MeshInstance& getMeshInstance()							{ return getMesh().getMeshInstance(); }
 
 		/**
-		* Toggles visibility.
-		*/
-		void setVisible(bool visible)							{ mVisible = visible; }
-
-		/**
-		* Sets clipping rectangle on this instance.
-		* @param rect Rectangle in pixel coordinates.
-		*/
+		 * Sets clipping rectangle on this instance.
+		 * @param rect Rectangle in pixel coordinates.
+		 */
 		void setClipRect(const math::Rect& rect)				{ mClipRect = rect; }
 
-	private:
-		void pushUniforms();
-		void setBlendMode();
+		/**
+		 * @return the clipping rectangle in pixel coordinates
+		 */
+		const math::Rect& getClipRect() const					{ return mClipRect; }
+
+		/**
+		 * @return the transform component instance, used to compose the model matrix
+		 */
+		const TransformComponentInstance& getTransform()		{ return *mTransformComponent; }
+
+	protected:
+		/**
+		 * Renders the model from the ModelResource, using the material on the ModelResource.
+	 	 */
+		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		TransformComponentInstance*				mTransformComponent;	// Cached pointer to transform
 		MaterialInstance						mMaterialInstance;		// The MaterialInstance as created from the resource. 
-		bool									mVisible = true;		// Whether this instance is visible or not
 		math::Rect								mClipRect;				// Clipping rectangle for this instance, in pixel coordinates
 		RenderableMesh							mRenderableMesh;		// The currently active renderable mesh, either set during init() or set by setMesh.
 	};

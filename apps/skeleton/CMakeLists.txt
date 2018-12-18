@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(skeleton)
 
 # add all cpp files to SOURCES
@@ -20,18 +20,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-target_link_libraries(${PROJECT_NAME}
-        mod_napinput
-        mod_napsdlinput
-        mod_napsdlwindow
-        mod_napsvg
-        mod_napapp)
+# Get our modules list from project.json
+project_json_to_cmake()
 
+target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 
-if (WIN32)
-    find_package(freeimage REQUIRED)
-    copy_freeimage_dll()
-
-    copy_base_windows_graphics_dlls()
-endif()
-
+# Package into release, export FBX, other shared source project fixes
+nap_source_project_packaging_and_shared_postprocessing(FALSE FALSE "unused" FALSE)

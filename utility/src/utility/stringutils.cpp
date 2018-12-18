@@ -31,6 +31,7 @@ namespace nap
 			return ret;
 		}
 
+
 		// Write a string to ostream (binary)
 		void writeString(std::ostream& stream, const std::string& text)
 		{
@@ -116,6 +117,23 @@ namespace nap
 		}
 
 
+		bool endsWith(const std::string& string, const std::string& subString, bool caseSensitive /*= true*/)
+		{
+			auto str_len = string.size();
+			auto sub_len = subString.size();
+			if (sub_len > str_len)
+				return 0;
+
+			int(*compare_func)(const char*, const char*, size_t);
+#ifdef _WIN32
+			compare_func = caseSensitive ? &strncmp : &strnicmp;
+#else
+			compare_func = caseSensitive ? &strncmp : &strncasecmp;
+#endif
+			return compare_func(string.c_str() + str_len - sub_len, subString.c_str(), sub_len) == 0;
+		}
+
+
 		bool contains(const std::string& inString, const std::string& inSubString, bool caseSensitive)
 		{
 			// case sensitive
@@ -175,6 +193,7 @@ namespace nap
 			}
 			return outString;
 		}
+
 
 	}
 

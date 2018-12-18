@@ -1,0 +1,8 @@
+{
+    "title": "VideoPlayer",
+    "version": "0.1.0",
+    "modules": [
+        "mod_napapp",
+        "mod_napvideo"
+    ]
+}

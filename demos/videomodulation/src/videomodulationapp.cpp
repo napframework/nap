@@ -11,6 +11,7 @@
 #include <mathutils.h>
 #include <selectvideocomponent.h>
 #include <selectvideomeshcomponent.h>
+#include <audio/component/levelmetercomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoModulationApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -56,12 +57,6 @@ namespace nap
 		SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
 		mCurrentVideo = video_selector.getIndex();
 
-		// Position window center of screen
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
-		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
-		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
-		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
-
 		return true;
 	}
 	
@@ -75,7 +70,7 @@ namespace nap
 
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mPerspCameraEntity.get() };
-		mInputService->processEvents(*mRenderWindow, input_router, entities);
+		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Update gui components
 		updateGui();
@@ -231,6 +226,16 @@ namespace nap
 		{
 			ImGui::ColorEdit3("Color One", mBackgroundColorOne.getData());
 			ImGui::ColorEdit3("Color Two", mBackgroundColorTwo.getData());
+		}
+		
+		if (ImGui::CollapsingHeader("Playback"))
+		{
+			SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
+			Video* current_video = video_selector.getCurrentVideo();
+			float currentTime = current_video->getCurrentTime();
+			if (ImGui::SliderFloat("Current Time", &currentTime, 0.0f, current_video->getDuration(), "%.3fs", 1.0f))
+				current_video->seek(currentTime);
+			ImGui::Text("Total time: %fs", current_video->getDuration());
 		}
 		
 		ImGui::End();

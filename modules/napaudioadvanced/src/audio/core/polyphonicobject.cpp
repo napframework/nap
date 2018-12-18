@@ -15,6 +15,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::PolyphonicObjectInstance)
     RTTI_FUNCTION("findFreeVoice", &nap::audio::PolyphonicObjectInstance::findFreeVoice)
     RTTI_FUNCTION("play", &nap::audio::PolyphonicObjectInstance::play)
     RTTI_FUNCTION("stop", &nap::audio::PolyphonicObjectInstance::stop)
+    RTTI_FUNCTION("getBusyVoiceCount", &nap::audio::PolyphonicObjectInstance::getBusyVoiceCount)
 RTTI_END_CLASS
 
 namespace nap
@@ -29,22 +30,22 @@ namespace nap
         }
 
     
-        bool PolyphonicObjectInstance::init(NodeManager& nodeManager, utility::ErrorState& errorState)
+        bool PolyphonicObjectInstance::init(AudioService& audioService, utility::ErrorState& errorState)
         {
             auto resource = rtti_cast<PolyphonicObject>(&getResource());
-            mNodeManager = &nodeManager;
+            mAudioService = &audioService;
             
             for (auto i = 0; i < resource->mVoiceCount; ++i)
             {
                 mVoices.emplace_back(std::make_unique<VoiceInstance>());
                 if (!mVoices.back()->init(*resource->mVoice, errorState))
                     return false;
-                mVoices.back()->finishedSignal.connect(this, &PolyphonicObjectInstance::voiceFinished);
+                mVoices.back()->finishedSignal.connect(voiceFinishedSlot);
             }
             
             // Create the mix nodes to mix output of all the voices
             for (auto i = 0; i < resource->mVoice->mOutput->getInstance()->getChannelCount(); ++i)
-                mMixNodes.emplace_back(std::make_unique<MixNode>(resource->mVoice->getNodeManager()));
+                mMixNodes.emplace_back(mAudioService->makeSafe<MixNode>(audioService.getNodeManager()));
             
             return true;
         }
@@ -78,8 +79,7 @@ namespace nap
             
             voice->play(duration);
             
-            mNodeManager->execute([&, voice](){
-                std::lock_guard<std::mutex> lock(mMixNodesMutex);
+            mAudioService->enqueueTask([&, voice](){
                 for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
                     mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));
             });
@@ -91,8 +91,19 @@ namespace nap
             if (!voice)
                 return;
             
-            mNodeManager->execute([&](){ voice->stop(); });
+            voice->stop();
         }
+        
+        
+        int PolyphonicObjectInstance::getBusyVoiceCount() const
+        {
+            int result = 0;
+            for (auto& voice : mVoices)
+                if (voice->isBusy())
+                    result++;
+            return result;
+        }
+
         
 
         OutputPin& PolyphonicObjectInstance::getOutputForChannel(int channel)
@@ -111,11 +122,9 @@ namespace nap
         {
             assert(voice.getEnvelope().getValue() == 0);
             
-            std::lock_guard<std::mutex> lock(mMixNodesMutex);
-            
             for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice.getOutput().getChannelCount()); ++channel)
             {
-                // this function is called from the audio thread, so we don't have to call NodeManager::execute() to schedule disconnection on the audio thread
+                // this function is called from the audio thread, so we don't have to call AudioService::enqueueTask() to schedule disconnection on the audio thread
                 mMixNodes[channel]->inputs.disconnect(voice.getOutput().getOutputForChannel(channel));
             }
             voice.free();

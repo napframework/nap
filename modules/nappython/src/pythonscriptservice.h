@@ -2,6 +2,7 @@
 
 #include <utility/dllexport.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <pybind11/embed.h>
 #include "nap/service.h"
 
@@ -12,6 +13,8 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
+		PythonScriptService(ServiceConfiguration* configuration);
+
 		bool TryLoad(const std::string& modulePath, pybind11::module& module, utility::ErrorState& errorState);
 
 	private:

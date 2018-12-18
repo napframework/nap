@@ -4,7 +4,7 @@
 #include <audio/core/polyphonicobject.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::Voice)
-    RTTI_CONSTRUCTOR(nap::audio::NodeManager&)
+    RTTI_CONSTRUCTOR(nap::audio::AudioService&)
     RTTI_PROPERTY("Envelope", &nap::audio::Voice::mEnvelope, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -36,7 +36,7 @@ namespace nap
                 return false;
             }
             
-            mEnvelope->getEnvelopeFinishedSignal().connect(this, &VoiceInstance::envelopeFinished);
+            mEnvelope->getEnvelopeFinishedSignal().connect(envelopeFinishedSlot);
                         
             return true;
         }
@@ -45,7 +45,7 @@ namespace nap
         void VoiceInstance::play(TimeValue duration)
         {
             mEnvelope->trigger(duration);
-            mStartTime = getResource().getNodeManager().getSampleTime();
+            mStartTime = getResource().getAudioService().getNodeManager().getSampleTime();
         }
         
         

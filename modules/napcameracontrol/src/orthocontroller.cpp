@@ -50,7 +50,7 @@ namespace nap
 		pointer_component->released.connect(std::bind(&OrthoControllerInstance::onMouseUp, this, std::placeholders::_1));
 
 		// The CorrectAspectRatio mode will correct the height based on the aspect ratio
-		mOrthoCameraComponent->setMode(OrthoCameraComponentInstance::EMode::CorrectAspectRatio);
+		mOrthoCameraComponent->setMode(EOrthoCameraMode::CorrectAspectRatio);
 
 		return true;
 	}

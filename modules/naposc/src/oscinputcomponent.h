@@ -16,7 +16,11 @@ namespace nap
 	class OSCService;
 
 	/**
-	 *	Receives OSC events based on the address filter
+	 * Receives osc events based on the address filter
+	 * The address filter is a list of strings that represent individual osc addresses
+	 * When the osc service forwards an event it checks if one of the names in the address filter starts with the address of the osc event. 
+	 * If that's the case the instance of this component receives an osc event. 
+	 * When the address filter is empty all events are forwarded.
 	 */
 	class NAPAPI OSCInputComponent : public Component
 	{
@@ -27,9 +31,7 @@ namespace nap
 			return RTTI_OF(OSCInputComponentInstance);
 		}
 
-		// Holds the allowed OSC addresses, when empty every osc event is valid to
-		// be received by this component, otherwise only the onces that specified by the filter
-		std::vector<std::string>		mAddressFilter;
+		std::vector<std::string>		mAddressFilter;		///< Property: 'Addresses' list of OSC addresses this component is allowed to receive, when empty all events are forwarded
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -51,16 +53,14 @@ namespace nap
 		virtual ~OSCInputComponentInstance();
 
 		/**
-		 *	Initializes the component and copies over the osc addresses
+		 * Initializes the component and copies over the osc addresses
+		 * @param errorState contains the error when the component could not be initialized
+		 * @return if initialization succeeded
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		// Holds a set of OSC addresses, when empty every osc event is valid to
-		// be received by this component, otherwise only the ones that are present in this list
-		std::vector<std::string>		mAddressFilter;
-
-		// Connect to this signal to receive osc events
-		Signal<const OSCEvent&>			messageReceived;
+		std::vector<std::string>		mAddressFilter;			///< List of available osc addresses, when empty all osc events are forwarded
+		Signal<const OSCEvent&>			messageReceived;		///< Triggered when the component receives an osc message
         
         Signal<const OSCEvent&>* getMessageReceived() { return &messageReceived; }
 

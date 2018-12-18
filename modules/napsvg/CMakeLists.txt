@@ -3,6 +3,9 @@ project(mod_napsvg)
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
+# Get our NAP modules dependencies from module.json
+module_json_to_cmake()
+
 find_package(nanosvg REQUIRED)
 
 # LIBRARY
@@ -22,4 +25,17 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-target_link_libraries(${PROJECT_NAME} mod_naprender)
+target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})
+
+# Deploy module.json as MODULENAME.json alongside module post-build
+copy_module_json_to_bin()
+
+# Package into platform release
+package_module()
+
+# Package nanosvg into platform release
+install(FILES ${THIRDPARTY_DIR}/nanosvg/LICENSE.txt
+              ${THIRDPARTY_DIR}/nanosvg/README.md
+        DESTINATION thirdparty/nanosvg
+        )
+install(DIRECTORY ${NANOSVG_INCLUDE_DIRS}/ DESTINATION thirdparty/nanosvg/include)

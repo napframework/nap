@@ -4,15 +4,11 @@
 #include <vector>
 
 // Nap includes
-#include <rtti/objectptr.h>
-
-// Nap includes
-#include <rtti/rttiobject.h>
+#include <nap/resourceptr.h>
+#include <rtti/object.h>
 #include <rtti/factory.h>
 
 // Audio includes
-#include <audio/core/audionode.h>
-#include <audio/core/audionodemanager.h>
 #include <audio/core/audioobject.h>
 
 
@@ -22,17 +18,17 @@ namespace nap
     namespace audio
     {
         
-        using AudioObjectPtr = rtti::ObjectPtr<AudioObject>;
+        using AudioObjectPtr = ResourcePtr<AudioObject>;
         
         
         /**
          * The Graph manages a number of different audio objects that are connected together to represent a DSP network to perform a specific task of mono or multichannel audio processing.
          */
-        class NAPAPI Graph : public rtti::RTTIObject
+        class NAPAPI Graph : public Resource
         {
-            RTTI_ENABLE(rtti::RTTIObject)
+            RTTI_ENABLE(Resource)
         public:
-            Graph(NodeManager& nodeManager) : mNodeManager(&nodeManager)  { }
+            Graph(AudioService& service) : mAudioService(service)  { }
 
             /**
              * The audio objects managed by the graph that are part of it's DSP network.
@@ -46,19 +42,19 @@ namespace nap
             AudioObjectPtr mOutput;
             
             /**
-             * Returns the node manager that instances of this graph will run on.
+             * Returns the audio service that instances of this graph will perform their DSP processing on.
              */
-            NodeManager& getNodeManager() { return *mNodeManager; }
+            AudioService& getAudioService() { return mAudioService; }
             
         private:
-            NodeManager* mNodeManager = nullptr;
+            AudioService& mAudioService;
         };
         
         
         /**
          * Instance of Graph that manages a number of different audio objects, connected together to represent a DSP network to perform a specific task of mono or multichannel audio processing.
          */
-        class NAPAPI GraphInstance : rtti::RTTIObject
+        class NAPAPI GraphInstance : rtti::Object
         {
             RTTI_ENABLE()
         public:
@@ -96,7 +92,7 @@ namespace nap
         };
         
         
-        using GraphObjectCreator = rtti::ObjectCreator<Graph, NodeManager>;
+        using GraphObjectCreator = rtti::ObjectCreator<Graph, AudioService>;
         
     }
     

@@ -1,7 +1,11 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 #include <audio/core/audionode.h>
-#include <audio/utility/linearramper.h>
+#include <audio/utility/linearsmoothedvalue.h>
+#include <audio/utility/safeptr.h>
 
 namespace nap
 {
@@ -62,7 +66,7 @@ namespace nap
             /**
              * Constructor takes the waveform of the oscillator
              */
-            OscillatorNode(NodeManager& aManager, WaveTable& aWave);
+            OscillatorNode(NodeManager& aManager, SafePtr<WaveTable> aWave);
             
             /**
              * Set the frequency in Hz
@@ -82,28 +86,24 @@ namespace nap
             /**
              * Set a new waveform for the oscillator
              */
-            void setWave(WaveTable& aWave);
+            void setWave(SafePtr<WaveTable>& aWave);
             
-            ControllerValue getFrequency() const { return mFrequency; }
-            ControllerValue getAmplitude() const { return mAmplitude; }
-            ControllerValue getPhase() const { return mPhaseOffset / float(mWave.getSize()); }
-
-            InputPin fmInput;
-            OutputPin output = { this };
+            InputPin fmInput; ///< Input pin to control frequency modulation.
+            OutputPin output = { this }; ///< Audio output pin.
 
         private:
             void process() override;
             void sampleRateChanged(float sampleRate) override;
 
-            WaveTable& mWave;
+            SafePtr<WaveTable> mWave = nullptr;
 
-            ControllerValue mFrequency = { 0 };
-            ControllerValue mAmplitude = { 1.f };
-            LinearRamper<ControllerValue> mFrequencyRamper = { mFrequency };
-            LinearRamper<ControllerValue> mAmplitudeRamper = { mAmplitude };
-            ControllerValue mStep = 0;
+            LinearSmoothedValue<ControllerValue> mFrequency = { 440, 44 };
+            LinearSmoothedValue<ControllerValue> mAmplitude = { 1.f, 44 };
+            
+            std::atomic<ControllerValue> mStep = { 0 };
+            std::atomic<ControllerValue> mPhaseOffset = { 0 };
+            
             ControllerValue mPhase = 0;
-            ControllerValue mPhaseOffset = 0;
         };
     }
 }

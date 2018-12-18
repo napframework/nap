@@ -1,7 +1,7 @@
 #version 330
 
 // input  
-in vec4 pass_Color;
+in float pass_Tip;
 
 // output
 out vec4 out_Color;
@@ -13,8 +13,8 @@ uniform float length;			//< Normal length
 
 void main() 
 {
-	float v = 1.0-clamp(pass_Color.a, 0.0, 1.0);
+	float v = 1.0-clamp(pass_Tip, 0.0, 1.0);
 	float m = length;
 	v =  1.0 - (v / (m) * 1.0);
-	out_Color = vec4(color.rgb * pass_Color.rgb, opacity * v);
+	out_Color = vec4(color.rgb, opacity * v);
 }

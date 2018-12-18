@@ -18,11 +18,20 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 	public:
 		/**
-		 * Creates and initializes the plane as a mesh
-		 * @param errorState contains the error message if the mesh could not be created
-		 * @return if the mesh was successfully created and initialized
+		 * Sets up and initializes the plane as a mesh based on the provided parameters.
+		 * @param errorState contains the error message if the mesh could not be created.
+		 * @return if the mesh was successfully created and initialized.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		* Creates and prepares the mesh instance but doesn't initialize it.
+		* Call this when you want to prepare a grid without creating the GPU representation.
+		* You have to manually call init() on the mesh instance afterwards.
+		* @param error contains the error code if setup fails
+		* @return if setup succeeded
+		*/
+		bool setup(utility::ErrorState& error);
 
 		/**
 		 *	@return the mesh used for rendering
@@ -44,15 +53,6 @@ namespace nap
 		glm::vec2	mPosition =	{ 0.0,0.0 };							///< Property: 'Position' where the plane is positioned in object space
 		int			mRows = 1;											///< Property: 'Rows' number of rows
 		int			mColumns = 1;										///< Property: 'Columns' number of columns
-
-	protected:
-		/**
-		 * Creates and prepares the mesh but doesn't initialize it
-		 * Call this in derived classes that want to work with a grid before initialization
-		 * @param error contains the error code if setup fails
-		 * @return if setup succeeded
-		 */
-		bool setup(utility::ErrorState& error);
 
 	private:
 		std::unique_ptr<MeshInstance> mMeshInstance;

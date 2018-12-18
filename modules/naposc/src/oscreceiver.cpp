@@ -13,6 +13,7 @@
 RTTI_BEGIN_CLASS(nap::OSCReceiver)
 	RTTI_PROPERTY("Port",				&nap::OSCReceiver::mPort,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("EnableDebugOutput",	&nap::OSCReceiver::mDebugOutput,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowPortReuse",		&nap::OSCReceiver::mAllowPortReuse,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -27,26 +28,19 @@ namespace nap
 
 	OSCReceiver::~OSCReceiver()
 	{
-		if (mSocket != nullptr)
-		{
-			mSocket->stop();
-			mEventThread.join();
-			mService->removeReceiver(*this);
-			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
-		}
+		stop();
 	}
-
 
 	/**
 	 * Creates the thread that will run the OSC message handler
 	 */
-	bool OSCReceiver::init(utility::ErrorState& errorState)
+	bool OSCReceiver::start(utility::ErrorState& errorState)
 	{
 		// Register the receiver
 		mService->registerReceiver(*this);
 
 		// Create the socket
-		mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort));
+		mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort), mAllowPortReuse);
 
 		// Create and set the listener
 		mListener = std::make_unique<OSCPacketListener>(*this);
@@ -60,12 +54,23 @@ namespace nap
 	}
 	
 
+	void OSCReceiver::stop()
+	{
+		if (mSocket != nullptr)
+		{
+			mSocket->stop();
+			mEventThread.join();
+			mService->removeReceiver(*this);
+			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
+		}
+	}
+
+
 	void OSCReceiver::addEvent(OSCEventPtr event)
 	{
 		std::lock_guard<std::mutex> lock(mEventMutex);
 		mEvents.emplace(std::move(event));
 	}
-
 
 	void OSCReceiver::consumeEvents(std::queue<OSCEventPtr>& outEvents)
 	{

@@ -9,11 +9,11 @@ namespace nap
 	}
 
 
-	rtti::RTTIObject* rtti::Factory::create(rtti::TypeInfo typeInfo)
+	rtti::Object* rtti::Factory::create(rtti::TypeInfo typeInfo)
 	{
 		CreatorMap::iterator creator = mCreators.find(typeInfo);
 		if (creator == mCreators.end())
-			return typeInfo.create<RTTIObject>();
+			return typeInfo.create<Object>();
 
 		return creator->second->create();
 	}

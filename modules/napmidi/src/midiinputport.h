@@ -1,9 +1,9 @@
 #pragma once
 
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <utility/dllexport.h>
-
 #include <RtMidi.h>
+#include <nap/device.h>
 
 #include "midiservice.h"
 
@@ -15,16 +15,24 @@ namespace nap
      * Opens and manages one or more midi input ports that will be listened to for incoming midi messages.
      * Messages will be parsed and passed on to the midi service for processing.
      */
-    class NAPAPI MidiInputPort : public rtti::RTTIObject
+    class NAPAPI MidiInputPort : public Device
     {
-        RTTI_ENABLE(rtti::RTTIObject)
-        
+        RTTI_ENABLE(Device)
     public:
         MidiInputPort() = default;
         MidiInputPort(MidiService& service);
-        virtual ~MidiInputPort();
         
-        bool init(utility::ErrorState& errorState) override;
+		virtual ~MidiInputPort() override;
+
+        /**
+         * Starts the midi input port.
+         */
+        virtual bool start(utility::ErrorState& errorState) override;
+
+        /**
+         * Stops the midi input port.
+         */
+		virtual void stop() override;
         
         /**
          * @return: the midi service that this input port is registered to

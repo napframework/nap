@@ -8,7 +8,7 @@ namespace nap
 {
 	namespace rtti
 	{
-		class RTTIObject;
+		class Object;
 	}
 
 	namespace utility
@@ -24,7 +24,7 @@ namespace nap
 	class RTTIObjectGraphItem
 	{
 	public:
-		using Type = rtti::RTTIObject*;
+		using Type = rtti::Object*;
 
 		enum class EType : uint8_t
 		{
@@ -36,7 +36,7 @@ namespace nap
 		 * Creates a graph item.
 		 * @param object Object to wrap in the item that is created.
 		 */
-		static const RTTIObjectGraphItem create(rtti::RTTIObject* object);
+		static const RTTIObjectGraphItem create(rtti::Object* object);
 
 		/**
 		 * @return ID of the item. For objects, the ID is the object ID, for files, it is the filename.
@@ -59,7 +59,7 @@ namespace nap
 		
 		EType						mType;							// Type: file or object
 		std::string					mFilename;						// If type is file, contains filename
-		rtti::RTTIObject*			mObject = nullptr;				// If type is object, contains object pointer
+		rtti::Object*			mObject = nullptr;				// If type is object, contains object pointer
 	};
 
 	template<typename ITEM> class ObjectGraph;

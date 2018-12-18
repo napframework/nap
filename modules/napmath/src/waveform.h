@@ -12,10 +12,10 @@ namespace nap
 		 */
 		enum class NAPAPI EWaveform : int
 		{
-			SINE			= 0,			// Sine
-			SQUARE,							// Square
-			SAW,							// Saw
-			TRIANGLE						// Triangle
+			SINE			= 0,			///< Sine
+			SQUARE,							///< Square
+			SAW,							///< Saw
+			TRIANGLE						///< Triangle
 		};
 
 		/**

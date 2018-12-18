@@ -2,6 +2,9 @@
 #include "meshfromfile.h"
 #include "fbxconverter.h"
 
+// External Includes
+#include <nap/logger.h>
+
 RTTI_BEGIN_CLASS(nap::MeshFromFile)
 	RTTI_PROPERTY_FILELINK("Path", &nap::MeshFromFile::mPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh)
 	RTTI_PROPERTY("Usage",	&nap::MeshFromFile::mUsage, nap::rtti::EPropertyMetaData::Default)
@@ -12,6 +15,8 @@ namespace nap
 	bool MeshFromFile::init(utility::ErrorState& errorState)
 	{
 		// Load our mesh
+		nap::Logger::info("loading mesh: %s", mPath.c_str());
+
 		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(mPath, errorState);
 		if (!errorState.check(mesh_instance != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;

@@ -5,7 +5,7 @@
 
 // External Includes
 #include <unordered_set>
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <pybind11/cast.h>
 
 namespace nap
@@ -20,38 +20,49 @@ namespace nap
 		class NAPAPI ObjectPtrBase
 		{
 			RTTI_ENABLE()
-        
+
+		public:
+            virtual ~ObjectPtrBase() = default;
+            
+		    /**
+		     * @return the type of the object pointed to
+		     */
+			rttr::type getWrappedType() const
+			{
+				return mPtr->get_type();
+			}
+
 		private:
 			ObjectPtrBase() = default;
         
 			/**
 			 * ctor taking direct pointer.
 			 */
-			ObjectPtrBase(rtti::RTTIObject* ptr) :
+			ObjectPtrBase(rtti::Object* ptr) :
 			mPtr(ptr)
 			{
 			}
-        
+
 			/**
 			 * @return RTTIObject pointer.
 			 */
-			rtti::RTTIObject* get()
+			rtti::Object* get()
 			{
 				return mPtr;
 			}
-        
+
 			/**
 			 * @return RTTIObject pointer.
 			 */
-			const rtti::RTTIObject* get() const
+			const rtti::Object* get() const
 			{
 				return mPtr;
 			}
-        
+
 			/**
 			 * @param ptr new pointer to set.
 			 */
-			void set(rtti::RTTIObject* ptr)
+			void set(rtti::Object* ptr)
 			{
 				mPtr = ptr;
 			}
@@ -59,7 +70,7 @@ namespace nap
 			template<class T> friend class ObjectPtr;
 			friend class ObjectPtrManager;
         
-			rtti::RTTIObject* mPtr = nullptr;
+			rtti::Object* mPtr = nullptr;
 		};
     
 		/**
@@ -97,7 +108,7 @@ namespace nap
 			{
 				for (ObjectPtrBase* ptr : mObjectPointers)
 				{
-					rtti::RTTIObject* target = ptr->get();
+					rtti::Object* target = ptr->get();
 					if (target == nullptr)
 						continue;
 
@@ -112,7 +123,7 @@ namespace nap
  			 * Resets all ObjectPtrs to the specified object to nullptr
 			 * @param targetObject The object to which ObjectPtrs are pointing to
 			 */
-			void resetPointers(const rtti::RTTIObject& targetObject)
+			void resetPointers(const rtti::Object& targetObject)
 			{
 				for (ObjectPtrBase* ptr : mObjectPointers)
 					if (ptr->get() == &targetObject)
@@ -155,6 +166,12 @@ namespace nap
 		public:
 			ObjectPtr() = default;
 
+            // Dtor
+            virtual ~ObjectPtr() override
+            {
+                ObjectPtrManager::get().remove(*this);
+            }
+            
 			// Regular ptr Ctor
 			ObjectPtr(T* ptr) :
 				ObjectPtrBase(ptr)
@@ -189,12 +206,6 @@ namespace nap
 				Assign(other);
 				other.mPtr = nullptr;
 				return *this;
-			}
-
-			// Dtor
-			~ObjectPtr()
-			{
-				ObjectPtrManager::get().remove(*this);
 			}
 
 			//////////////////////////////////////////////////////////////////////////

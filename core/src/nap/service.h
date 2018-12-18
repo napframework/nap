@@ -1,12 +1,12 @@
 #pragma once
 
 // Local Includes
-#include "configure.h"
+#include "numeric.h"
 #include "utility/dllexport.h"
 #include "utility/errorstate.h"
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <rtti/factory.h>
 #include <set>
 
@@ -17,6 +17,19 @@ namespace nap
 	class ServiceObjectGraphItem;
 
 	/**
+	 * Base class for all Service configurations. In the derived class you can supply parameters that can be used to initialize a service.
+	 */
+	class NAPAPI ServiceConfiguration : public rtti::Object
+	{
+		RTTI_ENABLE(rtti::Object)
+	public:
+		/**
+		 *	@return The Service type associated with this configuration.
+		 */
+		virtual rtti::TypeInfo getServiceType() = 0;
+	};
+
+	/**
 	 A Service is a process within core that cooperates with certain components in the system, this is the base
 	 class for all services. Often services are used to load a driver, set up a connection or manage global module
 	 specific state. All services are automatically loaded and managed by Core. This ensures the right order of
@@ -24,13 +37,14 @@ namespace nap
 	 service using the NAP_SERVICE_MODULE #define in a source file exactly once. This will ensure that core automatically loads,
 	 creates and initializes the service when loading the available system modules
 	 **/
-
 	class NAPAPI Service
 	{
 		RTTI_ENABLE()
 		friend class Core;
 		friend class ServiceObjectGraphItem;
 	public:
+		Service(ServiceConfiguration* configuration);
+
 		// Virtual destructor because of virtual methods!
 		virtual ~Service();
 
@@ -108,8 +122,19 @@ namespace nap
 		 */
 		virtual void resourcesLoaded()													{ }
 
+		/**
+		 * Retrieve the ServiceConfiguration for this service. Will be null if this service does not support configuration
+		 * @return The ServiceConfiguration
+		 */
+		template<typename SERVICE_CONFIG>
+		SERVICE_CONFIG* getConfiguration()
+		{
+			return rtti_cast<SERVICE_CONFIG>(mConfiguration.get());
+		}
+
 	private:
 		// this variable will be set by the core when the service is added
-		Core* mCore = nullptr;
+		Core*									mCore = nullptr;
+		std::unique_ptr<ServiceConfiguration>	mConfiguration;
 	};
 }

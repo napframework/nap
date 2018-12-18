@@ -146,6 +146,7 @@ namespace nap
 			Required 	= 1,				///< Load will fail if the property isn't set
 			FileLink 	= 2,				///< Defines a relationship with an external file
 			Embedded 	= 4,				///< An embedded pointer
+			ReadOnly	= 8					///< A read only property in Python
 		};
 
 		/**
@@ -161,7 +162,8 @@ namespace nap
 			Mesh			= 5,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
 			Video			= 6,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
 			ImageSequence	= 7,	///< Points to a an image sequence, must be used with EPropertyMetaData::FileLink
-            Audio           = 8,    ///< Points to an audio file, must be used with EPropertyMetaData::FileLink
+            Audio           = 8,	///< Points to an audio file, must be used with EPropertyMetaData::FileLink
+			Font			= 9		///< Points to a true type font, must be used with EPropertyMetaData::FileLink
 		};
 
 		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)
@@ -320,12 +322,12 @@ namespace nap
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)
 
-/**
- * Defines the beginning of an RTTI enabled class of @Type
- * This macro will register the class of @Type with the RTTI system
- * It also enables the class to be available to python
- * @param Type the type to register
- */
+ /**
+  * Defines the beginning of an RTTI enabled class of @Type
+  * This macro will register the class of @Type with the RTTI system
+  * It also enables the class to be available to python
+  * @param Type the type to register
+  */
 #define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)															\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
@@ -338,19 +340,22 @@ namespace nap
 			registration::class_<Type> rtti_class_type(#Type);													\
 			PythonClassType python_class(#Type);
 
-/**
- * Registers a property of @name
- * Call this after starting your class definition
- * @param Name RTTI name of the property
- * @param Member reference to the member variable
- * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
- */
+  /**
+   * Registers a property of @name that is readable and writable in C++ and Python
+   * Call this after starting your class definition
+   * @param Name RTTI name of the property
+   * @param Member reference to the member variable
+   * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
+   */
 #define RTTI_PROPERTY(Name, Member, Flags)																		\
 			rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
-				cls.def_readwrite(Name, Member);																\
-			});		
+				if(((uint8_t)(Flags) & (uint8_t)(nap::rtti::EPropertyMetaData::ReadOnly)) != 0)					\
+					cls.def_readonly(Name, Member);																\
+				else																							\
+					cls.def_readwrite(Name, Member);															\
+			});
 
 /**
  * Registers a property of @name that will refer to a filename

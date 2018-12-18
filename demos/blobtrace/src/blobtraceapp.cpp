@@ -41,14 +41,8 @@ namespace nap
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 
-		// Position window
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
-		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
-		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
-		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
-
 		// Find the camera and plane entities
-		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mPlaneEntity = scene->findEntity("Plane");
 		mCameraEntity = scene->findEntity("Camera");
 
@@ -73,7 +67,7 @@ namespace nap
 		
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
-		mInputService->processEvents(*mRenderWindow, input_router, entities);
+		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Set mouse pos in shader
 		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
@@ -99,9 +93,7 @@ namespace nap
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"Move mouse over canvas to position blob\nLeft mouse button to rotate camera\nRight mouse button to zoom");
+		ImGui::TextColored(mTextHighlightColor, "Move mouse over canvas to position blob\nLeft mouse button to rotate camera\nRight mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}

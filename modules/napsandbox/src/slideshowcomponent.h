@@ -4,6 +4,7 @@
 #include <entity.h>
 #include "imagefromfile.h"
 #include <glm/glm.hpp>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -62,9 +63,9 @@ namespace nap
 		void setVisible(nap::EntityInstance& entity, bool visible);
 
 	private:
-		rtti::ObjectPtr<nap::EntityInstance>				mLeftChildInstance;		// Instance of left child
-		rtti::ObjectPtr<nap::EntityInstance>				mCenterChildInstance;	// Instance of center child
-		rtti::ObjectPtr<nap::EntityInstance>				mRightChildInstance;	// Instance of right child
+		ResourcePtr<nap::EntityInstance>			mLeftChildInstance;		// Instance of left child
+		ResourcePtr<nap::EntityInstance>			mCenterChildInstance;	// Instance of center child
+		ResourcePtr<nap::EntityInstance>			mRightChildInstance;	// Instance of right child
 		int											mImageIndex = 0;		// Current image index
 		int											mTargetImageIndex = 0;	// Target image we want to cycle to
 		double										mTimer;					// Timer, used for animation

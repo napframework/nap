@@ -7,9 +7,9 @@
 #include <ngpumesh.h>
 #include <memory>
 #include <utility/dllexport.h>
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <rtti/objectptr.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -149,8 +149,8 @@ namespace nap
 		opengl::EDrawMode getDrawMode() const { return mDrawMode; }
 
 	public:
-		opengl::EDrawMode	mDrawMode;		///< The draw mode that should be used to draw this shape
-		IndexList			mIndices;		///< Indices into the mesh's vertex data
+		opengl::EDrawMode	mDrawMode;		///< Property: 'DrawMode' The draw mode that should be used to draw this shape
+		IndexList			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};
 
 
@@ -169,10 +169,10 @@ namespace nap
 	{
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
 
-		int						mNumVertices;
-		EMeshDataUsage			mUsage = EMeshDataUsage::Static;
-		VertexAttributeList		mAttributes;
-		std::vector<MeshShape>	mShapes;
+		int						mNumVertices;						///< Property: 'NumVertices' number of mesh vertices
+		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
+		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
+		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
 
 	// ObjectPtr based mesh properties, used in serializable Mesh format (json/binary)
@@ -321,13 +321,23 @@ namespace nap
 		EMeshDataUsage getUsage(EMeshDataUsage inUsage) const					{ return mProperties.mUsage; }
 
 		/**
-		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),
+		 * Pushes all CPU vertex buffers to the GPU. Note that update() is called during init(),
 		 * so this is only required if CPU data is modified after init().
 		 * If there is a mismatch between vertex buffer, an error will be returned.
 		 * @param errorState Contains error information if an error occurred.
 		 * @return True if succeeded, false on error.		 
 		 */
 		bool update(utility::ErrorState& errorState);
+
+		/**
+		 * Push one specific CPU vertex buffer to the GPU.
+		 * Use this when updating only specific vertex attributes at run-time.
+		 * If there is a mismatch between the vertex buffer an error will be returned
+		 * @param attribute the attribute to synchronize.
+		 * @param errorState contains the error when synchronization fails.
+		 * @return if the update succeeded or not.
+ 		 */
+		bool update(nap::BaseVertexAttribute& attribute, utility::ErrorState& errorState);
 
 	protected:
 		bool initGPUData(utility::ErrorState& errorState);
@@ -341,9 +351,9 @@ namespace nap
 	/**
 	 * Base class for each mesh resource. Every derived mesh should provide a MeshInstance class.
 	 */
-	class IMesh : public rtti::RTTIObject
+	class IMesh : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 
 	public:
 		virtual MeshInstance& getMeshInstance() = 0;
@@ -397,14 +407,9 @@ namespace nap
 		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		 */
 		template<typename T>
-		const VertexAttribute<T>& GetAttribute(const std::string& id) const
-		{
-			const VertexAttribute<T>* attribute = FindAttribute<T>(id);
-			assert(attribute != nullptr);
-			return *attribute;
-		}
+		const VertexAttribute<T>& GetAttribute(const std::string& id) const;
 
-		RTTIMeshProperties	mProperties;		///< RTTI mesh CPU data
+		RTTIMeshProperties	mProperties;		///< Property: 'Properties' RTTI mesh CPU data
 
 	private:
 		MeshInstance		mMeshInstance;		///< Runtime mesh instance
@@ -483,5 +488,13 @@ namespace nap
 		return nullptr;
 	}
 
+
+	template<typename T>
+	const VertexAttribute<T>& nap::Mesh::GetAttribute(const std::string& id) const
+	{
+		const VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		assert(attribute != nullptr);
+		return *attribute;
+	}
 } // nap
 

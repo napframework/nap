@@ -44,8 +44,9 @@ namespace nap
 		for (auto& component : mComponents)
 			component->update(deltaTime);
 
-		for (EntityInstance* child : mChildren)
-			child->update(deltaTime);
+        // We need to work with an integer iterator control variable here because children can be added or removed from the list while iterating the loop.
+        for (auto i = 0; i < mChildren.size(); ++i)
+            mChildren[i]->update(deltaTime);
 	}
 
 
@@ -74,11 +75,11 @@ namespace nap
     }
     
     
-	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
+	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type) const
 	{
 		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) 
 		{ 
-			return rtti::isTypeMatch(element->get_type(), type, typeCheck);
+			return rtti::isTypeMatch(element->get_type(), type, rtti::ETypeCheck::IS_DERIVED_FROM);
 		});
 		if (pos == mComponents.end())
 			return nullptr;
@@ -87,33 +88,33 @@ namespace nap
 	}
 
 
-	void EntityInstance::getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components, rtti::ETypeCheck typeCheck) const
+	void EntityInstance::getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components) const
 	{
 		for (auto& component : mComponents)
-			if (rtti::isTypeMatch(component->get_type(), type, typeCheck))
+			if (rtti::isTypeMatch(component->get_type(), type, rtti::ETypeCheck::IS_DERIVED_FROM))
 				components.emplace_back(component.get());
 	}
 
 
-	bool EntityInstance::hasComponentsOfType(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
+	bool EntityInstance::hasComponentsOfType(const rtti::TypeInfo& type) const
 	{
 		for (auto& component : mComponents)
-			if (rtti::isTypeMatch(component->get_type(), type, typeCheck))
+			if (rtti::isTypeMatch(component->get_type(), type, rtti::ETypeCheck::IS_DERIVED_FROM))
 				return true;
 
 		return false;
 	}
 
 
-	bool EntityInstance::hasComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
+	bool EntityInstance::hasComponent(const rtti::TypeInfo& type) const
 	{
-		return findComponent(type, typeCheck) != nullptr;
+		return findComponent(type) != nullptr;
 	}
 
 
-	ComponentInstance& EntityInstance::getComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
+	ComponentInstance& EntityInstance::getComponent(const rtti::TypeInfo& type) const
 	{
-		ComponentInstance* result = findComponent(type, typeCheck);
+		ComponentInstance* result = findComponent(type);
 		assert(result != nullptr);
 		return *result;
 	}
@@ -170,9 +171,9 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	rtti::ObjectPtr<Component> Entity::findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
+	rtti::ObjectPtr<Component> Entity::findComponent(const rtti::TypeInfo& type) const
 	{
-		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return isTypeMatch(element->get_type(), type, typeCheck); });
+		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return isTypeMatch(element->get_type(), type, rtti::ETypeCheck::IS_DERIVED_FROM); });
 		if (pos == mComponents.end())
 			return nullptr;
 
@@ -180,9 +181,9 @@ namespace nap
 	}
 
 
-	bool Entity::hasComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
+	bool Entity::hasComponent(const rtti::TypeInfo& type) const
 	{
-		return findComponent(type, typeCheck) != nullptr;
+		return findComponent(type) != nullptr;
 	}
 
 }

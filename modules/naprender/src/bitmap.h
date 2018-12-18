@@ -1,9 +1,11 @@
 #pragma once
 
+// Local Includes
+#include "color.h"
+
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 #include <utility/dllexport.h>
-#include <color.h>
 
 namespace opengl
 {
@@ -23,18 +25,18 @@ namespace nap
 	 * This object wraps a Bitmap and allocates the bitmap resource on init()
 	 * The properties associated with the bitmap are set when initialized from texture or file
 	 */
-	class NAPAPI Bitmap : public rtti::RTTIObject
+	class NAPAPI Bitmap : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		/**
 		 *	Supported bitmap data types
 		 */
 		enum class EDataType : int
 		{
-			BYTE	= 0,		///< Byte 8 bit
-			USHORT	= 2,		///< Short 16 bit
-			FLOAT	= 3			///< Float 32 bit
+			BYTE		= 0,	
+			USHORT		= 1,	
+			FLOAT		= 2
 		};
 
 		/**
@@ -42,11 +44,11 @@ namespace nap
 		 */
 		enum class EChannels : int
 		{
-			R			= 1,	///< R red component
-			RGB			= 2,	///< RGB red, green and blue component
-			RGBA		= 3,	///< RGBA red, green, blue and alpha component
-			BGR			= 4,	///< BGR blue, green and red component
-			BGRA		= 5		///< BGRA blue, green, red and alpha component
+			R			= 0,	///< R red component
+			RGB			= 1,	///< RGB red, green and blue component
+			RGBA		= 2,	///< RGBA red, green, blue and alpha component
+			BGR			= 3,	///< BGR blue, green and red component
+			BGRA		= 4		///< BGRA blue, green, red and alpha component
 		};
 
 		virtual ~Bitmap();
