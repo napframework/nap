@@ -48,8 +48,8 @@
 		{
 			"Type" : "nap::Shader",
 			"mID": "LineShader",
-			"mVertShader": "shaders/etherdream/line.vert",
-			"mFragShader": "shaders/etherdream/line.frag"
+			"mVertShader": "shaders/line.vert",
+			"mFragShader": "shaders/line.frag"
 		},
 
 		{
@@ -62,15 +62,15 @@
 		{
 			"Type" : "nap::Shader",
 			"mID": "TracerShader",
-			"mVertShader": "shaders/etherdream/tracer.vert",
-			"mFragShader": "shaders/etherdream/tracer.frag"
+			"mVertShader": "shaders/tracer.vert",
+			"mFragShader": "shaders/tracer.frag"
 		},
 
 		{
 			"Type" : "nap::Shader",
 			"mID": "FrameShader",
-			"mVertShader": "shaders/etherdream/laserframe.vert",
-			"mFragShader": "shaders/etherdream/laserframe.frag"
+			"mVertShader": "shaders/laserframe.vert",
+			"mFragShader": "shaders/laserframe.frag"
 		},
 
 		{
