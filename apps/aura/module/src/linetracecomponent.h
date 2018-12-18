@@ -6,6 +6,7 @@
 // external includes
 #include <utility/dllexport.h>
 #include <nap/resourceptr.h>
+#include <smoothdamp.h>
 
 namespace nap
 {
