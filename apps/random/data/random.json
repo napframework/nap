@@ -395,6 +395,7 @@
                 {
                     "Type": "nap::RandomOSCHandler",
                     "mID": "nap::RandomOSCHandler",
+                    "LightingModeComponent": "./nap::LightingModeComponent",
                     "CombinationComponent": "./LightRig/nap::ApplyCombinationComponent",
                     "UpdateMaterialComponent": "./nap::UpdateMaterialComponent",
                     "ControlGroups": "ControlGroups"

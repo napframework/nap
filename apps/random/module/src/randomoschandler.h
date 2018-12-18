@@ -1,6 +1,7 @@
 #pragma once
 
 // Local Includes
+#include "lightingmodecomponent.h"
 #include "applycombinationcomponent.h"
 #include "updatematerialcomponent.h"
 #include "controlgroups.h"
@@ -30,6 +31,7 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
+		ComponentPtr<LightingModeComponent> mLightingModeComponent;			///< Property: 'LightingModeComponent' link to the lighting mode component
 		ComponentPtr<ApplyCombinationComponent> mCombinationComponent;		///< Property: 'CombinationComponent' link to the combination component
 		ComponentPtr<UpdateMaterialComponent> mUpdateMaterialComponent;		///< Property: 'UpdateMaterialComponent' link to the update material component
 		ResourcePtr<ControlGroups> mControlGroups = nullptr;				///< Property: Pointer to the control groups
@@ -60,6 +62,7 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		// Pointers to the run time Component Instances, set during de-serialization
+		ComponentInstancePtr<LightingModeComponent> mLightingModeComponent = { this, &RandomOSCHandler::mLightingModeComponent };
 		ComponentInstancePtr<ApplyCombinationComponent> mApplyCombinationComponent = { this, &RandomOSCHandler::mCombinationComponent };
 		ComponentInstancePtr<UpdateMaterialComponent> mUpdateMaterialComponent = { this, &RandomOSCHandler::mUpdateMaterialComponent };
 
@@ -72,6 +75,7 @@ namespace nap
 		 * @param OSCEvent the new osc event
 		 */
 		void onEventReceived(const OSCEvent&);
+		void updateLightingMode(const OSCEvent& oscEvent, const std::vector<std::string>& args);
 		void updateBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args);
 		void updateControlGroupBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args);
 		void updateStaticTemperature(const OSCEvent& oscEvent, const std::vector<std::string>& args);

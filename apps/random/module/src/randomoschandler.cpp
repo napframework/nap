@@ -7,6 +7,7 @@
 
 // nap::randomoschandler run time class definition 
 RTTI_BEGIN_CLASS(nap::RandomOSCHandler)
+	RTTI_PROPERTY("LightingModeComponent", &nap::RandomOSCHandler::mLightingModeComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CombinationComponent", &nap::RandomOSCHandler::mCombinationComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("UpdateMaterialComponent", &nap::RandomOSCHandler::mUpdateMaterialComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ControlGroups", &nap::RandomOSCHandler::mControlGroups, nap::rtti::EPropertyMetaData::Required)
@@ -41,6 +42,7 @@ namespace nap
 		mOSCInputComponent->messageReceived.connect(eventReceivedSlot);
 
 		// Populate our map of callbacks
+		mOscEventFuncs.emplace(std::make_pair("lighting-mode", &RandomOSCHandlerInstance::updateLightingMode));
 		mOscEventFuncs.emplace(std::make_pair("brightness", &RandomOSCHandlerInstance::updateBrightness));
 		mOscEventFuncs.emplace(std::make_pair("control-group-brightness", &RandomOSCHandlerInstance::updateControlGroupBrightness));
 		mOscEventFuncs.emplace(std::make_pair("static-temperature", &RandomOSCHandlerInstance::updateStaticTemperature));
@@ -74,6 +76,12 @@ namespace nap
 		// Call found callback
 		addressParts.erase(addressParts.begin());
 		(this->*(it->second))(oscEvent, addressParts);
+	}
+
+	void RandomOSCHandlerInstance::updateLightingMode(const OSCEvent& oscEvent, const std::vector<std::string>& args)
+	{
+		mLightingModeComponent->mLightingModeInt = std::stoi(args[0]) - 1;
+		mLightingModeComponent->startLightingModeTransition();
 	}
 
 	void RandomOSCHandlerInstance::updateBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args)
