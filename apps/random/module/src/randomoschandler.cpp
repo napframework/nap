@@ -10,6 +10,7 @@ RTTI_BEGIN_CLASS(nap::RandomOSCHandler)
 	RTTI_PROPERTY("LightingModeComponent", &nap::RandomOSCHandler::mLightingModeComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CombinationComponent", &nap::RandomOSCHandler::mCombinationComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("UpdateMaterialComponent", &nap::RandomOSCHandler::mUpdateMaterialComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SelectVideoComponent", &nap::RandomOSCHandler::mSelectVideoComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ControlGroups", &nap::RandomOSCHandler::mControlGroups, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -46,6 +47,7 @@ namespace nap
 		mOscEventFuncs.emplace(std::make_pair("brightness", &RandomOSCHandlerInstance::updateBrightness));
 		mOscEventFuncs.emplace(std::make_pair("control-group-brightness", &RandomOSCHandlerInstance::updateControlGroupBrightness));
 		mOscEventFuncs.emplace(std::make_pair("static-temperature", &RandomOSCHandlerInstance::updateStaticTemperature));
+		mOscEventFuncs.emplace(std::make_pair("video-index", &RandomOSCHandlerInstance::updateVideoIndex));
 
 		return true;
 	}
@@ -78,16 +80,19 @@ namespace nap
 		(this->*(it->second))(oscEvent, addressParts);
 	}
 
+
 	void RandomOSCHandlerInstance::updateLightingMode(const OSCEvent& oscEvent, const std::vector<std::string>& args)
 	{
 		mLightingModeComponent->mLightingModeInt = std::stoi(args[0]) - 1;
 		mLightingModeComponent->startLightingModeTransition();
 	}
 
+
 	void RandomOSCHandlerInstance::updateBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args)
 	{
 		mApplyCombinationComponent->mBrightness = oscEvent[0].asFloat();
 	}
+
 
 	void RandomOSCHandlerInstance::updateControlGroupBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args)
 	{
@@ -96,8 +101,16 @@ namespace nap
 		controlGroup->mBrightness = oscEvent[0].asFloat();
 	}
 
+
 	void RandomOSCHandlerInstance::updateStaticTemperature(const OSCEvent& oscEvent, const std::vector<std::string>& args)
 	{
 		*mUpdateMaterialComponent->getStaticWarmthPtr() = oscEvent[0].asFloat();
+	}
+
+
+	void RandomOSCHandlerInstance::updateVideoIndex(const OSCEvent& oscEvent, const std::vector<std::string>& args)
+	{
+		int videoIndex = std::stoi(args[0]) - 1;
+		mSelectVideoComponent->selectVideo(videoIndex);
 	}
 }

@@ -398,6 +398,7 @@
                     "LightingModeComponent": "./nap::LightingModeComponent",
                     "CombinationComponent": "./LightRig/nap::ApplyCombinationComponent",
                     "UpdateMaterialComponent": "./nap::UpdateMaterialComponent",
+                    "SelectVideoComponent": "./Video/nap::SelectVideoComponent",
                     "ControlGroups": "ControlGroups"
                 },
                 {

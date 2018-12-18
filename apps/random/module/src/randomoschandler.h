@@ -4,6 +4,7 @@
 #include "lightingmodecomponent.h"
 #include "applycombinationcomponent.h"
 #include "updatematerialcomponent.h"
+#include "selectvideocomponent.h"
 #include "controlgroups.h"
 
 // External Includes
@@ -34,6 +35,7 @@ namespace nap
 		ComponentPtr<LightingModeComponent> mLightingModeComponent;			///< Property: 'LightingModeComponent' link to the lighting mode component
 		ComponentPtr<ApplyCombinationComponent> mCombinationComponent;		///< Property: 'CombinationComponent' link to the combination component
 		ComponentPtr<UpdateMaterialComponent> mUpdateMaterialComponent;		///< Property: 'UpdateMaterialComponent' link to the update material component
+		ComponentPtr<SelectVideoComponent> mSelectVideoComponent;			///< Property: 'SelectVideoComponent' link to the select video component
 		ResourcePtr<ControlGroups> mControlGroups = nullptr;				///< Property: Pointer to the control groups
 	};
 
@@ -65,6 +67,7 @@ namespace nap
 		ComponentInstancePtr<LightingModeComponent> mLightingModeComponent = { this, &RandomOSCHandler::mLightingModeComponent };
 		ComponentInstancePtr<ApplyCombinationComponent> mApplyCombinationComponent = { this, &RandomOSCHandler::mCombinationComponent };
 		ComponentInstancePtr<UpdateMaterialComponent> mUpdateMaterialComponent = { this, &RandomOSCHandler::mUpdateMaterialComponent };
+		ComponentInstancePtr<SelectVideoComponent> mSelectVideoComponent = { this, &RandomOSCHandler::mSelectVideoComponent };
 
 	private:
 		OSCInputComponentInstance* mOSCInputComponent = nullptr;				///< Handle to the component that receives the incoming osc messages
@@ -79,6 +82,7 @@ namespace nap
 		void updateBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args);
 		void updateControlGroupBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args);
 		void updateStaticTemperature(const OSCEvent& oscEvent, const std::vector<std::string>& args);
+		void updateVideoIndex(const OSCEvent& oscEvent, const std::vector<std::string>& args);
 
 		// This map holds all the various callbacks based on id
 		typedef void (RandomOSCHandlerInstance::*OscEventFunc)(const OSCEvent&, const std::vector<std::string>& args);
