@@ -127,14 +127,15 @@ namespace nap
 		 */
 		static const int getMaxUpdateFrequency();
 
-		uint8_t				mSubnet = 0;									///< Subnet, in range from 0 - 15
-		uint8_t				mUniverse = 0;									///< Universe, in range from 0 - 15
-		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Update artnet refresh rate, the default is the maximum refresh rate
-		float				mWaitTime = 2.0f;								///< Number of seconds before the control data is send regardless of changes
-		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Artnet message mode
-		int					mUnicastLimit = 10;								///< Allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
-		bool				mVerbose = false;								///< Prints artnet network traffic information to the consolve
-		float				mReadTimeout = 2.0f;							///< Poll network read timeout
+		uint8_t				mSubnet = 0;									///< Property: 'Subnet' range from 0 - 15
+		uint8_t				mUniverse = 0;									///< Property: 'Universe' range from 0 - 15
+		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Property: 'Frequency' artnet refresh rate, the default is the maximum refresh rate
+		float				mWaitTime = 2.0f;								///< Property: 'WaitTime' number of seconds before the control data is send regardless of changes
+		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Property: 'Mode' artnet message mode, Broadcast or Unicast
+		int					mUnicastLimit = 10;								///< Property: 'UnicastLimit' allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
+		bool				mVerbose = false;								///< Property: 'Verbose' prints artnet network traffic information to the consolve
+		float				mReadTimeout = 2.0f;							///< Property: 'Timeout' poll network node read timeout, only used when mode is set to Unicast
+		std::string			mIpAddress = "";								///< Property: 'IPAddress' this controller's IP Address, when left empty the first available ethernet adapter is chosen.
 
 	private:
 
