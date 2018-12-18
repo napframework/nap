@@ -77,10 +77,15 @@ namespace nap
 
 	const nap::UniformBinding* UniformContainer::findUniformBinding(const std::string& name) const
 	{
-		auto it = mUniformValueBindings.find(name);
-		if (it == mUniformValueBindings.end())
-			return nullptr;
-		return &(it->second);
+		auto value_it = mUniformValueBindings.find(name);
+		if (value_it != mUniformValueBindings.end())
+			return &(value_it->second);
+
+		auto text_it = mUniformTextureBindings.find(name);
+		if (text_it != mUniformTextureBindings.end())
+			return &(text_it->second);
+
+		return nullptr;
 	}
 
 

@@ -367,6 +367,36 @@ endif()
 
 ```
 
+### macOS RPATH Management {#macos_thirdparty_library_rpath}
+
+One thing to keep an eye out for on macOS is the install name of the third party libraries that you're attempting to integrate.
+
+The install name of a shared library can be viewed in macOS using the command `otool -D`. See this example, showing mpg123:
+```
+$ otool -D lib/libmpg123.0.dylib
+lib/libmpg123.0.dylib:
+/Users/username/mpg123-1.25.6/install/osx/lib/libmpg123.0.dylib
+```
+
+If that install name were allowed to remain this way any library linked against libout123.0.dylib would look for it at the path shown above. What we want to end up with instead is having our library found in its relative position within the NAP framework directory.
+
+To achieve that let's update the library's install name, prefixing it with `@rpath`:
+```
+$ install_name_tool -id @rpath/libmpg123.0.dylib lib/libmpg123.0.dylib
+```
+
+We can then check the results by running `otool` again:
+```
+$ otool -D lib/libmpg123.0.dylib
+lib/libmpg123.0.dylib:
+@rpath/libmpg123.dylib
+```
+
+Anything using our library with the updated install name (in this case mpg123) would then need to be rebuilt to pull in the changed path.
+
+One risk with RPATH management and third party libraries is in the case where you're integrating a library that you also have installed on your system via eg. Homebrew or MacPorts. In this case it's possible to unknowningly be building and running against the system-level third party library. There are a number of ways to detect this, one of which is while running your project using `lsof` in a terminal and grepping the output to ensure that the correct instance of your library is being used. If this issue goes unresolved you're likely to run into problems when the project or module is used on a another system.
+
+
 ## Project Modules {#project_modules}
 
 You may have noticed that a number of the demos included with NAP v$(NAP_VERSION_MAJOR) use modules located within the project.  This method of working with modules is a recent internal development and as such isn't a supported approach in the beta.  We recommend instead creating all modules within the user modules directory.

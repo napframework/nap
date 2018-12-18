@@ -6,7 +6,6 @@
 #include "renderglobals.h"
 #include "material.h"
 #include "renderservice.h"
-#include "materialutils.h"
 
 // External Includes
 #include <entity.h>
@@ -29,19 +28,6 @@ namespace nap
 	void RenderableMeshComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.push_back(RTTI_OF(TransformComponent));
-	}
-
-
-	// Upload all uniform variables to GPU
-	void RenderableMeshComponentInstance::pushUniforms()
-	{
-		utility::pushUniforms(getMaterialInstance());
-	}
-
-
-	void RenderableMeshComponentInstance::setBlendMode()
-	{
-		utility::setBlendMode(getMaterialInstance());
 	}
 
 
@@ -110,11 +96,12 @@ namespace nap
 		// Get global transform
 		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
 
-		// Get material to bind
-		Material* comp_mat = getMaterialInstance().getMaterial();
-		comp_mat->bind();
+		// Bind material
+		MaterialInstance& mat_instance = getMaterialInstance();
+		mat_instance.bind();
 
 		// Set projection uniform in shader
+		Material* comp_mat = mat_instance.getMaterial();
 		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
 		if (projectionUniform != nullptr)
 			projectionUniform->setValue(projectionMatrix);
@@ -130,11 +117,12 @@ namespace nap
 			modelUniform->setValue(model_matrix);
 
 		// Prepare blending
-		setBlendMode();
+		mat_instance.pushBlendMode();
 
 		// Push all shader uniforms
-		pushUniforms();
+		mat_instance.pushUniforms();
 
+		// Bind mesh for rendering
 		mRenderableMesh.bind();
 
 		// If a cliprect was set, enable scissor and set correct values
@@ -144,11 +132,11 @@ namespace nap
 			glScissor(mClipRect.getMin().x, mClipRect.getMin().y, mClipRect.getWidth(), mClipRect.getHeight());
 		}
 
-		MeshInstance& mesh_instance = getMeshInstance();
-
 		// Gather draw info
+		MeshInstance& mesh_instance = getMeshInstance();
 		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
 
+		// Draw all shapes associated with the mesh
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
 			MeshShape& shape = mesh_instance.getShape(index);
@@ -162,7 +150,7 @@ namespace nap
 			index_buffer.unbind();
 		}
 
-		comp_mat->unbind();
+		mat_instance.unbind();
 		mRenderableMesh.unbind();
 		opengl::enableScissorTest(false);
 	}

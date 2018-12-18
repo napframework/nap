@@ -119,6 +119,44 @@ namespace nap
 		template<typename T>
 		T& getOrCreateUniform(const std::string& name);
 
+		/**
+		 * Binds the shader program so it can be used by subsequent calls such as pushUniforms() etc.
+		 * This call is forwarded to bind() of the parent material.
+		 */
+		void bind();
+
+		/**
+		 * Unbinds the shader program.
+		 * This call is forwarded to unbind() of the parent material.
+		 */
+		void unbind();
+
+		/**
+		 * Uploads all uniforms stored in this material to the GPU. Call this after binding!
+		 * Only call this after binding the material otherwise the outcome of this call is uncertain.
+		 * This applies to the uniforms in the instance that are overridden as for the uniforms in the underlying material.
+		 */
+		void pushUniforms();
+
+		/**
+		 * Updates the blend mode on the GPU based on the blend settings associated with this material.
+		 * Both the instance and parent material have the option to change the blend mode.
+		 * If this material inherits the blend mode from the parent material the blend mode of the parent material is used.
+		 * Otherwise the blend settings that have been given to this instance are taken into account. 
+		 * Preferably call this after binding!
+		 */
+		void pushBlendMode();
+
+		/**
+		 * Locates the texture unit that is associated with a specific uniform in this material.
+		 * Use this index when updating a specific texture uniform on the GPU.
+		 * The texture unit number is required when pushing a single texture to the GPU.
+		 * Note that the uniform needs to be managed (created) by this material instance or the underlying parent material.
+		 * @param uniform the texture uniform to find the texture unit number for.
+		 * @return the texture unit associated with a specific texture uniform in a material, -1 if not found
+		 */
+		int getTextureUnit(nap::UniformTexture& uniform);
+
 	private:
 		/**
 		 * Creates a new uniform with the given name

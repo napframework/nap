@@ -15,7 +15,7 @@ SEARCH_TARGET = OUTPUT_DIR + "/search/search.css"
 SEARCH_SOURCE = "/css/search.css"
 
 # errors
-ERROR_INVALID_NAP_VERSION = 1
+ERROR_INVALID_NAP_VERSION = 2
 
 def call(cwd, cmd):
     print('dir: %s' % cwd)

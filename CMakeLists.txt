@@ -91,10 +91,11 @@ add_subdirectory(core)
 add_subdirectory(utility)
 add_subdirectory(rtti)
 add_subdirectory(nrender)
+add_subdirectory(qt)
 
 # tools targets
 add_subdirectory(tools/fbxconverter)
-add_subdirectory(napkin)
+add_subdirectory(tools/napkin)
 
 # executable targets
 add_subdirectory(test/render)
@@ -126,6 +127,8 @@ add_subdirectory(demos/oscmidi)
 add_subdirectory(demos/oscmidi/module)
 add_subdirectory(demos/lineblending)
 add_subdirectory(demos/lineblending/module)
+add_subdirectory(demos/curveball)
+add_subdirectory(demos/curveball/module)
 add_subdirectory(demos/copystamp)
 add_subdirectory(demos/copystamp/module)
 
