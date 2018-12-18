@@ -1,3 +1,3 @@
 #include "utility/module.h"
 
-NAP_MODULE("naprtti", "1.0")
+NAP_MODULE("naprtti", "0.2.0")

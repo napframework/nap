@@ -20,6 +20,7 @@ RTTI_END_ENUM
 RTTI_BEGIN_CLASS(nap::ArtNetController)
 	RTTI_PROPERTY("Subnet",			&nap::ArtNetController::mSubnet,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Universe",		&nap::ArtNetController::mUniverse,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("IPAddress",		&nap::ArtNetController::mIpAddress,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("WaitTime",		&nap::ArtNetController::mWaitTime,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Frequency",		&nap::ArtNetController::mUpdateFrequency,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Mode",			&nap::ArtNetController::mMode,				nap::rtti::EPropertyMetaData::Default)
@@ -53,7 +54,10 @@ namespace nap
 
 		// Create a new artnet (controller) node
 		assert(mNode == nullptr);
-		mNode = artnet_new(NULL, (mVerbose ? 1 : 0));
+		mNode = artnet_new((mIpAddress.empty() ? NULL : mIpAddress.c_str()), (mVerbose ? 1 : 0));
+
+		if (!errorState.check(mNode != nullptr, "Unable to create new ArtNode using address: %s error: %s", mIpAddress.c_str(), artnet_strerror()))
+			return false;
 
 		// Add controller
 		if (!mService->addController(*this, errorState))

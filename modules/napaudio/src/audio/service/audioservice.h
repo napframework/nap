@@ -66,14 +66,14 @@ namespace nap
             /**
              * The buffer size the audio stream will run on, every audio callback processes this amount of samples per channel
              */
-            int mBufferSize = 256;
+            int mBufferSize = 1024;
 
 			/**
 			 * The buffer size that is used internally by the node system to peform processing.
 			 * This can be lower than mBufferSize but has to fit within mBufferSize a discrete amount of times.
 			 * Lowering this can improve timing precision in the case that the node manager performs internal event scheduling, however will increase performance load.
 			 */
-			int mInternalBufferSize = 256;
+			int mInternalBufferSize = 1024;
 		};
         
         /**

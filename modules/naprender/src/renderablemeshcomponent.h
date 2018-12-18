@@ -124,17 +124,6 @@ namespace nap
 
 	protected:
 		/**
-		 * Uploads all uniforms variables of the material to the GPU.
-		 * This applies to the uniforms in the instance that are overridden as for the uniforms in the underlying material.
-		 */
-		void pushUniforms();
-
-		/**
-		 * Sets the OpenGL blend mode based on the blend mode settings in the material instance.
-		 */
-		void setBlendMode();
-
-		/**
 		 * Renders the model from the ModelResource, using the material on the ModelResource.
 	 	 */
 		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;

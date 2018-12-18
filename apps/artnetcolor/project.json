@@ -1,6 +1,6 @@
 {
     "title": "ArtnetColor",
-    "version": "0.1",
+    "version": "0.2.0",
     "modules": [
         "mod_napartnet",
         "mod_napapp"
