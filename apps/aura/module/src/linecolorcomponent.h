@@ -9,6 +9,7 @@
 #include <imagefromfile.h>
 #include <glm/glm.hpp>
 #include <smoothdamp.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -29,7 +30,7 @@ namespace nap
 		ComponentPtr<nap::LineBlendComponent> mBlendComponent;
 
 		// property: link to the image component that holds the lookup image
-		rtti::ObjectPtr<nap::ImageFromFile> mLookupImage;
+		ResourcePtr<nap::ImageFromFile> mLookupImage;
 
 		// property: start lookup color for spline
 		glm::vec2 mStartPos = { 0.5f, 0.5f };

@@ -12,15 +12,22 @@ namespace nap
 {
     
     
-    MidiOutputPort::MidiOutputPort(MidiService& service) : rtti::RTTIObject(), mService(&service)
+    MidiOutputPort::MidiOutputPort(MidiService& service) : 
+		mService(&service)
     {
-
     }
+
+
+	MidiOutputPort::~MidiOutputPort()
+	{
+		stop();
+	}
     
     
-    bool MidiOutputPort::init(utility::ErrorState& errorState)
+    bool MidiOutputPort::start(utility::ErrorState& errorState)
     {
-        try {
+        try 
+		{
             mPortNumber = mService->getOutputPortNumber(mPortName);
             if (mPortNumber < 0)
             {
@@ -36,6 +43,11 @@ namespace nap
         }
     }
     
+
+	void MidiOutputPort::stop()
+	{
+		midiOut.closePort();
+	}
     
     void MidiOutputPort::sendEvent(const MidiEvent& event)
     {

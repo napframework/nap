@@ -22,14 +22,6 @@ RTTI_BEGIN_CLASS(nap::LedColorPaletteGrid)
 RTTI_END_CLASS
 
 
-RTTI_DEFINE_BASE(std::vector<int>)
-	RTTI_BEGIN_STRUCT(std::vector<int>)
-RTTI_END_STRUCT
-
-RTTI_DEFINE_BASE(int)
-	RTTI_BEGIN_STRUCT(int)
-RTTI_END_STRUCT
-
 //////////////////////////////////////////////////////////////////////////
 
 
@@ -244,13 +236,28 @@ namespace nap
 	{
 		assert(weekNumber < mWeekColors.size());
 		assert(variationIndex == -1 || variationIndex < mWeekColors[weekNumber]->getVariationCount());
-
 		std::vector<WeekColors::GridColorIndex> color_indices = mWeekColors[weekNumber]->getColors(variationIndex);
 		
 		std::vector<PaletteColor> result;
 		for (const WeekColors::GridColorIndex& color_index : color_indices)
-			result.push_back(mPaletteGrid[color_index.mRow][color_index.mColumn]);
+		{
+			result.emplace_back(mPaletteGrid[color_index.mRow][color_index.mColumn]);
+		}
+		return result;
+	}
 
+
+	std::vector<nap::LedColorPaletteGrid::PaletteColor> LedColorPaletteGrid::getPalette(const WeekColors& colors, int variationIndex)
+	{
+		// Get the color indices
+		assert(variationIndex < colors.getVariationCount());
+		std::vector<WeekColors::GridColorIndex> color_indices = colors.getColors(variationIndex);
+
+		std::vector<PaletteColor> result;
+		for (const WeekColors::GridColorIndex& color_index : color_indices)
+		{
+			result.emplace_back(mPaletteGrid[color_index.mRow][color_index.mColumn]);
+		}
 		return result;
 	}
 }

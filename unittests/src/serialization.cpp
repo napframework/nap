@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include "utils/catch.hpp"
 
 #include <fstream>
 #include <nap/core.h>
@@ -8,7 +8,6 @@
 #include <rtti/jsonwriter.h>
 #include <utility/fileutils.h>
 
-using namespace nap;
 using namespace nap::rtti;
 using namespace nap::utility;
 
@@ -24,13 +23,14 @@ std::string readJSONData(const std::string& filename)
 	return jsonData;
 }
 
-void deserialize(Core& core, const std::string& jsonData, OwnedObjectList& outObjects) {
+void deserialize(nap::Core& core, const std::string& jsonData, OwnedObjectList& outObjects) {
 	ErrorState err;
 
 	auto& factory = core.getResourceManager()->getFactory();
 
-	nap::rtti::RTTIDeserializeResult result;
-	if (!deserializeJSON(jsonData, factory, result, err))
+	nap::rtti::DeserializeResult result;
+
+	if (!deserializeJSON(jsonData, EPropertyValidationMode::DisallowMissingProperties, factory, result, err))
 		FAIL("Failed to deserialize json data: " + err.toString());
 
 	if (!DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))

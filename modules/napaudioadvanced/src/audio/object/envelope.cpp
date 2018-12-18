@@ -20,6 +20,20 @@ namespace nap
         {
             return std::make_unique<EnvelopeInstance>(*this);
         }
+        
+        
+        bool EnvelopeInstance::init(AudioService& audioService, utility::ErrorState& errorState)
+        {
+            mEnvelopeGenerator = audioService.makeSafe<EnvelopeGenerator>(audioService.getNodeManager());
+            auto resource = rtti_cast<Envelope>(&getResource());
+            
+            mSegments = audioService.makeSafe<EnvelopeGenerator::Envelope>(resource->mSegments);
+            if (resource->mAutoTrigger)
+                mEnvelopeGenerator->trigger(mSegments.get());
+            return true;
+        }
+        
+
     }
     
 }

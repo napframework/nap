@@ -4,8 +4,8 @@
 #include "lineblendcomponent.h"
 
 // external includes
-#include <smoothdamp.h>
 #include <utility/dllexport.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -34,7 +34,7 @@ namespace nap
 		TraceProperties mProperties;
 
 		// property: Link to the tracer mesh that is computed by the instance of this component
-		rtti::ObjectPtr<nap::PolyLine> mTargetLine;
+		ResourcePtr<nap::PolyLine> mTargetLine;
 
 		// property: Link to the line blend component that holds the line we want to trace
 		ComponentPtr<nap::LineBlendComponent>		mBlendComponent;

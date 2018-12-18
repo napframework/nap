@@ -3,8 +3,6 @@
 // Mod nap render includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
-#include <sdlinput.h>
-#include <sdlwindow.h>
 
 // Nap includes
 #include <nap/resourcemanager.h>
@@ -18,6 +16,8 @@
 
 namespace nap
 {
+	using namespace rtti;
+
 	/**
 	* Demo application that is called from within the main loop
 	*
@@ -86,9 +86,9 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< IMGui service
-		rtti::ObjectPtr<RenderWindow> mRenderWindow;							//< Pointers to the render window
-		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter;					//< Routes input events to the input component
-		rtti::ObjectPtr<EntityInstance> mCameraEntity;						//< Entity that holds the camera
+		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointers to the render window
+		ObjectPtr<EntityInstance> mDefaultInputRouter;					//< Routes input events to the input component
+		ObjectPtr<EntityInstance> mCameraEntity;						//< Entity that holds the camera
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }

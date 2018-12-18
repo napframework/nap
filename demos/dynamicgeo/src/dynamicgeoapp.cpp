@@ -33,17 +33,10 @@ namespace nap
 			return false;                
 		}
 		
-		rtti::ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
+		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
 		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");
 		mCameraEntity				= scene->findEntity("CameraEntity");
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
-
-		// Position window
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
-		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
-		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
-		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
-
 		return true;
 	}
 	
@@ -64,14 +57,13 @@ namespace nap
 			entities.push_back(mCameraEntity.get());
 
 			Window* window = mRenderWindow.get();
-			mInputService->processEvents(*window, input_router, entities);
+			mInputService->processWindowEvents(*window, input_router, entities);
 		}
 
 		ImGui::Begin("Controls");
 		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"wasd keys to move, mouse + left mouse button to look");
+		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}

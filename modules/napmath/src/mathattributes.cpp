@@ -1,6 +1,6 @@
 // Local Includes
 #include <rtti/rtti.h>
-#include <rtti/rttipath.h>
+#include <rtti/path.h>
 
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>

@@ -4,6 +4,7 @@
 #include <mutex>
 
 // Audio includes
+#include <audio/utility/safeptr.h>
 #include <audio/core/audioobject.h>
 #include <audio/core/voice.h>
 #include <audio/node/mixnode.h>
@@ -33,7 +34,7 @@ namespace nap
             /**
              * This points to the voice graph resource defining the patch for a single voice in the polyphonic system.
              */
-            rtti::ObjectPtr<Voice> mVoice;
+            ResourcePtr<Voice> mVoice;
             
             /**
              * Number of voices in the voice pool. This indicates the maximum number of voices playing at the same time.
@@ -61,8 +62,8 @@ namespace nap
         public:
             PolyphonicObjectInstance(PolyphonicObject& resource) : AudioObjectInstance(resource) { }
             
-            // Initialize the component
-            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override;
+            // Initialize the object
+            bool init(AudioService& audioService, utility::ErrorState& errorState) override;
             
             /**
              * Returns the first voice in the pool that is not being used (Voice::isBusy() == false) for playback.
@@ -83,17 +84,22 @@ namespace nap
              */
             void stop(VoiceInstance* voice);
             
+            /**
+             * Counts the number of voices that are currently playing.
+             */
+            int getBusyVoiceCount() const;
+            
         private:
             OutputPin& getOutputForChannel(int channel) override;
             int getChannelCount() const override;
             
+            Slot<VoiceInstance&> voiceFinishedSlot = { this, &PolyphonicObjectInstance::voiceFinished };
             void voiceFinished(VoiceInstance& voice);
             
             std::vector<std::unique_ptr<VoiceInstance>> mVoices;
-            std::vector<std::unique_ptr<MixNode>> mMixNodes;
-            std::mutex mMixNodesMutex; /**< To protect mMixNodes */
+            std::vector<SafeOwner<MixNode>> mMixNodes;
             
-            NodeManager* mNodeManager = nullptr;
+            AudioService* mAudioService = nullptr;
         };
         
     }

@@ -1,5 +1,8 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
 // Audio includes
 #include <audio/core/audionode.h>
 #include <audio/core/audionodemanager.h>
@@ -44,7 +47,7 @@ namespace nap
              */
             void process() override;
             
-            ControllerValue mGain  = 1; // Current multiplication factor of the output signal.
+            std::atomic<ControllerValue> mGain  = { 1 }; // Current multiplication factor of the output signal.
         };
         
     }

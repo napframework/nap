@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=0.1
+Name=Napkin
+Comment=Napkin is Naivi Software's GUI editor for the NAP framework.
+Exec=napkin
+Icon=nap-logo.svg
+Terminal=false
+Type=Application
+Categories=Development;

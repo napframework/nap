@@ -5,7 +5,6 @@
 
 // Nap Includes
 #include <nap/service.h>
-#include <queue>
 
 namespace nap
 {
@@ -19,7 +18,7 @@ namespace nap
 		RTTI_ENABLE(Service)
 	public:
 		// Default constructor
-		VideoService() = default;
+		VideoService(ServiceConfiguration* configuration);
 
 		// Disable copy
 		VideoService(const VideoService& that) = delete;
@@ -57,6 +56,7 @@ namespace nap
 		*/
 		void removeVideoPlayer(Video& receiver);
 
+	private:
 		std::vector<Video*> mVideoPlayers;			///< All registered video players
 	};
 }

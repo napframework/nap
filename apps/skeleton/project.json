@@ -1,0 +1,9 @@
+{
+    "title": "Skeleton",
+    "version": "0.2.0",
+    "modules": [
+        "mod_napapp",
+        "mod_napsvg",
+        "mod_napvideo"
+    ]
+}

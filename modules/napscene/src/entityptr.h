@@ -39,7 +39,7 @@ namespace nap
 		 * @param targetID The ID of the target
 		 * @param targetObject The pointer to be assigned
 		 */
-		void assign(const std::string& targetID, rtti::RTTIObject& targetObject)
+		void assign(const std::string& targetID, rtti::Object& targetObject)
 		{
 			mPath = targetID;
 			mResource = rtti_cast<Entity>(&targetObject);

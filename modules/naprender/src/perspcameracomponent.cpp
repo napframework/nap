@@ -189,6 +189,19 @@ namespace nap
 	}
 
 
+	void PerspCameraComponentInstance::setFieldOfView(float fov)
+	{
+		mProperties.mFieldOfView = fov;
+		setDirty();
+	}
+
+
+	float PerspCameraComponentInstance::getFieldOfView() const
+	{
+		return mProperties.mFieldOfView;
+	}
+
+
 	// Computes projection matrix if dirty, otherwise returns the
 	// cached version
 	const glm::mat4& PerspCameraComponentInstance::getProjectionMatrix() const
@@ -218,4 +231,11 @@ namespace nap
 		const glm::mat4& global_transform = mTransformComponent->getGlobalTransform();
 		return glm::inverse(global_transform);
 	}
+
+
+	void PerspCameraComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.push_back(RTTI_OF(TransformComponent));
+	}
+
 }

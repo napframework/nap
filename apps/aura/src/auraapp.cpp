@@ -55,10 +55,11 @@ namespace nap
 		assert(mFrameCamera != nullptr);
 
 		// Set render states
-		RenderState& render_state = mRenderService->getRenderState();
+		RenderState render_state = mRenderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+		mRenderService->setRenderState(render_state);
 
 		return true;
 	}

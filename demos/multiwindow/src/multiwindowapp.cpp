@@ -9,6 +9,7 @@
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
+#include <imgui/imgui.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -27,6 +28,7 @@ namespace nap
 		mRenderService = getCore().getService<nap::RenderService>();
 		mSceneService  = getCore().getService<nap::SceneService>();
 		mInputService  = getCore().getService<nap::InputService>();
+		mGuiService = getCore().getService<nap::IMGuiService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -51,7 +53,7 @@ namespace nap
 		mRenderWindowThree->setPosition({ offset_x + 1024, offset_y });
 
 		// Find the world and camera entities
-		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
 		mWorldEntity = scene->findEntity("World");
 		mPerspectiveCameraOne = scene->findEntity("PerpectiveCameraOne");
@@ -61,6 +63,8 @@ namespace nap
 		mPlaneTwoEntity = scene->findEntity("PlaneTwo");
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
+
+		mGuiService->selectWindow(mRenderWindowTwo);
 		return true;
 	}
 	
@@ -82,12 +86,12 @@ namespace nap
 		
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCameraOne.get() };
-		mInputService->processEvents(*mRenderWindowOne, input_router, entities);
+		mInputService->processWindowEvents(*mRenderWindowOne, input_router, entities);
 
 		// Forward all input events associated with the third window to listening components
 		entities.clear();
 		entities.emplace_back(mPerspectiveCameraTwo.get());
-		mInputService->processEvents(*mRenderWindowThree, input_router, entities);
+		mInputService->processWindowEvents(*mRenderWindowThree, input_router, entities);
 
 		// Center the first plane relative to the orthographic camera
 		// The orthographic camera works in pixel space, therefore we need to move the position
@@ -98,6 +102,14 @@ namespace nap
 		// Do the same for the second plane that is drawn in the third window
 		TransformComponentInstance& plane_xform_two = mPlaneTwoEntity->getComponent<TransformComponentInstance>();
 		positionPlane(*mRenderWindowThree, plane_xform_two);
+
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
 	}
 
 	
@@ -141,9 +153,6 @@ namespace nap
 
 			// Render the world with the right camera directly to screen
 			mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
-
-			// Swap screen buffers
-			mRenderWindowOne->swap();
 		}
 
 		// Render Window Two : Texture
@@ -165,8 +174,8 @@ namespace nap
 			// Render the plane with the orthographic to window two
 			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
 
-			// Swap buffers screen two
-			mRenderWindowTwo->swap();
+			// Draw gui to window one
+			mGuiService->draw();
 		}
 
 		// Render Window Three: Sphere and Texture
@@ -203,14 +212,28 @@ namespace nap
 
 			// Render the plane with the orthographic to window three
 			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), camera, components_to_render);
+		}
+
+		// We can only render the gui to the primary window for now
+		// To do so we simply request the primary window and draw
+		// Note that the primary window is not defined by the declaration
+		// of window resources in json! After that swap all the buffers
+		{
+			// Swap screen buffers
+			mRenderWindowOne->makeActive();
+			mRenderWindowOne->swap();
+
+			// Swap buffers screen two
+			mRenderWindowTwo->makeActive();
+			mRenderWindowTwo->swap();
 
 			// Swap buffers screen three
+			mRenderWindowThree->makeActive();
 			mRenderWindowThree->swap();
 		}
 	}
 
 
-	
 	/**
 	 * Occurs when the event handler receives a window message.
 	 * You generally give it to the render service which in turn forwards it to the right internal window. 

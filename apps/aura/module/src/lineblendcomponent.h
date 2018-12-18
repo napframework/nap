@@ -5,7 +5,7 @@
 
 // External includes
 #include <component.h>
-#include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
 #include <polyline.h>
@@ -36,7 +36,7 @@ namespace nap
 		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo;
 
 		// property: link to the mesh that we want to blend in between
-		rtti::ObjectPtr<nap::PolyLine> mTarget;
+		ResourcePtr<nap::PolyLine> mTarget;
 	};
 
 

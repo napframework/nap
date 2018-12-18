@@ -35,6 +35,7 @@ namespace nap
             friend class OutputPin;
             friend class InputPin;
             friend class MultiInputPin;
+            friend class NodePtrBase;
             
         public:
             /**
@@ -42,6 +43,12 @@ namespace nap
              */
             Node(NodeManager& manager);
             virtual ~Node();
+            
+            /**
+             * We need to delete these so that the compiler doesn't try to use them. Otherwise we get compile errors on unique_ptr. Not sure why.
+             */
+            Node(const Node&) = delete;
+            Node& operator=(const Node&) = delete;
             
             /**
              * Returns the internal buffersize of the node system that this node belongs to. 
@@ -64,6 +71,11 @@ namespace nap
              * Returns all this node's outputs
              */
             const std::set<OutputPin*>& getOutputs() { return mOutputs; }
+            
+            /**
+             * @return: The node manager that this node is processed on
+             */
+            NodeManager& getNodeManager() { return *mNodeManager; }
             
         protected:
             /**
@@ -88,13 +100,8 @@ namespace nap
              */
             SampleBuffer& getOutputBuffer(OutputPin& output);
             
-            /**
-             * @return: The node manager that this node is processed on
-             */
-            NodeManager& getNodeManager() { return *mNodeManager; }
-
         private:
-            /**
+            /*
              * Override this method to do the actual audio processing and fill the buffers of this node's outputs with new audio data
              * Use @getOutputBuffer() to access the buffers that have to be filled.
              */
@@ -119,19 +126,11 @@ namespace nap
              */
             void setSampleRate(float sampleRate) { sampleRateChanged(sampleRate); }
             
-            /*
-             * Used internally by the node to keep track of all its outputs.
-             */
-            std::set<OutputPin*> mOutputs;
+            std::set<OutputPin*> mOutputs; // Used internally by the node to keep track of all its outputs.
             
-            // The time stamp of the latest calculated sample by this node
-            DiscreteTimeValue mLastCalculatedSample = 0;
+            DiscreteTimeValue mLastCalculatedSample = 0; // The time stamp of the latest calculated sample by this node
             
-            /**
-             * The node manager that this node is processed on
-             */
-            NodeManager* mNodeManager = nullptr;
-            
+            NodeManager* mNodeManager = nullptr; // The node manager that this node is processed on            
         };
         
         

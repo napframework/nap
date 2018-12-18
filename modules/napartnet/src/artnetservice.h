@@ -32,7 +32,7 @@ namespace nap
 		using FloatChannelData = std::vector<float>;
 
 		// Default Constructor
-		ArtNetService();
+		ArtNetService(ServiceConfiguration* configuration);
 
 		// Default Destructor
 		virtual ~ArtNetService();

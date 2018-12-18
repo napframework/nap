@@ -28,7 +28,16 @@ namespace nap
         /**
          * Different kinds of midi events
          */
-        enum class Type { noteOff = 0x80, noteOn = 0x90, afterTouch = 0xA0, controlChange = 0xB0, programChange = 0xC0, channelPressure = 0xD0, pitchBend = 0xE0};
+        enum class Type 
+		{ 
+			noteOff = 0x80,				///< Note off message 
+			noteOn = 0x90,				///< Note on message
+			afterTouch = 0xA0,			///< After touch message
+			controlChange = 0xB0,		///< Control change message
+			programChange = 0xC0,		///< Program change message
+			channelPressure = 0xD0,		///< Channel pressure message
+			pitchBend = 0xE0			///< Pitch band change
+		};
 
         MidiEvent() = default;
         
@@ -53,17 +62,17 @@ namespace nap
         bool operator >(const MidiEvent &rhs) const { return mNumber > rhs.mNumber; }
         bool operator <(const MidiEvent &rhs) const { return mNumber < rhs.mNumber; }
         
-        Type getType() const { return mType; }                 /**< The type of the event */
-        MidiValue getNumber() const { return mNumber; }        /**< Returns the first byte: note number, cc number or program number */
-        MidiValue getValue() const { return mValue; }          /**< Returns the second byte: velocity, CC value */
-        MidiValue getNoteNumber() const { return mNumber; }    /**< If a note on or off event, this returns the note number */
-        MidiValue getVelocity() const { return mValue; }       /**< If a note on or off event, this returns the velocity */
-        MidiValue getCCNumber() const { return mNumber; }      /**< If a control change event, this returns the controller number */
-        MidiValue getCCValue() const { return mValue; }        /**< If a control change event, this returns the controller value */
-        float getPitchBendValue() const;                       /**< If a pitch bend event, this returns the pitchbend amount between -1 and 1. */
-        MidiValue getProgramNumber() const { return mNumber; } /**< If a program change event, this returns the program number */
-        MidiValue getChannel() const { return mChannel; }      /**< The midi channel this event is emitted on */
-        std::string getPort() const { return mPort; }          /**< the mID of the port object through which the message is received, not to be confused with the physical portname */
+        Type getType() const				{ return mType; }		/**< The type of the event */
+        MidiValue getNumber() const			{ return mNumber; }     /**< Returns the first byte: note number, cc number or program number */
+        MidiValue getValue() const			{ return mValue; }      /**< Returns the second byte: velocity, CC value */
+        MidiValue getNoteNumber() const		{ return mNumber; }		/**< If a note on or off event, this returns the note number */
+        MidiValue getVelocity() const		{ return mValue; }      /**< If a note on or off event, this returns the velocity */
+        MidiValue getCCNumber() const		{ return mNumber; }     /**< If a control change event, this returns the controller number */
+        MidiValue getCCValue() const		{ return mValue; }      /**< If a control change event, this returns the controller value */
+        float getPitchBendValue() const;							/**< If a pitch bend event, this returns the pitchbend amount between -1 and 1. */
+        MidiValue getProgramNumber() const	{ return mNumber; }		/**< If a program change event, this returns the program number */
+        MidiValue getChannel() const		{ return mChannel; }    /**< The midi channel this event is emitted on */
+        std::string getPort() const			{ return mPort; }       /**< the mID of the port object through which the message is received, not to be confused with the physical portname */
         
         /**
          * Returns the contents of the event as a formatted text string for logging

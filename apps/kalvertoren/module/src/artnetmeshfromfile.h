@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <rtti/object.h>
 #include <mesh.h>
 #include <artnetcontroller.h>
 #include <box.h>

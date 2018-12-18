@@ -21,9 +21,6 @@ namespace nap
             mInternalBufferOffset = 0;
             while (mInternalBufferOffset < framesPerBuffer)
             {
-                // process tasks that are enqueued from outside the audio thread
-                mAudioCallbackTaskQueue.process();
-                
                 for (auto& channelMapping : mOutputMapping)
                     channelMapping.clear();
                 
@@ -41,6 +38,8 @@ namespace nap
                 
                 mInternalBufferOffset += mInternalBufferSize;
                 mSampleTime += mInternalBufferSize;
+                
+                mTaskQueue.process();
             }
         }
         
@@ -79,9 +78,19 @@ namespace nap
         
         void NodeManager::registerNode(Node& node)
         {
-            mNodes.emplace(&node);
             node.setSampleRate(mSampleRate);
             node.setBufferSize(mInternalBufferSize);
+            auto oldSampleRate = mSampleRate;
+            auto oldBufferSize = mInternalBufferSize;
+            enqueueTask([&, oldSampleRate, oldBufferSize](){
+                // In the extremely rare case the buffersize or the samplerate of the node manager have been changed in between the enqueueing of the task and its execution on the audio thread, we set them again.
+                // However we prefer not to, in order to avoid memory allocation on the audio thread.
+                if (oldSampleRate != mSampleRate)
+                    node.setSampleRate(mSampleRate);
+                if (oldBufferSize != mInternalBufferSize)
+                    node.setBufferSize(mInternalBufferSize);
+                mNodes.emplace(&node);
+            });
         }
         
         
@@ -93,23 +102,22 @@ namespace nap
         
         void NodeManager::registerRootNode(Node& rootNode)
         {
-            auto rootNodePtr = &rootNode;
-            execute([&, rootNodePtr](){ mRootNodes.emplace(rootNodePtr); });
+            enqueueTask([&](){ mRootNodes.emplace(&rootNode); });
         }
 
         
         void NodeManager::unregisterRootNode(Node& rootNode)
         {
-            auto rootNodePtr = &rootNode;
-            execute([&, rootNodePtr](){ mRootNodes.erase(rootNodePtr); });
+            mRootNodes.erase(&rootNode);
         }
 
         
-        void NodeManager::provideOutputBufferForChannel(SampleBufferPtr buffer, int channel)
+        void NodeManager::provideOutputBufferForChannel(SampleBuffer* buffer, int channel)
         {
             assert(channel < mOutputMapping.size());
             mOutputMapping[channel].emplace_back(buffer);
         }
+        
         
     }
     

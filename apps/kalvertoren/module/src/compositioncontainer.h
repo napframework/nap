@@ -4,16 +4,16 @@
 #include "composition.h"
 
 // External Includes
-#include <rtti/rttiobject.h>
+#include <nap/resource.h>
 
 namespace nap
 {
 	/**
 	 * Bundles a set of composition
 	 */
-	class CompositionContainer : public rtti::RTTIObject
+	class CompositionContainer : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:
 		virtual ~CompositionContainer();
 

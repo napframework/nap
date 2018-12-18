@@ -8,7 +8,7 @@
 
 // Nap includes
 #include <nap/service.h>
-#include <nap/concurrentqueue.h>
+#include <concurrentqueue.h>
 
 // Midi includes
 #include "midievent.h"
@@ -31,7 +31,7 @@ namespace nap {
         friend class MidiInputComponentInstance;
         
     public:
-        MidiService() = default;
+        MidiService(ServiceConfiguration* configuration);
         
         // Initialization
         bool init(nap::utility::ErrorState& errorState) override;

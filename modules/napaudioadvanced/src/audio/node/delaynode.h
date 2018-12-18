@@ -1,10 +1,12 @@
 #pragma once
 
+// Std includes
+#include <atomic>
 
 // Audio includes
 #include <audio/core/audionode.h>
-#include <audio/node/delay.h>
-#include <audio/utility/linearramper.h>
+#include <audio/utility/delay.h>
+#include <audio/utility/linearsmoothedvalue.h>
 
 namespace nap
 {
@@ -18,7 +20,7 @@ namespace nap
         class NAPAPI DelayNode : public Node
         {
         public:
-            DelayNode(NodeManager& manager, int delayLineSize = 65536 * 8) : Node(manager), mDelay(delayLineSize) { }
+            DelayNode(NodeManager& manager, int delayLineSize = 65536 * 8);
             
             InputPin input; /**< The audio input receiving the signal to be delayed. */
             OutputPin output = { this }; /**< The audio output with the processed signal. */
@@ -42,12 +44,12 @@ namespace nap
             /**
              * Return the current delay time.
              */
-            int getTime() const { return mTime; }
+            int getTime() const { return mTime.getValue(); }
             
             /**
              * Return the dry/wet level. 0 means dry, 1. means fully wet.
              */
-            ControllerValue getDryWet() const { return mDryWet; }
+            ControllerValue getDryWet() const { return mDryWet.getValue(); }
             
             /**
              * Returns the feedback amount
@@ -58,12 +60,9 @@ namespace nap
             void process() override;
             
             Delay mDelay;
-            float mTime = 0; // in samples
-            ControllerValue mDryWet = 0.5f;
-            ControllerValue mFeedback = 0.f;
-            
-            LinearRamper<float> mTimeRamper = { mTime };
-            LinearRamper<ControllerValue> mDryWetRamper = { mDryWet };
+            LinearSmoothedValue<float> mTime = { 0, 44 }; // in samples
+            LinearSmoothedValue<ControllerValue> mDryWet = { 0.5f, 44 };
+            std::atomic<ControllerValue> mFeedback = { 0.f };
         };
         
     }

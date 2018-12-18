@@ -7,7 +7,7 @@
 #include <string.h>
 #include <glm/glm.hpp>
 #include <nsdlgl.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <utility/dllexport.h>
 
 struct SDL_Window;
@@ -22,6 +22,7 @@ namespace nap
 
 	// Forward Declares
 	class GLWindow;
+	class Renderer;
 
 	/**
 	* Holds all window launch settings
@@ -36,24 +37,27 @@ namespace nap
 		RenderWindowSettings() = default;
 		virtual ~RenderWindowSettings() = default;
 
-		std::string		title;										// Name of the window
-		int				x				= SDL_WINDOWPOS_CENTERED;	// Position
-		int				y				= SDL_WINDOWPOS_CENTERED;	// Position
-		int				width			= 512;						// Width of the window
-		int				height			= 512;						// Height of the window
-		bool			borderless		= false;					// If the window is borderless
-		bool			resizable		= true;						// If the window is resizable
-		bool			visible			= true;						// If the window is visible or not
-		bool			sync			= true;						// If v-sync is turned on for the window
+		std::string		title;										///< Name of the window
+		int				x				= SDL_WINDOWPOS_CENTERED;	///< Position
+		int				y				= SDL_WINDOWPOS_CENTERED;	///< Position
+		int				width			= 512;						//< Width of the window
+		int				height			= 512;						///< Height of the window
+		bool			borderless		= false;					///< If the window is borderless
+		bool			resizable		= true;						///< If the window is resizable
+		bool			visible			= true;						///< If the window is visible or not
+		bool			sync			= true;						///< If v-sync is turned on for the window
 	};
 
 
 	/**
-	* Render window base class
-	*/
+	 * An OpenGL Accelerated Render Window. 
+	 * This is a low level construct and a member of the RenderWindow resource.
+	 * Declare that resource to create an OpenGL accelerated render window.
+	 */
 	class NAPAPI GLWindow final
 	{
 		RTTI_ENABLE()
+		friend class Renderer;
 	public:
 
 		GLWindow();
@@ -66,12 +70,6 @@ namespace nap
 		GLWindow& operator=(const GLWindow& other) = delete;
 
 		bool init(const RenderWindowSettings& settings, GLWindow* sharedWindow, utility::ErrorState& errorState);
-
-		/**
-		 * Apply the specified window settings. Normally this is done during init, but for real-time editing scenarios we need this to update the primary window (which is never recreated)
-		 * @param settings The settings to apply
-		 */
-		void applySettings(const RenderWindowSettings& settings);
 
 		/**
 		* @return the hardware window handle, nullptr if undefined
@@ -166,5 +164,12 @@ namespace nap
 		opengl::BackbufferRenderTarget					mBackbuffer;
 		SDL_Window*										mWindow = nullptr;		// Actual GL window
 		SDL_GLContext									mContext = nullptr;		// GL Context
+
+		/**
+		 * Apply the specified window settings. Normally this is done during initialization of new windows,
+		 * but for real-time editing scenarios we need this call to update the primary window which has been created before
+		 * @param settings The settings to apply
+		 */
+		void applySettings(const RenderWindowSettings& settings);
 	};
 }

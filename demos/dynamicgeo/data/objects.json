@@ -22,7 +22,7 @@
 			"mVertShader": "shaders/dynamicgeometrytest/particle.vert",
 			"mFragShader": "shaders/dynamicgeometrytest/particle.frag"
 		},	
-
+		
 		{
 			"Type" : "nap::Material",
 			"mID": "ParticleMaterial",

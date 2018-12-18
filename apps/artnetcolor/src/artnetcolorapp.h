@@ -3,8 +3,6 @@
 // Mod nap render includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
-#include <sdlinput.h>
-#include <sdlwindow.h>
 #include <nap/signalslot.h>
 
 // Nap includes
@@ -15,6 +13,7 @@
 #include <artnetservice.h>
 #include <artnetcontroller.h>
 #include <app.h>
+#include <smoothdamp.h>
 
 namespace nap
 {
@@ -75,9 +74,10 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mCameraEntity = nullptr;		//< Pointer to the entity that holds the camera
 		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Pointer to the entity that holds the plane
 		rtti::ObjectPtr<ArtNetController> mArtnetController = nullptr;	//< The art-net controller
+		math::FloatSmoothOperator mIntensitySmoother = { 1.0f, 2.0f };	//< Smooths the intensity over time
+		float mCurrentIntensity = 1.0f;
 
-		std::vector<glm::vec3> mColor;								//< Current Color for every selection component
-		std::vector<int> mWhite;									//< Current white level for every selection component
+		std::vector<int> mWhiteValues;
 
 		// Window event handling
 		void handleWindowEvent(const WindowEvent& windowEvent);

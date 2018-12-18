@@ -1,5 +1,9 @@
 #pragma once
 
+// Std includes
+#include <atomic>
+
+// Audio includes
 #include <audio/core/audionode.h>
 
 namespace nap
@@ -43,6 +47,8 @@ namespace nap
             
         private:
             void process() override;
+            
+            std::atomic<ControllerValue> mNewPanning = { 0.5 };
             
             ControllerValue mPanning = 0.5f;
             ControllerValue mLeftGain = 0; // Gain factor of the left channel

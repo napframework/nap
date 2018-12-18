@@ -28,7 +28,7 @@ namespace nap
 		EntityInstance* laser_draw_entity = getEntityInstance()->getChildren()[0];
 
 		// Make sure that visualizer has a transform
-		mCanvasTransform = laser_draw_entity->findComponent<TransformComponentInstance>(rtti::ETypeCheck::IS_DERIVED_FROM);
+		mCanvasTransform = laser_draw_entity->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mCanvasTransform != nullptr, "missing transform component"))
 			return false;
 
@@ -43,6 +43,9 @@ namespace nap
 	{
 		glm::vec2 laser_frustrum = mOutput->mProperties.mFrustum;
 		mCanvasTransform->setScale(glm::vec3(laser_frustrum.x, laser_frustrum.y, 1.0));
+		mCanvasTransform->setTranslate({ 0.0f,0.0f,0.0f });
+		mCanvasTransform->setUniformScale(1.0f);
+		mCanvasTransform->setRotate(glm::quat());
 	}
 
 

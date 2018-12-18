@@ -1,9 +1,9 @@
 #pragma once
 
 #include <utility/dllexport.h>
-#include "rtti/rttiobject.h"
-#include "glm/glm.hpp"
-#include "GL/glew.h"
+#include <nap/resource.h>
+#include <glm/glm.hpp>
+#include <GL/glew.h>
 
 namespace nap
 {
@@ -11,9 +11,9 @@ namespace nap
 	 * Base class for vertex attribute. Describes what kind of data will be present in the attribute.
 	 * This base class is necessary to have a type independent way to update the GPU meshes.
 	 */
-	class NAPAPI BaseVertexAttribute : public rtti::RTTIObject
+	class NAPAPI BaseVertexAttribute : public Resource
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		RTTI_ENABLE(Resource)
 	public:		
 		BaseVertexAttribute();
 		

@@ -51,10 +51,11 @@ namespace nap
 		mDefaultInputRouter			= mScene->findEntity("DefaultInputRouterEntity");
 		
 		// Set render states
-		nap::RenderState& render_state = mRenderService->getRenderState();
+		nap::RenderState render_state;
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+		mRenderService->setRenderState(render_state);
 
 		rtti::ObjectPtr<RenderWindow> window = mRenderService->getWindow(1);
 
@@ -89,7 +90,7 @@ namespace nap
 			entities.push_back(mCameraEntityLeft.get());
 			
 			Window* window = mRenderWindows[0].get();
-			mInputService->processEvents(*window, input_router, entities);
+			mInputService->processWindowEvents(*window, input_router, entities);
 		}
 		
 		{
@@ -98,7 +99,7 @@ namespace nap
 			entities.push_back(mCameraEntityRight.get());
 			
 			Window* window = mRenderWindows[1].get();
-			mInputService->processEvents(*window, input_router, entities);
+			mInputService->processWindowEvents(*window, input_router, entities);
 		}
 		
 		// Retrieve source (resource) mesh data

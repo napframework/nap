@@ -27,8 +27,7 @@ namespace nap
          * A buffer of samples
          */
         using SampleBuffer = std::vector<SampleValue>;
-        using SampleBufferPtr = SampleBuffer*;
-
+        
         
         /**
          * A collection of sample buffers, one for each channel to represent multichannel audio.
@@ -83,7 +82,7 @@ namespace nap
                 for (auto& channel : channels)
                     channel.reserve(size);
             }
-
+            
             /**
              * Clear the content of the buffer.
              */
@@ -94,7 +93,6 @@ namespace nap
             
             std::vector<SampleBuffer> channels;
         };
-        using MultiSampleBufferPtr = MultiSampleBuffer*;
         
         
         /**
@@ -116,5 +114,5 @@ namespace nap
         using DiscreteTimeValue = long;
         
     }
-        
+    
 }

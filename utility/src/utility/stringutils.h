@@ -18,7 +18,7 @@ namespace nap
 	namespace utility
 	{
 		/*
-		 * Splits a string based on @inDelim, populates @ioParts
+		 * Splits a string based on inDelim, populates ioParts
 		 * @param string the sequence to split
 		 * @param delim the delimiter used to split the string
 		 * @param ioParts list of individual split parts
@@ -26,12 +26,33 @@ namespace nap
 		void splitString(const std::string& string, const char delim, std::vector<std::string>& ioParts);
 
 		/*
-		 * Splits a string based on @inDelim, populates @ioParts
+		 * Splits a string based on inDelim, populates ioParts
 		 * @param string the sequence to split
 		 * @param delim the delimiter used to split the string
 		 * @return vector of split parts
 		 */
 		std::vector<std::string> splitString(const std::string& string, const char delim);
+
+		/**
+		 * Join a vector of strings using the specified delimiter.
+		 * eg. joinString({"one", "two", "three"}, ", ");
+		 * becomes: "one, two, three"
+		 * @param list The list of strings to join
+		 * @param delim The delimiter to inject between the elements
+		 * @return The joined string.
+		 */
+		template<typename T>
+		std::string joinString(const T& list, const std::string& delim)
+		{
+			std::stringstream ss;
+			for (size_t i=0, len=list.size(); i < len; i++)
+			{
+				if (i > 0)
+					ss << delim;
+				ss << list.at(i);
+			}
+			return ss.str();
+		}
 
 		/**
 		 * Writes a string to an output stream
@@ -68,7 +89,7 @@ namespace nap
 		std::string stripNamespace(const std::string& str);
 
 		/**
-		 * Tokenize @str in to @tokens
+		 * Tokenize str in to tokens
 		 * @param str the string to tokenize
 		 * @param delims the delimiters used for the the tokenization process
 		 * @param omitTokens if the tokens are discarded from the result
@@ -76,7 +97,7 @@ namespace nap
 		void tokenize(const std::string& str, std::list<std::string>& tokens, const std::string& delims, bool omitTokens = false);
 
 		/**
-		 * Checks if @string starts with @subString
+		 * Checks if string starts with subString
 		 * @param string the string to check
 		 * @param subString the part of the string to check for
 		 * @param caseSensitive if the lookup is case sensitive or not
@@ -85,11 +106,20 @@ namespace nap
 		bool startsWith(const std::string& string, const std::string& subString, bool caseSensitive = true);
 
 		/**
-		 * Checks if @subString is present in @string
+		 * Checks if string ends with subString
+		 * @param string the string to check
+		 * @param subString the part of the string to check for
+		 * @param caseSensitive if the lookup is case sensitive or now
+		 * @return if string ends with substring
+		 */
+		bool endsWith(const std::string& string, const std::string& subString, bool caseSensitive = true);
+
+		/**
+		 * Checks if subString is present in string
 		 * @param string the full string that could contain @substring
-		 * @param subString part of the string that could be present in @string
+		 * @param subString part of the string that could be present in string
 		 * @param caseSensitive if the lookup is case sensitive or not
-		 * @return if @string contains @subString
+		 * @return if string contains subString
 		 */
 		bool contains(const std::string& string, const std::string& subString, bool caseSensitive = true);
 
@@ -101,7 +131,7 @@ namespace nap
 		std::string trim(const std::string& string);
 
 		/**
-		 * Converts @T in to a string
+		 * Converts T in to a string
 		 * @param thing the object to convert in to a string
 		 * @return the object as a string
 		 */

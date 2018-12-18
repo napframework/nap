@@ -209,6 +209,13 @@ void nap::BaseColor::convertColor(const BaseColor& source, BaseColor& target)
 }
 
 
+void nap::BaseColor::convertColor(const BaseColor& source, BaseColor& target, const Converter& converter)
+{
+	for (int i = 0; i < target.getNumberOfChannels(); i++)
+		converter(source, target, i);
+}
+
+
 std::function<void(const nap::BaseColor&, nap::BaseColor&, int)> nap::BaseColor::getConverter(const BaseColor& target) const
 {
 	return BaseColor::getConverter(*this, target);

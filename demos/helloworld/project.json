@@ -1,0 +1,8 @@
+{
+    "title": "HelloWorld",
+    "version": "0.2.0",
+    "modules": [
+        "mod_napapp",
+        "mod_napcameracontrol"
+    ]
+}

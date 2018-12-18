@@ -9,12 +9,18 @@
 
 namespace nap
 {
+	class RendererSettings
+	{
+	public:
+		bool mDoubleBuffer = true;		///< Enables / Disabled double buffering
+		bool mEnableMultiSampling = 1;	///< Enables / Disables multi sampling.
+		int  mMultiSampleSamples = 4;	///< Number of samples per pixel when multi sampling is enabled
+	};
+
 	/**
-	 * Renderer Base Class
-	 * Derived classed implement specific hardware rendering
-	 * options. Every renderer renders a set of objects to 
-	 * a specific render target. The render target initialization
-	 * and binding is handled by that target
+	 * OpenGL render back-end. 
+	 * Initializes and shuts down the OpenGL API and allows for the creation of new render windows.
+	 * This class also creates and manages the primary window which is constructed on initialization
 	 */
 	class NAPAPI Renderer final
 	{
@@ -42,9 +48,13 @@ namespace nap
 		std::shared_ptr<GLWindow> createRenderWindow(const RenderWindowSettings& settings, const std::string& windowID, utility::ErrorState& errorState);
 
 		/**
-		 * Initialize the renderer
+		 * Initialize the renderer.
+		 * This call sets up the render attributes, create the first window and
+		 * initializes the opengl engine. After initialization the primary window is active.
+		 * @param errorState contains the error when the renderer can't be initialized
+		 * @return if the renderer initialized successfully
 		 */
-		bool init(utility::ErrorState& errorState);
+		bool init(const RendererSettings& rendererSettings, utility::ErrorState& errorState);
 
 		/**
 		 * Called when the renderer needs to shut down
@@ -52,12 +62,23 @@ namespace nap
 		void shutdown();
 
 		/**
-		 * Get the primary window (i.e. the window that was used to init OpenGL against)
+		 * Get the primary window (i.e. the window that was used to init against)
 		 */
-		GLWindow& getPrimaryWindow() { return *mPrimaryWindow; }
+		GLWindow& getPrimaryWindow()						{ return *mPrimaryWindow; }
+
+		/**
+		 *	@return the id (name) of the primary window
+		 */
+		const std::string& getPrimaryWindowID()	const		{ return mPrimaryWindowID; }
 
 	private:
 		std::shared_ptr<GLWindow>	mPrimaryWindow;			///< Primary Window. This always exists for as long as the Renderer exists.
 		std::string					mPrimaryWindowID;		///< When a RenderWindow is bound to the primary window, this contains the ID of the RenderWindow
+
+		/**
+		 * Creates the primary render window which is always available
+		 * By default this window is hidden and not synchronized to the display refresh rate
+		 */
+		bool createPrimaryWindow(utility::ErrorState& error);
 	};
 }

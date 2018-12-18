@@ -1,8 +1,9 @@
 #pragma once
 
 #include <rtti/rtti.h>
-#include <nap/configure.h>
+#include <nap/numeric.h>
 #include <utility/dllexport.h>
+#include <glm/glm.hpp>
 
 namespace nap
 {
@@ -20,7 +21,7 @@ namespace nap
 
 	/**
 	 * Base class for all types of color. There are two types of colors:
-	 * Colors that manage their own values and colors that point to values in memory
+	 * Colors that manage their own values and colors that point to values in memory.
 	 * Colors that point to values in memory have the suffix Data, where colors
 	 * that manage their own values don't: ie: RGBColor8 is a color that holds
 	 * 3 RGB uint8 (Byte) color values. RGBColorData8 on the other hand holds
@@ -40,6 +41,9 @@ namespace nap
 		*/
 		BaseColor(int channels, int size) : mChannels(channels), mValueSize(size) { }
 
+        virtual ~BaseColor() = default;
+        
+        
 		bool operator==(const BaseColor& rhs) = delete;
 		bool operator!=(const BaseColor& rhs) = delete;
 
@@ -105,12 +109,14 @@ namespace nap
 		T convert() const;
 
 		/**
-		 * @return the data associated with the channel @index
+		 * @param channel number of the channel to get the data for
+		 * @return the data associated with the channel at the index
 		 */
 		virtual const void* getData(int channel) const = 0;
 
 		/**
-		 *	@return the data associated with the channel @index
+		 * @param channel number of the channel to get the data for
+		 * @return the data associated with the channel at the index
 		 */
 		virtual void* getData(int channel) = 0;
 
@@ -120,7 +126,7 @@ namespace nap
 		int size() const														{ return mChannels * mValueSize; }
 
 		/**
-		 * Converts the color values in @source Color to @target Color
+		 * Converts the color values in source Color to target Color
 		 * It's required that the from color has an equal or higher amount of color channels
 		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
 		 * The following is also valid: RGBColorData16 to RGBColorFloat or, RGBAColorData8 to RGBColorData16
@@ -137,9 +143,30 @@ namespace nap
 		static void convertColor(const BaseColor& source, BaseColor& target);
 
 		/**
-		 * @return a color converter to convert @source color in to @target color, nullptr if no such converter exists
-		 * Use this call when dealing with the same color conversion multiple times in, for example, a loop
+		* Converts the color values in source Color to target Color using the given conversion method
+		* It's required that the from color has an equal or higher amount of color channels
+		* Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
+		* The following is also valid: RGBColorData16 to RGBColorFloat or, RGBAColorData8 to RGBColorData16
+		* When converting to and from float colors, normalized color values are used.
+		* Float values that do not fall within the 0-1 range are clamped
+		* When the target does not manage it's own color values, ie:
+		* holds pointers to color values in memory, the values that are pointed to are overridden by the result of the conversion
+		* This makes it possible (for example) to write colors directly in to a bitmap without having
+		* to copy them over.
+		*
+		* This call is faster than the default convertColor method and is recommended to be used in loops!
+		* Make sure to call getConverter() before staring the loop to acquire the right conversion method
+		* 
+		* @param source the color to convert
+		* @param target holds the converted color values
+		* @param converter the method used to convert source color into target color
 		*/
+		static void convertColor(const BaseColor& source, BaseColor& target, const Converter& converter);
+
+		/**
+		 * @return a color converter to convert source color in to target color, nullptr if no such converter exists
+		 * Use this call when dealing with the same color conversion multiple times in, for example, a loop
+		 */
 		static Converter getConverter(const BaseColor& source, const BaseColor& target);
 
 	private:
@@ -187,20 +214,24 @@ namespace nap
 		bool isPointer() const override;
 
 		/**
-		* @return the color value associated with @channel
+		* @param the channel to get the value for
+		* @return the color value associated with the specified channel
 		* This call asserts when the channel is not available
 		*/
 		T getValue(EColorChannel channel) const;
 
 		/** 
-		 * @return reference to the color value associated with @channel
+		 * @param channel the channel to get the value for
+		 * @return reference to the color value associated with the specified channel
 		 * This call asserts when the channel is not available
 		 */
 		T& getValue(EColorChannel channel);
 
 		/**
-		 * Sets the color value for @channel
+		 * Sets the color value for the incoming channel
 		 * This call asserts when the channel is not available
+		 * @param channel the color channel to set
+		 * @param value the new color value
 		 */
 		void setValue(EColorChannel channel, T value);
 
@@ -229,8 +260,7 @@ namespace nap
 		void setData(T* data);
 
 		/**
-		 * Computes the distance between this and another color in Euclidean space
-		 * The result is not squared
+		 * Computes the distance between this and another color in Euclidean space. The result is not squared
 		 * @param other the color to compare against
 		 * @return the non squared distance between this and another color
 		 */
@@ -249,42 +279,54 @@ namespace nap
 		bool operator!=(const Color<T, CHANNELS>& rhs) const							{ return !(rhs == mValues); }
 		
 		/**
-		 * @return if the color value is less than @rhs
+		 * @return if the color value is less than another color
 		 * Won't work when the color is a pointer
 		 */
 		bool operator<(const Color<T, CHANNELS>& rhs) const;
 
 		/**
-		 * @return if the color value higher than @rhs
+		 * @return if the color value higher than another color
 		 * Won't work when the color is a pointer
 		 */
 		bool operator>(const Color<T, CHANNELS>& rhs) const								{ rhs < *this; }
 
 		/**
-		 * @return if the color value is less or equal to @rhs
+		 * @return if the color value is less or equal to another color
 		 * Won't work when the color is a pointer
 		 */
 		bool operator<=(const Color<T, CHANNELS>& rhs) const							{ return !(*this > rhs); }
 
 		/**
-		 * @return if the color value is higher or equal to @rhs
+		 * @return if the color value is higher or equal to another color
 		 * Won't work when the color is a pointer
 		 */
 		bool operator>=(const Color<T, CHANNELS>& rhs) const							{ return !(*this < rhs); }
 
 		/**
-		*	Color values associated with this color
-		*/
+		 * Array subscript overload. Does not perform a bounds check!
+		 * @return the color at index
+		 */
+		T& operator[](std::size_t index)												{ return mValues[index]; }
+
+		/**
+		 * Array subscript overload. Does not perform a bounds check!
+		 * @return the color at index
+		 */
+		const T& operator[](std::size_t index) const									{ return mValues[index]; }
+
+		/**
+		 * Color values associated with this color
+		 */
 		std::array<T, CHANNELS> mValues;
 
 	private:
 		/**
-		 *	@return the data associated with the channel @index
+		 * @return the data associated with the channel specified by index
 		 */
 		const void* getData(int channel) const override;
 
 		/**
-		 *	@return the data associated with the channel @index
+		 * @return the data associated with the channel specified by index
 		 */
 		void* getData(int channel) override;
 	};
@@ -317,7 +359,7 @@ namespace nap
 		RGBColor() : Color<T, 3>()												{ }
 
 		/**
-		* Sets the red channel to @value
+		* Sets the red channel to the incoming value
 		* @param value red color value
 		*/
         void setRed(T value)													{ Color<T,3>::setValue(EColorChannel::Red, value); }
@@ -328,7 +370,7 @@ namespace nap
         T getRed() const														{ return Color<T,3>::getValue(EColorChannel::Red); }
 
 		/**
-		* Sets the green channel to @value
+		* Sets the green channel to the incoming value
 		* @param value green color value
 		*/
 		void setGreen(T value)													{ Color<T,3>::setValue(EColorChannel::Green, value); }
@@ -339,7 +381,7 @@ namespace nap
 		T getGreen() const														{ return Color<T,3>::getValue(EColorChannel::Green); }
 
 		/**
-		* Sets the blue channel to @value
+		* Sets the blue channel to the incoming value
 		* @param blue color value
 		*/
 		void setBlue(T value)													{ Color<T,3>::setValue(EColorChannel::Blue, value); }
@@ -348,6 +390,11 @@ namespace nap
 		 * @return the blue color value
 		 */
 		T getBlue() const														{ return Color<T,3>::getValue(EColorChannel::Blue); }
+
+		/**
+		 *	@return the color as a vec3 (float)
+		 */
+		glm::vec3 toVec3() const;
 	};
 
 
@@ -371,7 +418,7 @@ namespace nap
 		RGBAColor() : Color<T, 4>()												{ }
 
 		/**
-		 * Sets the red channel to @value
+		 * Sets the red channel to the incoming value
 		 * @param value red color value
 		 */
 		void setRed(T value)													{ Color<T,4>::setValue(EColorChannel::Red, value); }
@@ -382,7 +429,7 @@ namespace nap
 		T getRed() const														{ return Color<T,4>::getValue(EColorChannel::Red); }
 
 		/**
-		* Sets the green channel to @value
+		* Sets the green channel to the incoming value
 		* @param value green color value
 		*/
 		void setGreen(T value)													{ Color<T,4>::setValue(EColorChannel::Green, value); }
@@ -393,7 +440,7 @@ namespace nap
 		T getGreen() const														{ return Color<T,4>::getValue(EColorChannel::Green); }
 
 		/**
-		* Sets the blue channel to @value
+		* Sets the blue channel to the incoming value
 		* @param blue color value
 		*/
 		void setBlue(T value)													{ Color<T,4>::setValue(EColorChannel::Blue, value); }
@@ -404,7 +451,7 @@ namespace nap
 		T getBlue() const														{ return Color<T,4>::getValue(EColorChannel::Blue); }
 
 		/**
-		* Sets the alpha channel to @value
+		* Sets the alpha channel to the incoming value
 		* @param value alpha color value
 		*/
 		void setAlpha(T value)													{ Color<T,4>::setValue(EColorChannel::Alpha, value); }
@@ -413,8 +460,12 @@ namespace nap
 		 * @return the alpha color value
 		 */
 		T getAlpha() const														{ return Color<T,4>::getValue(EColorChannel::Alpha); }
-	};
 
+		/**
+		 *	@return the color as a vec4 (float)
+		 */
+		glm::vec4 toVec4() const;
+	};
 
 	/**
 	* Color that has only one value associated with it.
@@ -436,7 +487,7 @@ namespace nap
 		RColor() : Color<T, 1>() { }
 
 		/**
-		* Sets the red channel to @value
+		* Sets the red channel to the incoming value
 		* @param value red color value
 		*/
 		void setRed(T value)													{ Color<T,1>::setValue(EColorChannel::Red, value); }
@@ -576,6 +627,29 @@ namespace nap
 			dist += pow(diff,2);
 		}
 		return dist;
+	}
+
+	template<typename T>
+	glm::vec3 nap::RGBColor<T>::toVec3() const
+	{
+		return 
+		{ 
+			(float)(RGBColor<T>::mValues[0]),
+			(float)(RGBColor<T>::mValues[1]),
+			(float)(RGBColor<T>::mValues[2])
+		};
+	};
+
+	template<typename T>
+	glm::vec4 nap::RGBAColor<T>::toVec4() const
+	{
+		return
+		{
+			(float)(RGBColor<T>::mValues[0]),
+			(float)(RGBColor<T>::mValues[1]),
+			(float)(RGBColor<T>::mValues[2]),
+			(float)(RGBColor<T>::mValues[3])
+		};
 	}
 }
 
