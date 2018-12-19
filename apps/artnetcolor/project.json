@@ -3,6 +3,7 @@
     "version": "0.2.0",
     "modules": [
         "mod_napartnet",
-        "mod_napapp"
+        "mod_napapp",
+        "mod_napimgui"
     ]
 }

@@ -1,8 +1,7 @@
 {
     "dependencies": [
         "mod_naprender",
-        "mod_napinput",
-        "mod_napscene"
+        "mod_napsdlinput"
     ]
 }
 

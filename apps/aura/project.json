@@ -2,7 +2,8 @@
     "title": "Etherdream",
     "version": "0.2.0",
     "modules": [
-        "mod_napapp",
-        "mod_aura"
+        "mod_napimgui",
+        "mod_aura",
+        "mod_napcameracontrol"
     ]
 }
