@@ -4,12 +4,11 @@
         "mod_napmath",
         "mod_napsdlinput",
         "mod_napcameracontrol",
-        "mod_napapp",
         "mod_napartnet",
-        "mod_napimgui",
         "mod_napyoctopuce",
         "mod_napmidi",
-        "mod_napvideo"
+        "mod_napvideo",
+        "mod_napscene"
     ]
 }
 

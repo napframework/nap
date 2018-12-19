@@ -2,6 +2,8 @@
     "title": "Random",
     "version": "0.2.0",
     "modules": [
-        "mod_random"
+        "mod_random",
+        "mod_napapp",
+        "mod_napimgui"
     ]
 }

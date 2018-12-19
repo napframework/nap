@@ -4,6 +4,7 @@
     "modules": [
         "mod_napapp",
         "mod_napsvg",
-        "mod_napvideo"
+        "mod_napvideo",
+        "mod_napimgui"
     ]
 }
