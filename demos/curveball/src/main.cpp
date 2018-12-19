@@ -5,6 +5,7 @@
 // Nap includes
 #include <nap/logger.h>
 #include <apprunner.h>
+#include <guiappeventhandler.h>
 
 /**
  * Curveball Demo.

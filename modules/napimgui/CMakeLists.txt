@@ -33,4 +33,8 @@ if(UNIX)
     set(UNIX_EXTRA_RPATH "../../../../thirdparty/glew/lib")
     list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
 endif()    
+if(APPLE)    
+    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS. NAP-225.
+    list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
+endif()
 package_module()
