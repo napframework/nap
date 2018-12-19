@@ -1,7 +1,6 @@
 #version 330
 
 // vertex shader input  
-in vec3 passUVs;						//< frag Uv's
 in vec3 passPosition;					//< frag world space position 
 in vec3 passNormals;					// Normals
 in mat4 passModelMatrix;				// Matrix
