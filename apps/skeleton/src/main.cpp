@@ -6,6 +6,7 @@
 // Nap includes
 #include <apprunner.h>
 #include <nap/logger.h>
+#include <guiappeventhandler.h>
 
 // Main loop
 int main(int argc, char *argv[])

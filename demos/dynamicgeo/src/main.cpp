@@ -7,6 +7,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <apprunner.h>
+#include <guiappeventhandler.h>
 
 // Main loop
 int main(int argc, char *argv[])

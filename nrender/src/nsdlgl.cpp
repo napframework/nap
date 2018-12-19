@@ -294,13 +294,6 @@ namespace opengl
 	}
 
 
-	// Checks is sdl received an event
-	bool pollEvent(opengl::Event& inputEvent)
-	{
-		return SDL_PollEvent(&inputEvent) > 0;
-	}
-
-
 	// Returns an SDL window based on the given id
 	SDL_Window* getWindow(uint32_t  id)
 	{

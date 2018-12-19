@@ -5,6 +5,7 @@
         "mod_napetherdream",
         "mod_naposc",
         "mod_napsvg",
-        "mod_napapp"
+        "mod_napapp",
+        "mod_napimgui"
     ]
 }

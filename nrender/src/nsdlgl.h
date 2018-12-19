@@ -8,11 +8,6 @@
 namespace opengl
 {
 	/**
-	 *	Typedef for SDL_Event
-	 */
-	using Event = SDL_Event;
-
-	/**
 	 * Turn window v-sync on / off
 	 */
 	void enableVSync(bool value);
@@ -168,13 +163,6 @@ namespace opengl
 	 * Prints the last SDL error to screen
 	 */
 	void printSDLError();
-
-	/**
-	 * Polls SDL for an event
-	 * @param event the event that was generated
-	 * @return if an event has been generated
-	 */
-	bool pollEvent(opengl::Event& inputEvent);
 
 	/**
 	 * Returns an SDL window based on the given ID
