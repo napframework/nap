@@ -46,6 +46,8 @@ To package NAP for release run: package.bat or package.sh. The various options f
 
 Packaging NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable QT_DIR points to its location.
 
+After packaging a new zip or folder is created called: NAP-'X'-'Platform'-'Timestamp'. This contains the NAP package that can be distributed and includes all demo projects, compiled modules and core components. 
+
 ## Want to know more?
 
 Take a look at our high level [documentation](https://www.napframework.com/doxygen/index.html) or [download](https://www.napframework.com) the latest version of NAP right now!	
