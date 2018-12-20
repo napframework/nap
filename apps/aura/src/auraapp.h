@@ -10,7 +10,9 @@
 #include <inputservice.h>
 #include <etherdreamservice.h>
 #include <oscservice.h>
+#include <imguiservice.h>
 #include <app.h>
+#include <scene.h>
 
 namespace nap
 {
@@ -32,6 +34,11 @@ namespace nap
 		 *	Render is called after update, pushes all renderable objects to the GPU
 		 */
 		void render() override;
+
+		/**
+		 *	Update is called before render
+		 */
+		void update(double deltaTime) override;
 
 		/**
 		 *	Forwards the received window event to the render service
@@ -60,12 +67,14 @@ namespace nap
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
-		EtherDreamService* mLaserService = nullptr;						// < Laser service
-		OSCService* mOscService = nullptr;								// < Laser DAC
-	
+		EtherDreamService* mLaserService = nullptr;						//< Laser service
+		OSCService* mOscService = nullptr;								//< Laser DAC
+		IMGuiService* mGUIService = nullptr;							//< Gui Service
+
 		rtti::ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointers to the render window// Laser DAC
 		rtti::ObjectPtr<EntityInstance> mLaserController = nullptr;		//< Entity that holds all the lasers to update / draw
 		rtti::ObjectPtr<EntityInstance> mLaserCamera = nullptr;			//< Entity that holds the camera that is used to render the laser to a backbuffer
 		rtti::ObjectPtr<EntityInstance> mFrameCamera = nullptr;			//< Entity that holds the camera that is used to render all the backbuffers to screen
+		rtti::ObjectPtr<Scene> mScene = nullptr;						//< Nap scene, contains all entities
 	};
 }

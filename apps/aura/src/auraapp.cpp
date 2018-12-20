@@ -9,6 +9,8 @@
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
 #include <scene.h>
+#include <imgui/imgui.h>
+#include <inputrouter.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AuraApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -23,11 +25,12 @@ namespace nap
 	bool AuraApp::init(utility::ErrorState& error)
 	{
 		// Create render service
-		mRenderService = getCore().getService<RenderService>(); 
-		mInputService  = getCore().getService<InputService>();
-		mSceneService  = getCore().getService<SceneService>();
-		mLaserService  = getCore().getService<EtherDreamService>();
-		mOscService	   = getCore().getService<OSCService>();
+		mRenderService	= getCore().getService<RenderService>(); 
+		mInputService	= getCore().getService<InputService>();
+		mSceneService	= getCore().getService<SceneService>();
+		mLaserService	= getCore().getService<EtherDreamService>();
+		mOscService		= getCore().getService<OSCService>();
+		mGUIService		= getCore().getService<IMGuiService>();
 
 		// Initialize all services
 
@@ -38,20 +41,20 @@ namespace nap
 		if (!mResourceManager->loadFile("aura.json", error)) 
 			return false;    
 
-		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		mScene = mResourceManager->findObject<Scene>("Scene");
 
 		// Store all render windows
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
 
 		// Store laser dacs
-		mLaserController = scene->findEntity("LaserControllerEntity");
+		mLaserController = mScene->findEntity("LaserControllerEntity");
 
 		// Store camera
-		mLaserCamera = scene->findEntity("LaserCameraEntity");
+		mLaserCamera = mScene->findEntity("LaserCameraEntity");
 		assert(mLaserCamera != nullptr);
 
 		// Store frame camera
-		mFrameCamera = scene->findEntity("FrameCameraEntity");
+		mFrameCamera = mScene->findEntity("FrameCameraEntity");
 		assert(mFrameCamera != nullptr);
 
 		// Set render states
@@ -59,6 +62,7 @@ namespace nap
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+
 		mRenderService->setRenderState(render_state);
 
 		return true;
@@ -87,13 +91,29 @@ namespace nap
 		// Render all laser frames to the window
 		PerspCameraComponentInstance& frame_cam = mFrameCamera->getComponent<PerspCameraComponentInstance>();
 		laser_control_comp.renderFrames(*mRenderWindow, frame_cam, *mRenderService);
+		
+		mGUIService->draw();
 
 		// Swap back buffer
 		mRenderWindow->swap();
 	}
 	
 	
-	void AuraApp::windowMessageReceived(WindowEventPtr windowEvent) 
+	void AuraApp::update(double deltaTime)
+	{
+		// Forward all window events
+		DefaultInputRouter router;
+		mInputService->processWindowEvents(*mRenderWindow, router, { &mScene->getRootEntity() });
+
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
+	}
+
+
+	void AuraApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
@@ -115,7 +135,6 @@ namespace nap
 				fullscreen = !fullscreen;
 			}
 		}
-
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
