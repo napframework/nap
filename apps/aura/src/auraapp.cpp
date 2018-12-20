@@ -85,7 +85,6 @@ namespace nap
 
 		// Clear window back-buffer
 		opengl::RenderTarget& backbuffer = mRenderWindow->getBackbuffer();
-		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 		mRenderService->clearRenderTarget(backbuffer);
 
 		// Render all laser frames to the window
@@ -103,7 +102,7 @@ namespace nap
 	{
 		// Forward all window events
 		DefaultInputRouter router;
-		mInputService->processWindowEvents(*mRenderWindow, router, { &mScene->getRootEntity() });
+		mInputService->processWindowEvents(*mRenderWindow, router, { mFrameCamera.get() });
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");
@@ -125,23 +124,19 @@ namespace nap
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
-			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit();
-
-			if (press_event->mKey == nap::EKeyCode::KEY_f)
+			switch (press_event->mKey)
 			{
-				static bool fullscreen = true;
-				setWindowFullscreen("Window", fullscreen);
-				fullscreen = !fullscreen;
+			case nap::EKeyCode::KEY_ESCAPE:
+				quit();
+				break;
+			case nap::EKeyCode::KEY_f:
+				mRenderWindow->toggleFullscreen();
+				break;
+			default:
+				break;
 			}
 		}
 		mInputService->addEvent(std::move(inputEvent));
-	}
-
-	
-	void AuraApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
