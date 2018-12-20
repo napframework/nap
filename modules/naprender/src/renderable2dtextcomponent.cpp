@@ -1,4 +1,5 @@
 #include "renderable2dtextcomponent.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <entity.h>
@@ -120,7 +121,7 @@ namespace nap
 	}
 
 
-	void Renderable2DTextComponentInstance::draw(const opengl::BackbufferRenderTarget& target)
+	void Renderable2DTextComponentInstance::draw(const opengl::RenderTarget& target)
 	{
 		// Create projection matrix
 		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)target.getSize().x, 0.0f, (float)target.getSize().y);
