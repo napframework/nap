@@ -14,7 +14,4 @@ namespace nap
 
 	// GLM identity matrix
 	const glm::mat4x4 identityMatrix = glm::mat4x4();
-
-	// GLSL glyph slot name
-	const std::string glyphUniform("glyph");
 }

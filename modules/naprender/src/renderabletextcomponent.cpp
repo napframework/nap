@@ -1,5 +1,6 @@
 // Local Includes
 #include "renderabletextcomponent.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <entity.h>
