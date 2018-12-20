@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "etherdreamapp.h"
+#include "auraapp.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -16,7 +16,8 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::EtherdreamApp, nap::AppEventHandler> app_runner(core);
+	nap::AppRunner<nap::AuraApp, nap::GUIAppEventHandler> app_runner(core);
+	app_runner.setFramerate(180);
 
 	// Start
 	nap::utility::ErrorState error;

@@ -30,7 +30,7 @@ namespace nap
 	/**
 	 *	lasercontroller
 	 */
-	class LaserControlComponent : public Component
+	class NAPAPI LaserControlComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LaserControlComponent, LaserControlInstanceComponent)
@@ -50,7 +50,7 @@ namespace nap
 	/**
 	 * lasercontrollerInstance	
 	 */
-	class LaserControlInstanceComponent : public ComponentInstance
+	class NAPAPI LaserControlInstanceComponent : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

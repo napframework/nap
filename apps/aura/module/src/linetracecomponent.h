@@ -4,12 +4,13 @@
 #include "lineblendcomponent.h"
 
 // external includes
-#include <smoothdamp.h>
+#include <utility/dllexport.h>
 #include <nap/resourceptr.h>
+#include <smoothdamp.h>
 
 namespace nap
 {
-	struct TraceProperties
+	struct NAPAPI TraceProperties
 	{
 		/**
 		 * Holds all the properties associated with the tracer
@@ -25,7 +26,7 @@ namespace nap
 
 	class LineTraceComponentInstance;
 	
-	class LineTraceComponent : public Component
+	class NAPAPI LineTraceComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LineTraceComponent, LineTraceComponentInstance)
@@ -52,7 +53,7 @@ namespace nap
 	 * The traced mesh is stored in the target and has a fixed amount of points
 	 * Only color and position and traced, other attributes are not interpolated
 	 */
-	class LineTraceComponentInstance : public ComponentInstance
+	class NAPAPI LineTraceComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

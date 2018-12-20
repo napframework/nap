@@ -101,6 +101,9 @@ namespace nap
 	{
 		// Make sure we're rendering offscreen surfaces to primary window
 		renderer.getPrimaryWindow().makeCurrent();
+		
+		// I want nice looking lines
+		opengl::enableLineSmoothing(true);
 
 		for (auto& it : mLaserEntityMap)
 		{

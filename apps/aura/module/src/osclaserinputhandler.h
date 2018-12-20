@@ -29,7 +29,7 @@ namespace nap
 	/**
 	* Interprets OSC events associated with laser shapes and actions
 	*/
-	class OSCLaserInputHandler : public Component
+	class NAPAPI OSCLaserInputHandler : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(OSCLaserInputHandler, OSCLaserInputHandlerInstance)
@@ -47,7 +47,7 @@ namespace nap
 	/**
 	 *	Helper component that translates received OSC events in to specific app actions
 	 */
-	class OSCLaserInputHandlerInstance : public ComponentInstance
+	class NAPAPI OSCLaserInputHandlerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

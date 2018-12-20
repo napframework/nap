@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(etherdream)
+project(aura)
 
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
@@ -22,8 +22,7 @@ project_json_to_cmake()
 
 # preprocessor
 target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
-target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
-add_dependencies(${PROJECT_NAME} fbxconverter)
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # Package into release, export FBX, other shared source project fixes
 nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" TRUE)

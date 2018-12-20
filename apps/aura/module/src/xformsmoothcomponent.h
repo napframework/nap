@@ -11,7 +11,7 @@ namespace nap
 	/**
 	 *	xformsmoothcomponent
 	 */
-	class XformSmoothComponent : public Component
+	class NAPAPI XformSmoothComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(XformSmoothComponent, XformSmoothComponentInstance)
@@ -34,7 +34,7 @@ namespace nap
 	/**
 	 * xformsmoothcomponentInstance	
 	 */
-	class XformSmoothComponentInstance : public ComponentInstance
+	class NAPAPI XformSmoothComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

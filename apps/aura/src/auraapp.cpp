@@ -1,4 +1,4 @@
-#include "etherdreamapp.h"
+#include "auraapp.h"
 
 // Local includes
 #include "lineselectioncomponent.h"
@@ -9,8 +9,10 @@
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
 #include <scene.h>
+#include <imgui/imgui.h>
+#include <inputrouter.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherdreamApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AuraApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -20,14 +22,15 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool EtherdreamApp::init(utility::ErrorState& error)
+	bool AuraApp::init(utility::ErrorState& error)
 	{
 		// Create render service
-		mRenderService = getCore().getService<RenderService>(); 
-		mInputService  = getCore().getService<InputService>();
-		mSceneService  = getCore().getService<SceneService>();
-		mLaserService  = getCore().getService<EtherDreamService>();
-		mOscService	   = getCore().getService<OSCService>();
+		mRenderService	= getCore().getService<RenderService>(); 
+		mInputService	= getCore().getService<InputService>();
+		mSceneService	= getCore().getService<SceneService>();
+		mLaserService	= getCore().getService<EtherDreamService>();
+		mOscService		= getCore().getService<OSCService>();
+		mGUIService		= getCore().getService<IMGuiService>();
 
 		// Initialize all services
 
@@ -35,23 +38,23 @@ namespace nap
 		mResourceManager = getCore().getResourceManager();
 
 		// Load scene
-		if (!mResourceManager->loadFile("etherdream.json", error)) 
+		if (!mResourceManager->loadFile("aura.json", error)) 
 			return false;    
 
-		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		mScene = mResourceManager->findObject<Scene>("Scene");
 
 		// Store all render windows
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
 
 		// Store laser dacs
-		mLaserController = scene->findEntity("LaserControllerEntity");
+		mLaserController = mScene->findEntity("LaserControllerEntity");
 
 		// Store camera
-		mLaserCamera = scene->findEntity("LaserCameraEntity");
+		mLaserCamera = mScene->findEntity("LaserCameraEntity");
 		assert(mLaserCamera != nullptr);
 
 		// Store frame camera
-		mFrameCamera = scene->findEntity("FrameCameraEntity");
+		mFrameCamera = mScene->findEntity("FrameCameraEntity");
 		assert(mFrameCamera != nullptr);
 
 		// Set render states
@@ -59,6 +62,7 @@ namespace nap
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+
 		mRenderService->setRenderState(render_state);
 
 		return true;
@@ -66,7 +70,7 @@ namespace nap
 	
 	
 	// Called when the window is going to render
-	void EtherdreamApp::render()
+	void AuraApp::render()
 	{
 		// Get rid of unnecessary resources
 		mRenderService->destroyGLContextResources({ mRenderWindow });
@@ -87,19 +91,35 @@ namespace nap
 		// Render all laser frames to the window
 		PerspCameraComponentInstance& frame_cam = mFrameCamera->getComponent<PerspCameraComponentInstance>();
 		laser_control_comp.renderFrames(*mRenderWindow, frame_cam, *mRenderService);
+		
+		mGUIService->draw();
 
 		// Swap back buffer
 		mRenderWindow->swap();
 	}
 	
 	
-	void EtherdreamApp::windowMessageReceived(WindowEventPtr windowEvent) 
+	void AuraApp::update(double deltaTime)
+	{
+		// Forward all window events
+		DefaultInputRouter router;
+		mInputService->processWindowEvents(*mRenderWindow, router, { &mScene->getRootEntity() });
+
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
+	}
+
+
+	void AuraApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void EtherdreamApp::inputMessageReceived(InputEventPtr inputEvent) 
+	void AuraApp::inputMessageReceived(InputEventPtr inputEvent) 
 	{
 		// If we pressed escape, quit the loop
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
@@ -115,18 +135,17 @@ namespace nap
 				fullscreen = !fullscreen;
 			}
 		}
-
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void EtherdreamApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	void AuraApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
 		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	int EtherdreamApp::shutdown()
+	int AuraApp::shutdown()
 	{
 		return 0;
 	}

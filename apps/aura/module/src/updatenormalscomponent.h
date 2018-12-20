@@ -12,7 +12,7 @@ namespace nap
 	/**
 	 *	Updates a normals mesh on update
 	 */
-	class UpdateNormalsComponent : public Component
+	class NAPAPI UpdateNormalsComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(UpdateNormalsComponent, UpdateNormalsComponentInstance)
@@ -32,7 +32,7 @@ namespace nap
 	/**
 	 * updatenormalscomponentInstance	
 	 */
-	class UpdateNormalsComponentInstance : public ComponentInstance
+	class NAPAPI UpdateNormalsComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

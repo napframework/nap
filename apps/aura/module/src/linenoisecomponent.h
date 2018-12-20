@@ -14,7 +14,7 @@ namespace nap
 	/**
 	 * Properties associated with the line noise modulation component
 	 */
-	struct NoiseProperties
+	struct NAPAPI NoiseProperties
 	{
 		float mFrequency = 1.0f;							// Frequency of the waveform
 		float mFrequencySmoothTime = 0.1f;					// Freq smooth time
@@ -30,7 +30,7 @@ namespace nap
 	/**
 	 * Resource of the LineNoiseComponent
 	 */
-	class LineNoiseComponent : public Component
+	class NAPAPI LineNoiseComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LineNoiseComponent, LineNoiseComponentInstance)
@@ -50,7 +50,7 @@ namespace nap
 	 * modulates a line based on it's normals and a noise pattern
 	 * the noise is applied in the object's uv space
 	 */
-	class LineNoiseComponentInstance : public ComponentInstance
+	class NAPAPI LineNoiseComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
