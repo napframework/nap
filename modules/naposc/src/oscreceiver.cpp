@@ -61,6 +61,7 @@ namespace nap
 			mSocket->stop();
 			mEventThread.join();
 			mService->removeReceiver(*this);
+			mSocket = nullptr;
 			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
 		}
 	}
