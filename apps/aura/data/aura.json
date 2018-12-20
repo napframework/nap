@@ -54,6 +54,13 @@
 
 		{
 			"Type" : "nap::Shader",
+			"mID": "CanvasShader",
+			"mVertShader": "shaders/canvas.vert",
+			"mFragShader": "shaders/canvas.frag"
+		},
+
+		{
+			"Type" : "nap::Shader",
 			"mID": "NormalsShader",
 			"mVertShader": "shaders/normals.vert",
 			"mFragShader": "shaders/normals.frag"
