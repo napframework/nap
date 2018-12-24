@@ -172,6 +172,24 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "nap::Renderable2DTextComponent",
+                    "Text": "LASER: 1",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "NoReadWrite"
+                    },
+                    "Location": {
+                        "x": 512,
+                        "y": 512
+                    },
+                    "Orientation": "Center"
                 }
             ],
             "Children": []
@@ -715,6 +733,15 @@
             "AllowFailure": true
         },
         {
+            "Type": "nap::Font",
+            "mID": "Font",
+            "Properties": {
+                "Size": 48,
+                "DPI": 96
+            },
+            "Font": "fonts/Montserrat-Light.otf"
+        },
+        {
             "Type": "nap::Hexagon",
             "mID": "HexagonMesh",
             "Properties": {
@@ -1201,6 +1228,26 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "FontMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "textColor",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                }
+            ],
+            "Shader": "FontShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "NoReadWrite"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "FrameMaterial",
             "Uniforms": [
                 {
@@ -1422,10 +1469,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 20
             },
-            "Usage": "DynamicWrite",
-            "Width": 2048,
-            "Height": 2048,
-            "Format": "RGBA8"
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -1438,9 +1485,9 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Width": 2048,
-            "Height": 2048,
-            "Format": "RGBA8"
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -1453,9 +1500,9 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Width": 2048,
-            "Height": 2048,
-            "Format": "RGBA8"
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -1468,9 +1515,9 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Width": 2048,
-            "Height": 2048,
-            "Format": "RGBA8"
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -1483,8 +1530,8 @@
                 "MaxLodLevel": 0
             },
             "Usage": "Static",
-            "Width": 2048,
-            "Height": 2048,
+            "Width": 1024,
+            "Height": 1024,
             "Format": "Depth"
         },
         {
@@ -1498,8 +1545,8 @@
                 "MaxLodLevel": 0
             },
             "Usage": "Static",
-            "Width": 2048,
-            "Height": 2048,
+            "Width": 1024,
+            "Height": 1024,
             "Format": "Depth"
         },
         {
@@ -1510,11 +1557,11 @@
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
+                "MaxLodLevel": 0
             },
             "Usage": "Static",
-            "Width": 2048,
-            "Height": 2048,
+            "Width": 1024,
+            "Height": 1024,
             "Format": "Depth"
         },
         {
@@ -1528,8 +1575,8 @@
                 "MaxLodLevel": 0
             },
             "Usage": "Static",
-            "Width": 2048,
-            "Height": 2048,
+            "Width": 1024,
+            "Height": 1024,
             "Format": "Depth"
         },
         {
@@ -2000,6 +2047,12 @@
             "mID": "CanvasShader",
             "mVertShader": "shaders/canvas.vert",
             "mFragShader": "shaders/canvas.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "FontShader",
+            "mVertShader": "shaders/font.vert",
+            "mFragShader": "shaders/font.frag"
         },
         {
             "Type": "nap::Shader",

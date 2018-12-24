@@ -8,6 +8,7 @@
 #include <renderservice.h>
 #include <renderwindow.h>
 #include <rendertarget.h>
+#include <renderable2dtextcomponent.h>
 
 namespace nap
 {
@@ -92,5 +93,8 @@ namespace nap
 
 		// All the laser frames
 		std::unordered_map<int, nap::EntityInstance*> mLaserFrameMap;
+
+		// Component used when rendering text
+		Renderable2DTextComponentInstance* mTextComponent = nullptr;
 	};
 }

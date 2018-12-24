@@ -1,3 +1,3 @@
 #include <utility/module.h>
 
-NAP_MODULE("mod_napaura", "1.0")
+NAP_MODULE("mod_napaura", "0.2.0")

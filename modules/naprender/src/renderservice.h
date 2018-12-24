@@ -147,6 +147,13 @@ namespace nap
 		void setRenderState(const RenderState& renderState)														{ mRenderState = renderState; }
 
 		/**
+		 * Pushes the global render state to the GPU.
+		 * Note that this is called automatically when rendering objects through the render service using RenderObjects().
+		 * Use this call when implementing your own draw call in a component.
+		 */
+		void pushRenderState();
+
+		/**
 		 * Batches an OpenGL resource that is dependent on GLContext for destruction, to avoid many GL context switches during destruction.
 		 * @param resource: object that is dependent on GL context, that is scheduled for destruction. Notice that ownership is transferred here.
 		 */
@@ -268,8 +275,8 @@ namespace nap
 		std::unique_ptr<nap::Renderer> mRenderer = nullptr;
 
 		/**
-		* Updates the current context's render state by using the latest render state as set by the user.
-		*/
+		 * Updates the current context's render state by using the latest render state as set by the user.
+		 */
 		void updateRenderState();
 
 		/**

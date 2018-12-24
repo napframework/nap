@@ -6,6 +6,7 @@
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <depthsorter.h>
+#include <renderable2dtextcomponent.h>
 
 RTTI_BEGIN_CLASS(nap::LaserConfiguration)
 	RTTI_PROPERTY("Target",		&nap::LaserConfiguration::mTarget,	nap::rtti::EPropertyMetaData::Required)
@@ -78,8 +79,25 @@ namespace nap
 			// Calculate xform
 			float tx = ((current_col * scale) + offset) - ((cols * scale) / 2);
 			float ty = ((current_row * scale) + offset) - ((rows * scale) / 2);
-
 			frame_xform->setTranslate(glm::vec3(tx, ty, 0.0f));
+
+			// Get text component and 
+			std::vector<Renderable2DTextComponentInstance*> text_comps;
+			laser_entity->getComponentsOfTypeRecursive<Renderable2DTextComponentInstance>(text_comps);
+			if (!errorState.check(text_comps.size() == 1, "%s: unable to find 2d text render component!", this->mID.c_str()))
+				return false;
+
+			// Set text when drawn
+			if (!text_comps[0]->setText(utility::stringFormat("LASER: %d", configuration.mLaserID), errorState))
+				return false;
+
+			// Position text in center based on render buffer size
+			glm::ivec2 text_loc = configuration.mTarget->getTarget().getSize();
+			text_loc = text_loc / 2;
+
+			// Compensate for y, because y is not centered, only x
+			text_loc.y -= text_comps[0]->getBoundingBox().getHeight() / 2;
+			text_comps[0]->setLocation(text_loc);
 
 			current_count++;
 		}
@@ -109,21 +127,30 @@ namespace nap
 		{
 			// Get all available components to render
 			std::vector<RenderableComponentInstance*> components_to_render;
+			std::vector<RenderableMeshComponentInstance*> mesh_components_to_render;
+			std::vector<Renderable2DTextComponentInstance*> text_to_render;
 
 			// Get entity
 			nap::EntityInstance* entity = it.second;
 			
 			// Get all components to render
-			entity->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
-
+			entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(mesh_components_to_render);
+			components_to_render.reserve(mesh_components_to_render.size());
+			for (auto& comp : mesh_components_to_render)
+				components_to_render.emplace_back(comp);
+			
 			// Get compound and clear target we want to render to
 			const LaserConfiguration& configuration = mLaserConfigurationMap[it.first];
 
 			// Clear target
 			renderer.clearRenderTarget(configuration.mTarget->getTarget());
 			
-			// Render to target
+			// Render all meshes to target
 			renderer.renderObjects(configuration.mTarget->getTarget(), camera, components_to_render);
+
+			// Get text renderable component
+			entity->getComponentsOfTypeRecursive<Renderable2DTextComponentInstance>(text_to_render);
+			text_to_render[0]->draw(configuration.mTarget->getTarget());
 		}
 	}
 
