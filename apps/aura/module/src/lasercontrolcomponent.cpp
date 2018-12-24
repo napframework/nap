@@ -78,7 +78,7 @@ namespace nap
 
 			// Calculate xform
 			float tx = ((current_col * scale) + offset) - ((cols * scale) / 2);
-			float ty = ((current_row * scale) + offset) - ((rows * scale) / 2);
+			float ty = (rows * scale) - ((current_row * scale) + offset) - ((rows * scale) / 2);
 			frame_xform->setTranslate(glm::vec3(tx, ty, 0.0f));
 
 			// Get text component and 
@@ -88,7 +88,7 @@ namespace nap
 				return false;
 
 			// Set text when drawn
-			if (!text_comps[0]->setText(utility::stringFormat("LASER: %d", configuration.mLaserID), errorState))
+			if (!text_comps[0]->setText(utility::stringFormat("Laser: %d", configuration.mLaserID), errorState))
 				return false;
 
 			// Position text in center based on render buffer size
