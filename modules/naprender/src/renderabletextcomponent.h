@@ -3,7 +3,6 @@
 // Local Includes
 #include "rendercomponent.h"
 #include "material.h"
-#include "transformcomponent.h"
 #include "renderableglyph.h"
 
 // External Includes
@@ -11,6 +10,7 @@
 #include <planemesh.h>
 #include <renderablemesh.h>
 #include <nbackbufferrendertarget.h>
+#include <transformcomponent.h>
 
 namespace nap
 {

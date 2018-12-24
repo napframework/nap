@@ -1,11 +1,13 @@
 #include "renderable2dtextcomponent.h"
 #include "renderglobals.h"
+#include "renderservice.h"
 
 // External Includes
 #include <entity.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
 #include <orthocameracomponent.h>
+#include <nap/core.h>
 
 // nap::Renderable2DTextComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::Renderable2DTextComponent)
@@ -35,6 +37,10 @@ namespace nap
 		// Copy location
 		setLocation(getComponent<Renderable2DTextComponent>()->mLocation);
 
+		// Fetch render service
+		mService = getEntityInstance()->getCore()->getService<RenderService>();
+		assert(mService != nullptr);
+		
 		return true;
 	}
 
@@ -121,16 +127,20 @@ namespace nap
 	}
 
 
-	void Renderable2DTextComponentInstance::draw(const opengl::RenderTarget& target)
+	void Renderable2DTextComponentInstance::draw(opengl::RenderTarget& target)
 	{
 		// Create projection matrix
-		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)target.getSize().x, 0.0f, (float)target.getSize().y);
+		glm::ivec2 size = target.getSize();
+		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)size.x, 0.0f, (float)size.y);
 		
 		// Compute model matrix
 		glm::mat4x4 model_matrix;
 		computeTextModelMatrix(model_matrix);
 
 		// Draw text in screen space
+		target.bind();
+		mService->pushRenderState();
 		RenderableTextComponentInstance::draw(identityMatrix, proj_matrix, model_matrix);
+		target.unbind();
 	}
 }
