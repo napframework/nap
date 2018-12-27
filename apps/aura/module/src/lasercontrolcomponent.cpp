@@ -62,6 +62,7 @@ namespace nap
 			mLaserEntityMap.emplace(std::make_pair(configuration.mLaserID, laser_entity));
 			mLaserConfigurationMap.emplace(std::make_pair(configuration.mLaserID, configuration));
 			mLaserFrameMap.emplace(std::make_pair(configuration.mLaserID, frame_entity));
+			mLaserIDs.emplace(configuration.mLaserID);
 
 			// Get transform
 			TransformComponentInstance* frame_xform = frame_entity->findComponent<TransformComponentInstance>();
@@ -112,6 +113,12 @@ namespace nap
 		if (it == mLaserEntityMap.end())
 			return nullptr;
 		return it->second;
+	}
+
+
+	const std::unordered_set<int>& LaserControlInstanceComponent::getLaserIDs() const
+	{
+		return mLaserIDs;
 	}
 
 

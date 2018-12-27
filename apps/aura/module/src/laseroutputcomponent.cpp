@@ -89,6 +89,27 @@ namespace nap
 	}
 
 
+	bool LaserOutputComponentInstance::isConnected() const
+	{
+		assert(mDac != nullptr);
+		return mDac->isConnected();
+	}
+
+
+	nap::EtherDreamInterface::EStatus LaserOutputComponentInstance::getStatus() const
+	{
+		assert(mDac != nullptr);
+		return mDac->getStatus();
+	}
+
+
+	const std::string& LaserOutputComponentInstance::getDacName() const
+	{
+		assert(mDac != nullptr);
+		return mDac->mDacName;
+	}
+
+	
 	void LaserOutputComponentInstance::populateLaserBuffer(const PolyLine& line, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform)
 	{
 		const Vec3VertexAttribute& vert_attr = line.getPositionAttr();

@@ -6,6 +6,8 @@
 #include <imgui/imgui.h>
 #include <nap/core.h>
 #include <imguiutils.h>
+#include <lasercontrolcomponent.h>
+#include <laseroutputcomponent.h>
 
 namespace nap
 {
@@ -19,6 +21,10 @@ namespace nap
 	{
 		mColorLookupImage = mApp.mResourceManager->findObject<nap::ImageFromFile>("ColorLookupImage");
 		assert(mColorLookupImage != nullptr);
+		mLedOnImage = mApp.mResourceManager->findObject<nap::ImageFromFile>("LedOnImage");
+		assert(mLedOnImage != nullptr);
+		mLedOffImage = mApp.mResourceManager->findObject<nap::ImageFromFile>("LedOffImage");
+		assert(mLedOffImage != nullptr);
 	}
 
 
@@ -53,6 +59,44 @@ namespace nap
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());
 		
+		if (ImGui::CollapsingHeader("Laser Status"))
+		{
+			LaserControlInstanceComponent& mController = mApp.mLaserController->getComponent<LaserControlInstanceComponent>();
+			const std::unordered_set<int>& ids = mController.getLaserIDs();
+			for (const auto& id : ids)
+			{
+				nap::EntityInstance* laser_entity = mController.getLaserEntity(id);
+				assert(laser_entity != nullptr);
+				LaserOutputComponentInstance& laser_output = laser_entity->getChildren()[1]->getComponent<nap::LaserOutputComponentInstance>();
+				ImGui::TextColored(clr, "Laser: ");
+				ImGui::SameLine();
+				ImGui::Text(utility::stringFormat("%d", id).c_str());
+				ImGui::SameLine();
+				ImGui::Image(laser_output.isConnected() ? *mLedOnImage : *mLedOffImage , { 16, 16 });
+				std::string status = "Ready";
+				switch (laser_output.getStatus())
+				{
+				case EtherDreamInterface::EStatus::BUSY:
+					status = "Writing Frame";
+					break;
+				case EtherDreamInterface::EStatus::ERROR:
+					status = "Read / Write Error, check log!";
+					break;
+				case EtherDreamInterface::EStatus::READY:
+					status = "Ready";
+					break;
+				}
+				ImGui::SameLine();
+				ImGui::TextColored(clr, "DAC: ");
+				ImGui::SameLine();
+				ImGui::Text(laser_output.getDacName().c_str());
+				ImGui::SameLine();
+				ImGui::TextColored(clr, "Status: ");
+				ImGui::SameLine();
+				ImGui::Text(status.c_str());
+			}
+		}
+
 		// Displays the color lookup image
 		if(ImGui::CollapsingHeader("Color Lookup"))
 		{

@@ -36,11 +36,14 @@ namespace nap
 
 	private:
 		AuraApp&	mApp;
-		bool		showInfo = false;											//< If the GUI should be shown
+		bool		showInfo = false;									//< If the GUI should be shown
 		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		
 		// Gathered resources
-		ResourcePtr<ImageFromFile> mColorLookupImage = nullptr;
+		ResourcePtr<ImageFromFile> mColorLookupImage = nullptr;			//< Color lookup image
+		ResourcePtr<ImageFromFile> mLedOnImage = nullptr;				//< Signals established connection
+		ResourcePtr<ImageFromFile> mLedOffImage = nullptr;				//< Signals invalid connections
+
 		float mLookupSize = 1.0f;
 
 		void showInfoWindow();											//< Shows the info window to the user

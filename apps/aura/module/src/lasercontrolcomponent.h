@@ -71,6 +71,11 @@ namespace nap
 		 */
 		nap::EntityInstance* getLaserEntity(int id);
 
+		/*
+		 * @return all the unique laser ids	
+		 */
+		const std::unordered_set<int>& getLaserIDs() const;
+
 		/**
 		 *	Renders all available lasers to their respective buffers
 		 */
@@ -93,6 +98,9 @@ namespace nap
 
 		// All the laser frames
 		std::unordered_map<int, nap::EntityInstance*> mLaserFrameMap;
+
+		// All the unique laser ids
+		std::unordered_set<int> mLaserIDs;
 
 		// Component used when rendering text
 		Renderable2DTextComponentInstance* mTextComponent = nullptr;

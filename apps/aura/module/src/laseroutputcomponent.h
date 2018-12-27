@@ -87,6 +87,24 @@ namespace nap
 		// Sets the dac to send to the laser
 		void setDac(nap::EtherDreamDac& dac)				{ mDac = &dac; }
 
+		/**
+		 * Returns if the dac is currently connected
+		 * This doesn't include possible read / write errors
+		 * Only if the DAC has been found and connected
+		 * @return if the dac is connected
+		 */
+		bool isConnected() const;
+
+		/**
+		 * @return status when connected, error when not connected 
+		 */
+		EtherDreamInterface::EStatus getStatus() const;
+
+		/**
+		 * @return the dac unique name	
+		 */
+		const std::string& getDacName() const;
+
 	private:
 		// Populate Laser Buffer
 		void populateLaserBuffer(const PolyLine& line, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
