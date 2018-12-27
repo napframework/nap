@@ -1,5 +1,8 @@
 #pragma once
 
+// Local Includes
+#include "auragui.h"
+
 // Mod nap render includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
@@ -22,6 +25,7 @@ namespace nap
 	class AuraApp : public App
 	{
 		RTTI_ENABLE(App)
+		friend class AuraGui;
 	public:
 		AuraApp(nap::Core& core) : App(core)		{ }
 		
@@ -71,6 +75,6 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mLaserCamera = nullptr;			//< Entity that holds the camera that is used to render the laser to a backbuffer
 		rtti::ObjectPtr<EntityInstance> mFrameCamera = nullptr;			//< Entity that holds the camera that is used to render all the backbuffers to screen
 		rtti::ObjectPtr<Scene> mScene = nullptr;						//< Nap scene, contains all entities
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+		std::unique_ptr<AuraGui> mGUI= nullptr;							//< GUI associated with AURA app
 	};
 }

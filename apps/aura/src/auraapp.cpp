@@ -65,6 +65,10 @@ namespace nap
 
 		mRenderService->setRenderState(render_state);
 
+		// Initialize gui
+		mGUI = std::make_unique<AuraGui>(*this);
+		mGUI->init();
+
 		return true;
 	}
 	
@@ -90,8 +94,9 @@ namespace nap
 		// Render all laser frames to the window
 		PerspCameraComponentInstance& frame_cam = mFrameCamera->getComponent<PerspCameraComponentInstance>();
 		laser_control_comp.renderFrames(*mRenderWindow, frame_cam, *mRenderService);
-		
-		mGUIService->draw();
+
+		// Draw our GUI to screen
+		mGUI->draw();
 
 		// Swap back buffer
 		mRenderWindow->swap();
@@ -104,13 +109,8 @@ namespace nap
 		DefaultInputRouter router;
 		mInputService->processWindowEvents(*mRenderWindow, router, { mFrameCamera.get() });
 
-		// Draw some gui elements
-		ImGui::Begin("Controls");
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::End();
+		// Update Gui
+		mGUI->update(deltaTime);
 	}
 
 
@@ -144,6 +144,7 @@ namespace nap
 	
 	int AuraApp::shutdown()
 	{
+		mGUI.reset(nullptr);
 		return 0;
 	}
 }
