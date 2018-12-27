@@ -17,10 +17,12 @@ namespace nap
 	{
 	}
 
+
 	EtherDreamDac::~EtherDreamDac()
 	{
 		stop();
 	}
+
 
 	void EtherDreamDac::stop()
 	{
@@ -98,8 +100,8 @@ namespace nap
 		std::vector<EtherDreamPoint> mPointsToWrite;
 		while (!mStopWriting)
 		{
-			nap::EtherDreamInterface::EStatus write_status = getWriteStatus();
-			switch (write_status)
+			mStatus = getWriteStatus();
+			switch (mStatus)
 			{
 				case EtherDreamInterface::EStatus::ERROR:
 				{
@@ -168,6 +170,12 @@ namespace nap
 	bool EtherDreamDac::isConnected() const
 	{
 		return mConnected;
+	}
+
+
+	nap::EtherDreamInterface::EStatus EtherDreamDac::getStatus() const
+	{
+		return mStatus;
 	}
 
 
