@@ -116,7 +116,7 @@ namespace nap
 		/**
 		 * Last available DAC communication state	
 		 */
-		std::atomic<EtherDreamInterface::EStatus> mStatus = EtherDreamInterface::EStatus::READY;
+		std::atomic<EtherDreamInterface::EStatus> mStatus = EtherDreamInterface::EStatus::ERROR;
 	};
 
 	using DacObjectCreator = rtti::ObjectCreator<EtherDreamDac, EtherDreamService>;
