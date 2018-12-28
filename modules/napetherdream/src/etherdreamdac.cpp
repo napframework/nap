@@ -8,12 +8,13 @@
 RTTI_BEGIN_CLASS(nap::EtherDreamDac)
 	RTTI_PROPERTY("DacName",		&nap::EtherDreamDac::mDacName,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PointRate",		&nap::EtherDreamDac::mPointRate,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("AllowFailure",	&nap::EtherDreamDac::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowFailure",	&nap::EtherDreamDac::mAllowFailure,	    nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	EtherDreamDac::EtherDreamDac(EtherDreamService& service) : mService(&service)
+	EtherDreamDac::EtherDreamDac(EtherDreamService& service)
+		: mService(&service), mConnected(false), mStatus(EtherDreamInterface::EStatus::ERROR)
 	{
 	}
 
