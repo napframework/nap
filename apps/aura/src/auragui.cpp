@@ -73,7 +73,7 @@ namespace nap
 				ImGui::Text(utility::stringFormat("%d", id).c_str());
 				ImGui::SameLine();
 				ImGui::Image(laser_output.isConnected() ? *mLedOnImage : *mLedOffImage , { 16, 16 });
-				std::string status = "Ready";
+				std::string status;
 				switch (laser_output.getStatus())
 				{
 				case EtherDreamInterface::EStatus::BUSY:
@@ -84,6 +84,9 @@ namespace nap
 					break;
 				case EtherDreamInterface::EStatus::READY:
 					status = "Ready";
+					break;
+				default:
+					assert(false);
 					break;
 				}
 				ImGui::SameLine();
