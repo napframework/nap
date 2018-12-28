@@ -106,7 +106,7 @@ namespace nap
 		/**
 		 * If the etherdream dac is connected	
 		 */
-		std::atomic<bool> mConnected = false;
+		std::atomic<bool> mConnected;
 
 		/**
 		 * If the etherdream is running and pumping out frames
@@ -116,7 +116,7 @@ namespace nap
 		/**
 		 * Last available DAC communication state	
 		 */
-		std::atomic<EtherDreamInterface::EStatus> mStatus = EtherDreamInterface::EStatus::ERROR;
+		std::atomic<EtherDreamInterface::EStatus> mStatus;
 	};
 
 	using DacObjectCreator = rtti::ObjectCreator<EtherDreamDac, EtherDreamService>;
