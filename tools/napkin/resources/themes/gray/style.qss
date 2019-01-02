@@ -1,7 +1,7 @@
 QWidget
 {
     color: #000;
-    background-color: #888;
+    /*background-color: #888;*/
 
     selection-background-color:#D84;
     /*selection-color: #eff0f1;*/
