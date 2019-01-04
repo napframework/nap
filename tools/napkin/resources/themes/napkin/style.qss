@@ -17,7 +17,7 @@ QWidget
     font-family: "Nunito Sans", sans-serif;
     font-size: 13px;
     color: #000;
-    background-color: #3c3d4d;
+    /*background-color: #3c3d4d;*/
 
     selection-background-color:#8B8CA0;
     selection-color: #111426;
