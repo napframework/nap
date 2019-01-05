@@ -1,3 +1,4 @@
+#include <rtti/object.h>
 #include "commands.h"
 
 #include "napkinglobals.h"
@@ -14,6 +15,7 @@ QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QStri
 		displayType = type;
 
 	QList<QStandardItem*> items;
+
 	if (type.is_array())
 	{
 		items << new ArrayPropertyItem(name, path, prop, value.create_array_view());
