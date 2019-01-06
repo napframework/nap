@@ -120,3 +120,36 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 	}
 
 }
+
+TEST_CASE("PropertyIteration", "[napkinpropertypath]")
+{
+	RUN_Q_APPLICATION
+
+	TestResourceB res;
+	res.mID = "TestResource";
+
+	{
+		auto props = PropertyPath::getProperties(res);
+		REQUIRE(props.size() == 16);
+	}
+
+	{
+		auto props = PropertyPath::getProperties(res, IterFlag::Resursive);
+		REQUIRE(props.size() == 26);
+	}
+
+	{
+		TestResource subRes;
+		res.mResPointer = &subRes;
+		REQUIRE(res.mResPointer != nullptr);
+		auto props = PropertyPath::getProperties(res, IterFlag::Resursive | IterFlag::FollowPointers);
+
+		for (auto p : props)
+			qInfo() << QString::fromStdString(p.toString());
+
+		REQUIRE(props.size() == 26);
+
+		res.mResPointer = nullptr;
+
+	}
+}

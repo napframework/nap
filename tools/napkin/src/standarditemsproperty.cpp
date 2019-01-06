@@ -7,10 +7,18 @@
 #include "standarditemsgeneric.h"
 #include "appcontext.h"
 
+#include <QtDebug>
 
 QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QString& name, const PropertyPath& path,
 													rttr::property prop, rttr::variant value, rttr::type displayType)
 {
+//	qInfo() << QString::fromStdString(path.toString());
+//	bool ok;
+//	qInfo() << QString::fromStdString(path.getType().get_name().data());
+//	qInfo() << QString::fromStdString(value.get_type().get_name().data());
+//	assert(path.getProperty() == prop);
+//	assert(path.getValue() == value);
+
 	if (!displayType.is_valid())
 		displayType = type;
 
@@ -91,13 +99,13 @@ void napkin::CompoundPropertyItem::populateChildren()
 
 	for (auto childprop : compound.get_type().get_properties())
 	{
-		auto value = childprop.get_value(compound);
+		auto childvalue = childprop.get_value(compound);
 		std::string name = childprop.get_name().data();
 		QString qName = QString::fromStdString(name);
 
-		auto wrappedType = value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
+		auto wrappedType = childvalue.get_type().is_wrapper() ? childvalue.get_type().get_wrapped_type() : childvalue.get_type();
 
-		appendRow(createPropertyItemRow(wrappedType, qName, mPath.getChild(name), childprop, value));
+		appendRow(createPropertyItemRow(wrappedType, qName, mPath.getChild(name), childprop, childvalue));
 	}
 }
 
@@ -114,6 +122,8 @@ int napkin::CompoundPropertyItem::type() const
 
 void napkin::ArrayPropertyItem::populateChildren()
 {
+//	auto array = mPath.getValue().create_array_view();
+//	auto array = mPath.resolve().getValue().create_array_view();
 	auto array = mArray;
 
 	for (int i = 0; i < array.get_size(); i++)
@@ -236,12 +246,10 @@ void napkin::EmbeddedPointerItem::populateChildren()
 		nap::rtti::Path path;
 		path.pushAttribute(name);
 
-		auto wrappedType =
-			childValue.get_type().is_wrapper() ? childValue.get_type().get_wrapped_type() : childValue.get_type();
+		auto wrappedType = childValue.get_type().is_wrapper() ? childValue.get_type().get_wrapped_type() : childValue.get_type();
 
 
-		appendRow(createPropertyItemRow(wrappedType, qName, {*object, path}, childprop,
-										childValue));
+		appendRow(createPropertyItemRow(wrappedType, qName, {*object, path}, childprop, childValue));
 	}
 }
 

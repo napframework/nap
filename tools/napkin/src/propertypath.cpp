@@ -6,6 +6,8 @@
 #include <rtti/defaultlinkresolver.h>
 #include <appcontext.h>
 #include <nap/logger.h>
+#include <stack>
+#include <QtDebug>
 
 using namespace nap::rtti;
 
@@ -25,6 +27,15 @@ napkin::PropertyPath::PropertyPath(Object& obj, const std::string& path)
 {
 }
 
+napkin::PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
+		: mObject(&obj)
+{
+	nap::rtti::Path path;
+	path.pushAttribute(prop.get_name().data());
+	mPath = path;
+}
+
+
 const std::string napkin::PropertyPath::getName() const
 {
 	return getProperty().get_name().data();
@@ -32,7 +43,8 @@ const std::string napkin::PropertyPath::getName() const
 
 rttr::variant napkin::PropertyPath::getValue() const
 {
-	return getProperty().get_value(mObject);
+	rttr::property prop = getProperty();
+	return prop.get_value(mObject);
 }
 
 void napkin::PropertyPath::setValue(rttr::variant value)
@@ -45,7 +57,7 @@ napkin::PropertyPath napkin::PropertyPath::getParent() const
 {
 	auto path = mPath;
 	path.popBack();
-	return { *mObject, path };
+	return {*mObject, path};
 }
 
 rttr::property napkin::PropertyPath::getProperty() const
@@ -83,7 +95,7 @@ rttr::type napkin::PropertyPath::getArrayElementType() const
 	return elmtype.is_wrapper() ? elmtype.get_wrapped_type() : elmtype;
 }
 
-size_t napkin::PropertyPath::getArrayLength()const
+size_t napkin::PropertyPath::getArrayLength() const
 {
 	ResolvedPath resolved_path = resolve();
 	assert(resolved_path.isValid());
@@ -191,7 +203,7 @@ Object* napkin::PropertyPath::getPointee() const
 	auto value_type = value.get_type();
 	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 
-	if(wrapped_type != value_type)
+	if (wrapped_type != value_type)
 		return value.extract_wrapped_value().get_value<nap::rtti::Object*>();
 	else
 		return value.get_value<nap::rtti::Object*>();
@@ -225,6 +237,151 @@ void napkin::PropertyPath::setPointee(Object* pointee)
 		bool value_set = resolved_path.setValue(pointee);
 		assert(value_set);
 	}
+}
+
+void napkin::PropertyPath::iterateChildren(std::function<bool(const napkin::PropertyPath&)> visitor, int flags) const
+{
+	rttr::type type = getType();
+	qInfo() << QString::fromStdString(toString());
+
+	if (isArray())
+	{
+		iterateArrayElements(visitor, flags);
+		return;
+	}
+	else if (type.is_associative_container())
+	{
+		return;
+	}
+	else if (type.is_pointer())
+	{
+		iteratePointerProperties(visitor, flags);
+	}
+	else if (nap::rtti::isPrimitive(type))
+	{
+		return;
+	}
+	else // compound property
+	{
+		iterateChildrenProperties(visitor, flags);
+	}
+
+}
+
+std::vector<napkin::PropertyPath> napkin::PropertyPath::getChildren(int flags) const
+{
+	std::vector<napkin::PropertyPath> children;
+
+	iterateChildren([&children](const auto& path)
+					{
+						children.emplace_back(path);
+						return true;
+					}, flags);
+
+	return children;
+}
+
+
+void napkin::PropertyPath::iterateProperties(nap::rtti::Object& obj,
+											 std::function<bool(const napkin::PropertyPath&)> visitor, int flags)
+{
+	for (rttr::property prop : obj.get_type().get_properties())
+	{
+		PropertyPath path(obj, prop);
+		if (!visitor(path))
+			return;
+
+		if (flags & IterFlag::Resursive)
+			path.iterateChildren(visitor, flags);
+	}
+}
+
+std::vector<napkin::PropertyPath> napkin::PropertyPath::getProperties(nap::rtti::Object& obj, int flags)
+{
+	std::vector<napkin::PropertyPath> props;
+
+	iterateProperties(obj, [&props](const auto& path)
+	{
+		props.emplace_back(path);
+		return true;
+	}, flags);
+
+	return props;
+}
+
+void napkin::PropertyPath::iterateArrayElements(napkin::PropertyVisitor visitor, int flags) const
+{
+	auto value = getValue();
+	auto array = value.create_array_view();
+
+	for (int i = 0; i < array.get_size(); i++)
+	{
+		nap::rtti::Path path = getPath();
+		path.pushArrayElement(i);
+		PropertyPath childPath(*mObject, path);
+
+		if (!visitor(childPath))
+			return;
+
+		if (flags & IterFlag::Resursive)
+			childPath.iterateChildren(visitor, flags);
+	}
+}
+
+void napkin::PropertyPath::iterateChildrenProperties(napkin::PropertyVisitor visitor, int flags) const
+{
+	for (auto childProp : getType().get_properties())
+	{
+		auto path = mPath;
+		path.pushAttribute(childProp.get_name().data());
+
+		PropertyPath childPath(*mObject, path);
+
+		if (!visitor(childPath))
+			return;
+
+		if (flags & IterFlag::Resursive)
+			childPath.iterateChildren(visitor, flags);
+	}
+}
+
+void napkin::PropertyPath::iteratePointerProperties(napkin::PropertyVisitor visitor, int flags) const
+{
+//	rttr::property prop = getProperty();
+//
+//	// First resolve the pointee, after that behave like compound
+//	nap::rtti::ResolvedPath resolvedPath = resolve();
+//	assert(resolvedPath.isValid());
+//
+//	auto value = resolvedPath.getValue();
+//
+//	auto value_type = value.get_type();
+//	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+//	bool is_wrapper = wrapped_type != value_type;
+//	nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>()
+//											: value.get_value<nap::rtti::Object*>();
+//
+	auto pointee = getPointee();
+
+	// prune here if there is no pointer value
+	if (nullptr == pointee)
+		return;
+
+	for (auto childprop : pointee->get_type().get_properties())
+	{
+		auto childValue = childprop.get_value(pointee);
+		std::string name = childprop.get_name().data();
+		QString qName = QString::fromStdString(name);
+
+		nap::rtti::Path path;
+		path.pushAttribute(name);
+
+		PropertyPath childPath(*mObject, path);
+
+		if (!visitor(childPath))
+			return;
+	}
+
 }
 
 
