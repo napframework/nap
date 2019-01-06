@@ -242,7 +242,6 @@ void napkin::PropertyPath::setPointee(Object* pointee)
 void napkin::PropertyPath::iterateChildren(std::function<bool(const napkin::PropertyPath&)> visitor, int flags) const
 {
 	rttr::type type = getType();
-	qInfo() << QString::fromStdString(toString());
 
 	if (isArray())
 	{
@@ -253,7 +252,7 @@ void napkin::PropertyPath::iterateChildren(std::function<bool(const napkin::Prop
 	{
 		return;
 	}
-	else if (type.is_pointer())
+	else if (isPointer())
 	{
 		iteratePointerProperties(visitor, flags);
 	}
@@ -347,24 +346,21 @@ void napkin::PropertyPath::iterateChildrenProperties(napkin::PropertyVisitor vis
 
 void napkin::PropertyPath::iteratePointerProperties(napkin::PropertyVisitor visitor, int flags) const
 {
-//	rttr::property prop = getProperty();
-//
-//	// First resolve the pointee, after that behave like compound
-//	nap::rtti::ResolvedPath resolvedPath = resolve();
-//	assert(resolvedPath.isValid());
-//
-//	auto value = resolvedPath.getValue();
-//
-//	auto value_type = value.get_type();
-//	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-//	bool is_wrapper = wrapped_type != value_type;
-//	nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>()
-//											: value.get_value<nap::rtti::Object*>();
-//
+	if (isEmbeddedPointer())
+	{
+		if (!(flags & IterFlag::FollowEmbeddedPointers))
+			return;
+	}
+	else
+	{
+		if (!(flags & IterFlag::FollowPointers))
+			return;
+	}
+
 	auto pointee = getPointee();
 
 	// prune here if there is no pointer value
-	if (nullptr == pointee)
+	if (!pointee)
 		return;
 
 	for (auto childprop : pointee->get_type().get_properties())
@@ -376,7 +372,8 @@ void napkin::PropertyPath::iteratePointerProperties(napkin::PropertyVisitor visi
 		nap::rtti::Path path;
 		path.pushAttribute(name);
 
-		PropertyPath childPath(*mObject, path);
+		// This path points to the pointee
+		PropertyPath childPath(*pointee, path);
 
 		if (!visitor(childPath))
 			return;

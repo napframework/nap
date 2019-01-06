@@ -140,14 +140,34 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 
 	{
 		TestResource subRes;
+		subRes.mID = "SubRes";
 		res.mResPointer = &subRes;
 		REQUIRE(res.mResPointer != nullptr);
-		auto props = PropertyPath::getProperties(res, IterFlag::Resursive | IterFlag::FollowPointers);
 
-		for (auto p : props)
-			qInfo() << QString::fromStdString(p.toString());
+		TestResourceB embedRes;
+		embedRes.mID = "EmbedRes";
+		res.mEmbedPointer = &embedRes;
+		REQUIRE(res.mEmbedPointer != nullptr);
 
-		REQUIRE(props.size() == 26);
+		PropertyPath p(res, "ResPointer");
+		REQUIRE(p.isValid());
+		REQUIRE(p.isPointer());
+
+		auto props1 = PropertyPath::getProperties(res, IterFlag::Resursive | IterFlag::FollowPointers);
+		for (auto p : props1)
+		{
+			// The embedded pointee cannot be in this result, only regular pointees
+			REQUIRE(&p.getObject() != &embedRes);
+		}
+		REQUIRE(props1.size() == 38);
+
+		auto props2 = PropertyPath::getProperties(res, IterFlag::Resursive | IterFlag::FollowEmbeddedPointers);
+		for (auto p : props2)
+		{
+			// The regular pointee subRes cannot be in this result, only embedded pointees
+			REQUIRE(&p.getObject() != &subRes);
+		}
+		REQUIRE(props2.size() == 42);
 
 		res.mResPointer = nullptr;
 

@@ -12,13 +12,6 @@
 QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QString& name, const PropertyPath& path,
 													rttr::property prop, rttr::variant value, rttr::type displayType)
 {
-//	qInfo() << QString::fromStdString(path.toString());
-//	bool ok;
-//	qInfo() << QString::fromStdString(path.getType().get_name().data());
-//	qInfo() << QString::fromStdString(value.get_type().get_name().data());
-//	assert(path.getProperty() == prop);
-//	assert(path.getValue() == value);
-
 	if (!displayType.is_valid())
 		displayType = type;
 
