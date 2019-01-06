@@ -153,6 +153,7 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		REQUIRE(p.isValid());
 		REQUIRE(p.isPointer());
 
+
 		auto props1 = PropertyPath::getProperties(res, IterFlag::Resursive | IterFlag::FollowPointers);
 		for (auto p : props1)
 		{
