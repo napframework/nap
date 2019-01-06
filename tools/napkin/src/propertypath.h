@@ -5,6 +5,17 @@
 
 namespace napkin
 {
+	class PropertyPath;
+
+	using PropertyVisitor = std::function<bool(const PropertyPath& path)>;
+
+	enum IterFlag : int
+	{
+		Resursive 					= 1 << 0,
+		FollowPointers 				= 1 << 1,
+		FollowEmbeddedPointers 		= 1 << 2,
+	};
+
 	/**
 	 * A path to a property, including its object.
 	 * This class carries both the object and the property path.
@@ -24,16 +35,25 @@ namespace napkin
 		PropertyPath(const PropertyPath& other);
 
 		/**
+		 * Create a PropertyPath using an Object and a nap::rtti::Path
 		 * @param obj The object this property is on
 		 * @param path The path to the property
 		 */
 		PropertyPath(nap::rtti::Object& obj, const nap::rtti::Path& path);
 
 		/**
+		 * Create a PropertyPath using an Object and a path as string
 		 * @param obj The object this property is on
 		 * @param path The path to the property
 		 */
 		PropertyPath(nap::rtti::Object& obj, const std::string& path);
+
+		/**
+		 * Create a PropertyPath using an Object and a property
+		 * @param obj
+		 * @param prop
+		 */
+		PropertyPath(nap::rtti::Object& obj, rttr::property prop);
 
 		/**
 		 * @return The last part of the property name (not including the path)
@@ -160,8 +180,43 @@ namespace napkin
 		 */
 		bool operator==(const PropertyPath& other) const;
 
+		/**
+		 * Iterate over the children of this property and call PropertyVisitor for each child.
+		 * @param visitor The function to be called on each iteration, return false from this function to stop iteration
+		 * @param flags Provide true to also iterate the children's children and so on
+		 */
+		void iterateChildren(PropertyVisitor visitor, int flags) const;
+
+		/**
+		 * Get this properties children if it has any.
+		 * @param flags Provide true to also get the children's children and so on
+		 * @return All children of this property
+		 */
+		std::vector<PropertyPath> getChildren(int flags) const;
+
+		/**
+		 * Iterate over an Object's properties, top-level or recursive
+		 * @param obj The object's properties to iterator over
+		 * @param visitor This function will be called for every property.
+		 * 				  Return false from this function to stop the iteration
+		 * @param flags Whether to recurse into sub-properties or not.
+		 */
+		static void iterateProperties(nap::rtti::Object& obj, PropertyVisitor visitor, int flags = 0);
+
+		/**
+		 * Get all properties of an object.
+		 * @param obj The object to retrieve the properties from
+		 * @param flags Also get the property children recursively?
+		 * @return All the properties on this object
+		 */
+		static std::vector<PropertyPath> getProperties(nap::rtti::Object& obj, int flags = 0);
 
 	private:
+		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
+		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
+		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
+
+
 		nap::rtti::Object* mObject = nullptr;
 		nap::rtti::Path mPath;
 	};
