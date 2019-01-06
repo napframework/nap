@@ -9,11 +9,14 @@ namespace napkin
 
 	using PropertyVisitor = std::function<bool(const PropertyPath& path)>;
 
+	/**
+	 * Flags used in property path iteration/recursion
+	 */
 	enum IterFlag : int
 	{
-		Resursive 					= 1 << 0,
-		FollowPointers 				= 1 << 1,
-		FollowEmbeddedPointers 		= 1 << 2,
+		Resursive 					= 1 << 0,	// Recursively find children in the property path
+		FollowPointers 				= 1 << 1,	// Resolve regular pointers and visit the resolved object's properties
+		FollowEmbeddedPointers 		= 1 << 2,	// Resolve embedded pointers and visit the resolved object's properties
 	};
 
 	/**
