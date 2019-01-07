@@ -104,10 +104,5 @@ napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e) : ObjectItem(&e)
 
 	//	name = QString("%1 (%2)").arg(name, entityName);
 	setText(name);
-
-//	for (auto e : mEntityInstance.getChildren())
-//	{
-//		appendRow(new EntityInstanceItem(*e));
-//	}
 }
 

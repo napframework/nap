@@ -59,10 +59,11 @@ void SetValueCommand::redo()
 }
 
 SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue)
-		: mPath(path), mNewValue(newValue->mID), QUndoCommand()
+		: mPath(path), QUndoCommand()
 {
+	auto id = newValue ? newValue->mID : "";
 	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
-															 QString::fromStdString(newValue->mID)));
+															 QString::fromStdString(id)));
 	auto pointee = path.getPointee();
 	if (pointee != nullptr)
 		mOldValue = pointee->mID;

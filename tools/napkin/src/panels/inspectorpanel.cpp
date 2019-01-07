@@ -260,7 +260,7 @@ void napkin::InspectorModel::populateItems()
 		PropertyPath propPath(*mObject, path);
 
 		if (!isPropertyIgnored(propPath))
-			appendRow(createPropertyItemRow(wrappedType, qName, propPath, prop, value));
+			appendRow(createPropertyItemRow(propPath));
 	}
 }
 

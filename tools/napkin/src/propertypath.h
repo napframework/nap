@@ -195,7 +195,7 @@ namespace napkin
 		 * @param flags Provide true to also get the children's children and so on
 		 * @return All children of this property
 		 */
-		std::vector<PropertyPath> getChildren(int flags) const;
+		std::vector<PropertyPath> getChildren(int flags = IterFlag::FollowEmbeddedPointers) const;
 
 		/**
 		 * Iterate over an Object's properties, top-level or recursive
