@@ -235,7 +235,8 @@ void napkin::PropertyPath::setPointee(Object* pointee)
 	else
 	{
 		bool value_set = resolved_path.setValue(pointee);
-		assert(value_set);
+		if (pointee)
+			assert(value_set);
 	}
 }
 
