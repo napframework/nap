@@ -6,6 +6,7 @@
 // nap::LightingModeComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::LightingModeComponent)
 	RTTI_PROPERTY("UpdateMaterialComponent", &nap::LightingModeComponent::mUpdateMaterialComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SelectVideoComponent", &nap::LightingModeComponent::mSelectVideoComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OffColorTexture", &nap::LightingModeComponent::mOffColorTexture, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SunColorTexture", &nap::LightingModeComponent::mSunColorTexture, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VideoColorTexture", &nap::LightingModeComponent::mVideoColorTexture, nap::rtti::EPropertyMetaData::Required)
@@ -54,9 +55,13 @@ namespace nap
 
 	void LightingModeComponentInstance::startLightingModeTransition()
 	{
+		// do nothing if the lighting mode didn't actually change
+		LightingModes newLightingModeEnum = static_cast<LightingModes>(mLightingModeInt);
+		if (mLightingModeEnum == newLightingModeEnum) return;
+
 		// Store the previous and current lighing mode
 		mOldLightingModeEnum = mLightingModeEnum;
-		mLightingModeEnum = static_cast<LightingModes>(mLightingModeInt);
+		mLightingModeEnum = newLightingModeEnum;
 
 		// Set lighting mode transition properties
 		mLightingModeTransitionActive = true;
@@ -65,6 +70,13 @@ namespace nap
 		// Set combination plane uniform values at transition start
 		mUpdateMaterialComponent->setCombinationTextures(*getTextureForLightingMode(mOldLightingModeEnum), *getTextureForLightingMode(mLightingModeEnum));
 		*mUpdateMaterialComponent->getCombinationBlendValuePtr() = 0.0f;
+
+		// Start / stop the current video depending on the lighting mode
+		if (mOldLightingModeEnum == LightingModes::Video)
+			mSelectVideoComponent->stopCurrentVideo();
+		
+		if (mLightingModeEnum == LightingModes::Video)
+			mSelectVideoComponent->playCurrentVideo();
 	}
 
 

@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "updatematerialcomponent.h"
+#include "selectvideocomponent.h"
 
 // External Includes
 #include <component.h>
@@ -31,6 +32,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		ComponentPtr<UpdateMaterialComponent>	mUpdateMaterialComponent;		///< Property: Pointer to the update material component
+		ComponentPtr<SelectVideoComponent>		mSelectVideoComponent;			///< Property: Pointer to the select video component
 		ResourcePtr<Texture2D>					mOffColorTexture = nullptr;		///< Property: Pointer to the texture for Lighting Mode: Off
 		ResourcePtr<Texture2D>					mSunColorTexture = nullptr;		///< Property: Pointer to the texture for Lighting Mode: Sun
 		ResourcePtr<Texture2D>					mVideoColorTexture = nullptr;	///< Property: Pointer to the texture for Lighting Mode: Video
@@ -62,6 +64,7 @@ namespace nap
 		
 		// Pointers to the run time Component Instances, set during de-serialization
 		ComponentInstancePtr<UpdateMaterialComponent> mUpdateMaterialComponent = { this, &LightingModeComponent::mUpdateMaterialComponent };
+		ComponentInstancePtr<SelectVideoComponent> mSelectVideoComponent = { this, &LightingModeComponent::mSelectVideoComponent };
 
 		// Properties for storing the lighting mode state
 		const char*		mLightingModes[4] = { "Off", "Sun", "Video", "Static" };

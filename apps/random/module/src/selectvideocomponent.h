@@ -69,6 +69,16 @@ namespace nap
 		Video* getCurrentVideo()								{ return mCurrentVideo; }
 
 		/**
+		* Starts playback of the current video
+		*/
+		void playCurrentVideo();
+
+		/**
+		* Stops playback of the current video
+		*/
+		void stopCurrentVideo();
+
+		/**
 		 * Selects a new video
 		 * @param index new video index, clamped to video range
 		 */

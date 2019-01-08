@@ -420,6 +420,7 @@
                     "Type": "nap::LightingModeComponent",
                     "mID": "nap::LightingModeComponent",
                     "UpdateMaterialComponent": "./nap::UpdateMaterialComponent",
+                    "SelectVideoComponent": "./Video/nap::SelectVideoComponent",
                     "OffColorTexture": "OffColorTexture",
                     "SunColorTexture": "SunColorTexture",
                     "VideoColorTexture": "VideoColorTexture",
