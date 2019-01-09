@@ -32,10 +32,10 @@ namespace napkin
 		InspectorModel();
 
 		/**
-		 * Set the
-		 * @param object
+		 * Set the path to edit
+		 * @param path The object or property to edit
 		 */
-		void setObject(nap::rtti::Object* object);
+		void setPath(const PropertyPath& path);
 
 		/**
 		 * @return The object currently displayed/edited by this model
@@ -94,7 +94,7 @@ namespace napkin
 		 */
 		void populateItems();
 
-		nap::rtti::Object* mObject = nullptr; // The object currently used by this model
+		PropertyPath mPath; // the path currently being edited by the property editor
 	};
 
 	/**
@@ -110,10 +110,10 @@ namespace napkin
 		InspectorPanel();
 
 		/**
-		 * Show this object in the inspector.
+		 * Show this path in the inspector.
 		 * @param object The object shown in the inspector.
 		 */
-		void setObject(nap::rtti::Object* object);
+		void setPath(const PropertyPath& path);
 
 	private:
 		/**

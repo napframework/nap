@@ -2,6 +2,8 @@
 
 #include <rtti/path.h>
 #include <QMetaType>
+#include <entity.h>
+#include <scene.h>
 
 namespace napkin
 {
@@ -36,6 +38,19 @@ namespace napkin
 		 * @param other
 		 */
 		PropertyPath(const PropertyPath& other);
+
+		/**
+		 * Create a PropertyPath to an object
+		 * @param obj The object to create the path to.
+		 */
+		PropertyPath(nap::rtti::Object& obj);
+
+		/**
+		 * Create a path to an object that is to be instantiated.
+		 * @param rootEntity Contains the instance property data
+		 * @param obj
+		 */
+		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj);
 
 		/**
 		 * Create a PropertyPath using an Object and a nap::rtti::Path
@@ -136,6 +151,16 @@ namespace napkin
 		std::string toString() const;
 
 		/**
+		 * @return True if this path represents an instance
+		 */
+		bool isInstance() const { return mRootEntity != nullptr; }
+
+		/**
+		 * @return true when the path points to a property, false when it points to an Object
+		 */
+		bool hasProperty() const { return mPath.length() > 0; }
+
+		/**
 		 * @return If the path is a valid one
 		 */
 		bool isValid() const;
@@ -219,7 +244,7 @@ namespace napkin
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
 
-
+		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
 		nap::rtti::Object* mObject = nullptr;
 		nap::rtti::Path mPath;
 	};

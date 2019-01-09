@@ -496,6 +496,9 @@ namespace nap
 			 */
 			bool resolve(const rtti::Object* object, ResolvedPath& resolvedPath) const;
 
+
+			int length() const { return mLength; }
+
 		private:
 			static const int	RTTIPATH_MAX_LENGTH = 16;			// Maximum number of elements on an RTTIPath
 			PathElement		mElements[RTTIPATH_MAX_LENGTH];		// The elements on the path
