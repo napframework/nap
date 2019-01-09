@@ -87,7 +87,7 @@ nap::Component& napkin::ComponentItem::getComponent()
 napkin::SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene)
 {
 	for (auto entity : scene.getEntityResources())
-		appendRow(new EntityInstanceItem(*entity.mEntity));
+		appendRow(new RootEntityItem(entity));
 }
 
 napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e)
@@ -100,8 +100,32 @@ napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e)
 
 }
 
+nap::RootEntity& napkin::EntityInstanceItem::rootEntity() {
+	auto rootEntityItem = dynamic_cast<RootEntityItem*>(parent());
+	if (rootEntityItem)
+		return rootEntityItem->rootEntity();
+	auto p = dynamic_cast<EntityInstanceItem*>(parent());
+	return p->rootEntity();
+}
+
+napkin::RootEntityItem::RootEntityItem(nap::RootEntity& e)
+	: EntityInstanceItem(*e.mEntity), mRootEntity(e)
+{
+
+}
+
+nap::RootEntity& napkin::RootEntityItem::rootEntity()
+{
+	return mRootEntity;
+}
+
 napkin::ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp)
 	: ObjectItem(&comp)
 {
 
+}
+
+nap::RootEntity& napkin::ComponentInstanceItem::rootEntity()
+{
+	return dynamic_cast<EntityInstanceItem*>(parent())->rootEntity();
 }

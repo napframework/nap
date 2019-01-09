@@ -16,6 +16,15 @@ napkin::PropertyPath::PropertyPath(const napkin::PropertyPath& other)
 {
 }
 
+napkin::PropertyPath::PropertyPath(nap::rtti::Object& obj)
+		: mObject(&obj)
+{
+}
+
+napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj)
+		: mRootEntity(&rootEntity), mObject(&obj)
+{
+}
 
 napkin::PropertyPath::PropertyPath(Object& obj, const Path& path)
 		: mObject(&obj), mPath(path)
@@ -38,7 +47,9 @@ napkin::PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
 
 const std::string napkin::PropertyPath::getName() const
 {
-	return getProperty().get_name().data();
+	if (hasProperty())
+		return getProperty().get_name().data();
+	return mObject->mID;
 }
 
 rttr::variant napkin::PropertyPath::getValue() const
@@ -143,8 +154,11 @@ bool napkin::PropertyPath::isValid() const
 {
 	if (mObject == nullptr)
 		return false;
-	auto resolvedPath = resolve();
 
+	if (!hasProperty())
+		return true; // points to object, not a property
+
+	auto resolvedPath = resolve();
 	return resolvedPath.isValid();
 
 }
@@ -242,6 +256,19 @@ void napkin::PropertyPath::setPointee(Object* pointee)
 
 void napkin::PropertyPath::iterateChildren(std::function<bool(const napkin::PropertyPath&)> visitor, int flags) const
 {
+	if (!mObject)
+		return;
+
+	if (!hasProperty())
+	{
+		for (auto p : getProperties(*mObject, flags))
+		{
+			assert(p.isValid());
+			p.iterateChildren(visitor, flags);
+		}
+		return;
+	}
+
 	rttr::type type = getType();
 
 	if (isArray())

@@ -15,21 +15,18 @@
 
 using namespace nap::rtti;
 
-void napkin::InspectorModel::setObject(Object* object)
+void napkin::InspectorModel::setPath(const napkin::PropertyPath& path)
 {
-	mObject = object;
-
+	mPath = path;
 	rebuild();
 }
-
 
 void napkin::InspectorModel::rebuild()
 {
 	while (rowCount() > 0)
 		removeRow(0);
 
-	if (mObject != nullptr)
-		populateItems();
+	populateItems();
 }
 
 napkin::InspectorModel::InspectorModel() : QStandardItemModel()
@@ -190,13 +187,12 @@ void napkin::InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 	rebuild();
 }
 
-
-void napkin::InspectorPanel::setObject(Object* object)
+void napkin::InspectorPanel::setPath(const napkin::PropertyPath& path)
 {
-	if (object)
+	if (path.isValid())
 	{
-		mTitle.setText(QString::fromStdString(object->mID));
-		mSubTitle.setText(QString::fromStdString(object->get_type().get_name().data()));
+		mTitle.setText(QString::fromStdString(path.getName()));
+		mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
 	}
 	else
 	{
@@ -204,10 +200,9 @@ void napkin::InspectorPanel::setObject(Object* object)
 		mSubTitle.setText("");
 	}
 
-	mModel.setObject(object);
+	mModel.setPath(path);
 	mTreeView.getTreeView().expandAll();
 }
-
 
 void napkin::InspectorPanel::rebuild()
 {
@@ -219,8 +214,6 @@ void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop
 {
 	QList<nap::rtti::Object*> objects = {&prop.getObject()};
 	AppContext::get().selectionChanged(objects);
-
-
 
 	auto pathItem = nap::qt::findItemInModel(mModel, [prop](QStandardItem* item)
 	{
@@ -242,23 +235,8 @@ bool napkin::InspectorModel::isPropertyIgnored(const napkin::PropertyPath& prop)
 
 void napkin::InspectorModel::populateItems()
 {
-	for (auto prop : mObject->get_type().get_properties())
+	for (auto propPath : mPath.getChildren())
 	{
-		if (!prop.is_valid() || prop.is_static() || prop.get_name() == PROP_CHILDREN ||
-			prop.get_name() == PROP_COMPONENTS)
-			continue;
-
-		std::string name = prop.get_name().data();
-		QString qName = QString::fromStdString(name);
-
-		nap::rtti::Path path;
-		path.pushAttribute(name);
-
-		auto value = prop.get_value(mObject);
-		auto wrappedType = value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
-
-		PropertyPath propPath(*mObject, path);
-
 		if (!isPropertyIgnored(propPath))
 			appendRow(createPropertyItemRow(propPath));
 	}
@@ -284,7 +262,7 @@ bool napkin::InspectorModel::setData(const QModelIndex& index, const QVariant& v
 
 nap::rtti::Object* napkin::InspectorModel::getObject()
 {
-	return mObject;
+	return &mPath.getObject();
 }
 
 Qt::ItemFlags napkin::InspectorModel::flags(const QModelIndex& index) const
