@@ -11,7 +11,7 @@ napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 napkin::ObjectItem::ObjectItem(nap::rtti::Object* rttiObject) : mObject(rttiObject)
 {
 	refresh();
-
+	setText(QString::fromStdString(rttiObject->mID));
     setIcon(AppContext::get().getResourceFactory().getIcon(*rttiObject));
 }
 
@@ -86,23 +86,22 @@ nap::Component& napkin::ComponentItem::getComponent()
 
 napkin::SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene)
 {
-	setText(QString::fromStdString(scene.mID));
-    for (auto entity : scene.getEntityResources())
-    {
+	for (auto entity : scene.getEntityResources())
 		appendRow(new EntityInstanceItem(*entity.mEntity));
-    }
 }
 
-napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e) : ObjectItem(&e)
+napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e)
+	: ObjectItem(&e)
 {
-	auto name = QString::fromStdString(e.mID);
-	if (name.isEmpty())
-		name = "Unnamed";
+	for (auto comp : e.mComponents)
+		appendRow(new ComponentInstanceItem(*comp));
+	for (auto entity : e.mChildren)
+		appendRow(new EntityInstanceItem(*entity));
 
-	// TODO: This crashes
-	//    auto entityName = QString::fromStdString(e.getEntity()->mID);
-
-	//	name = QString("%1 (%2)").arg(name, entityName);
-	setText(name);
 }
 
+napkin::ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp)
+	: ObjectItem(&comp)
+{
+
+}

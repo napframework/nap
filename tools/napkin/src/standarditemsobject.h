@@ -100,4 +100,13 @@ namespace napkin
 
 	};
 
+	/**
+	 * Item that displays a Component Instance
+	 */
+	class ComponentInstanceItem : public ObjectItem
+	{
+	public:
+		explicit ComponentInstanceItem(nap::Component& comp);
+	};
+
 } // namespace napkin
