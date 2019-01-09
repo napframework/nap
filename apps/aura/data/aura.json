@@ -491,7 +491,9 @@
                     "Type": "nap::XformSmoothComponent",
                     "mID": "XformSmoother",
                     "TransformSmoothTime": 0.30000001192092898,
-                    "ScaleSmoothTime": 0.30000001192092898
+                    "BlendTransform" : false,
+                    "ScaleSmoothTime": 0.30000001192092898,
+                    "BlendScale" : true
                 },
                 {
                     "Type": "nap::LineBlendComponent",
