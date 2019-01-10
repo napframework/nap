@@ -162,6 +162,7 @@ add_subdirectory(modules/napimgui)
 add_subdirectory(modules/napmidi)
 add_subdirectory(modules/napyoctopuce)
 add_subdirectory(modules/napfont)
+add_subdirectory(modules/napdatabase)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
