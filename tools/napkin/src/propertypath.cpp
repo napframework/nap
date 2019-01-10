@@ -60,7 +60,7 @@ rttr::variant napkin::PropertyPath::getValue() const
 
 void napkin::PropertyPath::setValue(rttr::variant value)
 {
-	bool success = getProperty().set_value(mObject, value);
+	bool success = resolve().setValue(value);
 	assert(success);
 }
 
