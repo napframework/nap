@@ -148,7 +148,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
 {
-	mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
+	if (objects.isEmpty())
+		mInspectorPanel.clear();
+	else
+		mInspectorPanel.setPath(*objects.first());
 
 	mCurvePanel.editCurve(nullptr);
 
