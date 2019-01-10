@@ -11,6 +11,7 @@ RTTI_BEGIN_CLASS(nap::LightingModeComponent)
 	RTTI_PROPERTY("SunColorTexture", &nap::LightingModeComponent::mSunColorTexture, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VideoColorTexture", &nap::LightingModeComponent::mVideoColorTexture, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("StaticColorTexture", &nap::LightingModeComponent::mStaticColorTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PartyColorTexture", &nap::LightingModeComponent::mPartyColorTexture, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::LightingModeComponentInstance run time class definition 
@@ -36,6 +37,7 @@ namespace nap
 		mSunColorTexture = getComponent<LightingModeComponent>()->mSunColorTexture.get();
 		mVideoColorTexture = getComponent<LightingModeComponent>()->mVideoColorTexture.get();
 		mStaticColorTexture = getComponent<LightingModeComponent>()->mStaticColorTexture.get();
+		mPartyColorTexture = getComponent<LightingModeComponent>()->mPartyColorTexture.get();
 
 		// Transition from black to sun mode when the app starts
 		mLightingModeInt = static_cast<int>(LightingModes::Sun);
@@ -119,6 +121,8 @@ namespace nap
 			return mVideoColorTexture;
 		case LightingModes::Static:
 			return mStaticColorTexture;
+		case LightingModes::Party:
+			return mPartyColorTexture;
 		default:
 			return mOffColorTexture;
 		}

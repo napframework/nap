@@ -424,7 +424,8 @@
                     "OffColorTexture": "OffColorTexture",
                     "SunColorTexture": "SunColorTexture",
                     "VideoColorTexture": "VideoColorTexture",
-                    "StaticColorTexture": "StaticColorTexture"
+                    "StaticColorTexture": "StaticColorTexture",
+                    "PartyColorTexture": "PartyColorTexture"
                 }
             ],
             "Children": [
@@ -1345,6 +1346,20 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "PartyMaterial",
+            "Uniforms": [],
+            "Shader": "PartyShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "StaticMaterial",
             "Uniforms": [
                 {
@@ -1518,6 +1533,20 @@
         },
         {
             "Type": "nap::PlaneMesh",
+            "mID": "PartyMesh",
+            "Size": {
+                "x": 1024.0,
+                "y": 1024.0
+            },
+            "Position": {
+                "x": 512.0,
+                "y": 512.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::PlaneMesh",
             "mID": "ProjectionMesh",
             "Size": {
                 "x": 256.0,
@@ -1567,6 +1596,18 @@
                 "x": 0.0,
                 "y": 0.0,
                 "z": 1.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "PartyRenderTarget",
+            "mColorTexture": "PartyColorTexture",
+            "mDepthTexture": "PartyDepthTexture",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
                 "w": 0.0
             }
         },
@@ -1650,6 +1691,36 @@
             "Width": 1024,
             "Height": 1024,
             "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "PartyColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "PartyDepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -1790,6 +1861,12 @@
             "mID": "OrbitShader",
             "mVertShader": "shaders/orbit.vert",
             "mFragShader": "shaders/orbit.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "PartyShader",
+            "mVertShader": "shaders/party.vert",
+            "mFragShader": "shaders/party.frag"
         },
         {
             "Type": "nap::Shader",

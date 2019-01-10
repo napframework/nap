@@ -12,7 +12,7 @@
 
 namespace nap
 {
-	enum class LightingModes { Off, Sun, Video, Static };
+	enum class LightingModes { Off, Sun, Video, Static, Party };
 
 	class LightingModeComponentInstance;
 
@@ -37,6 +37,7 @@ namespace nap
 		ResourcePtr<Texture2D>					mSunColorTexture = nullptr;		///< Property: Pointer to the texture for Lighting Mode: Sun
 		ResourcePtr<Texture2D>					mVideoColorTexture = nullptr;	///< Property: Pointer to the texture for Lighting Mode: Video
 		ResourcePtr<Texture2D>					mStaticColorTexture = nullptr;	///< Property: Pointer to the texture for Lighting Mode: Static
+		ResourcePtr<Texture2D>					mPartyColorTexture = nullptr;	///< Property: Pointer to the texture for Lighting Mode: Party
 	};
 
 
@@ -67,7 +68,7 @@ namespace nap
 		ComponentInstancePtr<SelectVideoComponent> mSelectVideoComponent = { this, &LightingModeComponent::mSelectVideoComponent };
 
 		// Properties for storing the lighting mode state
-		const char*		mLightingModes[4] = { "Off", "Sun", "Video", "Static" };
+		const char*		mLightingModes[5] = { "Off", "Sun", "Video", "Static", "Party" };
 		int				mLightingModeInt = 0;
 		LightingModes	mLightingModeEnum = LightingModes::Off;
 		LightingModes	mOldLightingModeEnum;
@@ -84,6 +85,7 @@ namespace nap
 		nap::Texture2D* mSunColorTexture = nullptr;
 		nap::Texture2D* mVideoColorTexture = nullptr;
 		nap::Texture2D* mStaticColorTexture = nullptr;
+		nap::Texture2D* mPartyColorTexture = nullptr;
 
 		// Get the appropriate texture for a lighing mode
 		nap::Texture2D* getTextureForLightingMode(LightingModes& lightingMode);
