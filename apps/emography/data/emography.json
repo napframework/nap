@@ -1,10 +1,23 @@
 {
     "Objects": [
-    	{
+        {
+            "Type": "nap::DBSettings",
+            "mID": "DatabaseSettings",
+            "Settings": [
+                {
+                    "Key": "Name",
+                    "Value": "Coen"
+                },
+                {
+                    "Key": "Watch",
+                    "Value": "18934898934"
+                }
+            ]
+        },
+        {
             "Type": "nap::Scene",
             "mID": "Scene",
-            "Entities": [
-            ]
+            "Entities": []
         }
     ]
 }
