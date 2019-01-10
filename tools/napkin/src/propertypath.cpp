@@ -12,11 +12,11 @@
 using namespace nap::rtti;
 
 napkin::PropertyPath::PropertyPath(const napkin::PropertyPath& other)
-		: mObject(&other.getObject()), mPath(other.getPath())
+		: mRootEntity(other.mRootEntity), mObject(other.mObject), mPath(other.mPath)
 {
 }
 
-napkin::PropertyPath::PropertyPath(nap::rtti::Object& obj)
+napkin::PropertyPath::PropertyPath(Object& obj)
 		: mObject(&obj)
 {
 }
@@ -78,6 +78,12 @@ rttr::property napkin::PropertyPath::getProperty() const
 
 rttr::type napkin::PropertyPath::getType() const
 {
+	if (!mObject)
+		return rttr::type::empty();
+
+	if (!hasProperty())
+		return mObject->get_type();
+
 	Variant value = resolve().getValue();
 	return value.get_type();
 }
@@ -263,8 +269,11 @@ void napkin::PropertyPath::iterateChildren(std::function<bool(const napkin::Prop
 	{
 		for (auto p : getProperties(*mObject, flags))
 		{
-			assert(p.isValid());
-			p.iterateChildren(visitor, flags);
+			if (!visitor(p))
+				return;
+
+			if (flags & IterFlag::Resursive)
+				p.iterateChildren(visitor, flags);
 		}
 		return;
 	}

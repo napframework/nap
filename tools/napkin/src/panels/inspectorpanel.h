@@ -63,6 +63,11 @@ namespace napkin
 		QStringList mimeTypes() const override;
 
 		/**
+		 * Clear the model of its items. Unlike clear(), it leaves the headers etc.
+		 */
+		void removeItems();
+
+		/**
 		 * Rebuild the model
 		 */
 		void rebuild();
@@ -114,6 +119,11 @@ namespace napkin
 		 * @param object The object shown in the inspector.
 		 */
 		void setPath(const PropertyPath& path);
+
+		/**
+		 * Clear out the properties from this panel
+		 */
+		void clear();
 
 	private:
 		/**

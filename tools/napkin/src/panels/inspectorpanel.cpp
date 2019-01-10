@@ -21,11 +21,15 @@ void napkin::InspectorModel::setPath(const napkin::PropertyPath& path)
 	rebuild();
 }
 
-void napkin::InspectorModel::rebuild()
+void napkin::InspectorModel::removeItems()
 {
 	while (rowCount() > 0)
 		removeRow(0);
+}
 
+void napkin::InspectorModel::rebuild()
+{
+	removeItems();
 	populateItems();
 }
 
@@ -192,7 +196,10 @@ void napkin::InspectorPanel::setPath(const napkin::PropertyPath& path)
 	if (path.isValid())
 	{
 		mTitle.setText(QString::fromStdString(path.getName()));
-		mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
+		if (path.isInstance())
+			mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()) + " [INSTANCE]");
+		else
+			mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
 	}
 	else
 	{
@@ -202,6 +209,11 @@ void napkin::InspectorPanel::setPath(const napkin::PropertyPath& path)
 
 	mModel.setPath(path);
 	mTreeView.getTreeView().expandAll();
+}
+
+void napkin::InspectorPanel::clear()
+{
+	mModel.removeItems();
 }
 
 void napkin::InspectorPanel::rebuild()
@@ -235,6 +247,9 @@ bool napkin::InspectorModel::isPropertyIgnored(const napkin::PropertyPath& prop)
 
 void napkin::InspectorModel::populateItems()
 {
+	if (dynamic_cast<nap::Entity*>(&mPath.getObject()))
+		return;
+
 	for (auto propPath : mPath.getChildren())
 	{
 		if (!isPropertyIgnored(propPath))

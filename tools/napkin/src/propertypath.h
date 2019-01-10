@@ -245,8 +245,8 @@ namespace napkin
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
 
 		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
-		nap::rtti::Object* mObject = nullptr;
-		nap::rtti::Path mPath;
+		nap::rtti::Object* mObject = nullptr; // the object on which the property exists
+		nap::rtti::Path mPath; // the path to the property on the object
 	};
 }
 
