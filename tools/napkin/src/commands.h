@@ -106,7 +106,7 @@ namespace napkin
 		void redo() override;
 
 	private:
-		const PropertyPath mPath; // The path to the property
+		PropertyPath mPath; // The path to the property
 		QVariant mNewValue; // The new value
 		QVariant mOldValue; // The old value
 	};

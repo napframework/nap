@@ -18,15 +18,10 @@ SetValueCommand::SetValueCommand(const PropertyPath& propPath, QVariant newValue
 
 void SetValueCommand::undo()
 {
-	// resolve path
-	nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
-	assert(resolvedPath.isValid());
-
-	// set new value
 	bool ok;
-	rttr::variant variant = fromQVariant(resolvedPath.getType(), mOldValue, &ok);
+	rttr::variant variant = fromQVariant(mPath.getType(), mOldValue, &ok);
 	assert(ok);
-	resolvedPath.setValue(variant);
+	mPath.setValue(variant);
 
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
@@ -34,9 +29,8 @@ void SetValueCommand::undo()
 void SetValueCommand::redo()
 {
 	// retrieve and store current value
-	auto resolvedPath = mPath.resolve();
-	rttr::variant oldValueVariant = resolvedPath.getValue();
-	assert(toQVariant(resolvedPath.getType(), oldValueVariant, mOldValue));
+	bool success = toQVariant(mPath.getType(), mPath.getValue(), mOldValue);
+	assert(success);
 
 	auto& ctx = AppContext::get();
 
@@ -50,9 +44,10 @@ void SetValueCommand::redo()
 	{
 		// Any other old value
 		bool ok;
-		rttr::variant variant = fromQVariant(resolvedPath.getType(), mNewValue, &ok);
+		rttr::variant variant = fromQVariant(mPath.getType(), mNewValue, &ok);
 		assert(ok);
-		resolvedPath.setValue(variant);
+		mPath.setValue(variant);
+
 		ctx.getDocument()->propertyValueChanged(mPath);
 	}
 
