@@ -11,7 +11,7 @@ namespace nap
 		/**
 		 * Represents the various stress related stimulation states
 		 */
-		enum class NAPAPI EState : int
+		enum class NAPAPI EStressState : int
 		{
 			Under	=  0,			///< Under stimulated
 			Normal	=  1,			///< Normally stimulated
@@ -25,7 +25,7 @@ namespace nap
 		 * Simple struct like object that has only 1 field but is serializable.
 		 * Because the object is relatively light weight it can be both copy and move constructed or assigned on the fly.
 		 */
-		class NAPAPI Intensity final
+		class NAPAPI StressIntensity final
 		{
 			RTTI_ENABLE()
 		public:
@@ -33,13 +33,13 @@ namespace nap
 			/**
 			 * Default constructor	
 			 */
-			Intensity() = default;
+			StressIntensity() = default;
 
 			/**
 			* Constructor
 			* @param intensity stress intensity value
 			*/
-			Intensity(float intensity);
+			StressIntensity(float intensity);
 
 			/**
 			 * @return if this is a valid intensity reading, ie: intensity value is >= 0

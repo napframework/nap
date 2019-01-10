@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "emographystate.h"
+#include "emographystress.h"
 
 // External Includes
 #include <utility/datetime.h>
@@ -26,7 +26,7 @@ namespace nap
 			 * @param state stress related state
 			 * @param intensity intensity value
 			 */
-			Snapshot(EState state, float intensity);
+			Snapshot(EStressState state, float intensity);
 
 			/**
 			 * Constructs a snapshot at a particular time with the given intensity and state
@@ -34,7 +34,7 @@ namespace nap
 			 * @param intensity intensity value
 			 * @param timestamp Point in time associated with this snapshot
 			 */
-			Snapshot(EState state, float intensity, utility::SystemTimeStamp stamp);
+			Snapshot(EStressState state, float intensity, utility::SystemTimeStamp stamp);
 
 			/**
 			 * Default constructor
@@ -46,11 +46,11 @@ namespace nap
 			 */
 			inline bool isValid() const						
 			{ 
-				return mIntensity.isValid() && mState != EState::Unknown; 
+				return mIntensity.isValid() && mState != EStressState::Unknown; 
 			}
 
-			Intensity					mIntensity;							///< Property: 'Intensity' stress intensity value
-			EState						mState = EState::Unknown;			///< Property: 'State' stress related state
+			StressIntensity					mIntensity;							///< Property: 'Intensity' stress intensity value
+			EStressState						mState = EStressState::Unknown;			///< Property: 'State' stress related state
 			TimeStamp					mTimeStamp;							///< Property: 'TimeStamp' Point in time at which this snapshot is taken
 		};
 	}
