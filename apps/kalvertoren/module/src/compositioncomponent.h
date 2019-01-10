@@ -5,7 +5,7 @@
 
 #include <component.h>
 #include <nap/resourceptr.h>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 #include <unordered_map>
 
 namespace nap

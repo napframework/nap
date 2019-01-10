@@ -4,7 +4,7 @@
 #include <entity.h>
 #include <mathutils.h>
 #include <nap/logger.h>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 
 // nap::colorpalettecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ColorPaletteComponent)

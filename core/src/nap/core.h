@@ -8,7 +8,7 @@
 #include <rtti/factory.h>
 #include <rtti/rtti.h>
 #include <unordered_set>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 
 // Core Includes
 #include "modulemanager.h"

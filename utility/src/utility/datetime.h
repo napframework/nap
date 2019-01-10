@@ -245,7 +245,7 @@ namespace nap
 			/**
 			 *	@return the time stamp asscoiated with this object
 			 */
-			SystemTimeStamp getTimeStamp() const													{ return mTimeStamp; }
+			const SystemTimeStamp& getTimeStamp() const													{ return mTimeStamp; }
 
 		private:
 

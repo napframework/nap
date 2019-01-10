@@ -18,6 +18,27 @@
             "Type": "nap::Scene",
             "mID": "Scene",
             "Entities": []
+        },
+        {
+            "Type": "nap::emography::Reading",
+            "mID": "Reading",
+            "Snapshots": [
+                {
+                    "State": "Unknown",
+                    "Intensity": {
+                        "Intensity": 1.0
+                    },
+                    "TimeStamp": {
+                        "Time": -1
+                    }
+                }
+            ],
+            "StartTime": {
+                "Time": -1
+            },
+            "EndTime": {
+                "Time": -1
+            }
         }
     ]
 }

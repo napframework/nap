@@ -7,7 +7,7 @@
 #include <nap/numeric.h>
 #include <condition_variable>
 #include <mutex>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 
 namespace nap
 {

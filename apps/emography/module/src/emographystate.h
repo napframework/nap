@@ -22,19 +22,18 @@ namespace nap
 
 		/**
 		 * Represents an emography stress related intensity value.
-		 * Simple struct like object that has only 1 field but is serializable
+		 * Simple struct like object that has only 1 field but is serializable.
+		 * Because the object is relatively light weight it can be both copy and move constructed or assigned on the fly.
 		 */
-		class NAPAPI Intensity
+		class NAPAPI Intensity final
 		{
 			RTTI_ENABLE()
 		public:
-			// Destructor
-			virtual ~Intensity() { }
 
 			/**
 			 * Default constructor	
 			 */
-			Intensity()							{ }
+			Intensity() = default;
 
 			/**
 			* Constructor
@@ -45,9 +44,9 @@ namespace nap
 			/**
 			 * @return if this is a valid intensity reading, ie: intensity value is >= 0
 			 */
-			bool isValid();
+			inline bool isValid() const					{ return mValue >= 0.0f; }
 
-			float mIntensity = -1.0f;			///< Property: "Intensity" the stress related intensity value
+			float mValue = -1.0f;			///< Property: "Intensity" the stress related intensity value
 		};
 	}
 }

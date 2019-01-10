@@ -3,7 +3,7 @@
 #include <nap/logger.h>
 #include <chrono>
 #include <thread>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 
 RTTI_BEGIN_CLASS(nap::EtherDreamDac)
 	RTTI_PROPERTY("DacName",		&nap::EtherDreamDac::mDacName,			nap::rtti::EPropertyMetaData::Required)

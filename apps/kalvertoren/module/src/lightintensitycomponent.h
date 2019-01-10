@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <smoothdamp.h>
 #include <nap/resourceptr.h>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 
 namespace nap
 {

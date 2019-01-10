@@ -23,7 +23,7 @@
 #include <inputrouter.h>
 #include <entity.h>
 #include <artnetcontroller.h>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 
 namespace nap
 {

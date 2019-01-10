@@ -6,7 +6,7 @@
 #include <artnet/artnet.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 #include <thread>
 #include <iostream>
 #include <nap/logger.h>
