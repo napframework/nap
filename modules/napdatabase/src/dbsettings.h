@@ -21,7 +21,7 @@ namespace nap
 
 		/**
 		 * Ensures that every setting contains a valid key / value pair.
-		 * Every DBSetting needs to have a key, the value can be empty.
+		 * Every setting needs to have a unique key, the value can be empty.
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
@@ -37,7 +37,7 @@ namespace nap
 	/**
 	 * Single database setting.
 	 * Every setting represents a column in the database.
-	 * Note that settings are for simplicity only strings for now.
+	 * Note that the value is for simplicity only a string for now. Could be a templated type.
 	 */
 	class NAPAPI DBSetting
 	{
