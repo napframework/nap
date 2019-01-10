@@ -76,6 +76,7 @@ namespace nap
 		rtti::ObjectPtr<RenderTarget>						mSunRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mVideoRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mStaticRenderTarget = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mPartyRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
 
 		// Control Groups
@@ -97,6 +98,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance>						mOrbitStart = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mOrbitEnd = nullptr;
 		rtti::ObjectPtr<EntityInstance>						mOrbitSun = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mParty = nullptr;
 
 		// Random GUI
 		std::unique_ptr<RandomGui>							mGui = nullptr;
@@ -123,6 +125,11 @@ namespace nap
 		*	Renders the static into it's back-buffer
 		*/
 		void renderStatic(OrthoCameraComponentInstance& orthoCamera);
+
+		/**
+		*	Renders the static into it's back-buffer
+		*/
+		void renderParty(OrthoCameraComponentInstance& orthoCamera);
 
 		/**
 		 *	Renders the combination into it's back-buffer

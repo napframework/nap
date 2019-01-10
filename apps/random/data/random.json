@@ -436,7 +436,8 @@
                 "Combination",
                 "LightRig",
                 "Orbit",
-                "Static"
+                "Static",
+                "Party"
             ]
         },
         {
@@ -738,6 +739,56 @@
                     "Mesh": "OrbitCircle",
                     "MaterialInstance": {
                         "Material": "OrbitMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Party",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::PartyMeshComponent",
+                    "Mesh": "PartyMesh",
+                    "MaterialInstance": {
+                        "Material": "PartyMaterial",
                         "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"

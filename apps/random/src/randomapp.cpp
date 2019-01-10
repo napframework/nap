@@ -51,6 +51,7 @@ namespace nap
 		mSunRenderTarget     = mResourceManager->findObject("SunRenderTarget");
 		mVideoRenderTarget   = mResourceManager->findObject("VideoRenderTarget");
 		mStaticRenderTarget  = mResourceManager->findObject("StaticRenderTarget");
+		mPartyRenderTarget   = mResourceManager->findObject("PartyRenderTarget");
 		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
 
 		// Look for Control Groups
@@ -73,6 +74,7 @@ namespace nap
 		mOrbitStart = mScene->findEntity("OrbitStart");
 		mOrbitEnd = mScene->findEntity("OrbitEnd");
 		mOrbitSun = mScene->findEntity("OrbitSun");
+		mParty = mScene->findEntity("Party");
 
 		// Set render states
 		nap::RenderState render_state;
@@ -121,6 +123,8 @@ namespace nap
 			renderVideo(ortho_cam);
 		if (lightingModeComponent.isLightingModeRendered(LightingModes::Static))
 			renderStatic(ortho_cam);
+		if (lightingModeComponent.isLightingModeRendered(LightingModes::Party))
+			renderParty(ortho_cam);
 
 		// Render combination into back buffer
 		renderCombination(ortho_cam);
@@ -206,6 +210,19 @@ namespace nap
 
 		// Render static plane to static texture
 		mRenderService->renderObjects(mStaticRenderTarget->getTarget(), orthoCamera, components_to_render);
+	}
+
+
+	void RandomApp::renderParty(OrthoCameraComponentInstance& orthoCamera)
+	{
+		mRenderService->clearRenderTarget(mPartyRenderTarget->getTarget());
+
+		// Find the static plane and render it to the back-buffer
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		components_to_render.emplace_back(&(mParty->getComponent<nap::RenderableMeshComponentInstance>()));
+
+		// Render static plane to static texture
+		mRenderService->renderObjects(mPartyRenderTarget->getTarget(), orthoCamera, components_to_render);
 	}
 
 
