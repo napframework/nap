@@ -6,7 +6,7 @@
 #include <audio/utility/safeptr.h>
 #include <propertypath.h>
 #include <utility/fileutils.h>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 #include <nap/logger.h>
 #include <nap/signalslot.h>
 

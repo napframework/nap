@@ -6,7 +6,7 @@
 #include <perspcameracomponent.h>
 #include <scene.h>
 #include <imgui/imgui.h>
-#include <utility/datetimeutils.h>
+#include <utility/datetime.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DynamicGeoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)

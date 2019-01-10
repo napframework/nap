@@ -5,7 +5,7 @@
 #include <sceneservice.h>
 #include <renderservice.h>
 #include <nap/logger.h>
-#include "utility/datetimeutils.h"
+#include "utility/datetime.h"
 
 extern "C"
 {
