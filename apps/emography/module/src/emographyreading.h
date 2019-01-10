@@ -30,7 +30,8 @@ namespace nap
 			std::vector<T> mMembers;
 		};
 
-		using SnapshotContainer = RangedContainer<Snapshot>;
+		// Implement Snapshot as a templated type, useful for other snapshots in the future
+		using SnapshotContainer = RangedContainer<Snapshot<Stress>>;
 		*/
 
 		/**
