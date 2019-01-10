@@ -413,6 +413,7 @@
                     "SunCloudsMeshComponent": "./Sun/SunClouds/nap::SunCloudsMeshComponent",
                     "SunGlareMeshComponent": "./Sun/SunGlare/nap::SunGlareMeshComponent",
                     "StaticMeshComponent": "./Static/nap::StaticMeshComponent",
+                    "PartyMeshComponent": "./Party/nap::PartyMeshComponent",
                     "OrbitComponent": "./Orbit/nap::OrbitComponent",
                     "LightRigEntity": "LightRig"
                 },
@@ -1398,12 +1399,33 @@
         {
             "Type": "nap::Material",
             "mID": "PartyMaterial",
-            "Uniforms": [],
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_17",
+                    "Name": "uTime",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_5",
+                    "Name": "uCenter",
+                    "Value": {
+                        "x": 0.20000000298023225,
+                        "y": 0.800000011920929,
+                        "z": 0.0
+                    }
+                }
+            ],
             "Shader": "PartyShader",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
                     "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
                 }
             ],
             "BlendMode": "Opaque",

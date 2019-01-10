@@ -32,6 +32,7 @@ namespace nap
 		ComponentPtr<RenderableMeshComponent>	mSunCloudsMeshComponent;	///< Property: 'SunCloudsMeshComponent' link to the sun clouds mesh component
 		ComponentPtr<RenderableMeshComponent>	mSunGlareMeshComponent;		///< Property: 'SunGlareMeshComponent' link to the sun glare mesh component
 		ComponentPtr<RenderableMeshComponent>	mStaticMeshComponent;		///< Property: 'StaticMeshComponent' link to the static mesh component
+		ComponentPtr<RenderableMeshComponent>	mPartyMeshComponent;		///< Property: 'PartyMeshComponent' link to the party mesh component
 		ComponentPtr<OrbitComponent>			mOrbitComponent;			///< Property: 'OrbitComponent' link to the orbit component
 		EntityPtr								mLightRigEntity;			///< Property: 'LightRigEntity' link to the light rig entity
 	};
@@ -59,6 +60,7 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 		void updateCameraLocation();
+		void updateParty(double deltaTime);
 		void updateSunClouds(double deltaTime);
 		void updateSunGlareOrbit();
 
@@ -68,6 +70,7 @@ namespace nap
 		ComponentInstancePtr<RenderableMeshComponent>	mSunCloudsMeshComponent = { this, &UpdateMaterialComponent::mSunCloudsMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mSunGlareMeshComponent = { this, &UpdateMaterialComponent::mSunGlareMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mStaticMeshComponent = { this, &UpdateMaterialComponent::mStaticMeshComponent };
+		ComponentInstancePtr<RenderableMeshComponent>	mPartyMeshComponent = { this, &UpdateMaterialComponent::mPartyMeshComponent };
 		ComponentInstancePtr<OrbitComponent>			mOrbitComponent = { this, &UpdateMaterialComponent::mOrbitComponent };
 		EntityInstancePtr								mLightRigEntity = { this, &UpdateMaterialComponent::mLightRigEntity };
 

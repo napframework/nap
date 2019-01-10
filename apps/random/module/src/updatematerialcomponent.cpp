@@ -11,6 +11,7 @@ RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
 	RTTI_PROPERTY("SunCloudsMeshComponent", &nap::UpdateMaterialComponent::mSunCloudsMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SunGlareMeshComponent", &nap::UpdateMaterialComponent::mSunGlareMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("StaticMeshComponent", &nap::UpdateMaterialComponent::mStaticMeshComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PartyMeshComponent", &nap::UpdateMaterialComponent::mPartyMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OrbitComponent", &nap::UpdateMaterialComponent::mOrbitComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LightRigEntity", &nap::UpdateMaterialComponent::mLightRigEntity, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -42,11 +43,20 @@ namespace nap
 
 	void UpdateMaterialComponentInstance::update(double deltaTime)
 	{
+		// Update party
+		updateParty(deltaTime);
+
 		// Update clouds shader
 		updateSunClouds(deltaTime);
 
 		// Update camera location
 		updateCameraLocation();
+	}
+
+
+	void UpdateMaterialComponentInstance::updateParty(double deltaTime) {
+		// Update time uniform on party shader
+		mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uTime").mValue += static_cast<float>(deltaTime);
 	}
 
 
