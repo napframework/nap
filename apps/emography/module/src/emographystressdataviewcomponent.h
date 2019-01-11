@@ -57,7 +57,8 @@ namespace nap
 
 		protected:
 			/**
-			 * Occurs when the sample count changes, update container size, get records and push view	
+			 * Occurs when the sample count or times frame changes 
+			 * update container size, get records and push view	
 			 */
 			virtual void settingsChanged() override;
 

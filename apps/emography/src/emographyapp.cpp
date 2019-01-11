@@ -59,7 +59,7 @@ namespace nap
 
 		// Set
 		StressDataViewComponentInstance& stress_comp = mHistoryEntity->getComponent<StressDataViewComponentInstance>();
-		stress_comp.setSettings({ yeste, today });
+		stress_comp.setTimeRange(yeste, today);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Date time conversion test

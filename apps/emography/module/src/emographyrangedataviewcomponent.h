@@ -52,7 +52,7 @@ namespace nap
 				ComponentInstance(entity, resource) { }
 
 			/**
-			* Initialize emographydataviewcomponentInstance based on the emographydataviewcomponent resource
+			* Initialize emographydataviewcomponentInstance based on the resource
 			* @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
 			* @param errorState should hold the error message when initialization fails
 			* @return if the emographydataviewcomponentInstance is initialized successfully
@@ -62,27 +62,32 @@ namespace nap
 			/**
 			 * @return total number of samples associated with this data view	
 			 */
-			int getSampleCount() const						{ return mSettings.mSamples; }
+			int getSampleCount() const						{ return mSampleCount; }
 
 			/**
-			 * @return the settings associated with this component
+			 * Sets the number of samples to take, updates settings internally
+			 * @param count number of samples to take from start to end range
 			 */
-			const RangeDataSettings& getSettings() const	{ return mSettings; }
+			void setSampleCount(int count);
 
 			/**
-			 * Update settings associated with this ranged data view
-			 * @param settings the new settings
+			 * Sets a time range, which updates the settings internally
+			 * @param begin sample range start time
+			 * @param end sample range end time 
 			 */
-			void setSettings(const RangeDataSettings& settings);
+			void setTimeRange(const utility::SystemTimeStamp& begin, const utility::SystemTimeStamp& end);
 
 		protected:
-			RangeDataSettings mSettings;	///< Ranged data settings
 
 			/**
 			 * Needs to be implemented by derived classes.
 			 * Called when sample count changes, ie: resolution of the buffer containing records
 			 */
 			virtual void settingsChanged() = 0;
+
+			int mSampleCount = -1;					///< Total number of samples
+			utility::SystemTimeStamp mStartTime;	///< Sample start time
+			utility::SystemTimeStamp mEndTime;		///< Sample end time
 		};
 	}
 }

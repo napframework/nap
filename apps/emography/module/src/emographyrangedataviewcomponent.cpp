@@ -27,15 +27,24 @@ namespace nap
 	bool emography::RangeDataviewComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Copy data
-		setSettings(getComponent<RangeDataViewComponent>()->mSettings);
+		RangeDataSettings& settings = getComponent<RangeDataViewComponent>()->mSettings;
+		mSampleCount = math::max<int>(1, settings.mSamples);
+		setTimeRange(settings.mStartTime.toSystemTime(), settings.mEndTime.toSystemTime());
 		return true;
 	}
 
 
-	void emography::RangeDataviewComponentInstance::setSettings(const RangeDataSettings& settings)
+	void emography::RangeDataviewComponentInstance::setSampleCount(int count)
 	{
-		mSettings = settings;
-		mSettings.mSamples = math::max<int>(1, settings.mSamples);
+		mSampleCount = math::max<int>(1, count);
+		settingsChanged();
+	}
+
+
+	void emography::RangeDataviewComponentInstance::setTimeRange(const utility::SystemTimeStamp& begin, const utility::SystemTimeStamp& end)
+	{
+		mStartTime = begin;
+		mEndTime = end;
 		settingsChanged();
 	}
 }
