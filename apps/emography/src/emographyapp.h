@@ -5,7 +5,6 @@
 #include <sceneservice.h>
 #include <app.h>
 #include <scene.h>
-#include <emographyreading.h>
 
 namespace nap
 {
@@ -39,6 +38,9 @@ namespace nap
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		rtti::ObjectPtr<Scene> mScene = nullptr;						//< Nap scene, contains all entities
-		rtti::ObjectPtr<nap::emography::Reading> mReading = nullptr;
+		rtti::ObjectPtr<EntityInstance> mController = nullptr;			//< Controlling entity
+		rtti::ObjectPtr<EntityInstance> mHistoryEntity = nullptr;		//< History entity
+		rtti::ObjectPtr<EntityInstance> mDashboardEntity = nullptr;		//< Dashboard entity
+		rtti::ObjectPtr<EntityInstance> mSummaryEntity = nullptr;		//< Summary entity
 	};
 }

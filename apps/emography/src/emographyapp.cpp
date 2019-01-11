@@ -7,6 +7,7 @@
 #include <scene.h>
 #include <inputrouter.h>
 #include <emographysnapshot.h>
+#include <emographystressdataviewcomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmographyApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -37,7 +38,11 @@ namespace nap
 		// Get reference to scene
 		mScene = mResourceManager->findObject<Scene>("Scene");
 
-		mReading = mResourceManager->findObject<nap::emography::Reading>("Reading");
+		// Get main entities
+		mController = mScene->findEntity("ControllerEntity");
+		mSummaryEntity = mScene->findEntity("SummaryEntity");
+		mDashboardEntity = mScene->findEntity("DashboardEntity");
+		mHistoryEntity = mScene->findEntity("HistoryEntity");
 
 		return true;
 	}
@@ -47,6 +52,18 @@ namespace nap
 	{
 		// Get current date time
 		utility::DateTime now = utility::getCurrentDateTime();
+
+		// Compute time range
+		utility::SystemTimeStamp today = now.getTimeStamp();
+		utility::SystemTimeStamp yeste = today - std::chrono::hours(24);
+
+		// Set
+		StressDataViewComponentInstance& stress_comp = mHistoryEntity->getComponent<StressDataViewComponentInstance>();
+		stress_comp.setSettings({ yeste, today });
+
+		//////////////////////////////////////////////////////////////////////////
+		// Date time conversion test
+		//////////////////////////////////////////////////////////////////////////
 		
 		// Create snapshot from datetime
 		StressSnapshot snapshot({ nap::emography::EStressState::Over, 1.0f }, now.getTimeStamp());

@@ -16,6 +16,13 @@ namespace nap
 		{
 			RangeDataSettings() = default;
 
+			/**
+			 * Construct settings based on start / stop time	
+			 */
+			RangeDataSettings(const TimeStamp& start, const TimeStamp& stop) :
+				mStartTime(start),
+				mEndTime(stop)	{ }
+
 			int			mSamples = 1024;		///< Property: 'Samples' number of samples associated with this data view
 			TimeStamp	mStartTime;				///< Property: 'StartTime' sample record start time
 			TimeStamp	mEndTime;				///< Property: 'EndTime' sample record end time

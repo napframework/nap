@@ -45,7 +45,7 @@
             "Components": [
                 {
                     "Type": "nap::emography::StressDataViewComponent",
-                    "mID": "nap::emography::StressDataViewComponent_2",
+                    "mID": "HistoryStressDataComponent",
                     "Settings": {
                         "Samples": 1024,
                         "StartTime": {
@@ -108,7 +108,22 @@
         {
             "Type": "nap::Entity",
             "mID": "OverviewEntity",
-            "Components": [],
+            "Components": [
+                {
+                    "Type": "nap::emography::StressDataViewComponent",
+                    "mID": "OverviewStressDataComponent",
+                    "Settings": {
+                        "Samples": 1024,
+                        "StartTime": {
+                            "Time": -1
+                        },
+                        "EndTime": {
+                            "Time": -1
+                        }
+                    },
+                    "StressData": []
+                }
+            ],
             "Children": []
         },
         {
@@ -117,7 +132,7 @@
             "Components": [
                 {
                     "Type": "nap::emography::StressDataViewComponent",
-                    "mID": "nap::emography::StressDataViewComponent",
+                    "mID": "SummartyStressDataComponent",
                     "Settings": {
                         "Samples": 1024,
                         "StartTime": {

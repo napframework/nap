@@ -2,9 +2,9 @@
 #include <iostream>
 
 // nap::timestamp run time class definition 
-RTTI_BEGIN_CLASS(nap::TimeStamp)
+RTTI_BEGIN_STRUCT(nap::TimeStamp)
 	RTTI_PROPERTY("Time", &nap::TimeStamp::mTimeStamp, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
+RTTI_END_STRUCT
 
 //////////////////////////////////////////////////////////////////////////
 
