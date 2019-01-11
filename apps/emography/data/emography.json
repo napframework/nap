@@ -15,44 +15,199 @@
             ]
         },
         {
-            "Type": "nap::Scene",
-            "mID": "Scene",
-            "Entities": []
+            "Type": "nap::Entity",
+            "mID": "ControllerEntity",
+            "Components": [],
+            "Children": [
+                "DashboardEntity",
+                "HistoryEntity",
+                "SummaryEntity"
+            ]
         },
         {
-            "Type": "nap::emography::Reading",
-            "mID": "Reading",
-            "Snapshots": [
+            "Type": "nap::Entity",
+            "mID": "CurrentStatusEntity",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "DashboardEntity",
+            "Components": [],
+            "Children": [
+                "CurrentStatusEntity",
+                "OverviewEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "HistoryEntity",
+            "Components": [
                 {
-                    "TimeStamp": {
-                        "Time": 1547205825699
-                    },
-                    "Object": {
-                        "State": "Over",
-                        "Intensity": {
-                            "Value": -1.0
+                    "Type": "nap::emography::StressDataViewComponent",
+                    "mID": "nap::emography::StressDataViewComponent_2",
+                    "Settings": {
+                        "Samples": 1024,
+                        "StartTime": {
+                            "Time": -1
+                        },
+                        "EndTime": {
+                            "Time": -1
                         }
-                    }
-                },
-                {
-                    "TimeStamp": {
-                        "Time": 1547205825699
                     },
-                    "Object": {
-                        "State": "Under",
-                        "Intensity": {
-                            "Value": -1.0
+                    "StressData": [
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217661633
+                            },
+                            "Object": {
+                                "State": "Normal",
+                                "Intensity": {
+                                    "Value": 0.5
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217666936
+                            },
+                            "Object": {
+                                "State": "Over",
+                                "Intensity": {
+                                    "Value": 2.0
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217667795
+                            },
+                            "Object": {
+                                "State": "Under",
+                                "Intensity": {
+                                    "Value": 0.20000000298023225
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217668763
+                            },
+                            "Object": {
+                                "State": "Normal",
+                                "Intensity": {
+                                    "Value": 0.800000011920929
+                                }
+                            }
                         }
-                    }
+                    ]
                 }
             ],
-            "StartTime": {
-                "Time": -1
-            },
-            "EndTime": {
-                "Time": -1
-            },
-            "Samples": 1024
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OverviewEntity",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SummaryEntity",
+            "Components": [
+                {
+                    "Type": "nap::emography::StressDataViewComponent",
+                    "mID": "nap::emography::StressDataViewComponent",
+                    "Settings": {
+                        "Samples": 1024,
+                        "StartTime": {
+                            "Time": -1
+                        },
+                        "EndTime": {
+                            "Time": -1
+                        }
+                    },
+                    "StressData": [
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217732604
+                            },
+                            "Object": {
+                                "State": "Over",
+                                "Intensity": {
+                                    "Value": 0.20000000298023225
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217733193
+                            },
+                            "Object": {
+                                "State": "Under",
+                                "Intensity": {
+                                    "Value": 0.800000011920929
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217733762
+                            },
+                            "Object": {
+                                "State": "Over",
+                                "Intensity": {
+                                    "Value": 2.0
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217734402
+                            },
+                            "Object": {
+                                "State": "Normal",
+                                "Intensity": {
+                                    "Value": 0.5
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217734998
+                            },
+                            "Object": {
+                                "State": "Under",
+                                "Intensity": {
+                                    "Value": 0.10000000149011612
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547217735560
+                            },
+                            "Object": {
+                                "State": "Unknown",
+                                "Intensity": {
+                                    "Value": -1.0
+                                }
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "ControllerEntity",
+                    "InstanceProperties": []
+                }
+            ]
         }
     ]
 }

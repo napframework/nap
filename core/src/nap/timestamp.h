@@ -44,7 +44,7 @@ namespace nap
 		 * @return if the timestamp managed by this object is valid, ie: has been set	
 		 */
 		inline bool isValid()			{ return mTimeStamp >= 0; }
-
+						
 		long long mTimeStamp = -1;		///< Property: 'Time' time since epoch stored as long
 	};
 }
