@@ -33,7 +33,7 @@ namespace nap
 		 * Converts a system time stamp into a long that can be serialized
 		 * @param systemTime time stamp to convert
 		 */
-		void fromSystemTime(utility::SystemTimeStamp systemTime);
+		void fromSystemTime(const utility::SystemTimeStamp& systemTime);
 
 		/**
 		 * @return the system time stamp based on stored internal time	
