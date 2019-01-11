@@ -46,7 +46,7 @@ namespace nap
 			 */
 			inline bool isValid() const					{ return mValue >= 0.0f; }
 
-			float mValue = -1.0f;			///< Property: "Intensity" the stress related intensity value
+			float mValue = -1.0f;			///< Property: "Value" the stress related intensity value
 		};
 
 

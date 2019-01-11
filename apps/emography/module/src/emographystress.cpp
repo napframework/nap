@@ -12,7 +12,7 @@ RTTI_END_ENUM
 // nap::emography::Intensity class definition
 RTTI_BEGIN_STRUCT(nap::emography::StressIntensity)
 	RTTI_VALUE_CONSTRUCTOR(float)
-	RTTI_PROPERTY("Intensity", &nap::emography::StressIntensity::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::emography::StressIntensity::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::emography::StressReading)

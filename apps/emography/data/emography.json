@@ -28,9 +28,20 @@
                         "Time": 1547205825699
                     },
                     "Object": {
-                        "State": "Unknown",
+                        "State": "Over",
                         "Intensity": {
-                            "Intensity": -1.0
+                            "Value": -1.0
+                        }
+                    }
+                },
+                {
+                    "TimeStamp": {
+                        "Time": 1547205825699
+                    },
+                    "Object": {
+                        "State": "Under",
+                        "Intensity": {
+                            "Value": -1.0
                         }
                     }
                 }
