@@ -49,7 +49,7 @@ namespace nap
 		utility::DateTime now = utility::getCurrentDateTime();
 		
 		// Create snapshot from datetime
-		Snapshot snapshot(nap::emography::EStressState::Over, 1.0f, now.getTimeStamp());
+		StressSnapshot snapshot({ nap::emography::EStressState::Over, 1.0f }, now.getTimeStamp());
 		
 		// Get converted time
 		utility::SystemTimeStamp cstamp = snapshot.mTimeStamp.toSystemTime();

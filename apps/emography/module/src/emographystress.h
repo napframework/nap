@@ -48,5 +48,40 @@ namespace nap
 
 			float mValue = -1.0f;			///< Property: "Intensity" the stress related intensity value
 		};
+
+
+		/**
+		 * Represents a single emography stress reading.
+		 * This object combines both the stress intensity level and stress state into a single object.
+		 * Together these can be used as an argument for a snapshot. 
+		 * Because the object is relatively light weight it can be both copy and move constructed or assigned on the fly.
+		 */
+		class NAPAPI StressReading final
+		{
+			RTTI_ENABLE()
+		public:
+			/**
+			 * Default Constructor
+			 */
+			StressReading() = default;
+
+			/**
+			 * Construct a reading with a given intensity and state.
+			 * @param state stress related state
+			 * @param intensity intensity value
+			 */
+			StressReading(EStressState state, float intensity);
+
+			/**
+			* @return if this snapshot is valid, ie: when intensity >= 0 and state != unknown
+			*/
+			inline bool isValid() const
+			{
+				return mIntensity.isValid() && mState != EStressState::Unknown;
+			}
+
+			StressIntensity				mIntensity;							///< Property: 'Intensity' stress intensity value
+			EStressState				mState = EStressState::Unknown;		///< Property: 'State' stress related state
+		};
 	}
 }

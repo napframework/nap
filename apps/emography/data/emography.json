@@ -24,12 +24,14 @@
             "mID": "Reading",
             "Snapshots": [
                 {
-                    "State": "Unknown",
-                    "Intensity": {
-                        "Intensity": 1.0
-                    },
                     "TimeStamp": {
-                        "Time": -1
+                        "Time": 1547205825699
+                    },
+                    "Object": {
+                        "State": "Unknown",
+                        "Intensity": {
+                            "Intensity": -1.0
+                        }
                     }
                 }
             ],
@@ -38,7 +40,8 @@
             },
             "EndTime": {
                 "Time": -1
-            }
+            },
+            "Samples": 1024
         }
     ]
 }

@@ -49,7 +49,7 @@ namespace nap
 			*/
 			virtual bool init(utility::ErrorState& errorState) override;
 
-			std::vector<Snapshot> mSnapshots;		///< Property: 'Snapshots' all snapshots associated with this reading
+			std::vector<StressSnapshot> mSnapshots;	///< Property: 'Snapshots' all snapshots associated with this reading
 			TimeStamp mStartTime;					///< Property: 'StartTime' Start date associated with snapshots
 			TimeStamp mEndTime;						///< Property: 'EndTime' End date associated with snapshots
 			int mSamples = 1024;					///< Property: 'Samples' number of snapshots associated with this reading

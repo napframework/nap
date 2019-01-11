@@ -23,8 +23,7 @@ namespace nap
 		auto ms = std::chrono::time_point_cast<std::chrono::milliseconds>(systemTime);
 			
 		// store epoch is in milliseconds as long
-		auto ms_epoch = ms.time_since_epoch();
-		mTimeStamp = ms_epoch.count();
+		mTimeStamp = ms.time_since_epoch().count();
 	}
 
 
