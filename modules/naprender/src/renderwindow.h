@@ -56,15 +56,33 @@ namespace nap
 		void makeActive()														{ mWindow->makeCurrent(); }
 
 		/**
-		 *	@return the width of the window in pixels
+         * Returns the width of the window.
+         * Note that on high DPI monitors this is not the same as the pixel count.
+         * To get the width in pixels use the size of the backbuffer using getWidthPixels().
+		 * @return the width of the window
 		 */
 		int getWidth() const													{ return mWindow->getSize().x; }
 
+        /**
+         * Returns the width of this window in pixels.
+         * @return the width of the window in pixels.
+         */
+        int getWidthPixels() const;
+        
 		/**
-		 *	@return the height of the window in pixels
+         * Returns the height of the window.
+         * Note that on high DPI monitors this is not the same as the pixel count.
+         * To get the height in pixels use the size of the backbuffer using getHeightPixels().
+		 * @return the height of the window in pixels
 		 */
 		int getHeight() const													{ return mWindow->getSize().y; }
-
+        
+        /**
+         * Returns the height of this window in pixels.
+         * @return the width of the window in pixels.
+         */
+        int getHeightPixels() const;
+        
 		/**
 		 * Shows the window and gives it input focus.
 		 * This call also makes sure the window is on top of other windows.
@@ -99,13 +117,15 @@ namespace nap
 		void toggleFullscreen();
 
 		/**
-		 * Sets the width of the window
+		 * Sets the width of the window.
+         * When the window is drawn on a high DPI monitor the resulting pixel count of the window buffer will be higher.
 		 * @param width the new width of the window in pixels
 		 */
 		void setWidth(int width);
 
 		/**
-		 * Sets the height of the window
+         * Sets the height of the window.
+         * When the window is drawn on a high DPI monitor the pixel count of the window buffer will be higher.
 		 * @param height the new window height in pixels
 		 */
 		void setHeight(int height);
