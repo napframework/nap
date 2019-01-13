@@ -244,8 +244,8 @@ namespace nap
 
 	void VideoModulationApp::positionBackground()
 	{
-		float window_width = static_cast<float>(mRenderWindow->getWidth());
-		float window_heigh = static_cast<float>(mRenderWindow->getHeight());
+		float window_width = static_cast<float>(mRenderWindow->getWidthPixels());
+		float window_heigh = static_cast<float>(mRenderWindow->getHeightPixels());
 
 		// Calculate ratio
 		SelectVideoComponentInstance& vsel = mVideoEntity->getComponent<SelectVideoComponentInstance>();	

@@ -20,6 +20,7 @@ namespace nap
 		options = settings.resizable ? options	| SDL_WINDOW_RESIZABLE : options;
 		options = settings.borderless ? options | SDL_WINDOW_BORDERLESS : options;
 		options = !settings.visible ? options	| SDL_WINDOW_HIDDEN : options;
+        options = options | SDL_WINDOW_ALLOW_HIGHDPI;
 
 		SDL_Window* new_window = SDL_CreateWindow(	settings.title.c_str(),
 													settings.x,
@@ -148,11 +149,12 @@ namespace nap
 	// Set opengl window size 
 	void GLWindow::setSize(const glm::ivec2& size)
 	{
-		// Set size of associated back buffer
-		mBackbuffer.setSize(size);
-
 		// Set set of window
 		opengl::setWindowSize(mWindow, size);
+        
+        // Backbuffer can have more pixels than the represented window (OSX / Retina)
+        // Get pixel size accordingly
+        mBackbuffer.setSize(opengl::getDrawableWindowSize(mWindow));
 	}
 
 
