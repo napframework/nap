@@ -1,0 +1,10 @@
+{
+    "Objects": [
+    	{
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+            ]
+        }
+    ]
+}

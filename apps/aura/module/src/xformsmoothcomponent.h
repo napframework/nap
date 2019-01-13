@@ -26,8 +26,14 @@ namespace nap
 		// property: blend speed
 		float mBlendSpeed = 0.1f;
 
-		// propery: scale blend speed
+		// property: scale blend speed
 		float mScaleBlendSpeed = 0.1f;
+
+		// property: perform xform blending
+		bool mBlendTransform = true;
+
+		// property: perform scale blending
+		bool mBlendScale = true;
 	};
 
 
@@ -84,5 +90,11 @@ namespace nap
 
 		// Scale Target Value
 		float mTargetScale = 1.0f;
+
+		// If blending transform is enabled
+		bool mBlendTransform = true;
+
+		// If blending scale is enabled
+		bool mBlendScale = true;
 	};
 }
