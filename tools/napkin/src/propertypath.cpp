@@ -26,6 +26,11 @@ napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Objec
 {
 }
 
+napkin::PropertyPath::PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const nap::rtti::Path& path)
+		: mRootEntity(rootEntity), mObject(&obj), mPath(path)
+{
+}
+
 napkin::PropertyPath::PropertyPath(Object& obj, const Path& path)
 		: mObject(&obj), mPath(path)
 {
@@ -36,8 +41,21 @@ napkin::PropertyPath::PropertyPath(Object& obj, const std::string& path)
 {
 }
 
+napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj, const std::string& path)
+		: mRootEntity(&rootEntity), mObject(&obj), mPath(Path::fromString(path))
+{
+}
+
 napkin::PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
 		: mObject(&obj)
+{
+	nap::rtti::Path path;
+	path.pushAttribute(prop.get_name().data());
+	mPath = path;
+}
+
+napkin::PropertyPath::PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, rttr::property prop)
+		: mRootEntity(rootEntity), mObject(&obj)
 {
 	nap::rtti::Path path;
 	path.pushAttribute(prop.get_name().data());
@@ -52,14 +70,111 @@ const std::string napkin::PropertyPath::getName() const
 	return mObject->mID;
 }
 
+nap::ComponentInstanceProperties* napkin::PropertyPath::instanceProps() const
+{
+	if (!isInstance())
+		return nullptr;
+
+	assert(mObject->get_type().is_derived_from<nap::Component>());
+
+	auto pathstr = mPath.toString();
+
+	// find instanceproperties
+	if (mRootEntity->mInstanceProperties.empty())
+		return nullptr;
+
+	for (nap::ComponentInstanceProperties& instProp : mRootEntity->mInstanceProperties)
+	{
+		if (instProp.mTargetComponent.get() == mObject)
+			return &instProp;
+	}
+	return nullptr;
+}
+
+nap::ComponentInstanceProperties& napkin::PropertyPath::getOrCreateInstanceProps()
+{
+	assert(isInstance());
+
+	auto props_ = instanceProps();
+	if (props_)
+		return *props_;
+
+	nap::ComponentInstanceProperties props;
+	props.mTargetComponent = dynamic_cast<nap::Component*>(mObject);
+	mRootEntity->mInstanceProperties.emplace_back(std::move(props));
+	return *instanceProps();
+}
+
+
+nap::TargetAttribute* napkin::PropertyPath::targetAttribute() const
+{
+	auto pathstr = mPath.toString();
+
+	auto instProps = instanceProps();
+	if (!instProps)
+		return nullptr;
+
+	for (auto& attr : instProps->mTargetAttributes)
+	{
+		if (attr.mPath == pathstr)
+			return &attr;
+	}
+
+	return nullptr;
+}
+
+nap::TargetAttribute& napkin::PropertyPath::getOrCreateTargetAttribute()
+{
+	assert(isInstance());
+
+
+	auto targetAttr = targetAttribute();
+	if (targetAttr)
+		return *targetAttr;
+
+	// didn't exist, create
+	auto& instProps = getOrCreateInstanceProps();
+
+	auto pathstr = mPath.toString();
+	for (auto& attr : instProps.mTargetAttributes)
+	{
+		if (attr.mPath == pathstr)
+			return attr;
+	}
+
+	nap::TargetAttribute attr;
+	attr.mPath = mPath.toString();
+	instProps.mTargetAttributes.emplace_back(std::move(attr));
+	return *targetAttribute();
+}
+
 rttr::variant napkin::PropertyPath::getValue() const
 {
+	auto targetAttr = targetAttribute();
+	if (targetAttr)
+	{
+		if (getType() == rttr::type::get<float>())
+			return dynamic_cast<nap::TypedInstancePropertyValue<float>*>(targetAttr->mValue.get())->mValue;
+	}
+
 	rttr::property prop = getProperty();
 	return prop.get_value(mObject);
 }
 
 void napkin::PropertyPath::setValue(rttr::variant value)
 {
+	if (isInstance())
+	{
+		auto& targetAttr = getOrCreateTargetAttribute();
+		if (getType() == rttr::type::get<float>())
+		{
+			auto propValue = new nap::TypedInstancePropertyValue<float>();
+			propValue->mValue = value.get_value<float>();
+			targetAttr.mValue = propValue;
+		}
+		return;
+	}
+
 	bool success = resolve().setValue(value);
 	assert(success);
 }
@@ -267,7 +382,7 @@ void napkin::PropertyPath::iterateChildren(std::function<bool(const napkin::Prop
 
 	if (!hasProperty())
 	{
-		for (auto p : getProperties(*mObject, flags))
+		for (auto p : getProperties(flags))
 		{
 			if (!visitor(p))
 				return;
@@ -317,13 +432,14 @@ std::vector<napkin::PropertyPath> napkin::PropertyPath::getChildren(int flags) c
 	return children;
 }
 
-
-void napkin::PropertyPath::iterateProperties(nap::rtti::Object& obj,
-											 std::function<bool(const napkin::PropertyPath&)> visitor, int flags)
+void napkin::PropertyPath::iterateProperties(napkin::PropertyVisitor visitor, int flags) const
 {
-	for (rttr::property prop : obj.get_type().get_properties())
+	if (!mObject)
+		return;
+
+	for (rttr::property prop : mObject->get_type().get_properties())
 	{
-		PropertyPath path(obj, prop);
+		PropertyPath path(mRootEntity, *mObject, prop);
 		if (!visitor(path))
 			return;
 
@@ -332,11 +448,14 @@ void napkin::PropertyPath::iterateProperties(nap::rtti::Object& obj,
 	}
 }
 
-std::vector<napkin::PropertyPath> napkin::PropertyPath::getProperties(nap::rtti::Object& obj, int flags)
+
+
+
+std::vector<napkin::PropertyPath> napkin::PropertyPath::getProperties(int flags) const
 {
 	std::vector<napkin::PropertyPath> props;
 
-	iterateProperties(obj, [&props](const auto& path)
+	iterateProperties([&props](const auto& path)
 	{
 		props.emplace_back(path);
 		return true;
@@ -354,7 +473,7 @@ void napkin::PropertyPath::iterateArrayElements(napkin::PropertyVisitor visitor,
 	{
 		nap::rtti::Path path = getPath();
 		path.pushArrayElement(i);
-		PropertyPath childPath(*mObject, path);
+		PropertyPath childPath(mRootEntity, *mObject, path);
 
 		if (!visitor(childPath))
 			return;
@@ -371,7 +490,7 @@ void napkin::PropertyPath::iterateChildrenProperties(napkin::PropertyVisitor vis
 		auto path = mPath;
 		path.pushAttribute(childProp.get_name().data());
 
-		PropertyPath childPath(*mObject, path);
+		PropertyPath childPath(mRootEntity, *mObject, path);
 
 		if (!visitor(childPath))
 			return;
@@ -410,17 +529,10 @@ void napkin::PropertyPath::iteratePointerProperties(napkin::PropertyVisitor visi
 		path.pushAttribute(name);
 
 		// This path points to the pointee
-		PropertyPath childPath(*pointee, path);
+		PropertyPath childPath(mRootEntity, *pointee, path);
 
 		if (!visitor(childPath))
 			return;
 	}
 
 }
-
-
-
-
-
-
-

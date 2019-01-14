@@ -138,7 +138,7 @@ namespace nap
 	};
 
 	/**
-	 * Represents all the properties that are overridden van a single component.
+	 * Represents all the properties that are overridden on a single component.
 	 */
 	class ComponentInstanceProperties
 	{
