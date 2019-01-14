@@ -99,10 +99,12 @@ nap::ComponentInstanceProperties& napkin::PropertyPath::getOrCreateInstanceProps
 	if (props_)
 		return *props_;
 
-	nap::ComponentInstanceProperties props;
-	props.mTargetComponent = dynamic_cast<nap::Component*>(mObject);
-	mRootEntity->mInstanceProperties.emplace_back(std::move(props));
-	return *instanceProps();
+	// No instance properties, create a new set
+	auto idx = mRootEntity->mInstanceProperties.size();
+	mRootEntity->mInstanceProperties.emplace_back();
+	mRootEntity->mInstanceProperties.at(idx).mTargetComponent = dynamic_cast<nap::Component*>(mObject);
+	auto instProps = &mRootEntity->mInstanceProperties;
+	return mRootEntity->mInstanceProperties.at(idx);
 }
 
 
@@ -142,10 +144,10 @@ nap::TargetAttribute& napkin::PropertyPath::getOrCreateTargetAttribute()
 			return attr;
 	}
 
-	nap::TargetAttribute attr;
-	attr.mPath = mPath.toString();
-	instProps.mTargetAttributes.emplace_back(std::move(attr));
-	return *targetAttribute();
+	auto idx = instProps.mTargetAttributes.size();
+	instProps.mTargetAttributes.emplace_back();
+	instProps.mTargetAttributes.at(idx).mPath = mPath.toString();
+	return instProps.mTargetAttributes.at(idx);
 }
 
 rttr::variant napkin::PropertyPath::getValue() const
@@ -169,6 +171,7 @@ void napkin::PropertyPath::setValue(rttr::variant value)
 		if (getType() == rttr::type::get<float>())
 		{
 			auto propValue = new nap::TypedInstancePropertyValue<float>();
+			propValue->mID = nap::utility::stringFormat("%s_instanceprop", toString().c_str());
 			propValue->mValue = value.get_value<float>();
 			targetAttr.mValue = propValue;
 		}
@@ -449,17 +452,15 @@ void napkin::PropertyPath::iterateProperties(napkin::PropertyVisitor visitor, in
 }
 
 
-
-
 std::vector<napkin::PropertyPath> napkin::PropertyPath::getProperties(int flags) const
 {
 	std::vector<napkin::PropertyPath> props;
 
 	iterateProperties([&props](const auto& path)
-	{
-		props.emplace_back(path);
-		return true;
-	}, flags);
+					  {
+						  props.emplace_back(path);
+						  return true;
+					  }, flags);
 
 	return props;
 }

@@ -94,7 +94,7 @@ napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& r
 	: ObjectItem(&e), mRootEntityItem(rootEntityItem)
 {
 	for (auto comp : e.mComponents)
-		appendRow(new ComponentInstanceItem(*comp));
+		appendRow(new ComponentInstanceItem(*comp, rootEntityItem));
 	for (auto entity : e.mChildren)
 		appendRow(new EntityInstanceItem(*entity, rootEntityItem));
 }
@@ -108,10 +108,12 @@ napkin::RootEntityItem::RootEntityItem(nap::RootEntity& e)
 	: ObjectItem(e.mEntity.get()), mRootEntity(&e)
 {
 	for (auto comp : e.mEntity->mComponents)
-		appendRow(new ComponentInstanceItem(*comp));
+		appendRow(new ComponentInstanceItem(*comp, *this));
 	for (auto entity : e.mEntity->mChildren)
 		appendRow(new EntityInstanceItem(*entity, *this));
 
+	auto rootProps = &e.mInstanceProperties;
+	rootProps->empty();
 }
 
 nap::RootEntity& napkin::RootEntityItem::rootEntity()
@@ -120,13 +122,14 @@ nap::RootEntity& napkin::RootEntityItem::rootEntity()
 	return *mRootEntity;
 }
 
-napkin::ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp)
-	: ObjectItem(&comp)
+napkin::ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityItem& entityItem)
+	: ObjectItem(&comp), mEntityItem(entityItem)
 {
 
 }
 
 nap::RootEntity& napkin::ComponentInstanceItem::rootEntity()
 {
-	return dynamic_cast<EntityInstanceItem*>(parent())->rootEntity();
+	return mEntityItem.rootEntity();
 }
+

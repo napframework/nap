@@ -187,10 +187,8 @@ QVariant napkin::PropertyValueItem::data(int role) const
 
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
-		nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
-		assert(resolvedPath.isValid());
 		QVariant variant;
-		if (napkin::toQVariant(resolvedPath.getType(), resolvedPath.getValue(), variant))
+		if (napkin::toQVariant(mPath.getType(), mPath.getValue(), variant))
 		{
 			return variant;
 		}
