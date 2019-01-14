@@ -47,6 +47,9 @@ namespace nap
 		case LightingModes::Static:
 			showStaticControls();
 			break;
+		case LightingModes::Party:
+			showPartyControls();
+			break;
 		default:
 			break;
 		}
@@ -148,6 +151,16 @@ namespace nap
 		{
 			UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
 			ImGui::SliderFloat("Temperature", updateMaterial.getStaticWarmthPtr(), 0.0f, 1.0f);
+		}
+	}
+
+	void RandomGui::showPartyControls()
+	{
+		if (ImGui::CollapsingHeader("Party", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
+			if (ImGui::DragFloat2("Party Center", updateMaterial.mPartyCenter, 0.001f, 0.0f, 1.0f))
+				updateMaterial.updatePartyCenter();
 		}
 	}
 }

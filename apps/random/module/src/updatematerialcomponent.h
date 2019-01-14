@@ -61,6 +61,7 @@ namespace nap
 		virtual void update(double deltaTime) override;
 		void updateCameraLocation();
 		void updateParty(double deltaTime);
+		void updatePartyCenter();
 		void updateSunClouds(double deltaTime);
 		void updateSunGlareOrbit();
 
@@ -101,5 +102,7 @@ namespace nap
 
 		const float	mSunGlareStretchMin = 1.0f;
 		const float	mSunGlareStretchMax = 10.0f;
+
+		float		mPartyCenter[2] = { 0.2f, 0.8f };
 	};
 }

@@ -36,6 +36,7 @@ namespace nap
 	{
 		// Call an intial update to apply properties
 		updateSunGlareOrbit();
+		updatePartyCenter();
 
 		return true;
 	}
@@ -57,6 +58,13 @@ namespace nap
 	void UpdateMaterialComponentInstance::updateParty(double deltaTime) {
 		// Update time uniform on party shader
 		mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uTime").mValue += static_cast<float>(deltaTime);
+	}
+
+
+	void UpdateMaterialComponentInstance::updatePartyCenter() {
+		glm::vec3* uCenter = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uCenter").mValue;
+		uCenter->x = mPartyCenter[0];
+		uCenter->y = mPartyCenter[1];
 	}
 
 
