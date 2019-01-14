@@ -34,7 +34,7 @@ namespace nap
 	public:
 		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
 
-		RendererSettings mSettings;
+		RendererSettings mSettings;		///< Property: 'Settings' All render settings
 	};
 
 	/**
