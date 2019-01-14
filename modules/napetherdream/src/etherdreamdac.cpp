@@ -3,7 +3,7 @@
 #include <nap/logger.h>
 #include <chrono>
 #include <thread>
-#include <utility/datetime.h>
+#include <nap/timer.h>
 
 RTTI_BEGIN_CLASS(nap::EtherDreamDac)
 	RTTI_PROPERTY("DacName",		&nap::EtherDreamDac::mDacName,			nap::rtti::EPropertyMetaData::Required)
@@ -95,7 +95,7 @@ namespace nap
 		mIsRunning = true;
 
 		// Timer is used for checking heart-beat
-		utility::SystemTimer timer;
+		SystemTimer timer;
 		timer.start();
 
 		std::vector<EtherDreamPoint> mPointsToWrite;

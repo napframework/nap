@@ -201,7 +201,7 @@ namespace nap
 	void VideoModulationApp::updateGui()
 	{
 		ImGui::Begin("Controls");
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		
 		if (ImGui::CollapsingHeader("Select"))
