@@ -207,7 +207,8 @@ void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 
 	if (role == Qt::EditRole)
 	{
-		napkin::AppContext::get().executeCommand(new SetValueCommand(mPath, value));
+		auto path = mPath;
+		napkin::AppContext::get().executeCommand(new SetValueCommand(path, value));
 	}
 	else if (role == Qt::DisplayRole)
 	{

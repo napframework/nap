@@ -42,7 +42,7 @@ namespace napkin
 		const PropertyPath& getPath() { return mPath; }
 
 	protected:
-		const PropertyPath mPath; // The path to the property
+		PropertyPath mPath; // The path to the property
 	};
 
 	/**

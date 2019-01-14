@@ -101,6 +101,11 @@ namespace nap
 		 */
 		RootEntityList getEntityResources()				{ return mEntities; }
 
+		/**
+		 * @return The RootEntity resources in the scene as a reference.
+		 */
+		RootEntityList& getEntityResourcesRef()			{ return mEntities; }
+
 	private:
 		EntityInstance* createEntityInstance(const Entity& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
