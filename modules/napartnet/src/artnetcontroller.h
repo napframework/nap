@@ -7,7 +7,7 @@
 #include <nap/numeric.h>
 #include <condition_variable>
 #include <mutex>
-#include <utility/datetime.h>
+#include <nap/timer.h>
 
 namespace nap
 {
@@ -184,7 +184,7 @@ namespace nap
 		std::future<void>			mReadTask;										///< Task that updates available nodes on the network
 		std::condition_variable		mConditionVar;									///< Used for telling the polling task to continue
 		std::mutex					mPollMutex;										///< Used for locking critical resources
-		nap::utility::SystemTimer	mPollTimer;										///< Send out a poll request every 3 seconds (as dictated by the artnet standard)
+		nap::SystemTimer			mPollTimer;										///< Send out a poll request every 3 seconds (as dictated by the artnet standard)
 		bool						mPoll = true;									///< Perform a poll operation on separate thread
 		std::atomic<bool>			mExit = { false };								///< Cancel all running operations and exit task
 	};

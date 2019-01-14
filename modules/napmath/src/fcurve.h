@@ -13,7 +13,7 @@ namespace nap
 		/**
 		 * Possible interpolations per curve segment
 		 */
-		enum class NAPAPI ECurveInterp : int
+		enum class ECurveInterp : int
 		{
 			Bezier = 0,				///< Bezier style interpolation
 			Linear,					///< Linear style interpolation

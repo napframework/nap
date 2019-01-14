@@ -18,7 +18,7 @@ namespace nap
 {
 	namespace emography
 	{
-		BaseSnapshot::BaseSnapshot() : mTimeStamp(utility::getCurrentTime())
+		BaseSnapshot::BaseSnapshot() : mTimeStamp(getCurrentTime())
 		{
 		}
 

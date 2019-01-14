@@ -11,7 +11,7 @@ namespace nap
 		/**
 		 * Represents the various stress related stimulation states
 		 */
-		enum class NAPAPI EStressState : int
+		enum class EStressState : int
 		{
 			Under	=  0,			///< Under stimulated
 			Normal	=  1,			///< Normally stimulated

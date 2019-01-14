@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <smoothdamp.h>
 #include <nap/resourceptr.h>
-#include <utility/datetime.h>
+#include <nap/datetime.h>
 
 namespace nap
 {
@@ -157,7 +157,7 @@ namespace nap
 		/**
 		 * Returns the opening and closing times
 		 */
-		void getOpeningTimes(const nap::utility::DateTime& dateTime, OpeningTime& outOpeningTime, OpeningTime& outClosingTime) const;
+		void getOpeningTimes(const nap::DateTime& dateTime, OpeningTime& outOpeningTime, OpeningTime& outClosingTime) const;
 
 		/**
 		 * If opening hours are taken into consideration

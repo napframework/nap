@@ -2,7 +2,7 @@
 
 #include <color.h>
 #include <glm/glm.hpp>
-#include <utility/datetime.h>
+#include <nap/datetime.h>
 #include <queue>
 #include <rtti/objectptr.h>
 #include <imagefromfile.h>
@@ -68,7 +68,7 @@ namespace nap
 		int													mSelectedWeek = 1;
 		int													mColorPaletteCycleMode = 0;
 		int													mDay = 0;
-		utility::DateTime									mDateTime;
+		DateTime											mDateTime;
 		RGBColor8											mTextColor = { 0xC8, 0x69, 0x69 };
 		float												mDisplaySize = 0.5f;
 		float												mVideoDisplaySize = 0.5f;

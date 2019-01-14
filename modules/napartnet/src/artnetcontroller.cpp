@@ -6,7 +6,7 @@
 #include <artnet/artnet.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <utility/datetime.h>
+#include <nap/timer.h>
 #include <thread>
 #include <iostream>
 #include <nap/logger.h>
@@ -206,7 +206,7 @@ namespace nap
 
 		// Gather network responses based on the last poll request
 		// This gives artnet the chance to update it's node list internally
-		nap::utility::SystemTimer select_timer;
+		nap::SystemTimer select_timer;
 		select_timer.start();
 		while (select_timer.getElapsedTime() < mReadTimeout)
 		{

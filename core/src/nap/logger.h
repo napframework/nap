@@ -12,7 +12,7 @@
 #include <queue>
 #include <thread>
 #include <fstream>
-#include <utility/datetime.h>
+#include <nap/datetime.h>
 #include <atomic>
 
 /**
@@ -110,12 +110,12 @@ namespace nap
 		/**
 		 * @return the message's timestamp in milliseconds since epoch
 		 */
-		const utility::SystemTimeStamp& getTimestamp() const { return mTimeStamp; }
+		const SystemTimeStamp& getTimestamp() const { return mTimeStamp; }
 
 	private:
 		const LogLevel* mLevel;
 		const std::string mMessage;
-		const utility::SystemTimeStamp mTimeStamp;
+		const SystemTimeStamp mTimeStamp;
 	};
 
 	// Shorthand for string formatter

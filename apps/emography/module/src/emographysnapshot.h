@@ -4,8 +4,7 @@
 #include "emographystress.h"
 
 // External Includes
-#include <utility/datetime.h>
-#include <nap/timestamp.h>
+#include <nap/datetime.h>
 
 namespace nap
 {
@@ -100,6 +99,7 @@ namespace nap
 		// Implementations
 		//////////////////////////////////////////////////////////////////////////
 
+		// Possibly send towards android client after query
 		using StressSnapshot = Snapshot<StressReading>;
 
 

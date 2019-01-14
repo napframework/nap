@@ -41,7 +41,7 @@ namespace nap
 	}
 
 
-	void emography::RangeDataviewComponentInstance::setTimeRange(const utility::SystemTimeStamp& begin, const utility::SystemTimeStamp& end)
+	void emography::RangeDataviewComponentInstance::setTimeRange(const SystemTimeStamp& begin, const SystemTimeStamp& end)
 	{
 		mStartTime = begin;
 		mEndTime = end;

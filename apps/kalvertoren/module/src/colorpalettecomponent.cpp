@@ -4,7 +4,7 @@
 #include <entity.h>
 #include <mathutils.h>
 #include <nap/logger.h>
-#include <utility/datetime.h>
+#include <nap/datetime.h>
 
 // nap::colorpalettecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ColorPaletteComponent)
@@ -50,7 +50,7 @@ namespace nap
 			return false;
 
 		// Select current week
-		selectWeek(utility::getCurrentDateTime().getWeek()-1);
+		selectWeek(getCurrentDateTime().getWeek()-1);
 
 		// Listen to composition component completion
 		// If link is turned on this will cause the palette to change
@@ -64,7 +64,7 @@ namespace nap
 	{
 		if (mLockWeek)
 		{
-			int newWeekNumber = utility::getCurrentDateTime().getWeek()-1;
+			int newWeekNumber = getCurrentDateTime().getWeek()-1;
 			if (newWeekNumber != mCurrentWeek)
 			{
 				selectWeek(newWeekNumber);

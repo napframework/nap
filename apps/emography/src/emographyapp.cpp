@@ -51,11 +51,11 @@ namespace nap
 	void EmographyApp::update(double deltaTime)
 	{
 		// Get current date time
-		utility::DateTime now = utility::getCurrentDateTime();
+		DateTime now = getCurrentDateTime();
 
 		// Compute time range
-		utility::SystemTimeStamp today = now.getTimeStamp();
-		utility::SystemTimeStamp yeste = today - std::chrono::hours(24);
+		SystemTimeStamp today = now.getTimeStamp();
+		SystemTimeStamp yeste = today - std::chrono::hours(24);
 
 		// Set
 		StressDataViewComponentInstance& stress_comp = mHistoryEntity->getComponent<StressDataViewComponentInstance>();
@@ -69,8 +69,8 @@ namespace nap
 		StressSnapshot snapshot({ nap::emography::EStressState::Over, 1.0f }, now.getTimeStamp());
 		
 		// Get converted time
-		utility::SystemTimeStamp cstamp = snapshot.mTimeStamp.toSystemTime();
-		utility::DateTime con(cstamp, utility::DateTime::ConversionMode::Local);
+		SystemTimeStamp cstamp = snapshot.mTimeStamp.toSystemTime();
+		DateTime con(cstamp, DateTime::ConversionMode::Local);
 		
 		static double time = 0;
 		time += deltaTime;

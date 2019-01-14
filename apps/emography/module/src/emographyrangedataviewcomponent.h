@@ -1,7 +1,7 @@
 #pragma once
 
 #include <component.h>
-#include <nap/timestamp.h>
+#include <nap/datetime.h>
 
 namespace nap
 {
@@ -19,13 +19,13 @@ namespace nap
 			/**
 			 * Construct settings based on start / stop time	
 			 */
-			RangeDataSettings(const TimeStamp& start, const TimeStamp& stop) :
+			RangeDataSettings(const Date& start, const Date& stop) :
 				mStartTime(start),
 				mEndTime(stop)	{ }
 
 			int			mSamples = 1024;		///< Property: 'Samples' number of samples associated with this data view
-			TimeStamp	mStartTime;				///< Property: 'StartTime' sample record start time
-			TimeStamp	mEndTime;				///< Property: 'EndTime' sample record end time
+			Date		mStartTime;				///< Property: 'StartTime' sample record start time
+			Date		mEndTime;				///< Property: 'EndTime' sample record end time
 		};
 
 
@@ -75,7 +75,7 @@ namespace nap
 			 * @param begin sample range start time
 			 * @param end sample range end time 
 			 */
-			void setTimeRange(const utility::SystemTimeStamp& begin, const utility::SystemTimeStamp& end);
+			void setTimeRange(const SystemTimeStamp& begin, const SystemTimeStamp& end);
 
 		protected:
 
@@ -86,8 +86,8 @@ namespace nap
 			virtual void settingsChanged() = 0;
 
 			int mSampleCount = -1;					///< Total number of samples
-			utility::SystemTimeStamp mStartTime;	///< Sample start time
-			utility::SystemTimeStamp mEndTime;		///< Sample end time
+			SystemTimeStamp mStartTime;				///< Sample start time
+			SystemTimeStamp mEndTime;				///< Sample end time
 		};
 	}
 }
