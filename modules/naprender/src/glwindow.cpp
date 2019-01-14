@@ -20,7 +20,7 @@ namespace nap
 		options = settings.resizable ? options	| SDL_WINDOW_RESIZABLE : options;
 		options = settings.borderless ? options | SDL_WINDOW_BORDERLESS : options;
 		options = !settings.visible ? options	| SDL_WINDOW_HIDDEN : options;
-        options = options | SDL_WINDOW_ALLOW_HIGHDPI;
+        options = settings.highdpi ?  options	| SDL_WINDOW_ALLOW_HIGHDPI : options;
 
 		SDL_Window* new_window = SDL_CreateWindow(	settings.title.c_str(),
 													settings.x,
