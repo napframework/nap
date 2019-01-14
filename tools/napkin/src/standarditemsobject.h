@@ -121,9 +121,12 @@ namespace napkin
 	class ComponentInstanceItem : public ObjectItem
 	{
 	public:
-		explicit ComponentInstanceItem(nap::Component& comp);
+		explicit ComponentInstanceItem(nap::Component& comp, RootEntityItem& rootEntityItem);
 		nap::Component& component() { return *dynamic_cast<nap::Component*>(mObject); }
 		nap::RootEntity& rootEntity();
+
+	private:
+		RootEntityItem& mEntityItem;
 	};
 
 } // namespace napkin
