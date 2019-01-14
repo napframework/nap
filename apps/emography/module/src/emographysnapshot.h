@@ -49,8 +49,8 @@ namespace nap
 
 
 		/**
-		 * Represents a single emography state reading at a particular point in time.
-		 * It combines both a stress related state and intensity value. 
+		 * Represents a single state reading at a particular point in time.
+		 * It combines both a timestamp and object associated with that time stamp.
 		 * This object is serializable but not a resource.
 		 * Because the object is relatively light weight it can be both copy and move constructed or assigned.
 		 */
