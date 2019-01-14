@@ -46,6 +46,7 @@ namespace nap
 		bool			resizable		= true;						///< If the window is resizable
 		bool			visible			= true;						///< If the window is visible or not
 		bool			sync			= true;						///< If v-sync is turned on for the window
+		bool			highdpi			= true;						///< If high-dpi mode is enabled
 	};
 
 

@@ -278,8 +278,9 @@ namespace nap
 
 	void MultiWindowApp::positionPlane(nap::RenderWindow& window, nap::TransformComponentInstance& planeTransform)
 	{
-		float window_width = static_cast<float>(window.getWidth());
-		float window_heigh = static_cast<float>(window.getHeight());
+        glm::ivec2 pixel_size = window.getBackbuffer().getSize();
+		float window_width = pixel_size.x;
+		float window_heigh = pixel_size.y;
 
 		// Scale of plane is smallest variant of window size
 		float scale = 0.0f;

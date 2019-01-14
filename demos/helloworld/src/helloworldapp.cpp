@@ -144,7 +144,7 @@ namespace nap
 		nap::OrthoCameraComponentInstance& ortho_camera = mOrthographicCamEntity->getComponent<nap::OrthoCameraComponentInstance>();
 
 		// Center text
-		render_text.setLocation({ mRenderWindow->getWidth() / 2, mRenderWindow->getHeight() / 2 });
+        render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
 
 		// Render text on top of sphere using render service
 		// Alternatively you can use: render_text.draw(const opengl::BackbufferRenderTarget& target) directly
