@@ -121,6 +121,41 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 }
 
+TEST_CASE("InstanceProperties", "[napkinpropertypath]")
+{
+	RUN_Q_APPLICATION
+
+	auto doc = AppContext::get().newDocument();
+	auto entity = doc->addObject<nap::Entity>();
+	auto comp = doc->addComponent<TestComponent>(*entity);
+	auto scene = doc->addObject<nap::Scene>();
+	doc->addEntityToScene(*scene, *entity);
+
+	auto rootEntity = doc->getRootEntity(*scene, *entity);
+	REQUIRE(rootEntity != nullptr);
+
+	PropertyPath regularPath(*comp, "Float");
+	REQUIRE(!regularPath.isInstance());
+	REQUIRE(regularPath.isValid());
+
+	PropertyPath instancePath(*rootEntity, *comp, "Float");
+	REQUIRE(instancePath.isInstance());
+	REQUIRE(instancePath.isValid());
+
+	float val1 = 123.456;
+	regularPath.setValue(val1);
+	REQUIRE(regularPath.getValue() == val1);
+	REQUIRE(instancePath.getValue() == val1);
+
+	float val2 = 678.90;
+	instancePath.setValue(val2);
+	REQUIRE(instancePath.getValue() == val2);
+	REQUIRE(regularPath.getValue() != val2);
+
+	PropertyPath instancePath2(*rootEntity, *comp, "Float");
+	REQUIRE(instancePath2.getValue() == val2);
+}
+
 TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 {
 	RUN_Q_APPLICATION
@@ -129,12 +164,12 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 	res.mID = "TestResource";
 
 	{
-		auto props = PropertyPath::getProperties(res);
+		auto props = PropertyPath(res).getProperties();
 		REQUIRE(props.size() == 16);
 	}
 
 	{
-		auto props = PropertyPath::getProperties(res, IterFlag::Resursive);
+		auto props = PropertyPath(res).getProperties(IterFlag::Resursive);
 		REQUIRE(props.size() == 26);
 	}
 
@@ -154,7 +189,7 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		REQUIRE(p.isPointer());
 
 
-		auto props1 = PropertyPath::getProperties(res, IterFlag::Resursive | IterFlag::FollowPointers);
+		auto props1 = PropertyPath(res).getProperties(IterFlag::Resursive | IterFlag::FollowPointers);
 		for (auto p : props1)
 		{
 			// The embedded pointee cannot be in this result, only regular pointees
@@ -162,7 +197,7 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		}
 		REQUIRE(props1.size() == 38);
 
-		auto props2 = PropertyPath::getProperties(res, IterFlag::Resursive | IterFlag::FollowEmbeddedPointers);
+		auto props2 = PropertyPath(res).getProperties(IterFlag::Resursive | IterFlag::FollowEmbeddedPointers);
 		for (auto p : props2)
 		{
 			// The regular pointee subRes cannot be in this result, only embedded pointees

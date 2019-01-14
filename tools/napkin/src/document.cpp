@@ -701,5 +701,15 @@ std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const 
 	return nap::utility::joinString(path, "/");
 }
 
+nap::RootEntity* Document::getRootEntity(nap::Scene& scene, nap::Entity& entity)
+{
+	for (auto& e : scene.mEntities)
+	{
+		if (e.mEntity.get() == &entity)
+			return &e;
+	}
+	return nullptr;
+}
+
 
 

@@ -90,26 +90,29 @@ namespace napkin
 		nap::Component& getComponent();
 	};
 
+	class RootEntityItem : public ObjectItem
+	{
+	public:
+		explicit RootEntityItem(nap::RootEntity& e);
+
+		nap::RootEntity& rootEntity();
+	private:
+		nap::RootEntity* mRootEntity;
+	};
+
 	/**
 	 * An item that displays an entity instance
 	 */
 	class EntityInstanceItem : public ObjectItem
 	{
 	public:
-		explicit EntityInstanceItem(nap::Entity& e);
+		explicit EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem);
 
-		virtual nap::RootEntity& rootEntity();
+		nap::RootEntity& rootEntity();
 		nap::Entity& entity() { return *dynamic_cast<nap::Entity*>(mObject); }
-	};
 
-	class RootEntityItem : public EntityInstanceItem
-	{
-	public:
-		explicit RootEntityItem(nap::RootEntity& e);
-
-		nap::RootEntity& rootEntity() override;
 	private:
-		nap::RootEntity& mRootEntity;
+		RootEntityItem& mRootEntityItem;
 	};
 
 	/**
@@ -118,9 +121,12 @@ namespace napkin
 	class ComponentInstanceItem : public ObjectItem
 	{
 	public:
-		explicit ComponentInstanceItem(nap::Component& comp);
+		explicit ComponentInstanceItem(nap::Component& comp, RootEntityItem& rootEntityItem);
 		nap::Component& component() { return *dynamic_cast<nap::Component*>(mObject); }
 		nap::RootEntity& rootEntity();
+
+	private:
+		RootEntityItem& mEntityItem;
 	};
 
 } // namespace napkin

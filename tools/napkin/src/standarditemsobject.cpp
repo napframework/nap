@@ -86,46 +86,50 @@ nap::Component& napkin::ComponentItem::getComponent()
 
 napkin::SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene)
 {
-	for (auto entity : scene.getEntityResources())
+	for (auto& entity : scene.getEntityResourcesRef())
 		appendRow(new RootEntityItem(entity));
 }
 
-napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e)
-	: ObjectItem(&e)
+napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem)
+	: ObjectItem(&e), mRootEntityItem(rootEntityItem)
 {
 	for (auto comp : e.mComponents)
-		appendRow(new ComponentInstanceItem(*comp));
+		appendRow(new ComponentInstanceItem(*comp, rootEntityItem));
 	for (auto entity : e.mChildren)
-		appendRow(new EntityInstanceItem(*entity));
-
+		appendRow(new EntityInstanceItem(*entity, rootEntityItem));
 }
 
-nap::RootEntity& napkin::EntityInstanceItem::rootEntity() {
-	auto rootEntityItem = dynamic_cast<RootEntityItem*>(parent());
-	if (rootEntityItem)
-		return rootEntityItem->rootEntity();
-	auto p = dynamic_cast<EntityInstanceItem*>(parent());
-	return p->rootEntity();
+nap::RootEntity& napkin::EntityInstanceItem::rootEntity()
+{
+	return mRootEntityItem.rootEntity();
 }
 
 napkin::RootEntityItem::RootEntityItem(nap::RootEntity& e)
-	: EntityInstanceItem(*e.mEntity), mRootEntity(e)
+	: ObjectItem(e.mEntity.get()), mRootEntity(&e)
 {
+	for (auto comp : e.mEntity->mComponents)
+		appendRow(new ComponentInstanceItem(*comp, *this));
+	for (auto entity : e.mEntity->mChildren)
+		appendRow(new EntityInstanceItem(*entity, *this));
 
+	auto rootProps = &e.mInstanceProperties;
+	rootProps->empty();
 }
 
 nap::RootEntity& napkin::RootEntityItem::rootEntity()
 {
-	return mRootEntity;
+	assert(mRootEntity);
+	return *mRootEntity;
 }
 
-napkin::ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp)
-	: ObjectItem(&comp)
+napkin::ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityItem& entityItem)
+	: ObjectItem(&comp), mEntityItem(entityItem)
 {
 
 }
 
 nap::RootEntity& napkin::ComponentInstanceItem::rootEntity()
 {
-	return dynamic_cast<EntityInstanceItem*>(parent())->rootEntity();
+	return mEntityItem.rootEntity();
 }
+
