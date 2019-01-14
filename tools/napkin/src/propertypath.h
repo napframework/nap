@@ -53,6 +53,13 @@ namespace napkin
 		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj);
 
 		/**
+		 * Create a path to an object that is to be instantiated.
+		 * @param rootEntity Contains the instance property data
+		 * @param obj
+		 */
+		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const nap::rtti::Path& path);
+
+		/**
 		 * Create a PropertyPath using an Object and a nap::rtti::Path
 		 * @param obj The object this property is on
 		 * @param path The path to the property
@@ -67,11 +74,25 @@ namespace napkin
 		PropertyPath(nap::rtti::Object& obj, const std::string& path);
 
 		/**
+		 * Create a PropertyPath using an Object and a path as string
+		 * @param obj The object this property is on
+		 * @param path The path to the property
+		 */
+		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj, const std::string& path);
+
+		/**
 		 * Create a PropertyPath using an Object and a property
 		 * @param obj
 		 * @param prop
 		 */
 		PropertyPath(nap::rtti::Object& obj, rttr::property prop);
+
+		/**
+		 * Create a PropertyPath using an Object and a property
+		 * @param obj
+		 * @param prop
+		 */
+		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, rttr::property prop);
 
 		/**
 		 * @return The last part of the property name (not including the path)
@@ -211,7 +232,7 @@ namespace napkin
 		/**
 		 * Iterate over the children of this property and call PropertyVisitor for each child.
 		 * @param visitor The function to be called on each iteration, return false from this function to stop iteration
-		 * @param flags Provide true to also iterate the children's children and so on
+		 * @param flags Provide traversal flags
 		 */
 		void iterateChildren(PropertyVisitor visitor, int flags) const;
 
@@ -223,26 +244,23 @@ namespace napkin
 		std::vector<PropertyPath> getChildren(int flags = IterFlag::FollowEmbeddedPointers) const;
 
 		/**
-		 * Iterate over an Object's properties, top-level or recursive
-		 * @param obj The object's properties to iterator over
-		 * @param visitor This function will be called for every property.
-		 * 				  Return false from this function to stop the iteration
-		 * @param flags Whether to recurse into sub-properties or not.
+		 * Iterate over this object's root properties.
+		 * @param visitor The function to be called on each iteration, return false from this function to stop iteration
+		 * @param flags Provide traversal flags
 		 */
-		static void iterateProperties(nap::rtti::Object& obj, PropertyVisitor visitor, int flags = 0);
-
-		/**
-		 * Get all properties of an object.
-		 * @param obj The object to retrieve the properties from
-		 * @param flags Also get the property children recursively?
-		 * @return All the properties on this object
-		 */
-		static std::vector<PropertyPath> getProperties(nap::rtti::Object& obj, int flags = 0);
+		void iterateProperties(PropertyVisitor visitor, int flags = 0) const;
+		std::vector<PropertyPath> getProperties(int flags = 0) const;
 
 	private:
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
+
+		nap::ComponentInstanceProperties* instanceProps() const;
+		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
+		nap::TargetAttribute* targetAttribute() const;
+		nap::TargetAttribute& getOrCreateTargetAttribute();
+
 
 		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
 		nap::rtti::Object* mObject = nullptr; // the object on which the property exists
