@@ -12,10 +12,10 @@ namespace nap
 	class RendererSettings
 	{
 	public:
-		bool mDoubleBuffer = true;		///< Property: 'DoubleBuffer' Enables / Disabled double buffering
-		bool mEnableMultiSampling = 1;	///< Property: 'EnableMultiSampling' Enables / Disables multi sampling.
-		int  mMultiSamples = 4;			///< Property: 'MultiSampleSamples' Number of samples per pixel when multi sampling is enabled
-		bool mEnableHighDPIMode = true;	///< Property: 'HighDPIMode' If high DPI render mode is enabled, on by default
+		bool mDoubleBuffer = true;			///< Property: 'DoubleBuffer' Enables / Disabled double buffering
+		bool mEnableMultiSampling = true;	///< Property: 'EnableMultiSampling' Enables / Disables multi sampling.
+		int  mMultiSamples = 4;				///< Property: 'MultiSampleSamples' Number of samples per pixel when multi sampling is enabled
+		bool mEnableHighDPIMode = true;		///< Property: 'HighDPIMode' If high DPI render mode is enabled, on by default
 	};
 
 	/**
