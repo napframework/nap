@@ -189,7 +189,7 @@ namespace nap
 				}
 				else
 				{
-					nap::utility::EDay new_day = static_cast<nap::utility::EDay>(mDay - 1);
+					nap::EDay new_day = static_cast<nap::EDay>(mDay - 1);
 					composition_selector.selectDay(new_day);
 				}
 			}
@@ -316,7 +316,7 @@ namespace nap
 		// GUI Colors
 		ImGui::Begin("Information");
 		ImGui::Spacing();
-		utility::getCurrentDateTime(mDateTime);
+		getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
 		ImGui::Text("Week %02d", mDateTime.getWeek());
 		RGBColorFloat float_clr = mTextColor.convert<RGBColorFloat>();
@@ -360,7 +360,7 @@ namespace nap
 		{
 			LightIntensityComponentInstance& light_comp = mApp.compositionEntity->getComponent<LightIntensityComponentInstance>();
 			OpeningTime opening_time, closing_time;
-			light_comp.getOpeningTimes(utility::getCurrentDateTime(), opening_time, closing_time);
+			light_comp.getOpeningTimes(getCurrentDateTime(), opening_time, closing_time);
 			ImGui::TextColored(float_clr, "Opening Hours:");
 			ImGui::SameLine();
 			ImGui::Text(utility::stringFormat("%02d:%02d", opening_time.mHour, opening_time.mMinute).c_str());

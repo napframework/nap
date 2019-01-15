@@ -276,7 +276,7 @@ namespace nap
 
 		ImGui::Begin("Information");
 		ImGui::Spacing();
-		utility::getCurrentDateTime(mDateTime);
+		getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());

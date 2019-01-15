@@ -109,7 +109,7 @@ add_subdirectory(apps/skeleton)
 add_subdirectory(apps/atmos)
 add_subdirectory(apps/random)
 add_subdirectory(apps/aura)
-#add_subdirectory(apps/emography)
+add_subdirectory(apps/emography)
 
 # demo targets
 add_subdirectory(demos/helloworld)
@@ -162,6 +162,7 @@ add_subdirectory(modules/napimgui)
 add_subdirectory(modules/napmidi)
 add_subdirectory(modules/napyoctopuce)
 add_subdirectory(modules/napfont)
+add_subdirectory(modules/napdatabase)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
@@ -171,7 +172,7 @@ add_subdirectory(apps/kalvertoren/module)
 add_subdirectory(apps/random/module)
 add_subdirectory(apps/atmos/module)
 add_subdirectory(apps/aura/module)
-#add_subdirectory(apps/emography/module)
+add_subdirectory(apps/emography/module)
 
 # Packaging
 include(cmake/packaging_macros.cmake)
