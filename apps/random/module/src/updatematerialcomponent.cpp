@@ -56,8 +56,8 @@ namespace nap
 
 
 	void UpdateMaterialComponentInstance::updateParty(double deltaTime) {
-		// Update time uniform on party shader
-		mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uTime").mValue += static_cast<float>(deltaTime);
+		float* uBeat = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBeat").mValue;
+		*uBeat = fmod(*uBeat + (static_cast<float>(mPartyBPM) / 60.0f) * static_cast<float>(deltaTime), 1.0f);
 	}
 
 
@@ -161,5 +161,29 @@ namespace nap
 	float* UpdateMaterialComponentInstance::getStaticWarmthPtr()
 	{
 		return &mStaticMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWarmth").mValue;
+	}
+
+
+	int* UpdateMaterialComponentInstance::getPartyWaveCountPtr()
+	{
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformInt>("uWaveCount").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getPartyWaveLengthPtr()
+	{
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveLength").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getPartyWaveFalloffStartPtr()
+	{
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveFalloffStart").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getPartyWaveFalloffEndPtr()
+	{
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveFalloffEnd").mValue;
 	}
 }

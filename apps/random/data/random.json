@@ -790,7 +790,32 @@
                     "Mesh": "PartyMesh",
                     "MaterialInstance": {
                         "Material": "PartyMaterial",
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformInt",
+                                "mID": "UniformInt_2",
+                                "Name": "uWaveCount",
+                                "Value": 3
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_18",
+                                "Name": "uWaveLength",
+                                "Value": 0.5
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_22",
+                                "Name": "uWaveFalloffStart",
+                                "Value": 0.25
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_23",
+                                "Name": "uWaveFalloffEnd",
+                                "Value": 0.75
+                            }
+                        ],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -1401,20 +1426,44 @@
             "mID": "PartyMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformFloat",
-                    "mID": "UniformFloat_17",
-                    "Name": "uTime",
-                    "Value": 0.0
-                },
-                {
                     "Type": "nap::UniformVec3",
                     "mID": "UniformVec3_5",
                     "Name": "uCenter",
                     "Value": {
-                        "x": 0.20000000298023225,
-                        "y": 0.800000011920929,
+                        "x": 0.0,
+                        "y": 0.0,
                         "z": 0.0
                     }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_20",
+                    "Name": "uBeat",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformInt",
+                    "mID": "UniformInt",
+                    "Name": "uWaveCount",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_17",
+                    "Name": "uWaveLength",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_19",
+                    "Name": "uWaveFalloffStart",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_21",
+                    "Name": "uWaveFalloffEnd",
+                    "Value": 0.0
                 }
             ],
             "Shader": "PartyShader",

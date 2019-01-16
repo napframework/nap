@@ -76,15 +76,19 @@ namespace nap
 		EntityInstancePtr								mLightRigEntity = { this, &UpdateMaterialComponent::mLightRigEntity };
 
 		// Exposed properties for GUI
-		void setCombinationTextures(nap::Texture2D& textureOne, nap::Texture2D& textureTwo);
-		float* getCombinationBlendValuePtr();
-		float* getSunCloudsRotationPtr();
-		float* getSunCloudsContrastPtr();
-		float* getSunCloudsScalePtr();
-		float* getSunGlareOuterSizePtr();
-		float* getSunGlareInnerSizePtr();
-		float* getSunGlareStretchPtr();
-		float* getStaticWarmthPtr();
+		void		setCombinationTextures(nap::Texture2D& textureOne, nap::Texture2D& textureTwo);
+		float*		getCombinationBlendValuePtr();
+		float*		getSunCloudsRotationPtr();
+		float*		getSunCloudsContrastPtr();
+		float*		getSunCloudsScalePtr();
+		float*		getSunGlareOuterSizePtr();
+		float*		getSunGlareInnerSizePtr();
+		float*		getSunGlareStretchPtr();
+		float*		getStaticWarmthPtr();
+		int*		getPartyWaveCountPtr();
+		float*		getPartyWaveLengthPtr();
+		float*		getPartyWaveFalloffStartPtr();
+		float*		getPartyWaveFalloffEndPtr();
 
 		float		mSunCloudsNoiseSpeed = 0.025f;
 		const float	mSunCloudsNoiseSpeedMax = 0.25f;
@@ -104,5 +108,12 @@ namespace nap
 		const float	mSunGlareStretchMax = 10.0f;
 
 		float		mPartyCenter[2] = { 0.2f, 0.8f };
+		int			mPartyBPM = 120;
+		int			mPartyBPMMin = 20;
+		int			mPartyBPMMax = 240;
+		int			mPartyWaveCountMax = 5;
+		float		mPartyWaveLengthMin = 0.1f;
+		float		mPartyWaveFalloffMin = 0.1f;
+		float		mPartyWaveFalloffMax = 1.5f;
 	};
 }

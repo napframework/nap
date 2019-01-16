@@ -156,11 +156,18 @@ namespace nap
 
 	void RandomGui::showPartyControls()
 	{
-		if (ImGui::CollapsingHeader("Party", ImGuiTreeNodeFlags_DefaultOpen))
+		UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
+		if (ImGui::CollapsingHeader("Music", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
-			if (ImGui::DragFloat2("Party Center", updateMaterial.mPartyCenter, 0.001f, 0.0f, 1.0f))
+			if (ImGui::SliderFloat2("Center", updateMaterial.mPartyCenter, 0.0f, 1.0f))
 				updateMaterial.updatePartyCenter();
+			ImGui::SliderInt("BPM", &updateMaterial.mPartyBPM, updateMaterial.mPartyBPMMin, updateMaterial.mPartyBPMMax);			
+		}
+		if (ImGui::CollapsingHeader("Waves", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::SliderInt("Count", updateMaterial.getPartyWaveCountPtr(), 1, updateMaterial.mPartyWaveCountMax);
+			ImGui::SliderFloat("Length", updateMaterial.getPartyWaveLengthPtr(), updateMaterial.mPartyWaveLengthMin, 1.0f);
+			ImGui::DragFloatRange2("Fall-off Start / End", updateMaterial.getPartyWaveFalloffStartPtr(), updateMaterial.getPartyWaveFalloffEndPtr(), 0.01f, updateMaterial.mPartyWaveFalloffMin, updateMaterial.mPartyWaveFalloffMax);
 		}
 	}
 }
