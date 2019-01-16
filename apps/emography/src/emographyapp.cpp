@@ -8,6 +8,7 @@
 #include <inputrouter.h>
 #include <emographysnapshot.h>
 #include <emographystressdataviewcomponent.h>
+#include <apiargument.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmographyApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -27,6 +28,14 @@ namespace nap
 		mSceneService	= getCore().getService<SceneService>();
 
 		// Initialize all services
+		APIArgument float_argument(std::make_unique<APIFloat>(1.0f));
+
+		// Some api argument magic
+		std::vector<float> mValues = { 1.0f,2.0f,1.0f };
+		APIArgument floav_argument(std::make_unique<APIFloatArray>(std::move(mValues)));
+		bool is_array = floav_argument.isArray();
+		bool is_float_v = floav_argument.getValueType() == RTTI_OF(float);
+		APIFloatArray float_copy = floav_argument.getCopy<APIFloatArray>();
 
 		// Get resource manager service
 		mResourceManager = getCore().getResourceManager();

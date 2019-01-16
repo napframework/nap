@@ -18,7 +18,7 @@ namespace nap
 	 * For other / more complex OSC Value types you can ask for the value using the get<T> function.
 	 * Note that this argument owns the value.
 	 */
-	class NAPAPI OSCArgument
+	class NAPAPI OSCArgument final
 	{
 		RTTI_ENABLE()
 	public:
@@ -27,7 +27,7 @@ namespace nap
 		OSCArgument(OSCValuePtr value);
 
 		// Default Destructor
-		virtual ~OSCArgument() = default;
+		~OSCArgument() = default;
 
 		/**
 		 * @return the value as type T, nullptr if the type doesn't match
