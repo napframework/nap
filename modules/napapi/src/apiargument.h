@@ -8,9 +8,9 @@ namespace nap
 	class BaseAPIValue;
 
 	/**
-	 * Wrapper around a value that can be given to or constructed for an external environment.
-	 * The argument can not be copied or moved but the API value can be moved and copied.
-	 * To access the API value use the get() or getCopy() methods.
+	 * Wrapper around an APIValue that can be given to or constructed for an external environment.
+	 * This object can not be copied or moved but the APIValue can be moved and copied.
+	 * To access the managed APIValue use the get() or getCopy() methods.
 	 */
 	class NAPAPI APIArgument final
 	{
@@ -94,7 +94,7 @@ namespace nap
 
 	/**
 	 * Represents an actual value that can be given to or constructed for an external environment.
-	 * This object owns a value of type T. This object can be moved and copied.
+	 * This object owns T and can be moved and copied.
 	 */
 	template<typename T>
 	class APIValue : public BaseAPIValue
