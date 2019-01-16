@@ -8,7 +8,7 @@ namespace nap
 	class BaseAPIValue;
 
 	/**
-	 * Wrapper around an APIValue that can be given to or constructed for an external environment.
+	 * Wrapper around an APIValue that can be given to or is received from an external environment.
 	 * This object can not be copied or moved but the APIValue can be moved and copied.
 	 * To access the managed APIValue use the get() or getCopy() methods.
 	 */
