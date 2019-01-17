@@ -61,4 +61,82 @@ namespace nap
 		}
 		return mAPIValue->get_type().get_raw_type();
 	}
+
+
+	bool APIArgument::isString() const
+	{
+		return mAPIValue->get_type().get_raw_type() == RTTI_OF(std::string);
+	}
+
+
+	std::string nap::APIArgument::asString() const
+	{
+		assert(isString());
+		return static_cast<const APIString*>(mAPIValue.get())->mValue;
+	}
+
+
+	bool APIArgument::isChar() const
+	{
+		return mAPIValue->get_type().get_raw_type() == RTTI_OF(char);
+	}
+
+
+	char APIArgument::asChar() const
+	{
+		assert(isChar());
+		return static_cast<const APIChar*>(mAPIValue.get())->mValue;
+	}
+
+
+	bool nap::APIArgument::isFloat() const
+	{
+		return mAPIValue->get_type().get_raw_type() == RTTI_OF(float);
+	}
+
+
+	float APIArgument::asFloat() const
+	{
+		assert(isFloat());
+		return static_cast<const APIFloat*>(mAPIValue.get())->mValue;
+	}
+
+
+	bool nap::APIArgument::isInt() const
+	{
+		return mAPIValue->get_type().get_raw_type() == RTTI_OF(int);
+	}
+
+
+	int APIArgument::asInt() const
+	{
+		assert(isInt());
+		return static_cast<const APIInt*>(mAPIValue.get())->mValue;
+	}
+
+
+	bool APIArgument::isBool() const
+	{
+		return mAPIValue->get_type().get_raw_type() == RTTI_OF(bool);
+	}
+
+
+	bool nap::APIArgument::asBool() const
+	{
+		assert(isBool());
+		return static_cast<const APIBool*>(mAPIValue.get())->mValue;
+	}
+
+
+	bool nap::APIArgument::isDouble() const
+	{
+		return mAPIValue->get_type().get_raw_type() == RTTI_OF(double);
+	}
+
+
+	float nap::APIArgument::asDouble() const
+	{
+		assert(isDouble());
+		return static_cast<const APIDouble*>(mAPIValue.get())->mValue;
+	}
 }

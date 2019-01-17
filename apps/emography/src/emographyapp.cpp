@@ -33,9 +33,12 @@ namespace nap
 		// Some api argument magic
 		std::vector<float> mValues = { 1.0f,2.0f,1.0f };
 		APIArgument floav_argument(std::make_unique<APIFloatArray>(std::move(mValues)));
+		
 		bool is_array = floav_argument.isArray();
 		bool is_float_v = floav_argument.getValueType() == RTTI_OF(float);
+		
 		APIFloatArray float_copy = floav_argument.getCopy<APIFloatArray>();
+		std::vector<float>* vector_arr = floav_argument.asArray<float>();
 
 		// Get resource manager service
 		mResourceManager = getCore().getResourceManager();
