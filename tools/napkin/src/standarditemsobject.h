@@ -17,13 +17,6 @@ namespace napkin
 		 * @param name The name of the group
 		 */
 		explicit GroupItem(const QString& name);
-
-		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override { return StandardItemTypeID::GroupItemID; }
 	};
 
 	/**
@@ -36,13 +29,6 @@ namespace napkin
 		 * @param o The object this item should represent
 		 */
 		explicit ObjectItem(nap::rtti::Object* o);
-
-		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override { return StandardItemTypeID::ObjectItemID; };
 
 		/**
 		 * Refresh
@@ -75,16 +61,19 @@ namespace napkin
 		explicit EntityItem(nap::Entity& entity);
 
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override { return StandardItemTypeID::EntityItemID; }
-
-		/**
 		 * @return The entity held by this item
 		 */
 		nap::Entity* getEntity();
+	};
+
+	/**
+	 * An item representing one scene
+	 */
+	class SceneItem : public ObjectItem
+	{
+	public:
+		explicit SceneItem(nap::Scene& scene);
+
 	};
 
 	/**
@@ -96,33 +85,19 @@ namespace napkin
 		explicit ComponentItem(nap::Component& comp);
 
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override { return StandardItemTypeID::ComponentItemID; }
-
-		/**
 		 * @return The component held by this item.
 		 */
 		nap::Component& getComponent();
 	};
 
-	/**
-	 * An item representing one scene
-	 */
-	class SceneItem : public ObjectItem
+	class RootEntityItem : public ObjectItem
 	{
 	public:
-		explicit SceneItem(nap::Scene& scene);
+		explicit RootEntityItem(nap::RootEntity& e);
 
-        /**
-         * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-         * This function is supposed to solve that.
-         * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-         */
-        int type() const override { return StandardItemTypeID::SceneItemID; }
-
+		nap::RootEntity& rootEntity();
+	private:
+		nap::RootEntity* mRootEntity;
 	};
 
 	/**
@@ -131,15 +106,27 @@ namespace napkin
 	class EntityInstanceItem : public ObjectItem
 	{
 	public:
-		explicit EntityInstanceItem(nap::Entity& e);
+		explicit EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem);
 
-        /**
-         * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-         * This function is supposed to solve that.
-         * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-         */
-        int type() const override { return StandardItemTypeID::EntityInstanceID; }
+		nap::RootEntity& rootEntity();
+		nap::Entity& entity() { return *dynamic_cast<nap::Entity*>(mObject); }
 
+	private:
+		RootEntityItem& mRootEntityItem;
+	};
+
+	/**
+	 * Item that displays a Component Instance
+	 */
+	class ComponentInstanceItem : public ObjectItem
+	{
+	public:
+		explicit ComponentInstanceItem(nap::Component& comp, RootEntityItem& rootEntityItem);
+		nap::Component& component() { return *dynamic_cast<nap::Component*>(mObject); }
+		nap::RootEntity& rootEntity();
+
+	private:
+		RootEntityItem& mEntityItem;
 	};
 
 } // namespace napkin

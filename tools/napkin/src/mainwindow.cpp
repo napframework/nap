@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <fcurve.h>
+#include <QtDebug>
 
 using namespace napkin;
 
@@ -11,6 +12,7 @@ void MainWindow::bindSignals()
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
 	connect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
+	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
 	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
 }
@@ -21,6 +23,7 @@ void MainWindow::unbindSignals()
 	disconnect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
 	disconnect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
+	disconnect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
 	disconnect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
 }
@@ -145,7 +148,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
 {
-	mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
+	if (objects.isEmpty())
+		mInspectorPanel.clear();
+	else
+		mInspectorPanel.setPath(*objects.first());
 
 	mCurvePanel.editCurve(nullptr);
 
@@ -156,6 +162,16 @@ void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
 		}
 	}
 
+}
+
+void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
+{
+	// TODO: Multiselect
+	for (auto path : paths)
+	{
+		mInspectorPanel.setPath(path);
+		return;
+	}
 }
 
 void MainWindow::onDocumentOpened(const QString filename)
@@ -176,4 +192,3 @@ void MainWindow::showError(nap::LogMessage msg)
 	mErrorDialog.addMessage(QString::fromStdString(msg.text()));
 	mErrorDialog.show();
 }
-

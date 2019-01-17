@@ -97,18 +97,6 @@ namespace napkin
 					return false;
 				}
 			}
-
-			// TODO: is this necessary?
-			//        if (!conversion_succeeded)
-			//            return false;
-			//        } else {
-			//            bool conversion_succeeded = false;
-			//            value_int = value.to_uint64(&conversion_succeeded);
-			//            if (!conversion_succeeded)
-			//                return false;
-			//        }
-			//
-			//        outValue.setValue(value_int);
 		}
 		else if (type == TypeInfo::get<std::string>())
 		{

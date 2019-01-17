@@ -25,19 +25,6 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 	auto type = getTypeFromModelIndex(index);
 	auto path = getPropertyPathFromIndex(index);
 
-	const nap::rtti::TypeInfo wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
-	// TODO: There must be a less convoluted way.
-	// In the case of array elements, the type will be the array type, not the element type.
-	// For now, grab the array's element type and use that.
-	nap::rtti::TypeInfo wrapped_array_type = rttr::type::empty();
-	if (type.is_array()) {
-		nap::rtti::Variant value = path.getValue();
-		nap::rtti::VariantArray array = value.create_array_view();
-		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
-		wrapped_array_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
-	}
-
-
 	if (path.isEnum())
 	{
 		uint val = index.model()->data(index, Qt::DisplayRole).toUInt();
@@ -220,7 +207,7 @@ const PropertyPath PropertyValueItemDelegate::getPropertyPathFromIndex(const QMo
 	auto variant = idx.data(Qt::UserRole);
 	if (variant.canConvert<PropertyPath>())
 		return variant.value<PropertyPath>();
-	return PropertyPath();
+	return {};
 }
 
 

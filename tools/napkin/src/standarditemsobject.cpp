@@ -11,7 +11,7 @@ napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 napkin::ObjectItem::ObjectItem(nap::rtti::Object* rttiObject) : mObject(rttiObject)
 {
 	refresh();
-
+	setText(QString::fromStdString(rttiObject->mID));
     setIcon(AppContext::get().getResourceFactory().getIcon(*rttiObject));
 }
 
@@ -86,28 +86,46 @@ nap::Component& napkin::ComponentItem::getComponent()
 
 napkin::SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene)
 {
-	setText(QString::fromStdString(scene.mID));
-    for (auto entity : scene.getEntityResources())
-    {
-		appendRow(new EntityInstanceItem(*entity.mEntity));
-    }
+	for (auto& entity : scene.getEntityResourcesRef())
+		appendRow(new RootEntityItem(entity));
 }
 
-napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e) : ObjectItem(&e)
+napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem)
+	: ObjectItem(&e), mRootEntityItem(rootEntityItem)
 {
-	auto name = QString::fromStdString(e.mID);
-	if (name.isEmpty())
-		name = "Unnamed";
-
-	// TODO: This crashes
-	//    auto entityName = QString::fromStdString(e.getEntity()->mID);
-
-	//	name = QString("%1 (%2)").arg(name, entityName);
-	setText(name);
-
-//	for (auto e : mEntityInstance.getChildren())
-//	{
-//		appendRow(new EntityInstanceItem(*e));
-//	}
+	for (auto comp : e.mComponents)
+		appendRow(new ComponentInstanceItem(*comp, rootEntityItem));
+	for (auto entity : e.mChildren)
+		appendRow(new EntityInstanceItem(*entity, rootEntityItem));
 }
 
+nap::RootEntity& napkin::EntityInstanceItem::rootEntity()
+{
+	return mRootEntityItem.rootEntity();
+}
+
+napkin::RootEntityItem::RootEntityItem(nap::RootEntity& e)
+	: ObjectItem(e.mEntity.get()), mRootEntity(&e)
+{
+	for (auto comp : e.mEntity->mComponents)
+		appendRow(new ComponentInstanceItem(*comp, *this));
+	for (auto entity : e.mEntity->mChildren)
+		appendRow(new EntityInstanceItem(*entity, *this));
+}
+
+nap::RootEntity& napkin::RootEntityItem::rootEntity()
+{
+	assert(mRootEntity);
+	return *mRootEntity;
+}
+
+napkin::ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityItem& entityItem)
+	: ObjectItem(&comp), mEntityItem(entityItem)
+{
+
+}
+
+nap::RootEntity& napkin::ComponentInstanceItem::rootEntity()
+{
+	return mEntityItem.rootEntity();
+}

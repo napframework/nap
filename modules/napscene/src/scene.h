@@ -24,7 +24,7 @@ namespace nap
 	{
 	public:
 		rtti::ObjectPtr<Entity>							mEntity;				///< Root entity to spawn
-		std::vector<ComponentInstanceProperties>	mInstanceProperties;	//< The instance properties for this entity (and all of its children)
+		std::vector<ComponentInstanceProperties>		mInstanceProperties;	//< The instance properties for this entity (and all of its children)
 	};
 
 	/**
@@ -37,7 +37,7 @@ namespace nap
 	public:
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
-        using RootEntityList = std::vector<RootEntity>;
+		using RootEntityList = std::vector<RootEntity>;
 		using InstanceByIDMap = std::unordered_map<std::string, rtti::Object*>;
 
 		Scene(Core& core);
@@ -48,26 +48,26 @@ namespace nap
 		 * As soon as this is called, EntityInstances will become available
 		 * and are accessible through #getRootEntity() and #getEntities()
 		 */
-        virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Update all entities contained in this scene
 		 */
 		void update(double deltaTime);
 
-        /**
-         * Spawns an entity hierarchy.
+		/**
+		 * Spawns an entity hierarchy.
 		 * @param entity Root Entity to spawn.
 		 * @param errorState Contains error information if the returned object is nullptr.
 		 * @return On succes, the EntityInstance that was spawned. The Entity can be destroyed 
 		 *         by calling destroy with the value returned from this function.
-         */		
+		 */		
 		SpawnedEntityInstance spawn(const Entity& entity, utility::ErrorState& errorState);
 
-        /**
+		/**
 		 * Destroys a spawned Entity.
 		 * @param entity The Entity to destroy. This is the Entity as created using the spawn function.
-         */		
+		 */		
 		void destroy(SpawnedEntityInstance& entity);
 
 		/**
@@ -89,17 +89,22 @@ namespace nap
 		/**
 		 * @return The root EntityInstance of this scene
 		 */
-		const EntityInstance& getRootEntity() const		{ return *mRootEntity;}
+		const EntityInstance& getRootEntity() const		{ return *mRootEntityInstance;}
 
 		/**
 		 * @return The root EntityInstance of this scene
 		 */
-		EntityInstance& getRootEntity()		{ return *mRootEntity;}
+		EntityInstance& getRootEntity()					{ return *mRootEntityInstance;}
 
-        /**
-         * @return The RootEntity resources in the scene.
-         */
-        RootEntityList getEntityResources() { return mEntities; }
+		/**
+		 * @return The RootEntity resources in the scene.
+		 */
+		RootEntityList getEntityResources()				{ return mEntities; }
+
+		/**
+		 * @return The RootEntity resources in the scene as a reference.
+		 */
+		RootEntityList& getEntityResourcesRef()			{ return mEntities; }
 
 	private:
 		EntityInstance* createEntityInstance(const Entity& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
@@ -121,7 +126,8 @@ namespace nap
 		friend class EntityInstance;
 
 		Core*								mCore;
-		std::unique_ptr<EntityInstance>		mRootEntity;					///< Root entity, owned and created by this scene
+		std::unique_ptr<EntityInstance>		mRootEntityInstance;			///< Root entity, owned and created by this scene
+		std::unique_ptr<Entity>				mRootEntityResource;			///< Root entity resource, owned and created by this scene
 		EntityByIDMap						mEntityInstancesByID;			///< Holds all spawned entities
 		InstanceByIDMap						mInstancesByID;					///< Holds all spawned entities & components
 		ClonedComponentByEntityMap			mClonedComponentsByEntity;		///< All cloned components, stored by entity. This map owns the cloned resources.
