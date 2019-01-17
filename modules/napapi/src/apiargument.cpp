@@ -3,7 +3,7 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIArgument)
 RTTI_END_CLASS
 
-RTTI_DEFINE_BASE(nap::BaseAPIValue)
+RTTI_DEFINE_BASE(nap::APIBaseValue)
 
 RTTI_BEGIN_STRUCT(nap::APIFloat)
 	RTTI_VALUE_CONSTRUCTOR(const float&)
@@ -138,5 +138,31 @@ namespace nap
 	{
 		assert(isDouble());
 		return static_cast<const APIDouble*>(mAPIValue.get())->mValue;
+	}
+
+
+	bool nap::APIArgument::isLong() const
+	{
+		return mAPIValue->get_type().get_raw_type() == RTTI_OF(long long);
+	}
+
+
+	long long nap::APIArgument::asLong() const
+	{
+		assert(isLong());
+		return static_cast<const APILong*>(mAPIValue.get())->mValue;
+	}
+
+
+	bool nap::APIArgument::isByte() const
+	{
+		return mAPIValue->get_type().get_raw_type() == RTTI_OF(uint8_t);
+	}
+
+
+	char nap::APIArgument::asByte() const
+	{
+		assert(isByte());
+		return static_cast<const APIByte*>(mAPIValue.get())->mValue;
 	}
 }

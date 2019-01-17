@@ -177,7 +177,8 @@ namespace nap
 	{
 		RTTI_ENABLE(OSCBaseValue)
 	public:
-		OSCValue(const T& value) : mValue(value)								{ }
+		OSCValue(const T& value)  : mValue(value)								{ }
+		OSCValue(const T&& value) : mValue(std::move(value))					{ }
 		T mValue;
         virtual std::string toString() const override;
 	protected:
@@ -194,6 +195,7 @@ namespace nap
 		RTTI_ENABLE(OSCBaseValue)
 	public:
 		OSCString(const std::string& string) : mString(string)						{ }
+		OSCString(const std::string&& string) : mString(std::move(string))			{ }
 		std::string mString;
         virtual std::string toString() const override					{ return mString; }
 	protected:

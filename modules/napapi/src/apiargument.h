@@ -5,7 +5,7 @@
 namespace nap
 {
 	// Forward Declares
-	class BaseAPIValue;
+	class APIBaseValue;
 
 	/**
 	 * Wrapper around an APIValue that can be given to or is received from an external environment.
@@ -20,7 +20,7 @@ namespace nap
 		 * Arguments can only be constructed using a value
 		 * @param value the value associated with this argument, owned by this object.
 		 */
-		APIArgument(std::unique_ptr<BaseAPIValue> value) : mAPIValue(std::move(value)) { }
+		APIArgument(std::unique_ptr<APIBaseValue> value) : mAPIValue(std::move(value)) { }
 
 		// Default destructor
 		~APIArgument() = default;
@@ -97,6 +97,16 @@ namespace nap
 		char asChar() const;
 
 		/**
+		 * @return if this argument's value is a char
+		 */
+		bool isByte() const;
+
+		/**
+		 * @return this argument's value as a char
+		 */
+		char asByte() const;
+
+		/**
 		 *	@return if this argument's value is a float
 		 */
 		bool isFloat() const;
@@ -132,12 +142,22 @@ namespace nap
 		bool isBool() const;
 
 		/**
-		 *	@return this argument's value as a bool
+		 * @return this argument's value as a bool
 		 */
 		bool asBool() const;
+		
+		/**
+		 * @return if this argument's value is a bool
+		 */
+		bool isLong() const;
+
+		/**
+		 * @return this argument's value as a bool
+		 */
+		long long asLong() const;
 
 	private:
-		std::unique_ptr<BaseAPIValue> mAPIValue = nullptr;	///< API Value represented by this argument
+		std::unique_ptr<APIBaseValue> mAPIValue = nullptr;	///< API Value represented by this argument
  	};
 
 
@@ -149,16 +169,16 @@ namespace nap
 	 * Base class of a value that can be given to or constructed for an external environment.
 	 * This value can be copied and move constructed.
 	 */
-	class NAPAPI BaseAPIValue
+	class NAPAPI APIBaseValue
 	{
 		friend class APIArgument;
 		RTTI_ENABLE()
 	public:
 		// Default constructor
-		BaseAPIValue(const rtti::TypeInfo& type) : mRepresentedType(type)	{ }
+		APIBaseValue(const rtti::TypeInfo& type) : mRepresentedType(type)	{ }
 
 		// Default destructor
-		virtual ~BaseAPIValue() = default;
+		virtual ~APIBaseValue() = default;
 
 	private:
 		rtti::TypeInfo mRepresentedType;		///< type of the embedded value
@@ -170,9 +190,9 @@ namespace nap
 	 * This object owns T and can be moved and copied.
 	 */
 	template<typename T>
-	class APIValue : public BaseAPIValue
+	class APIValue : public APIBaseValue
 	{
-		RTTI_ENABLE(BaseAPIValue)
+		RTTI_ENABLE(APIBaseValue)
 	public:
 		APIValue();
 
@@ -220,6 +240,7 @@ namespace nap
 	using APIBool			= APIValue<bool>;
 	using APIInt			= APIValue<int>;
 	using APIChar			= APIValue<char>;
+	using APIByte			= APIValue<uint8_t>;
 	using APIString			= APIValue<std::string>;
 	using APIDouble			= APIValue<double>;
 	using APILong			= APIValue<long long>;
@@ -227,6 +248,7 @@ namespace nap
 	using APIFloatArray		= APIValue<std::vector<float>>;
 	using APIIntArray		= APIValue<std::vector<int>>;
 	using APICharArray		= APIValue<std::vector<char>>;
+	using APIByteArray		= APIValue<std::vector<uint8_t>>;
 	using APIStringArray	= APIValue<std::vector<std::string>>;
 	using APIDoubleArray	= APIValue<std::vector<double>>;
 
@@ -237,23 +259,23 @@ namespace nap
 
 	template<typename T>
 	nap::APIValue<T>::APIValue(T&& value) : 
-		BaseAPIValue(RTTI_OF(T)), 
+		APIBaseValue(RTTI_OF(T)), 
 		mValue(std::move(value)) {  }
 
 
 	template<typename T>
 	nap::APIValue<T>::APIValue(const T& value) : 
-		BaseAPIValue(RTTI_OF(T)), 
+		APIBaseValue(RTTI_OF(T)), 
 		mValue(value) { }
 
 
 	template<typename T>
-	nap::APIValue<T>::APIValue() : BaseAPIValue(RTTI_OF(T)) { }
+	nap::APIValue<T>::APIValue() : APIBaseValue(RTTI_OF(T)) { }
 
 
 	template<typename T>
 	nap::APIValue<T>::APIValue(const APIValue& other) : 
-		BaseAPIValue(RTTI_OF(T)),
+		APIBaseValue(RTTI_OF(T)),
 		mValue(other.mValue)
 	{
 	}
@@ -261,7 +283,7 @@ namespace nap
 
 	template<typename T>
 	nap::APIValue<T>::APIValue(APIValue&& other) : 
-		BaseAPIValue(RTTI_OF(T)),
+		APIBaseValue(RTTI_OF(T)),
 		mValue(std::move(other.mValue))
 	{
 	}

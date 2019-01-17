@@ -3,7 +3,7 @@
 #include <nap/signalslot.h>
 
 // RTTI Definitions
-RTTI_BEGIN_CLASS(nap::OSCEvent)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCEvent)
 	RTTI_CONSTRUCTOR(const std::string&)
     RTTI_FUNCTION("getAddress", &nap::OSCEvent::getAddress)
     RTTI_FUNCTION("getArgument", (const nap::OSCArgument*(nap::OSCEvent::*)(int)const)&nap::OSCEvent::getArgument)
@@ -19,6 +19,12 @@ namespace nap
 {
 
 	OSCEvent::OSCEvent(const std::string& address) : mAddress(address)
+	{
+
+	}
+
+
+	OSCEvent::OSCEvent(const std::string&& address) : mAddress(std::move(address))
 	{
 
 	}
