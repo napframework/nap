@@ -507,7 +507,7 @@
                         "Universe2",
                         "Universe3"
                     ],
-                    "MinArtnetValue": 45
+                    "MinArtnetValue": 25
                 }
             ],
             "Children": [
