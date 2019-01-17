@@ -807,13 +807,13 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_22",
                                 "Name": "uWaveFalloffStart",
-                                "Value": 0.25
+                                "Value": 0.30000001192092898
                             },
                             {
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_23",
                                 "Name": "uWaveFalloffEnd",
-                                "Value": 0.75
+                                "Value": 0.8999999761581421
                             },
                             {
                                 "Type": "nap::UniformFloat",

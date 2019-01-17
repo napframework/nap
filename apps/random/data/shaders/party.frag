@@ -138,7 +138,8 @@ void main()
 			: (1.0 - nearestWaveInfluence / uWaveCenter) * -PI;
 		nearestWaveInfluence = (1.0 + cos(nearestWaveX)) * 0.5;
 	}
-	float waveFalloffInfluence = 1.0 - clamp((waveCenterDistance - uWaveFalloffStart) / (uWaveFalloffEnd - uWaveFalloffStart), 0.0, 1.0);
+	float waveFalloffX = clamp((waveCenterDistance - uWaveFalloffStart) / (uWaveFalloffEnd - uWaveFalloffStart), 0.0, 1.0) * PI;
+	float waveFalloffInfluence = (1.0 + cos(waveFalloffX)) * 0.5;
 	float wave = nearestWaveInfluence * waveFalloffInfluence;
 
 	// set fragment color
