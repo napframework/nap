@@ -3,6 +3,7 @@
 // Nap includes
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
+#include <apiservice.h>
 #include <app.h>
 #include <scene.h>
 
@@ -37,6 +38,7 @@ namespace nap
 		// Nap Services
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
+		APIService* mAPIService = nullptr;								//< Manages all API calls
 		rtti::ObjectPtr<Scene> mScene = nullptr;						//< Nap scene, contains all entities
 		rtti::ObjectPtr<EntityInstance> mController = nullptr;			//< Controlling entity
 		rtti::ObjectPtr<EntityInstance> mHistoryEntity = nullptr;		//< History entity

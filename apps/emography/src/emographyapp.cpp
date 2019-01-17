@@ -27,6 +27,9 @@ namespace nap
 		// Create render service
 		mSceneService	= getCore().getService<SceneService>();
 
+		// Create API Service
+		mAPIService = getCore().getService<APIService>();
+
 		// Initialize all services
 		APIArgument float_argument(std::make_unique<APIFloat>(1.0f));
 
@@ -55,6 +58,8 @@ namespace nap
 		mSummaryEntity = mScene->findEntity("SummaryEntity");
 		mDashboardEntity = mScene->findEntity("DashboardEntity");
 		mHistoryEntity = mScene->findEntity("HistoryEntity");
+
+		mAPIService->sendFloat("setIntensity", 2.0f);
 
 		return true;
 	}
