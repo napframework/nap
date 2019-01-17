@@ -5,49 +5,12 @@
 
 // External Includes
 #include <nap/datetime.h>
+#include <rtti/object.h>
 
 namespace nap
 {
 	namespace emography
 	{
-		/**
-		 * Base class of a snapshot that can be serialized.
-		 * Every snapshot can only be constructed using copy / move enabled objects, ie: no resources.
-		 * A snapshot represents a state at a particular point in time.
-		 */
-		class NAPAPI BaseSnapshot
-		{
-			RTTI_ENABLE()
-		public:
-			/**
-			 * Default constructor.
-			 * Timestamp will be set to the time of creation
-			 */
-			BaseSnapshot();
-
-			/**
-			 * Default destructor
-			 */
-			virtual ~BaseSnapshot() = default;
-
-			/**
-			 * Copy constructor
-			 * Snapshot taken at a particular point in time
-			 * @param timestamp time associated with this snapshot
-			 */
-			BaseSnapshot(const TimeStamp& timestamp);
-
-			/**
-			 * Move constructor
-			 * Snapshot taken at a particular point in time
-			 * @param timestamp time associated with this snapshot
-			 */
-			BaseSnapshot(TimeStamp&& timestamp);
-
-			TimeStamp mTimeStamp;							///< Property: 'TimeStamp' Point in time at which this snapshot is taken
-		};
-
-
 		/**
 		 * Represents a single state reading at a particular point in time.
 		 * It combines both a timestamp and object associated with that time stamp.
@@ -55,43 +18,62 @@ namespace nap
 		 * Because the object is relatively light weight it can be both copy and move constructed or assigned.
 		 */
 		template<typename T>
-		class Snapshot : public BaseSnapshot
+		class Reading : public rtti::Object
 		{
-			RTTI_ENABLE(BaseSnapshot)
+			RTTI_ENABLE(rtti::Object)
 		public:
 			/**
 			 * Default constructor
 			 * Timestamp will be set to the time of creation
 			 */
-			Snapshot();
+			Reading();
 
 			/**
 			 * Move Constructs a snapshot of type T, prevents unnecessary copy operations
 			 * @param object the object this snapshot holds
 			 */
-			Snapshot(T&& object);
+			Reading(T&& object);
 
 			/**
 			 * Constructs a snapshot of type T, a copy is made.
 			 * @param object the object this snapshot holds
 			 */
-			Snapshot(const T& object);
+			Reading(const T& object);
 
 			/**
 			 * Move Constructs a snapshot of type T at a particular time.
 			 * @param object the object this snapshot holds
 			 * @param timestamp time associated with this snapshot
 			 */
-			Snapshot(T&& object, TimeStamp&& timestamp);
+			Reading(T&& object, TimeStamp&& timestamp);
 
 			/**
 			 * Constructs a snapshot of type T at a particular time, a copy is made.
 			 * @param object the object this snapshot holds
 			 * @param timestamp time associated with this snapshot
 			 */
-			Snapshot(const T& object, const TimeStamp& timestamp);
+			Reading(const T& object, const TimeStamp& timestamp);
 
-			T mObject;		///< Property: 'Object' the object this snapshot manages
+			TimeStamp mTimeStamp;		///< Property: 'TimeStamp' Point in time at which this snapshot is taken
+			T mObject;					///< Property: 'Object' the object this snapshot manages
+		};
+
+		template<typename T>
+		class ReadingSummary : public rtti::Object
+		{
+			RTTI_ENABLE(rtti::Object)
+		public:
+			ReadingSummary() = default;
+			ReadingSummary(TimeStamp inStartTime, TimeStamp inEndTime, const T& inObject) :
+				mStartTime(inStartTime),
+				mEndTime(inEndTime),
+				mObject(inObject)
+			{
+			}
+
+			TimeStamp mStartTime;		///< Property: 'StartTime' Start point in time of the timerange this summary spans
+			TimeStamp mEndTime;			///< Property: 'EndTime' End point in time of the timerange this summary spans
+			T mObject;					///< Property: 'Object' the object this snapshot manages
 		};
 
 
@@ -100,7 +82,10 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		// Possibly send towards android client after query
-		using StressSnapshot = Snapshot<StressReading>;
+		using StressStateReading = Reading<EStressState>;
+		using StressStateReadingSummary = ReadingSummary<EStressState>;
+		using StressIntensityReading = Reading<StressIntensity>;
+		using StressIntensityReadingSummary = ReadingSummary<StressIntensity>;
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -108,24 +93,27 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T>
-		nap::emography::Snapshot<T>::Snapshot() : BaseSnapshot()	{ }
+		nap::emography::Reading<T>::Reading() :
+			mTimeStamp(getCurrentTime())							{ }
 
 		template<typename T>
-		nap::emography::Snapshot<T>::Snapshot(const T& object) : BaseSnapshot(),	
+		nap::emography::Reading<T>::Reading(const T& object) :
+			mTimeStamp(getCurrentTime()),
 			mObject(object)											{ }
 
 		template<typename T>
-		nap::emography::Snapshot<T>::Snapshot(T&& object) : BaseSnapshot(),
+		nap::emography::Reading<T>::Reading(T&& object) :
+			mTimeStamp(getCurrentTime()),
 			mObject(std::move(object))								{ }
 
 		template<typename T>
-		nap::emography::Snapshot<T>::Snapshot(T&& object, TimeStamp&& timestamp) : 
-			BaseSnapshot(std::move(timestamp)),
+		nap::emography::Reading<T>::Reading(T&& object, TimeStamp&& timestamp) : 
+			mTimeStamp(std::move(timestamp)),
 			mObject(std::move(object))								{ }
 
 		template<typename T>
-		nap::emography::Snapshot<T>::Snapshot(const T& object, const TimeStamp& timestamp) :
-			BaseSnapshot(timestamp),
+		nap::emography::Reading<T>::Reading(const T& object, const TimeStamp& timestamp) :
+			mTimeStamp(timestamp),
 			mObject(object)											{ }
 	}
 }

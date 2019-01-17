@@ -5,7 +5,7 @@
 
 // nap::emographystressdataviewcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::emography::StressDataViewComponent)
-	RTTI_PROPERTY("StressData", &nap::emography::StressDataViewComponent::mStressData, nap::rtti::EPropertyMetaData::Default)
+	//RTTI_PROPERTY("StressData", &nap::emography::StressDataViewComponent::mStressData, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::emographystressdataviewcomponentInstance run time class definition 
@@ -32,7 +32,7 @@ namespace nap
 				return false;
 
 			// Copy over stress data
-			mStressData = getComponent<StressDataViewComponent>()->mStressData;
+			//mStressData = getComponent<StressDataViewComponent>()->mStressData;
 
 			return true;
 		}
@@ -47,10 +47,10 @@ namespace nap
 		void StressDataViewComponentInstance::settingsChanged()
 		{
 			// Clear data
-			mStressData.clear();
+			//mStressData.clear();
 
 			// Allocate
-			mStressData.reserve(getSampleCount());
+			//mStressData.reserve(getSampleCount());
 
 			// Query and fill -> Push to view
 		}
