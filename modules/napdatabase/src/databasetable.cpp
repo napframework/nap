@@ -99,34 +99,34 @@ namespace nap
 	}
 
 
-	static std::string sGetTypeValue(const rtti::TypeInfo& type, const rtti::Variant& value)
+	static bool sBindColumnValue(const rtti::TypeInfo& type, const rtti::Variant& value, sqlite3_stmt& statement, int index)
 	{
 		if (type.is_arithmetic())
 		{
 			if (type == rtti::TypeInfo::get<bool>())
-				return utility::stringFormat("%d", value.to_bool() ? 1 : 0);
+				return sqlite3_bind_int(&statement, index, value.to_bool() ? 1 : 0) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<char>())
-				return utility::stringFormat("%u", value.to_uint8());
+				return sqlite3_bind_int(&statement, index, value.to_int8()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<int8_t>())
-				return utility::stringFormat("%d", value.to_int8());
+				return sqlite3_bind_int(&statement, index, value.to_int8()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<int16_t>())
-				return utility::stringFormat("%d", value.to_int16());
+				return sqlite3_bind_int(&statement, index, value.to_int16()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<int32_t>())
-				return utility::stringFormat("%d", value.to_int32());
+				return sqlite3_bind_int(&statement, index, value.to_int32()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<int64_t>())
-				return utility::stringFormat("%lld", value.to_int64());
+				return sqlite3_bind_int64(&statement, index, value.to_int64()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<uint8_t>())
-				return utility::stringFormat("%u", value.to_uint8());
+				return sqlite3_bind_int(&statement, index, value.to_uint8()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<uint16_t>())
-				return utility::stringFormat("%u", value.to_uint16());
+				return sqlite3_bind_int(&statement, index, value.to_uint16()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<uint32_t>())
-				return utility::stringFormat("%u", value.to_uint32());
+				return sqlite3_bind_int(&statement, index, value.to_uint32()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<uint64_t>())
-				return utility::stringFormat("%llu", value.to_uint64());
+				return sqlite3_bind_int64(&statement, index, value.to_uint64()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<float>())
-				return utility::stringFormat("%f", value.to_float());
+				return sqlite3_bind_double(&statement, index, value.to_float()) == SQLITE_OK;
 			else if (type == rtti::TypeInfo::get<double>())
-				return utility::stringFormat("%f", value.to_double());
+				return sqlite3_bind_double(&statement, index, value.to_double()) == SQLITE_OK;
 		}
 		else if (type.is_enumeration() || type == rtti::TypeInfo::get<std::string>())
 		{
@@ -134,7 +134,7 @@ namespace nap
 			bool conversion_succeeded = false;
 			std::string result = value.to_string(&conversion_succeeded);
 			assert(conversion_succeeded);
-			return utility::stringFormat("'%s'", result.c_str());
+			return sqlite3_bind_text(&statement, index, result.c_str(), result.size(), SQLITE_TRANSIENT) == SQLITE_OK;
 		}
 
 		assert(false);
@@ -152,35 +152,52 @@ namespace nap
 		std::replace(mTableID.begin(), mTableID.end(), ':', '_');
 	}
 
+	DatabaseTable::~DatabaseTable()
+	{
+		sqlite3_finalize(mInsertStatement);
+	}
 
 	bool DatabaseTable::init(utility::ErrorState& errorState)
 	{
 		sqlite3& database = mDatabase->GetDatabase();
-
-		std::string sql = utility::stringFormat("CREATE TABLE IF NOT EXISTS %s (", mTableID.c_str());
-
-		bool is_first = true;
-		rtti::Path path;
-
- 		bool result = sVisitRTTIPropertyTypes(mObjectType, path, [&sql, &is_first](const rtti::Property& property, const rtti::Path& path)
+	
+		rtti::Path current_path;
+ 		bool result = sVisitRTTIPropertyTypes(mObjectType, current_path, [this](const rtti::Property& property, const rtti::Path& path)
 		{
-			std::string column_name = path.toString().c_str();
-			std::replace(column_name.begin(), column_name.end(), '/', '.');
-			sql += utility::stringFormat("%s'%s' %s", is_first ? "" : ", ", column_name.c_str(), sGetTypeString(property.get_type()).c_str());
-			is_first = false;
+			mColumns.push_back({ path, sGetTypeString(property.get_type()) });
 		}, errorState);
-		
+
 		if (!result)
 			return false;
 
-		sql += ");";
+		std::string createTableSql = utility::stringFormat("CREATE TABLE IF NOT EXISTS %s (", mTableID.c_str());
+		std::string insertColumnsSql;
+		std::string insertValuesSql;
+		for (int index = 0; index < mColumns.size(); ++index)
+		{
+			Column& column = mColumns[index];
+
+			std::string column_name = column.mPath.toString().c_str();
+			std::replace(column_name.begin(), column_name.end(), '/', '.');
+
+			const char* separator = index < mColumns.size() - 1 ? ", " : "";
+			createTableSql += utility::stringFormat("'%s' %s%s", column_name.c_str(), column.mSqlType.c_str(), separator);
+
+			insertColumnsSql += utility::stringFormat("'%s'%s", column_name.c_str(), separator);
+			insertValuesSql += utility::stringFormat("?%s", separator);
+		}
+		createTableSql += ");";
 
 		char* errorMessage = nullptr;
-		if (!errorState.check(sqlite3_exec(&database, sql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to create table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
+		if (!errorState.check(sqlite3_exec(&database, createTableSql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to create table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
 		{
 			sqlite3_free(errorMessage);
 			return false;
 		}
+
+		std::string insertRowSql = utility::stringFormat("INSERT INTO %s (%s) VALUES (%s)", mTableID.c_str(), insertColumnsSql.c_str(), insertValuesSql.c_str());
+		if (!errorState.check(sqlite3_prepare_v2(&mDatabase->GetDatabase(), insertRowSql.c_str(), insertRowSql.size(), &mInsertStatement, nullptr) == SQLITE_OK, "Failed to create insert query %s", insertRowSql.c_str()))
+			return false;
 
 		return true;
 	}
@@ -191,35 +208,42 @@ namespace nap
 		// Types need to match exactly: even if the type is derived, it could mean that additional properties were added, making it incompatible with the table
 		assert(object.get_type() == mObjectType);
 
-		bool is_first = true;
-		rtti::Path path;
-
 		std::string columns;
 		std::string values;
-
-		bool result = sVisitRTTIPropertyValues(&object, mObjectType, path, [&columns, &values, &is_first](const rtti::Property& property, const rtti::Path& path, const rtti::Variant& value)
+		for (int index = 0; index < mColumns.size(); ++index)
 		{
-			std::string column_name = path.toString().c_str();
-			std::replace(column_name.begin(), column_name.end(), '/', '.');
+			Column& column = mColumns[index];
 
-			columns += utility::stringFormat("%s'%s'", is_first ? "" : ", ", column_name.c_str());
-			values += utility::stringFormat("%s%s", is_first ? "" : ", ", sGetTypeValue(property.get_type(), value).c_str());
+			rtti::ResolvedPath resolvedPath;
+			bool resolved = column.mPath.resolve(&object, resolvedPath);
+			assert(resolved);
 
-			is_first = false;
-		}, errorState);
-
-		// Everything that can go wrong during visiting of the values should already be verified on table creation
-		assert(result);
-
-		std::string sql = utility::stringFormat("INSERT INTO %s (%s) VALUES (%s)", mTableID.c_str(), columns.c_str(), values.c_str());
-
-		char* errorMessage;
-		if (!errorState.check(sqlite3_exec(&mDatabase->GetDatabase(), sql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to add object to table %s: %s", mTableID.c_str(), errorMessage))
-		{
-			sqlite3_free(errorMessage);
-			return false;
+			if (!errorState.check(sBindColumnValue(resolvedPath.getType(), resolvedPath.getValue(), *mInsertStatement, index+1), "Failed to set value for column %d", index))
+				return false;
 		}
 
+		if (!errorState.check(sqlite3_step(mInsertStatement) == SQLITE_DONE, "Failed to execute insert statement"))
+			return false;
+
+		if (!errorState.check(sqlite3_reset(mInsertStatement) == SQLITE_OK, "Failed to reset insert statement"))
+			return false;
+
 		return true;
+	}
+
+	bool DatabaseTable::getLast(int count, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
+	{
+		return false;
+// 		std::string sql = utility::stringFormat("SELECT * FROM %s LIMIT %d", mTableID.c_str(), count);
+// 		sqlite3_stmt* statement = nullptr;
+// 		if (!errorState.check(sqlite3_prepare_v2(&mDatabase->GetDatabase(), sql.c_str(), sql.size(), &statement, nullptr) == SQLITE_OK, "Failed to create query %s", sql.c_str()))
+// 			return false;
+// 
+// 		while (sqlite3_step(statement) == SQLITE_ROW)
+// 		{
+// 
+// 		}
+
+		//return std::vector<rtti::Object*>();
 	}
 }

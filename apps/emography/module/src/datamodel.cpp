@@ -45,7 +45,7 @@ namespace nap
 			{
 				if (++readingLOD.mCurNumSamples % readingLOD.mMaxNumSamples == 0)
 				{
-					std::vector<rtti::Object*> lastObjects = mRawTable->getLast(readingLOD.mMaxNumSamples);
+					//std::vector<rtti::Object*> lastObjects = mRawTable->getLast(readingLOD.mMaxNumSamples);
 					/*
 					std::unique_ptr<rtti::Object> collapsedObject = mCollapseFunction(lastObjects);
 					assert(collapsedObject->get_type().is_derived_from(mReadingSummaryType));
@@ -60,10 +60,11 @@ namespace nap
 
 		std::vector<rtti::Object*> getLast(int inLODIndex, int inCount)
 		{
-			if (inLODIndex == -1)
-				return mRawTable->getLast(inCount);
-
-			return mLODs[inLODIndex].mTable->getLast(inCount);
+			return{};
+// 			if (inLODIndex == -1)
+// 				return mRawTable->getLast(inCount);
+// 
+// 			return mLODs[inLODIndex].mTable->getLast(inCount);
 		}
 
 	private:
