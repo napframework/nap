@@ -20,6 +20,31 @@ namespace nap
 			return false;
 		}
 
+		char* errorMessage = nullptr;
+		if (!errorState.check(sqlite3_exec(mDatabase, "PRAGMA journal_mode = MEMORY", nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to set journal mode: %s", errorMessage != nullptr ? errorMessage : "Unknown error"))
+		{
+			sqlite3_free(errorMessage);
+			return false;
+		}
+
+		if (!errorState.check(sqlite3_exec(mDatabase, "PRAGMA temp_store = 2", nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to set journal mode: %s", errorMessage != nullptr ? errorMessage : "Unknown error"))
+		{
+			sqlite3_free(errorMessage);
+			return false;
+		}
+
+		if (!errorState.check(sqlite3_exec(mDatabase, "PRAGMA synchronous = 0", nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to set journal mode: %s", errorMessage != nullptr ? errorMessage : "Unknown error"))
+		{
+			sqlite3_free(errorMessage);
+			return false;
+		}
+
+		if (!errorState.check(sqlite3_exec(mDatabase, "PRAGMA locking_mode = EXCLUSIVE", nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to set journal mode: %s", errorMessage != nullptr ? errorMessage : "Unknown error"))
+		{
+			sqlite3_free(errorMessage);
+			return false;
+		}
+
 		return true;
 	}
 
@@ -29,7 +54,6 @@ namespace nap
  		if (pos != mTables.end())
  			return pos->second.get();
 
-		//std::unique_ptr<DatabaseTable> table;
  		std::unique_ptr<DatabaseTable> table = std::make_unique<DatabaseTable>(*this, tableID, objectType);
  		if (!table->init(errorState))
  			return nullptr;
