@@ -191,6 +191,12 @@ namespace napkin
 		size_t addEntityToScene(nap::Scene& scene, nap::Entity& entity);
 
 		/**
+		 * Return a RootEntity in a scene that represents the specified entity.
+		 * For more explanation see RootEntity
+		 */
+		nap::RootEntity* getRootEntity(nap::Scene& scene, nap::Entity& entity);
+
+		/**
 		 * Retrieve all properties referring to the given object.
 		 * @param targetObject The object that is being referred to.
 		 * @return A list of properties pointing to the given object.

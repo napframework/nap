@@ -110,7 +110,7 @@ namespace nap
 							pointee_id = string_result.to_string();
 						}
 
-						if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with invalid ID"))
+						if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with empty ID"))
 							return false;
 
 						// Objects we point to must also be serialized, so make sure they are in the set of objects to be serialized

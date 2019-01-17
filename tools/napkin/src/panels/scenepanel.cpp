@@ -73,6 +73,7 @@ napkin::ScenePanel::ScenePanel() : QWidget()
 	mFilterView.setMenuHook(std::bind(&napkin::ScenePanel::menuHook, this, std::placeholders::_1));
 	mFilterView.getTreeView().expandAll();
 
+	connect(mFilterView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ScenePanel::onSelectionChanged);
 	connect(&mModel, &QAbstractItemModel::rowsInserted, [this](const QModelIndex &parent, int first, int last) {
 		mFilterView.getTreeView().expandAll();
 	});
@@ -122,9 +123,23 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 			});
 		}
 	}
+}
 
-//	menu.addAction("Add Scene", []()
-//	{
-//		AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Scene)));
-//	});
+void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
+	// Grab selected nap objects
+	QList<PropertyPath> selectedObjects;
+	for (auto m : mFilterView.getSelectedItems())
+	{
+
+		auto eItem = dynamic_cast<EntityInstanceItem*>(m);
+		if (eItem)
+			selectedObjects << PropertyPath(eItem->rootEntity(), eItem->entity());
+
+		auto cItem = dynamic_cast<ComponentInstanceItem*>(m);
+		if (cItem)
+			selectedObjects << PropertyPath(cItem->rootEntity(), cItem->component());
+
+	}
+
+	selectionChanged(selectedObjects);
 }

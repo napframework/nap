@@ -2,9 +2,25 @@
 
 #include <rtti/path.h>
 #include <QMetaType>
+#include <entity.h>
+#include <scene.h>
 
 namespace napkin
 {
+	class PropertyPath;
+
+	using PropertyVisitor = std::function<bool(const PropertyPath& path)>;
+
+	/**
+	 * Flags used in property path iteration/recursion
+	 */
+	enum IterFlag : int
+	{
+		Resursive 					= 1 << 0,	// Recursively find children in the property path
+		FollowPointers 				= 1 << 1,	// Resolve regular pointers and visit the resolved object's properties
+		FollowEmbeddedPointers 		= 1 << 2,	// Resolve embedded pointers and visit the resolved object's properties
+	};
+
 	/**
 	 * A path to a property, including its object.
 	 * This class carries both the object and the property path.
@@ -24,16 +40,64 @@ namespace napkin
 		PropertyPath(const PropertyPath& other);
 
 		/**
+		 * Create a PropertyPath to an object
+		 * @param obj The object to create the path to.
+		 */
+		PropertyPath(nap::rtti::Object& obj);
+
+		/**
+		 * Create a path to an object that is to be instantiated.
+		 * @param rootEntity Contains the instance property data
+		 * @param obj
+		 */
+		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj);
+
+		/**
+		 * Create a path to an object that is to be instantiated.
+		 * @param rootEntity Contains the instance property data
+		 * @param obj
+		 */
+		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const nap::rtti::Path& path);
+
+		/**
+		 * Create a PropertyPath using an Object and a nap::rtti::Path
 		 * @param obj The object this property is on
 		 * @param path The path to the property
 		 */
 		PropertyPath(nap::rtti::Object& obj, const nap::rtti::Path& path);
 
 		/**
+		 * Create a PropertyPath using an Object and a path as string
 		 * @param obj The object this property is on
 		 * @param path The path to the property
 		 */
 		PropertyPath(nap::rtti::Object& obj, const std::string& path);
+
+		/**
+		 * Create a PropertyPath using an Object and a path as string
+		 * @param obj The object this property is on
+		 * @param path The path to the property
+		 */
+		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj, const std::string& path);
+
+		/**
+		 * Create a PropertyPath using an Object and a property
+		 * @param obj
+		 * @param prop
+		 */
+		PropertyPath(nap::rtti::Object& obj, rttr::property prop);
+
+		/**
+		 * Create a PropertyPath using an Object and a property
+		 * @param obj
+		 * @param prop
+		 */
+		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, rttr::property prop);
+
+		/**
+		 * @return The last part of the property name (not including the path)
+		 */
+		const std::string getName() const;
 
 		/**
 		 * @return The value of this property
@@ -108,6 +172,16 @@ namespace napkin
 		std::string toString() const;
 
 		/**
+		 * @return True if this path represents an instance
+		 */
+		bool isInstance() const { return mRootEntity != nullptr; }
+
+		/**
+		 * @return true when the path points to a property, false when it points to an Object
+		 */
+		bool hasProperty() const { return mPath.length() > 0; }
+
+		/**
 		 * @return If the path is a valid one
 		 */
 		bool isValid() const;
@@ -155,10 +229,42 @@ namespace napkin
 		 */
 		bool operator==(const PropertyPath& other) const;
 
+		/**
+		 * Iterate over the children of this property and call PropertyVisitor for each child.
+		 * @param visitor The function to be called on each iteration, return false from this function to stop iteration
+		 * @param flags Provide traversal flags
+		 */
+		void iterateChildren(PropertyVisitor visitor, int flags) const;
+
+		/**
+		 * Get this properties children if it has any.
+		 * @param flags Provide true to also get the children's children and so on
+		 * @return All children of this property
+		 */
+		std::vector<PropertyPath> getChildren(int flags = IterFlag::FollowEmbeddedPointers) const;
+
+		/**
+		 * Iterate over this object's root properties.
+		 * @param visitor The function to be called on each iteration, return false from this function to stop iteration
+		 * @param flags Provide traversal flags
+		 */
+		void iterateProperties(PropertyVisitor visitor, int flags = 0) const;
+		std::vector<PropertyPath> getProperties(int flags = 0) const;
 
 	private:
-		nap::rtti::Object* mObject = nullptr;
-		nap::rtti::Path mPath;
+		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
+		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
+		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
+
+		nap::ComponentInstanceProperties* instanceProps() const;
+		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
+		nap::TargetAttribute* targetAttribute() const;
+		nap::TargetAttribute& getOrCreateTargetAttribute();
+
+
+		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
+		nap::rtti::Object* mObject = nullptr; // the object on which the property exists
+		nap::rtti::Path mPath; // the path to the property on the object
 	};
 }
 

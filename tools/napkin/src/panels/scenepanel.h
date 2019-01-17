@@ -4,6 +4,7 @@
 #include <QtWidgets/QWidget>
 #include <napqt/filtertreeview.h>
 #include <scene.h>
+#include <propertypath.h>
 
 
 namespace napkin
@@ -70,7 +71,13 @@ namespace napkin
 		 */
 		void menuHook(QMenu& menu);
 
+	Q_SIGNALS:
+		void selectionChanged(QList<PropertyPath> obj);
+
 	private:
+		void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
+
 		QVBoxLayout mLayout;		// Layout
 		nap::qt::FilterTreeView mFilterView; // The tree view
 		SceneModel mModel;		// The model for the treeview
