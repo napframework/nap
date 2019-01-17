@@ -45,26 +45,26 @@ namespace nap
 			{
 				if (++readingLOD.mCurNumSamples % readingLOD.mMaxNumSamples == 0)
 				{
-					//std::vector<rtti::Object*> lastObjects = mRawTable->getLast(readingLOD.mMaxNumSamples);
-					/*
-					std::unique_ptr<rtti::Object> collapsedObject = mCollapseFunction(lastObjects);
+					std::vector<std::unique_ptr<rtti::Object>> lastObjects;
+					if (!mRawTable->getLast(readingLOD.mMaxNumSamples, lastObjects, errorState))
+						return false;
+					
+					std::unique_ptr<rtti::Object> collapsedObject = mSummaryFunction(lastObjects);
 					assert(collapsedObject->get_type().is_derived_from(mReadingSummaryType));
 					if (!readingLOD.mTable->add(*collapsedObject, errorState))
-					return false;
-					*/
+						return false;					
 				}
 			}
 
 			return true;
 		}
 
-		std::vector<rtti::Object*> getLast(int inLODIndex, int inCount)
+		bool getLast(int inLODIndex, int inCount, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
 		{
-			return{};
-// 			if (inLODIndex == -1)
-// 				return mRawTable->getLast(inCount);
-// 
-// 			return mLODs[inLODIndex].mTable->getLast(inCount);
+			if (inLODIndex == -1)
+				return mRawTable->getLast(inCount, objects, errorState);
+
+			return mLODs[inLODIndex].mTable->getLast(inCount, objects, errorState);
 		}
 
 	private:
@@ -118,11 +118,11 @@ namespace nap
 		return processorPos->second->add(object, errorState);
 	}
 
-	std::vector<rtti::Object*> DataModel::getLast(const rtti::TypeInfo& readingType, int lodIndex, int count)
+	bool DataModel::getLast(const rtti::TypeInfo& readingType, int lodIndex, int count, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
 	{
 		ReadingProcessorMap::iterator pos = mReadingProcessors.find(readingType);
 		assert(pos != mReadingProcessors.end());
 
-		return pos->second->getLast(lodIndex, count);
+		return pos->second->getLast(lodIndex, count, objects, errorState);
 	}
 }

@@ -1,6 +1,7 @@
 #include "database.h"
 #include "sqlite3.h"
 #include "rtti/path.h"
+#include "rtti/factory.h"
 
 namespace nap
 {
@@ -141,6 +142,49 @@ namespace nap
 		return "";
 	}
 
+	static bool sSetColumnValue(rtti::Object& object, const rtti::Path& path, sqlite3_stmt& statement, int columnIndex)
+	{
+		rtti::ResolvedPath resolvedPath;
+		bool was_resolved = path.resolve(&object, resolvedPath);
+		assert(was_resolved);
+		rtti::TypeInfo type = resolvedPath.getType();
+
+		if (type.is_arithmetic())
+		{
+			if (type == rtti::TypeInfo::get<bool>())
+				return resolvedPath.setValue(sqlite3_column_int(&statement, columnIndex) != 0);
+			else if (type == rtti::TypeInfo::get<char>())
+				return resolvedPath.setValue(static_cast<char>(sqlite3_column_int(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<int8_t>())
+				return resolvedPath.setValue(static_cast<int8_t>(sqlite3_column_int(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<int16_t>())
+				return resolvedPath.setValue(static_cast<int16_t>(sqlite3_column_int(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<int32_t>())
+				return resolvedPath.setValue(static_cast<int32_t>(sqlite3_column_int(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<int64_t>())
+				return resolvedPath.setValue(static_cast<int64_t>(sqlite3_column_int64(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<uint8_t>())
+				return resolvedPath.setValue(static_cast<uint8_t>(sqlite3_column_int(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<uint16_t>())
+				return resolvedPath.setValue(static_cast<uint16_t>(sqlite3_column_int(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<uint32_t>())
+				return resolvedPath.setValue(static_cast<uint32_t>(sqlite3_column_int(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<uint64_t>())
+				return resolvedPath.setValue(static_cast<uint64_t>(sqlite3_column_int64(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<float>())
+				return resolvedPath.setValue(static_cast<float>(sqlite3_column_double(&statement, columnIndex)));
+			else if (type == rtti::TypeInfo::get<double>())
+				return resolvedPath.setValue(static_cast<double>(sqlite3_column_double(&statement, columnIndex)));
+		}
+		else if (type.is_enumeration() || type == rtti::TypeInfo::get<std::string>())
+		{
+			return resolvedPath.setValue(std::string((char*)sqlite3_column_text(&statement, columnIndex)));
+		}
+
+		assert(false);
+		return false;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 
 
@@ -233,17 +277,26 @@ namespace nap
 
 	bool DatabaseTable::getLast(int count, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
 	{
-		return false;
-// 		std::string sql = utility::stringFormat("SELECT * FROM %s LIMIT %d", mTableID.c_str(), count);
-// 		sqlite3_stmt* statement = nullptr;
-// 		if (!errorState.check(sqlite3_prepare_v2(&mDatabase->GetDatabase(), sql.c_str(), sql.size(), &statement, nullptr) == SQLITE_OK, "Failed to create query %s", sql.c_str()))
-// 			return false;
-// 
-// 		while (sqlite3_step(statement) == SQLITE_ROW)
-// 		{
-// 
-// 		}
+ 		std::string sql = utility::stringFormat("SELECT * FROM %s LIMIT %d OFFSET (SELECT COUNT(*) FROM %s)-%d", mTableID.c_str(), count, mTableID.c_str(), count);
+ 		sqlite3_stmt* statement = nullptr;
+ 		if (!errorState.check(sqlite3_prepare_v2(&mDatabase->GetDatabase(), sql.c_str(), sql.size(), &statement, nullptr) == SQLITE_OK, "Failed to create query %s", sql.c_str()))
+ 			return false;
 
-		//return std::vector<rtti::Object*>();
+		rtti::Factory factory;
+
+		while (sqlite3_step(statement) == SQLITE_ROW)
+		{
+			std::unique_ptr<rtti::Object> object(factory.create(mObjectType));
+			for (int column_index = 0; column_index < mColumns.size(); ++column_index)
+			{
+				const Column& column = mColumns[column_index];
+				sSetColumnValue(*object, column.mPath, *statement, column_index);
+			}
+			objects.emplace_back(std::move(object));
+		}
+
+		sqlite3_finalize(statement);
+
+		return true;
 	}
 }

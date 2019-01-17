@@ -8,7 +8,7 @@ namespace nap
 	class NAPAPI DataModel
 	{
 	public:
-		using SummaryFunction = std::function<std::unique_ptr<rtti::Object>(const std::vector<rtti::Object*>&)>;
+		using SummaryFunction = std::function<std::unique_ptr<rtti::Object>(const std::vector<std::unique_ptr<rtti::Object>>&)>;
 		
 		DataModel();
 		~DataModel();
@@ -23,14 +23,14 @@ namespace nap
 		}
 
 		template<class ReadingType>
-		std::vector<rtti::Object*> getLast(int lodIndex, int count)
+		bool getLast(int lodIndex, int count, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
 		{
-			return getLast(RTTI_OF(ReadingType), lodIndex, count);
+			return getLast(RTTI_OF(ReadingType), lodIndex, count, objects, errorState);
 		}
 
 	private:
 		bool registerType(const rtti::TypeInfo& readingType, const rtti::TypeInfo& readingSummaryType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState);
-		std::vector<rtti::Object*> getLast(const rtti::TypeInfo& inReadingType, int lodIndex, int count);
+		bool getLast(const rtti::TypeInfo& inReadingType, int lodIndex, int count, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState);
 
 	private:
 		using ReadingProcessorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ReadingProcessor>>;

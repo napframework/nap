@@ -60,14 +60,14 @@ namespace nap
 		if (!mDataModel.init(error))
 			return false;		
 
-		bool result = mDataModel.registerType<StressIntensity>([](const std::vector<rtti::Object*>& inObjects) 
+		bool result = mDataModel.registerType<StressIntensity>([](const std::vector<std::unique_ptr<rtti::Object>>& inObjects) 
 		{
 			float total = 0.0;
 			TimeStamp startTime;
 			TimeStamp endTime;
 			for (int index = 0; index < inObjects.size(); ++index)
 			{
-				rtti::Object* object = inObjects[index];
+				rtti::Object* object = inObjects[index].get();
 				StressIntensityReading* stressIntensityReading = rtti_cast<StressIntensityReading>(object);
 				assert(stressIntensityReading);
 
@@ -86,14 +86,14 @@ namespace nap
 		if (!result)
 			return false;
 
-		result = mDataModel.registerType<EStressState>([](const std::vector<rtti::Object*>& inObjects)
+		result = mDataModel.registerType<EStressState>([](const std::vector<std::unique_ptr<rtti::Object>>& inObjects)
 		{
 			std::unordered_map<EStressState, int> stateCounts;
 			TimeStamp startTime;
 			TimeStamp endTime;
 			for (int index = 0; index < inObjects.size(); ++index)
 			{
-				rtti::Object* object = inObjects[index];
+				rtti::Object* object = inObjects[index].get();
 				StressStateReading* stressStateReading = rtti_cast<StressStateReading>(object);
 				assert(stressStateReading);
 
@@ -134,28 +134,37 @@ namespace nap
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		{
-			std::vector<rtti::Object*> rawValues = mDataModel.getLast<StressIntensityReading>(-1, 100);
 			std::vector<float> values;
-			values.resize(100 - rawValues.size());
-			for (rtti::Object* rawValue : rawValues)
+
+			std::vector<std::unique_ptr<rtti::Object>> rawValues;
+			utility::ErrorState errorState;
+			if (mDataModel.getLast<StressIntensityReading>(-1, 100, rawValues, errorState))			
 			{
-				StressIntensityReading* stressIntensity = rtti_cast<StressIntensityReading>(rawValue);
-				values.push_back(stressIntensity->mObject.mValue);
+				values.resize(100 - rawValues.size());
+				for (auto& rawValue : rawValues)
+				{
+					StressIntensityReading* stressIntensity = rtti_cast<StressIntensityReading>(rawValue.get());
+					values.push_back(stressIntensity->mObject.mValue);
+				}
 			}
 
 			ImGui::PlotLines("Raw", values.data(), values.size(), 0, nullptr, 1.0f, 100.0f, ImVec2(1000, 100));
 		}
-
+		
 		for (int lod = 0; lod < 5; ++lod)
 		{
-			std::vector<rtti::Object*> summaries = mDataModel.getLast<StressIntensityReading>(lod, 100);
 			std::vector<float> values;
 
-			values.resize(100 - summaries.size());
-			for (rtti::Object* summary : summaries)
+			utility::ErrorState errorState;
+			std::vector<std::unique_ptr<rtti::Object>> summaries;
+			if (mDataModel.getLast<StressIntensityReading>(lod, 100, summaries, errorState))			
 			{
-				StressIntensityReadingSummary* stressIntensitySummary = rtti_cast<StressIntensityReadingSummary>(summary);
-				values.push_back(stressIntensitySummary->mObject.mValue);
+				values.resize(100 - summaries.size());
+				for (auto& summary : summaries)
+				{
+					StressIntensityReadingSummary* stressIntensitySummary = rtti_cast<StressIntensityReadingSummary>(summary.get());
+					values.push_back(stressIntensitySummary->mObject.mValue);
+				}
 			}
 
 			ImGui::PlotLines(utility::stringFormat("LOD %d", lod + 1).c_str(), values.data(), values.size(), 0, nullptr, 1.0f, 100.0f, ImVec2(1000, 100));
@@ -167,13 +176,18 @@ namespace nap
 		ImGui::Begin("StressState (most common)");
 
 		{
-			std::vector<rtti::Object*> rawValues = mDataModel.getLast<StressStateReading>(-1, 100);
 			std::vector<float> values;
-			values.resize(100 - rawValues.size());
-			for (rtti::Object* rawValue : rawValues)
+
+			utility::ErrorState errorState;
+			std::vector<std::unique_ptr<rtti::Object>> rawValues;			
+			if (mDataModel.getLast<StressStateReading>(-1, 100, rawValues, errorState))			
 			{
-				StressStateReading* stressIntensity = rtti_cast<StressStateReading>(rawValue);
-				values.push_back((float)stressIntensity->mObject);
+				values.resize(100 - rawValues.size());
+				for (auto& rawValue : rawValues)
+				{
+					StressStateReading* stressIntensity = rtti_cast<StressStateReading>(rawValue.get());
+					values.push_back((float)stressIntensity->mObject);
+				}
 			}
 
 			ImGui::PlotLines("Raw", values.data(), values.size(), 0, nullptr, -1.0f, 3.0f, ImVec2(1000, 100));
@@ -181,14 +195,18 @@ namespace nap
 
 		for (int lod = 0; lod < 5; ++lod)
 		{
-			std::vector<rtti::Object*> summaries = mDataModel.getLast<StressStateReading>(lod, 100);
 			std::vector<float> values;
 
-			values.resize(100 - summaries.size());
-			for (rtti::Object* summary : summaries)
+			utility::ErrorState errorState;
+			std::vector<std::unique_ptr<rtti::Object>> summaries;
+			if (mDataModel.getLast<StressStateReading>(lod, 100, summaries, errorState))			
 			{
-				StressStateReadingSummary* stressIntensitySummary = rtti_cast<StressStateReadingSummary>(summary);
-				values.push_back((float)stressIntensitySummary->mObject);
+				values.resize(100 - summaries.size());
+				for (auto& summary : summaries)
+				{
+					StressStateReadingSummary* stressIntensitySummary = rtti_cast<StressStateReadingSummary>(summary.get());
+					values.push_back((float)stressIntensitySummary->mObject);
+				}
 			}
 
 			ImGui::PlotLines(utility::stringFormat("LOD %d", lod + 1).c_str(), values.data(), values.size(), 0, nullptr, -1.0f, 3.0f, ImVec2(1000, 100));
