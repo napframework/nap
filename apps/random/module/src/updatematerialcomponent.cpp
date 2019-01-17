@@ -206,4 +206,10 @@ namespace nap
 	{
 		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveCenter").mValue;
 	}
+
+
+	float* UpdateMaterialComponentInstance::getPartyWaveHighlightPtr()
+	{
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveHighlight").mValue;
+	}
 }
