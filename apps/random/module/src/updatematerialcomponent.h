@@ -89,6 +89,8 @@ namespace nap
 		float*		getPartyWaveLengthPtr();
 		float*		getPartyWaveFalloffStartPtr();
 		float*		getPartyWaveFalloffEndPtr();
+		float*		getPartyWaveNoiseScalePtr();
+		float*		getPartyWaveNoiseInfluencePtr();
 
 		float		mSunCloudsNoiseSpeed = 0.025f;
 		const float	mSunCloudsNoiseSpeedMax = 0.25f;
@@ -108,12 +110,17 @@ namespace nap
 		const float	mSunGlareStretchMax = 10.0f;
 
 		float		mPartyCenter[2] = { 0.2f, 0.8f };
-		int			mPartyBPM = 120;
-		int			mPartyBPMMin = 20;
+		int			mPartyBPM = 40;
+		int			mPartyBPMMin = 10;
 		int			mPartyBPMMax = 240;
-		int			mPartyWaveCountMax = 5;
+		int			mPartyWaveCountMax = 12;
 		float		mPartyWaveLengthMin = 0.1f;
 		float		mPartyWaveFalloffMin = 0.1f;
 		float		mPartyWaveFalloffMax = 1.5f;
+		float		mPartyWaveNoiseSpeed = 0.1f;
+		float		mPartyWaveNoiseSpeedMax = 1.0f;
+		float		mPartyWaveNoiseScaleMin = 0.1f;
+		float		mPartyWaveNoiseScaleMax = 1.0f;
+		float		mPartyWaveNoiseInfluenceMax = 0.5f;
 	};
 }

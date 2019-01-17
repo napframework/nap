@@ -57,7 +57,9 @@ namespace nap
 
 	void UpdateMaterialComponentInstance::updateParty(double deltaTime) {
 		float* uBeat = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBeat").mValue;
+		float* uWaveNoiseZ = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveNoiseZ").mValue;
 		*uBeat = fmod(*uBeat + (static_cast<float>(mPartyBPM) / 60.0f) * static_cast<float>(deltaTime), 1.0f);
+		*uWaveNoiseZ += mPartyWaveNoiseSpeed * static_cast<float>(deltaTime);
 	}
 
 
@@ -92,10 +94,10 @@ namespace nap
 		glm::vec3* sunCloudsOffset = &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset").mValue;
 		float sunCloudsRotation = mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation").mValue;
 		float windDirectionRad = nap::math::radians(sunCloudsRotation);
-		float windDistance = mSunCloudsWindSpeed * (float)deltaTime;
+		float windDistance = mSunCloudsWindSpeed * static_cast<float>(deltaTime);
 		sunCloudsOffset->x += cos(windDirectionRad) * windDistance;
 		sunCloudsOffset->y += sin(windDirectionRad) * windDistance;
-		sunCloudsOffset->z += mSunCloudsNoiseSpeed * (float)deltaTime;
+		sunCloudsOffset->z += mSunCloudsNoiseSpeed * static_cast<float>(deltaTime);
 	}
 
 
@@ -185,5 +187,17 @@ namespace nap
 	float* UpdateMaterialComponentInstance::getPartyWaveFalloffEndPtr()
 	{
 		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveFalloffEnd").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getPartyWaveNoiseScalePtr()
+	{
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveNoiseScale").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getPartyWaveNoiseInfluencePtr()
+	{
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveNoiseInfluence").mValue;
 	}
 }

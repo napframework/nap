@@ -814,6 +814,18 @@
                                 "mID": "UniformFloat_23",
                                 "Name": "uWaveFalloffEnd",
                                 "Value": 0.75
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_26",
+                                "Name": "uWaveNoiseScale",
+                                "Value": 0.5
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_28",
+                                "Name": "uWaveNoiseInfluence",
+                                "Value": 0.10000000149011612
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -1463,6 +1475,24 @@
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_21",
                     "Name": "uWaveFalloffEnd",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_24",
+                    "Name": "uWaveNoiseZ",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_25",
+                    "Name": "uWaveNoiseScale",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_27",
+                    "Name": "uWaveNoiseInfluence",
                     "Value": 0.0
                 }
             ],
