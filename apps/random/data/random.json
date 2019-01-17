@@ -826,6 +826,12 @@
                                 "mID": "UniformFloat_28",
                                 "Name": "uWaveNoiseInfluence",
                                 "Value": 0.10000000149011612
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_30",
+                                "Name": "uWaveCenter",
+                                "Value": 0.8500000238418579
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -1493,6 +1499,12 @@
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_27",
                     "Name": "uWaveNoiseInfluence",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_29",
+                    "Name": "uWaveCenter",
                     "Value": 0.0
                 }
             ],

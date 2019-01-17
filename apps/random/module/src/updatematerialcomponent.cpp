@@ -200,4 +200,10 @@ namespace nap
 	{
 		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveNoiseInfluence").mValue;
 	}
+
+
+	float* UpdateMaterialComponentInstance::getPartyWaveCenterPtr()
+	{
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveCenter").mValue;
+	}
 }

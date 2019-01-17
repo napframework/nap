@@ -11,6 +11,7 @@ uniform float uWaveFalloffEnd;
 uniform float uWaveNoiseZ;
 uniform float uWaveNoiseScale;
 uniform float uWaveNoiseInfluence;
+uniform float uWaveCenter;
 
 // input
 in vec3 passUVs;
@@ -131,6 +132,12 @@ void main()
 		nearestWave += waveSize;
 	}
 	float nearestWaveInfluence = 1.0 - ((nearestWave - waveCenterDistance) / waveSize / uWaveLength);
+	if (nearestWaveInfluence > 0.0) {
+		float nearestWaveX = nearestWaveInfluence > uWaveCenter
+			? ((nearestWaveInfluence - uWaveCenter) / (1.0 - uWaveCenter)) * PI
+			: (1.0 - nearestWaveInfluence / uWaveCenter) * -PI;
+		nearestWaveInfluence = (1.0 + cos(nearestWaveX)) * 0.5;
+	}
 	float waveFalloffInfluence = 1.0 - clamp((waveCenterDistance - uWaveFalloffStart) / (uWaveFalloffEnd - uWaveFalloffStart), 0.0, 1.0);
 	float wave = nearestWaveInfluence * waveFalloffInfluence;
 
