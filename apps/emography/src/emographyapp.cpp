@@ -59,7 +59,14 @@ namespace nap
 		mDashboardEntity = mScene->findEntity("DashboardEntity");
 		mHistoryEntity = mScene->findEntity("HistoryEntity");
 
-		mAPIService->sendFloat("setIntensity", 2.0f);
+		mAPIService->sendFloat("setIntensity", 2.0f, &error);
+		mAPIService->sendString("setName", "Olaf", &error);
+
+		std::array<int, 5> int_array = {0,1,2,3,4};
+		mAPIService->sendIntArray("setBeast", int_array.data(), int_array.size(), &error);
+
+		std::array<const char*, 3> string_array = { "ola", "brief", "rokit" };
+		mAPIService->sendStringArray("sendStrings", string_array.data(), string_array.size(), &error);
 
 		return true;
 	}

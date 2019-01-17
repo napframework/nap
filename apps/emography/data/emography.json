@@ -17,7 +17,17 @@
         {
             "Type": "nap::Entity",
             "mID": "ControllerEntity",
-            "Components": [],
+            "Components": [
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "nap::APIComponent",
+                    "Deferred": true,
+                    "CallFilter": [
+                        "setIntensity",
+                        "setName"
+                    ]
+                }
+            ],
             "Children": [
                 "DashboardEntity",
                 "HistoryEntity",
