@@ -7,6 +7,7 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 module_json_to_cmake()
 
 # package find should go here
+find_package(sqlite REQUIRED)
 
 # LIBRARY
 
@@ -16,6 +17,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC src ${SQLITE_INCLUDE_DIRS})
 
 # preprocessor
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
@@ -26,6 +28,7 @@ if(NOT WIN32)
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
+target_link_libraries(${PROJECT_NAME} debug ${SQLITE_LIBS_DEBUG} optimized ${SQLITE_LIBS_RELEASE})
 
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
