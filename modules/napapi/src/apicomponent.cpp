@@ -8,7 +8,7 @@
 // nap::apicomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::APIComponent)
 	RTTI_PROPERTY("Deferred",	&nap::APIComponent::mDeferred,	 nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CallFilter", &nap::APIComponent::mCallFilter, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Methods",	&nap::APIComponent::mSignatures, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::apicomponentInstance run time class definition 
@@ -39,9 +39,9 @@ namespace nap
 		mAPIService->registerAPIComponent(*this);
 
 		// Copy over list of accepted calls
-		std::vector<std::string>& calls = getComponent<APIComponent>()->mCallFilter;
-		for (const auto& call : calls)
-			mCallFilter.emplace(call);
+		std::vector<ResourcePtr<APISignature>>& methods = getComponent<APIComponent>()->mSignatures;
+		for (const auto& method : methods)
+			mSignatures.emplace(std::make_pair(method->mID, method.get()));
 
 		// Store if we need to execute deferred
 		mDeferred = getComponent<APIComponent>()->mDeferred;
@@ -50,10 +50,10 @@ namespace nap
 	}
 
 
-	bool APIComponentInstance::accepts(const std::string& action) const
+	bool APIComponentInstance::accepts(const std::string& id) const
 	{
-		const auto it = mCallFilter.find(action);
-		return it != mCallFilter.end();
+		const auto it = mSignatures.find(id);
+		return it != mSignatures.end();
 	}
 
 
