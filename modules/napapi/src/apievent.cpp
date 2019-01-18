@@ -22,6 +22,15 @@ namespace nap
 	}
 
 
+	APIArgument* APICallEvent::addArgument(std::unique_ptr<APIBaseValue> value)
+	{
+		// Create argument and move value
+		std::unique_ptr<APIArgument> argument = std::make_unique<APIArgument>(std::move(value));
+		mArguments.emplace_back(std::move(argument));
+		return mArguments.back().get();
+	}
+
+
 	const nap::APIArgument* APICallEvent::getArgument(int index) const
 	{
 		assert(index < mArguments.size() && index >= 0);

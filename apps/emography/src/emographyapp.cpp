@@ -60,19 +60,20 @@ namespace nap
 		mDashboardEntity = mScene->findEntity("DashboardEntity");
 		mHistoryEntity = mScene->findEntity("HistoryEntity");
 
+		// Send some single values
 		mAPIService->sendFloat("setIntensity", 2.0f, &error);
 		mAPIService->sendString("setName", "Olaf", &error);
 
+		// Send some random array data
 		std::array<int, 5> int_array = {0,1,2,3,4};
 		mAPIService->sendIntArray("setBeast", int_array.data(), int_array.size(), &error);
-
 		std::array<const char*, 3> string_array = { "ola", "brief", "rokit" };
 		mAPIService->sendStringArray("sendStrings", string_array.data(), string_array.size(), &error);
 
+		// Call app from parsed json file that includes signature
 		std::string buffer;
 		if (!utility::readFileToString("calls.json", buffer, error))
 			return false;
-
 		mAPIService->sendJSON(buffer.c_str(), &error);
 
 		return true;
