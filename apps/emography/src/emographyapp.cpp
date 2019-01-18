@@ -9,6 +9,7 @@
 #include <emographysnapshot.h>
 #include <emographystressdataviewcomponent.h>
 #include <apiargument.h>
+#include <utility/fileutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmographyApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -67,6 +68,12 @@ namespace nap
 
 		std::array<const char*, 3> string_array = { "ola", "brief", "rokit" };
 		mAPIService->sendStringArray("sendStrings", string_array.data(), string_array.size(), &error);
+
+		std::string buffer;
+		if (!utility::readFileToString("calls.json", buffer, error))
+			return false;
+
+		mAPIService->sendJSON(buffer.c_str(), &error);
 
 		return true;
 	}

@@ -81,7 +81,7 @@ namespace nap
 	bool APIComponentInstance::call(APICallEventPtr apiEvent, nap::utility::ErrorState& error)
 	{
 		// Make sure the call is accepted
-		assert(accepts(apiEvent->getAction()));
+		assert(accepts(apiEvent->getID()));
 
 		// TODO: Check signature
 

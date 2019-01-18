@@ -10,13 +10,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	APICallEvent::APICallEvent(const std::string& action) : mActionName(action)
+	APICallEvent::APICallEvent(const std::string& action) : mName(action)
 	{
 
 	}
 
 
-	APICallEvent::APICallEvent(const std::string&& action) : mActionName(std::move(action))
+	APICallEvent::APICallEvent(const std::string&& action) : mName(std::move(action))
 	{
 
 	}

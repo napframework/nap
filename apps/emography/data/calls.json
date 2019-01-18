@@ -1,0 +1,11 @@
+{
+    "Call" :
+    {
+        "mID":"setInstensity",
+        "Signature" :
+        {
+            "intensity" : 0.1,
+            "reading" : 2.0
+        }
+    }
+}   

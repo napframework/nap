@@ -22,7 +22,7 @@ namespace nap
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(APIComponent, APIComponentInstance)
 	public:
-		std::vector<std::string> mCallFilter;		///< Property: 'CallFilter' all (exact) names of API calls (actions) accepted by this component.
+		std::vector<std::string> mCallFilter;		///< Property: 'CallFilter' all (exact) names of API calls (ids) accepted by this component.
 		bool mDeferred = false;						///< Property: 'Deferred' if calls are executed immediately or deferred, ie: when the component is updated.
 	};
 
@@ -56,10 +56,10 @@ namespace nap
 
 		/**
 		 * Checks to see if a specific API call is accepted by this component.
-		 * @param action the name of the call to accept
+		 * @param id the name of the call to accept
 		 * @return if a specific API call is accepted by this component	
 		 */
-		bool accepts(const std::string& action) const;
+		bool accepts(const std::string& id) const;
 		
 		/**
 		 * Executes all deferred calls
