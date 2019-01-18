@@ -8,6 +8,7 @@
 // Local Includes
 #include "apiservice.h"
 #include "apievent.h"
+#include "apisignature.h"
 
 namespace nap
 {
@@ -22,8 +23,8 @@ namespace nap
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(APIComponent, APIComponentInstance)
 	public:
-		std::vector<std::string> mCallFilter;		///< Property: 'CallFilter' all (exact) names of API calls (ids) accepted by this component.
-		bool mDeferred = false;						///< Property: 'Deferred' if calls are executed immediately or deferred, ie: when the component is updated.
+		std::vector<ResourcePtr<APISignature>> mSignatures;			///< Property: 'Methods' all (exact) names of API calls (ids) accepted by this component.
+		bool mDeferred = false;										///< Property: 'Deferred' if calls are executed immediately or deferred, ie: when the component is updated.
 	};
 
 
@@ -72,7 +73,7 @@ namespace nap
 		APIService* mAPIService = nullptr;
 
 		// All accepted names of individual calls
-		std::unordered_set<std::string> mCallFilter;
+		std::unordered_map<std::string, APISignature*> mSignatures;
 
 		// Mutex associated with setting / getting calls
 		std::mutex	mCallMutex;

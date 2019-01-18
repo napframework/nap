@@ -3,10 +3,10 @@
 #include "apievent.h"
 #include "apicomponent.h"
 
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/error/en.h>
+// External Includes
+#include <rtti/jsonreader.h>
+#include <rtti/defaultlinkresolver.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -88,52 +88,69 @@ namespace nap
 	}
 
 
-	static int getLine(const std::string& json, size_t offset)
-	{
-		int line = 1;
-		size_t line_offset = 0;
-		while (true)
-		{
-			line_offset = json.find('\n', line_offset);
-			if (line_offset == std::string::npos || line_offset > offset)
-				break;
-			++line;
-			line_offset += 1;
-		}
-		return line;
-	}
-
-
 	bool APIService::sendJSON(const char* json, utility::ErrorState* error)
 	{
-		std::string json_str(json);
+		// Get factory
+		nap::rtti::DeserializeResult result;
+		auto& factory = getCore().getResourceManager()->getFactory();
 
-		// Try to parse the json file
-		rapidjson::Document document;
-		rapidjson::ParseResult parse_result = document.Parse(json_str.c_str());
-		if (!parse_result)
-		{
-			error->fail("Error parsing json: %s (line: %d)", rapidjson::GetParseError_En(parse_result.Code()), getLine(json_str, parse_result.Offset()));
+		// De-serialize json cmd
+		if (!rtti::deserializeJSON(json, rtti::EPropertyValidationMode::DisallowMissingProperties, factory, result, *error))
 			return false;
+
+		// Resolve links
+		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, *error))
+			return false;
+
+		// Fetch all api signatures
+		std::vector<nap::APISignature*> signatures;
+		for (const auto& object : result.mReadObjects)
+		{
+			// Check if it's a call signature
+			if (!object->get_type().is_derived_from(RTTI_OF(nap::APISignature)))
+				continue;
+
+			// Cast to signature and add as possible event
+			nap::APISignature* signature = rtti_cast<nap::APISignature>(object.get());
+			assert(signature != nullptr);
+			if (signature != nullptr)
+				signatures.emplace_back(signature);
 		}
 
-		// Read objects
-		rapidjson::Value::ConstMemberIterator call = document.FindMember("Call");
-
-		if (!error->check(call != document.MemberEnd(), "Unable to find required 'Call' field"))
+		// Error when json doesn't contain any signature objects
+		if (!error->check(!signatures.empty(), "JSON doesn't contain any nap::Signature objects"))
 			return false;
 
-		rapidjson::Value::ConstMemberIterator id = call->value.FindMember("mID");
-		if (!error->check(id != document.MemberEnd(), "Unable to find required 'mID' field"))
+		// Iterate over every signature, extract arguments (APIFloat etc.) and send as new event.
+		// Note that we make a copy of the argument because the original arguments are owned by the de-serialized result
+		bool succeeded = true;
+		for (auto& signature : signatures)
+		{
+			APICallEventPtr ptr = std::make_unique<APICallEvent>(signature->mID);
+			for (auto& arg : signature->mArguments)
+			{
+				// Create copy using RTTR
+				rtti::Variant arg_copy = arg->get_type().create();
+				assert(arg_copy.is_valid());
+				
+				// Wrap result in unique ptr
+				std::unique_ptr<APIBaseValue> copy(arg_copy.get_value<APIBaseValue*>());
+
+				// Copy all properties as we know they contain the same ones
+				rtti::copyObject(*arg, *copy);
+
+				// Add API value as argument
+				ptr->addArgument(std::move(copy));
+			}
+
+			// Forward, keep track of result
+			if (!forward(std::move(ptr), *error))
+				succeeded = false;
+		}
+
+		// Notify user if all signatures were send successfully.
+		if (!error->check(succeeded, "Unable to forward all JSON requests"))
 			return false;
-
-		rapidjson::Value::ConstMemberIterator signature = call->value.FindMember("Signature");
-		if (!error->check(signature != document.MemberEnd(), "Unable to find required 'Signature' field"))
-			return false;
-
-		// Read properties of signature
-
-		// TODO: parse JSON, create argument list and send!
 		return true;
 	}
 
@@ -220,7 +237,7 @@ namespace nap
 		}
 
 		// No component accepted the call!
-		return error.check(false, "%s: No matching call found for: %s", this->get_type().get_name().data(), apiEvent->getID().c_str());
+		return error.check(false, "%s: No matching signature found for: %s", this->get_type().get_name().data(), apiEvent->getID().c_str());
 	}
 
 

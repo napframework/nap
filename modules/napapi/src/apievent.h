@@ -54,12 +54,14 @@ namespace nap
 		const std::string& getID() const							{ return mName; }
 
 		/**
-		 * Adds an api argument to this event where VT needs to be of type APIValue.
-		 * @args the template arguments used for constructing the argument
+		 * Adds an api argument to this event where T needs to be of type APIValue and args the associated value.
+		 * @args the template arguments used for constructing the argument. In case of an APIFloat the argument could be 1.0f etc.
 		 * @return the newly created and added argument
 		 */
 		template<typename T, typename... Args>
 		APIArgument* addArgument(Args&&... args);
+
+		APIArgument* addArgument(std::unique_ptr<APIBaseValue> value);
 
 		/**
 		 * @return the number of arguments associated with this event
