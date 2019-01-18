@@ -95,7 +95,16 @@ namespace nap
 		bool send(const char* id, utility::ErrorState* error);
 		
 		/**
-		 * Parses a JSON file and sends the individual properties as a set of arguments to a NAP application.
+		 * Interprets the string as JSON and sends the individual properties as a set of arguments to a NAP application.
+		 * This call extracts nap::APISignature objects from the json stream. 
+		 * 
+		 * Each found signature together with it's arguments is converted into an event that is forwarded to the application.
+		 * A nap::Signature can be composed out of various nap::APIValue's and is therefore a powerful way to send custom information to a NAP application.
+		 *
+		 * After extracting all the signatures, which translate into separate events, the system checks if the application accepts the data by matching the signature.
+		 * For the app to accept an event the signature's 'mID' property must match one of the nap::Signature resources inside the application.
+		 * The amount of nap::APIValue's and the type of those values must also match. This ensures the app always receives correct information.
+		 * 
 		 * @param id method associated with signal.
 		 * @param json the json string to parse and extract arguments from.
 		 * @param error contains the error if sending fails.

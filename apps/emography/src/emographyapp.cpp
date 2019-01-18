@@ -70,7 +70,7 @@ namespace nap
 		std::array<const char*, 3> string_array = { "ola", "brief", "rokit" };
 		mAPIService->sendStringArray("sendStrings", string_array.data(), string_array.size(), &error);
 
-		// Send data from parsed json
+		// Call app from parsed json file that includes signature
 		std::string buffer;
 		if (!utility::readFileToString("calls.json", buffer, error))
 			return false;
