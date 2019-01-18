@@ -9,7 +9,7 @@ namespace nap
 	class APIComponentInstance;
 
 	/**
-	 * Offers a C-Style interface that can be used to send calls to a running NAP application.
+	 * Offers a C-Style interface that can be used to send data to a running NAP application.
 	 * Use the various utility functions, such as sendInt() and sendIntArray() to send data to a running NAP application.
 	 * All available methods copy the data that is given, making it hard to leak memory.
 	 * The copied data is converted (moved) into a nap::APIEvent and transferred to a nap::APIComponent.
@@ -33,110 +33,110 @@ namespace nap
 		
 		/**
 		 * Send a single float value to a NAP application.
-		 * @param action method associated with float value.
+		 * @param id method associated with float value.
 		 * @param value the float value to send.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendFloat(const char* action, float value, utility::ErrorState* error);
+		bool sendFloat(const char* id, float value, utility::ErrorState* error);
 		
 		/**
 		 * Send a single string value to a NAP application.
-		 * @param action method associated with string value.
+		 * @param id method associated with string value.
 		 * @param value the string to send.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendString(const char* action, const char* value, utility::ErrorState* error);
+		bool sendString(const char* id, const char* value, utility::ErrorState* error);
 		
 		/**
 		 * Sends a single int value to a NAP application.
-		 * @param action method associated with int value.
+		 * @param id method associated with int value.
 		 * @param value the int to send.
 		 * @param error contains the error if sending fails.
 		 */		
-		bool sendInt(const char* action, int value, utility::ErrorState* error);
+		bool sendInt(const char* id, int value, utility::ErrorState* error);
 		
 		/**
 		 * Sends a single byte value to a NAP application.
-		 * @param action method associated with byte value.
+		 * @param id method associated with byte value.
 		 * @param value the byte to send.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendByte(const char* action, nap::uint8 value, utility::ErrorState* error);
+		bool sendByte(const char* id, nap::uint8 value, utility::ErrorState* error);
 
 		/**
 		 * Sends a single bool value to a NAP application.
-		 * @param action method associated with bool value.
+		 * @param id method associated with bool value.
 		 * @param value the bool to send.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendBool(const char* action, bool value, utility::ErrorState* error);
+		bool sendBool(const char* id, bool value, utility::ErrorState* error);
 
 		/**
 		 * Sends a single long value to a NAP application.
-		 * @param action method associated with long value.
+		 * @param id method associated with long value.
 		 * @param value the long to send.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendLong(const char* action, long long value, utility::ErrorState* error);
+		bool sendLong(const char* id, long long value, utility::ErrorState* error);
 		
 		/**
 		 * Sends a single char value to a NAP application.
-		 * @param action method associated with char value.
+		 * @param id method associated with char value.
 		 * @param value the char to send.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendChar(const char* action, char value, utility::ErrorState* error);
+		bool sendChar(const char* id, char value, utility::ErrorState* error);
 		
 		/**
 		 * Sends a single signal to a NAP application
-		 * @param action method associated with signal.
+		 * @param id method associated with signal.
 		 * @param error contains the error if sending fails.
 		 */
-		bool send(const char* action, utility::ErrorState* error);
+		bool send(const char* id, utility::ErrorState* error);
 		
 		/**
-		 * Parses the action as a JSON file and sends the individual properties as a set of arguments to a NAP application.
-		 * @param action method associated with signal.
+		 * Parses JSON file and sends the individual properties as a set of arguments to a NAP application.
+		 * @param id method associated with signal.
 		 * @param json the json string to parse and extract arguments from.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendJSON(const char* action, const char** json, utility::ErrorState* error);
+		bool sendJSON(const char* json, utility::ErrorState* error);
 
 		/**
 		 * Sends an array of ints to a NAP application, a copy of the data in the array is made.
-		 * @param action method associated with int array.
+		 * @param id method associated with int array.
 		 * @param value the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendIntArray(const char* action, int* array, int length, utility::ErrorState* error);
+		bool sendIntArray(const char* id, int* array, int length, utility::ErrorState* error);
 		
 		/**
 		 * Sends an array of floats to a NAP application, a copy of the data in the array is made.
-		 * @param action method associated with float array.
+		 * @param id method associated with float array.
 		 * @param value the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendFloatArray(const char* action, float* array, int length, utility::ErrorState* error);
+		bool sendFloatArray(const char* id, float* array, int length, utility::ErrorState* error);
 		
 		/**
 		 * Sends an array of bytes to a NAP application, a copy of the data in the array is made.
-		 * @param action method associated with byte array.
+		 * @param id method associated with byte array.
 		 * @param value the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendByteArray(const char* action, uint8_t* array, int length, utility::ErrorState* error);
+		bool sendByteArray(const char* id, uint8_t* array, int length, utility::ErrorState* error);
 		
 		/**
 		 * Sends an array of string values to a NAP application, a copy of the data in the array is made.
-		 * @param action method associated with string array.
+		 * @param id method associated with string array.
 		 * @param value the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendStringArray(const char* action, const char** array, int length, utility::ErrorState* error);
+		bool sendStringArray(const char* id, const char** array, int length, utility::ErrorState* error);
 
 	protected:
 		/**

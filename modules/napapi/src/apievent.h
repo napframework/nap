@@ -21,8 +21,8 @@ namespace nap
 
 	/**
 	 * API event that is created when calling NAP from an external environment.
-	 * It contains a number of API arguments that hold specific values.
-	 * The application decides what to do with these events.
+	 * Contains a list of API arguments that carry the actual value.
+	 * The NAP application decides what to do with these events.
 	 * These events are forwarded to the running app by the APIService.
 	 */
 	class NAPAPI APICallEvent : public APIEvent
@@ -38,20 +38,20 @@ namespace nap
 
 		/**
 		 * Every API call needs to be associated with an action
-		 * @param action name of the action associated with this call
+		 * @param name identifier of this call
 		 */
-		APICallEvent(const std::string& action);
+		APICallEvent(const std::string& name);
 
 		/**
 		 * Every API call needs to be associated with an action
-		 * @param action name of the action associated with this call
+		 * @param name identifier of this call
 		 */
-		APICallEvent(const std::string&& action);
+		APICallEvent(const std::string&& name);
 
 		/**
-		 * @return action name of this call	
+		 * @return identifier of this call	
 		 */
-		const std::string& getAction() const						{ return mActionName; }
+		const std::string& getID() const							{ return mName; }
 
 		/**
 		 * Adds an api argument to this event where VT needs to be of type APIValue.
@@ -96,7 +96,7 @@ namespace nap
 		const APIArgument& operator[](std::size_t idx) const		{ return *getArgument(static_cast<int>(idx)); }
 
 	private:
-		std::string mActionName;		///< Name of the action associated with this call
+		std::string mName;				///< Name of the action associated with this call
 		APIArgumentList mArguments;		// All the arguments associated with the event
 	};
 
