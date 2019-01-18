@@ -1,6 +1,43 @@
 {
     "Objects": [
         {
+            "Type": "nap::APISignature",
+            "mID": "updatePixels",
+            "Arguments": [
+                {
+                    "Type": "nap::APIByteArray",
+                    "mID": "pixelValues",
+                    "Value": []
+                },
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "barNumber",
+                    "Value": 2
+                }
+            ]
+        },
+        {
+            "Type": "nap::APISignature",
+            "mID": "updateView",
+            "Arguments": [
+                {
+                    "Type": "nap::APILong",
+                    "mID": "startTime",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APILong",
+                    "mID": "endTime",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "samples",
+                    "Value": 0
+                }
+            ]
+        },
+        {
             "Type": "nap::DBSettings",
             "mID": "DatabaseSettings",
             "Settings": [
@@ -22,9 +59,9 @@
                     "Type": "nap::APIComponent",
                     "mID": "nap::APIComponent",
                     "Deferred": true,
-                    "CallFilter": [
-                        "setIntensity",
-                        "setName"
+                    "Methods": [
+                        "updateView",
+                        "updatePixels"
                     ]
                 }
             ],

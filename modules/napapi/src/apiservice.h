@@ -95,7 +95,7 @@ namespace nap
 		bool send(const char* id, utility::ErrorState* error);
 		
 		/**
-		 * Parses JSON file and sends the individual properties as a set of arguments to a NAP application.
+		 * Parses a JSON file and sends the individual properties as a set of arguments to a NAP application.
 		 * @param id method associated with signal.
 		 * @param json the json string to parse and extract arguments from.
 		 * @param error contains the error if sending fails.
