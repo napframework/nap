@@ -6,7 +6,10 @@
 // External Includes
 #include <unordered_set>
 #include <rtti/object.h>
-#include <pybind11/cast.h>
+
+#ifdef NAP_ENABLE_PYTHON
+	#include <pybind11/cast.h>
+#endif
 
 namespace nap
 {
@@ -412,6 +415,7 @@ namespace rttr
 *		   as a unique_ptr (as described above, through the class template type), causing it to be stored as a unique_ptr anyway.
 *		   Instead we pass nullptr to circumvent this behaviour.
 */
+#ifdef NAP_ENABLE_PYTHON
 namespace pybind11
 {
 	namespace detail
@@ -437,3 +441,4 @@ namespace pybind11
 		};
 	}
 }
+#endif // NAP_ENABLE_PYTHON

@@ -59,8 +59,7 @@ docs/latex
 imgui.ini
 packaging_staging
 packaging_build
-packaging_build_debug
-packaging_build_release
+packaging_build_*
 packaging_lib
 packaging_bin
 build_info.json
@@ -68,3 +67,10 @@ build_number.cmake
 cached_project_json.cmake
 cached_module_json.cmake
 NAP-*-*
+
+.externalNativeBuild
+.gradle
+*.iml
+local.properties
+.idea/workspace.xml
+.idea/libraries

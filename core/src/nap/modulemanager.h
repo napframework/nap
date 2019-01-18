@@ -35,7 +35,7 @@ namespace nap
 		 * @param moduleNames The list of modules to load
 		 * @return Whether we were successfully able load our requested modules
 		 */
-		bool loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error);
+		bool loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error, std::string forcedModuleDirectory=nullptr);
 
 	private:
 		/**

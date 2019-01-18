@@ -1,6 +1,8 @@
 #include "event.h"
 
-#include <rtti/pythonmodule.h>
+#ifdef NAP_ENABLE_PYTHON
+    #include <rtti/pythonmodule.h>
+#endif
 
 
 RTTI_BEGIN_CLASS(nap::Event)

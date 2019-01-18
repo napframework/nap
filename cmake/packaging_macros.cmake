@@ -14,68 +14,80 @@ macro(package_nap)
         configure_file(${NAP_ROOT}/cmake/build_number.cmake.in ${NAP_ROOT}/cmake/build_number.cmake @ONLY)
     endif()
 
-    # Package shared cmake files
-    install(DIRECTORY ${NAP_ROOT}/dist/cmake/ 
+    if(NOT ANDROID)
+        # Package shared cmake files
+        install(DIRECTORY ${NAP_ROOT}/dist/cmake/ 
             DESTINATION cmake
             )   
 
-    # Install wrapper batch scripts for user tools
-    if(WIN32)
-        file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/win64/user_tools_wrappers/*.*")
-    else()
-        file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/unix/user_tools_wrappers/*")
-    endif()
-    install(PROGRAMS ${USER_TOOL_WRAPPERS} DESTINATION tools)
+        # Install wrapper batch scripts for user tools
+        if(WIN32)
+            file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/win64/user_tools_wrappers/*.*")
+        else()
+            file(GLOB USER_TOOL_WRAPPERS "${NAP_ROOT}/dist/unix/user_tools_wrappers/*")
+        endif()
+        install(PROGRAMS ${USER_TOOL_WRAPPERS} DESTINATION tools)
 
-    # Package platform tools
-    file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/user_scripts/platform/*py")
-    install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
+        # Package platform tools
+        file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/user_scripts/platform/*py")
+        install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
 
-    # Package project directory package & regenerate shortcuts
-    package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
+        # Package project directory package & regenerate shortcuts
+        package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
 
-    # Package module directory regenerate shortcut
-    package_module_dir_shortcuts("tools/platform/module_dir_shortcuts")
+        # Package module directory regenerate shortcut
+        package_module_dir_shortcuts("tools/platform/module_dir_shortcuts")
 
-    # Package check_build_environment scripts
-    if(APPLE)
-        install(PROGRAMS ${NAP_ROOT}/dist/macos/check_build_environment/check_build_environment DESTINATION tools)
-    elseif(UNIX)
-        install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/check_build_environment DESTINATION tools)
-        install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/check_build_environment_worker.py DESTINATION tools/platform)
-    else()
-        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/check_build_environment.bat DESTINATION tools)
-        install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/check_build_environment_continued.py DESTINATION tools/platform)
-    endif()
+        # Package check_build_environment scripts
+        if(APPLE)
+            install(PROGRAMS ${NAP_ROOT}/dist/macos/check_build_environment/check_build_environment DESTINATION tools)
+        elseif(UNIX)
+            install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/check_build_environment DESTINATION tools)
+            install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/check_build_environment_worker.py DESTINATION tools/platform)
+        else()
+            install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/check_build_environment.bat DESTINATION tools)
+            install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/check_build_environment_continued.py DESTINATION tools/platform)
+        endif()
 
-    # Create empty projects and usermodules directories
-    install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
-    install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/user_modules)")
+        # Create empty projects and usermodules directories
+        install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
+        install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/user_modules)")
 
-    # Package thirdparty Python into release
-    package_python()
+        # Package thirdparty Python into release
+        package_python()
 
-    # Package Qt into release
-    package_qt()
+        # Package Qt into release
+        package_qt()
 
-    # Package documentation
-    if(INCLUDE_DOCS)
-        find_package(Doxygen REQUIRED)
-        install(CODE "execute_process(COMMAND python ${NAP_ROOT}/docs/doxygen/generateDocumentation.py)
-                      execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/docs/html/ ${CMAKE_INSTALL_PREFIX}/doc)")
-    endif()
+        # Package documentation
+        if(INCLUDE_DOCS)
+            find_package(Doxygen REQUIRED)
+            install(CODE "execute_process(COMMAND python ${NAP_ROOT}/docs/doxygen/generateDocumentation.py)
+                          execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/docs/html/ ${CMAKE_INSTALL_PREFIX}/doc)")
+        endif()
 
-    # Package IDE templates
-    if(WIN32)
-        install(DIRECTORY ${NAP_ROOT}/ide_templates/visual_studio_templates/ DESTINATION visual_studio_templates)
-    elseif(APPLE)
-        install(DIRECTORY ${NAP_ROOT}/ide_templates/xcode_templates/ DESTINATION xcode_templates)
-    endif()
+        # Package IDE templates
+        if(WIN32)
+            install(DIRECTORY ${NAP_ROOT}/ide_templates/visual_studio_templates/ DESTINATION visual_studio_templates)
+        elseif(APPLE)
+            install(DIRECTORY ${NAP_ROOT}/ide_templates/xcode_templates/ DESTINATION xcode_templates)
+        endif()
 
-    # Package Windows redistributable help
-    if(WIN32)
-        install(FILES "${NAP_ROOT}/dist/win64/redist_help/Microsoft Visual C++ Redistributable Help.txt" DESTINATION tools/platform)
-    endif()
+        # Package Windows redistributable help
+        if(WIN32)
+            install(FILES "${NAP_ROOT}/dist/win64/redist_help/Microsoft Visual C++ Redistributable Help.txt" DESTINATION tools/platform)
+        endif()
+    else() # ANDROID
+        # Package shared cmake files
+        install(DIRECTORY ${NAP_ROOT}/dist/cmake/android/
+                DESTINATION cmake/
+                )
+
+        # Build info installation
+        install(FILES ${NAP_ROOT}/dist/cmake/build_info.json
+                DESTINATION cmake/
+                )
+    endif() # ANDROID
 endmacro()
 
 # Package installed Python for distribution with NAP release (for use with mod_nappython, Napkin and interpreter for Python scripts)
@@ -309,6 +321,8 @@ macro(package_module)
                                         ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
     elseif(APPLE)
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
+    elseif(ANDROID)
+        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/${ANDROID_ABI})
     else()
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
     endif()
@@ -319,13 +333,15 @@ macro(package_module)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>/ RENAME ${PROJECT_NAME}.json)
     elseif(APPLE)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>/ RENAME lib${PROJECT_NAME}.json)
+    elseif(ANDROID)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/ RENAME lib${PROJECT_NAME}.json)
     else()
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/ RENAME lib${PROJECT_NAME}.json)
     endif()
    
     # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done done after we 
     # install the target above due to ordering of install_name_tool calling)
-    if(UNIX)
+    if(UNIX AND NOT ANDROID)
         if(DEFINED UNIX_EXTRA_RPATH)
             set(EXTRA_RPATH "${UNIX_EXTRA_RPATH}")    
         else()

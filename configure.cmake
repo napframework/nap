@@ -18,9 +18,12 @@ if(MSVC OR APPLE)
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
 
     endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
-
 else()
-    set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
+    if(ANDROID)
+        set(BUILD_CONF Android${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ANDROID_ABI})
+    else()
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
+    endif()
 
     # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
     # builds when working in packaging and non-packaging at the same time)
@@ -106,10 +109,14 @@ endmacro()
 # - WIN32_SOURCES
 # - MACOS_SOURCES
 # - LINUX_SOURCES
+# - NATIVE_SOURCES
+# - ANDROID_SOURCES
 function(filter_platform_specific_files UNFILTERED_SOURCES)
     set(LOCAL_WIN32_SOURCES)
     set(LOCAL_MACOS_SOURCES)
     set(LOCAL_LINUX_SOURCES)
+    set(LOCAL_NATIVE_SOURCES)
+    set(LOCAL_ANDROID_SOURCES)
     foreach(TMP_PATH ${${UNFILTERED_SOURCES}})
         string(FIND ${TMP_PATH} "/win32/" WIN32_EXCLUDE_DIR_FOUND)
         if(NOT ${WIN32_EXCLUDE_DIR_FOUND} EQUAL -1)
@@ -123,6 +130,16 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
                 string(FIND ${TMP_PATH} "/linux/" LINUX_EXCLUDE_DIR_FOUND)
                 if(NOT ${LINUX_EXCLUDE_DIR_FOUND} EQUAL -1)
                     list(APPEND LOCAL_LINUX_SOURCES ${TMP_PATH})
+                else()
+                    string(FIND ${TMP_PATH} "/native/" NATIVE_EXCLUDE_DIR_FOUND)
+                    if(NOT ${NATIVE_EXCLUDE_DIR_FOUND} EQUAL -1)
+                        list(APPEND LOCAL_ANDROID_SOURCES ${TMP_PATH})
+                    else()
+                        string(FIND ${TMP_PATH} "/android/" ANDROID_EXCLUDE_DIR_FOUND)
+                        if(NOT ${LOCAL_ANDROID_SOURCES} EQUAL -1)
+                            list(APPEND LOCAL_ANDROID_SOURCES ${TMP_PATH})
+                        endif()                        
+                    endif()
                 endif()
             endif()
         endif()
@@ -131,11 +148,13 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
     set(WIN32_SOURCES ${LOCAL_WIN32_SOURCES} PARENT_SCOPE)
     set(MACOS_SOURCES ${LOCAL_MACOS_SOURCES} PARENT_SCOPE)
     set(LINUX_SOURCES ${LOCAL_LINUX_SOURCES} PARENT_SCOPE)
+    set(NATIVE_SOURCES ${LOCAL_NATIVE_SOURCES} PARENT_SCOPE)
+    set(ANDROID_SOURCES ${LOCAL_ANDROID_SOURCES} PARENT_SCOPE)
 endfunction()
 
 # Helper macro to add platform-specific files to the correct directory and
 # to only compile the platform-specific files that match the current platform
-macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
+macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES NATIVE_SOURCES ANDROID_SOURCES)
 
     # Add to solution folders
     if(MSVC)
@@ -148,14 +167,28 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
                 source_group("Header Files\\Win32" FILES ${TMP_PATH})
             endif()
         endforeach()
-
-        # Sort header and cpps into solution folders for macOS
+        foreach(TMP_PATH ${NATIVE_SOURCES})
+            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
+            if(NOT ${IS_CPP} EQUAL -1)
+                source_group("Source Files\\Win32" FILES ${TMP_PATH})
+            else()
+                source_group("Header Files\\Win32" FILES ${TMP_PATH})
+            endif()
+        endforeach()
         foreach(TMP_PATH ${MACOS_SOURCES})
             string(FIND ${TMP_PATH} ".cpp" IS_CPP)
             if(NOT ${IS_CPP} EQUAL -1)
                 source_group("Source Files\\macOS" FILES ${TMP_PATH})
             else()
                 source_group("Header Files\\macOS" FILES ${TMP_PATH})
+            endif()
+        endforeach()
+        foreach(TMP_PATH ${ANDROID_SOURCES})
+            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
+            if(NOT ${IS_CPP} EQUAL -1)
+                source_group("Source Files\\Android" FILES ${TMP_PATH})
+            else()
+                source_group("Header Files\\Android" FILES ${TMP_PATH})
             endif()
         endforeach()
     endif()
@@ -173,6 +206,15 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
     if(APPLE OR NOT UNIX)
         set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
     endif()
+
+    if(NOT ANDROID)
+        set_source_files_properties(${ANDROID_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
+    endif()
+
+    if(ANDROID)
+        set_source_files_properties(${NATIVE_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
+    endif()
+
 endmacro()
 
 # Change our project output directories (when building against NAP source)
@@ -222,9 +264,9 @@ macro(project_json_to_cmake)
     unset(ENV{PYTHONPATH})
 
     # Parse our project.json and import it
-    if(WIN32)
+    if(CMAKE_HOST_WIN32)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
-    elseif(APPLE)
+    elseif(CMAKE_HOST_APPLE)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
     else()
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
@@ -254,9 +296,9 @@ macro(module_json_to_cmake)
     unset(ENV{PYTHONPATH})
 
     # Parse our module.json and import it
-    if(WIN32)
+    if(CMAKE_HOST_WIN32)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
-    elseif(APPLE)
+    elseif(CMAKE_HOST_APPLE)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
     else()
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
@@ -304,6 +346,7 @@ macro(find_rttr)
             else()
                 set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc32/install/cmake")
             endif()
+            find_package(RTTR CONFIG REQUIRED Core)
         elseif(APPLE)
             find_path(
                     RTTR_DIR
@@ -311,6 +354,25 @@ macro(find_rttr)
                     HINTS
                     ${THIRDPARTY_DIR}/rttr/xcode/install/cmake
             )
+            find_package(RTTR CONFIG REQUIRED Core)
+        elseif(ANDROID)
+            set(RTTR_DIR ${THIRDPARTY_DIR}/rttr/android/install)
+
+            # Create imported target RTTR::Core
+            add_library(RTTR::Core SHARED IMPORTED)
+            set_target_properties(RTTR::Core PROPERTIES
+                INTERFACE_COMPILE_DEFINITIONS "RTTR_DLL"
+                INTERFACE_INCLUDE_DIRECTORIES "${RTTR_DIR}/include"
+            )
+
+            set_property(TARGET RTTR::Core APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+            set_property(TARGET RTTR::Core APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+            set_target_properties(RTTR::Core PROPERTIES
+                IMPORTED_LOCATION_RELEASE "${RTTR_DIR}/bin/Release/${ANDROID_ABI}/librttr_core.so"
+                IMPORTED_SONAME_RELEASE "librttr_core.so"
+                IMPORTED_LOCATION_DEBUG "${RTTR_DIR}/bin/Debug/${ANDROID_ABI}/librttr_core_d.so"
+                IMPORTED_SONAME_DEBUG "librttr_core_d.so"
+                )
         else()
             find_path(
                     RTTR_DIR
@@ -319,8 +381,8 @@ macro(find_rttr)
                     ${THIRDPARTY_DIR}/rttr/install/cmake
                     ${THIRDPARTY_DIR}/rttr/linux/install/cmake
             )
+            find_package(RTTR CONFIG REQUIRED Core)
         endif()
-        find_package(RTTR CONFIG REQUIRED Core)
     endif()
 endmacro()
 

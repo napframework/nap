@@ -1,3 +1,4 @@
+#ifdef NAP_ENABLE_PYTHON
 #include "pythonmodule.h"
 #include "utility/stringutils.h"
 #include <unordered_map>
@@ -72,3 +73,4 @@ namespace nap
 		}
 	}
 }
+#endif // NAP_ENABLE_PYTHON

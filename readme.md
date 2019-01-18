@@ -35,8 +35,8 @@ To generate a solution and compile the source code you need to have installed:
 NAP depends on various third party libraries. A set of compatible libraries can be downloaded from our github page. Put the thirdparty library directory next to the NAP source directory:
 
 - ~/dev
-	- ~/nap
-	- ~/thirdparty
+	- nap
+	- thirdparty
 
 You can generate a Visual Studio solution by running generateVSSolution.bat and an Xcode project by running generateXCodeProject.sh
 

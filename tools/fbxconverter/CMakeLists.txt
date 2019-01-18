@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(fbxconverter)
 
 file(GLOB sources src/*.cpp src/*.h)

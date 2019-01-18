@@ -3,6 +3,10 @@
 #include <iostream>
 #include <utility/fileutils.h>
 
+#ifdef ANDROID
+	#include <android/log.h>
+#endif
+
 namespace nap
 {
 
@@ -12,7 +16,12 @@ namespace nap
 
 	std::string basicLogMessageFormatter(const LogMessage& msg)
 	{
+#ifdef ANDROID		
+		// Use Android's own log levels, don't prepend to message text
+		return utility::stringFormat("%s", msg.text().c_str());
+#else
 		return utility::stringFormat("[%s] %s", msg.level().name().c_str(), msg.text().c_str());
+#endif
 	}
 
 	std::string timestampLogMessageFormatter(const LogMessage& msg)
@@ -69,13 +78,47 @@ namespace nap
 	{
 		bool isError = message.level() >= Logger::errorLevel();
 
+
 		mOutStreamMutex.lock();
 
+#ifdef ANDROID
+		int priority = -1;
+		std::string logLevelName = message.level().name();
+		if (logLevelName == "fine")
+		{
+			priority = ANDROID_LOG_VERBOSE;
+		} else if (logLevelName == "debug")
+		{
+			priority = ANDROID_LOG_DEBUG;
+		} else if (logLevelName == "info")
+		{
+			priority = ANDROID_LOG_INFO;
+		} else if (logLevelName == "warn")
+		{
+			priority = ANDROID_LOG_WARN;
+		} else if (logLevelName == "error")
+		{
+			priority = ANDROID_LOG_ERROR;
+		} else if (logLevelName == "fatal")
+		{
+			priority = ANDROID_LOG_FATAL;
+		}
+		
+		if (priority != -1)
+		{
+			__android_log_print(priority, ANDROID_LOG_TAG, "%s", formatMessage(message).c_str());		
+		} else 
+		{
+			Logger::warn("Unknown log level: %s", logLevelName.c_str());
+			Logger::info(message.text());
+		}
+		// LOGI("%s", formatMessage(message).c_str());
+#else
 		if (isError)
 			std::cerr << formatMessage(message) << std::endl;
 		else
 			std::cout << formatMessage(message) << std::endl;
-
+#endif
 		mOutStreamMutex.unlock();
 	}
 

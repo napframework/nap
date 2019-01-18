@@ -15,23 +15,50 @@ list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 if(APPLE)
     add_library(${PROJECT_NAME} SHARED 
-        ${SOURCES}
-        src/nap/osx/directorywatcher.cpp
-        src/nap/osx/module.cpp)
+                ${SOURCES}
+                src/nap/osx/directorywatcher.cpp
+                src/nap/osx/module.cpp
+                src/nap/native/modulemanager.cpp
+                )
 elseif(MSVC)
     add_library(${PROJECT_NAME} SHARED 
-        ${SOURCES}
-        src/nap/win32/directorywatcher.cpp
-        src/nap/win32/module.cpp)
+                ${SOURCES}
+                src/nap/win32/directorywatcher.cpp
+                src/nap/win32/module.cpp
+                src/nap/native/modulemanager.cpp
+                )
+elseif(ANDROID)
+    find_library( # Sets the name of the path variable.
+          android-lib
+
+          # Specifies the name of the NDK library that
+          # you want CMake to locate.
+          android)
+    file(GLOB FILEWATCHER_SOURCES
+            src/nap/linux/FileWatcher/*.cpp
+            src/nap/linux/FileWatcher/*.h)
+    add_library(${PROJECT_NAME} SHARED
+                ${SOURCES}
+                ${FILEWATCHER_SOURCES}
+                src/nap/linux/directorywatcher.cpp
+                src/nap/linux/module.cpp
+                src/nap/android/modulemanager.cpp
+                )
+    target_link_libraries(${PROJECT_NAME} 
+                ${log-lib}
+                ${android-lib}
+                log)
 elseif(UNIX)
     file(GLOB FILEWATCHER_SOURCES
             src/nap/linux/FileWatcher/*.cpp
             src/nap/linux/FileWatcher/*.h)
     add_library(${PROJECT_NAME} SHARED
-            ${SOURCES}
-            ${FILEWATCHER_SOURCES}
-            src/nap/linux/directorywatcher.cpp
-	    src/nap/linux/module.cpp)
+                ${SOURCES}
+                ${FILEWATCHER_SOURCES}
+                src/nap/linux/directorywatcher.cpp
+                src/nap/linux/module.cpp
+                src/nap/native/modulemanager.cpp
+                )
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
@@ -44,7 +71,7 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 if(MSVC)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC src ${CMAKE_CURRENT_BINARY_DIR})
@@ -56,16 +83,22 @@ endif()
 
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework CoreServices")
+elseif(ANDROID)
+    target_link_libraries(${PROJECT_NAME} dl)
 elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} dl pthread)
 endif ()
 
 # Package into release build
 if(WIN32)
-	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
                                     ARCHIVE DESTINATION lib/$<CONFIG>)
 elseif(APPLE)
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)
+elseif(ANDROID)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE}/${ANDROID_ABI})
+else()
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})
 endif()
 
 if(WIN32)
@@ -76,8 +109,6 @@ elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
     set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
-else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})   
 endif()
 
 # Package headers
@@ -86,7 +117,13 @@ install(DIRECTORY "src/nap/" DESTINATION "include/nap/"
         PATTERN "linux" EXCLUDE
         PATTERN "osx" EXCLUDE
         PATTERN "win32" EXCLUDE
+        PATTERN "android" EXCLUDE
 )
+if(ANDROID)
+    install(DIRECTORY "src/nap/android/" DESTINATION "include/nap/android/"
+            FILES_MATCHING PATTERN "*.h"
+    )
+endif()
 
 # Package release version info
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h

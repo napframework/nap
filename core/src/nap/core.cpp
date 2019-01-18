@@ -8,7 +8,9 @@
 #include "rtti/jsonreader.h"
 
 // External Includes
-#include <rtti/pythonmodule.h>
+#ifdef NAP_ENABLE_PYTHON
+	#include <rtti/pythonmodule.h>
+#endif
 #include <iostream>
 #include <utility/fileutils.h>
 #include <packaginginfo.h>
@@ -16,6 +18,10 @@
 // Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
 #if defined(__APPLE__) || defined(__unix__)
 	#include <stdlib.h>
+#endif
+
+#ifdef ANDROID
+	#include <android/asset_manager.h>
 #endif
 
 using namespace std;
@@ -64,17 +70,19 @@ namespace nap
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
-		// expected when apps are launched directly from Finder and probably other things too.
+		// expected when apps are launched directly from macOS Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
 		// Setup our Python environment
+#ifdef NAP_ENABLE_PYTHON
 		setupPythonEnvironment();
+#endif
 		
 		// Load our module names from the project info
 		ProjectInfo projectInfo;
 		if (!runningInNonProjectContext)
 		{
-			if (!loadProjectInfoFromJSON(*this, projectInfo, error))
+			if (!loadProjectInfoFromFile(*this, projectInfo, error))
 				return false;
 		}
 
@@ -86,7 +94,13 @@ namespace nap
 		mResourceManager = std::make_unique<ResourceManager>(*this);
 
 		// Load modules
-		if (!mModuleManager.loadModules(projectInfo.mModules, error))
+		// TODO ANDROID These are some ugly, not ready for merge, ModuleManager changes
+		std::string forcedModulePath;
+#ifdef ANDROID
+		forcedModulePath = mAndroidNativeLibDir;
+#endif
+		// if (!mModuleManager.loadModules(*this, projectInfo.mModules, error))
+		if (!mModuleManager.loadModules(projectInfo.mModules, error, forcedModulePath))
 			return false;
 		
 		// Create the various services based on their dependencies
@@ -99,6 +113,7 @@ namespace nap
 
 	bool Core::initializePython(utility::ErrorState& error)
 	{
+#ifdef NAP_ENABLE_PYTHON
 		// Here we register a callback that is called when the nap python module is imported.
 		// We register a 'core' attribute so that we can write nap.core.<function>() in python
 		// to access core functionality as a 'global'.
@@ -106,6 +121,7 @@ namespace nap
 		{
 			module.attr("core") = this;
 		});
+#endif
 		return true;
 	}
 
@@ -180,8 +196,10 @@ namespace nap
 			service->preUpdate(delta_time);
 		}
 
+#ifndef ANDROID
 		// Check for file changes
 		mResourceManager->checkForFileChanges();
+#endif
 
 		// Update rest of the services
 		for (auto& service : mServices)
@@ -220,6 +238,7 @@ namespace nap
 		using ConfigurationByTypeMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>>;
 		ConfigurationByTypeMap configuration_by_type;
 
+#ifndef ANDROID
 		// If there is a config file, read the service configurations from it.
 		// Note that having a config file is optional, but if there *is* one, it should be valid
 		std::string config_file_path;
@@ -228,7 +247,7 @@ namespace nap
 			rtti::DeserializeResult deserialize_result;
 			if (!rtti::readJSONFile(config_file_path, rtti::EPropertyValidationMode::DisallowMissingProperties,  mResourceManager->getFactory(), deserialize_result, errorState))
 				return false;
-
+			
 			for (auto& object : deserialize_result.mReadObjects)
 			{
 				if (!errorState.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
@@ -238,6 +257,7 @@ namespace nap
 				configuration_by_type[config->getServiceType()] = std::move(config);
 			}
 		}
+#endif // ANDROID		
 
 		// Gather all service configuration types
 		std::vector<rtti::TypeInfo> service_configuration_types;
@@ -382,6 +402,11 @@ namespace nap
 	
 	bool Core::determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath)
 	{
+// TODO ANDROID temporary determineAndSetWorkingDirectory
+#ifdef ANDROID
+		return true;
+#endif
+
 		// If we've been provided with an explicit data path let's use that
 		if (!forcedDataPath.empty())
 		{
@@ -515,6 +540,12 @@ namespace nap
 	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
 	{
 		const std::string exeDir = utility::getExecutableDir();
+
+#ifdef ANDROID
+		// TODO ANDROID Confirm file exists using AssetManager
+		foundFilePath = filename;
+		return true;
+#endif		
 		
 		// Check for the file in its normal location, beside the binary
 		const std::string alongsideBinaryPath = utility::getExecutableDir() + "/" + filename;
@@ -553,4 +584,23 @@ namespace nap
 #endif // NAP_PACKAGED_BUILD
 		return false;
 	}
+
+#ifdef ANDROID
+	void Core::setAndroidInitialisationVars(AAssetManager *assetManager, std::string nativeLibDir)
+	{
+		mAndroidAssetManager = assetManager;
+		mAndroidNativeLibDir = nativeLibDir;
+	}
+
+	AAssetManager* Core::getAndroidAssetManager() const
+	{
+		return mAndroidAssetManager;
+	}
+
+	std::string Core::getAndroidNativeLibDir() const
+	{
+		return mAndroidNativeLibDir;
+	}
+
+#endif
 }
