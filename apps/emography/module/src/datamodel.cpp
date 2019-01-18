@@ -62,7 +62,7 @@ namespace nap
 						uint64_t prev_chunk_start_time_seconds = lod.mCurrentChunkIndex * lod.mMaxNumSeconds;
 						
 						objects.clear();
-						if (!prevTable->query(utility::stringFormat("\"TimeStamp.Time\" >= %llu", prev_chunk_start_time_seconds), objects, errorState))
+						if (!prevTable->query(utility::stringFormat("\"TimeStamp.Time\" >= %llu", prev_chunk_start_time_seconds * 1000), objects, errorState))
 							return false;
 
 						std::unique_ptr<ReadingBase> collapsedObject = mSummaryFunction(objects);
