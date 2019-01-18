@@ -63,24 +63,16 @@ namespace nap
 		bool result = mDataModel.registerType<StressIntensity>([](const std::vector<std::unique_ptr<rtti::Object>>& inObjects) 
 		{
 			float total = 0.0;
-			TimeStamp startTime;
-			TimeStamp endTime;
 			for (int index = 0; index < inObjects.size(); ++index)
 			{
 				rtti::Object* object = inObjects[index].get();
 				StressIntensityReading* stressIntensityReading = rtti_cast<StressIntensityReading>(object);
 				assert(stressIntensityReading);
 
-				if (index == 0)
-					startTime = stressIntensityReading->mTimeStamp;
-				
-				if (index == inObjects.size() - 1)
-					endTime = stressIntensityReading->mTimeStamp;
-
 				total += stressIntensityReading->mObject.mValue;
 			}
 
-			return std::make_unique<StressIntensityReadingSummary>(startTime, endTime, total / inObjects.size());
+			return std::make_unique<StressIntensityReading>(StressIntensity(total / inObjects.size()));
 		}, error);
 
 		if (!result)
@@ -89,19 +81,11 @@ namespace nap
 		result = mDataModel.registerType<EStressState>([](const std::vector<std::unique_ptr<rtti::Object>>& inObjects)
 		{
 			std::unordered_map<EStressState, int> stateCounts;
-			TimeStamp startTime;
-			TimeStamp endTime;
 			for (int index = 0; index < inObjects.size(); ++index)
 			{
 				rtti::Object* object = inObjects[index].get();
 				StressStateReading* stressStateReading = rtti_cast<StressStateReading>(object);
 				assert(stressStateReading);
-
-				if (index == 0)
-					startTime = stressStateReading->mTimeStamp;
-
-				if (index == inObjects.size() - 1)
-					endTime = stressStateReading->mTimeStamp;
 
 				stateCounts[stressStateReading->mObject]++;
 			}
@@ -117,7 +101,7 @@ namespace nap
 				}
 			}
 
-			return std::make_unique<StressStateReadingSummary>(startTime, endTime, maxStressState);
+			return std::make_unique<StressStateReading>(maxStressState);
 		}, error);
 		
 		if (!result)
@@ -162,7 +146,7 @@ namespace nap
 				values.resize(100 - summaries.size());
 				for (auto& summary : summaries)
 				{
-					StressIntensityReadingSummary* stressIntensitySummary = rtti_cast<StressIntensityReadingSummary>(summary.get());
+					StressIntensityReading* stressIntensitySummary = rtti_cast<StressIntensityReading>(summary.get());
 					values.push_back(stressIntensitySummary->mObject.mValue);
 				}
 			}
@@ -204,7 +188,7 @@ namespace nap
 				values.resize(100 - summaries.size());
 				for (auto& summary : summaries)
 				{
-					StressStateReadingSummary* stressIntensitySummary = rtti_cast<StressStateReadingSummary>(summary.get());
+					StressStateReading* stressIntensitySummary = rtti_cast<StressStateReading>(summary.get());
 					values.push_back((float)stressIntensitySummary->mObject);
 				}
 			}

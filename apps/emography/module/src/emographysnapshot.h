@@ -11,6 +11,24 @@ namespace nap
 {
 	namespace emography
 	{
+		class ReadingBase : public rtti::Object
+		{
+			RTTI_ENABLE(rtti::Object)
+		public:
+			ReadingBase() :
+				mTimeStamp(getCurrentTime())
+			{
+			}
+
+			ReadingBase(const TimeStamp& timeStamp) :
+				mTimeStamp(timeStamp)
+			{
+			}
+
+		public:
+			TimeStamp mTimeStamp;        ///< Property: 'TimeStamp' Point in time at which this snapshot is taken
+		};
+
 		/**
 		 * Represents a single state reading at a particular point in time.
 		 * It combines both a timestamp and object associated with that time stamp.
@@ -18,15 +36,15 @@ namespace nap
 		 * Because the object is relatively light weight it can be both copy and move constructed or assigned.
 		 */
 		template<typename T>
-		class Reading : public rtti::Object
+		class Reading : public ReadingBase
 		{
-			RTTI_ENABLE(rtti::Object)
+			RTTI_ENABLE(ReadingBase)
 		public:
 			/**
 			 * Default constructor
 			 * Timestamp will be set to the time of creation
 			 */
-			Reading();
+			Reading() = default;
 
 			/**
 			 * Move Constructs a snapshot of type T, prevents unnecessary copy operations
@@ -54,28 +72,8 @@ namespace nap
 			 */
 			Reading(const T& object, const TimeStamp& timestamp);
 
-			TimeStamp mTimeStamp;		///< Property: 'TimeStamp' Point in time at which this snapshot is taken
 			T mObject;					///< Property: 'Object' the object this snapshot manages
 		};
-
-		template<typename T>
-		class ReadingSummary : public rtti::Object
-		{
-			RTTI_ENABLE(rtti::Object)
-		public:
-			ReadingSummary() = default;
-			ReadingSummary(TimeStamp inStartTime, TimeStamp inEndTime, const T& inObject) :
-				mStartTime(inStartTime),
-				mEndTime(inEndTime),
-				mObject(inObject)
-			{
-			}
-
-			TimeStamp mStartTime;		///< Property: 'StartTime' Start point in time of the timerange this summary spans
-			TimeStamp mEndTime;			///< Property: 'EndTime' End point in time of the timerange this summary spans
-			T mObject;					///< Property: 'Object' the object this snapshot manages
-		};
-
 
 		//////////////////////////////////////////////////////////////////////////
 		// Implementations
@@ -83,9 +81,7 @@ namespace nap
 
 		// Possibly send towards android client after query
 		using StressStateReading = Reading<EStressState>;
-		using StressStateReadingSummary = ReadingSummary<EStressState>;
 		using StressIntensityReading = Reading<StressIntensity>;
-		using StressIntensityReadingSummary = ReadingSummary<StressIntensity>;
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -93,27 +89,23 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T>
-		nap::emography::Reading<T>::Reading() :
-			mTimeStamp(getCurrentTime())							{ }
-
-		template<typename T>
 		nap::emography::Reading<T>::Reading(const T& object) :
-			mTimeStamp(getCurrentTime()),
+			ReadingBase(getCurrentTime()),
 			mObject(object)											{ }
 
 		template<typename T>
 		nap::emography::Reading<T>::Reading(T&& object) :
-			mTimeStamp(getCurrentTime()),
+			ReadingBase(getCurrentTime()),
 			mObject(std::move(object))								{ }
 
 		template<typename T>
 		nap::emography::Reading<T>::Reading(T&& object, TimeStamp&& timestamp) : 
-			mTimeStamp(std::move(timestamp)),
+			ReadingBase(std::move(timestamp)),
 			mObject(std::move(object))								{ }
 
 		template<typename T>
 		nap::emography::Reading<T>::Reading(const T& object, const TimeStamp& timestamp) :
-			mTimeStamp(timestamp),
+			ReadingBase(timestamp),
 			mObject(object)											{ }
 	}
 }

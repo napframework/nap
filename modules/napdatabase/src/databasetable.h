@@ -22,6 +22,7 @@ namespace nap
 		bool add(const rtti::Object& object, utility::ErrorState& errorState);
 
 		bool getLast(int count, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState);
+		bool query(const std::string& whereClause, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState);
 
 	private:
 		struct Column
