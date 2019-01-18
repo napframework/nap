@@ -1063,6 +1063,12 @@
                                 "mID": "uRotation",
                                 "Name": "uRotation",
                                 "Value": 165.0
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_36",
+                                "Name": "uTemperature",
+                                "Value": 0.44999998807907107
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -1154,6 +1160,12 @@
                                 "mID": "UniformFloat_11",
                                 "Name": "uStretch",
                                 "Value": 5.0
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_35",
+                                "Name": "uTemperature",
+                                "Value": 1.0
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -1592,6 +1604,12 @@
                     "mID": "UniformInverted",
                     "Name": "uInverted",
                     "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_33",
+                    "Name": "uTemperature",
+                    "Value": 0.0
                 }
             ],
             "Shader": "SunCloudsShader",
@@ -1650,6 +1668,12 @@
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_15",
                     "Name": "uOrbitAngle",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_34",
+                    "Name": "uTemperature",
                     "Value": 0.0
                 }
             ],

@@ -11,6 +11,7 @@ uniform float uOrbitAngle;
 uniform float uOuterSize;
 uniform float uInnerSize;
 uniform float uStretch;
+uniform float uTemperature;
 
 // output
 out vec4 out_Color;
@@ -58,5 +59,5 @@ void main()
 	vec2 offset = position.xy - sunCenter;
 	float innerSize = uInnerSize * uOuterSize;
 	float intensity = 1.0 - clamp((length(offset) - innerSize) / (uOuterSize - innerSize), 0.0, 1.0);
-	out_Color =  vec4(1.0, 0.0, 0.0, intensity);
+	out_Color =  vec4(uTemperature, 1.0 - uTemperature, 0.0, intensity);
 }

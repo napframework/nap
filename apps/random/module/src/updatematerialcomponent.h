@@ -81,9 +81,11 @@ namespace nap
 		float*		getSunCloudsRotationPtr();
 		float*		getSunCloudsContrastPtr();
 		float*		getSunCloudsScalePtr();
+		float*		getSunCloudsTemperaturePtr();
 		float*		getSunGlareOuterSizePtr();
 		float*		getSunGlareInnerSizePtr();
 		float*		getSunGlareStretchPtr();
+		float*		getSunGlareTemperaturePtr();
 		float*		getStaticWarmthPtr();
 		int*		getPartyWaveCountPtr();
 		float*		getPartyWaveLengthPtr();

@@ -92,6 +92,7 @@ namespace nap
 		UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
 		if (ImGui::CollapsingHeader("Clouds", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			ImGui::SliderFloat("Cloud Temperature", updateMaterial.getSunCloudsTemperaturePtr(), 0.0, 1.0);
 			ImGui::SliderFloat("Noise Speed", &updateMaterial.mSunCloudsNoiseSpeed, 0.0f, updateMaterial.mSunCloudsNoiseSpeedMax);
 			ImGui::SliderFloat("Wind Speed", &updateMaterial.mSunCloudsWindSpeed, 0.0f, updateMaterial.mSunCloudsWindSpeedMax);
 			ImGui::SliderFloat("Wind Direction", updateMaterial.getSunCloudsRotationPtr(), 0.0f, 360.0f);
@@ -105,6 +106,7 @@ namespace nap
 			// if we change any properties on the orbit component, make sure
 			// we update its transform components and the sun-glare shader
 			bool updateOrbit = false;
+			ImGui::SliderFloat("Glare Temperature", updateMaterial.getSunGlareTemperaturePtr(), 0.0, 1.0);
 			updateOrbit = ImGui::DragFloat2("Orbit Center", orbit.mCenter, 0.001f, -orbit.mCenterRange, orbit.mCenterRange) || updateOrbit;
 			updateOrbit = ImGui::SliderFloat("Orbit Radius", &orbit.mRadius, orbit.mRadiusMin, orbit.mRadiusMax) || updateOrbit;
 			updateOrbit = ImGui::DragFloat2("Orbit Start / End", orbit.mStartEnd, 0.1f, 0.0f, 360.0f) || updateOrbit;
@@ -150,7 +152,7 @@ namespace nap
 		if (ImGui::CollapsingHeader("Static", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
-			ImGui::SliderFloat("Temperature", updateMaterial.getStaticWarmthPtr(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Static Temperature", updateMaterial.getStaticWarmthPtr(), 0.0f, 1.0f);
 		}
 	}
 

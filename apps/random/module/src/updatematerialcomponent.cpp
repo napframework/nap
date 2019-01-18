@@ -142,6 +142,12 @@ namespace nap
 	}
 
 
+	float* UpdateMaterialComponentInstance::getSunCloudsTemperaturePtr()
+	{
+		return &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uTemperature").mValue;
+	}
+
+
 	float* UpdateMaterialComponentInstance::getSunGlareOuterSizePtr()
 	{
 		return &mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize").mValue;
@@ -157,6 +163,12 @@ namespace nap
 	float* UpdateMaterialComponentInstance::getSunGlareStretchPtr()
 	{
 		return &mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uStretch").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getSunGlareTemperaturePtr()
+	{
+		return &mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uTemperature").mValue;
 	}
 
 

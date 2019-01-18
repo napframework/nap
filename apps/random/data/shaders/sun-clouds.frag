@@ -9,6 +9,7 @@ uniform float uRotation;
 uniform float uContrast;
 uniform float uScale;
 uniform float uInverted;
+uniform float uTemperature;
 uniform vec3 uOffset;
 
 // output
@@ -139,5 +140,5 @@ void main()
 
 	// set fragment color
 	float intensity = (1.0 - uContrast) + uContrast * noise;
-	out_Color =  vec4(0.0, intensity, 0.0, 1.0);
+	out_Color =  vec4(intensity * uTemperature, intensity * (1.0 - uTemperature), 0.0, 1.0);
 }
