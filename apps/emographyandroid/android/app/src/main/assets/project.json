@@ -1,0 +1,12 @@
+{
+    "title": "AndroidEmography",
+    "version": "0.1.0",
+    "modules": [
+        "mod_emography",
+        "mod_napapp",
+        "mod_napscene",
+        "mod_napmath",
+        "mod_napinput",
+        "mod_napdatabase"
+    ]
+}

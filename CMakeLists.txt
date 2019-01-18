@@ -21,7 +21,7 @@ get_filename_component(THIRDPARTY_DIR ../thirdparty REALPATH BASE_DIR ${CMAKE_CU
 message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
 # Enforce GCC on Linux for now (when doing packaging build at least)
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT ANDROID)
     if(DEFINED NAP_PACKAGED_BUILD AND NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         message(FATAL_ERROR "NAP only currently supports GCC on Linux (and this is enforced when doing release builds)")
     endif()
@@ -35,7 +35,9 @@ include(cmake/qtconfig.cmake)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-if(WIN32)
+if(ANDROID)
+    # Avoid for Android
+elseif(WIN32)
     if(MSVC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /wd4251 /MP /bigobj")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
@@ -53,6 +55,11 @@ if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 
+if(NOT ANDROID)
+    set(NAP_ENABLE_PYTHON 1)    
+    add_definitions(-DNAP_ENABLE_PYTHON)
+endif()    
+
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
@@ -67,7 +74,7 @@ include(configure.cmake)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging_staging)
 
-if(WIN32)
+if(WIN32 AND NOT ANDROID)
     if(MINGW)
         # Copy required MinGW dll's to bin dir
         get_filename_component(COMPILER_DIR ${CMAKE_CXX_COMPILER} PATH)
@@ -84,7 +91,6 @@ endif()
 
 # store project directory
 get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
-
 
 # library targets
 add_subdirectory(core)
@@ -104,12 +110,18 @@ add_subdirectory(test/audiotest)
 
 # app targets
 add_subdirectory(apps/kalvertoren)
+add_subdirectory(apps/kalvertoren/module)
 add_subdirectory(apps/artnetcolor)
 add_subdirectory(apps/skeleton)
 add_subdirectory(apps/atmos)
+add_subdirectory(apps/atmos/module)
 add_subdirectory(apps/random)
+add_subdirectory(apps/random/module)
 add_subdirectory(apps/aura)
+add_subdirectory(apps/aura/module)
 add_subdirectory(apps/emography)
+add_subdirectory(apps/emographyandroid)
+add_subdirectory(apps/emographyandroid/module)
 
 # demo targets
 add_subdirectory(demos/helloworld)
@@ -167,13 +179,6 @@ add_subdirectory(modules/napapi)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
-
-# app modules
-add_subdirectory(apps/kalvertoren/module)
-add_subdirectory(apps/random/module)
-add_subdirectory(apps/atmos/module)
-add_subdirectory(apps/aura/module)
-add_subdirectory(apps/emography/module)
 
 # Packaging
 include(cmake/packaging_macros.cmake)

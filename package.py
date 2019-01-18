@@ -8,6 +8,11 @@ import shutil
 import subprocess
 import sys
 from sys import platform
+from enum import Enum
+
+class CrossCompileTarget(Enum):
+    ANDROID = 1
+    IOS = 2
 
 WORKING_DIR = '.'
 BUILD_DIR = 'packaging_build'
@@ -17,9 +22,15 @@ PACKAGING_DIR = 'packaging_staging'
 ARCHIVING_DIR = 'archiving'
 BUILDINFO_FILE = 'dist/cmake/build_info.json'
 BUILD_TYPES = ('Release', 'Debug')
+
+ANDROID_ABIS = ('arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64')
+# ANDROID_ABIS = ('armeabi-v7a',)
+# ANDROID_ABIS = ('arm64-v8a',)
+ANDROID_PLATFORM = 'android-19'
     
 ERROR_PACKAGE_EXISTS = 1
 ERROR_INVALID_VERSION = 2
+ERROR_MISSING_ANDROID_NDK = 3
 
 def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     """Execute command in provided working directory"""
@@ -36,16 +47,21 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
         raise Exception(proc.returncode)
     return (out, err)
 
-def package(zip_release, include_docs, include_apps, clean, include_timestamp_in_name):
+def package(zip_release, include_docs, include_apps, clean, include_timestamp_in_name, android_build, android_ndk_root):
     """Package a NAP platform release - main entry point"""
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+    # Define cross compilation target, if relevant 
+    cross_compile_target = None
+    if android_build:
+        cross_compile_target = CrossCompileTarget.ANDROID
 
     # Add timestamp and git revision for build info
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
     (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
     git_revision = git_revision.decode('ascii', 'ignore').strip()
-    package_basename = build_package_basename(include_timestamp_in_name, timestamp)
+    package_basename = build_package_basename(include_timestamp_in_name, timestamp, cross_compile_target)
 
     # Ensure we won't overwrite any existing package
     check_for_existing_package(package_basename, zip_release)
@@ -59,22 +75,34 @@ def package(zip_release, include_docs, include_apps, clean, include_timestamp_in
 
     # Clean build if requested
     if clean:
-        clean_the_build()
+        clean_the_build(cross_compile_target)
 
     # Do the packaging
-    if platform.startswith('linux'):    
+    if android_build:
+        package_for_android(package_basename, timestamp, git_revision, zip_release, android_ndk_root)
+    elif platform.startswith('linux'):    
         package_for_linux(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release)
     elif platform == 'darwin':
         package_for_macos(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release)
     else:
         package_for_win64(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release)
 
-
-def clean_the_build():
+def clean_the_build(cross_compile_target):
     """Clean the build"""
 
     print("Cleaning...")
-    if platform.startswith('linux'):    
+
+    if not cross_compile_target is None:
+        if cross_compile_target == CrossCompileTarget.ANDROID:
+            # Iterate ABIs
+            for abi in ANDROID_ABIS:
+                # Iterate build types
+                for build_type in BUILD_TYPES:
+                    build_dir_for_type = "%s_Android_%s_%s" % (BUILD_DIR, abi, build_type.lower())
+                    if os.path.exists(build_dir_for_type):
+                        print("Clean removing %s" % os.path.abspath(build_dir_for_type))
+                        shutil.rmtree(build_dir_for_type, True)
+    elif platform.startswith('linux'):    
         for build_type in BUILD_TYPES:
             build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
             if os.path.exists(build_dir_for_type):
@@ -106,7 +134,6 @@ def check_for_existing_package(package_path, zip_release):
     if os.path.exists(package_path):
         print("Error: %s already exists" % package_path)
         sys.exit(ERROR_PACKAGE_EXISTS)
-
 
 def package_for_linux(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release):
     """Package NAP platform release for Linux"""
@@ -141,7 +168,7 @@ def package_for_macos(package_basename, timestamp, git_revision, include_apps, i
                        '-H.', 
                        '-B%s' % BUILD_DIR, 
                        '-G', 'Xcode',
-                       '-DNAP_PACKAGED_BUILD=1',                 
+                       '-DNAP_PACKAGED_BUILD=1',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
                        '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
@@ -192,6 +219,75 @@ def package_for_win64(package_basename, timestamp, git_revision, include_apps, i
     else:
         archive_to_timestamped_dir(package_basename)
 
+def package_for_android(package_basename, timestamp, git_revision, zip_release, android_ndk_root):
+    """Cross compile NAP and package platform release for Android"""
+
+    # Let's check we have an NDK path
+    ndk_root = None
+    if not android_ndk_root is None:
+        ndk_root = android_ndk_root
+    elif 'ANDROID_NDK_ROOT' in os.environ:
+        ndk_root = os.environ['ANDROID_NDK_ROOT']
+    else:
+        print("Error: Couldn't find Android NDK. Set with --android-ndk-root or in environment variable ANDROID_NDK_ROOT")
+        sys.exit(ERROR_MISSING_ANDROID_NDK)
+
+    # Verify NDK looks crudely sane
+    toolchain_file = os.path.join(ndk_root, 'build', 'cmake', 'android.toolchain.cmake')
+    if not os.path.exists(toolchain_file):
+        print("Error: Android NDK path '%s' does not appear to be valid (couldn't find build/cmake/android.toolchain.cmake')" % ndk_root)
+        sys.exit(ERROR_MISSING_ANDROID_NDK)
+
+    # Iterate ABIs
+    for abi in ANDROID_ABIS:
+        # Iterate build types
+        for build_type in BUILD_TYPES:
+            build_dir_for_type = "%s_Android_%s_%s" % (BUILD_DIR, abi, build_type.lower())
+
+            # Build CMake command with varying platform options
+            # TODO test and support Linux?
+            cmake_command = ['cmake', 
+                             '-H.', 
+                             '-B%s' % build_dir_for_type, 
+                             '-DCMAKE_TOOLCHAIN_FILE=%s' % toolchain_file,
+                             '-DANDROID_NDK=%s' % ndk_root,
+                             '-DANDROID_ABI=%s' % abi,
+                             '-DANDROID_PLATFORM=%s' % ANDROID_PLATFORM,
+                             '-DNAP_PACKAGED_BUILD=1',
+                             '-DCMAKE_BUILD_TYPE=%s' % build_type,
+                             '-DINCLUDE_DOCS=0' 
+                             '-DPACKAGE_NAIVI_APPS=0'
+                             '-DBUILD_TIMESTAMP=%s' % timestamp,
+                             '-DBUILD_GIT_REVISION=%s' % git_revision
+                             ]
+
+            # Set Ninja generator on Windows
+            if platform.startswith('win'):
+                cmake_command.append('-GNinja')
+
+            # Generate project
+            call(WORKING_DIR, cmake_command)
+
+            # Build
+            build_command = ['cmake', '--build', build_dir_for_type, '--target', 'install']
+            # TODO ANDROID ensure all cores are being utilised on Win64/Ninja
+            if not platform.startswith('win'):
+                build_command.extend(['-j', str(cpu_count())])
+            call(WORKING_DIR, build_command)
+
+    # Create archive
+    if zip_release:
+        if platform.startswith('linux'):
+            # TODO I feel like any Android builds should go to zip, supporting easy extraction on any platform.
+            #      Linux is currently creating a bz2 tarball.
+            archive_to_linux_tar_bz2(package_basename)
+        elif platform == 'darwin':
+            archive_to_macos_zip(package_basename)
+        else:
+            archive_to_win64_zip(package_basename)
+    else:
+        archive_to_timestamped_dir(package_basename)
+
 def archive_to_linux_tar_bz2(package_basename):
     """Create build archive to bzipped tarball on Linux"""
 
@@ -217,7 +313,7 @@ def archive_to_macos_zip(package_basename):
 
     # Cleanup
     shutil.move(package_basename, PACKAGING_DIR)
-    print("Packaged to %s" % os.path.abspath(package_filename_with_ext))  
+    print("Packaged to %s" % os.path.abspath(package_filename_with_ext))    
 
 def archive_to_win64_zip(package_basename):
     """Create build archive to zip on Win64"""
@@ -251,11 +347,16 @@ def archive_to_timestamped_dir(package_basename):
 
     print("Packaged to directory %s" % os.path.abspath(package_basename))
 
-def build_package_basename(include_timestamp_in_name, timestamp):
+def build_package_basename(include_timestamp_in_name, timestamp, cross_compile_target):
     """Build the name of our package and populate our JSON build info file"""
 
     # Do the packaging
-    if platform.startswith('linux'):
+    if not cross_compile_target is None:
+        if cross_compile_target == CrossCompileTarget.ANDROID:
+            platform_name = 'Android'
+        elif cross_compile_target == CrossCompileTarget.IOS:
+            platform_name = 'iOS'
+    elif platform.startswith('linux'):
         platform_name = 'Linux'
     elif platform == 'darwin':
         platform_name = 'macOS'
@@ -287,8 +388,14 @@ if __name__ == '__main__':
     parser.add_argument("-a", "--include-apps", action="store_true",
                         help="Include Naivi apps, packaging them as projects")
     parser.add_argument("--include-docs", action="store_true",
-                        help="Include documentation")      
+                        help="Include documentation")
+    parser.add_argument("--android", action="store_true",
+                        help="Build for Android")
+    parser.add_argument("--android-ndk-root", 
+                        type=str,
+                        help="The path to NDK to use for the Android build")
+
     args = parser.parse_args()
 
     # Package our build
-    package(not args.no_zip, args.include_docs, args.include_apps, args.clean, not args.no_timestamp)
+    package(not args.no_zip, args.include_docs, args.include_apps, args.clean, not args.no_timestamp, args.android, args.android_ndk_root)

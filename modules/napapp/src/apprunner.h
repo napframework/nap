@@ -154,8 +154,10 @@ namespace nap
 			return false;
 		}
 
+#ifdef NAP_ENABLE_PYTHON
 		if (!mCore.initializePython(error))
 			return false;
+#endif
 
 		// Initialize application
 		if(!error.check(app.init(error), "unable to initialize application"))

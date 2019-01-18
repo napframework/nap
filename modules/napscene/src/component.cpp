@@ -1,4 +1,6 @@
-#include <rtti/pythonmodule.h>
+#ifdef NAP_ENABLE_PYTHON
+    #include <rtti/pythonmodule.h>
+#endif // NAP_ENABLE_PYTHON
 #include "component.h"
 #include "entity.h"
 

@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napaudioadvanced)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.h)

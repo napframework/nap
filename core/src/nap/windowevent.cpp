@@ -1,4 +1,6 @@
-#include <rtti/pythonmodule.h>
+#ifdef NAP_ENABLE_PYTHON
+	#include <rtti/pythonmodule.h>
+#endif
 #include "windowevent.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WindowEvent)

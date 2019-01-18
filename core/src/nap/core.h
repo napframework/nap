@@ -16,6 +16,12 @@
 #include "service.h"
 #include "timer.h"
 
+// Android Includes
+// TODO ANDROID Move all this elsewhere?
+#ifdef ANDROID
+	#include <android/asset_manager.h>
+#endif
+
 namespace nap
 {
 	/**
@@ -146,6 +152,13 @@ namespace nap
 		 * @return true if the file was found, otherwise false.
 		 */
 		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
+
+#ifdef ANDROID
+		void setAndroidInitialisationVars(AAssetManager *assetManager, std::string nativeLibDir);;
+
+		AAssetManager* getAndroidAssetManager() const;
+		std::string getAndroidNativeLibDir() const;
+#endif
 	
 	private:
 		/**
@@ -222,6 +235,20 @@ namespace nap
 
 		nap::Slot<const std::string&> mFileLoadedSlot = {
 			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
+
+#ifdef ANDROID
+		// TODO ANDROID Ideally temporary
+
+		// The AssetManager is used to load assets bundled included with the Android APK. Bundled assets with the app
+		// aren't files on disk and need to be accessed via this mechanism. Currently used by the ResourceManager to 
+		// load the project structure JSON and the ProjectInfoManager for the.. project info but may likely be useful 
+		// elsewhere later.
+		AAssetManager *mAndroidAssetManager;
+
+		// The location of the shared libraries for the Android app on disk. Used by the ModuleManager to load the 
+		// module shared libs.
+		std::string mAndroidNativeLibDir;
+#endif
 	};
 }
 

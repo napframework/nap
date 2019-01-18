@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Emography Demo</string>
+    <string name="notification_title">Service</string>
+    <string name="notification_message">Running..</string>
+    <string name="ticker_text">Emography Demo running</string>
+    <string name="channel_name">Emography Demo</string>
+    <string name="channel_description">Demo</string>
+    <string name="shutdown">Shutdown</string>
+    <string name="toolbar_title">Emography Demo</string>
+    <string name="sendToService">Send To Service</string>
+</resources>

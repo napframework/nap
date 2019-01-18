@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:orientation="vertical"
+android:layout_width="fill_parent"
+android:layout_height="fill_parent"
+android:fillViewport="true"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+android:background="@color/textViewBackground">
+
+<android.support.v7.widget.Toolbar
+    android:id="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentLeft="true"
+    app:theme="@style/ToolBarStyle"
+    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+    android:background="@color/tweakedColorPrimary" />
+
+<ScrollView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical"
+    android:fadeScrollbars="false"
+    android:padding="5dp"
+    android:scrollbarThumbVertical="@color/textViewText"
+    >
+
+    <TextView
+        android:id="@+id/text_log"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:theme="@style/TextViewStyle" />
+</ScrollView>
+
+</LinearLayout>

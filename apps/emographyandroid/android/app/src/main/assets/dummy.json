@@ -1,0 +1,64 @@
+{
+  "Objects":
+  [
+    {
+      "Type" : "nap::Scene",
+      "mID": "Scene",
+      "Entities" :
+      [
+        {
+          "Entity" : "Plane"
+        },
+        {
+          "Entity" : "Camera"
+        }
+      ]
+    },
+
+    {
+      "Type" : "nap::Entity",
+      "mID": "Plane",
+      "Components" :
+      [
+        {
+          "Type" : "nap::TransformComponent"
+        },
+        {
+          "Type" : "nap::RotateComponent",
+          "Properties":
+          {
+            "Axis":
+            {
+              "x": 0.0,
+              "y": 1.0,
+              "z": 0.0
+            },
+            "Speed": 0.00,
+            "Offset": 0.00
+          }
+        }
+      ]
+    },
+
+    {
+      "Type" : "nap::Entity",
+      "mID": "Camera",
+      "Components" :
+      [
+        {
+          "Type" : "nap::TransformComponent",
+          "Properties":
+          {
+            "Translate":
+            {
+              "x": 0.4,
+              "y": -0.5,
+              "z": 0.9
+            }
+          }
+        }
+      ]
+    }
+
+  ]
+}

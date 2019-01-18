@@ -1,9 +1,14 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napetherdream)
 
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
-add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}")
+add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}" "${NATIVE_SOURCES}" "${ANDROID_SOURCES}")
 
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
