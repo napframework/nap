@@ -2,6 +2,7 @@
 
 // Local  Includes
 #include "apiargument.h"
+#include "apisignature.h"
 
 // External Includes
 #include <nap/event.h>
@@ -66,32 +67,39 @@ namespace nap
 		int getCount() const										{ return static_cast<int>(mArguments.size()); }
 
 		/**
-		*	@return the arguments of this osc event
-		*/
+		 *	@return the arguments of this osc event
+		 */
 		const ArgumentConstIterator getArguments() const			{ return ArgumentConstIterator(mArguments); }
 
 		/**
-		* @return an argument based on @index
-		* @param index the index of the argument, will throw an exception when out of bounds
-		*/
+		 * @return an argument based on @index
+		 * @param index the index of the argument, will throw an exception when out of bounds
+		 */
 		const APIArgument* getArgument(int index) const;
 
 		/**
-		* @return an argument based on @index
-		* @param index the index of the argument
-		*/
+		 * @return an argument based on @index
+		 * @param index the index of the argument
+		 */
 		APIArgument* getArgument(int index);
 
 		/**
-		* Array [] subscript operator
-		* @return the osc argument at index
-		*/
+		 * If the api arguments and order of arguments matches the given api signature.
+		 * @param signature the method signature to validate
+		 * @return if this event matches the given api signature.
+		 */
+		bool matches(nap::APISignature& signature) const;
+
+		/**
+		 * Array [] subscript operator
+		 * @return the osc argument at index
+		 */
 		APIArgument& operator[](std::size_t idx)					{ return *getArgument(static_cast<int>(idx)); }
 
 		/**
-		* Array [] subscript operator
-		* @return the osc argument at index
-		*/
+		 * Array [] subscript operator
+		 * @return the osc argument at index
+		 */
 		const APIArgument& operator[](std::size_t idx) const		{ return *getArgument(static_cast<int>(idx)); }
 
 	private:

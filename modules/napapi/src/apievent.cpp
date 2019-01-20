@@ -41,4 +41,22 @@ namespace nap
 		assert(index < mArguments.size() && index >= 0);
 		return mArguments[index].get();
 	}
+
+
+	bool APIEvent::matches(nap::APISignature& signature) const
+	{
+		// Make sure number of arguments is the same
+		if (getCount() != signature.getCount())
+			return false;
+
+		// Make sure that every api value is of the same type
+		for (int i = 0; i < getCount(); i++)
+		{
+			rtti::TypeInfo given_type = mArguments[i]->getValue().get_type();
+			rtti::TypeInfo signa_type = signature.getValue(i).get_type();
+			if (!given_type.is_derived_from(signa_type))
+				return false;
+		}
+		return true;
+	}
 }

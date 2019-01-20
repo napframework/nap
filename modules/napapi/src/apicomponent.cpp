@@ -50,10 +50,16 @@ namespace nap
 	}
 
 
-	bool APIComponentInstance::accepts(const std::string& id) const
+	bool APIComponentInstance::accepts(const APIEvent& apiEvent) const
 	{
-		const auto it = mSignatures.find(id);
-		return it != mSignatures.end();
+		// First perform quick lookup
+		const auto it = mSignatures.find(apiEvent.getID());
+		if (it == mSignatures.end())
+			return false;
+
+		// Check if this signature accepts the event, ie:
+		// The number of arguments and type of arguments in order must match
+		return apiEvent.matches(*it->second);
 	}
 
 
@@ -81,9 +87,7 @@ namespace nap
 	bool APIComponentInstance::call(APIEventPtr apiEvent, nap::utility::ErrorState& error)
 	{
 		// Make sure the call is accepted
-		assert(accepts(apiEvent->getID()));
-
-		// TODO: Check signature
+		assert(accepts(*apiEvent));
 
 		// If we defer the call, add it and run over it later
 		if (mDeferred)
