@@ -84,9 +84,9 @@ namespace nap
 		 * @param apiEvent event that is accepted and forwarded.
 		 * @param error contains the error if the call couldn't be handled correctly.
 		 */
-		bool call(APICallEventPtr apiEvent, nap::utility::ErrorState& error);
+		bool call(APIEventPtr apiEvent, nap::utility::ErrorState& error);
 
 		bool mDeferred = false;					///< if calls are executed deferred, ie: when the component is updated.
-		std::queue<APICallEventPtr> mCalls;		///< all calls that need to be executed deferred
+		std::queue<APIEventPtr> mCalls;		///< all calls that need to be executed deferred
 	};
 }

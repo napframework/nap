@@ -74,7 +74,7 @@ namespace nap
 		std::string buffer;
 		if (!utility::readFileToString("calls.json", buffer, error))
 			return false;
-		mAPIService->sendJSON(buffer.c_str(), &error);
+		mAPIService->sendMessage(buffer.c_str(), &error);
 
 		return true;
 	}

@@ -9,14 +9,6 @@
 
 namespace nap
 {
-	/**
-	 * Base class associated of all NAP API related events.	
-	 */
-	class NAPAPI APIEvent : public Event
-	{
-		RTTI_ENABLE(Event)
-	};
-
 	using APIArgumentList = std::vector<std::unique_ptr<APIArgument>>;
 
 	/**
@@ -25,28 +17,28 @@ namespace nap
 	 * The NAP application decides what to do with these events.
 	 * These events are forwarded to the running app by the APIService.
 	 */
-	class NAPAPI APICallEvent : public APIEvent
+	class NAPAPI APIEvent : public Event
 	{
-		RTTI_ENABLE(APIEvent)
+		RTTI_ENABLE(Event)
 	public:
 		using ArgumentConstIterator = utility::UniquePtrConstVectorWrapper<APIArgumentList, APIArgument*>;
 
 		/**
 		 * Default constructor
 		 */
-		APICallEvent() = default;
+		APIEvent() = default;
 
 		/**
 		 * Every API call needs to be associated with an action
 		 * @param name identifier of this call
 		 */
-		APICallEvent(const std::string& name);
+		APIEvent(const std::string& name);
 
 		/**
 		 * Every API call needs to be associated with an action
 		 * @param name identifier of this call
 		 */
-		APICallEvent(const std::string&& name);
+		APIEvent(const std::string&& name);
 
 		/**
 		 * @return identifier of this call	
@@ -55,12 +47,17 @@ namespace nap
 
 		/**
 		 * Adds an api argument to this event where T needs to be of type APIValue and args the associated value.
-		 * @args the template arguments used for constructing the argument. In case of an APIFloat the argument could be 1.0f etc.
+		 * @param args the template arguments used for constructing the argument. In case of an APIFloat the argument could be 1.0f etc.
 		 * @return the newly created and added argument
 		 */
 		template<typename T, typename... Args>
 		APIArgument* addArgument(Args&&... args);
 
+		/**
+		 * Adds an api argument to this event based on the given api value.
+		 * @param value the api value to add as an argument.
+		 * @return the added value as api argument.
+		 */
 		APIArgument* addArgument(std::unique_ptr<APIBaseValue> value);
 
 		/**
@@ -102,7 +99,7 @@ namespace nap
 		APIArgumentList mArguments;		// All the arguments associated with the event
 	};
 
-	using APICallEventPtr = std::unique_ptr<nap::APICallEvent>;
+	using APIEventPtr = std::unique_ptr<nap::APIEvent>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -110,7 +107,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T, typename... Args>
-	APIArgument* nap::APICallEvent::addArgument(Args&&... args)
+	APIArgument* nap::APIEvent::addArgument(Args&&... args)
 	{
 		assert(RTTI_OF(T).is_derived_from(RTTI_OF(nap::APIBaseValue)));
 

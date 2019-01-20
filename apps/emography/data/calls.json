@@ -2,7 +2,7 @@
     "Objects": 
     [
         {
-            "Type": "nap::APISignature",
+            "Type": "nap::APIMessage",
             "mID": "updateView",
             "Arguments": 
             [
@@ -24,7 +24,7 @@
             ]
         },
         {
-            "Type": "nap::APISignature",
+            "Type": "nap::APIMessage",
             "mID": "updatePixels",
             "Arguments": [
                 {

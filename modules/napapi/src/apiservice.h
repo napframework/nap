@@ -95,21 +95,19 @@ namespace nap
 		bool send(const char* id, utility::ErrorState* error);
 		
 		/**
-		 * Interprets the string as JSON and sends the individual properties as a set of arguments to a NAP application.
-		 * This call extracts nap::APISignature objects from the json stream. 
-		 * 
-		 * Each found signature together with it's arguments is converted into an event that is forwarded to the application.
-		 * A nap::Signature can be composed out of various nap::APIValue's and is therefore a powerful way to send custom information to a NAP application.
+		 * Interprets the string as JSON and sends the individual messages as separate events to a NAP application.
+		 * This call extracts nap::Message objects from the json stream. 
+		 * Each message is converted into an api event that is forwarded to the application.
+		 * Every message holds a custom number of nap::APIValue's and is therefore a powerful way to send custom information to a NAP application.
 		 *
-		 * After extracting all the signatures, which translate into separate events, the system checks if the application accepts the data by matching the signature.
-		 * For the app to accept an event the signature's 'mID' property must match one of the nap::Signature resources inside the application.
+		 * After extracting all the messages, which translate into separate events, the system checks if the application accepts the data by matching a declared nap::APISignature.
+		 * For the app to accept an event the message's 'mID' property must match one of the nap::Signature resources inside the application.
 		 * The amount of nap::APIValue's and the type of those values must also match. This ensures the app always receives correct information.
 		 * 
-		 * @param id method associated with signal.
-		 * @param json the json string to parse and extract arguments from.
+		 * @param json the json string to parse and extract messages from.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendJSON(const char* json, utility::ErrorState* error);
+		bool sendMessage(const char* json, utility::ErrorState* error);
 
 		/**
 		 * Sends an array of ints to a NAP application, a copy of the data in the array is made.
@@ -178,7 +176,7 @@ namespace nap
 		 * @param apiEvent api call to forward.
 		 * @param error contains the error if the call fails.
 		 */
-		bool forward(APICallEventPtr apiEvent, utility::ErrorState& error);
+		bool forward(APIEventPtr apiEvent, utility::ErrorState& error);
 
 		// All the osc components currently available to the system
 		std::vector<APIComponentInstance*> mAPIComponents;
