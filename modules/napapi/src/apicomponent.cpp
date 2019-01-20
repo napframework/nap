@@ -60,25 +60,25 @@ namespace nap
 	void APIComponentInstance::update(double deltaTime)
 	{
 		// Copy api events thread safe
-		std::queue<APICallEventPtr> out_events;
+		std::queue<APIEventPtr> out_events;
 		{
 			std::lock_guard<std::mutex> lock(mCallMutex);
 			out_events.swap(mCalls);
-			std::queue<APICallEventPtr> empty_queue;
+			std::queue<APIEventPtr> empty_queue;
 			mCalls.swap(empty_queue);
 		}
 
 		// Process api events
 		while (!out_events.empty())
 		{
-			APICallEvent* call_event = out_events.front().get();
+			APIEvent* call_event = out_events.front().get();
 			// TODO: call
 			out_events.pop();
 		}
 	}
 
 
-	bool APIComponentInstance::call(APICallEventPtr apiEvent, nap::utility::ErrorState& error)
+	bool APIComponentInstance::call(APIEventPtr apiEvent, nap::utility::ErrorState& error)
 	{
 		// Make sure the call is accepted
 		assert(accepts(apiEvent->getID()));
@@ -94,7 +94,7 @@ namespace nap
 		}
 
 		// TODO: Execute
-		APICallEventPtr api_event(std::move(apiEvent));
+		APIEventPtr api_event(std::move(apiEvent));
 
 		return true;
 	}

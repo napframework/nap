@@ -2,6 +2,7 @@
 #include "apiservice.h"
 #include "apievent.h"
 #include "apicomponent.h"
+#include "apimessage.h"
 
 // External Includes
 #include <rtti/jsonreader.h>
@@ -27,7 +28,7 @@ namespace nap
 
 	bool APIService::sendFloat(const char* id, float value, utility::ErrorState* error)
 	{
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIFloat>(value);
 		return forward(std::move(ptr), *error);
 	}
@@ -35,7 +36,7 @@ namespace nap
 
 	bool APIService::sendString(const char* id, const char* value, utility::ErrorState* error)
 	{
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIString>(value);
 		return forward(std::move(ptr), *error);
 	}
@@ -43,7 +44,7 @@ namespace nap
 
 	bool APIService::sendInt(const char* id, int value, utility::ErrorState* error)
 	{
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIInt>(value);
 		return forward(std::move(ptr), *error);
 	}
@@ -51,7 +52,7 @@ namespace nap
 
 	bool APIService::sendByte(const char* id, nap::uint8 value, utility::ErrorState* error)
 	{
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIByte>(value);
 		return forward(std::move(ptr), *error);
 	}
@@ -59,7 +60,7 @@ namespace nap
 
 	bool APIService::sendBool(const char* id, bool value, utility::ErrorState* error)
 	{
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIBool>(value);
 		return forward(std::move(ptr), *error);
 	}
@@ -67,7 +68,7 @@ namespace nap
 
 	bool APIService::sendLong(const char* id, long long value, utility::ErrorState* error)
 	{
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APILong>(value);
 		return forward(std::move(ptr), *error);
 	}
@@ -75,7 +76,7 @@ namespace nap
 
 	bool APIService::sendChar(const char* id, char value, utility::ErrorState* error)
 	{
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIChar>(value);
 		return forward(std::move(ptr), *error);
 	}
@@ -83,12 +84,12 @@ namespace nap
 
 	bool APIService::send(const char* id, utility::ErrorState* error)
 	{
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		return forward(std::move(ptr), *error);
 	}
 
 
-	bool APIService::sendJSON(const char* json, utility::ErrorState* error)
+	bool APIService::sendMessage(const char* json, utility::ErrorState* error)
 	{
 		// Get factory
 		nap::rtti::DeserializeResult result;
@@ -102,53 +103,36 @@ namespace nap
 		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, *error))
 			return false;
 
-		// Fetch all api signatures
-		std::vector<nap::APISignature*> signatures;
+		// Fetch all api messages
+		std::vector<nap::APIMessage*> messages;
 		for (const auto& object : result.mReadObjects)
 		{
-			// Check if it's a call signature
-			if (!object->get_type().is_derived_from(RTTI_OF(nap::APISignature)))
+			// Check if it's a message
+			if (!object->get_type().is_derived_from(RTTI_OF(nap::APIMessage)))
 				continue;
 
-			// Cast to signature and add as possible event
-			nap::APISignature* signature = rtti_cast<nap::APISignature>(object.get());
-			assert(signature != nullptr);
-			if (signature != nullptr)
-				signatures.emplace_back(signature);
+			// Cast to message and add as possible event
+			nap::APIMessage* message = rtti_cast<nap::APIMessage>(object.get());
+			assert(message != nullptr);
+			if (message != nullptr)
+				messages.emplace_back(message);
 		}
 
-		// Error when json doesn't contain any signature objects
-		if (!error->check(!signatures.empty(), "JSON doesn't contain any nap::Signature objects"))
+		// Error when json doesn't contain any messages
+		if (!error->check(!messages.empty(), "JSON doesn't contain any nap::APIMessage objects"))
 			return false;
 
-		// Iterate over every signature, extract arguments (APIFloat etc.) and send as new event.
+		// Iterate over every message, extract arguments (APIFloat etc.) and send as new event.
 		// Note that we make a copy of the argument because the original arguments are owned by the de-serialized result
 		bool succeeded = true;
-		for (auto& signature : signatures)
+		for (auto& message : messages)
 		{
-			APICallEventPtr ptr = std::make_unique<APICallEvent>(signature->mID);
-			for (auto& arg : signature->mArguments)
-			{
-				// Create copy using RTTR
-				rtti::Variant arg_copy = arg->get_type().create();
-				assert(arg_copy.is_valid());
-				
-				// Wrap result in unique ptr
-				std::unique_ptr<APIBaseValue> copy(arg_copy.get_value<APIBaseValue*>());
-
-				// Copy all properties as we know they contain the same ones
-				rtti::copyObject(*arg, *copy);
-
-				// Add API value as argument
-				ptr->addArgument(std::move(copy));
-			}
-
 			// Forward, keep track of result
-			if (!forward(std::move(ptr), *error))
+			if (!forward(std::move(message->toAPIEvent()), *error))
 				succeeded = false;
 		}
 
-		// Notify user if all signatures were send successfully.
+		// Notify user if all messages were send successfully.
 		if (!error->check(succeeded, "Unable to forward all JSON requests"))
 			return false;
 		return true;
@@ -162,7 +146,7 @@ namespace nap
 		std::memcpy(values.data(), array, sizeof(int)*length);
 
 		// Move construct argument and send.
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIIntArray>(std::move(values));
 		return forward(std::move(ptr), *error);
 	}
@@ -175,7 +159,7 @@ namespace nap
 		std::memcpy(values.data(), array, sizeof(float)*length);
 
 		// Move construct argument and send.
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIFloatArray>(std::move(values));
 		return forward(std::move(ptr), *error);
 	}
@@ -188,7 +172,7 @@ namespace nap
 		std::memcpy(values.data(), array, sizeof(uint8_t)*length);
 
 		// Move construct argument and send.
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIByteArray>(std::move(values));
 		return forward(std::move(ptr), *error);
 	}
@@ -203,7 +187,7 @@ namespace nap
 			values.emplace_back(std::move(std::string(array[i])));
 
 		// Move construct argument and send.
-		APICallEventPtr ptr = std::make_unique<APICallEvent>(id);
+		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APIStringArray>(std::move(values));
 		return forward(std::move(ptr), *error);
 	}
@@ -226,7 +210,7 @@ namespace nap
 	}
 
 
-	bool APIService::forward(APICallEventPtr apiEvent, utility::ErrorState& error)
+	bool APIService::forward(APIEventPtr apiEvent, utility::ErrorState& error)
 	{
 		for (auto& api_comp : mAPIComponents)
 		{
