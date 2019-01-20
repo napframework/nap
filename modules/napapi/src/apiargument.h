@@ -42,6 +42,11 @@ namespace nap
 		const rtti::TypeInfo getValueType() const;
 
 		/**
+		 * @return the api value managed by this argument.
+		 */
+		const APIBaseValue& getValue() const					{ return *mAPIValue; }
+
+		/**
 		 * Returns the API value as a pointer of type T, where T is of type APIValue
 		 * @return pointer to the API value, nullptr if the api value is not of type T.
 		 */

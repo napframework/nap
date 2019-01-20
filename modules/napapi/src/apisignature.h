@@ -17,9 +17,19 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-
 		// Default destructor
 		virtual ~APISignature();
+
+		/**
+		 * @return number of arguments associated with this api signature	
+		 */
+		int getCount() const								{ return static_cast<int>(mArguments.size()); }
+
+		/**
+		 * @param index the index to get the api value for
+		 * @return the value at the given index
+		 */
+		const APIBaseValue& getValue(int index)				{ return *(mArguments[index]); }
 
 		std::vector<ResourcePtr<APIBaseValue>> mArguments;	///< Property: 'Arguments': All input arguments associated with this signature
 	};

@@ -214,7 +214,7 @@ namespace nap
 	{
 		for (auto& api_comp : mAPIComponents)
 		{
-			if (api_comp->accepts(apiEvent->getID()))
+			if (api_comp->accepts(*apiEvent))
 			{
 				return api_comp->call(std::move(apiEvent), error);
 			}

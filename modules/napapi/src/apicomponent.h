@@ -57,10 +57,10 @@ namespace nap
 
 		/**
 		 * Checks to see if a specific API call is accepted by this component.
-		 * @param id the name of the call to accept
+		 * @param apiEvent the api event to accept
 		 * @return if a specific API call is accepted by this component	
 		 */
-		bool accepts(const std::string& id) const;
+		bool accepts(const APIEvent& apiEvent) const;
 		
 		/**
 		 * Executes all deferred calls
