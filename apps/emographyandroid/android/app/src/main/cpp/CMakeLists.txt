@@ -6,7 +6,10 @@ set(PROJECT_ROOT ${CMAKE_SOURCE_DIR}/../../../../..)
 add_library(nap-service SHARED
             nap-service.cpp
             ${PROJECT_ROOT}/src/emographyserviceapp.cpp
-            ${PROJECT_ROOT}/src/emographyserviceapp.h)
+            ${PROJECT_ROOT}/src/emographyserviceapp.h
+            ${PROJECT_ROOT}/src/tempexamplewrapper.cpp
+            ${PROJECT_ROOT}/src/tempexamplewrapper.h
+            )
 
 set(NAP_ROOT ${CMAKE_SOURCE_DIR}/../../../../../../../NAP-0.2.1-Android)
 set(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty)
