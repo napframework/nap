@@ -22,13 +22,13 @@ namespace nap
 			rtti::TypeInfo type = view.get_rank_type(view.get_rank());
 			return type.is_wrapper() ? type.get_wrapped_type().get_raw_type() : type.get_raw_type();
 		}
-		return mAPIValue->get_type().get_raw_type();
+		return mAPIValue->getRepresentedType();
 	}
 
 
 	bool APIArgument::isString() const
 	{
-		return mAPIValue->get_type().get_raw_type() == RTTI_OF(std::string);
+		return mAPIValue->getRepresentedType() == RTTI_OF(std::string);
 	}
 
 
@@ -41,7 +41,7 @@ namespace nap
 
 	bool APIArgument::isChar() const
 	{
-		return mAPIValue->get_type().get_raw_type() == RTTI_OF(char);
+		return mAPIValue->getRepresentedType() == RTTI_OF(char);
 	}
 
 
@@ -54,7 +54,7 @@ namespace nap
 
 	bool nap::APIArgument::isFloat() const
 	{
-		return mAPIValue->get_type().get_raw_type() == RTTI_OF(float);
+		return mAPIValue->getRepresentedType() == RTTI_OF(float);
 	}
 
 
@@ -67,7 +67,7 @@ namespace nap
 
 	bool nap::APIArgument::isInt() const
 	{
-		return mAPIValue->get_type().get_raw_type() == RTTI_OF(int);
+		return mAPIValue->getRepresentedType() == RTTI_OF(int);
 	}
 
 
@@ -80,7 +80,7 @@ namespace nap
 
 	bool APIArgument::isBool() const
 	{
-		return mAPIValue->get_type().get_raw_type() == RTTI_OF(bool);
+		return mAPIValue->getRepresentedType() == RTTI_OF(bool);
 	}
 
 
@@ -93,7 +93,7 @@ namespace nap
 
 	bool nap::APIArgument::isDouble() const
 	{
-		return mAPIValue->get_type().get_raw_type() == RTTI_OF(double);
+		return mAPIValue->getRepresentedType() == RTTI_OF(double);
 	}
 
 
@@ -106,7 +106,7 @@ namespace nap
 
 	bool nap::APIArgument::isLong() const
 	{
-		return mAPIValue->get_type().get_raw_type() == RTTI_OF(long long);
+		return mAPIValue->getRepresentedType() == RTTI_OF(long long);
 	}
 
 
@@ -119,7 +119,7 @@ namespace nap
 
 	bool nap::APIArgument::isByte() const
 	{
-		return mAPIValue->get_type().get_raw_type() == RTTI_OF(uint8_t);
+		return mAPIValue->getRepresentedType() == RTTI_OF(uint8_t);
 	}
 
 

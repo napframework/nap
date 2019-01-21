@@ -26,8 +26,13 @@ namespace nap
 		// Default destructor
 		virtual ~APIBaseValue() = default;
 
+		/**
+		 * @return the actual type represented by this API value, ie: RTTI_OF(float) etc.	
+		 */
+		const rtti::TypeInfo& getRepresentedType() const	{ return mRepresentedType; }
+
 	private:
-		rtti::TypeInfo mRepresentedType;		///< type of the embedded value
+		rtti::TypeInfo mRepresentedType;		///< type of the embedded value, ie: RTTI_OF(float) etc.
 	};
 
 

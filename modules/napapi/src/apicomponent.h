@@ -3,7 +3,6 @@
 // External Includes
 #include <component.h>
 #include <queue>
-#include <mutex>
 #include <nap/signalslot.h>
 
 // Local Includes
@@ -14,6 +13,7 @@
 namespace nap
 {
 	class APIComponentInstance;
+	class APICallBack;
 
 	/**
 	 * Receives APIEvents from the APIService. 
@@ -26,18 +26,17 @@ namespace nap
 		DECLARE_COMPONENT(APIComponent, APIComponentInstance)
 	public:
 		std::vector<ResourcePtr<APISignature>> mSignatures;			///< Property: 'Methods' all (exact) names of API calls (ids) accepted by this component.
-		bool mDeferred = false;										///< Property: 'Deferred' if calls are executed immediately or deferred, ie: when the component is updated.
 	};
 
 
 	/**
-	 * Receives APIEvents from the APIService and executes them immediately or deferred.
+	 * Receives APIEvents from the APIService and forwards the event to all registered callbacks.
 	 * An event is received when an external application calls into to API service to perform a specific task.
-	 * This component either directly executes the call or waits until update is called, based on the deferred toggle.
 	 * Only events with a matching signature are accepted and forwarded. 
 	 * 
 	 * To receive api events listen to the 'messageReceived' signal, which is triggered when a new api event is received.
 	 * When received, you know for sure the values of the events precisely match that of the registered signature.
+	 * For a more specific handling of api events you can create a callback for a given API signature and listen to it's messageReceived signal.
 	 */
 	class NAPAPI APIComponentInstance : public ComponentInstance
 	{
@@ -62,11 +61,11 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Tries to find a signature with the given name.
+		 * Tries to find a method signature with the given name.
 		 * @param id name of the signature.
 		 * @return found signature, nullptr if not found.
 		 */
-		APISignature* findSignature(const std::string& id);
+		const APISignature* findSignature(const std::string& id) const;
 
 		/**
 		 * Checks to see if a specific API call is accepted by this component.
@@ -74,12 +73,15 @@ namespace nap
 		 * @return if a specific API call is accepted by this component	
 		 */
 		bool accepts(const APIEvent& apiEvent) const;
-		
+
 		/**
-		 * Executes all deferred calls.
-		 * @param deltaTime time in between calls in seconds
+		 * Registers a specific callback that is called after receiving a specific api event. 
+		 * This is a convenience function that takes a slot and binds it to a new or existing callback.
+		 * The signature needs to be acquired using findSignature(). A new callback is created if it doesn't exist already.
+		 * @param signature the signature to register a callback for, must be acquired using findSignature()
+		 * @param slot the function that is called when receiving an event that matches the given signature.
 		 */
-		virtual void update(double deltaTime) override;
+		void registerCallback(const APISignature& signature, nap::Slot<const APIEvent&>& slot);
 
 		Signal<const APIEvent&> messageReceived;				///< Triggered when the component receives an api event
 
@@ -90,17 +92,66 @@ namespace nap
 		// All accepted names of individual calls
 		std::unordered_map<std::string, APISignature*> mSignatures;
 
-		// Mutex associated with setting / getting calls
-		std::mutex	mCallMutex;
+		// All registered callbacks
+		std::unordered_map<std::string, std::unique_ptr<APICallBack>> mCallbacks;
 
 		/**
 		 * Called by the API service when the component accepts the event.
-		 * When accepted this component owns the event.
 		 * @param apiEvent event that is accepted and forwarded.
 		 */
-		 void trigger(APIEventPtr apiEvent);
+		 void trigger(const APIEvent& apiEvent);
 
-		bool mDeferred = false;					///< if calls are executed deferred, ie: when the component is updated.
-		std::queue<APIEventPtr> mAPIEvents;		///< all calls that need to be executed deferred
+		 /**
+		  * Returns an API callback based on the given signature, a new callback is created if no existing callback is found.
+		  * The signature needs to be acquired using findSignature().
+		  * You can use this callback to receive api events targeted at a specific api signature.
+		  * @param signature the signature (name / arguments) to register a callback for, must be acquired using findSignature()
+		  * @return the callback which is triggered when receiving an api event.
+		  */
+		 APICallBack& getOrCreateCallback(const APISignature& signature);
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// API Callback
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Helper class, allows for binding a callback to an api signature.
+	 * This object is created and managed by the APIComponent.
+	 * Listen to the messageReceived signal to receive api events that target a specific api signature.
+	 * Use APIComponent::getOrCreateCallback() to acquire a callback based on an API signature.
+	 */
+	class NAPAPI APICallBack final
+	{
+	public:
+		// No default constructor
+		APICallBack() = delete;
+
+		// Removes binding
+		~APICallBack();
+
+		/**
+		* Copy is not allowed
+		*/
+		APICallBack(APICallBack&) = delete;
+		APICallBack& operator=(const APICallBack&) = delete;
+
+		/**
+		* Move is not allowed
+		*/
+		APICallBack(APICallBack&&) = delete;
+		APICallBack& operator=(APICallBack&&) = delete;
+
+		/**
+		* Creates a callback based on the given api signature
+		* @param signature the method signature to create a callback for
+		*/
+		APICallBack(const APISignature& signature) : mSignature(signature) { }
+
+		Signal<const APIEvent&> messageReceived;	///< called when this callback receives an API message
+
+	private:
+		const APISignature& mSignature;
 	};
 }

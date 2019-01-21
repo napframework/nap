@@ -3,11 +3,11 @@
 // External Includes
 #include <entity.h>
 #include <nap/core.h>
+#include <nap/logger.h>
 #include <entity.h>
 
 // nap::apicomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::APIComponent)
-	RTTI_PROPERTY("Deferred",	&nap::APIComponent::mDeferred,	 nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Methods",	&nap::APIComponent::mSignatures, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -24,6 +24,9 @@ namespace nap
 
 	APIComponentInstance::~APIComponentInstance()
 	{
+		// Clear all callbacks
+		mCallbacks.clear();
+
 		if (mAPIService != nullptr)
 		{
 			mAPIService->removeAPIComponent(*this);
@@ -42,15 +45,12 @@ namespace nap
 		std::vector<ResourcePtr<APISignature>>& methods = getComponent<APIComponent>()->mSignatures;
 		for (const auto& method : methods)
 			mSignatures.emplace(std::make_pair(method->mID, method.get()));
-
-		// Store if we need to execute deferred
-		mDeferred = getComponent<APIComponent>()->mDeferred;
 		
 		return true;
 	}
 
 
-	nap::APISignature* APIComponentInstance::findSignature(const std::string& id)
+	const nap::APISignature* APIComponentInstance::findSignature(const std::string& id) const
 	{
 		// First perform quick lookup
 		const auto it = mSignatures.find(id);
@@ -73,44 +73,43 @@ namespace nap
 	}
 
 
-	void APIComponentInstance::update(double deltaTime)
+	nap::APICallBack& APIComponentInstance::getOrCreateCallback(const APISignature& signature)
 	{
-		// Don't do anything when we are handling events in deferred mode.
-		if (!mDeferred)
-			return;
+		// See if we haven an existing callback
+		auto it = mCallbacks.find(signature.mID);
+		if (it != mCallbacks.end())
+			return *(it->second);
 
-		// Copy api events thread safe
-		std::queue<APIEventPtr> out_events;
-		{
-			std::lock_guard<std::mutex> lock(mCallMutex);
-			out_events.swap(mAPIEvents);
-			std::queue<APIEventPtr> empty_queue;
-			mAPIEvents.swap(empty_queue);
-		}
-
-		// Process api events
-		while (!out_events.empty())
-		{
-			messageReceived(*out_events.front());
-			out_events.pop();
-		}
+		// Create one otherwise
+		assert(findSignature(signature.mID) != nullptr);	///< signature not represented by this component
+		std::unique_ptr<APICallBack> new_callback(std::make_unique<APICallBack>(signature));
+		APICallBack* call_ptr = new_callback.get();
+		mCallbacks.emplace(std::make_pair(signature.mID, std::move(new_callback)));
+		return *call_ptr;
 	}
 
 
-	void APIComponentInstance::trigger(APIEventPtr apiEvent)
+	void APIComponentInstance::registerCallback(const APISignature& signature, nap::Slot<const APIEvent&>& slot)
 	{
-		// Make sure the call is accepted
-		assert(accepts(*apiEvent));
+		APICallBack& callback = getOrCreateCallback(signature);
+		callback.messageReceived.connect(slot);
+	}
 
-		// If we defer the call, add it and run over it later
-		if (mDeferred)
-		{
-			std::lock_guard<std::mutex> lock_guard(mCallMutex);
-			mAPIEvents.push(std::move(apiEvent));
-			return;
-		}
+
+	void APIComponentInstance::trigger(const APIEvent& apiEvent)
+	{
+		// Forward to registered callbacks
+		auto it = mCallbacks.find(apiEvent.getID());
+		if (it != mCallbacks.end())
+			it->second->messageReceived.trigger(apiEvent);
 
 		// Forward to potential listeners
-		messageReceived(*apiEvent);
+		messageReceived(apiEvent);
 	}
+
+
+	APICallBack::~APICallBack()
+	{
+	}
+
 }

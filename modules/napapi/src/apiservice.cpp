@@ -133,7 +133,7 @@ namespace nap
 		}
 
 		// Notify user if all messages were send successfully.
-		if (!error->check(succeeded, "Unable to forward all JSON requests"))
+		if (!error->check(succeeded, "Unable to forward all JSON messages"))
 			return false;
 		return true;
 	}
@@ -193,14 +193,44 @@ namespace nap
 	}
 
 	
+	void APIService::processEvents()
+	{
+		// Consume all given events
+		std::queue<APIEventPtr> api_events;
+		consumeEvents(api_events);
+
+		// Forward to all matching components
+		// Lock components as we don't want components removes / updated as we iterate over 'm
+		std::lock_guard<std::mutex> lock(mComponentMutex);
+		while (!api_events.empty())
+		{
+			// Get event
+			APIEvent& current_event = *api_events.front();
+
+			// Iterate over every api component
+			// Find a matching callback and forward
+			for (auto& api_comp : mAPIComponents)
+			{
+				if (api_comp->accepts(current_event))
+				{
+					api_comp->trigger(current_event);
+				}
+			}
+			api_events.pop();
+		}
+	}
+
+
 	void APIService::registerAPIComponent(APIComponentInstance& apicomponent)
 	{
+		std::lock_guard<std::mutex> lock(mComponentMutex);
 		mAPIComponents.emplace_back(&apicomponent);
 	}
 
 
 	void APIService::removeAPIComponent(APIComponentInstance& apicomponent)
 	{
+		std::lock_guard<std::mutex> lock(mComponentMutex);
 		auto found_it = std::find_if(mAPIComponents.begin(), mAPIComponents.end(), [&](const auto& it)
 		{
 			return it == &apicomponent;
@@ -212,24 +242,39 @@ namespace nap
 
 	bool APIService::forward(APIEventPtr apiEvent, utility::ErrorState& error)
 	{
+		// Make sure components don't get pulled / updated while forwarding calls
+		std::lock_guard<std::mutex> lock(mComponentMutex);
+
 		// Iterate over every api component
 		// Find a matching callback and forward
 		for (auto& api_comp : mAPIComponents)
 		{
 			// Check signature, if found and arguments match forward
-			APISignature* signature = api_comp->findSignature(apiEvent->getID());
+			const APISignature* signature = api_comp->findSignature(apiEvent->getID());
 			if (signature != nullptr)
 			{
-				if (!error.check(apiEvent->matches(*signature), "%s: Signature argument mismatch, component: %s", signature->mID.c_str(), api_comp->mID.c_str()))
+				if (!error.check(apiEvent->matches(*signature), "Signature mismatch for call: %s, component: %s", signature->mID.c_str(), 
+					api_comp->getComponent<APIComponent>()->mID.c_str()))
 					return false;
 				
-				api_comp->trigger(std::move(apiEvent));
+				// Add event safely
+				std::lock_guard<std::mutex> lock_guard(mEventMutex);
+				mAPIEvents.push(std::move(apiEvent));
 				return true;
 			}		
 		}
 
 		// No component accepted the call!
 		return error.check(false, "%s: No matching signature found for: %s", this->get_type().get_name().data(), apiEvent->getID().c_str());
+	}
+
+
+	void APIService::consumeEvents(std::queue<APIEventPtr>& outEvents)
+	{
+		std::lock_guard<std::mutex> lock(mEventMutex);
+		outEvents.swap(mAPIEvents);
+		std::queue<APIEventPtr> empty_queue;
+		mAPIEvents.swap(empty_queue);
 	}
 
 
@@ -242,5 +287,11 @@ namespace nap
 	void APIService::shutdown()
 	{
 
+	}
+
+
+	void APIService::update(double deltaTime)
+	{
+		processEvents();
 	}
 }
