@@ -4,6 +4,7 @@ RTTI_DEFINE_BASE(nap::APIBaseValue)
 
 RTTI_BEGIN_CLASS(nap::APIFloat)
 	RTTI_CONSTRUCTOR(const float&)
+	RTTI_PROPERTY("Value", &nap::APIFloat::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIBool)
@@ -37,8 +38,8 @@ RTTI_BEGIN_CLASS(nap::APILong)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIByte)
-RTTI_CONSTRUCTOR(const uint8_t&)
-RTTI_PROPERTY("Value", &nap::APIByte::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_CONSTRUCTOR(const uint8_t&)
+	RTTI_PROPERTY("Value", &nap::APIByte::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIFloatArray)

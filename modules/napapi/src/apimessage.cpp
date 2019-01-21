@@ -14,12 +14,32 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	APIMessage::~APIMessage()			{ }
 
-
-	bool APIMessage::init(utility::ErrorState& errorState)
+	APIMessage::APIMessage(const APIEvent& apiEvent) : Resource()
 	{
-		return true;
+		fromAPIEvent(apiEvent);
+	}
+
+
+	APIMessage::~APIMessage() { }
+
+
+	void APIMessage::fromAPIEvent(const APIEvent& apiEvent)
+	{
+		mArguments.clear();
+		for (const auto& arg : apiEvent.getArguments())
+		{
+			// Create copy of api value
+			rtti::Variant arg_copy = arg->getValue().get_type().create();
+			assert(arg_copy.is_valid());
+
+			// Copy over all properties
+			APIBaseValue* copy_ptr = arg_copy.get_value<APIBaseValue*>();
+			rtti::copyObject(arg->getValue(), *copy_ptr);
+
+			// Store
+			mArguments.emplace_back(ResourcePtr<APIBaseValue>(copy_ptr));
+		}
 	}
 
 

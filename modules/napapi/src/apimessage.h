@@ -21,13 +21,25 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		// Default constructor
+		APIMessage() = default;
+
+		/**
+		 * Constructs this message based on the given api event.
+		 * All arguments in the api events are copied into this object.
+		 * @param apiEvent the event to convert into a message.
+		 */
+		APIMessage(const APIEvent& apiEvent);
+
+		// Default destructor
 		virtual ~APIMessage();
 
 		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails
-		*/
-		virtual bool init(utility::ErrorState& errorState) override;
+		 * Constructs this message based on the given api event.
+		 * All arguments in the api events are copied into this object.
+		 * @param apiEvent the event used to construct this message from
+		 */
+		virtual void fromAPIEvent(const APIEvent& apiEvent);
 
 		/**
 		 * Converts this message, including all arguments, into an api event.
