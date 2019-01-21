@@ -13,10 +13,10 @@ namespace nap
 	using APIArgumentList = std::vector<std::unique_ptr<APIArgument>>;
 
 	/**
-	 * API event that is created when calling NAP from an external environment.
-	 * Contains a list of API arguments that carry the actual value.
-	 * The NAP application decides what to do with these events.
-	 * These events are forwarded to the running app by the APIService.
+	 * Input / Output message that is used at run-time to describe an api message.
+	 * Contains a list of API arguments. Every api argument carries a single value or list of values.
+	 * This event is created and given to the application by the APIService when an external request is made.
+	 * To dispatch an event to an external environment call APIService::dispatchEvent after construction of this event. 
 	 */
 	class NAPAPI APIEvent : public Event
 	{
@@ -47,7 +47,19 @@ namespace nap
 		const std::string& getID() const							{ return mName; }
 
 		/**
-		 * Adds an api argument to this event where T needs to be of type APIValue and args the associated value.
+		 * Adds an api argument with an id to this event where T is of type APIValue and 'args' the actual value, for example: 0.0f etc.
+		 * To add a float as an argument call: addArgument<APIFloat>("drag", 1.0f).
+		 * @param id the name of the newly created api value.
+		 * @param args the template arguments used for constructing the argument. In case of an APIFloat the argument could be 1.0f etc.
+		 * @return the newly created and added argument
+		 */
+		template<typename T, typename... Args>
+		APIArgument* addArgument(const std::string&& id, Args&&... args);
+
+		/**
+		 * Adds an api argument without an id to this event where T is of type APIValue and 'args' the actual value, for example: 0.0f etc.
+		 * To add a float as an argument call: addArgument<APIFloat>(1.0f).
+		 * @param name the name of the newly created api value.
 		 * @param args the template arguments used for constructing the argument. In case of an APIFloat the argument could be 1.0f etc.
 		 * @return the newly created and added argument
 		 */
@@ -115,17 +127,27 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T, typename... Args>
-	APIArgument* nap::APIEvent::addArgument(Args&&... args)
+	APIArgument* nap::APIEvent::addArgument(const std::string&& name, Args&&... args)
 	{
 		assert(RTTI_OF(T).is_derived_from(RTTI_OF(nap::APIBaseValue)));
 
 		// Create value
 		std::unique_ptr<T> value = std::make_unique<T>(std::forward<Args>(args)...);
+		
+		// Copy id
+		value->mID= name;
 
 		// Create argument and move value
 		std::unique_ptr<APIArgument> argument = std::make_unique<APIArgument>(std::move(value));
 
 		mArguments.emplace_back(std::move(argument));
 		return mArguments.back().get();
+	}
+
+
+	template<typename T, typename... Args>
+	APIArgument* nap::APIEvent::addArgument(Args&&... args)
+	{
+		addArgument<T>("", std::forward<Args>(args)...);
 	}
 }

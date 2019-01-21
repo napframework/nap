@@ -3,6 +3,7 @@
 // External Includes
 #include <rtti/rtti.h>
 #include <nap/resource.h>
+#include <iostream>
 
 namespace nap
 {
@@ -10,8 +11,8 @@ namespace nap
 	class APIArgument;
 
 	/**
-	* Base class of a value that can be given to or constructed for an external environment.
-	* This value can be copied and move constructed.
+	* Base class of a value that can be given to or is constructed for an external environment.
+	* This value can be copied, moved and serialized from and to JSON.
 	*/
 	class NAPAPI APIBaseValue : public Resource
 	{
@@ -38,7 +39,7 @@ namespace nap
 
 	/**
 	* Represents an actual value that can be given to or constructed for an external environment.
-	* This object owns T and can be moved and copied.
+	* This object owns T and can be moved, copied and serialized from and to JSON.
 	*/
 	template<typename T>
 	class APIValue : public APIBaseValue
@@ -125,6 +126,7 @@ namespace nap
 		APIBaseValue(RTTI_OF(T)),
 		mValue(other.mValue)
 	{
+		this->mID = other.mID;
 	}
 
 
@@ -133,6 +135,7 @@ namespace nap
 		APIBaseValue(RTTI_OF(T)),
 		mValue(std::move(other.mValue))
 	{
+		this->mID = std::move(other.mID);
 	}
 
 
@@ -140,6 +143,7 @@ namespace nap
 	nap::APIValue<T>& nap::APIValue<T>::operator=(APIValue<T>&& other)
 	{
 		mValue = std::move(other.mValue);
+		mID = std::move(other.mID);
 	}
 
 
@@ -147,5 +151,6 @@ namespace nap
 	nap::APIValue<T>& nap::APIValue<T>::operator=(APIValue<T>& other)
 	{
 		mValue = other.mValue;
+		mID = other.mID;
 	}
 }

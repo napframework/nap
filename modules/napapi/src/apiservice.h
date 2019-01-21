@@ -7,6 +7,7 @@
 #include <nap/service.h>
 #include <queue>
 #include <mutex>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -20,10 +21,11 @@ namespace nap
 	 * The copied data is converted (moved) into a nap::APIEvent and transferred to a nap::APIComponent.
 	 * Install listeners on an api component to provide logic when a function is called through this interface.
 	 * 
-	 * When sending data a unique nap::APIEvent is created. Events aren't processed immediately but stored in a queue.
+	 * When sending data to an app a unique nap::APIEvent is created. Events aren't processed immediately but stored in a queue.
 	 * This ensures that the recording and processing of api events is thread-safe, similar to how osc events are processed.
-	 * To process all the recorded api events call processEvents(). 
-	 * processEvents() is called for you when using an application event handler.
+	 * To process all the recorded api events call processEvents(). processEvents() is called for you automatically when using an application event handler.
+	 * 
+	 * To send an event to an external environment use dispatchEvent(). 
 	 */
 	class NAPAPI APIService : public Service
 	{
@@ -174,6 +176,19 @@ namespace nap
 		 * All events are recorded before being processed, allowing for thread safe execution of the api events.
 		 */
 		void processEvents();
+
+		/**
+		 * Sends an api event to an external environment.
+		 * In order for an external environment to receive this message it needs to listen to the messageDispatched signal.
+		 * The event is destroyed after calling the output function.
+		 * @param apiEvent the event to send to the external environment.
+		 */
+		void dispatchEvent(nap::APIEventPtr apiEvent);
+
+		/**
+		 * Listen to this signal in your external environment to receive outgoing NAP api events.
+		 */
+		nap::Signal<const APIEvent&> eventDispatched;
 
 	protected:
 		/**

@@ -192,6 +192,12 @@ namespace nap
 		return forward(std::move(ptr), *error);
 	}
 
+
+	void APIService::dispatchEvent(nap::APIEventPtr apiEvent)
+	{
+		eventDispatched.trigger(*apiEvent);
+	}
+
 	
 	void APIService::processEvents()
 	{

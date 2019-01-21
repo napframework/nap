@@ -60,20 +60,14 @@ namespace nap
 		mDashboardEntity = mScene->findEntity("DashboardEntity");
 		mHistoryEntity = mScene->findEntity("HistoryEntity");
 
+		std::unique_ptr<APIEvent> api_event(std::make_unique<APIEvent>("particle"));
+		api_event->addArgument<APIFloat>("speed",1.0f);
+		api_event->addArgument<APIInt>("drag", 2.0f);
+		mAPIService->dispatchEvent(std::move(api_event));
+
 		/////////////////////////////////////////////////////////////////////////
 		// API checks
 		//////////////////////////////////////////////////////////////////////////
-
-		// Send some single values
-		mAPIService->sendFloat("setIntensity", 2.0f, &error);
-		mAPIService->sendString("setName", "Olaf", &error);
-
-		// Send some random array data
-		std::array<int, 5> int_array = {0,1,2,3,4};
-		mAPIService->sendIntArray("setBeast", int_array.data(), int_array.size(), &error);
-		
-		std::array<const char*, 3> string_array = { "ola", "brief", "rokit" };
-		mAPIService->sendStringArray("sendStrings", string_array.data(), string_array.size(), &error);
 
 		// Call app from parsed json file that includes signature
 		std::string buffer;
@@ -106,8 +100,8 @@ namespace nap
 
 			// Call app from parsed json file that includes signature
 			utility::ErrorState error;
-			if (!mAPIService->sendMessage(mAPIMessageString.c_str(), &error))
-				nap::Logger::warn(error.toString());
+			//if (!mAPIService->sendMessage(mAPIMessageString.c_str(), &error))
+			//	nap::Logger::warn(error.toString());
 
 			time = 0.0;
 		}
