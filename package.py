@@ -23,9 +23,7 @@ ARCHIVING_DIR = 'archiving'
 BUILDINFO_FILE = 'dist/cmake/build_info.json'
 BUILD_TYPES = ('Release', 'Debug')
 
-ANDROID_ABIS = ('arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64')
-# ANDROID_ABIS = ('armeabi-v7a',)
-# ANDROID_ABIS = ('arm64-v8a',)
+DEFAULT_ANDROID_ABIS = ('arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64')
 ANDROID_PLATFORM = 'android-19'
     
 ERROR_PACKAGE_EXISTS = 1
@@ -47,7 +45,7 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
         raise Exception(proc.returncode)
     return (out, err)
 
-def package(zip_release, include_docs, include_apps, clean, include_timestamp_in_name, overwrite, android_build, android_ndk_root):
+def package(zip_release, include_docs, include_apps, clean, include_timestamp_in_name, overwrite, android_build, android_ndk_root, android_abis):
     """Package a NAP platform release - main entry point"""
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -74,13 +72,19 @@ def package(zip_release, include_docs, include_apps, clean, include_timestamp_in
         shutil.rmtree(PACKAGING_DIR, True)
     os.makedirs(PACKAGING_DIR)
 
+    # Setup ABIs for Android
+    if android_abis is None:
+        android_abis = DEFAULT_ANDROID_ABIS
+    else:
+        android_abis = android_abis.split(',')
+
     # Clean build if requested
     if clean:
-        clean_the_build(cross_compile_target)
+        clean_the_build(cross_compile_target, android_abis)
 
     # Do the packaging
     if android_build:
-        package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_ndk_root)
+        package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root)
     elif platform.startswith('linux'):    
         package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release)
     elif platform == 'darwin':
@@ -88,7 +92,7 @@ def package(zip_release, include_docs, include_apps, clean, include_timestamp_in
     else:
         package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release)
 
-def clean_the_build(cross_compile_target):
+def clean_the_build(cross_compile_target, android_abis):
     """Clean the build"""
 
     print("Cleaning...")
@@ -96,7 +100,7 @@ def clean_the_build(cross_compile_target):
     if not cross_compile_target is None:
         if cross_compile_target == CrossCompileTarget.ANDROID:
             # Iterate ABIs
-            for abi in ANDROID_ABIS:
+            for abi in android_abis:
                 # Iterate build types
                 for build_type in BUILD_TYPES:
                     build_dir_for_type = "%s_Android_%s_%s" % (BUILD_DIR, abi, build_type.lower())
@@ -239,7 +243,7 @@ def package_for_win64(package_basename, timestamp, git_revision, overwrite, incl
     else:
         archive_to_timestamped_dir(package_basename)
 
-def package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_ndk_root):
+def package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root):
     """Cross compile NAP and package platform release for Android"""
 
     # Let's check we have an NDK path
@@ -259,7 +263,7 @@ def package_for_android(package_basename, timestamp, git_revision, overwrite, zi
         sys.exit(ERROR_MISSING_ANDROID_NDK)
 
     # Iterate ABIs
-    for abi in ANDROID_ABIS:
+    for abi in android_abis:
         # Iterate build types
         for build_type in BUILD_TYPES:
             build_dir_for_type = "%s_Android_%s_%s" % (BUILD_DIR, abi, build_type.lower())
@@ -420,8 +424,20 @@ if __name__ == '__main__':
     parser.add_argument("--android-ndk-root", 
                         type=str,
                         help="The path to NDK to use for the Android build")
+    parser.add_argument("--android-abis", 
+                        type=str,
+                        help="Restrict our package to the provided comma-separated ABI/s for Android")
 
     args = parser.parse_args()
 
     # Package our build
-    package(not args.no_zip, args.include_docs, args.include_apps, args.clean, not args.no_timestamp, args.overwrite, args.android, args.android_ndk_root)
+    package(not args.no_zip, 
+            args.include_docs, 
+            args.include_apps, 
+            args.clean, 
+            not args.no_timestamp, 
+            args.overwrite, 
+            args.android, 
+            args.android_ndk_root,
+            args.android_abis
+            )
