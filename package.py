@@ -47,7 +47,7 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
         raise Exception(proc.returncode)
     return (out, err)
 
-def package(zip_release, include_docs, include_apps, clean, include_timestamp_in_name, android_build, android_ndk_root):
+def package(zip_release, include_docs, include_apps, clean, include_timestamp_in_name, overwrite, android_build, android_ndk_root):
     """Package a NAP platform release - main entry point"""
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -64,7 +64,8 @@ def package(zip_release, include_docs, include_apps, clean, include_timestamp_in
     package_basename = build_package_basename(include_timestamp_in_name, timestamp, cross_compile_target)
 
     # Ensure we won't overwrite any existing package
-    check_for_existing_package(package_basename, zip_release)
+    if not overwrite:
+        check_for_existing_package(package_basename, zip_release)
 
     print("Packaging...")
 
@@ -79,13 +80,13 @@ def package(zip_release, include_docs, include_apps, clean, include_timestamp_in
 
     # Do the packaging
     if android_build:
-        package_for_android(package_basename, timestamp, git_revision, zip_release, android_ndk_root)
+        package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_ndk_root)
     elif platform.startswith('linux'):    
-        package_for_linux(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release)
+        package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release)
     elif platform == 'darwin':
-        package_for_macos(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release)
+        package_for_macos(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release)
     else:
-        package_for_win64(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release)
+        package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release)
 
 def clean_the_build(cross_compile_target):
     """Clean the build"""
@@ -120,8 +121,8 @@ def clean_the_build(cross_compile_target):
         print("Clean removing %s" % os.path.abspath(BIN_DIR))
         shutil.rmtree(BIN_DIR, True)                  
 
-def check_for_existing_package(package_path, zip_release):
-    """Ensure we aren't overwriting a previous package"""
+def check_for_existing_package(package_path, zip_release, remove=False):
+    """Ensure we aren't overwriting a previous package, remove if requested"""
 
     # Add extension if zipping
     if zip_release:
@@ -130,12 +131,19 @@ def check_for_existing_package(package_path, zip_release):
         else:
             package_path += '.zip'
 
-    # Check and fail
+    # Check and fail, or remove if requested
     if os.path.exists(package_path):
-        print("Error: %s already exists" % package_path)
-        sys.exit(ERROR_PACKAGE_EXISTS)
+        if remove:
+            print("Overwriting %s" % os.path.abspath(package_path))
+            if zip_release:
+                os.remove(package_path)
+            else:
+                shutil.rmtree(package_path, True)
+        else:
+            print("Error: %s already exists" % package_path)
+            sys.exit(ERROR_PACKAGE_EXISTS)
 
-def package_for_linux(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release):
+def package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release):
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
@@ -154,13 +162,17 @@ def package_for_linux(package_basename, timestamp, git_revision, include_apps, i
         d = '%s/%s' % (WORKING_DIR, build_dir_for_type)
         call(d, ['make', 'all', 'install', '-j%s' % cpu_count()])
 
+    # If requested, overwrite any existing package
+    if overwrite:
+        check_for_existing_package(package_basename, zip_release, True)        
+
     # Create archive
     if zip_release:
         archive_to_linux_tar_bz2(package_basename)
     else:
         archive_to_timestamped_dir(package_basename)
 
-def package_for_macos(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release):
+def package_for_macos(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release):
     """Package NAP platform release for macOS"""
 
     # Generate project
@@ -183,13 +195,17 @@ def package_for_macos(package_basename, timestamp, git_revision, include_apps, i
     # Remove unwanted files (eg. .DS_Store)
     call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
 
+    # If requested, overwrite any existing package
+    if overwrite:
+        check_for_existing_package(package_basename, zip_release, True)        
+
     # Create archive
     if zip_release:
         archive_to_macos_zip(package_basename)
     else:
         archive_to_timestamped_dir(package_basename)
 
-def package_for_win64(package_basename, timestamp, git_revision, include_apps, include_docs, zip_release):
+def package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release):
     """Package NAP platform release for Windows"""
 
     # Create build dir if it doesn't exist
@@ -213,13 +229,17 @@ def package_for_win64(package_basename, timestamp, git_revision, include_apps, i
     for build_type in BUILD_TYPES:
         call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
+    # If requested, overwrite any existing package
+    if overwrite:
+        check_for_existing_package(package_basename, zip_release, True)        
+
     # Create archive
     if zip_release:
         archive_to_win64_zip(package_basename)
     else:
         archive_to_timestamped_dir(package_basename)
 
-def package_for_android(package_basename, timestamp, git_revision, zip_release, android_ndk_root):
+def package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_ndk_root):
     """Cross compile NAP and package platform release for Android"""
 
     # Let's check we have an NDK path
@@ -274,6 +294,10 @@ def package_for_android(package_basename, timestamp, git_revision, zip_release, 
             if not platform.startswith('win'):
                 build_command.extend(['-j', str(cpu_count())])
             call(WORKING_DIR, build_command)
+
+    # If requested, overwrite any existing package
+    if overwrite:
+        check_for_existing_package(package_basename, zip_release, True)        
 
     # Create archive
     if zip_release:
@@ -387,6 +411,8 @@ if __name__ == '__main__':
                         help="Clean build")
     parser.add_argument("-a", "--include-apps", action="store_true",
                         help="Include Naivi apps, packaging them as projects")
+    parser.add_argument("-o", "--overwrite", action="store_true",
+                        help="Overwrite any existing package")
     parser.add_argument("--include-docs", action="store_true",
                         help="Include documentation")
     parser.add_argument("--android", action="store_true",
@@ -398,4 +424,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Package our build
-    package(not args.no_zip, args.include_docs, args.include_apps, args.clean, not args.no_timestamp, args.android, args.android_ndk_root)
+    package(not args.no_zip, args.include_docs, args.include_apps, args.clean, not args.no_timestamp, args.overwrite, args.android, args.android_ndk_root)
