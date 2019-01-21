@@ -40,7 +40,7 @@ namespace nap
 		int shutdown() override;
 	
 	private:
-		void updateGui();
+		void renderGUI();
 
 		/**
 		 *  Forwards the received input event to the input service
