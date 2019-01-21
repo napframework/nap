@@ -212,12 +212,20 @@ namespace nap
 
 	bool APIService::forward(APIEventPtr apiEvent, utility::ErrorState& error)
 	{
+		// Iterate over every api component
+		// Find a matching callback and forward
 		for (auto& api_comp : mAPIComponents)
 		{
-			if (api_comp->accepts(*apiEvent))
+			// Check signature, if found and arguments match forward
+			APISignature* signature = api_comp->findSignature(apiEvent->getID());
+			if (signature != nullptr)
 			{
-				return api_comp->call(std::move(apiEvent), error);
-			}
+				if (!error.check(apiEvent->matches(*signature), "%s: Signature argument mismatch, component: %s", signature->mID.c_str(), api_comp->mID.c_str()))
+					return false;
+				
+				api_comp->trigger(std::move(apiEvent));
+				return true;
+			}		
 		}
 
 		// No component accepted the call!

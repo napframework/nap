@@ -4,6 +4,7 @@
 #include <component.h>
 #include <queue>
 #include <mutex>
+#include <nap/signalslot.h>
 
 // Local Includes
 #include "apiservice.h"
@@ -15,8 +16,9 @@ namespace nap
 	class APIComponentInstance;
 
 	/**
-	 * Receives APIEvents from the APIService.
-	 * Populate the 'CallFilter' with names of API events you wish to receive at run-time.
+	 * Receives APIEvents from the APIService. 
+	 * Populate the 'Methods' property with signatures of calls you wish to receive at run-time.
+	 * Only events that have a matching signature are accepted.
 	 */
 	class NAPAPI APIComponent : public Component
 	{
@@ -30,8 +32,12 @@ namespace nap
 
 	/**
 	 * Receives APIEvents from the APIService and executes them immediately or deferred.
-	 * An event is received when an external application calls into to API service to perform a task.
+	 * An event is received when an external application calls into to API service to perform a specific task.
 	 * This component either directly executes the call or waits until update is called, based on the deferred toggle.
+	 * Only events with a matching signature are accepted and forwarded. 
+	 * 
+	 * To receive api events listen to the 'messageReceived' signal, which is triggered when a new api event is received.
+	 * When received, you know for sure the values of the events precisely match that of the registered signature.
 	 */
 	class NAPAPI APIComponentInstance : public ComponentInstance
 	{
@@ -56,6 +62,13 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * Tries to find a signature with the given name.
+		 * @param id name of the signature.
+		 * @return found signature, nullptr if not found.
+		 */
+		APISignature* findSignature(const std::string& id);
+
+		/**
 		 * Checks to see if a specific API call is accepted by this component.
 		 * @param apiEvent the api event to accept
 		 * @return if a specific API call is accepted by this component	
@@ -63,10 +76,12 @@ namespace nap
 		bool accepts(const APIEvent& apiEvent) const;
 		
 		/**
-		 * Executes all deferred calls
+		 * Executes all deferred calls.
 		 * @param deltaTime time in between calls in seconds
 		 */
 		virtual void update(double deltaTime) override;
+
+		Signal<const APIEvent&> messageReceived;				///< Triggered when the component receives an api event
 
 	private:
 		// Pointer to the API service
@@ -79,14 +94,13 @@ namespace nap
 		std::mutex	mCallMutex;
 
 		/**
-		 * Called by the API service if this component accepts the call.
+		 * Called by the API service when the component accepts the event.
 		 * When accepted this component owns the event.
 		 * @param apiEvent event that is accepted and forwarded.
-		 * @param error contains the error if the call couldn't be handled correctly.
 		 */
-		bool call(APIEventPtr apiEvent, nap::utility::ErrorState& error);
+		 void trigger(APIEventPtr apiEvent);
 
 		bool mDeferred = false;					///< if calls are executed deferred, ie: when the component is updated.
-		std::queue<APIEventPtr> mCalls;		///< all calls that need to be executed deferred
+		std::queue<APIEventPtr> mAPIEvents;		///< all calls that need to be executed deferred
 	};
 }
