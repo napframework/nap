@@ -56,7 +56,7 @@ namespace nap
 #ifdef ANDROID
         /**
          * Currently unused method to call back into the Android service from C++ space. Left as
-         * an example
+         * an example, for eg. using from an event
          * @param message The message to log
          */
         void logToUIPush(std::string message);
