@@ -198,7 +198,7 @@ namespace nap
 	template<typename T>
 	const std::vector<T>* nap::APIArgument::asArray() const
 	{
-		APIValue<std::vector<T>>* api_value = get<APIValue<std::vector<T>>>();
+		const APIValue<std::vector<T>>* api_value = get<APIValue<std::vector<T>>>();
 		if (api_value == nullptr)
 			return nullptr;
 

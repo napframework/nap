@@ -77,9 +77,8 @@ namespace nap
 
 		// Call app from parsed json file that includes signature
 		std::string buffer;
-		if (!utility::readFileToString("calls.json", buffer, error))
+		if (!utility::readFileToString("calls.json", mAPIMessageString, error))
 			return false;
-		mAPIService->sendMessage(buffer.c_str(), &error);
 
 		return true;
 	}
@@ -90,18 +89,6 @@ namespace nap
 		// Get current date time
 		DateTime now = getCurrentDateTime();
 
-		// Compute time range
-		SystemTimeStamp today = now.getTimeStamp();
-		SystemTimeStamp yeste = today - std::chrono::hours(24);
-
-		// Set
-		StressDataViewComponentInstance& stress_comp = mHistoryEntity->getComponent<StressDataViewComponentInstance>();
-		stress_comp.setTimeRange(yeste, today);
-
-		//////////////////////////////////////////////////////////////////////////
-		// Date time conversion test
-		//////////////////////////////////////////////////////////////////////////
-		
 		// Create snapshot from datetime
 		StressSnapshot snapshot({ nap::emography::EStressState::Over, 1.0f }, now.getTimeStamp());
 		
@@ -113,8 +100,15 @@ namespace nap
 		time += deltaTime;
 		if (time > 1.0)
 		{
+			nap::Logger::info("fps: %02f", getCore().getFramerate());
 			nap::Logger::info("origin: %s", now.toString().c_str());
 			nap::Logger::info("conver: %s", con.toString().c_str());
+
+			// Call app from parsed json file that includes signature
+			utility::ErrorState error;
+			if (!mAPIService->sendMessage(mAPIMessageString.c_str(), &error))
+				nap::Logger::warn(error.toString());
+
 			time = 0.0;
 		}
 	}

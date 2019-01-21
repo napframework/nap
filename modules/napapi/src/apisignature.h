@@ -29,7 +29,7 @@ namespace nap
 		 * @param index the index to get the api value for
 		 * @return the value at the given index
 		 */
-		const APIBaseValue& getValue(int index)				{ return *(mArguments[index]); }
+		const APIBaseValue& getValue(int index)	const		{ return *(mArguments[index]); }
 
 		std::vector<ResourcePtr<APIBaseValue>> mArguments;	///< Property: 'Arguments': All input arguments associated with this signature
 	};

@@ -43,7 +43,7 @@ namespace nap
 	}
 
 
-	bool APIEvent::matches(nap::APISignature& signature) const
+	bool APIEvent::matches(const nap::APISignature& signature) const
 	{
 		// Make sure number of arguments is the same
 		if (getCount() != signature.getCount())

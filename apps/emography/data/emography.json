@@ -34,6 +34,11 @@
                     "Type": "nap::APIInt",
                     "mID": "samples",
                     "Value": 0
+                },
+                {
+                    "Type": "nap::APIFloatArray",
+                    "mID": "data",
+                    "Value": []
                 }
             ]
         },
@@ -58,11 +63,14 @@
                 {
                     "Type": "nap::APIComponent",
                     "mID": "nap::APIComponent",
-                    "Deferred": true,
                     "Methods": [
                         "updateView",
                         "updatePixels"
                     ]
+                },
+                {
+                    "Type": "nap::EmographyAPIComponent",
+                    "mID": "nap::EmographyAPIComponent"
                 }
             ],
             "Children": [

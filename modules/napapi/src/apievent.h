@@ -88,7 +88,7 @@ namespace nap
 		 * @param signature the method signature to validate
 		 * @return if this event matches the given api signature.
 		 */
-		bool matches(nap::APISignature& signature) const;
+		bool matches(const nap::APISignature& signature) const;
 
 		/**
 		 * Array [] subscript operator

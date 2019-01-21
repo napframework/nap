@@ -44,5 +44,6 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mHistoryEntity = nullptr;		//< History entity
 		rtti::ObjectPtr<EntityInstance> mDashboardEntity = nullptr;		//< Dashboard entity
 		rtti::ObjectPtr<EntityInstance> mSummaryEntity = nullptr;		//< Summary entity
+		std::string mAPIMessageString;
 	};
 }
