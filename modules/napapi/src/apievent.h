@@ -57,16 +57,6 @@ namespace nap
 		APIArgument* addArgument(const std::string&& id, Args&&... args);
 
 		/**
-		 * Adds an api argument without an id to this event where T is of type APIValue and 'args' the actual value, for example: 0.0f etc.
-		 * To add a float as an argument call: addArgument<APIFloat>(1.0f).
-		 * @param name the name of the newly created api value.
-		 * @param args the template arguments used for constructing the argument. In case of an APIFloat the argument could be 1.0f etc.
-		 * @return the newly created and added argument
-		 */
-		template<typename T, typename... Args>
-		APIArgument* addArgument(Args&&... args);
-
-		/**
 		 * Adds an api argument to this event based on the given api value.
 		 * @param value the api value to add as an argument.
 		 * @return the added value as api argument.
@@ -142,12 +132,5 @@ namespace nap
 
 		mArguments.emplace_back(std::move(argument));
 		return mArguments.back().get();
-	}
-
-
-	template<typename T, typename... Args>
-	APIArgument* nap::APIEvent::addArgument(Args&&... args)
-	{
-		addArgument<T>("", std::forward<Args>(args)...);
 	}
 }
