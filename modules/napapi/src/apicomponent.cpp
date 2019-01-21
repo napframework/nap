@@ -50,6 +50,16 @@ namespace nap
 	}
 
 
+	nap::APISignature* APIComponentInstance::findSignature(const std::string& id)
+	{
+		// First perform quick lookup
+		const auto it = mSignatures.find(id);
+		if (it == mSignatures.end())
+			return nullptr;
+		return it->second;
+	}
+
+
 	bool APIComponentInstance::accepts(const APIEvent& apiEvent) const
 	{
 		// First perform quick lookup
@@ -65,26 +75,29 @@ namespace nap
 
 	void APIComponentInstance::update(double deltaTime)
 	{
+		// Don't do anything when we are handling events in deferred mode.
+		if (!mDeferred)
+			return;
+
 		// Copy api events thread safe
 		std::queue<APIEventPtr> out_events;
 		{
 			std::lock_guard<std::mutex> lock(mCallMutex);
-			out_events.swap(mCalls);
+			out_events.swap(mAPIEvents);
 			std::queue<APIEventPtr> empty_queue;
-			mCalls.swap(empty_queue);
+			mAPIEvents.swap(empty_queue);
 		}
 
 		// Process api events
 		while (!out_events.empty())
 		{
-			APIEvent* call_event = out_events.front().get();
-			// TODO: call
+			messageReceived(*out_events.front());
 			out_events.pop();
 		}
 	}
 
 
-	bool APIComponentInstance::call(APIEventPtr apiEvent, nap::utility::ErrorState& error)
+	void APIComponentInstance::trigger(APIEventPtr apiEvent)
 	{
 		// Make sure the call is accepted
 		assert(accepts(*apiEvent));
@@ -93,13 +106,11 @@ namespace nap
 		if (mDeferred)
 		{
 			std::lock_guard<std::mutex> lock_guard(mCallMutex);
-			mCalls.push(std::move(apiEvent));
-			return true;
+			mAPIEvents.push(std::move(apiEvent));
+			return;
 		}
 
-		// TODO: Execute
-		APIEventPtr api_event(std::move(apiEvent));
-
-		return true;
+		// Forward to potential listeners
+		messageReceived(*apiEvent);
 	}
 }
