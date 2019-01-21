@@ -29,7 +29,7 @@ namespace nap
 	bool APIService::sendFloat(const char* id, float value, utility::ErrorState* error)
 	{
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIFloat>(value);
+		ptr->addArgument<APIFloat>("data", value);
 		return forward(std::move(ptr), *error);
 	}
 
@@ -37,7 +37,7 @@ namespace nap
 	bool APIService::sendString(const char* id, const char* value, utility::ErrorState* error)
 	{
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIString>(value);
+		ptr->addArgument<APIString>("data", value);
 		return forward(std::move(ptr), *error);
 	}
 
@@ -45,7 +45,7 @@ namespace nap
 	bool APIService::sendInt(const char* id, int value, utility::ErrorState* error)
 	{
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIInt>(value);
+		ptr->addArgument<APIInt>("data", value);
 		return forward(std::move(ptr), *error);
 	}
 
@@ -53,7 +53,7 @@ namespace nap
 	bool APIService::sendByte(const char* id, nap::uint8 value, utility::ErrorState* error)
 	{
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIByte>(value);
+		ptr->addArgument<APIByte>("data", value);
 		return forward(std::move(ptr), *error);
 	}
 
@@ -61,7 +61,7 @@ namespace nap
 	bool APIService::sendBool(const char* id, bool value, utility::ErrorState* error)
 	{
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIBool>(value);
+		ptr->addArgument<APIBool>("data", value);
 		return forward(std::move(ptr), *error);
 	}
 
@@ -69,7 +69,7 @@ namespace nap
 	bool APIService::sendLong(const char* id, long long value, utility::ErrorState* error)
 	{
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APILong>(value);
+		ptr->addArgument<APILong>("data", value);
 		return forward(std::move(ptr), *error);
 	}
 
@@ -77,7 +77,7 @@ namespace nap
 	bool APIService::sendChar(const char* id, char value, utility::ErrorState* error)
 	{
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIChar>(value);
+		ptr->addArgument<APIChar>("data", value);
 		return forward(std::move(ptr), *error);
 	}
 
@@ -147,7 +147,7 @@ namespace nap
 
 		// Move construct argument and send.
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIIntArray>(std::move(values));
+		ptr->addArgument<APIIntArray>("data", std::move(values));
 		return forward(std::move(ptr), *error);
 	}
 
@@ -160,7 +160,7 @@ namespace nap
 
 		// Move construct argument and send.
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIFloatArray>(std::move(values));
+		ptr->addArgument<APIFloatArray>("data", std::move(values));
 		return forward(std::move(ptr), *error);
 	}
 
@@ -173,7 +173,7 @@ namespace nap
 
 		// Move construct argument and send.
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIByteArray>(std::move(values));
+		ptr->addArgument<APIByteArray>("data", std::move(values));
 		return forward(std::move(ptr), *error);
 	}
 
@@ -188,7 +188,7 @@ namespace nap
 
 		// Move construct argument and send.
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
-		ptr->addArgument<APIStringArray>(std::move(values));
+		ptr->addArgument<APIStringArray>("data", std::move(values));
 		return forward(std::move(ptr), *error);
 	}
 
