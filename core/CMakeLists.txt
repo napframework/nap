@@ -19,6 +19,7 @@ if(APPLE)
                 src/nap/osx/directorywatcher.cpp
                 src/nap/osx/module.cpp
                 src/nap/native/modulemanager.cpp
+                src/nap/native/logger.cpp
                 )
 elseif(MSVC)
     add_library(${PROJECT_NAME} SHARED 
@@ -26,6 +27,7 @@ elseif(MSVC)
                 src/nap/win32/directorywatcher.cpp
                 src/nap/win32/module.cpp
                 src/nap/native/modulemanager.cpp
+                src/nap/native/logger.cpp
                 )
 elseif(ANDROID)
     find_library( # Sets the name of the path variable.
@@ -43,6 +45,7 @@ elseif(ANDROID)
                 src/nap/linux/directorywatcher.cpp
                 src/nap/linux/module.cpp
                 src/nap/android/modulemanager.cpp
+                src/nap/android/logger.cpp
                 )
     target_link_libraries(${PROJECT_NAME} 
                 ${log-lib}
@@ -58,6 +61,7 @@ elseif(UNIX)
                 src/nap/linux/directorywatcher.cpp
                 src/nap/linux/module.cpp
                 src/nap/native/modulemanager.cpp
+                src/nap/native/logger.cpp
                 )
 endif()
 
