@@ -84,13 +84,13 @@ namespace nap
 		const ArgumentConstIterator getArguments() const			{ return ArgumentConstIterator(mArguments); }
 
 		/**
-		 * @return an argument based on @index
+		 * @return an argument based on the given index
 		 * @param index the index of the argument, will throw an exception when out of bounds
 		 */
 		const APIArgument* getArgument(int index) const;
 
 		/**
-		 * @return an argument based on @index
+		 * @return an argument based on the given index
 		 * @param index the index of the argument
 		 */
 		APIArgument* getArgument(int index);
@@ -127,15 +127,15 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T, typename... Args>
-	APIArgument* nap::APIEvent::addArgument(const std::string&& name, Args&&... args)
+	APIArgument* nap::APIEvent::addArgument(const std::string&& id, Args&&... args)
 	{
 		assert(RTTI_OF(T).is_derived_from(RTTI_OF(nap::APIBaseValue)));
 
 		// Create value
 		std::unique_ptr<T> value = std::make_unique<T>(std::forward<Args>(args)...);
 		
-		// Copy id
-		value->mID= name;
+		// Assign id
+		value->mID=id;
 
 		// Create argument and move value
 		std::unique_ptr<APIArgument> argument = std::make_unique<APIArgument>(std::move(value));
