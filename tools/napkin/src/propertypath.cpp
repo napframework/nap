@@ -158,9 +158,7 @@ rttr::variant napkin::PropertyPath::getValue() const
 		if (getType() == rttr::type::get<float>())
 			return dynamic_cast<nap::TypedInstancePropertyValue<float>*>(targetAttr->mValue.get())->mValue;
 	}
-
-	rttr::property prop = getProperty();
-	return prop.get_value(mObject);
+	return resolve().getValue();
 }
 
 void napkin::PropertyPath::setValue(rttr::variant value)
