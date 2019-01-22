@@ -10,31 +10,31 @@
 
 #include <thread>
 
-int main(int argc, char *argv[])
-{
-    // Create core
-    nap::Core core;
-
-    // Create app runner using default event handler
-    nap::ServiceRunner<nap::EmographyServiceApp, nap::AppEventHandler> service_runner(core);
-    nap::EmographyServiceApp& app = service_runner.getApp();
-
-	nap::utility::ErrorState error;
-	if (!service_runner.init(error))
+	int main(int argc, char *argv[])
 	{
-		nap::Logger::fatal("error: %s", error.toString().c_str());
-		return -1;
-	}
+		// Create core
+		nap::Core core;
 
-    while (true)
-    {
-    	// Call our temporary methods
-    	service_runner.update();
-    	app.call("data");
-    	nap::Logger::info(app.pullLogAndFlush());
+		// Create app runner using default event handler
+		nap::ServiceRunner<nap::EmographyServiceApp, nap::AppEventHandler> service_runner(core);
+		nap::EmographyServiceApp& app = service_runner.getApp();
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
+		nap::utility::ErrorState error;
+		if (!service_runner.init(error))
+		{
+			nap::Logger::fatal("error: %s", error.toString().c_str());
+			return -1;
+		}
+
+		while (true)
+		{
+			// Call our temporary methods
+			service_runner.update();
+			app.call("data");
+			nap::Logger::info(app.pullLogAndFlush());
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		}
 
     return service_runner.shutdown();
 }
