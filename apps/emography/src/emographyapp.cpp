@@ -100,8 +100,8 @@ namespace nap
 
 			// Call app from parsed json file that includes signature
 			utility::ErrorState error;
-			//if (!mAPIService->sendMessage(mAPIMessageString.c_str(), &error))
-			//	nap::Logger::warn(error.toString());
+			if (!mAPIService->sendMessage(mAPIMessageString.c_str(), &error))
+				nap::Logger::warn(error.toString());
 
 			time = 0.0;
 		}
