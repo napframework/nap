@@ -44,22 +44,20 @@ namespace nap
 		return result;
 	}
 
-	static bool sRunUnitTestSingleSample(utility::ErrorState& errorState)
+	struct UnitTestDescriptor
 	{
-		std::string databasePath = "SingleValueTest.db";		
-		if (!errorState.check(!utility::fileExists(databasePath) || utility::deleteFile(databasePath), "Failed to delete test database"))
-			return false;
+		typedef bool(*UnitTestFunc)(DataModel& dataModel, utility::ErrorState& errorState);
+		std::string mDatabasePath;
+		UnitTestFunc mTestFunc;
+	};
 
-		DataModel dataModel;
-		if (!sInitDataModel(dataModel, databasePath, errorState))
-			return false;
-
-		DateTime now = getCurrentDateTime();
-		auto current_time_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now.getTimeStamp());
+	static bool sRunUnitTestSingleSample(DataModel& dataModel, utility::ErrorState& errorState)
+	{
+		TimeStamp now = getCurrentTime();
 
 		float value = 50.0f;
 
-		std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, std::chrono::time_point_cast<SystemClock::duration>(current_time_ms));
+		std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, now);
 		if (!dataModel.add(*intensityReading, errorState))
 			return false;
 
@@ -67,7 +65,7 @@ namespace nap
 			return false;
 
 		std::vector<std::unique_ptr<ReadingBase>> objects;
-		if (!dataModel.getRange<StressIntensityReading>(std::chrono::time_point_cast<SystemClock::duration>(current_time_ms), std::chrono::time_point_cast<SystemClock::duration>(current_time_ms + Milliseconds(1000)), 1, objects, errorState))
+		if (!dataModel.getRange<StressIntensityReading>(now, now.toSystemTime() + Milliseconds(1000), 1, objects, errorState))
 			return false;
 
 		if (!errorState.check(objects.size() == 1, "Expected one second of data"))
@@ -86,10 +84,214 @@ namespace nap
 		return true;
 	}
 
+	static bool sRunUnalignedMinuteTest(DataModel& dataModel, utility::ErrorState& errorState)
+	{
+		SystemTimeStamp time(Seconds(0));
+		SystemTimeStamp start = time;
+
+		// Create three minutes of data
+		for (int i = 0; i != 180; ++i)
+		{
+			std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(i, time);
+			if (!dataModel.add(*intensityReading, errorState))
+				return false;
+
+			time += Seconds(1);
+		}
+
+		if (!dataModel.flush(errorState))
+			return false;
+
+		// Request a one and a half minute of unaligned data
+		const int num_seconds = 90;
+		for (int start_second = 30; start_second != 60; ++start_second)
+		{
+			// Calc average
+			int total = 0;
+			for (int i = 0; i != num_seconds; ++i)
+				total += start_second + i;
+
+			float average = total / (float)num_seconds;
+
+			std::vector<std::unique_ptr<ReadingBase>> objects;
+			if (!dataModel.getRange<StressIntensityReading>(start + Seconds(start_second), start + Seconds(start_second + num_seconds), 1, objects, errorState))
+				return false;
+
+			if (!errorState.check(objects.size() == 1, "Expected one value"))
+				return false;
+
+			StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[0].get());
+			if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
+				return false;
+
+			if (!errorState.check(std::abs(reading->mObject.mValue - average) < 0.001, "Incorrect value returned"))
+				return false;
+
+			if (!errorState.check(reading->mNumSecondsActive == num_seconds, "Expected a single second of active data"))
+				return false;
+		}
+
+		return true;
+	}
+
+	static bool sRunAlignedMinuteTest(DataModel& dataModel, utility::ErrorState& errorState)
+	{
+		float value = 50.0f;
+
+		SystemTimeStamp time(Seconds(0));
+		SystemTimeStamp start = time;
+
+		int total = 0;
+		for (int i = 0; i != 60; ++i)
+		{
+			total += i;
+			std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(i, time);
+			if (!dataModel.add(*intensityReading, errorState))
+				return false;
+
+			time += Seconds(1);
+		}
+		float average = total / 60.0f;
+
+		if (!dataModel.flush(errorState))
+			return false;
+
+		std::vector<std::unique_ptr<ReadingBase>> objects;
+		if (!dataModel.getRange<StressIntensityReading>(start, start + Seconds(60), 1, objects, errorState))
+			return false;
+
+		if (!errorState.check(objects.size() == 1, "Expected one value"))
+			return false;
+
+		StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[0].get());
+		if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
+			return false;
+
+		if (!errorState.check(reading->mObject.mValue == average, "Incorrect value returned"))
+			return false;
+
+		if (!errorState.check(reading->mNumSecondsActive == 60, "Expected a single second of active data"))
+			return false;
+
+		return true;
+	}
+
+	static bool sRunInactivityTest(DataModel& dataModel, utility::ErrorState& errorState)
+	{
+		SystemTimeStamp time(Seconds(0));
+		SystemTimeStamp start = time;
+
+		int total_active = 0;
+		int active_count = 0;
+
+		bool active = true;
+		int num_inactive_samples = 0;
+
+		struct Average
+		{
+			int mCount = 0;
+			int mTotal = 0;
+		};
+
+		const int num_minutes = 3;
+		Average minute_averages[num_minutes];
+
+		// Create three minutes of data
+		for (int i = 0; i != num_minutes * 60; ++i)
+		{
+			if (i % 10 != 0)
+				active = !active;
+			
+			if (active)
+			{
+				std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(i, time);
+				if (!dataModel.add(*intensityReading, errorState))
+					return false;
+
+				total_active += i;
+				active_count++;
+
+				int currentMinute = i / 60;
+				minute_averages[currentMinute].mTotal += i;
+				minute_averages[currentMinute].mCount++;
+			}
+
+			time += Seconds(1);
+		}
+
+		float active_average = (float)total_active / (float)active_count;
+
+		if (!dataModel.flush(errorState))
+			return false;
+
+		// Single value test
+		{
+			std::vector<std::unique_ptr<ReadingBase>> objects;
+			if (!dataModel.getRange<StressIntensityReading>(start, start + Seconds(num_minutes * 60), 1, objects, errorState))
+				return false;
+
+			if (!errorState.check(objects.size() == 1, "Expected one second of data"))
+				return false;
+
+			StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[0].get());
+			if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
+				return false;
+
+			if (!errorState.check(std::abs(reading->mObject.mValue - active_average) < 0.001, "Incorrect value returned"))
+				return false;
+
+			if (!errorState.check(reading->mNumSecondsActive == active_count, "Wrong number of active seconds returned"))
+				return false;
+		}
+
+		// Multi value test
+		{
+			std::vector<std::unique_ptr<ReadingBase>> objects;
+			if (!dataModel.getRange<StressIntensityReading>(start, start + Seconds(num_minutes * 60), num_minutes, objects, errorState))
+				return false;
+
+			if (!errorState.check(objects.size() == num_minutes, "Expected %d items of data", num_minutes))
+				return false;
+
+			for (int i = 0; i < num_minutes; ++i)
+			{
+				float minute_average = (float)minute_averages[i].mTotal / (float)minute_averages[i].mCount;
+
+				StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[i].get());
+				if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
+					return false;
+
+				if (!errorState.check(std::abs(reading->mObject.mValue - minute_average) < 0.001, "Incorrect value returned"))
+					return false;
+
+				if (!errorState.check(reading->mNumSecondsActive == minute_averages[i].mCount, "Wrong number of active seconds returned"))
+					return false;
+			}
+		}
+		return true;
+	}
+
+	std::vector<UnitTestDescriptor> sUnitTests = { 
+		{ "SingleValueTest.db", &sRunUnitTestSingleSample },
+		{ "AlignedMinuteTest.db", &sRunAlignedMinuteTest },
+		{ "UnalignedMinuteTest.db", &sRunUnalignedMinuteTest },
+		{ "InactivityTest.db", &sRunInactivityTest }
+	};
+
 	static bool sRunUnitTests(utility::ErrorState& errorState)
 	{
-		if (!sRunUnitTestSingleSample(errorState))
-			return false;
+		for (auto& test : sUnitTests)
+		{
+			if (!errorState.check(!utility::fileExists(test.mDatabasePath) || utility::deleteFile(test.mDatabasePath), "Failed to delete test database"))
+				return false;
+
+			DataModel dataModel;
+			if (!sInitDataModel(dataModel, test.mDatabasePath, errorState))
+				return false;
+
+			if (!test.mTestFunc(dataModel, errorState))
+				return false;
+		}
 
 		return true;
 	}
@@ -338,7 +540,7 @@ namespace nap
 		bool OnMouseDown(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown)
 		{
 			//  In case an active mode was set, it means it is a mode set by the UI buttons. We store it here
-			// so that we can test later if the mode was overriden by a shortcut key
+			// so that we can test later if the mode was overridden by a shortcut key
 			mPrevActiveMode = mActiveMode;
 
 			mCursorClickPos = inPosition;
@@ -348,7 +550,7 @@ namespace nap
 			mLastCursorTimePos = PixelToAbsTime(inPosition.x);
 			mCursorClickTimePos = mLastCursorTimePos;
 
-			// If the active mode is set through the UI buttons, it can be overriden by any of the shortcut keys
+			// If the active mode is set through the UI buttons, it can be overridden by any of the shortcut keys
 			if (inCtrlDown)
 				SetActiveMode(EMode::Pan);
 			else if (inAltDown)

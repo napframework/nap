@@ -48,10 +48,10 @@ namespace nap
 
 			bool add(const ReadingBase& object, utility::ErrorState& errorState)
 			{
-				if (!mRawTable->add(object, errorState))
+				if (!flush(object.mTimeStamp, errorState))
 					return false;
 
-				if (!flush(object.mTimeStamp, errorState))
+				if (!mRawTable->add(object, errorState))
 					return false;
 
 				mLastReadingTime = object.mTimeStamp;
@@ -135,7 +135,9 @@ namespace nap
 				for (; lod_index < mLODs.size() - 1; ++lod_index)
 				{
 					uint64_t next_lod_duration = mLODs[lod_index + 1].mMaxNumSeconds;
-					uint64_t next_lod_start_time = (cur_time_seconds / next_lod_duration) * next_lod_duration + next_lod_duration;
+					uint64_t next_lod_start_time = (cur_time_seconds / next_lod_duration) * next_lod_duration;
+					if (next_lod_start_time < cur_time_seconds) 
+						next_lod_start_time += next_lod_duration;
 					uint64_t next_lod_end_time = next_lod_start_time + next_lod_duration;
 
 					if (next_lod_end_time < endTime)
