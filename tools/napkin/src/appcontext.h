@@ -99,14 +99,14 @@ namespace napkin
 		 * The filename can be set by invoking saveFileAs(const QString& filename) before calling this method.
 		 * Any failures will be reported through nap::Logger, recovery should be handled prior to calling this method.
 		 */
-		void saveDocument();
+        bool saveDocument();
 
 		/**
 		 * Save the current data to disk.
 		 * Any failures will be reported through nap::Logger
 		 * @param filename The file to save the data to.
 		 */
-		void saveDocumentAs(const QString& filename);
+        bool saveDocumentAs(const QString& filename);
 
 		/**
 		 * Serialize the current document to a string
