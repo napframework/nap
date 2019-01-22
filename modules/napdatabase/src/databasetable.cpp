@@ -324,4 +324,22 @@ namespace nap
 
 		return true;
 	}
+
+	bool DatabaseTable::createIndex(const rtti::Path& propertyPath, utility::ErrorState& errorState)
+	{
+		std::string column_name = propertyPath.toString().c_str();
+		std::replace(column_name.begin(), column_name.end(), '/', '.');
+
+		//CREATE INDEX tag_titles ON tags(title);
+		std::string sql = utility::stringFormat("CREATE INDEX IF NOT EXISTS \"%s_%s\" ON %s (\"%s\")", mTableID.c_str(), column_name.c_str(), mTableID.c_str(), column_name.c_str());
+
+		char* errorMessage = nullptr;
+		if (!errorState.check(sqlite3_exec(&mDatabase->GetDatabase(), sql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to create index on table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
+		{
+			sqlite3_free(errorMessage);
+			return false;
+		}
+
+		return true;
+	}
 }
