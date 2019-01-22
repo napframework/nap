@@ -201,7 +201,7 @@ namespace nap
 	void VideoModulationApp::updateGui()
 	{
 		ImGui::Begin("Controls");
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		
 		if (ImGui::CollapsingHeader("Select"))
@@ -244,8 +244,8 @@ namespace nap
 
 	void VideoModulationApp::positionBackground()
 	{
-		float window_width = static_cast<float>(mRenderWindow->getWidth());
-		float window_heigh = static_cast<float>(mRenderWindow->getHeight());
+		float window_width = static_cast<float>(mRenderWindow->getWidthPixels());
+		float window_heigh = static_cast<float>(mRenderWindow->getHeightPixels());
 
 		// Calculate ratio
 		SelectVideoComponentInstance& vsel = mVideoEntity->getComponent<SelectVideoComponentInstance>();	

@@ -5,7 +5,7 @@
 
 #include <component.h>
 #include <nap/resourceptr.h>
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 #include <unordered_map>
 
 namespace nap
@@ -85,12 +85,12 @@ namespace nap
 		 * Sets the current day to use, enables manual mode
 		 * @param day the new day to select compositions from
 		 */
-		void selectDay(nap::utility::EDay day);
+		void selectDay(nap::EDay day);
 
 		/**
 		 *	@return the currently active day
 		 */
-		const utility::EDay getDay() const;
+		const EDay getDay() const;
 
 		/**
 		 * @return the currently selected composition instance
@@ -143,24 +143,24 @@ namespace nap
 	private:
 		int										mCurrentIndex = -1;							///< Currently selected composition @index
 		CompositionContainer*					mCurrentContainer = nullptr;				///< Container associated with active day
-		utility::EDay							mCurrentDay = utility::EDay::Monday;		///< Currently active day
+		EDay							mCurrentDay = EDay::Monday;		///< Currently active day
 		std::unique_ptr<CompositionInstance>	mCompositionInstance;						///< CompositionInstance created when switching compositions
 		CompositionCycleMode					mCycleMode = CompositionCycleMode::Off;		///< How this component cycles through the various available compositions
 		bool									mSwitch = false;							///< Set to true when a composition finishes playback
 		float									mDurationScale = 1.0f;						///< Scales the length of a composition
-		std::unordered_map<nap::utility::EDay, CompositionContainer*> mWeekMap;				///< Contains a composition container for every day in the week, populated on init
+		std::unordered_map<nap::EDay, CompositionContainer*> mWeekMap;				///< Contains a composition container for every day in the week, populated on init
 		EMode									mMode = EMode::Automatic;					///< When set to true, the day associated with the selection is derived from the current date / time
-		utility::EDay							mDay = utility::EDay::Monday;				///< Currently selected day
+		EDay							mDay = EDay::Monday;				///< Currently selected day
 
 		/**
 		 *	@return the set of compositions associated with this week-day
 		 */
-		const CompositionContainer& getContainer(utility::EDay day ) const;
+		const CompositionContainer& getContainer(EDay day ) const;
 
 		/**
 		 * @return the set of compositions associated with a specific day in the week
 		 */
-		CompositionContainer& getContainer(utility::EDay day);
+		CompositionContainer& getContainer(EDay day);
 
 		/**
 		 * Select the composition at index in the associated container

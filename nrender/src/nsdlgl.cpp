@@ -252,13 +252,21 @@ namespace opengl
 			return;
 		SDL_SetWindowSize(window, size.x, size.y);
 	}
+    
+    
+    glm::ivec2 getDrawableWindowSize(SDL_Window* window)
+    {
+        int x, y;
+        SDL_GL_GetDrawableSize(window, &x, &y);
+        return { x, y };
+    }
 
 
 	glm::ivec2 getWindowPosition(SDL_Window* window)
 	{
 		int x, y;
 		SDL_GetWindowPosition(window, &x, &y);
-		return glm::ivec2(x, y);
+        return { x, y };
 	}
 
 

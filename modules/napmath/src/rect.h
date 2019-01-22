@@ -9,7 +9,8 @@ namespace nap
 	namespace math
 	{
 		/**
-		 *	Simple 2D rectangle
+		 *	Simple 2D rectangle.
+		 * 	This is a relatively light weight object that can be both copy and move constructed or assigned.
 		 */
 		class NAPAPI Rect final
 		{
