@@ -113,22 +113,22 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 }
 
 
-void AppContext::saveDocument()
+bool AppContext::saveDocument()
 {
 	if (getDocument()->getCurrentFilename().isEmpty())
 	{
 		nap::Logger::fatal("Cannot save file, no filename has been set.");
-		return;
+		return false;
 	}
-	saveDocumentAs(getDocument()->getCurrentFilename());
+	return saveDocumentAs(getDocument()->getCurrentFilename());
 }
 
-void AppContext::saveDocumentAs(const QString& filename)
+bool AppContext::saveDocumentAs(const QString& filename)
 {
 
 	std::string serialized_document = documentToString();
 	if (serialized_document.empty())
-		return;
+		return false;
 
 	std::ofstream out(filename.toStdString());
 	out << serialized_document;
@@ -143,6 +143,8 @@ void AppContext::saveDocumentAs(const QString& filename)
 	documentSaved(filename);
 	getUndoStack().setClean();
 	documentChanged(mDocument.get());
+
+	return true;
 }
 
 std::string AppContext::documentToString() const
