@@ -36,7 +36,7 @@ TEST_CASE("Component to Component pointer", "napkin-pointers")
 	REQUIRE(pointee == comp);
 
 	serializedData = ctx.documentToString();
-	nap::Logger::info(serializedData);
+//	nap::Logger::info(serializedData);
 	REQUIRE(!serializedData.empty());
 
 	auto loadedDoc = ctx.loadDocumentFromString(serializedData);
