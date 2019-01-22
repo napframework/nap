@@ -65,7 +65,6 @@ namespace nap
 				case rapidjson::kTrueType:
 				{
 					return jsonValue.GetBool();
-					break;
 				}
 				case rapidjson::kNumberType:
 				{
@@ -81,6 +80,8 @@ namespace nap
 						return jsonValue.GetUint64();
 					break;
 				}
+				default:
+					break;
 			}
 
 			// Unknown type
