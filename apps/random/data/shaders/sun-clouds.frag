@@ -8,7 +8,6 @@ in vec3 passPosition;					//< frag world space position
 uniform float uRotation;
 uniform float uContrast;
 uniform float uScale;
-uniform float uInverted;
 uniform float uTemperature;
 uniform float uCloudRatio;
 uniform float uCloudFill;
@@ -142,7 +141,6 @@ void main()
 	noise = noise < uCloudRatio
 		? uCloudFill >= 1.0 ? 0.0 : max(0.0, uCloudRatio - (uCloudRatio - noise) / (1.0 - uCloudFill))
 		: uLightFill >= 1.0 ? 1.0 : min(1.0, uCloudRatio + (noise - uCloudRatio) / (1.0 - uLightFill));
-	if (uInverted == 1.0) noise = 1.0 - noise;
 
 	// set fragment color
 	float intensity = (1.0 - uContrast) + uContrast * noise;

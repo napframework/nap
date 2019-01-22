@@ -101,7 +101,6 @@ namespace nap
 			ImGui::SliderFloat("Wind Direction", updateMaterial.getSunCloudsRotationPtr(), 0.0f, 360.0f);
 			ImGui::SliderFloat("Contrast", updateMaterial.getSunCloudsContrastPtr(), 0.0f, 1.0f);
 			ImGui::SliderFloat("Scale", updateMaterial.getSunCloudsScalePtr(), updateMaterial.mSunCloudsScaleMin, updateMaterial.mSunCloudsScaleMax);
-			ImGui::Checkbox("Inverted", &updateMaterial.mSunCloudsInverted);
 		}
 		OrbitComponentInstance& orbit = mApp.mOrbit->getComponent<OrbitComponentInstance>();
 		if (ImGui::CollapsingHeader("Glare", ImGuiTreeNodeFlags_DefaultOpen))

@@ -112,8 +112,6 @@ namespace nap
 		const float mSunCloudsScaleMin = 0.1f;
 		const float mSunCloudsScaleMax = 2.0f;
 
-		bool		mSunCloudsInverted = false;
-
 		const float	mSunGlareSizeMin = 0.05f;
 		const float	mSunGlareSizeMax = 0.25f;
 

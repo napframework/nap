@@ -88,8 +88,6 @@ namespace nap
 
 	void UpdateMaterialComponentInstance::updateSunClouds(double deltaTime)
 	{
-		// Set inverted property on shader in case the mSunCloudsInverted boolean changed
-		mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uInverted").mValue = mSunCloudsInverted ? 1.0f : 0.0f;
 		// Apply wind and noise forces to cloud shader
 		glm::vec3* sunCloudsOffset = &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uOffset").mValue;
 		float sunCloudsRotation = mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uRotation").mValue;

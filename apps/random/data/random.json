@@ -1619,12 +1619,6 @@
                 },
                 {
                     "Type": "nap::UniformFloat",
-                    "mID": "UniformInverted",
-                    "Name": "uInverted",
-                    "Value": 0.0
-                },
-                {
-                    "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_33",
                     "Name": "uTemperature",
                     "Value": 0.0
