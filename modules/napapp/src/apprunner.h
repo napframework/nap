@@ -95,7 +95,7 @@ namespace nap
 		std::unique_ptr<APP>		mApp = nullptr;			// App this runner works with
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
 		bool						mStop = false;			// If the runner should stop
-		int							mExitCode = 0;			// Application exit code
+		int							mExitCode = 0;			// Application exit code* Call update() to force an update.
 		MicroSeconds				mWaitTime;				// Time to wait in milliseconds based on FPS
 	};
 
