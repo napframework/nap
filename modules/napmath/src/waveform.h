@@ -10,7 +10,7 @@ namespace nap
 		/**
 		 *	Various available waveforms
 		 */
-		enum class NAPAPI EWaveform : int
+		enum class EWaveform : int
 		{
 			SINE			= 0,			///< Sine
 			SQUARE,							///< Square

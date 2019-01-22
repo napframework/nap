@@ -9,7 +9,8 @@ RTTI_DEFINE_CLASS(nap::Renderer)
 RTTI_BEGIN_CLASS(nap::RendererSettings)
 	RTTI_PROPERTY("DoubleBuffer",			&nap::RendererSettings::mDoubleBuffer,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableMultiSampling",	&nap::RendererSettings::mEnableMultiSampling,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MultiSampleSamples",		&nap::RendererSettings::mMultiSampleSamples,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MultiSamples",			&nap::RendererSettings::mMultiSamples,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighDPIMode",			&nap::RendererSettings::mEnableHighDPIMode,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -68,7 +69,7 @@ namespace nap
 		if (rendererSettings.mEnableMultiSampling)
 		{
 			opengl::setAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-			opengl::setAttribute(SDL_GL_MULTISAMPLESAMPLES, rendererSettings.mMultiSampleSamples);
+			opengl::setAttribute(SDL_GL_MULTISAMPLESAMPLES, rendererSettings.mMultiSamples);
 		}
 
 		// Enable debug
@@ -86,6 +87,9 @@ namespace nap
 		if (!errorState.check(opengl::initVideo(), "Failed to init SDL"))
 			return false;
 
+		// Store render settings, used for initialization and global window creation
+		mSettings = rendererSettings;
+
 		// Set GL Attributes for creation of native render window
 		OpenGLAttributes attrs;
 		attrs.versionMinor = 3;
@@ -93,6 +97,8 @@ namespace nap
 #ifdef _DEBUG
 		attrs.debug = true;
 #endif
+
+		// Update opengl attributes based on render settings
 		setOpenGLAttributes(attrs, rendererSettings);
 
 		// Create primary window
@@ -110,9 +116,35 @@ namespace nap
 	}
 
 
+	bool Renderer::createPrimaryWindow(utility::ErrorState& error)
+	{
+		// Create the primary window, this window is invisible and only
+		// used to synchronize resources. Therefore it does not need to be v-synced
+		RenderWindowSettings window_settings;
+		window_settings.visible = false;
+		window_settings.sync = false;
+		window_settings.borderless = false;
+		window_settings.height = 512;
+		window_settings.width = 512;
+		window_settings.title = "";
+		window_settings.resizable = true;
+		window_settings.x = SDL_WINDOWPOS_CENTERED;
+		window_settings.y = SDL_WINDOWPOS_CENTERED;
+		window_settings.highdpi = mSettings.mEnableHighDPIMode;
+
+		// Create primary window
+		mPrimaryWindow = std::make_shared<GLWindow>();
+		return mPrimaryWindow->init(window_settings, nullptr, error);
+	}
+
+
 	// Create an opengl window
 	std::shared_ptr<GLWindow> Renderer::createRenderWindow(const RenderWindowSettings& settings, const std::string& inID, utility::ErrorState& errorState)
 	{
+		// Copy settings and set dpi mode
+		RenderWindowSettings window_settings = settings;
+		window_settings.highdpi = mSettings.mEnableHighDPIMode;
+
 		// The primary window always exists. This is necessary to initialize openGL, and we need a window and an associated GL context for creating
 		// resources before a window resource becomes available. The first RenderWindow that is created will share the primary window with the Renderer.
 		// The settings that are passed here are applied to the primary window.
@@ -122,13 +154,13 @@ namespace nap
 		if (mPrimaryWindow.unique() || mPrimaryWindowID == inID)
 		{
 			mPrimaryWindowID = inID;
-			mPrimaryWindow->applySettings(settings);
+			mPrimaryWindow->applySettings(window_settings);
 			return mPrimaryWindow;
 		}
 
 		// Construct and return new window
 		std::shared_ptr<GLWindow> new_window = std::make_shared<GLWindow>();
-		if (!new_window->init(settings, mPrimaryWindow.get(), errorState))
+		if (!new_window->init(window_settings, mPrimaryWindow.get(), errorState))
 			return nullptr;
 
 		return new_window;
@@ -139,26 +171,5 @@ namespace nap
 	void Renderer::shutdown()
 	{
 		opengl::shutdown();
-	}
-
-
-	bool Renderer::createPrimaryWindow(utility::ErrorState& error)
-	{
-		// Create the primary window, this window is invisible and only
-		// used to synchronize resources. Therefore it does not need to be v-synced
-		RenderWindowSettings settings;
-		settings.visible = false;
-		settings.sync = false;
-		settings.borderless = false;
-		settings.height = 512;
-		settings.width = 512;
-		settings.title = "";
-		settings.resizable = true;
-		settings.x = SDL_WINDOWPOS_CENTERED;
-		settings.y = SDL_WINDOWPOS_CENTERED;
-
-		// Create primary window
-		mPrimaryWindow = std::make_shared<GLWindow>();
-		return mPrimaryWindow->init(settings, nullptr, error);
 	}
 }
