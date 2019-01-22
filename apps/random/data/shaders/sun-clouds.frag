@@ -10,6 +10,9 @@ uniform float uContrast;
 uniform float uScale;
 uniform float uInverted;
 uniform float uTemperature;
+uniform float uCloudRatio;
+uniform float uCloudFill;
+uniform float uLightFill;
 uniform vec3 uOffset;
 
 // output
@@ -135,7 +138,10 @@ void main()
 
 	// calculate noise
 	vec3 noisePosition = vec3(position.xy, uOffset.z);
-	float noise = clamp(snoise(noisePosition), 0.0, 1.0);
+	float noise = (1.0 + snoise(noisePosition)) * 0.5;
+	noise = noise < uCloudRatio
+		? uCloudFill >= 1.0 ? 0.0 : max(0.0, uCloudRatio - (uCloudRatio - noise) / (1.0 - uCloudFill))
+		: uLightFill >= 1.0 ? 1.0 : min(1.0, uCloudRatio + (noise - uCloudRatio) / (1.0 - uLightFill));
 	if (uInverted == 1.0) noise = 1.0 - noise;
 
 	// set fragment color

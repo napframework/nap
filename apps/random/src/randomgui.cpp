@@ -93,6 +93,9 @@ namespace nap
 		if (ImGui::CollapsingHeader("Clouds", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::SliderFloat("Cloud Temperature", updateMaterial.getSunCloudsTemperaturePtr(), 0.0, 1.0);
+			ImGui::SliderFloat("Cloud Ratio", updateMaterial.getSunCloudsCloudRatioPtr(), 0.0, 1.0);
+			ImGui::SliderFloat("Cloud Fill", updateMaterial.getSunCloudsCloudFillPtr(), 0.0, 1.0);
+			ImGui::SliderFloat("Light Fill", updateMaterial.getSunCloudsLightFillPtr(), 0.0, 1.0);
 			ImGui::SliderFloat("Noise Speed", &updateMaterial.mSunCloudsNoiseSpeed, 0.0f, updateMaterial.mSunCloudsNoiseSpeedMax);
 			ImGui::SliderFloat("Wind Speed", &updateMaterial.mSunCloudsWindSpeed, 0.0f, updateMaterial.mSunCloudsWindSpeedMax);
 			ImGui::SliderFloat("Wind Direction", updateMaterial.getSunCloudsRotationPtr(), 0.0f, 360.0f);

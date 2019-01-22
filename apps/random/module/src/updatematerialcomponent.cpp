@@ -148,6 +148,24 @@ namespace nap
 	}
 
 
+	float* UpdateMaterialComponentInstance::getSunCloudsCloudRatioPtr()
+	{
+		return &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uCloudRatio").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getSunCloudsCloudFillPtr()
+	{
+		return &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uCloudFill").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getSunCloudsLightFillPtr()
+	{
+		return &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uLightFill").mValue;
+	}
+
+
 	float* UpdateMaterialComponentInstance::getSunGlareOuterSizePtr()
 	{
 		return &mSunGlareMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uOuterSize").mValue;

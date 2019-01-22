@@ -1069,6 +1069,24 @@
                                 "mID": "UniformFloat_36",
                                 "Name": "uTemperature",
                                 "Value": 0.44999998807907107
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_40",
+                                "Name": "uCloudRatio",
+                                "Value": 0.30000001192092898
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_41",
+                                "Name": "uCloudFill",
+                                "Value": 0.5
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_42",
+                                "Name": "uLightFill",
+                                "Value": 0.5
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -1609,6 +1627,24 @@
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_33",
                     "Name": "uTemperature",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_37",
+                    "Name": "uCloudRatio",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_38",
+                    "Name": "uCloudFill",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_39",
+                    "Name": "uLightFill",
                     "Value": 0.0
                 }
             ],

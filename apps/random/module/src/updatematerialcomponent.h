@@ -78,15 +78,22 @@ namespace nap
 		// Exposed properties for GUI
 		void		setCombinationTextures(nap::Texture2D& textureOne, nap::Texture2D& textureTwo);
 		float*		getCombinationBlendValuePtr();
+
 		float*		getSunCloudsRotationPtr();
 		float*		getSunCloudsContrastPtr();
 		float*		getSunCloudsScalePtr();
 		float*		getSunCloudsTemperaturePtr();
+		float*		getSunCloudsCloudRatioPtr();
+		float*		getSunCloudsCloudFillPtr();
+		float*		getSunCloudsLightFillPtr();
+		
 		float*		getSunGlareOuterSizePtr();
 		float*		getSunGlareInnerSizePtr();
 		float*		getSunGlareStretchPtr();
 		float*		getSunGlareTemperaturePtr();
+		
 		float*		getStaticWarmthPtr();
+		
 		int*		getPartyWaveCountPtr();
 		float*		getPartyWaveLengthPtr();
 		float*		getPartyWaveFalloffStartPtr();
