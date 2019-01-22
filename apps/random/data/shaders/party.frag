@@ -12,7 +12,8 @@ uniform float uWaveNoiseZ;
 uniform float uWaveNoiseScale;
 uniform float uWaveNoiseInfluence;
 uniform float uWaveCenter;
-uniform float uWaveHighlight;
+uniform float uWaveHighlightLength;
+uniform float uWaveHighlightIntensity;
 
 // input
 in vec3 passUVs;
@@ -142,10 +143,10 @@ void main()
 	float waveFalloffX = clamp((waveCenterDistance - uWaveFalloffStart) / (uWaveFalloffEnd - uWaveFalloffStart), 0.0, 1.0) * PI;
 	float waveFalloffInfluence = (1.0 + cos(waveFalloffX)) * 0.5;
 	float waveInfluence = nearestWaveInfluence * waveFalloffInfluence;
-	float waveHighlightX = clamp((waveInfluence - (1.0 - uWaveHighlight)) / uWaveHighlight, 0.0, 1.0) * PI;
-	float waveHighlightCurve = (1.0 + cos(waveHighlightX)) * 0.5;
-	float waveWarm = waveHighlightCurve * waveInfluence;
-	float waveCold = (1.0 - waveHighlightCurve) * waveInfluence;
+	float waveHighlightX = clamp((waveInfluence - (1.0 - uWaveHighlightLength)) / uWaveHighlightLength, 0.0, 1.0) * PI;
+	float waveHighlightCurve = (1.0 - (1.0 + cos(waveHighlightX)) * 0.5) * uWaveHighlightIntensity;
+	float waveWarm = (1.0 - waveHighlightCurve) * waveInfluence;
+	float waveCold = waveHighlightCurve * waveInfluence;
 
 	// set fragment color
 	out_Color = vec4(waveWarm, waveCold, 0.0, 1.0);

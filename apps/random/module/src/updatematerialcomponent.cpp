@@ -236,8 +236,14 @@ namespace nap
 	}
 
 
-	float* UpdateMaterialComponentInstance::getPartyWaveHighlightPtr()
+	float* UpdateMaterialComponentInstance::getPartyWaveHighlightLengthPtr()
 	{
-		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveHighlight").mValue;
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveHighlightLength").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getPartyWaveHighlightIntensityPtr()
+	{
+		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveHighlightIntensity").mValue;
 	}
 }

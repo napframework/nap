@@ -836,8 +836,14 @@
                             {
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_32",
-                                "Name": "uWaveHighlight",
+                                "Name": "uWaveHighlightLength",
                                 "Value": 0.10000000149011612
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_44",
+                                "Name": "uWaveHighlightIntensity",
+                                "Value": 0.5
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -1546,7 +1552,13 @@
                 {
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_31",
-                    "Name": "uWaveHighlight",
+                    "Name": "uWaveHighlightLength",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_43",
+                    "Name": "uWaveHighlightIntensity",
                     "Value": 0.0
                 }
             ],

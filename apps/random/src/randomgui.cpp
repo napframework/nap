@@ -172,7 +172,8 @@ namespace nap
 			ImGui::SliderInt("Count", updateMaterial.getPartyWaveCountPtr(), 1, updateMaterial.mPartyWaveCountMax);
 			ImGui::SliderFloat("Length", updateMaterial.getPartyWaveLengthPtr(), updateMaterial.mPartyWaveLengthMin, 1.0f);
 			ImGui::SliderFloat("Center", updateMaterial.getPartyWaveCenterPtr(), 0.0f, 1.0f);
-			ImGui::SliderFloat("Highlight", updateMaterial.getPartyWaveHighlightPtr(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Highlight Length", updateMaterial.getPartyWaveHighlightLengthPtr(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Highlight Intensity", updateMaterial.getPartyWaveHighlightIntensityPtr(), 0.0f, 1.0f);
 			ImGui::DragFloatRange2("Fall-off Start / End", updateMaterial.getPartyWaveFalloffStartPtr(), updateMaterial.getPartyWaveFalloffEndPtr(), 0.01f, updateMaterial.mPartyWaveFalloffMin, updateMaterial.mPartyWaveFalloffMax);
 			ImGui::SliderFloat("Noise Speed", &updateMaterial.mPartyWaveNoiseSpeed, 0.0f, updateMaterial.mPartyWaveNoiseSpeedMax);
 			ImGui::SliderFloat("Noise Scale", updateMaterial.getPartyWaveNoiseScalePtr(), updateMaterial.mPartyWaveNoiseScaleMin, updateMaterial.mPartyWaveNoiseScaleMax);
