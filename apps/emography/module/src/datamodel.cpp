@@ -22,6 +22,12 @@ namespace nap
 				if (mRawTable == nullptr)
 					return false;
 
+				rtti::Path indexPath;
+				indexPath.pushAttribute("TimeStamp");
+				indexPath.pushAttribute("Time");
+				if (!mRawTable->createIndex(indexPath, errorState))
+					return false;
+
 				if (!addLOD(utility::stringFormat("%s_%s", raw_table_name.c_str(), "Seconds"), 1, errorState))
 					return false;
 
@@ -51,9 +57,9 @@ namespace nap
 				std::vector<DataModel::WeightedObject> weighted_objects;
 
 				DatabaseTable* prevTable = mRawTable;
-				for (int index = 0; index < mLODs.size(); ++index)
+				for (int lod_index = 0; lod_index < mLODs.size(); ++lod_index)
 				{
-					ReadingLOD& lod = mLODs[index];
+					ReadingLOD& lod = mLODs[lod_index];
 					uint64_t chunk_index = timestamp_in_seconds / lod.mMaxNumSeconds;
 					if (chunk_index == lod.mCurrentChunkIndex)
 						break;
@@ -68,17 +74,22 @@ namespace nap
 						if (!prevTable->query(utility::stringFormat("\"TimeStamp.Time\" >= %llu", prev_chunk_start_time_seconds * 1000), objects, errorState))
 							return false;
 
+						int num_active_seconds = 0;
 						weighted_objects.reserve(objects.size());
 						float weight = 1.0f / objects.size();
 						for (auto& object : objects)
 						{
+							ReadingBase* reading = rtti_cast<ReadingBase>(object.get());
+							num_active_seconds += reading->mNumSecondsActive;
+
 							DataModel::WeightedObject weighted_object{ weight, std::move(object) };
-							weighted_objects.emplace_back(std::move(weighted_object));
+							weighted_objects.emplace_back(std::move(weighted_object));							
 						}
 
 						std::unique_ptr<ReadingBase> collapsedObject = mSummaryFunction(weighted_objects);
 						assert(collapsedObject->get_type() == mReadingType);
 						collapsedObject->mTimeStamp.mTimeStamp = prev_chunk_start_time_seconds * 1000;
+						collapsedObject->mNumSecondsActive = lod_index == 0 ? 1 : num_active_seconds;
 
 						if (!lod.mTable->add(*collapsedObject, errorState))
 							return false;
@@ -94,7 +105,7 @@ namespace nap
 			bool getRange(uint64_t startTime, uint64_t endTime, std::vector<std::unique_ptr<ReadingBase>>& readings, utility::ErrorState& errorState)
 			{
 				uint64_t cur_time_seconds = startTime;
-				uint64_t full_range = endTime - startTime;
+				int total_active_seconds = 0;
 
 				std::vector<DataModel::WeightedObject> weighted_objects;
 
@@ -111,7 +122,7 @@ namespace nap
 						if (delta <= 0)
 							continue;
 
-						if (!getWeightedObjects(mLODs[lod_index], cur_time_seconds, next_lod_start_time, full_range, weighted_objects, errorState))
+						if (!getWeightedObjects(mLODs[lod_index], cur_time_seconds, next_lod_start_time, total_active_seconds, weighted_objects, errorState))
 							return false;
 
 						cur_time_seconds = next_lod_start_time;
@@ -120,7 +131,7 @@ namespace nap
 					{
 						uint64_t current_lod_end_time = endTime / mLODs[lod_index].mMaxNumSeconds * mLODs[lod_index].mMaxNumSeconds;
 
-						if (!getWeightedObjects(mLODs[lod_index], cur_time_seconds, current_lod_end_time, full_range, weighted_objects, errorState))
+						if (!getWeightedObjects(mLODs[lod_index], cur_time_seconds, current_lod_end_time, total_active_seconds, weighted_objects, errorState))
 							return false;
 
 						cur_time_seconds = current_lod_end_time;
@@ -132,10 +143,16 @@ namespace nap
 				{
 					uint64_t current_lod_end_time = endTime / mLODs[lod_index].mMaxNumSeconds * mLODs[lod_index].mMaxNumSeconds;
 
-					if (!getWeightedObjects(mLODs[lod_index], cur_time_seconds, current_lod_end_time, full_range, weighted_objects, errorState))
+					if (!getWeightedObjects(mLODs[lod_index], cur_time_seconds, current_lod_end_time, total_active_seconds, weighted_objects, errorState))
 						return false;
 
 					cur_time_seconds = current_lod_end_time;
+				}
+
+				for (DataModel::WeightedObject& weighted_object : weighted_objects)
+				{
+					ReadingBase* readingBase = rtti_cast<ReadingBase>(weighted_object.mObject.get());
+					weighted_object.mWeight = (float)readingBase->mNumSecondsActive / (float)total_active_seconds;
 				}
 
 				std::unique_ptr<ReadingBase> collapsedObject = mSummaryFunction(weighted_objects);
@@ -193,21 +210,29 @@ namespace nap
 				if (lod.mTable == nullptr)
 					return false;
 
+				rtti::Path indexPath;
+				indexPath.pushAttribute("TimeStamp");
+				indexPath.pushAttribute("Time");
+				if (!lod.mTable->createIndex(indexPath, errorState))
+					return false;
+
 				mLODs.push_back(lod);
 				return true;
 			}
 
-			bool getWeightedObjects(ReadingLOD& lod, uint64_t startTime, uint64_t endTime, uint64_t fullQueryRange, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
+			bool getWeightedObjects(ReadingLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
 			{
 				std::vector<std::unique_ptr<rtti::Object>> objects;
 				std::string query = utility::stringFormat("\"TimeStamp.Time\" >= %llu AND \"TimeStamp.Time\" < %llu", startTime * 1000, endTime * 1000);
 				if (!lod.mTable->query(query, objects, errorState))
 					return false;
 
-				float weight = (float)lod.mMaxNumSeconds / (float)fullQueryRange;
 				for (auto& object : objects)
 				{
-					DataModel::WeightedObject weighted_object { weight, std::move(object) };
+					ReadingBase* readingBase = rtti_cast<ReadingBase>(object.get());
+					totalActiveSeconds += readingBase->mNumSecondsActive;
+
+					DataModel::WeightedObject weighted_object { 0.0f, std::move(object) };
 					weightedObjects.emplace_back(std::move(weighted_object));
 				}
 

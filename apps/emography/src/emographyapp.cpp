@@ -119,6 +119,12 @@ namespace nap
 				Logger::info(utility::stringFormat("%2d:%2d", days, hours));
 				for (int minutes = 0; minutes != 60; ++minutes)
 				{
+					if (hours % 3 == 0 && minutes == 5)
+					{
+						current_time_ms += Milliseconds(60 * 55 * 1000);
+						break;
+					}
+
 					float minute_bias = 0.5f + 0.5f * sin(((float)minutes / 60.0f) * math::pi());
 
 					for (int seconds = 0; seconds != 60; ++seconds)

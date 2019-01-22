@@ -27,6 +27,7 @@ namespace nap
 
 		public:
 			TimeStamp mTimeStamp;        ///< Property: 'TimeStamp' Point in time at which this snapshot is taken
+			int		  mNumSecondsActive = 0;
 		};
 
 		/**
