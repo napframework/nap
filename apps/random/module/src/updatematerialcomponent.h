@@ -103,7 +103,7 @@ namespace nap
 		float*		getPartyWaveCenterPtr();
 		float*		getPartyWaveHighlightPtr();
 
-		float		mSunCloudsNoiseSpeed = 0.025f;
+		float		mSunCloudsNoiseSpeed = 0.01f;
 		const float	mSunCloudsNoiseSpeedMax = 0.25f;
 
 		float		mSunCloudsWindSpeed = 0.05f;

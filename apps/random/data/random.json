@@ -1050,7 +1050,7 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "uContrast",
                                 "Name": "uContrast",
-                                "Value": 0.5
+                                "Value": 0.8500000238418579
                             },
                             {
                                 "Type": "nap::UniformFloat",
