@@ -15,10 +15,8 @@ namespace nap
 
 		Database(const Database& rhs) = delete;
 		Database& operator=(const Database& rhs) = delete;
-// 		Database(Database&& rhs) = delete;
-// 		Database& operator=(Database&& rhs) = delete;
 		
-		bool init(utility::ErrorState& errorState);
+		bool init(const std::string& path, utility::ErrorState& errorState);
 		DatabaseTable* createTable(const std::string& tableID, const rtti::TypeInfo& objectType, utility::ErrorState& errorState);
 
 	private:

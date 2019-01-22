@@ -51,7 +51,26 @@ namespace nap
 				if (!mRawTable->add(object, errorState))
 					return false;
 
-				uint64_t timestamp_in_seconds = object.mTimeStamp.mTimeStamp / 1000;
+				if (!flush(object.mTimeStamp, errorState))
+					return false;
+
+				mLastReadingTime = object.mTimeStamp;
+
+				return true;
+			}
+
+			bool flush(utility::ErrorState& errorState)
+			{
+				if (!mLastReadingTime.isValid())
+					return true;
+
+				auto nextTimeStamp = mLastReadingTime.toSystemTime() + Seconds(1);
+				return flush(nextTimeStamp, errorState);
+			}
+
+			bool flush(TimeStamp timestamp, utility::ErrorState& errorState)
+			{
+				uint64_t timestamp_in_seconds = timestamp.mTimeStamp / 1000;
 
 				std::vector<std::unique_ptr<rtti::Object>> objects;
 				std::vector<DataModel::WeightedObject> weighted_objects;
@@ -64,10 +83,13 @@ namespace nap
 					if (chunk_index == lod.mCurrentChunkIndex)
 						break;
 
+					if (lod.mCurrentChunkIndex != -1 && chunk_index < lod.mCurrentChunkIndex)
+						break;
+
 					if (lod.mCurrentChunkIndex != -1)
 					{
 						uint64_t prev_chunk_start_time_seconds = lod.mCurrentChunkIndex * lod.mMaxNumSeconds;
-						
+
 						objects.clear();
 						weighted_objects.clear();
 
@@ -83,7 +105,7 @@ namespace nap
 							num_active_seconds += reading->mNumSecondsActive;
 
 							DataModel::WeightedObject weighted_object{ weight, std::move(object) };
-							weighted_objects.emplace_back(std::move(weighted_object));							
+							weighted_objects.emplace_back(std::move(weighted_object));
 						}
 
 						std::unique_ptr<ReadingBase> collapsedObject = mSummaryFunction(weighted_objects);
@@ -158,6 +180,7 @@ namespace nap
 				std::unique_ptr<ReadingBase> collapsedObject = mSummaryFunction(weighted_objects);
 				assert(collapsedObject->get_type() == mReadingType);
 				collapsedObject->mTimeStamp.mTimeStamp = startTime * 1000;
+				collapsedObject->mNumSecondsActive = total_active_seconds;
 
 				readings.emplace_back(std::move(collapsedObject));
 				return true;
@@ -182,14 +205,6 @@ namespace nap
 				}
 
 				return true;
-			}
-
-			bool getLast(int inLODIndex, int inCount, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
-			{
-				if (inLODIndex == -1)
-					return mRawTable->getLast(inCount, objects, errorState);
-
-				return mLODs[inLODIndex].mTable->getLast(inCount, objects, errorState);
 			}
 
 		private:
@@ -240,13 +255,12 @@ namespace nap
 			}
 
 		private:
-
-
 			Database*					mDatabase;
 			rtti::TypeInfo				mReadingType;
 			std::vector<ReadingLOD>		mLODs;
 			DataModel::SummaryFunction	mSummaryFunction;
 			DatabaseTable*				mRawTable;
+			TimeStamp					mLastReadingTime;
 		};
 
 		//////////////////////////////////////////////////////////////////////////
@@ -257,11 +271,13 @@ namespace nap
 
 		DataModel::~DataModel()
 		{
+			utility::ErrorState errorState;
+			flush(errorState);
 		}
 
-		bool DataModel::init(utility::ErrorState& errorState)
+		bool DataModel::init(const std::string& path, utility::ErrorState& errorState)
 		{
-			return mDatabase.init(errorState);
+			return mDatabase.init(path, errorState);
 		}
 
 		bool DataModel::registerType(const rtti::TypeInfo& readingType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState)
@@ -284,12 +300,15 @@ namespace nap
 			return processorPos->second->add(object, errorState);
 		}
 
-		bool DataModel::getLast(const rtti::TypeInfo& readingType, int lodIndex, int count, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
+		bool DataModel::flush(utility::ErrorState& errorState)
 		{
-			ReadingProcessorMap::iterator pos = mReadingProcessors.find(readingType);
-			assert(pos != mReadingProcessors.end());
+			for (auto& kvp : mReadingProcessors)
+			{
+				if (!kvp.second->flush(errorState))
+					return false;
+			}
 
-			return pos->second->getLast(lodIndex, count, objects, errorState);
+			return true;
 		}
 
 		bool DataModel::getRange(const rtti::TypeInfo& inReadingType, TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingBase>>& readings, utility::ErrorState& errorState)

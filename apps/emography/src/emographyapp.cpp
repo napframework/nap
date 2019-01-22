@@ -11,6 +11,7 @@
 #include <emographystressdataviewcomponent.h>
 #include <random>
 #include <database.h>
+#include <utility/fileutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmographyApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -19,6 +20,79 @@ RTTI_END_CLASS
 namespace nap 
 {
 	using namespace emography;
+
+	static bool sInitDataModel(DataModel& dataModel, const std::string& path, utility::ErrorState& errorState)
+	{
+		if (!dataModel.init(path, errorState))
+			return false;
+
+		bool result = dataModel.registerType<StressIntensity>([](const std::vector<DataModel::WeightedObject>& inObjects)
+		{
+			float total = 0.0;
+			for (int index = 0; index < inObjects.size(); ++index)
+			{
+				rtti::Object* object = inObjects[index].mObject.get();
+				StressIntensityReading* stressIntensityReading = rtti_cast<StressIntensityReading>(object);
+				assert(stressIntensityReading);
+
+				total += stressIntensityReading->mObject.mValue * inObjects[index].mWeight;
+			}
+
+			return std::make_unique<StressIntensityReading>(StressIntensity(total));
+		}, errorState);
+
+		return result;
+	}
+
+	static bool sRunUnitTestSingleSample(utility::ErrorState& errorState)
+	{
+		std::string databasePath = "SingleValueTest.db";		
+		if (!errorState.check(!utility::fileExists(databasePath) || utility::deleteFile(databasePath), "Failed to delete test database"))
+			return false;
+
+		DataModel dataModel;
+		if (!sInitDataModel(dataModel, databasePath, errorState))
+			return false;
+
+		DateTime now = getCurrentDateTime();
+		auto current_time_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now.getTimeStamp());
+
+		float value = 50.0f;
+
+		std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, std::chrono::time_point_cast<SystemClock::duration>(current_time_ms));
+		if (!dataModel.add(*intensityReading, errorState))
+			return false;
+
+		if (!dataModel.flush(errorState))
+			return false;
+
+		std::vector<std::unique_ptr<ReadingBase>> objects;
+		if (!dataModel.getRange<StressIntensityReading>(std::chrono::time_point_cast<SystemClock::duration>(current_time_ms), std::chrono::time_point_cast<SystemClock::duration>(current_time_ms + Milliseconds(1000)), 1, objects, errorState))
+			return false;
+
+		if (!errorState.check(objects.size() == 1, "Expected one second of data"))
+			return false;
+
+		StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[0].get());
+		if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
+			return false;
+
+		if (!errorState.check(reading->mObject.mValue == value, "Incorrect value returned"))
+			return false;
+
+		if (!errorState.check(reading->mNumSecondsActive == 1, "Expected a single second of active data"))
+			return false;
+
+		return true;
+	}
+
+	static bool sRunUnitTests(utility::ErrorState& errorState)
+	{
+		if (!sRunUnitTestSingleSample(errorState))
+			return false;
+
+		return true;
+	}
 
 	/**
 	 * Initialize all the resources and instances used for drawing
@@ -57,7 +131,7 @@ namespace nap
 		mDashboardEntity = mScene->findEntity("DashboardEntity");
 		mHistoryEntity = mScene->findEntity("HistoryEntity");
 
-		if (!mDataModel.init(error))
+		if (!mDataModel.init("emography.db", error))
 			return false;
 
 		bool result = mDataModel.registerType<StressIntensity>([](const std::vector<DataModel::WeightedObject>& inObjects)
@@ -105,6 +179,9 @@ namespace nap
 		}, error);
 
 		if (!result)
+			return false;
+
+		if (!sRunUnitTests(error))
 			return false;
 
 #if 0

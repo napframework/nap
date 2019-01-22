@@ -12,9 +12,9 @@ namespace nap
 		sqlite3_close(mDatabase);
 	}
 
-	bool Database::init(utility::ErrorState& errorState)
+	bool Database::init(const std::string& path, utility::ErrorState& errorState)
 	{
-		if (!errorState.check(sqlite3_open("emography.db", &mDatabase) == SQLITE_OK, "Failed to open database"))
+		if (!errorState.check(sqlite3_open(path.c_str(), &mDatabase) == SQLITE_OK, "Failed to open database"))
 		{
 			sqlite3_close(mDatabase);
 			return false;
