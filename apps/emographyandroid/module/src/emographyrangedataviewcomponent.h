@@ -12,7 +12,7 @@ namespace nap
 		/**
 		 * Settings associated with every range data component that is serializable
 		 */
-		struct RangeDataSettings
+		struct NAPAPI RangeDataSettings
 		{
 			RangeDataSettings() = default;
 
