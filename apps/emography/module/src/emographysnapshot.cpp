@@ -3,7 +3,6 @@
 // nap::emographysnapshot run time class definition 
 RTTI_BEGIN_CLASS(nap::emography::ReadingBase)
 	RTTI_PROPERTY("TimeStamp", &nap::emography::ReadingBase::mTimeStamp, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("NumSecondsActive", &nap::emography::ReadingBase::mNumSecondsActive, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::emography::StressStateReading)
@@ -16,6 +15,16 @@ RTTI_BEGIN_CLASS(nap::emography::StressIntensityReading)
 	RTTI_CONSTRUCTOR(const nap::emography::StressIntensity&, const nap::TimeStamp&)
 	RTTI_CONSTRUCTOR(const nap::emography::StressIntensity&)
 	RTTI_PROPERTY("Object", &nap::emography::StressIntensityReading::mObject, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
+RTTI_BEGIN_CLASS(nap::emography::ReadingSummaryBase)
+	RTTI_PROPERTY("TimeStamp", &nap::emography::StressIntensityReadingSummary::mTimeStamp, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("NumSecondsActive", &nap::emography::StressIntensityReadingSummary::mNumSecondsActive, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
+RTTI_BEGIN_CLASS(nap::emography::StressIntensityReadingSummary)
+	RTTI_CONSTRUCTOR(const nap::emography::ReadingBase&)
+	RTTI_PROPERTY("Object", &nap::emography::StressIntensityReadingSummary::mObject, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 

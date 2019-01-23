@@ -23,7 +23,7 @@ namespace nap
 
 	static bool sInitDataModel(DataModel& dataModel, const std::string& path, utility::ErrorState& errorState)
 	{
-		if (!dataModel.init(path, errorState))
+		if (!dataModel.init(path, DataModel::EKeepRawReadings::Disabled, errorState))
 			return false;
 
 		bool result = dataModel.registerType<StressIntensity>([](const std::vector<DataModel::WeightedObject>& inObjects)
@@ -32,13 +32,13 @@ namespace nap
 			for (int index = 0; index < inObjects.size(); ++index)
 			{
 				rtti::Object* object = inObjects[index].mObject.get();
-				StressIntensityReading* stressIntensityReading = rtti_cast<StressIntensityReading>(object);
+				StressIntensityReadingSummary* stressIntensityReading = rtti_cast<StressIntensityReadingSummary>(object);
 				assert(stressIntensityReading);
 
 				total += stressIntensityReading->mObject.mValue * inObjects[index].mWeight;
 			}
 
-			return std::make_unique<StressIntensityReading>(StressIntensity(total));
+			return std::make_unique<StressIntensityReadingSummary>(StressIntensity(total));
 		}, errorState);
 
 		return result;
@@ -64,14 +64,14 @@ namespace nap
 		if (!dataModel.flush(errorState))
 			return false;
 
-		std::vector<std::unique_ptr<ReadingBase>> objects;
+		std::vector<std::unique_ptr<ReadingSummaryBase>> objects;
 		if (!dataModel.getRange<StressIntensityReading>(now, now.toSystemTime() + Milliseconds(1000), 1, objects, errorState))
 			return false;
 
 		if (!errorState.check(objects.size() == 1, "Expected one second of data"))
 			return false;
 
-		StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[0].get());
+		StressIntensityReadingSummary* reading = rtti_cast<StressIntensityReadingSummary>(objects[0].get());
 		if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
 			return false;
 
@@ -113,14 +113,14 @@ namespace nap
 
 			float average = total / (float)num_seconds;
 
-			std::vector<std::unique_ptr<ReadingBase>> objects;
+			std::vector<std::unique_ptr<ReadingSummaryBase>> objects;
 			if (!dataModel.getRange<StressIntensityReading>(start + Seconds(start_second), start + Seconds(start_second + num_seconds), 1, objects, errorState))
 				return false;
 
 			if (!errorState.check(objects.size() == 1, "Expected one value"))
 				return false;
 
-			StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[0].get());
+			StressIntensityReadingSummary* reading = rtti_cast<StressIntensityReadingSummary>(objects[0].get());
 			if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
 				return false;
 
@@ -156,14 +156,14 @@ namespace nap
 		if (!dataModel.flush(errorState))
 			return false;
 
-		std::vector<std::unique_ptr<ReadingBase>> objects;
+		std::vector<std::unique_ptr<ReadingSummaryBase>> objects;
 		if (!dataModel.getRange<StressIntensityReading>(start, start + Seconds(60), 1, objects, errorState))
 			return false;
 
 		if (!errorState.check(objects.size() == 1, "Expected one value"))
 			return false;
 
-		StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[0].get());
+		StressIntensityReadingSummary* reading = rtti_cast<StressIntensityReadingSummary>(objects[0].get());
 		if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
 			return false;
 
@@ -226,14 +226,14 @@ namespace nap
 
 		// Single value test
 		{
-			std::vector<std::unique_ptr<ReadingBase>> objects;
+			std::vector<std::unique_ptr<ReadingSummaryBase>> objects;
 			if (!dataModel.getRange<StressIntensityReading>(start, start + Seconds(num_minutes * 60), 1, objects, errorState))
 				return false;
 
 			if (!errorState.check(objects.size() == 1, "Expected one second of data"))
 				return false;
 
-			StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[0].get());
+			StressIntensityReadingSummary* reading = rtti_cast<StressIntensityReadingSummary>(objects[0].get());
 			if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
 				return false;
 
@@ -246,7 +246,7 @@ namespace nap
 
 		// Multi value test
 		{
-			std::vector<std::unique_ptr<ReadingBase>> objects;
+			std::vector<std::unique_ptr<ReadingSummaryBase>> objects;
 			if (!dataModel.getRange<StressIntensityReading>(start, start + Seconds(num_minutes * 60), num_minutes, objects, errorState))
 				return false;
 
@@ -257,7 +257,7 @@ namespace nap
 			{
 				float minute_average = (float)minute_averages[i].mTotal / (float)minute_averages[i].mCount;
 
-				StressIntensityReading* reading = rtti_cast<StressIntensityReading>(objects[i].get());
+				StressIntensityReadingSummary* reading = rtti_cast<StressIntensityReadingSummary>(objects[i].get());
 				if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
 					return false;
 
@@ -333,7 +333,7 @@ namespace nap
 		mDashboardEntity = mScene->findEntity("DashboardEntity");
 		mHistoryEntity = mScene->findEntity("HistoryEntity");
 
-		if (!mDataModel.init("emography.db", error))
+		if (!mDataModel.init("emography.db", DataModel::EKeepRawReadings::Disabled, error))
 			return false;
 
 		bool result = mDataModel.registerType<StressIntensity>([](const std::vector<DataModel::WeightedObject>& inObjects)
@@ -342,43 +342,43 @@ namespace nap
 			for (int index = 0; index < inObjects.size(); ++index)
 			{
 				rtti::Object* object = inObjects[index].mObject.get();
-				StressIntensityReading* stressIntensityReading = rtti_cast<StressIntensityReading>(object);
+				StressIntensityReadingSummary* stressIntensityReading = rtti_cast<StressIntensityReadingSummary>(object);
 				assert(stressIntensityReading);
 
 				total += stressIntensityReading->mObject.mValue * inObjects[index].mWeight;
 			}
 
-			return std::make_unique<StressIntensityReading>(StressIntensity(total));
+			return std::make_unique<StressIntensityReadingSummary>(StressIntensity(total));
 		}, error);
 
 		if (!result)
 			return false;
 
-		result = mDataModel.registerType<EStressState>([](const std::vector<DataModel::WeightedObject>& inObjects)
-		{
-			std::unordered_map<EStressState, int> stateCounts;
-			for (int index = 0; index < inObjects.size(); ++index)
-			{
-				rtti::Object* object = inObjects[index].mObject.get();
-				StressStateReading* stressStateReading = rtti_cast<StressStateReading>(object);
-				assert(stressStateReading);
-
-				stateCounts[stressStateReading->mObject]++;
-			}
-
-			EStressState maxStressState = EStressState::Unknown;
-			int maxStressStateCount = 0;
-			for (auto& kvp : stateCounts)
-			{
-				if (kvp.second > maxStressStateCount)
-				{
-					maxStressStateCount = kvp.second;
-					maxStressState = kvp.first;
-				}
-			}
-
-			return std::make_unique<StressStateReading>(maxStressState);
-		}, error);
+// 		result = mDataModel.registerType<EStressState>([](const std::vector<DataModel::WeightedObject>& inObjects)
+// 		{
+// 			std::unordered_map<EStressState, int> stateCounts;
+// 			for (int index = 0; index < inObjects.size(); ++index)
+// 			{
+// 				rtti::Object* object = inObjects[index].mObject.get();
+// 				StressStateReading* stressStateReading = rtti_cast<StressStateReading>(object);
+// 				assert(stressStateReading);
+// 
+// 				stateCounts[stressStateReading->mObject]++;
+// 			}
+// 
+// 			EStressState maxStressState = EStressState::Unknown;
+// 			int maxStressStateCount = 0;
+// 			for (auto& kvp : stateCounts)
+// 			{
+// 				if (kvp.second > maxStressStateCount)
+// 				{
+// 					maxStressStateCount = kvp.second;
+// 					maxStressState = kvp.first;
+// 				}
+// 			}
+// 
+// 			return std::make_unique<StressStateReading>(maxStressState);
+// 		}, error);
 
 		if (!result)
 			return false;
@@ -735,7 +735,7 @@ namespace nap
 			numSamples = sTimelineState.mTimeRight - sTimelineState.mTimeLeft;
 		}
 
-		std::vector<std::unique_ptr<ReadingBase>> readings;
+		std::vector<std::unique_ptr<ReadingSummaryBase>> readings;
 		utility::ErrorState errorState;
 		if (mDataModel.getRange<StressIntensityReading>(left, right, numSamples, readings, errorState))
 		{
@@ -745,7 +745,7 @@ namespace nap
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 			for (auto& readingBase : readings)
 			{
-				StressIntensityReading* reading = rtti_cast<StressIntensityReading>(readingBase.get());
+				StressIntensityReadingSummary* reading = rtti_cast<StressIntensityReadingSummary>(readingBase.get());
 
 				float x = sTimelineState.AbsTimeToPixel(reading->mTimeStamp.mTimeStamp / 1000);
 				float y = bottomY - glm::clamp(reading->mObject.mValue / y_units, 0.0f, 1.0f) * height;

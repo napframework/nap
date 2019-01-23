@@ -8,9 +8,11 @@ namespace nap
 		class ReadingProcessor
 		{
 		public:
-			ReadingProcessor(Database& database, const rtti::TypeInfo& readingType, const DataModel::SummaryFunction& summaryFunction) :
+			ReadingProcessor(Database& database, const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, DataModel::EKeepRawReadings keepRawReadings, const DataModel::SummaryFunction& summaryFunction) :
 				mDatabase(&database),
 				mReadingType(readingType),
+				mSummaryType(summaryType),
+				mKeepRawReadings(keepRawReadings),
 				mSummaryFunction(summaryFunction)
 			{
 			}
@@ -21,8 +23,12 @@ namespace nap
 				timestamp_path.pushAttribute("TimeStamp");
 				timestamp_path.pushAttribute("Time");
 
-				mTimeStampPath = DatabasePropertyPath::sCreate(mReadingType, timestamp_path, errorState);
-				if (mTimeStampPath == nullptr)
+				mRawTimeStampPath = DatabasePropertyPath::sCreate(mReadingType, timestamp_path, errorState);
+				if (mRawTimeStampPath == nullptr)
+					return false;
+
+				mLODTimeStampPath = DatabasePropertyPath::sCreate(mSummaryType, timestamp_path, errorState);
+				if (mLODTimeStampPath == nullptr)
 					return false;
 
 				std::string raw_table_name(mReadingType.get_name());
@@ -30,7 +36,7 @@ namespace nap
 				if (mRawTable == nullptr)
 					return false;
 
-				if (!mRawTable->createIndex(*mTimeStampPath, errorState))
+				if (!mRawTable->createIndex(*mRawTimeStampPath, errorState))
 					return false;
 
 				if (!addLOD(utility::stringFormat("%s_%s", raw_table_name.c_str(), "Seconds"), 1, errorState))
@@ -56,8 +62,14 @@ namespace nap
 				if (!flush(object.mTimeStamp, errorState))
 					return false;
 
-				if (!mRawTable->add(object, errorState))
-					return false;
+				if (mKeepRawReadings == DataModel::EKeepRawReadings::Enabled)
+				{
+					if (!mRawTable->add(object, errorState))
+						return false;
+				}
+
+				std::unique_ptr<rtti::Object> raw_summary(mSummaryType.create<ReadingSummaryBase>({ object }));
+				mRawReadingCache.emplace_back(std::move(raw_summary));
 
 				mLastReadingTime = object.mTimeStamp;
 
@@ -80,7 +92,7 @@ namespace nap
 				std::vector<std::unique_ptr<rtti::Object>> objects;
 				std::vector<DataModel::WeightedObject> weighted_objects;
 
-				DatabaseTable* prevTable = mRawTable;
+				DatabaseTable* prevTable = nullptr;
 				for (int lod_index = 0; lod_index < mLODs.size(); ++lod_index)
 				{
 					ReadingLOD& lod = mLODs[lod_index];
@@ -98,26 +110,33 @@ namespace nap
 						objects.clear();
 						weighted_objects.clear();
 
-						const std::string timestamp_column_name = mTimeStampPath->toString();
-						if (!prevTable->query(utility::stringFormat("%s >= %llu", timestamp_column_name.c_str(), prev_chunk_start_time_seconds * 1000), objects, errorState))
-							return false;
+						if (prevTable == nullptr)
+						{
+							objects = std::move(mRawReadingCache);
+						}
+						else
+						{
+							const std::string timestamp_column_name = mRawTimeStampPath->toString();
+							if (!prevTable->query(utility::stringFormat("%s >= %llu", timestamp_column_name.c_str(), prev_chunk_start_time_seconds * 1000), objects, errorState))
+								return false;
+						}
 
 						int num_active_seconds = 0;
 						weighted_objects.reserve(objects.size());
 						float weight = 1.0f / objects.size();
 						for (auto& object : objects)
 						{
-							ReadingBase* reading = rtti_cast<ReadingBase>(object.get());
+							ReadingSummaryBase* reading = rtti_cast<ReadingSummaryBase>(object.get());
 							num_active_seconds += reading->mNumSecondsActive;
 
 							DataModel::WeightedObject weighted_object{ weight, std::move(object) };
 							weighted_objects.emplace_back(std::move(weighted_object));
 						}
 
-						std::unique_ptr<ReadingBase> collapsedObject = mSummaryFunction(weighted_objects);
+						std::unique_ptr<ReadingSummaryBase> collapsedObject = mSummaryFunction(weighted_objects);
 						assert(collapsedObject->get_type() == mReadingType);
 						collapsedObject->mTimeStamp.mTimeStamp = prev_chunk_start_time_seconds * 1000;
-						collapsedObject->mNumSecondsActive = lod_index == 0 ? 1 : num_active_seconds;
+						collapsedObject->mNumSecondsActive = num_active_seconds;
 
 						if (!lod.mTable->add(*collapsedObject, errorState))
 							return false;
@@ -130,7 +149,7 @@ namespace nap
 				return true;
 			}
 
-			bool getRange(uint64_t startTime, uint64_t endTime, std::vector<std::unique_ptr<ReadingBase>>& readings, utility::ErrorState& errorState)
+			bool getRange(uint64_t startTime, uint64_t endTime, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 			{
 				uint64_t cur_time_seconds = startTime;
 				int total_active_seconds = 0;
@@ -181,11 +200,11 @@ namespace nap
 
 				for (DataModel::WeightedObject& weighted_object : weighted_objects)
 				{
-					ReadingBase* readingBase = rtti_cast<ReadingBase>(weighted_object.mObject.get());
-					weighted_object.mWeight = (float)readingBase->mNumSecondsActive / (float)total_active_seconds;
+					ReadingSummaryBase* summary_base = rtti_cast<ReadingSummaryBase>(weighted_object.mObject.get());
+					weighted_object.mWeight = (float)summary_base->mNumSecondsActive / (float)total_active_seconds;
 				}
 
-				std::unique_ptr<ReadingBase> collapsedObject = mSummaryFunction(weighted_objects);
+				std::unique_ptr<ReadingSummaryBase> collapsedObject = mSummaryFunction(weighted_objects);
 				assert(collapsedObject->get_type() == mReadingType);
 				collapsedObject->mTimeStamp.mTimeStamp = startTime * 1000;
 				collapsedObject->mNumSecondsActive = total_active_seconds;
@@ -194,7 +213,7 @@ namespace nap
 				return true;
 			}
 
-			bool getRange(TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingBase>>& readings, utility::ErrorState& errorState)
+			bool getRange(TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 			{
 				uint64_t start_seconds = startTime.mTimeStamp / 1000;
 				uint64_t end_seconds = endTime.mTimeStamp / 1000;
@@ -229,11 +248,11 @@ namespace nap
 
 				ReadingLOD lod;
 				lod.mMaxNumSeconds = maxNumSeconds;
-				lod.mTable = mDatabase->createTable(id, mReadingType, errorState);
+				lod.mTable = mDatabase->createTable(id, mSummaryType, errorState);
 				if (lod.mTable == nullptr)
 					return false;
 
-				if (!lod.mTable->createIndex(*mTimeStampPath, errorState))
+				if (!lod.mTable->createIndex(*mLODTimeStampPath, errorState))
 					return false;
 
 				mLODs.push_back(lod);
@@ -243,15 +262,15 @@ namespace nap
 			bool getWeightedObjects(ReadingLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
 			{
 				std::vector<std::unique_ptr<rtti::Object>> objects;
-				const std::string timestamp_column_name = mTimeStampPath->toString();
+				const std::string timestamp_column_name = mLODTimeStampPath->toString();
 				std::string query = utility::stringFormat("%s >= %llu AND %s < %llu", timestamp_column_name.c_str(), startTime * 1000, timestamp_column_name.c_str(), endTime * 1000);
 				if (!lod.mTable->query(query, objects, errorState))
 					return false;
 
 				for (auto& object : objects)
 				{
-					ReadingBase* readingBase = rtti_cast<ReadingBase>(object.get());
-					totalActiveSeconds += readingBase->mNumSecondsActive;
+					ReadingSummaryBase* summary_base = rtti_cast<ReadingSummaryBase>(object.get());
+					totalActiveSeconds += summary_base->mNumSecondsActive;
 
 					DataModel::WeightedObject weighted_object { 0.0f, std::move(object) };
 					weightedObjects.emplace_back(std::move(weighted_object));
@@ -261,13 +280,17 @@ namespace nap
 			}
 
 		private:
-			Database*								mDatabase;
-			std::unique_ptr<DatabasePropertyPath>	mTimeStampPath;
-			rtti::TypeInfo							mReadingType;
-			std::vector<ReadingLOD>					mLODs;
-			DataModel::SummaryFunction				mSummaryFunction;
-			DatabaseTable*							mRawTable;
-			TimeStamp								mLastReadingTime;
+			Database*									mDatabase;
+			std::unique_ptr<DatabasePropertyPath>		mRawTimeStampPath;
+			std::unique_ptr<DatabasePropertyPath>		mLODTimeStampPath;
+			rtti::TypeInfo								mReadingType;
+			rtti::TypeInfo								mSummaryType;
+			DataModel::EKeepRawReadings					mKeepRawReadings;
+			std::vector<ReadingLOD>						mLODs;
+			DataModel::SummaryFunction					mSummaryFunction;
+			DatabaseTable*								mRawTable;
+			std::vector<std::unique_ptr<rtti::Object>>	mRawReadingCache;
+			TimeStamp									mLastReadingTime;
 		};
 
 		//////////////////////////////////////////////////////////////////////////
@@ -282,17 +305,18 @@ namespace nap
 			flush(errorState);
 		}
 
-		bool DataModel::init(const std::string& path, utility::ErrorState& errorState)
+		bool DataModel::init(const std::string& path, EKeepRawReadings keepRawReadings, utility::ErrorState& errorState)
 		{
+			mKeepRawReadings = keepRawReadings;
 			return mDatabase.init(path, errorState);
 		}
 
-		bool DataModel::registerType(const rtti::TypeInfo& readingType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState)
+		bool DataModel::registerType(const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState)
 		{
 			ReadingProcessorMap::iterator pos = mReadingProcessors.find(readingType);
 			assert(pos == mReadingProcessors.end());
 
-			std::unique_ptr<ReadingProcessor> processor = std::make_unique<ReadingProcessor>(mDatabase, readingType, summaryFunction);
+			std::unique_ptr<ReadingProcessor> processor = std::make_unique<ReadingProcessor>(mDatabase, readingType, summaryType, mKeepRawReadings, summaryFunction);
 			if (!processor->init(errorState))
 				return false;
 
@@ -318,7 +342,7 @@ namespace nap
 			return true;
 		}
 
-		bool DataModel::getRange(const rtti::TypeInfo& inReadingType, TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingBase>>& readings, utility::ErrorState& errorState)
+		bool DataModel::getRange(const rtti::TypeInfo& inReadingType, TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 		{
 			ReadingProcessorMap::iterator pos = mReadingProcessors.find(inReadingType);
 			assert(pos != mReadingProcessors.end());

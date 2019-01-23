@@ -27,7 +27,6 @@ namespace nap
 
 		public:
 			TimeStamp mTimeStamp;        ///< Property: 'TimeStamp' Point in time at which this snapshot is taken
-			int		  mNumSecondsActive = 0;
 		};
 
 		/**
@@ -76,6 +75,49 @@ namespace nap
 			T mObject;					///< Property: 'Object' the object this snapshot manages
 		};
 
+		class ReadingSummaryBase : public rtti::Object
+		{
+			RTTI_ENABLE(rtti::Object)
+		public:
+			ReadingSummaryBase() = default;
+
+			ReadingSummaryBase(const ReadingBase& reading) :
+				mTimeStamp(reading.mTimeStamp),
+				mNumSecondsActive(1)
+			{
+			}
+
+		public:
+			TimeStamp	mTimeStamp;
+			int			mNumSecondsActive = 0;
+		};
+
+		template<typename T>
+		class ReadingSummary : public ReadingSummaryBase
+		{
+			RTTI_ENABLE(ReadingSummaryBase)
+		public:
+			ReadingSummary() = default;
+
+			ReadingSummary(const ReadingBase& readingBase) :
+				ReadingSummaryBase(readingBase)
+			{
+				const Reading<T>* reading = rtti_cast<const Reading<T>>(&readingBase);
+				assert(reading);
+
+				mObject = reading->mObject;
+			}
+
+			ReadingSummary(const Reading<T>& reading) :
+				ReadingSummaryBase(reading),
+				mObject(reading.mObject)
+			{
+			}
+
+		public:
+			T			mObject;
+		};
+
 		//////////////////////////////////////////////////////////////////////////
 		// Implementations
 		//////////////////////////////////////////////////////////////////////////
@@ -83,6 +125,7 @@ namespace nap
 		// Possibly send towards android client after query
 		using StressStateReading = Reading<EStressState>;
 		using StressIntensityReading = Reading<StressIntensity>;
+		using StressIntensityReadingSummary = ReadingSummary<StressIntensity>;
 
 
 		//////////////////////////////////////////////////////////////////////////
