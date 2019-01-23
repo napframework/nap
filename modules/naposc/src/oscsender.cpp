@@ -5,6 +5,7 @@
 #include <ip/UdpSocket.h>
 #include <nap/logger.h>
 #include <osc/OscOutboundPacketStream.h>
+#include <mathutils.h>
 
 RTTI_BEGIN_CLASS(nap::OSCSender)
 	RTTI_PROPERTY("IpAddress", &nap::OSCSender::mIPAddress, nap::rtti::EPropertyMetaData::Default)
@@ -49,7 +50,7 @@ namespace nap
 	bool OSCSender::send(const OSCEvent& oscEvent)
 	{
 		std::size_t buffer_size = oscEvent.getSize();
-		buffer_size *= mBufferScale;
+		buffer_size *= math::max<int>(mBufferScale, 1);
 		buffer_size += sizeof(osc::BeginMessage);
 		buffer_size += sizeof(osc::EndMessage);
 
@@ -77,7 +78,7 @@ namespace nap
 
 		// Create the buffer
 		std::size_t buffer_size = mEventQueueDataSize;
-		buffer_size *= mBufferScale;
+		buffer_size *= math::max<int>(mBufferScale, 1);;
 		buffer_size += sizeof(osc::BeginMessage)	* mEventQueue.size();
 		buffer_size += sizeof(osc::EndMessage)		* mEventQueue.size();
 		buffer_size += sizeof(osc::BundleInitiator);
