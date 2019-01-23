@@ -6,7 +6,6 @@
 namespace nap
 {
 	using VisitRTTIPropertyTypesCallback = std::function<void(const rtti::Property&, const rtti::Path&)>;
-	using VisitRTTIPropertyValuesCallback = std::function<void(const rtti::Property&, const rtti::Path&, const rtti::Variant&)>;
 
 	static bool sVisitRTTIPropertyTypes(const rtti::TypeInfo& type, rtti::Path& path, const VisitRTTIPropertyTypesCallback& callback, utility::ErrorState& errorState)
 	{
@@ -35,37 +34,6 @@ namespace nap
 
 		return true;
 	}
-
-
-	static bool sVisitRTTIPropertyValues(const rtti::Variant& variant, const rtti::TypeInfo& type, rtti::Path& path, const VisitRTTIPropertyValuesCallback& callback, utility::ErrorState& errorState)
-	{
-		// Recursively visit each property of the type
-		for (const rtti::Property& property : type.get_properties())
-		{
-			path.pushAttribute(property.get_name().data());
-
-			rtti::TypeInfo actual_type = property.get_type().is_wrapper() ? property.get_type().get_wrapped_type() : property.get_type();
-
-			if (!errorState.check(!actual_type.is_array() && !actual_type.is_pointer(), "Serializing objects with pointers or arrays to a database is not supported"))
-				return false;
-
-			rtti::Variant value = property.get_value(variant);
-			if (actual_type.is_arithmetic() || actual_type.is_enumeration() || actual_type == rtti::TypeInfo::get<std::string>())
-			{
-				callback(property, path, value);
-			}
-			else
-			{
-				if (!sVisitRTTIPropertyValues(value, actual_type, path, callback, errorState))
-					return false;
-			}
-
-			path.popBack();
-		}
-
-		return true;
-	}
-
 
 	static std::string sGetTypeString(const rtti::TypeInfo& type)
 	{
@@ -187,6 +155,50 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
+	DatabasePropertyPath::DatabasePropertyPath(const rtti::Path& rttiPath) :
+		mRTTIPath(rttiPath)
+	{
+	}
+
+	std::unique_ptr<DatabasePropertyPath> DatabasePropertyPath::sCreate(const rtti::TypeInfo& rootType, const rtti::Path& rttiPath, utility::ErrorState& errorState)
+	{
+		// Can't resolve an empty path
+		if (rttiPath.getLength() == 0)
+			return nullptr;
+
+		rtti::TypeInfo current_type = rootType;
+		for (int index = 0; index < rttiPath.getLength(); ++index)
+		{
+			const rtti::PathElement& element = rttiPath.getElement(index);
+
+			// Arrays are not supported
+			if (!errorState.check(element.mType != rtti::PathElement::Type::ARRAY_ELEMENT, "Array properties are not supported"))
+				return nullptr;
+
+			// Handle attribute
+			assert(element.mType == rtti::PathElement::Type::ATTRIBUTE);
+			rtti::Property property = current_type.get_property(element.Attribute.Name);
+			if (!errorState.check(property.is_valid(), "Failed to find property %s on type %s", element.Attribute.Name, current_type.get_name().data()))
+				return nullptr;
+
+			current_type = property.get_type().is_wrapper() ? property.get_type().get_wrapped_type() : property.get_type();
+		}
+
+		if (!errorState.check(current_type.get_properties().empty(), "Path ends in a property with sub properties"))
+			return nullptr;
+
+		return std::unique_ptr<DatabasePropertyPath>(new DatabasePropertyPath(rttiPath));
+	}
+
+	std::string DatabasePropertyPath::toString() const
+	{
+		std::string column_name = mRTTIPath.toString();
+		std::replace(column_name.begin(), column_name.end(), '/', '$');
+		return column_name;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
 
 	DatabaseTable::DatabaseTable(Database& database, const std::string& tableID, const rtti::TypeInfo& objectType) :
 		mTableID(tableID),
@@ -208,7 +220,12 @@ namespace nap
 		rtti::Path current_path;
  		bool result = sVisitRTTIPropertyTypes(mObjectType, current_path, [this](const rtti::Property& property, const rtti::Path& path)
 		{
-			mColumns.push_back({ path, sGetTypeString(property.get_type()) });
+			utility::ErrorState errorState;
+			std::unique_ptr<DatabasePropertyPath> database_path = DatabasePropertyPath::sCreate(mObjectType, path, errorState);
+			assert(database_path != nullptr);
+
+			mColumns.push_back({ std::move(database_path), sGetTypeString(property.get_type()) });
+			
 		}, errorState);
 
 		if (!result)
@@ -221,8 +238,7 @@ namespace nap
 		{
 			Column& column = mColumns[index];
 
-			std::string column_name = column.mPath.toString().c_str();
-			std::replace(column_name.begin(), column_name.end(), '/', '.');
+			std::string column_name = column.mPath->toString();
 
 			const char* separator = index < mColumns.size() - 1 ? ", " : "";
 			createTableSql += utility::stringFormat("'%s' %s%s", column_name.c_str(), column.mSqlType.c_str(), separator);
@@ -259,7 +275,7 @@ namespace nap
 			Column& column = mColumns[index];
 
 			rtti::ResolvedPath resolvedPath;
-			bool resolved = column.mPath.resolve(&object, resolvedPath);
+			bool resolved = column.mPath->getRTTIPath().resolve(&object, resolvedPath);
 			assert(resolved);
 
 			if (!errorState.check(sBindColumnValue(resolvedPath.getType(), resolvedPath.getValue(), *mInsertStatement, index+1), "Failed to set value for column %d", index))
@@ -290,7 +306,7 @@ namespace nap
 			for (int column_index = 0; column_index < mColumns.size(); ++column_index)
 			{
 				const Column& column = mColumns[column_index];
-				sSetColumnValue(*object, column.mPath, *statement, column_index);
+				sSetColumnValue(*object, column.mPath->getRTTIPath(), *statement, column_index);
 			}
 			objects.emplace_back(std::move(object));
 		}
@@ -315,7 +331,7 @@ namespace nap
 			for (int column_index = 0; column_index < mColumns.size(); ++column_index)
 			{
 				const Column& column = mColumns[column_index];
-				sSetColumnValue(*object, column.mPath, *statement, column_index);
+				sSetColumnValue(*object, column.mPath->getRTTIPath(), *statement, column_index);
 			}
 			objects.emplace_back(std::move(object));
 		}
@@ -325,12 +341,10 @@ namespace nap
 		return true;
 	}
 
-	bool DatabaseTable::createIndex(const rtti::Path& propertyPath, utility::ErrorState& errorState)
+	bool DatabaseTable::createIndex(const DatabasePropertyPath& propertyPath, utility::ErrorState& errorState)
 	{
-		std::string column_name = propertyPath.toString().c_str();
-		std::replace(column_name.begin(), column_name.end(), '/', '.');
+		std::string column_name = propertyPath.toString();
 
-		//CREATE INDEX tag_titles ON tags(title);
 		std::string sql = utility::stringFormat("CREATE INDEX IF NOT EXISTS \"%s_%s\" ON %s (\"%s\")", mTableID.c_str(), column_name.c_str(), mTableID.c_str(), column_name.c_str());
 
 		char* errorMessage = nullptr;

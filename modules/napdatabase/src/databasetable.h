@@ -12,23 +12,42 @@ namespace nap
 {
 	class Database;
 
-	class NAPAPI DatabaseTable
+	class NAPAPI DatabasePropertyPath final
+	{
+	public:
+		static std::unique_ptr<DatabasePropertyPath> sCreate(const rtti::TypeInfo& rootType, const rtti::Path& rttiPath, utility::ErrorState& errorState);
+		
+		const rtti::Path& getRTTIPath() const { return mRTTIPath; }
+		
+		std::string toString() const;
+
+	private:
+		DatabasePropertyPath(const rtti::Path& rttiPath);
+
+	private:
+		rtti::Path	mRTTIPath;
+	};
+
+	class NAPAPI DatabaseTable final
 	{
 	public:
 		DatabaseTable(Database& database, const std::string& tableID, const rtti::TypeInfo& objectType);
 		~DatabaseTable();
-		
+
+		DatabaseTable(const DatabaseTable& rhs) = delete;
+		DatabaseTable& operator=(const DatabaseTable& rhs) = delete;
+
 		bool init(utility::ErrorState& errorState);
 		bool add(const rtti::Object& object, utility::ErrorState& errorState);
-		bool createIndex(const rtti::Path& propertyPath, utility::ErrorState& errorState);
+		bool createIndex(const DatabasePropertyPath& propertyPath, utility::ErrorState& errorState);
 		bool getLast(int count, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState);
 		bool query(const std::string& whereClause, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState);
 
 	private:
 		struct Column
 		{
-			rtti::Path	mPath;
-			std::string mSqlType;
+			std::unique_ptr<DatabasePropertyPath>	mPath;
+			std::string						mSqlType;
 		};
 
 		using ColumnList = std::vector<Column>;
