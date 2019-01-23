@@ -291,34 +291,9 @@ namespace nap
 		return true;
 	}
 
-	bool DatabaseTable::getLast(int count, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
-	{
- 		std::string sql = utility::stringFormat("SELECT * FROM %s LIMIT %d OFFSET (SELECT COUNT(*) FROM %s)-%d", mTableID.c_str(), count, mTableID.c_str(), count);
- 		sqlite3_stmt* statement = nullptr;
- 		if (!errorState.check(sqlite3_prepare_v2(&mDatabase->GetDatabase(), sql.c_str(), sql.size(), &statement, nullptr) == SQLITE_OK, "Failed to create query %s", sql.c_str()))
- 			return false;
-
-		rtti::Factory factory;
-
-		while (sqlite3_step(statement) == SQLITE_ROW)
-		{
-			std::unique_ptr<rtti::Object> object(factory.create(mObjectType));
-			for (int column_index = 0; column_index < mColumns.size(); ++column_index)
-			{
-				const Column& column = mColumns[column_index];
-				sSetColumnValue(*object, column.mPath->getRTTIPath(), *statement, column_index);
-			}
-			objects.emplace_back(std::move(object));
-		}
-
-		sqlite3_finalize(statement);
-
-		return true;
-	}
-
 	bool DatabaseTable::query(const std::string& whereClause, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
 	{
-		std::string sql = utility::stringFormat("SELECT * FROM %s WHERE %s", mTableID.c_str(), whereClause.c_str());
+		std::string sql = utility::stringFormat("SELECT * FROM %s %s %s", mTableID.c_str(), whereClause.empty() ? "" : "WHERE", whereClause.c_str());
 		sqlite3_stmt* statement = nullptr;
 		if (!errorState.check(sqlite3_prepare_v2(&mDatabase->GetDatabase(), sql.c_str(), sql.size(), &statement, nullptr) == SQLITE_OK, "Failed to create query %s", sql.c_str()))
 			return false;
@@ -341,7 +316,7 @@ namespace nap
 		return true;
 	}
 
-	bool DatabaseTable::createIndex(const DatabasePropertyPath& propertyPath, utility::ErrorState& errorState)
+	bool DatabaseTable::getOrCreateIndex(const DatabasePropertyPath& propertyPath, utility::ErrorState& errorState)
 	{
 		std::string column_name = propertyPath.toString();
 
@@ -349,6 +324,20 @@ namespace nap
 
 		char* errorMessage = nullptr;
 		if (!errorState.check(sqlite3_exec(&mDatabase->GetDatabase(), sql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to create index on table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
+		{
+			sqlite3_free(errorMessage);
+			return false;
+		}
+
+		return true;
+	}
+
+	bool DatabaseTable::clear(utility::ErrorState& errorState)
+	{
+		std::string sql = utility::stringFormat("DELETE FROM %s", mTableID.c_str());
+
+		char* errorMessage = nullptr;
+		if (!errorState.check(sqlite3_exec(&mDatabase->GetDatabase(), sql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to clear table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
 		{
 			sqlite3_free(errorMessage);
 			return false;

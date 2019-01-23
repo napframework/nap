@@ -17,7 +17,7 @@ namespace nap
 		Database& operator=(const Database& rhs) = delete;
 		
 		bool init(const std::string& path, utility::ErrorState& errorState);
-		DatabaseTable* createTable(const std::string& tableID, const rtti::TypeInfo& objectType, utility::ErrorState& errorState);
+		DatabaseTable* getOrCreateTable(const std::string& tableID, const rtti::TypeInfo& objectType, utility::ErrorState& errorState);
 
 	private:
 		sqlite3& GetDatabase() { return *mDatabase; }
