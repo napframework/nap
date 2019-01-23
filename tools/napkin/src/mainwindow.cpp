@@ -146,31 +146,47 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
+void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 {
-	if (objects.isEmpty())
-		mInspectorPanel.clear();
-	else
-		mInspectorPanel.setPath(*objects.first());
+	auto sceneTreeSelection = mScenePanel.treeView().getTreeView().selectionModel();
+	sceneTreeSelection->blockSignals(true);
+	sceneTreeSelection->clearSelection();
+	sceneTreeSelection->blockSignals(false);
 
+	mInspectorPanel.clear();
+	if (!paths.isEmpty())
+	{
+		auto path = paths.first();
+		// Don't edit scenes
+		if (!path.getObject().get_type().is_derived_from<nap::Scene>())
+			mInspectorPanel.setPath(paths.first());
+	}
+
+	// Edit curve?
 	mCurvePanel.editCurve(nullptr);
-
-	if (!objects.isEmpty()) {
-		auto ob = dynamic_cast<nap::math::FloatFCurve*>(objects.at(0));
-		if (ob) {
+	if (!paths.isEmpty())
+	{
+		auto ob = dynamic_cast<nap::math::FloatFCurve*>(&paths.first().getObject());
+		if (ob)
 			mCurvePanel.editCurve(ob);
-		}
 	}
 
 }
 
 void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
 {
-	// TODO: Multiselect
-	for (auto path : paths)
+	auto resTreeSelection = mResourcePanel.treeView().getTreeView().selectionModel();
+	resTreeSelection->blockSignals(true);
+	resTreeSelection->clearSelection();
+	resTreeSelection->blockSignals(false);
+
+	mInspectorPanel.clear();
+	if (!paths.isEmpty())
 	{
-		mInspectorPanel.setPath(path);
-		return;
+		auto path = paths.first();
+		// Don't edit scenes
+		if (!path.getObject().get_type().is_derived_from<nap::Scene>())
+			mInspectorPanel.setPath(paths.first());
 	}
 }
 

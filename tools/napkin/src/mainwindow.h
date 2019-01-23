@@ -83,9 +83,9 @@ namespace napkin
 
 		/**
 		 * Called when the selection changes
-		 * @param objects The newly selected objects
+		 * @param paths The newly selected objects
 		 */
-		void onResourceSelectionChanged(QList<nap::rtti::Object*> objects);
+		void onResourceSelectionChanged(QList<PropertyPath> paths);
 
 		/**
 		 * Handled when the scenepanel's selection changes
