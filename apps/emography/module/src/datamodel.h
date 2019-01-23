@@ -13,7 +13,7 @@ namespace nap
 		class ReadingBase;
 		class ReadingSummaryBase;
 
-		class NAPAPI DataModel
+		class NAPAPI DataModel final
 		{
 		public:
 			enum class EKeepRawReadings : uint8_t

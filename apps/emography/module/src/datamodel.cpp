@@ -5,7 +5,39 @@ namespace nap
 {
 	namespace emography
 	{
-		class ReadingProcessor
+		class ReadingProcessorState : public rtti::Object
+		{
+			RTTI_ENABLE(rtti::Object)
+		public:
+
+		public:
+			TimeStamp	mLastReadingTime;
+		};
+
+		class ReadingProcessorLODState : public rtti::Object
+		{
+			RTTI_ENABLE(rtti::Object)
+		public:
+
+		public:
+			uint64_t	mCurrentChunkIndex = -1;
+		};
+	}
+}
+
+RTTI_BEGIN_CLASS(nap::emography::ReadingProcessorState)
+	RTTI_PROPERTY("LastReadingTime", &nap::emography::ReadingProcessorState::mLastReadingTime, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
+RTTI_BEGIN_CLASS(nap::emography::ReadingProcessorLODState)
+	RTTI_PROPERTY("CurrentChunkIndex", &nap::emography::ReadingProcessorLODState::mCurrentChunkIndex, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
+namespace nap
+{
+	namespace emography
+	{
+		class ReadingProcessor final
 		{
 		public:
 			ReadingProcessor(Database& database, const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, DataModel::EKeepRawReadings keepRawReadings, const DataModel::SummaryFunction& summaryFunction) :
@@ -31,13 +63,34 @@ namespace nap
 				if (mLODTimeStampPath == nullptr)
 					return false;
 
+				// Create raw table and index
 				std::string raw_table_name(mReadingType.get_name());
-				mRawTable = mDatabase->createTable(raw_table_name, mReadingType, errorState);
+				mRawTable = mDatabase->getOrCreateTable(raw_table_name, mReadingType, errorState);
 				if (mRawTable == nullptr)
 					return false;
 
-				if (!mRawTable->createIndex(*mRawTimeStampPath, errorState))
+				if (!mRawTable->getOrCreateIndex(*mRawTimeStampPath, errorState))
 					return false;
+
+				// Create processor state table
+				{
+					std::string state_table_name = utility::stringFormat("%s_state", mReadingType.get_name().data());
+					mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorState), errorState);
+					if (mStateTable == nullptr)
+						return false;
+
+					std::vector<std::unique_ptr<rtti::Object>> state_object;
+					if (!mStateTable->query("", state_object, errorState))
+						return false;
+
+					if (!errorState.check(state_object.size() <= 1, "Found invalid number of state objects"))
+						return false;
+
+					if (state_object.empty())
+						mState = std::make_unique<ReadingProcessorState>();
+					else
+						mState = rtti_cast<ReadingProcessorState>(state_object[0]);
+				}
 
 				if (!addLOD(utility::stringFormat("%s_%s", raw_table_name.c_str(), "Seconds"), 1, errorState))
 					return false;
@@ -71,22 +124,23 @@ namespace nap
 				std::unique_ptr<rtti::Object> raw_summary(mSummaryType.create<ReadingSummaryBase>({ object }));
 				mRawReadingCache.emplace_back(std::move(raw_summary));
 
-				mLastReadingTime = object.mTimeStamp;
+				mState->mLastReadingTime = object.mTimeStamp;
 
 				return true;
 			}
 
 			bool flush(utility::ErrorState& errorState)
 			{
-				if (!mLastReadingTime.isValid())
+				if (!mState->mLastReadingTime.isValid())
 					return true;
 
-				auto nextTimeStamp = mLastReadingTime.toSystemTime() + Seconds(1);
+				auto nextTimeStamp = mState->mLastReadingTime.toSystemTime() + Seconds(1);
 				return flush(nextTimeStamp, errorState);
 			}
 
 			bool flush(TimeStamp timestamp, utility::ErrorState& errorState)
 			{
+				bool any_lod_flushed = false;
 				uint64_t timestamp_in_seconds = timestamp.mTimeStamp / 1000;
 
 				std::vector<std::unique_ptr<rtti::Object>> objects;
@@ -97,15 +151,15 @@ namespace nap
 				{
 					ReadingLOD& lod = mLODs[lod_index];
 					uint64_t chunk_index = timestamp_in_seconds / lod.mMaxNumSeconds;
-					if (chunk_index == lod.mCurrentChunkIndex)
+					if (chunk_index == lod.mState->mCurrentChunkIndex)
 						break;
 
-					if (lod.mCurrentChunkIndex != -1 && chunk_index < lod.mCurrentChunkIndex)
-						break;
-
-					if (lod.mCurrentChunkIndex != -1)
+					if (lod.mState->mCurrentChunkIndex != -1)
 					{
-						uint64_t prev_chunk_start_time_seconds = lod.mCurrentChunkIndex * lod.mMaxNumSeconds;
+						if (chunk_index < lod.mState->mCurrentChunkIndex)
+							break;
+
+						uint64_t prev_chunk_start_time_seconds = lod.mState->mCurrentChunkIndex * lod.mMaxNumSeconds;
 
 						objects.clear();
 						weighted_objects.clear();
@@ -142,8 +196,26 @@ namespace nap
 							return false;
 					}
 
-					lod.mCurrentChunkIndex = chunk_index;
+					lod.mState->mCurrentChunkIndex = chunk_index;
+
+					if (!lod.mStateTable->clear(errorState))
+						return false;
+
+					if (!lod.mStateTable->add(*lod.mState, errorState))
+						return false;
+
+					any_lod_flushed = true;
+
 					prevTable = lod.mTable;
+				}
+
+				if (any_lod_flushed)
+				{
+					if (!mStateTable->clear(errorState))
+						return false;
+
+					if (!mStateTable->add(*mState, errorState))
+						return false;
 				}
 
 				return true;
@@ -237,25 +309,75 @@ namespace nap
 		private:
 			struct ReadingLOD
 			{
-				int				mMaxNumSeconds = 0;
-				uint64_t		mCurrentChunkIndex = -1;
-				DatabaseTable*	mTable = nullptr;
+				ReadingLOD() = default;
+
+				ReadingLOD(const ReadingLOD&) = delete;
+				ReadingLOD& operator=(const ReadingLOD&) = delete;
+				
+				ReadingLOD(ReadingLOD&& rhs)
+				{
+					mMaxNumSeconds = rhs.mMaxNumSeconds;
+					mState = std::move(rhs.mState);
+					mTable = rhs.mTable;
+					mStateTable = rhs.mStateTable;
+					
+					rhs.mTable = nullptr;
+					rhs.mStateTable = nullptr;
+					rhs.mMaxNumSeconds = 0;
+				}
+
+				ReadingLOD& operator=(ReadingLOD&& rhs)
+				{
+					if (&rhs != this)
+					{
+						mMaxNumSeconds = rhs.mMaxNumSeconds;
+						mState = std::move(rhs.mState);
+						mTable = rhs.mTable;
+						mStateTable = rhs.mStateTable;
+
+						rhs.mTable = nullptr;
+						rhs.mStateTable = nullptr;
+						rhs.mMaxNumSeconds = 0;
+					}
+					return *this;
+				}
+
+				int											mMaxNumSeconds = 0;
+				std::unique_ptr<ReadingProcessorLODState>	mState;
+				DatabaseTable*								mTable = nullptr;
+				DatabaseTable*								mStateTable = nullptr;
 			};
 
 			bool addLOD(const std::string& id, int maxNumSeconds, utility::ErrorState& errorState)
 			{
-				std::string raw_table_name(mReadingType.get_name());
+				std::string state_table_name = id + "_state";
 
 				ReadingLOD lod;
 				lod.mMaxNumSeconds = maxNumSeconds;
-				lod.mTable = mDatabase->createTable(id, mSummaryType, errorState);
+				lod.mTable = mDatabase->getOrCreateTable(id, mSummaryType, errorState);
 				if (lod.mTable == nullptr)
 					return false;
 
-				if (!lod.mTable->createIndex(*mLODTimeStampPath, errorState))
+				if (!lod.mTable->getOrCreateIndex(*mLODTimeStampPath, errorState))
 					return false;
 
-				mLODs.push_back(lod);
+				lod.mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorLODState), errorState);
+				if (lod.mStateTable == nullptr)
+					return false;
+
+				std::vector<std::unique_ptr<rtti::Object>> state_object;
+				if (!lod.mStateTable->query("", state_object, errorState))
+					return false;
+
+				if (!errorState.check(state_object.size() <= 1, "Found invalid number of state objects"))
+					return false;
+
+				if (state_object.empty())
+					lod.mState = std::make_unique<ReadingProcessorLODState>();
+				else
+					lod.mState = rtti_cast<ReadingProcessorLODState>(state_object[0]);
+
+				mLODs.emplace_back(std::move(lod));
 				return true;
 			}
 
@@ -288,9 +410,12 @@ namespace nap
 			DataModel::EKeepRawReadings					mKeepRawReadings;
 			std::vector<ReadingLOD>						mLODs;
 			DataModel::SummaryFunction					mSummaryFunction;
-			DatabaseTable*								mRawTable;
+			DatabaseTable*								mRawTable = nullptr;
+			DatabaseTable*								mStateTable = nullptr;
 			std::vector<std::unique_ptr<rtti::Object>>	mRawReadingCache;
-			TimeStamp									mLastReadingTime;
+
+			// Runtime state, serialized to db
+			std::unique_ptr<ReadingProcessorState>		mState;
 		};
 
 		//////////////////////////////////////////////////////////////////////////

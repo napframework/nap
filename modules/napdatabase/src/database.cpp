@@ -48,7 +48,7 @@ namespace nap
 		return true;
 	}
 
-	DatabaseTable* Database::createTable(const std::string& tableID, const rtti::TypeInfo& objectType, utility::ErrorState& errorState)
+	DatabaseTable* Database::getOrCreateTable(const std::string& tableID, const rtti::TypeInfo& objectType, utility::ErrorState& errorState)
 	{
  		DatabaseTableMap::iterator pos = mTables.find(tableID);
  		if (pos != mTables.end())
