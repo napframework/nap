@@ -134,7 +134,7 @@ add_subdirectory(demos/copystamp)
 add_subdirectory(demos/copystamp/module)
 
 # Unit tests
-# add_subdirectory(unittests)
+add_subdirectory(unittests)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
