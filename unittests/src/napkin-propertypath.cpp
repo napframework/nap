@@ -140,6 +140,7 @@ TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 	REQUIRE(!regularPath.isInstance());
 	REQUIRE(regularPath.isValid());
 
+	// The path is an instance path if a root entity is provided
 	PropertyPath instancePath(*rootEntity, *comp, "Float");
 	REQUIRE(instancePath.isInstance());
 	REQUIRE(instancePath.isValid());
@@ -156,7 +157,6 @@ TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 
 	PropertyPath instancePath2(*rootEntity, *comp, "Float");
 	REQUIRE(instancePath2.getValue() == val2);
-
 
 	QString tempFilename = "__TEMP_NAPKIN_PROP_PATH_TEST.json";
 	doc->setFilename(tempFilename);

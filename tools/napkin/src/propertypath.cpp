@@ -102,8 +102,9 @@ nap::ComponentInstanceProperties& napkin::PropertyPath::getOrCreateInstanceProps
 	// No instance properties, create a new set
 	auto idx = mRootEntity->mInstanceProperties.size();
 	mRootEntity->mInstanceProperties.emplace_back();
-	mRootEntity->mInstanceProperties.at(idx).mTargetComponent = dynamic_cast<nap::Component*>(mObject);
-	auto instProps = &mRootEntity->mInstanceProperties;
+	auto targetComponent = dynamic_cast<nap::Component*>(mObject);
+	assert(targetComponent);
+	mRootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetComponent->mID, *targetComponent);
 	return mRootEntity->mInstanceProperties.at(idx);
 }
 
