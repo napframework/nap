@@ -17,15 +17,20 @@ namespace nap
 
 			bool init(utility::ErrorState& errorState)
 			{
+				rtti::Path timestamp_path;
+				timestamp_path.pushAttribute("TimeStamp");
+				timestamp_path.pushAttribute("Time");
+
+				mTimeStampPath = DatabasePropertyPath::sCreate(mReadingType, timestamp_path, errorState);
+				if (mTimeStampPath == nullptr)
+					return false;
+
 				std::string raw_table_name(mReadingType.get_name());
 				mRawTable = mDatabase->createTable(raw_table_name, mReadingType, errorState);
 				if (mRawTable == nullptr)
 					return false;
 
-				rtti::Path indexPath;
-				indexPath.pushAttribute("TimeStamp");
-				indexPath.pushAttribute("Time");
-				if (!mRawTable->createIndex(indexPath, errorState))
+				if (!mRawTable->createIndex(*mTimeStampPath, errorState))
 					return false;
 
 				if (!addLOD(utility::stringFormat("%s_%s", raw_table_name.c_str(), "Seconds"), 1, errorState))
@@ -93,7 +98,8 @@ namespace nap
 						objects.clear();
 						weighted_objects.clear();
 
-						if (!prevTable->query(utility::stringFormat("\"TimeStamp.Time\" >= %llu", prev_chunk_start_time_seconds * 1000), objects, errorState))
+						const std::string timestamp_column_name = mTimeStampPath->toString();
+						if (!prevTable->query(utility::stringFormat("%s >= %llu", timestamp_column_name.c_str(), prev_chunk_start_time_seconds * 1000), objects, errorState))
 							return false;
 
 						int num_active_seconds = 0;
@@ -227,10 +233,7 @@ namespace nap
 				if (lod.mTable == nullptr)
 					return false;
 
-				rtti::Path indexPath;
-				indexPath.pushAttribute("TimeStamp");
-				indexPath.pushAttribute("Time");
-				if (!lod.mTable->createIndex(indexPath, errorState))
+				if (!lod.mTable->createIndex(*mTimeStampPath, errorState))
 					return false;
 
 				mLODs.push_back(lod);
@@ -240,7 +243,8 @@ namespace nap
 			bool getWeightedObjects(ReadingLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
 			{
 				std::vector<std::unique_ptr<rtti::Object>> objects;
-				std::string query = utility::stringFormat("\"TimeStamp.Time\" >= %llu AND \"TimeStamp.Time\" < %llu", startTime * 1000, endTime * 1000);
+				const std::string timestamp_column_name = mTimeStampPath->toString();
+				std::string query = utility::stringFormat("%s >= %llu AND %s < %llu", timestamp_column_name.c_str(), startTime * 1000, timestamp_column_name.c_str(), endTime * 1000);
 				if (!lod.mTable->query(query, objects, errorState))
 					return false;
 
@@ -257,12 +261,13 @@ namespace nap
 			}
 
 		private:
-			Database*					mDatabase;
-			rtti::TypeInfo				mReadingType;
-			std::vector<ReadingLOD>		mLODs;
-			DataModel::SummaryFunction	mSummaryFunction;
-			DatabaseTable*				mRawTable;
-			TimeStamp					mLastReadingTime;
+			Database*								mDatabase;
+			std::unique_ptr<DatabasePropertyPath>	mTimeStampPath;
+			rtti::TypeInfo							mReadingType;
+			std::vector<ReadingLOD>					mLODs;
+			DataModel::SummaryFunction				mSummaryFunction;
+			DatabaseTable*							mRawTable;
+			TimeStamp								mLastReadingTime;
 		};
 
 		//////////////////////////////////////////////////////////////////////////

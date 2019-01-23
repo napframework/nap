@@ -450,6 +450,17 @@ namespace nap
 				mElements[--mLength] = PathElement();
 			}
 
+			inline int getLength() const
+			{
+				return mLength;
+			}
+
+			inline const PathElement& getElement(int index) const
+			{
+				assert(index < mLength);
+				return mElements[index];
+			}
+
 			/**
 			 * Equality comparison
 			 */
