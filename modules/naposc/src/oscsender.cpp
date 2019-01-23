@@ -7,8 +7,9 @@
 #include <osc/OscOutboundPacketStream.h>
 
 RTTI_BEGIN_CLASS(nap::OSCSender)
-RTTI_PROPERTY("IpAddress", &nap::OSCSender::mIPAddress, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Port", &nap::OSCSender::mPort, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("IpAddress", &nap::OSCSender::mIPAddress, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port", &nap::OSCSender::mPort, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BufferScale", &nap::OSCSender::mBufferScale, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // Max size in bytes of an OSC message
@@ -48,10 +49,12 @@ namespace nap
 	bool OSCSender::send(const OSCEvent& oscEvent)
 	{
 		std::size_t buffer_size = oscEvent.getSize();
+		buffer_size *= mBufferScale;
 		buffer_size += sizeof(osc::BeginMessage);
 		buffer_size += sizeof(osc::EndMessage);
 
 		// Grow the buffer based on the number of bytes that need allocation
+		// Always allocate more than the bare minimum, that's why we multiply by 2.
 		if (mBuffer.size() < buffer_size)
 			mBuffer.resize(buffer_size);
 
@@ -74,11 +77,11 @@ namespace nap
 
 		// Create the buffer
 		std::size_t buffer_size = mEventQueueDataSize;
+		buffer_size *= mBufferScale;
 		buffer_size += sizeof(osc::BeginMessage)	* mEventQueue.size();
 		buffer_size += sizeof(osc::EndMessage)		* mEventQueue.size();
 		buffer_size += sizeof(osc::BundleInitiator);
 		buffer_size += sizeof(osc::BundleTerminator);
-
 
 		// Grow the buffer based on the number of bytes that need allocation
 		if (mBuffer.size() < buffer_size)
