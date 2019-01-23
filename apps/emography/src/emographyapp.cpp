@@ -12,6 +12,7 @@
 #include <random>
 #include <database.h>
 #include <utility/fileutils.h>
+#include "emographysummaryfunctions.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmographyApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -26,20 +27,7 @@ namespace nap
 		if (!dataModel.init(path, DataModel::EKeepRawReadings::Disabled, errorState))
 			return false;
 
-		bool result = dataModel.registerType<StressIntensity>([](const std::vector<DataModel::WeightedObject>& inObjects)
-		{
-			float total = 0.0;
-			for (int index = 0; index < inObjects.size(); ++index)
-			{
-				rtti::Object* object = inObjects[index].mObject.get();
-				StressIntensityReadingSummary* stressIntensityReading = rtti_cast<StressIntensityReadingSummary>(object);
-				assert(stressIntensityReading);
-
-				total += stressIntensityReading->mObject.mValue * inObjects[index].mWeight;
-			}
-
-			return std::make_unique<StressIntensityReadingSummary>(StressIntensity(total));
-		}, errorState);
+		bool result = dataModel.registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, errorState);
 
 		return result;
 	}
@@ -167,7 +155,7 @@ namespace nap
 		if (!errorState.check(reading != nullptr, "Expected StressIntensityReading object"))
 			return false;
 
-		if (!errorState.check(reading->mObject.mValue == average, "Incorrect value returned"))
+		if (!errorState.check(std::abs(reading->mObject.mValue - average) < 0.001, "Incorrect value returned"))
 			return false;
 
 		if (!errorState.check(reading->mNumSecondsActive == 60, "Expected a single second of active data"))
@@ -336,20 +324,7 @@ namespace nap
 		if (!mDataModel.init("emography.db", DataModel::EKeepRawReadings::Disabled, error))
 			return false;
 
-		bool result = mDataModel.registerType<StressIntensity>([](const std::vector<DataModel::WeightedObject>& inObjects)
-		{
-			float total = 0.0;
-			for (int index = 0; index < inObjects.size(); ++index)
-			{
-				rtti::Object* object = inObjects[index].mObject.get();
-				StressIntensityReadingSummary* stressIntensityReading = rtti_cast<StressIntensityReadingSummary>(object);
-				assert(stressIntensityReading);
-
-				total += stressIntensityReading->mObject.mValue * inObjects[index].mWeight;
-			}
-
-			return std::make_unique<StressIntensityReadingSummary>(StressIntensity(total));
-		}, error);
+		bool result = mDataModel.registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error);
 
 		if (!result)
 			return false;

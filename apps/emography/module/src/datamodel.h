@@ -1,6 +1,9 @@
+#pragma once
+
 #include "utility/errorstate.h"
 #include "database.h"
 #include "nap/datetime.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {

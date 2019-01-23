@@ -134,7 +134,7 @@ namespace nap
 						}
 
 						std::unique_ptr<ReadingSummaryBase> collapsedObject = mSummaryFunction(weighted_objects);
-						assert(collapsedObject->get_type() == mReadingType);
+						assert(collapsedObject->get_type() == mSummaryType);
 						collapsedObject->mTimeStamp.mTimeStamp = prev_chunk_start_time_seconds * 1000;
 						collapsedObject->mNumSecondsActive = num_active_seconds;
 
@@ -205,7 +205,7 @@ namespace nap
 				}
 
 				std::unique_ptr<ReadingSummaryBase> collapsedObject = mSummaryFunction(weighted_objects);
-				assert(collapsedObject->get_type() == mReadingType);
+				assert(collapsedObject->get_type() == mSummaryType);
 				collapsedObject->mTimeStamp.mTimeStamp = startTime * 1000;
 				collapsedObject->mNumSecondsActive = total_active_seconds;
 
