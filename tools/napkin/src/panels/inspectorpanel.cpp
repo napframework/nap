@@ -266,6 +266,19 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 			return QVariant::fromValue(valueItem->getPath());
 		}
 	}
+	else if (role == Qt::BackgroundRole)
+	{
+		bool isInstance = false;
+		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
+		if (valueItem && valueItem->getPath().isInstance())
+			isInstance = true;
+
+		if (isInstance && valueItem->getPath().isOverridden())
+			return QVariant::fromValue<QColor>(QColor(Qt::yellow).lighter());
+
+		if (isInstance)
+			return QVariant::fromValue<QColor>(QColor(Qt::gray).lighter());
+	}
 	return QStandardItemModel::data(index, role);
 }
 

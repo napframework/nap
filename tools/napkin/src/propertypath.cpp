@@ -273,6 +273,11 @@ rttr::type napkin::PropertyPath::getWrappedType() const
 	return type.is_wrapper() ? type.get_wrapped_type() : type;
 }
 
+bool napkin::PropertyPath::isOverridden() const
+{
+	return targetAttribute();
+}
+
 bool napkin::PropertyPath::isValid() const
 {
 	if (mObject == nullptr)

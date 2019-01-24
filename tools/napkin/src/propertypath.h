@@ -177,6 +177,11 @@ namespace napkin
 		bool isInstance() const { return mRootEntity != nullptr; }
 
 		/**
+		 * @return True if this path represents an instance and the value has been overridden
+		 */
+		bool isOverridden() const;
+
+		/**
 		 * @return true when the path points to a property, false when it points to an Object
 		 */
 		bool hasProperty() const { return mPath.length() > 0; }
