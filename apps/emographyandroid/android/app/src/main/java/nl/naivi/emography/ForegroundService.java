@@ -26,7 +26,6 @@ public class ForegroundService extends Service
     private IntentFilter mIntentFilter;
     private boolean mStopThread = false;
     private String mOutputLog = "";
-    private long mServiceRunnerObjectPointer;
 
 
     @Override
@@ -81,10 +80,10 @@ public class ForegroundService extends Service
             public void run()
             {
                 // Initialisation
-                mServiceRunnerObjectPointer = napInit();
+                boolean initialized = napInit();
 
                 // Check init success
-                if (mServiceRunnerObjectPointer == -1)
+                if (!initialized)
                 {
                     Log.e(TAG, "Abandoning launch due to NAP initialisation failure");
                     Handler mainHandler = new Handler(ForegroundService.this.getMainLooper());
@@ -177,19 +176,19 @@ public class ForegroundService extends Service
 
     private void call(String data)
     {
-        napSendMessage(mServiceRunnerObjectPointer, data);
+        napSendMessage(data);
     }
 
 
     private void updateNapService()
     {
-        napUpdate(mServiceRunnerObjectPointer);
+        napUpdate();
     }
 
 
     private void shutdownNap()
     {
-        napShutdown(mServiceRunnerObjectPointer);
+        napShutdown();
     }
 
 
@@ -262,8 +261,8 @@ public class ForegroundService extends Service
         {
             @Override
             public void run() {
-            String s = pullLogFromApp(mServiceRunnerObjectPointer);
-            if (s.equals(""))
+            String s = pullLogFromApp();
+            if (s == null)
                 return;
 
             if (mOutputLog != "")
@@ -284,9 +283,10 @@ public class ForegroundService extends Service
     static {
         System.loadLibrary("nap-service");
     }
-    public native long napInit();
-    public native void napUpdate(long serviceRunnerObjectPointer);
-    public native void napSendMessage(long serviceRunnerObjectPointer, String data);
-    public native String pullLogFromApp(long serviceRunnerObjectPointer);
-    public native void napShutdown(long serviceRunnerObjectPointer);
+
+    public native boolean   napInit();
+    public native void      napUpdate();
+    public native void      napSendMessage(String data);
+    public native String    pullLogFromApp();
+    public native void      napShutdown();
 }
