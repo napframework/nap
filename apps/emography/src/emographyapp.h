@@ -61,6 +61,6 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mDashboardEntity = nullptr;		//< Dashboard entity
 		rtti::ObjectPtr<EntityInstance> mSummaryEntity = nullptr;		//< Summary entity
 		
-		emography::DataModel	mDataModel;
+		std::unique_ptr<emography::DataModel> mDataModel;
 	};
 }

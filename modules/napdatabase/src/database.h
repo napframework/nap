@@ -14,7 +14,7 @@ namespace nap
 	class NAPAPI Database final
 	{
 	public:
-		Database();
+		Database(rtti::Factory& factory);
 		~Database();
 
 		Database(const Database& rhs) = delete;
@@ -45,6 +45,7 @@ namespace nap
 		friend class DatabaseTable;
 		using DatabaseTableMap = std::unordered_map<std::string, std::unique_ptr<DatabaseTable>>;
 
+		rtti::Factory*		mFactory = nullptr;			///< Factory used to create objects when querying data
 		sqlite3*			mDatabase = nullptr;		///< Sqlite object
 		DatabaseTableMap	mTables;					///< Map from table ID to DatabaseTable
 	};

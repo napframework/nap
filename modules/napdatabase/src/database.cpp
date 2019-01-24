@@ -3,7 +3,8 @@
 
 namespace nap
 {
-	Database::Database()
+	Database::Database(rtti::Factory& factory) :
+		mFactory(&factory)
 	{
 	}
 
@@ -54,7 +55,7 @@ namespace nap
  		if (pos != mTables.end())
  			return pos->second.get();
 
- 		std::unique_ptr<DatabaseTable> table = std::make_unique<DatabaseTable>(*this, tableID, objectType);
+ 		std::unique_ptr<DatabaseTable> table = std::make_unique<DatabaseTable>(*this, *mFactory, tableID, objectType);
  		if (!table->init(propertiesToIgnore, errorState))
  			return nullptr;
 

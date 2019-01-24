@@ -460,7 +460,8 @@ namespace nap
 
 		//////////////////////////////////////////////////////////////////////////
 
-		DataModel::DataModel()
+		DataModel::DataModel(rtti::Factory& factory) :
+			mDatabase(factory)
 		{
 		}
 

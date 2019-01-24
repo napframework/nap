@@ -106,7 +106,7 @@ namespace nap
 
 			using SummaryFunction = std::function<std::unique_ptr<ReadingSummaryBase>(const std::vector<WeightedObject>&)>;
 
-			DataModel();
+			DataModel(rtti::Factory& factory);
 			~DataModel();
 
 			bool init(const std::string& path, EKeepRawReadings keepRawReadings, utility::ErrorState& errorState);

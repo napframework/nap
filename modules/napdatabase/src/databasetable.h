@@ -10,6 +10,11 @@ struct sqlite3_stmt;
 
 namespace nap
 {
+	namespace rtti
+	{
+		class Factory;
+	}
+
 	class Database;
 
 	class NAPAPI DatabasePropertyPath final
@@ -33,7 +38,7 @@ namespace nap
 	public:
 		using DatabasePropertyPathList = std::vector<DatabasePropertyPath>;
 
-		DatabaseTable(Database& database, const std::string& tableID, const rtti::TypeInfo& objectType);
+		DatabaseTable(Database& database, rtti::Factory& factory, const std::string& tableID, const rtti::TypeInfo& objectType);
 		~DatabaseTable();
 
 		DatabaseTable(const DatabaseTable& rhs) = delete;
@@ -54,6 +59,7 @@ namespace nap
 
 		using ColumnList = std::vector<Column>;
 
+		rtti::Factory*  mFactory = nullptr;
 		rtti::TypeInfo	mObjectType;
 		Database*		mDatabase;
 		std::string		mTableID;

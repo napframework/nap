@@ -269,12 +269,13 @@ namespace nap
 
 	static bool sRunUnitTests(utility::ErrorState& errorState)
 	{
+		rtti::Factory factory;
 		for (auto& test : sUnitTests)
 		{
 			if (!errorState.check(!utility::fileExists(test.mDatabasePath) || utility::deleteFile(test.mDatabasePath), "Failed to delete test database"))
 				return false;
 
-			DataModel dataModel;
+			DataModel dataModel(factory);
 			if (!sInitDataModel(dataModel, test.mDatabasePath, errorState))
 				return false;
 
@@ -322,10 +323,11 @@ namespace nap
 		mDashboardEntity = mScene->findEntity("DashboardEntity");
 		mHistoryEntity = mScene->findEntity("HistoryEntity");
 
-		if (!mDataModel.init("emography.db", DataModel::EKeepRawReadings::Disabled, error))
+		mDataModel = std::make_unique<DataModel>(mResourceManager->getFactory());
+		if (!mDataModel->init("emography.db", DataModel::EKeepRawReadings::Disabled, error))
 			return false;
 
-		bool result = mDataModel.registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error);
+		bool result = mDataModel->registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error);
 
 		if (!result)
 			return false;
@@ -733,7 +735,7 @@ namespace nap
 
 		std::vector<std::unique_ptr<ReadingSummaryBase>> readings;
 		utility::ErrorState errorState;
-		if (mDataModel.getRange<StressIntensityReading>(left, right, numSamples, readings, errorState))
+		if (mDataModel->getRange<StressIntensityReading>(left, right, numSamples, readings, errorState))
 		{
 			glm::vec2 prevPos(0.0, height);
 
