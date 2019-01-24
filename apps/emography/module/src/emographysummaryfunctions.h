@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "datamodel.h"
-#include "emographysnapshot.h"
+#include "emographyreading.h"
 
 namespace nap
 {

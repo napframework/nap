@@ -1,5 +1,8 @@
 #pragma once
 
+// Local Includes
+#include "emographyreading.h"
+
 // External Includes
 #include <utility/dllexport.h>
 #include <rtti/rtti.h>
@@ -48,5 +51,11 @@ namespace nap
 
 			float mValue = -1.0f;			///< Property: "Value" the stress related intensity value
 		};
+
+		using StressStateReading = Reading<EStressState>;
+		using StressStateReadingSummary = ReadingSummary<EStressState>;
+
+		using StressIntensityReading = Reading<StressIntensity>;
+		using StressIntensityReadingSummary = ReadingSummary<StressIntensity>;
 	}
 }

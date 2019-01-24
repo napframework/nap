@@ -7,12 +7,13 @@
 #include <scene.h>
 #include <imgui/imgui.h>
 #include <inputrouter.h>
-#include <emographysnapshot.h>
+#include <emographyreading.h>
 #include <emographystressdataviewcomponent.h>
 #include <random>
 #include <database.h>
 #include <utility/fileutils.h>
-#include "emographysummaryfunctions.h"
+#include <emographysummaryfunctions.h>
+#include <emographystress.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmographyApp)
 	RTTI_CONSTRUCTOR(nap::Core&)

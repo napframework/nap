@@ -1,5 +1,5 @@
 #include "datamodel.h"
-#include "emographysnapshot.h"
+#include "emographyreading.h"
 
 namespace nap
 {
@@ -214,7 +214,7 @@ namespace nap
 						assert(collapsedObject->get_type() == mSummaryType);
 
 						collapsedObject->mTimeStamp = prev_chunk_start_timestamp;
-						collapsedObject->mNumSecondsActive = num_active_seconds;
+						collapsedObject->mNumSecondsActive = lod_index == 0 ? 1 : num_active_seconds;
 
 						if (!lod.mTable->add(*collapsedObject, errorState))
 							return false;

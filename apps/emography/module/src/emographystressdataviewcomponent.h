@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "emographyrangedataviewcomponent.h"
-#include "emographysnapshot.h"
+#include "emographyreading.h"
 
 // External Includes
 
