@@ -211,7 +211,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 
-	DatabaseTable::DatabaseTable(Database& database, const std::string& tableID, const rtti::TypeInfo& objectType) :
+	DatabaseTable::DatabaseTable(Database& database, rtti::Factory& factory, const std::string& tableID, const rtti::TypeInfo& objectType) :
+		mFactory(&factory),
 		mObjectType(objectType),
 		mDatabase(&database)
 	{
@@ -314,11 +315,9 @@ namespace nap
 		if (!errorState.check(sqlite3_prepare_v2(&mDatabase->GetDatabase(), sql.c_str(), sql.size(), &statement, nullptr) == SQLITE_OK, "Failed to create query %s", sql.c_str()))
 			return false;
 
-		rtti::Factory factory;
-
 		while (sqlite3_step(statement) == SQLITE_ROW)
 		{
-			std::unique_ptr<rtti::Object> object(factory.create(mObjectType));
+			std::unique_ptr<rtti::Object> object(mFactory->create(mObjectType));
 			for (int column_index = 0; column_index < mColumns.size(); ++column_index)
 			{
 				const Column& column = mColumns[column_index];
