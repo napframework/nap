@@ -1,0 +1,53 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::APISignature",
+            "mID": "updateView",
+            "Arguments": [
+                {
+                    "Type": "nap::APILong",
+                    "mID": "startTime",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APILong",
+                    "mID": "endTime",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "samples",
+                    "Value": 0
+                }
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "ControllerEntity",
+            "Components": [
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "nap::APIComponent",
+                    "Methods": [
+                        "updateView"
+                    ]
+                },
+                {
+                    "Type": "nap::EmographyAPIComponent",
+                    "mID": "nap::EmographyAPIComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "ControllerEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        }
+    ]
+}
