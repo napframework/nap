@@ -33,6 +33,7 @@ namespace nap
 		ComponentPtr<RenderableMeshComponent>	mSunGlareMeshComponent;		///< Property: 'SunGlareMeshComponent' link to the sun glare mesh component
 		ComponentPtr<RenderableMeshComponent>	mStaticMeshComponent;		///< Property: 'StaticMeshComponent' link to the static mesh component
 		ComponentPtr<RenderableMeshComponent>	mPartyMeshComponent;		///< Property: 'PartyMeshComponent' link to the party mesh component
+		ComponentPtr<RenderableMeshComponent>	mSoundMeshComponent;		///< Property: 'SoundMeshComponent' link to the sound mesh component
 		ComponentPtr<OrbitComponent>			mOrbitComponent;			///< Property: 'OrbitComponent' link to the orbit component
 		EntityPtr								mLightRigEntity;			///< Property: 'LightRigEntity' link to the light rig entity
 	};
@@ -72,6 +73,7 @@ namespace nap
 		ComponentInstancePtr<RenderableMeshComponent>	mSunGlareMeshComponent = { this, &UpdateMaterialComponent::mSunGlareMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mStaticMeshComponent = { this, &UpdateMaterialComponent::mStaticMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent>	mPartyMeshComponent = { this, &UpdateMaterialComponent::mPartyMeshComponent };
+		ComponentInstancePtr<RenderableMeshComponent>	mSoundMeshComponent = { this, &UpdateMaterialComponent::mSoundMeshComponent };
 		ComponentInstancePtr<OrbitComponent>			mOrbitComponent = { this, &UpdateMaterialComponent::mOrbitComponent };
 		EntityInstancePtr								mLightRigEntity = { this, &UpdateMaterialComponent::mLightRigEntity };
 
@@ -103,6 +105,8 @@ namespace nap
 		float*		getPartyWaveCenterPtr();
 		float*		getPartyWaveHighlightLengthPtr();
 		float*		getPartyWaveHighlightIntensityPtr();
+
+		float*		getSoundTemperaturePtr();
 
 		float		mSunCloudsNoiseSpeed = 0.01f;
 		const float	mSunCloudsNoiseSpeedMax = 0.25f;

@@ -52,6 +52,7 @@ namespace nap
 		mVideoRenderTarget   = mResourceManager->findObject("VideoRenderTarget");
 		mStaticRenderTarget  = mResourceManager->findObject("StaticRenderTarget");
 		mPartyRenderTarget   = mResourceManager->findObject("PartyRenderTarget");
+		mSoundRenderTarget   = mResourceManager->findObject("SoundRenderTarget");
 		mCombineRenderTarget = mResourceManager->findObject("CombineRenderTarget");
 
 		// Look for Control Groups
@@ -75,6 +76,7 @@ namespace nap
 		mOrbitEnd = mScene->findEntity("OrbitEnd");
 		mOrbitSun = mScene->findEntity("OrbitSun");
 		mParty = mScene->findEntity("Party");
+		mSound = mScene->findEntity("Sound");
 
 		// Set render states
 		nap::RenderState render_state;
@@ -125,6 +127,8 @@ namespace nap
 			renderStatic(ortho_cam);
 		if (lightingModeComponent.isLightingModeRendered(LightingModes::Party))
 			renderParty(ortho_cam);
+		if (lightingModeComponent.isLightingModeRendered(LightingModes::Sound))
+			renderSound(ortho_cam);
 
 		// Render combination into back buffer
 		renderCombination(ortho_cam);
@@ -217,12 +221,25 @@ namespace nap
 	{
 		mRenderService->clearRenderTarget(mPartyRenderTarget->getTarget());
 
-		// Find the static plane and render it to the back-buffer
+		// Find the party plane and render it to the back-buffer
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
 		components_to_render.emplace_back(&(mParty->getComponent<nap::RenderableMeshComponentInstance>()));
 
-		// Render static plane to static texture
+		// Render party plane to static texture
 		mRenderService->renderObjects(mPartyRenderTarget->getTarget(), orthoCamera, components_to_render);
+	}
+
+
+	void RandomApp::renderSound(OrthoCameraComponentInstance& orthoCamera)
+	{
+		mRenderService->clearRenderTarget(mSoundRenderTarget->getTarget());
+
+		// Find the sound plane and render it to the back-buffer
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		components_to_render.emplace_back(&(mSound->getComponent<nap::RenderableMeshComponentInstance>()));
+
+		// Render sound plane to static texture
+		mRenderService->renderObjects(mSoundRenderTarget->getTarget(), orthoCamera, components_to_render);
 	}
 
 

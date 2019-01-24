@@ -12,6 +12,7 @@ RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
 	RTTI_PROPERTY("SunGlareMeshComponent", &nap::UpdateMaterialComponent::mSunGlareMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("StaticMeshComponent", &nap::UpdateMaterialComponent::mStaticMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PartyMeshComponent", &nap::UpdateMaterialComponent::mPartyMeshComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SoundMeshComponent", &nap::UpdateMaterialComponent::mSoundMeshComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OrbitComponent", &nap::UpdateMaterialComponent::mOrbitComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LightRigEntity", &nap::UpdateMaterialComponent::mLightRigEntity, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -245,5 +246,11 @@ namespace nap
 	float* UpdateMaterialComponentInstance::getPartyWaveHighlightIntensityPtr()
 	{
 		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveHighlightIntensity").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getSoundTemperaturePtr()
+	{
+		return &mSoundMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uTemperature").mValue;
 	}
 }

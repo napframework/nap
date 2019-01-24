@@ -50,6 +50,9 @@ namespace nap
 		case LightingModes::Party:
 			showPartyControls();
 			break;
+		case LightingModes::Sound:
+			showSoundControls();
+			break;
 		default:
 			break;
 		}
@@ -178,6 +181,15 @@ namespace nap
 			ImGui::SliderFloat("Noise Speed", &updateMaterial.mPartyWaveNoiseSpeed, 0.0f, updateMaterial.mPartyWaveNoiseSpeedMax);
 			ImGui::SliderFloat("Noise Scale", updateMaterial.getPartyWaveNoiseScalePtr(), updateMaterial.mPartyWaveNoiseScaleMin, updateMaterial.mPartyWaveNoiseScaleMax);
 			ImGui::SliderFloat("Noise Influence", updateMaterial.getPartyWaveNoiseInfluencePtr(), 0.0f, updateMaterial.mPartyWaveNoiseInfluenceMax);
+		}
+	}
+
+	void RandomGui::showSoundControls()
+	{
+		if (ImGui::CollapsingHeader("Sound", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
+			ImGui::SliderFloat("Sound Temperature", updateMaterial.getSoundTemperaturePtr(), 0.0f, 1.0f);
 		}
 	}
 }

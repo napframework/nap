@@ -414,6 +414,7 @@
                     "SunGlareMeshComponent": "./LightingModes/Sun/SunGlare/nap::SunGlareMeshComponent",
                     "StaticMeshComponent": "./LightingModes/Static/nap::StaticMeshComponent",
                     "PartyMeshComponent": "./LightingModes/Party/nap::PartyMeshComponent",
+                    "SoundMeshComponent": "./LightingModes/Sound/nap::SoundMeshComponent",
                     "OrbitComponent": "./Orbit/nap::OrbitComponent",
                     "LightRigEntity": "LightRig"
                 },
@@ -426,7 +427,8 @@
                     "SunColorTexture": "SunColorTexture",
                     "VideoColorTexture": "VideoColorTexture",
                     "StaticColorTexture": "StaticColorTexture",
-                    "PartyColorTexture": "PartyColorTexture"
+                    "PartyColorTexture": "PartyColorTexture",
+                    "SoundColorTexture": "SoundColorTexture"
                 }
             ],
             "Children": [
@@ -520,7 +522,8 @@
                 "Party",
                 "Static",
                 "Sun",
-                "Video"
+                "Video",
+                "Sound"
             ]
         },
         {
@@ -985,6 +988,63 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "Sound",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_13",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::SoundMeshComponent",
+                    "Mesh": "GenericPlaneMesh1024",
+                    "MaterialInstance": {
+                        "Material": "SoundMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_46",
+                                "Name": "uTemperature",
+                                "Value": 0.5
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "Static",
             "Components": [
                 {
@@ -1019,7 +1079,7 @@
                             {
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_16",
-                                "Name": "uWarmth",
+                                "Name": "uTemperature",
                                 "Value": 0.5
                             }
                         ],
@@ -1586,6 +1646,27 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "SoundMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_45",
+                    "Name": "uTemperature",
+                    "Value": 0.0
+                }
+            ],
+            "Shader": "SoundShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "StaticMaterial",
             "Uniforms": [
                 {
@@ -1821,6 +1902,18 @@
         },
         {
             "Type": "nap::RenderTarget",
+            "mID": "SoundRenderTarget",
+            "mColorTexture": "SoundColorTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
             "mID": "StaticRenderTarget",
             "mColorTexture": "StaticColorTexture",
             "mDepthTexture": "GenericDepthTexture1024",
@@ -1903,6 +1996,21 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "PartyColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "SoundColorTexture",
             "Parameters": {
                 "MinFilter": "Linear",
                 "MaxFilter": "Linear",
@@ -2015,6 +2123,12 @@
             "mID": "PartyShader",
             "mVertShader": "shaders/party.vert",
             "mFragShader": "shaders/party.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "SoundShader",
+            "mVertShader": "shaders/sound.vert",
+            "mFragShader": "shaders/sound.frag"
         },
         {
             "Type": "nap::Shader",

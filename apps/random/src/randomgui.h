@@ -35,6 +35,7 @@ namespace nap
 		void showVideoControls();
 		void showStaticControls();
 		void showPartyControls();
+		void showSoundControls();
 
 		// Layout sizes
 		const float guiWindowWidth = 400.0f;
