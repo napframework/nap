@@ -80,7 +80,7 @@ namespace examplewrapper
 
      nap::EmographyAndroidApp& getApp(jlong lp)
      {
-         nap::ServiceRunner<nap::EmographyServiceApp, nap::AppEventHandler>& service_runner = getServiceRunner(lp);
+         nap::ServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler>& service_runner = getServiceRunner(lp);
          return service_runner.getApp();
      }
 }
