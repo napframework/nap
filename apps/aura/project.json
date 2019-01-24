@@ -1,6 +1,6 @@
 {
-    "title": "Etherdream",
-    "version": "0.2.0",
+    "title": "Aura",
+    "version": "0.2.1",
     "modules": [
         "mod_napimgui",
         "mod_aura",

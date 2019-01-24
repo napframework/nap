@@ -111,6 +111,9 @@ napkin::RootEntityItem::RootEntityItem(nap::RootEntity& e)
 		appendRow(new ComponentInstanceItem(*comp, *this));
 	for (auto entity : e.mEntity->mChildren)
 		appendRow(new EntityInstanceItem(*entity, *this));
+
+	auto rootProps = &e.mInstanceProperties;
+	rootProps->empty();
 }
 
 nap::RootEntity& napkin::RootEntityItem::rootEntity()
@@ -129,3 +132,4 @@ nap::RootEntity& napkin::ComponentInstanceItem::rootEntity()
 {
 	return mEntityItem.rootEntity();
 }
+

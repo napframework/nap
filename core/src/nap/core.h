@@ -8,13 +8,13 @@
 #include <rtti/factory.h>
 #include <rtti/rtti.h>
 #include <unordered_set>
-#include <utility/datetimeutils.h>
+#include <utility/dllexport.h>
 
 // Core Includes
 #include "modulemanager.h"
 #include "resourcemanager.h"
 #include "service.h"
-#include "utility/dllexport.h"
+#include "timer.h"
 
 namespace nap
 {
@@ -111,7 +111,7 @@ namespace nap
 		/**
 		* @return start time point
 		*/
-		utility::HighResTimeStamp getStartTime() const;
+		HighResTimeStamp getStartTime() const;
 
 		/**
 		 * @return number of frames per second
@@ -207,7 +207,7 @@ namespace nap
 		ServiceList mServices;
 
 		// Timer
-		utility::HighResolutionTimer mTimer;
+		HighResolutionTimer mTimer;
 
 		// Amount of milliseconds the app is running
 		uint32 mLastTimeStamp = 0;

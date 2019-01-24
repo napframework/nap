@@ -18,10 +18,6 @@ namespace nap
 
 	bool FrustumSyncComponentInstance::init(utility::ErrorState& errorState)
 	{
-		FrustumSyncComponent* resource = getComponent<FrustumSyncComponent>();
-
-		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
-		
 		if (!errorState.check(getEntityInstance()->getChildren().size() == 1, "Expected one child"))
 			return false;
 

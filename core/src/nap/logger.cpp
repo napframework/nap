@@ -7,7 +7,7 @@ namespace nap
 {
 
 	LogMessage::LogMessage(const LogLevel& lvl, const std::string& msg)
-		: mLevel(&lvl), mMessage(msg), mTimeStamp(utility::getCurrentTime())
+		: mLevel(&lvl), mMessage(msg), mTimeStamp(getCurrentTime())
 	{}
 
 	std::string basicLogMessageFormatter(const LogMessage& msg)
@@ -17,7 +17,7 @@ namespace nap
 
 	std::string timestampLogMessageFormatter(const LogMessage& msg)
 	{
-		return utility::timeFormat(msg.getTimestamp()) + " " + basicLogMessageFormatter(msg);
+		return timeFormat(msg.getTimestamp()) + " " + basicLogMessageFormatter(msg);
 	}
 
 	LogHandler::LogHandler()
@@ -104,7 +104,7 @@ namespace nap
 	{
 		// filename-safe time format
 		std::string timeformat = "%Y-%m-%d_%H-%M-%S_%ms";
-		std::string timestamp = utility::timeFormat(utility::getCurrentTime(), timeformat);
+		std::string timestamp = timeFormat(getCurrentTime(), timeformat);
 		std::string filename = utility::stringFormat("%s/%s_%s.log",
 													 directory.c_str(),
 													 prefix.c_str(),

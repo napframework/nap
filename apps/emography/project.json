@@ -1,0 +1,8 @@
+{
+    "title": "Emography",
+    "version": "0.2.1",
+    "modules": [
+        "mod_napapp",
+        "mod_emography"
+    ]
+}

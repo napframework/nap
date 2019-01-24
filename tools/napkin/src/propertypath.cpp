@@ -102,8 +102,9 @@ nap::ComponentInstanceProperties& napkin::PropertyPath::getOrCreateInstanceProps
 	// No instance properties, create a new set
 	auto idx = mRootEntity->mInstanceProperties.size();
 	mRootEntity->mInstanceProperties.emplace_back();
-	mRootEntity->mInstanceProperties.at(idx).mTargetComponent = dynamic_cast<nap::Component*>(mObject);
-	auto instProps = &mRootEntity->mInstanceProperties;
+	auto targetComponent = dynamic_cast<nap::Component*>(mObject);
+	assert(targetComponent);
+	mRootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetComponent->mID, *targetComponent);
 	return mRootEntity->mInstanceProperties.at(idx);
 }
 
@@ -152,18 +153,13 @@ nap::TargetAttribute& napkin::PropertyPath::getOrCreateTargetAttribute()
 
 rttr::variant napkin::PropertyPath::getValue() const
 {
-	if (isInstance())
+	auto targetAttr = targetAttribute();
+	if (targetAttr)
 	{
-		auto targetAttr = targetAttribute();
-		if (targetAttr)
-		{
-			if (getType() == rttr::type::get<float>())
-				return dynamic_cast<nap::TypedInstancePropertyValue<float>*>(targetAttr->mValue.get())->mValue;
-		}
+		if (getType() == rttr::type::get<float>())
+			return dynamic_cast<nap::TypedInstancePropertyValue<float>*>(targetAttr->mValue.get())->mValue;
 	}
-
-	rttr::property prop = getProperty();
-	return prop.get_value(mObject);
+	return resolve().getValue();
 }
 
 void napkin::PropertyPath::setValue(rttr::variant value)
@@ -180,12 +176,8 @@ void napkin::PropertyPath::setValue(rttr::variant value)
 		}
 		return;
 	}
-	qInfo() << QString::fromStdString(toString());
-	qInfo() << QString::fromStdString(getProperty().get_name().data());
-	auto res = resolve();
-	auto prop = res.getProperty();
 
-	bool success = prop.set_value(mObject, value);
+	bool success = resolve().setValue(value);
 	assert(success);
 }
 
@@ -464,10 +456,10 @@ std::vector<napkin::PropertyPath> napkin::PropertyPath::getProperties(int flags)
 	std::vector<napkin::PropertyPath> props;
 
 	iterateProperties([&props](const auto& path)
-	{
-		props.emplace_back(path);
-		return true;
-	}, flags);
+					  {
+						  props.emplace_back(path);
+						  return true;
+					  }, flags);
 
 	return props;
 }

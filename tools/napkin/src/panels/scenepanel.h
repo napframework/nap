@@ -71,6 +71,8 @@ namespace napkin
 		 */
 		void menuHook(QMenu& menu);
 
+		nap::qt::FilterTreeView& treeView() { return mFilterView; }
+
 	Q_SIGNALS:
 		void selectionChanged(QList<PropertyPath> obj);
 

@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 #include <color.h>
 #include <nglutils.h>
 
@@ -50,7 +50,7 @@ namespace nap
 	private:
 		AtmosApp&				mApp;				///< The actual atmos appliation we build the gui for
 		bool					mHide = false;
-		utility::DateTime		mDateTime;
+		DateTime				mDateTime;
 		RGBColor8				mTextColor = { 0xC8, 0x69, 0x69 };
 		glm::vec4				mBackgroundColor;
 		bool					mTransparent = false;
