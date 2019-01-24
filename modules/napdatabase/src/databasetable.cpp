@@ -213,18 +213,24 @@ namespace nap
 		sqlite3_finalize(mInsertStatement);
 	}
 
-	bool DatabaseTable::init(utility::ErrorState& errorState)
+	bool DatabaseTable::init(const DatabasePropertyPathList& propertiesToIgnore, utility::ErrorState& errorState)
 	{
 		sqlite3& database = mDatabase->GetDatabase();
 	
 		rtti::Path current_path;
- 		bool result = sVisitRTTIPropertyTypes(mObjectType, current_path, [this](const rtti::Property& property, const rtti::Path& path)
+ 		bool result = sVisitRTTIPropertyTypes(mObjectType, current_path, [this, &propertiesToIgnore](const rtti::Property& property, const rtti::Path& path)
 		{
 			utility::ErrorState errorState;
 			std::unique_ptr<DatabasePropertyPath> database_path = DatabasePropertyPath::sCreate(mObjectType, path, errorState);
 			assert(database_path != nullptr);
 
-			mColumns.push_back({ std::move(database_path), sGetTypeString(property.get_type()) });
+			DatabasePropertyPathList::const_iterator ignored_property_pos = std::find_if(propertiesToIgnore.begin(), propertiesToIgnore.end(), [&database_path](const DatabasePropertyPath& value)
+			{
+				return value.getRTTIPath() == database_path->getRTTIPath();
+			});
+
+			if (ignored_property_pos == propertiesToIgnore.end())
+				mColumns.push_back({ std::move(database_path), sGetTypeString(property.get_type()) });
 			
 		}, errorState);
 
