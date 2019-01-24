@@ -37,6 +37,16 @@ namespace nap
 {
 	namespace emography
 	{
+		static TimeStamp sSecondsToTimeStamp(uint64_t seconds)
+		{
+			return TimeStamp(SystemTimeStamp(Seconds(seconds)));
+		}
+
+		static uint64_t sTimeStampToSeconds(TimeStamp timeStamp)
+		{
+			return std::chrono::time_point_cast<Seconds>(timeStamp.toSystemTime()).time_since_epoch().count();
+		}
+
 		class ReadingProcessor final
 		{
 		public:
@@ -55,6 +65,9 @@ namespace nap
 				timestamp_path.pushAttribute("TimeStamp");
 				timestamp_path.pushAttribute("Time");
 
+				rtti::Path id_path;
+				id_path.pushAttribute(rtti::sIDPropertyName);
+
 				mRawTimeStampPath = DatabasePropertyPath::sCreate(mReadingType, timestamp_path, errorState);
 				if (mRawTimeStampPath == nullptr)
 					return false;
@@ -63,9 +76,13 @@ namespace nap
 				if (mLODTimeStampPath == nullptr)
 					return false;
 
+				std::unique_ptr<DatabasePropertyPath> raw_id_path = DatabasePropertyPath::sCreate(mReadingType, id_path, errorState);
+				if (raw_id_path == nullptr)
+					return false;
+
 				// Create raw table and index
 				std::string raw_table_name(mReadingType.get_name());
-				mRawTable = mDatabase->getOrCreateTable(raw_table_name, mReadingType, errorState);
+				mRawTable = mDatabase->getOrCreateTable(raw_table_name, mReadingType, { *raw_id_path }, errorState);
 				if (mRawTable == nullptr)
 					return false;
 
@@ -74,8 +91,12 @@ namespace nap
 
 				// Create processor state table
 				{
+					std::unique_ptr<DatabasePropertyPath> processor_id_path = DatabasePropertyPath::sCreate(RTTI_OF(ReadingProcessorState), id_path, errorState);
+					if (processor_id_path == nullptr)
+						return false;
+
 					std::string state_table_name = utility::stringFormat("%s_state", mReadingType.get_name().data());
-					mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorState), errorState);
+					mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorState), { *processor_id_path }, errorState);
 					if (mStateTable == nullptr)
 						return false;
 
@@ -141,7 +162,8 @@ namespace nap
 			bool flush(TimeStamp timestamp, utility::ErrorState& errorState)
 			{
 				bool any_lod_flushed = false;
-				uint64_t timestamp_in_seconds = timestamp.mTimeStamp / 1000;
+
+				uint64_t timestamp_seconds = sTimeStampToSeconds(timestamp);
 
 				std::vector<std::unique_ptr<rtti::Object>> objects;
 				std::vector<DataModel::WeightedObject> weighted_objects;
@@ -150,7 +172,7 @@ namespace nap
 				for (int lod_index = 0; lod_index < mLODs.size(); ++lod_index)
 				{
 					ReadingLOD& lod = mLODs[lod_index];
-					uint64_t chunk_index = timestamp_in_seconds / lod.mMaxNumSeconds;
+					uint64_t chunk_index = timestamp_seconds / lod.mMaxNumSeconds;
 					if (chunk_index == lod.mState->mCurrentChunkIndex)
 						break;
 
@@ -159,7 +181,8 @@ namespace nap
 						if (chunk_index < lod.mState->mCurrentChunkIndex)
 							break;
 
-						uint64_t prev_chunk_start_time_seconds = lod.mState->mCurrentChunkIndex * lod.mMaxNumSeconds;
+						// We have to convert from seconds to Timestamp's time format, as this is the format that was written to the database
+						TimeStamp prev_chunk_start_timestamp = sSecondsToTimeStamp(lod.mState->mCurrentChunkIndex * lod.mMaxNumSeconds);
 
 						objects.clear();
 						weighted_objects.clear();
@@ -171,7 +194,7 @@ namespace nap
 						else
 						{
 							const std::string timestamp_column_name = mRawTimeStampPath->toString();
-							if (!prevTable->query(utility::stringFormat("%s >= %llu", timestamp_column_name.c_str(), prev_chunk_start_time_seconds * 1000), objects, errorState))
+							if (!prevTable->query(utility::stringFormat("%s >= %llu", timestamp_column_name.c_str(), prev_chunk_start_timestamp.mTimeStamp), objects, errorState))
 								return false;
 						}
 
@@ -189,7 +212,8 @@ namespace nap
 
 						std::unique_ptr<ReadingSummaryBase> collapsedObject = mSummaryFunction(weighted_objects);
 						assert(collapsedObject->get_type() == mSummaryType);
-						collapsedObject->mTimeStamp.mTimeStamp = prev_chunk_start_time_seconds * 1000;
+
+						collapsedObject->mTimeStamp = prev_chunk_start_timestamp;
 						collapsedObject->mNumSecondsActive = num_active_seconds;
 
 						if (!lod.mTable->add(*collapsedObject, errorState))
@@ -278,7 +302,7 @@ namespace nap
 
 				std::unique_ptr<ReadingSummaryBase> collapsedObject = mSummaryFunction(weighted_objects);
 				assert(collapsedObject->get_type() == mSummaryType);
-				collapsedObject->mTimeStamp.mTimeStamp = startTime * 1000;
+				collapsedObject->mTimeStamp = sSecondsToTimeStamp(startTime);
 				collapsedObject->mNumSecondsActive = total_active_seconds;
 
 				readings.emplace_back(std::move(collapsedObject));
@@ -287,8 +311,8 @@ namespace nap
 
 			bool getRange(TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 			{
-				uint64_t start_seconds = startTime.mTimeStamp / 1000;
-				uint64_t end_seconds = endTime.mTimeStamp / 1000;
+				uint64_t start_seconds = sTimeStampToSeconds(startTime);
+				uint64_t end_seconds = sTimeStampToSeconds(endTime);
 				uint64_t full_range = end_seconds - start_seconds;
 				double step = (double)full_range / numValues;
 				double curOffset = (double)start_seconds;
@@ -352,16 +376,27 @@ namespace nap
 			{
 				std::string state_table_name = id + "_state";
 
+				rtti::Path id_path;
+				id_path.pushAttribute(rtti::sIDPropertyName);
+
+				std::unique_ptr<DatabasePropertyPath> lod_id_path = DatabasePropertyPath::sCreate(mSummaryType, id_path, errorState);
+				if (lod_id_path == nullptr)
+					return false;
+
 				ReadingLOD lod;
 				lod.mMaxNumSeconds = maxNumSeconds;
-				lod.mTable = mDatabase->getOrCreateTable(id, mSummaryType, errorState);
+				lod.mTable = mDatabase->getOrCreateTable(id, mSummaryType, { *lod_id_path }, errorState);
 				if (lod.mTable == nullptr)
 					return false;
 
 				if (!lod.mTable->getOrCreateIndex(*mLODTimeStampPath, errorState))
 					return false;
 
-				lod.mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorLODState), errorState);
+				std::unique_ptr<DatabasePropertyPath> state_id_path = DatabasePropertyPath::sCreate(RTTI_OF(ReadingProcessorLODState), id_path, errorState);
+				if (state_id_path == nullptr)
+					return false;
+
+				lod.mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorLODState), { *state_id_path }, errorState);
 				if (lod.mStateTable == nullptr)
 					return false;
 
@@ -385,7 +420,12 @@ namespace nap
 			{
 				std::vector<std::unique_ptr<rtti::Object>> objects;
 				const std::string timestamp_column_name = mLODTimeStampPath->toString();
-				std::string query = utility::stringFormat("%s >= %llu AND %s < %llu", timestamp_column_name.c_str(), startTime * 1000, timestamp_column_name.c_str(), endTime * 1000);
+
+				// Convert to TimeStamp time format, because this is the format that was serialized to the database
+				TimeStamp start_timestamp = sSecondsToTimeStamp(startTime);
+				TimeStamp end_timestamp = sSecondsToTimeStamp(endTime);
+
+				std::string query = utility::stringFormat("%s >= %llu AND %s < %llu", timestamp_column_name.c_str(), start_timestamp.mTimeStamp, timestamp_column_name.c_str(), end_timestamp.mTimeStamp);
 				if (!lod.mTable->query(query, objects, errorState))
 					return false;
 

@@ -31,13 +31,15 @@ namespace nap
 	class NAPAPI DatabaseTable final
 	{
 	public:
+		using DatabasePropertyPathList = std::vector<DatabasePropertyPath>;
+
 		DatabaseTable(Database& database, const std::string& tableID, const rtti::TypeInfo& objectType);
 		~DatabaseTable();
 
 		DatabaseTable(const DatabaseTable& rhs) = delete;
 		DatabaseTable& operator=(const DatabaseTable& rhs) = delete;
 
-		bool init(utility::ErrorState& errorState);
+		bool init(const DatabasePropertyPathList& propertiesToIgnore, utility::ErrorState& errorState);
 		bool getOrCreateIndex(const DatabasePropertyPath& propertyPath, utility::ErrorState& errorState);
 		bool add(const rtti::Object& object, utility::ErrorState& errorState);
 		bool query(const std::string& whereClause, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState);
