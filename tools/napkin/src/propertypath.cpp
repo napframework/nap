@@ -170,7 +170,7 @@ void napkin::PropertyPath::setValue(rttr::variant value)
 		if (getType() == rttr::type::get<float>())
 		{
 			auto propValue = new nap::TypedInstancePropertyValue<float>();
-			propValue->mID = nap::utility::stringFormat("%s_instanceprop", toString().c_str());
+			propValue->mID = nap::utility::stringFormat("%s_instanceprop", mPath.toString().c_str());
 			propValue->mValue = value.get_value<float>();
 			targetAttr.mValue = propValue;
 		}
