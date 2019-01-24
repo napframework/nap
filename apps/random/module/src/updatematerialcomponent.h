@@ -122,7 +122,7 @@ namespace nap
 
 		float		mPartyCenter[2] = { 0.2f, 0.8f };
 		int			mPartyBPM = 4;
-		int			mPartyBPMMin = 0;
+		int			mPartyBPMMin = -240;
 		int			mPartyBPMMax = 240;
 		int			mPartyWaveCountMax = 12;
 		float		mPartyWaveLengthMin = 0.1f;

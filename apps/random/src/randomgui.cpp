@@ -168,7 +168,7 @@ namespace nap
 		{
 			if (ImGui::SliderFloat2("Center", updateMaterial.mPartyCenter, 0.0f, 1.0f))
 				updateMaterial.updatePartyCenter();
-			ImGui::SliderInt("BPM", &updateMaterial.mPartyBPM, updateMaterial.mPartyBPMMin, updateMaterial.mPartyBPMMax);			
+			ImGui::DragInt("BPM", &updateMaterial.mPartyBPM, 0.25f, updateMaterial.mPartyBPMMin, updateMaterial.mPartyBPMMax);			
 		}
 		if (ImGui::CollapsingHeader("Waves", ImGuiTreeNodeFlags_DefaultOpen))
 		{
