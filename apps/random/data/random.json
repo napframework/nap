@@ -402,18 +402,18 @@
                     "LightingModeComponent": "./nap::LightingModeComponent",
                     "CombinationComponent": "./LightRig/nap::ApplyCombinationComponent",
                     "UpdateMaterialComponent": "./nap::UpdateMaterialComponent",
-                    "SelectVideoComponent": "./Video/nap::SelectVideoComponent",
+                    "SelectVideoComponent": "./LightingModes/Video/nap::SelectVideoComponent",
                     "ControlGroups": "ControlGroups"
                 },
                 {
                     "Type": "nap::UpdateMaterialComponent",
                     "mID": "nap::UpdateMaterialComponent",
                     "CameraTransformComponent": "./SceneCamera/nap::SceneCameraTransformComponent",
-                    "CombinationMeshComponent": "./Combination/nap::CombinationMeshComponent",
-                    "SunCloudsMeshComponent": "./Sun/SunClouds/nap::SunCloudsMeshComponent",
-                    "SunGlareMeshComponent": "./Sun/SunGlare/nap::SunGlareMeshComponent",
-                    "StaticMeshComponent": "./Static/nap::StaticMeshComponent",
-                    "PartyMeshComponent": "./Party/nap::PartyMeshComponent",
+                    "CombinationMeshComponent": "./LightingModes/Combination/nap::CombinationMeshComponent",
+                    "SunCloudsMeshComponent": "./LightingModes/Sun/SunClouds/nap::SunCloudsMeshComponent",
+                    "SunGlareMeshComponent": "./LightingModes/Sun/SunGlare/nap::SunGlareMeshComponent",
+                    "StaticMeshComponent": "./LightingModes/Static/nap::StaticMeshComponent",
+                    "PartyMeshComponent": "./LightingModes/Party/nap::PartyMeshComponent",
                     "OrbitComponent": "./Orbit/nap::OrbitComponent",
                     "LightRigEntity": "LightRig"
                 },
@@ -421,7 +421,7 @@
                     "Type": "nap::LightingModeComponent",
                     "mID": "nap::LightingModeComponent",
                     "UpdateMaterialComponent": "./nap::UpdateMaterialComponent",
-                    "SelectVideoComponent": "./Video/nap::SelectVideoComponent",
+                    "SelectVideoComponent": "./LightingModes/Video/nap::SelectVideoComponent",
                     "OffColorTexture": "OffColorTexture",
                     "SunColorTexture": "SunColorTexture",
                     "VideoColorTexture": "VideoColorTexture",
@@ -521,7 +521,7 @@
                 "Static",
                 "Sun",
                 "Video"
-			]
+            ]
         },
         {
             "Type": "nap::Entity",
