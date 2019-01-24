@@ -8,8 +8,8 @@ endif()
 project(emographyandroid)
 
 #add all cpp files to SOURCES
-set(SOURCES src/emographyserviceapp.cpp src/main.cpp)
-set(HEADERS src/emographyserviceapp.h)
+set(SOURCES src/emographyandroidapp.cpp src/main.cpp)
+set(HEADERS src/emographyandroidapp.h)
 file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
 file(GLOB DATA data/*)
 

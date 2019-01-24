@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "emographyserviceapp.h"
+#include "emographyandroidapp.h"
 
 // Nap includes
 #include <nap/logger.h>
@@ -16,8 +16,8 @@
 		nap::Core core;
 
 		// Create app runner using default event handler
-		nap::ServiceRunner<nap::EmographyServiceApp, nap::AppEventHandler> service_runner(core);
-		nap::EmographyServiceApp& app = service_runner.getApp();
+		nap::ServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler> service_runner(core);
+		nap::EmographyAndroidApp& app = service_runner.getApp();
 
 		nap::utility::ErrorState error;
 		if (!service_runner.init(error))
@@ -32,7 +32,6 @@
 			service_runner.update();
 			app.call("data");
 			nap::Logger::info(app.pullLogAndFlush());
-
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		}
 

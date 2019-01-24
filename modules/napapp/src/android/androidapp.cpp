@@ -1,20 +1,22 @@
-#include "androidserviceapp.h"
+// Local Includes
+#include "androidapp.h"
 
+// External Includes
 #include <nap/logger.h>
-
 #include <android/asset_manager_jni.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AndroidServiceApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AndroidApp)
     RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 namespace nap
 {
-    AndroidServiceApp::AndroidServiceApp(Core& core) : App(core)
+    AndroidApp::AndroidApp(Core& core) : App(core)
     {
     }
 
-    void AndroidServiceApp::populateAndroidVars(JNIEnv *jniEnv, jobject androidContextObject) 
+
+    void AndroidApp::populateAndroidVars(JNIEnv *jniEnv, jobject androidContextObject)
     {
         // Get Java VM
         jniEnv->GetJavaVM(&mAndroidJvm);
@@ -27,7 +29,8 @@ namespace nap
         getCore().setAndroidInitialisationVars(getAssetManager(), getNativeLibDir());
     }
 
-    JNIEnv* AndroidServiceApp::getEnv() 
+
+    JNIEnv* AndroidApp::getEnv()
     {
         JNIEnv* env = nullptr;
         // JNI 1.6 is supported back to very early versions of Android, pre v2.0
@@ -49,7 +52,8 @@ namespace nap
         return nullptr;
     }
 
-    std::string AndroidServiceApp::getNativeLibDir()
+
+    std::string AndroidApp::getNativeLibDir()
     {
         // Get JNI env
         JNIEnv *env = getEnv();
@@ -81,7 +85,8 @@ namespace nap
         return s;
     }
 
-    AAssetManager* AndroidServiceApp::getAssetManager()
+
+    AAssetManager* AndroidApp::getAssetManager()
     {
         // Get JNI env
         JNIEnv *env = getEnv();

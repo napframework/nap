@@ -13,11 +13,11 @@
 
 namespace nap
 {
-    class NAPAPI AndroidServiceApp : public App
+    class NAPAPI AndroidApp : public App
     {
        RTTI_ENABLE(App)
     public:
-        AndroidServiceApp(Core& core);
+        AndroidApp(Core& core);
 
         /**
         * Populate Android variables. JVM and Context object into the app, and the AssetManager and shared libs directory into core
@@ -34,6 +34,10 @@ namespace nap
 
     protected:
         std::string getNativeLibDir();
+
+		/**
+		 * @return the android asset manager, which provides access to an application's raw assets
+		 */
         AAssetManager* getAssetManager();
 
         JavaVM*	mAndroidJvm; 						// The JNI environment
