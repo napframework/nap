@@ -537,6 +537,17 @@ namespace nap
 			return true;
 		}
 
+		void OnMouseEnter(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown)
+		{
+
+		}
+
+		void OnMouseLeave(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown)
+		{
+			mLastCursorTimePos = -1;
+			SetModeState(EModeState::Finished);
+		}
+
 		void OnMouseMove(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown)
 		{
 			if (IsModeStarted())
@@ -555,7 +566,7 @@ namespace nap
 						double total_time = mDragStartRightTime - mDragStartLeftTime;
 						float time_moved = (float)((drag_delta.x / mWidthInPixels) * total_time);
 
-						MoveTo(mDragStartLeftTime + time_moved);
+						MoveTo(mDragStartLeftTime + (uint64_t)time_moved);
 					}
 					else
 					{
@@ -624,14 +635,14 @@ namespace nap
 			uint64_t newEndPosition = endPosition;
 
 			// If one of the sides is clamped, correct the other side
-			if (newStartPosition != inStartPosition)
-			{
-				newEndPosition = newStartPosition + curRange;
-			}
-			else if (newEndPosition != endPosition)
-			{
-				newStartPosition = newEndPosition - curRange;
-			}
+// 			if (newStartPosition != inStartPosition)
+// 			{
+// 				newEndPosition = newStartPosition + curRange;
+// 			}
+// 			else if (newEndPosition != endPosition)
+// 			{
+// 				newStartPosition = newEndPosition - curRange;
+// 			}
 
 			mTimeLeft = newStartPosition;
 			mTimeRight = newEndPosition;
@@ -675,6 +686,7 @@ namespace nap
 		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 		ImGui::Begin("Test", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_ShowBorders);
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		sTimelineState.mWidthInPixels = ImGui::GetWindowWidth();
 		float height = ImGui::GetWindowHeight() - 1;
@@ -682,6 +694,8 @@ namespace nap
 
 		glm::vec2 topLeft = glm::vec2(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
 		glm::vec2 mousePos = glm::vec2(ImGui::GetMousePos().x, ImGui::GetMousePos().y) - topLeft;
+		bool is_inside_screen = mousePos.x != -FLT_MAX && mousePos.y != -FLT_MAX;
+		static bool was_inside_screen = is_inside_screen;
 		ImGuiIO& io = ImGui::GetIO();
 
 		if (ImGui::IsMouseClicked(0))
@@ -692,10 +706,16 @@ namespace nap
 		{
 			sTimelineState.OnMouseUp(mousePos, io.KeyCtrl, io.KeyAlt);
 		}
-		else
-		{
+
+		if (is_inside_screen)
 			sTimelineState.OnMouseMove(mousePos, io.KeyCtrl, io.KeyAlt);		
-		}
+
+		if (is_inside_screen && !was_inside_screen)
+			sTimelineState.OnMouseEnter(mousePos, io.KeyCtrl, io.KeyAlt);
+		else if (!is_inside_screen && was_inside_screen)
+			sTimelineState.OnMouseLeave(mousePos, io.KeyCtrl, io.KeyAlt);
+
+		was_inside_screen = is_inside_screen;
 
 		TimeStamp left;
 		left.mTimeStamp = sTimelineState.mTimeLeft * 1000;
@@ -761,7 +781,7 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Create snapshot from datetime
-		StressStateReading snapshot(nap::emography::EStressState::Over, now.getTimeStamp());
+		//StressStateReading snapshot(nap::emography::EStressState::Over, now.getTimeStamp());
 		/*
 		// Get converted time
 		SystemTimeStamp cstamp = snapshot.mTimeStamp.toSystemTime();

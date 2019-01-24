@@ -59,7 +59,18 @@ namespace nap
 			 */
 			Reading(const T& object) :
 				ReadingBase(getCurrentTime()),
-				mObject(object)
+				mObject(object) 
+			{ 
+			}
+
+			/**
+			* Constructs a reading of type T at a particular time, a copy is made.
+			* @param object the object this reading holds
+			* @param timestamp time associated with this reading
+			*/
+			Reading(const T& object, const TimeStamp& timestamp) :
+				ReadingBase(timestamp),
+				mObject(object) 
 			{
 			}
 
@@ -144,6 +155,7 @@ namespace nap
 
 #define DEFINE_READING_RTTI(Type)																						\
 	RTTI_BEGIN_CLASS(nap::emography::Reading<Type>)																		\
+		RTTI_CONSTRUCTOR(const Type&, const nap::TimeStamp&)															\
 		RTTI_CONSTRUCTOR(const Type&)																					\
 		RTTI_PROPERTY("Object", &nap::emography::Reading<Type>::mObject, nap::rtti::EPropertyMetaData::Default)			\
 	RTTI_END_STRUCT																										\
