@@ -90,21 +90,28 @@ namespace napkin
 		nap::Component& getComponent();
 	};
 
-	class RootEntityItem : public ObjectItem
+	class RootEntityItem : public QObject, public ObjectItem
 	{
+		Q_OBJECT
 	public:
 		explicit RootEntityItem(nap::RootEntity& e);
 
+		SceneItem* sceneItem() { return dynamic_cast<SceneItem*>(ObjectItem::parent()); }
 		nap::RootEntity& rootEntity();
 	private:
+		void onObjectRemoved(nap::rtti::Object* o);
+		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
+		void onComponentAdded(nap::Component* c, nap::Entity* owner);
+
 		nap::RootEntity* mRootEntity;
 	};
 
 	/**
 	 * An item that displays an entity instance
 	 */
-	class EntityInstanceItem : public ObjectItem
+	class EntityInstanceItem : public QObject, public ObjectItem
 	{
+		Q_OBJECT
 	public:
 		explicit EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem);
 
@@ -112,6 +119,10 @@ namespace napkin
 		nap::Entity& entity() { return *dynamic_cast<nap::Entity*>(mObject); }
 
 	private:
+		void onObjectRemoved(nap::rtti::Object* o);
+		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
+		void onComponentAdded(nap::Component* c, nap::Entity* owner);
+
 		RootEntityItem& mRootEntityItem;
 	};
 

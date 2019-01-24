@@ -108,7 +108,7 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 	auto rootEntityItem = dynamic_cast<RootEntityItem*>(item);
 	if (rootEntityItem)
 	{
-		auto sceneItem = dynamic_cast<SceneItem*>(rootEntityItem->parent());
+		auto sceneItem = rootEntityItem->sceneItem();
 
 		if (sceneItem)
 		{
