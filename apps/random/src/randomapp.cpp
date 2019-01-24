@@ -41,8 +41,12 @@ namespace nap
 
 		// Render window and texture target
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
+#ifdef NDEBUG
+		mRenderWindow->setFullscreen(true);
+#else
 		mRenderWindow->setWidth(1920);
 		mRenderWindow->setHeight(1080);
+#endif
 		
 		// Callback when window event is received
 		mRenderWindow->mWindowEvent.connect(std::bind(&RandomApp::handleWindowEvent, this, std::placeholders::_1));
