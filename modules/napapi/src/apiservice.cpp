@@ -6,6 +6,7 @@
 
 // External Includes
 #include <rtti/jsonreader.h>
+#include <rtti/jsonwriter.h>
 #include <rtti/defaultlinkresolver.h>
 #include <nap/core.h>
 
