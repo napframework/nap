@@ -25,7 +25,7 @@ namespace nap
         mResourceManager = getCore().getResourceManager();
         logToUI(" Got ResourceManager");
 
-        if (!mResourceManager->loadFile("dummy.json", error))
+        if (!mResourceManager->loadFile("emography.json", error))
         {
             nap::Logger::error("Dummy load fail");
             return false;
@@ -69,6 +69,7 @@ namespace nap
         logToUI(mTimestamp + " " + std::to_string(mCounter));
     }
 
+
     std::string EmographyAndroidApp::pullLogAndFlush()
     {
         // Simple demo, no threading considerations
@@ -76,6 +77,7 @@ namespace nap
         mLogOutput = "";
         return s;
     }
+
 
 #ifdef ANDROID
     void EmographyAndroidApp::logToUIPush(std::string message)

@@ -5,6 +5,7 @@
 #include <nap/logger.h>
 #include <utility/errorstate.h>
 #include <android/androidservicerunner.h>
+#include <apiservice.h>
 
 namespace nap
 {
@@ -12,11 +13,8 @@ namespace nap
     {
         jlong init(JNIEnv *env, jobject contextObject)
         {
-            nap::Logger::info("Creating nap::Core");
-
-            // TODO Cleanup: deal with raw pointers
-
             // Create core
+            nap::Logger::info("Creating nap::Core");
             nap::Core* core = new nap::Core();
 
             // Create service runner using default event handler
@@ -31,8 +29,10 @@ namespace nap
                 return -1;
             }
 
+            core->getService<nap::APIService>();
+
             // Return pointer to service runner
-            return (long) service_runner;
+            return (long)service_runner;
         }
 
 
@@ -59,7 +59,6 @@ namespace nap
             const char *s = env->GetStringUTFChars(jdata, NULL);
             std::string data = s;
             env->ReleaseStringUTFChars(jdata, s);
-
             app.call(data);
         }
 
@@ -73,8 +72,8 @@ namespace nap
 
         nap::ServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler>& getServiceRunner(jlong lp)
         {
-            nap::ServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler> *service_runner =
-                    (nap::ServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler> *) lp;
+            nap::ServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler>* service_runner =
+                    (nap::ServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler>*) lp;
             return *service_runner;
         }
 
