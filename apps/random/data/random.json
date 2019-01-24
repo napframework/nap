@@ -63,8 +63,8 @@
         {
             "Type": "nap::Bitmap",
             "mID": "CombinationBitmap",
-            "Width": 256,
-            "Height": 256,
+            "Width": 1024,
+            "Height": 1024,
             "Channels": "RGB",
             "ColorType": "Byte"
         },
@@ -360,7 +360,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::CombinationMeshComponent",
-                    "Mesh": "GenericPlaneMesh256",
+                    "Mesh": "GenericPlaneMesh1024",
                     "MaterialInstance": {
                         "Material": "CombineMaterial",
                         "Uniforms": [],
@@ -1796,20 +1796,6 @@
             "Columns": 1
         },
         {
-            "Type": "nap::PlaneMesh",
-            "mID": "GenericPlaneMesh256",
-            "Size": {
-                "x": 256.0,
-                "y": 256.0
-            },
-            "Position": {
-                "x": 128.0,
-                "y": 128.0
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
             "Type": "nap::RenderTarget",
             "mID": "CombineRenderTarget",
             "mColorTexture": "CombineColorTexture",
@@ -1817,7 +1803,7 @@
             "mClearColor": {
                 "x": 0.0,
                 "y": 0.0,
-                "z": 1.0,
+                "z": 0.0,
                 "w": 0.0
             }
         },
@@ -1865,7 +1851,7 @@
             "mClearColor": {
                 "x": 0.0,
                 "y": 0.0,
-                "z": 1.0,
+                "z": 0.0,
                 "w": 0.0
             }
         },
@@ -1880,8 +1866,8 @@
                 "MaxLodLevel": 0
             },
             "Usage": "DynamicRead",
-            "Width": 256,
-            "Height": 256,
+            "Width": 1024,
+            "Height": 1024,
             "Format": "RGB8"
         },
         {
@@ -1948,11 +1934,11 @@
             "Type": "nap::RenderTexture2D",
             "mID": "SunColorTexture",
             "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
+                "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 10
+                "MaxLodLevel": 0
             },
             "Usage": "Static",
             "Width": 1024,
@@ -1963,7 +1949,7 @@
             "Type": "nap::RenderTexture2D",
             "mID": "VideoColorTexture",
             "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
+                "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
