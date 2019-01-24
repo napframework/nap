@@ -1,19 +1,20 @@
-#include "emographyserviceapp.h"
+// Local Includes
+#include "emographyandroidapp.h"
 
+// External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
-
 #include <emographysnapshot.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmographyServiceApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmographyAndroidApp)
         RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 namespace nap
 {
-    EmographyServiceApp::EmographyServiceApp(nap::Core& core) : BaseClass(core) { }
+    EmographyAndroidApp::EmographyAndroidApp(nap::Core& core) : BaseClass(core) { }
 
-    bool EmographyServiceApp::init(nap::utility::ErrorState& error)
+    bool EmographyAndroidApp::init(nap::utility::ErrorState& error)
     {
         Logger::info("EmographyServiceApp::init");
         logToUI("EmographyServiceApp::init()");
@@ -40,18 +41,18 @@ namespace nap
     }
 
 
-    void EmographyServiceApp::update(double deltaTime)
+    void EmographyAndroidApp::update(double deltaTime)
     {
     }
 
 
-    int EmographyServiceApp::shutdown()
+    int EmographyAndroidApp::shutdown()
     {
         return 0;
     }
 
 
-    void EmographyServiceApp::logToUI(std::string message)
+    void EmographyAndroidApp::logToUI(std::string message)
     {
         if (mLogOutput != "")
             mLogOutput += "\n";
@@ -60,7 +61,7 @@ namespace nap
     }
 
 
-    void EmographyServiceApp::call(std::string data)
+    void EmographyAndroidApp::call(std::string data)
     {
         mTimestamp = data;
         mCounter++;
@@ -68,7 +69,7 @@ namespace nap
         logToUI(mTimestamp + " " + std::to_string(mCounter));
     }
 
-    std::string EmographyServiceApp::pullLogAndFlush()
+    std::string EmographyAndroidApp::pullLogAndFlush()
     {
         // Simple demo, no threading considerations
         std::string s = mLogOutput;
@@ -77,7 +78,7 @@ namespace nap
     }
 
 #ifdef ANDROID
-    void EmographyServiceApp::logToUIPush(std::string message)
+    void EmographyAndroidApp::logToUIPush(std::string message)
     {
         JNIEnv* env = getEnv();
         if (env == nullptr)

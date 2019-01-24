@@ -4,7 +4,7 @@
 #include "app.h"
 #include "appeventhandler.h"
 #include "servicerunner.h"
-#include "androidserviceapp.h"
+#include "androidapp.h"
 
 // External Includes
 #include <rtti/typeinfo.h>
@@ -14,7 +14,9 @@
 
 namespace nap
 {
-
+	/**
+	 * Specialization of the service runner, populates the application with all Android specific objects.	
+	 */
     template<typename APP, typename HANDLER>
     class AndroidServiceRunner: public ServiceRunner<APP, HANDLER>
     {
@@ -29,6 +31,7 @@ namespace nap
         AndroidServiceRunner(nap::Core& core, JNIEnv *jniEnv, jobject androidContextObject);
     };
 
+
     //////////////////////////////////////////////////////////////////////////
     // Template definitions
     //////////////////////////////////////////////////////////////////////////
@@ -36,7 +39,7 @@ namespace nap
     template<typename APP, typename HANDLER>
     nap::AndroidServiceRunner<APP, HANDLER>::AndroidServiceRunner(nap::Core& core, JNIEnv *jniEnv, jobject androidContextObject) : ServiceRunner<APP, HANDLER>(core)
     {	
-        nap::AndroidServiceApp& app = ServiceRunner<APP, HANDLER>::getApp();
+        nap::AndroidApp& app = ServiceRunner<APP, HANDLER>::getApp();
         app.populateAndroidVars(jniEnv, androidContextObject);
     }
 }

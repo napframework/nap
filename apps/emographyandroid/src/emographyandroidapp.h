@@ -10,23 +10,24 @@
 #endif
 
 // Some ugly workaround to allow us to run the app on Win64/macOS/Linux during dev
+#include <android/androidapp.h>
 #ifdef ANDROID
-	#include <android/androidserviceapp.h>
-	typedef nap::AndroidServiceApp BaseClass;
+
+    typedef nap::AndroidApp BaseClass;
 #else // ANDROID
-	#include <app.h>
+    #include <app.h>
 	typedef nap::App BaseClass;
 #endif // ANDROID
 
-namespace nap
-{
+    namespace nap
+    {
     using namespace rtti;
 
-    class EmographyServiceApp : public BaseClass
+    class EmographyAndroidApp : public BaseClass
     {
         RTTI_ENABLE(BaseClass)
     public:
-        EmographyServiceApp(nap::Core& core);
+        EmographyAndroidApp(nap::Core& core);
 
         bool init(nap::utility::ErrorState& error) override;
 

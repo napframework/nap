@@ -1,7 +1,7 @@
 #ifndef PROJECT_TEMPEXAMPLEWRAPPER_H
 #define PROJECT_TEMPEXAMPLEWRAPPER_H
 
-#include "emographyserviceapp.h"
+#include "emographyandroidapp.h"
 
 #include <jni.h>
 
@@ -23,9 +23,9 @@ namespace examplewrapper
 
     jstring pullLogFromApp(JNIEnv* env, jobject contextObject, jlong lp);
 
-    nap::ServiceRunner<nap::EmographyServiceApp, nap::AppEventHandler>& getServiceRunner(jlong jp);
+    nap::ServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler>& getServiceRunner(jlong jp);
 
-    nap::EmographyServiceApp& getApp(jlong jp);
+    nap::EmographyAndroidApp& getApp(jlong jp);
 }
 
 #endif //PROJECT_TEMPEXAMPLEWRAPPER_H
