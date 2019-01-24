@@ -1148,19 +1148,19 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_40",
                                 "Name": "uCloudRatio",
-                                "Value": 0.30000001192092898
+                                "Value": 0.44999998807907107
                             },
                             {
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_41",
                                 "Name": "uCloudFill",
-                                "Value": 0.5
+                                "Value": 0.44999998807907107
                             },
                             {
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_42",
                                 "Name": "uLightFill",
-                                "Value": 0.5
+                                "Value": 0.44999998807907107
                             }
                         ],
                         "BlendMode": "NotSet",
