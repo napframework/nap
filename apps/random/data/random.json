@@ -360,7 +360,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::CombinationMeshComponent",
-                    "Mesh": "ProjectionMesh",
+                    "Mesh": "GenericPlaneMesh256",
                     "MaterialInstance": {
                         "Material": "CombineMaterial",
                         "Uniforms": [],
@@ -787,7 +787,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::PartyMeshComponent",
-                    "Mesh": "PartyMesh",
+                    "Mesh": "GenericPlaneMesh1024",
                     "MaterialInstance": {
                         "Material": "PartyMaterial",
                         "Uniforms": [
@@ -1004,7 +1004,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::StaticMeshComponent",
-                    "Mesh": "StaticMesh",
+                    "Mesh": "GenericPlaneMesh1024",
                     "MaterialInstance": {
                         "Material": "StaticMaterial",
                         "Uniforms": [
@@ -1048,7 +1048,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::SunCloudsMeshComponent",
-                    "Mesh": "StaticMesh",
+                    "Mesh": "GenericPlaneMesh1024",
                     "MaterialInstance": {
                         "Material": "SunCloudsMaterial",
                         "Uniforms": [
@@ -1163,7 +1163,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::SunGlareMeshComponent",
-                    "Mesh": "StaticMesh",
+                    "Mesh": "GenericPlaneMesh1024",
                     "MaterialInstance": {
                         "Material": "SunGlareMaterial",
                         "Uniforms": [
@@ -1298,7 +1298,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_3",
-                    "Mesh": "VideoMesh",
+                    "Mesh": "GenericPlaneMesh1024",
                     "MaterialInstance": {
                         "Material": "VideoMaterial",
                         "Uniforms": [],
@@ -1775,7 +1775,7 @@
         },
         {
             "Type": "nap::PlaneMesh",
-            "mID": "PartyMesh",
+            "mID": "GenericPlaneMesh1024",
             "Size": {
                 "x": 1024.0,
                 "y": 1024.0
@@ -1789,7 +1789,7 @@
         },
         {
             "Type": "nap::PlaneMesh",
-            "mID": "ProjectionMesh",
+            "mID": "GenericPlaneMesh256",
             "Size": {
                 "x": 256.0,
                 "y": 256.0
@@ -1797,34 +1797,6 @@
             "Position": {
                 "x": 128.0,
                 "y": 128.0
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
-            "Type": "nap::PlaneMesh",
-            "mID": "StaticMesh",
-            "Size": {
-                "x": 1024.0,
-                "y": 1024.0
-            },
-            "Position": {
-                "x": 512.0,
-                "y": 512.0
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
-            "Type": "nap::PlaneMesh",
-            "mID": "VideoMesh",
-            "Size": {
-                "x": 1024.0,
-                "y": 1024.0
-            },
-            "Position": {
-                "x": 512.0,
-                "y": 512.0
             },
             "Rows": 1,
             "Columns": 1
