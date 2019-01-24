@@ -31,7 +31,7 @@ namespace nap
 	class NAPAPI EtherDreamInterface final
 	{
 	public:
-		enum class NAPAPI EStatus : int
+		enum class EStatus : int
 		{
 			ERROR	= -1,
 			BUSY	= 0,

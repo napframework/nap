@@ -189,7 +189,9 @@ QVariant napkin::PropertyValueItem::data(int role) const
 	{
 		QVariant variant;
 		if (napkin::toQVariant(mPath.getType(), mPath.getValue(), variant))
+		{
 			return variant;
+		}
 
 		return napkin::TXT_UNCONVERTIBLE_TYPE;
 	}

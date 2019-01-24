@@ -135,6 +135,13 @@ namespace opengl
 	 */
 	void setWindowSize(SDL_Window* window, const glm::ivec2& size);
 
+    /**
+     * Returns the actual size in pixels of a window, which can be different from the represented window size
+     * This is the case with High DPI screens on OSX
+     * @return the actual size in pixels of a window
+     */
+    glm::ivec2 getDrawableWindowSize(SDL_Window* window);
+    
 	/**
 	 * returns the OpenGL window position as pixel coordinates
 	 * @param window the window to get the position for

@@ -228,16 +228,16 @@ void napkin::ResourcePanel::onFileOpened(const QString& filename)
 void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
 	// Grab selected nap objects
-	QList<nap::rtti::Object*> selectedObjects;
+	QList<PropertyPath> selectedPaths;
 	for (auto m : mTreeView.getSelectedItems())
 	{
 		auto item = dynamic_cast<ObjectItem*>(m);
 		if (!item)
 			continue;
-		selectedObjects << item->getObject();
+		selectedPaths << *item->getObject();
 	}
 
-	selectionChanged(selectedObjects);
+	selectionChanged(selectedPaths);
 }
 
 void napkin::ResourcePanel::refresh()
