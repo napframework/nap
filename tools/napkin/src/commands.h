@@ -158,12 +158,13 @@ namespace napkin
 	class RemoveEntityFromSceneCommand : public QUndoCommand
 	{
 	public:
-		RemoveEntityFromSceneCommand(nap::Scene& scene, nap::Entity& entity);
+		RemoveEntityFromSceneCommand(nap::Scene& scene, nap::RootEntity& rootEntity);
 		void redo() override;
 		void undo() override;
 	private:
 		const std::string mSceneID;
 		const std::string mEntityID;
+		nap::RootEntity* mRootEntity = nullptr;
 		size_t mIndex;
 	};
 

@@ -94,12 +94,6 @@ namespace napkin
 		void onSceneSelectionChanged(QList<PropertyPath> paths);
 
 		/**
-		 * Handled when the scenepanel's selection changes
-		 * @param paths The paths that have been selected
-		 */
-		void onSceneSelectionChanged(QList<PropertyPath> paths);
-
-		/**
 		 * Receive messages from the logger
 		 * @param msg The log message being emitted
 		 */
