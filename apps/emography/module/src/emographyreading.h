@@ -41,7 +41,6 @@ namespace nap
 		 * Represents a single state reading at a particular point in time.
 		 * It combines both a timestamp and object associated with that time stamp.
 		 * This object is serializable but not a resource.
-		 * Because the object is relatively light weight it can be both copy and move constructed or assigned.
 		 */
 		template<typename T>
 		class Reading : public ReadingBase
@@ -55,30 +54,14 @@ namespace nap
 			Reading() = default;
 
 			/**
-			 * Move Constructs a reading of type T, prevents unnecessary copy operations
-			 * @param object the object this snapshot holds
-			 */
-			Reading(T&& object);
-
-			/**
 			 * Constructs a reading of type T, a copy is made.
 			 * @param object the object this reading holds
 			 */
-			Reading(const T& object);
-
-			/**
-			 * Move Constructs a reading of type T at a particular time.
-			 * @param object the object this reading holds
-			 * @param timestamp time associated with this reading
-			 */
-			Reading(T&& object, TimeStamp&& timestamp);
-
-			/**
-			 * Constructs a reading of type T at a particular time, a copy is made.
-			 * @param object the object this reading holds
-			 * @param timestamp time associated with this reading
-			 */
-			Reading(const T& object, const TimeStamp& timestamp);
+			Reading(const T& object) :
+				ReadingBase(getCurrentTime()),
+				mObject(object)
+			{
+			}
 
 			T mObject;					///< Property: 'Object' the object this reading manages
 		};
@@ -155,29 +138,17 @@ namespace nap
 		public:
 			T			mObject; ///< Property: 'Object' the object this reading summary manages
 		};
-
-		//////////////////////////////////////////////////////////////////////////
-		// Template definitions
-		//////////////////////////////////////////////////////////////////////////
-
-		template<typename T>
-		nap::emography::Reading<T>::Reading(const T& object) :
-			ReadingBase(getCurrentTime()),
-			mObject(object)											{ }
-
-		template<typename T>
-		nap::emography::Reading<T>::Reading(T&& object) :
-			ReadingBase(getCurrentTime()),
-			mObject(std::move(object))								{ }
-
-		template<typename T>
-		nap::emography::Reading<T>::Reading(T&& object, TimeStamp&& timestamp) : 
-			ReadingBase(std::move(timestamp)),
-			mObject(std::move(object))								{ }
-
-		template<typename T>
-		nap::emography::Reading<T>::Reading(const T& object, const TimeStamp& timestamp) :
-			ReadingBase(timestamp),
-			mObject(object)											{ }
 	}
 }
+
+
+#define DEFINE_READING_RTTI(Type)																						\
+	RTTI_BEGIN_CLASS(nap::emography::Reading<Type>)																		\
+		RTTI_CONSTRUCTOR(const Type&)																					\
+		RTTI_PROPERTY("Object", &nap::emography::Reading<Type>::mObject, nap::rtti::EPropertyMetaData::Default)			\
+	RTTI_END_STRUCT																										\
+																														\
+	RTTI_BEGIN_CLASS(nap::emography::ReadingSummary<Type>)																\
+		RTTI_CONSTRUCTOR(const nap::emography::ReadingBase&)															\
+		RTTI_PROPERTY("Object", &nap::emography::ReadingSummary<Type>::mObject, nap::rtti::EPropertyMetaData::Default)	\
+	RTTI_END_STRUCT

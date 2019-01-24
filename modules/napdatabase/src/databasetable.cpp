@@ -2,9 +2,21 @@
 #include "sqlite3.h"
 #include "rtti/path.h"
 #include "rtti/factory.h"
+#include <cctype>
 
 namespace nap
 {
+	static std::string sCPPToDatabaseName(const std::string& cppName)
+	{
+		std::string result = cppName;
+		std::replace_if(result.begin(), result.end(), [](unsigned char character)
+		{
+			return !std::isalnum(character) && character != '_';
+		}, '_');
+
+		return result;
+	}
+
 	using VisitRTTIPropertyTypesCallback = std::function<void(const rtti::Property&, const rtti::Path&)>;
 
 	static bool sVisitRTTIPropertyTypes(const rtti::TypeInfo& type, rtti::Path& path, const VisitRTTIPropertyTypesCallback& callback, utility::ErrorState& errorState)
@@ -193,19 +205,17 @@ namespace nap
 	std::string DatabasePropertyPath::toString() const
 	{
 		std::string column_name = mRTTIPath.toString();
-		std::replace(column_name.begin(), column_name.end(), '/', '$');
-		return column_name;
+		return sCPPToDatabaseName(column_name);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 
 
 	DatabaseTable::DatabaseTable(Database& database, const std::string& tableID, const rtti::TypeInfo& objectType) :
-		mTableID(tableID),
 		mObjectType(objectType),
 		mDatabase(&database)
 	{
-		std::replace(mTableID.begin(), mTableID.end(), ':', '_');
+		mTableID = sCPPToDatabaseName(tableID);
 	}
 
 	DatabaseTable::~DatabaseTable()
