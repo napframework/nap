@@ -492,7 +492,7 @@
                     "Bitmap": "CombinationBitmap",
                     "Mesh": "LightRigMesh",
                     "Influence": 1.0,
-                    "Brightness": 1.0,
+                    "Brightness": 0.20000000298023225,
                     "ControlGroups": "ControlGroups"
                 },
                 {
@@ -806,19 +806,19 @@
                                 "Type": "nap::UniformInt",
                                 "mID": "UniformInt_2",
                                 "Name": "uWaveCount",
-                                "Value": 3
+                                "Value": 4
                             },
                             {
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_18",
                                 "Name": "uWaveLength",
-                                "Value": 0.5
+                                "Value": 0.30000001192092898
                             },
                             {
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_22",
                                 "Name": "uWaveFalloffStart",
-                                "Value": 0.30000001192092898
+                                "Value": 0.6000000238418579
                             },
                             {
                                 "Type": "nap::UniformFloat",
@@ -836,13 +836,13 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_28",
                                 "Name": "uWaveNoiseInfluence",
-                                "Value": 0.10000000149011612
+                                "Value": 0.05000000074505806
                             },
                             {
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_30",
                                 "Name": "uWaveCenter",
-                                "Value": 0.8500000238418579
+                                "Value": 0.5
                             },
                             {
                                 "Type": "nap::UniformFloat",
@@ -854,7 +854,7 @@
                                 "Type": "nap::UniformFloat",
                                 "mID": "UniformFloat_44",
                                 "Name": "uWaveHighlightIntensity",
-                                "Value": 0.5
+                                "Value": 0.0
                             }
                         ],
                         "BlendMode": "NotSet",

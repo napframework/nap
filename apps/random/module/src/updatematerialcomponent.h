@@ -110,28 +110,25 @@ namespace nap
 
 		float		mSunCloudsNoiseSpeed = 0.01f;
 		const float	mSunCloudsNoiseSpeedMax = 0.25f;
-
 		float		mSunCloudsWindSpeed = 0.05f;
 		const float	mSunCloudsWindSpeedMax = 0.5f;
-
 		const float mSunCloudsScaleMin = 0.1f;
 		const float mSunCloudsScaleMax = 2.0f;
 
 		const float	mSunGlareSizeMin = 0.05f;
 		const float	mSunGlareSizeMax = 0.25f;
-
 		const float	mSunGlareStretchMin = 1.0f;
 		const float	mSunGlareStretchMax = 10.0f;
 
 		float		mPartyCenter[2] = { 0.2f, 0.8f };
-		int			mPartyBPM = 20;
+		int			mPartyBPM = 4;
 		int			mPartyBPMMin = 0;
 		int			mPartyBPMMax = 240;
 		int			mPartyWaveCountMax = 12;
 		float		mPartyWaveLengthMin = 0.1f;
 		float		mPartyWaveFalloffMin = 0.1f;
 		float		mPartyWaveFalloffMax = 1.5f;
-		float		mPartyWaveNoiseSpeed = 0.1f;
+		float		mPartyWaveNoiseSpeed = 0.05f;
 		float		mPartyWaveNoiseSpeedMax = 1.0f;
 		float		mPartyWaveNoiseScaleMin = 0.1f;
 		float		mPartyWaveNoiseScaleMax = 1.0f;
