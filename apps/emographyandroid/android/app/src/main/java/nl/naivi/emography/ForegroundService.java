@@ -23,13 +23,11 @@ import java.util.Date;
 public class ForegroundService extends Service
 {
     private static final String TAG = "NAPEmography";
-
     private IntentFilter mIntentFilter;
-
     private boolean mStopThread = false;
     private String mOutputLog = "";
-
     private long mServiceRunnerObjectPointer;
+
 
     @Override
     public void onCreate()
@@ -42,6 +40,7 @@ public class ForegroundService extends Service
         mIntentFilter.addAction(Constants.ACTION.STOP_SERVICE);
         mIntentFilter.addAction(Constants.ACTION.REQUEST_LOG_FROM_SERVICE);
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
@@ -82,7 +81,7 @@ public class ForegroundService extends Service
             public void run()
             {
                 // Initialisation
-                mServiceRunnerObjectPointer = initNap();
+                mServiceRunnerObjectPointer = napInit();
 
                 // Check init success
                 if (mServiceRunnerObjectPointer == -1)
@@ -137,6 +136,7 @@ public class ForegroundService extends Service
         return START_STICKY;
     }
 
+
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent)
@@ -157,6 +157,7 @@ public class ForegroundService extends Service
         }
     };
 
+
     // Create notification channel as required on Android O+
     private void createNotificationChannel()
     {
@@ -173,20 +174,24 @@ public class ForegroundService extends Service
         }
     }
 
+
     private void call(String data)
     {
-        callIntoNap(mServiceRunnerObjectPointer, data);
+        napSendMessage(mServiceRunnerObjectPointer, data);
     }
+
 
     private void updateNapService()
     {
-        updateServiceRunner(mServiceRunnerObjectPointer);
+        napUpdate(mServiceRunnerObjectPointer);
     }
+
 
     private void shutdownNap()
     {
-        shutdownNap(mServiceRunnerObjectPointer);
+        napShutdown(mServiceRunnerObjectPointer);
     }
+
 
     /**
      * Stop the service and request that the activity stop too
@@ -201,6 +206,7 @@ public class ForegroundService extends Service
         sendBroadcast(appStopIntent);
     }
 
+
     @Override
     public void onDestroy()
     {
@@ -214,12 +220,14 @@ public class ForegroundService extends Service
         super.onDestroy();
     }
 
+
     @Override
     public IBinder onBind(Intent intent)
     {
         // Used only in case of bound services.
         return null;
     }
+
 
     @Keep
     /**
@@ -246,6 +254,7 @@ public class ForegroundService extends Service
         mainHandler.post(myRunnable);
     }
 
+
     private void pullLogToUI()
     {
         Handler mainHandler = new Handler(this.getMainLooper());
@@ -270,13 +279,14 @@ public class ForegroundService extends Service
         mainHandler.post(myRunnable);
     }
 
+
     // Load native library
     static {
         System.loadLibrary("nap-service");
     }
-    public native long initNap();
-    public native void updateServiceRunner(long serviceRunnerObjectPointer);
-    public native void callIntoNap(long serviceRunnerObjectPointer, String data);
+    public native long napInit();
+    public native void napUpdate(long serviceRunnerObjectPointer);
+    public native void napSendMessage(long serviceRunnerObjectPointer, String data);
     public native String pullLogFromApp(long serviceRunnerObjectPointer);
-    public native void shutdownNap(long serviceRunnerObjectPointer);
+    public native void napShutdown(long serviceRunnerObjectPointer);
 }
