@@ -1833,7 +1833,7 @@
             "Type": "nap::RenderTarget",
             "mID": "CombineRenderTarget",
             "mColorTexture": "CombineColorTexture",
-            "mDepthTexture": "CombineDepthTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
             "mClearColor": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1845,7 +1845,7 @@
             "Type": "nap::RenderTarget",
             "mID": "PartyRenderTarget",
             "mColorTexture": "PartyColorTexture",
-            "mDepthTexture": "PartyDepthTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
             "mClearColor": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1857,7 +1857,7 @@
             "Type": "nap::RenderTarget",
             "mID": "StaticRenderTarget",
             "mColorTexture": "StaticColorTexture",
-            "mDepthTexture": "StaticDepthTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
             "mClearColor": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1869,7 +1869,7 @@
             "Type": "nap::RenderTarget",
             "mID": "SunRenderTarget",
             "mColorTexture": "SunColorTexture",
-            "mDepthTexture": "SunDepthTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
             "mClearColor": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1881,7 +1881,7 @@
             "Type": "nap::RenderTarget",
             "mID": "VideoRenderTarget",
             "mColorTexture": "VideoColorTexture",
-            "mDepthTexture": "VideoDepthTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
             "mClearColor": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1906,17 +1906,17 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "CombineDepthTexture",
+            "mID": "GenericDepthTexture1024",
             "Parameters": {
                 "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
+                "MaxLodLevel": 0
             },
             "Usage": "Static",
-            "Width": 256,
-            "Height": 256,
+            "Width": 1024,
+            "Height": 1024,
             "Format": "Depth"
         },
         {
@@ -1951,21 +1951,6 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "PartyDepthTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 0
-            },
-            "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "Depth"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
             "mID": "StaticColorTexture",
             "Parameters": {
                 "MinFilter": "Linear",
@@ -1978,21 +1963,6 @@
             "Width": 1024,
             "Height": 1024,
             "Format": "RGB8"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "StaticDepthTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 0
-            },
-            "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "Depth"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -2011,21 +1981,6 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "SunDepthTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 0
-            },
-            "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "Depth"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
             "mID": "VideoColorTexture",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
@@ -2038,21 +1993,6 @@
             "Width": 1920,
             "Height": 1080,
             "Format": "RGB8"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "VideoDepthTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 0
-            },
-            "Usage": "Static",
-            "Width": 1920,
-            "Height": 1080,
-            "Format": "Depth"
         },
         {
             "Type": "nap::RenderWindow",
