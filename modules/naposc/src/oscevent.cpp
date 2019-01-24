@@ -57,6 +57,6 @@ namespace nap
 		{
 			event_size += arg->size();
 		}
-		return event_size + mAddress.length();
+		return event_size + mAddress.size();
 	}
 }
