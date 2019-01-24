@@ -91,12 +91,17 @@ napkin::SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene)
 }
 
 napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem)
-	: ObjectItem(&e), mRootEntityItem(rootEntityItem)
+	: QObject(), ObjectItem(&e), mRootEntityItem(rootEntityItem)
 {
 	for (auto comp : e.mComponents)
-		appendRow(new ComponentInstanceItem(*comp, rootEntityItem));
-	for (auto entity : e.mChildren)
-		appendRow(new EntityInstanceItem(*entity, rootEntityItem));
+		onComponentAdded(comp.get(), &entity());
+	for (auto childEntity : e.mChildren)
+		onEntityAdded(childEntity.get(), &entity());
+
+	auto ctx = &AppContext::get();
+	connect(ctx, &AppContext::componentAdded, this, &EntityInstanceItem::onComponentAdded);
+	connect(ctx, &AppContext::entityAdded, this, &EntityInstanceItem::onEntityAdded);
+	connect(ctx, &AppContext::objectRemoved, this, &EntityInstanceItem::onObjectRemoved);
 }
 
 nap::RootEntity& napkin::EntityInstanceItem::rootEntity()
@@ -104,19 +109,84 @@ nap::RootEntity& napkin::EntityInstanceItem::rootEntity()
 	return mRootEntityItem.rootEntity();
 }
 
+void napkin::EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
+{
+	if (parent != &entity())
+		return;
+
+	appendRow(new EntityInstanceItem(*e, mRootEntityItem));
+}
+
+void napkin::EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
+{
+	if (owner != &entity())
+		return;
+
+	appendRow(new ComponentInstanceItem(*c, mRootEntityItem));
+}
+
+void napkin::EntityInstanceItem::onObjectRemoved(nap::rtti::Object* o)
+{
+	for (int row=0, len=rowCount(); row < len; row++)
+	{
+		auto objectItem = dynamic_cast<ObjectItem*>(child(row));
+		assert(objectItem);
+		if (objectItem->getObject() == o)
+		{
+			removeRow(row);
+			return;
+		}
+	}
+}
+
 napkin::RootEntityItem::RootEntityItem(nap::RootEntity& e)
-	: ObjectItem(e.mEntity.get()), mRootEntity(&e)
+	: QObject(), ObjectItem(e.mEntity.get()), mRootEntity(&e)
 {
 	for (auto comp : e.mEntity->mComponents)
-		appendRow(new ComponentInstanceItem(*comp, *this));
+		onComponentAdded(comp.get(), e.mEntity.get());
 	for (auto entity : e.mEntity->mChildren)
-		appendRow(new EntityInstanceItem(*entity, *this));
+		onEntityAdded(entity.get(), e.mEntity.get());
+
+	auto ctx = &AppContext::get();
+	connect(ctx, &AppContext::componentAdded, this, &RootEntityItem::onComponentAdded);
+	connect(ctx, &AppContext::entityAdded, this, &RootEntityItem::onEntityAdded);
+	connect(ctx, &AppContext::objectRemoved, this, &RootEntityItem::onObjectRemoved);
 }
 
 nap::RootEntity& napkin::RootEntityItem::rootEntity()
 {
 	assert(mRootEntity);
 	return *mRootEntity;
+}
+
+void napkin::RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
+{
+	if (parent != mRootEntity->mEntity.get())
+		return;
+
+	appendRow(new EntityInstanceItem(*e, *this));
+}
+
+void napkin::RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
+{
+	if (owner != mRootEntity->mEntity.get())
+		return;
+
+	appendRow(new ComponentInstanceItem(*c, *this));
+}
+
+void napkin::RootEntityItem::onObjectRemoved(nap::rtti::Object* o)
+{
+	for (int row=0, len=rowCount(); row < len; row++)
+	{
+		auto objectItem = dynamic_cast<ObjectItem*>(child(row));
+		assert(objectItem);
+		if (objectItem->getObject() == o)
+		{
+			removeRow(row);
+			return;
+		}
+	}
 }
 
 napkin::ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityItem& entityItem)
