@@ -430,15 +430,11 @@
                 }
             ],
             "Children": [
+                "LightingModes",
                 "SceneCamera",
                 "ProjectionCamera",
-                "Sun",
-                "Video",
-                "Combination",
                 "LightRig",
-                "Orbit",
-                "Static",
-                "Party"
+                "Orbit"
             ]
         },
         {
@@ -514,6 +510,18 @@
                 "Truss",
                 "Blueprint"
             ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "LightingModes",
+            "Components": [],
+            "Children": [
+                "Combination",
+                "Party",
+                "Static",
+                "Sun",
+                "Video"
+			]
         },
         {
             "Type": "nap::Entity",
