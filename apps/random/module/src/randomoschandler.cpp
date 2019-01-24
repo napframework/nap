@@ -104,7 +104,7 @@ namespace nap
 
 	void RandomOSCHandlerInstance::updateStaticTemperature(const OSCEvent& oscEvent, const std::vector<std::string>& args)
 	{
-		*mUpdateMaterialComponent->getStaticWarmthPtr() = oscEvent[0].asFloat();
+		*mUpdateMaterialComponent->getStaticTemperaturePtr() = oscEvent[0].asFloat();
 	}
 
 

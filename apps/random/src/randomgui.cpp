@@ -154,7 +154,7 @@ namespace nap
 		if (ImGui::CollapsingHeader("Static", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
-			ImGui::SliderFloat("Static Temperature", updateMaterial.getStaticWarmthPtr(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Static Temperature", updateMaterial.getStaticTemperaturePtr(), 0.0f, 1.0f);
 		}
 	}
 

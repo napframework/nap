@@ -1591,7 +1591,7 @@
                 {
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_2",
-                    "Name": "uWarmth",
+                    "Name": "uTemperature",
                     "Value": 0.0
                 }
             ],

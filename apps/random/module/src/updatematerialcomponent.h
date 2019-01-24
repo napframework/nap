@@ -92,7 +92,7 @@ namespace nap
 		float*		getSunGlareStretchPtr();
 		float*		getSunGlareTemperaturePtr();
 		
-		float*		getStaticWarmthPtr();
+		float*		getStaticTemperaturePtr();
 		
 		int*		getPartyWaveCountPtr();
 		float*		getPartyWaveLengthPtr();

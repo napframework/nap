@@ -188,9 +188,9 @@ namespace nap
 	}
 
 
-	float* UpdateMaterialComponentInstance::getStaticWarmthPtr()
+	float* UpdateMaterialComponentInstance::getStaticTemperaturePtr()
 	{
-		return &mStaticMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWarmth").mValue;
+		return &mStaticMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uTemperature").mValue;
 	}
 
 
