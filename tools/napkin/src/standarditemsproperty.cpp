@@ -62,6 +62,8 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path)
 	: QStandardItem(QString::fromStdString(path.getName())), mPath(path)
 {
+//	if (path.isInstance())
+//		setBackground(QColor(Qt::gray).lighter());
 //	auto txt = text();
 //	nap::Logger::info(txt.toStdString());
 //	setText(txt);

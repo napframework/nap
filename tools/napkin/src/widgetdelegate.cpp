@@ -22,6 +22,10 @@ PropertyValueItemDelegate::PropertyValueItemDelegate()
 void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
 									  const QModelIndex& index) const
 {
+	QVariant col = index.data(Qt::BackgroundRole);
+	if (col.isValid())
+		painter->fillRect(option.rect, col.value<QColor>());
+
 	auto type = getTypeFromModelIndex(index);
 	auto path = getPropertyPathFromIndex(index);
 
