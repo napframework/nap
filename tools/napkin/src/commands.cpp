@@ -197,8 +197,8 @@ void AddEntityToSceneCommand::redo()
 
 }
 
-RemoveEntityFromSceneCommand::RemoveEntityFromSceneCommand(nap::Scene& scene, nap::Entity& entity)
-	: mSceneID(scene.mID), mEntityID(entity.mID), QUndoCommand()
+RemoveEntityFromSceneCommand::RemoveEntityFromSceneCommand(nap::Scene& scene, nap::RootEntity& rootEntity)
+	: mSceneID(scene.mID), mRootEntity(&rootEntity), mEntityID(rootEntity.mEntity->mID), QUndoCommand()
 {
 	setText(QString("Remove Entity '%1' from Scene '%2'").arg(QString::fromStdString(mEntityID),
 															  QString::fromStdString(mSceneID)));
@@ -209,9 +209,7 @@ void RemoveEntityFromSceneCommand::redo()
 	auto doc = AppContext::get().getDocument();
 	auto scene = doc->getObject<nap::Scene>(mSceneID);
 	assert(scene != nullptr);
-	auto entity = doc->getObject<nap::Entity>(mEntityID);
-	assert(entity != nullptr);
-	doc->removeEntityFromScene(*scene, *entity);
+	doc->removeEntityFromScene(*scene, *mRootEntity);
 	// TODO: Store index and support undo
 }
 void RemoveEntityFromSceneCommand::undo()

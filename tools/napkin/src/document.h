@@ -180,7 +180,15 @@ namespace napkin
 		 * @param scene The Scene to remove the entity from
 		 * @param entity The entity to remove from the scene
 		 */
+		void removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity);
+
+		/**
+		 * Remove all entity instances from a scene, note that a Scene may contain the same entity multiple times.
+		 * @param scene The Scene to remove the entity from
+		 * @param entity The entity to remove from the scene
+		 */
 		void removeEntityFromScene(nap::Scene& scene, nap::Entity& entity);
+
 
 		/**
 		 * Add an entity to a scene (at root level)

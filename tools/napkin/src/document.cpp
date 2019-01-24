@@ -260,14 +260,21 @@ size_t Document::addEntityToScene(nap::Scene& scene, nap::Entity& entity)
 }
 
 
-void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
+void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
 {
 	auto& v = scene.mEntities;
-	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity== &entity; };
+	auto filter = [&](nap::RootEntity& obj) { return &obj == &entity; };
 	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
 	objectChanged(&scene);
 }
 
+void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
+{
+	auto& v = scene.mEntities;
+	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity == &entity; };
+	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
+	objectChanged(&scene);
+}
 
 size_t Document::arrayAddValue(const PropertyPath& path, size_t index)
 {

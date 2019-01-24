@@ -77,6 +77,7 @@ napkin::ScenePanel::ScenePanel() : QWidget()
 	connect(&mModel, &QAbstractItemModel::rowsInserted, [this](const QModelIndex &parent, int first, int last) {
 		mFilterView.getTreeView().expandAll();
 	});
+
 }
 
 void napkin::ScenePanel::menuHook(QMenu& menu)
@@ -104,22 +105,22 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 		}
 	}
 
-	auto entityInstanceItem = dynamic_cast<EntityInstanceItem*>(item);
-	if (entityInstanceItem)
+	auto rootEntityItem = dynamic_cast<RootEntityItem*>(item);
+	if (rootEntityItem)
 	{
-		auto sceneItem = dynamic_cast<SceneItem*>(entityInstanceItem->parent());
+		auto sceneItem = dynamic_cast<SceneItem*>(rootEntityItem->parent());
 
 		if (sceneItem)
 		{
 			auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
 			assert(scene);
-			auto entity = rtti_cast<nap::Entity>(entityInstanceItem->getObject());
-			assert(entity);
+			auto rootEntity = &rootEntityItem->rootEntity();
+			assert(rootEntity);
 
 			auto removeEntityAction = menu.addAction("Delete Instance");
-			connect(removeEntityAction, &QAction::triggered, [this, scene, entity]
+			connect(removeEntityAction, &QAction::triggered, [scene, rootEntity]
 			{
-				AppContext::get().executeCommand(new RemoveEntityFromSceneCommand(*scene, *entity));
+				AppContext::get().executeCommand(new RemoveEntityFromSceneCommand(*scene, *rootEntity));
 			});
 		}
 	}
