@@ -330,6 +330,36 @@ namespace nap
 				return true;
 			}
 
+			TimeStamp getLastReadingTime() const
+			{
+				return mState->mLastReadingTime;
+			}
+
+			bool clearData(utility::ErrorState& errorState)
+			{
+				if (!mRawTable->clear(errorState))
+					return false;
+
+				if (!mStateTable->clear(errorState))
+					return false;
+
+				mState = std::make_unique<ReadingProcessorState>();
+				mRawReadingCache.clear();
+
+				for (ReadingLOD& lod : mLODs)
+				{
+					if (!lod.mTable->clear(errorState))
+						return false;
+
+					if (!lod.mStateTable->clear(errorState))
+						return false;
+
+					lod.mState = std::make_unique<ReadingProcessorLODState>();
+				}
+
+				return true;
+			}
+
 		private:
 			struct ReadingLOD
 			{
@@ -514,6 +544,22 @@ namespace nap
 			assert(pos != mReadingProcessors.end());
 
 			return pos->second->getRange(startTime, endTime, numValues, readings, errorState);
+		}
+
+		TimeStamp DataModel::getLastReadingTime(const rtti::TypeInfo& inReadingType) const
+		{
+			ReadingProcessorMap::const_iterator pos = mReadingProcessors.find(inReadingType);
+			assert(pos != mReadingProcessors.end());
+
+			return pos->second->getLastReadingTime();
+		}
+
+		bool DataModel::clearData(const rtti::TypeInfo& inReadingType, utility::ErrorState& errorState)
+		{
+			ReadingProcessorMap::const_iterator pos = mReadingProcessors.find(inReadingType);
+			assert(pos != mReadingProcessors.end());
+
+			return pos->second->clearData(errorState);
 		}
 	}
 }
