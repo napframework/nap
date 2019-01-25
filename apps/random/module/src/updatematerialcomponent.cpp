@@ -64,9 +64,9 @@ namespace nap
 		mPartyGlitchOn = true;
 		mPartyGlitchStopTimer = 0.0f;
 		mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uGlitchSize").mValue = mPartyGlitchSize;
-		glm::vec3* glitchPosition = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uGlitchPosition").mValue;
-		glitchPosition->x = nap::math::random(0.0f, 1.0f);
-		glitchPosition->y = nap::math::random(0.0f, 1.0f);
+		glm::vec3* uGlitchPosition = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uGlitchPosition").mValue;
+		uGlitchPosition->x = nap::math::random(0.0f, 1.0f);
+		uGlitchPosition->y = nap::math::random(0.0f, 1.0f);
 	}
 
 
