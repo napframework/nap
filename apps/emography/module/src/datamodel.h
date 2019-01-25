@@ -19,8 +19,12 @@ namespace nap
 		 * and the client can query for a week of data at a resolution of 7 steps (which is a day). The query will return 7 values, one for each day in that week. The
 		 * value per day is a 'summarized' value of the original reading. How values are summarized can be configured by the client through the Summarize function.
 		 *
-		 * To accomplish this efficiently, the DataModel creates a hierarchy of data. In the following example, we show a number of raw readings and how the timeline is
-		 * divided into 'Levels of Details' (LODs). The summarizing function is an averaging function:
+		 *
+		 * +++++++++++++++++++++++++++++++ The algorithm +++++++++++++++++++++++++++++++
+		 *
+		 *
+		 * To accomplish querying large data sets efficiently, the DataModel creates a hierarchy of data. In the following example, we show a number of raw readings and 
+		 * how the timeline is divided into 'Levels of Details' (LODs). The summarizing function is an averaging function:
 		 *
 		 *	Raw reading:	5  3  8  2	1  3  4  6
 		 *	LOD 0		   [ 4  ][ 5  ][ 2  ][ 5  ]
@@ -40,6 +44,10 @@ namespace nap
 		 * store has separated the data into buckets of a specific timezone. But as the local timezone changes, you want to request data that is unaligned to the data as
 		 * stored in the backing store. To solve this, 'unaligned' queries are supported, enabling you to query from any start time to any end time, in any resolution.
 		 * As a consequence, the flexibility of querying for any start/end time and resolution also enables you to gradually zoom in and out on the data set.
+		 *
+		 *
+		 * +++++++++++++++++++++++++++++++ Algorithm: unaligned queries +++++++++++++++++++++++++++++++
+		 *
 		 *
 		 * The algorithm for performing unaligned queries works as follows. In the following example you can see a query for a timerange (only a single value as output) on an
 		 * unaligned time:
@@ -71,6 +79,8 @@ namespace nap
 		 * This matches the outcome of the original equation:
 		 *		(5 + 2 + 5 + 6 + 4 + 3 + 3 + 6) / 8 = 4.25
 		 *
+		 * +++++++++++++++++++++++++++++++ Algorithm: inactivity +++++++++++++++++++++++++++++++
+		 *
 		 * It is also possible that there are periods of 'inactivity': no data is generated for a period of time:
 		 *
 		 *	Query range	                     #----------------------------#
@@ -88,29 +98,100 @@ namespace nap
 		 *
 		 * We can use this value to calculate the correct weights, dealing with periods of inactivity.
 		 *
+		 *
+		 * +++++++++++++++++++++++++++++++ A fully configurable object pipeline +++++++++++++++++++++++++++++++
+		 *
+		 *
+		 * The DataModel is very versatile in what objects are inserted into the DataModel and what objects are returned from the Database. One could have a simple float
+		 * value inserted into the DataModel, but have a richer structure returned from the DataModel when a query is performed. For instance, the output object could 
+		 * count how many 1s, 2s and 3s were present in the range that was requested. It depends entirely on the Summarize function how the input data is converted into
+		 * output data. All three parts of the following pipeline is fully customizable:
+		 *
+		 *  input -> summary function -> output
+		 *
+		 * The only restriction is that the DataModel works with ReadingBase and ReadingSummaryBase base classes. The ReadingBase is the 'input' object that couples 'some' value to a
+		 * timestamp, and the ReadingSummaryBase is the 'output' object that has a bit of extra metadata that can be used by the DataModel to calculate summaries correctly. You can 
+		 * derive from these two objects and provide a summary function that can convert the input to an output. By default, some simple objects are already provided:
+		 *
+		 *		Reading<T>			Derived from ReadingBase. This couples a templatized value T to the reading. T could be a float, int, or a class containing data.
+		 *		ReadingSummary<T>	Derived from ReadingSummaryBase. Also couples the same T to the summary.
+		 *
+		 * These default objects could have several summarizing functions. A default summarizing function is provided in the form of an averaging function. This is the 
+		 * gAveragingSummary function. It expects the T of Reading<T> and ReadingSummary<T> to have an mValue member. Therefore it only works in limited cases where T is a
+		 * struct/class having a public mValue member, it doesn't work directly with ints and floats (but it will work with an mValue of any type (float, int, double etc). 
+		 * You need to provide a different Summary function to support other cases like multiple members, direct float/int storage etc. And of course in case you don't want
+		 * to summarize but to perform other forms of summarizing.
+		 *
+		 * To register what input/output/summary you would like to use for your value, use RegisterType. This will configure the pipeline for a type.
+		 *
+		 *
+		 * +++++++++++++++++++++++++++++++ Limitations of summary functions +++++++++++++++++++++++++++++++
+		 *
+		 *
+		 * The Summary function is used to collapse a list of data into a single output object. Internally this process will be repeated multiple times to construct a 
+		 * hierarchy of data:
+		 * 		  input -> summary function -> output level 0 \
+		 *													   ----> summary function -> output level 1
+		 * 		  input -> summary function -> output level 0 /
+		 * 
+		 * An important consequence is that not every summarizing function can be used. Any summarizing function that requires the full original list of raw readings will not work.
+		 * For example, the mathematic Median function will need to sort the original list and find the middle number. This is a summarizing function that does not work hierarchically.
 		 */
 		class NAPAPI DataModel final
 		{
 		public:
+			/**
+			 * Selects whether the original 'raw' reading are kept for storage in the database. 
+			 */
 			enum class EKeepRawReadings : uint8_t
 			{
 				Enabled,
 				Disabled
 			};
 
+			/**
+			 * The Summarize function takes list of WeightedObjects. Each object in the list has an associated weight.
+			 * Because each object in this list can represent a different amount of time, the weight can be used to summarize correctly.
+			 * See the comments above DataModel for a more in-depth explanation.
+			 */
 			struct WeightedObject
 			{
-				float							mWeight;
-				std::unique_ptr<rtti::Object>	mObject;
+				float							mWeight;		///< Weight representing how much this object should count for the summarize function
+				std::unique_ptr<rtti::Object>	mObject;		///< The object as returned from the database
 			};
 
 			using SummaryFunction = std::function<std::unique_ptr<ReadingSummaryBase>(const std::vector<WeightedObject>&)>;
 
+			/**
+			 * Constructor.
+			 * @param factory: The factory used when deserializing objects from the database.
+			 */
 			DataModel(rtti::Factory& factory);
+
+			/**
+			 * Destructor, flushes the DataModel.
+			 */
 			~DataModel();
 
+			/**
+			 * Opens the database.
+			 * @param path: Path to the database on disk.
+			 * @param keepRawReading: Selects whether the original 'raw' reading should be kept in the database or not.
+			 * @param errorState : if the function returns false, contains error information.
+			 */
 			bool init(const std::string& path, EKeepRawReadings keepRawReadings, utility::ErrorState& errorState);
+
+			/**
+			 * Adds a single reading to the DataModel. Updates the internal data hierarchy.
+			 * @param object: Path to the database on disk.
+			 * @param errorState : if the function returns false, contains error information.
+			 */
 			bool add(const ReadingBase& object, utility::ErrorState& errorState);
+
+			/**
+			 * Updates the DataModel up until the last processed reading for each object.
+			 * @param errorState : if the function returns false, contains error information.
+			 */
 			bool flush(utility::ErrorState& errorState);
 
 			template<class ReadingType>
