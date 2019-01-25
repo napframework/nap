@@ -83,6 +83,7 @@ namespace nap
 		void updateControlGroupBrightness(const OSCEvent& oscEvent, const std::vector<std::string>& args);
 		void updateStaticTemperature(const OSCEvent& oscEvent, const std::vector<std::string>& args);
 		void updateVideoIndex(const OSCEvent& oscEvent, const std::vector<std::string>& args);
+		void updatePartyGlitchIntensity(const OSCEvent& oscEvent, const std::vector<std::string>& args);
 
 		// This map holds all the various callbacks based on id
 		typedef void (RandomOSCHandlerInstance::*OscEventFunc)(const OSCEvent&, const std::vector<std::string>& args);

@@ -78,6 +78,8 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 		void updateCameraLocation();
+		void startPartyGlitch();
+		void stopPartyGlitch();
 		void startPartyPresetTransition(PartyPresetTypes type);
 		void updatePartyPresetTransition(double deltaTime);
 		void updateParty(double deltaTime);
@@ -152,6 +154,13 @@ namespace nap
 		float		mPartyWaveNoiseScaleMin = 0.1f;
 		float		mPartyWaveNoiseScaleMax = 1.0f;
 		float		mPartyWaveNoiseInfluenceMax = 0.5f;
+		float		mPartyGlitchSize = 0.25f;
+		float		mPartyGlitchIntensity = 0.0f;
+		float		mPartyGlitchCheckInterval = 0.1f;
+		float		mPartyGlitchDuration = 0.05f;
+		float		mPartyGlitchCheckTimer = 0.0f;
+		float		mPartyGlitchStopTimer = 0.0f;
+		bool		mPartyGlitchOn = false;
 
 		bool				mPartyPresetsActive = true;
 		bool				mPartyPresetTransitionActive = false;

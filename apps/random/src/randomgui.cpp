@@ -188,6 +188,13 @@ namespace nap
 			ImGui::SliderFloat("Noise Scale", updateMaterial.getPartyWaveNoiseScalePtr(), updateMaterial.mPartyWaveNoiseScaleMin, updateMaterial.mPartyWaveNoiseScaleMax);
 			ImGui::SliderFloat("Noise Influence", updateMaterial.getPartyWaveNoiseInfluencePtr(), 0.0f, updateMaterial.mPartyWaveNoiseInfluenceMax);
 		}
+		if (ImGui::CollapsingHeader("Glitch", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::SliderFloat("Glitch Size", &updateMaterial.mPartyGlitchSize, 0.0f, 1.0f);
+			ImGui::SliderFloat("Glitch Intensity", &updateMaterial.mPartyGlitchIntensity, 0.0f, 1.0f);
+			ImGui::SliderFloat("Glitch Interval", &updateMaterial.mPartyGlitchCheckInterval, 0.0f, 1.0f);
+			ImGui::SliderFloat("Glitch Duration", &updateMaterial.mPartyGlitchDuration, 0.0f, 1.0f);
+		}
 	}
 
 	void RandomGui::showSoundControls()

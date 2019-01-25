@@ -14,6 +14,8 @@ uniform float uWaveNoiseInfluence;
 uniform float uWaveCenter;
 uniform float uWaveHighlightLength;
 uniform float uWaveHighlightIntensity;
+uniform float uGlitchSize;
+uniform vec3 uGlitchPosition;
 
 // input
 in vec3 passUVs;
@@ -147,7 +149,12 @@ void main()
 	float waveHighlightCurve = (1.0 - (1.0 + cos(waveHighlightX)) * 0.5) * uWaveHighlightIntensity;
 	float waveWarm = (1.0 - waveHighlightCurve) * waveInfluence;
 	float waveCold = waveHighlightCurve * waveInfluence;
+	
+	// glitch
+	vec2 glitchStart = uGlitchPosition.xy * vec2(1.0 - uGlitchSize, 1.0 - uGlitchSize);
+	vec2 glitchEnd = glitchStart + uGlitchSize;
+	float glitch = passUVs.x > glitchStart.x && passUVs.x < glitchEnd.x && passUVs.y > glitchStart.y && passUVs.y < glitchEnd.y ? 1.0 : 0.0;
 
 	// set fragment color
-	out_Color = vec4(waveWarm, waveCold, 0.0, 1.0);
+	out_Color = vec4(max(0.0, waveWarm - glitch), min(1.0, waveCold + glitch), 0.0, 1.0);
 }

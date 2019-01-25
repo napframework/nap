@@ -59,6 +59,24 @@ namespace nap
 	}
 
 
+	void UpdateMaterialComponentInstance::startPartyGlitch()
+	{
+		mPartyGlitchOn = true;
+		mPartyGlitchStopTimer = 0.0f;
+		mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uGlitchSize").mValue = mPartyGlitchSize;
+		glm::vec3* glitchPosition = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uGlitchPosition").mValue;
+		glitchPosition->x = nap::math::random(0.0f, 1.0f);
+		glitchPosition->y = nap::math::random(0.0f, 1.0f);
+	}
+
+
+	void UpdateMaterialComponentInstance::stopPartyGlitch()
+	{
+		mPartyGlitchOn = false;
+		mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uGlitchSize").mValue = 0.0f;
+	}
+
+
 	void UpdateMaterialComponentInstance::startPartyPresetTransition(PartyPresetTypes type)
 	{
 		mPartyPresetsActive = type != PARTY_PRESET_NONE;
@@ -124,10 +142,30 @@ namespace nap
 				startPartyPresetTransition(mPartyPresetType == PARTY_PRESET_CALM ? PARTY_PRESET_INTENSE : PARTY_PRESET_CALM);
 		}
 
+		// update beat / noise
 		float* uBeat = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBeat").mValue;
 		float* uWaveNoiseZ = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveNoiseZ").mValue;
 		*uBeat = fmod(*uBeat + beatIncrement, 1.0f);
 		*uWaveNoiseZ += mPartyWaveNoiseSpeed * static_cast<float>(deltaTime);
+
+		// update glitch
+		if (mPartyGlitchOn)
+		{
+			mPartyGlitchStopTimer += static_cast<float>(deltaTime);
+			if (mPartyGlitchStopTimer >= mPartyGlitchDuration)
+				stopPartyGlitch();
+		}
+		else
+		{
+			mPartyGlitchCheckTimer += static_cast<float>(deltaTime);
+			if (mPartyGlitchCheckTimer >= mPartyGlitchCheckInterval)
+			{
+				if (mPartyGlitchIntensity >= nap::math::random(0.0f, 1.0f))
+					startPartyGlitch();
+				else
+					mPartyGlitchCheckTimer = 0.0f;
+			}
+		}
 	}
 
 

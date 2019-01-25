@@ -48,6 +48,7 @@ namespace nap
 		mOscEventFuncs.emplace(std::make_pair("control-group-brightness", &RandomOSCHandlerInstance::updateControlGroupBrightness));
 		mOscEventFuncs.emplace(std::make_pair("static-temperature", &RandomOSCHandlerInstance::updateStaticTemperature));
 		mOscEventFuncs.emplace(std::make_pair("video-index", &RandomOSCHandlerInstance::updateVideoIndex));
+		mOscEventFuncs.emplace(std::make_pair("party-glitch-intensity", &RandomOSCHandlerInstance::updatePartyGlitchIntensity));
 
 		return true;
 	}
@@ -112,5 +113,11 @@ namespace nap
 	{
 		int videoIndex = std::stoi(args[0]) - 1;
 		mSelectVideoComponent->selectVideo(videoIndex);
+	}
+
+
+	void RandomOSCHandlerInstance::updatePartyGlitchIntensity(const OSCEvent& oscEvent, const std::vector<std::string>& args)
+	{
+		mUpdateMaterialComponent->mPartyGlitchIntensity = oscEvent[0].asFloat();
 	}
 }

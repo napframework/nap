@@ -1628,6 +1628,22 @@
                     "mID": "UniformFloat_43",
                     "Name": "uWaveHighlightIntensity",
                     "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_47",
+                    "Name": "uGlitchSize",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_7",
+                    "Name": "uGlitchPosition",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
                 }
             ],
             "Shader": "PartyShader",
