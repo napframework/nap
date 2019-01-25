@@ -132,7 +132,7 @@ namespace nap
 			}
 
 			template<class ReadingType>
-			bool getLastReadingTime(utility::ErrorState& errorState) const
+			bool clearData(utility::ErrorState& errorState)
 			{
 				return clearData(RTTI_OF(ReadingType), errorState);
 			}
