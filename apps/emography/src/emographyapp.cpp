@@ -133,17 +133,23 @@ namespace nap
 	{
 		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-		ImGui::Begin("GraphWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_ShowBorders);
+		ImGui::Begin("GraphWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_ShowBorders);
+		
+		glm::vec2 topLeft = glm::vec2(0.0f, 0.0);
+
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::SliderInt("Resolution", &mResolution, 10, ImGui::GetWindowWidth());
+		ImGui::SliderInt("Graph Height", &mGraphHeight, 1, 1000);
 
 		ImGuiIO& io = ImGui::GetIO();
 
+		float timelineHeight = renderTimeline();
+
 		mTimelineState.mWidthInPixels = ImGui::GetWindowWidth();
 		
-		float height = ImGui::GetWindowHeight() - 1;
-		float y_units = 100;
+		float height = ImGui::GetWindowHeight() - timelineHeight;
+		float y_units = mGraphHeight;
 
-		glm::vec2 topLeft = glm::vec2(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
 		glm::vec2 mousePos = glm::vec2(ImGui::GetMousePos().x, ImGui::GetMousePos().y) - topLeft;
 		
 		bool mouse_inside_screen = mousePos.x != -FLT_MAX && mousePos.y != -FLT_MAX;		
@@ -163,7 +169,7 @@ namespace nap
 
 		mMouseWasInsideScreen = mouse_inside_screen;
 
-		int numSamples = 400;
+		int numSamples = mResolution;
 		float secondsPerSample = (mTimelineState.mTimeRight - mTimelineState.mTimeLeft) / (float)numSamples;
 		if (secondsPerSample < 1.0f)
 			numSamples = mTimelineState.mTimeRight - mTimelineState.mTimeLeft;
@@ -186,13 +192,162 @@ namespace nap
 				float x = mTimelineState.AbsTimeToPixel(reading->mTimeStamp.mTimeStamp / 1000);
 				float y = bottomY - glm::clamp(reading->mObject.mValue / y_units, 0.0f, 1.0f) * height;
 
-				draw_list->AddLine(ImVec2(topLeft.x + prevPos.x, topLeft.y + prevPos.y), ImVec2(topLeft.x + x, topLeft.y + y), ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), 1.0f);
+				draw_list->AddLine(ImVec2(topLeft.x + prevPos.x, topLeft.y + prevPos.y), ImVec2(topLeft.x + x, topLeft.y + y), ImGui::GetColorU32(ImVec4(170.0f / 255.0f, 211.0f / 255.0f, 1.0f, 1.0f)), 1.0f);
 
 				prevPos = glm::vec2(x, y);
 			}
 		}
 
 		ImGui::End();
+	}
+
+	float EmographyApp::renderTimeline()
+	{
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		glm::vec2 topLeft = glm::vec2(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
+		float height = ImGui::GetWindowHeight() - 1;
+
+		double left = mTimelineState.mTimeLeft;
+		double right = mTimelineState.mTimeRight;
+		double delta = right - left;
+
+		double markerTimelineHeight = 25.0;
+		double textTimelineHeight = 25.0f;
+		double totalTimelineHeight = markerTimelineHeight + textTimelineHeight + 2;
+
+		// Calculate how many milliseconds a particular unit takes
+		const double oneHour = 1000.0 * 60.0 * 60.0;
+		const double oneMinute = 1000.0 * 60.0;
+		const double oneSecond = 1000.0;
+		const double oneMsec = 1.0f;
+
+		struct Separator
+		{
+			double	mMajorTime;				// Time for major separator
+			int		mNumMinorSubdivisions;	// Amount of subdivisons requires for this major separator
+		};
+
+		// Table determining where the major separators lie and how the subdivions are placed
+		Separator separatorSettings[] =
+		{
+			{ oneHour,				10 },
+			{ oneMinute * 10.0f,	10 },
+			{ oneMinute * 5.0f,		5 },
+			{ oneMinute,			10 },
+			{ oneSecond * 10.0f,	10 },
+			{ oneSecond * 5.0f,		5 },
+			{ oneSecond,			10 },
+			{ oneMsec * 100.0f,		10 },
+			{ oneMsec * 50.0f,		5 },
+			{ oneMsec * 10.0f,		10 },
+			{ oneMsec * 5.0f,		5 },
+			{ oneMsec * 1.0f,		10 }
+		};
+
+		const int preferredSpaceBetweenSeparators = (int)(300.0f);
+		const int preferredNumSeparators = mTimelineState.mWidthInPixels / preferredSpaceBetweenSeparators;
+
+		// Find what major separator comes closest to the space we prefer between separators
+		int numMinorSubDivisions = 10;
+		double minorStepSize = FLT_MAX;
+		double majorStepSize = FLT_MAX;
+		for (int i = 0; i != sizeof(separatorSettings) / sizeof(Separator); ++i)
+		{
+			if (abs((delta / separatorSettings[i].mMajorTime) - preferredNumSeparators) < abs((delta / majorStepSize) - preferredNumSeparators))
+			{
+				majorStepSize = separatorSettings[i].mMajorTime;
+				numMinorSubDivisions = separatorSettings[i].mNumMinorSubdivisions;
+				minorStepSize = majorStepSize / (float)separatorSettings[i].mNumMinorSubdivisions;
+			}
+		}
+
+		// Draw background
+		//mCanvas.DrawSolidRect(glm::vec2(0.0f, 0.0f), GetRect().Size(), glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), Renderer::EFillPattern::SolidColor, DrawDepth::sTimelineBackground);
+
+		// Determine if we want to print secs/mins/hour at all. If the time on this bar does not exceed a certain threshold,
+		// we don't print that unit at all.
+		bool showSecs = (int)(right / oneSecond) > 0;
+		bool showMins = (int)(right / oneMinute) > 0;
+		bool showHours = (int)(right / oneHour) > 0;
+
+		// Calculate start time value
+		double majorMarkerTime = (int)(left / (double)majorStepSize) * majorStepSize;
+
+		// Draw major, minor separators and text
+		while (majorMarkerTime < right)
+		{
+			// Only draw positive values
+			if (majorMarkerTime >= 0.0f)
+			{
+				// Draw major marker line
+				int x = mTimelineState.AbsTimeToPixel(majorMarkerTime);
+				
+				draw_list->AddLine(ImVec2(topLeft.x + x, height - totalTimelineHeight), ImVec2(topLeft.x + x, height - totalTimelineHeight + markerTimelineHeight), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), 2.0f);
+
+				// Draw all major marker lines
+				double minorMarkerTime = majorMarkerTime + minorStepSize;
+				for (int minorIndex = 1; minorIndex < numMinorSubDivisions; ++minorIndex)
+				{
+					float minorX = mTimelineState.AbsTimeToPixel(minorMarkerTime);
+					float minorY = markerTimelineHeight * 0.75f;
+					if (numMinorSubDivisions == 10 && minorIndex == 5)
+						minorY = markerTimelineHeight * 0.5f;
+
+					draw_list->AddLine(ImVec2(topLeft.x + minorX, height - totalTimelineHeight), ImVec2(topLeft.x + minorX, height - totalTimelineHeight + minorY), ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1.0f)), 1.0f);
+					minorMarkerTime += minorStepSize;
+				}
+
+				SystemTimeStamp majorMarkerTimeStamp(Seconds((uint64_t)majorMarkerTime));
+				DateTime majorMarkerDateTime(majorMarkerTimeStamp);
+
+				std::string majorMarkerText = majorMarkerDateTime.toString();
+				draw_list->AddText(ImVec2(topLeft.x + x, height - textTimelineHeight), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), majorMarkerText.c_str());
+
+#if 0
+				double remainder = majorMarkerTime;
+				int numHours = (int)(remainder / oneHour);
+				remainder -= numHours * oneHour;
+				int numMins = (int)(remainder / oneMinute);
+				remainder -= numMins * oneMinute;
+				int numSecs = (int)(remainder / oneSecond);
+				remainder -= numSecs * oneSecond;
+				int numMsecs = (int)(remainder);
+
+				std::string markerTimeText;
+
+				if (showHours)
+					markerTimeText = Utility::FormatString("h%d", numHours);
+
+				if (majorStepSize < oneHour && showMins)
+				{
+					if (!markerTimeText.empty())
+						markerTimeText += ":";
+					markerTimeText += Utility::FormatString("m%d", numMins);
+				}
+
+				if (majorStepSize < oneMinute && showSecs)
+				{
+					if (!markerTimeText.empty())
+						markerTimeText += ":";
+					markerTimeText += Utility::FormatString("s%d", numSecs);
+				}
+
+				if (majorStepSize < oneSecond)
+				{
+					if (!markerTimeText.empty())
+						markerTimeText += ":";
+					markerTimeText += Utility::FormatString("ms%d", numMsecs);
+				}
+
+				mCanvas.DrawText(glm::vec2(x + 10.0f, 6.0f), gGetDefaultTextHeight(), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), markerTimeText, DrawDepth::sTimelineForeground);
+#endif
+			}
+
+			majorMarkerTime += majorStepSize;
+		}
+		draw_list->AddLine(ImVec2(topLeft.x, height - totalTimelineHeight), ImVec2(topLeft.x + mTimelineState.mWidthInPixels, height - totalTimelineHeight), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), 1.0f);
+
+		return totalTimelineHeight;
 	}
 
 	void EmographyApp::update(double deltaTime)

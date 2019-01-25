@@ -42,6 +42,7 @@ namespace nap
 	
 	private:
 		void renderGUI();
+		float renderTimeline();
 
 		/**
 		 *  Forwards the received input event to the input service
@@ -60,5 +61,7 @@ namespace nap
 		bool mMouseWasInsideScreen = false;
 		emography::TimelineState mTimelineState;
 		std::unique_ptr<emography::DataModel> mDataModel;
+		int mResolution = 400;
+		int mGraphHeight = 100;
 	};
 }
