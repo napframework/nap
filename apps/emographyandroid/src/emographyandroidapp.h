@@ -11,6 +11,8 @@
 
 // Some ugly workaround to allow us to run the app on Win64/macOS/Linux during dev
 #include <android/androidapp.h>
+#include <apiservice.h>
+
 #ifdef ANDROID
 
     typedef nap::AndroidApp BaseClass;
@@ -53,6 +55,7 @@
 
         nap::SceneService* 			mSceneService = nullptr;
         nap::ResourceManager* 		mResourceManager = nullptr;
+        nap::APIService*            mAPIService = nullptr;
 
 #ifdef ANDROID
         /**

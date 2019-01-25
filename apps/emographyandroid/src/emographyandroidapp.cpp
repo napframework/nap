@@ -25,6 +25,9 @@ namespace nap
         mResourceManager = getCore().getResourceManager();
         logToUI(" Got ResourceManager");
 
+        mAPIService = getCore().getService<nap::APIService>();
+        logToUI("Got API Service");
+
         if (!mResourceManager->loadFile("emography.json", error))
         {
             nap::Logger::error("Dummy load fail");
@@ -43,6 +46,10 @@ namespace nap
 
     void EmographyAndroidApp::update(double deltaTime)
     {
+        std::unique_ptr<APIEvent> api_event(std::make_unique<APIEvent>("particle"));
+        api_event->addArgument<APIFloat>("speed",1.0f);
+        api_event->addArgument<APIInt>("drag", 2.0f);
+        mAPIService->dispatchEvent(std::move(api_event));
     }
 
 

@@ -6,11 +6,51 @@
 #include <utility/errorstate.h>
 #include <android/androidservicerunner.h>
 #include <apiservice.h>
+#include <nap/signalslot.h>
+#include <apimessage.h>
 
 namespace nap
 {
     namespace android
     {
+        /**
+         * Describes the object that runs the emography android app.
+         */
+        using EmographyRunner = nap::AndroidServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler>;
+
+
+        ///////////////////////////////////////////////////////
+        // Callback
+        ///////////////////////////////////////////////////////
+
+        /**
+         * Describes the signature of a NAP api callback function
+         */
+        using APICallbackFunction = std::function<void(JNIEnv *env, const nap::APIEvent&)>;
+
+
+        /**
+         * Called when the application receives an api event
+         * @param env java native environment
+         * @param event the received api event
+         */
+        void apiEventReceived(JNIEnv *env, const nap::APIEvent& event)
+        {
+            // Convert into api message
+            APIMessage apimsg(event);
+
+            // Extract json
+            std::string json;
+            nap::utility::ErrorState error;
+            if(!apimsg.toJSON(json, error))
+            {
+                nap::Logger::error(error.toString());
+                return;
+            }
+            nap::Logger::info(json);
+        }
+
+
         ///////////////////////////////////////////////////////
         // Application Instance
         ///////////////////////////////////////////////////////
@@ -23,16 +63,6 @@ namespace nap
         class Instance final
         {
         public:
-            /**
-             * @return the global instance of this app.
-             */
-            static Instance& get()
-            {
-                // Return if instance was created already
-                static Instance sInstance;
-                return sInstance;
-            }
-
             /**
              * Creates the instance, only allowed if there is no instance created already.
              * @return if creation succeeded or not
@@ -63,6 +93,8 @@ namespace nap
                     nap::Logger::fatal("error: %s", "unable to acquire handle to API service");
                     return false;
                 }
+                mAPIService->eventDispatched.connect(mDispatchSlot);
+
                 return true;
             }
 
@@ -106,6 +138,16 @@ namespace nap
             }
 
             /**
+             * Installs a callback which is called when the system receives an api event
+             * @param callback the callback to install
+             */
+            void installCallback(APICallbackFunction callback)
+            {
+                // Store callback
+                mCallback = callback;
+            }
+
+            /**
              * Destructor
              */
             ~Instance()
@@ -114,16 +156,41 @@ namespace nap
                 mCore.reset(nullptr);
             }
 
+            /**
+             * @return the global instance of this app.
+             */
+            static Instance& get()
+            {
+                static Instance sInstance;
+                return sInstance;
+            }
+
 
         private:
             // Hide constructor
-            Instance()                                  {   }
+            Instance()                                          {   }
 
             // Members
-            nap::APIService* mAPIService                = nullptr;
-            std::unique_ptr<nap::Core> mCore            = nullptr;
-            std::unique_ptr<EmographyRunner> mRunner    = nullptr;
+            nap::APIService* mAPIService                        = nullptr;
+            std::unique_ptr<nap::Core> mCore                    = nullptr;
+            std::unique_ptr<EmographyRunner> mRunner            = nullptr;
+            APICallbackFunction mCallback                       = nullptr;
+
+            /**
+             * Called when the instance receives a message from the api service
+             * @param event generated api event, forwarded to callback
+             */
+            void onAPIEventReceived(const nap::APIEvent& event)
+            {
+                if(mCallback == nullptr)
+                    return;
+                mCallback(mRunner->getApp().getEnv(), event);
+            }
+
+            // Slot that is connected on initialization
+            nap::Slot<const nap::APIEvent&> mDispatchSlot       = {this, &Instance::onAPIEventReceived};
         };
+
 
 
         ///////////////////////////////////////////////////////
@@ -132,7 +199,14 @@ namespace nap
 
         bool init(JNIEnv *env, jobject contextObject)
         {
-            return Instance::get().init(env, contextObject);
+            // Initialize the NAP env and app
+            if(Instance::get().init(env, contextObject))
+            {
+                APICallbackFunction callbackFunc = &nap::android::apiEventReceived;
+                Instance::get().installCallback(callbackFunc);
+                return true;
+            }
+            return false;
         }
 
 
