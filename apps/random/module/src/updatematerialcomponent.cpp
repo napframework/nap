@@ -39,6 +39,9 @@ namespace nap
 		updateSunGlareOrbit();
 		updatePartyCenter();
 
+		if (mPartyPresetsActive)
+			startPartyPresetTransition(PARTY_PRESET_CALM);
+
 		return true;
 	}
 
@@ -56,10 +59,60 @@ namespace nap
 	}
 
 
+	void UpdateMaterialComponentInstance::startPartyPresetTransition(PartyPresetTypes type) {
+		mPartyPresetsActive = type != PARTY_PRESET_NONE;
+		mPartyPresetTransitionActive = mPartyPresetsActive;
+		mPartyPresetTransitionBpmVelocity = 0.0f;
+		mPartyPresetBeats = 0.0f;
+		mPartyPresetType = type;
+		switch (type)
+		{
+		case PARTY_PRESET_CALM:
+			mPartyPreset = &mPartyPresetsCalm[nap::math::random(0, static_cast<int>(sizeof(mPartyPresetsCalm) / sizeof(mPartyPresetsCalm[0])) - 1)];
+			break;
+		case PARTY_PRESET_INTENSE:
+			mPartyPreset = &mPartyPresetsIntense[nap::math::random(0, static_cast<int>(sizeof(mPartyPresetsIntense) / sizeof(mPartyPresetsIntense[0])) - 1)];
+			break;
+		}
+		mPartyPresetTransitionDuration = 1.0f;
+		mPartyPresetTransitionBpmIncrement = mPartyPreset->bpm > mPartyBPM;
+	}
+
+
+	void UpdateMaterialComponentInstance::updatePartyPresetTransition(double deltaTime)
+	{
+		// Smoothly transition the party preset values
+		nap::math::smooth(mPartyBPM, mPartyPreset->bpm, mPartyPresetTransitionBpmVelocity, static_cast<float>(deltaTime), mPartyPresetTransitionDuration, 1000000.0f);
+
+		// Stop the updating when the transition is complete
+		if (mPartyPresetTransitionBpmIncrement && mPartyBPM + mPartyPresetTransitionTolerance >= mPartyPreset->bpm ||
+			!mPartyPresetTransitionBpmIncrement && mPartyBPM - mPartyPresetTransitionTolerance <= mPartyPreset->bpm)
+		{
+			mPartyBPM = mPartyPreset->bpm;
+			mPartyPresetTransitionActive = false;
+		}
+	}
+
+
 	void UpdateMaterialComponentInstance::updateParty(double deltaTime) {
+		float beatIncrement = (mPartyBPM / 60.0f) * static_cast<float>(deltaTime);
+
+		// update the preset transition if active
+		if (mPartyPresetTransitionActive)
+		{
+			updatePartyPresetTransition(deltaTime);
+		}
+		// otherwise, start counting the preset duration if active
+		else if (mPartyPresetsActive)
+		{
+			mPartyPresetBeats += abs(beatIncrement);
+			if (mPartyPresetBeats >= mPartyPreset->durationBeats)
+				startPartyPresetTransition(mPartyPresetType == PARTY_PRESET_CALM ? PARTY_PRESET_INTENSE : PARTY_PRESET_CALM);
+		}
+
 		float* uBeat = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uBeat").mValue;
 		float* uWaveNoiseZ = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveNoiseZ").mValue;
-		*uBeat = fmod(*uBeat + (static_cast<float>(mPartyBPM) / 60.0f) * static_cast<float>(deltaTime), 1.0f);
+		*uBeat = fmod(*uBeat + beatIncrement, 1.0f);
 		*uWaveNoiseZ += mPartyWaveNoiseSpeed * static_cast<float>(deltaTime);
 	}
 

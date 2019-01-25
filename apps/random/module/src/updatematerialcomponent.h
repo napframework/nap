@@ -10,6 +10,23 @@
 
 namespace nap
 {
+	/**
+	* Party Presets
+	*/
+	enum PartyPresetTypes {
+		PARTY_PRESET_NONE,
+		PARTY_PRESET_CALM,
+		PARTY_PRESET_INTENSE
+	};
+
+	struct PartyPreset
+	{
+		float durationBeats;
+		float bpm;
+		float noiseSpeed;
+		float noiseInfluence;
+	};
+
 	class UpdateMaterialComponentInstance;
 
 	/**
@@ -61,6 +78,8 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 		void updateCameraLocation();
+		void startPartyPresetTransition(PartyPresetTypes type);
+		void updatePartyPresetTransition(double deltaTime);
 		void updateParty(double deltaTime);
 		void updatePartyCenter();
 		void updateSunClouds(double deltaTime);
@@ -121,9 +140,9 @@ namespace nap
 		const float	mSunGlareStretchMax = 10.0f;
 
 		float		mPartyCenter[2] = { 0.2f, 0.8f };
-		int			mPartyBPM = 4;
-		int			mPartyBPMMin = -240;
-		int			mPartyBPMMax = 240;
+		float		mPartyBPM = 40;
+		float		mPartyBPMMin = -240;
+		float		mPartyBPMMax = 240;
 		int			mPartyWaveCountMax = 12;
 		float		mPartyWaveLengthMin = 0.1f;
 		float		mPartyWaveFalloffMin = 0.1f;
@@ -133,5 +152,25 @@ namespace nap
 		float		mPartyWaveNoiseScaleMin = 0.1f;
 		float		mPartyWaveNoiseScaleMax = 1.0f;
 		float		mPartyWaveNoiseInfluenceMax = 0.5f;
+
+		bool				mPartyPresetsActive = true;
+		bool				mPartyPresetTransitionActive = false;
+		float				mPartyPresetTransitionTolerance = 0.001;
+		float				mPartyPresetTransitionDuration;
+		float				mPartyPresetTransitionBpmVelocity;
+		bool				mPartyPresetTransitionBpmIncrement;
+		float				mPartyPresetBeats;
+		PartyPresetTypes	mPartyPresetType;
+		PartyPreset*		mPartyPreset;
+
+		PartyPreset	mPartyPresetsCalm[2] = {
+			{ 0.1f, 2.0f, 0.05f, 0.05f },	// transition 1.5s; duration 30s
+			{ 0.1f, -2.0f, 0.05f, 0.05f }	// transition 1.5s; duration 30s
+		};
+
+		PartyPreset	mPartyPresetsIntense[2] = {
+			{ 10.0f, 120.0f, 0.05f, 0.05f },	// transition 0.5s; duration 5s
+			{ 10.0f, -120.0f, 0.05f, 0.05f }	// transition 0.5s; duration 5s
+		};
 	};
 }

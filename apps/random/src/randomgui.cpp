@@ -164,11 +164,16 @@ namespace nap
 	void RandomGui::showPartyControls()
 	{
 		UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
+		if (ImGui::CollapsingHeader("Presets", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (ImGui::Checkbox("Use Party Presets", &updateMaterial.mPartyPresetsActive))
+				updateMaterial.startPartyPresetTransition(updateMaterial.mPartyPresetsActive ? PARTY_PRESET_CALM : PARTY_PRESET_NONE);
+		}
 		if (ImGui::CollapsingHeader("Music", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			if (ImGui::SliderFloat2("Center", updateMaterial.mPartyCenter, 0.0f, 1.0f))
 				updateMaterial.updatePartyCenter();
-			ImGui::DragInt("BPM", &updateMaterial.mPartyBPM, 0.25f, updateMaterial.mPartyBPMMin, updateMaterial.mPartyBPMMax);			
+			ImGui::DragFloat("BPM", &updateMaterial.mPartyBPM, 0.25f, updateMaterial.mPartyBPMMin, updateMaterial.mPartyBPMMax);			
 		}
 		if (ImGui::CollapsingHeader("Waves", ImGuiTreeNodeFlags_DefaultOpen))
 		{
