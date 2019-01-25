@@ -84,6 +84,7 @@ namespace nap
 		void updatePartyPresetTransition(double deltaTime);
 		void updateParty(double deltaTime);
 		void updatePartyCenter();
+		void updateSound(double deltaTime);
 		void updateSunClouds(double deltaTime);
 		void updateSunGlareOrbit();
 
@@ -127,6 +128,7 @@ namespace nap
 		float*		getPartyWaveHighlightLengthPtr();
 		float*		getPartyWaveHighlightIntensityPtr();
 
+		float*		getSoundSourceWidthPtr();
 		float*		getSoundTemperaturePtr();
 
 		float		mSunCloudsNoiseSpeed = 0.01f;
@@ -162,9 +164,15 @@ namespace nap
 		float		mPartyGlitchStopTimer = 0.0f;
 		bool		mPartyGlitchOn = false;
 
+		bool		mSoundAnimateSource = true;
+		float		mSoundAnimationSpeed = 1.0f;
+		float		mSoundAnimationSpeedMax = 5.0f;
+		float		mSoundSourceWidthMin = 0.01f;
+		float		mSoundSourceWidthMax = 0.5f;
+
 		bool				mPartyPresetsActive = true;
 		bool				mPartyPresetTransitionActive = false;
-		float				mPartyPresetTransitionTolerance = 0.005;
+		float				mPartyPresetTransitionTolerance = 0.005f;
 		float				mPartyPresetTransitionDuration = 0.25f;
 		float				mPartyPresetTransitionBpmVelocity;
 		bool				mPartyPresetTransitionBpmIncrement;

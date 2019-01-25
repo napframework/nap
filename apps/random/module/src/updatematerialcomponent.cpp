@@ -50,6 +50,9 @@ namespace nap
 	{
 		// Update party
 		updateParty(deltaTime);
+		
+		// Update sound
+		updateSound(deltaTime);
 
 		// Update clouds shader
 		updateSunClouds(deltaTime);
@@ -174,6 +177,15 @@ namespace nap
 		glm::vec3* uCenter = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uCenter").mValue;
 		uCenter->x = mPartyCenter[0];
 		uCenter->y = mPartyCenter[1];
+	}
+
+
+	void UpdateMaterialComponentInstance::updateSound(double deltaTime)
+	{
+		if (mSoundAnimateSource) {
+			glm::vec3* uSourcePosition = &mSoundMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uSourcePosition").mValue;
+			uSourcePosition->x = fmod(uSourcePosition->x + static_cast<float>(deltaTime) * mSoundAnimationSpeed, 1.0f);
+		}
 	}
 
 
@@ -352,6 +364,12 @@ namespace nap
 	float* UpdateMaterialComponentInstance::getPartyWaveHighlightIntensityPtr()
 	{
 		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uWaveHighlightIntensity").mValue;
+	}
+
+
+	float* UpdateMaterialComponentInstance::getSoundSourceWidthPtr()
+	{
+		return &mSoundMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uSourceWidth").mValue;
 	}
 
 

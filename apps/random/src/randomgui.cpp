@@ -202,6 +202,9 @@ namespace nap
 		if (ImGui::CollapsingHeader("Sound", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
+			ImGui::Checkbox("Animate Source", &updateMaterial.mSoundAnimateSource);
+			ImGui::SliderFloat("Animation Speed", &updateMaterial.mSoundAnimationSpeed, 0.0f, updateMaterial.mSoundAnimationSpeedMax);
+			ImGui::SliderFloat("Source Width", updateMaterial.getSoundSourceWidthPtr(), updateMaterial.mSoundSourceWidthMin, updateMaterial.mSoundSourceWidthMax);
 			ImGui::SliderFloat("Sound Temperature", updateMaterial.getSoundTemperaturePtr(), 0.0f, 1.0f);
 		}
 	}
