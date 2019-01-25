@@ -8,10 +8,12 @@ namespace nap
 	{
 	}
 
+
 	Database::~Database()
 	{
 		sqlite3_close(mDatabase);
 	}
+
 
 	bool Database::init(const std::string& path, utility::ErrorState& errorState)
 	{
@@ -49,13 +51,14 @@ namespace nap
 		return true;
 	}
 
+
 	DatabaseTable* Database::getOrCreateTable(const std::string& tableID, const rtti::TypeInfo& objectType, const DatabaseTable::DatabasePropertyPathList& propertiesToIgnore, utility::ErrorState& errorState)
 	{
  		DatabaseTableMap::iterator pos = mTables.find(tableID);
  		if (pos != mTables.end())
  			return pos->second.get();
 
- 		std::unique_ptr<DatabaseTable> table = std::make_unique<DatabaseTable>(*this, *mFactory, tableID, objectType);
+ 		std::unique_ptr<DatabaseTable> table = std::make_unique<DatabaseTable>(*mDatabase, *mFactory, tableID, objectType);
  		if (!table->init(propertiesToIgnore, errorState))
  			return nullptr;
 

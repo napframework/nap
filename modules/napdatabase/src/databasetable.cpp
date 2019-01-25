@@ -6,6 +6,9 @@
 
 namespace nap
 {
+	/**
+	 * Convert a C++ type name that a name that can be used for table/column names in the database (not all characters are allowed)
+	 */
 	static std::string sCPPToDatabaseName(const std::string& cppName)
 	{
 		std::string result = cppName;
@@ -16,6 +19,7 @@ namespace nap
 
 		return result;
 	}
+
 
 	using VisitRTTIPropertyTypesCallback = std::function<void(const rtti::Property&, const rtti::Path&)>;
 
@@ -47,7 +51,11 @@ namespace nap
 		return true;
 	}
 
-	static std::string sGetTypeString(const rtti::TypeInfo& type)
+
+	/** 
+	 * Returns the type string for an SQL column based on the rtti type.
+	 */
+	static std::string sGetSQLTypeString(const rtti::TypeInfo& type)
 	{
 		if (type.is_arithmetic())
 		{
@@ -122,6 +130,7 @@ namespace nap
 		return "";
 	}
 
+
 	static bool sSetColumnValue(rtti::Object& object, const rtti::Path& path, sqlite3_stmt& statement, int columnIndex)
 	{
 		rtti::ResolvedPath resolvedPath;
@@ -172,6 +181,7 @@ namespace nap
 	{
 	}
 
+
 	std::unique_ptr<DatabasePropertyPath> DatabasePropertyPath::sCreate(const rtti::TypeInfo& rootType, const rtti::Path& rttiPath, utility::ErrorState& errorState)
 	{
 		// Can't resolve an empty path
@@ -202,6 +212,7 @@ namespace nap
 		return std::unique_ptr<DatabasePropertyPath>(new DatabasePropertyPath(rttiPath));
 	}
 
+
 	std::string DatabasePropertyPath::toString() const
 	{
 		std::string column_name = mRTTIPath.toString();
@@ -211,7 +222,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 
-	DatabaseTable::DatabaseTable(Database& database, rtti::Factory& factory, const std::string& tableID, const rtti::TypeInfo& objectType) :
+	DatabaseTable::DatabaseTable(sqlite3& database, rtti::Factory& factory, const std::string& tableID, const rtti::TypeInfo& objectType) :
 		mFactory(&factory),
 		mObjectType(objectType),
 		mDatabase(&database)
@@ -219,35 +230,43 @@ namespace nap
 		mTableID = sCPPToDatabaseName(tableID);
 	}
 
+
 	DatabaseTable::~DatabaseTable()
 	{
 		sqlite3_finalize(mInsertStatement);
 	}
 
+
 	bool DatabaseTable::init(const DatabasePropertyPathList& propertiesToIgnore, utility::ErrorState& errorState)
 	{
-		sqlite3& database = mDatabase->GetDatabase();
-	
+		// Here we create a list of columns that need to be serialized. This column structure is reused for adds/queries later on.
 		rtti::Path current_path;
  		bool result = sVisitRTTIPropertyTypes(mObjectType, current_path, [this, &propertiesToIgnore](const rtti::Property& property, const rtti::Path& path)
 		{
+			// Create path to the property we are visiting for storage in our column data structure. Creation of the path should always succeed, 
+			// as the visitor is only visiting properties that are valid for the database.
 			utility::ErrorState errorState;
 			std::unique_ptr<DatabasePropertyPath> database_path = DatabasePropertyPath::sCreate(mObjectType, path, errorState);
 			assert(database_path != nullptr);
 
+			// See if the property is in the ignore list
 			DatabasePropertyPathList::const_iterator ignored_property_pos = std::find_if(propertiesToIgnore.begin(), propertiesToIgnore.end(), [&database_path](const DatabasePropertyPath& value)
 			{
 				return value.getRTTIPath() == database_path->getRTTIPath();
 			});
 
+			// Only add if it is not an ignored property
 			if (ignored_property_pos == propertiesToIgnore.end())
-				mColumns.push_back({ std::move(database_path), sGetTypeString(property.get_type()) });
+				mColumns.push_back({ std::move(database_path), sGetSQLTypeString(property.get_type()) });
 			
 		}, errorState);
 
 		if (!result)
 			return false;
 
+		// Converts the column names to strings that can be used for:
+		// 1) A query to create the table and its columns
+		// 2) A query to insert values, using placeholders ('?') that can be bound later to the query
 		std::string createTableSql = utility::stringFormat("CREATE TABLE IF NOT EXISTS %s (", mTableID.c_str());
 		std::string insertColumnsSql;
 		std::string insertValuesSql;
@@ -259,21 +278,23 @@ namespace nap
 
 			const char* separator = index < mColumns.size() - 1 ? ", " : "";
 			createTableSql += utility::stringFormat("'%s' %s%s", column_name.c_str(), column.mSqlType.c_str(), separator);
-
 			insertColumnsSql += utility::stringFormat("'%s'%s", column_name.c_str(), separator);
 			insertValuesSql += utility::stringFormat("?%s", separator);
 		}
 		createTableSql += ");";
 
+		// Execute the create table + columns query
 		char* errorMessage = nullptr;
-		if (!errorState.check(sqlite3_exec(&database, createTableSql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to create table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
+		if (!errorState.check(sqlite3_exec(mDatabase, createTableSql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to create table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
 		{
 			sqlite3_free(errorMessage);
 			return false;
 		}
 
+		// We already prepare the insert statement here. This saves a lot of parsing performance when we insert values. Upon execution we only need to bind the 
+		// correct values to the placeholders
 		std::string insertRowSql = utility::stringFormat("INSERT INTO %s (%s) VALUES (%s)", mTableID.c_str(), insertColumnsSql.c_str(), insertValuesSql.c_str());
-		if (!errorState.check(sqlite3_prepare_v2(&mDatabase->GetDatabase(), insertRowSql.c_str(), insertRowSql.size(), &mInsertStatement, nullptr) == SQLITE_OK, "Failed to create insert query %s", insertRowSql.c_str()))
+		if (!errorState.check(sqlite3_prepare_v2(mDatabase, insertRowSql.c_str(), insertRowSql.size(), &mInsertStatement, nullptr) == SQLITE_OK, "Failed to create insert query %s", insertRowSql.c_str()))
 			return false;
 
 		return true;
@@ -285,6 +306,7 @@ namespace nap
 		// Types need to match exactly: even if the type is derived, it could mean that additional properties were added, making it incompatible with the table
 		assert(object.get_type() == mObjectType);
 
+		// Go through the columns structure. We already prepared the query so all we need to do is bind the values from this object to the query
 		std::string columns;
 		std::string values;
 		for (int index = 0; index < mColumns.size(); ++index)
@@ -299,25 +321,33 @@ namespace nap
 				return false;
 		}
 
+		// Step the query. We only expect a single row, so SQLITE_DONE should be returned immediately on success
 		if (!errorState.check(sqlite3_step(mInsertStatement) == SQLITE_DONE, "Failed to execute insert statement"))
 			return false;
 
+		// SQL statement needs to be reset after the step returned SQLITE_DONE
 		if (!errorState.check(sqlite3_reset(mInsertStatement) == SQLITE_OK, "Failed to reset insert statement"))
 			return false;
 
 		return true;
 	}
 
+
 	bool DatabaseTable::query(const std::string& whereClause, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState)
 	{
+		// Execute the query
 		std::string sql = utility::stringFormat("SELECT * FROM %s %s %s", mTableID.c_str(), whereClause.empty() ? "" : "WHERE", whereClause.c_str());
 		sqlite3_stmt* statement = nullptr;
-		if (!errorState.check(sqlite3_prepare_v2(&mDatabase->GetDatabase(), sql.c_str(), sql.size(), &statement, nullptr) == SQLITE_OK, "Failed to create query %s", sql.c_str()))
+		if (!errorState.check(sqlite3_prepare_v2(mDatabase, sql.c_str(), sql.size(), &statement, nullptr) == SQLITE_OK, "Failed to create query %s", sql.c_str()))
 			return false;
 
+		// Process all rows
 		while (sqlite3_step(statement) == SQLITE_ROW)
 		{
+			// Create an object through the factory
 			std::unique_ptr<rtti::Object> object(mFactory->create(mObjectType));
+
+			// Set all properties from the columns as retrieved by the query for this row
 			for (int column_index = 0; column_index < mColumns.size(); ++column_index)
 			{
 				const Column& column = mColumns[column_index];
@@ -331,14 +361,14 @@ namespace nap
 		return true;
 	}
 
+
 	bool DatabaseTable::getOrCreateIndex(const DatabasePropertyPath& propertyPath, utility::ErrorState& errorState)
 	{
 		std::string column_name = propertyPath.toString();
-
 		std::string sql = utility::stringFormat("CREATE INDEX IF NOT EXISTS \"%s_%s\" ON %s (\"%s\")", mTableID.c_str(), column_name.c_str(), mTableID.c_str(), column_name.c_str());
 
 		char* errorMessage = nullptr;
-		if (!errorState.check(sqlite3_exec(&mDatabase->GetDatabase(), sql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to create index on table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
+		if (!errorState.check(sqlite3_exec(mDatabase, sql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to create index on table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
 		{
 			sqlite3_free(errorMessage);
 			return false;
@@ -347,12 +377,13 @@ namespace nap
 		return true;
 	}
 
+
 	bool DatabaseTable::clear(utility::ErrorState& errorState)
 	{
 		std::string sql = utility::stringFormat("DELETE FROM %s", mTableID.c_str());
 
 		char* errorMessage = nullptr;
-		if (!errorState.check(sqlite3_exec(&mDatabase->GetDatabase(), sql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to clear table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
+		if (!errorState.check(sqlite3_exec(mDatabase, sql.c_str(), nullptr, nullptr, &errorMessage) == SQLITE_OK, "Failed to clear table with ID %s: %s", mTableID.c_str(), errorMessage == nullptr ? "" : errorMessage))
 		{
 			sqlite3_free(errorMessage);
 			return false;
