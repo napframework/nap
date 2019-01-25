@@ -2,14 +2,14 @@
 
 #include "utility/dllexport.h"
 #include "utility/errorstate.h"
-#include "sqlite3.h"
 #include "databasetable.h"
 
 namespace nap
 {
 
 	/**
-	 * 
+	 * Wrapper around a SQLite database used to store RTTI objects for a specific type in tables. 
+	 * The Database interface is primarily used to create tables for a specific object type.
 	 */
 	class NAPAPI Database final
 	{
@@ -39,10 +39,6 @@ namespace nap
 		DatabaseTable* getOrCreateTable(const std::string& tableID, const rtti::TypeInfo& objectType, const DatabaseTable::DatabasePropertyPathList& propertiesToIgnore, utility::ErrorState& errorState);
 
 	private:
-		sqlite3& GetDatabase() { return *mDatabase; }
-
-	private:
-		friend class DatabaseTable;
 		using DatabaseTableMap = std::unordered_map<std::string, std::unique_ptr<DatabaseTable>>;
 
 		rtti::Factory*		mFactory = nullptr;			///< Factory used to create objects when querying data
