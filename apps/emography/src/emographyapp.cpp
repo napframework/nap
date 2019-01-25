@@ -55,26 +55,45 @@ namespace nap
 		if (!mDataModel->init("emography.db", DataModel::EKeepRawReadings::Disabled, error))
 			return false;
 
-		bool result = mDataModel->registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error);
-
-		if (!result)
+		if (!mDataModel->registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error))
 			return false;
 
-#if 0
-		// Get converted time
-		DateTime now = getCurrentDateTime();
-		auto current_time_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now.getTimeStamp());
+		return true;
+	}
 
-		for (int days = 0; days != 7; ++days)
+
+	void EmographyApp::clearData()
+	{
+		utility::ErrorState errorState;
+		if (!mDataModel->clearData<StressIntensityReading>(errorState))
+			Logger::error(utility::stringFormat("Failed to clear data: %s", errorState.toString().c_str()));
+	}
+
+
+	void EmographyApp::generateData(int numDays)
+	{
+		// Start generating data from the last timestamp in the model, if available. Otherwise generate data starting at the current time.
+		Seconds offset(0);
+
+		TimeStamp start_time = mDataModel->getLastReadingTime<StressIntensityReading>();
+		if (!start_time.isValid())
+			start_time = getCurrentTime();
+		else
+			offset = Seconds((int)(60 * 60 * 12.5f));
+
+		SystemTimeStamp current_time = start_time.toSystemTime();
+		current_time += offset;
+
+		for (int days = 0; days != numDays; ++days)
 		{
 			for (int hours = 0; hours != 24; ++hours)
 			{
-				Logger::info(utility::stringFormat("%2d:%2d", days, hours));
+				//Logger::info(utility::stringFormat("%2d:%2d", days, hours));
 				for (int minutes = 0; minutes != 60; ++minutes)
 				{
 					if (hours % 3 == 0 && minutes == 5)
 					{
-						current_time_ms += Milliseconds(60 * 55 * 1000);
+						current_time += Milliseconds(60 * 55 * 1000);
 						break;
 					}
 
@@ -91,25 +110,21 @@ namespace nap
 
 							float value = (float)(rand() % 100) * minute_bias * seconds_bias;
 
-							current_time_ms += Milliseconds(1000 / num_seconds_samples);
+							current_time += Milliseconds(1000 / num_seconds_samples);
 
-							TimeStamp cur_time = TimeStamp(current_time_ms);
-							std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, cur_time);
-							if (!mDataModel.add(*intensityReading, errorState))
+							std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, current_time);
+							if (!mDataModel->add(*intensityReading, errorState))
+							{
 								nap::Logger::error(errorState.toString());
-
-// 							std::unique_ptr<StressStateReading> stateReading = std::make_unique<StressStateReading>((EStressState)distr(eng), cur_time);
-// 							if (!mDataModel.add(*stateReading, errorState))
-// 								nap::Logger::error(errorState.toString());
+								return;
+							}
 						}
 					}
 				}
 			}
 		}
-#endif
-
-		return true;
 	}
+
 
 	void EmographyApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
@@ -129,226 +144,211 @@ namespace nap
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
+
 	void EmographyApp::renderGUI()
 	{
 		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 		ImGui::Begin("GraphWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_ShowBorders);
-		
-		glm::vec2 topLeft = glm::vec2(0.0f, 0.0);
 
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::SliderInt("Resolution", &mResolution, 10, ImGui::GetWindowWidth());
-		ImGui::SliderInt("Graph Height", &mGraphHeight, 1, 1000);
+		updateTimelineState();
+		renderControls();
 
-		ImGuiIO& io = ImGui::GetIO();
+		float timeline_height = renderTimeline();	
 
-		float timelineHeight = renderTimeline();
-
-		mTimelineState.mWidthInPixels = ImGui::GetWindowWidth();
-		
-		float height = ImGui::GetWindowHeight() - timelineHeight;
-		float y_units = mGraphHeight;
-
-		glm::vec2 mousePos = glm::vec2(ImGui::GetMousePos().x, ImGui::GetMousePos().y) - topLeft;
-		
-		bool mouse_inside_screen = mousePos.x != -FLT_MAX && mousePos.y != -FLT_MAX;		
-
-		if (ImGui::IsMouseClicked(0))
-			mTimelineState.OnMouseDown(mousePos, io.KeyCtrl, io.KeyAlt);
-		else if (ImGui::IsMouseReleased(0))
-			mTimelineState.OnMouseUp(mousePos, io.KeyCtrl, io.KeyAlt);
-
-		if (mouse_inside_screen)
-			mTimelineState.OnMouseMove(mousePos, io.KeyCtrl, io.KeyAlt);		
-
-		if (mouse_inside_screen && !mMouseWasInsideScreen)
-			mTimelineState.OnMouseEnter(mousePos, io.KeyCtrl, io.KeyAlt);
-		else if (!mouse_inside_screen && mMouseWasInsideScreen)
-			mTimelineState.OnMouseLeave(mousePos, io.KeyCtrl, io.KeyAlt);
-
-		mMouseWasInsideScreen = mouse_inside_screen;
-
-		int numSamples = mResolution;
-		float secondsPerSample = (mTimelineState.mTimeRight - mTimelineState.mTimeLeft) / (float)numSamples;
-		if (secondsPerSample < 1.0f)
-			numSamples = mTimelineState.mTimeRight - mTimelineState.mTimeLeft;
-
-		TimeStamp left(SystemTimeStamp(Seconds(mTimelineState.mTimeLeft)));
-		TimeStamp right(SystemTimeStamp(Seconds(mTimelineState.mTimeRight)));
-
-		std::vector<std::unique_ptr<ReadingSummaryBase>> readings;
-		utility::ErrorState errorState;
-		if (mDataModel->getRange<StressIntensityReading>(left, right, numSamples, readings, errorState))
-		{
-			glm::vec2 prevPos(0.0, height);
-
-			float bottomY = height;
-			ImDrawList* draw_list = ImGui::GetWindowDrawList();
-			for (auto& readingBase : readings)
-			{
-				StressIntensityReadingSummary* reading = rtti_cast<StressIntensityReadingSummary>(readingBase.get());
-
-				float x = mTimelineState.AbsTimeToPixel(reading->mTimeStamp.mTimeStamp / 1000);
-				float y = bottomY - glm::clamp(reading->mObject.mValue / y_units, 0.0f, 1.0f) * height;
-
-				draw_list->AddLine(ImVec2(topLeft.x + prevPos.x, topLeft.y + prevPos.y), ImVec2(topLeft.x + x, topLeft.y + y), ImGui::GetColorU32(ImVec4(170.0f / 255.0f, 211.0f / 255.0f, 1.0f, 1.0f)), 1.0f);
-
-				prevPos = glm::vec2(x, y);
-			}
-		}
+		renderGraph(ImGui::GetWindowHeight() - timeline_height);
 
 		ImGui::End();
 	}
 
+
+	void EmographyApp::updateTimelineState()
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		mTimelineState.mWidthInPixels = ImGui::GetWindowWidth();
+
+		glm::vec2 mouse_pos = glm::vec2(ImGui::GetMousePos().x, ImGui::GetMousePos().y);
+
+		bool mouse_inside_screen = mouse_pos.x != -FLT_MAX && mouse_pos.y != -FLT_MAX;
+
+		if (ImGui::IsMouseClicked(0))
+			mTimelineState.OnMouseDown(mouse_pos, io.KeyCtrl, io.KeyAlt);
+		else if (ImGui::IsMouseReleased(0))
+			mTimelineState.OnMouseUp(mouse_pos, io.KeyCtrl, io.KeyAlt);
+
+		if (mouse_inside_screen)
+			mTimelineState.OnMouseMove(mouse_pos, io.KeyCtrl, io.KeyAlt);
+
+		if (mouse_inside_screen && !mMouseWasInsideScreen)
+			mTimelineState.OnMouseEnter(mouse_pos, io.KeyCtrl, io.KeyAlt);
+		else if (!mouse_inside_screen && mMouseWasInsideScreen)
+			mTimelineState.OnMouseLeave(mouse_pos, io.KeyCtrl, io.KeyAlt);
+
+		mMouseWasInsideScreen = mouse_inside_screen;
+	}
+
+	void EmographyApp::renderControls()
+	{
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::NewLine();
+
+		ImGui::BeginChild("Controls", ImVec2(300, 200), false);
+
+		if (ImGui::Button("Clear Data"))
+			clearData();
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Generate data"))
+			generateData(mNumDaysToGenerate);
+
+		ImGui::InputInt("Days", &mNumDaysToGenerate, 0, 0);
+		ImGui::NewLine();
+
+		ImGui::Text("Render options");
+		ImGui::SliderInt("Resolution", &mResolution, 10, 1000);
+		ImGui::SliderInt("Graph Height", &mGraphYUnits, 1, 1000);
+
+		ImGui::EndChild();
+	}
+
+
 	float EmographyApp::renderTimeline()
 	{
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
-		glm::vec2 topLeft = glm::vec2(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
+		glm::vec2 top_left = glm::vec2(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
 		float height = ImGui::GetWindowHeight() - 1;
 
 		double left = mTimelineState.mTimeLeft;
 		double right = mTimelineState.mTimeRight;
 		double delta = right - left;
 
-		double markerTimelineHeight = 25.0;
-		double textTimelineHeight = 25.0f;
-		double totalTimelineHeight = markerTimelineHeight + textTimelineHeight + 2;
+		double marker_timeline_height = 25.0;
+		double text_timeline_height = 25.0f;
+		double total_timeline_height = marker_timeline_height + text_timeline_height + 2;
 
 		// Calculate how many milliseconds a particular unit takes
-		const double oneHour = 1000.0 * 60.0 * 60.0;
-		const double oneMinute = 1000.0 * 60.0;
-		const double oneSecond = 1000.0;
-		const double oneMsec = 1.0f;
+		const double one_hour = 1000.0 * 60.0 * 60.0;
+		const double one_minute = 1000.0 * 60.0;
+		const double one_second = 1000.0;
+		const double one_msec = 1.0f;
 
 		struct Separator
 		{
 			double	mMajorTime;				// Time for major separator
-			int		mNumMinorSubdivisions;	// Amount of subdivisons requires for this major separator
+			int		mNumMinorSubdivisions;	// Amount of subdivisions requires for this major separator
 		};
 
-		// Table determining where the major separators lie and how the subdivions are placed
-		Separator separatorSettings[] =
+		// Table determining where the major separators lie and how the subdivisions are placed
+		Separator separator_settings[] =
 		{
-			{ oneHour,				10 },
-			{ oneMinute * 10.0f,	10 },
-			{ oneMinute * 5.0f,		5 },
-			{ oneMinute,			10 },
-			{ oneSecond * 10.0f,	10 },
-			{ oneSecond * 5.0f,		5 },
-			{ oneSecond,			10 },
-			{ oneMsec * 100.0f,		10 },
-			{ oneMsec * 50.0f,		5 },
-			{ oneMsec * 10.0f,		10 },
-			{ oneMsec * 5.0f,		5 },
-			{ oneMsec * 1.0f,		10 }
+			{ one_hour,				10 },
+			{ one_minute * 10.0f,	10 },
+			{ one_minute * 5.0f,		5 },
+			{ one_minute,			10 },
+			{ one_second * 10.0f,	10 },
+			{ one_second * 5.0f,		5 },
+			{ one_second,			10 },
+			{ one_msec * 100.0f,		10 },
+			{ one_msec * 50.0f,		5 },
+			{ one_msec * 10.0f,		10 },
+			{ one_msec * 5.0f,		5 },
+			{ one_msec * 1.0f,		10 }
 		};
 
-		const int preferredSpaceBetweenSeparators = (int)(300.0f);
-		const int preferredNumSeparators = mTimelineState.mWidthInPixels / preferredSpaceBetweenSeparators;
+		const int preferred_space_between_separators = (int)(300.0f);
+		const int preferred_num_separators = mTimelineState.mWidthInPixels / preferred_space_between_separators;
 
 		// Find what major separator comes closest to the space we prefer between separators
-		int numMinorSubDivisions = 10;
-		double minorStepSize = FLT_MAX;
-		double majorStepSize = FLT_MAX;
-		for (int i = 0; i != sizeof(separatorSettings) / sizeof(Separator); ++i)
+		int num_minor_sub_divisions = 10;
+		double minor_step_size = FLT_MAX;
+		double major_step_size = FLT_MAX;
+		for (int i = 0; i != sizeof(separator_settings) / sizeof(Separator); ++i)
 		{
-			if (abs((delta / separatorSettings[i].mMajorTime) - preferredNumSeparators) < abs((delta / majorStepSize) - preferredNumSeparators))
+			if (abs((delta / separator_settings[i].mMajorTime) - preferred_num_separators) < abs((delta / major_step_size) - preferred_num_separators))
 			{
-				majorStepSize = separatorSettings[i].mMajorTime;
-				numMinorSubDivisions = separatorSettings[i].mNumMinorSubdivisions;
-				minorStepSize = majorStepSize / (float)separatorSettings[i].mNumMinorSubdivisions;
+				major_step_size = separator_settings[i].mMajorTime;
+				num_minor_sub_divisions = separator_settings[i].mNumMinorSubdivisions;
+				minor_step_size = major_step_size / (float)separator_settings[i].mNumMinorSubdivisions;
 			}
 		}
-
-		// Draw background
-		//mCanvas.DrawSolidRect(glm::vec2(0.0f, 0.0f), GetRect().Size(), glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), Renderer::EFillPattern::SolidColor, DrawDepth::sTimelineBackground);
-
-		// Determine if we want to print secs/mins/hour at all. If the time on this bar does not exceed a certain threshold,
-		// we don't print that unit at all.
-		bool showSecs = (int)(right / oneSecond) > 0;
-		bool showMins = (int)(right / oneMinute) > 0;
-		bool showHours = (int)(right / oneHour) > 0;
 
 		// Calculate start time value
-		double majorMarkerTime = (int)(left / (double)majorStepSize) * majorStepSize;
+		double major_marker_time = (int)(left / (double)major_step_size) * major_step_size;
 
 		// Draw major, minor separators and text
-		while (majorMarkerTime < right)
+		while (major_marker_time < right)
 		{
 			// Only draw positive values
-			if (majorMarkerTime >= 0.0f)
+			if (major_marker_time >= 0.0f)
 			{
 				// Draw major marker line
-				int x = mTimelineState.AbsTimeToPixel(majorMarkerTime);
+				int x = mTimelineState.AbsTimeToPixel(major_marker_time);
 				
-				draw_list->AddLine(ImVec2(topLeft.x + x, height - totalTimelineHeight), ImVec2(topLeft.x + x, height - totalTimelineHeight + markerTimelineHeight), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), 2.0f);
+				draw_list->AddLine(ImVec2(top_left.x + x, height - total_timeline_height), ImVec2(top_left.x + x, height - total_timeline_height + marker_timeline_height), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), 2.0f);
 
 				// Draw all major marker lines
-				double minorMarkerTime = majorMarkerTime + minorStepSize;
-				for (int minorIndex = 1; minorIndex < numMinorSubDivisions; ++minorIndex)
+				double minor_marker_time = major_marker_time + minor_step_size;
+				for (int minor_index = 1; minor_index < num_minor_sub_divisions; ++minor_index)
 				{
-					float minorX = mTimelineState.AbsTimeToPixel(minorMarkerTime);
-					float minorY = markerTimelineHeight * 0.75f;
-					if (numMinorSubDivisions == 10 && minorIndex == 5)
-						minorY = markerTimelineHeight * 0.5f;
+					float minor_x = mTimelineState.AbsTimeToPixel(minor_marker_time);
+					float minor_y = marker_timeline_height * 0.75f;
+					if (num_minor_sub_divisions == 10 && minor_index == 5)
+						minor_y = marker_timeline_height * 0.5f;
 
-					draw_list->AddLine(ImVec2(topLeft.x + minorX, height - totalTimelineHeight), ImVec2(topLeft.x + minorX, height - totalTimelineHeight + minorY), ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1.0f)), 1.0f);
-					minorMarkerTime += minorStepSize;
+					draw_list->AddLine(ImVec2(top_left.x + minor_x, height - total_timeline_height), ImVec2(top_left.x + minor_x, height - total_timeline_height + minor_y), ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1.0f)), 1.0f);
+					minor_marker_time += minor_step_size;
 				}
 
-				SystemTimeStamp majorMarkerTimeStamp(Seconds((uint64_t)majorMarkerTime));
-				DateTime majorMarkerDateTime(majorMarkerTimeStamp);
+				SystemTimeStamp major_marker_time(Seconds((uint64_t)major_marker_time));
+				DateTime major_marker_datetime(major_marker_time);
 
-				std::string majorMarkerText = majorMarkerDateTime.toString();
-				draw_list->AddText(ImVec2(topLeft.x + x, height - textTimelineHeight), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), majorMarkerText.c_str());
-
-#if 0
-				double remainder = majorMarkerTime;
-				int numHours = (int)(remainder / oneHour);
-				remainder -= numHours * oneHour;
-				int numMins = (int)(remainder / oneMinute);
-				remainder -= numMins * oneMinute;
-				int numSecs = (int)(remainder / oneSecond);
-				remainder -= numSecs * oneSecond;
-				int numMsecs = (int)(remainder);
-
-				std::string markerTimeText;
-
-				if (showHours)
-					markerTimeText = Utility::FormatString("h%d", numHours);
-
-				if (majorStepSize < oneHour && showMins)
-				{
-					if (!markerTimeText.empty())
-						markerTimeText += ":";
-					markerTimeText += Utility::FormatString("m%d", numMins);
-				}
-
-				if (majorStepSize < oneMinute && showSecs)
-				{
-					if (!markerTimeText.empty())
-						markerTimeText += ":";
-					markerTimeText += Utility::FormatString("s%d", numSecs);
-				}
-
-				if (majorStepSize < oneSecond)
-				{
-					if (!markerTimeText.empty())
-						markerTimeText += ":";
-					markerTimeText += Utility::FormatString("ms%d", numMsecs);
-				}
-
-				mCanvas.DrawText(glm::vec2(x + 10.0f, 6.0f), gGetDefaultTextHeight(), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), markerTimeText, DrawDepth::sTimelineForeground);
-#endif
+				std::string major_marker_text = major_marker_datetime.toString();
+				draw_list->AddText(ImVec2(top_left.x + x, height - text_timeline_height), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), major_marker_text.c_str());
 			}
 
-			majorMarkerTime += majorStepSize;
+			major_marker_time += major_step_size;
 		}
-		draw_list->AddLine(ImVec2(topLeft.x, height - totalTimelineHeight), ImVec2(topLeft.x + mTimelineState.mWidthInPixels, height - totalTimelineHeight), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), 1.0f);
+		draw_list->AddLine(ImVec2(top_left.x, height - total_timeline_height), ImVec2(top_left.x + mTimelineState.mWidthInPixels, height - total_timeline_height), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), 1.0f);
 
-		return totalTimelineHeight;
+		return total_timeline_height;
 	}
+
+
+	void EmographyApp::renderGraph(float graphHeight)
+	{
+		float y_units = mGraphYUnits;
+
+		int num_samples = mResolution;
+		float seconds_per_sample = (mTimelineState.mTimeRight - mTimelineState.mTimeLeft) / (float)num_samples;
+		if (seconds_per_sample < 1.0f)
+			num_samples = mTimelineState.mTimeRight - mTimelineState.mTimeLeft;
+
+		TimeStamp left(SystemTimeStamp(Seconds(mTimelineState.mTimeLeft)));
+		TimeStamp right(SystemTimeStamp(Seconds(mTimelineState.mTimeRight)));
+
+		std::vector<std::unique_ptr<ReadingSummaryBase>> readings;
+		utility::ErrorState errorState;
+		if (mDataModel->getRange<StressIntensityReading>(left, right, num_samples, readings, errorState))
+		{
+			glm::vec2 prev_pos(0.0, graphHeight);
+
+			float bottom_y = graphHeight;
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+			for (auto& reading_base : readings)
+			{
+				StressIntensityReadingSummary* reading = rtti_cast<StressIntensityReadingSummary>(reading_base.get());
+
+				float x = mTimelineState.AbsTimeToPixel(reading->mTimeStamp.mTimeStamp / 1000);
+				float y = bottom_y - glm::clamp(reading->mObject.mValue / y_units, 0.0f, 1.0f) * graphHeight;
+
+				draw_list->AddLine(ImVec2(prev_pos.x, prev_pos.y), ImVec2(x, y), ImGui::GetColorU32(ImVec4(170.0f / 255.0f, 211.0f / 255.0f, 1.0f, 1.0f)), 1.0f);
+
+				prev_pos = glm::vec2(x, y);
+			}
+		}
+	}
+
 
 	void EmographyApp::update(double deltaTime)
 	{
@@ -361,8 +361,8 @@ namespace nap
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		renderGUI();
-	}
-	
+	}	
+
 
 	void EmographyApp::render()
 	{
