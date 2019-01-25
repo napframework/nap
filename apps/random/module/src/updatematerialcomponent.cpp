@@ -63,6 +63,8 @@ namespace nap
 		mPartyPresetsActive = type != PARTY_PRESET_NONE;
 		mPartyPresetTransitionActive = mPartyPresetsActive;
 		mPartyPresetTransitionBpmVelocity = 0.0f;
+		mPartyPresetTransitionNoiseSpeedVelocity = 0.0f;
+		mPartyPresetTransitionNoiseInfluenceVelocity = 0.0f;
 		mPartyPresetBeats = 0.0f;
 		mPartyPresetType = type;
 		switch (type)
@@ -74,8 +76,9 @@ namespace nap
 			mPartyPreset = &mPartyPresetsIntense[nap::math::random(0, static_cast<int>(sizeof(mPartyPresetsIntense) / sizeof(mPartyPresetsIntense[0])) - 1)];
 			break;
 		}
-		mPartyPresetTransitionDuration = 1.0f;
 		mPartyPresetTransitionBpmIncrement = mPartyPreset->bpm > mPartyBPM;
+		mPartyPresetTransitionNoiseSpeedIncrement = mPartyPreset->noiseSpeed > mPartyWaveNoiseSpeed;
+		mPartyPresetTransitionNoiseInfluenceIncrement = mPartyPreset->noiseInfluence > *getPartyWaveNoiseInfluencePtr();
 	}
 
 
@@ -83,10 +86,19 @@ namespace nap
 	{
 		// Smoothly transition the party preset values
 		nap::math::smooth(mPartyBPM, mPartyPreset->bpm, mPartyPresetTransitionBpmVelocity, static_cast<float>(deltaTime), mPartyPresetTransitionDuration, 1000000.0f);
+		nap::math::smooth(mPartyWaveNoiseSpeed, mPartyPreset->noiseSpeed, mPartyPresetTransitionNoiseSpeedVelocity, static_cast<float>(deltaTime), mPartyPresetTransitionDuration, 1000000.0f);
+		nap::math::smooth(*getPartyWaveNoiseInfluencePtr(), mPartyPreset->noiseInfluence, mPartyPresetTransitionNoiseInfluenceVelocity, static_cast<float>(deltaTime), mPartyPresetTransitionDuration, 1000000.0f);
 
 		// Stop the updating when the transition is complete
-		if (mPartyPresetTransitionBpmIncrement && mPartyBPM + mPartyPresetTransitionTolerance >= mPartyPreset->bpm ||
-			!mPartyPresetTransitionBpmIncrement && mPartyBPM - mPartyPresetTransitionTolerance <= mPartyPreset->bpm)
+		if
+		(
+			(mPartyPresetTransitionBpmIncrement && mPartyBPM + mPartyPresetTransitionTolerance >= mPartyPreset->bpm ||
+			!mPartyPresetTransitionBpmIncrement && mPartyBPM - mPartyPresetTransitionTolerance <= mPartyPreset->bpm) &&
+			(mPartyPresetTransitionNoiseSpeedIncrement && mPartyWaveNoiseSpeed + mPartyPresetTransitionTolerance >= mPartyPreset->noiseSpeed ||
+			!mPartyPresetTransitionNoiseSpeedIncrement && mPartyWaveNoiseSpeed - mPartyPresetTransitionTolerance <= mPartyPreset->noiseSpeed) &&
+			(mPartyPresetTransitionNoiseInfluenceIncrement && *getPartyWaveNoiseInfluencePtr() + mPartyPresetTransitionTolerance >= mPartyPreset->noiseInfluence ||
+			!mPartyPresetTransitionNoiseInfluenceIncrement && *getPartyWaveNoiseInfluencePtr() - mPartyPresetTransitionTolerance <= mPartyPreset->noiseInfluence)
+		)
 		{
 			mPartyBPM = mPartyPreset->bpm;
 			mPartyPresetTransitionActive = false;

@@ -155,22 +155,34 @@ namespace nap
 
 		bool				mPartyPresetsActive = true;
 		bool				mPartyPresetTransitionActive = false;
-		float				mPartyPresetTransitionTolerance = 0.001;
-		float				mPartyPresetTransitionDuration;
+		float				mPartyPresetTransitionTolerance = 0.005;
+		float				mPartyPresetTransitionDuration = 0.25f;
 		float				mPartyPresetTransitionBpmVelocity;
 		bool				mPartyPresetTransitionBpmIncrement;
+		float				mPartyPresetTransitionNoiseSpeedVelocity;
+		bool				mPartyPresetTransitionNoiseSpeedIncrement;
+		float				mPartyPresetTransitionNoiseInfluenceVelocity;
+		bool				mPartyPresetTransitionNoiseInfluenceIncrement;
 		float				mPartyPresetBeats;
 		PartyPresetTypes	mPartyPresetType;
 		PartyPreset*		mPartyPreset;
 
-		PartyPreset	mPartyPresetsCalm[2] = {
-			{ 0.1f, 2.0f, 0.05f, 0.05f },	// transition 1.5s; duration 30s
-			{ 0.1f, -2.0f, 0.05f, 0.05f }	// transition 1.5s; duration 30s
+		// WARNING: with a BPM of 0.0f the durationBeats will never be reached and the preset will never finish
+
+		PartyPreset	mPartyPresetsCalm[5] = {
+			{ 0.1f, 0.5f, 0.075f, 0.15f },
+			{ 0.5f, 2.0f, 0.05f, 0.05f },
+			{ 0.5f, -2.0f, 0.05f, 0.05f },
+			{ 1.0f, 6.0f, 0.0f, 0.0f },
+			{ 1.0f, -6.0f, 0.0f, 0.0f }
 		};
 
-		PartyPreset	mPartyPresetsIntense[2] = {
-			{ 10.0f, 120.0f, 0.05f, 0.05f },	// transition 0.5s; duration 5s
-			{ 10.0f, -120.0f, 0.05f, 0.05f }	// transition 0.5s; duration 5s
+		PartyPreset	mPartyPresetsIntense[5] = {
+			{ 0.05f, 0.5f, 0.5f, 0.15f },
+			{ 6.0f, 120.0f, 0.05f, 0.05f },
+			{ 6.0f, -120.0f, 0.05f, 0.05f },
+			{ 1.5f, 240.0f, 0.0f, 0.0f },
+			{ 1.5f, -240.0f, 0.0f, 0.0f }
 		};
 	};
 }
