@@ -125,9 +125,23 @@ namespace nap
 				return getRange(RTTI_OF(ReadingType), startTime, endTime, numValues, readings, errorState);
 			}
 
+			template<class ReadingType>
+			TimeStamp getLastReadingTime() const
+			{
+				return getLastReadingTime(RTTI_OF(ReadingType));
+			}
+
+			template<class ReadingType>
+			bool getLastReadingTime(utility::ErrorState& errorState) const
+			{
+				return clearData(RTTI_OF(ReadingType), errorState);
+			}
+
 		private:
 			bool registerType(const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState);
 			bool getRange(const rtti::TypeInfo& inReadingType, TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState);
+			TimeStamp getLastReadingTime(const rtti::TypeInfo& inReadingType) const;
+			bool clearData(const rtti::TypeInfo& inReadingType, utility::ErrorState& errorState);
 
 		private:
 			using ReadingProcessorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ReadingProcessor>>;
