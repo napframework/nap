@@ -33,6 +33,9 @@ namespace nap
 		 */
 		void update(double deltaTime) override;
 
+		/**
+		 * Render is called every frame
+		 */
 		void render() override;
 		
 		/**
@@ -41,8 +44,44 @@ namespace nap
 		int shutdown() override;
 	
 	private:
+		/**
+		 * Main function to render the GUI using IMGUI
+		 */
 		void renderGUI();
+
+		/**
+		 * Update the timeline state based on user input
+		 */
+		void updateTimelineState();
+
+		/**
+		 * Render the control panel with controls to clear, generate data, etc
+		 */
+		void renderControls();
+
+		/**
+		 * Render the timeline
+		 * @return The height of the renderedtimeline
+		 */
 		float renderTimeline();
+
+		/**
+		 * Render the graph from data in the DataModel with the specified height
+		 * @param height The height of the graph to render
+		 */
+		void renderGraph(float height);
+		
+		/**
+		 * Clear all data from the datamodel
+		 */
+		void clearData();
+
+		/**
+		 * Generate data for the specified number of days. The generated data is a sine wave with noise added on top, with periods of no data to simulate 'no activity'
+		 * The data is generated starting from the time of the last data in the datamodel, or the current time if the datamodel is empty
+		 * @param days The number of days to generate data for
+		 */
+		void generateData(int days);
 
 		/**
 		 *  Forwards the received input event to the input service
@@ -58,10 +97,11 @@ namespace nap
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Render window
 
-		bool mMouseWasInsideScreen = false;
-		emography::TimelineState mTimelineState;
-		std::unique_ptr<emography::DataModel> mDataModel;
-		int mResolution = 400;
-		int mGraphHeight = 100;
+		bool mMouseWasInsideScreen = false;								//< Whether the mouse was inside the screen during the last update
+		emography::TimelineState mTimelineState;						//< The timeline state, used for zooming/panning
+		std::unique_ptr<emography::DataModel> mDataModel;				//< The data model containing all data
+		int mResolution = 400;											//< The resolution at which data is returned from the data model (num samples)
+		int mGraphYUnits = 100;											//< The max value on the Y axis
+		int mNumDaysToGenerate = 7;										//< The number of days to generate data for
 	};
 }
