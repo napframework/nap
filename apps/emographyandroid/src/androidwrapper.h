@@ -16,11 +16,6 @@ namespace  nap
     namespace android
     {
         /**
-         * Describes the object that runs the emography android app.
-         */
-        using EmographyRunner = nap::AndroidServiceRunner<nap::EmographyAndroidApp, nap::AppEventHandler>;
-
-        /**
          * Initializes NAP and the wrapped Emography application
          * @param env JNI the Java Native Interface
          * @param contextObject object that calls into this function
@@ -41,9 +36,6 @@ namespace  nap
          * @param contextObject object that calls into this function
          */
         void shutdown(JNIEnv* env, jobject contextObject);
-
-
-
 
         void sendMessage(JNIEnv* env, jobject contextObject, jstring jdata);
 
