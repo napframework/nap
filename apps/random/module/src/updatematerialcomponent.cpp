@@ -59,7 +59,8 @@ namespace nap
 	}
 
 
-	void UpdateMaterialComponentInstance::startPartyPresetTransition(PartyPresetTypes type) {
+	void UpdateMaterialComponentInstance::startPartyPresetTransition(PartyPresetTypes type)
+	{
 		mPartyPresetsActive = type != PARTY_PRESET_NONE;
 		mPartyPresetTransitionActive = mPartyPresetsActive;
 		mPartyPresetTransitionBpmVelocity = 0.0f;
@@ -106,7 +107,8 @@ namespace nap
 	}
 
 
-	void UpdateMaterialComponentInstance::updateParty(double deltaTime) {
+	void UpdateMaterialComponentInstance::updateParty(double deltaTime)
+	{
 		float beatIncrement = (mPartyBPM / 60.0f) * static_cast<float>(deltaTime);
 
 		// update the preset transition if active
@@ -129,7 +131,8 @@ namespace nap
 	}
 
 
-	void UpdateMaterialComponentInstance::updatePartyCenter() {
+	void UpdateMaterialComponentInstance::updatePartyCenter()
+	{
 		glm::vec3* uCenter = &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("uCenter").mValue;
 		uCenter->x = mPartyCenter[0];
 		uCenter->y = mPartyCenter[1];
