@@ -9,7 +9,7 @@ namespace nap
 	/**
 	 * Convert a C++ type name that a name that can be used for table/column names in the database (not all characters are allowed)
 	 */
-	static std::string sCPPToDatabaseName(const std::string& cppName)
+	static std::string cppToDatabaseName(const std::string& cppName)
 	{
 		std::string result = cppName;
 		std::replace_if(result.begin(), result.end(), [](unsigned char character)
@@ -23,7 +23,7 @@ namespace nap
 
 	using VisitRTTIPropertyTypesCallback = std::function<void(const rtti::Property&, const rtti::Path&)>;
 
-	static bool sVisitRTTIPropertyTypes(const rtti::TypeInfo& type, rtti::Path& path, const VisitRTTIPropertyTypesCallback& callback, utility::ErrorState& errorState)
+	static bool visitRTTIPropertyTypes(const rtti::TypeInfo& type, rtti::Path& path, const VisitRTTIPropertyTypesCallback& callback, utility::ErrorState& errorState)
 	{
 		// Recursively visit each property of the type
 		for (const rtti::Property& property : type.get_properties())
@@ -41,7 +41,7 @@ namespace nap
 			}
 			else
 			{
-				if (!sVisitRTTIPropertyTypes(actual_type, path, callback, errorState))
+				if (!visitRTTIPropertyTypes(actual_type, path, callback, errorState))
 					return false;
 			}
 
@@ -55,7 +55,7 @@ namespace nap
 	/** 
 	 * Returns the type string for an SQL column based on the rtti type.
 	 */
-	static std::string sGetSQLTypeString(const rtti::TypeInfo& type)
+	static std::string getSQLTypeString(const rtti::TypeInfo& type)
 	{
 		if (type.is_arithmetic())
 		{
@@ -88,7 +88,7 @@ namespace nap
 	}
 
 
-	static bool sBindColumnValue(const rtti::TypeInfo& type, const rtti::Variant& value, sqlite3_stmt& statement, int index)
+	static bool bindColumnValue(const rtti::TypeInfo& type, const rtti::Variant& value, sqlite3_stmt& statement, int index)
 	{
 		if (type.is_arithmetic())
 		{
@@ -131,7 +131,7 @@ namespace nap
 	}
 
 
-	static bool sSetColumnValue(rtti::Object& object, const rtti::Path& path, sqlite3_stmt& statement, int columnIndex)
+	static bool setColumnValue(rtti::Object& object, const rtti::Path& path, sqlite3_stmt& statement, int columnIndex)
 	{
 		rtti::ResolvedPath resolvedPath;
 		bool was_resolved = path.resolve(&object, resolvedPath);
@@ -213,12 +213,6 @@ namespace nap
 	}
 
 
-	std::string DatabasePropertyPath::toString() const
-	{
-		std::string column_name = mRTTIPath.toString();
-		return sCPPToDatabaseName(column_name);
-	}
-
 	//////////////////////////////////////////////////////////////////////////
 
 
@@ -227,7 +221,7 @@ namespace nap
 		mObjectType(objectType),
 		mDatabase(&database)
 	{
-		mTableID = sCPPToDatabaseName(tableID);
+		mTableID = cppToDatabaseName(tableID);
 	}
 
 
@@ -241,7 +235,7 @@ namespace nap
 	{
 		// Here we create a list of columns that need to be serialized. This column structure is reused for adds/queries later on.
 		rtti::Path current_path;
- 		bool result = sVisitRTTIPropertyTypes(mObjectType, current_path, [this, &propertiesToIgnore](const rtti::Property& property, const rtti::Path& path)
+ 		bool result = visitRTTIPropertyTypes(mObjectType, current_path, [this, &propertiesToIgnore](const rtti::Property& property, const rtti::Path& path)
 		{
 			// Create path to the property we are visiting for storage in our column data structure. Creation of the path should always succeed, 
 			// as the visitor is only visiting properties that are valid for the database.
@@ -257,8 +251,10 @@ namespace nap
 
 			// Only add if it is not an ignored property
 			if (ignored_property_pos == propertiesToIgnore.end())
-				mColumns.push_back({ std::move(database_path), sGetSQLTypeString(property.get_type()) });
-			
+			{
+				std::string column_name = generateUniqueColumnName(path);
+				mColumns.push_back({ std::move(database_path), std::move(column_name), getSQLTypeString(property.get_type()) });
+			}			
 		}, errorState);
 
 		if (!result)
@@ -274,11 +270,9 @@ namespace nap
 		{
 			Column& column = mColumns[index];
 
-			std::string column_name = column.mPath->toString();
-
 			const char* separator = index < mColumns.size() - 1 ? ", " : "";
-			createTableSql += utility::stringFormat("'%s' %s%s", column_name.c_str(), column.mSqlType.c_str(), separator);
-			insertColumnsSql += utility::stringFormat("'%s'%s", column_name.c_str(), separator);
+			createTableSql += utility::stringFormat("'%s' %s%s", column.mName.c_str(), column.mSqlType.c_str(), separator);
+			insertColumnsSql += utility::stringFormat("'%s'%s", column.mName.c_str(), separator);
 			insertValuesSql += utility::stringFormat("?%s", separator);
 		}
 		createTableSql += ");";
@@ -317,7 +311,7 @@ namespace nap
 			bool resolved = column.mPath->getRTTIPath().resolve(&object, resolvedPath);
 			assert(resolved);
 
-			if (!errorState.check(sBindColumnValue(resolvedPath.getType(), resolvedPath.getValue(), *mInsertStatement, index+1), "Failed to set value for column %d", index))
+			if (!errorState.check(bindColumnValue(resolvedPath.getType(), resolvedPath.getValue(), *mInsertStatement, index+1), "Failed to set value for column %d", index))
 				return false;
 		}
 
@@ -351,7 +345,7 @@ namespace nap
 			for (int column_index = 0; column_index < mColumns.size(); ++column_index)
 			{
 				const Column& column = mColumns[column_index];
-				sSetColumnValue(*object, column.mPath->getRTTIPath(), *statement, column_index);
+				setColumnValue(*object, column.mPath->getRTTIPath(), *statement, column_index);
 			}
 			objects.emplace_back(std::move(object));
 		}
@@ -364,7 +358,10 @@ namespace nap
 
 	bool DatabaseTable::getOrCreateIndex(const DatabasePropertyPath& propertyPath, utility::ErrorState& errorState)
 	{
-		std::string column_name = propertyPath.toString();
+		std::string column_name = getColumnName(propertyPath, errorState);
+		if (column_name.empty())
+			return false;
+
 		std::string sql = utility::stringFormat("CREATE INDEX IF NOT EXISTS \"%s_%s\" ON %s (\"%s\")", mTableID.c_str(), column_name.c_str(), mTableID.c_str(), column_name.c_str());
 
 		char* errorMessage = nullptr;
@@ -390,5 +387,28 @@ namespace nap
 		}
 
 		return true;
+	}
+
+
+	std::string DatabaseTable::getColumnName(const DatabasePropertyPath& path, utility::ErrorState& errorState) const
+	{
+		ColumnList::const_iterator pos = std::find_if(mColumns.begin(), mColumns.end(), [&path](const Column& column){ return column.mPath->getRTTIPath() == path.getRTTIPath(); });
+		if (!errorState.check(pos != mColumns.end(), "Unable to retrieve column name for the specified property: the property is not in the database"))
+			return "";
+
+		return pos->mName;
+	}
+
+
+	std::string DatabaseTable::generateUniqueColumnName(const rtti::Path& path) const
+	{
+		std::string base_name = cppToDatabaseName(path.toString());
+		
+		int counter = 1;
+		std::string result = cppToDatabaseName(path.toString());
+		while (std::find_if(mColumns.begin(), mColumns.end(), [&result](const Column& column){ return column.mName == result; }) != mColumns.end())
+			result = utility::stringFormat("%s_%d", base_name.c_str(), counter++);
+		
+		return result;
 	}
 }
