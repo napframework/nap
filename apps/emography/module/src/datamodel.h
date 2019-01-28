@@ -4,6 +4,7 @@
 #include "database.h"
 #include "nap/datetime.h"
 #include "utility/dllexport.h"
+#include <mutex>
 
 namespace nap
 {
@@ -15,10 +16,11 @@ namespace nap
 
 		/**
 		 * The DataModel is a class that manages readings in a hierarchy. Readings are stored in a database and queries can be performed on a large set of readings
-		 * for any timerange and on any resolution desired. For instance, reading can be pushed in the datamodel at a very high frequence (hundreds of readings per second),
+		 * for any timerange and on any resolution desired. For instance, reading can be pushed in the datamodel at a very high frequency (hundreds of readings per second),
 		 * and the client can query for a week of data at a resolution of 7 steps (which is a day). The query will return 7 values, one for each day in that week. The
 		 * value per day is a 'summarized' value of the original reading. How values are summarized can be configured by the client through the Summarize function.
 		 *
+		 * The DataModel is thread safe: you can add data to it on one thread and retrieve data from it on another thread.
 		 *
 		 * +++++++++++++++++++++++++++++++ The algorithm +++++++++++++++++++++++++++++++
 		 *
@@ -260,6 +262,7 @@ namespace nap
 			Database			mDatabase;				///< Database used as backing store
 			ReadingProcessorMap mReadingProcessors;		///< A map holding all the internal reading processors for all object types
 			EKeepRawReadings	mKeepRawReadings;		///< Flag indicating whether raw data should be kept and discarded
+			mutable std::mutex	mLock;					///< Mutex used to guard concurrent use of the datamodel
 		};
 	}
 }
