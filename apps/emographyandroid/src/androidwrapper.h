@@ -37,9 +37,13 @@ namespace  nap
          */
         void shutdown(JNIEnv* env, jobject contextObject);
 
-        void sendMessage(JNIEnv* env, jobject contextObject, jstring jdata);
-
-        jstring pullLogFromApp(JNIEnv* env, jobject contextObject);
+        /**
+         * Send a NAP api as json to the running NAP application.
+         * @param env
+         * @param contextObject
+         * @param json the NAP API message as json to send over
+         */
+        void sendMessage(JNIEnv* env, jobject contextObject, jstring json);
     }
 }
 
