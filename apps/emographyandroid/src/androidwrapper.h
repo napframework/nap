@@ -1,12 +1,7 @@
-#ifndef PROJECT_TEMPEXAMPLEWRAPPER_H
-#define PROJECT_TEMPEXAMPLEWRAPPER_H
+#pragma once
 
-#include "emographyandroidapp.h"
-
+// External Includes
 #include <jni.h>
-
-#include <android/androidservicerunner.h>
-#include <appeventhandler.h>
 
 /**
  * A temporary little example of reducing the NAP specific code in the Android-space JNI wrapper
@@ -46,5 +41,3 @@ namespace  nap
         void sendMessage(JNIEnv* env, jobject contextObject, jstring json);
     }
 }
-
-#endif //PROJECT_TEMPEXAMPLEWRAPPER_H
