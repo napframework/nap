@@ -248,6 +248,19 @@ namespace nap
 			}
 
 
+			/** 
+			 * This is the main 'LOD generation' routine. Each LOD is separated into chunks of a certain length, indicated by mMaxNumSeconds.
+			 * The chunk 'index' is an ID that represent a single chunk in the LOD. It is calculated by:
+			 *
+			 *			floor(TimeStampSecs / mMaxNumSeconds)
+			 *
+			 * For each LOD we store the current chunk index, and when a new flush is called, we check whether we transitioned from the 
+			 * previous to a new chunk. This means we need to update the LOD level. 
+			 *
+			 * Updating is performed by gathering data from the lower LOD for the timerange that we need, and summarizing that data into
+			 * a new, single value. That value is then stored in the database. If there is no lower LOD, the raw cache is used to gather
+			 * data, otherwise, a database query is performed on the lower LOD.
+			 */
 			bool flush(TimeStamp timestamp, utility::ErrorState& errorState)
 			{
 				bool any_lod_flushed = false;
@@ -261,12 +274,19 @@ namespace nap
 				for (int lod_index = 0; lod_index < mLODs.size(); ++lod_index)
 				{
 					ReadingProcessorLOD& lod = mLODs[lod_index];
+
+					// Calculate what chunk this lod is currently in
 					uint64_t chunk_index = timestamp_seconds / lod.mMaxNumSeconds;
+
+					// If we are still in the same chunk, we don't need to continue processing. Notice that this is a break and not a continue, because
+					// we know for sure that when this chunk didn't transition, that any higher LODs will also not transition, because its hierarchical nature.
 					if (chunk_index == lod.mState->mCurrentChunkIndex)
 						break;
 
+					// If this is not the first chunk, process it
 					if (lod.mState->mCurrentChunkIndex != -1)
 					{
+						// If we went back in time, ignore data (this is theoretically possible when flush is called manually, see comments in flush()).
 						if (chunk_index < lod.mState->mCurrentChunkIndex)
 							break;
 
@@ -278,15 +298,24 @@ namespace nap
 
 						if (prevTable == nullptr)
 						{
+							// If this is the lowest LOD, grab data from the raw cache
 							objects = std::move(mRawReadingCache);
 						}
 						else
 						{
+							// For any non-zero LOD, query the 'parent' LOD for data on this LOD's timerange
 							const std::string timestamp_column_name = mRawTimeStampPath->toString();
 							if (!prevTable->query(utility::stringFormat("%s >= %llu", timestamp_column_name.c_str(), prev_chunk_start_timestamp.mTimeStamp), objects, errorState))
 								return false;
 						}
 
+						// Here we are going to convert the data from the parent LOD into a list of weighted objects. Although weighting (as described in
+						// the DataModel header) is only relevant when querying from multiple LOD levels (as is performed in getRange), we still perform
+						// the same procedure here because we use the same Summary function for generating the LOD as we do for querying the LODs.
+						// The weight that is calculated here is simply an even distribution of the amount of values we received from the parent LOD:
+						// which is 1 / numvalues.
+						// The numSecondsActive field is processed here as well. We simply add all the NumSecondsActive from the higher LOD together, making
+						// the value a summary of the higher LODs. Notice though that we always reset the value to 1 for the lowest LOD in the collapsed object.
 						int num_active_seconds = 0;
 						weighted_objects.reserve(objects.size());
 						float weight = 1.0f / objects.size();
@@ -299,9 +328,11 @@ namespace nap
 							weighted_objects.emplace_back(std::move(weighted_object));
 						}
 
+						// Create the new summarized object by calling the Summarize function with the weighted objects
 						std::unique_ptr<ReadingSummaryBase> collapsedObject = mSummaryFunction(weighted_objects);
 						assert(collapsedObject->get_type() == mSummaryType);
 
+						// Set timestamp to start of the chunk and update seconds active. Notice that we reset the seconds active for the lowest LOD.
 						collapsedObject->mTimeStamp = prev_chunk_start_timestamp;
 						collapsedObject->mNumSecondsActive = lod_index == 0 ? 1 : num_active_seconds;
 
@@ -309,8 +340,11 @@ namespace nap
 							return false;
 					}
 
+					// Always store the last processed chunk
 					lod.mState->mCurrentChunkIndex = chunk_index;
 
+					// We replace the state object in the state table by clearing the entire table and re-adding the value. A more elegant and possibly
+					// faster way would be to update the row in the database table.
 					if (!lod.mStateTable->clear(errorState))
 						return false;
 
@@ -322,6 +356,7 @@ namespace nap
 					prevTable = lod.mTable;
 				}
 
+				// To avoid flushing the generic processor state for each reading, we only update it when any of the LODs is updated.
 				if (any_lod_flushed)
 				{
 					if (!mStateTable->clear(errorState))
@@ -333,6 +368,7 @@ namespace nap
 
 				return true;
 			}
+
 
 			bool getRange(uint64_t startTime, uint64_t endTime, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 			{
