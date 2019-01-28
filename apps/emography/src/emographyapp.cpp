@@ -75,6 +75,8 @@ namespace nap
 		// Start generating data from the last timestamp in the model, if available. Otherwise generate data starting at the current time.
 		Seconds offset(0);
 
+		TimeStamp generate_start = getCurrentTime();
+
 		TimeStamp start_time = mDataModel->getLastReadingTime<StressIntensityReading>();
 		if (!start_time.isValid())
 			start_time = getCurrentTime();
@@ -84,6 +86,7 @@ namespace nap
 		SystemTimeStamp current_time = start_time.toSystemTime();
 		current_time += offset;
 
+		int num_samples_added = 0;
 		for (int days = 0; days != numDays; ++days)
 		{
 			for (int hours = 0; hours != 24; ++hours)
@@ -118,11 +121,19 @@ namespace nap
 								nap::Logger::error(errorState.toString());
 								return;
 							}
+
+							num_samples_added++;
 						}
 					}
 				}
 			}
 		}
+
+		TimeStamp generate_end = getCurrentTime();
+		
+		double generate_ms = (double)(std::chrono::time_point_cast<Milliseconds>(generate_end.toSystemTime()).time_since_epoch().count() - std::chrono::time_point_cast<Milliseconds>(generate_start.toSystemTime()).time_since_epoch().count());
+		
+		Logger::info("Generating %d days of data (%d samples) took %.2fs (%fs/sample)", numDays, num_samples_added, generate_ms / 1000.0, generate_ms / 1000.0 / num_samples_added);
 	}
 
 
@@ -186,6 +197,7 @@ namespace nap
 
 		mMouseWasInsideScreen = mouse_inside_screen;
 	}
+
 
 	void EmographyApp::renderControls()
 	{

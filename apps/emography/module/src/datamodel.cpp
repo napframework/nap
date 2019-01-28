@@ -557,6 +557,8 @@ namespace nap
 
 		bool DataModel::registerType(const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState)
 		{
+			std::unique_lock<std::mutex> lock(mLock);
+
 			ReadingProcessorMap::iterator pos = mReadingProcessors.find(readingType);
 			assert(pos == mReadingProcessors.end());
 
@@ -570,6 +572,8 @@ namespace nap
 
 		bool DataModel::add(const ReadingBase& object, utility::ErrorState& errorState)
 		{
+			std::unique_lock<std::mutex> lock(mLock);
+
 			ReadingProcessorMap::iterator processorPos = mReadingProcessors.find(object.get_type());
 			assert(processorPos != mReadingProcessors.end());
 			return processorPos->second->add(object, errorState);
@@ -577,6 +581,8 @@ namespace nap
 
 		bool DataModel::flush(utility::ErrorState& errorState)
 		{
+			std::unique_lock<std::mutex> lock(mLock);
+
 			for (auto& kvp : mReadingProcessors)
 			{
 				if (!kvp.second->flush(errorState))
@@ -588,6 +594,8 @@ namespace nap
 
 		bool DataModel::getRange(const rtti::TypeInfo& inReadingType, TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 		{
+			std::unique_lock<std::mutex> lock(mLock);
+
 			ReadingProcessorMap::iterator pos = mReadingProcessors.find(inReadingType);
 			assert(pos != mReadingProcessors.end());
 
@@ -596,6 +604,8 @@ namespace nap
 
 		TimeStamp DataModel::getLastReadingTime(const rtti::TypeInfo& inReadingType) const
 		{
+			std::unique_lock<std::mutex> lock(mLock);
+
 			ReadingProcessorMap::const_iterator pos = mReadingProcessors.find(inReadingType);
 			assert(pos != mReadingProcessors.end());
 
@@ -604,6 +614,8 @@ namespace nap
 
 		bool DataModel::clearData(const rtti::TypeInfo& inReadingType, utility::ErrorState& errorState)
 		{
+			std::unique_lock<std::mutex> lock(mLock);
+
 			ReadingProcessorMap::const_iterator pos = mReadingProcessors.find(inReadingType);
 			assert(pos != mReadingProcessors.end());
 

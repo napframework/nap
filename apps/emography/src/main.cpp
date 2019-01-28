@@ -2,7 +2,6 @@
 //
 // Local Includes
 #include "emographyapp.h"
-#include "emographyappeventhandler.h"
 
 // Nap includes
 #include <nap/core.h>
