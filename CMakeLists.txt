@@ -120,7 +120,6 @@ add_subdirectory(apps/random/module)
 add_subdirectory(apps/aura)
 add_subdirectory(apps/aura/module)
 add_subdirectory(apps/emography)
-add_subdirectory(apps/emographyandroid)
 add_subdirectory(apps/emographyandroid/module)
 
 # demo targets
