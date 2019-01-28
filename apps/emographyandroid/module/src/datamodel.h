@@ -1,5 +1,6 @@
 #pragma once
 
+#include "emographyreading.h"
 #include "utility/errorstate.h"
 #include "database.h"
 #include "nap/datetime.h"
