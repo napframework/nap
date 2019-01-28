@@ -32,6 +32,7 @@ namespace nap
         /**
          * Called when the application receives an api event
          * @param env java native environment
+         * @param context the android context in java
          * @param event the received api event
          */
         void apiEventReceived(JNIEnv *env, jobject context, const nap::APIEvent& event)
@@ -151,7 +152,7 @@ namespace nap
             void installCallback(APICallbackFunction callback)
             {
                 // Store callback
-                mCallback = callback;
+                mCallback = std::move(callback);
             }
 
             /**
@@ -229,25 +230,15 @@ namespace nap
         }
 
 
-        void sendMessage(JNIEnv* env, jobject contextObject, jstring jdata)
+        void sendMessage(JNIEnv* env, jobject contextObject, jstring json)
         {
             EmographyRunner* runner = Instance::get().runner();
             if(runner == nullptr)
                 return;
 
-            const char *s = env->GetStringUTFChars(jdata, NULL);
-            std::string data = s;
-            env->ReleaseStringUTFChars(jdata, s);
-            runner->getApp().call(data);
-        }
-
-
-        jstring pullLogFromApp(JNIEnv* env, jobject contextObject)
-        {
-            EmographyRunner* runner = Instance::get().runner();
-            if(runner == nullptr)
-                return nullptr;
-            return env->NewStringUTF(runner->getApp().pullLogAndFlush().c_str());
+            //const char *s = env->GetStringUTFChars(jdata, NULL);
+            //std::string data = s;
+            //env->ReleaseStringUTFChars(jdata, s);
         }
     }
 }
