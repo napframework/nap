@@ -1,5 +1,6 @@
 #include "datamodel.h"
 #include "emographyreading.h"
+#include "rtti/rttiutilities.h"
 
 namespace nap
 {
@@ -12,9 +13,19 @@ namespace nap
 		{
 			RTTI_ENABLE(rtti::Object)
 		public:
+			/** 
+			 * Default constructor for RTTI. Should not be used.
+			 */
+			ReadingProcessorState() = default;
+
+			ReadingProcessorState(size_t rttiVersion) :
+				mRTTIVersion(rttiVersion)
+			{
+			}
 
 		public:
 			TimeStamp	mLastReadingTime;
+			size_t		mRTTIVersion = -1;
 		};
 
 		/**
@@ -24,19 +35,31 @@ namespace nap
 		{
 			RTTI_ENABLE(rtti::Object)
 		public:
+			/** 
+			 * Default constructor for RTTI. Should not be used.
+			 */
+			ReadingProcessorLODState() = default;
+
+			ReadingProcessorLODState(size_t rttiVersion) :
+				mRTTIVersion(rttiVersion)
+			{
+			}
 
 		public:
 			uint64_t	mCurrentChunkIndex = -1;
+			size_t		mRTTIVersion = -1;
 		};
 	}
 }
 
 RTTI_BEGIN_CLASS(nap::emography::ReadingProcessorState)
 	RTTI_PROPERTY("LastReadingTime", &nap::emography::ReadingProcessorState::mLastReadingTime, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RTTIVersion", &nap::emography::ReadingProcessorState::mRTTIVersion, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::emography::ReadingProcessorLODState)
 	RTTI_PROPERTY("CurrentChunkIndex", &nap::emography::ReadingProcessorLODState::mCurrentChunkIndex, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RTTIVersion", &nap::emography::ReadingProcessorLODState::mRTTIVersion, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 namespace nap
@@ -150,17 +173,7 @@ namespace nap
 				if (raw_id_path == nullptr)
 					return false;
 
-				// Create raw table and index
-				std::string raw_table_name(mReadingType.get_name());
-				mRawTable = mDatabase->getOrCreateTable(raw_table_name, mReadingType, { *raw_id_path }, errorState);
-				if (mRawTable == nullptr)
-					return false;
-
-				// Create index for the raw table on the timestamp
-				if (!mRawTable->getOrCreateIndex(*mRawTimeStampPath, errorState))
-					return false;
-
-				// Create processor state table
+				// Create processor state table first so we can detect RTTI changes
 				{
 					// Create a path to the ID field of ReadingProcessorState type for ignoring the property when serializing
 					std::unique_ptr<DatabasePropertyPath> processor_id_path = DatabasePropertyPath::sCreate(RTTI_OF(ReadingProcessorState), id_path, errorState);
@@ -182,11 +195,25 @@ namespace nap
 						return false;
 
 					// If the object does not exist, create a default one. Otherwise, use the one from the table
+					size_t rtti_version = rtti::getRTTIVersion(mReadingType);
 					if (state_object.empty())
-						mState = std::make_unique<ReadingProcessorState>();
+						mState = std::make_unique<ReadingProcessorState>(rtti_version);
 					else
 						mState = rtti_cast<ReadingProcessorState>(state_object[0]);
+
+					if (!errorState.check(mState->mRTTIVersion == rtti_version, "The structure of type '%s' has changed and is no longer compatible with the existing data", mReadingType.get_name().data()))
+						return false;
 				}
+
+				// Create raw table and index
+				std::string raw_table_name(mReadingType.get_name());
+				mRawTable = mDatabase->getOrCreateTable(raw_table_name, mReadingType, { *raw_id_path }, errorState);
+				if (mRawTable == nullptr)
+					return false;
+
+				// Create index for the raw table on the timestamp
+				if (!mRawTable->getOrCreateIndex(*mRawTimeStampPath, errorState))
+					return false;
 
 				if (!addLOD(utility::stringFormat("%s_%s", raw_table_name.c_str(), "Seconds"), 1, errorState))
 					return false;
@@ -305,7 +332,10 @@ namespace nap
 						else
 						{
 							// For any non-zero LOD, query the 'parent' LOD for data on this LOD's timerange
-							const std::string timestamp_column_name = mRawTimeStampPath->toString();
+							const std::string timestamp_column_name = prevTable->getColumnName(*mRawTimeStampPath, errorState);
+							if (timestamp_column_name.empty())
+								return false;
+
 							if (!prevTable->query(utility::stringFormat("%s >= %llu", timestamp_column_name.c_str(), prev_chunk_start_timestamp.mTimeStamp), objects, errorState))
 								return false;
 						}
@@ -528,7 +558,7 @@ namespace nap
 				if (!mStateTable->clear(errorState))
 					return false;
 
-				mState = std::make_unique<ReadingProcessorState>();
+				mState = std::make_unique<ReadingProcessorState>(rtti::getRTTIVersion(mReadingType));
 				mRawReadingCache.clear();
 
 				for (ReadingProcessorLOD& lod : mLODs)
@@ -539,7 +569,7 @@ namespace nap
 					if (!lod.mStateTable->clear(errorState))
 						return false;
 
-					lod.mState = std::make_unique<ReadingProcessorLODState>();
+					lod.mState = std::make_unique<ReadingProcessorLODState>(rtti::getRTTIVersion(mSummaryType));
 				}
 
 				return true;
@@ -560,36 +590,40 @@ namespace nap
 				// Create LOD and summary table
 				ReadingProcessorLOD lod;
 				lod.mMaxNumSeconds = maxNumSeconds;
-				lod.mTable = mDatabase->getOrCreateTable(id, mSummaryType, { *lod_id_path }, errorState);
-				if (lod.mTable == nullptr)
-					return false;
-
-				// Put an index on the timestamp of the summary table
-				if (!lod.mTable->getOrCreateIndex(*mLODTimeStampPath, errorState))
-					return false;
 
 				std::unique_ptr<DatabasePropertyPath> state_id_path = DatabasePropertyPath::sCreate(RTTI_OF(ReadingProcessorLODState), id_path, errorState);
 				if (state_id_path == nullptr)
 					return false;
 
-				// Create state table
-				lod.mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorLODState), { *state_id_path }, errorState);
-				if (lod.mStateTable == nullptr)
+				// Initialize the state first so we can detect RTTI changes
+				{
+					lod.mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorLODState), { *state_id_path }, errorState);
+					if (lod.mStateTable == nullptr)
+						return false;
+
+					std::vector<std::unique_ptr<rtti::Object>> state_object;
+					if (!lod.mStateTable->query("", state_object, errorState))
+						return false;
+
+					if (!errorState.check(state_object.size() <= 1, "Found invalid number of state objects"))
+						return false;
+
+					size_t rtti_version = rtti::getRTTIVersion(mSummaryType);
+					if (state_object.empty())
+						lod.mState = std::make_unique<ReadingProcessorLODState>(rtti_version);
+					else
+						lod.mState = rtti_cast<ReadingProcessorLODState>(state_object[0]);
+
+					if (!errorState.check(lod.mState->mRTTIVersion == rtti_version, "The structure of type '%s' has changed and is no longer compatible with the existing data", mSummaryType.get_name().data()))
+						return false;
+				}
+
+				lod.mTable = mDatabase->getOrCreateTable(id, mSummaryType, { *lod_id_path }, errorState);
+				if (lod.mTable == nullptr)
 					return false;
 
-				// Try to retrieve the state object from the state table
-				std::vector<std::unique_ptr<rtti::Object>> state_object;
-				if (!lod.mStateTable->query("", state_object, errorState))
-					return false;
-
-				if (!errorState.check(state_object.size() <= 1, "Found invalid number of state objects"))
-					return false;
-
-				// If there was a state object, use it. Otherwise, create a new state object
-				if (state_object.empty())
-					lod.mState = std::make_unique<ReadingProcessorLODState>();
-				else
-					lod.mState = rtti_cast<ReadingProcessorLODState>(state_object[0]);
+				if (!lod.mTable->getOrCreateIndex(*mLODTimeStampPath, errorState))
+					return false;				
 
 				mLODs.emplace_back(std::move(lod));
 				return true;
@@ -602,7 +636,9 @@ namespace nap
 			bool getWeightedObjects(ReadingProcessorLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
 			{
 				std::vector<std::unique_ptr<rtti::Object>> objects;
-				const std::string timestamp_column_name = mLODTimeStampPath->toString();
+				const std::string timestamp_column_name = lod.mTable->getColumnName(*mLODTimeStampPath, errorState);
+				if (timestamp_column_name.empty())
+					return false;
 
 				// Convert to TimeStamp time format, because this is the format that was serialized to the database
 				TimeStamp start_timestamp = secondsToTimeStamp(startTime);
