@@ -282,7 +282,10 @@ namespace nap
 						}
 						else
 						{
-							const std::string timestamp_column_name = mRawTimeStampPath->toString();
+							const std::string timestamp_column_name = prevTable->getColumnName(*mRawTimeStampPath, errorState);
+							if (timestamp_column_name.empty())
+								return false;
+
 							if (!prevTable->query(utility::stringFormat("%s >= %llu", timestamp_column_name.c_str(), prev_chunk_start_timestamp.mTimeStamp), objects, errorState))
 								return false;
 						}
@@ -497,7 +500,9 @@ namespace nap
 			bool getWeightedObjects(ReadingProcessorLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
 			{
 				std::vector<std::unique_ptr<rtti::Object>> objects;
-				const std::string timestamp_column_name = mLODTimeStampPath->toString();
+				const std::string timestamp_column_name = lod.mTable->getColumnName(*mLODTimeStampPath, errorState);
+				if (timestamp_column_name.empty())
+					return false;
 
 				// Convert to TimeStamp time format, because this is the format that was serialized to the database
 				TimeStamp start_timestamp = sSecondsToTimeStamp(startTime);
