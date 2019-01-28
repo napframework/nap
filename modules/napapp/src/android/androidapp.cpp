@@ -53,7 +53,13 @@ namespace nap
     }
 
 
-    std::string AndroidApp::getNativeLibDir()
+	jobject AndroidApp::getContext()
+	{
+		return mAndroidGlobalObject;
+	}
+
+
+	std::string AndroidApp::getNativeLibDir()
     {
         // Get JNI env
         JNIEnv *env = getEnv();
