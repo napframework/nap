@@ -8,6 +8,7 @@
 #include <utility/errorstate.h>
 #include <android/androidservicerunner.h>
 #include <nap/core.h>
+#include <mutex>
 
 namespace  nap
 {
@@ -23,6 +24,8 @@ namespace  nap
          * Where APP is the app that is instantiated and run using the AndroidServiceRunner.
          * Using this wrapper ensures all calls to a NAP app are thread safe and
          * all resources a de-allocated correctly on destruction.
+         * Preferably init, update and shutdown are called from the same thread.
+         * Messages can be received from any thread.
          */
         template<typename APP>
         class Instance final
@@ -36,6 +39,7 @@ namespace  nap
              */
             bool init(JNIEnv *env, jobject contextObject)
             {
+                std::lock_guard<std::mutex> lock(mInstanceMutex);
                 if (mRunner != nullptr)
                 {
                     nap::Logger::warn("instance of emography nap environment already exists!");
@@ -71,6 +75,7 @@ namespace  nap
              */
             int shutDown()
             {
+                std::lock_guard<std::mutex> lock(mInstanceMutex);
                 if(mRunner == nullptr)
                 {
                     nap::Logger::warn("unable to shutdown nap env, not initialized");
@@ -89,20 +94,12 @@ namespace  nap
              */
             void update()
             {
+                std::lock_guard<std::mutex> lock(mInstanceMutex);
                 if(mRunner == nullptr)
                     nap::Logger::warn("unable to update nap env, not initialized");
                 mRunner->update();
             }
 
-            /**
-             * @return the application runner, nullptr if not initialized
-             */
-            InstanceRunner* runner()
-            {
-                if(mRunner == nullptr)
-                    nap::Logger::warn("unable to acquire app runner, not initialized");
-                return mRunner.get();
-            }
 
             /**
              * Installs a callback which is called when the system receives an api event
@@ -143,6 +140,7 @@ namespace  nap
             std::unique_ptr<nap::Core> mCore                    = nullptr;
             std::unique_ptr<InstanceRunner> mRunner             = nullptr;
             APICallbackFunction mCallback                       = nullptr;
+            std::mutex mInstanceMutex;
 
             /**
              * Called when the instance receives a message from the api service
