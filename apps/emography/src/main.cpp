@@ -2,12 +2,12 @@
 //
 // Local Includes
 #include "emographyapp.h"
-#include "emographyappeventhandler.h"
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <apprunner.h>
+#include <guiappeventhandler.h>
 
 // Main loop
 int main(int argc, char *argv[])
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::EmographyApp, nap::EmographyAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::EmographyApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

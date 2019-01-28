@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "emographyrangedataviewcomponent.h"
-#include "emographysnapshot.h"
+#include "emographyreading.h"
 
 // External Includes
 
@@ -27,7 +27,7 @@ namespace nap
 			 */
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-			std::vector<StressSnapshot> mStressData;	///< Property: 'StressData' Example: stress related data snapshot
+			//std::vector<StressIntensityReading> mStressData;	///< Property: 'StressData' Example: stress related data snapshot
 		};
 
 
@@ -63,7 +63,7 @@ namespace nap
 			virtual void settingsChanged() override;
 
 		private:
-			std::vector<StressSnapshot> mStressData;	///< Property: 'Data' Example: stress related data snapshot
+			//std::vector<StressIntensityReading> mStressData;	///< Property: 'Data' Example: stress related data snapshot
 		};
 	}
 }

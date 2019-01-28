@@ -3,6 +3,9 @@
     "version": "0.2.2",
     "modules": [
         "mod_napapp",
-        "mod_emography"
+        "mod_emography",
+		"mod_naprender",
+		"mod_napimgui",
+		"mod_napsdlinput"
     ]
 }
