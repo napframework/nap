@@ -27,18 +27,24 @@ namespace nap
         void populateAndroidVars(JNIEnv *jniEnv, jobject androidContextObject);
 
         /**
-        * Get the JNI environment from our Java VM
-        * @return The environment
-        */
+         * Get the JNI environment from our Java VM
+         * @return The java native environment
+         */
         JNIEnv* getEnv();
 
-    protected:
-        std::string getNativeLibDir();
+		/**
+		 * Get the context back in Android space, typically the activity or service
+		 * @return The context back in Android space
+		 */
+		jobject getContext();
 
 		/**
 		 * @return the android asset manager, which provides access to an application's raw assets
 		 */
-        AAssetManager* getAssetManager();
+		AAssetManager* getAssetManager();
+
+    protected:
+        std::string getNativeLibDir();
 
         JavaVM*	mAndroidJvm; 						// The JNI environment
         jobject	mAndroidGlobalObject;				// Our context object back in Android space, typically the activity or service

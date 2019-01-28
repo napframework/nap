@@ -26,7 +26,7 @@ namespace nap
         /**
          * Describes the signature of a NAP api callback function
          */
-        using APICallbackFunction = std::function<void(JNIEnv *env, const nap::APIEvent&)>;
+        using APICallbackFunction = std::function<void(JNIEnv *env, jobject context, const nap::APIEvent&)>;
 
 
         /**
@@ -34,7 +34,7 @@ namespace nap
          * @param env java native environment
          * @param event the received api event
          */
-        void apiEventReceived(JNIEnv *env, const nap::APIEvent& event)
+        void apiEventReceived(JNIEnv *env, jobject context, const nap::APIEvent& event)
         {
             // Convert into api message
             APIMessage apimsg(event);
@@ -47,7 +47,14 @@ namespace nap
                 nap::Logger::error(error.toString());
                 return;
             }
-            nap::Logger::info(json);
+
+            // Calling for first time, get the method id
+            jclass thisClass = env->GetObjectClass(context);
+            jmethodID android_method = env->GetMethodID(thisClass, "logToUI", "(Ljava/lang/String;)V");
+
+            jstring jstr = env->NewStringUTF(json.c_str());
+            env->CallVoidMethod(context, android_method, jstr);
+            env->DeleteLocalRef(jstr);
         }
 
 
@@ -184,7 +191,7 @@ namespace nap
             {
                 if(mCallback == nullptr)
                     return;
-                mCallback(mRunner->getApp().getEnv(), event);
+                mCallback(mRunner->getApp().getEnv(), mRunner->getApp().getContext(), event);
             }
 
             // Slot that is connected on initialization
