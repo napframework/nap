@@ -39,11 +39,6 @@ namespace nap
 		 * @return Returns the path to the property.
 		 */
 		const rtti::Path& getRTTIPath() const { return mRTTIPath; }
-		
-		/**
-		 * @return The column name of the property as it is serialized to the database table.
-		 */
-		std::string toString() const;
 
 	private:
 		DatabasePropertyPath(const rtti::Path& rttiPath);
@@ -125,6 +120,24 @@ namespace nap
 		 */
 		bool clear(utility::ErrorState& errorState);
 
+		/**
+		 * Get the column name for the specified database path
+		 *
+		 * @param path The path to get the column name for
+		 * @param errorState: if the function returns an empty string, contains error information.
+		 * @return The column name for the specified path, or empty if the path could not be found
+		 */
+		std::string getColumnName(const DatabasePropertyPath& path, utility::ErrorState& errorState) const;
+
+	private:
+		/**
+		 * Generate a column name for the specified RTTI path. The generated name is unique with respect to other columns in the table.
+		 *
+		 * @param path The path to generate the column name for
+		 * @return A unique column name
+		 */
+		std::string generateUniqueColumnName(const rtti::Path& path) const;
+
 	private:
 		/**
 		 * Metadata for a column in the database
@@ -132,6 +145,7 @@ namespace nap
 		struct Column
 		{
 			std::unique_ptr<DatabasePropertyPath>	mPath;			///< Path to the property
+			std::string								mName;			///< Name of the column in the database
 			std::string								mSqlType;		///< SQL typename for a column (INTEGER/REAL/TEXT)
 		};
 

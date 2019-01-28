@@ -213,12 +213,6 @@ namespace nap
 	}
 
 
-	std::string DatabasePropertyPath::toString() const
-	{
-		std::string column_name = mRTTIPath.toString();
-		return sCPPToDatabaseName(column_name);
-	}
-
 	//////////////////////////////////////////////////////////////////////////
 
 
@@ -257,8 +251,10 @@ namespace nap
 
 			// Only add if it is not an ignored property
 			if (ignored_property_pos == propertiesToIgnore.end())
-				mColumns.push_back({ std::move(database_path), sGetSQLTypeString(property.get_type()) });
-			
+			{
+				std::string column_name = generateUniqueColumnName(path);
+				mColumns.push_back({ std::move(database_path), std::move(column_name), sGetSQLTypeString(property.get_type()) });
+			}			
 		}, errorState);
 
 		if (!result)
@@ -274,11 +270,9 @@ namespace nap
 		{
 			Column& column = mColumns[index];
 
-			std::string column_name = column.mPath->toString();
-
 			const char* separator = index < mColumns.size() - 1 ? ", " : "";
-			createTableSql += utility::stringFormat("'%s' %s%s", column_name.c_str(), column.mSqlType.c_str(), separator);
-			insertColumnsSql += utility::stringFormat("'%s'%s", column_name.c_str(), separator);
+			createTableSql += utility::stringFormat("'%s' %s%s", column.mName.c_str(), column.mSqlType.c_str(), separator);
+			insertColumnsSql += utility::stringFormat("'%s'%s", column.mName.c_str(), separator);
 			insertValuesSql += utility::stringFormat("?%s", separator);
 		}
 		createTableSql += ");";
@@ -364,7 +358,10 @@ namespace nap
 
 	bool DatabaseTable::getOrCreateIndex(const DatabasePropertyPath& propertyPath, utility::ErrorState& errorState)
 	{
-		std::string column_name = propertyPath.toString();
+		std::string column_name = getColumnName(propertyPath, errorState);
+		if (column_name.empty())
+			return false;
+
 		std::string sql = utility::stringFormat("CREATE INDEX IF NOT EXISTS \"%s_%s\" ON %s (\"%s\")", mTableID.c_str(), column_name.c_str(), mTableID.c_str(), column_name.c_str());
 
 		char* errorMessage = nullptr;
@@ -390,5 +387,28 @@ namespace nap
 		}
 
 		return true;
+	}
+
+
+	std::string DatabaseTable::getColumnName(const DatabasePropertyPath& path, utility::ErrorState& errorState) const
+	{
+		ColumnList::const_iterator pos = std::find_if(mColumns.begin(), mColumns.end(), [&path](const Column& column){ return column.mPath->getRTTIPath() == path.getRTTIPath(); });
+		if (!errorState.check(pos != mColumns.end(), "Unable to retrieve column name for the specified property: the property is not in the database"))
+			return "";
+
+		return pos->mName;
+	}
+
+
+	std::string DatabaseTable::generateUniqueColumnName(const rtti::Path& path) const
+	{
+		std::string base_name = sCPPToDatabaseName(path.toString());
+		
+		int counter = 1;
+		std::string result = sCPPToDatabaseName(path.toString());
+		while (std::find_if(mColumns.begin(), mColumns.end(), [&result](const Column& column){ return column.mName == result; }) != mColumns.end())
+			result = utility::stringFormat("%s_%d", base_name.c_str(), counter++);
+		
+		return result;
 	}
 }
