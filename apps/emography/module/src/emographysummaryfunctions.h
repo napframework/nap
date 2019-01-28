@@ -23,7 +23,7 @@ namespace nap
 				total += reading_summary->mObject.mValue * inObjects[index].mWeight;
 			}
 
-			return std::make_unique<StressIntensityReadingSummary>(Reading<T>((Type)total));
+			return std::make_unique<ReadingSummary<T>>(Reading<T>((Type)total));
 		}
 	}
 }

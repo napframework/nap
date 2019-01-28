@@ -194,41 +194,72 @@ namespace nap
 			 */
 			bool flush(utility::ErrorState& errorState);
 
+			/**
+			 * Registers an object type with a summary function. This function uses the default Reading<T> and ReadingSummary<T> classes to wrap
+			 * the ReadingType. To use a custom ReadingBase and ReadingSummary derived class, use the non-templatized version of registerType.
+			 * See 'a fully configurable object pipeline' in the DataModel class comments for more details.
+			 * @param summaryFunction: The summary function used to convert a reading to a summary.
+			 * @param errorState : if the function returns false, contains error information.
+			 */
 			template<class ReadingType>
 			bool registerType(const SummaryFunction& summaryFunction, utility::ErrorState& errorState)
 			{
 				return registerType(RTTI_OF(Reading<ReadingType>), RTTI_OF(ReadingSummary<ReadingType>), summaryFunction, errorState);
 			}
 
+			/**
+			 * Registers all three parts (in -> summary -> out) of the object pipeline for an object type.
+			 * See 'a fully configurable object pipeline' in the DataModel class comments for more details.
+			 * @param readingType: The ReadingBase-derived object used as 'input'
+			 * @param summaryType: The ReadingSummaryBase-derived object used as 'output'
+			 * @param summaryFunction: The summary function used to convert a reading (input) to a summary (output).
+			 * @param errorState : if the function returns false, contains error information.
+			 */
+			bool registerType(const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState);
+
+			/**
+			 * Queries the DataModel for retrieving summarized data for a time range. Any start- and end time can be requested, as well as a resolution: in how many steps
+			 * the data is returned. 
+			 * @param startTime: The start time of the range (inclusive).
+			 * @param endTime: The end time of the range (exclusive)
+			 * @param numValues: how many summarized values are to be returned, the number of 'steps'.
+			 * @param numValues: readings: the deserialized objects from the database.
+			 * @param errorState : if the function returns false, contains error information.
+			 */
 			template<class ReadingType>
 			bool getRange(TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 			{
 				return getRange(RTTI_OF(ReadingType), startTime, endTime, numValues, readings, errorState);
 			}
 
-			template<class ReadingType>
-			TimeStamp getLastReadingTime() const
-			{
-				return getLastReadingTime(RTTI_OF(ReadingType));
-			}
-
+			/**
+			 * Clears all data in the datamodel: all rows in the database tables and the internal state.
+			 */
 			template<class ReadingType>
 			bool clearData(utility::ErrorState& errorState)
 			{
 				return clearData(RTTI_OF(ReadingType), errorState);
 			}
 
+			/**
+			 * Returns the timestamp for the last processed reading of this type.
+			 */
+			template<class ReadingType>
+			TimeStamp getLastReadingTime() const
+			{
+				return getLastReadingTime(RTTI_OF(ReadingType));
+			}
+
 		private:
-			bool registerType(const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState);
 			bool getRange(const rtti::TypeInfo& inReadingType, TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState);
 			TimeStamp getLastReadingTime(const rtti::TypeInfo& inReadingType) const;
 			bool clearData(const rtti::TypeInfo& inReadingType, utility::ErrorState& errorState);
 
 		private:
 			using ReadingProcessorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ReadingProcessor>>;
-			Database			mDatabase;
-			ReadingProcessorMap mReadingProcessors;
-			EKeepRawReadings	mKeepRawReadings;
+			Database			mDatabase;				///< Database used as backing store
+			ReadingProcessorMap mReadingProcessors;		///< A map holding all the internal reading processors for all object types
+			EKeepRawReadings	mKeepRawReadings;		///< Flag indicating whether raw data should be kept and discarded
 		};
 	}
 }
