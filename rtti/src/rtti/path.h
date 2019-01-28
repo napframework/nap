@@ -450,11 +450,22 @@ namespace nap
 				mElements[--mLength] = PathElement();
 			}
 
+			/**
+			 * Get the length of the path
+			 *
+			 * @return The length of the path
+			 */
 			inline int getLength() const
 			{
 				return mLength;
 			}
 
+			/**
+			 * Get the element at the specified index on the path
+			 *
+			 * @param index The index of the element to get
+			 * @return The element at the specified index
+			 */
 			inline const PathElement& getElement(int index) const
 			{
 				assert(index < mLength);
