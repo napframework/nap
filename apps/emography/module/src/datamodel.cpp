@@ -46,7 +46,7 @@ namespace nap
 		/**
 		 * Internally the database works with seconds, this converts whatever unit was used in TimeStamp into seconds.
 		 */
-		static TimeStamp sSecondsToTimeStamp(uint64_t seconds)
+		static TimeStamp secondsToTimeStamp(uint64_t seconds)
 		{
 			return TimeStamp(SystemTimeStamp(Seconds(seconds)));
 		}
@@ -55,7 +55,7 @@ namespace nap
 		/**
 		 * Internally the database works with seconds, this converts whatever unit was used in TimeStamp to seconds.
 		 */
-		static uint64_t sTimeStampToSeconds(TimeStamp timeStamp)
+		static uint64_t timeStampToSeconds(TimeStamp timeStamp)
 		{
 			return std::chrono::time_point_cast<Seconds>(timeStamp.toSystemTime()).time_since_epoch().count();
 		}
@@ -108,6 +108,7 @@ namespace nap
 			DatabaseTable*								mTable = nullptr;			///< Database table for this LOD's reading summaries
 			DatabaseTable*								mStateTable = nullptr;		///< Database table for runtime state
 		};
+
 
 		/**
 		 * Internal class for processing a reading of a certain type. Converts data from input to output using the summary function and stores the result in LODs in the database.
@@ -265,7 +266,7 @@ namespace nap
 			{
 				bool any_lod_flushed = false;
 
-				uint64_t timestamp_seconds = sTimeStampToSeconds(timestamp);
+				uint64_t timestamp_seconds = timeStampToSeconds(timestamp);
 
 				std::vector<std::unique_ptr<rtti::Object>> objects;
 				std::vector<DataModel::WeightedObject> weighted_objects;
@@ -291,7 +292,7 @@ namespace nap
 							break;
 
 						// We have to convert from seconds to Timestamp's time format, as this is the format that was written to the database
-						TimeStamp prev_chunk_start_timestamp = sSecondsToTimeStamp(lod.mState->mCurrentChunkIndex * lod.mMaxNumSeconds);
+						TimeStamp prev_chunk_start_timestamp = secondsToTimeStamp(lod.mState->mCurrentChunkIndex * lod.mMaxNumSeconds);
 
 						objects.clear();
 						weighted_objects.clear();
@@ -370,6 +371,54 @@ namespace nap
 			}
 
 
+			/**
+			 * This is the main algorithm for querying and summarizing a range of data. It's recommended to first read the generic documentation in DataModel.h.
+			 * 
+			 * See the following state and query range:
+			 * 
+			 *	Query range	                     #----------------------------------------------#
+			 *	LOD 0		   [ 1  ][ 1  ][ 4  ][ 5  ][ 2  ][ 5  ][ 6  ][ 4  ][ 3  ][ 3  ][ 6  ][ 4  ]
+			 *	LOD 1		   [    0.5   ][   4.5    ][   3.5    ][    5     ][     3    ][    5     ]
+			 *  LOD 2		   [         2.5          ][         4.25         ][           4          ]
+			 *  LOD 3								   [                     4.125                    ]
+			 *
+			 * As explained in the DataModel comments, we wish to process the minimum of data, and calculate the correct weights for the data,
+			 * which, for this example, would be the following data:
+			 *
+			 *	LOD 0		   [ 5  ]                                   [ 6  ]
+			 *	LOD 1		                                 [     3    ]
+			 *  LOD 2		         [         4.25         ]
+			 *
+			 * The algorithm is split into two parts: 
+			 * 1) The part where the algorithm processes blocks that lead to higher LODs in This example that is only the block with value [5].
+			 * 2) The part where the algorithm tries to fit in as many blocks as possible, from low detail (high LOD) to high detail (lowest LOD).
+			 * 
+			 * Part 1) We process all LODs, starting from the lowest LOD. We want to answer the question: is there a higher LOD that we want to process? (Is there a higher 
+			 * that fits within our time range?) And if so, where does it start? To answer this question, we calculate the start time of the chunk in the next, higher LOD. 
+			 * This start time can either be exactly equal to the current time or somewhere in the future. From the start time of the next LOD, we calculate the end time of 
+			 * a single chunk in that LOD. If the end time of the block is within the time range, we know we want to process at least one chunk in a higher LOD, so we don't 
+			 * want to go through all the current LOD's separate blocks. However, we do want to process any blocks leading to the next LOD's start time. After processing
+			 * these blocks, we proceed to the next LOD level and perform the same routine. In our example, this means the following:
+			 * 
+			 * - We start at LOD 5, at the block with the value [5]. The next LOD chunk is LOD1 with value [3.5]. The start time of that chunk lies one second ahead of the 
+			 *   current block. The end time of that chunk is well within the range of our query, so we know we want to process the next LOD. There is a single block at LOD0 
+			 *   that we need to process that lies before the next LOD, so we process the block with value [5].
+			 * - We are now at LOD1. The next LOD is LOD2. The time aligns perfectly with our LOD, and the end time of the block with value [4.25] is within the time range,
+			 *   so we want to process it. There are no blocks leading to that LOD as the time aligns perfectly, so we don't process any blocks on this level.
+			 * - We are at LOD2. The next LOD level aligns perfectly, but the end of the block passes beyond the time range, so we can't use it. We stop processing here.
+			 *
+			 * Part 2) The remainder of the algorithm is simple: we know what LODs we already have processed. We can start by the last processed LOD level and go down until we  
+			 * processed all LOD levels. The only thing we need to do is see how many blocks fit within our time range, and process all of them. In our example:
+			 *
+			 * - We were at LOD2 so we start there. There is only one block to process here that is within range, so we process the block with value [4.25]. We proceed one level higher
+			 * - We are at LOD1 and process only the block with value [3].
+			 * - We are now at LOD0 and process only the block with value [6].
+			 *
+			 * As far as the weighting goes, each summarized block already has a value for the amount of seconds it was active. We know the full range of seconds that was queried,
+			 * so each block receives a weight that corresponds to the active number of seconds: 
+			 * 
+			 *		weight = activeSecs / totalQuerySecs
+			 */
 			bool getRange(uint64_t startTime, uint64_t endTime, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 			{
 				uint64_t cur_time_seconds = startTime;
@@ -377,39 +426,38 @@ namespace nap
 
 				std::vector<DataModel::WeightedObject> weighted_objects;
 
+				// Part one of the algorithm: process all blocks leading to higher LODs
 				int lod_index = 0;
 				for (; lod_index < mLODs.size() - 1; ++lod_index)
 				{
+					// Find the start and end time of the next chunk of the next LOD
 					uint64_t next_lod_duration = mLODs[lod_index + 1].mMaxNumSeconds;
 					uint64_t next_lod_start_time = (cur_time_seconds / next_lod_duration) * next_lod_duration;
 					if (next_lod_start_time < cur_time_seconds) 
 						next_lod_start_time += next_lod_duration;
 					uint64_t next_lod_end_time = next_lod_start_time + next_lod_duration;
 
-					if (next_lod_end_time < endTime)
-					{
-						uint64_t delta = next_lod_start_time - cur_time_seconds;
-						if (delta <= 0)
-							continue;
-
-						if (!getWeightedObjects(mLODs[lod_index], cur_time_seconds, next_lod_start_time, total_active_seconds, weighted_objects, errorState))
-							return false;
-
-						cur_time_seconds = next_lod_start_time;
-					}
-					else
-					{
-						uint64_t current_lod_end_time = endTime / mLODs[lod_index].mMaxNumSeconds * mLODs[lod_index].mMaxNumSeconds;
-
-						if (!getWeightedObjects(mLODs[lod_index], cur_time_seconds, current_lod_end_time, total_active_seconds, weighted_objects, errorState))
-							return false;
-
-						cur_time_seconds = current_lod_end_time;
+					// If the next LOD level is out of the time range, we stop processing the first part of the algorithm
+					if (next_lod_end_time >= endTime)
 						break;
-					}
+
+					// We do want to process the next LOD level, find how much time is leading to that level
+					uint64_t delta = next_lod_start_time - cur_time_seconds;
+
+					// If there is no time, we're perfectly aligned. There's nothing to do at this LOD level, proceed to next level
+					if (delta <= 0)
+						continue;
+
+					// There is time leading up to the next LOD. Ask the database for all data in this timerange.
+					if (!getWeightedObjects(mLODs[lod_index], cur_time_seconds, next_lod_start_time, total_active_seconds, weighted_objects, errorState))
+						return false;
+
+					// Progress time to the next LOD's start time
+					cur_time_seconds = next_lod_start_time;
 				}
 
-				for (lod_index = lod_index - 1; lod_index >= 0; --lod_index)
+				// Part two of the algorithm: process all blocks that fit within the time range, going from low detail to higher detail
+				for (lod_index = lod_index; lod_index >= 0; --lod_index)
 				{
 					uint64_t current_lod_end_time = endTime / mLODs[lod_index].mMaxNumSeconds * mLODs[lod_index].mMaxNumSeconds;
 
@@ -419,26 +467,36 @@ namespace nap
 					cur_time_seconds = current_lod_end_time;
 				}
 
+				// Fill in the correct weight based on the number of seconds the summary was active
 				for (DataModel::WeightedObject& weighted_object : weighted_objects)
 				{
 					ReadingSummaryBase* summary_base = rtti_cast<ReadingSummaryBase>(weighted_object.mObject.get());
 					weighted_object.mWeight = (float)summary_base->mNumSecondsActive / (float)total_active_seconds;
 				}
 
+				// Create the final object. Call the summary object. Set start time to the start time of the summary
+				// and set amount of active seconds to total amount of active seconds in this query
 				std::unique_ptr<ReadingSummaryBase> collapsedObject = mSummaryFunction(weighted_objects);
 				assert(collapsedObject->get_type() == mSummaryType);
-				collapsedObject->mTimeStamp = sSecondsToTimeStamp(startTime);
+				collapsedObject->mTimeStamp = secondsToTimeStamp(startTime);
 				collapsedObject->mNumSecondsActive = total_active_seconds;
 
 				readings.emplace_back(std::move(collapsedObject));
 				return true;
 			}
 
+
+			/**
+			 * Outer loop of the getRange function. For a detailed description, see the inner getRange function.
+			 * This function simply cuts the requested range into a number of smaller queries with separate time ranges.
+			 */
 			bool getRange(TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 			{
-				uint64_t start_seconds = sTimeStampToSeconds(startTime);
-				uint64_t end_seconds = sTimeStampToSeconds(endTime);
+				uint64_t start_seconds = timeStampToSeconds(startTime);
+				uint64_t end_seconds = timeStampToSeconds(endTime);
 				uint64_t full_range = end_seconds - start_seconds;
+
+				// We count the offset and step size in doubles because step sizes may have fractions
 				double step = (double)full_range / numValues;
 				double curOffset = (double)start_seconds;
 
@@ -455,10 +513,12 @@ namespace nap
 				return true;
 			}
 
+
 			TimeStamp getLastReadingTime() const
 			{
 				return mState->mLastReadingTime;
 			}
+
 
 			bool clearData(utility::ErrorState& errorState)
 			{
@@ -497,12 +557,14 @@ namespace nap
 				if (lod_id_path == nullptr)
 					return false;
 
+				// Create LOD and summary table
 				ReadingProcessorLOD lod;
 				lod.mMaxNumSeconds = maxNumSeconds;
 				lod.mTable = mDatabase->getOrCreateTable(id, mSummaryType, { *lod_id_path }, errorState);
 				if (lod.mTable == nullptr)
 					return false;
 
+				// Put an index on the timestamp of the summary table
 				if (!lod.mTable->getOrCreateIndex(*mLODTimeStampPath, errorState))
 					return false;
 
@@ -510,10 +572,12 @@ namespace nap
 				if (state_id_path == nullptr)
 					return false;
 
+				// Create state table
 				lod.mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorLODState), { *state_id_path }, errorState);
 				if (lod.mStateTable == nullptr)
 					return false;
 
+				// Try to retrieve the state object from the state table
 				std::vector<std::unique_ptr<rtti::Object>> state_object;
 				if (!lod.mStateTable->query("", state_object, errorState))
 					return false;
@@ -521,6 +585,7 @@ namespace nap
 				if (!errorState.check(state_object.size() <= 1, "Found invalid number of state objects"))
 					return false;
 
+				// If there was a state object, use it. Otherwise, create a new state object
 				if (state_object.empty())
 					lod.mState = std::make_unique<ReadingProcessorLODState>();
 				else
@@ -530,19 +595,24 @@ namespace nap
 				return true;
 			}
 
+
+			/**
+			 * Retrieve objects from the database and creates a list of weightedObjects from them. The initial weight will be zero, the correct weight is filled in later.
+			 */
 			bool getWeightedObjects(ReadingProcessorLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
 			{
 				std::vector<std::unique_ptr<rtti::Object>> objects;
 				const std::string timestamp_column_name = mLODTimeStampPath->toString();
 
 				// Convert to TimeStamp time format, because this is the format that was serialized to the database
-				TimeStamp start_timestamp = sSecondsToTimeStamp(startTime);
-				TimeStamp end_timestamp = sSecondsToTimeStamp(endTime);
+				TimeStamp start_timestamp = secondsToTimeStamp(startTime);
+				TimeStamp end_timestamp = secondsToTimeStamp(endTime);
 
 				std::string query = utility::stringFormat("%s >= %llu AND %s < %llu", timestamp_column_name.c_str(), start_timestamp.mTimeStamp, timestamp_column_name.c_str(), end_timestamp.mTimeStamp);
 				if (!lod.mTable->query(query, objects, errorState))
 					return false;
 
+				// We create weighted objects here with a default weight of 0.0f. The real weight will be filled in at a later stage
 				for (auto& object : objects)
 				{
 					ReadingSummaryBase* summary_base = rtti_cast<ReadingSummaryBase>(object.get());
@@ -556,20 +626,18 @@ namespace nap
 			}
 
 		private:
-			Database*									mDatabase;
-			std::unique_ptr<DatabasePropertyPath>		mRawTimeStampPath;
-			std::unique_ptr<DatabasePropertyPath>		mLODTimeStampPath;
-			rtti::TypeInfo								mReadingType;
-			rtti::TypeInfo								mSummaryType;
-			DataModel::EKeepRawReadings					mKeepRawReadings;
-			std::vector<ReadingProcessorLOD>			mLODs;
-			DataModel::SummaryFunction					mSummaryFunction;
-			DatabaseTable*								mRawTable = nullptr;
-			DatabaseTable*								mStateTable = nullptr;
-			std::vector<std::unique_ptr<rtti::Object>>	mRawReadingCache;
-
-			// Runtime state, serialized to db
-			std::unique_ptr<ReadingProcessorState>		mState;
+			Database*									mDatabase;					///< Database object, owned by DataModel
+			rtti::TypeInfo								mReadingType;				///< ReadingType for this processor
+			rtti::TypeInfo								mSummaryType;				///< SummaryType for this processor
+			DataModel::EKeepRawReadings					mKeepRawReadings;			///< Flag indicating whether to store raw reading in the database
+			std::vector<ReadingProcessorLOD>			mLODs;						///< All LODs for this processor
+			DataModel::SummaryFunction					mSummaryFunction;			///< The summary function used to convert readings to summaries
+			DatabaseTable*								mRawTable = nullptr;		///< The raw table used to store raw reading
+			DatabaseTable*								mStateTable = nullptr;		///< The database table for storing state data
+			std::vector<std::unique_ptr<rtti::Object>>	mRawReadingCache;			///< Window of raw readings, large enough to build one chunk of LOD0 data
+			std::unique_ptr<DatabasePropertyPath>		mRawTimeStampPath;			///< Path to timestamp property for raw database table
+			std::unique_ptr<DatabasePropertyPath>		mLODTimeStampPath;			///< Path to timestamp property for LOD database table
+			std::unique_ptr<ReadingProcessorState>		mState;						///< Runtime state, serialized to db
 		};
 
 		//////////////////////////////////////////////////////////////////////////
