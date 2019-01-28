@@ -101,9 +101,6 @@ public class ForegroundService extends Service
                     return;
                 }
 
-                // Pull some data back over JNI
-                pullLogToUI();
-
                 // Loop through doing some imaginary things with our NAP service
                 while (!Thread.interrupted() && !mStopThread)
                     try
@@ -117,9 +114,6 @@ public class ForegroundService extends Service
 
                         // Send our fake data through over JNI
                         call(timestamp);
-
-                        // Pull some data back over JNI
-                        pullLogToUI();
                     }
                     catch (InterruptedException e) { }
 
@@ -254,31 +248,6 @@ public class ForegroundService extends Service
     }
 
 
-    private void pullLogToUI()
-    {
-        Handler mainHandler = new Handler(this.getMainLooper());
-        Runnable myRunnable = new Runnable()
-        {
-            @Override
-            public void run() {
-            String s = pullLogFromApp();
-            if (s == null)
-                return;
-
-            if (mOutputLog != "")
-                mOutputLog += "\n";
-            mOutputLog += s;
-
-            Intent logIntent = new Intent();
-            logIntent.setAction(Constants.ACTION.LOG_TO_ACTIVITY);
-            logIntent.putExtra("log", s);
-            sendBroadcast(logIntent);
-            }
-        };
-        mainHandler.post(myRunnable);
-    }
-
-
     // Load native library
     static {
         System.loadLibrary("nap-service");
@@ -287,6 +256,5 @@ public class ForegroundService extends Service
     public native boolean   napInit();
     public native void      napUpdate();
     public native void      napSendMessage(String data);
-    public native String    pullLogFromApp();
     public native void      napShutdown();
 }
