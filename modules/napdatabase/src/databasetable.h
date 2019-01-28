@@ -17,8 +17,7 @@ namespace nap
 	/**
 	 * Identification of an path to an RTTI property that can be serialized to a DatabaseTable.
 	 * Upon creation, it is verified that this is a property that can be serialized to a table, otherwise the creation will fail.
-	 * This object is then further used to identify columns in the database table. The toString method will return the column name
-	 * in the database table.
+	 * This object is then further used to identify columns in the database table.
 	 */
 	class NAPAPI DatabasePropertyPath final
 	{
