@@ -5,6 +5,9 @@ namespace nap
 {
 	namespace emography
 	{
+		/**
+		 * Runtime state for ReadingProcessor. This is separated in an object so that it can be serialized to a database table.
+		 */
 		class ReadingProcessorState : public rtti::Object
 		{
 			RTTI_ENABLE(rtti::Object)
@@ -14,6 +17,9 @@ namespace nap
 			TimeStamp	mLastReadingTime;
 		};
 
+		/**
+		 * Runtime state for ReadingProcessorLOD. This is separated in an object so that it can be serialized to a database table.
+		 */
 		class ReadingProcessorLODState : public rtti::Object
 		{
 			RTTI_ENABLE(rtti::Object)
@@ -37,16 +43,75 @@ namespace nap
 {
 	namespace emography
 	{
+		/**
+		 * Internally the database works with seconds, this converts whatever unit was used in TimeStamp into seconds.
+		 */
 		static TimeStamp sSecondsToTimeStamp(uint64_t seconds)
 		{
 			return TimeStamp(SystemTimeStamp(Seconds(seconds)));
 		}
 
+
+		/**
+		 * Internally the database works with seconds, this converts whatever unit was used in TimeStamp to seconds.
+		 */
 		static uint64_t sTimeStampToSeconds(TimeStamp timeStamp)
 		{
 			return std::chrono::time_point_cast<Seconds>(timeStamp.toSystemTime()).time_since_epoch().count();
 		}
 
+
+		/**
+		 * Represents a single Level Of Detail in a ReadingProcessor.
+		 */
+		class ReadingProcessorLOD final
+		{
+		public:
+			ReadingProcessorLOD() = default;
+
+			ReadingProcessorLOD(const ReadingProcessorLOD&) = delete;
+			ReadingProcessorLOD& operator=(const ReadingProcessorLOD&) = delete;
+
+
+			ReadingProcessorLOD(ReadingProcessorLOD&& rhs)
+			{
+				mMaxNumSeconds = rhs.mMaxNumSeconds;
+				mState = std::move(rhs.mState);
+				mTable = rhs.mTable;
+				mStateTable = rhs.mStateTable;
+
+				rhs.mTable = nullptr;
+				rhs.mStateTable = nullptr;
+				rhs.mMaxNumSeconds = 0;
+			}
+
+
+			ReadingProcessorLOD& operator=(ReadingProcessorLOD&& rhs)
+			{
+				if (&rhs != this)
+				{
+					mMaxNumSeconds = rhs.mMaxNumSeconds;
+					mState = std::move(rhs.mState);
+					mTable = rhs.mTable;
+					mStateTable = rhs.mStateTable;
+
+					rhs.mTable = nullptr;
+					rhs.mStateTable = nullptr;
+					rhs.mMaxNumSeconds = 0;
+				}
+				return *this;
+			}
+
+		public:
+			int											mMaxNumSeconds = 0;			///< The amount of seconds stored in a single bucket for this LOD
+			std::unique_ptr<ReadingProcessorLODState>	mState;						///< Runtime state for this LOD
+			DatabaseTable*								mTable = nullptr;			///< Database table for this LOD's reading summaries
+			DatabaseTable*								mStateTable = nullptr;		///< Database table for runtime state
+		};
+
+		/**
+		 * Internal class for processing a reading of a certain type. Converts data from input to output using the summary function and stores the result in LODs in the database.
+		 */
 		class ReadingProcessor final
 		{
 		public:
@@ -59,6 +124,7 @@ namespace nap
 			{
 			}
 
+
 			bool init(utility::ErrorState& errorState)
 			{
 				rtti::Path timestamp_path;
@@ -68,14 +134,17 @@ namespace nap
 				rtti::Path id_path;
 				id_path.pushAttribute(rtti::sIDPropertyName);
 
+				// Create a path to the timestamp field for the Reading type for creating the index on the timestamp field
 				mRawTimeStampPath = DatabasePropertyPath::sCreate(mReadingType, timestamp_path, errorState);
 				if (mRawTimeStampPath == nullptr)
 					return false;
 
+				// Create a path to the timestamp field for the ReadingSummary type for creating the index on the timestamp field
 				mLODTimeStampPath = DatabasePropertyPath::sCreate(mSummaryType, timestamp_path, errorState);
 				if (mLODTimeStampPath == nullptr)
 					return false;
 
+				// Create a path to the ID field of Reading type for ignoring the property when serializing
 				std::unique_ptr<DatabasePropertyPath> raw_id_path = DatabasePropertyPath::sCreate(mReadingType, id_path, errorState);
 				if (raw_id_path == nullptr)
 					return false;
@@ -86,20 +155,24 @@ namespace nap
 				if (mRawTable == nullptr)
 					return false;
 
+				// Create index for the raw table on the timestamp
 				if (!mRawTable->getOrCreateIndex(*mRawTimeStampPath, errorState))
 					return false;
 
 				// Create processor state table
 				{
+					// Create a path to the ID field of ReadingProcessorState type for ignoring the property when serializing
 					std::unique_ptr<DatabasePropertyPath> processor_id_path = DatabasePropertyPath::sCreate(RTTI_OF(ReadingProcessorState), id_path, errorState);
 					if (processor_id_path == nullptr)
 						return false;
 
+					// Get/create the state table for the processor
 					std::string state_table_name = utility::stringFormat("%s_state", mReadingType.get_name().data());
 					mStateTable = mDatabase->getOrCreateTable(state_table_name, RTTI_OF(ReadingProcessorState), { *processor_id_path }, errorState);
 					if (mStateTable == nullptr)
 						return false;
 
+					// Retrieve the state object from the state table
 					std::vector<std::unique_ptr<rtti::Object>> state_object;
 					if (!mStateTable->query("", state_object, errorState))
 						return false;
@@ -107,6 +180,7 @@ namespace nap
 					if (!errorState.check(state_object.size() <= 1, "Found invalid number of state objects"))
 						return false;
 
+					// If the object does not exist, create a default one. Otherwise, use the one from the table
 					if (state_object.empty())
 						mState = std::make_unique<ReadingProcessorState>();
 					else
@@ -131,33 +205,48 @@ namespace nap
 				return true;
 			}
 
+
 			bool add(const ReadingBase& object, utility::ErrorState& errorState)
 			{
+				// Make sure that the LODs are updated up until this timestamp that we just received
 				if (!flush(object.mTimeStamp, errorState))
 					return false;
 
+				// Add raw reading if enabled
 				if (mKeepRawReadings == DataModel::EKeepRawReadings::Enabled)
 				{
 					if (!mRawTable->add(object, errorState))
 						return false;
 				}
 
+				// We maintain a small window of raw data for creating the first LOD level. We only want to convert from 
+				// summary to summary objects in the summary function, so we create an initial summary object based on the
+				// raw reading here through the summary constructor.
 				std::unique_ptr<rtti::Object> raw_summary(mSummaryType.create<ReadingSummaryBase>({ object }));
 				mRawReadingCache.emplace_back(std::move(raw_summary));
 
+				// Store the last reading time. This means we have updated up until this point. This state is used when flushing
+				// manually using flush(): we will then update all LODs up until the last known processed timestamp.
 				mState->mLastReadingTime = object.mTimeStamp;
 
 				return true;
 			}
+
 
 			bool flush(utility::ErrorState& errorState)
 			{
 				if (!mState->mLastReadingTime.isValid())
 					return true;
 
+				// We take the last processed reading time and add a single second to it. We do this to ensure that a second is guaranteed
+				// to pass it's bucket size. This will flush the second LOD and any higher LODs that are aligned to that second LOD as well. 
+				// Because we artificially progress in time a little bit to ensure the LOD is flushed, this does mean that one could, in theory,
+				// call flush again within that same second, causing the data to go back in time. To solve this, the flush ignores any data
+				// that goes back in time.
 				auto nextTimeStamp = mState->mLastReadingTime.toSystemTime() + Seconds(1);
 				return flush(nextTimeStamp, errorState);
 			}
+
 
 			bool flush(TimeStamp timestamp, utility::ErrorState& errorState)
 			{
@@ -171,7 +260,7 @@ namespace nap
 				DatabaseTable* prevTable = nullptr;
 				for (int lod_index = 0; lod_index < mLODs.size(); ++lod_index)
 				{
-					ReadingLOD& lod = mLODs[lod_index];
+					ReadingProcessorLOD& lod = mLODs[lod_index];
 					uint64_t chunk_index = timestamp_seconds / lod.mMaxNumSeconds;
 					if (chunk_index == lod.mState->mCurrentChunkIndex)
 						break;
@@ -346,7 +435,7 @@ namespace nap
 				mState = std::make_unique<ReadingProcessorState>();
 				mRawReadingCache.clear();
 
-				for (ReadingLOD& lod : mLODs)
+				for (ReadingProcessorLOD& lod : mLODs)
 				{
 					if (!lod.mTable->clear(errorState))
 						return false;
@@ -361,47 +450,6 @@ namespace nap
 			}
 
 		private:
-			struct ReadingLOD
-			{
-				ReadingLOD() = default;
-
-				ReadingLOD(const ReadingLOD&) = delete;
-				ReadingLOD& operator=(const ReadingLOD&) = delete;
-				
-				ReadingLOD(ReadingLOD&& rhs)
-				{
-					mMaxNumSeconds = rhs.mMaxNumSeconds;
-					mState = std::move(rhs.mState);
-					mTable = rhs.mTable;
-					mStateTable = rhs.mStateTable;
-					
-					rhs.mTable = nullptr;
-					rhs.mStateTable = nullptr;
-					rhs.mMaxNumSeconds = 0;
-				}
-
-				ReadingLOD& operator=(ReadingLOD&& rhs)
-				{
-					if (&rhs != this)
-					{
-						mMaxNumSeconds = rhs.mMaxNumSeconds;
-						mState = std::move(rhs.mState);
-						mTable = rhs.mTable;
-						mStateTable = rhs.mStateTable;
-
-						rhs.mTable = nullptr;
-						rhs.mStateTable = nullptr;
-						rhs.mMaxNumSeconds = 0;
-					}
-					return *this;
-				}
-
-				int											mMaxNumSeconds = 0;
-				std::unique_ptr<ReadingProcessorLODState>	mState;
-				DatabaseTable*								mTable = nullptr;
-				DatabaseTable*								mStateTable = nullptr;
-			};
-
 			bool addLOD(const std::string& id, int maxNumSeconds, utility::ErrorState& errorState)
 			{
 				std::string state_table_name = id + "_state";
@@ -413,7 +461,7 @@ namespace nap
 				if (lod_id_path == nullptr)
 					return false;
 
-				ReadingLOD lod;
+				ReadingProcessorLOD lod;
 				lod.mMaxNumSeconds = maxNumSeconds;
 				lod.mTable = mDatabase->getOrCreateTable(id, mSummaryType, { *lod_id_path }, errorState);
 				if (lod.mTable == nullptr)
@@ -446,7 +494,7 @@ namespace nap
 				return true;
 			}
 
-			bool getWeightedObjects(ReadingLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
+			bool getWeightedObjects(ReadingProcessorLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
 			{
 				std::vector<std::unique_ptr<rtti::Object>> objects;
 				const std::string timestamp_column_name = mLODTimeStampPath->toString();
@@ -478,7 +526,7 @@ namespace nap
 			rtti::TypeInfo								mReadingType;
 			rtti::TypeInfo								mSummaryType;
 			DataModel::EKeepRawReadings					mKeepRawReadings;
-			std::vector<ReadingLOD>						mLODs;
+			std::vector<ReadingProcessorLOD>			mLODs;
 			DataModel::SummaryFunction					mSummaryFunction;
 			DatabaseTable*								mRawTable = nullptr;
 			DatabaseTable*								mStateTable = nullptr;
