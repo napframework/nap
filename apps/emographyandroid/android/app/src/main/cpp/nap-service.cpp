@@ -21,13 +21,7 @@ Java_nl_naivi_emography_ForegroundService_napShutdown(JNIEnv *env, jobject conte
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_nl_naivi_emography_ForegroundService_napSendMessage(JNIEnv *env, jobject contextObject, jstring jdata)
+Java_nl_naivi_emography_ForegroundService_napSendMessage(JNIEnv *env, jobject contextObject, jstring json)
 {
-    nap::android::sendMessage(env, contextObject, jdata);
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_nl_naivi_emography_ForegroundService_pullLogFromApp(JNIEnv *env, jobject contextObject)
-{
-    return nap::android::pullLogFromApp(env, contextObject);
+    nap::android::sendMessage(env, contextObject, json);
 }
