@@ -1,3 +1,9 @@
+# TODO ANDROID Temporary workaround for cached path when changing between NAP release versions on Win64/Ninja
+if(GLM_INCLUDE_DIRS AND NOT EXISTS(GLM_INCLUDE_DIRS))
+  unset(GLM_INCLUDE_DIRS)
+  unset(GLM_INCLUDE_DIRS CACHE)
+endif()
+
 find_path(GLM_INCLUDE_DIRS
           NAMES glm/glm.hpp
           NO_CMAKE_FIND_ROOT_PATH
