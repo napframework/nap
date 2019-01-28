@@ -9,6 +9,7 @@ add_library(nap-service SHARED
             ${PROJECT_ROOT}/src/emographyandroidapp.h
             ${PROJECT_ROOT}/src/androidwrapper.cpp
             ${PROJECT_ROOT}/src/androidwrapper.h
+            ${PROJECT_ROOT}/src/androidinstance.h
             )
 
 set(NAP_ROOT ${CMAKE_SOURCE_DIR}/../../../../../../../NAP-0.2.2-Android)
