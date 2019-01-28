@@ -13,7 +13,9 @@ namespace nap
 {
 	RandomGui::RandomGui(RandomApp& app) : mApp(app)
 	{
-
+		ImGuiIO& io = ImGui::GetIO();
+		io.MouseDoubleClickTime = 0.5f;
+		io.MouseDoubleClickMaxDist = 25.0f;
 	}
 
 	void RandomGui::update(double deltaTime)
