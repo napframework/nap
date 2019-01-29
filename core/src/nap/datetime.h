@@ -352,7 +352,7 @@ namespace nap
 		*/
 		inline bool isValid() const { return mTimeStamp >= 0; }
 
-		long long mTimeStamp = -1;		///< Property: 'Time' time since epoch stored as long
+		int64_t mTimeStamp = -1;		///< Property: 'Time' time since epoch stored as long
 	};
 }
 

@@ -95,7 +95,7 @@ namespace nap
 	using APIByte = APIValue<uint8_t>;
 	using APIString = APIValue<std::string>;
 	using APIDouble = APIValue<double>;
-	using APILong = APIValue<long long>;
+	using APILong = APIValue<int64_t>;
 
 	using APIFloatArray = APIValue<std::vector<float>>;
 	using APIIntArray = APIValue<std::vector<int>>;

@@ -67,7 +67,7 @@ namespace nap
 	}
 
 
-	bool APIService::sendLong(const char* id, long long value, utility::ErrorState* error)
+	bool APIService::sendLong(const char* id, int64_t value, utility::ErrorState* error)
 	{
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
 		ptr->addArgument<APILong>("data", value);

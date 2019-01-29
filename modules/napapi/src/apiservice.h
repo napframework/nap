@@ -94,7 +94,7 @@ namespace nap
 		 * @param value the long to send.
 		 * @param error contains the error if sending fails.
 		 */
-		bool sendLong(const char* id, long long value, utility::ErrorState* error);
+		bool sendLong(const char* id, int64_t value, utility::ErrorState* error);
 		
 		/**
 		 * Sends a single char value to a NAP application.

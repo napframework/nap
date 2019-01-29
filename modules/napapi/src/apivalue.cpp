@@ -89,7 +89,7 @@ namespace nap
 	nap::APIValue<uint8_t>::APIValue() : APIBaseValue(RTTI_OF(uint8_t)), mValue(0) { }
 
 	template<>
-	nap::APIValue<long long>::APIValue() : APIBaseValue(RTTI_OF(long long)), mValue(0) { }
+	nap::APIValue<int64_t>::APIValue() : APIBaseValue(RTTI_OF(int64_t)), mValue(0) { }
 
 	template<>
 	nap::APIValue<bool>::APIValue() : APIBaseValue(RTTI_OF(bool)), mValue(false) { }
