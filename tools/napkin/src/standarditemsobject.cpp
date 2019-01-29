@@ -8,11 +8,18 @@ napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {
 }
 
-napkin::ObjectItem::ObjectItem(nap::rtti::Object* rttiObject) : mObject(rttiObject)
+napkin::ObjectItem::ObjectItem(nap::rtti::Object* rttiObject)
+		: QObject(), mObject(rttiObject)
 {
 	refresh();
 	setText(QString::fromStdString(rttiObject->mID));
     setIcon(AppContext::get().getResourceFactory().getIcon(*rttiObject));
+
+    auto& ctx = AppContext::get();
+    connect(&ctx, &AppContext::propertyValueChanged, [this](const PropertyPath& path) {
+    	if (&path.getObject() == mObject)
+    		refresh();
+    });
 }
 
 void napkin::ObjectItem::refresh()
@@ -91,7 +98,7 @@ napkin::SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene)
 }
 
 napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem)
-	: QObject(), ObjectItem(&e), mRootEntityItem(rootEntityItem)
+	: ObjectItem(&e), mRootEntityItem(rootEntityItem)
 {
 	for (auto comp : e.mComponents)
 		onComponentAdded(comp.get(), &entity());
@@ -140,7 +147,7 @@ void napkin::EntityInstanceItem::onObjectRemoved(nap::rtti::Object* o)
 }
 
 napkin::RootEntityItem::RootEntityItem(nap::RootEntity& e)
-	: QObject(), ObjectItem(e.mEntity.get()), mRootEntity(&e)
+	: ObjectItem(e.mEntity.get()), mRootEntity(&e)
 {
 	for (auto comp : e.mEntity->mComponents)
 		onComponentAdded(comp.get(), e.mEntity.get());

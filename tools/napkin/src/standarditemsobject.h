@@ -22,8 +22,9 @@ namespace napkin
 	/**
 	 * An item representing a single nap::rtti::RTTIObject. The item will show the object's name.
 	 */
-	class ObjectItem : public QStandardItem
+	class ObjectItem : public QObject, public QStandardItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param o The object this item should represent
@@ -90,13 +91,13 @@ namespace napkin
 		nap::Component& getComponent();
 	};
 
-	class RootEntityItem : public QObject, public ObjectItem
+	class RootEntityItem : public ObjectItem
 	{
 		Q_OBJECT
 	public:
 		explicit RootEntityItem(nap::RootEntity& e);
 
-		SceneItem* sceneItem() { return dynamic_cast<SceneItem*>(ObjectItem::parent()); }
+		SceneItem* sceneItem() { return dynamic_cast<SceneItem*>(QStandardItem::parent()); }
 		nap::RootEntity& rootEntity();
 	private:
 		void onObjectRemoved(nap::rtti::Object* o);
@@ -109,7 +110,7 @@ namespace napkin
 	/**
 	 * An item that displays an entity instance
 	 */
-	class EntityInstanceItem : public QObject, public ObjectItem
+	class EntityInstanceItem : public ObjectItem
 	{
 		Q_OBJECT
 	public:
