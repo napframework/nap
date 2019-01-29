@@ -193,4 +193,10 @@ namespace napkin
 	 */
 	std::string toURI(const PropertyPath& path);
 
+	/**
+	 * Make a type name more readable, for use in napkin when creating objects
+	 * @param type
+	 * @return
+	 */
+	std::string friendlyTypeName(rttr::type type);
 }

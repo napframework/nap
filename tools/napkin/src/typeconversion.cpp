@@ -155,4 +155,22 @@ namespace napkin
 		assert(false);
 		return Variant();
 	}
+
+	nap::InstancePropertyValue* createInstancePropertyValue(const rttr::type& type, const rttr::variant& value)
+	{
+		if (type == rttr::type::get<float>())
+		{
+			auto propValue = new nap::TypedInstancePropertyValue<float>();
+			propValue->mValue = value.get_value<float>();
+			return propValue;
+		}
+		else if (type == rttr::type::get<std::string>())
+		{
+			auto propValue = new nap::TypedInstancePropertyValue<std::string>();
+			std::string stringVal = value.get_value<std::string>();
+			propValue->mValue = stringVal;
+			return propValue;
+		}
+		return nullptr;
+	}
 };

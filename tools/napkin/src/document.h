@@ -147,6 +147,13 @@ namespace napkin
 		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject = true);
 
 		/**
+		 * Add an Entity to a parent Entity, remove from previous parent if necessary
+		 * @param entity The Entity to move under a new parent
+		 * @param parent The parent entity or nullptr when the entity should have no parent
+		 */
+		void reparentEntity(nap::Entity& entity, nap::Entity* parent);
+
+		/**
 		 * Add an object of the specified type
 		 * @tparam T
 		 * @param parent
@@ -160,9 +167,10 @@ namespace napkin
 
 		/**
 		 * Add and entity to the document
+		 * @param parent The parent of the newly created entity or nullptr
 		 * @return The newly created Entity
 		 */
-		nap::Entity& addEntity();
+		nap::Entity& addEntity(nap::Entity* parent = nullptr);
 
 		/**
 		 * Obliterate the specified object and its dependents
@@ -211,15 +219,6 @@ namespace napkin
 		 */
 		QList<PropertyPath>
 		getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent);
-
-		/**
-		 * Add an element to an array
-		 * The propertyValueChanged signal will be emitted.
-		 * @param path The path to the array property to add the element to
-		 * @param index The index at which to add the new element, provide -1 to add to the end
-		 * @return The index of the newly created element
-		 */
-		size_t arrayAddValue(const PropertyPath& path, size_t index);
 
 		/**
 		 * Add an element to the end of an array
@@ -401,6 +400,15 @@ namespace napkin
 		 * @param object The object about to be removed
 		 */
 		void objectRemoved(nap::rtti::Object* object);
+
+		/**
+		 * Qt Signal
+		 * Invoked after an Entity has moved under a new parent
+		 * @param entity The Entity that moved under a new parent
+		 * @param oldParent The old parent of the Entity
+		 * @param newParent The new parent of the Entity
+		 */
+		void entityReparented(nap::Entity* entity, nap::Entity* oldParent, nap::Entity* newParent);
 
 		/**
 		 * Qt Signal

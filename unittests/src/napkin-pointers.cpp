@@ -13,7 +13,7 @@ TEST_CASE("Component to Component pointer", "napkin-pointers")
 
 	auto doc = ctx.newDocument();
 
-	nap::Entity& entity = doc->addEntity();
+	nap::Entity& entity = doc->addEntity(nullptr);
 	doc->setObjectName(entity, ENTITY_NAME);
 	REQUIRE(entity.mID == ENTITY_NAME);
 

@@ -124,6 +124,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 {
+	QString tempFilename = "__TEMP_NAPKIN_PROP_PATH_TEST.json";
 	RUN_Q_APPLICATION
 
 	auto& ctx = AppContext::get();
@@ -158,11 +159,59 @@ TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 	PropertyPath instancePath2(*rootEntity, *comp, "Float");
 	REQUIRE(instancePath2.getValue() == val2);
 
-	QString tempFilename = "__TEMP_NAPKIN_PROP_PATH_TEST.json";
 	doc->setFilename(tempFilename);
 	nap::Logger::info(nap::utility::getAbsolutePath(doc->getCurrentFilename().toStdString()));
 	REQUIRE(ctx.saveDocument());
 
+	AppContext::destroy();
+}
+
+
+TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
+{
+	std::string tempFilename("__TEMP_NAPKIN_PROP_PATH_TEST.json");
+	float floatVal = 2356.7;
+	std::string stringVal = "Jade";
+	{
+		RUN_Q_APPLICATION
+
+
+		auto& ctx = AppContext::get();
+		auto doc = ctx.newDocument();
+		auto& parentEntity = doc->addEntity(nullptr);
+		auto parentComp = doc->addComponent<TestComponent>(parentEntity);
+		parentComp->mID = "ParentEntityComponent";
+		auto& entity = doc->addEntity(&parentEntity);
+		auto comp = doc->addComponent<TestComponent>(entity);
+		comp->mID = "ChildEntityComponent";
+		auto scene = doc->addObject<nap::Scene>();
+		doc->addEntityToScene(*scene, parentEntity);
+
+		auto rootEntity = doc->getRootEntity(*scene, parentEntity);
+		REQUIRE(rootEntity != nullptr);
+
+		PropertyPath parentInstancePath(*rootEntity, *parentComp, "String");
+		parentInstancePath.setValue(stringVal);
+
+		PropertyPath instancePath(*rootEntity, *comp, "Float");
+		instancePath.setValue(floatVal);
+
+		doc->setFilename(QString::fromStdString(tempFilename));
+		REQUIRE(ctx.saveDocument());
+
+		AppContext::destroy();
+	}
+
+	nap::Core core;
+
+	std::string dataFile = nap::utility::getAbsolutePath(tempFilename);
+
+	nap::utility::ErrorState err;
+	if (!core.initializeEngine(err, "resources", true))
+		FAIL(err.toString());
+
+	if (!core.getResourceManager()->loadFile(dataFile, err))
+		FAIL(err.toString());
 }
 
 TEST_CASE("PropertyIteration", "[napkinpropertypath]")

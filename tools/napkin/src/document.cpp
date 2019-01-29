@@ -1,7 +1,6 @@
 #include "document.h"
 
 #include <nap/logger.h>
-#include <scene.h>
 
 #include "naputils.h"
 
@@ -104,11 +103,7 @@ Object* Document::addObject(rttr::type type, Object* parent, bool selectNewObjec
 		return nullptr;
 	}
 
-	// Strip off namespace prefixes when creating new objects
-	std::string base_name = type.get_name().data();
-	size_t last_colon = base_name.find_last_of(':');
-	if (last_colon != std::string::npos)
-		base_name = base_name.substr(last_colon + 1);
+	std::string base_name = friendlyTypeName(type);
 
 	std::unique_ptr<Object> obj = std::unique_ptr<Object>(factory.create(type));
 	Object* objptr = obj.get();
@@ -143,10 +138,25 @@ Object* Document::addObject(rttr::type type, Object* parent, bool selectNewObjec
 	return objptr;
 }
 
-
-nap::Entity& Document::addEntity()
+void Document::reparentEntity(nap::Entity& entity, nap::Entity* newParent)
 {
-	auto e = addObject<nap::Entity>();
+	nap::Entity* oldParent = getParent(entity);
+
+	if (oldParent == newParent)
+		return; // nothing to do, already parented
+
+	if (oldParent)
+		oldParent->mChildren.erase(std::remove(oldParent->mChildren.begin(), oldParent->mChildren.end(), &entity));
+
+	if (newParent)
+		newParent->mChildren.emplace_back(&entity);
+
+	entityReparented(&entity, oldParent, newParent);
+}
+
+nap::Entity& Document::addEntity(nap::Entity* parent)
+{
+	auto e = addObject<nap::Entity>(parent);
 	assert(e != nullptr);
 	return *e;
 }
@@ -220,11 +230,7 @@ void Document::removeObject(Object& object)
 		for (auto compptr : comps)
 			removeObject(*compptr.get());
 
-		// Remove from parent
-		nap::Entity* parent = getParent(*entity);
-		if (parent)
-			parent->mChildren.erase(std::remove(parent->mChildren.begin(), parent->mChildren.end(), &object));
-
+		reparentEntity(*entity, nullptr);
 	}
 
 	auto component = rtti_cast<nap::Component>(&object);
@@ -274,33 +280,6 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity == &entity; };
 	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
 	objectChanged(&scene);
-}
-
-size_t Document::arrayAddValue(const PropertyPath& path, size_t index)
-{
-	ResolvedPath resolved_path = path.resolve();
-	assert(resolved_path.isValid());
-
-	Variant array = resolved_path.getValue();
-	assert(array.is_array());
-	VariantArray array_view = array.create_array_view();
-
-	const TypeInfo element_type = array_view.get_rank_type(1);
-	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
-	assert(wrapped_type.can_create_instance());
-	rttr::variant new_value = wrapped_type.create();
-	assert(new_value.is_valid());
-	assert(array_view.is_dynamic());
-
-	bool inserted = array_view.insert_value(index, new_value);
-	assert(inserted);
-
-	resolved_path.setValue(array);
-
-	propertyValueChanged(path);
-	propertyChildInserted(path, index);
-
-	return index;
 }
 
 size_t Document::arrayAddValue(const PropertyPath& path)

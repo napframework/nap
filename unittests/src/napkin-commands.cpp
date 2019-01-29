@@ -98,7 +98,7 @@ TEST_CASE("Commands", "napkin-commands")
 	REQUIRE(doc->getObjects().size() == 0);
 
 	// Add a component (crashes OSX?)
-	auto& entity = doc->addEntity();
+	auto& entity = doc->addEntity(nullptr);
 	ctx.executeCommand(new AddComponentCommand(entity, RTTI_OF(TestComponent)));
 	REQUIRE(entity.hasComponent<TestComponent>());
 	auto component = doc->getComponent(entity, RTTI_OF(TestComponent));

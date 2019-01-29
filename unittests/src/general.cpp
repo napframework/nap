@@ -176,4 +176,16 @@ TEST_CASE("Signals and slots", "[signalslot]")
 	REQUIRE(x == 1);
 }
 
+TEST_CASE("Core", "[core]")
+{
+	nap::Core core;
 
+	std::string dataFile = nap::utility::getAbsolutePath("unit_tests_data/entitystructure.json");
+
+	nap::utility::ErrorState err;
+	if (!core.initializeEngine(err, "resources", true))
+		FAIL(err.toString());
+
+	if (!core.getResourceManager()->loadFile(dataFile, err))
+		FAIL(err.toString());
+}
