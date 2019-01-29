@@ -84,7 +84,7 @@ namespace nap
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
@@ -144,7 +144,7 @@ namespace nap
 		nap::OrthoCameraComponentInstance& ortho_camera = mOrthographicCamEntity->getComponent<nap::OrthoCameraComponentInstance>();
 
 		// Center text
-		render_text.setLocation({ mRenderWindow->getWidth() / 2, mRenderWindow->getHeight() / 2 });
+        render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
 
 		// Render text on top of sphere using render service
 		// Alternatively you can use: render_text.draw(const opengl::BackbufferRenderTarget& target) directly

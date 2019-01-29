@@ -1,6 +1,6 @@
 {
     "title": "Random",
-    "version": "0.2.0",
+    "version": "0.2.2",
     "modules": [
         "mod_random",
         "mod_napapp",

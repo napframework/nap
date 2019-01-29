@@ -1,0 +1,219 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::DBSettings",
+            "mID": "DatabaseSettings",
+            "Settings": [
+                {
+                    "Key": "Name",
+                    "Value": "Coen"
+                },
+                {
+                    "Key": "Watch",
+                    "Value": "18934898934"
+                }
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "ControllerEntity",
+            "Components": [],
+            "Children": [
+                "DashboardEntity",
+                "HistoryEntity",
+                "SummaryEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CurrentStatusEntity",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "DashboardEntity",
+            "Components": [],
+            "Children": [
+                "CurrentStatusEntity",
+                "OverviewEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "HistoryEntity",
+            "Components": [
+                {
+                    "Type": "nap::emography::StressDataViewComponent",
+                    "mID": "nap::emography::StressDataViewComponent",
+                    "Settings": {
+                        "Samples": 1024,
+                        "StartTime": {
+                            "Month": "January",
+                            "Day": 1,
+                            "Year": 2019
+                        },
+                        "EndTime": {
+                            "Month": "January",
+                            "Day": 13,
+                            "Year": 2019
+                        }
+                    },
+                    "StressData": [
+                        {
+                            "TimeStamp": {
+                                "Time": 1547486490321
+                            },
+                            "Object": {
+                                "State": "Under",
+                                "Intensity": {
+                                    "Value": 0.20000000298023225
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547486491147
+                            },
+                            "Object": {
+                                "State": "Over",
+                                "Intensity": {
+                                    "Value": 0.800000011920929
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1298265204
+                            },
+                            "Object": {
+                                "State": "Normal",
+                                "Intensity": {
+                                    "Value": 0.5
+                                }
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OverviewEntity",
+            "Components": [
+                {
+                    "Type": "nap::emography::StressDataViewComponent",
+                    "mID": "nap::emography::StressDataViewComponent_2",
+                    "Settings": {
+                        "Samples": 1024,
+                        "StartTime": {
+                            "Month": "January",
+                            "Day": 1,
+                            "Year": 2019
+                        },
+                        "EndTime": {
+                            "Month": "January",
+                            "Day": 13,
+                            "Year": 2019
+                        }
+                    },
+                    "StressData": [
+                        {
+                            "TimeStamp": {
+                                "Time": 1547486413058
+                            },
+                            "Object": {
+                                "State": "Normal",
+                                "Intensity": {
+                                    "Value": 0.5
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547486413801
+                            },
+                            "Object": {
+                                "State": "Over",
+                                "Intensity": {
+                                    "Value": 1.0
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547486414442
+                            },
+                            "Object": {
+                                "State": "Under",
+                                "Intensity": {
+                                    "Value": 0.05000000074505806
+                                }
+                            }
+                        },
+                        {
+                            "TimeStamp": {
+                                "Time": 1547486415094
+                            },
+                            "Object": {
+                                "State": "Under",
+                                "Intensity": {
+                                    "Value": 0.20000000298023225
+                                }
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SummaryEntity",
+            "Components": [
+                {
+                    "Type": "nap::emography::StressDataViewComponent",
+                    "mID": "nap::emography::StressDataViewComponent_3",
+                    "Settings": {
+                        "Samples": 1024,
+                        "StartTime": {
+                            "Month": "January",
+                            "Day": 1,
+                            "Year": 2019
+                        },
+                        "EndTime": {
+                            "Month": "January",
+                            "Day": 13,
+                            "Year": 2019
+                        }
+                    },
+                    "StressData": [
+                        {
+                            "TimeStamp": {
+                                "Time": 1547486494220
+                            },
+                            "Object": {
+                                "State": "Under",
+                                "Intensity": {
+                                    "Value": 0.10000000149011612
+                                }
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "ControllerEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        }
+    ]
+}

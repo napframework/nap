@@ -45,13 +45,13 @@ namespace nap
 		// Make sure there are compositions
 		CompositionComponent* resource = getComponent<CompositionComponent>();
 
-		mWeekMap[utility::EDay::Monday]		= resource->mMonday.get();
-		mWeekMap[utility::EDay::Tuesday]	= resource->mTuesday.get();
-		mWeekMap[utility::EDay::Wednesday]	= resource->mWednesday.get();
-		mWeekMap[utility::EDay::Thursday]	= resource->mThursday.get();
-		mWeekMap[utility::EDay::Friday]		= resource->mFriday.get();
-		mWeekMap[utility::EDay::Saturday]	= resource->mSaturday.get();
-		mWeekMap[utility::EDay::Sunday]		= resource->mSunday.get();
+		mWeekMap[EDay::Monday]		= resource->mMonday.get();
+		mWeekMap[EDay::Tuesday]	= resource->mTuesday.get();
+		mWeekMap[EDay::Wednesday]	= resource->mWednesday.get();
+		mWeekMap[EDay::Thursday]	= resource->mThursday.get();
+		mWeekMap[EDay::Friday]		= resource->mFriday.get();
+		mWeekMap[EDay::Saturday]	= resource->mSaturday.get();
+		mWeekMap[EDay::Sunday]		= resource->mSunday.get();
 		
 		// Copy duration scale
 		mDurationScale = resource->mDurationScale;
@@ -137,7 +137,7 @@ namespace nap
 	}
 
 
-	void CompositionComponentInstance::selectDay(nap::utility::EDay day)
+	void CompositionComponentInstance::selectDay(nap::EDay day)
 	{
 		// Turn manual selection on and store the day
 		mDay = day;
@@ -145,13 +145,13 @@ namespace nap
 	}
 
 
-	const nap::utility::EDay CompositionComponentInstance::getDay() const
+	const nap::EDay CompositionComponentInstance::getDay() const
 	{
-		utility::EDay day = utility::EDay::Unknown;
+		EDay day = EDay::Unknown;
 		switch (mMode)
 		{
 		case CompositionComponentInstance::EMode::Automatic:
-			day = utility::getCurrentDateTime().getDay();
+			day = getCurrentDateTime().getDay();
 			break;
 		case CompositionComponentInstance::EMode::Manual:
 			day = mDay;
@@ -159,12 +159,12 @@ namespace nap
 		default:
 			break;
 		}
-		assert(day != utility::EDay::Unknown);
+		assert(day != EDay::Unknown);
 		return day;
 	}
 
 
-	const nap::CompositionContainer& CompositionComponentInstance::getContainer(utility::EDay day) const
+	const nap::CompositionContainer& CompositionComponentInstance::getContainer(EDay day) const
 	{
 		auto it = mWeekMap.find(day);
 		assert(it != mWeekMap.end());
@@ -172,7 +172,7 @@ namespace nap
 	}
 
 
-	nap::CompositionContainer& CompositionComponentInstance::getContainer(utility::EDay day)
+	nap::CompositionContainer& CompositionComponentInstance::getContainer(EDay day)
 	{
 		auto it = mWeekMap.find(day);
 		assert(it != mWeekMap.end());

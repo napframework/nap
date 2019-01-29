@@ -10,7 +10,7 @@ namespace nap
 	/**
 	 *	Used by the various color classes to map a channel to an index
 	 */
-	enum class NAPAPI EColorChannel : int
+	enum class EColorChannel : int
 	{
 		Red		= 0,				///< Red Color Channel: 0
 		Green	= 1,				///< Green Color Channel: 1
