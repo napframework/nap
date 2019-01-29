@@ -49,8 +49,8 @@ namespace nap
 	void EmographyAPIComponentInstance::updateView(const nap::APIEvent& apiEvent)
 	{
 		nap::Logger::info("received: %s", apiEvent.getID().c_str());
-		long long start_time = apiEvent[0].asLong();
-		long long end_time = apiEvent[1].asLong();
+		int64_t start_time = apiEvent[0].asLong();
+		int64_t end_time = apiEvent[1].asLong();
 		int samples = apiEvent[2].asInt();
 		const std::vector<float>* parray = apiEvent[3].asArray<float>();
 	}

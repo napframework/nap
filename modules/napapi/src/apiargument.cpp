@@ -106,11 +106,11 @@ namespace nap
 
 	bool nap::APIArgument::isLong() const
 	{
-		return mAPIValue->getRepresentedType() == RTTI_OF(long long);
+		return mAPIValue->getRepresentedType() == RTTI_OF(int64_t);
 	}
 
 
-	long long nap::APIArgument::asLong() const
+	int64_t nap::APIArgument::asLong() const
 	{
 		assert(isLong());
 		return static_cast<const APILong*>(mAPIValue.get())->mValue;

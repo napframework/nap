@@ -161,7 +161,7 @@ namespace nap
 		/**
 		 * @return this argument's value as a bool
 		 */
-		long long asLong() const;
+		int64_t asLong() const;
 
 	private:
 		std::unique_ptr<APIBaseValue> mAPIValue = nullptr;	///< API Value represented by this argument
