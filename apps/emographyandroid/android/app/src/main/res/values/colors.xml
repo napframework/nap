@@ -6,8 +6,8 @@
 
     <color name="tweakedColorPrimary">#3c3f41</color>
     <color name="tweakedColorPrimaryDark">#202220</color>
-    <color name="toolbarTextColor">#c9c9c9</color>
-    <color name="textViewText">#d4d4d4</color>
+    <color name="toolbarTextColor">#C9C9C9</color>
+    <color name="textViewText">#D4D4D4</color>
     <color name="textViewBackground">#2b2b2b</color>
 
 </resources>

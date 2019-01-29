@@ -1,5 +1,6 @@
 package nl.naivi.emography;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,7 +13,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.SeekBar;
 import android.widget.TextView;
+
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -20,16 +25,65 @@ public class MainActivity extends AppCompatActivity
 
     private IntentFilter mIntentFilter;
 
+    /**
+     * Returns to current number of samples based on slider value
+     */
+    private int getNumberOfSamples()
+    {
+        SeekBar slider = findViewById(R.id.sampleSlider);
+        return Math.max(slider.getProgress(), 1);
+    }
+
+
+    /**
+     * Updates sample count text view
+     */
+    private void updateSampleView()
+    {
+        TextView view  = findViewById(R.id.sampleDisplay);
+        int sample_count = getNumberOfSamples();
+        view.setText(String.format(Locale.getDefault(), "%04d", sample_count));
+    }
+
+
+    /**
+     * Initializes the GUI
+     */
+    void initGUI()
+    {
+        // Set toolbar title
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(getString(R.string.toolbar_title));
+        setSupportActionBar(toolbar);
+
+        // Get slider
+        SeekBar sample_slider = findViewById(R.id.sampleSlider);
+        sample_slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                updateSampleView();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        sample_slider.setProgress(100);
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Set toolbar title
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(getString(R.string.toolbar_title));
-        setSupportActionBar(toolbar);
+        initGUI();
 
         // Add our intent actions for shutdown and logging
         mIntentFilter = new IntentFilter();
@@ -48,6 +102,7 @@ public class MainActivity extends AppCompatActivity
             Log.i(TAG, "Service already running");
         }
     }
+
 
     @Override
     protected void onResume()
@@ -70,6 +125,7 @@ public class MainActivity extends AppCompatActivity
         sendBroadcast(logRequestIntent);
     }
 
+
     @Override
     protected void onPause()
     {
@@ -80,12 +136,14 @@ public class MainActivity extends AppCompatActivity
         unregisterReceiver(mReceiver);
     }
 
+
     @Override
     public void onDestroy()
     {
         Log.i(TAG, "MainActivity.onDestroy");
         super.onDestroy();
     }
+
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver()
     {
@@ -106,6 +164,7 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+
     private void appendToUILog(String s)
     {
         TextView tv = findViewById(R.id.text_log);
@@ -115,6 +174,7 @@ public class MainActivity extends AppCompatActivity
 
         tv.setText(built + s);
     }
+
 
     /**
      * Check whether service is already running
@@ -135,6 +195,7 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -142,6 +203,7 @@ public class MainActivity extends AppCompatActivity
         menuInflater.inflate(R.menu.menu, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -158,4 +220,20 @@ public class MainActivity extends AppCompatActivity
         }
         return true;
     }
+
+
+    /**
+     * Called when a new set of data is requested
+     * @param view calling view (button)
+     */
+    public void onRequestData(View view)
+    {
+
+    }
+
+
+    /**
+     * Called when the sliders changes
+     */
+
 }

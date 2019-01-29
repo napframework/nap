@@ -105,8 +105,8 @@ public class ForegroundService extends Service
                 while (!Thread.interrupted() && !mStopThread)
                     try
                     {
-                        Thread.sleep(333);
                         updateNapService();
+                        Thread.sleep(5000);
 
                         // Let's make up some fake data to work on, a timestamp
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss.SS");
