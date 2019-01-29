@@ -62,11 +62,6 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path)
 	: QStandardItem(QString::fromStdString(path.getName())), mPath(path)
 {
-//	if (path.isInstance())
-//		setBackground(QColor(Qt::gray).lighter());
-//	auto txt = text();
-//	nap::Logger::info(txt.toStdString());
-//	setText(txt);
 }
 
 napkin::PropertyItem::PropertyItem(const PropertyPath& path)
@@ -170,9 +165,6 @@ void napkin::EmbeddedPointerItem::populateChildren()
 
 		nap::rtti::Path path;
 		path.pushAttribute(name);
-
-		auto wrappedType = childValue.get_type().is_wrapper() ? childValue.get_type().get_wrapped_type() : childValue.get_type();
-
 
 		appendRow(createPropertyItemRow({*object, path}));
 	}

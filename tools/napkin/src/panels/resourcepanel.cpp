@@ -102,7 +102,7 @@ void ResourceModel::removeObjectItem(const nap::rtti::Object& object)
 	if (item == nullptr)
 		return;
 
-	removeRow(item->row(), item->parent()->index());
+	removeRow(item->row(), static_cast<QStandardItem*>(item)->parent()->index());
 }
 
 void ResourceModel::removeEmbeddedObjects()
