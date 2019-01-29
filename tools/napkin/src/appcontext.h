@@ -43,19 +43,19 @@ namespace napkin
 		 */
 		static AppContext& get();
 
-        /**
-         * Construct the singleton
-         * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
-         */
-        static void create();
-        
-        /**
-         * Destruct the singleton
-         * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
-         */
-        static void destroy();
-        
-        AppContext(); // Alas, this has to be public to be able to support the singleton unique_ptr construction
+		/**
+		 * Construct the singleton
+		 * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
+		 */
+		static void create();
+
+		/**
+		 * Destruct the singleton
+		 * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
+		 */
+		static void destroy();
+
+		AppContext(); // Alas, this has to be public to be able to support the singleton unique_ptr construction
 
 		AppContext(AppContext const&) = delete;
 
