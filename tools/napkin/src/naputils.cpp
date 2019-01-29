@@ -307,3 +307,13 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 
 	return yesclicked;
 }
+
+std::string napkin::friendlyTypeName(rttr::type type)
+{
+	// Strip off namespace prefixes when creating new objects
+	std::string base_name = type.get_name().data();
+	size_t last_colon = base_name.find_last_of(':');
+	if (last_colon != std::string::npos)
+		base_name = base_name.substr(last_colon + 1);
+	return base_name;
+}

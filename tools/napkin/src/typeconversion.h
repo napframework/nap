@@ -5,7 +5,7 @@
 #include <rtti/typeinfo.h>
 #include <rttr/type.h>
 #include <nap/logger.h>
-
+#include <instanceproperty.h>
 
 namespace napkin
 {
@@ -52,5 +52,9 @@ namespace napkin
 	 * @return The resulting value as an rttr::variant
 	 */
 	rttr::variant fromQVariant(const nap::rtti::TypeInfo& type, const QVariant& variant, bool* ok);
+
+
+	nap::InstancePropertyValue* createInstancePropertyValue(const rttr::type& type, const rttr::variant& value);
+
 }
 

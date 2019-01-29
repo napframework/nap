@@ -1,5 +1,6 @@
 #include "propertypath.h"
 #include "naputils.h"
+#include "typeconversion.h"
 
 #include <rtti/object.h>
 #include <rtti/linkresolver.h>
@@ -104,7 +105,11 @@ nap::ComponentInstanceProperties& napkin::PropertyPath::getOrCreateInstanceProps
 	mRootEntity->mInstanceProperties.emplace_back();
 	auto targetComponent = dynamic_cast<nap::Component*>(mObject);
 	assert(targetComponent);
-	mRootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetComponent->mID, *targetComponent);
+
+	// Create component path
+	std::string targetID = "./" + targetComponent->mID;
+
+	mRootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetID, *targetComponent);
 	return mRootEntity->mInstanceProperties.at(idx);
 }
 
@@ -167,13 +172,7 @@ void napkin::PropertyPath::setValue(rttr::variant value)
 	if (isInstance())
 	{
 		auto& targetAttr = getOrCreateTargetAttribute();
-		if (getType() == rttr::type::get<float>())
-		{
-			auto propValue = new nap::TypedInstancePropertyValue<float>();
-			propValue->mID = nap::utility::stringFormat("%s_instanceprop", mPath.toString().c_str());
-			propValue->mValue = value.get_value<float>();
-			targetAttr.mValue = propValue;
-		}
+		targetAttr.mValue = napkin::createInstancePropertyValue(getType(), value);
 		return;
 	}
 
