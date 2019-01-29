@@ -195,10 +195,10 @@ namespace nap
 	public:
 		OSCString(const std::string& string) : mString(string)						{ }
 		std::string mString;
-        virtual std::string toString() const override					{ return mString; }
+        virtual std::string toString() const override;
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override;
-		virtual std::size_t size() const override									{ return mString.length(); }
+		virtual std::size_t size() const override;
 	};
 
 

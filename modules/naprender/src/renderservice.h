@@ -2,7 +2,7 @@
 
 // External Includes
 #include <nap/service.h>
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 #include <nap/windowevent.h>
 #include <nopengl.h>
 #include <thread>
@@ -34,7 +34,7 @@ namespace nap
 	public:
 		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
 
-		RendererSettings mSettings;
+		RendererSettings mSettings;		///< Property: 'Settings' All render settings
 	};
 
 	/**
