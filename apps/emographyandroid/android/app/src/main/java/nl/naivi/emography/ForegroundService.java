@@ -103,16 +103,18 @@ public class ForegroundService extends Service
                 while (!Thread.interrupted() && !mStopThread)
                     try
                     {
-                        // Create NAP Call
+                        // Create NAP Message
                         mBuilder.clear();
                         APIMessage msg = mBuilder.addMessage("updateView");
                         msg.addLong("startTime", 20);
                         msg.addLong("endTime", 40);
                         msg.addInt("samples", 200);
+
+                        // Call
                         call(mBuilder.asString());
 
                         // Flush
-                        updateNapService();
+                        napFlush();
 
                         Thread.sleep(5000);
                     }
@@ -175,7 +177,7 @@ public class ForegroundService extends Service
     }
 
 
-    private void updateNapService()
+    private void napFlush()
     {
         napUpdate();
     }
