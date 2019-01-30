@@ -17,6 +17,8 @@ import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
@@ -56,6 +58,9 @@ public class MainActivity extends AppCompatActivity
         toolbar.setTitle(getString(R.string.toolbar_title));
         setSupportActionBar(toolbar);
 
+        // Test, construct API message in JAVA
+        constructMessage();
+
         // Get slider
         SeekBar sample_slider = findViewById(R.id.sampleSlider);
         sample_slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -75,6 +80,17 @@ public class MainActivity extends AppCompatActivity
             }
         });
         sample_slider.setProgress(100);
+    }
+
+    public void constructMessage()
+    {
+        APIMessageBuilder builder = new APIMessageBuilder();
+        APIMessage msg = builder.addMessage("updateView");
+        msg.addLong("startTime", 20);
+        msg.addLong("endTime", 40);
+        msg.addInt("samples", 200);
+        String nap_msg = builder.asString();
+        Log.i("voila", nap_msg);
     }
 
 
