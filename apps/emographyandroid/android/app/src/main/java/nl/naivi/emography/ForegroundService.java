@@ -255,6 +255,6 @@ public class ForegroundService extends Service
 
     public native boolean   napInit();
     public native void      napUpdate();
-    public native void      napSendMessage(String data);
+    public native boolean   napSendMessage(String data);
     public native void      napShutdown();
 }
