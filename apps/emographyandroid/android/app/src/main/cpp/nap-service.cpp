@@ -8,11 +8,13 @@ Java_nl_naivi_emography_ForegroundService_napInit(JNIEnv* env, jobject contextOb
     return nap::android::init(env, contextObject);
 }
 
+
 extern "C" JNIEXPORT void JNICALL
 Java_nl_naivi_emography_ForegroundService_napUpdate(JNIEnv *env, jobject contextObject)
 {
     nap::android::update(env, contextObject);
 }
+
 
 extern "C" JNIEXPORT void JNICALL
 Java_nl_naivi_emography_ForegroundService_napShutdown(JNIEnv *env, jobject contextObject)
@@ -20,8 +22,9 @@ Java_nl_naivi_emography_ForegroundService_napShutdown(JNIEnv *env, jobject conte
     nap::android::shutdown(env, contextObject);
 }
 
-extern "C" JNIEXPORT void JNICALL
+
+extern "C" JNIEXPORT jboolean JNICALL
 Java_nl_naivi_emography_ForegroundService_napSendMessage(JNIEnv *env, jobject contextObject, jstring json)
 {
-    nap::android::sendMessage(env, contextObject, json);
+    return (jboolean)nap::android::sendMessage(env, contextObject, json);
 }

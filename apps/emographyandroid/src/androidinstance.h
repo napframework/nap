@@ -102,6 +102,21 @@ namespace  nap
 
 
             /**
+             * Sends an api message to the running application
+             * json the api message as json string
+             * error contains the error if sending fails
+             */
+             bool sendMessage(const char* json, nap::utility::ErrorState& error)
+            {
+                std::lock_guard<std::mutex> lock(mInstanceMutex);
+                if(!error.check(mRunner != nullptr, "unable to send message, not initialized"))
+                    return false;
+
+                return mAPIService->sendMessage(json, &error);
+            }
+
+
+            /**
              * Installs a callback which is called when the system receives an api event
              * @param callback the callback to install
              */

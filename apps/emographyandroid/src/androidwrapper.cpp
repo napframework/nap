@@ -74,16 +74,15 @@ namespace nap
         }
 
 
-        void sendMessage(JNIEnv* env, jobject contextObject, jstring json)
+        bool sendMessage(JNIEnv* env, jobject contextObject, jstring json)
         {
-            /*
-            auto* runner = Instance<EmographyAndroidApp>::get().runner();
-            if(runner == nullptr)
-                return;
-            */
-            //const char *s = env->GetStringUTFChars(jdata, NULL);
-            //std::string data = s;
-            //env->ReleaseStringUTFChars(jdata, s);
+            const char *json_msg = env->GetStringUTFChars(json, nullptr);
+            nap::utility::ErrorState error;
+            bool success = Instance<EmographyAndroidApp>::get().sendMessage(json_msg, error);
+            if(!success)
+                nap::Logger::warn("%s", error.toString().c_str());
+            env->ReleaseStringUTFChars(json, json_msg);
+            return success;
         }
     }
 }
