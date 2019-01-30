@@ -8,8 +8,7 @@
 
 namespace nap
 {
-    namespace android
-    {
+    namespace android {
         ///////////////////////////////////////////////////////
         // Callback
         ///////////////////////////////////////////////////////
@@ -20,27 +19,39 @@ namespace nap
          * @param context the android context in java
          * @param event the received api event
          */
-        void apiEventReceived(JNIEnv *env, jobject context, const nap::APIEvent& event)
-        {
+        void apiEventReceived(JNIEnv *env, jobject context, const nap::APIEvent &event) {
             // Convert into api message
             APIMessage apimsg(event);
 
             // Extract json
             std::string json;
             nap::utility::ErrorState error;
-            if(!apimsg.toJSON(json, error))
-            {
+            if (!apimsg.toJSON(json, error)) {
                 nap::Logger::error(error.toString());
                 return;
             }
 
             // Calling for first time, get the method id
             jclass thisClass = env->GetObjectClass(context);
-            jmethodID android_method = env->GetMethodID(thisClass, "logToUI", "(Ljava/lang/String;)V");
+            jmethodID android_method = env->GetMethodID(thisClass, "logToUI",
+                                                        "(Ljava/lang/String;)V");
 
             jstring jstr = env->NewStringUTF(json.c_str());
             env->CallVoidMethod(context, android_method, jstr);
             env->DeleteLocalRef(jstr);
+        }
+
+
+        /**
+         * Called when the application receives a log message
+         * @param env java native environment
+         * @param context the android context in java
+         * @param level log level
+         * @param msg the received message
+         */
+        void logMessageReceived(JNIEnv *env, jobject context, ELogLevel level, const std::string& msg)
+        {
+
         }
 
 
@@ -54,8 +65,13 @@ namespace nap
             // Initialize the NAP env and app
             if(Instance<EmographyAndroidApp>::get().init(env, contextObject))
             {
+                // Install API callback
                 APICallbackFunction callbackFunc = &nap::android::apiEventReceived;
-                Instance<EmographyAndroidApp>::get().installCallback(callbackFunc);
+                Instance<EmographyAndroidApp>::get().installAPICallback(callbackFunc);
+
+                // Install log callback
+                APILogFunction logFunc = &nap::android::logMessageReceived;
+                Instance<EmographyAndroidApp>::get().installLogCallback(logFunc);
                 return true;
             }
             return false;
@@ -77,12 +93,7 @@ namespace nap
         bool sendMessage(JNIEnv* env, jobject contextObject, jstring json)
         {
             const char *json_msg = env->GetStringUTFChars(json, nullptr);
-            nap::utility::ErrorState error;
-            bool success = Instance<EmographyAndroidApp>::get().sendMessage(json_msg, error);
-            if(!success)
-                nap::Logger::warn("%s", error.toString().c_str());
-            env->ReleaseStringUTFChars(json, json_msg);
-            return success;
+            return Instance<EmographyAndroidApp>::get().sendMessage(json_msg);
         }
     }
 }

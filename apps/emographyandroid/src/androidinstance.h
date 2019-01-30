@@ -15,9 +15,27 @@ namespace  nap
     namespace android
     {
         /**
+         * Various supported NAP android log levels
+         */
+        enum class ELogLevel : int
+        {
+            Info = 0,
+            Warning = 1,
+            Error = 2,
+            Fatal = 4
+        };
+
+        /**
+         * Describes the signature of a NAP log function
+         */
+        using APILogFunction = std::function<void(JNIEnv *env, jobject context, ELogLevel level, const std::string&)>;
+
+
+        /**
          * Describes the signature of a NAP api callback function
          */
         using APICallbackFunction = std::function<void(JNIEnv *env, jobject context, const nap::APIEvent&)>;
+
 
         /**
          * Thread safe NAP android application instance, implemented as a singleton.
@@ -42,7 +60,7 @@ namespace  nap
                 std::lock_guard<std::mutex> lock(mInstanceMutex);
                 if (mRunner != nullptr)
                 {
-                    nap::Logger::warn("instance of emography nap environment already exists!");
+                    log(ELogLevel::Error, "instance of emography nap environment already exists!");
                     return false;
                 }
 
@@ -54,14 +72,14 @@ namespace  nap
                 nap::utility::ErrorState error;
                 if (!mRunner->init(error))
                 {
-                    nap::Logger::fatal("error: %s", error.toString().c_str());
+                    log(ELogLevel::Error, error.toString());
                     return false;
                 }
 
                 mAPIService = mCore->getService<nap::APIService>();
                 if(mAPIService == nullptr)
                 {
-                    nap::Logger::fatal("error: %s", "unable to acquire handle to API service");
+                    log(ELogLevel::Error, "unable to acquire handle to API service");
                     return false;
                 }
                 mAPIService->eventDispatched.connect(mDispatchSlot);
@@ -78,7 +96,7 @@ namespace  nap
                 std::lock_guard<std::mutex> lock(mInstanceMutex);
                 if(mRunner == nullptr)
                 {
-                    nap::Logger::warn("unable to shutdown nap env, not initialized");
+                    log(ELogLevel::Warning, "unable to shutdown nap env, not initialized");
                     return -1;
                 }
 
@@ -96,7 +114,10 @@ namespace  nap
             {
                 std::lock_guard<std::mutex> lock(mInstanceMutex);
                 if(mRunner == nullptr)
-                    nap::Logger::warn("unable to update nap env, not initialized");
+                {
+                    log(ELogLevel::Warning, "unable to update nap env, not initialized");
+                    return;
+                }
                 mRunner->update();
             }
 
@@ -106,13 +127,22 @@ namespace  nap
              * json the api message as json string
              * error contains the error if sending fails
              */
-             bool sendMessage(const char* json, nap::utility::ErrorState& error)
+             bool sendMessage(const char* json)
             {
                 std::lock_guard<std::mutex> lock(mInstanceMutex);
+                nap::utility::ErrorState error;
                 if(!error.check(mRunner != nullptr, "unable to send message, not initialized"))
+                {
+                    log(ELogLevel::Warning, error.toString());
                     return false;
+                }
 
-                return mAPIService->sendMessage(json, &error);
+                if(!mAPIService->sendMessage(json, &error))
+                {
+                    log(ELogLevel::Error, error.toString());
+                    return false;
+                }
+                return true;
             }
 
 
@@ -120,10 +150,19 @@ namespace  nap
              * Installs a callback which is called when the system receives an api event
              * @param callback the callback to install
              */
-            void installCallback(APICallbackFunction callback)
+            void installAPICallback(APICallbackFunction callback)
             {
                 // Store callback
-                mCallback = std::move(callback);
+                mAPICallback = std::move(callback);
+            }
+
+            /**
+             * Installs a callback which is called when the system receives a log message
+             * @param callback the log message callback to install
+             */
+            void installLogCallback(APILogFunction callback)
+            {
+                 mLogCallback = std::move(callback);
             }
 
             /**
@@ -154,7 +193,8 @@ namespace  nap
             nap::APIService* mAPIService                        = nullptr;
             std::unique_ptr<nap::Core> mCore                    = nullptr;
             std::unique_ptr<InstanceRunner> mRunner             = nullptr;
-            APICallbackFunction mCallback                       = nullptr;
+            APICallbackFunction mAPICallback                    = nullptr;
+            APILogFunction mLogCallback                         = nullptr;
             std::mutex mInstanceMutex;
 
             /**
@@ -163,10 +203,39 @@ namespace  nap
              */
             void onAPIEventReceived(const nap::APIEvent& event)
             {
-                if(mCallback == nullptr)
+                if(mAPICallback == nullptr)
                     return;
-                mCallback(mRunner->getApp().getEnv(), mRunner->getApp().getContext(), event);
+                mAPICallback(mRunner->getApp().getEnv(), mRunner->getApp().getContext(), event);
             }
+
+            /**
+             * Called when the system generates an api log message
+             */
+            void log(ELogLevel level, const std::string& msg)
+            {
+                 switch(level)
+                 {
+                     case ELogLevel::Info:
+                         nap::Logger::info(msg);
+                         break;
+                     case ELogLevel::Warning:
+                         nap::Logger::warn(msg);
+                         break;
+                     case ELogLevel::Error:
+                         nap::Logger::error(msg);
+                         break;
+                     case ELogLevel::Fatal:
+                         nap::Logger::fatal(msg);
+                         break;
+                     default:
+                         assert(false);
+                         break;
+                 }
+
+                 if(mLogCallback != nullptr)
+                     mLogCallback(mRunner->getApp().getEnv(), mRunner->getApp().getContext(), level, msg);
+            }
+
 
             // Slot that is connected on initialization
             nap::Slot<const nap::APIEvent&> mDispatchSlot       = {this, &Instance::onAPIEventReceived};
