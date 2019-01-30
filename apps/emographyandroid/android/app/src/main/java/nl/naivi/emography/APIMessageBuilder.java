@@ -10,19 +10,14 @@ import org.json.JSONObject;
  */
 class APIMessageBuilder
 {
-    private JSONArray mMessages = new JSONArray();     ///< List of constructed messages
-    private JSONObject mContainer = new JSONObject();  ///< Container of the constructed messages
+    private JSONArray mMessages = null;                 ///< List of constructed messages
+    private JSONObject mContainer = new JSONObject();   ///< Container of the constructed messages
 
     /**
      * Create the builder
      */
     APIMessageBuilder() {
-        try {
-            mContainer.put("Objects", mMessages);
-        }
-        catch (Exception e) {
-            Log.e("error", e.getMessage());
-        }
+        clear();
     }
 
     /**
@@ -50,7 +45,7 @@ class APIMessageBuilder
     String asString() {
         String json_string = "";
         try {
-            json_string = mContainer.toString(5);
+            json_string = mContainer.toString(4);
         } catch (Exception e) {
             Log.e("error", json_string);
         }
@@ -58,9 +53,17 @@ class APIMessageBuilder
     }
 
     /**
-     * Clears all collected API messages
+     * Clears all collected API messages and binds a new array
+     * Call this before creating a new set of messages that is send over
      */
     void clear() {
-        mMessages = new JSONArray();
+        try {
+            mContainer.remove("Objects");
+            mMessages = new JSONArray();
+            mContainer.put("Objects", mMessages);
+        }
+        catch (Exception e) {
+            Log.e("error", e.getMessage());
+        }
     }
 }

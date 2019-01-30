@@ -17,15 +17,13 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class ForegroundService extends Service
 {
     private static final String TAG = "NAPEmography";
     private IntentFilter mIntentFilter;
     private boolean mStopThread = false;
     private String mOutputLog = "";
+    private APIMessageBuilder mBuilder = new APIMessageBuilder();
 
 
     @Override
@@ -105,17 +103,18 @@ public class ForegroundService extends Service
                 while (!Thread.interrupted() && !mStopThread)
                     try
                     {
+                        // Create NAP Call
+                        mBuilder.clear();
+                        APIMessage msg = mBuilder.addMessage("updateView");
+                        msg.addLong("startTime", 20);
+                        msg.addLong("endTime", 40);
+                        msg.addInt("samples", 200);
+                        call(mBuilder.asString());
+
+                        // Flush
                         updateNapService();
-                        call("THis should be an api message!");
 
                         Thread.sleep(5000);
-
-                        // Let's make up some fake data to work on, a timestamp
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss.SS");
-                        String timestamp = simpleDateFormat.format(new Date());
-
-                        // Send our fake data through over JNI
-                        call(timestamp);
                     }
                     catch (InterruptedException e) { }
 

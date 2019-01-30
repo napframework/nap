@@ -1,4 +1,6 @@
 #include "emographyapicomponent.h"
+#include <nap/core.h>
+#include <entity.h>
 
 // External Includes
 #include <entity.h>
@@ -48,10 +50,14 @@ namespace nap
 
 	void EmographyAPIComponentInstance::updateView(const nap::APIEvent& apiEvent)
 	{
-		nap::Logger::info("received: %s", apiEvent.getID().c_str());
 		int64_t start_time = apiEvent[0].asLong();
 		int64_t end_time = apiEvent[1].asLong();
 		int samples = apiEvent[2].asInt();
-		const std::vector<float>* parray = apiEvent[3].asArray<float>();
+
+		nap::APIService* api_service = getEntityInstance()->getCore()->getService<nap::APIService>();
+		std::unique_ptr<APIEvent> message(std::make_unique<APIEvent>("NAP Calling!"));
+		message->addArgument<APIString>("command", apiEvent.getID());
+		message->addArgument<APIInt>("samples", samples);
+		api_service->dispatchEvent(std::move(message));
 	}
 }
