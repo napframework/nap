@@ -117,4 +117,40 @@ namespace nap
  
         return AAssetManager_fromJava(env, assetManagerObject);
     }
+
+
+    // TODO ANDROID Potentially need to keep in mind device protected storage contexts? 
+    // https://developer.android.com/reference/android/content/Context.html#createDeviceProtectedStorageContext()
+    std::string AndroidApp::getAppInternalFilesDir()
+    {
+        // Get JNI env
+        JNIEnv *env = getEnv();
+
+        // Get Context Class descriptor
+        jclass contextClass = env->FindClass("android/content/Context");
+
+        // Get methodId from Context class
+        jmethodID getFilesDirMethodId = env->GetMethodID(contextClass, "getFilesDir", "()Ljava/io/File;");
+
+        // Call method on Context object which is passed in
+        jobject fileObject = env->CallObjectMethod(mAndroidGlobalObject, getFilesDirMethodId);
+
+        // Get File class descriptor
+        jclass fileClass = env->FindClass("java/io/File");
+
+        // Get methodId from File class
+        jmethodID getAbsolutePathMethodId = env->GetMethodID(fileClass, "getAbsolutePath", "()Ljava/lang/String;");
+
+        // Call method on File object which is passed in
+        jstring absolutePathJStr = (jstring) env->CallObjectMethod(fileObject, getAbsolutePathMethodId);
+
+        // Convert to C++ string
+        const char* absolutePathChr = env->GetStringUTFChars(absolutePathJStr, 0);
+
+        // Temp. store, release and return
+        std::string s = absolutePathChr;
+        env->ReleaseStringUTFChars(absolutePathJStr, absolutePathChr);
+        return s;
+    }
+
 }

@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <android/androidapp.h>
 #include <apiservice.h>
+#include <datamodel.h>
 
 namespace nap
 {
@@ -43,9 +44,10 @@ namespace nap
         int shutdown() override;
 
     private:
-        nap::SceneService* 			mSceneService = nullptr;            ///< Manages all scene related objects (entity, component etc.)
-        nap::ResourceManager* 		mResourceManager = nullptr;         ///< Manages all the resources required by the APP.
-        nap::APIService*            mAPIService = nullptr;              ///< Allows for sending and receiving nap API messages.
+        nap::SceneService*						mSceneService = nullptr;            ///< Manages all scene related objects (entity, component etc.)
+        nap::ResourceManager*					mResourceManager = nullptr;         ///< Manages all the resources required by the APP.
+        nap::APIService*						mAPIService = nullptr;              ///< Allows for sending and receiving nap API messages.
+        std::unique_ptr<emography::DataModel>	mDataModel;				            ///< The data model containing all data
     };
 
 }

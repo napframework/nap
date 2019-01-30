@@ -11,6 +11,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
+    using namespace emography;
+
     EmographyAndroidApp::EmographyAndroidApp(nap::Core& core) : AndroidApp(core) { }
 
     bool EmographyAndroidApp::init(nap::utility::ErrorState& error)
@@ -20,6 +22,11 @@ namespace nap
         mAPIService = getCore().getService<nap::APIService>();
 
         if (!mResourceManager->loadFile("emography.json", error))
+            return false;
+
+        std::string appInternalFilesDir = getAppInternalFilesDir();
+        mDataModel = std::make_unique<DataModel>(mResourceManager->getFactory());
+        if (!mDataModel->init(appInternalFilesDir + "/emography.db", DataModel::EKeepRawReadings::Disabled, error))
             return false;
 
         return true;
