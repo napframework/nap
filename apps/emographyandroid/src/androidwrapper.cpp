@@ -23,22 +23,14 @@ namespace nap
             // Convert into api message
             APIMessage apimsg(event);
 
-            // Extract json
+            // Extract json, should ALWAYS succeed.
             std::string json;
             nap::utility::ErrorState error;
-            if (!apimsg.toJSON(json, error)) {
-                nap::Logger::error(error.toString());
+            if (!apimsg.toJSON(json, error))
+            {
+                assert(false);
                 return;
             }
-
-            // Calling for first time, get the method id
-            jclass thisClass = env->GetObjectClass(context);
-            jmethodID android_method = env->GetMethodID(thisClass, "logToUI",
-                                                        "(Ljava/lang/String;)V");
-
-            jstring jstr = env->NewStringUTF(json.c_str());
-            env->CallVoidMethod(context, android_method, jstr);
-            env->DeleteLocalRef(jstr);
         }
 
 
@@ -51,7 +43,13 @@ namespace nap
          */
         void logMessageReceived(JNIEnv *env, jobject context, ELogLevel level, const std::string& msg)
         {
+            // Calling for first time, get the method id
+            jclass thisClass = env->GetObjectClass(context);
+            jmethodID android_method = env->GetMethodID(thisClass, "logToUI", "(Ljava/lang/String;)V");
 
+            jstring jstr = env->NewStringUTF(msg.c_str());
+            env->CallVoidMethod(context, android_method, jstr);
+            env->DeleteLocalRef(jstr);
         }
 
 

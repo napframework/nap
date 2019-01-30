@@ -106,6 +106,8 @@ public class ForegroundService extends Service
                     try
                     {
                         updateNapService();
+                        call("THis should be an api message!");
+
                         Thread.sleep(5000);
 
                         // Let's make up some fake data to work on, a timestamp
