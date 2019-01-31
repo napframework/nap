@@ -35,16 +35,7 @@ namespace nap
 
     void EmographyAndroidApp::update(double deltaTime)
     {
-        /*
-        std::unique_ptr<APIEvent> message(std::make_unique<APIEvent>("log"));
-        message->addArgument<APIString>("info", "successfully loaded emography.json");
-        mAPIService->dispatchEvent(std::move(message));
 
-        std::unique_ptr<APIEvent> api_event(std::make_unique<APIEvent>("particle"));
-        api_event->addArgument<APIFloat>("speed",1.0f);
-        api_event->addArgument<APIInt>("drag", 2.0f);
-        mAPIService->dispatchEvent(std::move(api_event));
-        */
     }
 
 

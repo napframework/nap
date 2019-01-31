@@ -90,11 +90,11 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/textView8"
+                android:id="@+id/api_log"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:theme="@style/TextViewStyle"
-                android:text="TextView" />
+                android:text="TextView"
+                app:theme="@style/TextViewStyle" />
         </ScrollView>
 
         <ScrollView
@@ -113,6 +113,16 @@
                 app:theme="@style/TextViewStyle"
                 android:text="TextView" />
         </ScrollView>
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintBottom_toTopOf="@+id/scrollLog"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/scrollMessages" />
 
     </android.support.constraint.ConstraintLayout>
 
