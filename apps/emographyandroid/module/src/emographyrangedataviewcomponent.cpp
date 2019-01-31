@@ -3,6 +3,7 @@
 // External Includes
 #include <entity.h>
 #include <mathutils.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_STRUCT(nap::emography::RangeDataSettings)
 	RTTI_PROPERTY("Samples",	&nap::emography::RangeDataSettings::mSamples,		nap::rtti::EPropertyMetaData::Default)
@@ -26,25 +27,25 @@ namespace nap
 {
 	bool emography::RangeDataviewComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Fetch API Service
+		mAPIService = getEntityInstance()->getCore()->getService<nap::APIService>();
+		if (!errorState.check(mAPIService != nullptr, "%s: no api service found", mID.c_str()))
+			return false;
+
 		// Copy data
 		RangeDataSettings& settings = getComponent<RangeDataViewComponent>()->mSettings;
 		mSampleCount = math::max<int>(1, settings.mSamples);
-		setTimeRange(settings.mStartTime.toSystemTime(), settings.mEndTime.toSystemTime());
+		mStartTime = TimeStamp(settings.mStartTime.toSystemTime());
+		mEndTime = TimeStamp(settings.mEndTime.toSystemTime());
 		return true;
 	}
 
 
-	void emography::RangeDataviewComponentInstance::setSampleCount(int count)
+	void emography::RangeDataviewComponentInstance::query(const TimeStamp& startTime, const TimeStamp& endTime, int samples)
 	{
-		mSampleCount = math::max<int>(1, count);
-		settingsChanged();
-	}
-
-
-	void emography::RangeDataviewComponentInstance::setTimeRange(const SystemTimeStamp& begin, const SystemTimeStamp& end)
-	{
-		mStartTime = begin;
-		mEndTime = end;
-		settingsChanged();
+		mStartTime = startTime;
+		mEndTime = endTime;
+		mSampleCount = math::max<int>(samples, 1);
+		onQuery();
 	}
 }

@@ -2,6 +2,7 @@
 
 #include <component.h>
 #include <nap/datetime.h>
+#include <apiservice.h>
 
 namespace nap
 {
@@ -68,7 +69,7 @@ namespace nap
 			 * Sets the number of samples to take, updates settings internally
 			 * @param count number of samples to take from start to end range
 			 */
-			void setSampleCount(int count);
+			void query(const TimeStamp& startTime, const TimeStamp& endTime, int samples);
 
 			/**
 			 * Sets a time range, which updates the settings internally
@@ -83,11 +84,12 @@ namespace nap
 			 * Needs to be implemented by derived classes.
 			 * Called when sample count changes, ie: resolution of the buffer containing records
 			 */
-			virtual void settingsChanged() = 0;
+			virtual void onQuery() = 0;
 
 			int mSampleCount = -1;					///< Total number of samples
-			SystemTimeStamp mStartTime;				///< Sample start time
-			SystemTimeStamp mEndTime;				///< Sample end time
+			TimeStamp mStartTime;					///< Sample start time
+			TimeStamp mEndTime;						///< Sample end time
+			nap::APIService* mAPIService = nullptr;	///< The API Service
 		};
 	}
 }

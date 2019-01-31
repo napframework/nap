@@ -331,9 +331,15 @@ namespace nap
 		TimeStamp() = default;
 
 		/**
-		* Constructor based on given system time. Converts system time to a long that can be serialized.
-		* @param systemTime system time stamp to convert to serializable time stamp.
-		*/
+		 * Default Constructor
+		 * @param timestamp time since epoch as long
+		 */
+		TimeStamp(int64_t timeStamp) : mTimeStamp(timeStamp)	{ }
+
+		/**
+		 * Constructor based on given system time. Converts system time to a long that can be serialized.
+		 * @param systemTime system time stamp to convert to serializable time stamp.
+		 */
 		TimeStamp(const SystemTimeStamp& systemTime);
 
 		/**

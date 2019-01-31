@@ -92,6 +92,7 @@
                 android:id="@+id/api_log"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textSize="10dp"
                 app:theme="@style/TextViewStyle" />
         </ScrollView>
 
@@ -109,6 +110,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="TextView"
+                android:textSize="10dp"
                 app:theme="@style/TextViewStyle" />
         </ScrollView>
 

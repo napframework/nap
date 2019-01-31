@@ -1,7 +1,9 @@
 #include "emographystressdataviewcomponent.h"
+#include "emographystress.h"
 
 // External Includes
 #include <entity.h>
+#include <mathutils.h>
 
 // nap::emographystressdataviewcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::emography::StressDataViewComponent)
@@ -30,10 +32,6 @@ namespace nap
 		{
 			if (!RangeDataviewComponentInstance::init(errorState))
 				return false;
-
-			// Copy over stress data
-			//mStressData = getComponent<StressDataViewComponent>()->mStressData;
-
 			return true;
 		}
 
@@ -44,15 +42,24 @@ namespace nap
 		}
 
 
-		void StressDataViewComponentInstance::settingsChanged()
+		void StressDataViewComponentInstance::onQuery()
 		{
-			// Clear data
-			//mStressData.clear();
+			// Create reply
+			APIEventPtr reply = std::make_unique<APIEvent>("StressReply");
 
-			// Allocate
-			//mStressData.reserve(getSampleCount());
+			// Populate event
+			reply->addArgument<APILong>("startTime", mStartTime.mTimeStamp);
+			reply->addArgument<APILong>("endTime", mEndTime.mTimeStamp);
+			reply->addArgument<APIInt>("samples", mSampleCount);
+			
+			// Add some random values to test
+			std::vector<float> stress_reading(mSampleCount, 0);
+			for (int i = 0; i < mSampleCount; i++)
+				stress_reading[i] = math::random<float>(0.0f, 1.0f);
+			reply->addArgument<APIFloatArray>("data", std::move(stress_reading));
 
-			// Query and fill -> Push to view
+			// Dispatch result
+			mAPIService->dispatchEvent(std::move(reply));
 		}
 	}
 }

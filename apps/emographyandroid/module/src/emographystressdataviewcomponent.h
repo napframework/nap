@@ -26,8 +26,6 @@ namespace nap
 			 * @param components the components this object depends on
 			 */
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
-			//std::vector<StressIntensityReading> mStressData;	///< Property: 'StressData' Example: stress related data snapshot
 		};
 
 
@@ -60,10 +58,7 @@ namespace nap
 			 * Occurs when the sample count or times frame changes 
 			 * update container size, get records and push view	
 			 */
-			virtual void settingsChanged() override;
-
-		private:
-			//std::vector<StressIntensityReading> mStressData;	///< Property: 'Data' Example: stress related data snapshot
+			virtual void onQuery() override;
 		};
 	}
 }
