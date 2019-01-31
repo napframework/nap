@@ -62,6 +62,8 @@ if(WIN32)
         endif()
     endforeach()
 elseif(APPLE)
+    list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
+
     # Deploy Qt plugins from thirdparty on macOS for running against packaged NAP
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
