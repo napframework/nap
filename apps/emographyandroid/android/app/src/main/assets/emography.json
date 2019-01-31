@@ -33,8 +33,26 @@
                     ]
                 },
                 {
-                    "Type": "nap::EmographyAPIComponent",
-                    "mID": "nap::EmographyAPIComponent"
+                    "Type": "nap::emography::APIControlComponent",
+                    "mID": "APIControlComponent",
+                    "StressViewComponent": "./DataViewComponent"
+                },
+                {
+                    "Type": "nap::emography::StressDataViewComponent",
+                    "mID": "DataViewComponent",
+                    "Settings": {
+                        "Samples": 1024,
+                        "StartTime": {
+                            "Month": "January",
+                            "Day": 1,
+                            "Year": 1970
+                        },
+                        "EndTime": {
+                            "Month": "January",
+                            "Day": 1,
+                            "Year": 1970
+                        }
+                    }
                 }
             ],
             "Children": []
