@@ -165,7 +165,7 @@ macro(package_qt)
 
     elseif(APPLE)
         # macOS appears to depend on these extra Qt frameworks
-        list(APPEND QT_FRAMEWORKS PrintSupport)
+        list(APPEND QT_FRAMEWORKS PrintSupport DBus)
 
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
