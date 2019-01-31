@@ -54,7 +54,7 @@ namespace nap
 		void APIControlComponentInstance::updateView(const nap::APIEvent& apiEvent)
 		{
 			TimeStamp start_time(apiEvent[0].asLong());
-			TimeStamp end_time(apiEvent[0].asLong());
+			TimeStamp end_time(apiEvent[1].asLong());
 			int samples = apiEvent[2].asInt();
 			mStressViewComponent->query(start_time, end_time, samples);
 		}

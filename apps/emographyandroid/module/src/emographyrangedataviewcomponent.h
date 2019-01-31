@@ -71,13 +71,6 @@ namespace nap
 			 */
 			void query(const TimeStamp& startTime, const TimeStamp& endTime, int samples);
 
-			/**
-			 * Sets a time range, which updates the settings internally
-			 * @param begin sample range start time
-			 * @param end sample range end time 
-			 */
-			void setTimeRange(const SystemTimeStamp& begin, const SystemTimeStamp& end);
-
 		protected:
 
 			/**

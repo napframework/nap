@@ -106,8 +106,8 @@ public class ForegroundService extends Service
                         // Create NAP Message
                         mBuilder.clear();
                         APIMessage msg = mBuilder.addMessage("updateView");
-                        msg.addLong("startTime", 20);
-                        msg.addLong("endTime", 40);
+                        msg.addLong("startTime", System.currentTimeMillis() - (1000*2));
+                        msg.addLong("endTime", System.currentTimeMillis());
                         msg.addInt("samples", 200);
 
                         // Call
