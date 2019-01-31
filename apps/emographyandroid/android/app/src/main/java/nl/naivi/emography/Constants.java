@@ -10,7 +10,8 @@ public class Constants
 
         // To activity
         String STOP_ACTIVITY = "nl.naivi.emography.action.stopapp";
-        String LOG_TO_ACTIVITY = "nl.naivi.emography.action.logtoactivity";
+        String API_LOG_ACTIVITY = "nl.naivi.emography.action.logtoactivity";
+        String API_MESSAGE_ACTIVITY = "nl.naivi.emography.action.apiMessageActivity";
     }
 
     public interface NOTIFICATIONS

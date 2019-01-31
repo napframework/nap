@@ -87,7 +87,8 @@ public class MainActivity extends AppCompatActivity
         // Add our intent actions for shutdown and logging
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Constants.ACTION.STOP_ACTIVITY);
-        mIntentFilter.addAction(Constants.ACTION.LOG_TO_ACTIVITY);
+        mIntentFilter.addAction(Constants.ACTION.API_LOG_ACTIVITY);
+        mIntentFilter.addAction(Constants.ACTION.API_MESSAGE_ACTIVITY);
 
         // Check if service is running
         if (!isServiceRunning(ForegroundService.class))
@@ -151,14 +152,17 @@ public class MainActivity extends AppCompatActivity
         {
             String action = intent.getAction();
 
-            if (action.equals(Constants.ACTION.STOP_ACTIVITY))
-            {
+            if (action.equals(Constants.ACTION.STOP_ACTIVITY)) {
                 // Received stop request from service
                 finish();
-            } else if (action.equals(Constants.ACTION.LOG_TO_ACTIVITY))
-            {
+            }
+            else if(action.equals(Constants.ACTION.API_MESSAGE_ACTIVITY)) {
+                // Received api message from service
+                appendToAPILog(intent.getStringExtra("apimessage"));
+            }
+            else if (action.equals(Constants.ACTION.API_LOG_ACTIVITY)) {
                 // Received log from service
-                appendToUILog(intent.getStringExtra("log"));
+                appendToUILog(intent.getStringExtra("apilog"));
             }
         }
     };
@@ -167,6 +171,17 @@ public class MainActivity extends AppCompatActivity
     private void appendToUILog(String s)
     {
         TextView tv = findViewById(R.id.text_log);
+        String built = tv.getText().toString();
+        if (!built.equals(""))
+            built += "\n";
+
+        tv.setText(built + s);
+    }
+
+
+    private void appendToAPILog(String s)
+    {
+        TextView tv = findViewById(R.id.api_log);
         String built = tv.getText().toString();
         if (!built.equals(""))
             built += "\n";
@@ -229,10 +244,4 @@ public class MainActivity extends AppCompatActivity
     {
 
     }
-
-
-    /**
-     * Called when the sliders changes
-     */
-
 }

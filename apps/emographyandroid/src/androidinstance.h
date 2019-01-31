@@ -137,6 +137,7 @@ namespace  nap
                     return false;
                 }
 
+                log(ELogLevel::Info, utility::stringFormat("Request: %s", json));
                 if(!mAPIService->sendMessage(json, &error))
                 {
                     log(ELogLevel::Error, error.toString());
@@ -226,9 +227,6 @@ namespace  nap
                          break;
                      case ELogLevel::Fatal:
                          nap::Logger::fatal(msg);
-                         break;
-                     default:
-                         assert(false);
                          break;
                  }
 

@@ -142,13 +142,6 @@ public class ForegroundService extends Service
                 // Shutdown request received
                 Log.i(TAG, "Received stop service intent");
                 stopAll();
-            } else if (intent.getAction().equals(Constants.ACTION.REQUEST_LOG_FROM_SERVICE))
-            {
-                // Log pull request received from activity
-                Intent logIntent = new Intent();
-                logIntent.setAction(Constants.ACTION.LOG_TO_ACTIVITY);
-                logIntent.putExtra("log", mOutputLog);
-                sendBroadcast(logIntent);
             }
         }
     };
@@ -228,23 +221,41 @@ public class ForegroundService extends Service
     @Keep
     /**
      * Currently unused method for pushing the log into Java from the NAP service, instead of
-     * pulling as is currently being used. Left as example.
+     * pulling as is currently being used.
      */
-    public void logToUI(final String s)
+    public void onAPILog(final String s)
     {
         Handler mainHandler = new Handler(this.getMainLooper());
         Runnable myRunnable = new Runnable()
         {
             @Override
             public void run() {
-            if (mOutputLog != "")
-                mOutputLog += "\n";
-            mOutputLog += s;
-
             Intent logIntent = new Intent();
-            logIntent.setAction(Constants.ACTION.LOG_TO_ACTIVITY);
-            logIntent.putExtra("log", s);
+            logIntent.setAction(Constants.ACTION.API_LOG_ACTIVITY);
+            logIntent.putExtra("apilog", s);
             sendBroadcast(logIntent);
+            }
+        };
+        mainHandler.post(myRunnable);
+    }
+
+    @Keep
+    /**
+     * Called by the NAP API Service when a new event in the form of a message is received
+     * Forwards it to the main activity
+     * @param apiMessage the api message as a json deserializable structure
+     */
+    public void onAPIMessage(final String apiMessage)
+    {
+        Handler mainHandler = new Handler(this.getMainLooper());
+        Runnable myRunnable = new Runnable()
+        {
+            @Override
+            public void run() {
+                Intent apiIntent = new Intent();
+                apiIntent.setAction(Constants.ACTION.API_MESSAGE_ACTIVITY);
+                apiIntent.putExtra("apimessage", apiMessage);
+                sendBroadcast(apiIntent);
             }
         };
         mainHandler.post(myRunnable);

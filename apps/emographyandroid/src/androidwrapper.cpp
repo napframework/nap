@@ -34,8 +34,7 @@ namespace nap
 
             // Calling for first time, get the method id
             jclass thisClass = env->GetObjectClass(context);
-            jmethodID android_method = env->GetMethodID(thisClass, "logToUI", "(Ljava/lang/String;)V");
-
+            jmethodID android_method = env->GetMethodID(thisClass, "onAPIMessage", "(Ljava/lang/String;)V");
 
             jstring jstr = env->NewStringUTF(json.c_str());
             env->CallVoidMethod(context, android_method, jstr);
@@ -54,7 +53,7 @@ namespace nap
         {
             // Calling for first time, get the method id
             jclass thisClass = env->GetObjectClass(context);
-            jmethodID android_method = env->GetMethodID(thisClass, "logToUI", "(Ljava/lang/String;)V");
+            jmethodID android_method = env->GetMethodID(thisClass, "onAPILog", "(Ljava/lang/String;)V");
 
             jstring jstr = env->NewStringUTF(msg.c_str());
             env->CallVoidMethod(context, android_method, jstr);
