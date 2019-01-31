@@ -1,7 +1,7 @@
 # NAP modules which Napkin uses (as a minimum)
-set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio)
+set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio mod_napfont)
 # Qt frameworks which Napkin uses
-set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport)
+set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport QtOpenGL)
 message(STATUS "Preparing Napkin deployment to output directory")
 
 if(WIN32 OR APPLE)

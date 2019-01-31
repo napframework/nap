@@ -132,7 +132,7 @@ endmacro()
 
 # Package installed Qt for distribution with NAP release (for use with Napkin)
 macro(package_qt)
-    set(QT_FRAMEWORKS Core Gui Widgets)
+    set(QT_FRAMEWORKS Core Gui Widgets OpenGL)
 
     # Install licenses.  This link is a little tenuous but seems to work for Win64
     # TODO Fail if we don't find sufficient licenses (which happens pre Qt 5.10)

@@ -54,24 +54,26 @@ macro(nap_qt_pre)
     find_package(Qt5Core REQUIRED)
     find_package(Qt5Widgets REQUIRED)
     find_package(Qt5Gui REQUIRED)
+    find_package(Qt5OpenGL REQUIRED)
 
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
     add_definitions(-DQT_NO_KEYWORDS)
 
-    set(QT_LIBS Qt5::Widgets Qt5::Core Qt5::Gui)
+    set(QT_LIBS Qt5::Widgets Qt5::Core Qt5::Gui Qt5::OpenGL)
 
 endmacro()
 
 
 macro(nap_qt_post PROJECTNAME)
-    qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)
+    qt5_use_modules(${PROJECT_NAME} Core Widgets Gui OpenGL)
 
     if(WIN32)
         add_custom_command(TARGET ${PROJECTNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
                            $<TARGET_FILE:Qt5::Widgets>
                            $<TARGET_FILE:Qt5::Core>
                            $<TARGET_FILE:Qt5::Gui>
+                           $<TARGET_FILE:Qt5::OpenGL>
                            $<TARGET_FILE_DIR:${PROJECTNAME}>
                            COMMENT "Copy Qt DLLs")
     endif()
