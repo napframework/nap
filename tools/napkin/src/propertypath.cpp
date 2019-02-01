@@ -103,16 +103,49 @@ nap::ComponentInstanceProperties& napkin::PropertyPath::getOrCreateInstanceProps
 	// No instance properties, create a new set
 	auto idx = mRootEntity->mInstanceProperties.size();
 	mRootEntity->mInstanceProperties.emplace_back();
-	auto targetComponent = dynamic_cast<nap::Component*>(mObject);
-	assert(targetComponent);
 
-	// Create component path
-	std::string targetID = "./" + targetComponent->mID;
+	std::string targetID = componentInstancePath();
 
-	mRootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetID, *targetComponent);
+	mRootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetID, *component());
 	return mRootEntity->mInstanceProperties.at(idx);
 }
 
+std::string napkin::PropertyPath::componentInstancePath()
+{
+	auto targetComponent = component();
+
+	// Path to component, start from component, track back to root entity
+	std::list<std::string> compPath;
+
+	// TODO: Don't access document globally (store instance in PropertyPath?)
+	auto doc = AppContext::get().getDocument();
+	auto entity = doc->getOwner(*targetComponent);
+	compPath.push_front(entity->mID);
+
+	auto parent = doc->getParent(*entity);
+	while (parent)
+	{
+		compPath.push_front(parent->mID);
+		parent = doc->getParent(*parent);
+	}
+	// Omit root
+	compPath.pop_front();
+
+	// convert path to string
+	std::string compPathStr = "./";
+	for (auto elm : compPath)
+		compPathStr += elm + "/";
+	compPathStr += targetComponent->mID;
+
+	return compPathStr;
+}
+
+nap::Component* napkin::PropertyPath::component()
+{
+	auto targetComponent = dynamic_cast<nap::Component*>(mObject);
+	assert(targetComponent);
+	return targetComponent;
+}
 
 nap::TargetAttribute* napkin::PropertyPath::targetAttribute() const
 {

@@ -263,6 +263,13 @@ namespace napkin
 
 		nap::ComponentInstanceProperties* instanceProps() const;
 		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
+		std::string componentInstancePath();
+
+		/**
+		 * This PropertyPath is most likely pointing to a Component, retrieve it here.
+		 * @return The component this PropertyPath is pointing to.
+		 */
+		nap::Component* component();
 		nap::TargetAttribute* targetAttribute() const;
 		nap::TargetAttribute& getOrCreateTargetAttribute();
 
