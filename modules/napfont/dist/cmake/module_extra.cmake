@@ -1,4 +1,6 @@
-find_package(freetype REQUIRED)
+if(NOT TARGET freetype)
+    find_package(freetype REQUIRED)
+endif()
 target_link_libraries(${PROJECT_NAME} freetype)
 target_include_directories(${PROJECT_NAME} PUBLIC ${FREETYPE_INCLUDE_DIRS})
 

@@ -23,5 +23,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
+# If doing a framework release build let's avoid building the module
+if(NAP_PACKAGED_BUILD AND NOT PACKAGE_NAIVI_APPS)
+    set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)        
+    return()
+endif()
+
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()

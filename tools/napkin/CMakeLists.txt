@@ -89,7 +89,7 @@ install(TARGETS ${PROJECT_NAME}
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
         DESTINATION tools/platform/napkin/)
 
-set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets)
+set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 
 set(PATH_TO_THIRDPARTY "../../../../thirdparty")
 if(APPLE)
