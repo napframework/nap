@@ -171,7 +171,7 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 {
 	std::string tempFilename("__TEMP_NAPKIN_PROP_PATH_TEST.json");
 	float floatVal = 2356.7;
-	std::string stringVal = "Jade";
+	int intVal = 42;
 	{
 		RUN_Q_APPLICATION
 
@@ -190,8 +190,8 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 		auto rootEntity = doc->getRootEntity(*scene, parentEntity);
 		REQUIRE(rootEntity != nullptr);
 
-		PropertyPath parentInstancePath(*rootEntity, *parentComp, "String");
-		parentInstancePath.setValue(stringVal);
+		PropertyPath parentInstancePath(*rootEntity, *parentComp, "Int");
+		parentInstancePath.setValue(intVal);
 
 		PropertyPath instancePath(*rootEntity, *comp, "Float");
 		instancePath.setValue(floatVal);
