@@ -1,8 +1,3 @@
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_emography)
 
 # add all cpp files to SOURCES
@@ -11,22 +6,16 @@ file(GLOB HEADERS src/*.h)
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 
-# Get our NAP modules dependencies from module.json
-module_json_to_cmake()
-
-# LIBRARY
-
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
+# TODO ANDROID pull in from interdependent module.json files
+set(DEPENDENT_NAP_MODULES mod_napscene mod_napdatabase mod_napmath mod_napapi)
+
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
-
-# Deploy module.json as MODULENAME.json alongside module post-build
-copy_module_json_to_bin()
+target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core ${DEPENDENT_NAP_MODULES})

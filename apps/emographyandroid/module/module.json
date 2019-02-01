@@ -1,7 +1,0 @@
-{
-    "dependencies": [
-        "mod_napscene",
-        "mod_napdatabase",
-        "mod_napapi"
-    ]
-}
