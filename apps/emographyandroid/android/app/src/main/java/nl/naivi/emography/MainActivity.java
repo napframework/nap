@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "NAPServiceDemo";
 
     private IntentFilter mIntentFilter;
+    private APIMessageBuilder mBuilder = new APIMessageBuilder();
 
     /**
      * Returns to current number of samples based on slider value
@@ -88,7 +89,7 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Constants.ACTION.STOP_ACTIVITY);
         mIntentFilter.addAction(Constants.ACTION.API_LOG_ACTIVITY);
-        mIntentFilter.addAction(Constants.ACTION.API_MESSAGE_ACTIVITY);
+        mIntentFilter.addAction(Constants.ACTION.API_RESPONSE_ACTIVITY);
 
         // Check if service is running
         if (!isServiceRunning(ForegroundService.class))
@@ -116,13 +117,6 @@ public class MainActivity extends AppCompatActivity
         // Flush existing log view
         TextView tv = findViewById(R.id.text_log);
         tv.setText("");
-
-        // Request the existing log from the service
-        // TODO If used outside of demo would need to cater for a non-backlog message coming through
-        //      before backlog is received
-        Intent logRequestIntent = new Intent();
-        logRequestIntent.setAction(Constants.ACTION.REQUEST_LOG_FROM_SERVICE);
-        sendBroadcast(logRequestIntent);
     }
 
 
@@ -156,38 +150,18 @@ public class MainActivity extends AppCompatActivity
                 // Received stop request from service
                 finish();
             }
-            else if(action.equals(Constants.ACTION.API_MESSAGE_ACTIVITY)) {
-                // Received api message from service
-                appendToAPILog(intent.getStringExtra("apimessage"));
+            else if(action.equals(Constants.ACTION.API_RESPONSE_ACTIVITY)) {
+                // Received api response message from service
+                TextView tv = findViewById(R.id.api_log);
+                tv.setText(intent.getStringExtra("apimessage"));
             }
             else if (action.equals(Constants.ACTION.API_LOG_ACTIVITY)) {
-                // Received log from service
-                appendToUILog(intent.getStringExtra("apilog"));
+                // Received api log message from service
+                TextView tv = findViewById(R.id.text_log);
+                tv.setText(intent.getStringExtra("apilog"));
             }
         }
     };
-
-
-    private void appendToUILog(String s)
-    {
-        TextView tv = findViewById(R.id.text_log);
-        String built = tv.getText().toString();
-        if (!built.equals(""))
-            built += "\n";
-
-        tv.setText(built + s);
-    }
-
-
-    private void appendToAPILog(String s)
-    {
-        TextView tv = findViewById(R.id.api_log);
-        String built = tv.getText().toString();
-        if (!built.equals(""))
-            built += "\n";
-
-        tv.setText(built + s);
-    }
 
 
     /**
@@ -237,11 +211,26 @@ public class MainActivity extends AppCompatActivity
 
 
     /**
-     * Called when a new set of data is requested
+     * Called when a new set of data is requested.
+     * Constructs an api message based on the requested number of samples and start-end time
      * @param view calling view (button)
      */
     public void onRequestData(View view)
     {
+        Intent queryIntent = new Intent();
+        queryIntent.setAction(Constants.ACTION.API_REQUEST_DATA_ACTIVITY);
 
+        // Construct message
+        mBuilder.clear();
+        APIMessage msg = mBuilder.addMessage("updateView");
+        msg.addLong("startTime", System.currentTimeMillis() - (1000*2));
+        msg.addLong("endTime", System.currentTimeMillis());
+        msg.addInt("samples", getNumberOfSamples());
+
+        // Add message
+        queryIntent.putExtra("apimessage", mBuilder.asString());
+
+        // Send
+        sendBroadcast(queryIntent);
     }
 }

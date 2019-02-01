@@ -53,6 +53,14 @@ class APIMessageBuilder
     }
 
     /**
+     * @return all collected API messaged as a string, empty on error.
+     */
+    @Override
+    public String toString() {
+        return asString();
+    }
+
+    /**
      * Clears all collected API messages and binds a new array
      * Call this before creating a new set of messages that is send over
      */

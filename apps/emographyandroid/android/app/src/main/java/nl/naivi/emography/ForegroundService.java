@@ -22,8 +22,6 @@ public class ForegroundService extends Service
     private static final String TAG = "NAPEmography";
     private IntentFilter mIntentFilter;
     private boolean mStopThread = false;
-    private String mOutputLog = "";
-    private APIMessageBuilder mBuilder = new APIMessageBuilder();
 
 
     @Override
@@ -35,7 +33,7 @@ public class ForegroundService extends Service
         // Accept shutdown and logging request intents
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Constants.ACTION.STOP_SERVICE);
-        mIntentFilter.addAction(Constants.ACTION.REQUEST_LOG_FROM_SERVICE);
+        mIntentFilter.addAction(Constants.ACTION.API_REQUEST_DATA_ACTIVITY);
     }
 
 
@@ -103,19 +101,6 @@ public class ForegroundService extends Service
                 while (!Thread.interrupted() && !mStopThread)
                     try
                     {
-                        // Create NAP Message
-                        mBuilder.clear();
-                        APIMessage msg = mBuilder.addMessage("updateView");
-                        msg.addLong("startTime", System.currentTimeMillis() - (1000*2));
-                        msg.addLong("endTime", System.currentTimeMillis());
-                        msg.addInt("samples", 200);
-
-                        // Call
-                        call(mBuilder.asString());
-
-                        // Flush
-                        napFlush();
-
                         Thread.sleep(5000);
                     }
                     catch (InterruptedException e) { }
@@ -142,6 +127,16 @@ public class ForegroundService extends Service
                 // Shutdown request received
                 Log.i(TAG, "Received stop service intent");
                 stopAll();
+            }
+            else if (intent.getAction().equals(Constants.ACTION.API_REQUEST_DATA_ACTIVITY))
+            {
+                String api_request = intent.getStringExtra("apimessage");
+
+                // Call into nap with the request
+                call(api_request);
+
+                // Flush - forces an update on the C++ side
+                napFlush();
             }
         }
     };
@@ -220,10 +215,12 @@ public class ForegroundService extends Service
 
     @Keep
     /**
-     * Currently unused method for pushing the log into Java from the NAP service, instead of
-     * pulling as is currently being used.
+     * Called by the NAP API Service when a new log message is received
+     * Log messages are often errors or warnings.
+     * When received this log message is forwarded to potential listeners
+     * @param logMessage the log message received from the NAP API service
      */
-    public void onAPILog(final String s)
+    public void onAPILog(final String logMessage)
     {
         Handler mainHandler = new Handler(this.getMainLooper());
         Runnable myRunnable = new Runnable()
@@ -232,7 +229,7 @@ public class ForegroundService extends Service
             public void run() {
             Intent logIntent = new Intent();
             logIntent.setAction(Constants.ACTION.API_LOG_ACTIVITY);
-            logIntent.putExtra("apilog", s);
+            logIntent.putExtra("apilog", logMessage);
             sendBroadcast(logIntent);
             }
         };
@@ -253,7 +250,7 @@ public class ForegroundService extends Service
             @Override
             public void run() {
                 Intent apiIntent = new Intent();
-                apiIntent.setAction(Constants.ACTION.API_MESSAGE_ACTIVITY);
+                apiIntent.setAction(Constants.ACTION.API_RESPONSE_ACTIVITY);
                 apiIntent.putExtra("apimessage", apiMessage);
                 sendBroadcast(apiIntent);
             }
