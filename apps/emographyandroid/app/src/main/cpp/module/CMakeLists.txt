@@ -1,8 +1,8 @@
 project(mod_emography)
 
 # add all cpp files to SOURCES
-file(GLOB SOURCES ${PROJECT_ROOT}/module/src/*.cpp)
-file(GLOB HEADERS ${PROJECT_ROOT}/module/src/*.h)
+file(GLOB SOURCES src/*.cpp)
+file(GLOB HEADERS src/*.h)
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 

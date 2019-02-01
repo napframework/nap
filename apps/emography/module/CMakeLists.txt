@@ -6,8 +6,9 @@ endif()
 project(mod_emography)
 
 # add all cpp files to SOURCES
-file(GLOB SOURCES src/*.cpp)
-file(GLOB HEADERS src/*.h)
+set(SOURCE_DIR_IN_ANDROID_PROJ ../../emographyandroid/app/src/main/cpp/module/src)
+file(GLOB SOURCES ${SOURCE_DIR_IN_ANDROID_PROJ}/*.cpp)
+file(GLOB HEADERS ${SOURCE_DIR_IN_ANDROID_PROJ}/*.h)
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 
@@ -21,7 +22,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${SOURCE_DIR_IN_ANDROID_PROJ})
 
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
