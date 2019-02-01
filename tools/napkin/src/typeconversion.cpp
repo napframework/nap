@@ -1,4 +1,5 @@
 #include "typeconversion.h"
+#include "appcontext.h"
 
 #include <qdebug.h>
 
@@ -158,17 +159,21 @@ namespace napkin
 
 	nap::InstancePropertyValue* createInstancePropertyValue(const rttr::type& type, const rttr::variant& value)
 	{
-		if (type == rttr::type::get<float>())
+		if (type == rttr::type::get<std::string>())
 		{
-			auto propValue = new nap::TypedInstancePropertyValue<float>();
+
+		}
+		else if (type == rttr::type::get<float>())
+		{
+
+			auto propValue = napkin::AppContext::get().getDocument()->addObject<nap::TypedInstancePropertyValue<float>>();
 			propValue->mValue = value.get_value<float>();
 			return propValue;
 		}
-		else if (type == rttr::type::get<std::string>())
+		else if (type == rttr::type::get<int>())
 		{
-			auto propValue = new nap::TypedInstancePropertyValue<std::string>();
-			std::string stringVal = value.get_value<std::string>();
-			propValue->mValue = stringVal;
+			auto propValue = napkin::AppContext::get().getDocument()->addObject<nap::TypedInstancePropertyValue<int>>();
+			propValue->mValue = value.get_value<int>();
 			return propValue;
 		}
 		return nullptr;
