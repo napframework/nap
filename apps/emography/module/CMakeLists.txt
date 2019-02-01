@@ -22,7 +22,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${SOURCE_DIR_IN_ANDROID_PROJ})
 
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
