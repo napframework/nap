@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 
-project.ext.set('NAP_ROOT', '../../../../NAP-0.2.2-Android')
+project.ext.set('NAP_ROOT', '../../../NAP-0.2.2-Android')
 
 android {
     compileSdkVersion 28
