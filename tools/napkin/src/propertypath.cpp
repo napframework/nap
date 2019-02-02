@@ -2,13 +2,10 @@
 #include "naputils.h"
 #include "typeconversion.h"
 
-#include <rtti/object.h>
 #include <rtti/linkresolver.h>
 #include <rtti/defaultlinkresolver.h>
 #include <appcontext.h>
-#include <nap/logger.h>
 #include <stack>
-#include <QtDebug>
 
 using namespace nap::rtti;
 
@@ -115,26 +112,35 @@ std::string napkin::PropertyPath::componentInstancePath()
 	auto targetComponent = component();
 
 	// Path to component, start from component, track back to root entity
-	std::list<std::string> compPath;
+	std::vector<nap::Entity*> compPath;
 
 	// TODO: Don't access document globally (store instance in PropertyPath?)
 	auto doc = AppContext::get().getDocument();
 	auto entity = doc->getOwner(*targetComponent);
-	compPath.push_front(entity->mID);
+	compPath.insert(compPath.begin(), entity);
 
+	// walk from componet to root
 	auto parent = doc->getParent(*entity);
 	while (parent)
 	{
-		compPath.push_front(parent->mID);
+		compPath.insert(compPath.begin(), parent);
 		parent = doc->getParent(*parent);
 	}
-	// Omit root
-	compPath.pop_front();
 
 	// convert path to string
 	std::string compPathStr = "./";
-	for (auto elm : compPath)
-		compPathStr += elm + "/";
+	for (size_t i = 1, len = compPath.size(); i < len; i++)
+	{
+		auto elm = compPath[i];
+		std::string elmName = elm->mID;
+		auto elmParent = compPath[i - 1];
+
+		// index of entity under parent
+		auto it = std::find(elmParent->mChildren.begin(), elmParent->mChildren.end(), elm);
+		auto index = std::distance(elmParent->mChildren.begin(), it);
+
+		compPathStr += elm->mID + ":" + std::to_string(index) + "/";
+	}
 	compPathStr += targetComponent->mID;
 
 	return compPathStr;
