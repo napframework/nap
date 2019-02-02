@@ -172,6 +172,8 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 	std::string tempFilename("__TEMP_NAPKIN_PROP_PATH_TEST.json");
 	float floatVal = 2356.7;
 	int intVal = 42;
+	std::string parentEntityCompName = "ParentEntityComponent";
+	std::string childEntityCompName = "ChildEntityComponent";
 	{
 		RUN_Q_APPLICATION
 
@@ -180,10 +182,10 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 		auto doc = ctx.newDocument();
 		auto& parentEntity = doc->addEntity(nullptr);
 		auto parentComp = doc->addComponent<TestComponent>(parentEntity);
-		parentComp->mID = "ParentEntityComponent";
+		parentComp->mID = parentEntityCompName;
 		auto& entity = doc->addEntity(&parentEntity);
 		auto comp = doc->addComponent<TestComponent>(entity);
-		comp->mID = "ChildEntityComponent";
+		comp->mID = childEntityCompName;
 		auto scene = doc->addObject<nap::Scene>();
 		doc->addEntityToScene(*scene, parentEntity);
 
@@ -191,9 +193,13 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 		REQUIRE(rootEntity != nullptr);
 
 		PropertyPath parentInstancePath(*rootEntity, *parentComp, "Int");
+		REQUIRE(parentInstancePath.isValid());
+		REQUIRE(parentInstancePath.getType().is_derived_from<int>());
 		parentInstancePath.setValue(intVal);
 
 		PropertyPath instancePath(*rootEntity, *comp, "Float");
+		REQUIRE(instancePath.isValid());
+		REQUIRE(instancePath.getType().is_derived_from<float>());
 		instancePath.setValue(floatVal);
 
 		doc->setFilename(QString::fromStdString(tempFilename));
@@ -212,6 +218,15 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 
 	if (!core.getResourceManager()->loadFile(dataFile, err))
 		FAIL(err.toString());
+
+	{
+		auto resman = core.getResourceManager();
+		auto parentComp = resman->findObject<TestComponent>(parentEntityCompName);
+		REQUIRE(parentComp != nullptr);
+
+		auto childComp = resman->findObject<TestComponent>(childEntityCompName);
+		REQUIRE(childComp != nullptr);
+	}
 }
 
 TEST_CASE("PropertyIteration", "[napkinpropertypath]")
