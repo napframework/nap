@@ -107,9 +107,11 @@ nap::ComponentInstanceProperties& napkin::PropertyPath::getOrCreateInstanceProps
 	return mRootEntity->mInstanceProperties.at(idx);
 }
 
-std::string napkin::PropertyPath::componentInstancePath()
+std::string napkin::PropertyPath::componentInstancePath() const
 {
 	auto targetComponent = component();
+	if (!targetComponent)
+		return std::string();
 
 	// Path to component, start from component, track back to root entity
 	std::vector<nap::Entity*> compPath;
@@ -176,11 +178,9 @@ std::string napkin::PropertyPath::componentInstancePath()
 	return compPathStr;
 }
 
-nap::Component* napkin::PropertyPath::component()
+nap::Component* napkin::PropertyPath::component() const
 {
-	auto targetComponent = dynamic_cast<nap::Component*>(mObject);
-	assert(targetComponent);
-	return targetComponent;
+	return dynamic_cast<nap::Component*>(mObject);
 }
 
 nap::TargetAttribute* napkin::PropertyPath::targetAttribute() const
@@ -325,7 +325,14 @@ napkin::PropertyPath napkin::PropertyPath::getArrayElement(size_t index) const
 
 std::string napkin::PropertyPath::toString() const
 {
-	return nap::utility::stringFormat("%s@%s", mObject->mID.c_str(), mPath.toString().c_str());
+	if (isInstance())
+		return componentInstancePath();
+
+	auto propPathStr = mPath.toString();
+	if (!propPathStr.empty())
+		return nap::utility::stringFormat("%s@%s", mObject->mID.c_str(), propPathStr.c_str());
+
+	return mObject->mID;
 }
 
 napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) const

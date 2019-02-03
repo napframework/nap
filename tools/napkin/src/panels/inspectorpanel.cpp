@@ -65,6 +65,13 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 	mHeaderLayout.addWidget(&mSubTitle);
 	mLayout.addLayout(&mHeaderLayout);
 
+	mPathLabel.setText("Path:");
+	mSubHeaderLayout.addWidget(&mPathLabel);
+	mPathField.setReadOnly(true);
+	mSubHeaderLayout.addWidget(&mPathField);
+
+	mLayout.addLayout(&mSubHeaderLayout);
+
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
 	mTreeView.getTreeView().setColumnWidth(0, 250);
@@ -201,9 +208,12 @@ void InspectorPanel::setPath(const PropertyPath& path)
 			mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()) + " [INSTANCE]");
 		else
 			mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
+
+		mPathField.setText(QString::fromStdString(path.toString()));
 	}
 	else
 	{
+		mPathField.setText("");
 		mTitle.setText("");
 		mSubTitle.setText("");
 	}
@@ -215,6 +225,9 @@ void InspectorPanel::setPath(const PropertyPath& path)
 void InspectorPanel::clear()
 {
 	mModel.removeItems();
+	mPathField.setText("");
+	mTitle.setText("");
+	mSubTitle.setText("");
 }
 
 void InspectorPanel::rebuild()
