@@ -86,7 +86,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 }
 
 
-Object* Document::addObject(rttr::type type, Object* parent, bool selectNewObject)
+nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject, const std::string& name)
 {
 	Factory& factory = mCore.getResourceManager()->getFactory();
 
@@ -103,7 +103,7 @@ Object* Document::addObject(rttr::type type, Object* parent, bool selectNewObjec
 		return nullptr;
 	}
 
-	std::string base_name = friendlyTypeName(type);
+	std::string base_name = name.empty() ? friendlyTypeName(type) : name;
 
 	std::unique_ptr<Object> obj = std::unique_ptr<Object>(factory.create(type));
 	Object* objptr = obj.get();
@@ -154,13 +154,12 @@ void Document::reparentEntity(nap::Entity& entity, nap::Entity* newParent)
 	entityReparented(&entity, oldParent, newParent);
 }
 
-nap::Entity& Document::addEntity(nap::Entity* parent)
+nap::Entity& Document::addEntity(nap::Entity* parent, const std::string& name)
 {
-	auto e = addObject<nap::Entity>(parent);
+	auto e = addObject<nap::Entity>(parent, name);
 	assert(e != nullptr);
 	return *e;
 }
-
 
 std::string Document::getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object)
 {
