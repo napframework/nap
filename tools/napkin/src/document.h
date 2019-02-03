@@ -144,7 +144,9 @@ namespace napkin
 		 * 	In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject = true);
+		nap::rtti::Object*
+		addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject = true,
+				const std::string& name = std::string());
 
 		/**
 		 * Add an Entity to a parent Entity, remove from previous parent if necessary
@@ -160,9 +162,9 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr)
+		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string())
 		{
-			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, true));
+			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, true, name));
 		}
 
 		/**
@@ -170,7 +172,9 @@ namespace napkin
 		 * @param parent The parent of the newly created entity or nullptr
 		 * @return The newly created Entity
 		 */
-		nap::Entity& addEntity(nap::Entity* parent = nullptr);
+		nap::Entity& addEntity(nap::Entity* parent = nullptr, const std::string& name = "");
+
+		nap::Entity& addEntity() { return addEntity(nullptr); }
 
 		/**
 		 * Obliterate the specified object and its dependents

@@ -177,22 +177,46 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 	{
 		RUN_Q_APPLICATION
 
+		/**
+		 EntityA
+		 	EntityAA
+		 		EntityAAA
+		 	EntityAB
+		 		EntityABA
+		 			ComponentABA
+		 		EntityABB
+		 		EntityABC
+		 			ComponentABC
+		 	EntityABA:0
+				ComponentABA
+			EntityABA:1
+				ComponentABA
+		**/
 
 		auto& ctx = AppContext::get();
 		auto doc = ctx.newDocument();
-		auto& parentEntity = doc->addEntity(nullptr);
-		auto parentComp = doc->addComponent<TestComponent>(parentEntity);
-		parentComp->mID = parentEntityCompName;
-		auto& entity = doc->addEntity(&parentEntity);
-		auto comp = doc->addComponent<TestComponent>(entity);
+
+		// Root entity
+		auto& entityA = doc->addEntity(nullptr, "EntityA");
+		auto& entityAA = doc->addEntity(&entityA, "EntityAA");
+		auto& entityAAA = doc->addEntity(&entityAA, "EntityAAA");
+		auto& entityAB = doc->addEntity(&entityA, "EntityAB");
+		auto& entityABA = doc->addEntity(&entityAB, "EntityABA");
+		auto compABA = doc->addComponent<TestComponent>(entityABA);
+		auto& entityABB = doc->addEntity(&entityAB, "EntityABB");
+		auto& entityABC = doc->addEntity(&entityAB, "EntityABC");
+		auto compABC = doc->addComponent<TestComponent>(entityABA);
+
+		// Child entity
+		auto comp = doc->addComponent<TestComponent>(entityAA);
 		comp->mID = childEntityCompName;
 		auto scene = doc->addObject<nap::Scene>();
-		doc->addEntityToScene(*scene, parentEntity);
+		doc->addEntityToScene(*scene, entityA);
 
-		auto rootEntity = doc->getRootEntity(*scene, parentEntity);
+		auto rootEntity = doc->getRootEntity(*scene, entityA);
 		REQUIRE(rootEntity != nullptr);
 
-		PropertyPath parentInstancePath(*rootEntity, *parentComp, "Int");
+		PropertyPath parentInstancePath(*rootEntity, *compABA, "Int");
 		REQUIRE(parentInstancePath.isValid());
 		REQUIRE(parentInstancePath.getType().is_derived_from<int>());
 		parentInstancePath.setValue(intVal);
@@ -219,14 +243,6 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 	if (!core.getResourceManager()->loadFile(dataFile, err))
 		FAIL(err.toString());
 
-	{
-		auto resman = core.getResourceManager();
-		auto parentComp = resman->findObject<TestComponent>(parentEntityCompName);
-		REQUIRE(parentComp != nullptr);
-
-		auto childComp = resman->findObject<TestComponent>(childEntityCompName);
-		REQUIRE(childComp != nullptr);
-	}
 }
 
 TEST_CASE("PropertyIteration", "[napkinpropertypath]")

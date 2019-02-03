@@ -127,7 +127,14 @@ std::string napkin::PropertyPath::componentInstancePath()
 		parent = doc->getParent(*parent);
 	}
 
-	// convert path to string
+	struct MatchingSibling
+	{
+		const nap::Entity* mEntity;
+		int mSiblingIndex;
+	};
+
+	// convert path to string,
+	// iterate over parent's children and add index if same-named siblings are found
 	std::string compPathStr = "./";
 	for (size_t i = 1, len = compPath.size(); i < len; i++)
 	{
@@ -135,11 +142,34 @@ std::string napkin::PropertyPath::componentInstancePath()
 		std::string elmName = elm->mID;
 		auto elmParent = compPath[i - 1];
 
-		// index of entity under parent
-		auto it = std::find(elmParent->mChildren.begin(), elmParent->mChildren.end(), elm);
-		auto index = std::distance(elmParent->mChildren.begin(), it);
+		// find all siblings with the same id
+		std::vector<MatchingSibling> matchingSiblings;
+		for (int idx=0; idx < elmParent->mChildren.size(); idx++)
+		{
+			const auto sibling = elmParent->mChildren[idx].get();
+			if (sibling->mID == elm->mID)
+				matchingSiblings.push_back({sibling, idx});
+		}
 
-		compPathStr += elm->mID + ":" + std::to_string(index) + "/";
+		if (matchingSiblings.size() == 1) // id is unique
+		{
+			compPathStr += elm->mID + "/";
+		}
+		else // id is not unique, disambiguate
+		{
+			// get the index of the element in the sibling list
+			int index = -1;
+			for (int idx=0; idx < matchingSiblings.size(); idx++)
+			{
+				if (matchingSiblings[idx].mEntity == elm)
+				{
+					index = idx;
+					break;
+				}
+			}
+			assert(index >= 0);
+			compPathStr += elm->mID + ":" + std::to_string(index) + "/";
+		}
 	}
 	compPathStr += targetComponent->mID;
 
