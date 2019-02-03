@@ -148,13 +148,16 @@ namespace napkin
 		void rebuild();
 
 	private:
-		InspectorModel mModel;					   // The model for the view
-		nap::qt::FilterTreeView mTreeView;	       // A tree view
-		QVBoxLayout mLayout;					   // The main layout
-		PropertyValueItemDelegate mWidgetDelegate; // Display a different editor based on the property type
+		InspectorModel mModel;						// The model for the view
+		nap::qt::FilterTreeView mTreeView;			// A tree view
+		QVBoxLayout mLayout;						// The main layout
+		PropertyValueItemDelegate mWidgetDelegate;	// Display a different editor based on the property type
 
-		QHBoxLayout mHeaderLayout;				   // Layout for top part (includes title and subtitle)
-		QLabel mTitle;							   // Title label
-		QLabel mSubTitle;                          // Subtitle label
+		QHBoxLayout mHeaderLayout;					// Layout for top part (includes title and subtitle)
+		QHBoxLayout mSubHeaderLayout;				// Just below the header
+		QLabel mTitle;								// Title label
+		QLabel mSubTitle;							// Subtitle label
+		QLabel mPathLabel;							// label before path
+		QLineEdit mPathField;						// Display path to object
 	};
 };
