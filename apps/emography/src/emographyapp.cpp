@@ -51,11 +51,15 @@ namespace nap
 		// Find the window we want to render the output to
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
 
-		mDataModel = std::make_unique<DataModel>(mResourceManager->getFactory());
-		if (!mDataModel->init("emography.db", DataModel::EKeepRawReadings::Disabled, error))
+		// Find the data model
+		mDataModel = mResourceManager->findObject<emography::DataModel>("DataModel");
+
+		// Initialize the datamodel
+		if (!mDataModel->init(mResourceManager->getFactory(), "emography.db" , error))
 			return false;
 
-		if (!mDataModel->registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error))
+		// Register type to read
+		if (!mDataModel->getInstance().registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error))
 			return false;
 
 		return true;
@@ -65,7 +69,7 @@ namespace nap
 	void EmographyApp::clearData()
 	{
 		utility::ErrorState errorState;
-		if (!mDataModel->clearData<StressIntensityReading>(errorState))
+		if (!mDataModel->getInstance().clearData<StressIntensityReading>(errorState))
 			Logger::error(utility::stringFormat("Failed to clear data: %s", errorState.toString().c_str()));
 	}
 
@@ -77,7 +81,7 @@ namespace nap
 
 		TimeStamp generate_start = getCurrentTime();
 
-		TimeStamp start_time = mDataModel->getLastReadingTime<StressIntensityReading>();
+		TimeStamp start_time = mDataModel->getInstance().getLastReadingTime<StressIntensityReading>();
 		if (!start_time.isValid())
 			start_time = getCurrentTime();
 		else
@@ -116,7 +120,7 @@ namespace nap
 							current_time += Milliseconds(1000 / num_seconds_samples);
 
 							std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, current_time);
-							if (!mDataModel->add(*intensityReading, errorState))
+							if (!mDataModel->getInstance().add(*intensityReading, errorState))
 							{
 								nap::Logger::error(errorState.toString());
 								return;
@@ -341,7 +345,7 @@ namespace nap
 
 		std::vector<std::unique_ptr<ReadingSummaryBase>> readings;
 		utility::ErrorState errorState;
-		if (mDataModel->getRange<StressIntensityReading>(left, right, num_samples, readings, errorState))
+		if (mDataModel->getInstance().getRange<StressIntensityReading>(left, right, num_samples, readings, errorState))
 		{
 			glm::vec2 prev_pos(0.0, graphHeight);
 

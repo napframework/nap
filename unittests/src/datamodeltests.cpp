@@ -13,7 +13,7 @@
 	}
 
 
-static bool sInitDataModel(nap::emography::DataModel& dataModel, const std::string& path, nap::utility::ErrorState& errorState)
+static bool sInitDataModel(nap::emography::DataModelInstance& dataModel, const std::string& path, nap::utility::ErrorState& errorState)
 {
 	if (!dataModel.init(path, nap::emography::DataModel::EKeepRawReadings::Disabled, errorState))
 		return false;
@@ -22,12 +22,12 @@ static bool sInitDataModel(nap::emography::DataModel& dataModel, const std::stri
 }
 
 
-std::unique_ptr<nap::emography::DataModel> sCreateDataModel(const std::string& databasePath, nap::rtti::Factory& factory, nap::utility::ErrorState& errorState)
+std::unique_ptr<nap::emography::DataModelInstance> sCreateDataModel(const std::string& databasePath, nap::rtti::Factory& factory, nap::utility::ErrorState& errorState)
 {
 	if (!errorState.check(!nap::utility::fileExists(databasePath) || nap::utility::deleteFile(databasePath), "Failed to delete test database"))
 		return nullptr;
 
-	std::unique_ptr<nap::emography::DataModel> data_model = std::make_unique<nap::emography::DataModel>(factory);
+	std::unique_ptr<nap::emography::DataModelInstance> data_model = std::make_unique<nap::emography::DataModelInstance>(factory);
 	if (!sInitDataModel(*data_model, databasePath, errorState))
 		return nullptr;
 
@@ -42,7 +42,7 @@ TEST_CASE("Emography DataModel - Single Sample Query", "[single sample]")
 	std::string database_path = "SingleValueTest.db";
 	nap::utility::ErrorState errorState;
 
-	std::unique_ptr<nap::emography::DataModel> data_model = sCreateDataModel(database_path, factory, errorState);
+	std::unique_ptr<nap::emography::DataModelInstance> data_model = sCreateDataModel(database_path, factory, errorState);
 	VERIFY_ERROR_STATE(data_model != nullptr)
 
 	nap::TimeStamp now = nap::getCurrentTime();
@@ -74,7 +74,7 @@ TEST_CASE("Emography DataModel - Aligned Minute Query", "[aligned-minute]")
 	std::string database_path = "AlignedMinuteQuery.db";
 	nap::utility::ErrorState errorState;
 
-	std::unique_ptr<nap::emography::DataModel> data_model = sCreateDataModel(database_path, factory, errorState);
+	std::unique_ptr<nap::emography::DataModelInstance> data_model = sCreateDataModel(database_path, factory, errorState);
 	VERIFY_ERROR_STATE(data_model != nullptr)
 
 	nap::SystemTimeStamp time(Seconds(0));
@@ -114,7 +114,7 @@ TEST_CASE("Emography DataModel - Unaligned Minute Query", "[unaligned-minute]")
 	std::string database_path = "UnalignedMinuteQuery.db";
 	nap::utility::ErrorState errorState;
 
-	std::unique_ptr<nap::emography::DataModel> data_model = sCreateDataModel(database_path, factory, errorState);
+	std::unique_ptr<nap::emography::DataModelInstance> data_model = sCreateDataModel(database_path, factory, errorState);
 	VERIFY_ERROR_STATE(data_model != nullptr)
 
 	SystemTimeStamp time(Seconds(0));
@@ -163,7 +163,7 @@ TEST_CASE("Emography DataModel - Inactivity Test", "[inactivity]")
 	std::string database_path = "Inactivity.db";
 	nap::utility::ErrorState errorState;
 
-	std::unique_ptr<nap::emography::DataModel> data_model = sCreateDataModel(database_path, factory, errorState);
+	std::unique_ptr<nap::emography::DataModelInstance> data_model = sCreateDataModel(database_path, factory, errorState);
 	VERIFY_ERROR_STATE(data_model != nullptr)
 
 	SystemTimeStamp time(Seconds(0));

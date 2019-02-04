@@ -97,10 +97,10 @@ namespace nap
 		IMGuiService* mGuiService = nullptr;							//< Service used for updating / drawing guis
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Render window
+		rtti::ObjectPtr<emography::DataModel> mDataModel = nullptr;		//< The data model containing all data
 
 		bool mMouseWasInsideScreen = false;								//< Whether the mouse was inside the screen during the last update
 		emography::TimelineState mTimelineState;						//< The timeline state, used for zooming/panning
-		std::unique_ptr<emography::DataModel> mDataModel;				//< The data model containing all data
 		int mResolution = 400;											//< The resolution at which data is returned from the data model (num samples)
 		int mGraphYUnits = 100;											//< The max value on the Y axis
 		int mNumDaysToGenerate = 7;										//< The number of days to generate data for

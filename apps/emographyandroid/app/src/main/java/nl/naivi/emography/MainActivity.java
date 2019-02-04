@@ -117,6 +117,10 @@ public class MainActivity extends AppCompatActivity
         // Flush existing log view
         TextView tv = findViewById(R.id.text_log);
         tv.setText("");
+
+        // Flush existing nap view
+        TextView nv = findViewById(R.id.api_log);
+        nv.setText("");
     }
 
 
