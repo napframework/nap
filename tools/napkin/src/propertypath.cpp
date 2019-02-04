@@ -616,3 +616,8 @@ void napkin::PropertyPath::iteratePointerProperties(napkin::PropertyVisitor visi
 	}
 
 }
+
+const napkin::PropertyPath& napkin::PropertyPath::invalid() {
+	static PropertyPath invalid;
+	return invalid;
+}

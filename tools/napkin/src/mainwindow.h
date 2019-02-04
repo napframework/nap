@@ -5,6 +5,7 @@
 
 #include <napqt/basewindow.h>
 #include <napqt/errordialog.h>
+#include <panels/pathbrowserpanel.h>
 
 #include "actions.h"
 #include "appcontext.h"
@@ -108,6 +109,7 @@ namespace napkin
 	private:
 		ResourcePanel mResourcePanel;
 		HierarchyPanel mHierarchyPanel;
+		PathBrowserPanel mPathBrowser;
 		InspectorPanel mInspectorPanel;
 		HistoryPanel mHistoryPanel;
 		LogPanel mLogPanel;
