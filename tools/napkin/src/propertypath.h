@@ -94,6 +94,8 @@ namespace napkin
 		 */
 		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, rttr::property prop);
 
+
+		static const PropertyPath& invalid();
 		/**
 		 * @return The last part of the property name (not including the path)
 		 */
@@ -277,6 +279,7 @@ namespace napkin
 		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
 		nap::rtti::Object* mObject = nullptr; // the object on which the property exists
 		nap::rtti::Path mPath; // the path to the property on the object
+
 	};
 }
 
