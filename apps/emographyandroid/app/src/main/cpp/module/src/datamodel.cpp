@@ -1,6 +1,14 @@
+
+// Local Includes
 #include "datamodel.h"
 #include "emographyreading.h"
-#include "rtti/rttiutilities.h"
+#include "emographyservice.h"
+
+// External Includes
+#include <rtti/rttiutilities.h>
+#include <nap/core.h>
+#include <emographystress.h>
+#include <emographysummaryfunctions.h>
 
 namespace nap
 {
@@ -52,6 +60,7 @@ namespace nap
 	}
 }
 
+
 RTTI_BEGIN_CLASS(nap::emography::ReadingProcessorState)
 	RTTI_PROPERTY("LastReadingTime", &nap::emography::ReadingProcessorState::mLastReadingTime, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RTTIVersion", &nap::emography::ReadingProcessorState::mRTTIVersion, nap::rtti::EPropertyMetaData::Default)
@@ -63,12 +72,14 @@ RTTI_BEGIN_CLASS(nap::emography::ReadingProcessorLODState)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_ENUM(nap::emography::DataModel::EKeepRawReadings)
-	RTTI_ENUM_VALUE(nap::emography::DataModel::EKeepRawReadings::Enabled,	"Enabled"),
-	RTTI_ENUM_VALUE(nap::emography::DataModel::EKeepRawReadings::Disabled,	"Disabled")
+	RTTI_ENUM_VALUE(nap::emography::DataModel::EKeepRawReadings::Enabled, "Enabled"),
+	RTTI_ENUM_VALUE(nap::emography::DataModel::EKeepRawReadings::Disabled, "Disabled")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::emography::DataModel)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::emography::DataModel)
 	RTTI_PROPERTY("KeepRawReadings", &nap::emography::DataModel::mKeepRawReadings, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Database", &nap::emography::DataModel::mDatabaseFile, nap::rtti::EPropertyMetaData::Required)
+	RTTI_CONSTRUCTOR(nap::EmographyService&)
 RTTI_END_CLASS
 
 
@@ -76,24 +87,30 @@ namespace nap
 {
 	namespace emography
 	{
-		DataModel::~DataModel()
-		{
-			mInstance.reset(nullptr);
+
+		DataModel::DataModel(EmographyService& service) : mService(service)
+		{ }
+
+		
+		DataModel::~DataModel()								
+		{ 
+			mInstance.reset(nullptr); 
 		}
 
 
-		bool DataModel::init(utility::ErrorState& error)
+		bool DataModel::init(utility::ErrorState& error)	
 		{
-			return true;
-		}
+			// Get factory
+			nap::rtti::Factory& factory = mService.getCore().getResourceManager()->getFactory();
 
-
-		bool DataModel::init(rtti::Factory& factory, const std::string& dbPath, utility::ErrorState& error)
-		{
+			// Create instance
 			mInstance = std::make_unique<DataModelInstance>(factory);
-			if (!mInstance->init("emography.db", mKeepRawReadings, error))
+
+			// Initialize data model
+			if (!mInstance->init(mService.getDBSourceDir() + mDatabaseFile, mKeepRawReadings, error))
 				return false;
-			return true;
+
+			return true; 
 		}
 	}
 }

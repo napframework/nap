@@ -22,6 +22,12 @@
             ]
         },
         {
+            "Type": "nap::emography::DataModel",
+            "mID": "DataModel",
+            "KeepRawReadings": "Disabled",
+            "Database": "emography.db"
+        },
+        {
             "Type": "nap::Entity",
             "mID": "ControllerEntity",
             "Components": [
@@ -40,6 +46,7 @@
                 {
                     "Type": "nap::emography::StressDataViewComponent",
                     "mID": "DataViewComponent",
+                    "DataModel" : "DataModel",
                     "Settings": {
                         "Samples": 1024,
                         "StartTime": {

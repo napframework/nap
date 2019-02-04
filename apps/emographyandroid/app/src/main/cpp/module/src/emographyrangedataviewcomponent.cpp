@@ -14,6 +14,7 @@ RTTI_END_STRUCT
 // nap::emographydataviewcomponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::emography::RangeDataViewComponent)
 	RTTI_PROPERTY("Settings", &nap::emography::RangeDataViewComponent::mSettings,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DataModel", &nap::emography::RangeDataViewComponent::mDataModel, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::emographydataviewcomponentInstance run time class definition 
@@ -32,11 +33,17 @@ namespace nap
 		if (!errorState.check(mAPIService != nullptr, "%s: no api service found", mID.c_str()))
 			return false;
 
-		// Copy data
-		RangeDataSettings& settings = getComponent<RangeDataViewComponent>()->mSettings;
+		// Get pointer to original resource
+		RangeDataViewComponent* resource = getComponent<RangeDataViewComponent>();
+
+		// Copy settings
+		RangeDataSettings& settings = resource->mSettings;
 		mSampleCount = math::max<int>(1, settings.mSamples);
 		mStartTime = TimeStamp(settings.mStartTime.toSystemTime());
 		mEndTime = TimeStamp(settings.mEndTime.toSystemTime());
+
+		// Acquire handle to data model, we know (now) that it has been initialized correctly.
+		mDataModel = &(resource->mDataModel->getInstance());
 		return true;
 	}
 

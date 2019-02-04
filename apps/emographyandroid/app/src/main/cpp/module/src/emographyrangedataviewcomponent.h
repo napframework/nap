@@ -1,5 +1,9 @@
 #pragma once
 
+// Local Includes
+#include "datamodel.h"
+
+// External Includes
 #include <component.h>
 #include <nap/datetime.h>
 #include <apiservice.h>
@@ -31,19 +35,26 @@ namespace nap
 
 
 		/**
-		 * DataViewComponent
+		 * Data View Component Resource
+		 * Allows for getting emography data from the data-model.
 		 */
 		class NAPAPI RangeDataViewComponent : public Component
 		{
 			RTTI_ENABLE(Component)
 			DECLARE_COMPONENT(RangeDataViewComponent, RangeDataviewComponentInstance)
 		public:
-			RangeDataSettings mSettings;		///< Property: 'Settings' settings associated with this ranged data view
+			RangeDataSettings mSettings;					///< Property: 'Settings' settings associated with this ranged data view.
+			ResourcePtr<DataModel> mDataModel = nullptr;	///< Property: 'DataModel' the data-model that manages all emography related data.
 		};
 
 
+		//////////////////////////////////////////////////////////////////////////
+		// RangeDataviewComponentInstance
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
-		 * DataViewComponentInstance
+		 * Data View Component Instance, run-time version of the RangeDataViewComponent
+		 * Allows for getting emography data from the data-model.
 		 */
 		class NAPAPI RangeDataviewComponentInstance : public ComponentInstance
 		{
@@ -79,10 +90,11 @@ namespace nap
 			 */
 			virtual void onQuery() = 0;
 
-			int mSampleCount = -1;					///< Total number of samples
-			TimeStamp mStartTime;					///< Sample start time
-			TimeStamp mEndTime;						///< Sample end time
-			nap::APIService* mAPIService = nullptr;	///< The API Service
+			int mSampleCount = -1;						///< Total number of samples
+			TimeStamp mStartTime;						///< Sample start time
+			TimeStamp mEndTime;							///< Sample end time
+			nap::APIService* mAPIService = nullptr;		///< The API Service
+			DataModelInstance* mDataModel = nullptr;	///< The data model that holds all the emography samples
 		};
 	}
 }
