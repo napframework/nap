@@ -43,13 +43,13 @@ namespace nap
 		 */
 		AAssetManager* getAssetManager();
 
+		/**
+		 * @return The internal storage directory for the app
+		 */
+		std::string getAppInternalFilesDir();
+
     protected:
         std::string getNativeLibDir();
-
-        /**
-         * @return The internal storage directory for the app
-         */
-        std::string getAppInternalFilesDir();
 
         JavaVM*	mAndroidJvm; 						// The JNI environment
         jobject	mAndroidGlobalObject;				// Our context object back in Android space, typically the activity or service

@@ -19,7 +19,8 @@
         {
             "Type": "nap::emography::DataModel",
             "mID": "DataModel",
-            "KeepRawReadings": "Disabled"
+            "KeepRawReadings": "Disabled",
+            "Database": "emography.db"
         }
     ]
 }

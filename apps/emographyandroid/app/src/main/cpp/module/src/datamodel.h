@@ -1,18 +1,25 @@
 #pragma once
 
+// Local Includes
 #include "emographyreading.h"
 
+// External Includes
 #include <database.h>
 #include <nap/datetime.h>
 #include <utility/dllexport.h> 
 #include <mutex>
 #include <nap/resource.h>
 #include <utility/errorstate.h>
+#include <nap/core.h>
 
 namespace nap
 {
+	// Forward declare emography service
+	class EmographyService;
+
 	namespace emography
 	{
+		// Forward declare emography classes used by datamodel
 		class ReadingProcessor;
 		class ReadingBase;
 		class ReadingSummaryBase;
@@ -43,9 +50,9 @@ namespace nap
 			};
 
 			/**
-			 * Default constructor
+			 * Constructor used by factory	
 			 */
-			DataModel() = default;
+			DataModel(EmographyService& service);
 
 			/**
 			 * Destroys the data-model	
@@ -60,12 +67,6 @@ namespace nap
 			virtual bool init(utility::ErrorState& errorState) override;
 
 			/**
-			 * Creates the database and initializes the data model based on the given database path.
-			 * @return if initialization succeeded or failed.
-			 */
-			bool init(rtti::Factory& factory, const std::string& dbPath, utility::ErrorState& error);
-
-			/**
 			 * @return the data model that manages all the emography readings.
 			 */
 			const DataModelInstance& getInstance() const						{ return *mInstance; }
@@ -76,10 +77,18 @@ namespace nap
 			DataModelInstance& getInstance()									{ return *mInstance; }
 
 			EKeepRawReadings mKeepRawReadings = EKeepRawReadings::Disabled;		///< Property: 'KeepRawReadings' if raw readings are kept in memory.
+			std::string mDatabaseFile = "emography.db";							///< Property: 'Database' database file to store and read from.
 
 		private:
+			// Created instance
 			std::unique_ptr<DataModelInstance> mInstance = nullptr;
+
+			// Emography Service
+			EmographyService& mService;
 		};
+
+		// Every data-model is constructed using the emography service as argument
+		using DataModelObjectCreator = rtti::ObjectCreator<DataModel, EmographyService>;
 
 
 		//////////////////////////////////////////////////////////////////////////

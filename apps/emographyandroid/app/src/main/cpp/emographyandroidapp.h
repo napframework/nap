@@ -1,6 +1,9 @@
 #ifndef PROJECT_EMOGRAPHYSERVICEAPP_H
 #define PROJECT_EMOGRAPHYSERVICEAPP_H
 
+// Local Includes
+#include "emographyservice.h"
+
 // External Includes
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
@@ -47,7 +50,8 @@ namespace nap
         nap::SceneService*						mSceneService = nullptr;            ///< Manages all scene related objects (entity, component etc.)
         nap::ResourceManager*					mResourceManager = nullptr;         ///< Manages all the resources required by the APP.
         nap::APIService*						mAPIService = nullptr;              ///< Allows for sending and receiving nap API messages.
-        std::unique_ptr<emography::DataModel>	mDataModel;				            ///< The data model containing all data
+        nap::EmographyService*                  mEmographyService = nullptr;        ////< Allows for setting emography global settings.
+        rtti::ObjectPtr<emography::DataModel>   mDataModel = nullptr;		        ///< The data model containing all data
     };
 
 }

@@ -15,19 +15,25 @@ namespace nap
 
     EmographyAndroidApp::EmographyAndroidApp(nap::Core& core) : AndroidApp(core) { }
 
+
     bool EmographyAndroidApp::init(nap::utility::ErrorState& error)
     {
+        // Get necessary services.
         mSceneService = getCore().getService<nap::SceneService>();
         mResourceManager = getCore().getResourceManager();
         mAPIService = getCore().getService<nap::APIService>();
+        mEmographyService = getCore().getService<nap::EmographyService>();
 
+        // Set the database source directory: TODO populate from external environment directly
+        mEmographyService->setDBSourceDir(getAppInternalFilesDir()+"/");
+
+        // Load and spawn resources
         if (!mResourceManager->loadFile("emography.json", error))
             return false;
 
-        std::string appInternalFilesDir = getAppInternalFilesDir();
-        mDataModel = std::make_unique<DataModel>(mResourceManager->getFactory());
-        if (!mDataModel->init(appInternalFilesDir + "/emography.db", DataModel::EKeepRawReadings::Disabled, error))
-            return false;
+        // Find the data model.
+        mDataModel = mResourceManager->findObject<emography::DataModel>("DataModel");
+        assert(mDataModel != nullptr);
 
         return true;
     }

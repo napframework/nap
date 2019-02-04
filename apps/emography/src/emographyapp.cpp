@@ -54,10 +54,6 @@ namespace nap
 		// Find the data model
 		mDataModel = mResourceManager->findObject<emography::DataModel>("DataModel");
 
-		// Initialize the datamodel
-		if (!mDataModel->init(mResourceManager->getFactory(), "emography.db" , error))
-			return false;
-
 		// Register type to read
 		if (!mDataModel->getInstance().registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error))
 			return false;

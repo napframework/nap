@@ -81,7 +81,7 @@ public class ForegroundService extends Service
                 // Check init success
                 if (!initialized)
                 {
-                    Log.e(TAG, "Abandoning launch due to NAP initialisation failure");
+                    Log.e(TAG, "Abandoning launch due to NAP initialization failure");
                     Handler mainHandler = new Handler(ForegroundService.this.getMainLooper());
                     Runnable myRunnable = new Runnable()
                     {
