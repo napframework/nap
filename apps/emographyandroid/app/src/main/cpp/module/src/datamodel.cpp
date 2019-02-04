@@ -62,6 +62,43 @@ RTTI_BEGIN_CLASS(nap::emography::ReadingProcessorLODState)
 	RTTI_PROPERTY("RTTIVersion", &nap::emography::ReadingProcessorLODState::mRTTIVersion, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
+RTTI_BEGIN_ENUM(nap::emography::DataModel::EKeepRawReadings)
+	RTTI_ENUM_VALUE(nap::emography::DataModel::EKeepRawReadings::Enabled,	"Enabled"),
+	RTTI_ENUM_VALUE(nap::emography::DataModel::EKeepRawReadings::Disabled,	"Disabled")
+RTTI_END_ENUM
+
+RTTI_BEGIN_CLASS(nap::emography::DataModel)
+	RTTI_PROPERTY("KeepRawReadings", &nap::emography::DataModel::mKeepRawReadings, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+
+namespace nap
+{
+	namespace emography
+	{
+		DataModel::~DataModel()
+		{
+			mInstance.reset(nullptr);
+		}
+
+
+		bool DataModel::init(utility::ErrorState& error)
+		{
+			return true;
+		}
+
+
+		bool DataModel::init(rtti::Factory& factory, const std::string& dbPath, utility::ErrorState& error)
+		{
+			mInstance = std::make_unique<DataModelInstance>(factory);
+			if (!mInstance->init("emography.db", mKeepRawReadings, error))
+				return false;
+			return true;
+		}
+	}
+}
+
+
 namespace nap
 {
 	namespace emography
@@ -139,7 +176,7 @@ namespace nap
 		class ReadingProcessor final
 		{
 		public:
-			ReadingProcessor(Database& database, const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, DataModel::EKeepRawReadings keepRawReadings, const DataModel::SummaryFunction& summaryFunction) :
+			ReadingProcessor(Database& database, const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, DataModel::EKeepRawReadings keepRawReadings, const DataModelInstance::SummaryFunction& summaryFunction) :
 				mDatabase(&database),
 				mReadingType(readingType),
 				mSummaryType(summaryType),
@@ -296,7 +333,7 @@ namespace nap
 				uint64_t timestamp_seconds = timeStampToSeconds(timestamp);
 
 				std::vector<std::unique_ptr<rtti::Object>> objects;
-				std::vector<DataModel::WeightedObject> weighted_objects;
+				std::vector<DataModelInstance::WeightedObject> weighted_objects;
 
 				DatabaseTable* prevTable = nullptr;
 				for (int lod_index = 0; lod_index < mLODs.size(); ++lod_index)
@@ -355,7 +392,7 @@ namespace nap
 							ReadingSummaryBase* reading = rtti_cast<ReadingSummaryBase>(object.get());
 							num_active_seconds += reading->mNumSecondsActive;
 
-							DataModel::WeightedObject weighted_object{ weight, std::move(object) };
+							DataModelInstance::WeightedObject weighted_object{ weight, std::move(object) };
 							weighted_objects.emplace_back(std::move(weighted_object));
 						}
 
@@ -454,7 +491,7 @@ namespace nap
 				uint64_t cur_time_seconds = startTime;
 				int total_active_seconds = 0;
 
-				std::vector<DataModel::WeightedObject> weighted_objects;
+				std::vector<DataModelInstance::WeightedObject> weighted_objects;
 
 				// Part one of the algorithm: process all blocks leading to higher LODs
 				int lod_index = 0;
@@ -498,7 +535,7 @@ namespace nap
 				}
 
 				// Fill in the correct weight based on the number of seconds the summary was active
-				for (DataModel::WeightedObject& weighted_object : weighted_objects)
+				for (DataModelInstance::WeightedObject& weighted_object : weighted_objects)
 				{
 					ReadingSummaryBase* summary_base = rtti_cast<ReadingSummaryBase>(weighted_object.mObject.get());
 					weighted_object.mWeight = (float)summary_base->mNumSecondsActive / (float)total_active_seconds;
@@ -633,7 +670,7 @@ namespace nap
 			/**
 			 * Retrieve objects from the database and creates a list of weightedObjects from them. The initial weight will be zero, the correct weight is filled in later.
 			 */
-			bool getWeightedObjects(ReadingProcessorLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModel::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
+			bool getWeightedObjects(ReadingProcessorLOD& lod, uint64_t startTime, uint64_t endTime, int& totalActiveSeconds, std::vector<DataModelInstance::WeightedObject>& weightedObjects, utility::ErrorState& errorState)
 			{
 				std::vector<std::unique_ptr<rtti::Object>> objects;
 				const std::string timestamp_column_name = lod.mTable->getColumnName(*mLODTimeStampPath, errorState);
@@ -654,7 +691,7 @@ namespace nap
 					ReadingSummaryBase* summary_base = rtti_cast<ReadingSummaryBase>(object.get());
 					totalActiveSeconds += summary_base->mNumSecondsActive;
 
-					DataModel::WeightedObject weighted_object { 0.0f, std::move(object) };
+					DataModelInstance::WeightedObject weighted_object { 0.0f, std::move(object) };
 					weightedObjects.emplace_back(std::move(weighted_object));
 				}
 
@@ -667,7 +704,7 @@ namespace nap
 			rtti::TypeInfo								mSummaryType;				///< SummaryType for this processor
 			DataModel::EKeepRawReadings					mKeepRawReadings;			///< Flag indicating whether to store raw reading in the database
 			std::vector<ReadingProcessorLOD>			mLODs;						///< All LODs for this processor
-			DataModel::SummaryFunction					mSummaryFunction;			///< The summary function used to convert readings to summaries
+			DataModelInstance::SummaryFunction			mSummaryFunction;			///< The summary function used to convert readings to summaries
 			DatabaseTable*								mRawTable = nullptr;		///< The raw table used to store raw reading
 			DatabaseTable*								mStateTable = nullptr;		///< The database table for storing state data
 			std::vector<std::unique_ptr<rtti::Object>>	mRawReadingCache;			///< Window of raw readings, large enough to build one chunk of LOD0 data
@@ -678,24 +715,24 @@ namespace nap
 
 		//////////////////////////////////////////////////////////////////////////
 
-		DataModel::DataModel(rtti::Factory& factory) :
+		DataModelInstance::DataModelInstance(rtti::Factory& factory) :
 			mDatabase(factory)
 		{
 		}
 
-		DataModel::~DataModel()
+		DataModelInstance::~DataModelInstance()
 		{
 			utility::ErrorState errorState;
 			flush(errorState);
 		}
 
-		bool DataModel::init(const std::string& path, EKeepRawReadings keepRawReadings, utility::ErrorState& errorState)
+		bool DataModelInstance::init(const std::string& path, DataModel::EKeepRawReadings keepRawReadings, utility::ErrorState& errorState)
 		{
 			mKeepRawReadings = keepRawReadings;
 			return mDatabase.init(path, errorState);
 		}
 
-		bool DataModel::registerType(const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState)
+		bool DataModelInstance::registerType(const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState)
 		{
 			std::unique_lock<std::mutex> lock(mLock);
 
@@ -710,7 +747,7 @@ namespace nap
 			return true;
 		}
 
-		bool DataModel::add(const ReadingBase& object, utility::ErrorState& errorState)
+		bool DataModelInstance::add(const ReadingBase& object, utility::ErrorState& errorState)
 		{
 			std::unique_lock<std::mutex> lock(mLock);
 
@@ -719,7 +756,7 @@ namespace nap
 			return processorPos->second->add(object, errorState);
 		}
 
-		bool DataModel::flush(utility::ErrorState& errorState)
+		bool DataModelInstance::flush(utility::ErrorState& errorState)
 		{
 			std::unique_lock<std::mutex> lock(mLock);
 
@@ -732,7 +769,7 @@ namespace nap
 			return true;
 		}
 
-		bool DataModel::getRange(const rtti::TypeInfo& inReadingType, TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
+		bool DataModelInstance::getRange(const rtti::TypeInfo& inReadingType, TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState)
 		{
 			std::unique_lock<std::mutex> lock(mLock);
 
@@ -742,7 +779,7 @@ namespace nap
 			return pos->second->getRange(startTime, endTime, numValues, readings, errorState);
 		}
 
-		TimeStamp DataModel::getLastReadingTime(const rtti::TypeInfo& inReadingType) const
+		TimeStamp DataModelInstance::getLastReadingTime(const rtti::TypeInfo& inReadingType) const
 		{
 			std::unique_lock<std::mutex> lock(mLock);
 
@@ -752,7 +789,7 @@ namespace nap
 			return pos->second->getLastReadingTime();
 		}
 
-		bool DataModel::clearData(const rtti::TypeInfo& inReadingType, utility::ErrorState& errorState)
+		bool DataModelInstance::clearData(const rtti::TypeInfo& inReadingType, utility::ErrorState& errorState)
 		{
 			std::unique_lock<std::mutex> lock(mLock);
 

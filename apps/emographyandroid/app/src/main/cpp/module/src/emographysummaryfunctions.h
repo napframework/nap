@@ -9,7 +9,7 @@ namespace nap
 	namespace emography
 	{
 		template<typename T>
-		std::unique_ptr<ReadingSummary<T>> gAveragingSummary(const std::vector<DataModel::WeightedObject>& inObjects)
+		std::unique_ptr<ReadingSummary<T>> gAveragingSummary(const std::vector<DataModelInstance::WeightedObject>& inObjects)
 		{
 			using Type = decltype(ReadingSummary<T>().mObject.mValue);
 

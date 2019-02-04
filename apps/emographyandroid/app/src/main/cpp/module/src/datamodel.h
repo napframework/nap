@@ -1,11 +1,13 @@
 #pragma once
 
 #include "emographyreading.h"
-#include "utility/errorstate.h"
-#include "database.h"
-#include "nap/datetime.h"
-#include "utility/dllexport.h"
+
+#include <database.h>
+#include <nap/datetime.h>
+#include <utility/dllexport.h> 
 #include <mutex>
+#include <nap/resource.h>
+#include <utility/errorstate.h>
 
 namespace nap
 {
@@ -14,6 +16,75 @@ namespace nap
 		class ReadingProcessor;
 		class ReadingBase;
 		class ReadingSummaryBase;
+		class DataModelInstance;
+
+
+		//////////////////////////////////////////////////////////////////////////
+		// Resource
+		//////////////////////////////////////////////////////////////////////////
+
+		/**
+		 * JSON serializable emography data model. 
+		 * Creates and manages an instance of the data model internally.
+		 * Use this resource to declare an emography data-model in JSON.
+		 */
+		class NAPAPI DataModel : public nap::Resource
+		{
+			RTTI_ENABLE(nap::Resource)
+		public:
+			
+			/**
+			 * Selects whether the original 'raw' reading are kept for storage in the database.
+			 */
+			enum class EKeepRawReadings : uint8_t
+			{
+				Enabled		= 1,
+				Disabled	= 0
+			};
+
+			/**
+			 * Default constructor
+			 */
+			DataModel() = default;
+
+			/**
+			 * Destroys the data-model	
+			 */
+			virtual ~DataModel();
+
+			/**
+			 * Creates the database and initializes the data model.
+			 * TODO: This can't initialize the data model currently because of path appendix!
+			 * Call init on the instance on startup of the application.
+			 */
+			virtual bool init(utility::ErrorState& errorState) override;
+
+			/**
+			 * Creates the database and initializes the data model based on the given database path.
+			 * @return if initialization succeeded or failed.
+			 */
+			bool init(rtti::Factory& factory, const std::string& dbPath, utility::ErrorState& error);
+
+			/**
+			 * @return the data model that manages all the emography readings.
+			 */
+			const DataModelInstance& getInstance() const						{ return *mInstance; }
+
+			/**
+			 * @return the data model that manages all the emography readings.
+			 */
+			DataModelInstance& getInstance()									{ return *mInstance; }
+
+			EKeepRawReadings mKeepRawReadings = EKeepRawReadings::Disabled;		///< Property: 'KeepRawReadings' if raw readings are kept in memory.
+
+		private:
+			std::unique_ptr<DataModelInstance> mInstance = nullptr;
+		};
+
+
+		//////////////////////////////////////////////////////////////////////////
+		// Instance
+		//////////////////////////////////////////////////////////////////////////
 
 		/**
 		 * The DataModel is a class that manages readings in a hierarchy. Readings are stored in a database and queries can be performed on a large set of readings
@@ -140,18 +211,9 @@ namespace nap
 		 * An important consequence is that not every summarizing function can be used. Any summarizing function that requires the full original list of raw readings will not work.
 		 * For example, the mathematic Median function will need to sort the original list and find the middle number. This is a summarizing function that does not work hierarchically.
 		 */
-		class NAPAPI DataModel final
+		class NAPAPI DataModelInstance final
 		{
 		public:
-			/**
-			 * Selects whether the original 'raw' reading are kept for storage in the database. 
-			 */
-			enum class EKeepRawReadings : uint8_t
-			{
-				Enabled,
-				Disabled
-			};
-
 			/**
 			 * The Summarize function takes list of WeightedObjects. Each object in the list has an associated weight.
 			 * Because each object in this list can represent a different amount of time, the weight can be used to summarize correctly.
@@ -169,12 +231,12 @@ namespace nap
 			 * Constructor.
 			 * @param factory: The factory used when deserializing objects from the database.
 			 */
-			DataModel(rtti::Factory& factory);
+			DataModelInstance(rtti::Factory& factory);
 
 			/**
 			 * Destructor, flushes the DataModel.
 			 */
-			~DataModel();
+			~DataModelInstance();
 
 			/**
 			 * Opens the database.
@@ -182,7 +244,7 @@ namespace nap
 			 * @param keepRawReading: Selects whether the original 'raw' reading should be kept in the database or not.
 			 * @param errorState : if the function returns false, contains error information.
 			 */
-			bool init(const std::string& path, EKeepRawReadings keepRawReadings, utility::ErrorState& errorState);
+			bool init(const std::string& path, DataModel::EKeepRawReadings keepRawReadings, utility::ErrorState& errorState);
 
 			/**
 			 * Adds a single reading to the DataModel. Updates the internal data hierarchy.
@@ -260,10 +322,10 @@ namespace nap
 
 		private:
 			using ReadingProcessorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ReadingProcessor>>;
-			Database			mDatabase;				///< Database used as backing store
-			ReadingProcessorMap mReadingProcessors;		///< A map holding all the internal reading processors for all object types
-			EKeepRawReadings	mKeepRawReadings;		///< Flag indicating whether raw data should be kept and discarded
-			mutable std::mutex	mLock;					///< Mutex used to guard concurrent use of the datamodel
+			Database					mDatabase;				///< Database used as backing store
+			ReadingProcessorMap			mReadingProcessors;		///< A map holding all the internal reading processors for all object types
+			DataModel::EKeepRawReadings mKeepRawReadings;		///< Flag indicating whether raw data should be kept and discarded
+			mutable std::mutex			mLock;					///< Mutex used to guard concurrent use of the datamodel
 		};
 	}
 }
