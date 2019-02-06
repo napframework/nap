@@ -1011,6 +1011,8 @@ def rename_qt_dir(warnings):
         The path to the top level Qt directory
     """
 
+    qt_top_level_path = None
+
     # Check for environment var
     if 'QT_DIR' in os.environ and os.path.exists(os.environ['QT_DIR']):
         # Find top-level Qt folder
