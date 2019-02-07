@@ -76,7 +76,7 @@ namespace nap
 		clearData();
 
 		// Start generating data from the last timestamp in the model, if available. Otherwise generate data starting at the current time.
-		SystemTimeStamp current_time = getCurrentTime();// - (Hours(24) * numDays);
+		SystemTimeStamp current_time = getCurrentTime() - (Hours(24) * numDays);
 		TimeStamp generate_start = TimeStamp(current_time);
 		int num_samples_added = 0;
 		uint64_t num_second_samples = 1;
@@ -100,7 +100,7 @@ namespace nap
 						for (int seconds_samples = 0; seconds_samples != num_second_samples; ++seconds_samples)
 						{
 							utility::ErrorState errorState;
-							float value = (float)(rand() % 100) * minute_bias * seconds_bias;
+							float value = (float)(math::random<int>(0,99)) * minute_bias * seconds_bias;
 							current_time += Milliseconds(1000 / num_second_samples);
 
 							std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, current_time);
