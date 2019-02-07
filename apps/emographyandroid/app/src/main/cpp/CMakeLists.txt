@@ -11,7 +11,6 @@ add_library(nap-service SHARED
             androidinstance.h
             )
 
-set(NAP_ROOT ${CMAKE_SOURCE_DIR}/../../../../../../NAP-0.2.2-Android)
 set(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty)
 
 # Allow extra Find{project}.cmake files to be found by projects
