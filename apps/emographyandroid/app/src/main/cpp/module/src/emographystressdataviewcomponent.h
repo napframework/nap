@@ -40,8 +40,7 @@ namespace nap
 				RangeDataviewComponentInstance(entity, resource) { }
 
 			/**
-			* Initialize emographystressdataviewcomponentInstance based on the emographystressdataviewcomponent resource
-			* @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
+			* Initialize StressDataViewComponentInstance based on the StressDataViewComponent resource
 			* @param errorState should hold the error message when initialization fails
 			* @return if the emographystressdataviewcomponentInstance is initialized successfully
 			*/

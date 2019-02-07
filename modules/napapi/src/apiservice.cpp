@@ -90,6 +90,12 @@ namespace nap
 	}
 
 
+	bool APIService::sendEvent(APIEventPtr apiEvent, utility::ErrorState* error)
+	{
+		return forward(std::move(apiEvent), *error);
+	}
+
+
 	bool APIService::sendMessage(const char* json, utility::ErrorState* error)
 	{
 		// Get factory

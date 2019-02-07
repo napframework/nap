@@ -292,6 +292,13 @@ namespace nap
 			bool registerType(const rtti::TypeInfo& readingType, const rtti::TypeInfo& summaryType, const SummaryFunction& summaryFunction, utility::ErrorState& errorState);
 
 			/**
+			 * Returns a list of all the types currently registered with the data-model.
+			 * See 'a fully configurable object pipeline' in the DataModel class comments for more details.
+			 * @return all the registered types.
+			 */
+			std::vector<rtti::TypeInfo> getRegisteredTypes() const;
+
+			/**
 			 * Queries the DataModel for retrieving summarized data for a time range. Any start- and end time can be requested, as well as a resolution: in how many steps
 			 * the data is returned. 
 			 * @param startTime: The start time of the range (inclusive).
@@ -307,13 +314,22 @@ namespace nap
 			}
 
 			/**
-			 * Clears all data in the datamodel: all rows in the database tables and the internal state.
+			 * Clears all data associated with the given ReadingType in the data-model: all rows in the database tables and the internal state.
+			 * @param errorState contains the error if the data could not be cleared.
+			 * @return if the data was cleared successfully. 
 			 */
 			template<class ReadingType>
 			bool clearData(utility::ErrorState& errorState)
 			{
 				return clearData(RTTI_OF(ReadingType), errorState);
 			}
+
+			/**
+			 * Clears all data associated with the given type in the data-model: all rows in the database tables and the internal state.
+			 * @param errorState contains the error if the data could not be cleared.
+			 * @return if the data was cleared successfully.
+			 */
+			bool clearData(const rtti::TypeInfo& inReadingType, utility::ErrorState& errorState);
 
 			/**
 			 * Returns the timestamp for the last processed reading of this type.
@@ -327,7 +343,6 @@ namespace nap
 		private:
 			bool getRange(const rtti::TypeInfo& inReadingType, TimeStamp startTime, TimeStamp endTime, int numValues, std::vector<std::unique_ptr<ReadingSummaryBase>>& readings, utility::ErrorState& errorState);
 			TimeStamp getLastReadingTime(const rtti::TypeInfo& inReadingType) const;
-			bool clearData(const rtti::TypeInfo& inReadingType, utility::ErrorState& errorState);
 
 		private:
 			using ReadingProcessorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ReadingProcessor>>;
