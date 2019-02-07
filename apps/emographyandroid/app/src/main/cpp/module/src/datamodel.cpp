@@ -764,6 +764,16 @@ namespace nap
 			return true;
 		}
 
+		std::vector<rtti::TypeInfo> DataModelInstance::getRegisteredTypes() const
+		{
+			std::vector<rtti::TypeInfo> types;
+			std::unique_lock<std::mutex> lock(mLock);
+			types.reserve(mReadingProcessors.size());
+			for (const auto& processor : mReadingProcessors)
+				types.emplace_back(processor.first);
+			return types;
+		}
+
 		bool DataModelInstance::add(const ReadingBase& object, utility::ErrorState& errorState)
 		{
 			std::unique_lock<std::mutex> lock(mLock);

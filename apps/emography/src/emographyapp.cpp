@@ -29,17 +29,20 @@ namespace nap
 	 */
 	bool EmographyApp::init(utility::ErrorState& error)
 	{
-		// Create render service
+		// Fetch render service
 		mRenderService = getCore().getService<RenderService>();
 
-		// Create GUI service
+		// Fetch GUI service
 		mGuiService = getCore().getService<IMGuiService>();
 
-		// Create scene service
+		// Fetch scene service
 		mSceneService	= getCore().getService<SceneService>();
 
-		// Create input service
+		// Fetch input service
 		mInputService = getCore().getService<InputService>();
+
+		// Fetch api service
+		mAPIService = getCore().getService<APIService>();
 
 		// Get resource manager service
 		mResourceManager = getCore().getResourceManager();
@@ -64,68 +67,18 @@ namespace nap
 	
 	void EmographyApp::clearData()
 	{
-		utility::ErrorState errorState;
-		if (!mDataModel->getInstance().clearData<StressIntensityReading>(errorState))
-			Logger::error(utility::stringFormat("Failed to clear data: %s", errorState.toString().c_str()));
+		nap::utility::ErrorState error;
+		if (!mAPIService->send("clearCache", &error))
+			nap::Logger::error(error.toString().c_str());
+
 	}
 
 
-	void EmographyApp::generateData(int numDays)
+	void EmographyApp::generateData()
 	{
-		// Clear existing data
-		clearData();
-
-		// Start generating data from the last timestamp in the model, if available. Otherwise generate data starting at the current time.
-		SystemTimeStamp current_time = getCurrentTime() - (Hours(24) * numDays);
-		TimeStamp generate_start = TimeStamp(current_time);
-		int num_samples_added = 0;
-		uint64_t num_second_samples = 1;
-
-		// Used for tracking progress (0-100)
-		int step_inc = (numDays * 24 * 60 * 60 * num_second_samples) / 100;
-		int curr_pro = 0;
-		int next_inc = step_inc;
-
-		for (int days = 0; days != numDays; ++days)
-		{
-			for (int hours = 0; hours != 24; ++hours)
-			{
-				for (int minutes = 0; minutes != 60; ++minutes)
-				{
-					float minute_bias = 0.5f + 0.5f * sin(((float)minutes / 60.0f) * math::pi());
-					for (int seconds = 0; seconds != 60; ++seconds)
-					{
-						float seconds_bias = 0.5f + sin(((float)minutes / 60.0f) * math::pi());
-
-						for (int seconds_samples = 0; seconds_samples != num_second_samples; ++seconds_samples)
-						{
-							utility::ErrorState errorState;
-							float value = (float)(math::random<int>(0,99)) * minute_bias * seconds_bias;
-							current_time += Milliseconds(1000 / num_second_samples);
-
-							std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, current_time);
-							if (!mDataModel->getInstance().add(*intensityReading, errorState))
-							{
-								nap::Logger::error(errorState.toString());
-								return;
-							}
-							num_samples_added++;
-
-							// Report progress
-							if (num_samples_added == next_inc)
-							{
-								next_inc += step_inc;
-								Logger::info(utility::stringFormat("%d", ++curr_pro));
-							}
-						}
-					}
-				}
-			}
-		}
-
-		TimeStamp generate_end = getCurrentTime();
-		double generate_ms = (double)(std::chrono::time_point_cast<Milliseconds>(generate_end.toSystemTime()).time_since_epoch().count() - std::chrono::time_point_cast<Milliseconds>(generate_start.toSystemTime()).time_since_epoch().count());
-		Logger::info("Generating %d days of data (%d samples) took %.2fs (%fs/sample)", numDays, num_samples_added, generate_ms / 1000.0, generate_ms / 1000.0 / num_samples_added);
+		nap::utility::ErrorState error;
+		if (!mAPIService->send("populateCache", &error))
+			nap::Logger::error(error.toString().c_str());
 	}
 
 
@@ -204,11 +157,9 @@ namespace nap
 		ImGui::SameLine();
 
 		if (ImGui::Button("Generate data"))
-			generateData(mNumDaysToGenerate);
+			generateData();
 
-		ImGui::InputInt("Days", &mNumDaysToGenerate, 0, 0);
 		ImGui::NewLine();
-
 		ImGui::Text("Render options");
 		ImGui::SliderInt("Resolution", &mResolution, 10, 1000);
 		ImGui::SliderInt("Graph Height", &mGraphYUnits, 1, 1000);

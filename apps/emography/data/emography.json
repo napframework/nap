@@ -1,6 +1,108 @@
 {
     "Objects": [
         {
+            "Type": "nap::APISignature",
+            "mID": "clearCache",
+            "Arguments": []
+        },
+        {
+            "Type": "nap::APISignature",
+            "mID": "populateCache",
+            "Arguments": []
+        },
+        {
+            "Type": "nap::APISignature",
+            "mID": "populateCacheParameterized",
+            "Arguments": [
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "numberOfDays",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "samplesPerSecond",
+                    "Value": 0
+                }
+            ]
+        },
+        {
+            "Type": "nap::APISignature",
+            "mID": "updateView",
+            "Arguments": [
+                {
+                    "Type": "nap::APILong",
+                    "mID": "startTime",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APILong",
+                    "mID": "endTime",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "samples",
+                    "Value": 200
+                }
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "ControllerEntity",
+            "Components": [
+                {
+                    "Type": "nap::emography::APIControlComponent",
+                    "mID": "nap::emography::APIControlComponent",
+                    "StressViewComponent": "./nap::emography::StressDataViewComponent",
+                    "ClearCacheComponent": "./nap::emography::ClearCacheComponent",
+                    "PopulateCacheComponent": "./nap::emography::PopulateCacheComponent"
+                },
+                {
+                    "Type": "nap::emography::StressDataViewComponent",
+                    "mID": "nap::emography::StressDataViewComponent",
+                    "Settings": {
+                        "Samples": 1024,
+                        "StartTime": {
+                            "Month": "Unknown",
+                            "Day": 1,
+                            "Year": 1970
+                        },
+                        "EndTime": {
+                            "Month": "Unknown",
+                            "Day": 1,
+                            "Year": 1970
+                        }
+                    },
+                    "DataModel": "DataModel"
+                },
+                {
+                    "Type": "nap::emography::ClearCacheComponent",
+                    "mID": "nap::emography::ClearCacheComponent",
+                    "DataModel": "DataModel"
+                },
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "nap::APIComponent",
+                    "Methods": [
+                        "updateView",
+                        "clearCache",
+                        "populateCacheParameterized",
+                        "populateCache"
+                    ]
+                },
+                {
+                    "Type": "nap::emography::PopulateCacheComponent",
+                    "mID": "nap::emography::PopulateCacheComponent",
+                    "NumberOfDays": 7,
+                    "SamplesPerSecond": 1,
+                    "DataModel": "DataModel",
+                    "ClearCacheComponent": "./nap::emography::ClearCacheComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Width": 1280,
@@ -15,6 +117,16 @@
                 "z": 0.0,
                 "w": 1.0
             }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "ControllerEntity",
+                    "InstanceProperties": []
+                }
+            ]
         },
         {
             "Type": "nap::emography::DataModel",

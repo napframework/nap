@@ -114,6 +114,15 @@ namespace nap
 		bool send(const char* id, utility::ErrorState* error);
 		
 		/**
+		 * Sends a user constructed api event to a NAP application.
+		 * Processing of the generated event is deferred until processEvents() is called.
+		 * @param apiEvent the event to forward to the running application
+		 * @param error contains the error if sending fails
+		 * @return if the message could be send or not
+		 */
+		bool sendEvent(APIEventPtr apiEvent, utility::ErrorState* error);
+
+		/**
 		 * Interprets the string as JSON and sends the individual messages as separate events to a NAP application.
 		 * This call extracts nap::Message objects from the json stream. 
 		 * Each message is converted into an api event that is forwarded to the application.
@@ -124,6 +133,40 @@ namespace nap
 		 * The amount of nap::APIValue's and the type of those values must also match. This ensures the app always receives correct information.
 		 * 
 		 * Processing of the generated event is deferred until processEvents() is called.
+		 *
+		 * Example of a simple API Message in JSON:
+		 * 
+		 * {
+				"Objects":
+		 *		[
+		 *			{
+		 *				"Type": "nap::APIMessage",
+		 *				"mID": "updateView",
+		 *				"Arguments":
+		 *				[
+		 *					{
+		 *						"Type": "nap::APILong",
+		 *						"mID": "startTime",
+		 *						"Value": 2000
+		 *					},
+		 *					{
+		 *						"Type": "nap::APILong",
+		 *						"mID": "endTime",
+		 *						"Value": 3000
+		 *					},
+		 *					{
+		 *						"Type": "nap::APIInt",
+		 *						"mID": "samples",
+		 *						"Value": 30
+		 *					}
+		 *				]
+		 *			}
+		 *		]
+		 *	}
+		 *
+		 * Note that the arguments can be of any type as defined in apivalue.h, including arrays.
+		 * Multiple messages can be combined inside the Objects array.
+		 * Every api message in that array is converted into an event and given to the nap application.
 		 * 
 		 * @param json the json string to parse and extract messages from.
 		 * @param error contains the error if sending fails.

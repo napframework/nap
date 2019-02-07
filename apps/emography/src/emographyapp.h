@@ -78,11 +78,11 @@ namespace nap
 		void clearData();
 
 		/**
-		 * Generate data for the specified number of days. The generated data is a sine wave with noise added on top, with periods of no data to simulate 'no activity'
-		 * The data is generated starting from the time of the last data in the datamodel, or the current time if the datamodel is empty
+		 * Generate data for the specified number of days. 
+		 * The generated data is a sine wave with noise added on top, with periods of no data to simulate 'no activity'
 		 * @param days The number of days to generate data for
 		 */
-		void generateData(int days);
+		void generateData();
 
 		/**
 		 *  Forwards the received input event to the input service
@@ -96,6 +96,7 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		IMGuiService* mGuiService = nullptr;							//< Service used for updating / drawing guis
 		InputService* mInputService = nullptr;							//< Input service for processing input
+		APIService* mAPIService = nullptr;								//< API service, used for sending / receiving api commands
 		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Render window
 		rtti::ObjectPtr<emography::DataModel> mDataModel = nullptr;		//< The data model containing all data
 
@@ -103,6 +104,5 @@ namespace nap
 		emography::TimelineState mTimelineState;						//< The timeline state, used for zooming/panning
 		int mResolution = 400;											//< The resolution at which data is returned from the data model (num samples)
 		int mGraphYUnits = 100;											//< The max value on the Y axis
-		int mNumDaysToGenerate = 7;										//< The number of days to generate data for
 	};
 }
