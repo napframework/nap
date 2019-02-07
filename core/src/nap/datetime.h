@@ -18,6 +18,8 @@ namespace nap
 	using MicroSeconds = std::chrono::microseconds;							///< Microseconds type definition
 	using NanoSeconds = std::chrono::nanoseconds;							///< Nanoseconds type definition
 	using Seconds = std::chrono::seconds;									///< Seconds type definition
+	using Minutes = std::chrono::minutes;									///< Minutes type definition
+	using Hours = std::chrono::hours;										///< Hours type definition
 	using SystemTimeStamp = std::chrono::time_point<SystemClock>;			///< Point in time associated with the SystemClock
 	using HighResTimeStamp = std::chrono::time_point<HighResolutionClock>;	///< Point in time associated with the HighResolutionClock
 

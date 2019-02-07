@@ -72,48 +72,36 @@ namespace nap
 
 	void EmographyApp::generateData(int numDays)
 	{
+		// Clear existing data
+		clearData();
+
 		// Start generating data from the last timestamp in the model, if available. Otherwise generate data starting at the current time.
-		Seconds offset(0);
-
-		TimeStamp generate_start = getCurrentTime();
-
-		TimeStamp start_time = mDataModel->getInstance().getLastReadingTime<StressIntensityReading>();
-		if (!start_time.isValid())
-			start_time = getCurrentTime();
-		else
-			offset = Seconds((int)(60 * 60 * 12.5f));
-
-		SystemTimeStamp current_time = start_time.toSystemTime();
-		current_time += offset;
-
+		SystemTimeStamp current_time = getCurrentTime();// - (Hours(24) * numDays);
+		TimeStamp generate_start = TimeStamp(current_time);
 		int num_samples_added = 0;
+		uint64_t num_second_samples = 1;
+
+		// Used for tracking progress (0-100)
+		int step_inc = (numDays * 24 * 60 * 60 * num_second_samples) / 100;
+		int curr_pro = 0;
+		int next_inc = step_inc;
+
 		for (int days = 0; days != numDays; ++days)
 		{
 			for (int hours = 0; hours != 24; ++hours)
 			{
-				//Logger::info(utility::stringFormat("%2d:%2d", days, hours));
 				for (int minutes = 0; minutes != 60; ++minutes)
 				{
-					if (hours % 3 == 0 && minutes == 5)
-					{
-						current_time += Milliseconds(60 * 55 * 1000);
-						break;
-					}
-
 					float minute_bias = 0.5f + 0.5f * sin(((float)minutes / 60.0f) * math::pi());
-
 					for (int seconds = 0; seconds != 60; ++seconds)
 					{
 						float seconds_bias = 0.5f + sin(((float)minutes / 60.0f) * math::pi());
 
-						uint64_t num_seconds_samples = 100;
-						for (int seconds_samples = 0; seconds_samples != num_seconds_samples; ++seconds_samples)
+						for (int seconds_samples = 0; seconds_samples != num_second_samples; ++seconds_samples)
 						{
 							utility::ErrorState errorState;
-
 							float value = (float)(rand() % 100) * minute_bias * seconds_bias;
-
-							current_time += Milliseconds(1000 / num_seconds_samples);
+							current_time += Milliseconds(1000 / num_second_samples);
 
 							std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, current_time);
 							if (!mDataModel->getInstance().add(*intensityReading, errorState))
@@ -121,8 +109,14 @@ namespace nap
 								nap::Logger::error(errorState.toString());
 								return;
 							}
-
 							num_samples_added++;
+
+							// Report progress
+							if (num_samples_added == next_inc)
+							{
+								next_inc += step_inc;
+								Logger::info(utility::stringFormat("%d", ++curr_pro));
+							}
 						}
 					}
 				}
@@ -130,9 +124,7 @@ namespace nap
 		}
 
 		TimeStamp generate_end = getCurrentTime();
-		
 		double generate_ms = (double)(std::chrono::time_point_cast<Milliseconds>(generate_end.toSystemTime()).time_since_epoch().count() - std::chrono::time_point_cast<Milliseconds>(generate_start.toSystemTime()).time_since_epoch().count());
-		
 		Logger::info("Generating %d days of data (%d samples) took %.2fs (%fs/sample)", numDays, num_samples_added, generate_ms / 1000.0, generate_ms / 1000.0 / num_samples_added);
 	}
 
