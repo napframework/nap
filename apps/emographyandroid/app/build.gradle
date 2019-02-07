@@ -2,6 +2,10 @@ apply plugin: 'com.android.application'
 
 project.ext.set('NAP_ROOT', '../../../NAP-0.2.2-Android')
 
+// This needs to be a list of all dependencies; populated manually. project.json and
+// module.json files aren't being processed for dependencies (for now?)
+def napModules = ['mod_napscene', 'mod_napdatabase', 'mod_napapp', 'mod_napinput', 'mod_napmath', 'mod_napapi']
+
 android {
     compileSdkVersion 28
 
@@ -15,7 +19,8 @@ android {
             cmake {
                 cppFlags "-frtti -fexceptions -std=c++14"
                 arguments '-DANDROID_STL=c++_static',
-                          '-DNAP_ROOT=' + file(project.ext.get('NAP_ROOT')).absolutePath
+                          '-DNAP_ROOT=' + file(project.ext.get('NAP_ROOT')).absolutePath,
+                          '-DNAP_MODULES=' + napModules.join(';')
             }
         }
         ndk {
@@ -34,26 +39,23 @@ android {
         main {
         }
         release {
-            jniLibs.srcDirs = [project.NAP_ROOT + '/thirdparty/rttr/bin/Release',
-                               project.NAP_ROOT + '/lib/Release',
-                               project.NAP_ROOT + '/modules/mod_napscene/lib/Release',
-                               project.NAP_ROOT + '/modules/mod_napmath/lib/Release',
-                               project.NAP_ROOT + '/modules/mod_napapp/lib/Release',
-                               project.NAP_ROOT + '/modules/mod_napinput/lib/Release',
-                               project.NAP_ROOT + '/modules/mod_napapi/lib/Release',
-                               project.NAP_ROOT + '/modules/mod_napdatabase/lib/Release'
-                               ]
+            def srcDirs = [project.NAP_ROOT + '/thirdparty/rttr/bin/Release',
+                           project.NAP_ROOT + '/lib/Release'
+                           ]
+            for (String napModule : napModules) {
+                srcDirs.add(project.NAP_ROOT + '/modules/' + napModule + '/lib/Release')
+            }
+            jniLibs.srcDirs = srcDirs
+
         }
         debug {
-            jniLibs.srcDirs = [project.NAP_ROOT + '/thirdparty/rttr/bin/Debug',
-                               project.NAP_ROOT + '/lib/Debug',
-                               project.NAP_ROOT + '/modules/mod_napscene/lib/Debug',
-                               project.NAP_ROOT + '/modules/mod_napmath/lib/Debug',
-                               project.NAP_ROOT + '/modules/mod_napapp/lib/Debug',
-                               project.NAP_ROOT + '/modules/mod_napinput/lib/Debug',
-                               project.NAP_ROOT + '/modules/mod_napapi/lib/Debug',
-                               project.NAP_ROOT + '/modules/mod_napdatabase/lib/Debug'
-                               ]
+            def srcDirs = [project.NAP_ROOT + '/thirdparty/rttr/bin/Debug',
+                           project.NAP_ROOT + '/lib/Debug'
+            ]
+            for (String napModule : napModules) {
+                srcDirs.add(project.NAP_ROOT + '/modules/' + napModule + '/lib/Debug')
+            }
+            jniLibs.srcDirs = srcDirs
         }
     }
     externalNativeBuild {

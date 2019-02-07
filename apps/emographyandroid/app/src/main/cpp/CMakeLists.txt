@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-
-add_library(nap-service SHARED
+set(LIB_NAME nap-service)
+add_library(${LIB_NAME} SHARED
             nap-service.cpp
             emographyandroidapp.cpp
             emographyandroidapp.h
@@ -10,6 +9,11 @@ add_library(nap-service SHARED
             androidwrapper.h
             androidinstance.h
             )
+
+
+#------------------------------------------------
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty)
 
@@ -19,33 +23,31 @@ list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/cmake)
 find_package(rttr REQUIRED)
 find_package(napcore REQUIRED)
 find_package(naprtti REQUIRED)
-find_package(mod_napscene REQUIRED)
-find_package(mod_napdatabase REQUIRED)
-find_package(mod_napapp REQUIRED)
-find_package(mod_napinput REQUIRED)
-find_package(mod_napmath REQUIRED)
-find_package(mod_napapi REQUIRED)
+foreach(NAP_MODULE ${NAP_MODULES})
+    find_package(${NAP_MODULE} REQUIRED)
+endforeach()
 
 # Add project module
-add_subdirectory(module)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module)
+    add_subdirectory(module)
+endif()
 
 # Add third party include path, other paths will be brought in through the properties on the linked
 # targets below
-target_include_directories(nap-service PRIVATE ${NAP_ROOT}/thirdparty
-                                               module/src)
+target_include_directories(${LIB_NAME} PRIVATE ${THIRDPARTY_DIR})
 
-# This needs to be a list of all dependencies; populated manually. project.json and
-# module.json files aren't being processed for dependencies (for now?)
-target_link_libraries(nap-service
+# Add module to include paths
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module)
+    target_include_directories(${LIB_NAME} PRIVATE module/src)
+endif()
+
+target_link_libraries(${LIB_NAME}
                       android
                       log
                       RTTR::Core
                       naprtti
                       napcore
-                      mod_napscene
-                      mod_napinput
-                      mod_napmath
-                      mod_napapp
-                      mod_napapi
-                      mod_emography
+                      ${NAP_MODULES}
                       )
+
+#------------------------------------------------
