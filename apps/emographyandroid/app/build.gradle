@@ -14,7 +14,8 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-frtti -fexceptions -std=c++14"
-                arguments '-DANDROID_STL=c++_static'
+                arguments '-DANDROID_STL=c++_static',
+                          '-DNAP_ROOT=' + file(project.ext.get('NAP_ROOT')).absolutePath
             }
         }
         ndk {
