@@ -17,12 +17,12 @@
                 {
                     "Type": "nap::APIInt",
                     "mID": "numberOfDays",
-                    "Value": 0
+                    "Value": 7
                 },
                 {
                     "Type": "nap::APIInt",
                     "mID": "samplesPerSecond",
-                    "Value": 0
+                    "Value": 1
                 }
             ]
         },

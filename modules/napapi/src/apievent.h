@@ -17,6 +17,16 @@ namespace nap
 	 * Contains a list of API arguments. Every api argument carries a single value or list of values.
 	 * This event is created and given to the application by the APIService when an external request is made.
 	 * To dispatch an event to an external environment call APIService::dispatchEvent after construction of this event. 
+	 *
+	 * Example: 	
+	 * // Create the event
+	 * APIEventPtr progress_event = std::make_unique<APIEvent>("CacheProgress");
+	 *
+	 * // Add an argument
+	 * progress_event->addArgument<APIInt>("Percentage", ++curr_pro);
+	 * 
+	 * // Dispatch to possible listeners
+	 * mAPIService->dispatchEvent(std::move(progress_event));
 	 */
 	class NAPAPI APIEvent : public Event
 	{

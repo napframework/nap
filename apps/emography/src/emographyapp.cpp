@@ -153,9 +153,7 @@ namespace nap
 
 		if (ImGui::Button("Clear Data"))
 			clearData();
-
 		ImGui::SameLine();
-
 		if (ImGui::Button("Generate data"))
 			generateData();
 

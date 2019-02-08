@@ -88,7 +88,7 @@ public class ForegroundService extends Service
                         @Override
                         public void run()
                         {
-                            Toast.makeText(ForegroundService.this, "NAP initialisation failure", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ForegroundService.this, "NAP initialization failure", Toast.LENGTH_SHORT).show();
                             stopAll();
                         }
                     };

@@ -15,17 +15,27 @@ namespace nap
 	class APIComponentInstance;
 
 	/**
-	 * Offers a C-Style interface that can be used to send data to a running NAP application.
+	 * Offers a C-Style interface that can be used to send and receive data from a running NAP application.
+	 * Use this interface to wrap a REST-like interface around your NAP application.
+	 *
 	 * Use the various utility functions, such as sendInt() and sendIntArray() to send data to a running NAP application.
-	 * All available methods copy the data that is given, making it hard to leak memory.
-	 * The copied data is converted (moved) into a nap::APIEvent and transferred to a nap::APIComponent.
+	 * All 'send' methods copy the arguments by value, making it hard to leak memory.
+	 * The copied data is converted (moved) into a nap::APIEvent and forwarded to an interested nap::APIComponent.
 	 * Install listeners on an api component to provide logic when a function is called through this interface.
+	 *
+	 * Messages with variable number of arguments can be constructed and sent using sendMessage().
+	 * This call accepts a JSON formatted string that can contain multiple API messages as a bundle, 
+	 * where each message contains a variable number of arguments. See sendMessage() for more information.
 	 * 
 	 * When sending data to an app a unique nap::APIEvent is created. Events aren't processed immediately but stored in a queue.
 	 * This ensures that the recording and processing of api events is thread-safe, similar to how osc events are processed.
 	 * To process all the recorded api events call processEvents(). processEvents() is called for you automatically when using an application event handler.
 	 * 
-	 * To send an event to an external environment use dispatchEvent(). 
+	 * This service can also be used to dispatch events to an external environment, often as a reply to a previously received message.
+	 * In order for an external environment to receive an event it needs to listen to the messageDispatched signal.
+	 * Events are dispatched immediately, without being queued.
+	 * 
+	 * To dispatch an event from a NAP application, often in reply to a previously received message, use dispatchEvent().
 	 */
 	class NAPAPI APIService : public Service
 	{
@@ -221,15 +231,18 @@ namespace nap
 		void processEvents();
 
 		/**
-		 * Sends an api event to an external environment.
+		 * Dispatches an event to an external environment.
+		 * NAP applications often dispatch events as a reply to a previously received message, after processing.
+		 * Events are dispatched immediately, there is no dispatch queue.
 		 * In order for an external environment to receive this message it needs to listen to the messageDispatched signal.
-		 * The event is destroyed after calling the output function.
+		 * The given event is destroyed after calling this function.
 		 * @param apiEvent the event to send to the external environment.
 		 */
 		void dispatchEvent(nap::APIEventPtr apiEvent);
 
 		/**
 		 * Listen to this signal in your external environment to receive outgoing NAP api events.
+		 * An event is often dispatched as a reply to a previously received message.
 		 */
 		nap::Signal<const APIEvent&> eventDispatched;
 

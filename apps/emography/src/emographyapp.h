@@ -11,6 +11,7 @@
 #include <imguiservice.h>
 #include <inputservice.h>
 #include <datamodel.h>
+#include <nap/signalslot.h>
 #include "timelinestate.h"
 
 namespace nap

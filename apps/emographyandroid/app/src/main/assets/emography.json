@@ -2,6 +2,32 @@
     "Objects": [
         {
             "Type": "nap::APISignature",
+            "mID": "clearCache",
+            "Arguments": []
+        },
+        {
+            "Type": "nap::APISignature",
+            "mID": "populateCache",
+            "Arguments": []
+        },
+        {
+            "Type": "nap::APISignature",
+            "mID": "populateCacheParameterized",
+            "Arguments": [
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "numberOfDays",
+                    "Value": 7
+                },
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "samplesPerSecond",
+                    "Value": 1
+                }
+            ]
+        },
+        {
+            "Type": "nap::APISignature",
             "mID": "updateView",
             "Arguments": [
                 {
@@ -22,12 +48,6 @@
             ]
         },
         {
-            "Type": "nap::emography::DataModel",
-            "mID": "DataModel",
-            "KeepRawReadings": "Disabled",
-            "Database": "emography.db"
-        },
-        {
             "Type": "nap::Entity",
             "mID": "ControllerEntity",
             "Components": [
@@ -35,18 +55,22 @@
                     "Type": "nap::APIComponent",
                     "mID": "nap::APIComponent",
                     "Methods": [
-                        "updateView"
+                        "updateView",
+                        "populateCache",
+                        "clearCache",
+                        "populateCacheParameterized"
                     ]
                 },
                 {
                     "Type": "nap::emography::APIControlComponent",
                     "mID": "APIControlComponent",
-                    "StressViewComponent": "./DataViewComponent"
+                    "StressViewComponent": "./DataViewComponent",
+                    "ClearCacheComponent": "./ClearCacheComponent",
+                    "PopulateCacheComponent": "./PopulateCacheComponent"
                 },
                 {
                     "Type": "nap::emography::StressDataViewComponent",
                     "mID": "DataViewComponent",
-                    "DataModel" : "DataModel",
                     "Settings": {
                         "Samples": 1024,
                         "StartTime": {
@@ -59,7 +83,21 @@
                             "Day": 1,
                             "Year": 1970
                         }
-                    }
+                    },
+                    "DataModel": "DataModel"
+                },
+                {
+                    "Type": "nap::emography::ClearCacheComponent",
+                    "mID": "ClearCacheComponent",
+                    "DataModel": "DataModel"
+                },
+                {
+                    "Type": "nap::emography::PopulateCacheComponent",
+                    "mID": "PopulateCacheComponent",
+                    "NumberOfDays": 7,
+                    "SamplesPerSecond": 1,
+                    "DataModel": "DataModel",
+                    "ClearCacheComponent": "./ClearCacheComponent"
                 }
             ],
             "Children": []
@@ -73,6 +111,12 @@
                     "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::emography::DataModel",
+            "mID": "DataModel",
+            "KeepRawReadings": "Disabled",
+            "Database": "emography.db"
         }
     ]
 }
