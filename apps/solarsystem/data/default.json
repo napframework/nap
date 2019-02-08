@@ -26,8 +26,8 @@
                     "mID": "nap::TransformComponent_2",
                     "Properties": {
                         "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
+                            "x": 0.1,
+                            "y": 0.1,
                             "z": 10.0
                         },
                         "Rotate": {
@@ -168,7 +168,7 @@
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
                                         "mID": "FloatInstancePropertyValue",
-                                        "Value": 2.0
+                                        "Value": 1.0
                                     }
                                 }
                             ]
@@ -177,7 +177,21 @@
                 },
                 {
                     "Entity": "SphereEntity",
-                    "InstanceProperties": []
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./nap::TransformComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "FloatInstancePropertyValue2",
+                                        "Value": -1.0
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         },
