@@ -1,7 +1,6 @@
 #include "scene.h"
 #include "entity.h"
 #include "entityobjectgraphitem.h"
-#include "entitycreationparameters.h"
 #include "entityptr.h"
 #include <nap/core.h>
 #include <rtti/rttiutilities.h>
@@ -586,12 +585,19 @@ namespace nap
 				cloned_resource_map[instance_property.mTargetComponent.get()].push_back(cloned_target_component.get());
 
 				ComponentResourcePath resolved_component_path;
-				if (!errorState.check(ComponentResourcePath::fromString(*entity, instance_property.mTargetComponent.getInstancePath(), resolved_component_path, errorState), "Failed to apply instance property for entity %s: invalid component path %s", entity->mID.c_str(), instance_property.mTargetComponent.getInstancePath().c_str()))
+				bool success = ComponentResourcePath::fromString(*entity,
+																 instance_property.mTargetComponent.getInstancePath(),
+																 resolved_component_path, errorState);
+				if (!errorState.check(success,
+									  "Failed to apply instance property for entity %s: invalid component path %s",
+									  entity->mID.c_str(),
+									  instance_property.mTargetComponent.getInstancePath().c_str()))
 					return false;
 
 				// Apply instance properties to the cloned object
 				for (const TargetAttribute& attribute : instance_property.mTargetAttributes)
-					if (!errorState.check(attribute.apply(*cloned_target_component, errorState), "Failed to apply instance properties for entity %s", entity->mID.c_str()))
+					if (!errorState.check(attribute.apply(*cloned_target_component, errorState),
+							"Failed to apply instance properties for entity %s", entity->mID.c_str()))
 						return false;
 
 				clonedComponents.emplace_back(ClonedComponentResource(resolved_component_path, std::move(cloned_target_component)));
