@@ -6,10 +6,10 @@
 #include <nap/logger.h>
 #include <inputrouter.h>
 
-namespace nap 
-{    
-    bool CoreApp::init(utility::ErrorState& error)
-    {
+namespace nap
+{
+	bool CoreApp::init(utility::ErrorState& error)
+	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
 		mSceneService	= getCore().getService<nap::SceneService>();
@@ -17,16 +17,16 @@ namespace nap
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 
 		// Fetch the resource manager
-        mResourceManager = getCore().getResourceManager();
+		mResourceManager = getCore().getResourceManager();
 
 		// Fetch the scene
 		mScene = mResourceManager->findObject<Scene>("Scene");
 
 		// Convert our path and load resources from file
-        auto abspath = utility::getAbsolutePath(mFilename);
-        nap::Logger::info("Loading: %s", abspath.c_str());
-        if (!mResourceManager->loadFile(mFilename, error))
-            return false;
+		auto abspath = utility::getAbsolutePath(mFilename);
+		nap::Logger::info("Loading: %s", abspath.c_str());
+		if (!mResourceManager->loadFile(mFilename, error))
+			return false;
 
 		// Get the render window
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
@@ -37,63 +37,63 @@ namespace nap
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
 			return false;
-        
-        mCamera = mScene->findEntity("CameraEntity");
-        if (!error.check(mScene != nullptr, "unable to find camera with name: %s", "CameraEntity"))
-            return false;
-        
-        mSphere = mScene->findEntity("SphereEntity");
-        if (!error.check(mScene != nullptr, "unable to find sphere with name: %s", "SphereEntity"))
-            return false;
+
+		mCamera = mScene->findEntity("CameraEntity");
+		if (!error.check(mScene != nullptr, "unable to find camera with name: %s", "CameraEntity"))
+			return false;
+
+		mSphere = mScene->findEntity("SphereEntity");
+		if (!error.check(mScene != nullptr, "unable to find sphere with name: %s", "SphereEntity"))
+			return false;
 
 		// All done!
-        return true;
-    }
+		return true;
+	}
 
 
-    // Called when the window is going to render
-    void CoreApp::render()
-    {
+	// Called when the window is going to render
+	void CoreApp::render()
+	{
 		// Activate current window for drawing
 		mRenderWindow->makeActive();
 
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
-        // Render all objects in the scene at once
-        // This includes the line + normals and the laser canvas
-        mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCamera->getComponent<PerspCameraComponentInstance>());
-        
+		// Render all objects in the scene at once
+		// This includes the line + normals and the laser canvas
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCamera->getComponent<PerspCameraComponentInstance>());
+
 		// Draw our gui
 		mGuiService->draw();
 
 		// Swap screen buffers
 		mRenderWindow->swap();
-    }
+	}
 
 
-    void CoreApp::windowMessageReceived(WindowEventPtr windowEvent)
-    {
+	void CoreApp::windowMessageReceived(WindowEventPtr windowEvent)
+	{
 		mRenderService->addEvent(std::move(windowEvent));
-    }
+	}
 
 
-    void CoreApp::inputMessageReceived(InputEventPtr inputEvent)
-    {
+	void CoreApp::inputMessageReceived(InputEventPtr inputEvent)
+	{
 		mInputService->addEvent(std::move(inputEvent));
-    }
+	}
 
 
-    int CoreApp::shutdown()
-    {
+	int CoreApp::shutdown()
+	{
 		return 0;
-    }
+	}
 
 
-    void CoreApp::update(double deltaTime)
-    {
+	void CoreApp::update(double deltaTime)
+	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
-    }
+	}
 }
