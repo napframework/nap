@@ -222,17 +222,59 @@ public class MainActivity extends AppCompatActivity
     public void onRequestData(View view)
     {
         Intent queryIntent = new Intent();
-        queryIntent.setAction(Constants.ACTION.API_REQUEST_DATA_ACTIVITY);
+        queryIntent.setAction(Constants.ACTION.API_SEND_MESSAGE);
 
         // Construct message
         mBuilder.clear();
         APIMessage msg = mBuilder.addMessage("updateView");
-        msg.addLong("startTime", System.currentTimeMillis() - (1000*2));
-        msg.addLong("endTime", System.currentTimeMillis());
+        msg.addLong("startTime", System.currentTimeMillis() - (1000*60*60*20));
+        msg.addLong("endTime", System.currentTimeMillis()-(1000*60*60*10));
         msg.addInt("samples", getNumberOfSamples());
 
         // Add message
-        queryIntent.putExtra("apimessage", mBuilder.asString());
+        queryIntent.putExtra(Constants.API.MESSAGE, mBuilder.asString());
+
+        // Send
+        sendBroadcast(queryIntent);
+    }
+
+
+    /**
+     * Called when the data model needs to be cleared
+     * @param view calling view (button)
+     */
+    public void onClearCache(View view)
+    {
+        Intent queryIntent = new Intent();
+        queryIntent.setAction(Constants.ACTION.API_SEND_MESSAGE);
+
+        // Construct message
+        mBuilder.clear();
+        APIMessage msg = mBuilder.addMessage("clearCache");
+
+        // Add message
+        queryIntent.putExtra(Constants.API.MESSAGE, mBuilder.asString());
+
+        // Send
+        sendBroadcast(queryIntent);
+    }
+
+
+    /**
+     * Called when the data model needs to be populated
+     * @param view calling view (button)
+     */
+    public void onPopulateCache(View view)
+    {
+        Intent queryIntent = new Intent();
+        queryIntent.setAction(Constants.ACTION.API_SEND_MESSAGE);
+
+        // Construct message
+        mBuilder.clear();
+        APIMessage msg = mBuilder.addMessage("populateCache");
+
+        // Add message
+        queryIntent.putExtra(Constants.API.MESSAGE, mBuilder.asString());
 
         // Send
         sendBroadcast(queryIntent);

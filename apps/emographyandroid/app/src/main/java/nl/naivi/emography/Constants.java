@@ -6,7 +6,7 @@ public class Constants
     {
         // To the service
         String STOP_SERVICE = "nl.naivi.emography.action.stopservice";
-        String API_REQUEST_DATA_ACTIVITY = "nl.naivi.emography.action.requestdata";
+        String API_SEND_MESSAGE = "nl.naivi.emography.action.requestdata";
 
         // To activity
         String STOP_ACTIVITY = "nl.naivi.emography.action.stopapp";
@@ -18,5 +18,10 @@ public class Constants
     {
         int FOREGROUND_SERVICE_ID = 101;
         String CHANNEL_ID = "emography_service_demo";
+    }
+
+    public interface API
+    {
+        String MESSAGE = "apimessage";
     }
 }

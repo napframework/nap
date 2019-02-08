@@ -4,6 +4,8 @@
 // External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <emographystress.h>
+#include <emographysummaryfunctions.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AndroidApp)
         RTTI_CONSTRUCTOR(nap::Core&)

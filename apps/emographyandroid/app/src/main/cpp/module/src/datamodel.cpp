@@ -3,6 +3,8 @@
 #include "datamodel.h"
 #include "emographyreading.h"
 #include "emographyservice.h"
+#include "emographystress.h"
+#include "emographysummaryfunctions.h"
 
 // External Includes
 #include <rtti/rttiutilities.h>
@@ -109,6 +111,11 @@ namespace nap
 			// Initialize data model
 			if (!mInstance->init(mService.getDBSourceDir() + mDatabaseFile, mKeepRawReadings, error))
 				return false;
+
+			// Register types
+			// TODO: Should not happen here, but in a deferred class
+            if(!mInstance->registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error))
+                return false;
 
 			return true; 
 		}

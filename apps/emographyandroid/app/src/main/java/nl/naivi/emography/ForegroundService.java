@@ -33,7 +33,7 @@ public class ForegroundService extends Service
         // Accept shutdown and logging request intents
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Constants.ACTION.STOP_SERVICE);
-        mIntentFilter.addAction(Constants.ACTION.API_REQUEST_DATA_ACTIVITY);
+        mIntentFilter.addAction(Constants.ACTION.API_SEND_MESSAGE);
     }
 
 
@@ -101,7 +101,10 @@ public class ForegroundService extends Service
                 while (!Thread.interrupted() && !mStopThread)
                     try
                     {
-                        Thread.sleep(5000);
+                        Thread.sleep(100);
+
+                        // Flush - forces an update on the C++ side
+                        napFlush();
                     }
                     catch (InterruptedException e) { }
 
@@ -128,15 +131,12 @@ public class ForegroundService extends Service
                 Log.i(TAG, "Received stop service intent");
                 stopAll();
             }
-            else if (intent.getAction().equals(Constants.ACTION.API_REQUEST_DATA_ACTIVITY))
+            else if (intent.getAction().equals(Constants.ACTION.API_SEND_MESSAGE))
             {
                 String api_request = intent.getStringExtra("apimessage");
 
                 // Call into nap with the request
                 call(api_request);
-
-                // Flush - forces an update on the C++ side
-                napFlush();
             }
         }
     };
