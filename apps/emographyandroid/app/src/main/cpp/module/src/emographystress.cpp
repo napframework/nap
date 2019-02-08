@@ -19,12 +19,3 @@ DEFINE_READING_RTTI(nap::emography::EStressState)
 DEFINE_READING_RTTI(nap::emography::StressIntensity)
 
 //////////////////////////////////////////////////////////////////////////
-
-
-namespace nap
-{
-	namespace emography
-	{
-		StressIntensity::StressIntensity(float intensity) : mValue(intensity)	{ }
-	}
-}

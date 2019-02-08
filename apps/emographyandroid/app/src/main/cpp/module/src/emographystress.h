@@ -42,7 +42,7 @@ namespace nap
 			* Constructor
 			* @param intensity stress intensity value
 			*/
-			StressIntensity(float intensity);
+			StressIntensity(float intensity) : mValue(intensity)	{ }
 
 			/**
 			 * @return if this is a valid intensity reading, ie: intensity value is >= 0

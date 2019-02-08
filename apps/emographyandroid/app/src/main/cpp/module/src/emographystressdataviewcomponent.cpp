@@ -4,6 +4,7 @@
 // External Includes
 #include <entity.h>
 #include <mathutils.h>
+#include <nap/logger.h>
 
 // nap::emographystressdataviewcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::emography::StressDataViewComponent)
@@ -44,6 +45,29 @@ namespace nap
 
 		void StressDataViewComponentInstance::onQuery()
 		{
+			// Convert time-stamps
+			SystemTimeStamp sys_start = mStartTime.toSystemTime();
+			SystemTimeStamp sys_end = mEndTime.toSystemTime();
+
+			// Log some info
+			nap::Logger::info("query start time: %s", DateTime(sys_start).toString().c_str());
+			nap::Logger::info("query end time: %s", DateTime(sys_end).toString().c_str());
+
+			// Get readings
+			std::vector<std::unique_ptr<ReadingSummaryBase>> model_readings;
+			utility::ErrorState errorState;
+			if (!mDataModel->getRange<StressIntensityReading>(sys_start, sys_end, mSampleCount, model_readings, errorState))
+				nap::Logger::error(errorState.toString().c_str());
+
+			// Copy to vector
+			std::vector<float> stress_readings;
+			stress_readings.reserve(model_readings.size());
+			for (auto& reading_base : model_readings)
+			{
+				StressIntensityReadingSummary* reading = rtti_cast<StressIntensityReadingSummary>(reading_base.get());
+				stress_readings.emplace_back(reading->mObject.mValue);
+			}
+
 			// Create reply
 			APIEventPtr reply = std::make_unique<APIEvent>("StressReply");
 
@@ -51,14 +75,9 @@ namespace nap
 			reply->addArgument<APILong>("startTime", mStartTime.mTimeStamp);
 			reply->addArgument<APILong>("endTime", mEndTime.mTimeStamp);
 			reply->addArgument<APIInt>("samples", mSampleCount);
-			
-			// Add some random values to test
-			std::vector<float> stress_reading(mSampleCount, 0);
-			for (int i = 0; i < mSampleCount; i++)
-				stress_reading[i] = math::random<float>(0.0f, 1.0f);
-			reply->addArgument<APIFloatArray>("data", std::move(stress_reading));
 
 			// Dispatch result
+			reply->addArgument<APIFloatArray>("data", std::move(stress_readings));
 			mAPIService->dispatchEvent(std::move(reply));
 		}
 	}
