@@ -71,6 +71,11 @@ namespace nap
 			int curr_pro = 0;
 			int next_inc = step_inc;
 
+			// Notify listeners we're starting
+			APIEventPtr progress_event = std::make_unique<APIEvent>("PopulateCache");
+			progress_event->addArgument<APIBool>("Status", true);
+			mAPIService->dispatchEvent(std::move(progress_event));
+
 			for (int days = 0; days != numberOfDays; ++days)
 			{
 				for (int hours = 0; hours != 24; ++hours)
@@ -99,8 +104,11 @@ namespace nap
 								// Report progress
 								if (num_samples_added == next_inc)
 								{
+									progress_event = std::make_unique<APIEvent>("PopulateCacheProgress");
+									progress_event->addArgument<APIInt>("Value", ++curr_pro);
+									mAPIService->dispatchEvent(std::move(progress_event));
+									nap::Logger::info("Cache Progress: %d", curr_pro);
 									next_inc += step_inc;
-									Logger::info(utility::stringFormat("%d", ++curr_pro));
 								}
 							}
 						}
@@ -114,6 +122,11 @@ namespace nap
 				numberOfDays,
 				num_samples_added,
 				generate_ms / 1000.0, generate_ms / 1000.0 / num_samples_added);
+
+			// Notify listeners we've finished
+			progress_event = std::make_unique<APIEvent>("PopulateCache");
+			progress_event->addArgument<APIBool>("Status", false);
+			mAPIService->dispatchEvent(std::move(progress_event));
 
 			return true;
 		}
