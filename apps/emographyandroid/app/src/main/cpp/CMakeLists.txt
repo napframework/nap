@@ -48,6 +48,7 @@ target_link_libraries(${LIB_NAME}
                       naprtti
                       napcore
                       ${NAP_MODULES}
+                      mod_emography
                       )
 
 #------------------------------------------------
