@@ -93,16 +93,6 @@ void SaveFileAsAction::perform()
 	ctx.saveDocumentAs(filename);
 }
 
-AddObjectAction::AddObjectAction(const rttr::type& type) : Action(), mType(type)
-{
-    setText(QString(type.get_name().data()));
-}
-
-void AddObjectAction::perform()
-{
-	AppContext::get().executeCommand(new AddObjectCommand(mType));
-}
-
 DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : Action(), mObject(object)
 {
     setText("Delete");
@@ -133,26 +123,4 @@ void SetThemeAction::perform()
 {
     AppContext::get().getThemeManager().setTheme(mTheme);
 }
-
-AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
-	: Action(), mEntity(entity), mComponentType(type)
-{
-	setText(QString(type.get_name().data()));
-}
-
-void AddComponentAction::perform()
-{
-    AppContext::get().getDocument()->addComponent(mEntity, mComponentType);
-}
-
-AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
-{
-    setText("Add Entity");
-}
-
-void AddEntityAction::perform()
-{
-	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), mParent));
-}
-
 

@@ -9,6 +9,8 @@ using namespace napkin;
 // TODO: All commands need to get their document passed in
 // so we may support multiple documents in a far future
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 SetValueCommand::SetValueCommand(const PropertyPath& propPath, QVariant newValue)
 		: mPath(propPath), mNewValue(newValue), QUndoCommand()
 {
@@ -52,6 +54,8 @@ void SetValueCommand::redo()
 	}
 
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue)
 		: mPath(path), QUndoCommand()
@@ -99,6 +103,9 @@ void SetPointerValueCommand::redo()
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent)
 		: mType(type), QUndoCommand()
 {
@@ -136,6 +143,7 @@ void AddObjectCommand::undo()
 	AppContext::get().getDocument()->removeObject(mObjectName);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 AddComponentCommand::AddComponentCommand(nap::Entity& entity, nap::rtti::TypeInfo type)
 : mEntityName(entity.mID), mType(type)
@@ -157,6 +165,8 @@ void AddComponentCommand::undo()
 	nap::Logger::fatal("Undo is not available...");
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 DeleteObjectCommand::DeleteObjectCommand(nap::rtti::Object& object) : mObjectName(object.mID), QUndoCommand()
 {
 	setText(QString("Deleting Object '%1'").arg(QString::fromStdString(mObjectName)));
@@ -172,6 +182,8 @@ void DeleteObjectCommand::redo()
 	AppContext::get().getDocument()->removeObject(mObjectName);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 AddEntityToSceneCommand::AddEntityToSceneCommand(nap::Scene& scene, nap::Entity& entity)
 		: mSceneID(scene.mID), mEntityID(entity.mID), QUndoCommand()
@@ -182,20 +194,48 @@ AddEntityToSceneCommand::AddEntityToSceneCommand(nap::Scene& scene, nap::Entity&
 
 void AddEntityToSceneCommand::undo()
 {
-	nap::Logger::fatal("Sorry, no undo for you");
+	auto doc = AppContext::get().getDocument();
+	auto scene = doc->getObject<nap::Scene>(mSceneID);
+	assert(scene);
+	doc->removeEntityFromScene(*scene, mIndex);
 }
 
 void AddEntityToSceneCommand::redo()
 {
 	auto doc = AppContext::get().getDocument();
 	auto scene = doc->getObject<nap::Scene>(mSceneID);
-	assert(scene != nullptr);
+	assert(scene);
 	auto entity = doc->getObject<nap::Entity>(mEntityID);
-	assert(entity != nullptr);
+	assert(entity);
 
 	mIndex = doc->addEntityToScene(*scene, *entity);
 
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+AddChildEntityCommand::AddChildEntityCommand(nap::Entity& parent, nap::Entity& child)
+		: mParentID(parent.mID), mChildID(child.mID) {
+
+}
+
+void AddChildEntityCommand::redo()
+{
+	auto doc = AppContext::get().getDocument();
+	auto child = doc->getObject<nap::Entity>(mChildID);
+	auto parent = doc->getObject<nap::Entity>(mParentID);
+	mIndex = doc->addChildEntity(*parent, *child);
+}
+
+void AddChildEntityCommand::undo()
+{
+	auto doc = AppContext::get().getDocument();
+	auto parent = doc->getObject<nap::Entity>(mParentID);
+	assert(parent);
+	doc->removeChildEntity(*parent, mIndex);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RemoveEntityFromSceneCommand::RemoveEntityFromSceneCommand(nap::Scene& scene, nap::RootEntity& rootEntity)
 	: mSceneID(scene.mID), mRootEntity(&rootEntity), mEntityID(rootEntity.mEntity->mID), QUndoCommand()
@@ -217,6 +257,7 @@ void RemoveEntityFromSceneCommand::undo()
 	nap::Logger::fatal("Undo not supported yet");
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop, size_t index)
 		: mPath(prop), mIndex(index), QUndoCommand()
@@ -241,6 +282,8 @@ void ArrayAddValueCommand::undo()
 {
 	nap::Logger::fatal("Sorry, no undo for you");
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ArrayAddNewObjectCommand::ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type,
 												   size_t index) : mPath(prop), mType(type), mIndex(index), QUndoCommand()
@@ -268,6 +311,7 @@ void ArrayAddNewObjectCommand::undo()
 	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::Object& object,
 															 size_t index)
@@ -299,6 +343,8 @@ void ArrayAddExistingObjectCommand::undo()
 	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ArrayRemoveElementCommand::ArrayRemoveElementCommand(const PropertyPath& array_prop, size_t index)
 		: mPath(array_prop), mIndex(index), QUndoCommand()
 {}
@@ -315,6 +361,7 @@ void ArrayRemoveElementCommand::undo()
 	nap::Logger::fatal("No undo supported");
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ArrayMoveElementCommand::ArrayMoveElementCommand(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex)
 		: mPath(array_prop), mFromIndex(fromIndex), mToIndex(toIndex), QUndoCommand()
@@ -334,6 +381,8 @@ void ArrayMoveElementCommand::undo()
 {
 	AppContext::get().getDocument()->arrayMoveElement(mPath, mNewIndex, mOldIndex);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RemoveComponentCommand::RemoveComponentCommand(nap::Component& comp) : mComponentName(comp.mID)
 {
