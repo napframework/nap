@@ -197,6 +197,13 @@ namespace napkin
 		 */
 		void removeEntityFromScene(nap::Scene& scene, nap::Entity& entity);
 
+		/**
+		 * Remove an Entity from a scene at the specified index
+		 * @param scene The Scene to remove the Entity from
+		 * @param index The index of the Entity to be removed
+		 */
+		void removeEntityFromScene(nap::Scene& scene, size_t index);
+
 
 		/**
 		 * Add an entity to a scene (at root level)
@@ -205,6 +212,21 @@ namespace napkin
 		 * @return the index at which the entity was added
 		 */
 		size_t addEntityToScene(nap::Scene& scene, nap::Entity& entity);
+
+		/**
+		 * Add an entity to another Entity's children list
+		 * @param parent The Entity to add the child Entity to
+		 * @param child The Entity to add to the other
+		 * @return the resultin index of the Entity
+		 */
+		size_t addChildEntity(nap::Entity& parent, nap::Entity& child);
+
+		/**
+		 * Remove a child entity from another Entity's children
+		 * @param parent The parent Entity to remove the child from
+		 * @param childIndex The index of the child Entity to be removed
+		 */
+		void removeChildEntity(nap::Entity& parent, size_t childIndex);
 
 		/**
 		 * Return a RootEntity in a scene that represents the specified entity.

@@ -265,6 +265,19 @@ size_t Document::addEntityToScene(nap::Scene& scene, nap::Entity& entity)
 	return index;
 }
 
+size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
+{
+	auto index = parent.mChildren.size();
+	parent.mChildren.emplace_back(&child);
+	objectChanged(&parent);
+	return index;
+}
+
+void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
+{
+	parent.mChildren.erase(parent.mChildren.begin() + childIndex);
+	objectChanged(&parent);
+}
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
 {
@@ -279,6 +292,12 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 	auto& v = scene.mEntities;
 	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity == &entity; };
 	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
+	objectChanged(&scene);
+}
+
+void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
+{
+	scene.mEntities.erase(scene.mEntities.begin() + index);
 	objectChanged(&scene);
 }
 
@@ -696,6 +715,3 @@ nap::RootEntity* Document::getRootEntity(nap::Scene& scene, nap::Entity& entity)
 	}
 	return nullptr;
 }
-
-
-
