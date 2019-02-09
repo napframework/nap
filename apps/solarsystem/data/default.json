@@ -48,6 +48,15 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "SphereContainerEntity",
+            "Children":
+            [
+                "SphereEntity",
+                "SphereEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "SphereEntity",
             "Components": [
                 {
@@ -158,35 +167,30 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "SphereEntity",
+                    "Entity": "SphereContainerEntity",
                     "InstanceProperties": [
                         {
-                            "TargetComponent": "./nap::TransformComponent",
+                            "TargetComponent": "./SphereEntity:0/nap::TransformComponent",
                             "TargetAttributes": [
                                 {
                                     "Path": "Properties/Translate/x",
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "FloatInstancePropertyValue",
-                                        "Value": 1.0
+                                        "mID": "FloatInstancePropertyValue1",
+                                        "Value": 0.0
                                     }
                                 }
                             ]
-                        }
-                    ]
-                },
-                {
-                    "Entity": "SphereEntity",
-                    "InstanceProperties": [
+                        },
                         {
-                            "TargetComponent": "./nap::TransformComponent",
+                            "TargetComponent": "./SphereEntity:1/nap::TransformComponent",
                             "TargetAttributes": [
                                 {
                                     "Path": "Properties/Translate/x",
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
                                         "mID": "FloatInstancePropertyValue2",
-                                        "Value": -1.0
+                                        "Value": 2.0
                                     }
                                 }
                             ]
