@@ -8,7 +8,7 @@ from subprocess import call
 from nap_shared import find_project, validate_pascalcase_name
 
 # Default modules if none are specified
-DEFAULT_MODULE_LIST = "mod_napapp,mod_napaudio"
+DEFAULT_MODULE_LIST = "mod_napapp,mod_napaudio,mod_napimgui"
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
