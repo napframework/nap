@@ -6,9 +6,13 @@
 
 using namespace napkin;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 		: QObject(), mObject(o), mIsPointer(isPointer)
@@ -87,6 +91,12 @@ QVariant ObjectItem::data(int role) const
 	return QStandardItem::data(role);
 }
 
+void ObjectItem::removeChildren()
+{
+	while(rowCount())
+		removeRow(0);
+}
+
 void ObjectItem::onObjectRemoved(nap::rtti::Object* o)
 {
 	for (int row=0, len=rowCount(); row < len; row++)
@@ -101,6 +111,8 @@ void ObjectItem::onObjectRemoved(nap::rtti::Object* o)
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(&entity, isPointer)
 {
 
@@ -110,9 +122,10 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(&entity
 	for (auto& comp : entity.mComponents)
 		onComponentAdded(comp.get(), &entity);
 
-	auto ctx = &AppContext::get();
-	connect(ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
-	connect(ctx, &AppContext::entityAdded, this, &EntityItem::onEntityAdded);
+	auto& ctx = AppContext::get();
+	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
+	connect(&ctx, &AppContext::entityAdded, this, &EntityItem::onEntityAdded);
+	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
 }
 
 nap::Entity* EntityItem::getEntity()
@@ -120,6 +133,17 @@ nap::Entity* EntityItem::getEntity()
 	return rtti_cast<nap::Entity>(mObject);
 }
 
+int EntityItem::childEntityIndex(EntityItem& childEntityItem)
+{
+	int i = 0;
+	for (int row=0; row < rowCount(); row++) {
+		auto childItem = child(row, 0);
+		if (childItem == &childEntityItem)
+			return i;
+		i++;
+	}
+	return -1;
+}
 
 void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
@@ -139,6 +163,20 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 	appendRow({compItem, compTypeItem});
 }
 
+void EntityItem::onPropertyValueChanged(const PropertyPath& path)
+{
+	PropertyPath childrenPath(*getEntity(), "Children");
+	assert(childrenPath.isValid());
+	if (path != childrenPath)
+		return;
+
+	removeChildren();
+	for (auto child : getEntity()->mChildren)
+		onEntityAdded(child.get(), getEntity());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(&comp, false)
 {
 }
@@ -149,11 +187,15 @@ nap::Component& ComponentItem::getComponent()
 	return *o;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene, false)
 {
 	for (auto& entity : scene.getEntityResourcesRef())
 		appendRow(new RootEntityItem(entity));
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem)
 	: ObjectItem(&e, false), mRootEntityItem(rootEntityItem)
@@ -167,6 +209,8 @@ EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntit
 	connect(ctx, &AppContext::componentAdded, this, &EntityInstanceItem::onComponentAdded);
 	connect(ctx, &AppContext::entityAdded, this, &EntityInstanceItem::onEntityAdded);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 nap::RootEntity& EntityInstanceItem::rootEntity()
 {
@@ -188,6 +232,8 @@ void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 
 	appendRow(new ComponentInstanceItem(*c, mRootEntityItem));
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RootEntityItem::RootEntityItem(nap::RootEntity& e)
 	: ObjectItem(e.mEntity.get(), false), mRootEntity(&e)
@@ -223,6 +269,8 @@ void RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 
 	appendRow(new ComponentInstanceItem(*c, *this));
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityItem& entityItem)
 	: ObjectItem(&comp, false), mEntityItem(entityItem)

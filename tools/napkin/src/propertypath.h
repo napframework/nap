@@ -235,6 +235,12 @@ namespace napkin
 		bool operator==(const PropertyPath& other) const;
 
 		/**
+		 * @param other The property to compare to
+		 * @return false if the both property paths point to the same property
+		 */
+		bool operator!=(const PropertyPath& other) const { return !(*this == other); }
+
+		/**
 		 * Iterate over the children of this property and call PropertyVisitor for each child.
 		 * @param visitor The function to be called on each iteration, return false from this function to stop iteration
 		 * @param flags Provide traversal flags

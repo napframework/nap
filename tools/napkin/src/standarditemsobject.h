@@ -43,6 +43,11 @@ namespace napkin
 		void refresh();
 
 		/**
+		 * @return The parent QStandardItem if one exists
+		 */
+		QStandardItem* parentItem() { return QStandardItem::parent(); }
+
+		/**
 		 * @return The object held by this item
 		 */
 		nap::rtti::Object* getObject() const;
@@ -52,9 +57,20 @@ namespace napkin
 		 */
 		virtual const QString getName() const;
 
+		/**
+		 * Override from QStandardItem
+		 */
 		void setData(const QVariant& value, int role) override;
 
+		/**
+		 * Override from QStandardItem
+		 */
 		QVariant data(int role) const override;
+
+		/**
+		 * Remove all children of this item
+		 */
+		void removeChildren();
 
 	protected:
 		nap::rtti::Object* mObject; // THe object held by this item
@@ -78,9 +94,15 @@ namespace napkin
 		 */
 		nap::Entity* getEntity();
 
+		/**
+		 * Index of the given item's Entity under this item's Entity
+		 */
+		int childEntityIndex(EntityItem& childEntityItem);
+
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
+		void onPropertyValueChanged(const PropertyPath& path);
 
 	};
 
