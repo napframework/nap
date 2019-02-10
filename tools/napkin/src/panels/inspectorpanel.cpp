@@ -160,8 +160,8 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
 			menu.addAction("Add...", [this, array_path]()
 			{
-				nap::rtti::Object* selected_object = showObjectSelector(this,
-																					 array_path.getArrayElementType());
+				auto objects = AppContext::get().getDocument()->getObjects(array_path.getArrayElementType());
+				nap::rtti::Object* selected_object = showObjectSelector(this, objects);
 				if (selected_object != nullptr)
 					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 			});

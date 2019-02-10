@@ -109,6 +109,10 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(&entity
 
 	for (auto& comp : entity.mComponents)
 		onComponentAdded(comp.get(), &entity);
+
+	auto ctx = &AppContext::get();
+	connect(ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
+	connect(ctx, &AppContext::entityAdded, this, &EntityItem::onEntityAdded);
 }
 
 nap::Entity* EntityItem::getEntity()
@@ -119,11 +123,17 @@ nap::Entity* EntityItem::getEntity()
 
 void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
+	if (parent != mObject)
+		return;
+
 	appendRow({new EntityItem(*e, true), new RTTITypeItem(e->get_type())});
 }
 
 void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 {
+	if (owner != mObject)
+		return;
+
 	auto compItem	 = new ComponentItem(*comp);
 	auto compTypeItem = new RTTITypeItem(comp->get_type());
 	appendRow({compItem, compTypeItem});

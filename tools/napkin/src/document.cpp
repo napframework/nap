@@ -19,7 +19,7 @@ nap::Entity* Document::getParent(const nap::Entity& child) const
 		if (!o->get_type().is_derived_from<nap::Entity>())
 			continue;
 
-		nap::Entity* parent = rtti_cast<nap::Entity>(o);
+		auto parent = rtti_cast<nap::Entity>(o);
 		auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(),
 							   [&child](ObjectPtr<nap::Entity> e) -> bool { return &child == e.get(); });
 
@@ -27,6 +27,18 @@ nap::Entity* Document::getParent(const nap::Entity& child) const
 			return parent;
 	}
 	return nullptr;
+}
+
+bool Document::hasChild(const nap::Entity& parentEntity, const nap::Entity& childEntity, bool recursive) const
+{
+	for (auto child : parentEntity.mChildren)
+	{
+		if (child == &childEntity)
+			return true;
+		if (recursive && hasChild(*child, childEntity, true))
+			return true;
+	}
+	return false;
 }
 
 
@@ -268,7 +280,7 @@ size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
 {
 	auto index = parent.mChildren.size();
 	parent.mChildren.emplace_back(&child);
-	objectChanged(&parent);
+	entityAdded(&child, &parent);
 	return index;
 }
 
@@ -570,6 +582,17 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 Document::~Document()
 {
 	
+}
+
+std::vector<nap::rtti::Object*> Document::getObjects(const nap::rtti::TypeInfo& type)
+{
+	std::vector<nap::rtti::Object*> result;
+	for (auto& object : getObjects())
+	{
+		if (object->get_type().is_derived_from(type))
+			result.emplace_back(object.get());
+	}
+	return result;
 }
 
 bool Document::isPointedToByEmbeddedPointer(const nap::rtti::Object& obj)

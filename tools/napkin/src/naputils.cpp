@@ -32,14 +32,11 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
 	refresh();
 }
 
-napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType(baseType)
+napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)
 {
-	for (auto& object : AppContext::get().getDocument()->getObjects())
+	for (auto object : objects)
 	{
-		if (!object.get()->get_type().is_derived_from(baseType))
-			continue;
-
-		auto item = new ObjectItem(object.get(), false);
+		auto item = new ObjectItem(object, false);
 		item->setEditable(false);
 		appendRow(item);
 	}
@@ -112,21 +109,12 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 			topLevelObjects.push_back(object);
 	}
 
-    // Probably no need to sort
-//	// Pass 3: sort objects on type & ID to ensure files remain consistent after saving (for diffing and such)
-//	std::sort(topLevelObjects.begin(), topLevelObjects.end(), [](RTTIObject* a, RTTIObject* b) {
-//		if (a->get_type() == b->get_type())
-//			return a->mID < b->mID;
-//		else
-//			return a->get_type().get_name().compare(b->get_type().get_name()) < 0;
-//	});
     return topLevelObjects;
 }
 
-
-nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const rttr::type& typeConstraint)
+nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects)
 {
-	FlatObjectModel model(typeConstraint);
+	FlatObjectModel model(objects);
 	nap::qt::FilterPopup dialog(parent, model);
 
 	dialog.exec(QCursor::pos());

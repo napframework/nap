@@ -117,7 +117,7 @@ napkin::ResourcePanel::ResourcePanel()
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
 	mTreeView.getTreeView().setColumnWidth(0, 300);
-	mTreeView.getTreeView().setSortingEnabled(true);
+//	mTreeView.getTreeView().setSortingEnabled(true);
 
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
@@ -153,7 +153,19 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 			auto addEntityAction = menu.addAction("Add Child Entity...");
 			connect(addEntityAction, &QAction::triggered, [this, entity]()
 			{
-				auto child = napkin::showObjectSelector<nap::Entity>(this);
+				auto doc = AppContext::get().getDocument();
+				auto objects = doc->getObjects(RTTI_OF(nap::Entity));
+				std::vector<nap::rtti::Object*> filteredEntities;
+				for (auto o : objects)
+				{
+					auto e = dynamic_cast<nap::Entity*>(o);
+					assert(e);
+					if (e == entity || doc->hasChild(*e, *entity, true))
+						continue;
+					filteredEntities.emplace_back(e);
+				}
+
+				auto child = dynamic_cast<nap::Entity*>(napkin::showObjectSelector(this, filteredEntities));
 				if (!child)
 					return;
 
