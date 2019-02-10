@@ -39,7 +39,7 @@ napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType
 		if (!object.get()->get_type().is_derived_from(baseType))
 			continue;
 
-		auto item = new ObjectItem(object.get());
+		auto item = new ObjectItem(object.get(), false);
 		item->setEditable(false);
 		appendRow(item);
 	}

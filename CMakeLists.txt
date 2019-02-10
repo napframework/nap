@@ -110,6 +110,7 @@ add_subdirectory(apps/atmos)
 add_subdirectory(apps/random)
 add_subdirectory(apps/aura)
 add_subdirectory(apps/emography)
+add_subdirectory(apps/solarsystem)
 
 # demo targets
 add_subdirectory(demos/helloworld)
