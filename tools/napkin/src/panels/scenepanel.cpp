@@ -94,7 +94,8 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 			auto addEntityAction = menu.addAction("Add Entity...");
 			connect(addEntityAction, &QAction::triggered, [this, sceneItem, scene]()
 			{
-				auto entity = napkin::showObjectSelector<nap::Entity>(this);
+				auto entities = AppContext::get().getDocument()->getObjects(RTTI_OF(nap::Entity));
+				auto entity = dynamic_cast<nap::Entity*>(napkin::showObjectSelector(this, entities));
 				if (!entity)
 					return;
 

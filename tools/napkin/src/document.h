@@ -46,6 +46,13 @@ namespace napkin
 		nap::rtti::OwnedObjectList& getObjects() { return mObjects; }
 
 		/**
+		 * Get all objects from this document, derived from the specified type.
+		 * @param type The type each object has to be derived from
+		 * @return All the objects in this document, derived from the provided type
+		 */
+		std::vector<nap::rtti::Object*> getObjects(const nap::rtti::TypeInfo& type);
+
+		/**
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
 		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
@@ -82,6 +89,15 @@ namespace napkin
 		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
 		 */
 		nap::Entity* getParent(const nap::Entity& entity) const;
+
+		/**
+		 * See if an entity is a child of another.
+		 * @param parentEntity The parent entity to check.
+		 * @param childEntity The child entity to check for
+		 * @param recursive If true, check grandchildren and so forth.
+		 * @return True if the given child entity was found under the parent entity
+		 */
+		bool hasChild(const nap::Entity& parentEntity, const nap::Entity& childEntity, bool recursive) const;
 
 		/**
 		 * Retrieve the Entity the provided Component belongs to.
