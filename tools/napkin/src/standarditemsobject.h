@@ -28,8 +28,14 @@ namespace napkin
 	public:
 		/**
 		 * @param o The object this item should represent
+		 * @param isPointer Whether this item should be displayed as a pointer/instance
 		 */
-		explicit ObjectItem(nap::rtti::Object* o);
+		explicit ObjectItem(nap::rtti::Object* o, bool isPointer = false);
+
+		/**
+		 * @return true if this item is representing a pointer instead of the actual object
+		 */
+		bool isPointer() const;
 
 		/**
 		 * Refresh
@@ -48,9 +54,15 @@ namespace napkin
 
 		void setData(const QVariant& value, int role) override;
 
+		QVariant data(int role) const override;
 
 	protected:
 		nap::rtti::Object* mObject; // THe object held by this item
+
+	private:
+		void onObjectRemoved(nap::rtti::Object* o);
+
+		bool mIsPointer;
 	};
 
 	/**
@@ -59,12 +71,17 @@ namespace napkin
 	class EntityItem : public ObjectItem
 	{
 	public:
-		explicit EntityItem(nap::Entity& entity);
+		explicit EntityItem(nap::Entity& entity, bool isPointer = false);
 
 		/**
 		 * @return The entity held by this item
 		 */
 		nap::Entity* getEntity();
+
+	private:
+		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
+		void onComponentAdded(nap::Component* c, nap::Entity* owner);
+
 	};
 
 	/**
@@ -99,8 +116,8 @@ namespace napkin
 
 		SceneItem* sceneItem() { return dynamic_cast<SceneItem*>(QStandardItem::parent()); }
 		nap::RootEntity& rootEntity();
+
 	private:
-		void onObjectRemoved(nap::rtti::Object* o);
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
 

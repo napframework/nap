@@ -58,40 +58,22 @@ void napkin::ResourceModel::refresh()
 
 ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 {
-	ObjectItem* item = napkin::findItemInModel<ObjectItem>(*this, ob);
-	if (item != nullptr)
-		return item;
-
 	auto typeItem = new RTTITypeItem(ob.get_type());
 
-	// Entity?
 	if (ob.get_type().is_derived_from<nap::Entity>())
 	{
-		// Grab entities and stuff them in a group
-		nap::Entity& e = *rtti_cast<nap::Entity>(&ob);
+		nap::Logger::info("Entity: %s", ob.mID.c_str());
+		auto entityItem = new EntityItem(*rtti_cast<nap::Entity>(&ob));
+		mEntitiesItem.appendRow({entityItem, typeItem});
 
-		auto entityItem = new EntityItem(e);
-
-		auto parent = AppContext::get().getDocument()->getParent(e);
-		if (parent != nullptr)
-		{
-			auto parentItem = napkin::findItemInModel<EntityItem>(*this, *parent);
-			if (parentItem != nullptr)
-				parentItem->appendRow({entityItem, typeItem});
-		}
-		else
-		{
-			mEntitiesItem.appendRow({entityItem, typeItem});
-		}
-
-		return nullptr;
+		return entityItem;
 	}
 
 	if (!shouldObjectBeVisible(ob))
 		return nullptr;
 
 	// ... now the rest in Objects...
-	item = new ObjectItem(&ob);
+	auto item = new ObjectItem(&ob, false);
 	mObjectsItem.appendRow({item, typeItem});
 	return item;
 }
@@ -167,7 +149,17 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		{
 			// Selected item is an Entity
 			auto entity = entityItem->getEntity();
-			menu.addAction(new AddEntityAction(entity));
+
+			auto addEntityAction = menu.addAction("Add Child Entity...");
+			connect(addEntityAction, &QAction::triggered, [this, entity]()
+			{
+				auto child = napkin::showObjectSelector<nap::Entity>(this);
+				if (!child)
+					return;
+
+				AppContext::get().executeCommand(new AddChildEntityCommand(*entity, *child));
+			});
+
 
 			// Components
 			menu.addAction("Add Component...", [entity]()
@@ -193,7 +185,9 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	{
 		if (groupItem->text() == TXT_LABEL_ENTITIES)
 		{
-			menu.addAction(new AddEntityAction(nullptr));
+			menu.addAction("Create Entity", [this]() {
+				AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), nullptr));
+			});
 		}
 		else if (groupItem->text() == TXT_LABEL_RESOURCES)
 		{

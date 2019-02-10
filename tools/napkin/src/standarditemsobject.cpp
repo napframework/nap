@@ -4,40 +4,53 @@
 #include "sceneservice.h"
 #include "naputils.h"
 
-napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
+using namespace napkin;
+
+GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {
 }
 
-napkin::ObjectItem::ObjectItem(nap::rtti::Object* rttiObject)
-		: QObject(), mObject(rttiObject)
+ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
+		: QObject(), mObject(o), mIsPointer(isPointer)
 {
 	refresh();
-	setText(QString::fromStdString(rttiObject->mID));
-    setIcon(AppContext::get().getResourceFactory().getIcon(*rttiObject));
+	setText(QString::fromStdString(o->mID));
+    setIcon(AppContext::get().getResourceFactory().getIcon(*o));
 
     auto& ctx = AppContext::get();
     connect(&ctx, &AppContext::propertyValueChanged, [this](const PropertyPath& path) {
     	if (&path.getObject() == mObject)
     		refresh();
     });
+
+	connect(&ctx, &AppContext::objectRemoved, this, &ObjectItem::onObjectRemoved);
 }
 
-void napkin::ObjectItem::refresh()
+bool ObjectItem::isPointer() const
+{
+	if (mIsPointer)
+		return true;
+
+	auto parentItem = dynamic_cast<ObjectItem*>(QStandardItem::parent());
+	return parentItem && parentItem->isPointer();
+}
+
+void ObjectItem::refresh()
 {
 	QStandardItem::setText(getName());
 }
 
-const QString napkin::ObjectItem::getName() const
+const QString ObjectItem::getName() const
 {
 	return QString::fromStdString(mObject->mID);
 }
 
-nap::rtti::Object* napkin::ObjectItem::getObject() const
+nap::rtti::Object* ObjectItem::getObject() const
 {
 	return mObject;
 }
 
-void napkin::ObjectItem::setData(const QVariant& value, int role)
+void ObjectItem::setData(const QVariant& value, int role)
 {
 	if (role == Qt::EditRole)
 	{
@@ -60,45 +73,80 @@ void napkin::ObjectItem::setData(const QVariant& value, int role)
 	QStandardItem::setData(value, role);
 }
 
-napkin::EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(&entity)
+QVariant ObjectItem::data(int role) const
 {
-
-	for (auto& child : entity.mChildren)
+	if (role == Qt::ForegroundRole && isPointer())
 	{
-		appendRow({new EntityItem(*child), new napkin::RTTITypeItem(child->get_type())});
+//		auto bgcol = QStandardItem::data(Qt::Window).value<QColor>();
+		auto bgcol = Qt::white;
+		auto fgcol = QStandardItem::data(role).value<QColor>();
+
+		QColor color = nap::qt::lerpCol(bgcol, fgcol, 0.5);
+		return QVariant::fromValue<QColor>(color);
 	}
+	return QStandardItem::data(role);
+}
 
-	for (auto& comp : entity.mComponents)
+void ObjectItem::onObjectRemoved(nap::rtti::Object* o)
+{
+	for (int row=0, len=rowCount(); row < len; row++)
 	{
-		auto compItem	 = new ComponentItem(*comp);
-		auto compTypeItem = new napkin::RTTITypeItem(comp->get_type());
-		appendRow({compItem, compTypeItem});
+		auto objectItem = dynamic_cast<ObjectItem*>(child(row));
+		assert(objectItem);
+		if (objectItem->getObject() == o)
+		{
+			removeRow(row);
+			return;
+		}
 	}
 }
 
-nap::Entity* napkin::EntityItem::getEntity()
+EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(&entity, isPointer)
+{
+
+	for (auto& child : entity.mChildren)
+		onEntityAdded(child.get(), &entity);
+
+	for (auto& comp : entity.mComponents)
+		onComponentAdded(comp.get(), &entity);
+}
+
+nap::Entity* EntityItem::getEntity()
 {
 	return rtti_cast<nap::Entity>(mObject);
 }
 
-napkin::ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(&comp)
+
+void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
+{
+	appendRow({new EntityItem(*e, true), new RTTITypeItem(e->get_type())});
+}
+
+void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
+{
+	auto compItem	 = new ComponentItem(*comp);
+	auto compTypeItem = new RTTITypeItem(comp->get_type());
+	appendRow({compItem, compTypeItem});
+}
+
+ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(&comp, false)
 {
 }
 
-nap::Component& napkin::ComponentItem::getComponent()
+nap::Component& ComponentItem::getComponent()
 {
 	auto& o = *rtti_cast<nap::Component*>(mObject);
 	return *o;
 }
 
-napkin::SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene)
+SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene, false)
 {
 	for (auto& entity : scene.getEntityResourcesRef())
 		appendRow(new RootEntityItem(entity));
 }
 
-napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem)
-	: ObjectItem(&e), mRootEntityItem(rootEntityItem)
+EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem)
+	: ObjectItem(&e, false), mRootEntityItem(rootEntityItem)
 {
 	for (auto comp : e.mComponents)
 		onComponentAdded(comp.get(), &entity());
@@ -108,15 +156,14 @@ napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& r
 	auto ctx = &AppContext::get();
 	connect(ctx, &AppContext::componentAdded, this, &EntityInstanceItem::onComponentAdded);
 	connect(ctx, &AppContext::entityAdded, this, &EntityInstanceItem::onEntityAdded);
-	connect(ctx, &AppContext::objectRemoved, this, &EntityInstanceItem::onObjectRemoved);
 }
 
-nap::RootEntity& napkin::EntityInstanceItem::rootEntity()
+nap::RootEntity& EntityInstanceItem::rootEntity()
 {
 	return mRootEntityItem.rootEntity();
 }
 
-void napkin::EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
+void EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
 	if (parent != &entity())
 		return;
@@ -124,7 +171,7 @@ void napkin::EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* pare
 	appendRow(new EntityInstanceItem(*e, mRootEntityItem));
 }
 
-void napkin::EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
+void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 {
 	if (owner != &entity())
 		return;
@@ -132,22 +179,8 @@ void napkin::EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity
 	appendRow(new ComponentInstanceItem(*c, mRootEntityItem));
 }
 
-void napkin::EntityInstanceItem::onObjectRemoved(nap::rtti::Object* o)
-{
-	for (int row=0, len=rowCount(); row < len; row++)
-	{
-		auto objectItem = dynamic_cast<ObjectItem*>(child(row));
-		assert(objectItem);
-		if (objectItem->getObject() == o)
-		{
-			removeRow(row);
-			return;
-		}
-	}
-}
-
-napkin::RootEntityItem::RootEntityItem(nap::RootEntity& e)
-	: ObjectItem(e.mEntity.get()), mRootEntity(&e)
+RootEntityItem::RootEntityItem(nap::RootEntity& e)
+	: ObjectItem(e.mEntity.get(), false), mRootEntity(&e)
 {
 	for (auto comp : e.mEntity->mComponents)
 		onComponentAdded(comp.get(), e.mEntity.get());
@@ -157,16 +190,15 @@ napkin::RootEntityItem::RootEntityItem(nap::RootEntity& e)
 	auto ctx = &AppContext::get();
 	connect(ctx, &AppContext::componentAdded, this, &RootEntityItem::onComponentAdded);
 	connect(ctx, &AppContext::entityAdded, this, &RootEntityItem::onEntityAdded);
-	connect(ctx, &AppContext::objectRemoved, this, &RootEntityItem::onObjectRemoved);
 }
 
-nap::RootEntity& napkin::RootEntityItem::rootEntity()
+nap::RootEntity& RootEntityItem::rootEntity()
 {
 	assert(mRootEntity);
 	return *mRootEntity;
 }
 
-void napkin::RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
+void RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
 	if (parent != mRootEntity->mEntity.get())
 		return;
@@ -174,7 +206,7 @@ void napkin::RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	appendRow(new EntityInstanceItem(*e, *this));
 }
 
-void napkin::RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
+void RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 {
 	if (owner != mRootEntity->mEntity.get())
 		return;
@@ -182,27 +214,13 @@ void napkin::RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* ow
 	appendRow(new ComponentInstanceItem(*c, *this));
 }
 
-void napkin::RootEntityItem::onObjectRemoved(nap::rtti::Object* o)
-{
-	for (int row=0, len=rowCount(); row < len; row++)
-	{
-		auto objectItem = dynamic_cast<ObjectItem*>(child(row));
-		assert(objectItem);
-		if (objectItem->getObject() == o)
-		{
-			removeRow(row);
-			return;
-		}
-	}
-}
-
-napkin::ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityItem& entityItem)
-	: ObjectItem(&comp), mEntityItem(entityItem)
+ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityItem& entityItem)
+	: ObjectItem(&comp, false), mEntityItem(entityItem)
 {
 
 }
 
-nap::RootEntity& napkin::ComponentInstanceItem::rootEntity()
+nap::RootEntity& ComponentInstanceItem::rootEntity()
 {
 	return mEntityItem.rootEntity();
 }
