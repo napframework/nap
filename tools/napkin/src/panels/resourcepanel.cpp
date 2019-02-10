@@ -188,8 +188,29 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 			});
 
 		}
-
-		menu.addAction(new DeleteObjectAction(*objItem->getObject()));
+		if (entityItem != nullptr && entityItem->isPointer())
+		{
+			// In case of a pointer, we're displaying an 'instance' of an entity,
+			// so this should only remove the Entity from its parent
+			auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
+			if (parentItem)
+			{
+				auto index = parentItem->childEntityIndex(*entityItem);
+				assert(index >= 0);
+				if (index >= 0)
+				{
+					menu.addAction("Remove", [parentItem, index]()
+					{
+						auto doc = AppContext::get().getDocument();
+						doc->removeChildEntity(*parentItem->getEntity(), index);
+					});
+				}
+			}
+		}
+		else
+		{
+			menu.addAction(new DeleteObjectAction(*objItem->getObject()));
+		}
 	}
 
 	auto groupItem = dynamic_cast<GroupItem*>(item);

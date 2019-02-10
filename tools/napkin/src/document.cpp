@@ -286,8 +286,13 @@ size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
 
 void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 {
+	auto obj = parent.mChildren[childIndex];
 	parent.mChildren.erase(parent.mChildren.begin() + childIndex);
 	objectChanged(&parent);
+
+	PropertyPath childrenProp(parent, "Children");
+	assert(childrenProp.isValid());
+	propertyValueChanged(childrenProp);
 }
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)

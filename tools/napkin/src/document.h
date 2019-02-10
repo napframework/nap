@@ -234,7 +234,7 @@ namespace napkin
 		size_t addEntityToScene(nap::Scene& scene, nap::Entity& entity);
 
 		/**
-		 * Add an entity to another Entity's children list
+		 * Add an entity to another Entity's children list, you can have multiple of the same children
 		 * @param parent The Entity to add the child Entity to
 		 * @param child The Entity to add to the other
 		 * @return the resultin index of the Entity
