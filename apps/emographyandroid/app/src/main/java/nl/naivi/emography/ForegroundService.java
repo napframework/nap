@@ -229,7 +229,7 @@ public class ForegroundService extends Service
             public void run() {
             Intent logIntent = new Intent();
             logIntent.setAction(Constants.ACTION.API_LOG_ACTIVITY);
-            logIntent.putExtra("apilog", logMessage);
+            logIntent.putExtra(Constants.API.LOG, logMessage);
             sendBroadcast(logIntent);
             }
         };
@@ -251,7 +251,7 @@ public class ForegroundService extends Service
             public void run() {
                 Intent apiIntent = new Intent();
                 apiIntent.setAction(Constants.ACTION.API_RESPONSE_ACTIVITY);
-                apiIntent.putExtra("apimessage", apiMessage);
+                apiIntent.putExtra(Constants.API.MESSAGE, apiMessage);
                 sendBroadcast(apiIntent);
             }
         };

@@ -76,10 +76,15 @@ namespace nap
 			int getSampleCount() const						{ return mSampleCount; }
 
 			/**
-			 * Sets the number of samples to take, updates settings internally
+			 * Queries the database for a specific number of samples.
+			 * Derived classes should implement the onQuery() method to perform the query into the database.
+			 * @param startTime GMT start time
+			 * @param endTime GMT end time
+			 * @param samples number of samples to return
+			 * @param uuid the unique identifier associated with the query
 			 * @param count number of samples to take from start to end range
 			 */
-			void query(const TimeStamp& startTime, const TimeStamp& endTime, int samples);
+			void query(const TimeStamp& startTime, const TimeStamp& endTime, int samples, std::string uuid);
 
 		protected:
 
@@ -94,6 +99,7 @@ namespace nap
 			TimeStamp mEndTime;							///< Sample end time
 			nap::APIService* mAPIService = nullptr;		///< The API Service
 			DataModelInstance* mDataModel = nullptr;	///< The data model that holds all the emography samples
+			std::string mUUID;
 		};
 	}
 }

@@ -42,7 +42,7 @@ namespace  nap
          * Where APP is the app that is instantiated and run using the AndroidServiceRunner.
          * Using this wrapper ensures all calls to a NAP app are thread safe and
          * all resources a de-allocated correctly on destruction.
-         * Preferably init, update and shutdown are called from the same thread.
+         * Init, Update and Shutdown must be called from the same thread.
          * Messages can be received from any thread.
          */
         template<typename APP>
@@ -109,15 +109,10 @@ namespace  nap
 
             /**
              * Update the emography app environment
+             * Can only be called when initialization succeeded!
              */
             void update()
             {
-                std::lock_guard<std::mutex> lock(mInstanceMutex);
-                if(mRunner == nullptr)
-                {
-                    log(ELogLevel::Warning, "unable to update nap env, not initialized");
-                    return;
-                }
                 mRunner->update();
             }
 

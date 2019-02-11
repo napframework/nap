@@ -36,6 +36,9 @@ namespace nap
 	 * Events are dispatched immediately, without being queued.
 	 * 
 	 * To dispatch an event from a NAP application, often in reply to a previously received message, use dispatchEvent().
+	 * Sending messages to a NAP application is completely thread safe.
+	 * Dispatching messages from a running NAP application is also completely thread safe.
+	 * When processing events manually by calling processEvents() it is recommended to do that from the thread that initializes and shut down NAP.
 	 */
 	class NAPAPI APIService : public Service
 	{
@@ -227,6 +230,7 @@ namespace nap
 		 * Processes all given api commands.
 		 * This is called automatically on update but can be called manually from an external environment when there is no application loop.
 		 * All events are recorded before being processed, allowing for thread safe execution of the api events.
+		 * When calling this manually, call it from the same thread that initializes and shuts down NAP.
 		 */
 		void processEvents();
 

@@ -77,7 +77,8 @@ namespace nap
 			TimeStamp start_time(apiEvent[0].asLong());
 			TimeStamp end_time(apiEvent[1].asLong());
 			int samples = apiEvent[2].asInt();
-			mStressViewComponent->query(start_time, end_time, samples);
+			std::string uuid = apiEvent[3].asString();
+			mStressViewComponent->query(start_time, end_time, samples, uuid);
 		}
 
 

@@ -48,11 +48,12 @@ namespace nap
 	}
 
 
-	void emography::RangeDataviewComponentInstance::query(const TimeStamp& startTime, const TimeStamp& endTime, int samples)
+	void emography::RangeDataviewComponentInstance::query(const TimeStamp& startTime, const TimeStamp& endTime, int samples, std::string uuid)
 	{
 		mStartTime = startTime;
 		mEndTime = endTime;
 		mSampleCount = math::max<int>(samples, 1);
+		mUUID = uuid;
 		onQuery();
 	}
 }

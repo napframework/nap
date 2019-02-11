@@ -17,6 +17,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.Locale;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -157,12 +158,12 @@ public class MainActivity extends AppCompatActivity
             else if(action.equals(Constants.ACTION.API_RESPONSE_ACTIVITY)) {
                 // Received api response message from service
                 TextView tv = findViewById(R.id.api_log);
-                tv.setText(intent.getStringExtra("apimessage"));
+                tv.setText(intent.getStringExtra(Constants.API.MESSAGE));
             }
             else if (action.equals(Constants.ACTION.API_LOG_ACTIVITY)) {
                 // Received api log message from service
                 TextView tv = findViewById(R.id.text_log);
-                tv.setText(intent.getStringExtra("apilog"));
+                tv.setText(intent.getStringExtra(Constants.API.LOG));
             }
         }
     };
@@ -230,6 +231,7 @@ public class MainActivity extends AppCompatActivity
         msg.addLong("startTime", System.currentTimeMillis() - (1000*60*60*20));
         msg.addLong("endTime", System.currentTimeMillis()-(1000*60*60*10));
         msg.addInt("samples", getNumberOfSamples());
+        msg.addString("UUID", UUID.randomUUID().toString());
 
         // Add message
         queryIntent.putExtra(Constants.API.MESSAGE, mBuilder.asString());

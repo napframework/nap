@@ -23,5 +23,6 @@ public class Constants
     public interface API
     {
         String MESSAGE = "apimessage";
+        String LOG = "apilog";
     }
 }
