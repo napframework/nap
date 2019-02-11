@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -115,13 +116,8 @@ public class MainActivity extends AppCompatActivity
         // Register broadcast receiver
         registerReceiver(mReceiver, mIntentFilter);
 
-        // Flush existing log view
-        TextView tv = findViewById(R.id.text_log);
-        tv.setText("");
-
-        // Flush existing nap view
-        TextView nv = findViewById(R.id.api_log);
-        nv.setText("");
+        // Clear text in views
+        clearViews();
     }
 
 
@@ -164,7 +160,7 @@ public class MainActivity extends AppCompatActivity
                 // Received api log message from service
                 TextView tv = findViewById(R.id.text_log);
                 String msg = intent.getStringExtra(Constants.API.LOG);
-                tv.setText(String.format("%s\n%s", tv.getText(), msg));
+                addLogMessage(msg);
             }
         }
     };
@@ -243,27 +239,6 @@ public class MainActivity extends AppCompatActivity
 
 
     /**
-     * Called when the data model needs to be cleared
-     * @param view calling view (button)
-     */
-    public void onClearCache(View view)
-    {
-        Intent queryIntent = new Intent();
-        queryIntent.setAction(Constants.ACTION.API_SEND_MESSAGE);
-
-        // Construct message
-        mBuilder.clear();
-        APIMessage msg = mBuilder.addMessage("clearCache");
-
-        // Add message
-        queryIntent.putExtra(Constants.API.MESSAGE, mBuilder.asString());
-
-        // Send
-        sendBroadcast(queryIntent);
-    }
-
-
-    /**
      * Called when the data model needs to be populated
      * @param view calling view (button)
      */
@@ -281,5 +256,50 @@ public class MainActivity extends AppCompatActivity
 
         // Send
         sendBroadcast(queryIntent);
+    }
+
+
+    /**
+     * Called when the text views need to be cleared
+     * @param view calling view (button)
+     */
+    public void onClearLog(View view)
+    {
+        clearViews();
+    }
+
+
+
+    protected void clearViews()
+    {
+        // Flush existing log view
+        TextView tv = findViewById(R.id.text_log);
+        tv.setText("");
+
+        // Flush existing nap view
+        TextView nv = findViewById(R.id.api_log);
+        nv.setText("");
+    }
+
+
+    /**
+     * function to append a string to a TextView as a new line
+     * and scroll to the bottom if needed
+     * @param msg message to append
+     */
+    private void addLogMessage(String msg)
+    {
+        // append the new string
+        TextView tv = findViewById(R.id.text_log);
+        tv.append(String.format("%s\n", msg));
+
+        // Scroll to bottom, defer until post is called.
+        final ScrollView sv = findViewById(R.id.scrollLog);
+        sv.post(new Runnable() {
+            @Override
+            public void run() {
+                sv.fullScroll(ScrollView.FOCUS_DOWN);
+            }
+        });
     }
 }
