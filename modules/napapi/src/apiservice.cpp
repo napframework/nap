@@ -212,9 +212,7 @@ namespace nap
 		std::queue<APIEventPtr> api_events;
 		consumeEvents(api_events);
 
-		// Forward to all matching components
-		// Lock components as we don't want components removes / updated as we iterate over 'm
-		std::lock_guard<std::mutex> lock(mComponentMutex);
+		// Forward to api components for processing
 		while (!api_events.empty())
 		{
 			// Get event
@@ -225,9 +223,7 @@ namespace nap
 			for (auto& api_comp : mAPIComponents)
 			{
 				if (api_comp->accepts(current_event))
-				{
 					api_comp->trigger(current_event);
-				}
 			}
 			api_events.pop();
 		}

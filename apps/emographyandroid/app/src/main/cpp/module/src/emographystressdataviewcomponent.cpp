@@ -75,6 +75,7 @@ namespace nap
 			reply->addArgument<APILong>("startTime", mStartTime.mTimeStamp);
 			reply->addArgument<APILong>("endTime", mEndTime.mTimeStamp);
 			reply->addArgument<APIInt>("samples", mSampleCount);
+			reply->addArgument<APIString>("UUID", mUUID);
 
 			// Dispatch result
 			reply->addArgument<APIFloatArray>("data", std::move(stress_readings));

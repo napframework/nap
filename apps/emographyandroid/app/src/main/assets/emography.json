@@ -44,6 +44,11 @@
                     "Type": "nap::APIInt",
                     "mID": "samples",
                     "Value": 0
+                },
+                {
+                    "Type": "nap::APIString",
+                    "mID": "UUID",
+                    "Value": 0
                 }
             ]
         },
