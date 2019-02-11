@@ -46,10 +46,10 @@ namespace nap
          * Called when the application receives a log message
          * @param env java native environment
          * @param context the android context in java
-         * @param level log level
+         * @param level log level, as defined by the nap::Logger
          * @param msg the received message
          */
-        void logMessageReceived(JNIEnv *env, jobject context, ELogLevel level, const std::string& msg)
+        void logMessageReceived(JNIEnv *env, jobject context, int level, const std::string& msg)
         {
             // Calling for first time, get the method id
             jclass thisClass = env->GetObjectClass(context);
@@ -68,16 +68,17 @@ namespace nap
 
         bool init(JNIEnv *env, jobject contextObject)
         {
+            // Start by installing log callback.
+            // Allows the java environment to receive all NAP log messages.
+            APILogFunction logFunc = &nap::android::logMessageReceived;
+            Instance<EmographyAndroidApp>::get().installLogCallback(logFunc);
+
             // Initialize the NAP env and app
             if(Instance<EmographyAndroidApp>::get().init(env, contextObject))
             {
                 // Install API callback
                 APICallbackFunction callbackFunc = &nap::android::apiEventReceived;
                 Instance<EmographyAndroidApp>::get().installAPICallback(callbackFunc);
-
-                // Install log callback
-                APILogFunction logFunc = &nap::android::logMessageReceived;
-                Instance<EmographyAndroidApp>::get().installLogCallback(logFunc);
                 return true;
             }
             return false;

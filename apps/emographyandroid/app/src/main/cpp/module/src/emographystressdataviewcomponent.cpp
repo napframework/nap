@@ -50,8 +50,8 @@ namespace nap
 			SystemTimeStamp sys_end = mEndTime.toSystemTime();
 
 			// Log some info
-			nap::Logger::info("query start time: %s", DateTime(sys_start).toString().c_str());
-			nap::Logger::info("query end time: %s", DateTime(sys_end).toString().c_str());
+			// nap::Logger::info("query start time: %s", DateTime(sys_start).toString().c_str());
+			// nap::Logger::info("query end time: %s", DateTime(sys_end).toString().c_str());
 
 			// Get readings
 			std::vector<std::unique_ptr<ReadingSummaryBase>> model_readings;

@@ -193,11 +193,10 @@ public class ForegroundService extends Service
      */
     private void call(String data)
     {
-        // Send message
-        napSendMessage(data);
-
-        // Flush -> triggers an update of the NAP application running in the background
-        flush();
+        // Send message and Flush:
+        // triggers an update of the NAP application running in the background
+        if(napSendMessage(data))
+            flush();
     }
 
 

@@ -163,7 +163,8 @@ public class MainActivity extends AppCompatActivity
             else if (action.equals(Constants.ACTION.API_LOG_ACTIVITY)) {
                 // Received api log message from service
                 TextView tv = findViewById(R.id.text_log);
-                tv.setText(intent.getStringExtra(Constants.API.LOG));
+                String msg = intent.getStringExtra(Constants.API.LOG);
+                tv.setText(String.format("%s\n%s", tv.getText(), msg));
             }
         }
     };
