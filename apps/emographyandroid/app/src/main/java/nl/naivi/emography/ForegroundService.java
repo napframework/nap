@@ -17,12 +17,15 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class ForegroundService extends Service
 {
     private static final String TAG = "NAPEmography";
     private IntentFilter mIntentFilter;
-    private boolean mStopThread = false;
-
+    private volatile boolean mStopThread = false;
+    private AtomicBoolean mFlush = new AtomicBoolean(false);
+    final private Object mLock = new Object();
 
     @Override
     public void onCreate()
@@ -70,7 +73,7 @@ public class ForegroundService extends Service
         startForeground(Constants.NOTIFICATIONS.FOREGROUND_SERVICE_ID, notification);
 
         // Build worker thread
-        Thread t = new Thread(new Runnable()
+        Thread nap_thread = new Thread(new Runnable()
         {
             @Override
             public void run()
@@ -89,34 +92,43 @@ public class ForegroundService extends Service
                         public void run()
                         {
                             Toast.makeText(ForegroundService.this, "NAP initialization failure", Toast.LENGTH_SHORT).show();
-                            stopAll();
+                            stopService();
                         }
                     };
                     mainHandler.post(myRunnable);
-
                     return;
                 }
 
-                // Loop through doing some imaginary things with our NAP service
+                // Update NAP when a new message is received
                 while (!Thread.interrupted() && !mStopThread)
-                    try
-                    {
-                        Thread.sleep(100);
-
-                        // Flush - forces an update on the C++ side
-                        napFlush();
+                {
+                    synchronized (mLock) {
+                        try {
+                            // Wait until we need to flush
+                            while (!mFlush.get()) {
+                                mLock.wait();
+                            }
+                        }
+                        catch(InterruptedException e) {
+                            Log.e("error", e.toString());
+                        } // Perform action appropriate to condition
                     }
-                    catch (InterruptedException e) { }
+
+                    // Reset
+                    mFlush.set(false);
+
+                    // Flush - forces an update on the C++ side
+                    napUpdate();
+                }
 
                 // Shutdown NAP core
-                shutdownNap();
+                napShutdown();
                 Log.i(TAG, "Service thread exiting cleanly");
             }
         });
 
         // Start our thread
-        t.start();
-
+        nap_thread.start();
         return START_STICKY;
     }
 
@@ -129,7 +141,7 @@ public class ForegroundService extends Service
             {
                 // Shutdown request received
                 Log.i(TAG, "Received stop service intent");
-                stopAll();
+                stopService();
             }
             else if (intent.getAction().equals(Constants.ACTION.API_SEND_MESSAGE))
             {
@@ -159,28 +171,41 @@ public class ForegroundService extends Service
     }
 
 
-    private void call(String data)
+    /**
+     * Notifies the NAP thread to flush all current events (messages)
+     * All events are processed in order, ie: first in / first out.
+     */
+    private void flush ()
     {
-        napSendMessage(data);
-    }
-
-
-    private void napFlush()
-    {
-        napUpdate();
-    }
-
-
-    private void shutdownNap()
-    {
-        napShutdown();
+        // Notify NAP thread that a message can be processed
+        synchronized (mLock)
+        {
+            mFlush.set(true);
+            mLock.notifyAll();
+        }
     }
 
 
     /**
-     * Stop the service and request that the activity stop too
+     * Forwards a message to the NAP APP.
+     * Also ensures the NAP thread is notified about a received message.
+     * @param data the NAP message as json formatted string.
      */
-    private void stopAll()
+    private void call(String data)
+    {
+        // Send message
+        napSendMessage(data);
+
+        // Flush -> triggers an update of the NAP application running in the background
+        flush();
+    }
+
+
+    /**
+     * Stop this service and request that the activity stop too
+     * This is called when an intent to stop the service is received.
+     */
+    private void stopService()
     {
         stopForeground(true);
         stopSelf();
@@ -191,6 +216,10 @@ public class ForegroundService extends Service
     }
 
 
+    /**
+     * Called on destruction, stops the NAP thread from running.
+     * On destruction the NAP system is flushed before exiting.
+     */
     @Override
     public void onDestroy()
     {
@@ -198,6 +227,9 @@ public class ForegroundService extends Service
 
         // Stop our worker
         mStopThread = true;
+
+        // Flush NAP system
+        flush();
 
         // Unregister broadcast receiver
         unregisterReceiver(mReceiver);
@@ -264,8 +296,31 @@ public class ForegroundService extends Service
         System.loadLibrary("nap-service");
     }
 
+
+    ////////////////////////////////////////////////////////////
+    // Native Java Calls
+    ////////////////////////////////////////////////////////////
+
+    /**
+     * Java JNI Wrapper function to initialize the NAP application
+     * @return if the nap application initialized correctly.
+     */
     public native boolean   napInit();
+
+    /**
+     * Java JNI Wrapper function to update the initialized NAP application
+     */
     public native void      napUpdate();
-    public native boolean   napSendMessage(String data);
+
+    /**
+     * Java JNI Wrapper function to send a message to the initialized NAP application
+     * @param jsonMessage the json formatted api message as string.
+     * @return if the message was accepted by the system.
+     */
+    public native boolean   napSendMessage(String jsonMessage);
+
+    /**
+     * Java JNI Wrapper function to shut down the running NAP application
+     */
     public native void      napShutdown();
 }
