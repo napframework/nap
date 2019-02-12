@@ -1,5 +1,7 @@
 #include "pathbrowserpanel.h"
 
+#include <QtDebug>
+
 using namespace napkin;
 
 PathItem::PathItem(const PropertyPath& path) : mPath(path)
@@ -7,17 +9,45 @@ PathItem::PathItem(const PropertyPath& path) : mPath(path)
 	if (!path.hasProperty())
 		setIcon(AppContext::get().getResourceFactory().getIcon(path.getObject()));
 
-	for (auto p : path.getChildren())
+	for (auto p : path.getChildren(IterFlag::FollowPointers | IterFlag::FollowEmbeddedPointers))
 	{
-//		if (mPath.getType().is_derived_from<nap::Entity>())
-			appendRow(new PathItem(p));
+		appendRow({
+						  new PathItem(p),
+						  new PathTypeItem(p)
+				  });
 	}
 }
 QVariant PathItem::data(int role) const
 {
 	if (role == Qt::DisplayRole)
-		return QString::fromStdString(mPath.toString());
+	{
+		auto pathstr = QString::fromStdString(mPath.toString());
+		auto pathsplit = pathstr.split('/');
+		return pathsplit.last();
+	}
+//	else if (role == Qt::ForegroundRole)
+//	{
+//		if (mPath.hasProperty())
+//		{
+//			return QVariant::fromValue<QColor>(Qt::blue);
+//		}
+//	}
 	return QStandardItem::data(role);
+}
+
+PathTypeItem::PathTypeItem(const PropertyPath& path)
+		: PathItem(path)
+{
+
+}
+
+QVariant PathTypeItem::data(int role) const
+{
+	if (role == Qt::DisplayRole)
+		return QString::fromStdString(std::string(path().getType().get_name()));
+	if (role == Qt::DecorationRole)
+		return {};
+	return PathItem::data(role);
 }
 
 const PropertyPath& PathItem::parentPath()
@@ -53,8 +83,30 @@ PathBrowserPanel::PathBrowserPanel()
 		{
 			if (obj->get_type().is_derived_from<nap::Component>())
 				continue;
-			mModel.appendRow(new PathItem(PropertyPath(*obj)));
+			if (obj->get_type().is_derived_from<nap::InstancePropertyValue>())
+				continue;
+			PropertyPath p(*obj);
+			mModel.appendRow({
+									 new PathItem(p),
+									 new PathTypeItem(p)
+							 });
 		}
 	});
+
+	connect(mTreeView.getTreeView().selectionModel(), &QItemSelectionModel::selectionChanged,
+			[this](const QItemSelection& selected,
+				   const QItemSelection& deselected)
+			{
+				auto indexes = mTreeView.getTreeView().selectionModel()->selectedIndexes();
+				for (auto idx : indexes)
+				{
+					if (idx.column() > 0)
+						continue;
+					auto srcIndex = mTreeView.getFilterModel().mapToSource(idx);
+					auto item = mTreeView.getModel()->itemFromIndex(srcIndex);
+					auto pathItem = dynamic_cast<PathItem*>(item);
+					qInfo() << pathItem->text();
+				}
+			});
 }
 nap::qt::FilterTreeView& PathBrowserPanel::treeView() { return mTreeView; }

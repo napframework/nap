@@ -31,6 +31,14 @@ namespace napkin
 		PropertyPath mPath;
 	};
 
+
+	class PathTypeItem : public PathItem
+	{
+	public:
+		PathTypeItem(const PropertyPath& path);
+		QVariant data(int role) const override;
+	};
+
 	class PathBrowserPanel : public QWidget
 	{
 	Q_OBJECT

@@ -62,6 +62,7 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path)
 	: QStandardItem(QString::fromStdString(path.getName())), mPath(path)
 {
+
 }
 
 napkin::PropertyItem::PropertyItem(const PropertyPath& path)
