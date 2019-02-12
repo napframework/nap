@@ -160,8 +160,8 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					if (variant.canConvert<PropertyPath>())
 					{
 						auto path = variant.value<PropertyPath>();
-						auto selected = napkin::showObjectSelector(AppContext::get().getMainWindow(),
-																		wrapped_type);
+						auto objects = AppContext::get().getDocument()->getObjects(wrapped_type);
+						auto selected = napkin::showObjectSelector(AppContext::get().getMainWindow(), objects);
 						if (selected != nullptr)
 							model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
 

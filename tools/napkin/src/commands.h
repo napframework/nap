@@ -139,7 +139,6 @@ namespace napkin
 
 
 	/**
-	 * TODO: Can this be an 'AddPointerToVectorCommand'?
 	 * Add an entity to a scene
 	 */
 	class AddEntityToSceneCommand : public QUndoCommand
@@ -152,6 +151,21 @@ namespace napkin
 	private:
 		const std::string mSceneID;
 		const std::string mEntityID;
+		size_t mIndex;
+	};
+
+	/**
+	 * Add an Entity as a child to another entity
+	 */
+	class AddChildEntityCommand : public QUndoCommand
+	{
+	public:
+		AddChildEntityCommand(nap::Entity& parent, nap::Entity& child);
+		void redo() override;
+		void undo() override;
+	private:
+		const std::string mChildID;
+		const std::string mParentID;
 		size_t mIndex;
 	};
 

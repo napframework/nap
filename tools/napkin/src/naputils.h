@@ -41,12 +41,8 @@ namespace napkin
 	class FlatObjectModel : public QStandardItemModel
 	{
 	public:
-		FlatObjectModel(const rttr::type& basetype);
-
-	private:
-		const rttr::type mBaseType;
+		FlatObjectModel(const std::vector<nap::rtti::Object*> objects);
 	};
-
 
 	using TypePredicate = std::function<bool(const rttr::type& type)>;
 
@@ -74,12 +70,11 @@ namespace napkin
 
 	/**
 	 * Display a selection dialog with all available objects, filtered by type T
-	 * @tparam T the base type to filter by
 	 * @param parent The parent widget to attach to.
+	 * @param objects The objects to select from
 	 * @return The selected object or nullptr if no object was selected
 	 */
-	template<typename T>
-	T* showObjectSelector(QWidget* parent) { return rtti_cast<T>(showObjectSelector(parent, RTTI_OF(T))); }
+	nap::rtti::Object* showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects);
 
 	/**
 	 * Show a dialog box containing the given properties and a custom message.

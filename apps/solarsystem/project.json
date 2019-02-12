@@ -1,0 +1,10 @@
+{
+    "title": "solarsystem",
+    "version": "0.2.2",
+    "modules": [
+        "mod_napapp",
+        "mod_napsvg",
+        "mod_napvideo",
+        "mod_napimgui"
+    ]
+}

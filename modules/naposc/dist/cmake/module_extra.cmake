@@ -1,4 +1,7 @@
-find_package(oscpack REQUIRED)
+if(NOT TARGET oscpack)
+    find_package(oscpack REQUIRED)
+endif()
+
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} debug ${OSCPACK_LIBS_DEBUG} optimized ${OSCPACK_LIBS_RELEASE})
 else()
