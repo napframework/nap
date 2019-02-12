@@ -26,8 +26,8 @@ elseif (ANDROID)
         NAMES Release/${ANDROID_ABI}/libnaputility.a
         HINTS ${NAP_ROOT}/lib/
     )
-    set(NAPUTILITY_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/${ANDROID_ABI}/libnaputility.a)
-    set(NAPUTILITY_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/${ANDROID_ABI}/libnaputility.a)
+    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/${ANDROID_ABI}/libnaputility.a)
+    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/${ANDROID_ABI}/libnaputility.a)
 elseif (UNIX)
     find_path(
         NAPUTILITY_LIBS_DIR
@@ -38,10 +38,6 @@ elseif (UNIX)
     set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/libnaputility.a)
 endif()
 
-if (NOT NAPUTILITY_LIBS_DIR)
-    message(FATAL_ERROR "Couldn't find NAP utility")
-endif()
-
 # Setup as interface library
 add_library(naputility INTERFACE)
 target_link_libraries(naputility INTERFACE optimized ${NAPUTILITY_LIBS_RELEASE})
@@ -49,7 +45,7 @@ target_link_libraries(naputility INTERFACE debug ${NAPUTILITY_LIBS_DEBUG})
 set_target_properties(naputility PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NAP_ROOT}/include;${MOODYCAMEL_INCLUDE_DIRS}")
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(naputility REQUIRED_VARS NAPRTTI_LIBS_DIR)
+find_package_handle_standard_args(naputility REQUIRED_VARS NAPUTILITY_LIBS_DIR)
 
 # Show headers in IDE
 file(GLOB utility_headers ${CMAKE_CURRENT_LIST_DIR}/../include/utility/*.h)
