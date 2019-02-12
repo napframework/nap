@@ -17,6 +17,8 @@ import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -153,14 +155,11 @@ public class MainActivity extends AppCompatActivity
             }
             else if(action.equals(Constants.ACTION.API_RESPONSE_ACTIVITY)) {
                 // Received api response message from service
-                TextView tv = findViewById(R.id.api_log);
-                tv.setText(intent.getStringExtra(Constants.API.MESSAGE));
+                showAPIReply(intent.getStringExtra(Constants.API.MESSAGE));
             }
             else if (action.equals(Constants.ACTION.API_LOG_ACTIVITY)) {
                 // Received api log message from service
-                TextView tv = findViewById(R.id.text_log);
-                String msg = intent.getStringExtra(Constants.API.LOG);
-                addLogMessage(msg);
+                addLogMessage(intent.getStringExtra(Constants.API.LOG));
             }
         }
     };
@@ -279,6 +278,43 @@ public class MainActivity extends AppCompatActivity
         // Flush existing nap view
         TextView nv = findViewById(R.id.api_log);
         nv.setText("");
+    }
+
+
+    /**
+     * Displays the received API message
+     */
+    private void showAPIReply(String msg)
+    {
+        /*
+         * JSON API MESSAGE PARSING EXAMPLE!
+         * UNCOMMENT TO SEE IT WORK
+         *
+        ArrayList<APIMessage> reply = new ArrayList<APIMessage>();
+        boolean success = mBuilder.parseReply(msg, reply);
+        if(!success) {
+            Log.e("error","Unable to parse API reply message");
+            return;
+        }
+
+        // Get name of api event
+        String name = reply.get(0).getID();
+
+        // Extract values
+        StringBuilder error = new StringBuilder();
+        String uuid = reply.get(0).getString("UUID", error);
+        Long starttime = reply.get(0).getLong("startTime", error);
+        Long endtime = reply.get(0).getLong("endTime", error);
+        Long samplec = reply.get(0).getLong("samples", error);
+
+        // Extract stress data
+        ArrayList<Double> stressData = new ArrayList<Double>();
+        reply.get(0).getDoubleArray("data", stressData, error);
+        */
+
+        // Log
+        TextView tv = findViewById(R.id.api_log);
+        tv.setText(msg);
     }
 
 

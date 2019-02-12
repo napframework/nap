@@ -4,6 +4,8 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 /**
  * Manages multiple NAP API messages.
  * A collection of NAP API messages can be send as a list of commands to a NAP application.
@@ -18,6 +20,40 @@ class APIMessageBuilder
      */
     APIMessageBuilder() {
         clear();
+    }
+
+    /**
+     * Extracts all the api messages and caches them internally.
+     * This call clears all previously cached messages.
+     * The result of this operation is stored in outMessages.
+     * @param apiReply the json formatted string dispatched by the NAP application
+     * @param outMessages contains all the extracted messages
+     * @return if extracting all messages succeeded
+     */
+    boolean parseReply(String apiReply, ArrayList<APIMessage> outMessages) {
+
+        outMessages.clear();
+        boolean all_extracted = true;
+        try
+        {
+            mContainer = new JSONObject(apiReply);
+            mMessages  = mContainer.getJSONArray("Objects");
+            for(int obj =0; obj < mMessages.length(); obj++)
+            {
+                APIMessage extracted_msg = APIMessage.fromReply(mMessages.getJSONObject(obj));
+                if(extracted_msg != null) {
+                    outMessages.add(extracted_msg);
+                }
+                else {
+                    all_extracted = false;
+                }
+            }
+        }
+        catch (Exception e) {
+            Log.e("error", e.getMessage());
+            return false;
+        }
+        return all_extracted;
     }
 
     /**
