@@ -19,7 +19,7 @@ nap::Entity* Document::getParent(const nap::Entity& child) const
 		if (!o->get_type().is_derived_from<nap::Entity>())
 			continue;
 
-		nap::Entity* parent = rtti_cast<nap::Entity>(o);
+		auto parent = rtti_cast<nap::Entity>(o);
 		auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(),
 							   [&child](ObjectPtr<nap::Entity> e) -> bool { return &child == e.get(); });
 
@@ -27,6 +27,18 @@ nap::Entity* Document::getParent(const nap::Entity& child) const
 			return parent;
 	}
 	return nullptr;
+}
+
+bool Document::hasChild(const nap::Entity& parentEntity, const nap::Entity& childEntity, bool recursive) const
+{
+	for (auto child : parentEntity.mChildren)
+	{
+		if (child == &childEntity)
+			return true;
+		if (recursive && hasChild(*child, childEntity, true))
+			return true;
+	}
+	return false;
 }
 
 
@@ -264,6 +276,24 @@ size_t Document::addEntityToScene(nap::Scene& scene, nap::Entity& entity)
 	return index;
 }
 
+size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
+{
+	auto index = parent.mChildren.size();
+	parent.mChildren.emplace_back(&child);
+	entityAdded(&child, &parent);
+	return index;
+}
+
+void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
+{
+	auto obj = parent.mChildren[childIndex];
+	parent.mChildren.erase(parent.mChildren.begin() + childIndex);
+	objectChanged(&parent);
+
+	PropertyPath childrenProp(parent, "Children");
+	assert(childrenProp.isValid());
+	propertyValueChanged(childrenProp);
+}
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
 {
@@ -278,6 +308,12 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 	auto& v = scene.mEntities;
 	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity == &entity; };
 	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
+	objectChanged(&scene);
+}
+
+void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
+{
+	scene.mEntities.erase(scene.mEntities.begin() + index);
 	objectChanged(&scene);
 }
 
@@ -553,6 +589,17 @@ Document::~Document()
 	
 }
 
+std::vector<nap::rtti::Object*> Document::getObjects(const nap::rtti::TypeInfo& type)
+{
+	std::vector<nap::rtti::Object*> result;
+	for (auto& object : getObjects())
+	{
+		if (object->get_type().is_derived_from(type))
+			result.emplace_back(object.get());
+	}
+	return result;
+}
+
 bool Document::isPointedToByEmbeddedPointer(const nap::rtti::Object& obj)
 {
 	for (const auto& path : getPointersTo(obj, false, false))
@@ -695,6 +742,3 @@ nap::RootEntity* Document::getRootEntity(nap::Scene& scene, nap::Entity& entity)
 	}
 	return nullptr;
 }
-
-
-

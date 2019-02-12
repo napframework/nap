@@ -58,40 +58,22 @@ void napkin::ResourceModel::refresh()
 
 ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 {
-	ObjectItem* item = napkin::findItemInModel<ObjectItem>(*this, ob);
-	if (item != nullptr)
-		return item;
-
 	auto typeItem = new RTTITypeItem(ob.get_type());
 
-	// Entity?
 	if (ob.get_type().is_derived_from<nap::Entity>())
 	{
-		// Grab entities and stuff them in a group
-		nap::Entity& e = *rtti_cast<nap::Entity>(&ob);
+		nap::Logger::info("Entity: %s", ob.mID.c_str());
+		auto entityItem = new EntityItem(*rtti_cast<nap::Entity>(&ob));
+		mEntitiesItem.appendRow({entityItem, typeItem});
 
-		auto entityItem = new EntityItem(e);
-
-		auto parent = AppContext::get().getDocument()->getParent(e);
-		if (parent != nullptr)
-		{
-			auto parentItem = napkin::findItemInModel<EntityItem>(*this, *parent);
-			if (parentItem != nullptr)
-				parentItem->appendRow({entityItem, typeItem});
-		}
-		else
-		{
-			mEntitiesItem.appendRow({entityItem, typeItem});
-		}
-
-		return nullptr;
+		return entityItem;
 	}
 
 	if (!shouldObjectBeVisible(ob))
 		return nullptr;
 
 	// ... now the rest in Objects...
-	item = new ObjectItem(&ob);
+	auto item = new ObjectItem(&ob, false);
 	mObjectsItem.appendRow({item, typeItem});
 	return item;
 }
@@ -135,7 +117,7 @@ napkin::ResourcePanel::ResourcePanel()
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
 	mTreeView.getTreeView().setColumnWidth(0, 300);
-	mTreeView.getTreeView().setSortingEnabled(true);
+	mTreeView.getTreeView().setSortingEnabled(false);
 
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
@@ -167,7 +149,29 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		{
 			// Selected item is an Entity
 			auto entity = entityItem->getEntity();
-			menu.addAction(new AddEntityAction(entity));
+
+			auto addEntityAction = menu.addAction("Add Child Entity...");
+			connect(addEntityAction, &QAction::triggered, [this, entity]()
+			{
+				auto doc = AppContext::get().getDocument();
+				auto objects = doc->getObjects(RTTI_OF(nap::Entity));
+				std::vector<nap::rtti::Object*> filteredEntities;
+				for (auto o : objects)
+				{
+					auto e = dynamic_cast<nap::Entity*>(o);
+					assert(e);
+					if (e == entity || doc->hasChild(*e, *entity, true))
+						continue;
+					filteredEntities.emplace_back(e);
+				}
+
+				auto child = dynamic_cast<nap::Entity*>(napkin::showObjectSelector(this, filteredEntities));
+				if (!child)
+					return;
+
+				AppContext::get().executeCommand(new AddChildEntityCommand(*entity, *child));
+			});
+
 
 			// Components
 			menu.addAction("Add Component...", [entity]()
@@ -184,8 +188,29 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 			});
 
 		}
-
-		menu.addAction(new DeleteObjectAction(*objItem->getObject()));
+		if (entityItem != nullptr && entityItem->isPointer())
+		{
+			// In case of a pointer, we're displaying an 'instance' of an entity,
+			// so this should only remove the Entity from its parent
+			auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
+			if (parentItem)
+			{
+				auto index = parentItem->childEntityIndex(*entityItem);
+				assert(index >= 0);
+				if (index >= 0)
+				{
+					menu.addAction("Remove", [parentItem, index]()
+					{
+						auto doc = AppContext::get().getDocument();
+						doc->removeChildEntity(*parentItem->getEntity(), index);
+					});
+				}
+			}
+		}
+		else
+		{
+			menu.addAction(new DeleteObjectAction(*objItem->getObject()));
+		}
 	}
 
 	auto groupItem = dynamic_cast<GroupItem*>(item);
@@ -193,7 +218,9 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	{
 		if (groupItem->text() == TXT_LABEL_ENTITIES)
 		{
-			menu.addAction(new AddEntityAction(nullptr));
+			menu.addAction("Create Entity", [this]() {
+				AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), nullptr));
+			});
 		}
 		else if (groupItem->text() == TXT_LABEL_RESOURCES)
 		{

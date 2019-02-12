@@ -56,7 +56,8 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects\m
     "version": "0.1",
     "modules": [
         "mod_napapp",
-        "mod_napaudio"
+        "mod_napaudio",
+        "mod_napimgui"
     ]
 }
 ```
@@ -117,7 +118,8 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
     "version": "0.1",
     "modules": [
         "mod_napapp",
-        "mod_napaudio"
+        "mod_napaudio",
+        "mod_napimgui"
     ]
 }
 ```
@@ -178,7 +180,8 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
     "version": "0.1",
     "modules": [
         "mod_napapp",
-        "mod_napaudio"
+        "mod_napaudio",
+        "mod_napimgui"
     ]
 }
 ```

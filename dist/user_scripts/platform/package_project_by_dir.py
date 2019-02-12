@@ -39,7 +39,7 @@ if __name__ == '__main__':
         cmd.append('--no-zip')
     if args.no_show:
         cmd.append('--no-show')
-    call(cmd)
+    exit_code = call(cmd)
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
     if not sys.platform.startswith('linux') and not args.no_pause:
@@ -47,3 +47,6 @@ if __name__ == '__main__':
 
         # Read a char from console
         read_console_char()
+
+    # Expose exit code
+    sys.exit(exit_code)

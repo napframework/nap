@@ -1,6 +1,6 @@
 {
-    "title": "Skeleton",
-    "version": "0.2.3",
+    "title": "solarsystem",
+    "version": "0.2.2",
     "modules": [
         "mod_napapp",
         "mod_napsvg",

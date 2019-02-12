@@ -1,0 +1,216 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "CameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "nap::PerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 50.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.1,
+                            "y": 0.1,
+                            "z": 10.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SphereContainerEntity",
+            "Children":
+            [
+                "SphereEntity",
+                "SphereEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SphereEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "SphereMesh",
+                    "MaterialInstance": {
+                        "Material": "Material",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "Material",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "inCameraPosition",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": -2.0
+                    }
+                }
+            ],
+            "Shader": "Shader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normal"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "SolarSystem",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "CameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "SphereContainerEntity",
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./SphereEntity:0/nap::TransformComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "FloatInstancePropertyValue1",
+                                        "Value": 0.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./SphereEntity:1/nap::TransformComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "FloatInstancePropertyValue2",
+                                        "Value": 2.0
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "Shader",
+            "mVertShader": "shaders/ball.vert",
+            "mFragShader": "shaders/ball.frag"
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "SphereMesh",
+            "Radius": 1.0,
+            "Rings": 50.0,
+            "Sectors": 50.0
+        }
+    ]
+}
