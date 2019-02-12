@@ -215,5 +215,99 @@ namespace nap
 		}
 		
 		return true;
-	}	
+	}
+
+
+	bool ModuleManager::fetchImmediateModuleDependencies(const std::vector<std::string>& searchModules, 
+		                                                 std::vector<std::string>& previouslyFoundModules, 
+		                                                 std::vector<std::string>& dependencies, 
+		                                                 utility::ErrorState& errorState)
+	{
+		// Based on the modules we're searching on build a set of directories to locate them in
+		std::vector<std::string> directories;
+		if (!buildModuleSearchDirectories(searchModules, directories, errorState))
+			return false;
+		
+		// List of remaining modules to locate dependencies for
+		std::vector<std::string> remainingModulesToFind = searchModules;
+		
+		// Iterate the directories in our search path
+		for (const auto& directory : directories) 
+		{
+			// Skip directory if it doesn't exist
+			if (!utility::dirExists(directory))
+				continue;
+			
+			// Find all files in the specified directory
+			std::vector<std::string> files_in_directory;
+			utility::listDir(directory.c_str(), files_in_directory);
+		
+			// Iterate the files in our search path
+			for (const auto& filename : files_in_directory)
+			{
+				// Ignore directories
+				if (utility::dirExists(filename))
+					continue;
+				
+				// Ignore non-shared libraries
+				if (!isModule(filename))
+					continue;
+				
+				// Skip any modules we come across that aren't the ones we're after
+				std::string moduleName = getModuleNameFromPath(filename);
+				if (std::find(remainingModulesToFind.begin(), remainingModulesToFind.end(), 
+					          moduleName) == remainingModulesToFind.end())
+					continue;
+
+				// Get the JSON filename for the module
+				std::string modulePath = utility::getAbsolutePath(filename);
+#if defined(_WIN32)
+				std::replace(modulePath.begin(), modulePath.end(), '\\', '/');
+#endif
+				std::string jsonFile = utility::getFileDir(modulePath) + "/" + 
+				                       utility::getFileNameWithoutExtension(modulePath);
+				jsonFile = jsonFile + ".json";
+
+				// Load the dependencies from the JSON file
+				std::vector<std::string> dependenciesFromJson;
+				if (!loadModuleDependenciesFromJsonFile(jsonFile, dependenciesFromJson, errorState))
+					return false;
+
+				// Iterate each dependency for this module
+				for (const auto& dependencyModule : dependenciesFromJson)
+				{
+					// Check if we already had this dependency before listing dependencies for this module
+					bool hadModulePreviously = std::find(previouslyFoundModules.begin(), previouslyFoundModules.end(), dependencyModule) != previouslyFoundModules.end();
+
+					// Check if we already had added this dependency as a new dependency
+					bool foundModuleRecently = std::find(dependencies.begin(), dependencies.end(), dependencyModule) != dependencies.end();
+					
+					// If we've found a new dependency add it to the list
+					if (!hadModulePreviously && !foundModuleRecently)
+						dependencies.push_back(dependencyModule);
+				}
+				
+				// Remove our handled module from the remaining modules to load dependencies for
+				std::vector<std::string>::iterator position = std::find(remainingModulesToFind.begin(), remainingModulesToFind.end(), moduleName);
+				if (position != remainingModulesToFind.end())
+					remainingModulesToFind.erase(position);
+			}
+			
+			// At least break our outer loop if we've already loaded dependencies for the requested modules
+			if (remainingModulesToFind.empty())
+				break;
+		}
+		
+		// If we couldn't load dependencies for all modules error and fail
+		if (!remainingModulesToFind.empty())
+		{
+			std::string errorModulesToLog;
+			for (const auto &errorModule : remainingModulesToFind)
+				errorModulesToLog += errorModule + " ";
+			errorState.fail("Couldn't load modules dependencies for: " + errorModulesToLog);
+			return false;
+		}
+	
+		return true;
+	}		
 }

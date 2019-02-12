@@ -16,10 +16,6 @@ namespace nap
 {
 	bool ModuleManager::loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error, std::string forcedModuleDirectory)
 	{
-		// TODO ANDROID At the moment we're only supporting a top level specific list of modules to load;
-		// we don't supporting module child dependencies pulled from module.json files and we don't
-		// support the native behaviour which loads all available modules when none are specified
-
 		// Track which modules remain to be loaded
 		std::vector<std::string> modulesToLoad;
 		if (!fetchProjectModuleDependencies(moduleNames, modulesToLoad, error))
@@ -98,7 +94,8 @@ namespace nap
 		                                             std::vector<std::string>& searchDirectories, 
 		                                             utility::ErrorState& errorState)
 	{
-		// TODO ANDROID Not using module search directories for Android, permanent?
+		// We don't use module search directories on Android
+		// TODO ANDROID Restructure API to not have this pointless stub?
 		return true;
 	}
 
@@ -107,8 +104,97 @@ namespace nap
 		                                               std::vector<std::string>& dependencies, 
 		                                               utility::ErrorState& errorState)
 	{
-		// TODO ANDROID temporary fetchProjectModuleDependencies? For now just use an explicit module list in project.json
-		dependencies.insert(dependencies.end(), topLevelProjectModules.begin(), topLevelProjectModules.end());
+		// Take the top level modules from project.json as the first modules to work on
+		std::vector<std::string> newModules = topLevelProjectModules;
+
+		// Work until we find loop and come across no new dependencies
+		std::vector<std::string> searchModules;
+		while (!newModules.empty())
+		{
+			// Add our new dependencies to our master list
+			dependencies.insert(dependencies.end(), newModules.begin(), newModules.end());
+			
+			// Fetch any new dependencies for the dependencies found in the last loop
+			searchModules = newModules;
+			newModules.clear();
+			if (!fetchImmediateModuleDependencies(searchModules, dependencies, newModules, 
+				                                  errorState))
+				return false;
+		}
+		
 		return true;
-	}	
+	}
+
+
+	bool ModuleManager::fetchImmediateModuleDependencies(const std::vector<std::string>& searchModules, 
+		                                                 std::vector<std::string>& previouslyFoundModules, 
+		                                                 std::vector<std::string>& dependencies, 
+		                                                 utility::ErrorState& errorState)
+	{
+		// List of remaining modules to locate dependencies for
+		std::vector<std::string> remainingModulesToFind = searchModules;
+		
+		// Iterate the directories in our search path
+		for (const auto& moduleName : searchModules) 
+		{
+			// Get the path for the module.json
+			std::string jsonFile = "nap_modules/" + moduleName + "/module.json";
+
+			// Open the asset using Android's AssetManager
+			// TODO ANDROID Cleanup, harden and code re-use. I believe this also doesn't cater for files over 1MB.
+	        AAsset* asset = AAssetManager_open(mCore.getAndroidAssetManager(), jsonFile.c_str(), AASSET_MODE_UNKNOWN);
+	        if (asset == NULL) 
+	        {
+    			errorState.fail("AssetManager couldn't load asset %s", jsonFile.c_str());
+	            return false;
+	        }
+
+	        // Read the asset
+	        long size = AAsset_getLength(asset);
+	        char* buffer = (char*) malloc (sizeof(char)*size);
+	        AAsset_read(asset, buffer, size);
+			std::string outBuffer(buffer, size);
+	        AAsset_close(asset);
+
+			// Load the dependencies from the JSON file
+			std::vector<std::string> dependenciesFromJson;
+			if (!deserializeModuleDependenciesFromJson(outBuffer, dependenciesFromJson, errorState))
+				return false;
+
+			// Iterate each dependency for this module
+			for (const auto& dependencyModule : dependenciesFromJson)
+			{
+				// Check if we already had this dependency before listing dependencies for this module
+				bool hadModulePreviously = std::find(previouslyFoundModules.begin(), previouslyFoundModules.end(), dependencyModule) != previouslyFoundModules.end();
+
+				// Check if we already had added this dependency as a new dependency
+				bool foundModuleRecently = std::find(dependencies.begin(), dependencies.end(), dependencyModule) != dependencies.end();
+				
+				// If we've found a new dependency add it to the list
+				if (!hadModulePreviously && !foundModuleRecently)
+					dependencies.push_back(dependencyModule);
+			}
+			
+			// Remove our handled module from the remaining modules to load dependencies for
+			std::vector<std::string>::iterator position = std::find(remainingModulesToFind.begin(), remainingModulesToFind.end(), moduleName);
+			if (position != remainingModulesToFind.end())
+				remainingModulesToFind.erase(position);
+			
+			// At least break our outer loop if we've already loaded dependencies for the requested modules
+			if (remainingModulesToFind.empty())
+				break;
+		}
+		
+		// If we couldn't load dependencies for all modules error and fail
+		if (!remainingModulesToFind.empty())
+		{
+			std::string errorModulesToLog;
+			for (const auto &errorModule : remainingModulesToFind)
+				errorModulesToLog += errorModule + " ";
+			errorState.fail("Couldn't load modules dependencies for: " + errorModulesToLog);
+			return false;
+		}
+	
+		return true;
+	}
 }

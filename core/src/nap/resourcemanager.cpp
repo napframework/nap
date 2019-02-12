@@ -219,36 +219,13 @@ namespace nap
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
 		assert(utility::toComparableFilename(filename) != utility::toComparableFilename(externalChangedFile));
 
-#ifndef ANDROID
 		// Read objects from disk
 		DeserializeResult read_result;
-		if (!readJSONFile(filename, EPropertyValidationMode::DisallowMissingProperties, getFactory(), read_result, errorState))
-			return false;
-#else
-		// TODO ANDROID Cleanup, harden and reorganise. I believe this also doesn't cater for files over 1MB.
-		DeserializeResult read_result;
-		// Open the asset using Android's AssetManager
-        AAsset* asset = AAssetManager_open(mCore.getAndroidAssetManager(), filename.c_str(), AASSET_MODE_UNKNOWN);
-        if (asset == NULL) 
-        {
-            Logger::error("AssetManager couldn't load asset %s", filename.c_str());
-            return false;
-        }
-
-        // Read the asset
-        long size = AAsset_getLength(asset);
-        char* buffer = (char*) malloc (sizeof(char)*size);
-        AAsset_read(asset, buffer, size);
-		std::string outBuffer(buffer, size);
-        AAsset_close(asset);
-
-        // Process the loaded JSON
-		if (!deserializeJSON(outBuffer, EPropertyValidationMode::DisallowMissingProperties, getFactory(), read_result, errorState)) 
+		if (!loadFileAndDeserialize(filename, read_result, errorState))
 		{
-			Logger::error("Failed to deserialise");
-			return false;            
+			errorState.fail("Failed to load and deserialize %s", filename.c_str());
+			return false;
 		}
-#endif
 
 		// We first gather the objects that require an update. These are the new objects and the changed objects.
 		// Change detection is performed by comparing RTTI attributes. Very important to note is that, after reading

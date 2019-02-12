@@ -1,0 +1,13 @@
+def napDirName = 'NAP-' + napVersion + '-Android'
+// Path with NAP release sitting alongside framework
+def alongsidePath = new File('../' + napDirName)
+// Path with NAP release sitting alongside framework
+def postBuildPath = new File('../../' + napDirName)
+
+if(alongsidePath.exists()) {
+    project.ext.set('NAP_ROOT', alongsidePath.getAbsolutePath())
+} else if (postBuildPath.exists()) {
+    project.ext.set('NAP_ROOT', postBuildPath.getAbsolutePath())
+} else {
+    throw new GradleException('Couldn\'t find NAP framework v' + napVersion)
+}

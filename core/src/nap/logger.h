@@ -15,11 +15,6 @@
 #include <nap/datetime.h>
 #include <atomic>
 
-#ifdef ANDROID
-	// The logging tag message will appear under on Android
-	static const char* ANDROID_LOG_TAG = "NAPFramework";
-#endif
-
 /**
  * This ugly macro allows us to register a nice, easy interface per log level
  * without making a long list of hard to read member functions to maintain.

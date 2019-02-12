@@ -2,6 +2,9 @@
 
 #include <android/log.h>
 
+// The logging tag message will appear under on Android
+static const char* ANDROID_LOG_TAG = "NAPFramework";
+
 namespace nap
 {
 	std::string basicLogMessageFormatter(const LogMessage& msg)
