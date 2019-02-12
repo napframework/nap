@@ -6,11 +6,9 @@
 #include "objectgraph.h"
 #include "projectinfomanager.h"
 #include "rtti/jsonreader.h"
+#include "python.h"
 
 // External Includes
-#ifdef NAP_ENABLE_PYTHON
-	#include <rtti/pythonmodule.h>
-#endif
 #include <iostream>
 #include <utility/fileutils.h>
 #include <packaginginfo.h>

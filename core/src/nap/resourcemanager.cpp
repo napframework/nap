@@ -2,14 +2,12 @@
 #include "objectgraph.h"
 #include "logger.h"
 #include "core.h"
+#include "python.h"
 #include "rttiobjectgraphitem.h"
 #include <utility/fileutils.h>
 #include <utility/stringutils.h>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
-#ifdef NAP_ENABLE_PYTHON
-	#include <rtti/pythonmodule.h>
-#endif // NAP_ENABLE_PYTHON
 #include <rtti/linkresolver.h>
 #include <nap/core.h>
 #include <nap/device.h>
