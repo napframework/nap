@@ -49,10 +49,6 @@ namespace nap
 
 	DirectoryWatcher::DirectoryWatcher()
 	{
-		// TODO ANDROID Clean this up!
-#ifdef ANDROID
-		return;
-#endif		
 		// PImpl instantiation using unique_ptr because we only want a unique snowflake
 		mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
 
@@ -66,10 +62,8 @@ namespace nap
 	}
 
 
-	DirectoryWatcher::~DirectoryWatcher() { 
-#ifdef ANDROID
-		return;
-#endif				
+	DirectoryWatcher::~DirectoryWatcher() 
+	{ 
 		mPImpl->fileWatcher.removeWatch(mPImpl->watchID); 
 	}
 
@@ -80,9 +74,6 @@ namespace nap
 	 */
 	bool DirectoryWatcher::update(std::vector<std::string>& modifiedFiles)
 	{
-#ifdef ANDROID
-		return false;
-#endif
 		mPImpl->fileWatcher.update();
 
 		if (mPImpl->modifiedFiles.empty())

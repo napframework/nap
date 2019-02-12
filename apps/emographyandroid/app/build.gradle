@@ -1,10 +1,15 @@
 apply plugin: 'com.android.application'
 
-project.ext.set('NAP_ROOT', '../../../NAP-0.2.2-Android')
+// Find NAP, using framework version from gradle.properties
+// TODO Later, devise a more Gradle-y way to do this logic sharing
+apply from: 'find_nap.gradle'
 
-// This needs to be a list of all dependencies; populated manually. project.json and
-// module.json files aren't being processed for dependencies (for now?)
-def napModules = ['mod_napscene', 'mod_napdatabase', 'mod_napapp', 'mod_napinput', 'mod_napmath', 'mod_napapi']
+// Bring in common Gradle methods
+apply from: project.ext.get('NAP_ROOT') + '/gradle/nap_shared.gradle'
+logger.quiet('Using NAP framework v' + napVersion + ' for project \'' + napProjectName + '\'')
+
+// Process project NAP module dependencies from project.json and module.json files
+processNapDependencies(napProjectName)
 
 android {
     compileSdkVersion 28
@@ -20,7 +25,9 @@ android {
                 cppFlags "-frtti -fexceptions -std=c++14"
                 arguments '-DANDROID_STL=c++_static',
                           '-DNAP_ROOT=' + file(project.ext.get('NAP_ROOT')).absolutePath,
-                          '-DNAP_MODULES=' + napModules.join(';')
+                          '-DNAP_PROJECT_NAME=' + napProjectName,
+                          '-DNAP_MODULES=' + project.ext.get('NAP_MODULES').join(';'),
+                          '-DNAP_PROJECTMODULE_MODULES=' + project.ext.get('NAP_PROJECTMODULE_MODULES').join(';')
             }
         }
         ndk {
@@ -38,24 +45,12 @@ android {
     sourceSets {
         main {
         }
+        // Add shared directory directories for NAP modules etc
         release {
-            def srcDirs = [project.NAP_ROOT + '/thirdparty/rttr/bin/Release',
-                           project.NAP_ROOT + '/lib/Release'
-                           ]
-            for (String napModule : napModules) {
-                srcDirs.add(project.NAP_ROOT + '/modules/' + napModule + '/lib/Release')
-            }
-            jniLibs.srcDirs = srcDirs
-
+            jniLibs.srcDirs = getSharedLibSourceDirs(napProjectName, 'Release')
         }
         debug {
-            def srcDirs = [project.NAP_ROOT + '/thirdparty/rttr/bin/Debug',
-                           project.NAP_ROOT + '/lib/Debug'
-            ]
-            for (String napModule : napModules) {
-                srcDirs.add(project.NAP_ROOT + '/modules/' + napModule + '/lib/Debug')
-            }
-            jniLibs.srcDirs = srcDirs
+            jniLibs.srcDirs = getSharedLibSourceDirs(napProjectName, 'Debug')
         }
     }
     externalNativeBuild {

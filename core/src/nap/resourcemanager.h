@@ -11,6 +11,7 @@
 // External Includes
 #include <rtti/unresolvedpointer.h>
 #include <rtti/factory.h>
+#include <rtti/deserializeresult.h>
 #include <map>
 
 namespace nap
@@ -110,6 +111,11 @@ namespace nap
 		void addObject(const std::string& id, std::unique_ptr<rtti::Object> object);
 		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
+
+		/**
+		* Lower level platform dependent function used by loadFile that simply loads the file from disk and deserializes.
+		*/
+		bool loadFileAndDeserialize(const std::string& filename, rtti::DeserializeResult& readResult, utility::ErrorState& errorState);
 
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
 

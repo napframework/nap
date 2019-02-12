@@ -20,6 +20,9 @@ if(APPLE)
                 src/nap/osx/module.cpp
                 src/nap/native/modulemanager.cpp
                 src/nap/native/logger.cpp
+                src/nap/native/core.cpp
+                src/nap/native/projectinfomanager.cpp
+                src/nap/native/resourcemanager.cpp
                 )
 elseif(MSVC)
     add_library(${PROJECT_NAME} SHARED 
@@ -28,24 +31,23 @@ elseif(MSVC)
                 src/nap/win32/module.cpp
                 src/nap/native/modulemanager.cpp
                 src/nap/native/logger.cpp
+                src/nap/native/core.cpp
+                src/nap/native/projectinfomanager.cpp
+                src/nap/native/resourcemanager.cpp
                 )
 elseif(ANDROID)
-    find_library( # Sets the name of the path variable.
-          android-lib
-
-          # Specifies the name of the NDK library that
-          # you want CMake to locate.
-          android)
-    file(GLOB FILEWATCHER_SOURCES
-            src/nap/linux/FileWatcher/*.cpp
-            src/nap/linux/FileWatcher/*.h)
+    # Bring in Android libs
+    find_library(android-lib
+                 android)
     add_library(${PROJECT_NAME} SHARED
                 ${SOURCES}
-                ${FILEWATCHER_SOURCES}
-                src/nap/linux/directorywatcher.cpp
+                src/nap/android/directorywatcher.cpp
                 src/nap/linux/module.cpp
                 src/nap/android/modulemanager.cpp
                 src/nap/android/logger.cpp
+                src/nap/android/core.cpp
+                src/nap/android/projectinfomanager.cpp
+                src/nap/android/resourcemanager.cpp
                 )
     target_link_libraries(${PROJECT_NAME} 
                 ${log-lib}
@@ -53,8 +55,8 @@ elseif(ANDROID)
                 log)
 elseif(UNIX)
     file(GLOB FILEWATCHER_SOURCES
-            src/nap/linux/FileWatcher/*.cpp
-            src/nap/linux/FileWatcher/*.h)
+                src/nap/linux/FileWatcher/*.cpp
+                src/nap/linux/FileWatcher/*.h)
     add_library(${PROJECT_NAME} SHARED
                 ${SOURCES}
                 ${FILEWATCHER_SOURCES}
@@ -62,6 +64,9 @@ elseif(UNIX)
                 src/nap/linux/module.cpp
                 src/nap/native/modulemanager.cpp
                 src/nap/native/logger.cpp
+                src/nap/native/core.cpp
+                src/nap/native/projectinfomanager.cpp
+                src/nap/native/resourcemanager.cpp
                 )
 endif()
 

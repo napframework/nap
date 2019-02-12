@@ -78,9 +78,14 @@ macro(package_nap)
             install(FILES "${NAP_ROOT}/dist/win64/redist_help/Microsoft Visual C++ Redistributable Help.txt" DESTINATION tools/platform)
         endif()
     else() # ANDROID
-        # Package shared cmake files
+        # Package shared CMake files
         install(DIRECTORY ${NAP_ROOT}/dist/cmake/android/
                 DESTINATION cmake/
+                )
+
+        # Package shared Gradle logic
+        install(DIRECTORY ${NAP_ROOT}/dist/gradle/
+                DESTINATION gradle/
                 )
 
         # Build info installation

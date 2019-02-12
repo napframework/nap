@@ -7,6 +7,7 @@
 // External Includes
 #include <rtti/factory.h>
 #include <rtti/rtti.h>
+#include <rtti/deserializeresult.h>
 #include <unordered_set>
 #include <utility/dllexport.h>
 
@@ -21,6 +22,9 @@
 #ifdef ANDROID
 	#include <android/asset_manager.h>
 #endif
+
+#define SERVICE_CONFIG_FILENAME "config.json"
+
 
 namespace nap
 {
@@ -180,6 +184,12 @@ namespace nap
 		*/
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
 
+
+		bool hasServiceConfiguration();
+
+
+		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
+
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
 		* Forwards the call to all interested services.
@@ -211,7 +221,7 @@ namespace nap
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
 		// Manages all the loaded modules
-		ModuleManager mModuleManager;
+		std::unique_ptr<ModuleManager> mModuleManager;
 
 		// Manages all the objects in core
 		std::unique_ptr<ResourceManager> mResourceManager;
