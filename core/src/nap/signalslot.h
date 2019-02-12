@@ -5,9 +5,7 @@
 #include <vector>
 #include <memory>
 
-#ifdef NAP_ENABLE_PYTHON
-	#include "pybind11/pybind11.h"
-#endif
+#include "python.h"
 
 namespace nap
 {

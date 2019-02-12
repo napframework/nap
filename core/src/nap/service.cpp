@@ -1,7 +1,5 @@
 // Local Includes
-#ifdef NAP_ENABLE_PYTHON
-	#include <rtti/pythonmodule.h>
-#endif
+#include "python.h"
 #include "logger.h"
 #include "service.h"
 

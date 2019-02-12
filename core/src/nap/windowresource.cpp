@@ -1,6 +1,4 @@
-#ifdef NAP_ENABLE_PYTHON
-	#include <rtti/pythonmodule.h>
-#endif
+#include "python.h"
 #include "windowresource.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Window)

@@ -1,6 +1,4 @@
-#ifdef NAP_ENABLE_PYTHON
-    #include "rtti/pythonmodule.h"
-#endif
+#include "python.h"
 #include "utility/module.h"
 
 #ifdef NAP_ENABLE_PYTHON
