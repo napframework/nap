@@ -241,8 +241,6 @@ namespace nap
                 errorState.fail("Failed to load config.json");
                 return false;
             }
-        } else {
-        	Logger::info("No service configuration file");
         }
 
 		// Gather all service configuration types

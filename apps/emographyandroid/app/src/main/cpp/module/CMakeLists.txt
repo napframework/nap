@@ -18,4 +18,4 @@ set(DEPENDENT_NAP_MODULES "${NAP_PROJECTMODULE_MODULES}")
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core ${DEPENDENT_NAP_MODULES})
+target_link_libraries(${PROJECT_NAME} napcore naprtti naputility RTTR::Core ${DEPENDENT_NAP_MODULES})
