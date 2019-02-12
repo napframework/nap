@@ -40,4 +40,8 @@ namespace nap
 
         return true;
     }
+
+    // At the moment on Android we're only managing files within the APK assets, which don't change, so we 
+    // aren't handling changed files
+    void ResourceManager::checkForFileChanges() { }
 }

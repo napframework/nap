@@ -87,13 +87,7 @@ namespace nap
 		mModuleManager = std::make_unique<ModuleManager>(*this);
 
 		// Load modules
-		// TODO ANDROID These are some ugly, not ready for merge, ModuleManager changes
-		std::string forcedModulePath;
-#ifdef ANDROID
-		forcedModulePath = mAndroidNativeLibDir;
-#endif
-		// if (!mModuleManager.loadModules(*this, projectInfo.mModules, error))
-		if (!mModuleManager->loadModules(projectInfo.mModules, error, forcedModulePath))
+		if (!mModuleManager->loadModules(projectInfo.mModules, error))
 			return false;
 		
 		// Create the various services based on their dependencies
@@ -189,10 +183,8 @@ namespace nap
 			service->preUpdate(delta_time);
 		}
 
-#ifndef ANDROID
 		// Check for file changes
 		mResourceManager->checkForFileChanges();
-#endif
 
 		// Update rest of the services
 		for (auto& service : mServices)

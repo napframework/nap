@@ -14,7 +14,7 @@
 
 namespace nap
 {
-	bool ModuleManager::loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error, std::string forcedModuleDirectory)
+	bool ModuleManager::loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
 		// Track which modules remain to be loaded
 		std::vector<std::string> modulesToLoad;
@@ -25,7 +25,7 @@ namespace nap
 		{
 			rtti::TypeInfo service = rtti::TypeInfo::empty();
 
-			std::string module_path = forcedModuleDirectory + "/lib" + moduleName + ".so";
+			std::string module_path = mCore.getAndroidNativeLibDir() + "/lib" + moduleName + ".so";
 			
 			// Try to load the module
 			std::string error_string;

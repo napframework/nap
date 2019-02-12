@@ -14,7 +14,7 @@
 
 namespace nap
 {
-	bool ModuleManager::loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error, std::string forcedModuleDirectory)
+	bool ModuleManager::loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
 		// Whether we're loading a specific set of requested modules
 		const bool loadSpecificModules = moduleNames.size() != 0;
