@@ -1,3 +1,4 @@
+project(${NAP_PROJECT_NAME})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty)
@@ -8,6 +9,7 @@ list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/cmake)
 find_package(rttr REQUIRED)
 find_package(napcore REQUIRED)
 find_package(naprtti REQUIRED)
+find_package(naputility REQUIRED)
 foreach(NAP_MODULE ${NAP_MODULES})
     if(NAP_MODULE STREQUAL "mod_${NAP_PROJECT_NAME}")
         continue()
@@ -35,6 +37,7 @@ target_link_libraries(${LIB_NAME}
                       RTTR::Core
                       naprtti
                       napcore
+                      naputility
                       ${NAP_MODULES}
                       )
 
