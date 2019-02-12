@@ -17,17 +17,15 @@ GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 		: QObject(), mObject(o), mIsPointer(isPointer)
 {
-	refresh();
+	auto& ctx = AppContext::get();
+
 	setText(QString::fromStdString(o->mID));
-    setIcon(AppContext::get().getResourceFactory().getIcon(*o));
+    setIcon(ctx.getResourceFactory().getIcon(*o));
 
-    auto& ctx = AppContext::get();
-    connect(&ctx, &AppContext::propertyValueChanged, [this](const PropertyPath& path) {
-    	if (&path.getObject() == mObject)
-    		refresh();
-    });
-
+    connect(&ctx, &AppContext::propertyValueChanged, this, &ObjectItem::onPropertyValueChanged);
 	connect(&ctx, &AppContext::objectRemoved, this, &ObjectItem::onObjectRemoved);
+
+	refresh();
 }
 
 bool ObjectItem::isPointer() const
@@ -97,18 +95,16 @@ void ObjectItem::removeChildren()
 		removeRow(0);
 }
 
+void ObjectItem::onPropertyValueChanged(PropertyPath path)
+{
+	if (&path.getObject() == mObject)
+		refresh();
+}
+
 void ObjectItem::onObjectRemoved(nap::rtti::Object* o)
 {
-	for (int row=0, len=rowCount(); row < len; row++)
-	{
-		auto objectItem = dynamic_cast<ObjectItem*>(child(row));
-		assert(objectItem);
-		if (objectItem->getObject() == o)
-		{
-			removeRow(row);
-			return;
-		}
-	}
+	if (o == mObject)
+		delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

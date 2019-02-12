@@ -76,6 +76,7 @@ namespace napkin
 		nap::rtti::Object* mObject; // THe object held by this item
 
 	private:
+		void onPropertyValueChanged(PropertyPath path);
 		void onObjectRemoved(nap::rtti::Object* o);
 
 		bool mIsPointer;
