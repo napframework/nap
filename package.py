@@ -29,6 +29,7 @@ ANDROID_PLATFORM = 'android-19'
 ERROR_PACKAGE_EXISTS = 1
 ERROR_INVALID_VERSION = 2
 ERROR_MISSING_ANDROID_NDK = 3
+ERROR_COULD_NOT_REMOVE_DIRECTORY = 4
 
 def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     """Execute command in provided working directory"""
@@ -69,7 +70,7 @@ def package(zip_release, include_docs, include_apps, clean, include_timestamp_in
 
     # Remove old packaging path if it exists
     if os.path.exists(PACKAGING_DIR):
-        shutil.rmtree(PACKAGING_DIR, True)
+        remove_directory_exit_on_failure(PACKAGING_DIR, 'old packaging staging area')
     os.makedirs(PACKAGING_DIR)
 
     # Setup ABIs for Android
@@ -92,6 +93,13 @@ def package(zip_release, include_docs, include_apps, clean, include_timestamp_in
     else:
         package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release)
 
+def remove_directory_exit_on_failure(path, use):
+    try:
+        shutil.rmtree(path)
+    except OSError:
+        print("Error: Could not remove directory '%s' (%s)" % (path, use))
+        sys.exit(ERROR_COULD_NOT_REMOVE_DIRECTORY)
+
 def clean_the_build(cross_compile_target, android_abis):
     """Clean the build"""
 
@@ -106,24 +114,24 @@ def clean_the_build(cross_compile_target, android_abis):
                     build_dir_for_type = "%s_Android_%s_%s" % (BUILD_DIR, abi, build_type.lower())
                     if os.path.exists(build_dir_for_type):
                         print("Clean removing %s" % os.path.abspath(build_dir_for_type))
-                        shutil.rmtree(build_dir_for_type, True)
+                        remove_directory_exit_on_failure(build_dir_for_type, 'build dir for %s' % build_type.lower())
     elif platform.startswith('linux'):    
         for build_type in BUILD_TYPES:
             build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
             if os.path.exists(build_dir_for_type):
                 print("Clean removing %s" % os.path.abspath(build_dir_for_type))
-                shutil.rmtree(build_dir_for_type, True)
+                remove_directory_exit_on_failure(build_dir_for_type, 'build dir for %s' % build_type.lower())
     else:
         if os.path.exists(BUILD_DIR):
             print("Clean removing %s" % os.path.abspath(BUILD_DIR))
-            shutil.rmtree(BUILD_DIR, True)
+            remove_directory_exit_on_failure(BUILD_DIR, 'build dir')
 
     if os.path.exists(LIB_DIR):
         print("Clean removing %s" % os.path.abspath(LIB_DIR))
-        shutil.rmtree(LIB_DIR, True)
+        remove_directory_exit_on_failure(LIB_DIR, 'lib dir')
     if os.path.exists(BIN_DIR):
         print("Clean removing %s" % os.path.abspath(BIN_DIR))
-        shutil.rmtree(BIN_DIR, True)                  
+        remove_directory_exit_on_failure(BIN_DIR, 'bin dir')
 
 def check_for_existing_package(package_path, zip_release, remove=False):
     """Ensure we aren't overwriting a previous package, remove if requested"""
@@ -142,7 +150,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             if zip_release:
                 os.remove(package_path)
             else:
-                shutil.rmtree(package_path, True)
+                remove_directory_exit_on_failure(package_path, 'overwriting existing package')
         else:
             print("Error: %s already exists" % package_path)
             sys.exit(ERROR_PACKAGE_EXISTS)
@@ -353,7 +361,7 @@ def archive_to_win64_zip(package_basename):
 
     # Create our archive dir, used to create a copy level folder within the archive
     if os.path.exists(ARCHIVING_DIR):
-        shutil.rmtree(ARCHIVING_DIR, True)
+        remove_directory_exit_on_failure(ARCHIVING_DIR, 'used to make zip')
     os.makedirs(ARCHIVING_DIR)
     archive_path = os.path.join(ARCHIVING_DIR, package_basename)
     shutil.move(package_basename, archive_path)
@@ -364,7 +372,7 @@ def archive_to_win64_zip(package_basename):
 
     # Cleanup
     shutil.move(archive_path, PACKAGING_DIR)
-    shutil.rmtree(ARCHIVING_DIR)
+    remove_directory_exit_on_failure(ARCHIVING_DIR, 'zip path cleanup')
 
     print("Packaged to %s" % os.path.abspath(package_filename_with_ext))  
 
