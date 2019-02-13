@@ -94,7 +94,7 @@ install(TARGETS ${PROJECT_NAME}
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
         DESTINATION tools/platform/napkin/)
 
-set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets)
+set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 
 set(PATH_TO_THIRDPARTY "../../../../thirdparty")
 if(APPLE)
@@ -110,6 +110,7 @@ if(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FreeImage/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/portaudio/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/libsndfile/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/freetype/lib)
 
     foreach(MODULECONFIG Release Debug)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
