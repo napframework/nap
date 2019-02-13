@@ -28,7 +28,7 @@ add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES
 
 # The NAP modules Napkin needs to link against
 # TODO this needs updating/verifying; can any of these move into NAP_MODULES_USAGE_DEPENDENCIES below? 
-set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio)
+set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio mod_napfont)
 
 # This is the superset of modules that we want to have available to Napkin to run against; just a handy
 # way to ensure they've built
@@ -126,6 +126,8 @@ elseif(UNIX)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
     list(APPEND EXTRA_RPATH lib)
 
     set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_LINK_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
