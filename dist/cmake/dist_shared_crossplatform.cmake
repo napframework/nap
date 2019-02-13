@@ -55,12 +55,6 @@ macro(find_nap_module MODULE_NAME)
             endif()
         endif(NOT TARGET ${NAP_MODULE})
 
-        # Add module includes
-        if(NOT INSTALLING_MODULE_FOR_NAPKIN AND NOT ANDROID)
-            message(STATUS "Adding include for ${NAP_MODULE}")
-            target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
-        endif()
-
         # On macOS & Linux install module into packaged project
         if (NOT WIN32)
             install(FILES ${${MODULE_NAME}_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)
