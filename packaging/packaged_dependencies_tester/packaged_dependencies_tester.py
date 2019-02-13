@@ -24,6 +24,9 @@ TEMPLATE_APP_NAME = 'TemplateProject'
 # Build type for build projects
 PROJECT_BUILD_TYPE = 'Release'
 
+# Directory to iterate for testing
+DEFAULT_TESTING_PROJECTS_DIR = 'demos'
+
 def call_capturing_output(cmd, shell=True):
     """Run specified command, capturing output
 
@@ -350,7 +353,7 @@ def run_packaged_project(root_output_dir, timestamp, project_name):
 
     return (success, stdout, stderr)
 
-def build_and_package(root_output_dir, timestamp):
+def build_and_package(root_output_dir, timestamp, testing_projects_dir):
     """Configure, build and package all demos
 
     Parameters
@@ -359,6 +362,8 @@ def build_and_package(root_output_dir, timestamp):
         Directory where packaged projects will be moved to
     timestamp : str
         Timestamp of the test run
+    testing_projects_dir : str
+        Directory to iterate for testing, by default 'demos'        
         
     Returns
     -------
@@ -377,6 +382,11 @@ def build_and_package(root_output_dir, timestamp):
         demo_path = os.path.join(demos_root_dir, demo_name)
         # Check if path looks sane
         if not os.path.isdir(demo_path) or demo_name.startswith('.'):
+            continue
+
+        # If we're iterating our projects directory and we've already got our template project in there
+        # from a previous run, don't built it in here as we'll build it separately later
+        if demo_name == TEMPLATE_APP_NAME.lower() and testing_projects_dir != DEFAULT_TESTING_PROJECTS_DIR:
             continue
 
         print("----------------------------")
@@ -1040,7 +1050,7 @@ def rename_qt_dir(warnings):
     return qt_top_level_path
 
 
-def perform_test_run(nap_framework_path, launch_wait_seconds, create_json_report, force_log_reporting, rename_framework, rename_qt):
+def perform_test_run(nap_framework_path, launch_wait_seconds, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt):
     """Main entry point to the testing
 
     Parameters
@@ -1049,6 +1059,8 @@ def perform_test_run(nap_framework_path, launch_wait_seconds, create_json_report
         Command line provided path to NAP framework to test
     launch_wait_seconds : int
         Number of seconds to wait before checking the process is still running and terminating it
+    testing_projects_dir : str
+        Directory to iterate for testing, by default 'demos'
     create_json_report : bool
         Whether to create a report
     force_log_reporting : bool
@@ -1090,11 +1102,11 @@ def perform_test_run(nap_framework_path, launch_wait_seconds, create_json_report
         print("Warning: %s" % warning)
         warnings.append(warning)
 
-    os.chdir(os.path.join(nap_framework_full_path, 'demos'))
+    os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
 
     # Configure, build and package all demos
     print("============ Phase #1 - Building and packaging demos ============")
-    demo_results = build_and_package(root_output_dir, timestamp)
+    demo_results = build_and_package(root_output_dir, timestamp, testing_projects_dir)
 
     # Package a demo with Napkin
     print("============ Phase #2 - Packaging demo with Napkin ============")
@@ -1104,7 +1116,7 @@ def perform_test_run(nap_framework_path, launch_wait_seconds, create_json_report
     print("============ Phase #3 - Creating, building and packaging project from template ============")
     os.chdir(nap_framework_full_path)
     template_results = create_build_and_package_template_app(root_output_dir, timestamp)
-    os.chdir(os.path.join(nap_framework_full_path, 'demos'))
+    os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
 
     # Run all demos from normal build output
     print("============ Phase #4 - Running demos from build output directory ============")
@@ -1115,7 +1127,7 @@ def perform_test_run(nap_framework_path, launch_wait_seconds, create_json_report
     if 'build' in template_results and template_results['build']['success']:
         os.chdir(os.path.join(nap_framework_full_path, 'projects'))
         run_build_directory_template_project(template_results)
-        os.chdir(os.path.join(nap_framework_full_path, 'demos'))
+        os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
     else:
         print("Skipping due to build failure")
 
@@ -1211,6 +1223,10 @@ if __name__ == '__main__':
                         default=WAIT_SECONDS_FOR_PROCESS_HEALTH,
                         action='store', nargs='?',
                         help="Seconds to wait for each process launch initialisation (default %s)" % WAIT_SECONDS_FOR_PROCESS_HEALTH)
+    parser.add_argument('--testing-projects-dir', type=str,
+                        default=DEFAULT_TESTING_PROJECTS_DIR,
+                        action='store', nargs='?',
+                        help="Directory to test on (default %s)" % DEFAULT_TESTING_PROJECTS_DIR)
     parser.add_argument('-nj', '--no-json-report', action='store_true',
                         help="Don't create a JSON report to report.json")
     parser.add_argument('-fl', '--force-log-reporting', action='store_true',
@@ -1228,5 +1244,5 @@ if __name__ == '__main__':
         args.no_rename_framework = True
         args.no_rename_qt = True
 
-    success = perform_test_run(args.NAP_FRAMEWORK_PATH, args.launch_wait_seconds, not args.no_json_report, args.force_log_reporting, not args.no_rename_framework, not args.no_rename_qt)
+    success = perform_test_run(args.NAP_FRAMEWORK_PATH, args.launch_wait_seconds, args.testing_projects_dir, not args.no_json_report, args.force_log_reporting, not args.no_rename_framework, not args.no_rename_qt)
     sys.exit(not success)
