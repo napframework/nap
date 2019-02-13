@@ -5,6 +5,7 @@
 #include <thread>
 #include <mutex>
 #include <limits>
+#include <cassert>
 #include <nap/resource.h>
 #include <rtti/factory.h>
 #include <utility/autoresetevent.h>

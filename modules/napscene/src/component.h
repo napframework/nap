@@ -5,6 +5,8 @@
 #include <utility/dllexport.h>
 #include <nap/resource.h>
 
+#include <cassert>
+
 namespace nap
 {
 	// Forward Declares
