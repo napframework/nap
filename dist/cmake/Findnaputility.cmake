@@ -1,8 +1,5 @@
 # Find moodycamel
 find_package(moodycamel REQUIRED)
-if (NOT ANDROID)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
-endif()
 
 if (WIN32)
     find_path(

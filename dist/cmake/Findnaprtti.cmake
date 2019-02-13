@@ -1,19 +1,23 @@
-if (NOT ANDROID)
+if(ANDROID)
+    if(NOT TARGET RTTR::Core)
+        find_package(rttr)
+    endif()
+else()
     # Find RTTR
     set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
-    find_package(RTTR CONFIG REQUIRED Core)
+    if(NOT TARGET RTTR::Core)
+        find_package(RTTR CONFIG REQUIRED Core)
+    endif()
 
     # Find Python
     # Let find_python find our prepackaged Python in thirdparty
     find_python_in_thirdparty()
     set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
     find_package(pybind11 REQUIRED)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
+endif(ANDROID)
 
-    # Find rapidjson
-    find_package(rapidjson)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${RAPIDJSON_INCLUDE_DIRS})
-endif()
+# Find rapidjson
+find_package(rapidjson)
 
 if (WIN32)
     find_path(
@@ -52,15 +56,11 @@ elseif (UNIX)
     set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.so)
 endif()
 
-if (NOT NAPRTTI_LIBS_DIR)
-    message(FATAL_ERROR "Couldn't find NAP RTTI")
-endif()
-
 # Setup as interface library
 add_library(naprtti INTERFACE)
 target_link_libraries(naprtti INTERFACE debug ${NAPRTTI_LIBS_DEBUG} RTTR::Core)
 target_link_libraries(naprtti INTERFACE optimized ${NAPRTTI_LIBS_RELEASE} RTTR::Core)
-set_target_properties(naprtti PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NAP_ROOT}/include;${pybind11_INCLUDE_DIRS};${RAPIDJSON_INCLUDE_DIRS};${RTTR_DIR}/include")
+set_target_properties(naprtti PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NAP_ROOT}/include;${pybind11_INCLUDE_DIRS};${RAPIDJSON_INCLUDE_DIRS}")
 
 # Show headers in IDE
 file(GLOB rtti_headers ${CMAKE_CURRENT_LIST_DIR}/../include/rtti/*.h)
