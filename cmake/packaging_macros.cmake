@@ -149,7 +149,7 @@ endmacro()
 
 # Package installed Qt for distribution with NAP release (for use with Napkin)
 macro(package_qt)
-    set(QT_FRAMEWORKS Core Gui Widgets)
+    set(QT_FRAMEWORKS Core Gui Widgets OpenGL)
 
     # Install licenses.  This link is a little tenuous but seems to work for Win64
     # TODO Fail if we don't find sufficient licenses (which happens pre Qt 5.10)
@@ -182,7 +182,7 @@ macro(package_qt)
 
     elseif(APPLE)
         # macOS appears to depend on these extra Qt frameworks
-        list(APPEND QT_FRAMEWORKS PrintSupport)
+        list(APPEND QT_FRAMEWORKS PrintSupport DBus)
 
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
