@@ -1,6 +1,3 @@
-# Allow target_link_libraries use with targets in other directories (for module_extra.cmake)
-cmake_policy(SET CMP0079 NEW)
-
 # Generic way to import each module for different configurations.  Included is a fairly simple mechanism for 
 # extra per-module CMake logic, to be refined.
 macro(find_nap_module MODULE_NAME)
@@ -72,7 +69,11 @@ macro(find_nap_module MODULE_NAME)
         # Bring in any additional module requirements
         set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
         if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
+            unset(MODULE_NAME_EXTRA_LIBS)
             include (${MODULE_EXTRA_CMAKE_PATH})
+            if(MODULE_NAME_EXTRA_LIBS)
+                target_link_libraries(${MODULE_NAME} INTERFACE ${MODULE_NAME_EXTRA_LIBS})
+            endif()
         endif()
 
         if(WIN32)
@@ -91,6 +92,11 @@ endmacro()
 
 # Add an include to the list of includes on an interface target
 function(add_include_to_interface_target TARGET_NAME INCLUDE_PATH)
+    # Deal with cases using module_extra.cmake for DLL installation when targets aren't defined
+    if(INSTALLING_MODULE_FOR_NAPKIN AND NOT TARGET ${TARGET_NAME})
+        return()
+    endif()
+
     # Get existing list of includes
     get_target_property(module_includes ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
 

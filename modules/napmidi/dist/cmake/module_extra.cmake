@@ -4,7 +4,7 @@ if(NOT TARGET rtmidi)
     find_package(rtmidi REQUIRED)
 endif()
 if(NOT WIN32)
-    target_link_libraries(mod_napmidi INTERFACE rtmidi)
+    set(MODULE_NAME_EXTRA_LIBS rtmidi)
 endif()
 add_include_to_interface_target(mod_napmidi ${RTMIDI_INCLUDE_DIRS})
 

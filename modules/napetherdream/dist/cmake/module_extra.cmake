@@ -4,7 +4,7 @@ if(NOT TARGET etherdream)
     find_package(etherdream REQUIRED)
 endif()
 
-target_link_libraries(mod_napetherdream INTERFACE etherdreamlib)
+set(MODULE_NAME_EXTRA_LIBS etherdreamlib)
 
 if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME}

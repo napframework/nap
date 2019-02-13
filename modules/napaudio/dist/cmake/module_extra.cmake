@@ -3,7 +3,7 @@ include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 if(NOT TARGET mpg123)
     find_package(mpg123 REQUIRED)
 endif()
-target_link_libraries(mod_napaudio INTERFACE mpg123)
+set(MODULE_NAME_EXTRA_LIBS mpg123)
 
 if(NOT TARGET moodycamel)
     find_package(moodycamel REQUIRED)

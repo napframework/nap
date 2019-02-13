@@ -3,7 +3,7 @@ include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 if(NOT TARGET artnet)
     find_package(artnet REQUIRED)
 endif()
-target_link_libraries(mod_napartnet INTERFACE artnet)
+set(MODULE_NAME_EXTRA_LIBS artnet)
 
 if(WIN32)
     # Add post-build step to set copy artnet to bin

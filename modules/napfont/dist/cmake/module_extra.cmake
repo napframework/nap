@@ -4,7 +4,7 @@ if(NOT TARGET freetype)
     find_package(freetype REQUIRED)
 endif()
 
-target_link_libraries(mod_napfont INTERFACE freetype)
+set(MODULE_NAME_EXTRA_LIBS freetype)
 add_include_to_interface_target(mod_napfont ${FREETYPE_INCLUDE_DIRS})
 
 if(WIN32)
