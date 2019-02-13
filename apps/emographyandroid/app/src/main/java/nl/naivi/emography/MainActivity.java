@@ -224,8 +224,8 @@ public class MainActivity extends AppCompatActivity
         // Construct message
         mBuilder.clear();
         APIMessage msg = mBuilder.addMessage("updateView");
-        msg.addLong("startTime", System.currentTimeMillis() - (1000*60*60*20));
-        msg.addLong("endTime", System.currentTimeMillis()-(1000*60*60*10));
+        msg.addLong("startTime", System.currentTimeMillis() - (1000*60*60*10));
+        msg.addLong("endTime", System.currentTimeMillis()-(1000*60*60*5));
         msg.addInt("samples", getNumberOfSamples());
         msg.addString("UUID", UUID.randomUUID().toString());
 

@@ -47,30 +47,28 @@ namespace  nap
             bool init(JNIEnv *env, jobject contextObject)
             {
                 std::lock_guard<std::mutex> lock(mInstanceMutex);
-                if (mRunner != nullptr)
+                if (mInitialized)
                 {
-                    nap::Logger::error("instance of emography nap environment already exists!");
+                    nap::Logger::warn("instance of emography nap environment already exists!");
                     return false;
                 }
 
-                // Create core, replacing previous instance if allocated already.
-                mCore   = std::make_unique<nap::Core>();
-                mRunner = std::make_unique<InstanceRunner>(*mCore, env, contextObject);
+                // Create core and application
+                create(env, contextObject);
 
-                // Start
+                // Initialize app and start running
                 nap::utility::ErrorState error;
+                nap::Logger::info("initializing NAP application");
                 if (!mRunner->init(error))
                 {
                     nap::Logger::error(error.toString());
+                    destroy();
                     return false;
                 }
 
+                // Fetch API service
                 mAPIService = mCore->getService<nap::APIService>();
-                if(mAPIService == nullptr)
-                {
-                    nap::Logger::error("unable to acquire handle to API service");
-                    return false;
-                }
+                assert(mAPIService != nullptr);
                 mAPIService->eventDispatched.connect(mDispatchSlot);
 
                 return true;
@@ -83,16 +81,12 @@ namespace  nap
             int shutDown()
             {
                 std::lock_guard<std::mutex> lock(mInstanceMutex);
-                if(mRunner == nullptr)
+                if(!mInitialized)
                 {
-                    nap::Logger::warn("unable to shutdown nap env, not initialized");
+                    nap::Logger::error("unable to shutdown nap env, not initialized");
                     return -1;
                 }
-
-                // Call shutdown reset ptr
-                int v = mRunner->shutdown();
-                mRunner.reset(nullptr);
-                return v;
+                return destroy();
             }
 
 
@@ -115,7 +109,7 @@ namespace  nap
             {
                 std::lock_guard<std::mutex> lock(mInstanceMutex);
                 nap::utility::ErrorState error;
-                if(!error.check(mRunner != nullptr, "unable to send message, not initialized"))
+                if(!error.check(mInitialized, "unable to send message, not initialized"))
                 {
                     nap::Logger::warn(error.toString());
                     return false;
@@ -154,7 +148,8 @@ namespace  nap
              */
             ~Instance()
             {
-                mRunner.reset(nullptr);
+                if(mInitialized)
+                    destroy();
                 mCore.reset(nullptr);
             }
 
@@ -167,13 +162,40 @@ namespace  nap
                 return sInstance;
             }
 
-
         private:
 
             // Hide constructor
-            Instance()
+            Instance() = default;
+
+            /**
+             * Shuts down the app environment
+             * @return application exit code
+             */
+            int destroy()
             {
+                Logger::instance().log.disconnect(mLogSlot);
+                nap::Logger::info("shutting down NAP application");
+                int v = mRunner->shutdown();
+                mRunner.reset(nullptr);
+                mCore.reset(nullptr);
+                mInitialized = false;
+                nap::Logger::info("destroyed NAP application");
+                return v;
+            }
+
+            /**
+             * Creates the app environment
+             * @param env the java native environment
+             * @param contextObject java context
+             */
+            void create(JNIEnv *env, jobject contextObject)
+            {
+                // Create core, replacing previous instance if allocated already.
+                mCore   = std::make_unique<nap::Core>();
+                mRunner = std::make_unique<InstanceRunner>(*mCore, env, contextObject);
                 Logger::instance().log.connect(mLogSlot);
+                mInitialized = true;
+                nap::Logger::info("created NAP application");
             }
 
             // Members
@@ -183,6 +205,7 @@ namespace  nap
             APICallbackFunction mAPICallback                    = nullptr;
             APILogFunction mLogCallback                         = nullptr;
             std::mutex mInstanceMutex;
+            bool mInitialized = false;
 
             /**
              * Called when the instance receives a message from the api service
