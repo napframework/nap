@@ -190,7 +190,7 @@ namespace nap
 	void VinylApp::positionBackground()
 	{
 		// Get size
-		glm::ivec2 window_size = mRenderWindow->getWindow()->getSize();
+		glm::ivec2 window_size = { mRenderWindow->getWidthPixels(), mRenderWindow->getHeightPixels()} ;
 		
 		// Now update background texture
 		nap::TransformComponentInstance& xform_comp = mBackgroundEntity->getComponent<nap::TransformComponentInstance>();
