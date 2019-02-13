@@ -6,6 +6,7 @@
 // External Includes
 #include <unordered_set>
 #include <rtti/object.h>
+#include <cassert>
 
 #ifdef NAP_ENABLE_PYTHON
 	#include <pybind11/cast.h>
