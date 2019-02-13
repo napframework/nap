@@ -1,17 +1,19 @@
-# Find RTTR
-set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
-find_package(RTTR CONFIG REQUIRED Core)
+if (NOT ANDROID)
+    # Find RTTR
+    set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
+    find_package(RTTR CONFIG REQUIRED Core)
 
-# Find Python
-# Let find_python find our prepackaged Python in thirdparty
-find_python_in_thirdparty()
-set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
-find_package(pybind11 REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
+    # Find Python
+    # Let find_python find our prepackaged Python in thirdparty
+    find_python_in_thirdparty()
+    set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
+    find_package(pybind11 REQUIRED)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
 
-# Find rapidjson
-find_package(rapidjson)
-target_include_directories(${PROJECT_NAME} PUBLIC ${RAPIDJSON_INCLUDE_DIRS})
+    # Find rapidjson
+    find_package(rapidjson)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${RAPIDJSON_INCLUDE_DIRS})
+endif()
 
 if (WIN32)
     find_path(
@@ -31,10 +33,18 @@ elseif (APPLE)
     )
     set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/libnaprtti.dylib)
     set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.dylib)
+elseif (ANDROID)
+    find_path(
+        NAPRTTI_LIBS_DIR
+        NAMES Release/${ANDROID_ABI}/libnaprtti.so
+        HINTS ${NAP_ROOT}/lib/
+    )
+    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/${ANDROID_ABI}/libnaprtti.so)
+    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/${ANDROID_ABI}/libnaprtti.so)
 elseif (UNIX)
     find_path(
         NAPRTTI_LIBS_DIR
-	NAMES Debug/libnaprtti.so
+        NAMES Debug/libnaprtti.so
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
@@ -48,13 +58,17 @@ endif()
 
 # Setup as interface library
 add_library(naprtti INTERFACE)
-target_link_libraries(naprtti INTERFACE debug ${NAPRTTI_LIBS_DEBUG})
-target_link_libraries(naprtti INTERFACE optimized ${NAPRTTI_LIBS_RELEASE})
+target_link_libraries(naprtti INTERFACE debug ${NAPRTTI_LIBS_DEBUG} RTTR::Core)
+target_link_libraries(naprtti INTERFACE optimized ${NAPRTTI_LIBS_RELEASE} RTTR::Core)
+set_target_properties(naprtti PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NAP_ROOT}/include;${pybind11_INCLUDE_DIRS};${RAPIDJSON_INCLUDE_DIRS};${RTTR_DIR}/include")
 
 # Show headers in IDE
 file(GLOB rtti_headers ${CMAKE_CURRENT_LIST_DIR}/../include/rtti/*.h)
 target_sources(naprtti INTERFACE ${rtti_headers})
 source_group(NAP\\RTTI FILES ${rtti_headers})
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(naprtti REQUIRED_VARS NAPRTTI_LIBS_DIR)
 
 if (WIN32)
     # Copy over DLL post-build
@@ -75,7 +89,7 @@ if (WIN32)
 endif()
 
 # Package naprtti and RTTR into projects for macOS/Linux
-if(NOT WIN32)
+if(NOT WIN32 AND NOT ANDROID)
     install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
     install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
 

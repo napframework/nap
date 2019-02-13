@@ -14,6 +14,14 @@ elseif (APPLE)
     )
     set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/libnapcore.dylib)
     set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/libnapcore.dylib)
+elseif (ANDROID)
+    find_path(
+        NAPCORE_LIBS_DIR
+        NAMES Release/${ANDROID_ABI}/libnapcore.so
+        HINTS ${NAP_ROOT}/lib/
+    )
+    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/${ANDROID_ABI}/libnapcore.so)
+    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/${ANDROID_ABI}/libnapcore.so)
 elseif (UNIX)
     find_path(
         NAPCORE_LIBS_DIR
@@ -24,19 +32,19 @@ elseif (UNIX)
     set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/libnapcore.so)
 endif()
 
-if (NOT NAPCORE_LIBS_DIR)
-    message(FATAL_ERROR "Couldn't find NAP core")
-endif()
-
 # Setup as interface library
 add_library(napcore INTERFACE)
 target_link_libraries(napcore INTERFACE debug ${NAPCORE_LIBS_DEBUG})
 target_link_libraries(napcore INTERFACE optimized ${NAPCORE_LIBS_RELEASE})
+set_target_properties(napcore PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${NAP_ROOT}/include)
 
 # Show headers in IDE
 file(GLOB core_headers ${CMAKE_CURRENT_LIST_DIR}/../include/nap/*.h)
 target_sources(napcore INTERFACE ${core_headers})
 source_group(NAP\\Core FILES ${core_headers})
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(napcore REQUIRED_VARS NAPCORE_LIBS_DIR)
 
 if (WIN32)
     # Copy over DLL post-build
@@ -48,7 +56,7 @@ if (WIN32)
 endif()
 
 # Install into packaged project for macOS/Linux
-if(NOT WIN32)
+if(NOT WIN32 AND NOT ANDROID)
     install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
 
     # On Linux use lib directory for RPATH

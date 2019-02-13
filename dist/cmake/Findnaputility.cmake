@@ -1,6 +1,8 @@
 # Find moodycamel
 find_package(moodycamel REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
+if (NOT ANDROID)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
+endif()
 
 if (WIN32)
     find_path(
@@ -18,10 +20,18 @@ elseif (APPLE)
     )
     set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/libnaputility.a)
     set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/libnaputility.a)
+elseif (ANDROID)
+    find_path(
+        NAPUTILITY_LIBS_DIR
+        NAMES Release/${ANDROID_ABI}/libnaputility.a
+        HINTS ${NAP_ROOT}/lib/
+    )
+    set(NAPUTILITY_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/${ANDROID_ABI}/libnaputility.a)
+    set(NAPUTILITY_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/${ANDROID_ABI}/libnaputility.a)
 elseif (UNIX)
     find_path(
         NAPUTILITY_LIBS_DIR
-	NAMES Debug/libnaputility.a
+        NAMES Debug/libnaputility.a
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
     set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/libnaputility.a)
@@ -36,6 +46,10 @@ endif()
 add_library(naputility INTERFACE)
 target_link_libraries(naputility INTERFACE optimized ${NAPUTILITY_LIBS_RELEASE})
 target_link_libraries(naputility INTERFACE debug ${NAPUTILITY_LIBS_DEBUG})
+set_target_properties(naputility PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NAP_ROOT}/include;${MOODYCAMEL_INCLUDE_DIRS}")
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(naputility REQUIRED_VARS NAPRTTI_LIBS_DIR)
 
 # Show headers in IDE
 file(GLOB utility_headers ${CMAKE_CURRENT_LIST_DIR}/../include/utility/*.h)
