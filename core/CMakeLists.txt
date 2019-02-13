@@ -18,22 +18,22 @@ if(APPLE)
                 ${SOURCES}
                 src/nap/osx/directorywatcher.cpp
                 src/nap/osx/module.cpp
-                src/nap/native/modulemanager.cpp
-                src/nap/native/logger.cpp
-                src/nap/native/core.cpp
-                src/nap/native/projectinfomanager.cpp
-                src/nap/native/resourcemanager.cpp
+                src/nap/native/modulemanager_ext.cpp
+                src/nap/native/logger_ext.cpp
+                src/nap/native/core_ext.cpp
+                src/nap/native/projectinfomanager_ext.cpp
+                src/nap/native/resourcemanager_ext.cpp
                 )
 elseif(MSVC)
     add_library(${PROJECT_NAME} SHARED 
                 ${SOURCES}
-                src/nap/win32/directorywatcher.cpp
-                src/nap/win32/module.cpp
-                src/nap/native/modulemanager.cpp
-                src/nap/native/logger.cpp
-                src/nap/native/core.cpp
-                src/nap/native/projectinfomanager.cpp
-                src/nap/native/resourcemanager.cpp
+                src/nap/win32/directorywatcher_ext.cpp
+                src/nap/win32/module_ext.cpp
+                src/nap/native/modulemanager_ext.cpp
+                src/nap/native/logger_ext.cpp
+                src/nap/native/core_ext.cpp
+                src/nap/native/projectinfomanager_ext.cpp
+                src/nap/native/resourcemanager_ext.cpp
                 )
 elseif(ANDROID)
     # Bring in Android libs
@@ -41,13 +41,13 @@ elseif(ANDROID)
                  android)
     add_library(${PROJECT_NAME} SHARED
                 ${SOURCES}
-                src/nap/android/directorywatcher.cpp
-                src/nap/linux/module.cpp
-                src/nap/android/modulemanager.cpp
-                src/nap/android/logger.cpp
-                src/nap/android/core.cpp
-                src/nap/android/projectinfomanager.cpp
-                src/nap/android/resourcemanager.cpp
+                src/nap/android/directorywatcher_ext.cpp
+                src/nap/linux/module_ext.cpp
+                src/nap/android/modulemanager_ext.cpp
+                src/nap/android/logger_ext.cpp
+                src/nap/android/core_ext.cpp
+                src/nap/android/projectinfomanager_ext.cpp
+                src/nap/android/resourcemanager_ext.cpp
                 )
     target_link_libraries(${PROJECT_NAME} 
                 ${log-lib}
@@ -60,13 +60,13 @@ elseif(UNIX)
     add_library(${PROJECT_NAME} SHARED
                 ${SOURCES}
                 ${FILEWATCHER_SOURCES}
-                src/nap/linux/directorywatcher.cpp
-                src/nap/linux/module.cpp
-                src/nap/native/modulemanager.cpp
-                src/nap/native/logger.cpp
-                src/nap/native/core.cpp
-                src/nap/native/projectinfomanager.cpp
-                src/nap/native/resourcemanager.cpp
+                src/nap/linux/directorywatcher_ext.cpp
+                src/nap/linux/module_ext.cpp
+                src/nap/native/modulemanager_ext.cpp
+                src/nap/native/logger_ext.cpp
+                src/nap/native/core_ext.cpp
+                src/nap/native/projectinfomanager_ext.cpp
+                src/nap/native/resourcemanager_ext.cpp
                 )
 endif()
 
