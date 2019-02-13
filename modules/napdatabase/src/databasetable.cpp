@@ -3,6 +3,7 @@
 #include "rtti/path.h"
 #include "rtti/factory.h"
 #include <cctype>
+#include <nap/logger.h>
 
 namespace nap
 {
@@ -227,7 +228,17 @@ namespace nap
 
 	DatabaseTable::~DatabaseTable()
 	{
-		sqlite3_finalize(mInsertStatement);
+		switch (sqlite3_finalize(mInsertStatement))
+		{
+		case SQLITE_OK:
+			break;
+		case SQLITE_BUSY:
+			nap::Logger::error("Database table destruction failed: BUSY");
+			break;
+		default:
+			nap::Logger::error("Database table destruction failed: UNKNOWN ERROR");
+			break;
+		}
 	}
 
 

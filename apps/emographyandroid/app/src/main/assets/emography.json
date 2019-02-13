@@ -17,7 +17,7 @@
                 {
                     "Type": "nap::APIInt",
                     "mID": "numberOfDays",
-                    "Value": 7
+                    "Value": 1
                 },
                 {
                     "Type": "nap::APIInt",
@@ -99,7 +99,7 @@
                 {
                     "Type": "nap::emography::PopulateCacheComponent",
                     "mID": "PopulateCacheComponent",
-                    "NumberOfDays": 7,
+                    "NumberOfDays": 1,
                     "SamplesPerSecond": 1,
                     "DataModel": "DataModel",
                     "ClearCacheComponent": "./ClearCacheComponent"

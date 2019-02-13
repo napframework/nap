@@ -1,6 +1,8 @@
 #include "database.h"
 #include "sqlite3.h"
 
+#include <nap/logger.h>
+
 namespace nap
 {
 	Database::Database(rtti::Factory& factory) :
@@ -11,7 +13,18 @@ namespace nap
 
 	Database::~Database()
 	{
-		sqlite3_close(mDatabase);
+		switch (sqlite3_close(mDatabase))
+		{
+		case SQLITE_OK:
+			nap::Logger::info("Successfully closed database");
+			break;
+		case SQLITE_BUSY:
+			nap::Logger::error("Unable to close database: BUSY");
+			break;
+		default:
+			nap::Logger::error("Unable to close database: Unknown Error");
+			break;
+		}
 	}
 
 

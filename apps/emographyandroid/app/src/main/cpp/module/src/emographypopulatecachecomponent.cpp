@@ -63,7 +63,6 @@ namespace nap
 
 			// Start generating data from the last timestamp in the model, if available. Otherwise generate data starting at the current time.
 			SystemTimeStamp current_time = getCurrentTime() - (Hours(24) * numberOfDays);
-			TimeStamp generate_start = TimeStamp(current_time);
 			int num_samples_added = 0;
 
 			// Used for tracking progress (0-100)
@@ -75,6 +74,9 @@ namespace nap
 			APIEventPtr progress_event = std::make_unique<APIEvent>("PopulateCache");
 			progress_event->addArgument<APIBool>("Status", true);
 			mAPIService->dispatchEvent(std::move(progress_event));
+
+			nap::SystemTimer timer;
+			timer.start();
 
 			for (int days = 0; days != numberOfDays; ++days)
 			{
@@ -116,12 +118,12 @@ namespace nap
 				}
 			}
 
-			TimeStamp generate_end = getCurrentTime();
-			double generate_ms = (double)(std::chrono::time_point_cast<Milliseconds>(generate_end.toSystemTime()).time_since_epoch().count() - std::chrono::time_point_cast<Milliseconds>(generate_start.toSystemTime()).time_since_epoch().count());
-			Logger::info("Generating %d days of data (%d samples) took %.2fs (%fs/sample)",
+			float pop_duration_sec = timer.getElapsedTimeFloat();
+			Logger::info("Generating %d days of data (%d samples) took %.2fs (%.2f ms/sample)",
 				numberOfDays,
 				num_samples_added,
-				generate_ms / 1000.0, generate_ms / 1000.0 / num_samples_added);
+				pop_duration_sec,
+				(pop_duration_sec * 1000.0f) / float(num_samples_added));
 
 			// Notify listeners we've finished
 			progress_event = std::make_unique<APIEvent>("PopulateCache");
