@@ -23,7 +23,7 @@ add_include_to_interface_target(mod_naprender ${FREEIMAGE_INCLUDE_DIRS})
 if(NOT TARGET nrender)
     find_package(nrender REQUIRED)
 endif()
-target_link_libraries(mod_naprender INTERFACE nrender)
+set(MODULE_NAME_EXTRA_LIBS nrender)
 
 if(UNIX)
     # Package assimp into packaged project on *nix

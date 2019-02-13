@@ -5,9 +5,9 @@ if(NOT TARGET oscpack)
 endif()
 
 if(WIN32)
-    target_link_libraries(mod_naposc INTERFACE debug ${OSCPACK_LIBS_DEBUG} optimized ${OSCPACK_LIBS_RELEASE})
+    set(MODULE_NAME_EXTRA_LIBS debug ${OSCPACK_LIBS_DEBUG} optimized ${OSCPACK_LIBS_RELEASE})    
 else()
-    target_link_libraries(mod_naposc INTERFACE oscpack)
+    set(MODULE_NAME_EXTRA_LIBS oscpack)
 endif()
 add_include_to_interface_target(mod_naposc ${OSCPACK_INCLUDE_DIRS})
 

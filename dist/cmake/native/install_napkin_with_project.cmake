@@ -59,9 +59,11 @@ if(WIN32)
                            )
 
         # Run any module_extra to install module dependent DLLs
+        set(INSTALLING_MODULE_FOR_NAPKIN TRUE)
         if(EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
             include(${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
         endif()
+        unset(INSTALLING_MODULE_FOR_NAPKIN)
     endforeach()
 elseif(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)

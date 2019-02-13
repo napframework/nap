@@ -3,7 +3,7 @@ include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 if(NOT TARGET yoctopuce)
     find_package(yoctopuce REQUIRED)
 endif()
-target_link_libraries(mod_napyoctopuce INTERFACE yoctopuce)
+set(MODULE_NAME_EXTRA_LIBS yoctopuce)
 
 add_include_to_interface_target(mod_napyoctopuce ${YOCTOPUCE_INCLUDE_DIRS})
 
