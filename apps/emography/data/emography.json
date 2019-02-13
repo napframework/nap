@@ -69,12 +69,12 @@
                     "Settings": {
                         "Samples": 1024,
                         "StartTime": {
-                            "Month": "Unknown",
+                            "Month": "January",
                             "Day": 1,
                             "Year": 1970
                         },
                         "EndTime": {
-                            "Month": "Unknown",
+                            "Month": "January",
                             "Day": 1,
                             "Year": 1970
                         }
@@ -99,7 +99,7 @@
                 {
                     "Type": "nap::emography::PopulateCacheComponent",
                     "mID": "nap::emography::PopulateCacheComponent",
-                    "NumberOfDays": 7,
+                    "NumberOfDays": 1,
                     "SamplesPerSecond": 1,
                     "DataModel": "DataModel",
                     "ClearCacheComponent": "./nap::emography::ClearCacheComponent"
