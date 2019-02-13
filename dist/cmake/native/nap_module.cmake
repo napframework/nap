@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
+
+include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
+
 # Get our module name
 if (IMPORTING_PROJECT_MODULE)
     set(MODULE_NAME "mod_${PROJECT_NAME}")    
@@ -25,7 +28,7 @@ if(NOT MODULE_INTO_PROJ)
     include(${NAP_ROOT}/cmake/targetarch.cmake)
     target_architecture(ARCH)
 
-    include(${NAP_ROOT}/cmake/dist_shared.cmake)
+    include(${NAP_ROOT}/cmake/dist_shared_native.cmake)
 
     # Set our default build type if we haven't specified one (Linux)
     set_default_build_type()
@@ -115,9 +118,9 @@ endif()
 
 # Pull in NAP core
 if (NOT MODULE_INTO_PROJ)
-    include(${CMAKE_CURRENT_LIST_DIR}/napcore.cmake)
-    include(${CMAKE_CURRENT_LIST_DIR}/naprtti.cmake)
-    include(${CMAKE_CURRENT_LIST_DIR}/naputility.cmake)
+    find_package(napcore REQUIRED)
+    find_package(naprtti REQUIRED)
+    find_package(naputility REQUIRED)
 endif()
 
 target_link_libraries(${PROJECT_NAME} napcore naprtti naputility RTTR::Core ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})

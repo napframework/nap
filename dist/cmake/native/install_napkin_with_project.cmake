@@ -1,3 +1,5 @@
+include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
+
 # NAP modules which Napkin uses (as a minimum)
 set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio)
 # Qt frameworks which Napkin uses

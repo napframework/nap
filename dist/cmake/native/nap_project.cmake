@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
+include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
+
 get_filename_component(project_name_from_dir ${CMAKE_SOURCE_DIR} NAME)
 project(${project_name_from_dir})
 
@@ -20,7 +22,7 @@ message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 include(${NAP_ROOT}/cmake/targetarch.cmake)
 target_architecture(ARCH)
 
-include(${NAP_ROOT}/cmake/dist_shared.cmake)
+include(${NAP_ROOT}/cmake/dist_shared_native.cmake)
 
 # Get our modules list from project.json
 project_json_to_cmake()
@@ -101,9 +103,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set_output_directories()
 
 # Pull in NAP core
-include(${CMAKE_CURRENT_LIST_DIR}/napcore.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/naprtti.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/naputility.cmake)
+find_package(napcore REQUIRED)
+find_package(naprtti REQUIRED)
+find_package(naputility REQUIRED)
 
 # Pull in a project module if it exists
 add_project_module()
@@ -113,7 +115,7 @@ foreach(NAP_MODULE ${NAP_MODULES})
     find_nap_module(${NAP_MODULE})
 endforeach()
 
-target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core naputility ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
+target_link_libraries(${PROJECT_NAME} napcore naprtti naputility ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 
 # Include any extra project CMake logic
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)

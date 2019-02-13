@@ -19,10 +19,9 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
 
 if(NOT TARGET nrender)
-    include(${CMAKE_SOURCE_DIR}/../../cmake/nrender.cmake)
+    find_package(nrender REQUIRED)
 endif(NOT TARGET nrender)
 target_link_libraries(${PROJECT_NAME} nrender)
-target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDES})
 
 if(UNIX)
     # Package assimp into packaged project on *nix

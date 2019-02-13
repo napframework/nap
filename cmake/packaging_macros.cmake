@@ -15,10 +15,16 @@ macro(package_nap)
     endif()
 
     if(NOT ANDROID)
+        # install(DIRECTORY DESTINATION cmake)
+
         # Package shared cmake files
-        install(DIRECTORY ${NAP_ROOT}/dist/cmake/ 
-            DESTINATION cmake
-            )   
+        install(DIRECTORY ${NAP_ROOT}/dist/cmake/native/
+                DESTINATION cmake
+                )
+        file(GLOB CROSSP_FILES ${NAP_ROOT}/dist/cmake/*.*)
+        install(FILES ${CROSSP_FILES}
+                DESTINATION cmake/
+                )   
 
         # Install wrapper batch scripts for user tools
         if(WIN32)
@@ -82,15 +88,14 @@ macro(package_nap)
         install(DIRECTORY ${NAP_ROOT}/dist/cmake/android/
                 DESTINATION cmake/
                 )
+        file(GLOB CROSSP_FILES ${NAP_ROOT}/dist/cmake/*.*)
+        install(FILES ${CROSSP_FILES}
+                DESTINATION cmake
+                )   
 
         # Package shared Gradle logic
         install(DIRECTORY ${NAP_ROOT}/dist/gradle/
                 DESTINATION gradle/
-                )
-
-        # Build info installation
-        install(FILES ${NAP_ROOT}/dist/cmake/build_info.json
-                DESTINATION cmake/
                 )
     endif() # ANDROID
 endmacro()

@@ -6,6 +6,8 @@ set(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty)
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/cmake)
 
+include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
+
 find_package(rttr REQUIRED)
 find_package(napcore REQUIRED)
 find_package(naprtti REQUIRED)
@@ -14,7 +16,7 @@ foreach(NAP_MODULE ${NAP_MODULES})
     if(NAP_MODULE STREQUAL "mod_${NAP_PROJECT_NAME}")
         continue()
     endif()
-    find_package(${NAP_MODULE} REQUIRED)
+    find_nap_module(${NAP_MODULE})
 endforeach()
 
 # Add project module
