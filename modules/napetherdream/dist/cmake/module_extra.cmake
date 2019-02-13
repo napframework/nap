@@ -1,5 +1,10 @@
-find_package(etherdream REQUIRED)
-target_link_libraries(${PROJECT_NAME} etherdreamlib)
+include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
+
+if(NOT TARGET etherdream)
+    find_package(etherdream REQUIRED)
+endif()
+
+target_link_libraries(mod_napetherdream INTERFACE etherdreamlib)
 
 if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME}

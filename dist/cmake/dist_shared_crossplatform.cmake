@@ -1,3 +1,6 @@
+# Allow target_link_libraries use with targets in other directories (for module_extra.cmake)
+cmake_policy(SET CMP0079 NEW)
+
 # Generic way to import each module for different configurations.  Included is a fairly simple mechanism for 
 # extra per-module CMake logic, to be refined.
 macro(find_nap_module MODULE_NAME)
