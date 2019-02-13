@@ -1,10 +1,14 @@
+include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
+
 if(NOT TARGET mpg123)
     find_package(mpg123 REQUIRED)
 endif()
-target_link_libraries(${PROJECT_NAME} mpg123)
+target_link_libraries(mod_napaudio INTERFACE mpg123)
 
-find_package(moodycamel REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
+if(NOT TARGET moodycamel)
+    find_package(moodycamel REQUIRED)
+endif()
+add_include_to_interface_target(mod_napaudio ${MOODYCAMEL_INCLUDE_DIRS})
 
 if(WIN32)
     # Add post-build step to set copy mpg123 to bin on Win64
