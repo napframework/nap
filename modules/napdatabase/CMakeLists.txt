@@ -1,5 +1,5 @@
 # Bring in SQLite from thirdparty
-include(${THIRDPARTY_DIR}/sqlite/CMakeLists.txt)
+find_package(sqlite REQUIRED)
 
 project(mod_napdatabase)
 
@@ -35,4 +35,7 @@ package_module()
 # Package information 3rd party database should go here
 
 # SQLite packaging into release
-install(DIRECTORY ${THIRDPARTY_DIR}/sqlite/ DESTINATION thirdparty/sqlite)
+install(DIRECTORY ${THIRDPARTY_DIR}/sqlite/
+        DESTINATION thirdparty/sqlite
+        PATTERN NAP_NOTES.txt EXCLUDE
+        )
