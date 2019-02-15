@@ -293,7 +293,9 @@ macro(package_project_into_release DEST_DIR)
             PATTERN "CMakeLists.txt" EXCLUDE
             PATTERN "cached_project_json.cmake" EXCLUDE
             PATTERN "dist" EXCLUDE
-            PATTERN "*.mesh" EXCLUDE)
+            PATTERN "*.mesh" EXCLUDE
+            PATTERN "cached_module_json.cmake" EXCLUDE
+            )
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/CMakeLists.txt DESTINATION ${DEST_DIR})
 
     # Package any projectmodule cmake files
