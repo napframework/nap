@@ -20,6 +20,8 @@ LIB_DIR = 'packaging_lib'
 BIN_DIR = 'packaging_bin'
 PACKAGING_DIR = 'packaging_staging'
 ARCHIVING_DIR = 'archiving'
+APPS_SOURCE_DIR = 'apps'
+APPS_DEST_DIR = 'projects'
 BUILDINFO_FILE = 'dist/cmake/build_info.json'
 BUILD_TYPES = ('Release', 'Debug')
 
@@ -30,6 +32,7 @@ ERROR_PACKAGE_EXISTS = 1
 ERROR_INVALID_VERSION = 2
 ERROR_MISSING_ANDROID_NDK = 3
 ERROR_COULD_NOT_REMOVE_DIRECTORY = 4
+ERROR_BAD_INPUT = 5
 
 def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     """Execute command in provided working directory"""
@@ -46,7 +49,7 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
         raise Exception(proc.returncode)
     return (out, err)
 
-def package(zip_release, include_docs, include_apps, clean, include_timestamp_in_name, overwrite, android_build, android_ndk_root, android_abis):
+def package(zip_release, include_docs, include_apps, single_app_to_include, clean, include_timestamp_in_name, overwrite, android_build, android_ndk_root, android_abis):
     """Package a NAP platform release - main entry point"""
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -87,11 +90,11 @@ def package(zip_release, include_docs, include_apps, clean, include_timestamp_in
     if android_build:
         package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root)
     elif platform.startswith('linux'):    
-        package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release)
+        package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
     elif platform == 'darwin':
-        package_for_macos(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release)
+        package_for_macos(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
     else:
-        package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release)
+        package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
 
 def remove_directory_exit_on_failure(path, use):
     try:
@@ -155,7 +158,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             print("Error: %s already exists" % package_path)
             sys.exit(ERROR_PACKAGE_EXISTS)
 
-def package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release):
+def package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release):
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
@@ -174,6 +177,10 @@ def package_for_linux(package_basename, timestamp, git_revision, overwrite, incl
         d = '%s/%s' % (WORKING_DIR, build_dir_for_type)
         call(d, ['make', 'all', 'install', '-j%s' % cpu_count()])
 
+    # Remove all Naivi apps but the requested one
+    if include_apps and not single_app_to_include is None:
+        remove_all_apps_but_specified(single_app_to_include)
+
     # If requested, overwrite any existing package
     if overwrite:
         check_for_existing_package(package_basename, zip_release, True)        
@@ -184,7 +191,7 @@ def package_for_linux(package_basename, timestamp, git_revision, overwrite, incl
     else:
         archive_to_timestamped_dir(package_basename)
 
-def package_for_macos(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release):
+def package_for_macos(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release):
     """Package NAP platform release for macOS"""
 
     # Generate project
@@ -207,6 +214,10 @@ def package_for_macos(package_basename, timestamp, git_revision, overwrite, incl
     # Remove unwanted files (eg. .DS_Store)
     call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
 
+    # Remove all Naivi apps but the requested one
+    if include_apps and not single_app_to_include is None:
+        remove_all_apps_but_specified(single_app_to_include)
+
     # If requested, overwrite any existing package
     if overwrite:
         check_for_existing_package(package_basename, zip_release, True)        
@@ -217,7 +228,7 @@ def package_for_macos(package_basename, timestamp, git_revision, overwrite, incl
     else:
         archive_to_timestamped_dir(package_basename)
 
-def package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, include_docs, zip_release):
+def package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release):
     """Package NAP platform release for Windows"""
 
     # Create build dir if it doesn't exist
@@ -240,6 +251,10 @@ def package_for_win64(package_basename, timestamp, git_revision, overwrite, incl
     # Build & install to packaging dir
     for build_type in BUILD_TYPES:
         call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
+
+    # Remove all Naivi apps but the requested one
+    if include_apps and not single_app_to_include is None:
+        remove_all_apps_but_specified(single_app_to_include)
 
     # If requested, overwrite any existing package
     if overwrite:
@@ -383,6 +398,13 @@ def archive_to_timestamped_dir(package_basename):
 
     print("Packaged to directory %s" % os.path.abspath(package_basename))
 
+def remove_all_apps_but_specified(single_app_to_include):
+    """Remove all internal Naivi apps but the specified one"""
+    for app_name in os.listdir(os.path.join(PACKAGING_DIR, APPS_DEST_DIR)):
+        if not app_name == single_app_to_include:
+            path = os.path.join(PACKAGING_DIR, APPS_DEST_DIR, app_name)
+            remove_directory_exit_on_failure(path, 'unwanted internal app')
+
 def build_package_basename(include_timestamp_in_name, timestamp, cross_compile_target):
     """Build the name of our package and populate our JSON build info file"""
 
@@ -423,6 +445,9 @@ if __name__ == '__main__':
                         help="Clean build")
     parser.add_argument("-a", "--include-apps", action="store_true",
                         help="Include Naivi apps, packaging them as projects")
+    parser.add_argument("-sna", "--include-single-naivi-app",
+                        type=str,
+                        help="A single Naivi app to include, packaged as project. Conflicts with --include-apps.")
     parser.add_argument("-o", "--overwrite", action="store_true",
                         help="Overwrite any existing package")
     parser.add_argument("--include-docs", action="store_true",
@@ -438,10 +463,23 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # Make sure we're not trying to package all Naivi apps and just a single one
+    if args.include_apps and not args.include_single_naivi_app is None:
+        print("Error: Can't include a single Naivi app and include all Naivi apps..")
+        sys.exit(ERROR_BAD_INPUT)
+
+    # If we're packaging a single Naivi app make sure it exists
+    if args.include_single_naivi_app:
+        path = os.path.join(os.path.dirname(os.path.realpath(__file__)), APPS_SOURCE_DIR, args.include_single_naivi_app)
+        if not os.path.exists(path):
+            print("Error: Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_naivi_app)
+            sys.exit(ERROR_BAD_INPUT)
+
     # Package our build
     package(not args.no_zip, 
             args.include_docs, 
-            args.include_apps, 
+            args.include_apps or not args.include_single_naivi_app is None, 
+            args.include_single_naivi_app,
             args.clean, 
             not args.no_timestamp, 
             args.overwrite, 
