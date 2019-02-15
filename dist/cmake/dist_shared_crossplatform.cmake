@@ -1,3 +1,8 @@
+# Needed for the way extra libraries are brought in from module_extra.cmake
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13.0") 
+    cmake_policy(SET CMP0079 NEW)
+endif()
+
 # Generic way to import each module for different configurations.  Included is a fairly simple mechanism for 
 # extra per-module CMake logic, to be refined.
 macro(find_nap_module MODULE_NAME)
@@ -73,6 +78,21 @@ macro(find_nap_module MODULE_NAME)
             include (${MODULE_EXTRA_CMAKE_PATH})
             if(MODULE_NAME_EXTRA_LIBS)
                 target_link_libraries(${MODULE_NAME} INTERFACE ${MODULE_NAME_EXTRA_LIBS})
+
+                # On Android copy the library into the staging area that's used for the CMake built libraries
+                # that are loaded into the APK. This is a bit of a hack. Also, the specified library name for
+                # Android currently needs to be a target, plus only a single library is currently supported
+                # per module.
+                # TODO support more than one library by operating over a list
+                if(ANDROID)
+                    add_custom_command(
+                        TARGET ${LIB_NAME} 
+                        POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        $<TARGET_FILE:${MODULE_NAME_EXTRA_LIBS}>
+                        $<TARGET_FILE_DIR:${LIB_NAME}>
+                        )                    
+                endif()
             endif()
         endif()
 
