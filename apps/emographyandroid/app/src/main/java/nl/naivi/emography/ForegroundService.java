@@ -34,12 +34,15 @@ public class ForegroundService extends Service
     public void onCreate()
     {
         super.onCreate();
-        Log.i(TAG, "Service onCreate");
+        Log.i(TAG, "ForegroundService.onCreate");
 
         // Accept shutdown and logging request intents
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Constants.ACTION.STOP_SERVICE);
         mIntentFilter.addAction(Constants.ACTION.API_SEND_MESSAGE);
+
+        // Build worker thread
+        mAPIThread = new APIThread(this);
     }
 
 
@@ -77,9 +80,6 @@ public class ForegroundService extends Service
 
         // Run in foreground, show notification
         startForeground(Constants.NOTIFICATIONS.FOREGROUND_SERVICE_ID, notification);
-
-        // Build worker thread
-        mAPIThread = new APIThread(this);
 
         // Start our thread
         mAPIThread.start();
@@ -164,10 +164,9 @@ public class ForegroundService extends Service
     @Override
     public void onDestroy()
     {
+        // Stop API thread from running
         Log.i(TAG, "ForegroundService.onDestroy");
-
-        if(mAPIThread != null)
-            mAPIThread.stopRunning();
+        mAPIThread.stopRunning();
 
         // Unregister broadcast receiver
         unregisterReceiver(mReceiver);
