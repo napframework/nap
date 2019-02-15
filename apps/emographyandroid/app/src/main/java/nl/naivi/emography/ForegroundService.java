@@ -46,6 +46,7 @@ public class ForegroundService extends Service
         // Start broadcast receiver
         registerReceiver(mReceiver, mIntentFilter);
 
+        // Create notification channel
         createNotificationChannel();
 
         // Intent for touch on notification
