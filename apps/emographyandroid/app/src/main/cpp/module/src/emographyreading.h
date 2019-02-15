@@ -4,6 +4,8 @@
 #include <nap/datetime.h>
 #include <rtti/object.h>
 
+#include <cassert>
+
 namespace nap
 {
 	namespace emography

@@ -35,5 +35,10 @@ if(NAP_PACKAGED_BUILD AND NOT PACKAGE_NAIVI_APPS)
     return()
 endif()
 
+# Include strangely located module source into packaged framework release
+install(DIRECTORY ${SOURCE_DIR_IN_ANDROID_PROJ} 
+        DESTINATION projects/emography/module
+        )
+
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
