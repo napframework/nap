@@ -1,8 +1,3 @@
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_naposc)
 
 # add all cpp files to SOURCES
@@ -48,6 +43,8 @@ if(MSVC)
     install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/msvc64/ DESTINATION thirdparty/oscpack/lib)
 elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osx/install/lib/ DESTINATION thirdparty/oscpack/lib)
+elseif(ANDROID)
+    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/android/install/lib/ DESTINATION thirdparty/oscpack/lib)
 else()
     install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/linux/install/lib/ DESTINATION thirdparty/oscpack/lib)
 endif()

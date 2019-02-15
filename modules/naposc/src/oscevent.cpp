@@ -12,7 +12,9 @@ RTTI_END_CLASS
 
 using OSCEventSignal = nap::Signal<const nap::OSCEvent&>;
 RTTI_BEGIN_CLASS(OSCEventSignal)
-    RTTI_FUNCTION("connect", (void(OSCEventSignal::*)(const pybind11::function))&OSCEventSignal::connect)
+#ifdef NAP_ENABLE_PYTHON
+	RTTI_FUNCTION("connect", (void(OSCEventSignal::*)(const pybind11::function))&OSCEventSignal::connect)
+#endif
 RTTI_END_CLASS
 
 namespace nap
