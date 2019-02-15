@@ -15,17 +15,20 @@ import android.os.IBinder;
 import android.support.annotation.Keep;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
+/**
+ * Emography foreground service, which is always available.
+ * Manages the emography NAP application environment.
+ * This service can send and receive messages from the running NAP application.
+ * The NAP application runs in the background on a separate thread.
+ * Sending messages to the NAP application is a-synchronous, ie: won't block the calling thread.
+ * Messages are processed in order, ie: first in - first out.
+ */
 public class ForegroundService extends Service
 {
     private static final String TAG = "NAPEmography";
     private IntentFilter mIntentFilter;
-    private volatile boolean mStopThread = false;
-    private AtomicBoolean mFlush = new AtomicBoolean(false);
-    final private Object mLock = new Object();
+    private APIThread mAPIThread = null;
 
     @Override
     public void onCreate()
@@ -43,10 +46,12 @@ public class ForegroundService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
+        Log.i(TAG, "ForegroundService.onStart");
+
         // Start broadcast receiver
         registerReceiver(mReceiver, mIntentFilter);
 
-        // Create notification channel
+        // Create notification channels
         createNotificationChannel();
 
         // Intent for touch on notification
@@ -74,62 +79,12 @@ public class ForegroundService extends Service
         startForeground(Constants.NOTIFICATIONS.FOREGROUND_SERVICE_ID, notification);
 
         // Build worker thread
-        Thread nap_thread = new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                // Initialisation
-                boolean initialized = napInit();
-
-                // Check init success
-                if (!initialized)
-                {
-                    Log.e(TAG, "Abandoning launch due to NAP initialization failure");
-                    Handler mainHandler = new Handler(ForegroundService.this.getMainLooper());
-                    Runnable myRunnable = new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            Toast.makeText(ForegroundService.this, "NAP initialization failure", Toast.LENGTH_SHORT).show();
-                            stopService();
-                        }
-                    };
-                    mainHandler.post(myRunnable);
-                    return;
-                }
-
-                // Update NAP when a new message is received
-                while (!Thread.interrupted() && !mStopThread)
-                {
-                    synchronized (mLock) {
-                        try {
-                            // Wait until we need to flush
-                            while (!mFlush.get()) {
-                                mLock.wait();
-                            }
-                        }
-                        catch(InterruptedException e) {
-                            Log.e("error", e.toString());
-                        } // Perform action appropriate to condition
-                    }
-
-                    // Reset
-                    mFlush.set(false);
-
-                    // Flush - forces an update on the C++ side
-                    napUpdate();
-                }
-
-                // Shutdown NAP core
-                napShutdown();
-                Log.i(TAG, "Service thread exiting cleanly");
-            }
-        });
+        mAPIThread = new APIThread(this);
 
         // Start our thread
-        nap_thread.start();
+        mAPIThread.start();
+
+        // Keep this service around
         return START_STICKY;
     }
 
@@ -142,7 +97,7 @@ public class ForegroundService extends Service
             {
                 // Shutdown request received
                 Log.i(TAG, "Received stop service intent");
-                stopService();
+                kill();
             }
             else if (intent.getAction().equals(Constants.ACTION.API_SEND_MESSAGE))
             {
@@ -172,32 +127,18 @@ public class ForegroundService extends Service
     }
 
 
-    /**
-     * Notifies the NAP thread to flush all current events (messages)
-     * All events are processed in order, ie: first in / first out.
-     */
-    private void flush ()
-    {
-        // Notify NAP thread that a message can be processed
-        synchronized (mLock)
-        {
-            mFlush.set(true);
-            mLock.notifyAll();
-        }
-    }
-
-
-    /**
-     * Forwards a message to the NAP APP.
-     * Also ensures the NAP thread is notified about a received message.
-     * @param data the NAP message as json formatted string.
-     */
+     /**
+      * Sends a message to the running NAP application as a json formatted string.
+      * After receiving a message flush() is called to processes the event.
+      * This is an a-synchronous call that won't block the calling thread.
+      *
+      * @param data the NAP message as json formatted string.
+      */
     private void call(String data)
     {
-        // Send message and Flush:
-        // triggers an update of the NAP application running in the background
-        if(napSendMessage(data))
-            flush();
+         if(!mAPIThread.sendMessage(data)) {
+             Log.e(TAG, "Unable to send API message: " + data);
+         }
     }
 
 
@@ -205,7 +146,7 @@ public class ForegroundService extends Service
      * Stop this service and request that the activity stop too
      * This is called when an intent to stop the service is received.
      */
-    private void stopService()
+    public void kill()
     {
         stopForeground(true);
         stopSelf();
@@ -225,11 +166,8 @@ public class ForegroundService extends Service
     {
         Log.i(TAG, "ForegroundService.onDestroy");
 
-        // Stop our worker
-        mStopThread = true;
-
-        // Flush NAP system
-        flush();
+        if(mAPIThread != null)
+            mAPIThread.stopRunning();
 
         // Unregister broadcast receiver
         unregisterReceiver(mReceiver);
