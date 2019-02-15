@@ -1,8 +1,3 @@
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napartnet)
 
 # add all cpp files to SOURCES
@@ -65,7 +60,11 @@ package_module()
 install(FILES ${THIRDPARTY_DIR}/libartnet/AUTHORS DESTINATION thirdparty/libartnet)
 install(FILES ${THIRDPARTY_DIR}/libartnet/COPYING DESTINATION thirdparty/libartnet)
 install(FILES ${THIRDPARTY_DIR}/libartnet/README DESTINATION thirdparty/libartnet)
-install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin)
+if(ANDROID)
+    install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin/${ANDROID_ABI})
+else()
+    install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin)
+endif()
 install(DIRECTORY ${ARTNET_DIR}/artnet DESTINATION thirdparty/libartnet/include)
 if(WIN32)
     install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION thirdparty/libartnet/bin)
