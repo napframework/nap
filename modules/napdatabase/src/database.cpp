@@ -13,6 +13,9 @@ namespace nap
 
 	Database::~Database()
 	{
+		// Need to destroy the tables first to ensure the database isn't 'busy' (the tables hold on to sqlite3_stmt objects which are destroyed in their destructors)
+		mTables.clear();
+
 		switch (sqlite3_close(mDatabase))
 		{
 		case SQLITE_OK:
