@@ -151,7 +151,11 @@ std::string AppContext::documentToString() const
 {
 	ObjectList objects;
 	for (auto& ob : getDocument()->getObjects())
+	{
+		if (ob->get_type().is_derived_from<nap::InstancePropertyValue>())
+			continue;
 		objects.emplace_back(ob.get());
+	}
 
 	JSONWriter writer;
 	ErrorState err;
