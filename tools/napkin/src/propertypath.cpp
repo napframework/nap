@@ -79,7 +79,7 @@ nap::ComponentInstanceProperties* napkin::PropertyPath::instanceProps() const
 
 	for (nap::ComponentInstanceProperties& instProp : mRootEntity->mInstanceProperties)
 	{
-		if (instProp.mTargetComponent.get() == mObject)
+		if (instProp.mTargetComponent.getInstancePath() == mComponentPath)
 			return &instProp;
 	}
 	return nullptr;
