@@ -184,6 +184,7 @@ void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
 	if (!paths.isEmpty())
 	{
 		auto path = paths.first();
+
 		// Don't edit scenes
 		if (!path.getObject().get_type().is_derived_from<nap::Scene>())
 			mInspectorPanel.setPath(paths.first());

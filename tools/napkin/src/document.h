@@ -178,9 +178,9 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string())
+		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string(), bool selectNew = true)
 		{
-			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, true, name));
+			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, selectNew, name));
 		}
 
 		/**

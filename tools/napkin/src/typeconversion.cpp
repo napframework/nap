@@ -166,13 +166,13 @@ namespace napkin
 		else if (type == rttr::type::get<float>())
 		{
 
-			auto propValue = napkin::AppContext::get().getDocument()->addObject<nap::TypedInstancePropertyValue<float>>();
+			auto propValue = napkin::AppContext::get().getDocument()->addObject<nap::TypedInstancePropertyValue<float>>(nullptr, "a", false);
 			propValue->mValue = value.get_value<float>();
 			return propValue;
 		}
 		else if (type == rttr::type::get<int>())
 		{
-			auto propValue = napkin::AppContext::get().getDocument()->addObject<nap::TypedInstancePropertyValue<int>>();
+			auto propValue = napkin::AppContext::get().getDocument()->addObject<nap::TypedInstancePropertyValue<int>>(nullptr, "a", false);
 			propValue->mValue = value.get_value<int>();
 			return propValue;
 		}

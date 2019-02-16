@@ -106,11 +106,12 @@ namespace nap
 						rttr::method to_string_method = findMethodRecursive(value_type, "toString");
 						if (to_string_method.is_valid())
 						{
+							// This is likely a ComponentPtrBase
 							rttr::variant string_result = to_string_method.invoke(value);
 							pointee_id = string_result.to_string();
 						}
 
-						if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with empty ID"))
+						if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with empty ID: %s", pointee->mID.c_str()))
 							return false;
 
 						// Objects we point to must also be serialized, so make sure they are in the set of objects to be serialized
