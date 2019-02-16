@@ -67,11 +67,9 @@ void FilterTreeView::selectAndReveal(QStandardItem* item)
 		mSortFilter.exemptSourceIndex(item->index());
 		idx = getFilterModel().mapFromSource(item->index());
 		if (!idx.isValid())
-		{
-			qInfo() << "Nothing to select";
 			return;
-		}
 	}
+
 	// We are going to select an entire row
 	auto botRight = getFilterModel().index(idx.row(), getFilterModel().columnCount(idx.parent()) - 1, idx.parent());
     getTreeView().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);

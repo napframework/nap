@@ -6,6 +6,8 @@
 
 namespace napkin
 {
+	class ComponentInstanceItem;
+	class RootEntityItem;
 
 	/**
 	 * An empty item for grouping purposes.
@@ -131,9 +133,33 @@ namespace napkin
 		nap::Component& getComponent();
 	};
 
-	class RootEntityItem : public ObjectItem
+	/**
+	 * An item that displays an entity instance
+	 */
+	class EntityInstanceItem : public ObjectItem
 	{
 		Q_OBJECT
+	public:
+		explicit EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem);
+		QString instanceName();
+		nap::RootEntity& rootEntity();
+		nap::Entity& entity() { return *dynamic_cast<nap::Entity*>(mObject); }
+		EntityInstanceItem* parentEntityInstanceItem() { return dynamic_cast<EntityInstanceItem*>(parentItem()); }
+		int componentIndex(const ComponentInstanceItem& item);
+		int childIndex(const EntityInstanceItem& item);
+
+
+	private:
+		void onObjectRemoved(nap::rtti::Object* o);
+		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
+		void onComponentAdded(nap::Component* c, nap::Entity* owner);
+
+		RootEntityItem& mRootEntityItem;
+	};
+
+	class RootEntityItem : public EntityInstanceItem
+	{
+	Q_OBJECT
 	public:
 		explicit RootEntityItem(nap::RootEntity& e);
 
@@ -144,28 +170,10 @@ namespace napkin
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
 
+
 		nap::RootEntity* mRootEntity;
 	};
 
-	/**
-	 * An item that displays an entity instance
-	 */
-	class EntityInstanceItem : public ObjectItem
-	{
-		Q_OBJECT
-	public:
-		explicit EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem);
-
-		nap::RootEntity& rootEntity();
-		nap::Entity& entity() { return *dynamic_cast<nap::Entity*>(mObject); }
-
-	private:
-		void onObjectRemoved(nap::rtti::Object* o);
-		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
-		void onComponentAdded(nap::Component* c, nap::Entity* owner);
-
-		RootEntityItem& mRootEntityItem;
-	};
 
 	/**
 	 * Item that displays a Component Instance
@@ -176,7 +184,7 @@ namespace napkin
 		explicit ComponentInstanceItem(nap::Component& comp, RootEntityItem& rootEntityItem);
 		nap::Component& component() { return *dynamic_cast<nap::Component*>(mObject); }
 		nap::RootEntity& rootEntity();
-
+		std::string componentPath();
 	private:
 		RootEntityItem& mEntityItem;
 	};

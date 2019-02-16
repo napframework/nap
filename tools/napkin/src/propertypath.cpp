@@ -9,11 +9,6 @@
 
 using namespace nap::rtti;
 
-napkin::PropertyPath::PropertyPath(const napkin::PropertyPath& other)
-		: mRootEntity(other.mRootEntity), mObject(other.mObject), mPath(other.mPath)
-{
-}
-
 napkin::PropertyPath::PropertyPath(Object& obj)
 		: mObject(&obj)
 {
@@ -24,8 +19,14 @@ napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Objec
 {
 }
 
-napkin::PropertyPath::PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const nap::rtti::Path& path)
-		: mRootEntity(rootEntity), mObject(&obj), mPath(path)
+napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::Component& comp, const std::string& path)
+		: mRootEntity(&rootEntity), mObject(&comp), mComponentPath(path)
+{
+}
+
+napkin::PropertyPath::PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const std::string& compPath,
+								   const nap::rtti::Path& propPath)
+		: mRootEntity(rootEntity), mObject(&obj), mComponentPath(compPath), mPath(propPath)
 {
 }
 
@@ -39,11 +40,6 @@ napkin::PropertyPath::PropertyPath(Object& obj, const std::string& path)
 {
 }
 
-napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj, const std::string& path)
-		: mRootEntity(&rootEntity), mObject(&obj), mPath(Path::fromString(path))
-{
-}
-
 napkin::PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
 		: mObject(&obj)
 {
@@ -52,8 +48,8 @@ napkin::PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
 	mPath = path;
 }
 
-napkin::PropertyPath::PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, rttr::property prop)
-		: mRootEntity(rootEntity), mObject(&obj)
+napkin::PropertyPath::PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const std::string& compPath, rttr::property prop)
+		: mRootEntity(rootEntity), mObject(&obj), mComponentPath(compPath)
 {
 	nap::rtti::Path path;
 	path.pushAttribute(prop.get_name().data());
@@ -109,73 +105,7 @@ nap::ComponentInstanceProperties& napkin::PropertyPath::getOrCreateInstanceProps
 
 std::string napkin::PropertyPath::componentInstancePath() const
 {
-	auto targetComponent = component();
-	if (!targetComponent)
-		return std::string();
-
-	// Path to component, start from component, track back to root entity
-	std::vector<nap::Entity*> compPath;
-
-	// TODO: Don't access document globally (store instance in PropertyPath?)
-	auto doc = AppContext::get().getDocument();
-	auto entity = doc->getOwner(*targetComponent);
-	compPath.insert(compPath.begin(), entity);
-
-	// walk from componet to root
-	auto parent = doc->getParent(*entity);
-	while (parent)
-	{
-		compPath.insert(compPath.begin(), parent);
-		parent = doc->getParent(*parent);
-	}
-
-	struct MatchingSibling
-	{
-		const nap::Entity* mEntity;
-		int mSiblingIndex;
-	};
-
-	// convert path to string,
-	// iterate over parent's children and add index if same-named siblings are found
-	std::string compPathStr = "./";
-	for (size_t i = 1, len = compPath.size(); i < len; i++)
-	{
-		auto elm = compPath[i];
-		std::string elmName = elm->mID;
-		auto elmParent = compPath[i - 1];
-
-		// find all siblings with the same id
-		std::vector<MatchingSibling> matchingSiblings;
-		for (int idx=0; idx < elmParent->mChildren.size(); idx++)
-		{
-			const auto sibling = elmParent->mChildren[idx].get();
-			if (sibling->mID == elm->mID)
-				matchingSiblings.push_back({sibling, idx});
-		}
-
-		if (matchingSiblings.size() == 1) // id is unique
-		{
-			compPathStr += elm->mID + "/";
-		}
-		else // id is not unique, disambiguate
-		{
-			// get the index of the element in the sibling list
-			int index = -1;
-			for (int idx=0; idx < matchingSiblings.size(); idx++)
-			{
-				if (matchingSiblings[idx].mEntity == elm)
-				{
-					index = idx;
-					break;
-				}
-			}
-			assert(index >= 0);
-			compPathStr += elm->mID + ":" + std::to_string(index) + "/";
-		}
-	}
-	compPathStr += targetComponent->mID;
-
-	return compPathStr;
+	return mComponentPath;
 }
 
 nap::Component* napkin::PropertyPath::component() const
@@ -521,7 +451,7 @@ void napkin::PropertyPath::iterateProperties(napkin::PropertyVisitor visitor, in
 
 	for (rttr::property prop : mObject->get_type().get_properties())
 	{
-		PropertyPath path(mRootEntity, *mObject, prop);
+		PropertyPath path(mRootEntity, *mObject, mComponentPath, prop);
 		if (!visitor(path))
 			return;
 
@@ -553,7 +483,7 @@ void napkin::PropertyPath::iterateArrayElements(napkin::PropertyVisitor visitor,
 	{
 		nap::rtti::Path path = getPath();
 		path.pushArrayElement(i);
-		PropertyPath childPath(mRootEntity, *mObject, path);
+		PropertyPath childPath(mRootEntity, *mObject, mComponentPath, path);
 
 		if (!visitor(childPath))
 			return;
@@ -570,7 +500,7 @@ void napkin::PropertyPath::iterateChildrenProperties(napkin::PropertyVisitor vis
 		auto path = mPath;
 		path.pushAttribute(childProp.get_name().data());
 
-		PropertyPath childPath(mRootEntity, *mObject, path);
+		PropertyPath childPath(mRootEntity, *mObject, mComponentPath, path);
 
 		if (!visitor(childPath))
 			return;
@@ -609,7 +539,7 @@ void napkin::PropertyPath::iteratePointerProperties(napkin::PropertyVisitor visi
 		path.pushAttribute(name);
 
 		// This path points to the pointee
-		PropertyPath childPath(mRootEntity, *pointee, path);
+		PropertyPath childPath(mRootEntity, *pointee, mComponentPath, path);
 
 		if (!visitor(childPath))
 			return;

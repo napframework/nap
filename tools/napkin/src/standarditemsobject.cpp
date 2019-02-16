@@ -20,9 +20,9 @@ ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 	auto& ctx = AppContext::get();
 
 	setText(QString::fromStdString(o->mID));
-    setIcon(ctx.getResourceFactory().getIcon(*o));
+	setIcon(ctx.getResourceFactory().getIcon(*o));
 
-    connect(&ctx, &AppContext::propertyValueChanged, this, &ObjectItem::onPropertyValueChanged);
+	connect(&ctx, &AppContext::propertyValueChanged, this, &ObjectItem::onPropertyValueChanged);
 	connect(&ctx, &AppContext::objectRemoved, this, &ObjectItem::onObjectRemoved);
 
 	refresh();
@@ -91,7 +91,7 @@ QVariant ObjectItem::data(int role) const
 
 void ObjectItem::removeChildren()
 {
-	while(rowCount())
+	while (rowCount())
 		removeRow(0);
 }
 
@@ -132,7 +132,8 @@ nap::Entity* EntityItem::getEntity()
 int EntityItem::childEntityIndex(EntityItem& childEntityItem)
 {
 	int i = 0;
-	for (int row=0; row < rowCount(); row++) {
+	for (int row = 0; row < rowCount(); row++)
+	{
 		auto childItem = child(row, 0);
 		if (childItem == &childEntityItem)
 			return i;
@@ -154,7 +155,7 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 	if (owner != mObject)
 		return;
 
-	auto compItem	 = new ComponentItem(*comp);
+	auto compItem = new ComponentItem(*comp);
 	auto compTypeItem = new RTTITypeItem(comp->get_type());
 	appendRow({compItem, compTypeItem});
 }
@@ -194,7 +195,7 @@ SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene, false)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem)
-	: ObjectItem(&e, false), mRootEntityItem(rootEntityItem)
+		: ObjectItem(&e, false), mRootEntityItem(rootEntityItem)
 {
 	for (auto comp : e.mComponents)
 		onComponentAdded(comp.get(), &entity());
@@ -204,6 +205,28 @@ EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntit
 	auto ctx = &AppContext::get();
 	connect(ctx, &AppContext::componentAdded, this, &EntityInstanceItem::onComponentAdded);
 	connect(ctx, &AppContext::entityAdded, this, &EntityInstanceItem::onEntityAdded);
+}
+
+QString EntityInstanceItem::instanceName()
+{
+	auto parent = parentItem();
+	auto parentInstanceItem = dynamic_cast<EntityInstanceItem*>(parent);
+	if (parentInstanceItem)
+	{
+		int i = 0;
+		for (int row = 0, len = parentInstanceItem->rowCount(); row < len; row++)
+		{
+			auto sibling = dynamic_cast<EntityInstanceItem*>(parentInstanceItem->child(row));
+			if (!sibling)
+				continue;
+			if (sibling == this)
+				break;
+			i++;
+		}
+		return QString("%1:%2").arg(mObject->mID.c_str(), QString::number(i));
+	}
+	assert(false);
+	return "FAULTY";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -229,19 +252,41 @@ void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 	appendRow(new ComponentInstanceItem(*c, mRootEntityItem));
 }
 
+int EntityInstanceItem::componentIndex(const ComponentInstanceItem& item)
+{
+	int i = 0;
+	for (int row = 0; row < rowCount(); row++)
+	{
+		auto childItem = dynamic_cast<ComponentInstanceItem*>(child(row));
+		if (!childItem)
+			continue;
+		if (childItem == &item)
+			return i;
+		i++;
+	}
+	return -1;
+}
+
+int EntityInstanceItem::childIndex(const EntityInstanceItem& item)
+{
+	int i = 0;
+	for (int row = 0; row < rowCount(); row++)
+	{
+		auto childItem = dynamic_cast<EntityInstanceItem*>(child(row));
+		if (!childItem)
+			continue;
+		if (childItem == &item)
+			return i;
+		i++;
+	}
+	return -1;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RootEntityItem::RootEntityItem(nap::RootEntity& e)
-	: ObjectItem(e.mEntity.get(), false), mRootEntity(&e)
+		: EntityInstanceItem(*e.mEntity.get(), *this), mRootEntity(&e)
 {
-	for (auto comp : e.mEntity->mComponents)
-		onComponentAdded(comp.get(), e.mEntity.get());
-	for (auto entity : e.mEntity->mChildren)
-		onEntityAdded(entity.get(), e.mEntity.get());
-
-	auto ctx = &AppContext::get();
-	connect(ctx, &AppContext::componentAdded, this, &RootEntityItem::onComponentAdded);
-	connect(ctx, &AppContext::entityAdded, this, &RootEntityItem::onEntityAdded);
 }
 
 nap::RootEntity& RootEntityItem::rootEntity()
@@ -269,7 +314,7 @@ void RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityItem& entityItem)
-	: ObjectItem(&comp, false), mEntityItem(entityItem)
+		: ObjectItem(&comp, false), mEntityItem(entityItem)
 {
 
 }
@@ -277,5 +322,25 @@ ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityIte
 nap::RootEntity& ComponentInstanceItem::rootEntity()
 {
 	return mEntityItem.rootEntity();
+}
+
+std::string ComponentInstanceItem::componentPath()
+{
+	auto ownerItem = dynamic_cast<EntityInstanceItem*>(parentItem());
+	if (ownerItem)
+	{
+		std::vector<std::string> namePath = {mObject->mID};
+
+		auto parent = ownerItem;
+		while (parent != nullptr && !dynamic_cast<RootEntityItem*>(parent))
+		{
+			namePath.insert(namePath.begin(), parent->instanceName().toStdString());
+			parent = parent->parentEntityInstanceItem();
+		}
+
+		return "./" + nap::utility::joinString(namePath, "/");
+	}
+	assert(false);
+	return {"INVALID"};
 }
 

@@ -127,20 +127,19 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 	}
 }
 
-void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
+void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+{
 	// Grab selected nap objects
 	QList<PropertyPath> selectedObjects;
 	for (auto m : mFilterView.getSelectedItems())
 	{
-
 		auto eItem = dynamic_cast<EntityInstanceItem*>(m);
 		if (eItem)
 			selectedObjects << PropertyPath(eItem->rootEntity(), eItem->entity());
 
 		auto cItem = dynamic_cast<ComponentInstanceItem*>(m);
 		if (cItem)
-			selectedObjects << PropertyPath(cItem->rootEntity(), cItem->component());
-
+			selectedObjects << PropertyPath(cItem->rootEntity(), cItem->component(),cItem->componentPath());
 	}
 
 	selectionChanged(selectedObjects);
