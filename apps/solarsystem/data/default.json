@@ -105,7 +105,7 @@
                     "mID": "Xform_2",
                     "Properties": {
                         "Translate": {
-                            "x": 0.0,
+                            "x": 12.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -133,6 +133,16 @@
                 "Sphere",
                 "Sphere"
             ]
+        },
+        {
+            "Type": "nap::FloatInstancePropertyValue",
+            "mID": "a",
+            "Value": 10.0
+        },
+        {
+            "Type": "nap::FloatInstancePropertyValue",
+            "mID": "nap::FloatInstancePropertyValue",
+            "Value": -1.0
         },
         {
             "Type": "nap::Material",
@@ -205,6 +215,7 @@
                                     "Path": "Properties/Translate/x",
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_2",
                                         "Value": -1.0
                                     }
                                 }
@@ -217,6 +228,7 @@
                                     "Path": "Properties/Translate/x",
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "nap::FloatInstancePropertyValue_2",
                                         "Value": 1.0
                                     }
                                 }
