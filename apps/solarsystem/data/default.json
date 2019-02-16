@@ -2,11 +2,11 @@
     "Objects": [
         {
             "Type": "nap::Entity",
-            "mID": "Camera",
+            "mID": "CameraEntity",
             "Components": [
                 {
                     "Type": "nap::PerspCameraComponent",
-                    "mID": "PerspCam",
+                    "mID": "nap::PerspCameraComponent",
                     "Properties": {
                         "FieldOfView": 50.0,
                         "NearClippingPlane": 1.0,
@@ -23,7 +23,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "Xform_3",
+                    "mID": "nap::TransformComponent_2",
                     "Properties": {
                         "Translate": {
                             "x": 0.10000000149011612,
@@ -48,40 +48,21 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "Child",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "Xform",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
+            "mID": "SphereContainerEntity",
+            "Components": [],
+            "Children": [
+                "SphereEntity",
+                "SphereEntity",
+                "SphereEntity"
+            ]
         },
         {
             "Type": "nap::Entity",
-            "mID": "Sphere",
+            "mID": "SphereEntity",
             "Components": [
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "Mesh",
+                    "mID": "nap::RenderableMeshComponent",
                     "Mesh": "SphereMesh",
                     "MaterialInstance": {
                         "Material": "Material",
@@ -102,10 +83,10 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "Xform_2",
+                    "mID": "nap::TransformComponent",
                     "Properties": {
                         "Translate": {
-                            "x": 12.0,
+                            "x": 0.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -124,25 +105,6 @@
                 }
             ],
             "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "SphereContainer",
-            "Components": [],
-            "Children": [
-                "Sphere",
-                "Sphere"
-            ]
-        },
-        {
-            "Type": "nap::FloatInstancePropertyValue",
-            "mID": "a",
-            "Value": 10.0
-        },
-        {
-            "Type": "nap::FloatInstancePropertyValue",
-            "mID": "nap::FloatInstancePropertyValue",
-            "Value": -1.0
         },
         {
             "Type": "nap::Material",
@@ -202,34 +164,71 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "Camera",
+                    "Entity": "CameraEntity",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "SphereContainer",
+                    "Entity": "SphereContainerEntity",
                     "InstanceProperties": [
                         {
-                            "TargetComponent": "./Sphere:0/Xform_2",
+                            "TargetComponent": "./SphereEntity:0/nap::TransformComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a",
+                                        "Value": -1.0
+                                    }
+                                },
+                                {
+                                    "Path": "Properties/Translate/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_8",
+                                        "Value": -3.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./SphereEntity:1/nap::TransformComponent",
                             "TargetAttributes": [
                                 {
                                     "Path": "Properties/Translate/x",
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
                                         "mID": "a_2",
-                                        "Value": -1.0
+                                        "Value": 1.0
+                                    }
+                                },
+                                {
+                                    "Path": "Properties/Translate/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_9",
+                                        "Value": -3.0
                                     }
                                 }
                             ]
                         },
                         {
-                            "TargetComponent": "./Sphere:1/Xform_2",
+                            "TargetComponent": "./SphereEntity:2/nap::TransformComponent",
                             "TargetAttributes": [
                                 {
-                                    "Path": "Properties/Translate/x",
+                                    "Path": "Properties/Translate/y",
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "nap::FloatInstancePropertyValue_2",
-                                        "Value": 1.0
+                                        "mID": "a_6",
+                                        "Value": 0.0
+                                    }
+                                },
+                                {
+                                    "Path": "Properties/Scale/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_5",
+                                        "Value": 3.0
                                     }
                                 }
                             ]
