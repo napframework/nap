@@ -1,6 +1,7 @@
 #include "scene.h"
 #include "entity.h"
 #include "entityobjectgraphitem.h"
+#include "entitycreationparameters.h"
 #include "entityptr.h"
 #include <nap/core.h>
 #include <rtti/rttiutilities.h>
