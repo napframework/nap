@@ -273,6 +273,9 @@ namespace napkin
 		nap::TargetAttribute* targetAttribute() const;
 		nap::TargetAttribute& getOrCreateTargetAttribute();
 
+		// Revert to default
+		void removeTargetAttribute();
+
 
 		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
 		nap::rtti::Object* mObject = nullptr; // the object on which the property exists

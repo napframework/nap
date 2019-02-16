@@ -155,6 +155,37 @@ nap::TargetAttribute& napkin::PropertyPath::getOrCreateTargetAttribute()
 	return instProps.mTargetAttributes.at(idx);
 }
 
+void napkin::PropertyPath::removeTargetAttribute()
+{
+	auto pathstr = mPath.toString();
+
+	auto instProps = instanceProps();
+	assert(instProps);
+
+	// remove attribute
+	auto& attrs = instProps->mTargetAttributes;
+	attrs.erase(std::remove_if(attrs.begin(), attrs.end(),
+							   [&pathstr](const nap::TargetAttribute& at)
+							   {
+								   return at.mPath == pathstr;
+							   }),
+				attrs.end());
+
+	if (!attrs.empty())
+		return; // there are overridden properties left, stop here
+
+	// no more overrides, remove instanceproperties for this component
+	auto& props = mRootEntity->mInstanceProperties;
+
+	props.erase(std::remove_if(props.begin(), props.end(),
+							   [this](const nap::ComponentInstanceProperties& instProp)
+							   {
+								   return instProp.mTargetComponent.getInstancePath() == mComponentPath;
+							   }),
+				props.end());
+}
+
+
 rttr::variant napkin::PropertyPath::getValue() const
 {
 	auto targetAttr = targetAttribute();
@@ -168,6 +199,8 @@ rttr::variant napkin::PropertyPath::getValue() const
 
 void napkin::PropertyPath::setValue(rttr::variant value)
 {
+	auto resolved = resolve();
+
 	if (isInstance())
 	{
 		auto& targetAttr = getOrCreateTargetAttribute();
@@ -175,7 +208,7 @@ void napkin::PropertyPath::setValue(rttr::variant value)
 		return;
 	}
 
-	bool success = resolve().setValue(value);
+	bool success = resolved.setValue(value);
 	assert(success);
 }
 
