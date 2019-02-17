@@ -282,6 +282,11 @@ int EntityInstanceItem::childIndex(const EntityInstanceItem& item)
 	return -1;
 }
 
+const PropertyPath EntityInstanceItem::path() const
+{
+	return PropertyPath(mRootEntityItem.rootEntity(), entity());
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RootEntityItem::RootEntityItem(nap::RootEntity& e)

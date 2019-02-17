@@ -1,6 +1,8 @@
 #include "document.h"
 
 #include <nap/logger.h>
+#include <QList>
+#include <QtDebug>
 
 #include "naputils.h"
 
@@ -224,6 +226,8 @@ void Document::removeObject(Object& object)
 	// Emit signal first so observers can act before the change
 	objectRemoved(&object);
 
+	removeOverrides(object);
+
 	// Start by cleaning up objects that depend on this one
 	if (object.get_type().is_derived_from<nap::Entity>())
 	{
@@ -252,7 +256,7 @@ void Document::removeObject(Object& object)
 			owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
 	}
 
-	// All cleam. Remove our object
+	// All clean. Remove our object
 	auto filter = [&](const auto& obj) { return obj.get() == &object; };
 	mObjects.erase(std::remove_if(mObjects.begin(), mObjects.end(), filter), mObjects.end());
 }
@@ -265,6 +269,23 @@ void Document::removeObject(const std::string& name)
 		removeObject(*object);
 }
 
+void Document::removeOverrides(nap::rtti::Object& object)
+{
+	// First remove all overriden properties in scenes
+	for (auto prop : getOverriddenProperties(object))
+	{
+		qInfo() << "Remove property: " << QString::fromStdString(prop.toString());
+	}
+}
+
+void Document::removeOverrides(nap::Scene& scene, nap::rtti::Object& object)
+{
+	// First remove all overriden properties in scenes
+	for (auto prop : getOverriddenProperties(scene, object))
+	{
+		qInfo() << "Remove property: " << QString::fromStdString(prop.toString());
+	}
+}
 
 size_t Document::addEntityToScene(nap::Scene& scene, nap::Entity& entity)
 {
@@ -297,6 +318,8 @@ void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
 {
+	removeOverrides(scene, *entity.mEntity);
+
 	auto& v = scene.mEntities;
 	auto filter = [&](nap::RootEntity& obj) { return &obj == &entity; };
 	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
@@ -305,6 +328,8 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 {
+	removeOverrides(scene, entity);
+
 	auto& v = scene.mEntities;
 	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity == &entity; };
 	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
@@ -313,6 +338,8 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 
 void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 {
+	removeOverrides(scene, *scene.mEntities[index].mEntity);
+
 	scene.mEntities.erase(scene.mEntities.begin() + index);
 	objectChanged(&scene);
 }
@@ -422,8 +449,6 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::Obj
 
 	return index;
 }
-
-
 
 int Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, size_t index)
 {
@@ -560,7 +585,8 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 			if (link.mTarget != &targetObject)
 				continue;
 
-			PropertyPath propPath(*sourceObject.get(), link.mSourcePath);
+			PropertyPath propPath(*sourceObject, link.mSourcePath);
+			auto proppathstr = propPath.toString();
 			assert(propPath.isPointer());
 
 			if (excludeArrays && propPath.isArray())
@@ -582,6 +608,56 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 		}
 	}
 	return properties;
+}
+
+QList<nap::RootEntity*> Document::getRootEntities(nap::Scene& scene, nap::rtti::Object& object)
+{
+	auto entity = dynamic_cast<nap::Entity*>(&object);
+	if (entity == nullptr)
+	{
+		// must be component
+		auto comp = dynamic_cast<nap::Component*>(&object);
+		entity = getOwner(*comp);
+	}
+	assert(entity);
+
+	QList<nap::RootEntity*> rootEntities;
+	for (nap::RootEntity& rootEntity : scene.mEntities)
+	{
+		if (rootEntity.mEntity == &object)
+			rootEntities.append(&rootEntity);
+		else if (hasChild(*rootEntity.mEntity.get(), *entity, true))
+			rootEntities.append(&rootEntity);
+	}
+	return rootEntities;
+}
+
+
+
+QList<PropertyPath> Document::getOverriddenProperties(Object& object)
+{
+	QList<PropertyPath> props;
+	for (auto scene : getObjects<nap::Scene>())
+		props.append(getOverriddenProperties(*scene, object));
+	return props;
+}
+
+QList<PropertyPath> Document::getOverriddenProperties(nap::Scene& scene, Object& object)
+{
+	QList<PropertyPath> props;
+
+	// get root entities
+	for (nap::RootEntity* rootEntity : getRootEntities(scene, object))
+	{
+		PropertyPath prop(*rootEntity, object);
+		prop.iterateChildren([&props](const PropertyPath& prop) {
+			if (prop.isInstance() && prop.isOverridden())
+				props.append(prop);
+			return true;
+		});
+	}
+
+	return props;
 }
 
 Document::~Document()
@@ -733,12 +809,3 @@ std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const 
 	return nap::utility::joinString(path, "/");
 }
 
-nap::RootEntity* Document::getRootEntity(nap::Scene& scene, nap::Entity& entity)
-{
-	for (auto& e : scene.mEntities)
-	{
-		if (e.mEntity.get() == &entity)
-			return &e;
-	}
-	return nullptr;
-}

@@ -53,6 +53,20 @@ namespace napkin
 		std::vector<nap::rtti::Object*> getObjects(const nap::rtti::TypeInfo& type);
 
 		/**
+		 * Get all objects from this document, derived from the specified type.
+		 * @tparam T The type each object has to be derived from
+		 * @return All the objects in this document, derived from the provided type
+		 */
+		template<typename T>
+		std::vector<T*> getObjects()
+		{
+			std::vector<T*> ret;
+			for (auto obj : getObjects(RTTI_OF(T)))
+				ret.emplace_back(static_cast<T*>(obj));
+			return ret;
+		}
+
+		/**
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
 		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
@@ -203,6 +217,10 @@ namespace napkin
 		 */
 		void removeObject(const std::string& name);
 
+		void removeOverrides(nap::rtti::Object& object);
+
+		void removeOverrides(nap::Scene& scene, nap::rtti::Object& object);
+
 		/**
 		 * Remove an entity from a scene, note that a Scene may contain the same entity multiple times.
 		 * @param scene The Scene to remove the entity from
@@ -249,18 +267,22 @@ namespace napkin
 		void removeChildEntity(nap::Entity& parent, size_t childIndex);
 
 		/**
-		 * Return a RootEntity in a scene that represents the specified entity.
+		 * Return a RootEntities in a scene that represent the specified entity.
 		 * For more explanation see RootEntity
 		 */
-		nap::RootEntity* getRootEntity(nap::Scene& scene, nap::Entity& entity);
+		QList<nap::RootEntity*> getRootEntities(nap::Scene& scene, nap::rtti::Object& object);
 
 		/**
 		 * Retrieve all properties referring to the given object.
 		 * @param targetObject The object that is being referred to.
 		 * @return A list of properties pointing to the given object.
 		 */
-		QList<PropertyPath>
-		getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent);
+		QList<PropertyPath> getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent);
+
+		QList<PropertyPath> getOverriddenProperties(nap::rtti::Object& object);
+
+		QList<PropertyPath> getOverriddenProperties(nap::Scene& scene, nap::rtti::Object& object);
+
 
 		/**
 		 * Add an element to the end of an array

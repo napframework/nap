@@ -134,8 +134,7 @@ TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 	auto scene = doc->addObject<nap::Scene>();
 	doc->addEntityToScene(*scene, *entity);
 
-	auto rootEntity = doc->getRootEntity(*scene, *entity);
-	REQUIRE(rootEntity != nullptr);
+	REQUIRE(doc->getRootEntities(*scene, *entity).size() > 0);
 
 	PropertyPath regularPath(*comp, "Float");
 	REQUIRE(!regularPath.isInstance());
@@ -213,8 +212,7 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 		auto scene = doc->addObject<nap::Scene>();
 		doc->addEntityToScene(*scene, entityA);
 
-		auto rootEntity = doc->getRootEntity(*scene, entityA);
-		REQUIRE(rootEntity != nullptr);
+		REQUIRE(doc->getRootEntities(*scene, entityA).size() == 1);
 
 //		PropertyPath parentInstancePath(*rootEntity, *compABA, "Int");
 //		REQUIRE(parentInstancePath.isValid());

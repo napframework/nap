@@ -143,11 +143,11 @@ namespace napkin
 		explicit EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem);
 		QString instanceName();
 		nap::RootEntity& rootEntity();
-		nap::Entity& entity() { return *dynamic_cast<nap::Entity*>(mObject); }
+		nap::Entity& entity() const { return *dynamic_cast<nap::Entity*>(mObject); }
 		EntityInstanceItem* parentEntityInstanceItem() { return dynamic_cast<EntityInstanceItem*>(parentItem()); }
 		int componentIndex(const ComponentInstanceItem& item);
 		int childIndex(const EntityInstanceItem& item);
-
+		const PropertyPath path() const;
 
 	private:
 		void onObjectRemoved(nap::rtti::Object* o);
