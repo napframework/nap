@@ -294,7 +294,7 @@ std::string napkin::PropertyPath::toString() const
 
 	auto propPathStr = mPath.toString();
 	if (!propPathStr.empty())
-		return nap::utility::stringFormat("%s@%s", mObject->mID.c_str(), propPathStr.c_str());
+		return nap::utility::stringFormat("%s/%s", mObject->mID.c_str(), propPathStr.c_str());
 
 	return mObject->mID;
 }
@@ -588,4 +588,9 @@ void napkin::PropertyPath::iteratePointerProperties(napkin::PropertyVisitor visi
 			return;
 	}
 
+}
+
+const napkin::PropertyPath& napkin::PropertyPath::invalid() {
+	static PropertyPath invalid;
+	return invalid;
 }
