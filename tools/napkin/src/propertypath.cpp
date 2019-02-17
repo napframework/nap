@@ -19,8 +19,8 @@ napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Objec
 {
 }
 
-napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::Component& comp, const std::string& path)
-		: mRootEntity(&rootEntity), mObject(&comp), mComponentPath(path)
+napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::Component& comp, const std::string& compPath)
+		: mRootEntity(&rootEntity), mObject(&comp), mComponentPath(compPath)
 {
 }
 
@@ -28,6 +28,16 @@ napkin::PropertyPath::PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Objec
 								   const nap::rtti::Path& propPath)
 		: mRootEntity(rootEntity), mObject(&obj), mComponentPath(compPath), mPath(propPath)
 {
+}
+
+napkin::PropertyPath::PropertyPath(const PropertyPath& parentPath, rttr::property prop)
+		: mRootEntity(parentPath.mRootEntity),
+		  mObject(parentPath.mObject),
+		  mComponentPath(parentPath.mComponentPath)
+{
+	nap::rtti::Path path;
+	path.pushAttribute(prop.get_name().data());
+	mPath = path;
 }
 
 napkin::PropertyPath::PropertyPath(Object& obj, const Path& path)
@@ -47,15 +57,6 @@ napkin::PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
 	path.pushAttribute(prop.get_name().data());
 	mPath = path;
 }
-
-napkin::PropertyPath::PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const std::string& compPath, rttr::property prop)
-		: mRootEntity(rootEntity), mObject(&obj), mComponentPath(compPath)
-{
-	nap::rtti::Path path;
-	path.pushAttribute(prop.get_name().data());
-	mPath = path;
-}
-
 
 const std::string napkin::PropertyPath::getName() const
 {
@@ -313,7 +314,16 @@ rttr::type napkin::PropertyPath::getWrappedType() const
 
 bool napkin::PropertyPath::isOverridden() const
 {
+	if (!hasProperty())
+		return false;
 	return targetAttribute();
+}
+
+bool napkin::PropertyPath::hasProperty() const
+{
+	if (mObject->get_type().is_derived_from<nap::Entity>())
+		return false;
+	return mPath.length() > 0;
 }
 
 bool napkin::PropertyPath::isValid() const
@@ -484,7 +494,7 @@ void napkin::PropertyPath::iterateProperties(napkin::PropertyVisitor visitor, in
 
 	for (rttr::property prop : mObject->get_type().get_properties())
 	{
-		PropertyPath path(mRootEntity, *mObject, mComponentPath, prop);
+		PropertyPath path(*this, prop);
 		if (!visitor(path))
 			return;
 

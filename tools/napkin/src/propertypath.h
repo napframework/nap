@@ -49,9 +49,9 @@ namespace napkin
 		/**
 		 * Create a path to an object that is to be instantiated.
 		 * @param rootEntity Contains the instance property data
-		 * @param path the path to the component from the root entity
+		 * @param compPath the path to the component from the root entity
 		 */
-		PropertyPath(nap::RootEntity& rootEntity, nap::Component& comp, const std::string& path);
+		PropertyPath(nap::RootEntity& rootEntity, nap::Component& comp, const std::string& compPath);
 
 		/**
 		 * Create a path to an object that is to be instantiated.
@@ -59,6 +59,13 @@ namespace napkin
 		 * @param obj
 		 */
 		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const std::string& compPath, const nap::rtti::Path& propPath);
+
+		/**
+		 * Create a PropertyPath using an Object and a property
+		 * @param obj
+		 * @param prop
+		 */
+		PropertyPath(const PropertyPath& parentPath, rttr::property prop);
 
 		/**
 		 * Create a PropertyPath using an Object and a nap::rtti::Path
@@ -80,13 +87,6 @@ namespace napkin
 		 * @param prop
 		 */
 		PropertyPath(nap::rtti::Object& obj, rttr::property prop);
-
-		/**
-		 * Create a PropertyPath using an Object and a property
-		 * @param obj
-		 * @param prop
-		 */
-		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const std::string& compPath, rttr::property prop);
 
 		/**
 		 * @return The last part of the property name (not including the path)
@@ -178,7 +178,7 @@ namespace napkin
 		/**
 		 * @return true when the path points to a property, false when it points to an Object
 		 */
-		bool hasProperty() const { return mPath.length() > 0; }
+		bool hasProperty() const;
 
 		/**
 		 * @return If the path is a valid one
@@ -239,7 +239,7 @@ namespace napkin
 		 * @param visitor The function to be called on each iteration, return false from this function to stop iteration
 		 * @param flags Provide traversal flags
 		 */
-		void iterateChildren(PropertyVisitor visitor, int flags) const;
+		void iterateChildren(PropertyVisitor visitor, int flags = IterFlag::FollowEmbeddedPointers) const;
 
 		/**
 		 * Get this properties children if it has any.

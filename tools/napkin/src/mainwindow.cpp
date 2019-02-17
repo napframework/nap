@@ -185,9 +185,35 @@ void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
 	{
 		auto path = paths.first();
 
+		qInfo() << QString::fromStdString(path.toString());
+
 		// Don't edit scenes
 		if (!path.getObject().get_type().is_derived_from<nap::Scene>())
 			mInspectorPanel.setPath(paths.first());
+
+		auto& doc = *AppContext::get().getDocument();
+
+		for (auto scene : doc.getObjects<nap::Scene>())
+		{
+			for (auto rootEntity : doc.getRootEntities(*scene, path.getObject()))
+			{
+
+//				path.iterateChildren([](const PropertyPath& p) {
+//
+//					qInfo() << QString::fromStdString(p.toString());
+//
+//					return true;
+//				});
+
+			}
+
+		}
+
+
+//		for (auto prop : doc.getOverriddenProperties(path.getObject()))
+//		{
+//			qInfo() << QString::fromStdString(prop.toString());
+//		}
 	}
 }
 
