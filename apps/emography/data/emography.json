@@ -2,6 +2,27 @@
     "Objects": [
         {
             "Type": "nap::APISignature",
+            "mID": "addSample",
+            "Arguments": [
+                {
+                    "Type": "nap::APILong",
+                    "mID": "timeStamp",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APIFloat",
+                    "mID": "stressValue",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "stressSate",
+                    "Value": 0
+                }
+            ]
+        },
+        {
+            "Type": "nap::APISignature",
             "mID": "clearCache",
             "Arguments": []
         },
@@ -48,7 +69,7 @@
                 {
                     "Type": "nap::APIString",
                     "mID": "UUID",
-                    "Value": 0
+                    "Value": "0"
                 }
             ]
         },
@@ -61,7 +82,8 @@
                     "mID": "nap::emography::APIControlComponent",
                     "StressViewComponent": "./nap::emography::StressDataViewComponent",
                     "ClearCacheComponent": "./nap::emography::ClearCacheComponent",
-                    "PopulateCacheComponent": "./nap::emography::PopulateCacheComponent"
+                    "PopulateCacheComponent": "./nap::emography::PopulateCacheComponent",
+                    "AddStressComponent": "./nap::emography::AddStressSampleComponent"
                 },
                 {
                     "Type": "nap::emography::StressDataViewComponent",
@@ -93,7 +115,8 @@
                         "updateView",
                         "clearCache",
                         "populateCacheParameterized",
-                        "populateCache"
+                        "populateCache",
+                        "addSample"
                     ]
                 },
                 {
@@ -103,6 +126,11 @@
                     "SamplesPerSecond": 1,
                     "DataModel": "DataModel",
                     "ClearCacheComponent": "./nap::emography::ClearCacheComponent"
+                },
+                {
+                    "Type": "nap::emography::AddStressSampleComponent",
+                    "mID": "nap::emography::AddStressSampleComponent",
+                    "DataModel": "DataModel"
                 }
             ],
             "Children": []

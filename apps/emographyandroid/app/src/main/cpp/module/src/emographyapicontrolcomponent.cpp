@@ -12,6 +12,7 @@ RTTI_BEGIN_CLASS(nap::emography::APIControlComponent)
 	RTTI_PROPERTY("StressViewComponent",	&nap::emography::APIControlComponent::mStressViewComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ClearCacheComponent",	&nap::emography::APIControlComponent::mClearCacheComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PopulateCacheComponent", &nap::emography::APIControlComponent::mPopulateCacheComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AddStressComponent",		&nap::emography::APIControlComponent::mAddStressComponent,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::apihandlecomponentInstance run time class definition 
@@ -62,6 +63,12 @@ namespace nap
 				return false;
 			mComponentInstance->registerCallback(*populate_param_signature, mPopulateCacheParamSlot);
 
+			// Add stress sample
+			const nap::APISignature* add_stress_sample_signature = mComponentInstance->findSignature("addSample");
+			if (!errorState.check(add_stress_sample_signature != nullptr, "%s: unable to find method with signature: %s", this->mID.c_str(), "addSample"))
+				return false;
+			mComponentInstance->registerCallback(*add_stress_sample_signature, mAddStressSlot);
+
 			return true;
 		}
 
@@ -106,5 +113,13 @@ namespace nap
 				nap::Logger::error(error.toString());
 		}
 
+
+		void APIControlComponentInstance::addStressSample(const nap::APIEvent& apiEvent)
+		{
+			nap::utility::ErrorState error;
+			TimeStamp time(apiEvent[0].asLong());
+			if (!mAddStressComponent->addSample(time, apiEvent[1].asFloat(), apiEvent[2].asInt(), error))
+			    nap::Logger::error(error.toString());
+		}
 	}
 }
