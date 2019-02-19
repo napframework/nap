@@ -4,10 +4,13 @@
 // External Includes
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonwriter.h>
+#include <mathutils.h>
 
 // nap::apimessage run time class definition 
 RTTI_BEGIN_CLASS(nap::APIMessage)
-	RTTI_PROPERTY("Arguments", &nap::APIMessage::mArguments, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Name", &nap::APIMessage::mName, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Arguments",	&nap::APIMessage::mArguments, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_CONSTRUCTOR(const std::string&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -18,7 +21,12 @@ namespace nap
 
 	APIMessage::APIMessage(const APIEvent& apiEvent) : Resource()
 	{
-		mID = apiEvent.getID();
+		// TODO: Use UUID generation instead of random int
+		mID = utility::stringFormat("%s_%5d_%05d",
+			apiEvent.getName().c_str(),
+			math::random<int>(0, 100000),
+			math::random<int>(0, 100000));
+		mName = apiEvent.getName();
 		mArguments.clear();
 		mOwningArguments.clear();
 		for (const auto& arg : apiEvent.getArguments())
@@ -38,7 +46,13 @@ namespace nap
 	}
 
 
-	APIMessage::~APIMessage() 
+	APIMessage::APIMessage(const std::string& name) : mName(name)
+	{
+
+	}
+
+
+	APIMessage::~APIMessage()
 	{
 		mOwningArguments.clear();
 	}
@@ -46,7 +60,7 @@ namespace nap
 
 	nap::APIEventPtr APIMessage::toAPIEvent()
 	{
-		APIEventPtr ptr = std::make_unique<APIEvent>(mID);
+		APIEventPtr ptr = std::make_unique<APIEvent>(mName);
 		for (const auto& arg : mArguments)
 		{
 			// Create copy using RTTR
