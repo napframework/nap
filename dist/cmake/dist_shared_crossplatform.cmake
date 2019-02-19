@@ -77,22 +77,25 @@ macro(find_nap_module MODULE_NAME)
             unset(MODULE_NAME_EXTRA_LIBS)
             include (${MODULE_EXTRA_CMAKE_PATH})
             if(MODULE_NAME_EXTRA_LIBS)
-                target_link_libraries(${MODULE_NAME} INTERFACE ${MODULE_NAME_EXTRA_LIBS})
+                foreach(extra_lib ${MODULE_NAME_EXTRA_LIBS})
+                    target_link_libraries(${MODULE_NAME} INTERFACE ${extra_lib})
 
-                # On Android copy the library into the staging area that's used for the CMake built libraries
-                # that are loaded into the APK. This is a bit of a hack. Also, the specified library name for
-                # Android currently needs to be a target, plus only a single library is currently supported
-                # per module.
-                # TODO support more than one library by operating over a list
-                if(ANDROID)
-                    add_custom_command(
-                        TARGET ${LIB_NAME} 
-                        POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        $<TARGET_FILE:${MODULE_NAME_EXTRA_LIBS}>
-                        $<TARGET_FILE_DIR:${LIB_NAME}>
-                        )                    
-                endif()
+                    # On Android copy the library into the staging area that's used for the CMake built libraries
+                    # that are loaded into the APK. This is a bit of a hack. Also, the specified library name for
+                    # Android currently needs to be a target, plus only a single library is currently supported
+                    # per module.
+                    # TODO support more than one library by operating over a list
+                    if(ANDROID)
+                        message("Adding copy for ${extra_lib}")
+                        add_custom_command(
+                            TARGET ${LIB_NAME} 
+                            POST_BUILD
+                            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                            $<TARGET_FILE:${extra_lib}>
+                            $<TARGET_FILE_DIR:${LIB_NAME}>
+                            )                    
+                    endif()
+                endforeach()
             endif()
         endif()
 

@@ -5,8 +5,10 @@
 # PORTAUDIO_LIBRARIES - The libraries needed to use PORTAUDIO
 # PORTAUDIO_DEFINITIONS - Compiler switches required for using PORTAUDIO
 
-include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
-target_architecture(ARCH)
+if(NOT ANDROID)
+    include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
+    target_architecture(ARCH)
+endif()
 
 set(PORTAUDIO_DIR ${THIRDPARTY_DIR}/portaudio)
 set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/lib)
