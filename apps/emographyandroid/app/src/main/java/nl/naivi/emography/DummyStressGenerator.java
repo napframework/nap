@@ -1,6 +1,7 @@
 package nl.naivi.emography;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.util.Log;
 
 import java.util.Locale;
@@ -17,8 +18,8 @@ public class DummyStressGenerator extends Thread
     private MainActivity mContext = null;
     private AtomicBoolean mStop = new AtomicBoolean(false);
     private APIMessageBuilder mBuilder = new APIMessageBuilder();
-    private long mMessageInterval = 10000;              ///< ms in between sample message
-    private long mSampleInterval = 500;                 ///< ms in between samples
+    private long mMessageInterval = 5000;               ///< ms in between sample message
+    private long mSampleInterval = 100;                 ///< ms in between samples
     private Random mRandom = new Random();
 
     /**
@@ -64,6 +65,22 @@ public class DummyStressGenerator extends Thread
 
                 // Send message to nap application
                 mContext.sendBroadcast(messageIntent);
+
+                // Show that we added new stress samples
+                final String msg = String.format(Locale.getDefault(),
+                        "added: %d samples", sample_idx);
+                Handler mainHandler = new Handler(mContext.getMainLooper());
+                Runnable myRunnable = new Runnable()
+                {
+                    @Override
+                    public void run() {
+                        Intent logIntent = new Intent();
+                        logIntent.setAction(Constants.ACTION.API_LOG_ACTIVITY);
+                        logIntent.putExtra(Constants.API.LOG, msg);
+                        mContext.sendBroadcast(logIntent);
+                    }
+                };
+                mainHandler.post(myRunnable);
 
             } catch (Exception e) {
                 Log.e("error", e.toString());

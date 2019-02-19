@@ -332,7 +332,7 @@ public class MainActivity extends AppCompatActivity
      * and scroll to the bottom if needed
      * @param msg message to append
      */
-    private void addLogMessage(String msg)
+    void addLogMessage(String msg)
     {
         // append the new string
         TextView tv = findViewById(R.id.text_log);
