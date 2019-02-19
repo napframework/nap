@@ -3,14 +3,7 @@ include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 if(NOT TARGET oscpack)
     find_package(oscpack REQUIRED)
 endif()
-
-if(WIN32)
-    set(MODULE_NAME_EXTRA_LIBS debug ${OSCPACK_LIBS_DEBUG} optimized ${OSCPACK_LIBS_RELEASE})    
-else()
-    set(MODULE_NAME_EXTRA_LIBS oscpack)
-endif()
-add_include_to_interface_target(mod_naposc ${OSCPACK_INCLUDE_DIRS})
-
+set(MODULE_NAME_EXTRA_LIBS oscpack)
 
 # Install oscpack licenses into packaged project
 install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION licenses/oscpack)
