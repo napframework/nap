@@ -22,8 +22,9 @@ namespace nap
 	APIMessage::APIMessage(const APIEvent& apiEvent) : Resource()
 	{
 		// TODO: Use UUID generation instead of random int
-		mID = utility::stringFormat("%s_%5d_%05d",
+		mID = utility::stringFormat("%s-%5d-%05d-%05d",
 			apiEvent.getName().c_str(),
+			math::random<int>(0, 100000),
 			math::random<int>(0, 100000),
 			math::random<int>(0, 100000));
 		mName = apiEvent.getName();
