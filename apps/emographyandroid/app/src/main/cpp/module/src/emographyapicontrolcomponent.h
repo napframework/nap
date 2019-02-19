@@ -4,6 +4,7 @@
 #include "emographystressdataviewcomponent.h"
 #include "emographyclearcachecomponent.h"
 #include "emographypopulatecachecomponent.h"
+#include "emographyaddstresscomponent.h"
 
 // External Includes
 #include <component.h>
@@ -36,6 +37,7 @@ namespace nap
 			ComponentPtr<StressDataViewComponent> mStressViewComponent;		///< Property: 'StressViewComponent'
 			ComponentPtr<ClearCacheComponent> mClearCacheComponent;			///< Property: 'ClearCacheComponent'
 			ComponentPtr<PopulateCacheComponent> mPopulateCacheComponent;	///< Property: 'PopulateCacheComponent'
+			ComponentPtr<AddStressSampleComponent> mAddStressComponent;		///< Property: 'AddStressComponent'
 		};
 
 
@@ -73,6 +75,9 @@ namespace nap
 			// Can populate the database cache
 			ComponentInstancePtr<PopulateCacheComponent> mPopulateCacheComponent	= { this, &APIControlComponent::mPopulateCacheComponent };
 
+			// Stores new stress samples in the database cache
+			ComponentInstancePtr<AddStressSampleComponent> mAddStressComponent		= { this, &APIControlComponent::mAddStressComponent };
+
 		private:
 			APIComponentInstance* mComponentInstance = nullptr;
 
@@ -88,6 +93,9 @@ namespace nap
 
 			void populateCacheParam(const nap::APIEvent& apiEvent);
 			nap::Slot<const nap::APIEvent&> mPopulateCacheParamSlot = { this, &APIControlComponentInstance::populateCacheParam };
+
+			void addStressSample(const nap::APIEvent& apiEvent);
+			nap::Slot<const nap::APIEvent&> mAddStressSlot = { this, &APIControlComponentInstance::addStressSample };
 		};
 	}
 }
