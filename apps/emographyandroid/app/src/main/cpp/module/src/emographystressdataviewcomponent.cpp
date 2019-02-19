@@ -54,12 +54,15 @@ namespace nap
 			// nap::Logger::info("query end time: %s", DateTime(sys_end).toString().c_str());
 
 			// Get readings
+			nap::SystemTimer timer;
+			timer.start();
 			std::vector<std::unique_ptr<ReadingSummaryBase>> model_readings;
 			utility::ErrorState errorState;
 			if (!mDataModel->getRange<StressIntensityReading>(sys_start, sys_end, mSampleCount, model_readings, errorState))
 				nap::Logger::error(errorState.toString());
             nap::Logger::info("performed database query");
-
+			nap::Logger::info("Query took: %d (ms)", (int)timer.getMillis().count());
+			timer.reset();
 
 			// Copy to vector
 			std::vector<float> stress_readings;
@@ -82,7 +85,7 @@ namespace nap
 			// Dispatch result
 			reply->addArgument<APIFloatArray>("data", std::move(stress_readings));
 			mAPIService->dispatchEvent(std::move(reply));
-			nap::Logger::info("dispatched query event");
+			nap::Logger::info("Query dispatch took: %d (ms)", (int)timer.getMillis().count());
 		}
 	}
 }
