@@ -123,7 +123,7 @@
         <ScrollView
             android:id="@+id/scrollLog"
             android:layout_width="0dp"
-            android:layout_height="225dp"
+            android:layout_height="125dp"
             android:scrollbarThumbVertical="@color/textViewText"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -147,7 +147,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Request"
+            android:text="Log"
             app:layout_constraintBottom_toTopOf="@+id/scrollLog"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
