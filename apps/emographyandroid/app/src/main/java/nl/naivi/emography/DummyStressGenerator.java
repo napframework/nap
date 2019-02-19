@@ -3,6 +3,7 @@ package nl.naivi.emography;
 import android.content.Intent;
 import android.util.Log;
 
+import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -16,9 +17,9 @@ public class DummyStressGenerator extends Thread
     private MainActivity mContext = null;
     private AtomicBoolean mStop = new AtomicBoolean(false);
     private APIMessageBuilder mBuilder = new APIMessageBuilder();
-    private long mMessageInterval = 2500;           ///< ms in between sample message
-    private long mSampleInterval = 100;             ///< ms in between samples
-    Random mRandom = new Random();
+    private long mMessageInterval = 10000;              ///< ms in between sample message
+    private long mSampleInterval = 500;                 ///< ms in between samples
+    private Random mRandom = new Random();
 
     /**
      * Constructor
@@ -36,28 +37,23 @@ public class DummyStressGenerator extends Thread
     {
         while(!Thread.interrupted() && !mStop.get()) {
             try {
-                long start = System.currentTimeMillis();
-
                 // Clear existing messages
                 mBuilder.clear();
 
-                // Add new sample
-                addSample();
-
-                /*
                 // Keep adding messages until message interval reached.
                 long sample_time = 0;
+                int sample_idx = 0;
                 while(sample_time < mMessageInterval)
                 {
                     // add sample
                     long start = System.currentTimeMillis();
-                    addSample();
+                    addSample(sample_idx);
+                    sample_idx++;
 
                     // Sleep a while before adding a new sample
                     sleep(Math.max(0, mSampleInterval - (System.currentTimeMillis() - start)));
                     sample_time += mSampleInterval;
                 }
-                */
 
                 // Create message intent
                 Intent messageIntent = new Intent();
@@ -68,7 +64,6 @@ public class DummyStressGenerator extends Thread
 
                 // Send message to nap application
                 mContext.sendBroadcast(messageIntent);
-                sleep(Math.max(0, mMessageInterval - (System.currentTimeMillis() - start)));
 
             } catch (Exception e) {
                 Log.e("error", e.toString());
@@ -78,15 +73,22 @@ public class DummyStressGenerator extends Thread
 
     /**
      * Adds a new sample to the current list of sample data
+     * The index is used to add a unique value to every parameter
+     * This is necessary for serialization:
+     * Every parameter must have a unique id in the final json string that is read by NAP.
+     * @param index the index of the sample
      */
-    private void addSample() {
+    private void addSample(int index) {
         APIMessage msg = mBuilder.addMessage("addSample");
-        msg.addLong("timeStamp", System.currentTimeMillis());
-        msg.addFloat("stressValue", mRandom.nextFloat());
-        msg.addInt("stressState", mRandom.nextInt((2) + 1));
+        msg.addLong(String.format(Locale.getDefault(), "timestamp_%d", index),
+                System.currentTimeMillis());
+        msg.addFloat(String.format(Locale.getDefault(),"stressValue_%d", index),
+                mRandom.nextFloat());
+        msg.addInt(String.format(Locale.getDefault(), "stressState_%d", index),
+                mRandom.nextInt((2) + 1));
     }
 
-    public void kill() {
+    void kill() {
         mStop.set(true);
     }
 }
