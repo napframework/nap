@@ -54,7 +54,7 @@ namespace nap
 		/**
 		 * @return identifier of this call	
 		 */
-		const std::string& getID() const							{ return mName; }
+		const std::string& getName() const							{ return mName; }
 
 		/**
 		 * Adds an api argument with an id to this event where T is of type APIValue and 'args' the actual value, for example: 0.0f etc.

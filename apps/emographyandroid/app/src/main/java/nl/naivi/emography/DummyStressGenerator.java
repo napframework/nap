@@ -17,6 +17,7 @@ public class DummyStressGenerator extends Thread
     private AtomicBoolean mStop = new AtomicBoolean(false);
     private APIMessageBuilder mBuilder = new APIMessageBuilder();
     private long mMessageInterval = 2500;           ///< ms in between sample message
+    private long mSampleInterval = 100;             ///< ms in between samples
     Random mRandom = new Random();
 
     /**
@@ -35,14 +36,28 @@ public class DummyStressGenerator extends Thread
     {
         while(!Thread.interrupted() && !mStop.get()) {
             try {
-                // Log start time
-                long sstart = System.currentTimeMillis();
+                long start = System.currentTimeMillis();
 
                 // Clear existing messages
                 mBuilder.clear();
 
-                // Add sample
+                // Add new sample
                 addSample();
+
+                /*
+                // Keep adding messages until message interval reached.
+                long sample_time = 0;
+                while(sample_time < mMessageInterval)
+                {
+                    // add sample
+                    long start = System.currentTimeMillis();
+                    addSample();
+
+                    // Sleep a while before adding a new sample
+                    sleep(Math.max(0, mSampleInterval - (System.currentTimeMillis() - start)));
+                    sample_time += mSampleInterval;
+                }
+                */
 
                 // Create message intent
                 Intent messageIntent = new Intent();
@@ -53,8 +68,7 @@ public class DummyStressGenerator extends Thread
 
                 // Send message to nap application
                 mContext.sendBroadcast(messageIntent);
-
-                sleep(Math.max(0, mMessageInterval - (System.currentTimeMillis() - sstart)));
+                sleep(Math.max(0, mMessageInterval - (System.currentTimeMillis() - start)));
 
             } catch (Exception e) {
                 Log.e("error", e.toString());

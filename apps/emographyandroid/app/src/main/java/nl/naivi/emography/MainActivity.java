@@ -307,7 +307,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         // Get name of api event
-        String name = reply.get(0).getID();
+        String name = reply.get(0).getName();
 
         // Extract values
         StringBuilder error = new StringBuilder();

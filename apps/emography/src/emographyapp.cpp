@@ -57,6 +57,8 @@ namespace nap
 		// Find the data model
 		mDataModel = mResourceManager->findObject<emography::DataModel>("DataModel");
 
+		nap::Logger::info("%04d", math::random<int>(0, 20));
+
 		return true;
 	}
 	

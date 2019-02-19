@@ -63,7 +63,7 @@ namespace nap
 	bool APIComponentInstance::accepts(const APIEvent& apiEvent) const
 	{
 		// First perform quick lookup
-		const auto it = mSignatures.find(apiEvent.getID());
+		const auto it = mSignatures.find(apiEvent.getName());
 		if (it == mSignatures.end())
 			return false;
 
@@ -99,7 +99,7 @@ namespace nap
 	void APIComponentInstance::trigger(const APIEvent& apiEvent)
 	{
 		// Forward to registered callbacks
-		auto it = mCallbacks.find(apiEvent.getID());
+		auto it = mCallbacks.find(apiEvent.getName());
 		if (it != mCallbacks.end())
 			it->second->messageReceived.trigger(apiEvent);
 
