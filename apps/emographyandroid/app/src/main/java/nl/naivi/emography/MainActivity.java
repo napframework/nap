@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity
 
     private IntentFilter mIntentFilter;
     private APIMessageBuilder mBuilder = new APIMessageBuilder();
+    private DummyStressGenerator mStressGenerator = null;
 
     /**
      * Returns to current number of samples based on slider value
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        // Initialize base and gui
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initGUI();
@@ -118,6 +120,10 @@ public class MainActivity extends AppCompatActivity
         // Register broadcast receiver
         registerReceiver(mReceiver, mIntentFilter);
 
+        // Send dummy stress samples
+        mStressGenerator = new DummyStressGenerator(this);
+        mStressGenerator.start();
+
         // Clear text in views
         clearViews();
     }
@@ -131,6 +137,9 @@ public class MainActivity extends AppCompatActivity
 
         // Unregister broadcast receiver
         unregisterReceiver(mReceiver);
+
+        // Stop sending dummy samples
+        mStressGenerator.kill();
     }
 
 
