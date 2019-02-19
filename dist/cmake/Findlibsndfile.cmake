@@ -5,8 +5,10 @@
 # LIBSNDFILE_LIBRARIES - The libraries needed to use LIBSNDFILE
 # LIBSNDFILE_DEFINITIONS - Compiler switches required for using LIBSNDFILE
 
-include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
-target_architecture(ARCH)
+if(NOT ANDROID)
+    include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
+    target_architecture(ARCH)
+endif()
 
 set(LIBSNDFILE_DIR ${THIRDPARTY_DIR}/libsndfile)
 set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/lib)
