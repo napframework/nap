@@ -49,7 +49,17 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
         raise Exception(proc.returncode)
     return (out, err)
 
-def package(zip_release, include_docs, include_apps, single_app_to_include, clean, include_timestamp_in_name, overwrite, android_build, android_ndk_root, android_abis):
+def package(zip_release, 
+            include_docs, 
+            include_apps, 
+            single_app_to_include, 
+            clean, 
+            include_timestamp_in_name, 
+            overwrite, 
+            android_build, 
+            android_ndk_root, 
+            android_abis,
+            android_enable_python):
     """Package a NAP platform release - main entry point"""
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -88,7 +98,7 @@ def package(zip_release, include_docs, include_apps, single_app_to_include, clea
 
     # Do the packaging
     if android_build:
-        package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root)
+        package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python)
     elif platform.startswith('linux'):    
         package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
     elif platform == 'darwin':
@@ -266,7 +276,7 @@ def package_for_win64(package_basename, timestamp, git_revision, overwrite, incl
     else:
         archive_to_timestamped_dir(package_basename)
 
-def package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root):
+def package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python):
     """Cross compile NAP and package platform release for Android"""
 
     # Let's check we have an NDK path
@@ -311,6 +321,10 @@ def package_for_android(package_basename, timestamp, git_revision, overwrite, zi
             # Set Ninja generator on Windows
             if platform.startswith('win'):
                 cmake_command.append('-GNinja')
+
+            # Enable Python if requested
+            if android_enable_python:
+                cmake_command.append('-DANDROID_PYTHON=1')
 
             # Generate project
             call(WORKING_DIR, cmake_command)
@@ -460,6 +474,8 @@ if __name__ == '__main__':
     parser.add_argument("--android-abis", 
                         type=str,
                         help="Restrict our package to the provided comma-separated ABI/s for Android")
+    parser.add_argument("--android-enable-python", action="store_true",
+                        help="Enable Python for Android")
 
     args = parser.parse_args()
 
@@ -485,5 +501,6 @@ if __name__ == '__main__':
             args.overwrite, 
             args.android, 
             args.android_ndk_root,
-            args.android_abis
+            args.android_abis,
+            args.android_enable_python
             )

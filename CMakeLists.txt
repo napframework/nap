@@ -55,10 +55,10 @@ if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 
-if(NOT ANDROID)
+if(NOT ANDROID OR ANDROID_PYTHON)
     set(NAP_ENABLE_PYTHON 1)    
     add_definitions(-DNAP_ENABLE_PYTHON)
-endif()    
+endif()
 
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
