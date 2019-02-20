@@ -286,7 +286,10 @@ void Document::removeOverrides(nap::Scene& scene, nap::rtti::Object& object)
 		for (int i = static_cast<int>(props.size() - 1); i >= 0; --i)
 		{
 			if (allComponents.contains(props[i].mTargetComponent.get()))
+			{
+//				qInfo() << "Remove instance properties: " << QString::fromStdString(props[i].mTargetComponent.get()->mID);
 				props.erase(props.begin() + i);
+			}
 		}
 	}
 }
@@ -352,6 +355,9 @@ size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
 
 void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 {
+
+
+
 	auto obj = parent.mChildren[childIndex];
 	parent.mChildren.erase(parent.mChildren.begin() + childIndex);
 	objectChanged(&parent);
@@ -615,7 +621,10 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
-QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent)
+QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject,
+		bool excludeArrays,
+		bool excludeParent,
+		bool excludeInstanceProperties)
 {
 	QList<PropertyPath> properties;
 
@@ -637,7 +646,8 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 			if (excludeArrays && propPath.isArray())
 				continue;
 
-			if (excludeParent) {
+			if (excludeParent)
+			{
 				auto entity = rtti_cast<nap::Entity>(sourceObject.get());
 				if (entity != nullptr)
 				{
@@ -648,6 +658,9 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 						continue;
 				}
 			}
+
+			if (propPath.getParent().getType().is_derived_from<nap::ComponentInstanceProperties>())
+				continue;
 
 			properties << propPath;
 		}
