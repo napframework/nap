@@ -5,6 +5,8 @@ if(NOT TARGET oscpack)
 endif()
 set(MODULE_NAME_EXTRA_LIBS oscpack)
 
+add_include_to_interface_target(mod_naposc ${OSCPACK_INCLUDE_DIRS})
+
 # Install oscpack licenses into packaged project
 install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION licenses/oscpack)
 
