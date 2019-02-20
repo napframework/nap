@@ -57,6 +57,11 @@ elseif(UNIX)
     install(FILES ${SNDFILE_DYLIBS} DESTINATION lib)
 endif()
 
+if(APPLE)
+    # Add mpg123 RPATH to built app
+    macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/mpg123/lib)
+endif()  
+
 # Install thirdparty licenses into packaged project
 install(FILES ${THIRDPARTY_DIR}/portaudio/LICENSE.txt DESTINATION licenses/portaudio)
 install(FILES ${THIRDPARTY_DIR}/libsndfile/COPYING DESTINATION licenses/libsndfile)
