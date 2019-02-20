@@ -1,5 +1,5 @@
-# Exclude for Android
-if(ANDROID)
+# Only include if Python enabled
+if(NOT NAP_ENABLE_PYTHON)
     return()
 endif()
 
