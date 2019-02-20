@@ -27,7 +27,9 @@ mark_as_advanced(OSCPACK_INCLUDE_DIRS)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(oscpack REQUIRED_VARS OSCPACK_DIR OSCPACK_INCLUDE_DIRS OSCPACK_LIBS_DEBUG OSCPACK_LIBS_RELEASE)
 
-add_library(oscpack INTERFACE)
-target_link_libraries(oscpack INTERFACE optimized ${OSCPACK_LIBS_RELEASE})
-target_link_libraries(oscpack INTERFACE debug ${OSCPACK_LIBS_DEBUG})
-set_target_properties(oscpack PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${OSCPACK_INCLUDE_DIRS})
+add_library(oscpack SHARED IMPORTED)
+set_target_properties(oscpack PROPERTIES
+                      IMPORTED_CONFIGURATIONS "Debug;Release"
+                      IMPORTED_LOCATION_RELEASE ${OSCPACK_LIBS_RELEASE}
+                      IMPORTED_LOCATION_DEBUG ${OSCPACK_LIBS_DEBUG}
+                      )
