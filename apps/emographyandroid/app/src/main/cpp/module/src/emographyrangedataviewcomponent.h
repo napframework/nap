@@ -81,10 +81,10 @@ namespace nap
 			 * @param startTime GMT start time
 			 * @param endTime GMT end time
 			 * @param samples number of samples to return
-			 * @param uuid the unique identifier associated with the query
+			 * @param uuid the unique identifier associated with the query, part of the reply
 			 * @param count number of samples to take from start to end range
 			 */
-			void query(const TimeStamp& startTime, const TimeStamp& endTime, int samples, std::string uuid);
+			void query(const TimeStamp& startTime, const TimeStamp& endTime, int samples, const std::string& uuid);
 
 		protected:
 

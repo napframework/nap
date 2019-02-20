@@ -14,23 +14,23 @@ namespace nap
         ///////////////////////////////////////////////////////
 
         /**
-         * Called when the application receives an api event
-         * @param env java native environment
-         * @param context the android context in java
-         * @param event the received api event
-         */
-        void apiEventReceived(JNIEnv *env, jobject context, const nap::APIEvent &event) {
-            // Convert into api message
-            APIMessage apimsg(event);
+            * Called when the application receives an api event
+            * @param env java native environment
+            * @param context the android context in java
+            * @param event the received api event
+            */
+            void apiEventReceived(JNIEnv *env, jobject context, const nap::APIEvent &event) {
+                // Convert into api message
+                APIMessage apimsg(event);
 
-            // Extract json, should ALWAYS succeed.
-            std::string json;
-            nap::utility::ErrorState error;
-            if (!apimsg.toJSON(json, error))
-            {
-                assert(false);
-                return;
-            }
+                // Extract json, should ALWAYS succeed.
+                std::string json;
+                nap::utility::ErrorState error;
+                if (!apimsg.toJSON(json, error))
+                {
+                    assert(false);
+                    return;
+                }
 
             // Calling for first time, get the method id
             jclass thisClass = env->GetObjectClass(context);

@@ -83,6 +83,10 @@ namespace nap
 		return mAPIValue->getRepresentedType() == RTTI_OF(bool);
 	}
 
+	const std::string& APIArgument::getName() const
+	{
+		return mAPIValue->mName;
+	}
 
 	bool nap::APIArgument::asBool() const
 	{

@@ -7,6 +7,7 @@
 // External Includes
 #include <nap/event.h>
 #include <utility/uniqueptrvectoriterator.h>
+#include <mathutils.h>
 
 namespace nap
 {
@@ -37,34 +38,55 @@ namespace nap
 		/**
 		 * Default constructor
 		 */
-		APIEvent() = default;
+		APIEvent();
 
 		/**
 		 * Every API call needs to be associated with an action
-		 * @param name identifier of this call
+		 * @param name name of this call
 		 */
 		APIEvent(const std::string& name);
 
 		/**
+		 * Move constructor
 		 * Every API call needs to be associated with an action
-		 * @param name identifier of this call
+		 * @param name name of this call
 		 */
 		APIEvent(const std::string&& name);
 
 		/**
-		 * @return identifier of this call	
+		 * Every API call needs to be associated with an action
+		 * @param name name of this call
+		 * @param id unique identifier of this call
+		 */
+		APIEvent(const std::string& name, const std::string& id);
+
+		/**
+		 * Move constructor
+		 * Every API call needs to be associated with an action
+		 * @param name identifier of this call
+		 * @param id unique identifier of this call
+		 */
+		APIEvent(const std::string&& name, const std::string&& id);
+
+		/**
+		 * @return name (action) of this call	
 		 */
 		const std::string& getName() const							{ return mName; }
 
 		/**
+		 * @return id of this call
+		 */
+		const std::string& getID() const							{ return mID; }
+
+		/**
 		 * Adds an api argument with an id to this event where T is of type APIValue and 'args' the actual value, for example: 0.0f etc.
 		 * To add a float as an argument call: addArgument<APIFloat>("drag", 1.0f).
-		 * @param id the name of the newly created api value.
+		 * @param name the name of the newly created api value.
 		 * @param args the template arguments used for constructing the argument. In case of an APIFloat the argument could be 1.0f etc.
 		 * @return the newly created and added argument
 		 */
 		template<typename T, typename... Args>
-		APIArgument* addArgument(const std::string&& id, Args&&... args);
+		APIArgument* addArgument(const std::string&& name, Args&&... args);
 
 		/**
 		 * Adds an api argument to this event based on the given api value.
@@ -116,7 +138,8 @@ namespace nap
 
 	private:
 		std::string mName;				///< Name of the action associated with this call
-		APIArgumentList mArguments;		// All the arguments associated with the event
+		APIArgumentList mArguments;		///< All the arguments associated with the event
+		std::string mID;				///< Unique ID of the api event
 	};
 
 	using APIEventPtr = std::unique_ptr<nap::APIEvent>;
@@ -127,15 +150,15 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T, typename... Args>
-	APIArgument* nap::APIEvent::addArgument(const std::string&& id, Args&&... args)
+	APIArgument* nap::APIEvent::addArgument(const std::string&& name, Args&&... args)
 	{
 		assert(RTTI_OF(T).is_derived_from(RTTI_OF(nap::APIBaseValue)));
 
 		// Create value
-		std::unique_ptr<T> value = std::make_unique<T>(std::forward<Args>(args)...);
+		std::unique_ptr<T> value = std::make_unique<T>(name, std::forward<Args>(args)...);
 		
-		// Assign id
-		value->mID=id;
+		// Assign unique id
+		value->mID = math::generateUUID();
 
 		// Create argument and move value
 		std::unique_ptr<APIArgument> argument = std::make_unique<APIArgument>(std::move(value));
