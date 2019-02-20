@@ -15,6 +15,10 @@ namespace nap
 	 * When doing so the message is converted into an api event, which is the runtime version of an api message.
 	 * For convenience, an api event can also be converted into a message and therefore serialized to JSON.
 	 * This allows for an easy exchange of messages from and to a NAP application.
+	 *
+	 * Note that the 'mID' of the message needs to be unique 
+	 * when sending multiple messages as a bundle from an external environment.
+	 * The 'Name' of the message is used to find a matching method to call inside the running application.
 	 */
 	class NAPAPI APIMessage : public Resource
 	{
@@ -34,6 +38,12 @@ namespace nap
 		APIMessage(const APIEvent& apiEvent);
 
 		/**
+		 * Constructs this message based on the given name
+		 * @param name the name (action) associated with this message
+		 */
+		APIMessage(const std::string& name);
+
+		/**
 		 * Converts this message, including all of it's arguments into an api event.
 		 * This event is the runtime version of an api message.
 		 * @return the newly created api event.
@@ -48,6 +58,7 @@ namespace nap
 		bool toJSON(std::string& outString, utility::ErrorState& error);
 
 		std::vector<ResourcePtr<APIBaseValue>> mArguments;	///< Property: 'Arguments': All input arguments associated with this message
+		std::string mName;									///< Property: 'Name': action associated with the message
 
 	private:
 		// When constructing this message from an api event the values are owned by this object.

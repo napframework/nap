@@ -259,7 +259,7 @@ namespace nap
 		for (auto& api_comp : mAPIComponents)
 		{
 			// Check signature, if found and arguments match forward
-			const APISignature* signature = api_comp->findSignature(apiEvent->getID());
+			const APISignature* signature = api_comp->findSignature(apiEvent->getName());
 			if (signature != nullptr)
 			{
 				if (!error.check(apiEvent->matches(*signature), "Signature mismatch for call: %s, component: %s", signature->mID.c_str(), 
@@ -274,7 +274,7 @@ namespace nap
 		}
 
 		// No component accepted the call!
-		return error.check(false, "%s: No matching signature found for: %s", this->get_type().get_name().data(), apiEvent->getID().c_str());
+		return error.check(false, "%s: No matching signature found for: %s", this->get_type().get_name().data(), apiEvent->getName().c_str());
 	}
 
 

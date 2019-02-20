@@ -154,7 +154,8 @@ namespace nap
 		 *		[
 		 *			{
 		 *				"Type": "nap::APIMessage",
-		 *				"mID": "updateView",
+		 *				"Name": "updateView",
+		 *				"mID": "0284761",
 		 *				"Arguments":
 		 *				[
 		 *					{
