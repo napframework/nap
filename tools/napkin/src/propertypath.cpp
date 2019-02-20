@@ -19,8 +19,8 @@ napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Objec
 {
 }
 
-napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::Component& comp, const std::string& compPath)
-		: mRootEntity(&rootEntity), mObject(&comp), mComponentPath(compPath)
+napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, Object& obj, const std::string& compPath)
+		: mRootEntity(&rootEntity), mObject(&obj), mComponentPath(compPath)
 {
 }
 
@@ -69,8 +69,6 @@ nap::ComponentInstanceProperties* napkin::PropertyPath::instanceProps() const
 {
 	if (!isInstance())
 		return nullptr;
-
-	assert(mObject->get_type().is_derived_from<nap::Component>());
 
 	auto pathstr = mPath.toString();
 
@@ -290,11 +288,15 @@ napkin::PropertyPath napkin::PropertyPath::getArrayElement(size_t index) const
 std::string napkin::PropertyPath::toString() const
 {
 	if (isInstance())
+	{
+		if (mPath.length())
+			return componentInstancePath() + "/" + mPath.toString();
 		return componentInstancePath();
+	}
 
 	auto propPathStr = mPath.toString();
 	if (!propPathStr.empty())
-		return nap::utility::stringFormat("%s/%s", mObject->mID.c_str(), propPathStr.c_str());
+		return nap::utility::stringFormat("%s@%s", mObject->mID.c_str(), propPathStr.c_str());
 
 	return mObject->mID;
 }
@@ -321,8 +323,6 @@ bool napkin::PropertyPath::isOverridden() const
 
 bool napkin::PropertyPath::hasProperty() const
 {
-	if (mObject->get_type().is_derived_from<nap::Entity>())
-		return false;
 	return mPath.length() > 0;
 }
 
@@ -434,19 +434,6 @@ void napkin::PropertyPath::iterateChildren(std::function<bool(const napkin::Prop
 {
 	if (!mObject)
 		return;
-
-	if (!hasProperty())
-	{
-		for (auto p : getProperties(flags))
-		{
-			if (!visitor(p))
-				return;
-
-			if (flags & IterFlag::Resursive)
-				p.iterateChildren(visitor, flags);
-		}
-		return;
-	}
 
 	rttr::type type = getType();
 
@@ -588,9 +575,4 @@ void napkin::PropertyPath::iteratePointerProperties(napkin::PropertyVisitor visi
 			return;
 	}
 
-}
-
-const napkin::PropertyPath& napkin::PropertyPath::invalid() {
-	static PropertyPath invalid;
-	return invalid;
 }

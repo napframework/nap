@@ -51,7 +51,7 @@ namespace napkin
 		 * @param rootEntity Contains the instance property data
 		 * @param compPath the path to the component from the root entity
 		 */
-		PropertyPath(nap::RootEntity& rootEntity, nap::Component& comp, const std::string& compPath);
+		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj, const std::string& compPath);
 
 		/**
 		 * Create a path to an object that is to be instantiated.
@@ -256,6 +256,7 @@ namespace napkin
 		void iterateProperties(PropertyVisitor visitor, int flags = 0) const;
 		std::vector<PropertyPath> getProperties(int flags = 0) const;
 		std::string componentInstancePath() const;
+		nap::RootEntity* rootEntity() { return mRootEntity; }
 
 	private:
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
@@ -280,6 +281,7 @@ namespace napkin
 		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
 		nap::rtti::Object* mObject = nullptr; // the object on which the property exists
 		nap::rtti::Path mPath; // the path to the property on the object
+		std::string mComponentPath; // path to the component if it is one
 	};
 }
 

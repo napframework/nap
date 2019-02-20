@@ -135,11 +135,11 @@ void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, cons
 	{
 		auto eItem = dynamic_cast<EntityInstanceItem*>(m);
 		if (eItem)
-			selectedObjects << eItem->path();
+			selectedObjects << eItem->propertyPath();
 
 		auto cItem = dynamic_cast<ComponentInstanceItem*>(m);
 		if (cItem)
-			selectedObjects << PropertyPath(cItem->rootEntity(), cItem->component(), cItem->componentPath());
+			selectedObjects << cItem->propertyPath();
 	}
 
 	selectionChanged(selectedObjects);

@@ -35,6 +35,11 @@ namespace napkin
 		explicit ObjectItem(nap::rtti::Object* o, bool isPointer = false);
 
 		/**
+		 * Get the propertypath this item represents
+		 */
+		virtual const PropertyPath propertyPath() const;
+
+		/**
 		 * @return true if this item is representing a pointer instead of the actual object
 		 */
 		bool isPointer() const;
@@ -47,7 +52,7 @@ namespace napkin
 		/**
 		 * @return The parent QStandardItem if one exists
 		 */
-		QStandardItem* parentItem() { return QStandardItem::parent(); }
+		QStandardItem* parentItem() const { return QStandardItem::parent(); }
 
 		/**
 		 * @return The object held by this item
@@ -141,13 +146,13 @@ namespace napkin
 		Q_OBJECT
 	public:
 		explicit EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem);
-		QString instanceName();
-		nap::RootEntity& rootEntity();
+		QString instanceName() const;
+		nap::RootEntity& rootEntity() const;
 		nap::Entity& entity() const { return *dynamic_cast<nap::Entity*>(mObject); }
 		EntityInstanceItem* parentEntityInstanceItem() { return dynamic_cast<EntityInstanceItem*>(parentItem()); }
 		int componentIndex(const ComponentInstanceItem& item);
 		int childIndex(const EntityInstanceItem& item);
-		const PropertyPath path() const;
+		const PropertyPath propertyPath() const override;
 
 	private:
 		void onObjectRemoved(nap::rtti::Object* o);
@@ -162,9 +167,10 @@ namespace napkin
 	Q_OBJECT
 	public:
 		explicit RootEntityItem(nap::RootEntity& e);
+		const PropertyPath propertyPath() const override;
 
 		SceneItem* sceneItem() { return dynamic_cast<SceneItem*>(QStandardItem::parent()); }
-		nap::RootEntity& rootEntity();
+		nap::RootEntity& rootEntity() const;
 
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
@@ -182,9 +188,10 @@ namespace napkin
 	{
 	public:
 		explicit ComponentInstanceItem(nap::Component& comp, RootEntityItem& rootEntityItem);
-		nap::Component& component() { return *dynamic_cast<nap::Component*>(mObject); }
-		nap::RootEntity& rootEntity();
-		std::string componentPath();
+		const PropertyPath propertyPath() const override;
+		nap::Component& component() const;
+		nap::RootEntity& rootEntity() const;
+		std::string componentPath() const;
 	private:
 		RootEntityItem& mEntityItem;
 	};

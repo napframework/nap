@@ -217,9 +217,25 @@ namespace napkin
 		 */
 		void removeObject(const std::string& name);
 
+		/**
+		 * Remove all overrides for the specified object
+		 */
 		void removeOverrides(nap::rtti::Object& object);
 
+		/**
+		 * Remove all overrides for the specified object, but only in the specified scene
+		 */
 		void removeOverrides(nap::Scene& scene, nap::rtti::Object& object);
+
+		/**
+		 * Get all components recursively starting from the given object
+		 */
+		QList<nap::Component*> getComponentsRecursive(nap::rtti::Object& object);
+
+		/**
+		 * Recursively iterate an Entity's children
+		 */
+		void recurseChildren(nap::Entity& entity, std::function<void(nap::Entity& child)>);
 
 		/**
 		 * Remove an entity from a scene, note that a Scene may contain the same entity multiple times.
@@ -278,11 +294,6 @@ namespace napkin
 		 * @return A list of properties pointing to the given object.
 		 */
 		QList<PropertyPath> getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent);
-
-		QList<PropertyPath> getOverriddenProperties(nap::rtti::Object& object);
-
-		QList<PropertyPath> getOverriddenProperties(nap::Scene& scene, nap::rtti::Object& object);
-
 
 		/**
 		 * Add an element to the end of an array

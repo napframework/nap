@@ -109,7 +109,7 @@ namespace napkin
 	private:
 		ResourcePanel mResourcePanel;
 		HierarchyPanel mHierarchyPanel;
-		PathBrowserPanel mPathBrowser;
+//		PathBrowserPanel mPathBrowser;
 		InspectorPanel mInspectorPanel;
 		HistoryPanel mHistoryPanel;
 		LogPanel mLogPanel;
