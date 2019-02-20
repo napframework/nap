@@ -60,7 +60,9 @@ macro(package_nap)
         install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/user_modules)")
 
         # Package thirdparty Python into release
-        package_python()
+        if (NAP_ENABLE_PYTHON)
+            package_python()
+        endif ()
 
         # Package Qt into release
         package_qt()
@@ -97,6 +99,11 @@ macro(package_nap)
         install(DIRECTORY ${NAP_ROOT}/dist/gradle/
                 DESTINATION gradle/
                 )
+
+        # Package Python
+        if (NAP_ENABLE_PYTHON)
+            package_python()
+        endif ()
     endif() # ANDROID
 endmacro()
 
@@ -112,6 +119,11 @@ macro(package_python)
         install(FILES ${THIRDPARTY_DIR}/python/msvc/LICENSE.txt
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
+    elseif(ANDROID)
+        install(DIRECTORY ${THIRDPARTY_DIR}/python/android/install/
+                DESTINATION thirdparty/python
+                CONFIGURATIONS Release
+                )
     elseif(UNIX)
         if(APPLE)
             set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
