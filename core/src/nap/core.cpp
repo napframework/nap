@@ -415,6 +415,9 @@ namespace nap
 			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
+#elif ANDROID
+		// TODO ANDROID Need's to be implemented'
+		Logger::warn("Python environment not setup for Android");
 #else	
 		if (packagedBuild)
 		{
