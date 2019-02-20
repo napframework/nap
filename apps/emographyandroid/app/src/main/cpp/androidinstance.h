@@ -115,7 +115,7 @@ namespace  nap
                     return false;
                 }
 
-                nap::Logger::info(utility::stringFormat("Request: %s", json));
+                // Forward message
                 if(!mAPIService->sendMessage(json, &error))
                 {
                     nap::Logger::error(error.toString());

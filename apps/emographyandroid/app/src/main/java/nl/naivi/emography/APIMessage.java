@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Represents a JAVA NAP API message.
@@ -36,7 +37,8 @@ class APIMessage
 
         try {
             mMessage.put("Type", "nap::APIMessage");
-            mMessage.put("mID", command);
+            mMessage.put("mID", UUID.randomUUID().toString());
+            mMessage.put("Name", command);
             mMessage.put("Arguments", mArguments);
         }
         catch (Exception e) {
@@ -80,9 +82,9 @@ class APIMessage
      * Get the name of this message, ie: updateView or stressReply etc. Empty if not found
      * @return the name (id) of this api message.
      */
-    String getID() {
+    String getName() {
         try {
-            return mMessage.getString("mID");
+            return mMessage.getString("Name");
         }
         catch (Exception e) {
             Log.e("error", e.getMessage());

@@ -75,3 +75,5 @@ local.properties
 .idea/workspace.xml
 .idea/libraries
 **/assets/nap_modules/*/module.json
+*.db-shm
+*.db-wal
