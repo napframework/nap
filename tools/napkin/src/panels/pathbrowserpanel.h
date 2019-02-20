@@ -16,28 +16,22 @@ namespace nap
 
 namespace napkin
 {
-
-	class PathItem : public QStandardItem
+	class PathBrowserModel : public QAbstractItemModel
 	{
 	public:
-		PathItem(const PropertyPath& path);
+		QModelIndex index(int row, int column, const QModelIndex& parent) const override;
+		QModelIndex parent(const QModelIndex& child) const override;
+		int rowCount(const QModelIndex& parent) const override;
+		int columnCount(const QModelIndex& parent) const override;
+		QVariant data(const QModelIndex& index, int role) const override;
 
-		QVariant data(int role) const override;
-
-		const PropertyPath& parentPath();
-
-		const PropertyPath& path() const;
+		void clear();
+		void addPath(const PropertyPath& path);
 	private:
-		PropertyPath mPath;
+		QList<std::shared_ptr<PropertyPath>> mRootPaths;
+		mutable QMap<PropertyPath*, QList<std::shared_ptr<PropertyPath>>> mCache;
 	};
 
-
-	class PathTypeItem : public PathItem
-	{
-	public:
-		PathTypeItem(const PropertyPath& path);
-		QVariant data(int role) const override;
-	};
 
 	class PathBrowserPanel : public QWidget
 	{
@@ -55,7 +49,7 @@ namespace napkin
 
 	private:
 		QVBoxLayout mLayout;      // Layout
-		QStandardItemModel mModel;     // Model
+		PathBrowserModel mModel;     // Model
 		nap::qt::FilterTreeView mTreeView; // Treeview
 	};
 }

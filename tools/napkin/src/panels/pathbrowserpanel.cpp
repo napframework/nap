@@ -1,68 +1,80 @@
 #include "pathbrowserpanel.h"
 
+#include <QList>
 #include <QtDebug>
 
 using namespace napkin;
 
-PathItem::PathItem(const PropertyPath& path) : mPath(path)
+QModelIndex PathBrowserModel::index(int row, int column, const QModelIndex& parent) const
 {
-	if (!path.hasProperty())
-		setIcon(AppContext::get().getResourceFactory().getIcon(path.getObject()));
+	if (!parent.isValid())
+		return createIndex(row, column, mRootPaths[row].get());
 
-	for (auto p : path.getChildren(IterFlag::FollowPointers | IterFlag::FollowEmbeddedPointers))
+	auto parentPath = static_cast<PropertyPath*>(parent.internalPointer());
+	return createIndex(row, column, mCache[parentPath][row].get());
+}
+
+QModelIndex PathBrowserModel::parent(const QModelIndex& child) const
+{
+	return QModelIndex();
+}
+
+int PathBrowserModel::rowCount(const QModelIndex& parent) const
+{
+	if (!parent.isValid())
+		return mRootPaths.size();
+
+	auto parentPath = static_cast<PropertyPath*>(parent.internalPointer());
+	if (!mCache.contains(parentPath))
 	{
-		appendRow({
-						  new PathItem(p),
-						  new PathTypeItem(p)
-				  });
+		QList<std::shared_ptr<PropertyPath>> children;
+		parentPath->iterateChildren([&children](const PropertyPath& path)
+		{
+			children.append(std::make_shared<PropertyPath>(path));
+			return true;
+		}, IterFlag::FollowPointers | IterFlag::FollowEmbeddedPointers);
+		mCache.insert(parentPath, children);
 	}
-}
-QVariant PathItem::data(int role) const
-{
-	if (role == Qt::DisplayRole)
-	{
-		auto pathstr = QString::fromStdString(mPath.toString());
-		auto pathsplit = pathstr.split('/');
-		return pathsplit.last();
-	}
-//	else if (role == Qt::ForegroundRole)
-//	{
-//		if (mPath.hasProperty())
-//		{
-//			return QVariant::fromValue<QColor>(Qt::blue);
-//		}
-//	}
-	return QStandardItem::data(role);
+	return mCache[parentPath].size();
 }
 
-PathTypeItem::PathTypeItem(const PropertyPath& path)
-		: PathItem(path)
+int PathBrowserModel::columnCount(const QModelIndex& parent) const
 {
-
+	return 2;
 }
 
-QVariant PathTypeItem::data(int role) const
+QVariant PathBrowserModel::data(const QModelIndex& index, int role) const
 {
-	if (role == Qt::DisplayRole)
-		return QString::fromStdString(std::string(path().getType().get_name()));
-	if (role == Qt::DecorationRole)
+	if (!index.internalPointer())
 		return {};
-	return PathItem::data(role);
+	auto propPath = static_cast<PropertyPath*>(index.internalPointer());
+
+	if (index.column() == 0)
+	{
+		if (role == Qt::DisplayRole)
+			return QString::fromStdString(propPath->getName());
+	}
+	else if (index.column() == 1)
+	{
+		if (role == Qt::DisplayRole)
+			return QString::fromStdString(std::string(propPath->getType().get_name().data()));
+	}
+	return QVariant();
 }
 
-const PropertyPath& PathItem::parentPath()
+void PathBrowserModel::clear()
 {
-	auto parentPathItem = dynamic_cast<PathItem*>(parent());
-	if (parentPathItem)
-		return parentPathItem->path();
-
-	return PropertyPath::invalid();
+	mCache.clear();
+	mRootPaths = {};
 }
 
-const PropertyPath& PathItem::path() const
+void PathBrowserModel::addPath(const PropertyPath& path)
 {
-	return mPath;
+	beginInsertRows({}, 0, 0);
+	mRootPaths.append(std::make_shared<PropertyPath>(path));
+	endInsertRows();
 }
+
 
 PathBrowserPanel::PathBrowserPanel()
 {
@@ -85,11 +97,7 @@ PathBrowserPanel::PathBrowserPanel()
 				continue;
 			if (obj->get_type().is_derived_from<nap::InstancePropertyValue>())
 				continue;
-			PropertyPath p(*obj);
-			mModel.appendRow({
-									 new PathItem(p),
-									 new PathTypeItem(p)
-							 });
+//			mModel.addPath({*obj});
 		}
 	});
 
@@ -104,8 +112,8 @@ PathBrowserPanel::PathBrowserPanel()
 						continue;
 					auto srcIndex = mTreeView.getFilterModel().mapToSource(idx);
 					auto item = mTreeView.getModel()->itemFromIndex(srcIndex);
-					auto pathItem = dynamic_cast<PathItem*>(item);
-					qInfo() << pathItem->text();
+//					auto pathItem = dynamic_cast<PathItem*>(item);
+//					qInfo() << pathItem->text();
 				}
 			});
 }

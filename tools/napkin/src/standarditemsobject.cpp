@@ -28,6 +28,15 @@ ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 	refresh();
 }
 
+const PropertyPath ObjectItem::propertyPath() const
+{
+	return PropertyPath(*mObject);
+}
+
+void ObjectItem::scenePath(std::vector<std::string>& outPath)
+{
+}
+
 bool ObjectItem::isPointer() const
 {
 	if (mIsPointer)
@@ -207,31 +216,32 @@ EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntit
 	connect(ctx, &AppContext::entityAdded, this, &EntityInstanceItem::onEntityAdded);
 }
 
-QString EntityInstanceItem::instanceName()
+QString EntityInstanceItem::instanceName() const
 {
 	auto parent = parentItem();
-	auto parentInstanceItem = dynamic_cast<EntityInstanceItem*>(parent);
-	if (parentInstanceItem)
+	if (parent)
 	{
 		int i = 0;
-		for (int row = 0, len = parentInstanceItem->rowCount(); row < len; row++)
+		for (int row = 0, len = parent->rowCount(); row < len; row++)
 		{
-			auto sibling = dynamic_cast<EntityInstanceItem*>(parentInstanceItem->child(row));
+			auto sibling = dynamic_cast<EntityInstanceItem*>(parent->child(row));
 			if (!sibling)
 				continue;
 			if (sibling == this)
 				break;
-			i++;
+			if (sibling->mObject->mID == entity().mID)
+				i++;
 		}
 		return QString("%1:%2").arg(mObject->mID.c_str(), QString::number(i));
 	}
+
 	assert(false);
 	return "FAULTY";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-nap::RootEntity& EntityInstanceItem::rootEntity()
+nap::RootEntity& EntityInstanceItem::rootEntity() const
 {
 	return mRootEntityItem.rootEntity();
 }
@@ -282,8 +292,29 @@ int EntityInstanceItem::childIndex(const EntityInstanceItem& item)
 	return -1;
 }
 
-const PropertyPath EntityInstanceItem::path() const
+const PropertyPath EntityInstanceItem::propertyPath() const
 {
+	auto ownerItem = dynamic_cast<EntityInstanceItem*>(parentItem());
+	if (ownerItem)
+	{
+		std::vector<std::string> namePath = {mObject->mID};
+
+		auto parent = ownerItem;
+		while (parent != nullptr && !dynamic_cast<RootEntityItem*>(parent))
+		{
+			namePath.insert(namePath.begin(), parent->instanceName().toStdString());
+			parent = parent->parentEntityInstanceItem();
+		}
+
+		std::string path = "./" + nap::utility::joinString(namePath, "/");
+		return PropertyPath(rootEntity(), *mObject, path);
+	}
+
+	auto sceneItem = dynamic_cast<SceneItem*>(parentItem());
+	if (sceneItem) {
+		std::string path = "./" + instanceName().toStdString();
+		return { rootEntity(), *mObject, path };
+	}
 	return PropertyPath(mRootEntityItem.rootEntity(), entity());
 }
 
@@ -294,7 +325,12 @@ RootEntityItem::RootEntityItem(nap::RootEntity& e)
 {
 }
 
-nap::RootEntity& RootEntityItem::rootEntity()
+const PropertyPath RootEntityItem::propertyPath() const
+{
+	return EntityInstanceItem::propertyPath();
+}
+
+nap::RootEntity& RootEntityItem::rootEntity() const
 {
 	assert(mRootEntity);
 	return *mRootEntity;
@@ -324,12 +360,22 @@ ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityIte
 
 }
 
-nap::RootEntity& ComponentInstanceItem::rootEntity()
+const PropertyPath ComponentInstanceItem::propertyPath() const
+{
+	return PropertyPath(rootEntity(), component(), componentPath());
+}
+
+nap::Component& ComponentInstanceItem::component() const
+{
+	return *dynamic_cast<nap::Component*>(mObject);
+}
+
+nap::RootEntity& ComponentInstanceItem::rootEntity() const
 {
 	return mEntityItem.rootEntity();
 }
 
-std::string ComponentInstanceItem::componentPath()
+std::string ComponentInstanceItem::componentPath() const
 {
 	auto ownerItem = dynamic_cast<EntityInstanceItem*>(parentItem());
 	if (ownerItem)
@@ -348,4 +394,5 @@ std::string ComponentInstanceItem::componentPath()
 	assert(false);
 	return {"INVALID"};
 }
+
 
