@@ -259,6 +259,8 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 
 	FinderPanel finder;
 	nap::qt::FilterTreeView* tree = &finder.getTreeView();
+	tree->getTreeView().setHeaderHidden(true);
+	tree->getTreeView().setRootIsDecorated(false);
 
 	// On item double-click, close the dialog and reveal the property
 	finder.connect(&tree->getTreeView(), &QAbstractItemView::doubleClicked,
