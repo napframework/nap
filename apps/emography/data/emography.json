@@ -73,12 +73,6 @@
                     "mID": "samples",
                     "Name":"samples",
                     "Value": 200
-                },
-                {
-                    "Type": "nap::APIString",
-                    "mID": "UUID",
-                    "Name":"UUID",
-                    "Value": "0"
                 }
             ]
         },
