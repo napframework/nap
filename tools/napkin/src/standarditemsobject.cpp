@@ -109,7 +109,11 @@ void ObjectItem::onPropertyValueChanged(PropertyPath path)
 void ObjectItem::onObjectRemoved(nap::rtti::Object* o)
 {
 	if (o == mObject)
-		delete this;
+	{
+		auto parent = parentItem();
+		if (parent)
+			parent->removeRow(index().row());
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -256,36 +260,6 @@ void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 		return;
 
 	appendRow(new ComponentInstanceItem(*c, mRootEntityItem));
-}
-
-int EntityInstanceItem::componentIndex(const ComponentInstanceItem& item)
-{
-	int i = 0;
-	for (int row = 0; row < rowCount(); row++)
-	{
-		auto childItem = dynamic_cast<ComponentInstanceItem*>(child(row));
-		if (!childItem)
-			continue;
-		if (childItem == &item)
-			return i;
-		i++;
-	}
-	return -1;
-}
-
-int EntityInstanceItem::childIndex(const EntityInstanceItem& item)
-{
-	int i = 0;
-	for (int row = 0; row < rowCount(); row++)
-	{
-		auto childItem = dynamic_cast<EntityInstanceItem*>(child(row));
-		if (!childItem)
-			continue;
-		if (childItem == &item)
-			return i;
-		i++;
-	}
-	return -1;
 }
 
 const PropertyPath EntityInstanceItem::propertyPath() const

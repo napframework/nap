@@ -150,12 +150,9 @@ namespace napkin
 		nap::RootEntity& rootEntity() const;
 		nap::Entity& entity() const { return *dynamic_cast<nap::Entity*>(mObject); }
 		EntityInstanceItem* parentEntityInstanceItem() { return dynamic_cast<EntityInstanceItem*>(parentItem()); }
-		int componentIndex(const ComponentInstanceItem& item);
-		int childIndex(const EntityInstanceItem& item);
 		const PropertyPath propertyPath() const override;
 
 	private:
-		void onObjectRemoved(nap::rtti::Object* o);
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
 
