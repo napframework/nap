@@ -7,16 +7,19 @@
                 {
                     "Type": "nap::APILong",
                     "mID": "timeStamp",
+                    "Name":"timeStamp",
                     "Value": 0
                 },
                 {
                     "Type": "nap::APIFloat",
                     "mID": "stressValue",
+                    "Name": "stressValue",
                     "Value": 0.0
                 },
                 {
                     "Type": "nap::APIInt",
                     "mID": "stressSate",
+                    "Name": "stressSate",
                     "Value": 0
                 }
             ]
@@ -38,11 +41,13 @@
                 {
                     "Type": "nap::APIInt",
                     "mID": "numberOfDays",
+                    "Name":"numberOfDays",
                     "Value": 7
                 },
                 {
                     "Type": "nap::APIInt",
                     "mID": "samplesPerSecond",
+                    "Name":"samplesPerSecond",
                     "Value": 1
                 }
             ]
@@ -54,21 +59,25 @@
                 {
                     "Type": "nap::APILong",
                     "mID": "startTime",
+                    "Name":"startTime",
                     "Value": 0
                 },
                 {
                     "Type": "nap::APILong",
                     "mID": "endTime",
+                    "Name":"endTime",
                     "Value": 0
                 },
                 {
                     "Type": "nap::APIInt",
                     "mID": "samples",
+                    "Name":"samples",
                     "Value": 200
                 },
                 {
                     "Type": "nap::APIString",
                     "mID": "UUID",
+                    "Name":"UUID",
                     "Value": "0"
                 }
             ]

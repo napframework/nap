@@ -1,69 +1,71 @@
 #include "apivalue.h"
 
-RTTI_DEFINE_BASE(nap::APIBaseValue)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIBaseValue)
+	RTTI_PROPERTY("Name", &nap::APIBaseValue::mName, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIFloat)
-	RTTI_CONSTRUCTOR(const float&)
+	RTTI_CONSTRUCTOR(const std::string&, const float&)
 	RTTI_PROPERTY("Value", &nap::APIFloat::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIBool)
-	RTTI_CONSTRUCTOR(const bool&)
+	RTTI_CONSTRUCTOR(const std::string&, const bool&)
 	RTTI_PROPERTY("Value", &nap::APIBool::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIInt)
-	RTTI_CONSTRUCTOR(const int&)
+	RTTI_CONSTRUCTOR(const std::string&, const int&)
 	RTTI_PROPERTY("Value", &nap::APIInt::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIChar)
-	RTTI_CONSTRUCTOR(const char&)
+	RTTI_CONSTRUCTOR(const std::string&, const char&)
 	RTTI_PROPERTY("Value", &nap::APIChar::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIString)
-	RTTI_CONSTRUCTOR(const std::string&)
+	RTTI_CONSTRUCTOR(const std::string&, const std::string&)
 	RTTI_PROPERTY("Value", &nap::APIString::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIDouble)
-	RTTI_CONSTRUCTOR(const double&)
+	RTTI_CONSTRUCTOR(const std::string&, const double&)
 	RTTI_PROPERTY("Value", &nap::APIDouble::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APILong)
-	RTTI_CONSTRUCTOR(const long&)
+	RTTI_CONSTRUCTOR(const std::string&, const long&)
 	RTTI_PROPERTY("Value", &nap::APILong::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIByte)
-	RTTI_CONSTRUCTOR(const uint8_t&)
+	RTTI_CONSTRUCTOR(const std::string&, const uint8_t&)
 	RTTI_PROPERTY("Value", &nap::APIByte::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIFloatArray)
-	RTTI_CONSTRUCTOR(const std::vector<float>&)
+	RTTI_CONSTRUCTOR(const std::string&, const std::vector<float>&)
 	RTTI_PROPERTY("Value", &nap::APIFloatArray::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIIntArray)
-	RTTI_CONSTRUCTOR(const std::vector<int>&)
+	RTTI_CONSTRUCTOR(const std::string&, const std::vector<int>&)
 	RTTI_PROPERTY("Value", &nap::APIIntArray::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APICharArray)
-	RTTI_CONSTRUCTOR(const std::vector<char>&)
+	RTTI_CONSTRUCTOR(const std::string&, const std::vector<char>&)
 	RTTI_PROPERTY("Value", &nap::APICharArray::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIStringArray)
-	RTTI_CONSTRUCTOR(const std::vector<std::string>&)
+	RTTI_CONSTRUCTOR(const std::string&, const std::vector<std::string>&)
 	RTTI_PROPERTY("Value", &nap::APIStringArray::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::APIByteArray)
-	RTTI_CONSTRUCTOR(const std::vector<uint8_t>&)
+	RTTI_CONSTRUCTOR(const std::string&, const std::vector<uint8_t>&)
 	RTTI_PROPERTY("Value", &nap::APIByteArray::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

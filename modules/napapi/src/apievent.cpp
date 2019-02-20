@@ -3,22 +3,44 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIEvent)
 	RTTI_CONSTRUCTOR(const std::string&)
+	RTTI_CONSTRUCTOR(const std::string&, const std::string&)
 RTTI_END_CLASS
 
 
 namespace nap
 {
-	APIEvent::APIEvent(const std::string& action) : mName(action)
+	APIEvent::APIEvent(const std::string& action) : mName(action), 
+		mID(math::generateUUID())
 	{
 
 	}
 
 
-	APIEvent::APIEvent(const std::string&& action) : mName(std::move(action))
+	APIEvent::APIEvent(const std::string&& action) : mName(std::move(action)), 
+		mID(math::generateUUID())
 	{
 
 	}
 
+
+	APIEvent::APIEvent() : mID(math::generateUUID())
+	{
+
+	}
+
+
+	APIEvent::APIEvent(const std::string& name, const std::string& id) : mName(name), 
+		mID(id)
+	{
+
+	}
+
+
+	APIEvent::APIEvent(const std::string&& name, const std::string&& id) : mName(std::move(name)), 
+		mID(std::move(id))
+	{
+
+	}
 
 	APIArgument* APIEvent::addArgument(std::unique_ptr<APIBaseValue> value)
 	{

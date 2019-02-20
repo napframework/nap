@@ -163,6 +163,11 @@ namespace nap
 		 */
 		int64_t asLong() const;
 
+		/**
+		 * @return this argument's name
+		 */
+		const std::string& getName() const;
+
 	private:
 		std::unique_ptr<APIBaseValue> mAPIValue = nullptr;	///< API Value represented by this argument
  	};

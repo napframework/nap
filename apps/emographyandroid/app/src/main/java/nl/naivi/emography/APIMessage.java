@@ -93,6 +93,20 @@ class APIMessage
     }
 
     /**
+     * Get the unique id of this message, ie: updateView or stressReply etc. Empty if not found
+     * @return the name (id) of this api message.
+     */
+    String getID() {
+        try {
+            return mMessage.getString("mID");
+        }
+        catch (Exception e) {
+            Log.e("error", e.getMessage());
+            return "";
+        }
+    }
+
+    /**
      * Helper method that adds a new argument (APIValue) to this message
      * @param id name of the argument
      * @param type value type of the argument
@@ -103,7 +117,8 @@ class APIMessage
         JSONObject arg = new JSONObject();
         try {
             arg.put("Type", type);
-            arg.put("mID", id);
+            arg.put("mID", UUID.randomUUID().toString());
+            arg.put("Name", id);
             mArguments.put(arg);
         }
         catch (Exception e) {
@@ -123,7 +138,7 @@ class APIMessage
         try{
             for(int i=0; i<mArguments.length(); i++) {
                 JSONObject cur_arg = mArguments.getJSONObject(i);
-                if (cur_arg.getString("mID").equals(id)) {
+                if (cur_arg.getString("Name").equals(id)) {
                     found_arg = cur_arg;
                     break;
                 }

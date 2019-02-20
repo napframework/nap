@@ -215,9 +215,9 @@ public class MainActivity extends AppCompatActivity
                 shutdownIntent.setAction(Constants.ACTION.STOP_SERVICE);
                 sendBroadcast(shutdownIntent);
                 break;
-        }
-        return true;
     }
+        return true;
+}
 
 
     /**
@@ -236,13 +236,16 @@ public class MainActivity extends AppCompatActivity
         msg.addLong("startTime", System.currentTimeMillis() - (1000*60*60*10));
         msg.addLong("endTime", System.currentTimeMillis()-(1000*60*60*5));
         msg.addInt("samples", getNumberOfSamples());
-        msg.addString("UUID", UUID.randomUUID().toString());
 
         // Add message
         queryIntent.putExtra(Constants.API.MESSAGE, mBuilder.asString());
 
         // Send
         sendBroadcast(queryIntent);
+
+        // Log
+        addLogMessage(String.format(Locale.getDefault(), "Sending message with id: %s",
+                msg.getID()));
     }
 
 
@@ -295,10 +298,8 @@ public class MainActivity extends AppCompatActivity
      */
     private void showAPIReply(String msg)
     {
-        /*
-         * JSON API MESSAGE PARSING EXAMPLE!
-         * UNCOMMENT TO SEE IT WORK
-         *
+
+        // Parse reply
         ArrayList<APIMessage> reply = new ArrayList<APIMessage>();
         boolean success = mBuilder.parseReply(msg, reply);
         if(!success) {
@@ -306,12 +307,17 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        // Get name of api event
+        // Get name of api message
         String name = reply.get(0).getName();
+
+        // Check if it's a stress reply
+        if(!name.equals("StressReply")) {
+            return;
+        }
 
         // Extract values
         StringBuilder error = new StringBuilder();
-        String uuid = reply.get(0).getString("UUID", error);
+        String uuid = reply.get(0).getID();
         Long starttime = reply.get(0).getLong("startTime", error);
         Long endtime = reply.get(0).getLong("endTime", error);
         Long samplec = reply.get(0).getLong("samples", error);
@@ -319,11 +325,12 @@ public class MainActivity extends AppCompatActivity
         // Extract stress data
         ArrayList<Double> stressData = new ArrayList<Double>();
         reply.get(0).getDoubleArray("data", stressData, error);
-        */
 
         // Log
+        String lstring = String.format(Locale.getDefault(),
+                "Received reply with id: %s\n\ndata:\n\n%s", uuid, stressData.toString());
         TextView tv = findViewById(R.id.api_log);
-        tv.setText(msg);
+        tv.setText(lstring);
     }
 
 

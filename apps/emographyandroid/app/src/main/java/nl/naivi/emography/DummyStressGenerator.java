@@ -48,7 +48,7 @@ public class DummyStressGenerator extends Thread
                 {
                     // add sample
                     long start = System.currentTimeMillis();
-                    addSample(sample_idx);
+                    addSample();
                     sample_idx++;
 
                     // Sleep a while before adding a new sample
@@ -90,19 +90,12 @@ public class DummyStressGenerator extends Thread
 
     /**
      * Adds a new sample to the current list of sample data
-     * The index is used to add a unique value to every parameter
-     * This is necessary for serialization:
-     * Every parameter must have a unique id in the final json string that is read by NAP.
-     * @param index the index of the sample
      */
-    private void addSample(int index) {
+    private void addSample() {
         APIMessage msg = mBuilder.addMessage("addSample");
-        msg.addLong(String.format(Locale.getDefault(), "timestamp_%d", index),
-                System.currentTimeMillis());
-        msg.addFloat(String.format(Locale.getDefault(),"stressValue_%d", index),
-                mRandom.nextFloat());
-        msg.addInt(String.format(Locale.getDefault(), "stressState_%d", index),
-                mRandom.nextInt((2) + 1));
+        msg.addLong("timestamp",System.currentTimeMillis());
+        msg.addFloat("stressValue", mRandom.nextFloat());
+        msg.addInt("stressState", mRandom.nextInt((2) + 1));
     }
 
     void kill() {

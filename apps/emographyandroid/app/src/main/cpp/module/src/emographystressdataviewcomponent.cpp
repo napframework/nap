@@ -60,7 +60,6 @@ namespace nap
 			utility::ErrorState errorState;
 			if (!mDataModel->getRange<StressIntensityReading>(sys_start, sys_end, mSampleCount, model_readings, errorState))
 				nap::Logger::error(errorState.toString());
-            nap::Logger::info("performed database query");
 			nap::Logger::info("Query took: %d (ms)", (int)timer.getMillis().count());
 			timer.reset();
 
@@ -74,13 +73,12 @@ namespace nap
 			}
 
 			// Create reply
-			APIEventPtr reply = std::make_unique<APIEvent>("StressReply");
+			APIEventPtr reply = std::make_unique<APIEvent>("StressReply", mUUID);
 
 			// Populate event
 			reply->addArgument<APILong>("startTime", mStartTime.mTimeStamp);
 			reply->addArgument<APILong>("endTime", mEndTime.mTimeStamp);
 			reply->addArgument<APIInt>("samples", mSampleCount);
-			reply->addArgument<APIString>("UUID", mUUID);
 
 			// Dispatch result
 			reply->addArgument<APIFloatArray>("data", std::move(stress_readings));

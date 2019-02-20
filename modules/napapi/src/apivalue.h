@@ -22,7 +22,9 @@ namespace nap
 		APIBaseValue() = default;
 
 		// Default constructor
-		APIBaseValue(const rtti::TypeInfo& type) : mRepresentedType(type) { }
+		APIBaseValue(const rtti::TypeInfo& type, const std::string& name) : 
+			mRepresentedType(type),
+			mName(name)	{ }
 
 		// Default destructor
 		virtual ~APIBaseValue() = default;
@@ -32,8 +34,14 @@ namespace nap
 		 */
 		const rtti::TypeInfo& getRepresentedType() const	{ return mRepresentedType; }
 
+		std::string mName;									///< Property: 'Name' name associated with the value
+
+	protected:
+		APIBaseValue(const rtti::TypeInfo& type) :
+			mRepresentedType(type)							 { }
+
 	private:
-		rtti::TypeInfo mRepresentedType;		///< type of the embedded value, ie: RTTI_OF(float) etc.
+		rtti::TypeInfo mRepresentedType;					///< type of the embedded value, ie: RTTI_OF(float) etc.
 	};
 
 
@@ -62,13 +70,13 @@ namespace nap
 		* Move construct a value of type T
 		* @param value the value given to this object
 		*/
-		APIValue(T&& value);
+		APIValue(const std::string& name, T&& value);
 
 		/**
 		* Constructs a value of type T, a copy is made
 		* @param value the value this object is constructed with
 		*/
-		APIValue(const T& value);
+		APIValue(const std::string& name, const T& value);
 
 		/**
 		* Move assignment operator
@@ -110,20 +118,20 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	nap::APIValue<T>::APIValue(T&& value) :
-		APIBaseValue(RTTI_OF(T)),
-		mValue(std::move(value)) {  }
+	nap::APIValue<T>::APIValue(const std::string& name, T&& value) :
+		APIBaseValue(RTTI_OF(T), name),
+		mValue(std::move(value)) { }
 
 
 	template<typename T>
-	nap::APIValue<T>::APIValue(const T& value) :
-		APIBaseValue(RTTI_OF(T)),
+	nap::APIValue<T>::APIValue(const std::string& name, const T& value) :
+		APIBaseValue(RTTI_OF(T), name),
 		mValue(value) { }
 
 
 	template<typename T>
 	nap::APIValue<T>::APIValue(const APIValue& other) :
-		APIBaseValue(RTTI_OF(T)),
+		APIBaseValue(RTTI_OF(T), other.mName),
 		mValue(other.mValue)
 	{
 		this->mID = other.mID;
@@ -135,6 +143,7 @@ namespace nap
 		APIBaseValue(RTTI_OF(T)),
 		mValue(std::move(other.mValue))
 	{
+		this->mName = std::move(other.mName);
 		this->mID = std::move(other.mID);
 	}
 
@@ -144,6 +153,7 @@ namespace nap
 	{
 		mValue = std::move(other.mValue);
 		mID = std::move(other.mID);
+		mName = std::move(other.mName);
 	}
 
 
@@ -152,5 +162,6 @@ namespace nap
 	{
 		mValue = other.mValue;
 		mID = other.mID;
+		mName = other.mName;
 	}
 }

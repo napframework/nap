@@ -21,13 +21,11 @@ namespace nap
 
 	APIMessage::APIMessage(const APIEvent& apiEvent) : Resource()
 	{
-		// TODO: Use UUID generation instead of random int
-		mID = utility::stringFormat("%s-%06d-%06d-%06d",
-			apiEvent.getName().c_str(),
-			math::random<int>(0, 100000),
-			math::random<int>(0, 100000),
-			math::random<int>(0, 100000));
+		// Copy name and id
+		mID = apiEvent.getID();
 		mName = apiEvent.getName();
+
+		// Copy arguments
 		mArguments.clear();
 		mOwningArguments.clear();
 		for (const auto& arg : apiEvent.getArguments())
@@ -61,7 +59,7 @@ namespace nap
 
 	nap::APIEventPtr APIMessage::toAPIEvent()
 	{
-		APIEventPtr ptr = std::make_unique<APIEvent>(mName);
+		APIEventPtr ptr = std::make_unique<APIEvent>(mName, mID);
 		for (const auto& arg : mArguments)
 		{
 			// Create copy using RTTR

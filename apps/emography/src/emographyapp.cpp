@@ -68,7 +68,6 @@ namespace nap
 		nap::utility::ErrorState error;
 		if (!mAPIService->send("clearCache", &error))
 			nap::Logger::error(error.toString().c_str());
-
 	}
 
 
