@@ -33,10 +33,6 @@ const PropertyPath ObjectItem::propertyPath() const
 	return PropertyPath(*mObject);
 }
 
-void ObjectItem::scenePath(std::vector<std::string>& outPath)
-{
-}
-
 bool ObjectItem::isPointer() const
 {
 	if (mIsPointer)
