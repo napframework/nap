@@ -89,6 +89,10 @@ void MainWindow::addMenu()
 		addAction(openFileAction);
 		filemenu->addAction(openFileAction);
 
+		auto reloadFileAction = new ReloadFileAction();
+		addAction(reloadFileAction);
+		filemenu->addAction(reloadFileAction);
+
 		auto saveFileAction = new SaveFileAction();
 		addAction(saveFileAction);
 		filemenu->addAction(saveFileAction);
