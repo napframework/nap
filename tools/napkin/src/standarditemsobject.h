@@ -189,6 +189,7 @@ namespace napkin
 		nap::Component& component() const;
 		nap::RootEntity& rootEntity() const;
 		std::string componentPath() const;
+		QVariant data(int role) const override;
 	private:
 		RootEntityItem& mEntityItem;
 	};

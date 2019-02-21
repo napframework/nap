@@ -365,4 +365,14 @@ std::string ComponentInstanceItem::componentPath() const
 	return {"INVALID"};
 }
 
+QVariant ComponentInstanceItem::data(int role) const
+{
+	if (role == Qt::BackgroundRole)
+	{
+		if (propertyPath().hasOverriddenChildren())
+			return QVariant::fromValue<QColor>(QColor(Qt::yellow).lighter());
+	}
+	return ObjectItem::data(role);
+}
+
 
