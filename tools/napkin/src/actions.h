@@ -62,6 +62,14 @@ namespace napkin
 		void perform() override;
 	};
 
+	class ReloadFileAction : public Action
+	{
+	public:
+		ReloadFileAction();
+	private:
+		void perform() override;
+	};
+
 	/**
 	 * Save the currently open file, show a save file dialog if the file wasn't saved before.
 	 */
