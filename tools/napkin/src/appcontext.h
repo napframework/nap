@@ -87,6 +87,11 @@ namespace napkin
 		Document* loadDocument(const QString& filename);
 
 		/**
+		 * Reload the current document from disk
+		 */
+		void reloadDocument();
+
+		/**
 		 * Load a json string as document
 		 * @param data The json data to load.
 		 * @return A Document instance if loading succeeded, nullptr otherwise
@@ -301,10 +306,11 @@ namespace napkin
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		nap::Core mCore;						// The nap::Core
-		bool mCoreInitialized = false;			// Keep track of core initialization state
-		ThemeManager mThemeManager;			 	// The theme manager
-		ResourceFactory mResourceFactory;		// Le resource factory
+		nap::Core mCore;										// The nap::Core
+		bool mCoreInitialized = false;							// Keep track of core initialization state
+		ThemeManager mThemeManager;			 					// The theme manager
+		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
+		QString mCurrentFilename;								// The currently opened file
 	};
 };
