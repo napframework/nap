@@ -232,7 +232,27 @@ void AddChildEntityCommand::undo()
 	auto doc = AppContext::get().getDocument();
 	auto parent = doc->getObject<nap::Entity>(mParentID);
 	assert(parent);
-	doc->removeChildEntity(*parent, mIndex);
+	doc->removeChildEntity(*parent, mIndex, QStringList());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RemoveChildEntityCommand::RemoveChildEntityCommand(nap::Entity& parent, int index)
+	: QUndoCommand(), mParentID(parent.mID), mIndex(index)
+{
+	setText("Remove child entity");
+}
+
+void RemoveChildEntityCommand::redo()
+{
+	auto doc = AppContext::get().getDocument();
+	auto parent = doc->getObject<nap::Entity>(mParentID);
+	doc->removeChildEntity(*parent, mIndex, QStringList());
+}
+
+void RemoveChildEntityCommand::undo()
+{
+	assert(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

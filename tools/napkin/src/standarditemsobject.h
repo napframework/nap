@@ -79,6 +79,10 @@ namespace napkin
 		 */
 		void removeChildren();
 
+		QString instanceName() const;
+
+		std::string componentPath() const;
+
 	protected:
 		nap::rtti::Object* mObject; // THe object held by this item
 
@@ -146,10 +150,8 @@ namespace napkin
 		Q_OBJECT
 	public:
 		explicit EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem);
-		QString instanceName() const;
 		nap::RootEntity& rootEntity() const;
 		nap::Entity& entity() const { return *dynamic_cast<nap::Entity*>(mObject); }
-		EntityInstanceItem* parentEntityInstanceItem() { return dynamic_cast<EntityInstanceItem*>(parentItem()); }
 		const PropertyPath propertyPath() const override;
 
 	private:
@@ -188,7 +190,6 @@ namespace napkin
 		const PropertyPath propertyPath() const override;
 		nap::Component& component() const;
 		nap::RootEntity& rootEntity() const;
-		std::string componentPath() const;
 		QVariant data(int role) const override;
 	private:
 		RootEntityItem& mEntityItem;
