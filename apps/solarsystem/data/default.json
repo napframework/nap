@@ -6,7 +6,7 @@
             "Components": [
                 {
                     "Type": "nap::PerspCameraComponent",
-                    "mID": "nap::PerspCameraComponent",
+                    "mID": "PerspCam",
                     "Properties": {
                         "FieldOfView": 50.0,
                         "NearClippingPlane": 1.0,
@@ -23,7 +23,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_2",
+                    "mID": "CamXForm",
                     "Properties": {
                         "Translate": {
                             "x": 0.10000000149011612,
@@ -48,42 +48,11 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "SphereContainerEntity",
-            "Components": [],
-            "Children": [
-                "SphereEntity",
-                "SphereEntity",
-                "SphereEntity"
-            ]
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "SphereEntity",
+            "mID": "Child",
             "Components": [
                 {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent",
-                    "Mesh": "SphereMesh",
-                    "MaterialInstance": {
-                        "Material": "Material",
-                        "Uniforms": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent",
+                    "mID": "ChildXForm",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -105,6 +74,69 @@
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SphereContainer",
+            "Components": [],
+            "Children": [
+                "SphereEntity",
+                "SphereEntity",
+                "SphereEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SphereEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "Mesh",
+                    "Mesh": "SphereMesh",
+                    "MaterialInstance": {
+                        "Material": "Material",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "XForm",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "Child",
+                "Child"
+            ]
         },
         {
             "Type": "nap::Material",
@@ -168,7 +200,7 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "SphereContainerEntity",
+                    "Entity": "SphereContainer",
                     "InstanceProperties": [
                         {
                             "TargetComponent": "./SphereEntity:0/nap::TransformComponent",
