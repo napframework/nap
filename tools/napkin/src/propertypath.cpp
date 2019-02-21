@@ -321,6 +321,18 @@ bool napkin::PropertyPath::isOverridden() const
 	return targetAttribute();
 }
 
+bool napkin::PropertyPath::hasOverriddenChildren() const
+{
+	if (isOverridden())
+		return true;
+
+	for (auto child : getChildren(IterFlag::Resursive))
+		if (child.isOverridden())
+			return true;
+
+	return false;
+}
+
 bool napkin::PropertyPath::hasProperty() const
 {
 	return mPath.length() > 0;

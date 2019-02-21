@@ -176,6 +176,11 @@ namespace napkin
 		bool isOverridden() const;
 
 		/**
+		 * @return True if this path has any children with an override
+		 */
+		bool hasOverriddenChildren() const;
+
+		/**
 		 * @return true when the path points to a property, false when it points to an Object
 		 */
 		bool hasProperty() const;
