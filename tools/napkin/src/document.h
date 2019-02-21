@@ -204,8 +204,6 @@ namespace napkin
 		 */
 		nap::Entity& addEntity(nap::Entity* parent = nullptr, const std::string& name = "");
 
-		nap::Entity& addEntity() { return addEntity(nullptr); }
-
 		/**
 		 * Obliterate the specified object and its dependents
 		 * @param object The object to be deleted.
@@ -227,6 +225,7 @@ namespace napkin
 		 */
 		void removeOverrides(nap::Scene& scene, nap::rtti::Object& object);
 
+		void removeOverrides(nap::Entity& parent, int index, QStringList componentPaths);
 		/**
 		 * Get all components recursively starting from the given object
 		 */
@@ -280,7 +279,7 @@ namespace napkin
 		 * @param parent The parent Entity to remove the child from
 		 * @param childIndex The index of the child Entity to be removed
 		 */
-		void removeChildEntity(nap::Entity& parent, size_t childIndex);
+		void removeChildEntity(nap::Entity& parent, size_t childIndex, QStringList componentPaths);
 
 		/**
 		 * Return a RootEntities in a scene that represent the specified entity.

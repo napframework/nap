@@ -169,6 +169,17 @@ namespace napkin
 		size_t mIndex;
 	};
 
+	class RemoveChildEntityCommand : public QUndoCommand
+	{
+	public:
+		RemoveChildEntityCommand(nap::Entity& parent, int index);
+		void redo() override;
+		void undo() override;
+	private:
+		const std::string mParentID;
+		size_t mIndex;
+	};
+
 	class RemoveEntityFromSceneCommand : public QUndoCommand
 	{
 	public:

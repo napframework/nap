@@ -199,10 +199,24 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 				assert(index >= 0);
 				if (index >= 0)
 				{
-					menu.addAction("Remove", [parentItem, index]()
+					menu.addAction("Remove", [this, entityItem, parentItem, index]()
 					{
 						auto doc = AppContext::get().getDocument();
-						doc->removeChildEntity(*parentItem->getEntity(), index);
+
+						// Grab all component paths for later instance property removal
+						QStringList componentPaths;
+						nap::qt::traverse(mModel, [entityItem, &componentPaths](QStandardItem* item)
+						{
+							auto compItem = dynamic_cast<ComponentItem*>(item);
+							if (compItem)
+							{
+								componentPaths << QString::fromStdString(compItem->componentPath());
+//								qInfo() << "Path: " << QString::fromStdString(compItem->componentPath());
+							}
+							return true;
+						}, entityItem->index());
+
+						doc->removeChildEntity(*parentItem->getEntity(), index, componentPaths);
 					});
 				}
 			}
