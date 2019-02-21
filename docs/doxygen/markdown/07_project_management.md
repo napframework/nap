@@ -314,12 +314,15 @@ Now let's add libfoo into our user module.
 Create a file named `module_extra.cmake` in the root of your module directory containing the following:
 
 ```
-find_package(foo REQUIRED)
-target_link_libraries(${PROJECT_NAME} foo)
-target_include_directories(${PROJECT_NAME} PUBLIC ${FOO_INCLUDE_DIRECTORIES})
+if(NOT TARGET foo)
+    find_package(foo REQUIRED)
+endif()
+set(MODULE_NAME_EXTRA_LIBS foo)
+
+add_include_to_interface_target(mod_fooworker ${FOO_INCLUDE_DIRECTORIES})
 ```
 
-CMake's <a href="https://cmake.org/cmake/help/v3.6/command/find_package.html" target="_blank">find_package</a> has been used to locate the module, <a href="https://cmake.org/cmake/help/v3.6/command/target_link_libraries.html" target="_blank">target_link_libraries</a> links the library into the module and <a href="https://cmake.org/cmake/help/v3.6/command/target_include_directories.html">target_include_directories</a> adds the include directory.
+CMake's <a href="https://cmake.org/cmake/help/v3.6/command/find_package.html" target="_blank">find_package</a> has been used to locate the module, populating `MODULE_NAME_EXTRA_LIBS` will link libfoo to the module and `add_include_to_interface_target` adds the include directory. The first parameter to `add_include_to_interface_target` should be the name of your module.
 
 At this stage the library is now available to include and link on all platforms however if we attempt to run a project using the module on Windows the DLL won't be found.
 
@@ -350,9 +353,12 @@ endif()
 
 In the end with a minor simplification your `module_extra.cmake` should look like this:
 ```
-find_package(foo REQUIRED)
-target_link_libraries(${PROJECT_NAME} foo)
-target_include_directories(${PROJECT_NAME} PUBLIC ${FOO_INCLUDE_DIRECTORIES})
+if(NOT TARGET foo)
+    find_package(foo REQUIRED)
+endif()
+set(MODULE_NAME_EXTRA_LIBS foo)
+
+add_include_to_interface_target(mod_fooworker ${FOO_INCLUDE_DIRECTORIES})
 
 if(WIN32)
     # Add post-build step to copy libfoo to bin on Windows
