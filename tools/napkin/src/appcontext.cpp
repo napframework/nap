@@ -69,6 +69,8 @@ Document* AppContext::newDocument()
 
 Document* AppContext::loadDocument(const QString& filename)
 {
+	mCurrentFilename = filename;
+
 	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
 
 	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
@@ -83,6 +85,11 @@ Document* AppContext::loadDocument(const QString& filename)
 	}
 
 	return loadDocumentFromString(buffer, filename);
+}
+
+void AppContext::reloadDocument()
+{
+	loadDocument(mCurrentFilename);
 }
 
 Document* AppContext::loadDocumentFromString(const std::string& data, const QString& filename)
