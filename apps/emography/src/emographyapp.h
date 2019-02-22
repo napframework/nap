@@ -17,7 +17,7 @@
 namespace nap
 {
 	/**
-	 * Main application that is called from within the main loop
+	 * Main emography application that is called from within the main loop
 	 */
 	class EmographyApp : public App
 	{

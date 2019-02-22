@@ -24,8 +24,7 @@ namespace nap
 	using namespace emography;
 
 	/**
-	 * Initialize all the resources and instances used for drawing
-	 * slowly migrating all functionality to nap
+	 * Initialize all the resources and instances used for drawing.
 	 */
 	bool EmographyApp::init(utility::ErrorState& error)
 	{
@@ -56,8 +55,6 @@ namespace nap
 
 		// Find the data model
 		mDataModel = mResourceManager->findObject<emography::DataModel>("DataModel");
-
-		nap::Logger::info("%04d", math::random<int>(0, 20));
 
 		return true;
 	}
@@ -104,11 +101,10 @@ namespace nap
 		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 		ImGui::Begin("GraphWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_ShowBorders);
 
+		// Update timeline
 		updateTimelineState();
 		renderControls();
-
 		float timeline_height = renderTimeline();	
-
 		renderGraph(ImGui::GetWindowHeight() - timeline_height);
 
 		ImGui::End();

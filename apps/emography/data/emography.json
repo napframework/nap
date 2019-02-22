@@ -6,19 +6,19 @@
             "Arguments": [
                 {
                     "Type": "nap::APILong",
-                    "mID": "timeStamp",
+                    "mID": "01",
                     "Name":"timeStamp",
                     "Value": 0
                 },
                 {
                     "Type": "nap::APIFloat",
-                    "mID": "stressValue",
+                    "mID": "02",
                     "Name": "stressValue",
                     "Value": 0.0
                 },
                 {
                     "Type": "nap::APIInt",
-                    "mID": "stressSate",
+                    "mID": "03",
                     "Name": "stressSate",
                     "Value": 0
                 }
@@ -40,13 +40,13 @@
             "Arguments": [
                 {
                     "Type": "nap::APIInt",
-                    "mID": "numberOfDays",
+                    "mID": "04",
                     "Name":"numberOfDays",
                     "Value": 7
                 },
                 {
                     "Type": "nap::APIInt",
-                    "mID": "samplesPerSecond",
+                    "mID": "06",
                     "Name":"samplesPerSecond",
                     "Value": 1
                 }
@@ -58,19 +58,19 @@
             "Arguments": [
                 {
                     "Type": "nap::APILong",
-                    "mID": "startTime",
+                    "mID": "07",
                     "Name":"startTime",
                     "Value": 0
                 },
                 {
                     "Type": "nap::APILong",
-                    "mID": "endTime",
+                    "mID": "08",
                     "Name":"endTime",
                     "Value": 0
                 },
                 {
                     "Type": "nap::APIInt",
-                    "mID": "samples",
+                    "mID": "09",
                     "Name":"samples",
                     "Value": 200
                 }
