@@ -15,6 +15,8 @@
 
 namespace napkin
 {
+	class EntityItem;
+
 	/**
 	 * Base class for actions. Each subclass must implement the perform() method in which the actual work will be done.
 	 * In many cases perform() will create an instance of an appropriate command and execute it.
@@ -29,6 +31,15 @@ namespace napkin
 		 * This method will be called if the action is triggered
 		 */
 		virtual void perform() = 0;
+	};
+
+	/**
+	 * Base class for action that operates specifically on a QStandardItem
+	 */
+	class StandardItemAction : public Action
+	{
+	public:
+		virtual bool isValidFor(const QStandardItem& item) { return true; }
 	};
 
 	/**
@@ -66,6 +77,7 @@ namespace napkin
 	{
 	public:
 		ReloadFileAction();
+
 	private:
 		void perform() override;
 	};
@@ -101,9 +113,61 @@ namespace napkin
 	};
 
 	/**
+	 * Create a Resource
+	 */
+	class CreateResourceAction : public StandardItemAction
+	{
+	public:
+		explicit CreateResourceAction();
+
+	private:
+		void perform() override;
+	};
+
+	/**
+	 * Create an Entity
+	 */
+	class CreateEntityAction : public StandardItemAction
+	{
+	public:
+		explicit CreateEntityAction();
+
+	private:
+		void perform() override;
+	};
+
+	/**
+	 * Add an Entity as child of another Entity
+	 */
+	class AddChildEntityAction : public StandardItemAction
+	{
+	public:
+		explicit AddChildEntityAction(nap::Entity& entity);
+
+	private:
+		void perform() override;
+
+		nap::Entity* entity;
+	};
+
+	/**
+	 * Add a Component to an Entity
+	 */
+	class AddComponentAction : public StandardItemAction
+	{
+	public:
+		explicit AddComponentAction(nap::Entity& entity);
+
+	private:
+		void perform() override;
+
+		nap::Entity* entity;
+	};
+
+	/**
 	 * Delete a set of objects
 	 */
-	class DeleteObjectAction : public Action
+	class DeleteObjectAction : public StandardItemAction
 	{
 	public:
         /**
@@ -117,8 +181,21 @@ namespace napkin
 		 */
 		void perform() override;
 
-	private:
 		nap::rtti::Object& mObject;
+	};
+
+	/**
+	 * Remove a child Entity from its parent
+	 */
+	class RemoveChildEntityAction : public StandardItemAction
+	{
+	public:
+		explicit RemoveChildEntityAction(EntityItem& entityItem);
+
+	private:
+		void perform() override;
+
+		EntityItem* entityItem;
 	};
 
 	/**

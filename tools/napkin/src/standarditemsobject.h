@@ -15,10 +15,18 @@ namespace napkin
 	class GroupItem : public QStandardItem
 	{
 	public:
+		enum class GroupType {
+			Resources, Entities
+		};
+
 		/**
 		 * @param name The name of the group
 		 */
-		explicit GroupItem(const QString& name);
+		explicit GroupItem(const QString& name, GroupItem::GroupType t);
+
+		GroupType groupType() const { return mType; }
+	private:
+		GroupType mType;
 	};
 
 	/**
