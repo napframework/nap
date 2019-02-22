@@ -79,8 +79,22 @@ namespace napkin
 		 */
 		void removeChildren();
 
+		/**
+		 * The disambiguating name for this [component].
+		 * eg.
+		 * 		MyComponent:4
+		 *
+		 * TODO: this should not reside in the GUI code
+		 */
 		QString instanceName() const;
 
+		/**
+		 * The instance path from the scene's RootEntity to the component
+		 * eg.
+		 * 		./MyEntityA:2/MyEntityC:0/MyComponent:3
+		 *
+		 * TODO: this should not reside in the GUI code
+		 */
 		std::string componentPath() const;
 
 	protected:
