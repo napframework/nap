@@ -55,7 +55,7 @@
                     "mID": "ChildXForm",
                     "Properties": {
                         "Translate": {
-                            "x": 0.0,
+                            "x": 1.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -203,64 +203,40 @@
                     "Entity": "SphereContainer",
                     "InstanceProperties": [
                         {
-                            "TargetComponent": "./SphereEntity:0/nap::TransformComponent",
+                            "TargetComponent": "./SphereEntity:0/Mesh",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "ClipRect/Min/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_2",
+                                        "Value": 0.30000001192092898
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./SphereEntity:0/Child:0/ChildXForm",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_4",
+                                        "Value": 8.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./SphereEntity:0/Child:1/ChildXForm",
                             "TargetAttributes": [
                                 {
                                     "Path": "Properties/Translate/x",
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
                                         "mID": "a",
-                                        "Value": -1.0
-                                    }
-                                },
-                                {
-                                    "Path": "Properties/Translate/y",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "a_8",
-                                        "Value": -3.0
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "TargetComponent": "./SphereEntity:1/nap::TransformComponent",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "Properties/Translate/x",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "a_2",
-                                        "Value": 1.0
-                                    }
-                                },
-                                {
-                                    "Path": "Properties/Translate/y",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "a_9",
-                                        "Value": -3.0
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "TargetComponent": "./SphereEntity:2/nap::TransformComponent",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "Properties/Translate/y",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "a_6",
-                                        "Value": 0.0
-                                    }
-                                },
-                                {
-                                    "Path": "Properties/Scale/y",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "a_5",
-                                        "Value": 3.0
+                                        "Value": 5.0
                                     }
                                 }
                             ]
