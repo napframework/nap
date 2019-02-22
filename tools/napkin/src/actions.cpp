@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QHBoxLayout>
+#include "standarditemsobject.h"
 #include "commands.h"
 #include "naputils.h"
 
@@ -114,7 +115,88 @@ void SaveFileAsAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : Action(), mObject(object)
+CreateResourceAction::CreateResourceAction()
+{
+	setText("Create Resource...");
+}
+
+void CreateResourceAction::perform()
+{
+	auto parentWidget = AppContext::get().getMainWindow();
+
+	auto type = napkin::showTypeSelector(parentWidget, [](auto t)
+	{
+		if (t.is_derived_from(RTTI_OF(nap::Component)))
+			return false;
+		return t.is_derived_from(RTTI_OF(nap::Resource));
+	});
+
+	if (type.is_valid() && !type.is_derived_from(RTTI_OF(nap::Component)))
+		AppContext::get().executeCommand(new AddObjectCommand(type));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CreateEntityAction::CreateEntityAction()
+{
+	setText("Create Entity");
+}
+
+void CreateEntityAction::perform()
+{
+	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), nullptr));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+AddChildEntityAction::AddChildEntityAction(nap::Entity& entity) : entity(&entity)
+{
+	setText("Add Child Entity...");
+}
+
+void AddChildEntityAction::perform()
+{
+	auto doc = AppContext::get().getDocument();
+
+	std::vector<nap::rtti::Object*> filteredEntities;
+	for (auto e : doc->getObjects<nap::Entity>())
+	{
+		if (e == entity || doc->hasChild(*e, *entity, true))
+			continue;
+		filteredEntities.emplace_back(e);
+	}
+
+	auto parentWidget = AppContext::get().getMainWindow();
+	auto child = dynamic_cast<nap::Entity*>(napkin::showObjectSelector(parentWidget, filteredEntities));
+	if (!child)
+		return;
+
+	AppContext::get().executeCommand(new AddChildEntityCommand(*entity, *child));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+AddComponentAction::AddComponentAction(nap::Entity& entity) : entity(&entity)
+{
+	setText("Add Component...");
+}
+
+void AddComponentAction::perform()
+{
+	auto parent = AppContext::get().getMainWindow();
+
+	auto comptype = napkin::showTypeSelector(parent, [](auto t)
+	{
+		return t.is_derived_from(RTTI_OF(nap::Component));
+	});
+
+	if (comptype.is_valid())
+		AppContext::get().executeCommand(new AddComponentCommand(*entity, comptype));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : mObject(object)
 {
     setText("Delete");
 }
@@ -132,6 +214,35 @@ void DeleteObjectAction::perform()
 			return;
 	}
     AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) : entityItem(&entityItem)
+{
+	setText("Remove");
+}
+
+void RemoveChildEntityAction::perform()
+{
+	auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
+
+	auto doc = AppContext::get().getDocument();
+	auto index = parentItem->childEntityIndex(*entityItem);
+	assert(index >= 0);
+
+	// Grab all component paths for later instance property removal
+	QStringList componentPaths;
+	nap::qt::traverse(*parentItem->model(), [&componentPaths](QStandardItem* item)
+	{
+		auto compItem = dynamic_cast<ComponentItem*>(item);
+		if (compItem)
+			componentPaths << QString::fromStdString(compItem->componentPath());
+
+		return true;
+	}, entityItem->index());
+
+	doc->removeChildEntity(*parentItem->getEntity(), index, componentPaths);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -4,14 +4,14 @@
 #include <napqt/filterpopup.h>
 #include <napqt/qtutils.h>
 #include "naputils.h"
-#include "standarditemsobject.h"
 
 
 using namespace napkin;
 
 
-
-napkin::ResourceModel::ResourceModel() : mObjectsItem(TXT_LABEL_RESOURCES), mEntitiesItem(TXT_LABEL_ENTITIES)
+napkin::ResourceModel::ResourceModel()
+		: mObjectsItem(TXT_LABEL_RESOURCES, GroupItem::GroupType::Resources),
+		  mEntitiesItem(TXT_LABEL_ENTITIES, GroupItem::GroupType::Entities)
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE});
 	appendRow(&mObjectsItem);
@@ -136,121 +136,43 @@ napkin::ResourcePanel::ResourcePanel()
 
 void napkin::ResourcePanel::menuHook(QMenu& menu)
 {
-	auto item = mTreeView.getSelectedItem();
-	if (item == nullptr)
+	auto selectedItem = mTreeView.getSelectedItem();
+	if (selectedItem == nullptr)
 		return;
 
-	auto objItem = dynamic_cast<ObjectItem*>(item);
-	if (objItem != nullptr)
+	auto objItem = dynamic_cast<ObjectItem*>(selectedItem);
+	auto entityItem = dynamic_cast<EntityItem*>(selectedItem);
+
+	if (entityItem)
 	{
-		auto entityItem = dynamic_cast<EntityItem*>(item);
+		menu.addAction(new AddChildEntityAction(*entityItem->getEntity()));
+		menu.addAction(new AddComponentAction(*entityItem->getEntity()));
 
-		if (entityItem != nullptr)
-		{
-			// Selected item is an Entity
-			auto entity = entityItem->getEntity();
-
-			auto addEntityAction = menu.addAction("Add Child Entity...");
-			connect(addEntityAction, &QAction::triggered, [this, entity]()
-			{
-				auto doc = AppContext::get().getDocument();
-				auto objects = doc->getObjects(RTTI_OF(nap::Entity));
-				std::vector<nap::rtti::Object*> filteredEntities;
-				for (auto o : objects)
-				{
-					auto e = dynamic_cast<nap::Entity*>(o);
-					assert(e);
-					if (e == entity || doc->hasChild(*e, *entity, true))
-						continue;
-					filteredEntities.emplace_back(e);
-				}
-
-				auto child = dynamic_cast<nap::Entity*>(napkin::showObjectSelector(this, filteredEntities));
-				if (!child)
-					return;
-
-				AppContext::get().executeCommand(new AddChildEntityCommand(*entity, *child));
-			});
-
-
-			// Components
-			menu.addAction("Add Component...", [entity]()
-			{
-				auto parent = AppContext::get().getMainWindow();
-
-				auto comptype = napkin::showTypeSelector(parent, [](auto t)
-				{
-					return t.is_derived_from(RTTI_OF(nap::Component));
-				});
-
-				if (comptype.is_valid())
-					AppContext::get().executeCommand(new AddComponentCommand(*entity, comptype));
-			});
-
-		}
-		if (entityItem != nullptr && entityItem->isPointer())
+		if (entityItem->isPointer())
 		{
 			// In case of a pointer, we're displaying an 'instance' of an entity,
 			// so this should only remove the Entity from its parent
 			auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
 			if (parentItem)
-			{
-				auto index = parentItem->childEntityIndex(*entityItem);
-				assert(index >= 0);
-				if (index >= 0)
-				{
-					menu.addAction("Remove", [this, entityItem, parentItem, index]()
-					{
-						auto doc = AppContext::get().getDocument();
-
-						// Grab all component paths for later instance property removal
-						QStringList componentPaths;
-						nap::qt::traverse(mModel, [entityItem, &componentPaths](QStandardItem* item)
-						{
-							auto compItem = dynamic_cast<ComponentItem*>(item);
-							if (compItem)
-							{
-								componentPaths << QString::fromStdString(compItem->componentPath());
-//								qInfo() << "Path: " << QString::fromStdString(compItem->componentPath());
-							}
-							return true;
-						}, entityItem->index());
-
-						doc->removeChildEntity(*parentItem->getEntity(), index, componentPaths);
-					});
-				}
-			}
-		}
-		else
-		{
-			menu.addAction(new DeleteObjectAction(*objItem->getObject()));
+				menu.addAction(new RemoveChildEntityAction(*entityItem));
 		}
 	}
-
-	auto groupItem = dynamic_cast<GroupItem*>(item);
-	if (groupItem != nullptr)
+	else if (objItem)
 	{
-		if (groupItem->text() == TXT_LABEL_ENTITIES)
+		menu.addAction(new DeleteObjectAction(*objItem->getObject()));
+	}
+
+	auto groupItem = dynamic_cast<GroupItem*>(selectedItem);
+	if (groupItem)
+	{
+		if (groupItem->groupType() == GroupItem::GroupType::Entities)
 		{
-			menu.addAction("Create Entity", [this]() {
-				AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), nullptr));
-			});
+			menu.addAction(new CreateEntityAction());
 		}
-		else if (groupItem->text() == TXT_LABEL_RESOURCES)
+		else if (groupItem->groupType() == GroupItem::GroupType::Resources)
 		{
 			// Resources
-			menu.addAction("Add Resource...", [this]()
-			{
-				auto type = napkin::showTypeSelector(this, [](auto t)
-				{
-					if (t.is_derived_from(RTTI_OF(nap::Component)))
-						return false;
-					return t.is_derived_from(RTTI_OF(nap::Resource));
-				});
-
-				if (type.is_valid() && !type.is_derived_from(RTTI_OF(nap::Component)))
-					AppContext::get().executeCommand(new AddObjectCommand(type));
-			});
+			menu.addAction(new CreateResourceAction());
 		}
 	}
 }

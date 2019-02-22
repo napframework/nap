@@ -8,7 +8,7 @@ using namespace napkin;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-GroupItem::GroupItem(const QString& name) : QStandardItem(name)
+GroupItem::GroupItem(const QString& name, GroupItem::GroupType t) : QStandardItem(name), mType(t)
 {
 }
 
