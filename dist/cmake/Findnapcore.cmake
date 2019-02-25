@@ -15,11 +15,12 @@ elseif (APPLE)
     set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/libnapcore.dylib)
     set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/libnapcore.dylib)
 elseif (ANDROID)
-    find_path(
-        NAPCORE_LIBS_DIR
-        NAMES Release/${ANDROID_ABI}/libnapcore.so
-        HINTS ${NAP_ROOT}/lib/
-    )
+    # find_path(
+    #     NAPCORE_LIBS_DIR
+    #     NAMES Release/${ANDROID_ABI}/libnapcore.so
+    #     HINTS ${NAP_ROOT}/lib/
+    # )
+    set(NAPCORE_LIBS_DIR ${NAP_ROOT}/lib/)
     set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/${ANDROID_ABI}/libnapcore.so)
     set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/${ANDROID_ABI}/libnapcore.so)
 elseif (UNIX)

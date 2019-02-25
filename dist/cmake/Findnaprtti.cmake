@@ -38,11 +38,12 @@ elseif (APPLE)
     set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/libnaprtti.dylib)
     set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.dylib)
 elseif (ANDROID)
-    find_path(
-        NAPRTTI_LIBS_DIR
-        NAMES Release/${ANDROID_ABI}/libnaprtti.so
-        HINTS ${NAP_ROOT}/lib/
-    )
+    # find_path(
+    #     NAPRTTI_LIBS_DIR
+    #     NAMES Release/${ANDROID_ABI}/libnaprtti.so
+    #     HINTS ${NAP_ROOT}/lib/
+    # )
+    set(NAPRTTI_LIBS_DIR ${NAP_ROOT}/lib/)
     set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/${ANDROID_ABI}/libnaprtti.so)
     set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/${ANDROID_ABI}/libnaprtti.so)
 elseif (UNIX)
