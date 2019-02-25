@@ -18,12 +18,12 @@ elseif (APPLE)
     set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/libnaputility.a)
     set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/libnaputility.a)
 elseif (ANDROID)
-    # find_path(
-    #     NAPUTILITY_LIBS_DIR
-    #     NAMES Release/${ANDROID_ABI}/libnaputility.a
-    #     HINTS ${NAP_ROOT}/lib/
-    # )
-    set(NAPUTILITY_LIBS_DIR ${NAP_ROOT}/lib/)
+    find_path(
+        NAPUTILITY_LIBS_DIR
+        NO_CMAKE_FIND_ROOT_PATH
+        NAMES Release/${ANDROID_ABI}/libnaputility.a
+        HINTS ${NAP_ROOT}/lib/
+    )
     set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/${ANDROID_ABI}/libnaputility.a)
     set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/${ANDROID_ABI}/libnaputility.a)
 elseif (UNIX)

@@ -1,5 +1,6 @@
 find_path(
     SQLITE_DIR
+    NO_CMAKE_FIND_ROOT_PATH
     NAMES src/sqlite3.h
     HINTS ${THIRDPARTY_DIR}/sqlite
     )
