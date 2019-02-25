@@ -6,9 +6,8 @@ endif()
 project(mod_emography)
 
 # add all cpp files to SOURCES
-set(SOURCE_DIR_IN_ANDROID_PROJ ../../emographyandroid/app/src/main/cpp/module/src)
-file(GLOB SOURCES ${SOURCE_DIR_IN_ANDROID_PROJ}/*.cpp)
-file(GLOB HEADERS ${SOURCE_DIR_IN_ANDROID_PROJ}/*.h)
+file(GLOB SOURCES src/*.cpp)
+file(GLOB HEADERS src/*.h)
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 
@@ -22,7 +21,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC ${SOURCE_DIR_IN_ANDROID_PROJ})
+target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
@@ -34,11 +33,6 @@ if(NAP_PACKAGED_BUILD AND NOT PACKAGE_NAIVI_APPS)
     set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)        
     return()
 endif()
-
-# Include strangely located module source into packaged framework release
-install(DIRECTORY ${SOURCE_DIR_IN_ANDROID_PROJ} 
-        DESTINATION projects/emography/module
-        )
 
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
