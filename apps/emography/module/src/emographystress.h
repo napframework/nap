@@ -6,6 +6,7 @@
 // External Includes
 #include <utility/dllexport.h>
 #include <rtti/rtti.h>
+#include "datamodel.h"
 
 namespace nap
 {
@@ -107,5 +108,11 @@ namespace nap
 			int mNormalCount	= 0;	///< Property: "NormalCount" the number of samples of type EStressState::Normal that have been summarized in this object
 			int mOverCount		= 0;	///< Property: "OverCount" the number of samples of type EStressState::Over that have been summarized in this object
 		};
+
+		/**
+		 * This summary function is intended to summarize StressState readings. It does this by maintaining a count (per StressState) of how many times
+		 * that StressState has been seen in the list of WeightedObjects
+		 */
+		std::unique_ptr<StressStateReadingSummary> stressStateCountingSummary(const std::vector<DataModelInstance::WeightedObject>& inObjects);
 	}
 }

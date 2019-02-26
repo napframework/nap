@@ -74,5 +74,21 @@ namespace nap
 		{
 			return mUnderCount + mNormalCount + mOverCount;
 		}
+
+
+		std::unique_ptr<StressStateReadingSummary> stressStateCountingSummary(const std::vector<DataModelInstance::WeightedObject>& inObjects)
+		{
+			std::unique_ptr<StressStateReadingSummary> new_summary = std::make_unique<StressStateReadingSummary>();
+			for (int index = 0; index < inObjects.size(); ++index)
+			{
+				rtti::Object* object = inObjects[index].mObject.get();
+				StressStateReadingSummary* reading_summary = rtti_cast<StressStateReadingSummary>(object);
+				assert(reading_summary != nullptr);
+
+				new_summary->add(*reading_summary);
+			}
+
+			return new_summary;
+		}
 	}
 }

@@ -89,26 +89,6 @@ namespace nap
 {
 	namespace emography
 	{
-		/**
-		 * This summary function is intended to summarize StressState readings. It does this by maintaining a count (per StressState) of how many times
-		 * that StressState has been seen in the list of WeightedObjects
-		 */
-		std::unique_ptr<StressStateReadingSummary> stressStateCountingSummary(const std::vector<DataModelInstance::WeightedObject>& inObjects)
-		{
-			std::unique_ptr<StressStateReadingSummary> new_summary = std::make_unique<StressStateReadingSummary>();
-			for (int index = 0; index < inObjects.size(); ++index)
-			{
-				rtti::Object* object = inObjects[index].mObject.get();
-				StressStateReadingSummary* reading_summary = rtti_cast<StressStateReadingSummary>(object);
-				assert(reading_summary != nullptr);
-
-				new_summary->add(*reading_summary);
-			}
-
-			return new_summary;
-		}
-
-
 		DataModel::DataModel(EmographyService& service) : mService(service)
 		{ }
 
