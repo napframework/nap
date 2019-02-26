@@ -105,7 +105,11 @@ namespace nap
 		updateTimelineState();
 		renderControls();
 		float timeline_height = renderTimeline();	
-		renderGraph(ImGui::GetWindowHeight() - timeline_height);
+
+		if (mSelectedReading == (int)ESelectedReading::StressIntensity)
+			renderStressIntensityGraph(ImGui::GetWindowHeight() - timeline_height);
+		else
+			renderStressStateGraph(ImGui::GetWindowWidth(), ImGui::GetWindowHeight() - timeline_height);	
 
 		ImGui::End();
 	}
@@ -152,7 +156,20 @@ namespace nap
 
 		ImGui::NewLine();
 		ImGui::Text("Render options");
-		ImGui::SliderInt("Resolution", &mResolution, 10, 1000);
+		if (ImGui::Combo("Reading", &mSelectedReading, "Stress Intensity\0Stress State"))
+		{
+			// When the combobox value changes, reset the resolution to something sane for the selected graph
+			if (mSelectedReading == (int)ESelectedReading::StressIntensity)
+				mResolution = 400;
+			else
+				mResolution = 50;
+		}
+
+		if (mSelectedReading == (int)ESelectedReading::StressIntensity)
+			ImGui::SliderInt("Resolution", &mResolution, 10, 1000);
+		else
+			ImGui::SliderInt("Resolution", &mResolution, 10, 100);
+
 		ImGui::SliderInt("Graph Height", &mGraphYUnits, 1, 1000);
 
 		ImGui::EndChild();
@@ -261,7 +278,7 @@ namespace nap
 	}
 
 
-	void EmographyApp::renderGraph(float graphHeight)
+	void EmographyApp::renderStressIntensityGraph(float graphHeight)
 	{
 		float y_units = mGraphYUnits;
 
@@ -290,6 +307,61 @@ namespace nap
 				draw_list->AddLine(ImVec2(prev_pos.x, prev_pos.y), ImVec2(x, y), ImGui::GetColorU32(ImVec4(170.0f / 255.0f, 211.0f / 255.0f, 1.0f, 1.0f)), 1.0f);
 
 				prev_pos = glm::vec2(x, y);
+			}
+		}
+	}
+
+
+	void EmographyApp::renderStressStateGraph(float graphWidth, float graphHeight)
+	{
+		float y_units = mGraphYUnits;
+
+		int num_samples = mResolution;
+ 		float seconds_per_sample = (mTimelineState.mTimeRight - mTimelineState.mTimeLeft) / (float)num_samples;
+ 		if (seconds_per_sample < 1.0f)
+ 			num_samples = mTimelineState.mTimeRight - mTimelineState.mTimeLeft;
+
+		TimeStamp left(SystemTimeStamp(Seconds(mTimelineState.mTimeLeft)));
+		TimeStamp right(SystemTimeStamp(Seconds(mTimelineState.mTimeRight)));
+
+		std::array<ImU32, (int)EStressState::Count> colors = 
+		{
+			ImGui::GetColorU32(ImVec4(0.8f, 0.8f, 0.0f, 1.0f)),
+			ImGui::GetColorU32(ImVec4(0.0f, 0.8f, 0.0f, 1.0f)),
+			ImGui::GetColorU32(ImVec4(0.8f, 0.0f, 0.0f, 1.0f))
+		};
+
+		float step_x = std::round(graphWidth / (float)num_samples);
+		float barWidth = std::round(step_x * 0.7f);
+		float x = 0.0f;
+		std::vector<std::unique_ptr<ReadingSummaryBase>> readings;
+		utility::ErrorState errorState;
+		if (mDataModel->getInstance().getRange<StressStateReading>(left, right, num_samples, readings, errorState))
+		{
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+			for (auto& reading_base : readings)
+			{
+				StressStateReadingSummary* reading = rtti_cast<StressStateReadingSummary>(reading_base.get());
+				int totalCount = reading->getTotalCount();
+
+				float y1 = graphHeight;
+				for (int stress_state = 0; stress_state != (int)EStressState::Count; ++stress_state)
+				{
+					int count = reading->getCount((EStressState)stress_state);
+					if (count == 0)
+						continue;
+
+					float normalizedCount = (float)count / (float)totalCount;
+
+					float y2 = y1 - (graphHeight * 0.5) * normalizedCount;
+
+					draw_list->AddRectFilled(ImVec2(x, y2), ImVec2(x + barWidth, y1), colors[stress_state], 1.0f);
+
+					y1 = y2;
+				}
+
+				x += step_x;
 			}
 		}
 	}

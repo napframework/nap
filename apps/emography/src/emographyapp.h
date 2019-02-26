@@ -68,11 +68,18 @@ namespace nap
 		float renderTimeline();
 		
 		/**
-		 * Render the graph from data in the DataModel with the specified height
+		 * Render the StressIntensity graph from data in the DataModel with the specified height
 		 * @param height The height of the graph to render
 		 */
-		void renderGraph(float height);
+		void renderStressIntensityGraph(float height);
 		
+		/**
+		 * Render the StressState graph from data in the DataModel with the specified height and width
+		 * @param width The width of the graph to render
+		 * @param height The height of the graph to render
+		 */
+		void renderStressStateGraph(float width, float height);
+
 		/**
 		 * Clear all data from the datamodel
 		 */
@@ -91,6 +98,12 @@ namespace nap
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 
 	private:
+		enum class ESelectedReading : uint8_t
+		{
+			StressIntensity,
+			StressState
+		};
+
 		// Nap Services
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
@@ -105,5 +118,6 @@ namespace nap
 		emography::TimelineState mTimelineState;						//< The timeline state, used for zooming/panning
 		int mResolution = 400;											//< The resolution at which data is returned from the data model (num samples)
 		int mGraphYUnits = 100;											//< The max value on the Y axis
+		int mSelectedReading = 0;										//< The selected reading graph to render
 	};
 }

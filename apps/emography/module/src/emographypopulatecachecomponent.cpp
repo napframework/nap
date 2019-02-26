@@ -92,15 +92,31 @@ namespace nap
 							for (int seconds_samples = 0; seconds_samples != samplesPerSecond; ++seconds_samples)
 							{
 								utility::ErrorState errorState;
-								float value = (float)(math::random<int>(0, 99)) * minute_bias * seconds_bias;
+								float intensity_value = (float)(math::random<int>(0, 99)) * minute_bias * seconds_bias;
+								EStressState state_value;
+								if (intensity_value > 66)
+									state_value = EStressState::Over;
+								else if (intensity_value > 33)
+									state_value = EStressState::Normal;
+								else
+									state_value = EStressState::Under;
+
 								current_time += Milliseconds(1000 / samplesPerSecond);
 
-								std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(value, current_time);
+								std::unique_ptr<StressIntensityReading> intensityReading = std::make_unique<StressIntensityReading>(intensity_value, current_time);
 								if (!mDataModel->add(*intensityReading, errorState))
 								{
 									error.fail("failed to populate cache");
 									return false;
 								}
+
+								std::unique_ptr<StressStateReading> stateReading = std::make_unique<StressStateReading>(state_value, current_time);
+								if (!mDataModel->add(*stateReading, errorState))
+								{
+									error.fail("failed to populate cache");
+									return false;
+								}
+
 								num_samples_added++;
 
 								// Report progress

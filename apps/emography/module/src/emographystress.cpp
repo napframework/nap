@@ -15,7 +15,64 @@ RTTI_BEGIN_STRUCT(nap::emography::StressIntensity)
 	RTTI_PROPERTY("Value", &nap::emography::StressIntensity::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
-DEFINE_READING_RTTI(nap::emography::EStressState)
 DEFINE_READING_RTTI(nap::emography::StressIntensity)
 
+RTTI_BEGIN_CLASS(nap::emography::Reading<nap::emography::EStressState>)
+	RTTI_CONSTRUCTOR(const nap::emography::EStressState&, const nap::TimeStamp&)
+	RTTI_CONSTRUCTOR(const nap::emography::EStressState&)
+	RTTI_PROPERTY("Object", &nap::emography::Reading<nap::emography::EStressState>::mObject, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
+RTTI_BEGIN_CLASS(nap::emography::StressStateReadingSummary)
+	RTTI_CONSTRUCTOR(const nap::emography::ReadingBase&)
+	RTTI_PROPERTY("UnderCount", &nap::emography::StressStateReadingSummary::mUnderCount, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("NormalCount", &nap::emography::StressStateReadingSummary::mNormalCount, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OverCount", &nap::emography::StressStateReadingSummary::mOverCount, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
 //////////////////////////////////////////////////////////////////////////
+
+namespace nap
+{
+	namespace emography
+	{
+		StressStateReadingSummary::StressStateReadingSummary(const ReadingBase& readingBase) :
+			ReadingSummaryBase(readingBase)
+		{
+			const StressStateReading* reading = rtti_cast<const StressStateReading>(&readingBase);
+			assert(reading);
+
+			if (reading->mObject == EStressState::Under)
+				mUnderCount = 1;
+			else if (reading->mObject == EStressState::Normal)
+				mNormalCount = 1;
+			else if (reading->mObject == EStressState::Over)
+				mOverCount = 1;
+		}
+
+
+		void StressStateReadingSummary::add(const StressStateReadingSummary& other)
+		{
+			mUnderCount += other.mUnderCount;
+			mNormalCount += other.mNormalCount;
+			mOverCount += other.mOverCount;
+		}
+
+
+		int StressStateReadingSummary::getCount(EStressState inState) const
+		{
+			if (inState == EStressState::Normal)
+				return mNormalCount;
+			else if (inState == EStressState::Over)
+				return mOverCount;
+			else
+				return mUnderCount;
+		}
+
+
+		int StressStateReadingSummary::getTotalCount() const
+		{
+			return mUnderCount + mNormalCount + mOverCount;
+		}
+	}
+}
