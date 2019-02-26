@@ -132,6 +132,7 @@ TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 	auto entity = doc->addObject<nap::Entity>();
 	auto comp = doc->addComponent<TestComponent>(*entity);
 	auto scene = doc->addObject<nap::Scene>();
+	REQUIRE(scene);
 	doc->addEntityToScene(*scene, *entity);
 
 	REQUIRE(doc->getRootEntities(*scene, *entity).size() > 0);
