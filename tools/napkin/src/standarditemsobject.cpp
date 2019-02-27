@@ -273,9 +273,10 @@ SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene, false)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem)
-		: ObjectItem(&e, false), mRootEntityItem(rootEntityItem)
+EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity)
+		: mRootEntity(rootEntity), ObjectItem(&e, false)
 {
+	assert(&mRootEntity);
 	for (auto comp : e.mComponents)
 		onComponentAdded(comp.get(), &entity());
 	for (auto childEntity : e.mChildren)
@@ -290,7 +291,7 @@ EntityInstanceItem::EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntit
 
 nap::RootEntity& EntityInstanceItem::rootEntity() const
 {
-	return mRootEntityItem.rootEntity();
+	return mRootEntity;
 }
 
 void EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
@@ -298,7 +299,7 @@ void EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	if (parent != &entity())
 		return;
 
-	appendRow(new EntityInstanceItem(*e, mRootEntityItem));
+	appendRow(new EntityInstanceItem(*e, mRootEntity));
 }
 
 void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
@@ -306,7 +307,7 @@ void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 	if (owner != &entity())
 		return;
 
-	appendRow(new ComponentInstanceItem(*c, mRootEntityItem));
+	appendRow(new ComponentInstanceItem(*c, mRootEntity));
 }
 
 const PropertyPath EntityInstanceItem::propertyPath() const
@@ -332,14 +333,15 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 		std::string path = "./" + instanceName().toStdString();
 		return { rootEntity(), *mObject, path };
 	}
-	return PropertyPath(mRootEntityItem.rootEntity(), entity());
+	return PropertyPath(mRootEntity, entity());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RootEntityItem::RootEntityItem(nap::RootEntity& e)
-		: EntityInstanceItem(*e.mEntity.get(), *this), mRootEntity(&e)
+		: mRootEntity(e), EntityInstanceItem(*e.mEntity.get(), e)
 {
+	assert(&mRootEntity);
 }
 
 const PropertyPath RootEntityItem::propertyPath() const
@@ -349,32 +351,32 @@ const PropertyPath RootEntityItem::propertyPath() const
 
 nap::RootEntity& RootEntityItem::rootEntity() const
 {
-	assert(mRootEntity);
-	return *mRootEntity;
+	assert(&mRootEntity);
+	return mRootEntity;
 }
 
 void RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
-	if (parent != mRootEntity->mEntity.get())
+	if (parent != mRootEntity.mEntity.get())
 		return;
 
-	appendRow(new EntityInstanceItem(*e, *this));
+	appendRow(new EntityInstanceItem(*e, mRootEntity));
 }
 
 void RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 {
-	if (owner != mRootEntity->mEntity.get())
+	if (owner != mRootEntity.mEntity.get())
 		return;
 
-	appendRow(new ComponentInstanceItem(*c, *this));
+	appendRow(new ComponentInstanceItem(*c, mRootEntity));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, RootEntityItem& entityItem)
-		: ObjectItem(&comp, false), mEntityItem(entityItem)
+ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity)
+		: ObjectItem(&comp, false), mRootEntity(rootEntity)
 {
-
+	assert(&mRootEntity);
 }
 
 const PropertyPath ComponentInstanceItem::propertyPath() const
@@ -389,17 +391,45 @@ nap::Component& ComponentInstanceItem::component() const
 
 nap::RootEntity& ComponentInstanceItem::rootEntity() const
 {
-	return mEntityItem.rootEntity();
+	return mRootEntity;
 }
 
 QVariant ComponentInstanceItem::data(int role) const
 {
 	if (role == Qt::BackgroundRole)
 	{
+		if (instanceProperties())
+			return QVariant::fromValue<QColor>(QColor(Qt::green).lighter());
+
 		if (propertyPath().hasOverriddenChildren())
 			return QVariant::fromValue<QColor>(QColor(Qt::yellow).lighter());
 	}
 	return ObjectItem::data(role);
+}
+
+nap::ComponentInstanceProperties* ComponentInstanceItem::instanceProperties() const
+{
+	if (mInstancePropertiesResolved)
+		return hasInstanceProperties() ? &mInstanceProperties : nullptr;
+
+	for (const auto& instprops : mRootEntity.mInstanceProperties)
+	{
+		if (instprops.mTargetComponent.get() != &component())
+			continue;
+		if (instprops.mTargetComponent.toString() != componentPath())
+			continue;
+
+		mInstanceProperties = instprops;
+	}
+
+	mInstancePropertiesResolved = true;
+
+	return &mInstanceProperties;
+}
+
+bool ComponentInstanceItem::hasInstanceProperties() const
+{
+	return mInstanceProperties.mTargetComponent.get();
 }
 
 

@@ -294,7 +294,7 @@ void Document::removeOverrides(nap::Scene& scene, nap::rtti::Object& object)
 	}
 }
 
-void Document::removeOverrides(nap::Entity& parent, int index, QStringList componentPaths)
+void Document::removeInstanceProperties(nap::Entity& parent, int index, QStringList componentPaths)
 {
 	auto childEntity = parent.mChildren[index];
 	auto allComponents = getComponentsRecursive(*childEntity);
@@ -309,13 +309,32 @@ void Document::removeOverrides(nap::Entity& parent, int index, QStringList compo
 				auto compPath = QString::fromStdString(props[i].mTargetComponent.toString());
 				if (componentPaths.contains(compPath))
 				{
-					qInfo() << "Remove instance properties: " << compPath;
 					props.erase(props.begin() + i);
 				}
 			}
 		}
 	}
 }
+
+void Document::traverseInstanceProperties(nap::Entity& parent, int index,
+										  std::function<void(nap::ComponentInstanceProperties&)> visitor)
+{
+	auto childEntity = parent.mChildren[index];
+	auto allComponents = getComponentsRecursive(*childEntity);
+
+	for (auto scene : getObjects<nap::Scene>())
+	{
+		for (auto& rootEntity : scene->mEntities)
+		{
+			auto& props = rootEntity.mInstanceProperties;
+			for (int i = static_cast<int>(props.size() - 1); i >= 0; --i)
+			{
+				visitor(props[i]);
+			}
+		}
+	}
+}
+
 
 QList<nap::Component*> Document::getComponentsRecursive(nap::rtti::Object& object)
 {
@@ -376,10 +395,9 @@ size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
 	return index;
 }
 
-void Document::removeChildEntity(nap::Entity& parent, size_t childIndex, QStringList componentPaths)
+void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 {
-	removeOverrides(parent, childIndex, componentPaths);
-
+	// WARNING: This will NOT take care of removing and patching up instance properties
 	auto obj = parent.mChildren[childIndex];
 	parent.mChildren.erase(parent.mChildren.begin() + childIndex);
 	objectChanged(&parent);

@@ -1,8 +1,7 @@
 #include "actions.h"
 
 #include <QMessageBox>
-#include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QHBoxLayout>
+#include <QHBoxLayout>
 #include "standarditemsobject.h"
 #include "commands.h"
 #include "naputils.h"
@@ -225,6 +224,7 @@ RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) : entit
 
 void RemoveChildEntityAction::perform()
 {
+	// TODO: Move into Command
 	auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
 
 	auto doc = AppContext::get().getDocument();
@@ -242,7 +242,7 @@ void RemoveChildEntityAction::perform()
 		return true;
 	}, entityItem->index());
 
-	doc->removeChildEntity(*parentItem->getEntity(), index, componentPaths);
+	doc->removeChildEntity(*parentItem->getEntity(), index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
