@@ -225,7 +225,10 @@ namespace napkin
 		 */
 		void removeOverrides(nap::Scene& scene, nap::rtti::Object& object);
 
-		void removeOverrides(nap::Entity& parent, int index, QStringList componentPaths);
+		void removeInstanceProperties(nap::Entity& parent, int index, QStringList componentPaths);
+
+		void traverseInstanceProperties(nap::Entity& parent, int index, std::function<void(nap::ComponentInstanceProperties&)> visitor);
+
 		/**
 		 * Get all components recursively starting from the given object
 		 */
@@ -276,10 +279,13 @@ namespace napkin
 
 		/**
 		 * Remove a child entity from another Entity's children
+		 *
+		 * 		WARNING: This will NOT take care of removing and patching up instance properties
+		 *
 		 * @param parent The parent Entity to remove the child from
 		 * @param childIndex The index of the child Entity to be removed
 		 */
-		void removeChildEntity(nap::Entity& parent, size_t childIndex, QStringList componentPaths);
+		void removeChildEntity(nap::Entity& parent, size_t childIndex);
 
 		/**
 		 * Return a RootEntities in a scene that represent the specified entity.

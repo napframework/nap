@@ -133,8 +133,8 @@ namespace nap
 		 */
 		bool apply(rtti::Object& target, utility::ErrorState& errorState) const;
 
-		std::string							mPath;			///< RTTI path to the property
-		rtti::ObjectPtr<InstancePropertyValue>	mValue;			///< Value to override
+		std::string								mPath;		///< RTTI path to the property
+		rtti::ObjectPtr<InstancePropertyValue>	mValue;		///< Value to override
 	};
 
 	/**
@@ -144,8 +144,8 @@ namespace nap
 	{
 	public:
 		using TargetAttributeList = std::vector<TargetAttribute>;
-		ComponentPtr<Component>		mTargetComponent;		///< Component to override properties from
-		TargetAttributeList			mTargetAttributes;		///< List of values that are overridden
+		ComponentPtr<Component>		mTargetComponent = nullptr;		///< Component to override properties from
+		TargetAttributeList			mTargetAttributes;				///< List of values that are overridden
 	};
 
 	/**

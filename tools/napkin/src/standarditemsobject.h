@@ -171,7 +171,7 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
-		explicit EntityInstanceItem(nap::Entity& e, RootEntityItem& rootEntityItem);
+		explicit EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity);
 		nap::RootEntity& rootEntity() const;
 		nap::Entity& entity() const { return *dynamic_cast<nap::Entity*>(mObject); }
 		const PropertyPath propertyPath() const override;
@@ -180,7 +180,7 @@ namespace napkin
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
 
-		RootEntityItem& mRootEntityItem;
+		nap::RootEntity& mRootEntity;
 	};
 
 	class RootEntityItem : public EntityInstanceItem
@@ -197,24 +197,32 @@ namespace napkin
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
 
-
-		nap::RootEntity* mRootEntity;
+		nap::RootEntity& mRootEntity;
 	};
 
 
 	/**
-	 * Item that displays a Component Instance
+	 * Item that displays a Component Instance,
+	 * it also holds a copy of the componentinstanceproperties from the RootEntity
 	 */
 	class ComponentInstanceItem : public ObjectItem
 	{
 	public:
-		explicit ComponentInstanceItem(nap::Component& comp, RootEntityItem& rootEntityItem);
+		explicit ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity);
 		const PropertyPath propertyPath() const override;
 		nap::Component& component() const;
 		nap::RootEntity& rootEntity() const;
 		QVariant data(int role) const override;
 	private:
-		RootEntityItem& mEntityItem;
+		nap::ComponentInstanceProperties* instanceProperties() const;
+		bool hasInstanceProperties() const;
+
+		nap::RootEntity& mRootEntity;
+
+		mutable bool mInstancePropertiesResolved = false;
+
+		// This is a copy of the instanceproperties on the root entity
+		mutable nap::ComponentInstanceProperties mInstanceProperties;
 	};
 
 } // namespace napkin
