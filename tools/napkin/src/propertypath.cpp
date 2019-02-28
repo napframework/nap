@@ -214,9 +214,34 @@ void napkin::PropertyPath::setValue(rttr::variant value)
 
 napkin::PropertyPath napkin::PropertyPath::getParent() const
 {
-	auto path = mPath;
-	path.popBack();
-	return {*mObject, path};
+	if (hasProperty())
+	{
+		auto path = mPath;
+		path.popBack();
+		if (path.length() > 0)
+			return {*mObject, path};
+		return {*mObject};
+	}
+
+	if (!mInstancePath.empty())
+	{
+		auto slashIndex = mInstancePath.find_last_of('/');
+		if (slashIndex > 0)
+		{
+			auto parentPath = mInstancePath.substr(0, slashIndex);
+			auto parentID = mInstancePath.substr(mInstancePath.find_last_of('/')+1);
+
+			auto idx = parentID.find(':');
+			if (idx > 0)
+				parentID = parentID.substr(0, idx);
+
+			auto obj = AppContext::get().getDocument()->getObject(parentID);
+			assert(obj);
+
+			return {*obj, parentPath};
+		}
+	}
+	return {};
 }
 
 rttr::property napkin::PropertyPath::getProperty() const

@@ -410,7 +410,7 @@ void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 void Document::remove(const PropertyPath& path)
 {
 	qInfo() << "Remove: " << QString::fromStdString(path.toString());
-	assert(false); // not supported atm
+	qInfo() << "Parent: " << QString::fromStdString(path.getParent().toString());
 }
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
