@@ -3,7 +3,7 @@
 #include <nap/logger.h>
 #include <QList>
 #include <QtDebug>
-#include <QtCore/QStack>
+#include <QStack>
 
 #include "naputils.h"
 
@@ -71,7 +71,7 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 		return object.mID;
 
 	object.mID = getUniqueName(name, object);
-	PropertyPath path(object, nap::rtti::sIDPropertyName);
+	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName));
 	assert(path.isValid());
 	propertyValueChanged(path);
 	return object.mID;
@@ -402,9 +402,15 @@ void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 	parent.mChildren.erase(parent.mChildren.begin() + childIndex);
 	objectChanged(&parent);
 
-	PropertyPath childrenProp(parent, "Children");
+	PropertyPath childrenProp(parent, nap::rtti::Path::fromString("Children"));
 	assert(childrenProp.isValid());
 	propertyValueChanged(childrenProp);
+}
+
+void Document::remove(const PropertyPath& path)
+{
+	qInfo() << "Remove: " << QString::fromStdString(path.toString());
+	assert(false); // not supported atm
 }
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)

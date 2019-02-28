@@ -138,12 +138,12 @@ TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 	REQUIRE(doc->getRootEntities(*scene, *entity).size() > 0);
 
 	PropertyPath regularPath(*comp, "Float");
-	REQUIRE(!regularPath.isInstance());
+	REQUIRE(!regularPath.isInstanceProperty());
 	REQUIRE(regularPath.isValid());
 
 //	// The path is an instance path if a root entity is provided
 //	PropertyPath instancePath(*rootEntity, *comp, "Float");
-//	REQUIRE(instancePath.isInstance());
+//	REQUIRE(instancePath.isInstanceProperty());
 //	REQUIRE(instancePath.isValid());
 //
 //	float val1 = 123.456;

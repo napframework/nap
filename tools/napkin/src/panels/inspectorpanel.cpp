@@ -204,11 +204,7 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	if (path.isValid())
 	{
 		mTitle.setText(QString::fromStdString(path.getName()));
-		if (path.isInstance())
-			mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()) + " [INSTANCE]");
-		else
-			mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
-
+		mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
 		mPathField.setText(QString::fromStdString(path.toString()));
 	}
 	else
@@ -283,7 +279,7 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	{
 		bool isInstance = false;
 		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
-		if (valueItem && valueItem->getPath().isInstance())
+		if (valueItem && valueItem->getPath().isInstanceProperty())
 			isInstance = true;
 
 		if (isInstance && valueItem->getPath().isOverridden())

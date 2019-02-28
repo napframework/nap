@@ -160,6 +160,7 @@ void AddChildEntityAction::perform()
 	std::vector<nap::rtti::Object*> filteredEntities;
 	for (auto e : doc->getObjects<nap::Entity>())
 	{
+		// Omit self and entities that have self as a child
 		if (e == entity || doc->hasChild(*e, *entity, true))
 			continue;
 		filteredEntities.emplace_back(e);
@@ -228,7 +229,7 @@ void RemoveChildEntityAction::perform()
 	auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
 
 	auto doc = AppContext::get().getDocument();
-	auto index = parentItem->childEntityIndex(*entityItem);
+	auto index = parentItem->childIndex(*entityItem);
 	assert(index >= 0);
 
 	// Grab all component paths for later instance property removal
@@ -243,6 +244,19 @@ void RemoveChildEntityAction::perform()
 	}, entityItem->index());
 
 	doc->removeChildEntity(*parentItem->getEntity(), index);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RemovePathAction::RemovePathAction(const PropertyPath& path)
+	: mPath(path)
+{
+	setText("Remove");
+}
+
+void RemovePathAction::perform()
+{
+	AppContext::get().getDocument()->remove(mPath);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

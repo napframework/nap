@@ -125,7 +125,7 @@ void FCurveAdapter::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 const PropertyPath FCurveAdapter::pointPath(int pointIndex)
 {
 	std::string pointPath = QString("Points/%1").arg(pointIndex).toStdString();
-	return {sourceCurve(), pointPath};
+	return {sourceCurve(), nap::rtti::Path::fromString(pointPath)};
 }
 
 const QColor FCurveAdapter::color() const

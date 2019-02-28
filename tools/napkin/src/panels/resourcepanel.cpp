@@ -150,11 +150,10 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 
 		if (entityItem->isPointer())
 		{
-			// In case of a pointer, we're displaying an 'instance' of an entity,
-			// so this should only remove the Entity from its parent
 			auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
 			if (parentItem)
-				menu.addAction(new RemoveChildEntityAction(*entityItem));
+				menu.addAction(new RemovePathAction(entityItem->propertyPath()));
+
 		}
 	}
 	else if (objItem)
@@ -197,7 +196,7 @@ void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, c
 		auto item = dynamic_cast<ObjectItem*>(m);
 		if (!item)
 			continue;
-		selectedPaths << *item->getObject();
+		selectedPaths << item->propertyPath();
 	}
 
 	selectionChanged(selectedPaths);
