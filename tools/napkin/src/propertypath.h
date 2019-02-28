@@ -40,6 +40,13 @@ namespace napkin
 		PropertyPath(nap::rtti::Object& obj);
 
 		/**
+		 * Create a PropertyPath to an object
+		 * @param obj The object to create the path to.
+		 * @param instPath The path to the instance (in case of a child entity chain)
+		 */
+		PropertyPath(nap::rtti::Object& obj, const std::string& instPath);
+
+		/**
 		 * Create a path to an object that is to be instantiated.
 		 * @param rootEntity Contains the instance property data
 		 * @param obj
@@ -49,16 +56,16 @@ namespace napkin
 		/**
 		 * Create a path to an object that is to be instantiated.
 		 * @param rootEntity Contains the instance property data
-		 * @param compPath the path to the component from the root entity
+		 * @param instPath the path to the component from the root entity
 		 */
-		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj, const std::string& compPath);
+		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj, const std::string& instPath);
 
 		/**
 		 * Create a path to an object that is to be instantiated.
 		 * @param rootEntity Contains the instance property data
 		 * @param obj
 		 */
-		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const std::string& compPath, const nap::rtti::Path& propPath);
+		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const std::string& instPath, const nap::rtti::Path& propPath);
 
 		/**
 		 * Create a PropertyPath using an Object and a property
@@ -73,13 +80,6 @@ namespace napkin
 		 * @param path The path to the property
 		 */
 		PropertyPath(nap::rtti::Object& obj, const nap::rtti::Path& path);
-
-		/**
-		 * Create a PropertyPath using an Object and a path as string
-		 * @param obj The object this property is on
-		 * @param path The path to the property
-		 */
-		PropertyPath(nap::rtti::Object& obj, const std::string& path);
 
 		/**
 		 * Create a PropertyPath using an Object and a property
@@ -168,7 +168,7 @@ namespace napkin
 		/**
 		 * @return True if this path represents an instance
 		 */
-		bool isInstance() const { return mRootEntity != nullptr; }
+		bool isInstanceProperty() const { return mRootEntity != nullptr; }
 
 		/**
 		 * @return True if this path represents an instance and the value has been overridden
@@ -286,7 +286,7 @@ namespace napkin
 		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
 		nap::rtti::Object* mObject = nullptr; // the object on which the property exists
 		nap::rtti::Path mPath; // the path to the property on the object
-		std::string mComponentPath; // path to the component if it is one
+		std::string mInstancePath; // path to the component if it is one
 	};
 }
 

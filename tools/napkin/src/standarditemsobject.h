@@ -105,6 +105,16 @@ namespace napkin
 		 */
 		std::string componentPath() const;
 
+		/**
+		 * Index of the given child item under this item
+		 */
+		int childIndex(const ObjectItem& childItem) const;
+
+		/**
+		 * Disabmiguating index of child, index only increments when multiple children with the same name are found.
+		 */
+		int uniqueNameChildIndex(const ObjectItem& childItem) const;
+
 	protected:
 		nap::rtti::Object* mObject; // THe object held by this item
 
@@ -127,11 +137,6 @@ namespace napkin
 		 * @return The entity held by this item
 		 */
 		nap::Entity* getEntity();
-
-		/**
-		 * Index of the given item's Entity under this item's Entity
-		 */
-		int childEntityIndex(EntityItem& childEntityItem);
 
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);

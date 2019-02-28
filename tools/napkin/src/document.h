@@ -288,6 +288,12 @@ namespace napkin
 		void removeChildEntity(nap::Entity& parent, size_t childIndex);
 
 		/**
+		 * Remove an object or property
+		 * @param path The path that determines what to remove
+		 */
+		void remove(const PropertyPath& path);
+
+		/**
 		 * Return a RootEntities in a scene that represent the specified entity.
 		 * For more explanation see RootEntity
 		 */

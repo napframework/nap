@@ -199,6 +199,19 @@ namespace napkin
 	};
 
 	/**
+	 * Remove something defined by the propertypath
+	 */
+	class RemovePathAction : public Action
+	{
+	public:
+		explicit RemovePathAction(const PropertyPath& path);
+
+	private:
+		void perform() override;
+		PropertyPath mPath;
+	};
+
+	/**
 	 * Change the current theme. The name must match a theme name defined in the ThemeManager
 	 */
 	class SetThemeAction : public Action

@@ -30,7 +30,35 @@ ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 
 const PropertyPath ObjectItem::propertyPath() const
 {
-	return PropertyPath(*mObject);
+	auto parentEntity = dynamic_cast<EntityItem*>(parentItem());
+	QStringList path;
+
+	auto thisEntity = this;
+	while (parentEntity)
+	{
+		auto thisID = QString::fromStdString(thisEntity->getObject()->mID);
+		if (auto compItem = dynamic_cast<const ComponentItem*>(thisEntity))
+		{
+			// TODO: Remove this case if multiple entities of the same type/name may be added to entities
+			path.insert(0, thisID);
+		}
+		else
+		{
+			auto thisIndex = QString::number(parentEntity->uniqueNameChildIndex(*thisEntity));
+
+			auto id = QString("%1:%2").arg(thisID, thisIndex);
+			path.insert(0, id);
+		}
+
+		thisEntity = parentEntity;
+		parentEntity = dynamic_cast<EntityItem*>(parentEntity->parentItem());
+	}
+
+	path.insert(0, QString::fromStdString(thisEntity->getObject()->mID));
+
+	auto pathStr = "/" + path.join('/');
+
+	return PropertyPath(*mObject, pathStr.toStdString());
 }
 
 bool ObjectItem::isPointer() const
@@ -61,7 +89,7 @@ void ObjectItem::setData(const QVariant& value, int role)
 {
 	if (role == Qt::EditRole)
 	{
-		PropertyPath prop_path(*mObject, nap::rtti::sIDPropertyName);
+		PropertyPath prop_path(*mObject, nap::rtti::Path::fromString(nap::rtti::sIDPropertyName));
 
 		// Ensure filename exists
 		if (nap::rtti::hasFlag(prop_path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
@@ -170,6 +198,37 @@ std::string ObjectItem::componentPath() const
 	return {"INVALID"};
 }
 
+int ObjectItem::childIndex(const ObjectItem& childItem) const
+{
+	int i = 0;
+	for (int row = 0; row < rowCount(); row++)
+	{
+		auto otherChildItem = child(row, 0);
+		if (otherChildItem == &childItem)
+			return i;
+		i++;
+	}
+	return -1;
+}
+
+int ObjectItem::uniqueNameChildIndex(const ObjectItem& childItem) const
+{
+	QMap<std::__cxx11::string, int> nameCount;
+	for (int row = 0; row < rowCount(); row++)
+	{
+		auto otherChildItem = dynamic_cast<ObjectItem*>(child(row, 0));
+		if (!otherChildItem)
+			continue;
+		if (otherChildItem == &childItem)
+			return nameCount.value(childItem.getObject()->mID, 0);
+
+		auto id = otherChildItem->getObject()->mID;
+		nameCount.insert(id, nameCount.value(id, 0) + 1);
+
+	}
+	return -1;
+}
+
 void ObjectItem::onPropertyValueChanged(PropertyPath path)
 {
 	if (&path.getObject() == mObject)
@@ -208,19 +267,6 @@ nap::Entity* EntityItem::getEntity()
 	return rtti_cast<nap::Entity>(mObject);
 }
 
-int EntityItem::childEntityIndex(EntityItem& childEntityItem)
-{
-	int i = 0;
-	for (int row = 0; row < rowCount(); row++)
-	{
-		auto childItem = child(row, 0);
-		if (childItem == &childEntityItem)
-			return i;
-		i++;
-	}
-	return -1;
-}
-
 void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
 	if (parent != mObject)
@@ -241,7 +287,7 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
-	PropertyPath childrenPath(*getEntity(), "Children");
+	PropertyPath childrenPath(*getEntity(), nap::rtti::Path::fromString("Children"));
 	assert(childrenPath.isValid());
 	if (path != childrenPath)
 		return;
