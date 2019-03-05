@@ -6,10 +6,6 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE HEADERS src/*.h)
 file(GLOB_RECURSE RESOURCES resources/*.qrc)
 
-message(warning Not optimizing!!!!!!!!!!)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
-
 if (MSVC)
     set(RESOURCES ${RESOURCES} resources/resources.rc)
 endif()

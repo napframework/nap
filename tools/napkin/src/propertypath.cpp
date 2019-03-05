@@ -229,7 +229,7 @@ napkin::PropertyPath napkin::PropertyPath::getParent() const
 		if (slashIndex > 0)
 		{
 			auto parentPath = mInstancePath.substr(0, slashIndex);
-			auto parentID = mInstancePath.substr(mInstancePath.find_last_of('/')+1);
+			auto parentID = parentPath.substr(parentPath.find_last_of('/')+1);
 
 			auto idx = parentID.find(':');
 			if (idx > 0)
@@ -543,6 +543,43 @@ std::vector<napkin::PropertyPath> napkin::PropertyPath::getProperties(int flags)
 					  }, flags);
 
 	return props;
+}
+
+int napkin::PropertyPath::getInstanceChildEntityIndex() const
+{
+	// Take the previously set instance path and extract the index from the string
+	auto path = mInstancePath;
+	auto basename = nap::utility::splitString(mInstancePath, '/').back();
+	auto parts = nap::utility::splitString(basename, ':');
+	assert(parts.size() == 2);
+	auto idxstring = parts.back();
+	std::string::size_type sz;
+	return std::stoi(idxstring, &sz);
+}
+
+int napkin::PropertyPath::getRealChildEntityIndex() const
+{
+	auto parent = getParent();
+	assert(parent.isValid());
+	assert(parent.getType().is_derived_from<nap::Entity>());
+	auto parentEntity = dynamic_cast<nap::Entity*>(&parent.getObject());
+	assert(parentEntity);
+
+	int instanceIndex = getInstanceChildEntityIndex();
+
+	int foundIDs = 0;
+	for (int i=0, len = static_cast<int>(parentEntity->mChildren.size()); i < len; i++)
+	{
+		auto currChild = parentEntity->mChildren[i];
+		if (mObject->mID == currChild->mID)
+		{
+			if (foundIDs == instanceIndex)
+				return i;
+			foundIDs++;
+		}
+	}
+	assert(false);
+	return -1;
 }
 
 void napkin::PropertyPath::iterateArrayElements(napkin::PropertyVisitor visitor, int flags) const

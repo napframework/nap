@@ -4,11 +4,28 @@
 #include <QList>
 #include <QtDebug>
 #include <QStack>
+#include <utility/fileutils.h>
 
 #include "naputils.h"
 
 using namespace napkin;
 using namespace nap::rtti;
+
+void splitNameIndex(const std::string& str, std::string& name, int& index)
+{
+	auto split = nap::utility::splitString(str, ':');
+	if (split.size() == 2)
+	{
+		name = split[0];
+		index = std::stoi(split[1]);
+	}
+	else
+	{
+		name = str;
+		index = -1;
+	}
+
+}
 
 Document::Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
 	: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects))
@@ -227,7 +244,7 @@ void Document::removeObject(Object& object)
 	// Emit signal first so observers can act before the change
 	objectRemoved(&object);
 
-	removeOverrides(object);
+	removeInstanceProperties(object);
 
 	// Start by cleaning up objects that depend on this one
 	if (object.get_type().is_derived_from<nap::Entity>())
@@ -270,13 +287,13 @@ void Document::removeObject(const std::string& name)
 		removeObject(*object);
 }
 
-void Document::removeOverrides(nap::rtti::Object& object)
+void Document::removeInstanceProperties(nap::rtti::Object& object)
 {
 	for (auto scene : getObjects<nap::Scene>())
-		removeOverrides(*scene, object);
+		removeInstanceProperties(*scene, object);
 }
 
-void Document::removeOverrides(nap::Scene& scene, nap::rtti::Object& object)
+void Document::removeInstanceProperties(nap::Scene& scene, nap::rtti::Object& object)
 {
 	auto allComponents = getComponentsRecursive(object);
 
@@ -294,42 +311,51 @@ void Document::removeOverrides(nap::Scene& scene, nap::rtti::Object& object)
 	}
 }
 
-void Document::removeInstanceProperties(nap::Entity& parent, int index, QStringList componentPaths)
+void Document::removeInstanceProperties(PropertyPath path)
 {
-	auto childEntity = parent.mChildren[index];
-	auto allComponents = getComponentsRecursive(*childEntity);
+
+	auto parent = path.getParent();
+	assert(parent.isValid());
+	assert(parent.getType().is_derived_from<nap::Entity>());
+	auto parentEntity = dynamic_cast<nap::Entity*>(&parent.getObject());
+	assert(parentEntity);
+	auto instIndex = path.getInstanceChildEntityIndex();
+
+	auto parentID = parentEntity->mID;
+	auto entityID = path.getObject().mID;
+
 
 	for (auto scene : getObjects<nap::Scene>())
 	{
 		for (auto& rootEntity : scene->mEntities)
 		{
 			auto& props = rootEntity.mInstanceProperties;
-			for (int i = static_cast<int>(props.size() - 1); i >= 0; --i)
+
+			for (auto prop : rootEntity.mInstanceProperties)
 			{
-				auto compPath = QString::fromStdString(props[i].mTargetComponent.toString());
-				if (componentPaths.contains(compPath))
+				auto compPathStr = prop.mTargetComponent.toString();
+				auto entPath = nap::utility::getFileDir(compPathStr);
+				auto _entityID = nap::utility::getFileName(entPath);
+
+				auto _parentID = nap::utility::getFileName(nap::utility::getFileDir(entPath));
+
+				auto split = nap::utility::splitString(_entityID, ':');
+				int _instIndex;
+				splitNameIndex(_entityID, _entityID, _instIndex);
+
+				int parentIndex;
+				splitNameIndex(_parentID, _parentID, parentIndex);
+
+				if (_parentID == ".")
+					_parentID = rootEntity.mEntity->mID;
+
+				// If entity and parentEntity match, we can delete it
+
+				if (_parentID == parentID && _entityID == entityID && _instIndex == instIndex)
 				{
-					props.erase(props.begin() + i);
+					qInfo() << "Delete: " << QString::fromStdString(compPathStr);
 				}
-			}
-		}
-	}
-}
 
-void Document::traverseInstanceProperties(nap::Entity& parent, int index,
-										  std::function<void(nap::ComponentInstanceProperties&)> visitor)
-{
-	auto childEntity = parent.mChildren[index];
-	auto allComponents = getComponentsRecursive(*childEntity);
-
-	for (auto scene : getObjects<nap::Scene>())
-	{
-		for (auto& rootEntity : scene->mEntities)
-		{
-			auto& props = rootEntity.mInstanceProperties;
-			for (int i = static_cast<int>(props.size() - 1); i >= 0; --i)
-			{
-				visitor(props[i]);
 			}
 		}
 	}
@@ -409,13 +435,39 @@ void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 
 void Document::remove(const PropertyPath& path)
 {
-	qInfo() << "Remove: " << QString::fromStdString(path.toString());
-	qInfo() << "Parent: " << QString::fromStdString(path.getParent().toString());
+	auto parent = path.getParent();
+
+	if (parent.getType().is_derived_from<nap::Entity>() && path.getType().is_derived_from<nap::Entity>())
+	{
+		// Removing child Entity from parent Entity
+
+		qInfo() << "Remove: " << QString::fromStdString(path.toString());
+		qInfo() << "Parent: " << QString::fromStdString(parent.toString());
+
+		auto parentEntity = dynamic_cast<nap::Entity*>(&parent.getObject());
+		qInfo() << "ParentID" << QString::fromStdString(parentEntity->mID);
+		assert(parentEntity);
+		auto childEntity = dynamic_cast<nap::Entity*>(&path.getObject());
+		assert(childEntity);
+		auto instanceIndex = path.getInstanceChildEntityIndex();
+		auto realIndex = path.getRealChildEntityIndex();
+
+		// Remove all instanceproperties that refer to this Entity:0 under ParentEntity
+		// ....
+
+
+
+		// Patch up sibling paths after this one
+		removeInstanceProperties(path);
+
+//		removeChildEntity(*parentEntity, realIndex);
+
+	}
 }
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
 {
-	removeOverrides(scene, *entity.mEntity);
+	removeInstanceProperties(scene, *entity.mEntity);
 
 	auto& v = scene.mEntities;
 	auto filter = [&](nap::RootEntity& obj) { return &obj == &entity; };
@@ -425,7 +477,7 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 {
-	removeOverrides(scene, entity);
+	removeInstanceProperties(scene, entity);
 
 	auto& v = scene.mEntities;
 	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity == &entity; };
@@ -435,7 +487,7 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 
 void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 {
-	removeOverrides(scene, *scene.mEntities[index].mEntity);
+	removeInstanceProperties(scene, *scene.mEntities[index].mEntity);
 
 	scene.mEntities.erase(scene.mEntities.begin() + index);
 	objectChanged(&scene);

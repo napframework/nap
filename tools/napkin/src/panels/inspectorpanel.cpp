@@ -205,7 +205,12 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	{
 		mTitle.setText(QString::fromStdString(path.getName()));
 		mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
-		mPathField.setText(QString::fromStdString(path.toString()));
+
+		auto p = path.toString();
+		if (p.at(0) == '.')
+			p = path.rootEntity()->mEntity->mID + p.substr(1, p.size()-1);
+
+		mPathField.setText(QString::fromStdString(p));
 	}
 	else
 	{

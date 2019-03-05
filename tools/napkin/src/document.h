@@ -218,16 +218,14 @@ namespace napkin
 		/**
 		 * Remove all overrides for the specified object
 		 */
-		void removeOverrides(nap::rtti::Object& object);
+		void removeInstanceProperties(nap::rtti::Object& object);
 
 		/**
 		 * Remove all overrides for the specified object, but only in the specified scene
 		 */
-		void removeOverrides(nap::Scene& scene, nap::rtti::Object& object);
+		void removeInstanceProperties(nap::Scene& scene, nap::rtti::Object& object);
 
-		void removeInstanceProperties(nap::Entity& parent, int index, QStringList componentPaths);
-
-		void traverseInstanceProperties(nap::Entity& parent, int index, std::function<void(nap::ComponentInstanceProperties&)> visitor);
+		void removeInstanceProperties(PropertyPath path);
 
 		/**
 		 * Get all components recursively starting from the given object
