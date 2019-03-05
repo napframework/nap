@@ -261,7 +261,20 @@ namespace napkin
 		void iterateProperties(PropertyVisitor visitor, int flags = 0) const;
 		std::vector<PropertyPath> getProperties(int flags = 0) const;
 		std::string componentInstancePath() const;
-		nap::RootEntity* rootEntity() { return mRootEntity; }
+		nap::RootEntity* rootEntity() const { return mRootEntity; }
+
+		/**
+		 * If this path represents a child entity, get the ID-DISAMBIGUATING index of this entity under its parent.
+		 * TODO: This should go as soon as we can make instance properties editor-suited
+		 * @return the (not a real) "index" or -1 if it failed.
+		 */
+		int getInstanceChildEntityIndex() const;
+
+		/**
+		 * Get the actual index of this child Entity under its parent Entity
+		 * @return the actual index or -1 if not found
+		 */
+		int getRealChildEntityIndex() const;
 
 	private:
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;

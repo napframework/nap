@@ -143,9 +143,8 @@ namespace nap
 	class ComponentInstanceProperties
 	{
 	public:
-		using TargetAttributeList = std::vector<TargetAttribute>;
-		ComponentPtr<Component>		mTargetComponent = nullptr;		///< Component to override properties from
-		TargetAttributeList			mTargetAttributes;				///< List of values that are overridden
+		ComponentPtr<Component>			mTargetComponent = nullptr;		///< Component to override properties from
+		std::vector<TargetAttribute> 	mTargetAttributes;				///< List of values that are overridden
 	};
 
 	/**
