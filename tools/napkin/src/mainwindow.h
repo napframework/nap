@@ -19,6 +19,7 @@
 #include "panels/resourcepanel.h"
 #include "panels/scenepanel.h"
 #include "panels/curvepanel.h"
+#include "panels/modulepanel.h"
 
 namespace napkin
 {
@@ -112,6 +113,7 @@ namespace napkin
 //		PathBrowserPanel mPathBrowser;
 		InspectorPanel mInspectorPanel;
 		HistoryPanel mHistoryPanel;
+		ModulePanel mModulePanel;
 		LogPanel mLogPanel;
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;

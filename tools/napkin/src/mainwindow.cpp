@@ -74,6 +74,7 @@ void MainWindow::addDocks()
 	addDock("AppRunner", &mAppRunnerPanel);
     addDock("Scene", &mScenePanel);
 	addDock("Curve", &mCurvePanel);
+	addDock("Modules", &mModulePanel);
 }
 
 
