@@ -331,10 +331,11 @@ void Document::removeInstanceProperties(PropertyPath path)
 		for (auto& rootEntity : scene->mEntities)
 		{
 			auto& props = rootEntity.mInstanceProperties;
-			for (int i=0, len = static_cast<int>(props.size()); i < len; i++)
+			for (int i=0; i < props.size();)
 			{
-				auto prop = props[i];
+				auto& prop = props.at(i);
 				auto compPathStr = prop.mTargetComponent.toString();
+				auto compID = nap::utility::getFileName(compPathStr);
 				auto entPath = nap::utility::getFileDir(compPathStr);
 				auto _entityID = nap::utility::getFileName(entPath);
 
@@ -351,19 +352,38 @@ void Document::removeInstanceProperties(PropertyPath path)
 					_parentID = rootEntity.mEntity->mID;
 
 				// If entity and parentEntity match, we can delete it
-				if (_parentID == parentID && _entityID == entityID && _instIndex == instIndex)
+				if (_parentID == parentID && _entityID == entityID)
 				{
-					props.erase(props.begin() + i);
-					if (!changedScenes.contains(scene))
-						changedScenes.append(scene);
-				}
+					if (_instIndex == instIndex)
+					{
+						// same index, remove
+						props.erase(props.begin() + i);
 
+						if (!changedScenes.contains(scene))
+							changedScenes.append(scene);
+
+						continue;
+					}
+					else if (_instIndex > instIndex)
+					{
+						// shift index and reconstruct path
+						auto parentPath = nap::utility::getFileDir(entPath);
+						auto newIndex = _instIndex - 1;
+						auto newPath = nap::utility::stringFormat("%s/%s:%d/%s",
+								parentPath.c_str(), _entityID.c_str(), newIndex, compID.c_str());
+						prop.mTargetComponent.assign(newPath, *prop.mTargetComponent.get());
+
+						if (!changedScenes.contains(scene))
+							changedScenes.append(scene);
+					}
+				}
+				++i;
 			}
 		}
 	}
+
 	for (auto scene : changedScenes)
 		objectChanged(scene);
-
 }
 
 
@@ -445,25 +465,16 @@ void Document::remove(const PropertyPath& path)
 	if (parent.getType().is_derived_from<nap::Entity>() && path.getType().is_derived_from<nap::Entity>())
 	{
 		// Removing child Entity from parent Entity
-
-//		qInfo() << "Remove: " << QString::fromStdString(path.toString());
-//		qInfo() << "Parent: " << QString::fromStdString(parent.toString());
-
 		auto parentEntity = dynamic_cast<nap::Entity*>(&parent.getObject());
-//		qInfo() << "ParentID" << QString::fromStdString(parentEntity->mID);
 		assert(parentEntity);
 		auto childEntity = dynamic_cast<nap::Entity*>(&path.getObject());
 		assert(childEntity);
-//		auto instanceIndex = path.getInstanceChildEntityIndex();
-//		auto realIndex = path.getRealChildEntityIndex();
+		auto realIndex = path.getRealChildEntityIndex();
 
 		// Remove all instanceproperties that refer to this Entity:0 under ParentEntity
 		removeInstanceProperties(path);
 
-		// Patch up sibling paths after this one
-
-//		removeChildEntity(*parentEntity, realIndex);
-
+		removeChildEntity(*parentEntity, realIndex);
 	}
 }
 
