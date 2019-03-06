@@ -184,6 +184,12 @@ namespace napkin
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
+		 * Fired when nap::Core has been initialized
+		 */
+		void coreInitialized();
+
+		/**
+		 * Qt Signal
 		 * Fired when the global selection has changed.
 		 * TODO: This will need to be changed into a multi-level/hierarchical selection context
 		 */

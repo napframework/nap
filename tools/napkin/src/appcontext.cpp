@@ -273,6 +273,7 @@ nap::Core& AppContext::getCore()
 			nap::Logger::fatal("Failed to initialize engine");
 		}
 		mCoreInitialized = true;
+		coreInitialized();
 	}
 	return mCore;
 }

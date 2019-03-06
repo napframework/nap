@@ -20,7 +20,19 @@ namespace nap
 	class NAPAPI ModuleManager final
 	{
 		friend class Core;
+
 	public:
+		/**
+		* Data for a loaded module
+		*/
+		struct Module
+		{
+			ModuleDescriptor*	mDescriptor;							// The descriptor that belongs to the module
+			void*				mHandle;								// Handle to native module
+			rtti::TypeInfo		mService = rtti::TypeInfo::empty();		// Service associated with the module
+		};
+
+
 		// Constructor
 		ModuleManager();
 
@@ -37,17 +49,9 @@ namespace nap
 		 */
 		bool loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error);
 
-	private:
-		/**
-		* Data for a loaded module
-		*/
-		struct Module
-		{
-			ModuleDescriptor*	mDescriptor;							// The descriptor that belongs to the module
-			void*				mHandle;								// Handle to native module
-			rtti::TypeInfo		mService = rtti::TypeInfo::empty();		// Service associated with the module
-		};
+		const std::vector<Module>& getModules() const { return mModules; }
 
+	private:
 		/**
 		 * Build directories to search in for specified modules
 		 * @param moduleNames The names of the modules in use in the project

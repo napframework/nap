@@ -99,6 +99,11 @@ namespace nap
 		ResourceManager* getResourceManager() { return mResourceManager.get(); }
 
 		/**
+		 * @return the ModuleManager for this core
+		 */
+		const ModuleManager& getModuleManager() const { return mModuleManager; }
+
+		/**
 		 * @return number of elapsed time in milliseconds after invoking start
 		 */
 		uint32 getTicks() const;
