@@ -6,6 +6,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QtGui>
+#include <cassert>
 
 namespace nap
 {
@@ -126,6 +127,8 @@ namespace nap
 		{
 			if (!index.isValid())
 				return;
+
+			assert(index.model() == view->model());
 
 			if (expanded && !view->isExpanded(index))
 				view->expand(index);

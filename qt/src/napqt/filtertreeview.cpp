@@ -112,7 +112,11 @@ void FilterTreeView::onFilterChanged(const QString& text)
 void FilterTreeView::onExpandSelected()
 {
 	for (auto& idx : getSelectedIndexes())
-		expandChildren(mTreeView, idx, true);
+	{
+		auto index = mSortFilter.mapFromSource(idx);
+		expandChildren(mTreeView, index, true);
+	}
+
 }
 
 void FilterTreeView::onCollapseSelected()
