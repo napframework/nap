@@ -75,6 +75,7 @@ void MainWindow::addDocks()
     addDock("Scene", &mScenePanel);
 	addDock("Curve", &mCurvePanel);
 	addDock("Modules", &mModulePanel);
+	addDock("Instance Properties", &mInstPropPanel);
 }
 
 
