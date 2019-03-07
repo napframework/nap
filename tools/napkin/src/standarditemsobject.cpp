@@ -115,9 +115,7 @@ QVariant ObjectItem::data(int role) const
 //		auto bgcol = QStandardItem::data(Qt::Window).value<QColor>();
 		auto bgcol = Qt::white;
 		auto fgcol = QStandardItem::data(role).value<QColor>();
-
-		QColor color = nap::qt::lerpCol(bgcol, fgcol, 0.5);
-		return QVariant::fromValue<QColor>(color);
+		return QVariant::fromValue<QColor>(nap::qt::lerpCol(bgcol, fgcol, 0.5));
 	}
 	return QStandardItem::data(role);
 }
