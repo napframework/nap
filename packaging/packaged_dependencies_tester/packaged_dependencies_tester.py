@@ -307,7 +307,7 @@ def run_cwd_project(project_name):
     if success:
         print("  Done.")
     else:
-        print("  Error: Couldn't run from build dir, return code: %s" % returncode)
+        print("  Error: Couldn't run from build dir")
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
 

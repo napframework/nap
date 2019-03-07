@@ -32,14 +32,24 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		* Sets color texture resource.
-		*/
-		void setColorTexture(Texture2D& colorTexture)				{ mColorTexture = &colorTexture; }
+		 * Sets color texture to use by the render-target.
+		 * Note that if the operation fails the previous texture remains active and bound.
+		 * Target size needs to match current color texture size.
+		 * @param colorTexture color texture to render to.
+		 * @param error contains the error if setting the texture fails
+		 * @return if setting the texture succeeded.
+		 */
+		bool switchColorTexture(Texture2D& colorTexture, utility::ErrorState& error);
 
 		/**
-		* Sets depth texture resource
-		*/
-		void setDepthTexture(Texture2D& depthTexture)				{ mDepthTexture = &depthTexture; }
+		 * Sets depth texture to use by the render-target.
+		 * Note that if the operation fails the previous texture remains active and bound.
+		 * Target size needs to match current depth texture size.
+		 * @param depthTexture depth texture to render to.
+		 * @param error contains the error if setting the texture fails
+		 * @return if setting the texture succeeded.
+		 */
+		bool switchDepthTexture(Texture2D& depthTexture, utility::ErrorState& error);
 
 		/**
 		* Returns color texture resource
