@@ -157,25 +157,40 @@ namespace napkin
 		return Variant();
 	}
 
+	template<typename T>
+	nap::TypedInstancePropertyValue<T>* addInstProp(const rttr::variant& value)
+	{
+		auto doc = napkin::AppContext::get().getDocument();
+		std::string name("instnceProp_" + std::string(value.get_type().get_name().data()));
+		auto propValue = doc->addObject<nap::TypedInstancePropertyValue<T>>(nullptr, name, false);
+		propValue->mValue = value.get_value<T>();
+		return propValue;
+	}
+
 	nap::InstancePropertyValue* createInstancePropertyValue(const rttr::type& type, const rttr::variant& value)
 	{
-		if (type == rttr::type::get<std::string>())
-		{
+		if (type == rttr::type::get<bool>()) 		return addInstProp<bool>(value);
+		if (type == rttr::type::get<char>()) 		return addInstProp<char>(value);
+		if (type == rttr::type::get<int8_t>()) 		return addInstProp<int8_t>(value);
+		if (type == rttr::type::get<int16_t>()) 	return addInstProp<int16_t>(value);
+		if (type == rttr::type::get<int32_t>()) 	return addInstProp<int32_t>(value);
+		if (type == rttr::type::get<int64_t>()) 	return addInstProp<int64_t>(value);
+		if (type == rttr::type::get<uint8_t>()) 	return addInstProp<uint8_t>(value);
+		if (type == rttr::type::get<uint16_t>()) 	return addInstProp<uint16_t>(value);
+		if (type == rttr::type::get<uint32_t>()) 	return addInstProp<uint32_t>(value);
+		if (type == rttr::type::get<uint64_t>()) 	return addInstProp<uint64_t>(value);
+		if (type == rttr::type::get<float>()) 		return addInstProp<float>(value);
+		if (type == rttr::type::get<double>()) 		return addInstProp<double>(value);
+		if (type == rttr::type::get<glm::vec2>()) 	return addInstProp<glm::vec2>(value);
+		if (type == rttr::type::get<glm::vec3>()) 	return addInstProp<glm::vec3>(value);
+		if (type == rttr::type::get<glm::vec4>()) 	return addInstProp<glm::vec4>(value);
+		if (type == rttr::type::get<glm::ivec2>()) 	return addInstProp<glm::ivec2>(value);
+		if (type == rttr::type::get<glm::ivec3>()) 	return addInstProp<glm::ivec3>(value);
+		if (type == rttr::type::get<glm::quat>()) 	return addInstProp<glm::quat>(value);
+		if (type == rttr::type::get<std::string>()) return addInstProp<std::string>(value);
 
-		}
-		else if (type == rttr::type::get<float>())
-		{
+		nap::Logger::error("Instance property type '%s' not supported", type.get_name().data());
 
-			auto propValue = napkin::AppContext::get().getDocument()->addObject<nap::TypedInstancePropertyValue<float>>(nullptr, "a", false);
-			propValue->mValue = value.get_value<float>();
-			return propValue;
-		}
-		else if (type == rttr::type::get<int>())
-		{
-			auto propValue = napkin::AppContext::get().getDocument()->addObject<nap::TypedInstancePropertyValue<int>>(nullptr, "a", false);
-			propValue->mValue = value.get_value<int>();
-			return propValue;
-		}
 		return nullptr;
 	}
 };
