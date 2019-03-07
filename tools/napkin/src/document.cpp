@@ -244,7 +244,9 @@ void Document::removeObject(Object& object)
 	// Emit signal first so observers can act before the change
 	objectRemoved(&object);
 
-	removeInstanceProperties(object);
+	// Another special case for our snowflake: InstanceProperty
+	if (!object.get_type().is_derived_from<nap::InstancePropertyValue>())
+		removeInstanceProperties(object);
 
 	// Start by cleaning up objects that depend on this one
 	if (object.get_type().is_derived_from<nap::Entity>())

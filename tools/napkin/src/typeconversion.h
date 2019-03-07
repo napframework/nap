@@ -55,6 +55,7 @@ namespace napkin
 
 
 	nap::InstancePropertyValue* createInstancePropertyValue(const rttr::type& type, const rttr::variant& value);
-
+	void setInstancePropertyValue(rttr::variant& prop, const rttr::type& type, const rttr::variant& value);
+	void removeInstancePropertyValue(rttr::variant& prop, const rttr::type& type);
 }
 

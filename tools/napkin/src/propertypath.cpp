@@ -203,8 +203,45 @@ void napkin::PropertyPath::setValue(rttr::variant value)
 
 	if (isInstanceProperty())
 	{
-		auto& targetAttr = getOrCreateTargetAttribute();
-		targetAttr.mValue = napkin::createInstancePropertyValue(getType(), value);
+		auto targetAttr = targetAttribute();
+		if (targetAttr)
+		{
+			rttr::variant val = targetAttr->mValue.get();
+			if (resolve().getValue() == value)
+			{
+				// instance value is the same as the original, remove instancepropertyvalue
+
+				// remove from targetattributes list
+				auto instProps = instanceProps();
+				auto& attrs = instProps->mTargetAttributes;
+				auto filter = [&](const nap::TargetAttribute& attr) { return &attr == targetAttr; };
+				attrs.erase(std::remove_if(attrs.begin(), attrs.end(), filter), attrs.end());
+
+				// remove attributes list if necessary
+				if (attrs.empty())
+				{
+					auto component = instProps->mTargetComponent.get();
+					auto flt = [&](const nap::ComponentInstanceProperties& instProp) { return &instProp == instProps; };
+					auto& rootInstProps = mRootEntity->mInstanceProperties;
+					rootInstProps.erase(std::remove_if(rootInstProps.begin(), rootInstProps.end(), flt), rootInstProps.end());
+
+					AppContext::get().getDocument()->objectChanged(component);
+				}
+
+				// Remove from object list
+				napkin::removeInstancePropertyValue(val, getType());
+			}
+			else
+			{
+				napkin::setInstancePropertyValue(val, getType(), value);
+			}
+			return;
+		}
+		else
+		{
+			targetAttr = &getOrCreateTargetAttribute();
+			targetAttr->mValue = napkin::createInstancePropertyValue(getType(), value);
+		}
 		return;
 	}
 
