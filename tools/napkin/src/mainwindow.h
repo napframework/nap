@@ -20,6 +20,7 @@
 #include "panels/scenepanel.h"
 #include "panels/curvepanel.h"
 #include "panels/modulepanel.h"
+#include "panels/instanceproppanel.h"
 
 namespace napkin
 {
@@ -114,6 +115,7 @@ namespace napkin
 		InspectorPanel mInspectorPanel;
 		HistoryPanel mHistoryPanel;
 		ModulePanel mModulePanel;
+		InstancePropPanel mInstPropPanel;
 		LogPanel mLogPanel;
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;
