@@ -193,4 +193,64 @@ namespace napkin
 
 		return nullptr;
 	}
+
+	template<typename T>
+	void setInstProp(rttr::variant& prop, const rttr::variant& value)
+	{
+		auto propValue = prop.get_value<nap::TypedInstancePropertyValue<T>*>();
+		propValue->mValue = value.get_value<T>();
+	}
+
+	void setInstancePropertyValue(rttr::variant& prop, const rttr::type& type, const rttr::variant& value)
+	{
+		if (type == rttr::type::get<bool>()) 				setInstProp<bool>(prop, value);
+		else if (type == rttr::type::get<char>()) 			setInstProp<char>(prop, value);
+		else if (type == rttr::type::get<int8_t>()) 		setInstProp<int8_t>(prop, value);
+		else if (type == rttr::type::get<int16_t>()) 		setInstProp<int16_t>(prop, value);
+		else if (type == rttr::type::get<int32_t>()) 		setInstProp<int32_t>(prop, value);
+		else if (type == rttr::type::get<int64_t>()) 		setInstProp<int64_t>(prop, value);
+		else if (type == rttr::type::get<uint8_t>()) 		setInstProp<uint8_t>(prop, value);
+		else if (type == rttr::type::get<uint16_t>()) 		setInstProp<uint16_t>(prop, value);
+		else if (type == rttr::type::get<uint32_t>()) 		setInstProp<uint32_t>(prop, value);
+		else if (type == rttr::type::get<uint64_t>()) 		setInstProp<uint64_t>(prop, value);
+		else if (type == rttr::type::get<float>()) 			setInstProp<float>(prop, value);
+		else if (type == rttr::type::get<double>()) 		setInstProp<double>(prop, value);
+		else if (type == rttr::type::get<glm::vec2>()) 		setInstProp<glm::vec2>(prop, value);
+		else if (type == rttr::type::get<glm::vec3>()) 		setInstProp<glm::vec3>(prop, value);
+		else if (type == rttr::type::get<glm::vec4>()) 		setInstProp<glm::vec4>(prop, value);
+		else if (type == rttr::type::get<glm::ivec2>()) 	setInstProp<glm::ivec2>(prop, value);
+		else if (type == rttr::type::get<glm::ivec3>()) 	setInstProp<glm::ivec3>(prop, value);
+		else if (type == rttr::type::get<glm::quat>()) 		setInstProp<glm::quat>(prop, value);
+		else if (type == rttr::type::get<std::string>()) 	setInstProp<std::string>(prop, value);
+	}
+
+	template<typename T>
+	void removeInstProp(rttr::variant& prop)
+	{
+		auto doc = napkin::AppContext::get().getDocument();
+		auto propValue = prop.get_value<nap::TypedInstancePropertyValue<T>*>();
+		doc->removeObject(*propValue);
+	}
+
+	void removeInstancePropertyValue(rttr::variant& prop, const rttr::type& type) {
+		if (type == rttr::type::get<bool>()) 				removeInstProp<bool>(prop);
+		else if (type == rttr::type::get<char>()) 			removeInstProp<char>(prop);
+		else if (type == rttr::type::get<int8_t>()) 		removeInstProp<int8_t>(prop);
+		else if (type == rttr::type::get<int16_t>()) 		removeInstProp<int16_t>(prop);
+		else if (type == rttr::type::get<int32_t>()) 		removeInstProp<int32_t>(prop);
+		else if (type == rttr::type::get<int64_t>()) 		removeInstProp<int64_t>(prop);
+		else if (type == rttr::type::get<uint8_t>()) 		removeInstProp<uint8_t>(prop);
+		else if (type == rttr::type::get<uint16_t>()) 		removeInstProp<uint16_t>(prop);
+		else if (type == rttr::type::get<uint32_t>()) 		removeInstProp<uint32_t>(prop);
+		else if (type == rttr::type::get<uint64_t>()) 		removeInstProp<uint64_t>(prop);
+		else if (type == rttr::type::get<float>()) 			removeInstProp<float>(prop);
+		else if (type == rttr::type::get<double>()) 		removeInstProp<double>(prop);
+		else if (type == rttr::type::get<glm::vec2>()) 		removeInstProp<glm::vec2>(prop);
+		else if (type == rttr::type::get<glm::vec3>()) 		removeInstProp<glm::vec3>(prop);
+		else if (type == rttr::type::get<glm::vec4>()) 		removeInstProp<glm::vec4>(prop);
+		else if (type == rttr::type::get<glm::ivec2>()) 	removeInstProp<glm::ivec2>(prop);
+		else if (type == rttr::type::get<glm::ivec3>()) 	removeInstProp<glm::ivec3>(prop);
+		else if (type == rttr::type::get<glm::quat>()) 		removeInstProp<glm::quat>(prop);
+		else if (type == rttr::type::get<std::string>()) 	removeInstProp<std::string>(prop);
+	}
 };
