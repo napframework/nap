@@ -240,6 +240,84 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "TargetComponent": "./SphereEntity:1/Mesh",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "ClipRect/Min/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_3",
+                                        "Value": 3.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./SphereEntity:1/Child:0/ChildXForm",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Rotate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_5",
+                                        "Value": 12.0
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Entity": "SphereEntity",
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./XForm",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Scale/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_6",
+                                        "Value": 2.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./Child:0/ChildXForm",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Scale/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_9",
+                                        "Value": 3.0
+                                    }
+                                },
+                                {
+                                    "Path": "Properties/Scale/z",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_8",
+                                        "Value": 1.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./Child:1/ChildXForm",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Scale/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "a_10",
+                                        "Value": 5.0
+                                    }
+                                }
+                            ]
                         }
                     ]
                 }
