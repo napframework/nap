@@ -3,6 +3,8 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <napqt/filtertreeview.h>
+#include <instanceproperty.h>
+#include <scene.h>
 
 namespace napkin
 {
@@ -20,6 +22,7 @@ namespace napkin
 	{
 	public:
 		explicit InstancePropsItem(nap::ComponentInstanceProperties& props);
+		QVariant data(int role) const override;
 	private:
 		nap::ComponentInstanceProperties& mProps;
 	};
@@ -28,6 +31,7 @@ namespace napkin
 	{
 	public :
 		explicit RootEntityPropItem(nap::RootEntity& rootEntity);
+		QVariant data(int role) const override;
 	private:
 		nap::RootEntity& mRootEntity;
 	};
@@ -36,6 +40,7 @@ namespace napkin
 	{
 	public:
 		explicit InstPropSceneItem(nap::Scene& scene);
+		QVariant data(int role) const override;
 	private:
 		nap::Scene& mScene;
 	};

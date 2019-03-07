@@ -1,7 +1,8 @@
-#include <appcontext.h>
-#include <rtti/object.h>
 #include "instanceproppanel.h"
 
+#include <appcontext.h>
+#include <rtti/object.h>
+#include "naputils.h"
 
 using namespace napkin;
 
@@ -14,9 +15,20 @@ InstPropAttribItem::InstPropAttribItem(nap::TargetAttribute& attrib) : QStandard
 
 InstancePropsItem::InstancePropsItem(nap::ComponentInstanceProperties& props) : QStandardItem(), mProps(props)
 {
-	setText(QString::fromStdString(props.mTargetComponent->mID));
+	setText(QString::fromStdString(props.mTargetComponent.getInstancePath()));
 	for (auto& a : props.mTargetAttributes)
 		appendRow(new InstPropAttribItem(a));
+}
+
+QVariant InstancePropsItem::data(int role) const
+{
+	if (role == Qt::ForegroundRole)
+	{
+		auto bgcol = Qt::white;
+		auto fgcol = QStandardItem::data(role).value<QColor>();
+		return QVariant::fromValue<QColor>(nap::qt::lerpCol(bgcol, fgcol, 0.5));
+	}
+	return QStandardItem::data(role);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,6 +40,17 @@ RootEntityPropItem::RootEntityPropItem(nap::RootEntity& rootEntity) : QStandardI
 		appendRow(new InstancePropsItem(p));
 }
 
+QVariant RootEntityPropItem::data(int role) const
+{
+	if (role == Qt::ForegroundRole)
+	{
+		auto bgcol = Qt::white;
+		auto fgcol = QStandardItem::data(role).value<QColor>();
+		return QVariant::fromValue<QColor>(nap::qt::lerpCol(bgcol, fgcol, 0.5));
+	}
+	return QStandardItem::data(role);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 InstPropSceneItem::InstPropSceneItem(nap::Scene& scene) : QStandardItem(), mScene(scene)
@@ -37,6 +60,16 @@ InstPropSceneItem::InstPropSceneItem(nap::Scene& scene) : QStandardItem(), mScen
 		appendRow(new RootEntityPropItem(e));
 }
 
+QVariant InstPropSceneItem::data(int role) const
+{
+	if (role == Qt::ForegroundRole)
+	{
+		auto bgcol = Qt::white;
+		auto fgcol = QStandardItem::data(role).value<QColor>();
+		return QVariant::fromValue<QColor>(nap::qt::lerpCol(bgcol, fgcol, 0.5));
+	}
+	return QStandardItem::data(role);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 InstancePropModel::InstancePropModel()
@@ -73,6 +106,7 @@ InstancePropPanel::InstancePropPanel()
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
+	mTreeView.getTreeView().setHeaderHidden(true);
 
 	connect(&mModel, &InstancePropModel::sceneChanged, this, &InstancePropPanel::onModelChanged);
 }
