@@ -95,7 +95,18 @@
                     "Mesh": "SphereMesh",
                     "MaterialInstance": {
                         "Material": "Material",
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec3",
+                                "mID": "ballColor",
+                                "Name": "ballColor",
+                                "Value": {
+                                    "x": 1.0,
+                                    "y": 0.5,
+                                    "z": 0.5
+                                }
+                            }
+                        ],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -134,7 +145,6 @@
                 }
             ],
             "Children": [
-                "Child",
                 "Child"
             ]
         },
@@ -222,19 +232,6 @@
                                     "Path": "Properties/Translate/x",
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "a_4",
-                                        "Value": 8.0
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "TargetComponent": "./SphereEntity:0/Child:1/ChildXForm",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "Properties/Translate/x",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
                                         "mID": "a",
                                         "Value": 5.0
                                     }
@@ -255,14 +252,40 @@
                             ]
                         },
                         {
-                            "TargetComponent": "./SphereEntity:1/Child:0/ChildXForm",
+                            "TargetComponent": "./SphereEntity:0/XForm",
                             "TargetAttributes": [
                                 {
-                                    "Path": "Properties/Rotate/x",
+                                    "Path": "Properties/Translate/x",
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "a_5",
-                                        "Value": 12.0
+                                        "mID": "instnceProp_float",
+                                        "Value": 2.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./SphereEntity:1/XForm",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instnceProp_float_3",
+                                        "Value": 4.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./SphereEntity:2/XForm",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instnceProp_float_4",
+                                        "Value": -3.0
                                     }
                                 }
                             ]
@@ -287,27 +310,6 @@
                         },
                         {
                             "TargetComponent": "./Child:0/ChildXForm",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "Properties/Scale/y",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "a_9",
-                                        "Value": 3.0
-                                    }
-                                },
-                                {
-                                    "Path": "Properties/Scale/z",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "a_8",
-                                        "Value": 1.0
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "TargetComponent": "./Child:1/ChildXForm",
                             "TargetAttributes": [
                                 {
                                     "Path": "Properties/Scale/y",
