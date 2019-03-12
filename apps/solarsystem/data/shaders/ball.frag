@@ -8,6 +8,7 @@ in mat4 passModelMatrix;				//< modelMatrix
 
 // uniform inputs
 uniform vec3 	inCameraPosition;		//< Camera World Space Position
+uniform vec3 ballColor;
 
 // output
 out vec4 out_Color;
@@ -23,7 +24,6 @@ const vec3		colorOne = vec3(0.784, 0.411, 0.411);
 const vec3		colorThr = vec3(0.176, 0.180, 0.258);
 const vec3		colorFor = vec3(0.321, 0.329, 0.415);
 const float		uvOffset = 0.015;
-const vec3		ballColor = vec3(0.784, 0.411, 0.411);
 
 // Shades a color based on a light, incoming normal and position should be in object space
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
