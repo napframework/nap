@@ -211,7 +211,7 @@ int ObjectItem::childIndex(const ObjectItem& childItem) const
 
 int ObjectItem::uniqueNameChildIndex(const ObjectItem& childItem) const
 {
-	QMap<std::__cxx11::string, int> nameCount;
+	QMap<std::string, int> nameCount;
 	for (int row = 0; row < rowCount(); row++)
 	{
 		auto otherChildItem = dynamic_cast<ObjectItem*>(child(row, 0));
