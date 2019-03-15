@@ -221,7 +221,7 @@ void napkin::EmbeddedPointerItem::populateChildren()
 												: value.get_value<nap::rtti::Object*>();
 	if (nullptr == pointee)
 	{
-		assert(false); // Embedded pointer always has a target?
+		nap::Logger::warn("Embedded pointer was null: %s", mPath.toString().c_str());
 		return;
 	}
 
