@@ -12,60 +12,78 @@ void Color::setColor(const QColor& col)
 	changed(mColor);
 }
 
-void Color::setRed(qreal red)
+void Color::setRed(qreal r)
 {
-	if (red == mColor.redF())
+	if (r == red())
 		return;
-	mColor.setRedF(red);
+	mColor.setRedF(r);
 	changed(mColor);
 }
 
-void Color::setGreen(qreal green)
+void Color::setGreen(qreal g)
 {
-	if (green == mColor.greenF())
+	if (g == green())
 		return;
-	mColor.setGreenF(green);
+	mColor.setGreenF(g);
 	changed(mColor);
 }
 
-void Color::setBlue(qreal blue)
+void Color::setBlue(qreal b)
 {
-	if (blue == mColor.blueF())
+	if (b == blue())
 		return;
-	mColor.setBlueF(blue);
+	mColor.setBlueF(b);
 	changed(mColor);
 }
 
-void Color::setAlpha(qreal alpha)
+void Color::setAlpha(qreal a)
 {
-	if (alpha == mColor.alphaF())
+	if (a == alpha())
 		return;
-	mColor.setAlphaF(alpha);
+	mColor.setAlphaF(a);
 	changed(mColor);
 }
 
-void Color::setHue(qreal hue)
+void Color::setHue(qreal h)
 {
-	if (hue == mColor.hueF())
+	if (h == hue())
 		return;
-	mColor.setHsvF(hue, mColor.hsvSaturationF(), mColor.valueF());
+	mColor.setHsvF(h, mColor.hsvSaturationF(), mColor.valueF());
 	changed(mColor);
 }
 
-void Color::setSaturation(qreal saturation)
+void Color::setSaturation(qreal s)
 {
-	if (saturation == mColor.saturationF())
+	if (s == saturation())
 		return;
-	mColor.setHsvF(mColor.hsvHueF(), saturation, mColor.valueF());
+	mColor.setHsvF(mColor.hsvHueF(), s, mColor.valueF());
 	changed(mColor);
 }
 
-void Color::setValue(qreal value)
+void Color::setValue(qreal v)
 {
-	if (value == mColor.valueF())
+	if (v == value())
 		return;
-	mColor.setHsvF(mColor.hsvHueF(), mColor.hsvSaturationF(), value);
+	mColor.setHsvF(mColor.hsvHueF(), mColor.hsvSaturationF(), v);
 	changed(mColor);
+}
+
+void Color::setHex(const QString& hexvalue)
+{
+	auto v = hexvalue;
+	if (!v.startsWith('#'))
+		v = '#' + v;
+
+	if (v == hex())
+		return;
+	mColor.setNamedColor(v);
+	changed(mColor);
+}
+
+QString Color::hex() const
+{
+	auto s = mColor.name();
+	return s.mid(1, s.length() - 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +132,8 @@ void ColorSwatch::setColor(const QColor& col)
 	update();
 }
 
-void ColorSwatch::paintEvent(QPaintEvent* event) {
+void ColorSwatch::paintEvent(QPaintEvent* event)
+{
 	QWidget::paintEvent(event);
 	QPainter painter;
 	painter.begin(this);
@@ -128,6 +147,11 @@ void ColorSwatch::paintEvent(QPaintEvent* event) {
 ColorPicker::ColorPicker() : QWidget()
 {
 	setLayout(&mLayout);
+
+	auto font = mHexEdit.font();
+	font.setFamily("monospace");
+	mHexEdit.setFont(font);
+
 	int row = 0;
 
 	mLayout.addWidget(&mColorSwatch, row, 0);
@@ -161,6 +185,10 @@ ColorPicker::ColorPicker() : QWidget()
 	mLayout.addWidget(&mSliderValue, row, 1);
 	++row;
 
+	mLayout.addWidget(new QLabel("Hex"), row, 0);
+	mLayout.addWidget(&mHexEdit, row, 1);
+	++row;
+
 	mLayout.addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding), row, 1);
 
 	connect(&mColor, &Color::changed, this, &ColorPicker::onColorChanged);
@@ -172,6 +200,7 @@ ColorPicker::ColorPicker() : QWidget()
 	connect(&mSliderHue, &GradientSlider::changed, &mColor, &Color::setHue);
 	connect(&mSliderSaturation, &GradientSlider::changed, &mColor, &Color::setSaturation);
 	connect(&mSliderValue, &GradientSlider::changed, &mColor, &Color::setValue);
+	connect(&mHexEdit, &QLineEdit::editingFinished, [this]() { mColor.setHex(mHexEdit.text().trimmed()); });
 
 	setColor(QColor("#F80"));
 }
@@ -192,4 +221,6 @@ void ColorPicker::onColorChanged(const QColor col)
 	mSliderHue.setValue(mColor.hue());
 	mSliderSaturation.setValue(mColor.saturation());
 	mSliderValue.setValue(mColor.value());
+
+	mHexEdit.setText(mColor.hex());
 }

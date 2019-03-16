@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QSlider>
 #include <QPainter>
+#include <QLineEdit>
 
 namespace nap
 {
@@ -22,19 +23,22 @@ namespace nap
 			QColor color() const { return mColor; }
 
 			qreal red() const { return mColor.redF(); }
-			void setRed(qreal red);
+			void setRed(qreal r);
 			qreal green() const { return mColor.greenF(); }
 			void setGreen(qreal green);
 			qreal blue() const { return mColor.blueF(); }
-			void setBlue(qreal blue);
+			void setBlue(qreal b);
 			qreal alpha() const { return mColor.alphaF(); }
-			void setAlpha(qreal alpha);
+			void setAlpha(qreal a);
 			qreal hue() const { return mColor.hsvHueF(); }
 			void setHue(qreal hue);
 			qreal saturation() const { return mColor.hsvSaturationF(); }
 			void setSaturation(qreal saturation);
 			qreal value() const { return mColor.valueF(); }
-			void setValue(qreal value);
+			void setValue(qreal v);
+
+			void setHex(const QString& hexvalue);
+			QString hex() const;
 
 		Q_SIGNALS:
 			void changed(QColor col);
@@ -105,6 +109,7 @@ namespace nap
 			GradientSlider mSliderSaturation;
 			GradientSlider mSliderValue;
 
+			QLineEdit mHexEdit;
 		};
 	}
 }
