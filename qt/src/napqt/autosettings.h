@@ -93,7 +93,7 @@ namespace nap
 		class WidgetStorerBase
 		{
 		public:
-			~WidgetStorerBase() = default;
+			virtual ~WidgetStorerBase() = default;
 
 			virtual void storeWidget(const QWidget& widget, const QString& key, QSettings& s) const = 0;
 			virtual void restoreWidget(QWidget& widget, const QString& key, const QSettings& s) const = 0;
@@ -111,7 +111,7 @@ namespace nap
 		{
 		public:
 			WidgetStorer() = default;
-			virtual ~WidgetStorer() {}
+			~WidgetStorer() override = default;
 
 			/**
 			 * Store a widget.
@@ -131,14 +131,14 @@ namespace nap
 
 			void storeWidget(const QWidget& widget, const QString& key, QSettings& s) const override
 			{
-				const T* w = dynamic_cast<const T*>(&widget);
+				auto w = dynamic_cast<const T*>(&widget);
 				assert(w);
 				store(*w, key, s);
 			}
 
 			void restoreWidget(QWidget& widget, const QString& key, const QSettings& s) const override
 			{
-				T* w = dynamic_cast<T*>(&widget);
+				auto w = dynamic_cast<T*>(&widget);
 				assert(w);
 				restore(*w, key, s);
 			}
