@@ -6,6 +6,7 @@
 #include <QSlider>
 #include <QPainter>
 #include <QLineEdit>
+#include <QDoubleSpinBox>
 
 namespace nap
 {
@@ -60,8 +61,11 @@ namespace nap
 
 		private:
 			void onSliderChanged(int value);
+			void onSpinboxChanged(double v);
 
+			qreal mValue = 0;
 			QHBoxLayout mLayout;
+			QDoubleSpinBox mSpinBox;
 			QSlider mSlider;
 			const int mMaxValue = 2048; // WARNING: this has effect on the apparent precision of the slider
 		};

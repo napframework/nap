@@ -1,4 +1,7 @@
+
 #include "colorpicker.h"
+
+#include <QtGui>
 
 using namespace nap::qt;
 
@@ -92,30 +95,49 @@ GradientSlider::GradientSlider() : QWidget()
 {
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	setLayout(&mLayout);
-	mSlider.setOrientation(Qt::Horizontal);
+	mLayout.addWidget(&mSpinBox);
 	mLayout.addWidget(&mSlider);
 
+	mSlider.setOrientation(Qt::Horizontal);
 	mSlider.setRange(0, mMaxValue);
 
+	mSpinBox.setSingleStep(0.01);
+
 	connect(&mSlider, &QSlider::valueChanged, this, &GradientSlider::onSliderChanged);
+	connect(&mSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &GradientSlider::onSpinboxChanged);
 }
 
 qreal GradientSlider::value() const
 {
-	return (qreal) mSlider.value() / (qreal) mMaxValue;
+	return mValue;
 }
 
 void GradientSlider::setValue(qreal value)
 {
-	int intVal = qRound(value * mMaxValue);
-	if (mSlider.value() == intVal)
+	if (mValue == value)
 		return;
-	mSlider.setValue(intVal);
+
+	mValue = value;
+
+	mSlider.blockSignals(true);
+	mSlider.setValue(qRound(mValue * mMaxValue));
+	mSlider.blockSignals(false);
+
+	mSpinBox.blockSignals(true);
+	mSpinBox.setValue(mValue);
+	mSpinBox.blockSignals(false);
+
+	changed(mValue);
 }
 
 void GradientSlider::onSliderChanged(int v)
 {
-	changed(value());
+	setValue((qreal) mSlider.value() / (qreal) mMaxValue);
+}
+
+void GradientSlider::onSpinboxChanged(double v)
+{
+	setValue(v);
 }
 
 
@@ -147,6 +169,8 @@ void ColorSwatch::paintEvent(QPaintEvent* event)
 ColorPicker::ColorPicker() : QWidget()
 {
 	setLayout(&mLayout);
+	mLayout.setHorizontalSpacing(2);
+	mLayout.setVerticalSpacing(2);
 
 	auto font = mHexEdit.font();
 	font.setFamily("monospace");
