@@ -61,9 +61,11 @@ namespace nap
 			void paintEvent(QPaintEvent* event) override;
 
 		private:
-			int margin = 20;
-			QColor mColor;
 			QRect fitSquare(const QRect& rec) const;
+
+			int margin = 20;
+			int mHandleRadius = 8;
+			QColor mColor;
 		};
 
 		class GradientSlider : public QWidget

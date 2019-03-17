@@ -123,6 +123,7 @@ void ColorCircle::paintEvent(QPaintEvent* event)
 	const auto rec = rect().adjusted(0, 0, -1, -1);
 
 	QRect cRec = fitSquare(rec);
+	qreal cRadius = cRec.height() / 2.0;
 
 	// Color ring
 	QConicalGradient grad;
@@ -158,7 +159,7 @@ void ColorCircle::paintEvent(QPaintEvent* event)
 
 	// Transition to center (desaturation)
 	QRadialGradient radGrad;
-	radGrad.setRadius(cRec.height() / 2.0);
+	radGrad.setRadius(cRadius);
 	radGrad.setCenter(cRec.center());
 	radGrad.setFocalPoint(cRec.center());
 	radGrad.setStops({{0, QColor::fromRgbF(val, val, val, 1)},
@@ -166,6 +167,30 @@ void ColorCircle::paintEvent(QPaintEvent* event)
 
 	ptr.setBrush(radGrad);
 	ptr.drawEllipse(cRec);
+
+	// Draw color handle
+	{
+		qreal r = cRadius - margin / 2.0;
+		qreal a = -mColor.hsvHueF() * M_PI * 2;
+		qreal px = cRec.center().x() + qCos(a) * r;
+		qreal py = cRec.center().y() + qSin(a) * r;
+		QRectF hRec(px - mHandleRadius, py - mHandleRadius, mHandleRadius * 2, mHandleRadius * 2);
+		ptr.setBrush(Qt::white);
+		ptr.setPen(Qt::black);
+		ptr.drawEllipse(hRec);
+	}
+
+	// Draw center color handle
+	{
+		qreal r = (cRadius - margin - margin / 2.0) * mColor.saturationF();
+		qreal a = -mColor.hsvHueF() * M_PI * 2;
+		qreal px = cRec.center().x() + qCos(a) * r;
+		qreal py = cRec.center().y() + qSin(a) * r;
+		QRectF hRec(px - mHandleRadius, py - mHandleRadius, mHandleRadius * 2, mHandleRadius * 2);
+		ptr.setBrush(Qt::white);
+		ptr.setPen(Qt::black);
+		ptr.drawEllipse(hRec);
+	}
 
 	ptr.end();
 }
@@ -405,6 +430,8 @@ ColorPicker::ColorPicker() : QWidget()
 
 	mLayout.addWidget(new QLabel("A"), row, 0);
 	mLayout.addWidget(&mSliderAlpha, row, 1);
+	mSliderAlpha.setGradientStops({{0, Qt::black},
+								   {1, Qt::white}});
 	++row;
 
 	mLayout.addWidget(new QLabel("H"), row, 0);
