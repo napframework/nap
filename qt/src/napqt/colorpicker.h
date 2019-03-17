@@ -48,25 +48,74 @@ namespace nap
 			QColor mColor;
 		};
 
+		class ColorCircle : public QWidget
+		{
+		Q_OBJECT
+		public:
+			ColorCircle();
+
+			void setColor(const QColor& col);
+			QColor color() const;
+
+		protected:
+			void paintEvent(QPaintEvent* event) override;
+
+		private:
+			int margin = 20;
+			QColor mColor;
+			QRect fitSquare(const QRect& rec) const;
+		};
+
 		class GradientSlider : public QWidget
 		{
-			Q_OBJECT
+		Q_OBJECT
 		public:
 			GradientSlider();
+
+			void setGradientStops(const QGradientStops& stops);
+			void setValue(qreal v);
+			qreal value();
+
+			QSize sizeHint() const override;
+
+		Q_SIGNALS:
+			void valueChanged(qreal value);
+		protected:
+			void mousePressEvent(QMouseEvent* event) override;
+			void mouseMoveEvent(QMouseEvent* event) override;
+			void paintEvent(QPaintEvent* event) override;
+
+		private:
+			void updateCursor(QPoint mousePos);
+			QRectF hotArea() const;
+			int leftMargin() const;
+			int rightMargin() const;
+			int mCursorWidth = 4;
+			int mVertMargin = 2;
+			qreal mValue = 0;
+			QGradient mGradient;
+		};
+
+		class ChannelSlider : public QWidget
+		{
+		Q_OBJECT
+		public:
+			ChannelSlider();
 			qreal value() const;
 			void setValue(qreal value);
+			void setGradientStops(const QGradientStops& stops);
 
 		Q_SIGNALS:
 			void changed(qreal value);
 
 		private:
-			void onSliderChanged(int value);
+			void onSliderChanged(qreal value);
 			void onSpinboxChanged(double v);
 
 			qreal mValue = 0;
 			QHBoxLayout mLayout;
 			QDoubleSpinBox mSpinBox;
-			QSlider mSlider;
+			GradientSlider mSlider;
 			const int mMaxValue = 2048; // WARNING: this has effect on the apparent precision of the slider
 		};
 
@@ -79,6 +128,7 @@ namespace nap
 
 		protected:
 			void paintEvent(QPaintEvent* event) override;
+
 		private:
 			QColor mColor;
 		};
@@ -89,8 +139,8 @@ namespace nap
 		public:
 			ColorPicker();
 
-		QColor color() const { return mColor.color(); }
-		void setColor(const QColor& col);
+			QColor color() const { return mColor.color(); }
+			void setColor(const QColor& col);
 
 		Q_SIGNALS:
 			void colorChanged();
@@ -104,14 +154,16 @@ namespace nap
 			Color mColor;
 
 			ColorSwatch mColorSwatch;
-			GradientSlider mSliderRed;
-			GradientSlider mSliderGreen;
-			GradientSlider mSliderBlue;
-			GradientSlider mSliderAlpha;
+			ColorCircle mColorCircle;
 
-			GradientSlider mSliderHue;
-			GradientSlider mSliderSaturation;
-			GradientSlider mSliderValue;
+			ChannelSlider mSliderRed;
+			ChannelSlider mSliderGreen;
+			ChannelSlider mSliderBlue;
+			ChannelSlider mSliderAlpha;
+
+			ChannelSlider mSliderHue;
+			ChannelSlider mSliderSaturation;
+			ChannelSlider mSliderValue;
 
 			QLineEdit mHexEdit;
 		};

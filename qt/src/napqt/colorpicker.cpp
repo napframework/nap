@@ -91,28 +91,232 @@ QString Color::hex() const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+ColorCircle::ColorCircle() : QWidget()
+{
+	setMinimumSize(300, 300);
+}
+
+void ColorCircle::setColor(const QColor& col)
+{
+	if (mColor == col)
+		return;
+	mColor = col;
+	update();
+}
+
+QColor ColorCircle::color() const
+{
+	return mColor;
+}
+
+void ColorCircle::paintEvent(QPaintEvent* event)
+{
+	QPainter ptr;
+	ptr.begin(this);
+	ptr.setRenderHint(QPainter::Antialiasing, true);
+
+	// Debug
+	ptr.fillRect(rect(), Qt::gray);
+
+	ptr.setPen(Qt::NoPen);
+
+	const auto rec = rect().adjusted(0, 0, -1, -1);
+
+	QRect cRec = fitSquare(rec);
+
+	// Color ring
+	QConicalGradient grad;
+	grad.setCenter(cRec.center());
+	grad.setStops({{0.0,       QColor::fromHsvF(0.0, 1, 1)},
+				   {0.5 / 3.0, QColor::fromHsvF(0.5 / 3.0, 1, 1)},
+				   {1.0 / 3.0, QColor::fromHsvF(1.0 / 3.0, 1, 1)},
+				   {1.5 / 3.0, QColor::fromHsvF(1.5 / 3.0, 1, 1)},
+				   {2.0 / 3.0, QColor::fromHsvF(2.0 / 3.0, 1, 1)},
+				   {2.5 / 3.0, QColor::fromHsvF(2.5 / 3.0, 1, 1)},
+				   {1.0,       QColor::fromHsvF(0.0, 1, 1)},
+				  });
+
+	ptr.setBrush(grad);
+	ptr.drawEllipse(cRec);
+
+
+	// Inner conical gradient
+	cRec.adjust(margin, margin, -margin, -margin);
+	qreal val = mColor.valueF();
+	grad.setStops({{0.0,       QColor::fromHsvF(0.0, 1, val)},
+				   {0.5 / 3.0, QColor::fromHsvF(0.5 / 3.0, 1, val)},
+				   {1.0 / 3.0, QColor::fromHsvF(1.0 / 3.0, 1, val)},
+				   {1.5 / 3.0, QColor::fromHsvF(1.5 / 3.0, 1, val)},
+				   {2.0 / 3.0, QColor::fromHsvF(2.0 / 3.0, 1, val)},
+				   {2.5 / 3.0, QColor::fromHsvF(2.5 / 3.0, 1, val)},
+				   {1.0,       QColor::fromHsvF(0.0, 1, val)},
+				  });
+	ptr.setBrush(grad);
+	ptr.drawEllipse(cRec);
+
+	ptr.setPen(QPen(palette().window().color()));
+
+	// Transition to center (desaturation)
+	QRadialGradient radGrad;
+	radGrad.setRadius(cRec.height() / 2.0);
+	radGrad.setCenter(cRec.center());
+	radGrad.setFocalPoint(cRec.center());
+	radGrad.setStops({{0, QColor::fromRgbF(val, val, val, 1)},
+					  {1, QColor::fromRgbF(val, val, val, 0)}});
+
+	ptr.setBrush(radGrad);
+	ptr.drawEllipse(cRec);
+
+	ptr.end();
+}
+
+
+QRect ColorCircle::fitSquare(const QRect& rec) const
+{
+	qreal ratio = (qreal) rec.width() / (qreal) rec.height();
+	auto cRec = rec;
+	if (ratio > 1)
+	{
+		cRec.setX(rec.left() + (rec.width() / 2 - rec.height() / 2));
+		cRec.setWidth(rec.height());
+	}
+	else
+	{
+		cRec.setY(rec.top() + (rec.height() / 2 - rec.width() / 2));
+		cRec.setHeight(rec.width());
+	};
+	return cRec;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 GradientSlider::GradientSlider() : QWidget()
+{
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+	mGradient = QLinearGradient(0, 0, 1, 0);
+	mGradient.setCoordinateMode(QGradient::StretchToDeviceMode);
+	setGradientStops({{0, Qt::red},
+					  {1, Qt::yellow}});
+}
+
+void GradientSlider::setGradientStops(const QGradientStops& stops)
+{
+	mGradient.setStops(stops);
+}
+
+void GradientSlider::setValue(qreal v)
+{
+	if (mValue == v)
+		return;
+	mValue = v;
+	update();
+	valueChanged(mValue);
+}
+
+qreal GradientSlider::value()
+{
+	return mValue;
+}
+
+void GradientSlider::paintEvent(QPaintEvent* event)
+{
+	QPainter ptr;
+	ptr.begin(this);
+
+	const auto arec = hotArea();
+
+//	// debug
+//	ptr.fillRect(rect(), Qt::magenta);
+
+	// draw gradient box
+	QBrush b(mGradient);
+	ptr.fillRect(arec, b);
+	ptr.setPen(QPen(Qt::black));
+	ptr.drawRect(hotArea());
+
+	// draw cursor
+	int intVal = qFloor(mValue * hotArea().width());
+	QRect cursorRect(intVal, rect().top(), mCursorWidth, rect().height() - 1);
+	ptr.fillRect(cursorRect, Qt::white);
+	ptr.drawRect(cursorRect);
+
+	ptr.end();
+}
+QSize GradientSlider::sizeHint() const
+{
+	return {10, 10};
+}
+
+void GradientSlider::mousePressEvent(QMouseEvent* event)
+{
+	if (event->buttons() == Qt::LeftButton)
+	{
+		updateCursor(event->pos());
+		event->accept();
+		return;
+	}
+	QWidget::mousePressEvent(event);
+}
+
+void GradientSlider::mouseMoveEvent(QMouseEvent* event)
+{
+	if (event->buttons() == Qt::LeftButton)
+	{
+		updateCursor(event->pos());
+		event->accept();
+		return;
+	}
+	QWidget::mouseMoveEvent(event);
+}
+
+void GradientSlider::updateCursor(QPoint mousePos)
+{
+
+	int lm = leftMargin();
+	int x = mousePos.x() - lm;
+	qreal value = qBound(0.0, (qreal) x / (qreal) hotArea().width(), 1.0);
+	setValue(value);
+	update();
+}
+
+QRectF GradientSlider::hotArea() const
+{
+	return rect().adjusted(leftMargin(), mVertMargin, -rightMargin() - 1, -mVertMargin - mVertMargin + 1);
+}
+
+int GradientSlider::leftMargin() const
+{
+	return qFloor(mCursorWidth / 2.0);
+}
+
+int GradientSlider::rightMargin() const
+{
+	return qCeil(mCursorWidth / 2.0);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ChannelSlider::ChannelSlider() : QWidget()
 {
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	setLayout(&mLayout);
 	mLayout.addWidget(&mSpinBox);
 	mLayout.addWidget(&mSlider);
 
-	mSlider.setOrientation(Qt::Horizontal);
-	mSlider.setRange(0, mMaxValue);
-
 	mSpinBox.setSingleStep(0.01);
 
-	connect(&mSlider, &QSlider::valueChanged, this, &GradientSlider::onSliderChanged);
-	connect(&mSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &GradientSlider::onSpinboxChanged);
+	connect(&mSlider, &GradientSlider::valueChanged, this, &ChannelSlider::onSliderChanged);
+	connect(&mSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &ChannelSlider::onSpinboxChanged);
 }
 
-qreal GradientSlider::value() const
+qreal ChannelSlider::value() const
 {
 	return mValue;
 }
 
-void GradientSlider::setValue(qreal value)
+void ChannelSlider::setValue(qreal value)
 {
 	if (mValue == value)
 		return;
@@ -120,7 +324,7 @@ void GradientSlider::setValue(qreal value)
 	mValue = value;
 
 	mSlider.blockSignals(true);
-	mSlider.setValue(qRound(mValue * mMaxValue));
+	mSlider.setValue(mValue);
 	mSlider.blockSignals(false);
 
 	mSpinBox.blockSignals(true);
@@ -130,16 +334,21 @@ void GradientSlider::setValue(qreal value)
 	changed(mValue);
 }
 
-void GradientSlider::onSliderChanged(int v)
+void ChannelSlider::setGradientStops(const QGradientStops& stops)
 {
-	setValue((qreal) mSlider.value() / (qreal) mMaxValue);
+	mSlider.setGradientStops(stops);
+	update();
 }
 
-void GradientSlider::onSpinboxChanged(double v)
+void ChannelSlider::onSliderChanged(qreal v)
 {
 	setValue(v);
 }
 
+void ChannelSlider::onSpinboxChanged(double v)
+{
+	setValue(v);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -179,6 +388,7 @@ ColorPicker::ColorPicker() : QWidget()
 	int row = 0;
 
 	mLayout.addWidget(&mColorSwatch, row, 0);
+	mLayout.addWidget(&mColorCircle, row, 1);
 	++row;
 
 	mLayout.addWidget(new QLabel("R"), row, 0);
@@ -217,13 +427,13 @@ ColorPicker::ColorPicker() : QWidget()
 
 	connect(&mColor, &Color::changed, this, &ColorPicker::onColorChanged);
 
-	connect(&mSliderRed, &GradientSlider::changed, &mColor, &Color::setRed);
-	connect(&mSliderGreen, &GradientSlider::changed, &mColor, &Color::setGreen);
-	connect(&mSliderBlue, &GradientSlider::changed, &mColor, &Color::setBlue);
-	connect(&mSliderAlpha, &GradientSlider::changed, &mColor, &Color::setAlpha);
-	connect(&mSliderHue, &GradientSlider::changed, &mColor, &Color::setHue);
-	connect(&mSliderSaturation, &GradientSlider::changed, &mColor, &Color::setSaturation);
-	connect(&mSliderValue, &GradientSlider::changed, &mColor, &Color::setValue);
+	connect(&mSliderRed, &ChannelSlider::changed, &mColor, &Color::setRed);
+	connect(&mSliderGreen, &ChannelSlider::changed, &mColor, &Color::setGreen);
+	connect(&mSliderBlue, &ChannelSlider::changed, &mColor, &Color::setBlue);
+	connect(&mSliderAlpha, &ChannelSlider::changed, &mColor, &Color::setAlpha);
+	connect(&mSliderHue, &ChannelSlider::changed, &mColor, &Color::setHue);
+	connect(&mSliderSaturation, &ChannelSlider::changed, &mColor, &Color::setSaturation);
+	connect(&mSliderValue, &ChannelSlider::changed, &mColor, &Color::setValue);
 	connect(&mHexEdit, &QLineEdit::editingFinished, [this]() { mColor.setHex(mHexEdit.text().trimmed()); });
 
 	setColor(QColor("#F80"));
@@ -238,6 +448,16 @@ void ColorPicker::onColorChanged(const QColor col)
 {
 	mColorSwatch.setColor(col);
 
+	mColorCircle.blockSignals(true);
+	mSliderRed.blockSignals(true);
+	mSliderGreen.blockSignals(true);
+	mSliderBlue.blockSignals(true);
+	mSliderAlpha.blockSignals(true);
+	mSliderHue.blockSignals(true);
+	mSliderSaturation.blockSignals(true);
+	mSliderValue.blockSignals(true);
+
+	mColorCircle.setColor(mColor.color());
 	mSliderRed.setValue(mColor.red());
 	mSliderGreen.setValue(mColor.green());
 	mSliderBlue.setValue(mColor.blue());
@@ -245,6 +465,39 @@ void ColorPicker::onColorChanged(const QColor col)
 	mSliderHue.setValue(mColor.hue());
 	mSliderSaturation.setValue(mColor.saturation());
 	mSliderValue.setValue(mColor.value());
+
+	mColorCircle.blockSignals(false);
+	mSliderRed.blockSignals(false);
+	mSliderGreen.blockSignals(false);
+	mSliderBlue.blockSignals(false);
+	mSliderAlpha.blockSignals(false);
+	mSliderHue.blockSignals(false);
+	mSliderSaturation.blockSignals(false);
+	mSliderValue.blockSignals(false);
+
+	mSliderRed.setGradientStops({{0, QColor::fromRgbF(0, mColor.green(), mColor.blue())},
+								 {1, QColor::fromRgbF(1, mColor.green(), mColor.blue())}});
+
+	mSliderGreen.setGradientStops({{0, QColor::fromRgbF(mColor.red(), 0, mColor.blue())},
+								   {1, QColor::fromRgbF(mColor.red(), 1, mColor.blue())}});
+
+	mSliderBlue.setGradientStops({{0, QColor::fromRgbF(mColor.red(), mColor.green(), 0)},
+								  {1, QColor::fromRgbF(mColor.red(), mColor.green(), 1)}});
+
+
+	mSliderHue.setGradientStops({{0.0,       QColor::fromHsvF(0.0, mColor.saturation(), mColor.value())},
+								 {0.5 / 3.0, QColor::fromHsvF(0.5 / 3.0, mColor.saturation(), mColor.value())},
+								 {1.0 / 3.0, QColor::fromHsvF(1.0 / 3.0, mColor.saturation(), mColor.value())},
+								 {1.5 / 3.0, QColor::fromHsvF(1.5 / 3.0, mColor.saturation(), mColor.value())},
+								 {2.0 / 3.0, QColor::fromHsvF(2.0 / 3.0, mColor.saturation(), mColor.value())},
+								 {2.5 / 3.0, QColor::fromHsvF(2.5 / 3.0, mColor.saturation(), mColor.value())},
+								 {1.0,       QColor::fromHsvF(0.0, mColor.saturation(), mColor.value())}});
+
+	mSliderSaturation.setGradientStops({{0, QColor::fromHsvF(mColor.hue(), 0, mColor.value())},
+										{1, QColor::fromHsvF(mColor.hue(), 1, mColor.value())}});
+
+	mSliderValue.setGradientStops({{0, QColor::fromHsvF(mColor.hue(), mColor.saturation(), 0)},
+								   {1, QColor::fromHsvF(mColor.hue(), mColor.saturation(), 1)}});
 
 	mHexEdit.setText(mColor.hex());
 }
