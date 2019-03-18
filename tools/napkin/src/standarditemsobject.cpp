@@ -37,7 +37,7 @@ const PropertyPath ObjectItem::propertyPath() const
 	while (parentEntity)
 	{
 		auto thisID = QString::fromStdString(thisEntity->getObject()->mID);
-		if (auto compItem = dynamic_cast<const ComponentItem*>(thisEntity))
+		if (dynamic_cast<const ComponentItem*>(thisEntity))
 		{
 			// TODO: Remove this case if multiple entities of the same type/name may be added to entities
 			path.insert(0, thisID);
@@ -45,7 +45,6 @@ const PropertyPath ObjectItem::propertyPath() const
 		else
 		{
 			auto thisIndex = QString::number(parentEntity->uniqueNameChildIndex(*thisEntity));
-
 			auto id = QString("%1:%2").arg(thisID, thisIndex);
 			path.insert(0, id);
 		}

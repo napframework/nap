@@ -85,7 +85,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 		auto pointee = doc->addObject<TestResource>();
 		REQUIRE(pointee != nullptr);
 
-		PropertyPath respointers(*resource, "ResPointers");
+		PropertyPath respointers(*resource, nap::rtti::Path::fromString("ResPointers"));
 		REQUIRE(respointers.isValid());
 		REQUIRE(respointers.getArrayLength() == 0);
 
@@ -112,7 +112,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 		REQUIRE(resource != nullptr);
 
 		// Set up an array with four elements
-		PropertyPath pointers(*resource, "ResPointers");
+		PropertyPath pointers(*resource, nap::rtti::Path::fromString("ResPointers"));
 		REQUIRE(pointers.isValid());
 		doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));
 		doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));

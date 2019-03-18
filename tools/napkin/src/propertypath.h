@@ -41,6 +41,9 @@ namespace napkin
 
 		/**
 		 * Create a PropertyPath to an object
+		 * 	If the instPath represents a path to a property, treat it as such,
+		 * 	otherwise assume it's a path to an instance Entity
+		 *
 		 * @param obj The object to create the path to.
 		 * @param instPath The path to the instance (in case of a child entity chain)
 		 */
@@ -299,7 +302,7 @@ namespace napkin
 		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
 		nap::rtti::Object* mObject = nullptr; // the object on which the property exists
 		nap::rtti::Path mPath; // the path to the property on the object
-		std::string mInstancePath; // path to the component if it is one
+		std::string mCompInstancePath; // path to the component if it is one
 	};
 }
 

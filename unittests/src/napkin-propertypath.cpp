@@ -214,7 +214,7 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 		doc->addEntityToScene(*scene, entityA);
 
 		REQUIRE(doc->getRootEntities(*scene, entityA).size() == 1);
-
+//
 //		PropertyPath parentInstancePath(*rootEntity, *compABA, "Int");
 //		REQUIRE(parentInstancePath.isValid());
 //		REQUIRE(parentInstancePath.getType().is_derived_from<int>());
@@ -224,9 +224,9 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 //		REQUIRE(instancePath.isValid());
 //		REQUIRE(instancePath.getType().is_derived_from<float>());
 //		instancePath.setValue(floatVal);
-//
-//		doc->setFilename(QString::fromStdString(tempFilename));
-//		REQUIRE(ctx.saveDocument());
+
+		doc->setFilename(QString::fromStdString(tempFilename));
+		REQUIRE(ctx.saveDocument());
 
 		AppContext::destroy();
 	}
