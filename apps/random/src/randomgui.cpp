@@ -99,6 +99,7 @@ namespace nap
 		if (ImGui::CollapsingHeader("Clouds", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::SliderFloat("Cloud Temperature", updateMaterial.getSunCloudsTemperaturePtr(), 0.0, 1.0);
+            ImGui::SliderFloat("Cloud Intensity", updateMaterial.getSunCloudsIntensityPtr(), 0.0, 1.0);
 			ImGui::SliderFloat("Cloud Ratio", updateMaterial.getSunCloudsCloudRatioPtr(), 0.0, 1.0);
 			ImGui::SliderFloat("Cloud Fill", updateMaterial.getSunCloudsCloudFillPtr(), 0.0, 1.0);
 			ImGui::SliderFloat("Light Fill", updateMaterial.getSunCloudsLightFillPtr(), 0.0, 1.0);
@@ -161,6 +162,7 @@ namespace nap
 		{
 			UpdateMaterialComponentInstance& updateMaterial = mApp.mController->getComponent<UpdateMaterialComponentInstance>();
 			ImGui::SliderFloat("Static Temperature", updateMaterial.getStaticTemperaturePtr(), 0.0f, 1.0f);
+            ImGui::SliderFloat("Static Intensity", updateMaterial.getStaticIntensityPtr(), 0.0f, 1.0f);
 		}
 	}
 

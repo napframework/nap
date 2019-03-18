@@ -107,6 +107,7 @@ namespace nap
 		float*		getSunCloudsContrastPtr();
 		float*		getSunCloudsScalePtr();
 		float*		getSunCloudsTemperaturePtr();
+        float*      getSunCloudsIntensityPtr();
 		float*		getSunCloudsCloudRatioPtr();
 		float*		getSunCloudsCloudFillPtr();
 		float*		getSunCloudsLightFillPtr();
@@ -117,6 +118,7 @@ namespace nap
 		float*		getSunGlareTemperaturePtr();
 		
 		float*		getStaticTemperaturePtr();
+        float*      getStaticIntensityPtr();
 		
 		int*		getPartyWaveCountPtr();
 		float*		getPartyWaveLengthPtr();

@@ -9,6 +9,7 @@ uniform float uRotation;
 uniform float uContrast;
 uniform float uScale;
 uniform float uTemperature;
+uniform float uIntensity;
 uniform float uCloudRatio;
 uniform float uCloudFill;
 uniform float uLightFill;
@@ -143,6 +144,6 @@ void main()
 		: uLightFill >= 1.0 ? 1.0 : min(1.0, uCloudRatio + (noise - uCloudRatio) / (1.0 - uLightFill));
 
 	// set fragment color
-	float intensity = (1.0 - uContrast) + uContrast * noise;
+	float intensity = uIntensity * ((1.0 - uContrast) + uContrast * noise);
 	out_Color =  vec4(intensity * uTemperature, intensity * (1.0 - uTemperature), 0.0, 1.0);
 }

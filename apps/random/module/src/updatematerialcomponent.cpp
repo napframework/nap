@@ -265,6 +265,12 @@ namespace nap
 	}
 
 
+    float* UpdateMaterialComponentInstance::getSunCloudsIntensityPtr()
+    {
+        return &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uIntensity").mValue;
+    }
+    
+    
 	float* UpdateMaterialComponentInstance::getSunCloudsCloudRatioPtr()
 	{
 		return &mSunCloudsMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uCloudRatio").mValue;
@@ -313,6 +319,12 @@ namespace nap
 	}
 
 
+    float* UpdateMaterialComponentInstance::getStaticIntensityPtr()
+    {
+        return &mStaticMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("uIntensity").mValue;
+    }
+    
+    
 	int* UpdateMaterialComponentInstance::getPartyWaveCountPtr()
 	{
 		return &mPartyMeshComponent->getMaterialInstance().getOrCreateUniform<nap::UniformInt>("uWaveCount").mValue;
