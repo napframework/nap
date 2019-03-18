@@ -104,7 +104,7 @@ namespace napkin
 			outValue.setValue(QString::fromStdString(value.to_string()));
 			return true;
 		}
-
+		nap::Logger::error("Could not convert to QVariant: %s", type.get_name().data());
 		return false;
 	}
 
