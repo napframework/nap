@@ -4,8 +4,11 @@
 #include <entity.h>
 #include <nap/core.h>
 #include <propertypath.h>
-#include <QtCore/QString>
-#include <QtWidgets/QUndoCommand>
+
+#include <QString>
+#include <QUndoCommand>
+#include <QMap>
+
 #include <rtti/deserializeresult.h>
 
 namespace napkin
@@ -174,9 +177,8 @@ namespace napkin
 		 * 	In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::Object*
-		addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject = true,
-				const std::string& name = std::string());
+		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent,
+									 bool selectNewObject = true, const std::string& name = std::string());
 
 		/**
 		 * Add an Entity to a parent Entity, remove from previous parent if necessary
