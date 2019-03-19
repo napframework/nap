@@ -29,9 +29,11 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		ResourcePtr<Parameter> findParameter(const std::string& name) const;
+		ResourcePtr<ParameterContainer> findChild(const std::string& name) const;
 
 	public:
-		std::vector<ResourcePtr<Parameter>> mParameters;
+		std::vector<ResourcePtr<Parameter>>				mParameters;
+		std::vector<ResourcePtr<ParameterContainer>>	mChildren;
 	};
 
 	/**
@@ -83,11 +85,14 @@ namespace nap
 		bool loadPreset(const std::string& presetFile, utility::ErrorState& errorState);
 		bool savePreset(const std::string& presetFile, utility::ErrorState& errorState);
 	
+		bool hasParameters() const { return mRootContainer != nullptr; }
+		ParameterContainer& getParameters() { assert(hasParameters()); return *mRootContainer; }
+
 	protected:		
 		virtual void resourcesLoaded() override;
 
 	private:
-		void setParameters(const ParameterContainer& parameters);
+		void setParametersRecursive(const ParameterContainer& sourceParameters, ParameterContainer& destinationParameters);
 
 	private:
 		ResourcePtr<ParameterContainer> mRootContainer;

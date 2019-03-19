@@ -3,23 +3,29 @@
         {
             "Type": "nap::ParameterContainer",
 			"mID" : "Parameters",
-			"Parameters" :
-			[
-				{
-					"Type": "nap::ParameterFloat",
-					"mID": "CameraMovSpeed",
-					"Value" : 15.0,
-					"Minimum" : 0.0,
-					"Maximum" : 10.0
-				},
-				{
-					"Type": "nap::ParameterFloat",
-					"mID": "CameraRotSpeed",
-					"Value" : 0.0010000000474974514,
-					"Minimum" : 0.0,
-					"Maximum" : 10.0
-				}			
-			]
+            "Children" : [
+                {
+                    "Type": "nap::ParameterContainer",
+                    "mID": "Camera",
+                    "Parameters" :
+                    [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "CameraMovSpeed",
+                            "Value" : 15.0,
+                            "Minimum" : 0.0,
+                            "Maximum" : 10.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "CameraRotSpeed",
+                            "Value" : 0.0010000000474974514,
+                            "Minimum" : 0.0,
+                            "Maximum" : 10.0
+                        }           
+                    ]                    
+                }
+            ]
 		},
         {
             "Type": "nap::Entity",

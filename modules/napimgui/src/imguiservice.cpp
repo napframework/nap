@@ -384,6 +384,8 @@ namespace nap
 		style.Colors[ImGuiCol_PlotHistogramHovered]		= IMGUI_NAPHIGH;
 		style.Colors[ImGuiCol_TextSelectedBg]			= IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_ModalWindowDarkening]		= IMGUI_NAPMODAL;
+		style.Colors[ImGuiCol_Separator]				= IMGUI_NAPFRO3;
+		
 	}
 
 

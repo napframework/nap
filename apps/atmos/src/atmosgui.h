@@ -10,13 +10,14 @@ namespace nap
 {
 	// Forward Declares
 	class AtmosApp;
+	class ParameterGUI;
 
 	class AtmosGui final
 	{
 	public:
 		// Constructor
 		AtmosGui(AtmosApp& app);
-		virtual ~AtmosGui()					{ }
+		~AtmosGui();
 
 		/**
 		 * Initialize the various gui components
@@ -49,20 +50,9 @@ namespace nap
 		opengl::EPolygonMode getRenderMode() const			{ return mRenderMode; }
 
 	private:
-		void showPresets();
-		void HandleLoadPopup();
-		void HandleSaveAsPopup();
-		bool HandleNewPopup(std::string& outNewFilename);
-		void SavePresets();
-		void RestorePresets();
-
-	private:
 		AtmosApp&							mApp;				///< The actual atmos appliation we build the gui for
 		ParameterService&					mParameterService;
-		ParameterService::PresetFileList	mPresets;
-		ParameterService::PresetFileList	mPrevPresets;
-		int									mSelectedPresetIndex = -1;
-		int									mPrevSelectedPresetIndex = -1;
+		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;
 		DateTime							mDateTime;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };

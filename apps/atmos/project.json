@@ -5,6 +5,7 @@
         "mod_atmos",
         "mod_napapp",
         "mod_napimgui",
-		"mod_napparameter"
+		"mod_napparameter",
+		"mod_napparametergui"
     ]
 }
