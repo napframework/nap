@@ -301,14 +301,14 @@ napkin::PropertyPath napkin::PropertyPath::getParent() const
 	if (hasProperty())
 	{
 		if (mPropertyPath.size() > 1)
-			return {mObjectPath, PPath(mPropertyPath.begin(), mPropertyPath.end() - 2)};
+			return {mObjectPath, PPath(mPropertyPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1)};
 
 		if (mPropertyPath.size() == 1)
 			return {mObjectPath};
 	}
 
-	if (mObjectPath.size() > 2)
-		return {PPath(mObjectPath.begin(), mObjectPath.end() - 2)};
+	if (mObjectPath.size() >= 2)
+		return {PPath(mObjectPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1)};
 
 	return {};
 }
@@ -404,8 +404,7 @@ nap::rtti::Object* napkin::PropertyPath::getObject() const
 	if (mObjectPath.empty())
 		return nullptr;
 
-
-	return AppContext::get().getDocument()->getObject(mObjectPath[mObjectPath.size() - 1]);
+	return AppContext::get().getDocument()->getObject(mObjectPath.back().mID);
 }
 
 Path napkin::PropertyPath::getPath() const
@@ -621,14 +620,10 @@ std::vector<napkin::PropertyPath> napkin::PropertyPath::getProperties(int flags)
 
 int napkin::PropertyPath::getInstanceChildEntityIndex() const
 {
-	// Take the previously set instance path and extract the index from the string
-	auto path = getComponentInstancePath();
-	auto basename = nap::utility::splitString(path, '/').back();
-	auto parts = nap::utility::splitString(basename, ':');
-	assert(parts.size() == 2);
-	auto idxstring = parts.back();
-	std::string::size_type sz;
-	return std::stoi(idxstring, &sz);
+	if (mObjectPath.empty())
+		return -1;
+
+	return mObjectPath.back().mIndex;
 }
 
 int napkin::PropertyPath::getRealChildEntityIndex() const

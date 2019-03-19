@@ -477,7 +477,34 @@ void Document::remove(const PropertyPath& path)
 		removeInstanceProperties(path);
 
 		removeChildEntity(*parentEntity, realIndex);
+		return;
 	}
+
+	auto _p1 = parent.toString();
+	auto _p2 = path.toString();
+
+	if (parent.getType().is_derived_from<nap::Scene>() && path.getType().is_derived_from<nap::Entity>())
+	{
+		auto entity = dynamic_cast<nap::Entity*>(path.getObject());
+		auto scene = dynamic_cast<nap::Scene*>(parent.getObject());
+		int idx = 0;
+		int pathidx = path.getInstanceChildEntityIndex();
+		for (int i=0; i<scene->mEntities.size(); i++)
+		{
+			auto& rootEntity = scene->mEntities[i];
+			if (rootEntity.mEntity->mID == entity->mID) {
+				if (idx == pathidx)
+				{
+					scene->mEntities.erase(scene->mEntities.begin() + i);
+					objectChanged(scene);
+					return;
+				}
+				++idx;
+			}
+
+		}
+	}
+
 }
 
 void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
