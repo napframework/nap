@@ -4,6 +4,7 @@
 #include <nap/datetime.h>
 #include <color.h>
 #include <nglutils.h>
+#include "parameter.h"
 
 namespace nap
 {
@@ -48,22 +49,35 @@ namespace nap
 		opengl::EPolygonMode getRenderMode() const			{ return mRenderMode; }
 
 	private:
-		AtmosApp&				mApp;				///< The actual atmos appliation we build the gui for
-		bool					mHide = false;
-		DateTime				mDateTime;
-		RGBColor8				mTextColor = { 0xC8, 0x69, 0x69 };
-		glm::vec4				mBackgroundColor;
-		bool					mTransparent = false;
-		opengl::EPolygonMode	mRenderMode = opengl::EPolygonMode::Fill;
-		float					mTexPreviewDisplaySize = 1.0f;
-		float					mWraPreviewDisplaySize = 1.0f;
-		float					mVidPreviewDisplaySize = 1.0f;
-		float					mCameraMovSpeed = 1.0f;
-		float					mCameraRotSpeed = 1.0f;
-		float					mCamMaxRotSpeed = 0.0f;
-		float					mCamMaxMovSpeed = 0.0f;
-		bool					mLinkFogToBackground = true;
-		bool					mBackgroundColorDirty = true;
+		void showPresets();
+		void HandleLoadPopup();
+		void HandleSaveAsPopup();
+		bool HandleNewPopup(std::string& outNewFilename);
+		void SavePresets();
+		void RestorePresets();
+
+	private:
+		AtmosApp&							mApp;				///< The actual atmos appliation we build the gui for
+		ParameterService&					mParameterService;
+		ParameterService::PresetFileList	mPresets;
+		ParameterService::PresetFileList	mPrevPresets;
+		int									mSelectedPresetIndex = -1;
+		int									mPrevSelectedPresetIndex = -1;
+		bool								mHide = false;
+		DateTime							mDateTime;
+		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
+		glm::vec4							mBackgroundColor;
+		bool								mTransparent = false;
+		opengl::EPolygonMode				mRenderMode = opengl::EPolygonMode::Fill;
+		float								mTexPreviewDisplaySize = 1.0f;
+		float								mWraPreviewDisplaySize = 1.0f;
+		float								mVidPreviewDisplaySize = 1.0f;
+		ResourcePtr<ParameterFloat>			mCameraMovSpeed;
+		ResourcePtr<ParameterFloat>			mCameraRotSpeed;
+		float								mCamMaxRotSpeed;
+		float								mCamMaxMovSpeed;
+		bool								mLinkFogToBackground = true;
+		bool								mBackgroundColorDirty = true;
 
 		/**
 		 * Shows the controls menu

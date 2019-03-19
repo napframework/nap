@@ -12,6 +12,7 @@
 #include <imguiutils.h>
 #include <nap/core.h>
 #include <selectvideocomponent.h>
+#include "utility/fileutils.h"
 
 namespace nap
 {
@@ -21,9 +22,10 @@ namespace nap
 	static bool showControls = false;
 	static bool showInfo = false;
 
-	AtmosGui::AtmosGui(AtmosApp& app) : mApp(app)
+	AtmosGui::AtmosGui(AtmosApp& app) : 
+		mApp(app),
+		mParameterService(*app.getCore().getService<ParameterService>())
 	{
-
 	}
 
 
@@ -33,14 +35,21 @@ namespace nap
 		mBackgroundColor = mApp.mRenderWindow->getBackbuffer().getClearColor();
 
 		// Store speed values
-		FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
-		mCamMaxMovSpeed = fps_comp.getMovementSpeed();
-		mCamMaxRotSpeed = fps_comp.getRotationSpeed();
+ 		FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
+ 		mCamMaxMovSpeed = fps_comp.getMovementSpeed();
+ 		mCamMaxRotSpeed = fps_comp.getRotationSpeed();
 
-		if (mLinkFogToBackground) {
+		if (mLinkFogToBackground) 
+		{
 			nap::UpdateMaterialComponentInstance& up_mat_comp = mApp.mScanEntity->getComponent<UpdateMaterialComponentInstance>();
 			up_mat_comp.mFogColor = RGBColorFloat(mBackgroundColor.r, mBackgroundColor.g, mBackgroundColor.b);
 		}
+
+		mPresets = mParameterService.getPresets();
+
+		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
+		mCameraMovSpeed = resourceManager->findObject<ParameterFloat>("CameraMovSpeed");
+		mCameraRotSpeed = resourceManager->findObject<ParameterFloat>("CameraRotSpeed");
 	}
 
 
@@ -89,11 +98,238 @@ namespace nap
 		mHide = !mHide;
 	}
 
+	void AtmosGui::HandleLoadPopup()
+	{
+		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::Combo("Presets", &mSelectedPresetIndex, [](void* data, int index, const char** out_text)
+			{
+				ParameterService::PresetFileList* preset_files = (ParameterService::PresetFileList*)data;
+				*out_text = (*preset_files)[index].data();
+				return true;
+			}, &mPresets, mPresets.size());
+
+			if (ImGui::Button("OK"))
+			{
+				utility::ErrorState errorState;
+				if (mParameterService.loadPreset(mPresets[mSelectedPresetIndex], errorState))
+					ImGui::CloseCurrentPopup();
+				else
+					ImGui::OpenPopup("Failed to load preset");
+
+				if (ImGui::BeginPopupModal("Failed to load preset"))
+				{
+					ImGui::Text(errorState.toString().c_str());
+					if (ImGui::Button("OK"))
+					{
+						ImGui::CloseCurrentPopup();
+					}
+
+					ImGui::EndPopup();
+				}
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel"))
+			{
+				RestorePresets();
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+	}
+
+	bool AtmosGui::HandleNewPopup(std::string& outNewFilename)
+	{
+		bool result = false;
+
+		if (ImGui::BeginPopupModal("New", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			static char name[256] = { 0 };
+			ImGui::InputText("Name", name, 256);
+
+			if (ImGui::Button("OK") && strlen(name) != 0)
+			{
+				outNewFilename = std::string(name, strlen(name));
+				outNewFilename += ".json";
+				ImGui::CloseCurrentPopup();
+				result = true;
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel"))
+				ImGui::CloseCurrentPopup();
+
+			ImGui::EndPopup();
+		}
+
+		return result;
+	}
+
+	void AtmosGui::HandleSaveAsPopup()
+	{
+		if (ImGui::BeginPopupModal("Save As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			if (ImGui::Combo("Presets", &mSelectedPresetIndex, [](void* data, int index, const char** out_text)
+			{
+				ParameterService::PresetFileList* preset_files = (ParameterService::PresetFileList*)data;
+				*out_text = (*preset_files)[index].data();
+				return true;
+			}, &mPresets, mPresets.size()))
+			{
+				if (mSelectedPresetIndex == mPresets.size() -1)
+				{
+					ImGui::OpenPopup("New");
+				}
+			}
+
+
+			std::string newFilename;
+			if (HandleNewPopup(newFilename))
+			{
+				// Insert before the '<new...>' item
+				mPresets.insert(mPresets.end() - 1, newFilename);
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("OK"))
+			{
+				utility::ErrorState errorState;
+				if (mParameterService.savePreset(mPresets[mSelectedPresetIndex], errorState))
+				{
+					ImGui::CloseCurrentPopup();
+					std::string previous_selection = mPresets[mSelectedPresetIndex];
+
+					mPresets = mParameterService.getPresets();
+
+					// After we have retrieved the filenames from the service, the list may be in a different order,
+					// so we search for the item in the list to find the selected index.
+					for (int index = 0; index < mPresets.size(); ++index)
+					{
+						if (mPresets[index] == previous_selection)
+						{
+							mSelectedPresetIndex = index;
+							break;
+						}
+					}
+
+				}
+				else
+				{
+					ImGui::OpenPopup("Failed to save preset");
+				}
+
+				if (ImGui::BeginPopupModal("Failed to save preset"))
+				{
+					ImGui::Text(errorState.toString().c_str());
+					if (ImGui::Button("OK"))
+					{
+						ImGui::CloseCurrentPopup();
+					}
+
+					ImGui::EndPopup();
+				}
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel"))
+			{
+				RestorePresets();
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+	}
+
+	void AtmosGui::SavePresets()
+	{
+		mPrevSelectedPresetIndex = mSelectedPresetIndex;
+		mPrevPresets = mPresets;
+	}
+
+	void AtmosGui::RestorePresets()
+	{
+		mSelectedPresetIndex = mPrevSelectedPresetIndex;
+		mPresets = mPrevPresets;
+	}
+
+	void AtmosGui::showPresets()
+	{
+		if (ImGui::CollapsingHeader("Presets"))
+		{
+			ImGui::Text("Current preset: "); 
+			ImGui::SameLine();
+
+			bool hasPreset = mSelectedPresetIndex >= 0 && mSelectedPresetIndex < mPresets.size();
+
+			if (hasPreset)
+				ImGui::Text(mPresets[mSelectedPresetIndex].data());
+			else
+				ImGui::Text("<No preset>");
+
+			if (ImGui::Button("Save"))
+			{
+				if (hasPreset)
+				{
+					utility::ErrorState errorState;
+					if (!mParameterService.savePreset(mPresets[mSelectedPresetIndex], errorState))
+						ImGui::OpenPopup("Failed to save preset");
+
+					if (ImGui::BeginPopupModal("Failed to save preset"))
+					{
+						ImGui::Text(errorState.toString().c_str());
+						if (ImGui::Button("OK"))
+						{
+							ImGui::CloseCurrentPopup();
+						}
+
+						ImGui::EndPopup();
+					}
+
+				}
+				else
+				{
+					ImGui::OpenPopup("Save As");
+					SavePresets();
+					mPresets.push_back("<New...>");
+				}
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Save As"))
+			{
+				ImGui::OpenPopup("Save As");
+				SavePresets();
+				mPresets.push_back("<New...>");
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Load"))
+			{
+				ImGui::OpenPopup("Load");
+				SavePresets();
+			}
+
+			HandleLoadPopup();
+			HandleSaveAsPopup();
+
+		}
+	}
 
 	void AtmosGui::showControlWindow()
 	{
 		// Resets all the tracers
 		ImGui::Begin("Controls");
+
+		showPresets();
 
 		// Select mesh slider
 		nap::SelectMeshComponentInstance& mesh_selector = mApp.mScanEntity->getComponent<SelectMeshComponentInstance>();
@@ -224,16 +460,16 @@ namespace nap
 				cam_comp.setFieldOfView(cfov);
 			}
 
-			FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
-			if (ImGui::SliderFloat("Camera Movement Speed", &mCameraMovSpeed, 0.0f, 1.0f))
-			{
-				fps_comp.setMovementSpeed(mCamMaxMovSpeed * mCameraMovSpeed);
-			}
-
-			if (ImGui::SliderFloat("Camera Rotation Speed", &mCameraRotSpeed, 0.0f, 1.0f))
-			{
-				fps_comp.setRotationSpeed(mCamMaxRotSpeed * mCameraRotSpeed);
-			}
+ 			FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
+// 			if (ImGui::SliderFloat("Camera Movement Speed", &mCameraMovSpeed, 0.0f, 1.0f))
+// 			{
+ 				fps_comp.setMovementSpeed(mCamMaxMovSpeed * mCameraMovSpeed->mValue);
+// 			}
+// 
+// 			if (ImGui::SliderFloat("Camera Rotation Speed", &mCameraRotSpeed, 0.0f, 1.0f))
+// 			{
+// 				fps_comp.setRotationSpeed(mCamMaxRotSpeed * mCameraRotSpeed);
+// 			}
 		}
 
 		if (ImGui::CollapsingHeader("Rendering"))
