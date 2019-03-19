@@ -11,7 +11,8 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterService)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ParameterContainer)
-	RTTI_PROPERTY("Parameters",	&nap::ParameterContainer::mParameters,	nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Parameters",	&nap::ParameterContainer::mParameters, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Children",	&nap::ParameterContainer::mChildren, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 
@@ -33,10 +34,21 @@ namespace nap
 		return nullptr;
 	}
 
+
+	ResourcePtr<ParameterContainer> ParameterContainer::findChild(const std::string& name) const
+	{
+		for (auto& param : mChildren)
+			if (param->mID == name)
+				return param;
+
+		return nullptr;
+	}
+
 	ParameterService::ParameterService(ServiceConfiguration* configuration) :
 		Service(configuration)
 	{
 	}
+
 
 	ParameterService::PresetFileList ParameterService::getPresets() const
 	{
@@ -63,6 +75,7 @@ namespace nap
 		return presets;
 	}
 
+
 	bool ParameterService::loadPreset(const std::string& presetFile, utility::ErrorState& errorState)
 	{
 		std::string preset_path = "presets/" + presetFile;
@@ -78,13 +91,14 @@ namespace nap
 		{
 			if (object->get_type().is_derived_from<ParameterContainer>())
 			{
-				setParameters(*rtti_cast<ParameterContainer>(object.get()));
+				setParametersRecursive(*rtti_cast<ParameterContainer>(object.get()), *mRootContainer);
 				return true;
 			}
 		}
 
 		return false;
 	}
+
 
 	bool ParameterService::savePreset(const std::string& presetFile, utility::ErrorState& errorState)
 	{
@@ -105,6 +119,7 @@ namespace nap
 		return true;
 	}
 
+
 	void ParameterService::resourcesLoaded()
 	{
 		ResourcePtr<ParameterContainer> root_params = getCore().getResourceManager()->findObject<ParameterContainer>("Parameters");
@@ -113,13 +128,21 @@ namespace nap
 		mRootContainer = root_params;
 	}
 
-	void ParameterService::setParameters(const ParameterContainer& parameters)
+
+	void ParameterService::setParametersRecursive(const ParameterContainer& sourceParameters, ParameterContainer& destinationParameters)
 	{
-		for (auto& param : mRootContainer->mParameters)
+		for (auto& param : destinationParameters.mParameters)
 		{
-			const ResourcePtr<Parameter>& new_param = parameters.findParameter(param->mID);
-			assert(new_param != nullptr);
-			param->setValue(*new_param);
+			const ResourcePtr<Parameter>& new_param = sourceParameters.findParameter(param->mID);
+			if (new_param != nullptr)
+				param->setValue(*new_param);
+		}
+
+		for (auto& dest_child : destinationParameters.mChildren)
+		{
+			const ResourcePtr<ParameterContainer>& source_child = sourceParameters.findChild(dest_child->mID);
+			if (source_child != nullptr)
+				setParametersRecursive(*source_child, *dest_child);
 		}
 	}
 }
