@@ -27,7 +27,7 @@ TEST_CASE("Component to Component pointer", "napkin-pointers")
 	REQUIRE(comp != nullptr);
 	REQUIRE(!compB->mID.empty());
 
-	napkin::PropertyPath pointerPath(*compB, "CompPointer");
+	napkin::PropertyPath pointerPath(compB->mID, "CompPointer");
 	REQUIRE(pointerPath.isValid());
 
 	pointerPath.setPointee(comp);

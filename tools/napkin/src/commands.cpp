@@ -39,8 +39,8 @@ void SetValueCommand::redo()
 	if (mPath.getProperty().get_name() == nap::rtti::sIDPropertyName)
 	{
 		// Deal with object names separately
-		ctx.getDocument()->setObjectName(mPath.getObject(), mNewValue.toString().toStdString());
-		ctx.selectionChanged({&mPath.getObject()});
+		ctx.getDocument()->setObjectName(*mPath.getObject(), mNewValue.toString().toStdString());
+		ctx.selectionChanged({mPath.getObject()});
 	}
 	else
 	{
@@ -257,22 +257,17 @@ void RemoveChildEntityCommand::undo()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-RemoveEntityFromSceneCommand::RemoveEntityFromSceneCommand(nap::Scene& scene, nap::RootEntity& rootEntity)
-	: mSceneID(scene.mID), mRootEntity(&rootEntity), mEntityID(rootEntity.mEntity->mID), QUndoCommand()
+RemoveCommand::RemoveCommand(const PropertyPath& path)
+	: mPath(path), QUndoCommand()
 {
-	setText(QString("Remove Entity '%1' from Scene '%2'").arg(QString::fromStdString(mEntityID),
-															  QString::fromStdString(mSceneID)));
+	setText(QString("Remove Entity %1").arg(QString::fromStdString(mPath.toString())));
 }
 
-void RemoveEntityFromSceneCommand::redo()
+void RemoveCommand::redo()
 {
-	auto doc = AppContext::get().getDocument();
-	auto scene = doc->getObject<nap::Scene>(mSceneID);
-	assert(scene != nullptr);
-	doc->removeEntityFromScene(*scene, *mRootEntity);
-	// TODO: Store index and support undo
+	AppContext::get().getDocument()->remove(mPath);
 }
-void RemoveEntityFromSceneCommand::undo()
+void RemoveCommand::undo()
 {
 	nap::Logger::fatal("Undo not supported yet");
 }

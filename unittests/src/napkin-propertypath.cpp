@@ -21,7 +21,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("general")
 	{
-		PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
+		PropertyPath nameProp(entity->mID, nap::rtti::sIDPropertyName);
 		REQUIRE(nameProp.getType() == rttr::type::get<std::string>());
 		REQUIRE(&nameProp.getObject() == entity);
 		REQUIRE(nameProp.isValid());
@@ -36,7 +36,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("enum")
 	{
-		PropertyPath path(*res, "Enum");
+		PropertyPath path(res->mID, "Enum");
 		REQUIRE(path.getType() == rttr::type::get<TestEnum>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isEnum());
@@ -48,7 +48,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("regular pointer")
 	{
-		PropertyPath path(*res, "ResPointer");
+		PropertyPath path(res->mID, "ResPointer");
 		REQUIRE(path.getType() == rttr::type::get<nap::ResourcePtr<TestResource>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
@@ -60,7 +60,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("array of regular pointers")
 	{
-		PropertyPath path(*res, "ResPointers");
+		PropertyPath path(res->mID, "ResPointers");
 		REQUIRE(path.getType() == rttr::type::get<std::vector<nap::ResourcePtr<TestResource>>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isArray());
@@ -72,7 +72,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("array element: regular pointer")
 	{
-		PropertyPath path(*res, "ResPointers/0");
+		PropertyPath path(res->mID, "ResPointers/0");
 		REQUIRE(path.getType() == rttr::type::get<nap::ResourcePtr<TestResource>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
@@ -84,7 +84,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("embedded pointer")
 	{
-		PropertyPath path(*res, "EmbedPointer");
+		PropertyPath path(res->mID, "EmbedPointer");
 		REQUIRE(path.getType() == rttr::type::get<nap::ResourcePtr<TestResource>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
@@ -96,7 +96,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("array of embedded pointers")
 	{
-		PropertyPath path(*res, "EmbedPointers");
+		PropertyPath path(res->mID, "EmbedPointers");
 		REQUIRE(path.getType() == rttr::type::get<std::vector<nap::ResourcePtr<TestResource>>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isArray());
@@ -110,7 +110,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 	{
 		TestPropertiesStruct uniform;
 		res->mStructs.emplace_back(uniform);
-		PropertyPath path(*res, "Structs");
+		PropertyPath path(res->mID, "Structs");
 		REQUIRE(path.getType() == rttr::type::get<std::vector<TestPropertiesStruct>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isArray());
@@ -137,7 +137,7 @@ TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 
 	REQUIRE(doc->getRootEntities(*scene, *entity).size() > 0);
 
-	PropertyPath regularPath(*comp, "Float");
+	PropertyPath regularPath(comp->mID, "Float");
 	REQUIRE(!regularPath.isInstanceProperty());
 	REQUIRE(regularPath.isValid());
 
@@ -272,7 +272,7 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		res.mEmbedPointer = &embedRes;
 		REQUIRE(res.mEmbedPointer != nullptr);
 
-		PropertyPath p(res, "ResPointer");
+		PropertyPath p(res.mID, "ResPointer");
 		REQUIRE(p.isValid());
 		REQUIRE(p.isPointer());
 

@@ -320,12 +320,12 @@ void Document::removeInstanceProperties(PropertyPath path)
 	auto parent = path.getParent();
 	assert(parent.isValid());
 	assert(parent.getType().is_derived_from<nap::Entity>());
-	auto parentEntity = dynamic_cast<nap::Entity*>(&parent.getObject());
+	auto parentEntity = dynamic_cast<nap::Entity*>(parent.getObject());
 	assert(parentEntity);
 	auto instIndex = path.getInstanceChildEntityIndex();
 
 	auto parentID = parentEntity->mID;
-	auto entityID = path.getObject().mID;
+	auto entityID = path.getObject()->mID;
 
 	QList<nap::Scene*> changedScenes;
 	for (auto scene : getObjects<nap::Scene>())
@@ -467,9 +467,9 @@ void Document::remove(const PropertyPath& path)
 	if (parent.getType().is_derived_from<nap::Entity>() && path.getType().is_derived_from<nap::Entity>())
 	{
 		// Removing child Entity from parent Entity
-		auto parentEntity = dynamic_cast<nap::Entity*>(&parent.getObject());
+		auto parentEntity = dynamic_cast<nap::Entity*>(parent.getObject());
 		assert(parentEntity);
-		auto childEntity = dynamic_cast<nap::Entity*>(&path.getObject());
+		auto childEntity = dynamic_cast<nap::Entity*>(path.getObject());
 		assert(childEntity);
 		auto realIndex = path.getRealChildEntityIndex();
 

@@ -248,9 +248,10 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 	// Update object name?
 	if (path.getProperty().get_name() == nap::rtti::sIDPropertyName)
 	{
-		auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, path.getObject());
+		auto obj = path.getObject();
+		auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, *obj);
 		if (objectItem != nullptr)
-			objectItem->setText(QString::fromStdString(path.getObject().mID));
+			objectItem->setText(QString::fromStdString(obj->mID));
 	}
 
 	mModel.removeEmbeddedObjects();

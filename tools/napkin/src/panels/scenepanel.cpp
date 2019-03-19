@@ -122,9 +122,9 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 			assert(rootEntity);
 
 			auto removeEntityAction = menu.addAction("Delete Instance");
-			connect(removeEntityAction, &QAction::triggered, [scene, rootEntity]
+			connect(removeEntityAction, &QAction::triggered, [rootEntityItem]
 			{
-				AppContext::get().executeCommand(new RemoveEntityFromSceneCommand(*scene, *rootEntity));
+				AppContext::get().executeCommand(new RemoveCommand(rootEntityItem->propertyPath()));
 			});
 		}
 	}
@@ -133,17 +133,17 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
 	// Grab selected nap objects
-	QList<PropertyPath> selectedObjects;
+	QList<PropertyPath> selectedPaths;
 	for (auto m : mFilterView.getSelectedItems())
 	{
 		auto eItem = dynamic_cast<EntityInstanceItem*>(m);
 		if (eItem)
-			selectedObjects << eItem->propertyPath();
+			selectedPaths << eItem->propertyPath();
 
 		auto cItem = dynamic_cast<ComponentInstanceItem*>(m);
 		if (cItem)
-			selectedObjects << cItem->propertyPath();
+			selectedPaths << cItem->propertyPath();
 	}
 
-	selectionChanged(selectedObjects);
+	selectionChanged(selectedPaths);
 }

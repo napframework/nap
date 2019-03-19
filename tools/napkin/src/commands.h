@@ -180,17 +180,14 @@ namespace napkin
 		size_t mIndex;
 	};
 
-	class RemoveEntityFromSceneCommand : public QUndoCommand
+	class RemoveCommand : public QUndoCommand
 	{
 	public:
-		RemoveEntityFromSceneCommand(nap::Scene& scene, nap::RootEntity& rootEntity);
+		RemoveCommand(const PropertyPath& path);
 		void redo() override;
 		void undo() override;
 	private:
-		const std::string mSceneID;
-		const std::string mEntityID;
-		nap::RootEntity* mRootEntity = nullptr;
-		size_t mIndex;
+		PropertyPath mPath;
 	};
 
 	/**
