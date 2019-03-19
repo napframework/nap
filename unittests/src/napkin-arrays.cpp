@@ -16,11 +16,11 @@ TEST_CASE("Arrays", "napkin-arrays")
 		REQUIRE(resource != nullptr);
 
 		// Check invalid nonexistent path
-		PropertyPath nonExistent(*resource, "NonExistent_________");
+		PropertyPath nonExistent(resource->mID, "NonExistent_________");
 		REQUIRE(!nonExistent.isValid());
 
 		// Grab a valid path
-		PropertyPath ints2D(*resource, "Ints2D");
+		PropertyPath ints2D(resource->mID, "Ints2D");
 		REQUIRE(ints2D.isValid());
 
 		// Ensure empty array
@@ -33,7 +33,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 			REQUIRE(ints2D.getArrayLength() == 1);
 
 			// Verify validity of new element
-			REQUIRE(PropertyPath(*resource, "Ints2D/0").isValid());
+			REQUIRE(PropertyPath(resource->mID, "Ints2D/0").isValid());
 //		 TODO: This should not happen
 //		REQUIRE(!PropertyPath(*resource, "Ints2D/18").isValid());
 		}
@@ -45,8 +45,8 @@ TEST_CASE("Arrays", "napkin-arrays")
 			REQUIRE(ints2D.getArrayLength() == 2);
 
 			// Verify validity of new element
-			REQUIRE(PropertyPath(*resource, "Ints2D/0").isValid());
-			REQUIRE(PropertyPath(*resource, "Ints2D/1").isValid());
+			REQUIRE(PropertyPath(resource->mID, "Ints2D/0").isValid());
+			REQUIRE(PropertyPath(resource->mID, "Ints2D/1").isValid());
 		}
 
 		// Remove first element
@@ -67,7 +67,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 		auto doc = AppContext::get().newDocument();
 		auto midiinput = doc->addObject<TestResource>();
 		REQUIRE(midiinput != nullptr);
-		PropertyPath strings(*midiinput, "Strings");
+		PropertyPath strings(midiinput->mID, "Strings");
 		REQUIRE(strings.isValid());
 		REQUIRE(strings.isArray());
 		REQUIRE(!strings.isPointer());
@@ -85,7 +85,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 		auto pointee = doc->addObject<TestResource>();
 		REQUIRE(pointee != nullptr);
 
-		PropertyPath respointers(*resource, nap::rtti::Path::fromString("ResPointers"));
+		PropertyPath respointers(resource->mID, "ResPointers");
 		REQUIRE(respointers.isValid());
 		REQUIRE(respointers.getArrayLength() == 0);
 
@@ -112,7 +112,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 		REQUIRE(resource != nullptr);
 
 		// Set up an array with four elements
-		PropertyPath pointers(*resource, nap::rtti::Path::fromString("ResPointers"));
+		PropertyPath pointers(resource->mID, "ResPointers");
 		REQUIRE(pointers.isValid());
 		doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));
 		doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));

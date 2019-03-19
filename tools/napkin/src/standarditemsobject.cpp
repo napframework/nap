@@ -44,7 +44,7 @@ const PropertyPath ObjectItem::propertyPath() const
 		}
 		else
 		{
-			auto thisIndex = QString::number(parentEntity->uniqueNameChildIndex(*thisEntity));
+			auto thisIndex = QString::number(parentEntity->nameIndex(*thisEntity));
 			auto id = QString("%1:%2").arg(thisID, thisIndex);
 			path.insert(0, id);
 		}
@@ -57,7 +57,22 @@ const PropertyPath ObjectItem::propertyPath() const
 
 	auto pathStr = "/" + path.join('/');
 
-	return PropertyPath(*mObject, pathStr.toStdString());
+	return PropertyPath(absolutePath());
+}
+
+std::string ObjectItem::absolutePath() const
+{
+	std::vector<std::string> path;
+	path.emplace(path.begin(), unambiguousName());
+
+	auto pitem = dynamic_cast<ObjectItem*>(parentItem());
+
+	while (pitem)
+	{
+		path.emplace(path.begin(), pitem->unambiguousName());
+		pitem = dynamic_cast<ObjectItem*>(pitem->parentItem());
+	}
+	return "/" + nap::utility::joinString(path, "/");
 }
 
 bool ObjectItem::isPointer() const
@@ -208,27 +223,29 @@ int ObjectItem::childIndex(const ObjectItem& childItem) const
 	return -1;
 }
 
-int ObjectItem::uniqueNameChildIndex(const ObjectItem& childItem) const
+int ObjectItem::nameIndex(const ObjectItem& childItem) const
 {
-	QMap<std::string, int> nameCount;
+	auto childName = childItem.getObject()->mID;
+	int index = 0;
 	for (int row = 0; row < rowCount(); row++)
 	{
 		auto otherChildItem = dynamic_cast<ObjectItem*>(child(row, 0));
 		if (!otherChildItem)
 			continue;
 		if (otherChildItem == &childItem)
-			return nameCount.value(childItem.getObject()->mID, 0);
+			return index;
 
 		auto id = otherChildItem->getObject()->mID;
-		nameCount.insert(id, nameCount.value(id, 0) + 1);
-
+		if (otherChildItem->getObject()->mID == childName)
+			++index;
 	}
 	return -1;
 }
 
+
 void ObjectItem::onPropertyValueChanged(PropertyPath path)
 {
-	if (&path.getObject() == mObject)
+	if (path.getObject() == mObject)
 		refresh();
 }
 
@@ -240,6 +257,11 @@ void ObjectItem::onObjectRemoved(nap::rtti::Object* o)
 		if (parent)
 			parent->removeRow(index().row());
 	}
+}
+
+const std::string ObjectItem::unambiguousName() const
+{
+	return getObject()->mID;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,6 +314,15 @@ void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 	removeChildren();
 	for (auto child : getEntity()->mChildren)
 		onEntityAdded(child.get(), getEntity());
+}
+
+const std::string EntityItem::unambiguousName() const
+{
+	if (auto entityItem = dynamic_cast<EntityItem*>(parentItem()))
+	{
+		return ObjectItem::unambiguousName() + ":" + std::to_string(entityItem->nameIndex(*this));
+	}
+	return ObjectItem::unambiguousName();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -368,16 +399,20 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 		}
 
 		std::string path = "./" + nap::utility::joinString(namePath, "/");
-		return PropertyPath(rootEntity(), *mObject, path);
+
+		return absolutePath();
 	}
 
-	auto sceneItem = dynamic_cast<SceneItem*>(parentItem());
-	if (sceneItem) {
-		std::string path = "./" + instanceName().toStdString();
-		return { rootEntity(), *mObject, path };
-	}
-	return PropertyPath(mRootEntity, entity());
+	return absolutePath();
 }
+
+const std::string EntityInstanceItem::unambiguousName() const
+{
+	if (auto parentObjectItem = dynamic_cast<ObjectItem*>(parentItem()))
+		return ObjectItem::unambiguousName() + ":" + std::to_string(parentObjectItem->nameIndex(*this));
+	return ObjectItem::unambiguousName();
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -424,7 +459,7 @@ ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEnti
 
 const PropertyPath ComponentInstanceItem::propertyPath() const
 {
-	return PropertyPath(rootEntity(), component(), componentPath());
+	return absolutePath();
 }
 
 nap::Component& ComponentInstanceItem::component() const

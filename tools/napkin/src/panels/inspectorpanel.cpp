@@ -208,16 +208,16 @@ void InspectorPanel::setPath(const PropertyPath& path)
 
 		auto p = path.toString();
 		if (p.at(0) == '.')
-			p = path.rootEntity()->mEntity->mID + p.substr(1, p.size()-1);
+			p = path.getRootEntity()->mEntity->mID + p.substr(1, p.size()-1);
 
-		mPathField.setText(QString::fromStdString(p));
 	}
 	else
 	{
-		mPathField.setText("");
+//		mPathField.setText("");
 		mTitle.setText("");
 		mSubTitle.setText("");
 	}
+	mPathField.setText(QString::fromStdString(path.toString()));
 
 	mModel.setPath(path);
 	mTreeView.getTreeView().expandAll();
@@ -239,7 +239,7 @@ void InspectorPanel::rebuild()
 
 void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
-	QList<nap::rtti::Object*> objects = {&prop.getObject()};
+	QList<nap::rtti::Object*> objects = {prop.getObject()};
 	AppContext::get().selectionChanged(objects);
 
 	auto pathItem = nap::qt::findItemInModel(mModel, [prop](QStandardItem* item)
@@ -260,10 +260,10 @@ bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const
 
 void InspectorModel::populateItems()
 {
-	if (dynamic_cast<nap::Entity*>(&mPath.getObject()))
+	if (dynamic_cast<nap::Entity*>(mPath.getObject()))
 		return;
 
-	for (auto propPath : mPath.getChildren())
+	for (const auto& propPath : mPath.getChildren())
 	{
 		if (!isPropertyIgnored(propPath))
 			appendRow(createPropertyItemRow(propPath));
@@ -303,7 +303,7 @@ bool InspectorModel::setData(const QModelIndex& index, const QVariant& value, in
 
 nap::rtti::Object* InspectorModel::getObject()
 {
-	return &mPath.getObject();
+	return mPath.getObject();
 }
 
 Qt::ItemFlags InspectorModel::flags(const QModelIndex& index) const

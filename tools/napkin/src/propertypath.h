@@ -8,6 +8,7 @@
 namespace napkin
 {
 	class PropertyPath;
+	class Document;
 
 	using PropertyVisitor = std::function<bool(const PropertyPath& path)>;
 
@@ -20,6 +21,20 @@ namespace napkin
 		FollowPointers 				= 1 << 1,	// Resolve regular pointers and visit the resolved object's properties
 		FollowEmbeddedPointers 		= 1 << 2,	// Resolve embedded pointers and visit the resolved object's properties
 	};
+
+	struct NameIndex
+	{
+		NameIndex(const std::string& nameIndex);
+
+		NameIndex(const std::string& name, int index);
+
+		std::string toString() const;
+		operator std::string() const { return toString(); }
+		std::string mID;
+		int mIndex = -1;
+	};
+
+	using PPath = std::vector<NameIndex>;
 
 	/**
 	 * A path to a property, including its object.
@@ -39,43 +54,12 @@ namespace napkin
 		 */
 		PropertyPath(nap::rtti::Object& obj);
 
-		/**
-		 * Create a PropertyPath to an object
-		 * 	If the instPath represents a path to a property, treat it as such,
-		 * 	otherwise assume it's a path to an instance Entity
-		 *
-		 * @param obj The object to create the path to.
-		 * @param instPath The path to the instance (in case of a child entity chain)
-		 */
-		PropertyPath(nap::rtti::Object& obj, const std::string& instPath);
+		PropertyPath(const std::string& abspath);
 
-		/**
-		 * Create a path to an object that is to be instantiated.
-		 * @param rootEntity Contains the instance property data
-		 * @param obj
-		 */
-		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj);
+		PropertyPath(const std::string& abspath, const std::string& proppath);
 
-		/**
-		 * Create a path to an object that is to be instantiated.
-		 * @param rootEntity Contains the instance property data
-		 * @param instPath the path to the component from the root entity
-		 */
-		PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj, const std::string& instPath);
-
-		/**
-		 * Create a path to an object that is to be instantiated.
-		 * @param rootEntity Contains the instance property data
-		 * @param obj
-		 */
-		PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const std::string& instPath, const nap::rtti::Path& propPath);
-
-		/**
-		 * Create a PropertyPath using an Object and a property
-		 * @param obj
-		 * @param prop
-		 */
-		PropertyPath(const PropertyPath& parentPath, rttr::property prop);
+		PropertyPath(const PPath& abspath);
+		PropertyPath(const PPath& absPath, const PPath& propPath);
 
 		/**
 		 * Create a PropertyPath using an Object and a nap::rtti::Path
@@ -129,12 +113,12 @@ namespace napkin
 		/**
 		 * @return obj The object this property is on
 		 */
-		nap::rtti::Object& getObject() const { return *mObject; }
+		nap::rtti::Object* getObject() const;
 
 		/**
 		 * @return path The path to the property
 		 */
-		const nap::rtti::Path& getPath() const { return mPath; }
+		nap::rtti::Path getPath() const;
 
 		/**
 		 * Resolve a property path
@@ -171,7 +155,7 @@ namespace napkin
 		/**
 		 * @return True if this path represents an instance
 		 */
-		bool isInstanceProperty() const { return mRootEntity != nullptr; }
+		bool isInstanceProperty() const;
 
 		/**
 		 * @return True if this path represents an instance and the value has been overridden
@@ -263,8 +247,8 @@ namespace napkin
 		 */
 		void iterateProperties(PropertyVisitor visitor, int flags = 0) const;
 		std::vector<PropertyPath> getProperties(int flags = 0) const;
-		std::string componentInstancePath() const;
-		nap::RootEntity* rootEntity() const { return mRootEntity; }
+		std::string getComponentInstancePath() const;
+		nap::RootEntity* getRootEntity() const;
 
 		/**
 		 * If this path represents a child entity, get the ID-DISAMBIGUATING index of this entity under its parent.
@@ -280,9 +264,12 @@ namespace napkin
 		int getRealChildEntityIndex() const;
 
 	private:
+		nap::rtti::Path rttiPath() const;
+
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
+		Document* document() const;
 
 		nap::ComponentInstanceProperties* instanceProps() const;
 		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
@@ -295,14 +282,11 @@ namespace napkin
 		nap::TargetAttribute* targetAttribute() const;
 		nap::TargetAttribute& getOrCreateTargetAttribute();
 
-		// Revert to default
-		void removeTargetAttribute();
+		std::string objectPathStr() const;
+		std::string propPathStr() const;
 
-
-		nap::RootEntity* mRootEntity = nullptr; // contains the root entity in the scene and the instance properties
-		nap::rtti::Object* mObject = nullptr; // the object on which the property exists
-		nap::rtti::Path mPath; // the path to the property on the object
-		std::string mCompInstancePath; // path to the component if it is one
+		PPath mObjectPath;
+		PPath mPropertyPath;
 	};
 }
 

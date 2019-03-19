@@ -9,67 +9,86 @@
 
 using namespace nap::rtti;
 
+napkin::NameIndex::NameIndex(const std::string& nameIndex)
+{
+	auto parts = nap::utility::splitString(nameIndex, ':');
+	mID = parts[0];
+	if (parts.size() > 1)
+		mIndex = std::stoi(parts[1]);
+}
+
+napkin::NameIndex::NameIndex(const std::string& name, int index)
+		: mID(name), mIndex(index)
+{
+}
+
+std::string napkin::NameIndex::toString() const
+{
+	if (mIndex < 0)
+		return mID;
+	return mID + ":" + std::to_string(mIndex);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 napkin::PropertyPath::PropertyPath(Object& obj)
-		: mObject(&obj)
+{
+	mObjectPath.emplace_back(obj.mID);
+}
+
+napkin::PropertyPath::PropertyPath(const std::string& abspath)
+{
+	auto pathParts = nap::utility::splitString(abspath, '@');
+	for (auto pathElm : nap::utility::splitString(pathParts[0], '/'))
+		if (!pathElm.empty())
+			mObjectPath.emplace_back(pathElm);
+
+	if (pathParts.size() > 1)
+		for (auto propElm : nap::utility::splitString(pathParts[1], '/'))
+			mPropertyPath.emplace_back(propElm);
+
+}
+
+napkin::PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppath)
+{
+	for (const auto& pathElm : nap::utility::splitString(abspath, '/'))
+		if (!pathElm.empty())
+			mObjectPath.emplace_back(pathElm);
+
+	for (const auto& propElm : nap::utility::splitString(proppath, '/'))
+		mPropertyPath.emplace_back(propElm);
+}
+
+
+napkin::PropertyPath::PropertyPath(const napkin::PPath& abspath)
+		: mObjectPath(abspath)
 {
 }
 
-napkin::PropertyPath::PropertyPath(Object& obj, const std::string& instPath)
-		: mObject(&obj), mCompInstancePath(instPath)
-{
-	ResolvedPath resolvedPath;
-	auto propPath = Path::fromString(instPath);
-	if (propPath.resolve(mObject, resolvedPath))
-		mPath = propPath;
-	else
-		mCompInstancePath = instPath;
-}
-
-napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, nap::rtti::Object& obj)
-		: mRootEntity(&rootEntity), mObject(&obj)
+napkin::PropertyPath::PropertyPath(const napkin::PPath& absPath, const napkin::PPath& propPath)
+		: mObjectPath(absPath), mPropertyPath(propPath)
 {
 }
 
-napkin::PropertyPath::PropertyPath(nap::RootEntity& rootEntity, Object& obj, const std::string& instPath)
-		: mRootEntity(&rootEntity), mObject(&obj), mCompInstancePath(instPath)
-{
-}
-
-napkin::PropertyPath::PropertyPath(nap::RootEntity* rootEntity, nap::rtti::Object& obj, const std::string& instPath,
-								   const nap::rtti::Path& propPath)
-		: mRootEntity(rootEntity), mObject(&obj), mCompInstancePath(instPath), mPath(propPath)
-{
-}
-
-napkin::PropertyPath::PropertyPath(const PropertyPath& parentPath, rttr::property prop)
-		: mRootEntity(parentPath.mRootEntity),
-		  mObject(parentPath.mObject),
-		  mCompInstancePath(parentPath.mCompInstancePath)
-{
-	nap::rtti::Path path;
-	path.pushAttribute(prop.get_name().data());
-	mPath = path;
-}
 
 napkin::PropertyPath::PropertyPath(Object& obj, const Path& path)
-		: mObject(&obj), mPath(path)
 {
+	mObjectPath.emplace_back(obj.mID);
+	mPropertyPath.emplace_back(path.toString());
 }
 
 
 napkin::PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
-		: mObject(&obj)
 {
-	nap::rtti::Path path;
-	path.pushAttribute(prop.get_name().data());
-	mPath = path;
+	mObjectPath.emplace_back(obj.mID);
+	mPropertyPath.emplace_back(std::string(prop.get_name().data()));
 }
 
 const std::string napkin::PropertyPath::getName() const
 {
 	if (hasProperty())
 		return getProperty().get_name().data();
-	return mObject->mID;
+	return getObject()->mID;
 }
 
 nap::ComponentInstanceProperties* napkin::PropertyPath::instanceProps() const
@@ -77,15 +96,16 @@ nap::ComponentInstanceProperties* napkin::PropertyPath::instanceProps() const
 	if (!isInstanceProperty())
 		return nullptr;
 
-	auto pathstr = mPath.toString();
+	auto pathstr = propPathStr();
 
 	// find instanceproperties
-	if (mRootEntity->mInstanceProperties.empty())
+	auto rootEntity = getRootEntity();
+	if (getRootEntity()->mInstanceProperties.empty())
 		return nullptr;
 
-	for (nap::ComponentInstanceProperties& instProp : mRootEntity->mInstanceProperties)
+	for (nap::ComponentInstanceProperties& instProp : getRootEntity()->mInstanceProperties)
 	{
-		if (instProp.mTargetComponent.getInstancePath() == mCompInstancePath)
+		if (instProp.mTargetComponent.getInstancePath() == getComponentInstancePath())
 			return &instProp;
 	}
 	return nullptr;
@@ -100,28 +120,78 @@ nap::ComponentInstanceProperties& napkin::PropertyPath::getOrCreateInstanceProps
 		return *props_;
 
 	// No instance properties, create a new set
-	auto idx = mRootEntity->mInstanceProperties.size();
-	mRootEntity->mInstanceProperties.emplace_back();
+	auto rootEntity = getRootEntity();
+	auto idx = rootEntity->mInstanceProperties.size();
+	rootEntity->mInstanceProperties.emplace_back();
 
-	std::string targetID = componentInstancePath();
+	std::string targetID = getComponentInstancePath();
 
-	mRootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetID, *component());
-	return mRootEntity->mInstanceProperties.at(idx);
+	rootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetID, *component());
+	return rootEntity->mInstanceProperties.at(idx);
 }
 
-std::string napkin::PropertyPath::componentInstancePath() const
+std::string napkin::PropertyPath::getComponentInstancePath() const
 {
-	return mCompInstancePath;
+	if (mObjectPath.size() < 3)
+		return {};
+
+	auto doc = document();
+
+	// First object must be Scene
+	auto leadObject = doc->getObject(mObjectPath[0].mID);
+	if (!leadObject || !leadObject->get_type().is_derived_from<nap::Scene>())
+		return {};
+
+	// Second Object must be RootEntity
+	auto secondObject = doc->getObject(mObjectPath[1].mID);
+	if (!secondObject || !secondObject->get_type().is_derived_from<nap::Entity>())
+		return {};
+
+	// Last object must be Component
+	auto trailObject = getObject();
+	if (!trailObject || !trailObject->get_type().is_derived_from<nap::Component>())
+		return {};
+
+	std::vector<std::string> newPath(mObjectPath.begin() + 2, mObjectPath.begin() + mObjectPath.size());
+	return "./" + nap::utility::joinString(newPath, "/");
+}
+
+nap::RootEntity* napkin::PropertyPath::getRootEntity() const
+{
+	if (mObjectPath.size() < 2)
+		return nullptr;
+
+	auto doc = document();
+
+	auto scene = dynamic_cast<nap::Scene*>(doc->getObject(mObjectPath[0].mID));
+	if (!scene)
+		return nullptr;
+
+	auto entity = dynamic_cast<nap::Entity*>(doc->getObject(mObjectPath[1].mID));
+	if (!entity)
+		return nullptr;
+
+	auto nameIdx = mObjectPath[1].mIndex;
+
+	int idx = 0;
+	for (auto& rootEntity : scene->mEntities)
+	{
+		if (idx == nameIdx && rootEntity.mEntity.get() == entity)
+			return &rootEntity;
+		if (rootEntity.mEntity.get() == entity)
+			++idx;
+	}
+	return nullptr;
 }
 
 nap::Component* napkin::PropertyPath::component() const
 {
-	return dynamic_cast<nap::Component*>(mObject);
+	return dynamic_cast<nap::Component*>(getObject());
 }
 
 nap::TargetAttribute* napkin::PropertyPath::targetAttribute() const
 {
-	auto pathstr = mPath.toString();
+	auto pathstr = propPathStr();
 
 	auto instProps = instanceProps();
 	if (!instProps)
@@ -148,7 +218,7 @@ nap::TargetAttribute& napkin::PropertyPath::getOrCreateTargetAttribute()
 	// didn't exist, create
 	auto& instProps = getOrCreateInstanceProps();
 
-	auto pathstr = mPath.toString();
+	auto pathstr = propPathStr();
 	for (auto& attr : instProps.mTargetAttributes)
 	{
 		if (attr.mPath == pathstr)
@@ -157,38 +227,8 @@ nap::TargetAttribute& napkin::PropertyPath::getOrCreateTargetAttribute()
 
 	auto idx = instProps.mTargetAttributes.size();
 	instProps.mTargetAttributes.emplace_back();
-	instProps.mTargetAttributes.at(idx).mPath = mPath.toString();
+	instProps.mTargetAttributes.at(idx).mPath = pathstr;
 	return instProps.mTargetAttributes.at(idx);
-}
-
-void napkin::PropertyPath::removeTargetAttribute()
-{
-	auto pathstr = mPath.toString();
-
-	auto instProps = instanceProps();
-	assert(instProps);
-
-	// remove attribute
-	auto& attrs = instProps->mTargetAttributes;
-	attrs.erase(std::remove_if(attrs.begin(), attrs.end(),
-							   [&pathstr](const nap::TargetAttribute& at)
-							   {
-								   return at.mPath == pathstr;
-							   }),
-				attrs.end());
-
-	if (!attrs.empty())
-		return; // there are overridden properties left, stop here
-
-	// no more overrides, remove instanceproperties for this component
-	auto& props = mRootEntity->mInstanceProperties;
-
-	props.erase(std::remove_if(props.begin(), props.end(),
-							   [this](const nap::ComponentInstanceProperties& instProp)
-							   {
-								   return instProp.mTargetComponent.getInstancePath() == mCompInstancePath;
-							   }),
-				props.end());
 }
 
 
@@ -228,10 +268,11 @@ void napkin::PropertyPath::setValue(rttr::variant value)
 				{
 					auto component = instProps->mTargetComponent.get();
 					auto flt = [&](const nap::ComponentInstanceProperties& instProp) { return &instProp == instProps; };
-					auto& rootInstProps = mRootEntity->mInstanceProperties;
-					rootInstProps.erase(std::remove_if(rootInstProps.begin(), rootInstProps.end(), flt), rootInstProps.end());
+					auto& rootInstProps = getRootEntity()->mInstanceProperties;
+					rootInstProps.erase(std::remove_if(rootInstProps.begin(), rootInstProps.end(), flt),
+										rootInstProps.end());
 
-					AppContext::get().getDocument()->objectChanged(component);
+					document()->objectChanged(component);
 				}
 
 				// Remove from object list
@@ -259,31 +300,16 @@ napkin::PropertyPath napkin::PropertyPath::getParent() const
 {
 	if (hasProperty())
 	{
-		auto path = mPath;
-		path.popBack();
-		if (path.length() > 0)
-			return {*mObject, path};
-		return {*mObject};
+		if (mPropertyPath.size() > 1)
+			return {mObjectPath, PPath(mPropertyPath.begin(), mPropertyPath.end() - 2)};
+
+		if (mPropertyPath.size() == 1)
+			return {mObjectPath};
 	}
 
-	if (!mCompInstancePath.empty())
-	{
-		auto slashIndex = mCompInstancePath.find_last_of('/');
-		if (slashIndex > 0)
-		{
-			auto parentPath = mCompInstancePath.substr(0, slashIndex);
-			auto parentID = parentPath.substr(parentPath.find_last_of('/')+1);
+	if (mObjectPath.size() > 2)
+		return {PPath(mObjectPath.begin(), mObjectPath.end() - 2)};
 
-			auto idx = parentID.find(':');
-			if (idx > 0)
-				parentID = parentID.substr(0, idx);
-
-			auto obj = AppContext::get().getDocument()->getObject(parentID);
-			assert(obj);
-
-			return {*obj, parentPath};
-		}
-	}
 	return {};
 }
 
@@ -294,11 +320,11 @@ rttr::property napkin::PropertyPath::getProperty() const
 
 rttr::type napkin::PropertyPath::getType() const
 {
-	if (!mObject)
+	if (!getObject())
 		return rttr::type::empty();
 
 	if (!hasProperty())
-		return mObject->get_type();
+		return getObject()->get_type();
 
 	Variant value = resolve().getValue();
 	return value.get_type();
@@ -306,8 +332,9 @@ rttr::type napkin::PropertyPath::getType() const
 
 ResolvedPath napkin::PropertyPath::resolve() const
 {
+	auto path = Path::fromString(propPathStr());
 	ResolvedPath resolvedPath;
-	mPath.resolve(mObject, resolvedPath);
+	path.resolve(getObject(), resolvedPath);
 	return resolvedPath;
 }
 
@@ -348,36 +375,42 @@ napkin::PropertyPath napkin::PropertyPath::getArrayElement(size_t index) const
 {
 	if (!isArray())
 		return PropertyPath();
-	auto child_path = getPath();
-	child_path.pushArrayElement(index);
-	return {*mObject, child_path};
+
+	PPath p = mPropertyPath;
+	p.emplace_back(std::to_string(index));
+	return {mObjectPath, p};
 }
 
 
 std::string napkin::PropertyPath::toString() const
 {
-	if (isInstanceProperty())
-	{
-		if (mPath.length())
-			return componentInstancePath() + "/" + mPath.toString();
-		return componentInstancePath();
-	}
+	if (hasProperty())
+		return objectPathStr() + "@" + propPathStr();
+	return objectPathStr();
+}
 
-	auto objectPath = !mCompInstancePath.empty() ? mCompInstancePath : mObject->mID;
-
-	// Is Property?
-	auto propPathStr = mPath.toString();
-	if (!propPathStr.empty())
-		return objectPath + "@" + propPathStr;
-
-	return objectPath;
+bool napkin::PropertyPath::isInstanceProperty() const
+{
+	return hasProperty() && getRootEntity();
 }
 
 napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) const
 {
-	nap::rtti::Path child_path = getPath();
-	child_path.pushAttribute(name);
-	return {*mObject, child_path};
+	return {objectPathStr(), propPathStr() + "/" + name};
+}
+
+nap::rtti::Object* napkin::PropertyPath::getObject() const
+{
+	if (mObjectPath.empty())
+		return nullptr;
+
+
+	return AppContext::get().getDocument()->getObject(mObjectPath[mObjectPath.size() - 1]);
+}
+
+Path napkin::PropertyPath::getPath() const
+{
+	return Path::fromString(propPathStr());
 }
 
 rttr::type napkin::PropertyPath::getWrappedType() const
@@ -407,41 +440,25 @@ bool napkin::PropertyPath::hasOverriddenChildren() const
 
 bool napkin::PropertyPath::hasProperty() const
 {
-	return mPath.length() > 0;
+	return !mPropertyPath.empty();
 }
 
 bool napkin::PropertyPath::isValid() const
 {
 	// A valid path must always point to an object
-	if (mObject == nullptr)
+	auto obj = getObject();
+	if (!obj)
 		return false;
 
 	if (!hasProperty())
-	{
-		// points to object, not a property
-		if (!mCompInstancePath.empty())
-		{
-			// Points to a component, check if the trailing elements is this object's ID
-			auto elements = nap::utility::splitString(mCompInstancePath, '/');
-			auto lastElement = elements[elements.size() - 1];
-			return mObject->mID == lastElement;
-		}
 		return true;
-	}
 
-	auto resolvedPath = resolve();
-	return resolvedPath.isValid();
-
+	return resolve().isValid();
 }
 
 bool napkin::PropertyPath::operator==(const napkin::PropertyPath& other) const
 {
-	if (getProperty() != other.getProperty())
-		return false;
-	if (&getObject() != &other.getObject())
-		return false;
-
-	return true;
+	return objectPathStr() == other.objectPathStr() && propPathStr() == other.propPathStr();
 }
 
 bool napkin::PropertyPath::isArray() const
@@ -509,7 +526,7 @@ void napkin::PropertyPath::setPointee(Object* pointee)
 		auto target_value = resolved_path.getValue();
 
 		auto doc = AppContext::get().getDocument(); // TODO: This needs to go, but we need it to get a relative path.
-		std::string path = doc->relativeObjectPath(*mObject, *pointee);
+		std::string path = doc->relativeObjectPath(*getObject(), *pointee);
 
 		assign_method.invoke(target_value, path, *pointee);
 
@@ -527,7 +544,7 @@ void napkin::PropertyPath::setPointee(Object* pointee)
 
 void napkin::PropertyPath::iterateChildren(std::function<bool(const napkin::PropertyPath&)> visitor, int flags) const
 {
-	if (!mObject)
+	if (!getObject())
 		return;
 
 	rttr::type type = getType();
@@ -571,12 +588,15 @@ std::vector<napkin::PropertyPath> napkin::PropertyPath::getChildren(int flags) c
 
 void napkin::PropertyPath::iterateProperties(napkin::PropertyVisitor visitor, int flags) const
 {
-	if (!mObject)
+	if (!getObject())
 		return;
 
-	for (rttr::property prop : mObject->get_type().get_properties())
+	for (rttr::property prop : getObject()->get_type().get_properties())
 	{
-		PropertyPath path(*this, prop);
+		PPath propPath;
+		propPath.emplace_back(std::string(prop.get_name().data()));
+		PropertyPath path(mObjectPath, propPath);
+
 		if (!visitor(path))
 			return;
 
@@ -602,8 +622,8 @@ std::vector<napkin::PropertyPath> napkin::PropertyPath::getProperties(int flags)
 int napkin::PropertyPath::getInstanceChildEntityIndex() const
 {
 	// Take the previously set instance path and extract the index from the string
-	auto path = mCompInstancePath;
-	auto basename = nap::utility::splitString(mCompInstancePath, '/').back();
+	auto path = getComponentInstancePath();
+	auto basename = nap::utility::splitString(path, '/').back();
 	auto parts = nap::utility::splitString(basename, ':');
 	assert(parts.size() == 2);
 	auto idxstring = parts.back();
@@ -616,16 +636,16 @@ int napkin::PropertyPath::getRealChildEntityIndex() const
 	auto parent = getParent();
 	assert(parent.isValid());
 	assert(parent.getType().is_derived_from<nap::Entity>());
-	auto parentEntity = dynamic_cast<nap::Entity*>(&parent.getObject());
+	auto parentEntity = dynamic_cast<nap::Entity*>(parent.getObject());
 	assert(parentEntity);
 
 	int instanceIndex = getInstanceChildEntityIndex();
 
 	int foundIDs = 0;
-	for (int i=0, len = static_cast<int>(parentEntity->mChildren.size()); i < len; i++)
+	for (int i = 0, len = static_cast<int>(parentEntity->mChildren.size()); i < len; i++)
 	{
 		auto currChild = parentEntity->mChildren[i];
-		if (mObject->mID == currChild->mID)
+		if (getObject()->mID == currChild->mID)
 		{
 			if (foundIDs == instanceIndex)
 				return i;
@@ -643,9 +663,9 @@ void napkin::PropertyPath::iterateArrayElements(napkin::PropertyVisitor visitor,
 
 	for (int i = 0; i < array.get_size(); i++)
 	{
-		nap::rtti::Path path = getPath();
-		path.pushArrayElement(i);
-		PropertyPath childPath(mRootEntity, *mObject, mCompInstancePath, path);
+		PPath p = mPropertyPath;
+		p.emplace_back(std::to_string(i));
+		PropertyPath childPath(mObjectPath, p);
 
 		if (!visitor(childPath))
 			return;
@@ -659,10 +679,9 @@ void napkin::PropertyPath::iterateChildrenProperties(napkin::PropertyVisitor vis
 {
 	for (auto childProp : getType().get_properties())
 	{
-		auto path = mPath;
-		path.pushAttribute(childProp.get_name().data());
-
-		PropertyPath childPath(mRootEntity, *mObject, mCompInstancePath, path);
+		PPath p = mPropertyPath;
+		p.emplace_back(std::string(childProp.get_name().data()));
+		PropertyPath childPath(mObjectPath, p);
 
 		if (!visitor(childPath))
 			return;
@@ -697,14 +716,39 @@ void napkin::PropertyPath::iteratePointerProperties(napkin::PropertyVisitor visi
 		std::string name = childprop.get_name().data();
 		QString qName = QString::fromStdString(name);
 
-		nap::rtti::Path path;
-		path.pushAttribute(name);
+		PPath op;
+		op.emplace_back(pointee->mID);
+
+		PPath p;
+		p.emplace_back(name);
 
 		// This path points to the pointee
-		PropertyPath childPath(mRootEntity, *pointee, mCompInstancePath, path);
+		PropertyPath childPath(op, p);
 
 		if (!visitor(childPath))
 			return;
 	}
 
 }
+
+napkin::Document* napkin::PropertyPath::document() const
+{
+	return AppContext::get().getDocument();
+}
+
+std::string napkin::PropertyPath::objectPathStr() const
+{
+	std::vector<std::string> elements;
+	for (const auto& elm : mObjectPath)
+		elements.emplace_back(elm);
+	return "/" + nap::utility::joinString(elements, "/");
+}
+
+std::string napkin::PropertyPath::propPathStr() const
+{
+	std::vector<std::string> elements;
+	for (const auto& elm : mPropertyPath)
+		elements.emplace_back(elm);
+	return nap::utility::joinString(elements, "/");
+}
+

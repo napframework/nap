@@ -47,6 +47,8 @@ namespace napkin
 		 */
 		virtual const PropertyPath propertyPath() const;
 
+		std::string absolutePath() const;
+
 		/**
 		 * @return true if this item is representing a pointer instead of the actual object
 		 */
@@ -71,6 +73,8 @@ namespace napkin
 		 * @return The name of the object.
 		 */
 		virtual const QString getName() const;
+
+		virtual const std::string unambiguousName() const;
 
 		/**
 		 * Override from QStandardItem
@@ -113,15 +117,16 @@ namespace napkin
 		/**
 		 * Disabmiguating index of child, index only increments when multiple children with the same name are found.
 		 */
-		int uniqueNameChildIndex(const ObjectItem& childItem) const;
+		int nameIndex(const ObjectItem& childItem) const;
 
 	protected:
+
 		nap::rtti::Object* mObject; // THe object held by this item
 
 	private:
 		void onPropertyValueChanged(PropertyPath path);
 		void onObjectRemoved(nap::rtti::Object* o);
-
+		std::string mAbsolutePath;
 		bool mIsPointer;
 	};
 
@@ -137,6 +142,8 @@ namespace napkin
 		 * @return The entity held by this item
 		 */
 		nap::Entity* getEntity();
+
+		const std::string unambiguousName() const override;
 
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
@@ -177,10 +184,10 @@ namespace napkin
 		Q_OBJECT
 	public:
 		explicit EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity);
-		nap::RootEntity& rootEntity() const;
+		virtual nap::RootEntity& rootEntity() const;
 		nap::Entity& entity() const { return *dynamic_cast<nap::Entity*>(mObject); }
 		const PropertyPath propertyPath() const override;
-
+		const std::string unambiguousName() const override;
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
@@ -196,8 +203,7 @@ namespace napkin
 		const PropertyPath propertyPath() const override;
 
 		SceneItem* sceneItem() { return dynamic_cast<SceneItem*>(QStandardItem::parent()); }
-		nap::RootEntity& rootEntity() const;
-
+		nap::RootEntity& rootEntity() const override;
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);

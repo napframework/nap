@@ -165,7 +165,7 @@ void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 	{
 		auto path = paths.first();
 		// Don't edit scenes
-		if (!path.getObject().get_type().is_derived_from<nap::Scene>())
+		if (!path.getType().is_derived_from<nap::Scene>())
 			mInspectorPanel.setPath(paths.first());
 	}
 
@@ -173,7 +173,7 @@ void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 	mCurvePanel.editCurve(nullptr);
 	if (!paths.isEmpty())
 	{
-		auto ob = dynamic_cast<nap::math::FloatFCurve*>(&paths.first().getObject());
+		auto ob = dynamic_cast<nap::math::FloatFCurve*>(paths.first().getObject());
 		if (ob)
 			mCurvePanel.editCurve(ob);
 	}
@@ -193,8 +193,12 @@ void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
 		auto path = paths.first();
 
 		// Don't edit scenes
-		if (!path.getObject().get_type().is_derived_from<nap::Scene>())
+		if (!path.getType().is_derived_from<nap::Scene>())
 			mInspectorPanel.setPath(paths.first());
+
+		auto compInstPath = path.getComponentInstancePath();
+		if (!compInstPath.empty())
+			qInfo() << QString::fromStdString(compInstPath);
 	}
 }
 
