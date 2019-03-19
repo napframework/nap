@@ -18,9 +18,7 @@ if(NOT TARGET FreeImage)
 endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
 
-if(NOT TARGET nrender)
-    include(${CMAKE_SOURCE_DIR}/../../cmake/nrender.cmake)
-endif(NOT TARGET nrender)
+include(${CMAKE_SOURCE_DIR}/../../cmake/nrender.cmake)
 target_link_libraries(${PROJECT_NAME} nrender)
 target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDES})
 
