@@ -166,7 +166,7 @@ namespace nap
 			//ImGui::SliderFloat("Video Mask Value", &(up_mat_comp.mVideoMaskValue), 0.0f, 1.0f);
 			//ImGui::SliderFloat("Video Mask Contrast", &(up_mat_comp.mVideoContrastValue), 0.0f, 2.5f);
 			//ImGui::SliderFloat("Video Blend Value", &(up_mat_comp.mVideoTexMix), 0.0f, 1.0f);
-		}
+//		}
 
 		// Texture scale
 // 		if (ImGui::CollapsingHeader("Texture Settings"))
