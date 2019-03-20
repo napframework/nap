@@ -43,8 +43,10 @@ namespace nap
 		// We know it's there because we added it as a dependency above
 		mVideoMesh = &getEntityInstance()->getComponent<RenderableMeshComponentInstance>();
 
+		resource->mIndex->valueChanged.connect(mVideoIndexChangedSlot);
+
 		// Select one
-		selectVideo(resource->mIndex);
+		selectVideo(resource->mIndex->mValue);
 		return true;
 	}
 
@@ -68,8 +70,7 @@ namespace nap
 		if (mCurrentVideo != nullptr)
 			mCurrentVideo->stop(true);
         
-		mCurrentIndex = math::clamp<int>(index, 0, mVideos.size() - 1);
-		mCurrentVideo = mVideos[mCurrentIndex];
+		mCurrentVideo = mVideos[index];
 		mCurrentVideo->mLoop = true;
 		mCurrentVideo->play();
 	}

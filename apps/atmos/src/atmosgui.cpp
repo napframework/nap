@@ -55,8 +55,9 @@ namespace nap
 		mParameterGUI = std::make_unique<ParameterGUI>(mParameterService);
 
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
-		mCameraMovSpeed = resourceManager->findObject<ParameterFloat>("CameraMovSpeed");
-		mCameraRotSpeed = resourceManager->findObject<ParameterFloat>("CameraRotSpeed");
+		mCameraMovSpeed = resourceManager->findObject<ParameterFloat>("Camera Movement Speed");
+		mCameraRotSpeed = resourceManager->findObject<ParameterFloat>("Camera Rotation Speed");
+		mRotateSpeed	= resourceManager->findObject<ParameterFloat>("Rotation Speed");
 	}
 
 
@@ -109,80 +110,82 @@ namespace nap
 		mHide = !mHide;
 	}
 
+
 	void AtmosGui::showControlWindow()
 	{
 		// Resets all the tracers
 		ImGui::Begin("Controls");
 
 		// Select mesh slider
-		nap::SelectMeshComponentInstance& mesh_selector = mApp.mScanEntity->getComponent<SelectMeshComponentInstance>();
-		int ci = mesh_selector.getIndex();
-		if (ImGui::SliderInt("Select Mesh", &ci, 0, mesh_selector.getCount() - 1))
-		{
-			mesh_selector.selectMesh(ci);
-		}
+// 		nap::SelectMeshComponentInstance& mesh_selector = mApp.mScanEntity->getComponent<SelectMeshComponentInstance>();
+// 		int ci = mesh_selector.getIndex();
+// 		if (ImGui::SliderInt("Select Mesh", &ci, 0, mesh_selector.getCount() - 1))
+// 		{
+// 			mesh_selector.selectMesh(ci);
+// 		}
 
-		// Select image 1 (tileable) slider
-		nap::SelectImageComponentInstance* img_selector_tileable = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentTileable");
-		assert(img_selector_tileable != nullptr);
-		ci = img_selector_tileable->getIndex();
-		if (ImGui::SliderInt("Select Tileable Texture", &ci, 0, img_selector_tileable->getCount() - 1))
-		{
-			img_selector_tileable->selectImage(ci);
-		}
+// 		// Select image 1 (tileable) slider
+// 		nap::SelectImageComponentInstance* img_selector_tileable = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentTileable");
+// 		assert(img_selector_tileable != nullptr);
+// 		int ci = img_selector_tileable->getIndex();
+// 		if (ImGui::SliderInt("Select Tileable Texture", &ci, 0, img_selector_tileable->getCount() - 1))
+// 		{
+// 			img_selector_tileable->selectImage(ci);
+// 		}
 
 		// Select image 2 (stretched / single) slider
-		nap::SelectImageComponentInstance* img_selector_single = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentSingle");
-		assert(img_selector_single != nullptr);
-		ci = img_selector_single->getIndex();
-		if (ImGui::SliderInt("Select Stretch Texture", &ci, 0, img_selector_single->getCount() - 1))
-		{
-			img_selector_single->selectImage(ci);
-		}
-
+// 		nap::SelectImageComponentInstance* img_selector_single = mApp.mScanEntity->findComponentByID<SelectImageComponentInstance>("SelectImageComponentSingle");
+// 		assert(img_selector_single != nullptr);
+// 		int ci = img_selector_single->getIndex();
+// 		if (ImGui::SliderInt("Select Stretch Texture", &ci, 0, img_selector_single->getCount() - 1))
+// 		{
+// 			img_selector_single->selectImage(ci);
+// 		}
+// 
 		// Select video
-		nap::SelectVideoComponentInstance& video_selector = mApp.mVideoEntity->getComponent<SelectVideoComponentInstance>();
-		ci = video_selector.getIndex();
-		if (ImGui::SliderInt("Select Video", &ci, 0, video_selector.getCount() - 1))
-		{
-			video_selector.selectVideo(ci);
-		}
+// 		nap::SelectVideoComponentInstance& video_selector = mApp.mVideoEntity->getComponent<SelectVideoComponentInstance>();
+// 		int ci = video_selector.getIndex();
+// 		if (ImGui::SliderInt("Select Video", &ci, 0, video_selector.getCount() - 1))
+// 		{
+// 			video_selector.selectVideo(ci);
+// 		}
 
-		RotateComponentInstance& rot_comp = mApp.mWorldEntity->getComponent<RotateComponentInstance>();
-		ImGui::SliderFloat("Rotate Speed", &(rot_comp.mProperties.mSpeed), -0.1f, 0.1f);
+ 		RotateComponentInstance& rot_comp = mApp.mWorldEntity->getComponent<RotateComponentInstance>();
+		rot_comp.mProperties.mSpeed = mRotateSpeed->mValue;
+// 		ImGui::SliderFloat("Rotate Speed", &(rot_comp.mProperties.mSpeed), -0.1f, 0.1f);
 
 		// Mix Controls
 		nap::UpdateMaterialComponentInstance& up_mat_comp = mApp.mScanEntity->getComponent<UpdateMaterialComponentInstance>();
-		if (ImGui::CollapsingHeader("Color Mixing"))
-		{
-			ImGui::ColorEdit3("Diffuse Color", up_mat_comp.mDiffuseColor.getData());
-			ImGui::ColorEdit3("Mask Color", up_mat_comp.mMaskColor.getData());
-			ImGui::SliderFloat("Premult Blend Value", &(up_mat_comp.mPremultValue), 0.0f, 1.0f);
-			ImGui::SliderFloat("Texture Blend Value", &(up_mat_comp.mColorTexMix), 0.0f, 1.0f);
-			ImGui::SliderFloat("Diffuse Blend Value", &(up_mat_comp.mDiffuseColorMix), 0.0f, 1.0f);
-			ImGui::SliderFloat("Video Mask Value", &(up_mat_comp.mVideoMaskValue), 0.0f, 1.0f);
-			ImGui::SliderFloat("Video Mask Contrast", &(up_mat_comp.mVideoContrastValue), 0.0f, 2.5f);
-			ImGui::SliderFloat("Video Blend Value", &(up_mat_comp.mVideoTexMix), 0.0f, 1.0f);
+// 		if (ImGui::CollapsingHeader("Color Mixing"))
+// 		{
+			//ImGui::ColorEdit3("Diffuse Color", up_mat_comp.mDiffuseColor.getData());
+//			ImGui::ColorEdit3("Mask Color", up_mat_comp.mMaskColor.getData());
+			//ImGui::SliderFloat("Premult Blend Value", &(up_mat_comp.mPremultValue), 0.0f, 1.0f);
+			//ImGui::SliderFloat("Texture Blend Value", &(up_mat_comp.mColorTexMix), 0.0f, 1.0f);
+			//ImGui::SliderFloat("Diffuse Blend Value", &(up_mat_comp.mDiffuseColorMix), 0.0f, 1.0f);
+			//ImGui::SliderFloat("Video Mask Value", &(up_mat_comp.mVideoMaskValue), 0.0f, 1.0f);
+			//ImGui::SliderFloat("Video Mask Contrast", &(up_mat_comp.mVideoContrastValue), 0.0f, 2.5f);
+			//ImGui::SliderFloat("Video Blend Value", &(up_mat_comp.mVideoTexMix), 0.0f, 1.0f);
 		}
 
 		// Texture scale
-		if (ImGui::CollapsingHeader("Texture Settings"))
-		{
-			ImGui::SliderFloat("Tileable Scale", &(up_mat_comp.mColorTexScaleOne), 0.01f, 200.0f, "%.3f", 3.0f);
-			ImGui::SliderFloat("Stretch Scale", &(up_mat_comp.mColorTexScaleTwo), 0.01f, 200.0f, "%.3f", 3.0f);
-			ImGui::SliderFloat2("Stretch Slide Speed", &(up_mat_comp.mTextureSpeed[0]), -1.0f, 1.0f, "%.3f", 1.5f);
-			ImGui::SliderFloat("Video Scale", &(up_mat_comp.mVideoTexScaleOne), 0.01f, 200.0f, "%.3f", 3.0f);
-			ImGui::SliderFloat2("Video Slide Speed", &(up_mat_comp.mVideoTexureSpeed[0]), -1.0f, 1.0f, "%.3f", 1.5f);
-		}
+// 		if (ImGui::CollapsingHeader("Texture Settings"))
+// 		{
+// 			ImGui::SliderFloat("Tileable Scale", &(up_mat_comp.mColorTexScaleOne), 0.01f, 200.0f, "%.3f", 3.0f);
+// 			ImGui::SliderFloat("Stretch Scale", &(up_mat_comp.mColorTexScaleTwo), 0.01f, 200.0f, "%.3f", 3.0f);
+//			ImGui::SliderFloat2("Stretch Slide Speed", &(up_mat_comp.mTextureSpeed[0]), -1.0f, 1.0f, "%.3f", 1.5f);
+// 			ImGui::SliderFloat("Video Scale", &(up_mat_comp.mVideoTexScaleOne), 0.01f, 200.0f, "%.3f", 3.0f);
+// 			ImGui::SliderFloat2("Video Slide Speed", &(up_mat_comp.mVideoTexureSpeed[0]), -1.0f, 1.0f, "%.3f", 1.5f);
+//		}
 
 		// Light controls
-		if (ImGui::CollapsingHeader("Lighting"))
-		{
-			ImGui::SliderFloat3("Light Position", &(up_mat_comp.mLightPos[0]), -300.0f, 300.0f);
-			ImGui::SliderFloat("Light Intensity", &(up_mat_comp.mLightIntensity), 0.00001f, 2.0f);
-			ImGui::SliderFloat("Ambient Intensity", &(up_mat_comp.mAmbientIntensity), 0.00001f, 1.0f);
-			ImGui::SliderFloat("Diffuse Intensity", &(up_mat_comp.mDiffuseIntensity), 0.00001f, 1.0f);
-		}
+// 		if (ImGui::CollapsingHeader("Lighting"))
+// 		{
+//			ImGui::SliderFloat3("Light Position", &(up_mat_comp.mLightPos[0]), -300.0f, 300.0f);
+// 			ImGui::SliderFloat("Light Intensity", &(up_mat_comp.mLightIntensity), 0.00001f, 2.0f);
+// 			ImGui::SliderFloat("Ambient Intensity", &(up_mat_comp.mAmbientIntensity), 0.00001f, 1.0f);
+// 			ImGui::SliderFloat("Diffuse Intensity", &(up_mat_comp.mDiffuseIntensity), 0.00001f, 1.0f);
+//
 
 		if (ImGui::CollapsingHeader("Hair"))
 		{

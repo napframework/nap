@@ -33,6 +33,24 @@ namespace nap
 		ComponentPtr<SelectImageComponent> mTileableImageSelectComponent = nullptr;		///< Property: "TileableImageSelectComponent'
 		ComponentPtr<SelectImageComponent> mSingleImageSelectComponent = nullptr;		///< Property: "SingleImageSelectComponent
 		ComponentPtr<TransformComponent> mCameraTransformComponent = nullptr;			///< Property: "CameraTransformComponent"
+
+		ResourcePtr<ParameterFloat>				mPremultValue;
+		ResourcePtr<ParameterFloat>				mColorTexMix;
+		ResourcePtr<ParameterFloat>				mDiffuseColorMix;
+		ResourcePtr<ParameterFloat>				mVideoMaskValue;
+		ResourcePtr<ParameterFloat>				mVideoContrastValue;
+		ResourcePtr<ParameterFloat>				mVideoTexMix;
+		ResourcePtr<ParameterRGBColorFloat>		mDiffuseColor;
+		ResourcePtr<ParameterRGBColorFloat>		mMaskColor;
+		ResourcePtr<ParameterFloat>				mColorTexScaleOne;
+		ResourcePtr<ParameterFloat>				mColorTexScaleTwo;
+		ResourcePtr<ParameterVec2>				mTextureSpeed;
+		ResourcePtr<ParameterFloat>				mVideoTexScaleOne;
+		ResourcePtr<ParameterVec2>				mVideoTextureSpeed;
+		ResourcePtr<ParameterVec3>				mLightPos;
+		ResourcePtr<ParameterFloat>				mLightIntensity;
+		ResourcePtr<ParameterFloat>				mAmbientIntensity;
+		ResourcePtr<ParameterFloat>				mDiffuseIntensity;
 	};
 
 
@@ -44,7 +62,10 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		UpdateMaterialComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)									{ }
+			ComponentInstance(entity, resource),
+			mUpdateMaterialResource(rtti_cast<UpdateMaterialComponent>(&resource))
+		{
+		}
 
 		/**
 		 * Initialize updatematerialcomponentInstance based on the updatematerialcomponent resource
@@ -65,27 +86,6 @@ namespace nap
 		ComponentInstancePtr<SelectImageComponent> mTileableImageSelectComponent =		{ this, &UpdateMaterialComponent::mTileableImageSelectComponent };
 		ComponentInstancePtr<SelectImageComponent> mSingleImageSelectComponent =		{ this, &UpdateMaterialComponent::mSingleImageSelectComponent };
 		ComponentInstancePtr<TransformComponent> mCameraTransform =						{ this, &UpdateMaterialComponent::mCameraTransformComponent };
-
-		// Properties
-		float			mColorTexScaleOne	= 10.0f;
-		float			mColorTexScaleTwo	= 1.0f;
-		float			mVideoTexScaleOne	= 1.0f;
-		float			mColorTexMix		= 0.0f;
-		float			mVideoTexMix		= 0.0f;
-		float			mDiffuseColorMix	= 0.0f;
-		RGBColorFloat	mDiffuseColor		= { 0.0f, 0.0f, 0.0f };
-		float			mPremultValue		= { 0.0f };
-		glm::vec2		mTextureSpeed		= { 0.0f, 0.0f };
-		glm::vec2		mVideoTexureSpeed	= { 0.0f, 0.0f };
-		float			mVideoMaskValue		= 1.0f;
-		float			mVideoContrastValue = 1.0f;
-		RGBColorFloat	mMaskColor			= { 0.0f, 0.0f, 0.0f };
-
-		// Light
-		glm::vec3		mLightPos			= { 0, 100.0f, 100.0f };
-		float			mLightIntensity		= 1.0f;
-		float			mAmbientIntensity	= 0.5f;
-		float			mDiffuseIntensity	= 1.0f;
 
 		float			mNormalSpecIntens	= 0.5f;
 		float			mScanSpecIntens		= 0.25f;
@@ -113,6 +113,8 @@ namespace nap
 		float			mFogPower			= 2.0f;
 
 	private:
+		UpdateMaterialComponent* mUpdateMaterialResource;
+
 		double mWindTime = 0.0;
 		double mTexTimeU = 0.0;
 		double mTexTimeV = 0.0;

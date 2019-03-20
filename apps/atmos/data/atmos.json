@@ -3,6 +3,43 @@
         {
             "Type": "nap::ParameterContainer",
 			"mID" : "Parameters",
+            "Parameters" : [
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Selected Mesh",
+                    "Value" : 0,
+                    "Minimum" : 0,
+                    "Maximum" : 4
+                },
+                                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Selected Tileable Image",
+                    "Value" : 0,
+                    "Minimum" : 0,
+                    "Maximum" : 20
+                },
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Selected Stretch Image",
+                    "Value" : 0,
+                    "Minimum" : 0,
+                    "Maximum" : 3
+                },
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Selected Video",
+                    "Value" : 0,
+                    "Minimum" : 0,
+                    "Maximum" : 0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Rotation Speed",
+                    "Value" : 0,
+                    "Minimum" : -0.1,
+                    "Maximum" : 0.1
+                } 
+            ],
             "Children" : [
                 {
                     "Type": "nap::ParameterContainer",
@@ -11,20 +48,179 @@
                     [
                         {
                             "Type": "nap::ParameterFloat",
-                            "mID": "CameraMovSpeed",
+                            "mID": "Camera Movement Speed",
                             "Value" : 15.0,
                             "Minimum" : 0.0,
                             "Maximum" : 10.0
                         },
                         {
                             "Type": "nap::ParameterFloat",
-                            "mID": "CameraRotSpeed",
+                            "mID": "Camera Rotation Speed",
                             "Value" : 0.0010000000474974514,
                             "Minimum" : 0.0,
                             "Maximum" : 10.0
                         }           
                     ]                    
-                }
+                },
+                {
+                    "Type": "nap::ParameterContainer",
+                    "mID": "Color Mixing",
+                    "Parameters" :
+                    [
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "Diffuse Color",
+                            "Value" : 
+                            { 
+                                "Red" : 0.0, 
+                                "Green" : 0.0, 
+                                "Blue" : 0.0 
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "Mask Color",
+                            "Value" : 
+                            { 
+                                "Red" : 0.0, 
+                                "Green" : 0.0, 
+                                "Blue" : 0.0 
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Premult Blend Value",
+                            "Value" : 0.0,
+                            "Minimum" : 0.0,
+                            "Maximum" : 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Texture Blend Value",
+                            "Value" : 0.0,
+                            "Minimum" : 0.0,
+                            "Maximum" : 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Diffuse Blend Value",
+                            "Value" : 0.0,
+                            "Minimum" : 0.0,
+                            "Maximum" : 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Video Mask Value",
+                            "Value" : 1.0,
+                            "Minimum" : 0.0,
+                            "Maximum" : 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Video Mask Contrast",
+                            "Value" : 1.0,
+                            "Minimum" : 0.0,
+                            "Maximum" : 2.5
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Video Blend Value",
+                            "Value" : 0.0,
+                            "Minimum" : 0.0,
+                            "Maximum" : 1.0
+                        }
+                    ]                    
+                },
+                {
+                    "Type": "nap::ParameterContainer",
+                    "mID": "Texture Settings",
+                    "Parameters" :
+                    [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Tileable Scale",
+                            "Value" : 10.0,
+                            "Minimum" : 0.01,
+                            "Maximum" : 200.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Stretch Scale",
+                            "Value" : 1.0,
+                            "Minimum" : 0.01,
+                            "Maximum" : 200.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID":  "Stretch Slide Speed",
+                            "Value" : 
+                            {
+                                "x" : 0.0,
+                                "y" : 0.0
+                            },
+                            "Minimum" : -1.0,
+                            "Maximum" : 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Video Scale",
+                            "Value" : 1.0,
+                            "Minimum" : 0.01,
+                            "Maximum" : 200.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID":  "Video Slide Speed",
+                            "Value" : 
+                            {
+                                "x" : 0.0,
+                                "y" : 0.0
+                            },
+                            "Minimum" : -1.0,
+                            "Maximum" : 1.0
+                        }
+                    ]                    
+                },
+                {
+                    "Type": "nap::ParameterContainer",
+                    "mID": "Lighting",
+                    "Parameters" :
+                    [
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID":  "Light Position",
+                            "Value" : 
+                            {
+                                "x" : 0.0,
+                                "y" : 100.0,
+                                "z" : 100.0
+                            },
+                            "Minimum" : -300.0,
+                            "Maximum" : 300.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Light Intensity",
+                            "Value" : 1.0,
+                            "Minimum" : 0.00001,
+                            "Maximum" : 2.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Ambient Intensity",
+                            "Value" : 0.5,
+                            "Minimum" : 0.00001,
+                            "Maximum" : 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Diffuse Intensity",
+                            "Value" : 1.0,
+                            "Minimum" : 0.00001,
+                            "Maximum" : 1.0
+                        }
+                    ]
+                }                
             ]
 		},
         {
@@ -188,7 +384,7 @@
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
-                    "Index": 0
+                    "Index": "Selected Mesh"
                 },
                 {
                     "Type": "nap::SelectImageComponent",
@@ -216,7 +412,7 @@
                         "ImageTileable20",
                         "ImageTileable21"
                     ],
-                    "Index": 0
+                    "Index": "Selected Tileable Image"
                 },
                 {
                     "Type": "nap::SelectImageComponent",
@@ -227,7 +423,7 @@
                         "ImageSingle03",
                         "ImageSingle04"
                     ],
-                    "Index": 0
+                    "Index": "Selected Stretch Image"
                 },
                 {
                     "Type": "nap::UpdateMaterialComponent",
@@ -236,7 +432,24 @@
                     "NormalMeshComponent": "./ScanNormalRenderableMesh",
                     "TileableImageSelectComponent": "./SelectImageComponentTileable",
                     "SingleImageSelectComponent": "./SelectImageComponentSingle",
-                    "CameraTransformComponent": "CameraTransform"
+                    "CameraTransformComponent": "CameraTransform",
+                    "PremultValue" : "Premult Blend Value",
+                    "ColorTexMix" : "Texture Blend Value",
+                    "DiffuseColorMix" : "Diffuse Blend Value",
+                    "VideoMaskValue" : "Video Mask Value",
+                    "VideoContrastValue" : "Video Mask Contrast",
+                    "VideoTexMix" : "Video Blend Value",
+                    "DiffuseColor" : "Diffuse Color",
+                    "MaskColor" : "Mask Color",
+                    "ColorTexScaleOne" : "Tileable Scale",
+                    "ColorTexScaleTwo" : "Stretch Scale",
+                    "TextureSpeed" : "Stretch Slide Speed",
+                    "VideoTexScaleOne" : "Video Scale",
+                    "VideoTextureSpeed" : "Video Slide Speed",
+                    "LightPos" : "Light Position",
+                    "LightIntensity" : "Light Intensity",
+                    "AmbientIntensity" : "Ambient Intensity",
+                    "DiffuseIntensity" : "Diffuse Intensity"
                 }
             ],
             "Children": []
@@ -345,7 +558,7 @@
                     "Videos": [
                         "Video1"
                     ],
-                    "Index": 0
+                    "Index": "Selected Video"
                 }
             ],
             "Children": []

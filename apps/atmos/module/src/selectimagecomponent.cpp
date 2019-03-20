@@ -40,8 +40,10 @@ namespace nap
 		for (auto& image : resource->mImages)
 			mImages.emplace_back(image.get());
 
+		resource->mIndex->valueChanged.connect(mImageIndexChangedSlot);
+
 		// Select the right image (clamped)
-		selectImage(resource->mIndex);
+		selectImage(resource->mIndex->mValue);
 
 		return true;
 	}
@@ -55,8 +57,7 @@ namespace nap
 
 	void SelectImageComponentInstance::selectImage(int index)
 	{
-		mCurrentIndex = math::clamp<int>(index, 0, mImages.size() - 1);
-		mCurrentImage = mImages[mCurrentIndex];
+		mCurrentImage = mImages[index];
 	}
 
 

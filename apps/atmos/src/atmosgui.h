@@ -64,6 +64,7 @@ namespace nap
 		float								mVidPreviewDisplaySize = 1.0f;
 		ResourcePtr<ParameterFloat>			mCameraMovSpeed;
 		ResourcePtr<ParameterFloat>			mCameraRotSpeed;
+		ResourcePtr<ParameterFloat>			mRotateSpeed;
 		float								mCamMaxRotSpeed;
 		float								mCamMaxMovSpeed;
 		bool								mLinkFogToBackground = true;

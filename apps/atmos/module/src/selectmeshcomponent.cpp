@@ -11,7 +11,7 @@ RTTI_BEGIN_CLASS(nap::SelectMeshComponent)
 	RTTI_PROPERTY("Meshes",					&nap::SelectMeshComponent::mMeshes,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ScanMeshComponent",		&nap::SelectMeshComponent::mScanMeshComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("NormalsMeshComponent",	&nap::SelectMeshComponent::mNormalsMeshComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",	&nap::SelectMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Index",					&nap::SelectMeshComponent::mIndex,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::selectvideomeshcomponentInstance run time class definition 
@@ -58,8 +58,10 @@ namespace nap
 		// Copy normals mesh
 		mNormalsMesh = static_cast<nap::VisualizeNormalsMesh*>(&(mNormalsMeshComponent->getMesh()));
 
+		resource->mIndex->valueChanged.connect(mMeshIndexChangedSlot);
+
 		// Select the mesh to display based on resource index
-		selectMesh(resource->mIndex);
+		selectMesh(resource->mIndex->mValue);
 
 		return true;
 	}
@@ -74,8 +76,7 @@ namespace nap
 	void SelectMeshComponentInstance::selectMesh(int index)
 	{
 		// Get current mesh based on new index
-		mCurrentIndex = math::clamp<int>(index, 0, mScanMeshes.size() - 1);
-		mCurrentMesh = &mScanMeshes[mCurrentIndex];
+		mCurrentMesh = &mScanMeshes[index];
 		
 		// Set the new mesh
 		mScanMeshComponent->setMesh(*mCurrentMesh);
@@ -86,7 +87,7 @@ namespace nap
 		
 		// Set and update normals
 		nap::utility::ErrorState error;
-		normals_mesh->setReferenceMesh(*(mPointMeshes[mCurrentIndex]), error);
+		normals_mesh->setReferenceMesh(*(mPointMeshes[index]), error);
 		normals_mesh->calculateNormals(error, true);
 	}
 
