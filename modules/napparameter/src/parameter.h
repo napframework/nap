@@ -8,6 +8,7 @@
 #include "nap/service.h"
 #include "nap/signalslot.h"
 #include "mathutils.h"
+#include "../../naprender/src/color.h"
 
 namespace nap
 {
@@ -73,6 +74,67 @@ namespace nap
 		Signal<T> valueChanged;
 	};
 
+	template<typename T>
+	class NumericVecParameter : public Parameter
+	{
+		RTTI_ENABLE(Parameter)
+	public:
+		virtual void setValue(const Parameter& value) override
+		{
+			const NumericVecParameter<T>* derived_type = rtti_cast<const NumericVecParameter<T>>(&value);
+			assert(derived_type != nullptr);
+
+			mMinimum = derived_type->mMinimum;
+			mMaximum = derived_type->mMaximum;
+
+			setValue(derived_type->mValue);
+		}
+
+		void setValue(T value)
+		{
+			T oldValue = mValue;
+			for (int i = 0; i != mValue.length(); ++i)
+				mValue[i] = math::clamp(value[i], mMinimum, mMaximum);
+
+			if (oldValue != mValue)
+			{
+				valueChanged(mValue);
+			}
+		}
+
+	public:
+		T	mValue;											///< managed value
+		typename T::value_type	mMinimum = std::numeric_limits<typename T::value_type>::min();
+		typename T::value_type	mMaximum = std::numeric_limits<typename T::value_type>::max();
+
+		Signal<T> valueChanged;
+	};
+
+	class ParameterRGBColorFloat : public Parameter
+	{
+		RTTI_ENABLE(Parameter)
+	public:
+		virtual void setValue(const Parameter& value) override
+		{
+			const ParameterRGBColorFloat* derived_type = rtti_cast<const ParameterRGBColorFloat>(&value);
+			assert(derived_type != nullptr);
+			setValue(derived_type->mValue);
+		}
+
+		void setValue(const RGBColorFloat& value)
+		{
+			if (value != mValue)
+			{
+				mValue = value;
+				valueChanged(mValue);
+			}
+		}
+
+	public:
+		RGBColorFloat mValue;
+		Signal<RGBColorFloat> valueChanged;
+	};
+
 	class NAPAPI ParameterService : public Service
 	{
 		RTTI_ENABLE(Service)
@@ -110,4 +172,8 @@ namespace nap
 	using ParameterByte = NumericParameter<uint8_t>;
 	using ParameterDouble = NumericParameter<double>;
 	using ParameterLong = NumericParameter<int64_t>;
+
+	using ParameterVec2 = NumericVecParameter<glm::vec2>;
+	using ParameterIVec2 = NumericVecParameter<glm::ivec2>;
+	using ParameterVec3 = NumericVecParameter<glm::vec3>;
 }

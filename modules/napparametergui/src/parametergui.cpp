@@ -9,7 +9,7 @@ namespace nap
 	{
 		float value = parameter.mValue;
 		if (ImGui::SliderFloat(parameter.mID.c_str(), &value, parameter.mMinimum, parameter.mMaximum))
-			parameter.mValue = value;
+			parameter.setValue(value);
 	}
 
 	template<class PARAMETERTYPE>
@@ -17,7 +17,7 @@ namespace nap
 	{
 		int value = parameter.mValue;
 		if (ImGui::SliderInt(parameter.mID.c_str(), &value, parameter.mMinimum, parameter.mMaximum))
-			parameter.mValue = value;
+			parameter.setValue(value);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -286,6 +286,21 @@ namespace nap
 				{
 					ParameterChar* int_parameter = rtti_cast<ParameterChar>(parameter.get());
 					showIntParameter(*int_parameter);
+				}
+				else if (type == RTTI_OF(ParameterRGBColorFloat))
+				{
+					ParameterRGBColorFloat* color_parameter = rtti_cast<ParameterRGBColorFloat>(parameter.get());
+					ImGui::ColorEdit3(color_parameter->mID.c_str(), color_parameter->mValue.getData());
+				}
+				else if (type == RTTI_OF(ParameterVec2))
+				{
+					ParameterVec2* vec2_parameter = rtti_cast<ParameterVec2>(parameter.get());
+					ImGui::SliderFloat2(vec2_parameter->mID.c_str(), &(vec2_parameter->mValue[0]), vec2_parameter->mMinimum, vec2_parameter->mMaximum);
+				}
+				else if (type == RTTI_OF(ParameterVec3))
+				{
+					ParameterVec3* vec3_parameter = rtti_cast<ParameterVec3>(parameter.get());
+					ImGui::SliderFloat3(vec3_parameter->mID.c_str(), &(vec3_parameter->mValue[0]), vec3_parameter->mMinimum, vec3_parameter->mMaximum);
 				}
 			}
 
