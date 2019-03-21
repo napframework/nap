@@ -116,6 +116,13 @@ void HandleItem::updateRect()
 	mRect.setCoords(-ext, -ext, ext * 2, ext * 2);
 	path.addRect(mRect);
 	setPath(path);
+	mShape = QPainterPath();
+	mShape.addRect(-mShapeExtent, -mShapeExtent, mShapeExtent * 2, mShapeExtent * 2);
+}
+
+QPainterPath HandleItem::shape() const
+{
+	return mShape;
 }
 
 void HandleItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
