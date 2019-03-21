@@ -327,8 +327,8 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 
 	resolved_path.setValue(array);
 
-	propertyValueChanged(path);
 	propertyChildInserted(path, index);
+	propertyValueChanged(path);
 
 	return index;
 }
