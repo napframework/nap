@@ -36,6 +36,7 @@ namespace nap
 			const CurveSegmentItem& curveSegmentItem() const;
 			void setEmitItemChanged(bool b) { mEmitItemChanges = b; }
 			virtual void updateRect();
+			QPainterPath shape() const override;
 
 		Q_SIGNALS:
 			/**
@@ -58,6 +59,8 @@ namespace nap
 			QBrush mBrushSelected;
 			qreal mExtent = 2;
 			qreal mExtentSelectd = 2;
+			qreal mShapeExtent = 8; // used for hit detection (amongst others)
+			QPainterPath mShape; // shape used for hit detection (amongst others)
 			bool mEmitItemChanges = true;
 			QRectF mRect;
 		};
@@ -70,6 +73,7 @@ namespace nap
 		{
 		public:
 			explicit PointHandleItem(CurveSegmentItem& parent);
+
 		};
 
 		/**
