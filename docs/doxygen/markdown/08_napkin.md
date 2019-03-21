@@ -101,7 +101,9 @@ Controls:
 - `CTRL + LMB` add a point on the curve at the clicked location
 - `LMB + drag` in the background to rubberband select point handles or tangent handles
 - `ALT + MMB` pan the view
-- `ALT + RMB` to zoom the view
+- `ALT + RMB` zoom the view horizontally
+- `SHIFT + RMB` zoom the view vertically
+- `SHIFT + ALT + RMB' zoom the view both vertically and horizontally  
 - `F` to frame the selected handles inside the view (if no handles are selected, frame all)
 - `A` to frame the entire curve inside the view
 
