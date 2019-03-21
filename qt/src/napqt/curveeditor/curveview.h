@@ -8,6 +8,7 @@
 #include <napqt/gridview.h>
 #include <QtWidgets/QDoubleSpinBox>
 #include <napqt/floatlineedit.h>
+#include <napqt/flowlayout.h>
 #include "standardcurve.h"
 
 
@@ -353,7 +354,8 @@ namespace nap
 
 			QVBoxLayout mLayout;
 			CurveView mCurveView;
-			QToolBar mToolBar;
+			QWidget mToolbar;
+			FlowLayout mToolbarLayout;
 			FloatLineEdit mTimeSpinbox;
 			FloatLineEdit mValueSpinbox;
 			AbstractCurveModel* mCurveModel = nullptr;
