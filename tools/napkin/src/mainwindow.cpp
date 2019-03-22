@@ -29,13 +29,8 @@ void MainWindow::unbindSignals()
 
 void MainWindow::showEvent(QShowEvent* event)
 {
-	auto defaultSettingsFile = QString("%1/%2")
-			.arg(QString::fromStdString(nap::utility::getExecutableDir()),DEFAULT_SETTINGS_FILE);
-
-	QSettings defaultSettings(defaultSettingsFile, QSettings::IniFormat);
-	if (!QFileInfo::exists(DEFAULT_SETTINGS_FILE))
-		nap::Logger::warn("Default settings file not found: %s", DEFAULT_SETTINGS_FILE.toStdString().c_str());
-
+	QSettings settings;
+	nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
 	BaseWindow::showEvent(event);
 	AppContext::get().restoreUI();
 }
