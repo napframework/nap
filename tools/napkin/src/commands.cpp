@@ -47,7 +47,13 @@ void SetValueCommand::redo()
 		// Any other old value
 		bool ok;
 		rttr::variant variant = fromQVariant(mPath.getType(), mNewValue, &ok);
-		assert(ok);
+		if (!ok)
+		{
+			nap::Logger::debug("Invalid value %s for type %s",
+					mNewValue.toString().toStdString().c_str(), mPath.getType().get_name().data());
+			return;
+		}
+
 		mPath.setValue(variant);
 
 		ctx.getDocument()->propertyValueChanged(mPath);
