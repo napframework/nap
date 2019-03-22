@@ -412,6 +412,7 @@ QList<nap::Component*> Document::getComponentsRecursive(nap::rtti::Object& objec
 	}
 
 	assert(false);
+	return components;
 }
 
 void Document::recurseChildren(nap::Entity& entity, std::function<void(nap::Entity& child)> visitor)
