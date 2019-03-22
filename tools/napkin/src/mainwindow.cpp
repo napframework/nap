@@ -4,6 +4,7 @@
 #include <QCloseEvent>
 #include <fcurve.h>
 #include <QtDebug>
+#include <utility/fileutils.h>
 
 using namespace napkin;
 
@@ -31,10 +32,8 @@ void MainWindow::unbindSignals()
 
 void MainWindow::showEvent(QShowEvent* event)
 {
-	QSettings defaultSettings(DEFAULT_SETTINGS_FILE, QSettings::IniFormat);
-	if (!QFileInfo::exists(DEFAULT_SETTINGS_FILE))
-		nap::Logger::warn("Settings file not found: %1", DEFAULT_SETTINGS_FILE.toStdString().c_str());
-
+	QSettings settings;
+	nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
 	BaseWindow::showEvent(event);
 	AppContext::get().restoreUI();
 }
