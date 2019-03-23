@@ -109,6 +109,8 @@ namespace napkin
 		void showError(nap::LogMessage msg);
 
 	private:
+		bool mFirstShowEvent = true;
+
 		ResourcePanel mResourcePanel;
 		HierarchyPanel mHierarchyPanel;
 //		PathBrowserPanel mPathBrowser;

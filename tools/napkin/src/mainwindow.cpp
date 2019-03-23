@@ -32,10 +32,15 @@ void MainWindow::unbindSignals()
 
 void MainWindow::showEvent(QShowEvent* event)
 {
-	QSettings settings;
-	nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
 	BaseWindow::showEvent(event);
-	AppContext::get().restoreUI();
+
+	if (mFirstShowEvent)
+	{
+		QSettings settings;
+		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
+		AppContext::get().restoreUI();
+		mFirstShowEvent = false;
+	}
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
