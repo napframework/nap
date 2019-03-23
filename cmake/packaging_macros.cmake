@@ -323,15 +323,28 @@ macro(package_module)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/ RENAME lib${PROJECT_NAME}.json)
     endif()
    
-    # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done done after we 
+    # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done after we 
     # install the target above due to ordering of install_name_tool calling)
-    if(UNIX)
+    set(NAP_ROOT_LOCATION_TO_MODULE "../../../..")
+    if(APPLE)
+        if(DEFINED UNIX_EXTRA_RPATH_RELEASE)
+            set(UNIX_EXTRA_RPATH_RELEASE "${UNIX_EXTRA_RPATH_RELEASE}")    
+        else()
+            set(UNIX_EXTRA_RPATH_RELEASE "")
+        endif()
+        if(DEFINED UNIX_EXTRA_RPATH_DEBUG)
+            set(UNIX_EXTRA_RPATH_DEBUG "${UNIX_EXTRA_RPATH_DEBUG}")    
+        else()
+            set(UNIX_EXTRA_RPATH_DEBUG "")
+        endif()
+        set_installed_rpath_on_macos_module_for_dependent_modules("${DEEP_DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} "${UNIX_EXTRA_RPATH_RELEASE}" "${UNIX_EXTRA_RPATH_DEBUG}")
+    elseif(UNIX)
         if(DEFINED UNIX_EXTRA_RPATH)
             set(EXTRA_RPATH "${UNIX_EXTRA_RPATH}")    
         else()
             set(EXTRA_RPATH "")
         endif()
-        set_installed_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${EXTRA_RPATH})
+        set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} ${EXTRA_RPATH})        
     endif()
 endmacro()
 
@@ -403,19 +416,6 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                   ")
 endmacro()
 
-# Unix: Set the packaged RPATH of a module for its dependent modules.
-# DEPENDENT_NAP_MODULES: The modules to setup as dependencies
-# TARGET_NAME: The module name
-# ARGN: Any extra non-NAP-module paths to add
-macro(set_installed_module_rpath_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME)
-    set(NAP_ROOT_LOCATION_TO_MODULE "../../../..")
-    if(APPLE)
-        set_installed_rpath_on_macos_module_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} "${ARGN}")
-    elseif(UNIX)
-        set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} "${ARGN}")
-    endif()
-endmacro()
-
 # Linux: Set the packaged RPATH of binary object for its dependent modules
 # DEPENDENT_NAP_MODULES: The modules to setup as dependencies
 # TARGET_NAME: The module name
@@ -470,8 +470,9 @@ endmacro()
 # DEPENDENT_NAP_MODULES: The modules to setup as dependencies
 # MODULE_NAME: The module to work on
 # NAP_ROOT_LOCATION_TO_MODULE: The relative path from the module to NAP root
-# ARGN: Any extra non-NAP-module paths to add
-macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE)
+# EXTRA_RPATH_RELEASE: Any extra non-NAP-module paths to add for release build
+# EXTRA_RPATH_DEBUG: Any extra non-NAP-module paths to add for debug build
+macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE EXTRA_RPATH_RELEASE EXTRA_RPATH_DEBUG)
     foreach(MODULECONFIG Release Debug)
         # Set basic paths
         ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/python/lib")
@@ -484,7 +485,11 @@ macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MO
         endforeach()
 
         # Process any extra paths
-        set(EXTRA_PATHS ${ARGN})
+        if(${MODULECONFIG} STREQUAL Release)
+            set(EXTRA_PATHS "${EXTRA_RPATH_RELEASE}")
+        else()
+            set(EXTRA_PATHS "${EXTRA_RPATH_DEBUG}")
+        endif()
         foreach(EXTRA_PATH ${EXTRA_PATHS})
             ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${EXTRA_PATH}")
         endforeach()       
