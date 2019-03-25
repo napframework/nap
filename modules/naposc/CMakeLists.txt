@@ -28,10 +28,10 @@ copy_module_json_to_bin()
 
 # Package into platform release
 if(APPLE)
-    set(UNIX_EXTRA_RPATH_RELEASE ../../../../thirdparty/oscpack/lib/Release)
-    set(UNIX_EXTRA_RPATH_DEBUG ../../../../thirdparty/oscpack/lib/Debug)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/oscpack/lib/Release)
+    set(MACOS_EXTRA_RPATH_DEBUG ../../../../thirdparty/oscpack/lib/Debug)
 elseif(UNIX)
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/oscpack/lib)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/oscpack/lib)
 endif()
 package_module()
 

@@ -44,10 +44,10 @@ copy_module_json_to_bin()
 # Package into platform release
 if(UNIX)
     if(APPLE)
-        set(UNIX_EXTRA_RPATH_RELEASE ../../../../thirdparty/SDL2/lib)
-        set(UNIX_EXTRA_RPATH_DEBUG ${UNIX_EXTRA_RPATH_RELEASE})
+        set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/SDL2/lib)
+        set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
     else()
-        set(UNIX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+        set(LINUX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
     endif()
     # Workaround for module not having dependent modules but wanting to set extra RPATH
     set(DEPENDENT_NAP_MODULES mod_napsdlwindow) 

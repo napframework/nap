@@ -36,10 +36,10 @@ copy_module_json_to_bin()
 
 # Package into platform release
 if(APPLE)
-    set(UNIX_EXTRA_RPATH_RELEASE ../../../../thirdparty/freetype/lib)
-    set(UNIX_EXTRA_RPATH_DEBUG ${UNIX_EXTRA_RPATH_RELEASE})    
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/freetype/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})    
 elseif(UNIX)
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/freetype/lib)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/freetype/lib)
 endif()
 package_module()
 

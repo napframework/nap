@@ -35,10 +35,10 @@ copy_module_json_to_bin()
 
 # Package into platform release
 if(APPLE)
-    set(UNIX_EXTRA_RPATH_RELEASE ../../../../thirdparty/yoctopuce/bin)
-    set(UNIX_EXTRA_RPATH_DEBUG ${UNIX_EXTRA_RPATH_RELEASE})    
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/yoctopuce/bin)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})    
 elseif(UNIX)
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/yoctopuce/bin)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/yoctopuce/bin)
 endif()
 package_module()
 
