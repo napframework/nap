@@ -9,6 +9,7 @@
 #include "parameterenum.h"
 #include "parameternumeric.h"
 #include "parametersimple.h"
+#include "parametercolor.h"
 
 namespace nap
 {

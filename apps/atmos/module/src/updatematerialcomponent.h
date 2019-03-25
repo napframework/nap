@@ -9,6 +9,7 @@
 #include <transformcomponent.h>
 #include <color.h>
 #include "parametersimple.h"
+#include "parametercolor.h"
 
 namespace nap
 {

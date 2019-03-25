@@ -3,7 +3,6 @@
 // External Includes
 #include "parameter.h"
 #include "nap/signalslot.h"
-#include "../../naprender/src/color.h"
 
 namespace nap
 {
@@ -33,10 +32,11 @@ namespace nap
 		Signal<T> valueChanged;
 	};
 
-	//////////////////////////////////////////////////////////////////////////
-	// API Type Definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	using ParameterRGBColorFloat = ParameterSimple<RGBColorFloat>;
 	using ParameterBool = ParameterSimple<bool>;
 }
+
+
+#define DEFINE_SIMPLE_PARAMETER(Type)																			\
+	RTTI_BEGIN_CLASS(Type)																						\
+		RTTI_PROPERTY("Value",		&Type::mValue,		nap::rtti::EPropertyMetaData::Default)					\
+	RTTI_END_CLASS
