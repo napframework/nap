@@ -13,6 +13,10 @@
 		RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)				\
 	RTTI_END_CLASS
 
+#define DEFINE_SIMPLE_PARAMETER(Type)																			\
+	RTTI_BEGIN_CLASS(Type)																						\
+		RTTI_PROPERTY("Value",		&Type::mValue,		nap::rtti::EPropertyMetaData::Default)					\
+	RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -21,6 +25,9 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::ParameterContainer)
 	RTTI_PROPERTY("Parameters",	&nap::ParameterContainer::mParameters, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Children",	&nap::ParameterContainer::mChildren, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterEnumBase)
 RTTI_END_CLASS
 
 DEFINE_NUMERIC_PARAMETER(nap::ParameterFloat)
@@ -34,9 +41,8 @@ DEFINE_NUMERIC_PARAMETER(nap::ParameterVec2)
 DEFINE_NUMERIC_PARAMETER(nap::ParameterIVec2)
 DEFINE_NUMERIC_PARAMETER(nap::ParameterVec3)
 
-RTTI_BEGIN_CLASS(nap::ParameterRGBColorFloat)
-	RTTI_PROPERTY("Value",		&nap::ParameterRGBColorFloat::mValue,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
+DEFINE_SIMPLE_PARAMETER(nap::ParameterBool)
+DEFINE_SIMPLE_PARAMETER(nap::ParameterRGBColorFloat)
 
 namespace nap
 {

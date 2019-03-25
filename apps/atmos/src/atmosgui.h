@@ -5,12 +5,16 @@
 #include <color.h>
 #include <nglutils.h>
 #include "parameter.h"
+#include "controlselectcomponent.h"
 
 namespace nap
 {
 	// Forward Declares
 	class AtmosApp;
 	class ParameterGUI;
+
+	using ParameterControlMethod = ParameterEnum<EControlMethod>;
+	using ParameterPolygonMode = ParameterEnum<opengl::EPolygonMode>;
 
 	class AtmosGui final
 	{
@@ -42,38 +46,38 @@ namespace nap
 		/**
 		 *	@return the background color
 		 */
-		const glm::vec4& getBackgroundColor() const			{ return mBackgroundColor; }
+		glm::vec4 getBackgroundColor() const			{ return glm::vec4(mBackgroundColor->mValue.getRed(), mBackgroundColor->mValue.getGreen(), mBackgroundColor->mValue.getBlue(), 1.0f); }
 
 		/**
 		 * @return the current draw mode
 		 */
-		opengl::EPolygonMode getRenderMode() const			{ return mRenderMode; }
+		opengl::EPolygonMode getRenderMode() const			{ return mRenderMode->mValue; }
 
 	private:
-		AtmosApp&							mApp;				///< The actual atmos appliation we build the gui for
+		void UpdateFogColor();
+
+	private:
+		AtmosApp&							mApp;				///< The actual atmos application we build the gui for
 		ParameterService&					mParameterService;
 		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;
 		DateTime							mDateTime;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
-		glm::vec4							mBackgroundColor;
-		bool								mTransparent = false;
-		opengl::EPolygonMode				mRenderMode = opengl::EPolygonMode::Fill;
 		float								mTexPreviewDisplaySize = 1.0f;
 		float								mWraPreviewDisplaySize = 1.0f;
 		float								mVidPreviewDisplaySize = 1.0f;
 		ResourcePtr<ParameterFloat>			mCameraMovSpeed;
 		ResourcePtr<ParameterFloat>			mCameraRotSpeed;
 		ResourcePtr<ParameterFloat>			mRotateSpeed;
+		ResourcePtr<ParameterFloat>			mCameraFOV;
+		ResourcePtr<ParameterControlMethod>	mCameraControlMethod;
 		float								mCamMaxRotSpeed;
 		float								mCamMaxMovSpeed;
-		bool								mLinkFogToBackground = true;
-		bool								mBackgroundColorDirty = true;
-
-		/**
-		 * Shows the controls menu
-		 */
-		void showControlWindow();
+		ResourcePtr<ParameterBool>			mLinkFogToBackground;
+		ResourcePtr<ParameterRGBColorFloat>	mBackgroundColor;
+		ResourcePtr<ParameterRGBColorFloat>	mFogColor;
+		ResourcePtr<ParameterBool>			mUseTransparency;
+		ResourcePtr<ParameterPolygonMode>	mRenderMode;
 
 		/**
 		 * Shows the information window

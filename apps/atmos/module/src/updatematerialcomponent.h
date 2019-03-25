@@ -51,6 +51,26 @@ namespace nap
 		ResourcePtr<ParameterFloat>				mLightIntensity;
 		ResourcePtr<ParameterFloat>				mAmbientIntensity;
 		ResourcePtr<ParameterFloat>				mDiffuseIntensity;
+		ResourcePtr<ParameterRGBColorFloat>		mNormalSpecColor;
+		ResourcePtr<ParameterFloat>				mNormalSpecIntens;
+		ResourcePtr<ParameterFloat>				mNormalSpecShine;
+		ResourcePtr<ParameterFloat>				mNormalScale;
+		ResourcePtr<ParameterFloat>				mNormalRandom;
+		ResourcePtr<ParameterFloat>				mDiffuseSpecInfl;
+		ResourcePtr<ParameterFloat>				mNormalRotValue;
+		ResourcePtr<ParameterRGBColorFloat>		mScanSpecColor;
+		ResourcePtr<ParameterFloat>				mScanSpecIntens;
+		ResourcePtr<ParameterFloat>				mScanSpecShine;
+		ResourcePtr<ParameterFloat>				mScanRotValue;
+		ResourcePtr<ParameterFloat>				mWindSpeed;
+		ResourcePtr<ParameterFloat>				mWindScale;
+		ResourcePtr<ParameterFloat>				mWindFreq;
+		ResourcePtr<ParameterFloat>				mWindRandom;
+
+		ResourcePtr<ParameterFloat>				mFogMin;
+		ResourcePtr<ParameterFloat>				mFogMax;
+		ResourcePtr<ParameterFloat>				mFogPower;
+		ResourcePtr<ParameterFloat>				mFogInfluence;
 	};
 
 
@@ -87,30 +107,10 @@ namespace nap
 		ComponentInstancePtr<SelectImageComponent> mSingleImageSelectComponent =		{ this, &UpdateMaterialComponent::mSingleImageSelectComponent };
 		ComponentInstancePtr<TransformComponent> mCameraTransform =						{ this, &UpdateMaterialComponent::mCameraTransformComponent };
 
-		float			mNormalSpecIntens	= 0.5f;
-		float			mScanSpecIntens		= 0.25f;
-		RGBColorFloat	mNormalSpecColor	= { 1.0f, 1.0f, 1.0f };
-		RGBColorFloat	mScanSpecColor		= { 1.0f, 1.0f, 1.0f };
-		float			mNormalSpecShine	= { 20.0f };
-		float			mScanSpecShine		= { 10.0f };
-		float			mNormalRotValue		= { 0.0f };
-		float			mScanRotValue		= { 0.0f };
 		glm::vec3		mNormalRotAngle		= { 0.0f, 1.0f, 0.0f };
 		glm::vec3		mScanRotAngle		= { 0.0f, 1.0f, 0.0f };
 
-		float			mWindSpeed			= 0.25f;
-		float			mWindScale			= 0.6f;
-		float			mWindFreq			= 10.0f;
-		float			mWindRandom			= 0.15f;
-		float			mNormalRandom		= 0.5f;
-		float			mNormalScale		= 1.0f;
-		float			mDiffuseSpecInfl	= 0.0f;			//< Scales specular highlights based on diffuse information
-
-		float			mFogMin				= 0.75f;
-		float			mFogMax				= 1.0f;
-		float			mFogInfluence		= 0.0f;
 		RGBColorFloat	mFogColor			= { 0.0f, 0.0f, 0.0f };
-		float			mFogPower			= 2.0f;
 
 	private:
 		UpdateMaterialComponent* mUpdateMaterialResource;

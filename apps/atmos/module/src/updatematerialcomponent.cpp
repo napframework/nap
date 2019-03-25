@@ -30,6 +30,25 @@ RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
 	RTTI_PROPERTY("LightIntensity",					&nap::UpdateMaterialComponent::mLightIntensity,					nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("AmbientIntensity",				&nap::UpdateMaterialComponent::mAmbientIntensity,				nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("DiffuseIntensity",				&nap::UpdateMaterialComponent::mDiffuseIntensity,				nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("NormalSpecColor",				&nap::UpdateMaterialComponent::mNormalSpecColor,				nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("NormalSpecIntens",				&nap::UpdateMaterialComponent::mNormalSpecIntens,				nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("NormalSpecShine",				&nap::UpdateMaterialComponent::mNormalSpecShine,				nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("NormalScale",					&nap::UpdateMaterialComponent::mNormalScale,					nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("NormalRandom",					&nap::UpdateMaterialComponent::mNormalRandom,					nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("DiffuseSpecInfl",				&nap::UpdateMaterialComponent::mDiffuseSpecInfl,				nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("NormalRotValue",					&nap::UpdateMaterialComponent::mNormalRotValue,					nap::rtti::EPropertyMetaData::Required);	
+	RTTI_PROPERTY("ScanSpecColor",					&nap::UpdateMaterialComponent::mScanSpecColor,					nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("ScanSpecIntens",					&nap::UpdateMaterialComponent::mScanSpecIntens,					nap::rtti::EPropertyMetaData::Required);	
+	RTTI_PROPERTY("ScanSpecShine",					&nap::UpdateMaterialComponent::mScanSpecShine,					nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("ScanRotValue",					&nap::UpdateMaterialComponent::mScanRotValue,					nap::rtti::EPropertyMetaData::Required);	
+	RTTI_PROPERTY("WindSpeed",						&nap::UpdateMaterialComponent::mWindSpeed,						nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("WindScale",						&nap::UpdateMaterialComponent::mWindScale,						nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("WindFreq",						&nap::UpdateMaterialComponent::mWindFreq,						nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("WindRandom",						&nap::UpdateMaterialComponent::mWindRandom,						nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("FogMin",							&nap::UpdateMaterialComponent::mFogMin,							nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("FogMax",							&nap::UpdateMaterialComponent::mFogMax,							nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("FogPower",						&nap::UpdateMaterialComponent::mFogPower,						nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("FogInfluence",					&nap::UpdateMaterialComponent::mFogInfluence,					nap::rtti::EPropertyMetaData::Required);	
 RTTI_END_CLASS
 
 // nap::updatematerialcomponentInstance run time class definition 
@@ -126,7 +145,7 @@ namespace nap
 		// Shared Value
 		//////////////////////////////////////////////////////////////////////////
 
-		mWindTime += (deltaTime * mWindSpeed);
+		mWindTime += (deltaTime * mUpdateMaterialResource->mWindSpeed->mValue);
 
 		// Set first texture (tileable)
 		setSharedTexture(sm, nm, mTileableImageSelectComponent->getImage(), sColorTexOneName);
@@ -183,10 +202,10 @@ namespace nap
 		setSharedValue<UniformVec3, glm::vec3>(sm, nm, smaskColor, mUpdateMaterialResource->mMaskColor->mValue.toVec3());
 
 		// Set fog values
-		setSharedValue<UniformFloat, float>(sm, nm, sFogMin, mFogMin);
-		setSharedValue<UniformFloat, float>(sm, nm, sFogMax, mFogMax);
-		setSharedValue<UniformFloat, float>(sm, nm, sFogInfluence, mFogInfluence);
-		setSharedValue<UniformFloat, float>(sm, nm, sFogPower, mFogPower);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogMin, mUpdateMaterialResource->mFogMin->mValue);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogMax, mUpdateMaterialResource->mFogMax->mValue);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogInfluence, mUpdateMaterialResource->mFogInfluence->mValue);
+		setSharedValue<UniformFloat, float>(sm, nm, sFogPower, mUpdateMaterialResource->mFogPower->mValue);
 		setSharedValue<UniformVec3,  glm::vec3>(sm, nm, sFogColor, mFogColor.toVec3());
 
 		// Set texture u and v time
@@ -206,20 +225,20 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		// Specular Intensity
-		sm.getOrCreateUniform<UniformFloat>(sSpecularIntensity).setValue(mScanSpecIntens);
-		nm.getOrCreateUniform<UniformFloat>(sSpecularIntensity).setValue(mNormalSpecIntens);
+		sm.getOrCreateUniform<UniformFloat>(sSpecularIntensity).setValue(mUpdateMaterialResource->mScanSpecIntens->mValue);
+		nm.getOrCreateUniform<UniformFloat>(sSpecularIntensity).setValue(mUpdateMaterialResource->mNormalSpecIntens->mValue);
 
 		// Specular Color
-		sm.getOrCreateUniform<UniformVec3>(sSpecularColor).setValue(mScanSpecColor.toVec3());
-		nm.getOrCreateUniform<UniformVec3>(sSpecularColor).setValue(mNormalSpecColor.toVec3());
+		sm.getOrCreateUniform<UniformVec3>(sSpecularColor).setValue(mUpdateMaterialResource->mScanSpecColor->mValue.toVec3());
+		nm.getOrCreateUniform<UniformVec3>(sSpecularColor).setValue(mUpdateMaterialResource->mNormalSpecColor->mValue.toVec3());
 			
 		// Shininess Intensity
-		sm.getOrCreateUniform<UniformFloat>(sShininess).setValue(mScanSpecShine);
-		nm.getOrCreateUniform<UniformFloat>(sShininess).setValue(mNormalSpecShine);
+		sm.getOrCreateUniform<UniformFloat>(sShininess).setValue(mUpdateMaterialResource->mScanSpecShine->mValue);
+		nm.getOrCreateUniform<UniformFloat>(sShininess).setValue(mUpdateMaterialResource->mNormalSpecShine->mValue);
 
 		// Rotation value for normal
-		sm.getOrCreateUniform<UniformFloat>(sRotValue).setValue(mScanRotValue);
-		nm.getOrCreateUniform<UniformFloat>(sRotValue).setValue(mNormalRotValue);
+		sm.getOrCreateUniform<UniformFloat>(sRotValue).setValue(mUpdateMaterialResource->mScanRotValue->mValue);
+		nm.getOrCreateUniform<UniformFloat>(sRotValue).setValue(mUpdateMaterialResource->mNormalRotValue->mValue);
 
 		// Rotation axis for normal
 		sm.getOrCreateUniform<UniformVec3>(sRotAngle).setValue(mScanRotAngle);
@@ -229,12 +248,12 @@ namespace nap
 		// Normal shader only values
 		//////////////////////////////////////////////////////////////////////////
 
-		nm.getOrCreateUniform<UniformFloat>(sWindScale).setValue(mWindScale);
-		nm.getOrCreateUniform<UniformFloat>(sWindFreq).setValue(mWindFreq);
-		nm.getOrCreateUniform<UniformFloat>(sWindRandom).setValue(mWindRandom);
-		nm.getOrCreateUniform<UniformFloat>(sNormalRandom).setValue(mNormalRandom);
-		nm.getOrCreateUniform<UniformFloat>(sNormalScale).setValue(mNormalScale);
+		nm.getOrCreateUniform<UniformFloat>(sWindScale).setValue(mUpdateMaterialResource->mWindScale->mValue);
+		nm.getOrCreateUniform<UniformFloat>(sWindFreq).setValue(mUpdateMaterialResource->mWindFreq->mValue);
+		nm.getOrCreateUniform<UniformFloat>(sWindRandom).setValue(mUpdateMaterialResource->mWindRandom->mValue);
+		nm.getOrCreateUniform<UniformFloat>(sNormalRandom).setValue(mUpdateMaterialResource->mNormalRandom->mValue);
+		nm.getOrCreateUniform<UniformFloat>(sNormalScale).setValue(mUpdateMaterialResource->mNormalScale->mValue);
 		nm.getOrCreateUniform<UniformFloat>(sTime).setValue(mWindTime);
-		nm.getOrCreateUniform<UniformFloat>(sDiffSpecInfluence).setValue(mDiffuseSpecInfl);
+		nm.getOrCreateUniform<UniformFloat>(sDiffSpecInfluence).setValue(mUpdateMaterialResource->mDiffuseSpecInfl->mValue);
 	}
 }
