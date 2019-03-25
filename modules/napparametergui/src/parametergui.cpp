@@ -1,6 +1,7 @@
 #include "parametergui.h"
 #include "parameter.h"
 #include "imgui/imgui.h"
+#include "rtti/rttiutilities.h"
 
 namespace nap
 {
@@ -26,9 +27,108 @@ namespace nap
 		mParameterService(parameterService)
 	{
 		mPresets = mParameterService.getPresets();
+		
+		registerDefaultParameterEditors();
 	}
 
-	void ParameterGUI::HandleLoadPopup()
+	void ParameterGUI::registerDefaultParameterEditors()
+	{
+		registerParameterEditor(RTTI_OF(ParameterFloat), [](Parameter& parameter) 
+		{
+			ParameterFloat* float_parameter = rtti_cast<ParameterFloat>(&parameter);
+			showFloatParameter(*float_parameter);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterDouble), [](Parameter& parameter)
+		{
+			ParameterDouble* double_parameter = rtti_cast<ParameterDouble>(&parameter);
+			showFloatParameter(*double_parameter);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterInt), [](Parameter& parameter)
+		{
+			ParameterInt* int_parameter = rtti_cast<ParameterInt>(&parameter);
+			showIntParameter(*int_parameter);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterLong), [](Parameter& parameter)
+		{
+			ParameterLong* long_parameter = rtti_cast<ParameterLong>(&parameter);
+			showIntParameter(*long_parameter);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterByte), [](Parameter& parameter)
+		{
+			ParameterByte* byte_parameter = rtti_cast<ParameterByte>(&parameter);
+			showIntParameter(*byte_parameter);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterChar), [](Parameter& parameter)
+		{
+			ParameterChar* char_parameter = rtti_cast<ParameterChar>(&parameter);
+			showIntParameter(*char_parameter);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterBool), [](Parameter& parameter)
+		{
+			ParameterBool* bool_parameter = rtti_cast<ParameterBool>(&parameter);
+
+			bool value = bool_parameter->mValue;
+			if (ImGui::Checkbox(bool_parameter->mID.c_str(), &value))
+				bool_parameter->setValue(value);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterRGBColorFloat), [](Parameter& parameter)
+		{
+			ParameterRGBColorFloat* color_parameter = rtti_cast<ParameterRGBColorFloat>(&parameter);
+
+			RGBColorFloat value = color_parameter->mValue;
+			if (ImGui::ColorEdit3(color_parameter->mID.c_str(), value.getData()))
+				color_parameter->setValue(value);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterVec2), [](Parameter& parameter)
+		{
+			ParameterVec2* vec2_parameter = rtti_cast<ParameterVec2>(&parameter);
+
+			glm::vec2 value = vec2_parameter->mValue;
+			if (ImGui::SliderFloat2(vec2_parameter->mID.c_str(), &(value[0]), vec2_parameter->mMinimum, vec2_parameter->mMaximum))
+				vec2_parameter->setValue(value);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterVec3), [](Parameter& parameter)
+		{
+			ParameterVec3* vec3_parameter = rtti_cast<ParameterVec3>(&parameter);
+
+			glm::vec3 value = vec3_parameter->mValue;
+			if (ImGui::SliderFloat3(vec3_parameter->mID.c_str(), &(value[0]), vec3_parameter->mMinimum, vec3_parameter->mMaximum))
+				vec3_parameter->setValue(value);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterEnumBase), [](Parameter& parameter)
+		{
+			ParameterEnumBase* enum_parameter = rtti_cast<ParameterEnumBase>(&parameter);
+
+			const rtti::TypeInfo& enum_type = enum_parameter->getEnumType();
+			assert(enum_type.is_enumeration());
+
+			rttr::enumeration enum_instance = enum_type.get_enumeration();
+			std::vector<rttr::string_view> items(enum_instance.get_names().begin(), enum_instance.get_names().end());
+
+			int value = enum_parameter->getValue();
+			if (ImGui::Combo(parameter.mID.c_str(), &value, [](void* data, int index, const char** out_text)
+			{
+				std::vector<rttr::string_view>* items = (std::vector<rttr::string_view>*)data;
+				*out_text = (*items)[index].data();
+				return true;
+			}, &items, items.size()))
+			{
+				enum_parameter->setValue(value);
+			}
+		});
+	}
+
+	void ParameterGUI::handleLoadPopup()
 	{
 		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
@@ -63,7 +163,7 @@ namespace nap
 
 			if (ImGui::Button("Cancel"))
 			{
-				RestorePresets();
+				restorePresets();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -71,7 +171,7 @@ namespace nap
 		}
 	}
 
-	bool ParameterGUI::HandleNewPopup(std::string& outNewFilename)
+	bool ParameterGUI::handleNewPopup(std::string& outNewFilename)
 	{
 		bool result = false;
 
@@ -99,7 +199,7 @@ namespace nap
 		return result;
 	}
 
-	void ParameterGUI::HandleSaveAsPopup()
+	void ParameterGUI::handleSaveAsPopup()
 	{
 		if (ImGui::BeginPopupModal("Save As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
@@ -118,7 +218,7 @@ namespace nap
 
 
 			std::string newFilename;
-			if (HandleNewPopup(newFilename))
+			if (handleNewPopup(newFilename))
 			{
 				// Insert before the '<new...>' item
 				mPresets.insert(mPresets.end() - 1, newFilename);
@@ -169,7 +269,7 @@ namespace nap
 
 			if (ImGui::Button("Cancel"))
 			{
-				RestorePresets();
+				restorePresets();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -177,13 +277,13 @@ namespace nap
 		}
 	}
 
-	void ParameterGUI::SavePresets()
+	void ParameterGUI::savePresets()
 	{
 		mPrevSelectedPresetIndex = mSelectedPresetIndex;
 		mPrevPresets = mPresets;
 	}
 
-	void ParameterGUI::RestorePresets()
+	void ParameterGUI::restorePresets()
 	{
 		mSelectedPresetIndex = mPrevSelectedPresetIndex;
 		mPresets = mPrevPresets;
@@ -224,7 +324,7 @@ namespace nap
 			else
 			{
 				ImGui::OpenPopup("Save As");
-				SavePresets();
+				savePresets();
 				mPresets.push_back("<New...>");
 			}
 		}
@@ -234,7 +334,7 @@ namespace nap
 		if (ImGui::Button("Save As"))
 		{
 			ImGui::OpenPopup("Save As");
-			SavePresets();
+			savePresets();
 			mPresets.push_back("<New...>");
 		}
 
@@ -243,11 +343,11 @@ namespace nap
 		if (ImGui::Button("Load"))
 		{
 			ImGui::OpenPopup("Load");
-			SavePresets();
+			savePresets();
 		}
 
-		HandleLoadPopup();
-		HandleSaveAsPopup();
+		handleLoadPopup();
+		handleSaveAsPopup();
 	}
 
 	void ParameterGUI::showParameters(ParameterContainer& parameterContainer, bool isRoot)
@@ -257,89 +357,11 @@ namespace nap
 			for (auto& parameter : parameterContainer.mParameters)
 			{
 				const rtti::TypeInfo& type = parameter->get_type();
-				if (type == RTTI_OF(ParameterFloat))
-				{
-					ParameterFloat* float_parameter = rtti_cast<ParameterFloat>(parameter.get());
-					showFloatParameter(*float_parameter);
-				}
-				else if (type == RTTI_OF(ParameterDouble))
-				{
-					ParameterDouble* double_parameter = rtti_cast<ParameterDouble>(parameter.get());
-					showFloatParameter(*double_parameter);
-				}
-				else if (type == RTTI_OF(ParameterInt))
-				{
-					ParameterInt* int_parameter = rtti_cast<ParameterInt>(parameter.get());
-					showIntParameter(*int_parameter);
-				}
-				else if (type == RTTI_OF(ParameterLong))
-				{
-					ParameterLong* int_parameter = rtti_cast<ParameterLong>(parameter.get());
-					showIntParameter(*int_parameter);
-				}
-				else if (type == RTTI_OF(ParameterByte))
-				{
-					ParameterByte* int_parameter = rtti_cast<ParameterByte>(parameter.get());
-					showIntParameter(*int_parameter);
-				}
-				else if (type == RTTI_OF(ParameterChar))
-				{
-					ParameterChar* int_parameter = rtti_cast<ParameterChar>(parameter.get());
-					showIntParameter(*int_parameter);
-				}
-				else if (type == RTTI_OF(ParameterBool))
-				{
-					ParameterBool* bool_parameter = rtti_cast<ParameterBool>(parameter.get());
 
-					bool value = bool_parameter->mValue;
-					if (ImGui::Checkbox(bool_parameter->mID.c_str(), &value))
-						bool_parameter->setValue(value);
-				}
-				else if (type == RTTI_OF(ParameterRGBColorFloat))
-				{
-					ParameterRGBColorFloat* color_parameter = rtti_cast<ParameterRGBColorFloat>(parameter.get());
+				ParameterEditorMap::iterator pos = mParameterEditors.find(type);
+				assert(pos != mParameterEditors.end());
 
-					RGBColorFloat value = color_parameter->mValue;
-					if (ImGui::ColorEdit3(color_parameter->mID.c_str(), value.getData()))
-						color_parameter->setValue(value);
-				}
-				else if (type == RTTI_OF(ParameterVec2))
-				{
-					ParameterVec2* vec2_parameter = rtti_cast<ParameterVec2>(parameter.get());
-
-					glm::vec2 value = vec2_parameter->mValue;
-					if (ImGui::SliderFloat2(vec2_parameter->mID.c_str(), &(value[0]), vec2_parameter->mMinimum, vec2_parameter->mMaximum))
-						vec2_parameter->setValue(value);
-				}
-				else if (type == RTTI_OF(ParameterVec3))
-				{
-					ParameterVec3* vec3_parameter = rtti_cast<ParameterVec3>(parameter.get());
-
-					glm::vec3 value = vec3_parameter->mValue;
-					if (ImGui::SliderFloat3(vec3_parameter->mID.c_str(), &(value[0]), vec3_parameter->mMinimum, vec3_parameter->mMaximum))
-						vec3_parameter->setValue(value);
-				}
-				else if (type.is_derived_from<ParameterEnumBase>())
-				{
-					ParameterEnumBase* enum_parameter = rtti_cast<ParameterEnumBase>(parameter.get());
-					
-					const rtti::TypeInfo& enum_type = enum_parameter->getEnumType();
-					assert(enum_type.is_enumeration());
-
-					rttr::enumeration enum_instance = enum_type.get_enumeration();
-					std::vector<rttr::string_view> items(enum_instance.get_names().begin(), enum_instance.get_names().end());		
-
-					int value = enum_parameter->getValue();
-					if (ImGui::Combo(parameter->mID.c_str(), &value, [](void* data, int index, const char** out_text)
-					{
-						std::vector<rttr::string_view>* items = (std::vector<rttr::string_view>*)data;
-						*out_text = (*items)[index].data();
-						return true;
-					}, &items, items.size()))
-					{
-						enum_parameter->setValue(value);
-					}
-				}
+				pos->second(*parameter);
 			}
 			
 			if (!isRoot)
@@ -364,5 +386,15 @@ namespace nap
 		}
 
 		ImGui::End();
+	}
+
+	void ParameterGUI::registerParameterEditor(const rtti::TypeInfo& type, const CreateParameterEditor& createParameterEditorFunc)
+	{
+		std::vector<rtti::TypeInfo> types;
+		types.push_back(type);
+		rtti::getDerivedTypesRecursive(type, types);
+		
+		for (const rtti::TypeInfo& type : types)
+			mParameterEditors[type] = createParameterEditorFunc;
 	}
 }
