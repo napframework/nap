@@ -29,13 +29,13 @@ copy_module_json_to_bin()
 
 # Package into platform release
 if(APPLE)
-    set(UNIX_EXTRA_RPATH_RELEASE ../../../../thirdparty/FFmpeg/lib)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FFmpeg/lib)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
-    list(APPEND UNIX_EXTRA_RPATH_RELEASE ../../../../thirdparty/portaudio/lib)
-    list(APPEND UNIX_EXTRA_RPATH_RELEASE ../../../../thirdparty/libsndfile/lib)
-    set(UNIX_EXTRA_RPATH_DEBUG ${UNIX_EXTRA_RPATH_RELEASE})
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/portaudio/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/libsndfile/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 elseif(UNIX)
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/FFmpeg/lib)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/FFmpeg/lib)
 endif()
 package_module()
 

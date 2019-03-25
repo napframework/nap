@@ -37,12 +37,12 @@ copy_module_json_to_bin()
 
 # Package into platform release
 if(APPLE)
-    set(UNIX_EXTRA_RPATH_RELEASE ../../../../thirdparty/etherdream/bin)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/etherdream/bin)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
-    list(APPEND UNIX_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
-    set(UNIX_EXTRA_RPATH_DEBUG ${UNIX_EXTRA_RPATH_RELEASE})
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 elseif(UNIX)
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/etherdream/bin)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/etherdream/bin)
 endif()
 package_module()
 
