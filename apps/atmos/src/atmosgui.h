@@ -6,12 +6,16 @@
 #include <nglutils.h>
 #include "parameter.h"
 #include "controlselectcomponent.h"
+#include "parameterenum.h"
+#include "parameternumeric.h"
+#include "parametersimple.h"
 
 namespace nap
 {
 	// Forward Declares
 	class AtmosApp;
 	class ParameterGUI;
+	class ParameterService;
 
 	using ParameterControlMethod = ParameterEnum<EControlMethod>;
 	using ParameterPolygonMode = ParameterEnum<opengl::EPolygonMode>;

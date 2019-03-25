@@ -6,7 +6,7 @@
 #include <component.h>
 #include <vector>
 #include <renderablemeshcomponent.h>
-#include <parameter.h>
+#include <parameternumeric.h>
 
 
 namespace nap

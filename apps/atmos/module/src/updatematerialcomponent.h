@@ -8,6 +8,7 @@
 #include <renderablemeshcomponent.h>
 #include <transformcomponent.h>
 #include <color.h>
+#include "parametersimple.h"
 
 namespace nap
 {

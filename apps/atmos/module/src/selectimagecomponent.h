@@ -3,7 +3,7 @@
 #include <component.h>
 #include <imagefromfile.h>
 #include <nap/resourceptr.h>
-#include <parameter.h>
+#include <parameternumeric.h>
 
 namespace nap
 {

@@ -2,6 +2,7 @@
 
 #include "utility/dllexport.h"
 #include "parameter.h"
+#include "parameterservice.h"
 
 namespace nap
 {

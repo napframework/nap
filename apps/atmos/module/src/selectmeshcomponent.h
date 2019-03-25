@@ -11,7 +11,7 @@
 #include <renderablemeshcomponent.h>
 #include <visualizenormalsmesh.h>
 #include <scatterpointsmesh.h>
-#include <parameter.h>
+#include <parameternumeric.h>
 
 namespace nap
 {

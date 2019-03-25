@@ -1,0 +1,11 @@
+{
+    "Objects": 
+	[
+        {
+            "Type": "nap::ParameterServiceConfiguration",
+            "mID": "ParameterServiceConfiguration",
+			"RootParameterContainer" : "Parameters",
+			"PresetsDirectory" : "Presets"
+        }
+	]
+}

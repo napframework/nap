@@ -1,7 +1,11 @@
 #include "parametergui.h"
 #include "parameter.h"
+#include "parameterservice.h"
 #include "imgui/imgui.h"
 #include "rtti/rttiutilities.h"
+#include "parameternumeric.h"
+#include "parametersimple.h"
+#include "parameterenum.h"
 
 namespace nap
 {
