@@ -110,18 +110,19 @@ namespace nap
 		Signal<T> valueChanged;
 	};
 
-	class ParameterRGBColorFloat : public Parameter
+	template<typename T>
+	class SimpleParameter : public Parameter
 	{
 		RTTI_ENABLE(Parameter)
 	public:
 		virtual void setValue(const Parameter& value) override
 		{
-			const ParameterRGBColorFloat* derived_type = rtti_cast<const ParameterRGBColorFloat>(&value);
+			const SimpleParameter<T>* derived_type = rtti_cast<const SimpleParameter<T>>(&value);
 			assert(derived_type != nullptr);
 			setValue(derived_type->mValue);
 		}
 
-		void setValue(const RGBColorFloat& value)
+		void setValue(const T& value)
 		{
 			if (value != mValue)
 			{
@@ -131,8 +132,64 @@ namespace nap
 		}
 
 	public:
-		RGBColorFloat mValue;
-		Signal<RGBColorFloat> valueChanged;
+		T mValue;
+		Signal<T> valueChanged;
+	};
+
+	class ParameterEnumBase : public Parameter
+	{
+		RTTI_ENABLE(Parameter)
+
+	public:
+		ParameterEnumBase(rtti::TypeInfo enumType) :
+			mEnumType(enumType)
+		{
+		}
+
+		virtual int getValue() const = 0;
+		virtual void setValue(int value) = 0;
+		const rtti::TypeInfo& getEnumType() const { return mEnumType; }
+
+	private:
+		rtti::TypeInfo mEnumType;
+	};
+
+	template<class T>
+	class ParameterEnum : public ParameterEnumBase
+	{
+		RTTI_ENABLE(ParameterEnumBase)
+	
+	public:
+		ParameterEnum() :
+			ParameterEnumBase(RTTI_OF(T))
+		{
+		}
+
+		virtual int getValue() const override { return (int)mValue; }
+
+		virtual void setValue(int value) override { setValue((T)value); }
+
+		virtual void setValue(const Parameter& value) override
+		{
+			const ParameterEnum<T>* derived_type = rtti_cast<const ParameterEnum<T>>(&value);
+			assert(derived_type != nullptr);
+
+			setValue(derived_type->mValue);
+		}
+
+		void setValue(T value)
+		{
+			T oldValue = mValue;
+			mValue = value;
+			if (oldValue != mValue)
+			{
+				valueChanged(mValue);
+			}
+		}
+
+	public:
+		T mValue;
+		Signal<T> valueChanged;
 	};
 
 	class NAPAPI ParameterService : public Service
@@ -166,7 +223,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	using ParameterFloat = NumericParameter<float>;
-	using ParameterBool = NumericParameter<bool>;
 	using ParameterInt = NumericParameter<int>;
 	using ParameterChar = NumericParameter<char>;
 	using ParameterByte = NumericParameter<uint8_t>;
@@ -176,4 +232,7 @@ namespace nap
 	using ParameterVec2 = NumericVecParameter<glm::vec2>;
 	using ParameterIVec2 = NumericVecParameter<glm::ivec2>;
 	using ParameterVec3 = NumericVecParameter<glm::vec3>;
+
+	using ParameterRGBColorFloat = SimpleParameter<RGBColorFloat>;
+	using ParameterBool = SimpleParameter<bool>;
 }

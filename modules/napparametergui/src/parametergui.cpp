@@ -287,22 +287,63 @@ namespace nap
 					ParameterChar* int_parameter = rtti_cast<ParameterChar>(parameter.get());
 					showIntParameter(*int_parameter);
 				}
+				else if (type == RTTI_OF(ParameterBool))
+				{
+					ParameterBool* bool_parameter = rtti_cast<ParameterBool>(parameter.get());
+
+					bool value = bool_parameter->mValue;
+					if (ImGui::Checkbox(bool_parameter->mID.c_str(), &value))
+						bool_parameter->setValue(value);
+				}
 				else if (type == RTTI_OF(ParameterRGBColorFloat))
 				{
 					ParameterRGBColorFloat* color_parameter = rtti_cast<ParameterRGBColorFloat>(parameter.get());
-					ImGui::ColorEdit3(color_parameter->mID.c_str(), color_parameter->mValue.getData());
+
+					RGBColorFloat value = color_parameter->mValue;
+					if (ImGui::ColorEdit3(color_parameter->mID.c_str(), value.getData()))
+						color_parameter->setValue(value);
 				}
 				else if (type == RTTI_OF(ParameterVec2))
 				{
 					ParameterVec2* vec2_parameter = rtti_cast<ParameterVec2>(parameter.get());
-					ImGui::SliderFloat2(vec2_parameter->mID.c_str(), &(vec2_parameter->mValue[0]), vec2_parameter->mMinimum, vec2_parameter->mMaximum);
+
+					glm::vec2 value = vec2_parameter->mValue;
+					if (ImGui::SliderFloat2(vec2_parameter->mID.c_str(), &(value[0]), vec2_parameter->mMinimum, vec2_parameter->mMaximum))
+						vec2_parameter->setValue(value);
 				}
 				else if (type == RTTI_OF(ParameterVec3))
 				{
 					ParameterVec3* vec3_parameter = rtti_cast<ParameterVec3>(parameter.get());
-					ImGui::SliderFloat3(vec3_parameter->mID.c_str(), &(vec3_parameter->mValue[0]), vec3_parameter->mMinimum, vec3_parameter->mMaximum);
+
+					glm::vec3 value = vec3_parameter->mValue;
+					if (ImGui::SliderFloat3(vec3_parameter->mID.c_str(), &(value[0]), vec3_parameter->mMinimum, vec3_parameter->mMaximum))
+						vec3_parameter->setValue(value);
+				}
+				else if (type.is_derived_from<ParameterEnumBase>())
+				{
+					ParameterEnumBase* enum_parameter = rtti_cast<ParameterEnumBase>(parameter.get());
+					
+					const rtti::TypeInfo& enum_type = enum_parameter->getEnumType();
+					assert(enum_type.is_enumeration());
+
+					rttr::enumeration enum_instance = enum_type.get_enumeration();
+					std::vector<rttr::string_view> items(enum_instance.get_names().begin(), enum_instance.get_names().end());		
+
+					int value = enum_parameter->getValue();
+					if (ImGui::Combo(parameter->mID.c_str(), &value, [](void* data, int index, const char** out_text)
+					{
+						std::vector<rttr::string_view>* items = (std::vector<rttr::string_view>*)data;
+						*out_text = (*items)[index].data();
+						return true;
+					}, &items, items.size()))
+					{
+						enum_parameter->setValue(value);
+					}
 				}
 			}
+			
+			if (!isRoot)
+				ImGui::TreePop();
 
 			for (auto& child : parameterContainer.mChildren)
 				showParameters(*child, false);
