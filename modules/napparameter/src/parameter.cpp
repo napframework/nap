@@ -27,6 +27,11 @@ RTTI_BEGIN_CLASS(nap::ParameterContainer)
 	RTTI_PROPERTY("Children",	&nap::ParameterContainer::mChildren, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::ParameterServiceConfiguration)
+	RTTI_PROPERTY("RootParameterContainer",		&nap::ParameterServiceConfiguration::mRootParameterContainer,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PresetsDirectory",			&nap::ParameterServiceConfiguration::mPresetsDirectory,			nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterEnumBase)
 RTTI_END_CLASS
 
@@ -74,9 +79,11 @@ namespace nap
 
 	ParameterService::PresetFileList ParameterService::getPresets() const
 	{
+		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
+
 		// Find all files in the specified directory
 		std::vector<std::string> files_in_directory;
-		utility::listDir("presets", files_in_directory);
+		utility::listDir(configuration->mPresetsDirectory.c_str(), files_in_directory);
 
 		PresetFileList presets;
 
@@ -98,9 +105,25 @@ namespace nap
 	}
 
 
+	std::string ParameterService::getPresetPath(const std::string& filename) const
+	{
+		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
+
+		std::string preset_path = configuration->mPresetsDirectory;
+		if (preset_path.back() != '/' && preset_path.back() != '\\')
+			preset_path += "/";
+
+		preset_path += filename;
+		return preset_path;
+	}
+
+
 	bool ParameterService::loadPreset(const std::string& presetFile, utility::ErrorState& errorState)
 	{
-		std::string preset_path = "presets/" + presetFile;
+		std::string preset_path = getPresetPath(presetFile);
+
+		if (!errorState.check(mRootContainer != nullptr, "There is no root parameter container active in the project. Ensure the ParameterServiceConfiguration is correct"))
+			return false;
 
 		rtti::DeserializeResult deserialize_result;
 		if (!rtti::readJSONFile(preset_path, rtti::EPropertyValidationMode::DisallowMissingProperties, getCore().getResourceManager()->getFactory(), deserialize_result, errorState))
@@ -108,10 +131,12 @@ namespace nap
 
 		if (!rtti::DefaultLinkResolver::sResolveLinks(deserialize_result.mReadObjects, deserialize_result.mUnresolvedPointers, errorState))
 			return false;
-		
+
+		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
+
 		for (auto& object : deserialize_result.mReadObjects)
 		{
-			if (object->get_type().is_derived_from<ParameterContainer>())
+			if (object->get_type().is_derived_from<ParameterContainer>() && object->mID == configuration->mRootParameterContainer)
 			{
 				setParametersRecursive(*rtti_cast<ParameterContainer>(object.get()), *mRootContainer);
 				return true;
@@ -124,8 +149,13 @@ namespace nap
 
 	bool ParameterService::savePreset(const std::string& presetFile, utility::ErrorState& errorState)
 	{
-		utility::makeDirs(utility::getAbsolutePath("presets"));
-		std::string preset_path = "presets/" + presetFile;
+		if (!errorState.check(mRootContainer != nullptr, "There is no root parameter container active in the project. Ensure the ParameterServiceConfiguration is correct"))
+			return false;
+
+		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
+
+		utility::makeDirs(utility::getAbsolutePath(configuration->mPresetsDirectory));
+		std::string preset_path = getPresetPath(presetFile);
 
 		rtti::JSONWriter writer;
 		if (!rtti::serializeObjects({ mRootContainer.get() }, writer, errorState))
@@ -144,9 +174,9 @@ namespace nap
 
 	void ParameterService::resourcesLoaded()
 	{
-		ResourcePtr<ParameterContainer> root_params = getCore().getResourceManager()->findObject<ParameterContainer>("Parameters");
-		assert(root_params != nullptr);
-		
+		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
+
+		ResourcePtr<ParameterContainer> root_params = getCore().getResourceManager()->findObject<ParameterContainer>(configuration->mRootParameterContainer);
 		mRootContainer = root_params;
 	}
 
