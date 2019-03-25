@@ -192,6 +192,7 @@ namespace nap
 		Signal<T> valueChanged;
 	};
 
+
 	class NAPAPI ParameterService : public Service
 	{
 		RTTI_ENABLE(Service)
@@ -209,12 +210,31 @@ namespace nap
 
 	protected:		
 		virtual void resourcesLoaded() override;
+		std::string getPresetPath(const std::string& filename) const;
 
 	private:
 		void setParametersRecursive(const ParameterContainer& sourceParameters, ParameterContainer& destinationParameters);
 
 	private:
 		ResourcePtr<ParameterContainer> mRootContainer;
+	};
+
+
+	class NAPAPI ParameterServiceConfiguration : public ServiceConfiguration
+	{
+		RTTI_ENABLE(ServiceConfiguration)
+	public:
+		/**
+		*	@return The Service type associated with this configuration.
+		*/
+		virtual rtti::TypeInfo getServiceType()
+		{
+			return RTTI_OF(ParameterService);
+		}
+
+	public:
+		std::string mRootParameterContainer = "Parameters";
+		std::string mPresetsDirectory = "Presets";
 	};
 
 

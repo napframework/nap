@@ -47,6 +47,11 @@
                     "Parameters" :
                     [
                         {
+                            "Type": "nap::ParameterControlMethod",
+                            "mID": "Camera Mode",
+                            "Value" : "Orbit"
+                        },
+                        {
                             "Type": "nap::ParameterFloat",
                             "mID": "Camera Movement Speed",
                             "Value" : 15.0,
@@ -66,11 +71,6 @@
                             "Value" : 90,
                             "Minimum" : 25.0,
                             "Maximum" : 150.0
-                        },
-                        {
-                            "Type": "nap::ParameterControlMethod",
-                            "mID": "Camera Mode",
-                            "Value" : "Orbit"
                         }
                     ]                    
                 },
