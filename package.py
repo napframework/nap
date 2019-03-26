@@ -586,6 +586,8 @@ def strip_client_apps_for_source_archive(staging_dir):
         for line in lines:
             if 'START_SOURCE_ARCHIVE_REMOVED_SECTION' in line:
                 in_client_targets = True
+                output.append("# project targets\n")
+                output.append("add_subdirectory(projects/example)\n")
             if not in_client_targets:
                 output.append(line)
             if 'END_SOURCE_ARCHIVE_REMOVED_SECTION' in line:
@@ -617,12 +619,12 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
     # Misc. cleanup
     shutil.rmtree(os.path.join(staging_dir, 'test'))
 
+    # Populate example project
+    os.mkdir(os.path.join(staging_dir, 'projects'))
+    os.rename(os.path.join(staging_dir, 'apps', 'example'), os.path.join(staging_dir, 'projects', 'example'))
+
     # Remove client projects
     strip_client_apps_for_source_archive(staging_dir)
-
-    # Populate template project
-    os.mkdir(os.path.join(staging_dir, 'projects'))
-    # TODO populate template project in source archive
 
     # Populate source_archive.json
     call(WORKING_DIR, ['cmake', 
