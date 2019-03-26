@@ -553,7 +553,10 @@ def check_existing_source_archive(source_archive_basename, zip_source_archive, o
         if overwrite:
             shutil.rmtree(source_archive_basename)
         else:
-            print("Source cwd staging dir %s already exists" % source_archive_basename)
+            if zip_source_archive:
+                print("Source staging dir %s already exists" % source_archive_basename)
+            else:
+                print("Source archive output dir %s already exists" % source_archive_basename)
             sys.exit(ERROR_SOURCE_ARCHIVE_EXISTING)
 
     # Check final zipped filename
