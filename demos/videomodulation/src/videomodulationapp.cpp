@@ -12,6 +12,8 @@
 #include <selectvideocomponent.h>
 #include <selectvideomeshcomponent.h>
 #include <audio/component/levelmetercomponent.h>
+#include <rendertotexturecomponent.h>
+#include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoModulationApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -119,6 +121,12 @@ namespace nap
 			
 			// Render
 			mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, render_objects);
+		}
+
+		// Effect
+		{
+			RenderToTextureComponentInstance& to_tex_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
+			to_tex_comp.draw();
 		}
 
 		// Screen
@@ -236,6 +244,21 @@ namespace nap
 			if (ImGui::SliderFloat("Current Time", &currentTime, 0.0f, current_video->getDuration(), "%.3fs", 1.0f))
 				current_video->seek(currentTime);
 			ImGui::Text("Total time: %fs", current_video->getDuration());
+		}
+		if (ImGui::CollapsingHeader("Video Texture"))
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			nap::Texture2D& video_tex = mVideoRenderTarget->getColorTexture();
+			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
+			ImGui::Image(video_tex, { col_width, col_width / ratio_video });
+		}
+		if (ImGui::CollapsingHeader("FX Texture"))
+		{
+			RenderToTextureComponentInstance& fx_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance> ();
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			nap::Texture2D& output_tex = fx_comp.getOutputTexture();
+			float ratio_video = static_cast<float>(output_tex.getWidth()) / static_cast<float>(output_tex.getHeight());
+			ImGui::Image(output_tex, { col_width, col_width / ratio_video });
 		}
 		
 		ImGui::End();

@@ -132,6 +132,7 @@
                     "Type": "nap::OrthoCameraComponent",
                     "mID": "nap::OrthoCameraComponent",
                     "Properties": {
+                        "Mode": "PixelSpace",
                         "LeftPlane": 0.0,
                         "RightPlane": 100.0,
                         "TopPlane": 100.0,
@@ -245,19 +246,31 @@
                     ],
                     "Index": 0
                 },
-                {   
-                    "Type": "nap::audio::VideoAudioComponent",  
-                    "Video": "StreakVideo", 
-                    "mID": "audioComponent" 
-                },  
-                {   
-                    "Type": "nap::audio::OutputComponent",  
-                    "Input": "audioComponent",  
-                    "Routing": [ 0 , 1 ]    
-                },  
-                {   
-                    "Type": "nap::audio::LevelMeterComponent",  
-                    "Input": "audioComponent"   
+                {
+                    "Type": "nap::audio::VideoAudioComponent",
+                    "mID": "audioComponent",
+                    "Video": "StreakVideo",
+                    "ChannelCount": 2
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "mID": "nap::audio::OutputComponent",
+                    "Input": "audioComponent",
+                    "Routing": [
+                        0,
+                        1
+                    ]
+                },
+                {
+                    "Type": "nap::audio::LevelMeterComponent",
+                    "mID": "nap::audio::LevelMeterComponent",
+                    "Input": "audioComponent",
+                    "AnalysisWindowSize": 10.0,
+                    "MeterType": "RMS",
+                    "FilterInput": false,
+                    "CenterFrequency": 10000.0,
+                    "BandWidth": 10000.0,
+                    "Channel": 0
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -300,6 +313,33 @@
                             "z": 1.0
                         },
                         "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderToTextureComponent",
+                    "mID": "nap::RenderToTextureComponent",
+                    "InputTexture": "VideoColorTexture",
+                    "OutputTexture": "OutputTexture",
+                    "MaterialInstance": {
+                        "Material": "FXMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "intensityUniform",
+                                "Name": "intensity",
+                                "Value": 1.0
+                            }
+                        ],
+                        "BlendMode": "Opaque",
+                        "DepthMode": "NoReadWrite"
+                    },
+                    "TextureUniform": "inputTexture",
+                    "ClearColor": {
+                        "Values": [
+                            255,
+                            0,
+                            0
+                        ]
                     }
                 }
             ],
@@ -373,6 +413,15 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "FXMaterial",
+            "Uniforms": [],
+            "Shader": "FXShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "VideoMaterial",
             "Uniforms": [],
             "Shader": "VideoShader",
@@ -430,6 +479,51 @@
             }
         },
         {
+            "Type": "nap::RenderTexture2D",
+            "mID": "OutputTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "DynamicRead",
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoDepthTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "Depth"
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Width": 1280,
@@ -485,39 +579,15 @@
         },
         {
             "Type": "nap::Shader",
+            "mID": "FXShader",
+            "mVertShader": "shaders/videomodulation/fxshader.vert",
+            "mFragShader": "shaders/videomodulation/fxshader.frag"
+        },
+        {
+            "Type": "nap::Shader",
             "mID": "VideoShader",
             "mVertShader": "shaders/videomodulation/video.vert",
             "mFragShader": "shaders/videomodulation/video.frag"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "VideoColorTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "DynamicRead",
-            "Width": 1920,
-            "Height": 1080,
-            "Format": "RGB8"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "VideoDepthTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "Width": 1920,
-            "Height": 1080,
-            "Format": "Depth"
         },
         {
             "Type": "nap::Video",
