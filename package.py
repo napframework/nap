@@ -305,7 +305,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python):
+def package_for_android(package_basename, timestamp, git_revision, build_label, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python):
     """Cross compile NAP and package platform release for Android"""      
 
     # Let's check we have an NDK path
