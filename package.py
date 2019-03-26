@@ -5,6 +5,7 @@ import json
 import os
 from multiprocessing import cpu_count
 import shutil
+import stat
 import subprocess
 import sys
 from sys import platform
@@ -609,14 +610,23 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
         check_existing_source_archive(source_archive_basename, zip_source_archive, True)
 
     # Copy the repo
-    shutil.copytree('.', staging_dir, ignore=shutil.ignore_patterns('.git'))
+    shutil.copytree('.', staging_dir, ignore=shutil.ignore_patterns('packaging_bin', 'packaging_build', 'packaging_lib', 'msvc64'))
 
     # # Clean any git ignored content
     call(staging_dir, ['git', 'clean', '-dxf'], True)
     # Hard clean the repo, to be sure
     call(staging_dir, ['git', 'reset', '--hard'], True)
 
-    # Misc. cleanup
+    # Remove .git, handling shutil readonly permissions issues on Win64
+    if sys.platform == 'win32':
+        def del_rw(action, name, exc):
+            os.chmod(name, stat.S_IWRITE)
+            os.remove(name)
+        shutil.rmtree(os.path.join(staging_dir, '.git'), onerror=del_rw)
+    else:
+        shutil.rmtree(os.path.join(staging_dir, '.git'))
+
+    # Misc. cleanup       
     shutil.rmtree(os.path.join(staging_dir, 'test'))
 
     # Populate example project
