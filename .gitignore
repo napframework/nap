@@ -64,9 +64,11 @@ packaging_lib
 packaging_bin
 build_info.json
 build_number.cmake
+source_info.json
 cached_project_json.cmake
 cached_module_json.cmake
 NAP-*-*
+NAP_SOURCE-*
 
 .externalNativeBuild
 .gradle

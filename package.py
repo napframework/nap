@@ -33,6 +33,8 @@ ERROR_INVALID_VERSION = 2
 ERROR_MISSING_ANDROID_NDK = 3
 ERROR_COULD_NOT_REMOVE_DIRECTORY = 4
 ERROR_BAD_INPUT = 5
+ERROR_SOURCE_ARCHIVE_GIT_NOT_CLEAN = 6
+ERROR_SOURCE_ARCHIVE_EXISTING = 7
 
 def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     """Execute command in provided working directory"""
@@ -55,6 +57,9 @@ def package(zip_release,
             single_app_to_include, 
             clean, 
             include_timestamp_in_name, 
+            build_label, 
+            archive_source, 
+            zip_source_archive,
             overwrite, 
             android_build, 
             android_ndk_root, 
@@ -63,6 +68,7 @@ def package(zip_release,
     """Package a NAP platform release - main entry point"""
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    build_label_out = build_label if not build_label is None else ''
 
     # Define cross compilation target, if relevant 
     cross_compile_target = None
@@ -73,11 +79,19 @@ def package(zip_release,
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
     (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
     git_revision = git_revision.decode('ascii', 'ignore').strip()
-    package_basename = build_package_basename(include_timestamp_in_name, timestamp, cross_compile_target)
+    (package_basename, source_archive_basename) = build_package_basename(timestamp if include_timestamp_in_name else None, build_label, cross_compile_target)
 
     # Ensure we won't overwrite any existing package
     if not overwrite:
         check_for_existing_package(package_basename, zip_release)
+    
+    if archive_source:
+        # Verify our repo is clean if we want to do a source archive
+        verify_clean_git_repo()
+
+        # Check we're not going to overwrite an existing source archive
+        if not overwrite:
+            check_existing_source_archive(source_archive_basename, zip_source_archive)
 
     print("Packaging...")
 
@@ -98,13 +112,20 @@ def package(zip_release,
 
     # Do the packaging
     if android_build:
-        package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python)
+        package_path = package_for_android(package_basename, timestamp, git_revision, build_label_out, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python)
     elif platform.startswith('linux'):    
-        package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
+        package_path = package_for_linux(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
     elif platform == 'darwin':
-        package_for_macos(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
+        package_path = package_for_macos(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
     else:
-        package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
+        package_path = package_for_win64(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
+
+    # Archive source
+    if archive_source:
+        create_source_archive(source_archive_basename, zip_source_archive, build_label_out, timestamp, git_revision, overwrite)
+
+        # Make main package path visible
+        print("Release packaged to %s" % package_path)
 
 def remove_directory_exit_on_failure(path, use):
     try:
@@ -168,7 +189,8 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             print("Error: %s already exists" % package_path)
             sys.exit(ERROR_PACKAGE_EXISTS)
 
-def package_for_linux(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release):
+
+def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release):
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
@@ -181,7 +203,8 @@ def package_for_linux(package_basename, timestamp, git_revision, overwrite, incl
                            '-DINCLUDE_DOCS=%s' % int(include_docs),
                            '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                            '-DBUILD_TIMESTAMP=%s' % timestamp,
-                           '-DBUILD_GIT_REVISION=%s' % git_revision
+                           '-DBUILD_GIT_REVISION=%s' % git_revision,
+                           '-DBUILD_LABEL=%s' % build_label
                            ])
 
         d = '%s/%s' % (WORKING_DIR, build_dir_for_type)
@@ -197,11 +220,11 @@ def package_for_linux(package_basename, timestamp, git_revision, overwrite, incl
 
     # Create archive
     if zip_release:
-        archive_to_linux_tar_bz2(package_basename)
+        return archive_framework_to_linux_tar_bz2(package_basename)
     else:
-        archive_to_timestamped_dir(package_basename)
+        return archive_to_timestamped_dir(package_basename)
 
-def package_for_macos(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release):
+def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release):
     """Package NAP platform release for macOS"""
 
     # Generate project
@@ -209,11 +232,12 @@ def package_for_macos(package_basename, timestamp, git_revision, overwrite, incl
                        '-H.', 
                        '-B%s' % BUILD_DIR, 
                        '-G', 'Xcode',
-                       '-DNAP_PACKAGED_BUILD=1',
+                       '-DNAP_PACKAGED_BUILD=1',                 
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
                        '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
-                       '-DBUILD_GIT_REVISION=%s' % git_revision
+                       '-DBUILD_GIT_REVISION=%s' % git_revision,
+                       '-DBUILD_LABEL=%s' % build_label
                        ])
 
     # Build & install to packaging dir
@@ -234,11 +258,11 @@ def package_for_macos(package_basename, timestamp, git_revision, overwrite, incl
 
     # Create archive
     if zip_release:
-        archive_to_macos_zip(package_basename)
+        return archive_framework_to_macos_zip(package_basename)
     else:
-        archive_to_timestamped_dir(package_basename)
+        return archive_to_timestamped_dir(package_basename)
 
-def package_for_win64(package_basename, timestamp, git_revision, overwrite, include_apps, single_app_to_include, include_docs, zip_release):
+def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release):
     """Package NAP platform release for Windows"""
 
     # Create build dir if it doesn't exist
@@ -255,7 +279,8 @@ def package_for_win64(package_basename, timestamp, git_revision, overwrite, incl
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
                        '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
-                       '-DBUILD_GIT_REVISION=%s' % git_revision
+                       '-DBUILD_GIT_REVISION=%s' % git_revision,
+                       '-DBUILD_LABEL=%s' % build_label
                        ])
 
     # Build & install to packaging dir
@@ -272,12 +297,12 @@ def package_for_win64(package_basename, timestamp, git_revision, overwrite, incl
 
     # Create archive
     if zip_release:
-        archive_to_win64_zip(package_basename)
+        return archive_framework_to_win64_zip(package_basename)
     else:
-        archive_to_timestamped_dir(package_basename)
+        return archive_to_timestamped_dir(package_basename)
 
 def package_for_android(package_basename, timestamp, git_revision, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python):
-    """Cross compile NAP and package platform release for Android"""
+    """Cross compile NAP and package platform release for Android"""      
 
     # Let's check we have an NDK path
     ndk_root = None
@@ -315,7 +340,8 @@ def package_for_android(package_basename, timestamp, git_revision, overwrite, zi
                              '-DINCLUDE_DOCS=0' 
                              '-DPACKAGE_NAIVI_APPS=0'
                              '-DBUILD_TIMESTAMP=%s' % timestamp,
-                             '-DBUILD_GIT_REVISION=%s' % git_revision
+                             '-DBUILD_GIT_REVISION=%s' % git_revision,
+                             '-DBUILD_LABEL=%s' % build_label
                              ]
 
             # Set Ninja generator on Windows
@@ -345,72 +371,103 @@ def package_for_android(package_basename, timestamp, git_revision, overwrite, zi
         if platform.startswith('linux'):
             # TODO I feel like any Android builds should go to zip, supporting easy extraction on any platform.
             #      Linux is currently creating a bz2 tarball.
-            archive_to_linux_tar_bz2(package_basename)
+            package_path = archive_to_linux_tar_bz2(package_basename)
         elif platform == 'darwin':
-            archive_to_macos_zip(package_basename)
+            package_path = archive_to_macos_zip(package_basename)
         else:
-            archive_to_win64_zip(package_basename)
+            package_path = archive_to_win64_zip(package_basename)
     else:
-        archive_to_timestamped_dir(package_basename)
+        package_path = archive_to_timestamped_dir(package_basename)
+    return package_path
 
-def archive_to_linux_tar_bz2(package_basename):
+def archive_framework_to_linux_tar_bz2(package_basename):
     """Create build archive to bzipped tarball on Linux"""
 
     shutil.move(PACKAGING_DIR, package_basename)
 
-    package_filename_with_ext = '%s.%s' % (package_basename, 'tar.bz2')
-    print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
-    call(WORKING_DIR, ['tar', '-cjvf', package_filename_with_ext, package_basename])
+    package_filename_with_ext = create_linux_tar_bz2(package_basename)
 
     # Cleanup
     shutil.move(package_basename, PACKAGING_DIR)
-    print("Packaged to %s" % os.path.abspath(package_filename_with_ext))
 
-def archive_to_macos_zip(package_basename):
+    full_out_path = os.path.abspath(package_filename_with_ext)
+    print("Packaged to %s" % full_out_path)
+    return(full_out_path)
+
+def create_linux_tar_bz2(source_directory):
+    """Create a bzipped tarball for the provided directory on Linux"""
+
+    archive_filename_with_ext = '%s.%s' % (source_directory, 'tar.bz2')
+    print("Archiving to %s ..." % os.path.abspath(archive_filename_with_ext))
+    call(WORKING_DIR, ['tar', '-cjvf', archive_filename_with_ext, source_directory])    
+    return archive_filename_with_ext
+
+def archive_framework_to_macos_zip(package_basename):
     """Create build archive to zip on macOS"""
 
     shutil.move(PACKAGING_DIR, package_basename)
 
     # Archive
-    package_filename_with_ext = '%s.%s' % (package_basename, 'zip')
-    print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
-    call(WORKING_DIR, ['zip', '-yr', package_filename_with_ext, package_basename])
+    package_filename_with_ext = create_macos_zip(package_basename)
 
     # Cleanup
     shutil.move(package_basename, PACKAGING_DIR)
-    print("Packaged to %s" % os.path.abspath(package_filename_with_ext))    
 
-def archive_to_win64_zip(package_basename):
+    full_out_path = os.path.abspath(package_filename_with_ext)
+    print("Packaged to %s" % full_out_path)
+    return(full_out_path)
+
+def create_macos_zip(source_directory):
+    """Create a zip for the provided directory on macOS"""
+
+    archive_filename_with_ext = '%s.%s' % (source_directory, 'zip')
+    print("Archiving to %s ..." % os.path.abspath(archive_filename_with_ext))
+    call(WORKING_DIR, ['zip', '-yr', archive_filename_with_ext, source_directory])
+    return archive_filename_with_ext
+
+def archive_framework_to_win64_zip(package_basename):
     """Create build archive to zip on Win64"""
-
-    package_filename_with_ext = '%s.%s' % (package_basename, 'zip')
 
     # Rename our packaging dir to match the release
     shutil.move(PACKAGING_DIR, package_basename)
 
-    # Create our archive dir, used to create a copy level folder within the archive
-    if os.path.exists(ARCHIVING_DIR):
-        remove_directory_exit_on_failure(ARCHIVING_DIR, 'used to make zip')
-    os.makedirs(ARCHIVING_DIR)
-    archive_path = os.path.join(ARCHIVING_DIR, package_basename)
-    shutil.move(package_basename, archive_path)
-
-    # Create archive
-    print("Archiving to %s ..." % os.path.abspath(package_filename_with_ext))
-    shutil.make_archive(package_basename, 'zip', ARCHIVING_DIR)
+    (archive_filename_with_ext, archive_path) = create_win64_zip(package_basename)
 
     # Cleanup
     shutil.move(archive_path, PACKAGING_DIR)
-    remove_directory_exit_on_failure(ARCHIVING_DIR, 'zip path cleanup')
+    shutil.rmtree(ARCHIVING_DIR)
 
-    print("Packaged to %s" % os.path.abspath(package_filename_with_ext))  
+    full_out_path = os.path.abspath(package_filename_with_ext)
+    print("Packaged to %s" % full_out_path)
+    return(full_out_path)
+
+def create_win64_zip(source_directory):
+    """Create a zip for the provided directory on Win64"""
+
+    archive_filename_with_ext = '%s.%s' % (source_directory, 'zip')
+
+    # Create our archive dir, used to create a copy level folder within the archive
+    if os.path.exists(ARCHIVING_DIR):
+        shutil.rmtree(ARCHIVING_DIR, True)
+    os.makedirs(ARCHIVING_DIR)
+    archive_path = os.path.join(ARCHIVING_DIR, source_directory)
+    shutil.move(source_directory, archive_path)
+
+    # Create archive
+    print("Archiving to %s ..." % os.path.abspath(archive_filename_with_ext))
+    shutil.make_archive(source_directory, 'zip', ARCHIVING_DIR)
+
+    # Cleanup
+    return (archive_filename_with_ext, archive_path)
 
 def archive_to_timestamped_dir(package_basename):
     """Copy our packaged dir to a timestamped dir"""
 
     shutil.move(PACKAGING_DIR, package_basename)
 
-    print("Packaged to directory %s" % os.path.abspath(package_basename))
+    full_out_path = os.path.abspath(package_basename)
+    print("Packaged to directory %s" % full_out_path)
+    return(full_out_path)
 
 def remove_all_apps_but_specified(single_app_to_include):
     """Remove all internal Naivi apps but the specified one"""
@@ -418,8 +475,21 @@ def remove_all_apps_but_specified(single_app_to_include):
         if not app_name == single_app_to_include:
             path = os.path.join(PACKAGING_DIR, APPS_DEST_DIR, app_name)
             remove_directory_exit_on_failure(path, 'unwanted internal app')
+            
+def archive_source_archive_directory(source_directory):
+    if platform.startswith('linux'):    
+        package_filename_with_ext = create_linux_tar_bz2(source_directory)
+        shutil.rmtree(source_directory)
+    elif platform == 'darwin':
+        package_filename_with_ext = create_macos_zip(source_directory)
+        shutil.rmtree(source_directory)
+    else:
+        (package_filename_with_ext, _) = create_win64_zip(source_directory)
+        shutil.rmtree(ARCHIVING_DIR)
 
-def build_package_basename(include_timestamp_in_name, timestamp, cross_compile_target):
+    print("Source archived to %s" % os.path.abspath(package_filename_with_ext))
+
+def build_package_basename(timestamp, label, cross_compile_target):
     """Build the name of our package and populate our JSON build info file"""
 
     # Do the packaging
@@ -445,9 +515,131 @@ def build_package_basename(include_timestamp_in_name, timestamp, cross_compile_t
 
     # Create filename, including timestamp or not as requested
     package_filename = "NAP-%s-%s" % (version, platform_name)
-    if include_timestamp_in_name:
+    source_archive_basename = "NAP_SOURCE-%s" % version
+    if not timestamp is None:
         package_filename += "-%s" % timestamp
-    return package_filename
+        source_archive_basename += "-%s" % timestamp
+    if not label is None:
+        package_filename += "-%s" % label
+        source_archive_basename += "-%s" % label
+    return (package_filename, source_archive_basename)
+
+def verify_clean_git_repo():
+    """Verify that the git repository has no local changes"""
+
+    (out, err) = call('.', ['git', 'status', '--porcelain'], True)
+    clean = out.strip() == '' and err.strip() == ''
+    if not clean:
+        print("Error: Git repo needs to be clean to create a source archive")
+        sys.exit(ERROR_SOURCE_ARCHIVE_GIT_NOT_CLEAN)
+
+def check_existing_source_archive(source_archive_basename, zip_source_archive, overwrite=False):
+    """Verify we're not going to overwrite an existing source archive"""
+
+    # Check staging dir name
+    staging_dir = os.path.join(os.path.pardir, source_archive_basename)
+    if os.path.exists(staging_dir):
+        if overwrite:
+            shutil.rmtree(staging_dir)
+        else:
+            print("Source archive staging dir %s already exists" % staging_dir)
+            sys.exit(ERROR_SOURCE_ARCHIVE_EXISTING)
+
+    # Check cwd staging dir name
+    if os.path.exists(source_archive_basename):
+        if overwrite:
+            shutil.rmtree(source_archive_basename)
+        else:
+            print("Source cwd staging dir %s already exists" % source_archive_basename)
+            sys.exit(ERROR_SOURCE_ARCHIVE_EXISTING)
+
+    # Check final zipped filename
+    output_path = os.path.join(os.path.pardir, source_archive_basename)
+    if zip_source_archive:
+        if platform.startswith('linux'):
+            output_path += '.tar.bz2'
+        else:
+            output_path += '.zip'
+        if os.path.exists(output_path):
+            if overwrite:
+                shutil.rmtree(output_path)
+            else:
+                print("Source archive output %s already exists" % output_path)
+                sys.exit(ERROR_SOURCE_ARCHIVE_EXISTING)
+
+def strip_client_apps_for_source_archive(staging_dir):
+    # Remove apps
+    shutil.rmtree(os.path.join(staging_dir, 'apps'))
+
+    # Remove client projects from CMakeLists.txt
+    path = os.path.join(staging_dir, 'CMakeLists.txt')
+    output = []
+    with open(path, 'r') as f:
+        lines = f.readlines()
+        in_client_targets = False
+        for line in lines:
+            if 'START_SOURCE_ARCHIVE_REMOVED_SECTION' in line:
+                in_client_targets = True
+            if not in_client_targets:
+                output.append(line)
+            if 'END_SOURCE_ARCHIVE_REMOVED_SECTION' in line:
+                in_client_targets = False
+
+    with open(path, 'w') as f:
+        f.writelines(output)
+
+def create_source_archive(source_archive_basename, zip_source_archive, build_label, timestamp, git_revision, overwrite):
+    """Create a source archive of the repository with projects removed"""
+
+    print("Creating source archive...")
+
+    # Determine archive name
+    staging_dir = os.path.join(os.path.pardir, source_archive_basename)
+
+    # Remove any existing staging/output directories/files
+    if overwrite:
+        check_existing_source_archive(source_archive_basename, zip_source_archive, True)
+
+    # Copy the repo
+    shutil.copytree('.', staging_dir)
+
+    # # Clean any git ignored content
+    call(staging_dir, ['git', 'clean', '-dxf'], True)
+    # Hard clean the repo, to be sure
+    call(staging_dir, ['git', 'reset', '--hard'], True)
+
+    # Remove .git & other cleanup
+    shutil.rmtree(os.path.join(staging_dir, '.git'))
+    shutil.rmtree(os.path.join(staging_dir, 'test'))
+
+    # Remove client projects
+    strip_client_apps_for_source_archive(staging_dir)
+
+    # Populate template project
+    os.mkdir(os.path.join(staging_dir, 'projects'))
+    # TODO populate template project in source archive
+
+    # Populate source_archive.json
+    call(WORKING_DIR, ['cmake', 
+                       '-DOUT_PATH=%s' % staging_dir,
+                       '-DNAP_ROOT=.',
+                       '-DBUILD_TIMESTAMP=%s' % timestamp,
+                       '-DBUILD_GIT_REVISION=%s' % git_revision,
+                       '-DBUILD_LABEL=%s' % build_label,
+                       '-P', 'cmake/source_archive_populate_info.cmake'
+                       ])
+    
+    # Move alongside release
+    local_archive_name = os.path.join('.', source_archive_basename)
+    if overwrite and os.path.exists(local_archive_name):
+        shutil.rmtree(local_archive_name)
+    os.rename(staging_dir, local_archive_name)
+
+    # Optionally: compress to file (and cleanup)
+    if zip_source_archive:
+        archive_source_archive_directory(source_archive_basename)
+    else:
+        print("Source archived to %s" % os.path.abspath(source_archive_basename))
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -457,13 +649,19 @@ if __name__ == '__main__':
                         help="Don't include timestamp in the release archive and folder name, for final releases")
     parser.add_argument("-c", "--clean", action="store_true",
                         help="Clean build")
+    parser.add_argument("-l", "--label", type=str,
+                        help="An optional suffix for the package")    
+    parser.add_argument("-as", "--archive-source", action="store_true",
+                        help="Create a source archive")        
+    parser.add_argument("-zsa", "--zip-source-archive", action="store_true",
+                        help="Zip the created source source archive")        
     parser.add_argument("-a", "--include-apps", action="store_true",
                         help="Include Naivi apps, packaging them as projects")
     parser.add_argument("-sna", "--include-single-naivi-app",
                         type=str,
                         help="A single Naivi app to include, packaged as project. Conflicts with --include-apps.")
     parser.add_argument("-o", "--overwrite", action="store_true",
-                        help="Overwrite any existing package")
+                        help="Overwrite any existing framework or source package")
     parser.add_argument("--include-docs", action="store_true",
                         help="Include documentation")
     parser.add_argument("--android", action="store_true",
@@ -491,6 +689,11 @@ if __name__ == '__main__':
             print("Error: Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_naivi_app)
             sys.exit(ERROR_BAD_INPUT)
 
+    # It doesn't make sense to zip a source archive that we're not creating
+    if args.zip_source_archive and not args.archive_source:
+        print("Error: Can't zip a source archive that you're not creating")
+        sys.exit(ERROR_BAD_INPUT)
+
     # Package our build
     package(not args.no_zip, 
             args.include_docs, 
@@ -498,9 +701,11 @@ if __name__ == '__main__':
             args.include_single_naivi_app,
             args.clean, 
             not args.no_timestamp, 
+            args.label,             
+            args.archive_source, 
+            args.zip_source_archive,            
             args.overwrite, 
             args.android, 
             args.android_ndk_root,
             args.android_abis,
-            args.android_enable_python
-            )
+            args.android_enable_python)
