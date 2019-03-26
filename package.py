@@ -607,15 +607,14 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
         check_existing_source_archive(source_archive_basename, zip_source_archive, True)
 
     # Copy the repo
-    shutil.copytree('.', staging_dir)
+    shutil.copytree('.', staging_dir, ignore=shutil.ignore_patterns('.git'))
 
     # # Clean any git ignored content
     call(staging_dir, ['git', 'clean', '-dxf'], True)
     # Hard clean the repo, to be sure
     call(staging_dir, ['git', 'reset', '--hard'], True)
 
-    # Remove .git & other cleanup
-    shutil.rmtree(os.path.join(staging_dir, '.git'))
+    # Misc. cleanup
     shutil.rmtree(os.path.join(staging_dir, 'test'))
 
     # Remove client projects
