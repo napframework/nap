@@ -1,11 +1,4 @@
-#include "parameternumeric.h"
-
-#define DEFINE_NUMERIC_PARAMETER(Type)																			\
-	RTTI_BEGIN_CLASS(Type)																						\
-		RTTI_PROPERTY("Value",		&Type::mValue,			nap::rtti::EPropertyMetaData::Default)				\
-		RTTI_PROPERTY("Minimum",	&Type::mMinimum,		nap::rtti::EPropertyMetaData::Default)				\
-		RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)				\
-	RTTI_END_CLASS
+#include <parameternumeric.h>
 
 DEFINE_NUMERIC_PARAMETER(nap::ParameterFloat)
 DEFINE_NUMERIC_PARAMETER(nap::ParameterDouble)

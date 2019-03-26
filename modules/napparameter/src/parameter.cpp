@@ -1,4 +1,4 @@
-#include "parameter.h"
+#include <parameter.h>
 
 RTTI_BEGIN_CLASS(nap::ParameterContainer)
 	RTTI_PROPERTY("Parameters",	&nap::ParameterContainer::mParameters, nap::rtti::EPropertyMetaData::Embedded)
