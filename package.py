@@ -46,6 +46,9 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     else:
         proc = subprocess.Popen(cmd, cwd=cwd)
     (out, err) = proc.communicate()
+    if type(out) is bytes:
+        out = out.decode('ascii', 'ignore')
+        err = err.decode('ascii', 'ignore')
     if exception_on_nonzero and proc.returncode != 0:
         print("Bailing for non zero returncode")
         raise Exception(proc.returncode)
@@ -78,7 +81,7 @@ def package(zip_release,
     # Add timestamp and git revision for build info
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
     (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
-    git_revision = git_revision.decode('ascii', 'ignore').strip()
+    git_revision = git_revision.strip()
     (package_basename, source_archive_basename) = build_package_basename(timestamp if include_timestamp_in_name else None, build_label, cross_compile_target)
 
     # Ensure we won't overwrite any existing package
@@ -507,7 +510,7 @@ def build_package_basename(timestamp, label, cross_compile_target):
 
     # Fetch version from version.cmake
     (version_unparsed, _) = call(WORKING_DIR, ['cmake', '-P', 'cmake/version.cmake'], True)
-    chunks = version_unparsed.decode('ascii', 'ignore').split(':')
+    chunks = version_unparsed.split(':')
     if len(chunks) < 2:
         print("Error passing invalid output from version.cmake: %s" % version_unparsed)
         sys.exit(ERROR_INVALID_VERSION)
