@@ -5,7 +5,7 @@ if(ANDROID)
     return()
 endif()
 
-project(skeleton)
+project(example)
 
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
