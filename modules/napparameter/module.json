@@ -1,5 +1,5 @@
 {
     "dependencies": [
-		"mod_napapi"
+		"mod_naprender"
     ]
 }
