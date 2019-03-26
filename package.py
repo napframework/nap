@@ -646,37 +646,49 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-nz", "--no-zip", action="store_true",
-                        help="Don't zip the release, package to a directory")
-    parser.add_argument("-nt", "--no-timestamp", action="store_true",
+
+    labelling_group = parser.add_argument_group('Labelling')
+    labelling_group.add_argument("-nt", "--no-timestamp", action="store_true",
                         help="Don't include timestamp in the release archive and folder name, for final releases")
-    parser.add_argument("-c", "--clean", action="store_true",
-                        help="Clean build")
-    parser.add_argument("-l", "--label", type=str,
+    labelling_group.add_argument("-l", "--label", type=str,
                         help="An optional suffix for the package")    
-    parser.add_argument("-as", "--archive-source", action="store_true",
+
+    core_group = parser.add_argument_group('Core Behaviour')
+    core_group.add_argument("-nz", "--no-zip", action="store_true",
+                        help="Don't zip the release, package to a directory")
+    core_group.add_argument("-o", "--overwrite", action="store_true",
+                    help="Overwrite any existing framework or source package")
+    core_group.add_argument("-c", "--clean", action="store_true",
+                        help="Clean build")
+
+    source_archive_group = parser.add_argument_group('Source Archiving')
+    source_archive_group.add_argument("-as", "--archive-source", action="store_true",
                         help="Create a source archive")        
-    parser.add_argument("-zsa", "--zip-source-archive", action="store_true",
+    source_archive_group.add_argument("-zsa", "--zip-source-archive", action="store_true",
                         help="Zip the created source source archive")        
-    parser.add_argument("-a", "--include-apps", action="store_true",
+
+    naivi_apps_group = parser.add_argument_group('Naivi Apps')
+    naivi_apps_group.add_argument("-a", "--include-apps", action="store_true",
                         help="Include Naivi apps, packaging them as projects")
-    parser.add_argument("-sna", "--include-single-naivi-app",
+    naivi_apps_group.add_argument("-sna", "--include-single-naivi-app",
                         type=str,
                         help="A single Naivi app to include, packaged as project. Conflicts with --include-apps.")
-    parser.add_argument("-o", "--overwrite", action="store_true",
-                        help="Overwrite any existing framework or source package")
-    parser.add_argument("--include-docs", action="store_true",
-                        help="Include documentation")
-    parser.add_argument("--android", action="store_true",
+
+    android_group = parser.add_argument_group('Android')
+    android_group.add_argument("--android", action="store_true",
                         help="Build for Android")
-    parser.add_argument("--android-ndk-root", 
+    android_group.add_argument("--android-ndk-root", 
                         type=str,
                         help="The path to NDK to use for the Android build")
-    parser.add_argument("--android-abis", 
+    android_group.add_argument("--android-abis", 
                         type=str,
                         help="Restrict our package to the provided comma-separated ABI/s for Android")
-    parser.add_argument("--android-enable-python", action="store_true",
+    android_group.add_argument("--android-enable-python", action="store_true",
                         help="Enable Python for Android")
+
+    unsupported_group = parser.add_argument_group('Unsupported')
+    unsupported_group.add_argument("--include-docs", action="store_true",
+                        help="Include documentation")
 
     args = parser.parse_args()
 
