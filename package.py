@@ -63,7 +63,8 @@ def package(zip_release,
             include_timestamp_in_name, 
             build_label, 
             archive_source, 
-            zip_source_archive,
+            archive_source_zipped,
+            archive_source_only,
             overwrite, 
             android_build, 
             android_ndk_root, 
@@ -86,7 +87,7 @@ def package(zip_release,
     (package_basename, source_archive_basename) = build_package_basename(timestamp if include_timestamp_in_name else None, build_label, cross_compile_target)
 
     # Ensure we won't overwrite any existing package
-    if not overwrite:
+    if not archive_source_only and not overwrite:
         check_for_existing_package(package_basename, zip_release)
     
     if archive_source:
@@ -95,41 +96,44 @@ def package(zip_release,
 
         # Check we're not going to overwrite an existing source archive
         if not overwrite:
-            check_existing_source_archive(source_archive_basename, zip_source_archive)
+            check_existing_source_archive(source_archive_basename, archive_source_zipped)
 
-    print("Packaging...")
+    if not archive_source_only:
+        print("Packaging...")
 
     # Remove old packaging path if it exists
-    if os.path.exists(PACKAGING_DIR):
-        remove_directory_exit_on_failure(PACKAGING_DIR, 'old packaging staging area')
-    os.makedirs(PACKAGING_DIR)
+        # Remove old packaging path if it exists
+        if os.path.exists(PACKAGING_DIR):
+            remove_directory_exit_on_failure(PACKAGING_DIR, 'old packaging staging area')
+        os.makedirs(PACKAGING_DIR)
 
-    # Setup ABIs for Android
-    if android_abis is None:
-        android_abis = DEFAULT_ANDROID_ABIS
-    else:
-        android_abis = android_abis.split(',')
+        # Setup ABIs for Android
+        if android_abis is None:
+            android_abis = DEFAULT_ANDROID_ABIS
+        else:
+            android_abis = android_abis.split(',')
 
-    # Clean build if requested
-    if clean:
-        clean_the_build(cross_compile_target, android_abis)
+        # Clean build if requested
+        if clean:
+            clean_the_build(cross_compile_target, android_abis)
 
-    # Do the packaging
-    if android_build:
-        package_path = package_for_android(package_basename, timestamp, git_revision, build_label_out, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python)
-    elif platform.startswith('linux'):    
-        package_path = package_for_linux(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
-    elif platform == 'darwin':
-        package_path = package_for_macos(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
-    else:
-        package_path = package_for_win64(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
+        # Do the packaging
+        if android_build:
+            package_path = package_for_android(package_basename, timestamp, git_revision, build_label_out, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python)
+        elif platform.startswith('linux'):    
+            package_path = package_for_linux(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
+        elif platform == 'darwin':
+            package_path = package_for_macos(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
+        else:
+            package_path = package_for_win64(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release)
 
     # Archive source
     if archive_source:
-        create_source_archive(source_archive_basename, zip_source_archive, build_label_out, timestamp, git_revision, overwrite)
+        create_source_archive(source_archive_basename, archive_source_zipped, build_label_out, timestamp, git_revision, overwrite)
 
         # Make main package path visible
-        print("Release packaged to %s" % package_path)
+        if not archive_source_only:
+            print("Release packaged to %s" % package_path)
 
 def remove_directory_exit_on_failure(path, use):
     try:
@@ -678,8 +682,10 @@ if __name__ == '__main__':
     source_archive_group = parser.add_argument_group('Source Archiving')
     source_archive_group.add_argument("-as", "--archive-source", action="store_true",
                         help="Create a source archive")        
-    source_archive_group.add_argument("-zsa", "--zip-source-archive", action="store_true",
-                        help="Zip the created source source archive")        
+    source_archive_group.add_argument("-asz", "--source-archive-zipped", action="store_true",
+                        help="Zip the created source archive")        
+    source_archive_group.add_argument("-aso", "--source-archive-only", action="store_true",
+                        help="Only create a source archive")        
 
     naivi_apps_group = parser.add_argument_group('Naivi Apps')
     naivi_apps_group.add_argument("-a", "--include-apps", action="store_true",
@@ -719,8 +725,22 @@ if __name__ == '__main__':
             sys.exit(ERROR_BAD_INPUT)
 
     # It doesn't make sense to zip a source archive that we're not creating
-    if args.zip_source_archive and not args.archive_source:
+    if args.source_archive_zipped and not args.archive_source:
         print("Error: Can't zip a source archive that you're not creating")
+        sys.exit(ERROR_BAD_INPUT)
+
+    if args.source_archive_only and (args.no_zip 
+                                     or args.include_docs 
+                                     or args.include_apps
+                                     or args.include_single_naivi_app
+                                     or args.clean
+                                     or args.include_apps
+                                     or args.android
+                                     or args.android_ndk_root
+                                     or args.android_abis
+                                     or args.android_enable_python
+                                     ):
+        print("Error: You have specified options that don't make sense if only creating a source archive")
         sys.exit(ERROR_BAD_INPUT)
 
     # Package our build
@@ -731,8 +751,9 @@ if __name__ == '__main__':
             args.clean, 
             not args.no_timestamp, 
             args.label,             
-            args.archive_source, 
-            args.zip_source_archive,            
+            args.archive_source or args.source_archive_only, 
+            args.source_archive_zipped,
+            args.source_archive_only,            
             args.overwrite, 
             args.android, 
             args.android_ndk_root,
