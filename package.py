@@ -445,7 +445,7 @@ def archive_framework_to_win64_zip(package_basename):
     shutil.move(archive_path, PACKAGING_DIR)
     shutil.rmtree(ARCHIVING_DIR)
 
-    full_out_path = os.path.abspath(package_filename_with_ext)
+    full_out_path = os.path.abspath(archive_filename_with_ext)
     print("Packaged to %s" % full_out_path)
     return(full_out_path)
 
