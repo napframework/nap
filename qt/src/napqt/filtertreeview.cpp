@@ -14,10 +14,19 @@
 
 using namespace nap::qt;
 
+FilterTree_::FilterTree_(QWidget* parent) : QTreeView(parent)
+{
+}
+
+QRect FilterTree_::visualRectFor(const QItemSelection& selection) const
+{
+	return QTreeView::visualRegionForSelection(selection).boundingRect();
+}
+
 FilterTreeView::FilterTreeView(QTreeView* treeview)
 {
 	if (treeview == nullptr)
-		treeview = new QTreeView(this);
+		treeview = new FilterTree_(this);
 
 	mTreeView = treeview;
 	mTreeView->setParent(this);
@@ -142,23 +151,24 @@ void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 	menu.exec(mapToGlobal(pos));
 }
 
-void FilterTreeView::setIsItemSelector(bool b)
-{
-	if (b) {
-		setTopItemSelected();
-	}
-}
-
 void FilterTreeView::setTopItemSelected()
 {
 	auto model = mTreeView->model();
 	if (model->rowCount() == 0)
 		return;
 
-	auto leftIndex = model->index(0, 0);
+	setSelectedAndCurrent(model->index(0, 0));
+}
+
+void FilterTreeView::setSelectedAndCurrent(QModelIndex index)
+{
+	auto row = index.row();
+	auto model = index.model();
+	auto leftIndex = model->index(row, 0);;
 	auto rightIndex = model->index(0, model->columnCount() - 1);
 	QItemSelection selection(leftIndex, rightIndex);
-	getSelectionModel()->select(selection, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+	auto selectionModel = getSelectionModel();
+	selectionModel->setCurrentIndex(leftIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect);
 }
 
 QWidget& FilterTreeView::getCornerWidget()
