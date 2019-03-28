@@ -35,8 +35,11 @@ endif()
 copy_module_json_to_bin()
 
 # Package into platform release
-if(UNIX)
-    set(UNIX_EXTRA_RPATH "../../../../thirdparty/freetype/lib")
+if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/freetype/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})    
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/freetype/lib)
 endif()
 package_module()
 
