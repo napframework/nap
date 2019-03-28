@@ -9,12 +9,34 @@
 
 using namespace nap::rtti;
 
+bool isNumber(const std::string& s)
+{
+	return !s.empty() && std::find_if(s.begin(),
+									  s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+}
+
+// True when name has an index, false when it's just a name
+bool nameAndIndex(const std::string& nameIndex, std::string& name, int& index)
+{
+	std::size_t found = nameIndex.find_last_of(':');
+	if (found == std::string::npos)
+	{
+		auto name = nameIndex.substr(0,found);
+		auto index = nameIndex.substr(found+1);
+		if (isNumber(index))
+		{
+			name = name;
+			index = std::stoi(index);
+			return true;
+		}
+	}
+	name = nameIndex;
+	return false;
+}
+
 napkin::NameIndex::NameIndex(const std::string& nameIndex)
 {
-	auto parts = nap::utility::splitString(nameIndex, ':');
-	mID = parts[0];
-	if (parts.size() > 1)
-		mIndex = std::stoi(parts[1]);
+	nameAndIndex(nameIndex, mID, mIndex);
 }
 
 napkin::NameIndex::NameIndex(const std::string& name, int index)
@@ -73,7 +95,8 @@ napkin::PropertyPath::PropertyPath(const napkin::PPath& absPath, const napkin::P
 
 napkin::PropertyPath::PropertyPath(Object& obj, const Path& path)
 {
-	mObjectPath.emplace_back(obj.mID);
+	auto id = obj.mID;
+	mObjectPath.emplace_back(NameIndex(id));
 	mPropertyPath.emplace_back(path.toString());
 }
 
