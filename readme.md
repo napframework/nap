@@ -1,4 +1,4 @@
-New Amsterdam Platform {#mainpage}
+New Amsterdam Platform
 =======================
 
 # Description
