@@ -114,11 +114,9 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 
 nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects)
 {
-	const auto& objects = AppContext::get().getDocument()->getObjects();
 	QStringList ids;
 	for (auto& obj : objects)
-		if (obj->get_type().is_derived_from(typeConstraint))
-			ids << QString::fromStdString(obj->mID);
+		ids << QString::fromStdString(obj->mID);
 
 	auto selectedID = nap::qt::FilterPopup::show(parent, ids).toStdString();
 	if (selectedID.empty())
@@ -128,7 +126,7 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 	if (it == objects.end())
 		return nullptr;
 
-	return (*it).get();
+	return *it;
 }
 
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
