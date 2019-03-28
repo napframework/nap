@@ -85,7 +85,7 @@ private:
 		for (int i=0; i<100; i++)
 			content << QString::fromStdString(gen.multiple(2, 5));
 
-		auto result = FilterPopup::fromStringList(this, content);
+		auto result = FilterPopup::show(this, content);
 		if (!result.isEmpty())
 			mFilterResult.setText(result);
 	}
