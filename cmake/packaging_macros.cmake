@@ -344,7 +344,7 @@ macro(package_module)
         else()
             set(EXTRA_RPATH "")
         endif()
-        set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} ${EXTRA_RPATH})        
+        set_installed_rpath_on_linux_object_for_dependent_modules("${DEEP_DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} ${EXTRA_RPATH})        
     endif()
 endmacro()
 
