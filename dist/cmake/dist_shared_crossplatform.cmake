@@ -1,5 +1,5 @@
 # Needed for the way extra libraries are brought in from module_extra.cmake
-if(${CMAKE_VERSION} VERSION_GREATER "3.12.0") 
+if(${CMAKE_VERSION} VERSION_EQUAL "3.13.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.13.0") 
     cmake_policy(SET CMP0079 NEW)
 endif()
 
