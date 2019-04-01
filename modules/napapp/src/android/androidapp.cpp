@@ -4,7 +4,6 @@
 // External Includes
 #include <nap/logger.h>
 #include <android/asset_manager_jni.h>
-#include <android/asset_manager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AndroidApp)
     RTTI_CONSTRUCTOR(nap::Core&)
