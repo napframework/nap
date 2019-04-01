@@ -74,7 +74,7 @@ def create_project_module(project_name, update_project_json, generate_solution, 
                 python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
             cmd = [python, './tools/platform/regenerate_project_by_name.py', project_name]
-            if not show_solution:
+            if not show_solution and not sys.platform.startswith('linux'):
                 cmd.append('--no-show')
             if call(cmd, cwd=nap_root) != 0:
                 print("Solution generation failed")
