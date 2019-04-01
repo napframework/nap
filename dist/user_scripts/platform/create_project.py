@@ -17,7 +17,7 @@ ERROR_CMAKE_CREATION_FAILURE = 3
 ERROR_SOLUTION_GENERATION_FAILURE = 4
 ERROR_CMAKE_MODULE_CREATION_FAILURE = 5
 
-def create_project(project_name, module_list, with_module, generate_solution):
+def create_project(project_name, module_list, with_module, generate_solution, show_solution):
     print("Creating project %s" % project_name)
 
     # Set our paths
@@ -68,6 +68,8 @@ def create_project(project_name, module_list, with_module, generate_solution):
             python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
                 
         cmd = [python, './tools/platform/regenerate_project_by_name.py', project_name]
+        if not show_solution:
+            cmd.append('--no-show')        
         if call(cmd, cwd=nap_root) != 0:
             print("Solution generation failed")
             return ERROR_SOLUTION_GENERATION_FAILURE
@@ -84,6 +86,9 @@ if __name__ == '__main__':
                         help="Include a project module")
     parser.add_argument("-ng", "--no-generate", action="store_true",
                         help="Don't generate the solution for the created project")       
+    if not sys.platform.startswith('linux'):    
+        parser.add_argument("-ns", "--no-show", action="store_true",
+                            help="Don't show the generated solution")
     args = parser.parse_args()
 
     project_name = args.PASCAL_CASE_PROJECT_NAME
@@ -98,5 +103,6 @@ if __name__ == '__main__':
         print("Error: Please specify project name in PascalCase (ie. with an uppercase letter for each word, starting with the first word)")
         sys.exit(ERROR_INVALID_INPUT)
 
-    exit_code = create_project(project_name, DEFAULT_MODULE_LIST, args.with_module, not args.no_generate)
+    show_solution = not sys.platform.startswith('linux') and not args.no_show
+    exit_code = create_project(project_name, DEFAULT_MODULE_LIST, args.with_module, not args.no_generate, show_solution)
     sys.exit(exit_code)
