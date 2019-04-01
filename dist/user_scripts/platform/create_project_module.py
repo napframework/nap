@@ -12,7 +12,7 @@ ERROR_INVALID_INPUT = 1
 ERROR_MISSING_PROJECT = 2
 ERROR_EXISTING_MODULE = 3
 
-def create_project_module(project_name, update_project_json, generate_solution):
+def create_project_module(project_name, update_project_json, generate_solution, show_solution):
     # Ensure project exists
     project_path = find_project(project_name, True) 
     if project_path is None:
@@ -58,24 +58,27 @@ def create_project_module(project_name, update_project_json, generate_solution):
         print("Module creation failed")
         sys.exit(ERROR_CMAKE_CREATION_FAILURE)
 
-    # Update project.json
-    add_module_to_project_json(project_name, 'mod_%s' % module_name.lower())
+    if update_project_json:
+        # Update project.json
+        add_module_to_project_json(project_name, 'mod_%s' % module_name.lower())
 
-    # Solution regeneration
-    if generate_solution:
-        print("Module created")
-        print("Regenerating solution")        
+        # Solution regeneration
+        if generate_solution:
+            print("Module created")
+            print("Regenerating solution")        
 
-        # Determine our Python interpreter location
-        if sys.platform == 'win32':
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
-        else:
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
+            # Determine our Python interpreter location
+            if sys.platform == 'win32':
+                python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
+            else:
+                python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
-        cmd = [python, './tools/platform/regenerate_project_by_name.py', project_name]
-        if call(cmd, cwd=nap_root) != 0:
-            print("Solution generation failed")
-            sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    
+            cmd = [python, './tools/platform/regenerate_project_by_name.py', project_name]
+            if not show_solution:
+                cmd.append('--no-show')
+            if call(cmd, cwd=nap_root) != 0:
+                print("Solution generation failed")
+                sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    
 
     print("Project module created in %s" % os.path.relpath(module_path))
 
@@ -86,12 +89,17 @@ if __name__ == '__main__':
     parser.add_argument("-nu", "--no-update-project", action="store_true",
                         help="Don't update the project.json")
     parser.add_argument("-ng", "--no-generate", action="store_true",
-                        help="Don't generate the solution for the updated project")       
+                        help="Don't regenerate the solution for the updated project")       
+    if not sys.platform.startswith('linux'):    
+        parser.add_argument("-ns", "--no-show", action="store_true",
+                            help="Don't show the regenerated solution")
+
     args = parser.parse_args()
 
     project_name = args.PROJECT_NAME.lower()
 
     update_project_json = not args.no_update_project
     regenerate_project = update_project_json and not args.no_generate
-    exit_code = create_project_module(project_name, update_project_json, regenerate_project)
+    show_solution = not sys.platform.startswith('linux') and not args.no_show
+    exit_code = create_project_module(project_name, update_project_json, regenerate_project, show_solution)
     sys.exit(exit_code)
