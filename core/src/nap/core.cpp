@@ -45,6 +45,15 @@ namespace nap
 	}
 
 
+	Core::Core(std::unique_ptr<CoreInterface> coreInterface)
+	{
+		// Initialize default and move interface
+		mTimer.reset();
+		mTicks.fill(0);
+		mInterface = std::move(coreInterface);
+	}
+
+
 	Core::~Core()
 	{
 		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
@@ -440,25 +449,5 @@ namespace nap
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
-	}	
-
-
-#ifdef ANDROID
-	void Core::setAndroidInitialisationVars(AAssetManager *assetManager, std::string nativeLibDir)
-	{
-		mAndroidAssetManager = assetManager;
-		mAndroidNativeLibDir = nativeLibDir;
 	}
-
-	AAssetManager* Core::getAndroidAssetManager() const
-	{
-		return mAndroidAssetManager;
-	}
-
-	std::string Core::getAndroidNativeLibDir() const
-	{
-		return mAndroidNativeLibDir;
-	}
-
-#endif
 }

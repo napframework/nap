@@ -1,8 +1,8 @@
-// Local Includes
+// External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <nap/android/androidinterface.h>
 #include <rtti/jsonreader.h>
-
 #include <android/asset_manager.h>
 
 namespace nap
@@ -26,8 +26,11 @@ namespace nap
 
     bool Core::hasServiceConfiguration()
     {
+		// Get interface
+		const AndroidInterface& android_interface = getInterface<AndroidInterface>();
+
         // TODO ANDROID This is fairly temporary, use the AssetManager file list to determine if the file exists
-        AAsset* asset = AAssetManager_open(getAndroidAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_UNKNOWN);
+        AAsset* asset = AAssetManager_open(android_interface.getAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_UNKNOWN);
         bool has_config = asset != NULL;
         if (asset != NULL)
             AAsset_close(asset);
@@ -37,9 +40,12 @@ namespace nap
 
     bool Core::loadServiceConfiguration(rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
     {
+		// Get interface
+		const AndroidInterface& android_interface = getInterface<AndroidInterface>();
+
         // Open the asset using Android's AssetManager
         // TODO ANDROID Cleanup, harden and code re-use. I believe this also doesn't cater for files over 1MB.
-        AAsset* asset = AAssetManager_open(getAndroidAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_UNKNOWN);
+        AAsset* asset = AAssetManager_open(android_interface.getAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_UNKNOWN);
         if (asset == NULL)
         {
             errorState.fail("AssetManager couldn't load %s", SERVICE_CONFIG_FILENAME);
