@@ -4,6 +4,7 @@
 // External Includes
 #include <nap/logger.h>
 #include <android/asset_manager_jni.h>
+#include <android/asset_manager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AndroidApp)
     RTTI_CONSTRUCTOR(nap::Core&)
@@ -24,9 +25,6 @@ namespace nap
         // Get global reference to our activity/service
         // TODO Cleanup, releasing
         mAndroidGlobalObject = reinterpret_cast<jobject>(jniEnv->NewGlobalRef(androidContextObject));
-
-        // Get the AssetManager and shared lib dir and set them in core
-        getCore().setAndroidInitialisationVars(getAssetManager(), getNativeLibDir());
     }
 
 

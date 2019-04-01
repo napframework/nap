@@ -16,15 +16,9 @@
 #include "resourcemanager.h"
 #include "service.h"
 #include "timer.h"
-
-// Android Includes
-// TODO ANDROID Move all this elsewhere?
-#ifdef ANDROID
-	#include <android/asset_manager.h>
-#endif
+#include "coreinterface.h"
 
 #define SERVICE_CONFIG_FILENAME "config.json"
-
 
 namespace nap
 {
@@ -48,9 +42,17 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		/**
-		 * Constructor
+		 * Default Constructor
 		 */
 		Core();
+
+		/**
+		 * Interface constructor.
+		 * Used when additional data is associated with the core instance.
+		 * This is the case on specific platforms, where additional platform specific information is required.
+		 * @param interface the interface to associated with this instance of core, owned by core after construction.
+		 */
+		Core(std::unique_ptr<CoreInterface> coreInterface);
 
 		/**
 		 * Destructor
@@ -143,10 +145,26 @@ namespace nap
 		Service* getService(const std::string& type);
 
 		/**
-		 *  @return a service of type T, returns nullptr if that service can't be found
+		 * @return a service of type T, returns nullptr if that service can't be found
 		 */
 		template <typename T>
 		T* getService();
+
+		/**
+		 * Returns the interface associated with this instance of core as T. 
+		 * Note that an interface is given explicitly to core on construction.
+		 * When using the default constructor core has no interface associated with it!
+		 * @return interface associated with core as type T
+		 */
+		template <typename T>
+		const T& getInterface() const;
+
+		/**
+		 * @return if core has an interface of type T	
+		 */
+		template <typename T>
+		bool hasInterface() const;
+
 
 		/**
 		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
@@ -156,13 +174,6 @@ namespace nap
 		 * @return true if the file was found, otherwise false.
 		 */
 		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
-
-#ifdef ANDROID
-		void setAndroidInitialisationVars(AAssetManager *assetManager, std::string nativeLibDir);;
-
-		AAssetManager* getAndroidAssetManager() const;
-		std::string getAndroidNativeLibDir() const;
-#endif
 	
 	private:
 		/**
@@ -184,10 +195,18 @@ namespace nap
 		*/
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
 
-
+		/**
+		 * If a service configuration file is provided which is used to initialize the various services
+		 * @return if a service configuration file is provided
+		 */
 		bool hasServiceConfiguration();
 
-
+		/**
+		 * Load the service configuration file
+		 * @param deserialize_result contains the result after reading the config file
+		 * @param errorState contains the error if deserialization fails
+		 * @return if service configuration reading succeeded or not
+		 */
 		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
 
 		/**
@@ -243,22 +262,11 @@ namespace nap
 		uint32 mTicksum = 0;
 		uint32 mTickIdx = 0;
 
+		// Interface associated with this instance of core.
+		std::unique_ptr<CoreInterface> mInterface = nullptr;
+
 		nap::Slot<const std::string&> mFileLoadedSlot = {
 			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
-
-#ifdef ANDROID
-		// TODO ANDROID Ideally temporary
-
-		// The AssetManager is used to load assets bundled included with the Android APK. Bundled assets with the app
-		// aren't files on disk and need to be accessed via this mechanism. Currently used by the ResourceManager to 
-		// load the project structure JSON and the ProjectInfoManager for the.. project info but may likely be useful 
-		// elsewhere later.
-		AAssetManager *mAndroidAssetManager;
-
-		// The location of the shared libraries for the Android app on disk. Used by the ModuleManager to load the 
-		// module shared libs.
-		std::string mAndroidNativeLibDir;
-#endif
 	};
 }
 
@@ -266,11 +274,34 @@ namespace nap
 // Template definitions
 //////////////////////////////////////////////////////////////////////////
 
-// Searches for a service of type T in the services and returns it,
-// returns nullptr if none found
+/**
+ * Searches for a service of type T in the services and returns it, returns nullptr if none found
+ */
 template <typename T>
 T* nap::Core::getService()
 {
 	Service* new_service = getService(RTTI_OF(T));
 	return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
+}
+
+
+/**
+ * Returns the core interface as T, nullptr if not found
+ */
+template <typename T>
+const T& nap::Core::getInterface() const
+{
+	T* core_interface = rtti_cast<T>(mInterface.get());
+	assert(core_interface != nullptr);
+	return *core_interface;
+}
+
+
+/**
+ * Returns if core has an interface of type T
+ */
+template <typename T>
+bool nap::Core::hasInterface() const
+{
+	return rtti_cast<T>(mInterface.get()) != nullptr;
 }
