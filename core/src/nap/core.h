@@ -16,7 +16,7 @@
 #include "resourcemanager.h"
 #include "service.h"
 #include "timer.h"
-#include "coreinterface.h"
+#include "coreextension.h"
 
 #define SERVICE_CONFIG_FILENAME "config.json"
 
@@ -47,12 +47,12 @@ namespace nap
 		Core();
 
 		/**
-		 * Interface constructor.
-		 * Used when additional data is associated with the core instance.
-		 * This is the case on specific platforms, where additional platform specific information is required.
-		 * @param interface the interface to associated with this instance of core, owned by core after construction.
+		 * Extension constructor.
+		 * Used to add additional information to Core.
+		 * This is the case on specific platforms, where additional information is required to correctly initialize Core.
+		 * @param coreExtension the extension to associated with this instance of core, owned by core after construction.
 		 */
-		Core(std::unique_ptr<CoreInterface> coreInterface);
+		Core(std::unique_ptr<CoreExtension> coreExtension);
 
 		/**
 		 * Destructor
@@ -151,20 +151,19 @@ namespace nap
 		T* getService();
 
 		/**
-		 * Returns the interface associated with this instance of core as T. 
-		 * Note that an interface is given explicitly to core on construction.
+		 * Returns the extension associated with this instance of core as T. 
+		 * Note that an extension is given explicitly to core on construction.
 		 * When using the default constructor core has no interface associated with it!
-		 * @return interface associated with core as type T
+		 * @return extension associated with core as type T
 		 */
 		template <typename T>
-		const T& getInterface() const;
+		const T& getExtension() const;
 
 		/**
-		 * @return if core has an interface of type T	
+		 * @return if core has an extension of type T	
 		 */
 		template <typename T>
-		bool hasInterface() const;
-
+		bool hasExtension() const;
 
 		/**
 		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
@@ -258,12 +257,12 @@ namespace nap
 		float mFramerate = 0.0f;
 
 		// Used to calculate framerate over time
-		std::array<uint32, 100> mTicks;
+		std::array<uint32, 20> mTicks;
 		uint32 mTicksum = 0;
 		uint32 mTickIdx = 0;
 
 		// Interface associated with this instance of core.
-		std::unique_ptr<CoreInterface> mInterface = nullptr;
+		std::unique_ptr<CoreExtension> mExtension = nullptr;
 
 		nap::Slot<const std::string&> mFileLoadedSlot = {
 			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
@@ -286,22 +285,22 @@ T* nap::Core::getService()
 
 
 /**
- * Returns the core interface as T, nullptr if not found
+ * Returns the core extension as an extension of type T
  */
 template <typename T>
-const T& nap::Core::getInterface() const
+const T& nap::Core::getExtension() const
 {
-	T* core_interface = rtti_cast<T>(mInterface.get());
-	assert(core_interface != nullptr);
-	return *core_interface;
+	T* core_ext = rtti_cast<T>(mExtension.get());
+	assert(core_ext != nullptr);
+	return *core_ext;
 }
 
 
 /**
- * Returns if core has an interface of type T
+ * Returns if core has an extension of type T
  */
 template <typename T>
-bool nap::Core::hasInterface() const
+bool nap::Core::hasExtension() const
 {
-	return rtti_cast<T>(mInterface.get()) != nullptr;
+	return rtti_cast<T>(mExtension.get()) != nullptr;
 }

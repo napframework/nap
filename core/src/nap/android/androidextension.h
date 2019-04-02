@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <nap/coreinterface.h>
+#include <nap/coreextension.h>
 #include <utility/dllexport.h>
 #include <rtti/typeinfo.h>
 #include <android/asset_manager.h>
@@ -9,22 +9,23 @@
 namespace nap
 {
 	/**
-	 * Interface required by Android specific applications.
+	 * Extension required by Android specific applications.
 	 * Provides access to the android asset manager and shared library directory.
 	 * The AssetManager is used to load assets bundled included with the Android APK.
 	 */
-	class NAPAPI AndroidInterface : public CoreInterface
+	class NAPAPI AndroidExtension : public CoreExtension
 	{
-		RTTI_ENABLE(CoreInterface)
+		RTTI_ENABLE(CoreExtension)
 	public:
-		AndroidInterface() = delete;
+		// No default constructor
+		AndroidExtension() = delete;
 
 		/**
 		 * Constructor
 		 * @param assetManager the android asset manager
 		 * @param naiveLibDir the android native library directory
 		 */
-		AndroidInterface(AAssetManager* assetManager, std::string nativeLibDir);
+		AndroidExtension(AAssetManager* assetManager, std::string nativeLibDir);
 
 		/**
 		 * @return the android asset manager

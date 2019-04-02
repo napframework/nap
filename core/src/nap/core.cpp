@@ -18,10 +18,6 @@
 	#include <stdlib.h>
 #endif
 
-#ifdef ANDROID
-	#include <android/asset_manager.h>
-#endif
-
 using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Core)
@@ -45,12 +41,12 @@ namespace nap
 	}
 
 
-	Core::Core(std::unique_ptr<CoreInterface> coreInterface)
+	Core::Core(std::unique_ptr<CoreExtension> coreExtension)
 	{
 		// Initialize default and move interface
 		mTimer.reset();
 		mTicks.fill(0);
-		mInterface = std::move(coreInterface);
+		mExtension = std::move(coreExtension);
 	}
 
 

@@ -8,7 +8,7 @@
 #include <utility/errorstate.h>
 #include <nap/core.h>
 #include <nap/windowevent.h>
-#include <nap/android/androidinterface.h>
+#include <nap/android/androidextension.h>
 #include <jni.h>
 
 namespace nap
