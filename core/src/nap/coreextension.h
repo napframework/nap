@@ -6,9 +6,9 @@
 namespace nap
 {
 	/**
-	 * Opaque object that can be given to an instance of to add platform specific functionality.
+	 * Opaque object that can be given to core on construction to add platform specific functionality.
 	 * The extension is available during initialization of core, before initialization of services and the application.
-	 * Derive from this interface to add platform specific functionality, for example: global platform specific variables.
+	 * Derive from this interface to add platform specific functionality, for example: (global) platform specific variables.
 	 */
 	class NAPAPI CoreExtension
 	{
