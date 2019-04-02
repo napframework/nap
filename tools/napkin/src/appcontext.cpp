@@ -73,7 +73,7 @@ Document* AppContext::loadDocument(const QString& filename)
 
 	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
 
-	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
+	addRecentlyOpenedFile(filename);
 
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
@@ -145,7 +145,7 @@ bool AppContext::saveDocumentAs(const QString& filename)
 
 	nap::Logger::info("Written file: " + filename.toStdString());
 
-	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
+	addRecentlyOpenedFile(filename);
 
 	documentSaved(filename);
 	getUndoStack().setClean();
@@ -185,9 +185,28 @@ void AppContext::openRecentDocument()
 
 const QString AppContext::getLastOpenedFilename()
 {
-	return QSettings().value(settingsKey::LAST_OPENED_FILE).toString();
+	auto recent = getRecentlyOpenedFiles();
+	if (recent.isEmpty())
+		return {};
+
+	return recent.last();
 }
 
+void AppContext::addRecentlyOpenedFile(const QString& filename)
+{
+	auto recentFiles = getRecentlyOpenedFiles();
+	recentFiles.removeAll(filename);
+	recentFiles << filename;
+	while (recentFiles.size() > MAX_RECENT_FILES)
+		recentFiles.removeFirst();
+	QSettings().setValue(settingsKey::RECENTLY_OPENED, recentFiles);
+
+}
+
+QStringList AppContext::getRecentlyOpenedFiles() const
+{
+	return QSettings().value(settingsKey::RECENTLY_OPENED, QStringList()).value<QStringList>();
+}
 
 void AppContext::restoreUI()
 {
@@ -296,7 +315,6 @@ void AppContext::onUndoIndexChanged()
 {
 	documentChanged(mDocument.get());
 }
-
 
 
 

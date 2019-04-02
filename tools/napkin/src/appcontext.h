@@ -130,6 +130,12 @@ namespace napkin
 		const QString getLastOpenedFilename();
 
 		/**
+		 * Add a filename to the recently opened file list or bump an existing filename to the top
+		 */
+		void addRecentlyOpenedFile(const QString& filename);
+		QStringList getRecentlyOpenedFiles() const;
+
+		/**
 		 * @return The current document
 		 */
 		Document* getDocument();
