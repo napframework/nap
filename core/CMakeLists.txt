@@ -48,7 +48,7 @@ elseif(ANDROID)
                 src/nap/android/core_ext.cpp
                 src/nap/android/projectinfomanager_ext.cpp
                 src/nap/android/resourcemanager_ext.cpp
-                src/nap/android/androidinterface.cpp
+                src/nap/android/androidextension.cpp
                 )
     target_link_libraries(${PROJECT_NAME} 
                 ${log-lib}

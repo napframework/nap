@@ -1,12 +1,11 @@
 // Local Includes
-#include <nap/android/androidinterface.h>
+#include <nap/android/androidextension.h>
 #include <nap/resourcemanager.h>
 #include <nap/core.h>
 #include <nap/logger.h>
 
 // External Includes
 #include <rtti/jsonreader.h>
-
 #include <android/asset_manager.h>
 
 namespace nap
@@ -16,15 +15,14 @@ namespace nap
     bool ResourceManager::loadFileAndDeserialize(const std::string& filename, DeserializeResult& readResult, utility::ErrorState& errorState)
     {
         // TODO ANDROID Cleanup, harden and code re-use. I believe this also doesn't cater for files over 1MB.
-
-		if (!errorState.check(mCore.hasInterface<AndroidInterface>(), "Core not setup with Android interface!"))
+		if (!errorState.check(mCore.hasExtension<AndroidExtension>(), "Core not setup with Android extension!"))
 			return false;
 
 		// Get interface
-		const AndroidInterface& android_interface = mCore.getInterface<AndroidInterface>();
+		const AndroidExtension& android_ext = mCore.getExtension<AndroidExtension>();
 
         // Open the asset using Android's AssetManager
-        AAsset* asset = AAssetManager_open(android_interface.getAssetManager(), filename.c_str(), AASSET_MODE_UNKNOWN);
+        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), filename.c_str(), AASSET_MODE_UNKNOWN);
         if (asset == NULL) 
         {
             Logger::error("AssetManager couldn't load asset %s", filename.c_str());
@@ -41,7 +39,7 @@ namespace nap
         // Process the loaded JSON
         if (!deserializeJSON(outBuffer, EPropertyValidationMode::DisallowMissingProperties, getFactory(), readResult, errorState)) 
         {
-            Logger::error("Failed to deserialise");
+            Logger::error("Failed to de-serialize");
             return false;            
         }
 

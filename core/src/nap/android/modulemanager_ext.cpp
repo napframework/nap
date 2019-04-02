@@ -1,6 +1,6 @@
 // Local Includes
 #include <nap/modulemanager.h>
-#include <nap/android/androidinterface.h>
+#include <nap/android/androidextension.h>
 #include <nap/logger.h>
 #include <nap/service.h>
 #include <nap/module.h>
@@ -25,8 +25,8 @@ namespace nap
 		for (const auto& moduleName : modulesToLoad)
 		{
 			rtti::TypeInfo service = rtti::TypeInfo::empty();
-			const AndroidInterface& android_interface = mCore.getInterface<AndroidInterface>();
-			std::string module_path = android_interface.getNativeLibDir() + "/lib" + moduleName + ".so";
+			const AndroidExtension& android_ext = mCore.getExtension<AndroidExtension>();
+			std::string module_path = android_ext.getNativeLibDir() + "/lib" + moduleName + ".so";
 			
 			// Try to load the module
 			std::string error_string;
@@ -135,11 +135,11 @@ namespace nap
 		// List of remaining modules to locate dependencies for
 		std::vector<std::string> remainingModulesToFind = searchModules;
 		
-		if (!errorState.check(mCore.hasInterface<AndroidInterface>(), "Core not setup with Android interface!"))
+		if (!errorState.check(mCore.hasExtension<AndroidExtension>(), "Core not setup with Android extension!"))
 			return false;
 
 		// Get interface
-		const AndroidInterface& android_interface = mCore.getInterface<AndroidInterface>();
+		const AndroidExtension& android_ext = mCore.getExtension<AndroidExtension>();
 
 		// Iterate the directories in our search path
 		for (const auto& moduleName : searchModules) 
@@ -149,7 +149,7 @@ namespace nap
 
 			// Open the asset using Android's AssetManager
 			// TODO ANDROID Cleanup, harden and code re-use. I believe this also doesn't cater for files over 1MB.
-	        AAsset* asset = AAssetManager_open(android_interface.getAssetManager(), jsonFile.c_str(), AASSET_MODE_UNKNOWN);
+	        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), jsonFile.c_str(), AASSET_MODE_UNKNOWN);
 	        if (asset == NULL) 
 	        {
     			errorState.fail("AssetManager couldn't load asset %s", jsonFile.c_str());
