@@ -18,7 +18,8 @@
 #include "timer.h"
 #include "coreextension.h"
 
-#define SERVICE_CONFIG_FILENAME "config.json"
+// Name of the file that contains all the settings for the NAP services.
+constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
 
 namespace nap
 {
