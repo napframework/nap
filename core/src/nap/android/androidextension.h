@@ -9,9 +9,11 @@
 namespace nap
 {
 	/**
-	 * Extension required by Android specific applications. 
-	 * Provides access to the android environment and context.
-	 * This extension is used on initialization of Core and the running app to source android specific data.
+	 * Extension required to run Android specific applications. 
+	 * Provides access to the android environment and context as given by the JNI.
+	 * This extension is used during initialization of the engine to source android specific parameters.
+	 * When creating an Android application, make sure to construct Core with an instance of this class.
+	 * Failure to do so results in a non functioning Android application.
 	 */
 	class NAPAPI AndroidExtension : public CoreExtension
 	{
