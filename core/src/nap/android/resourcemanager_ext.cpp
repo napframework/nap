@@ -42,7 +42,6 @@ namespace nap
             Logger::error("Failed to de-serialize");
             return false;            
         }
-
         return true;
     }
 

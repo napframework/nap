@@ -171,7 +171,6 @@ namespace nap
 			ImGui::SliderInt("Resolution", &mResolution, 10, 100);
 
 		ImGui::SliderInt("Graph Height", &mGraphYUnits, 1, 1000);
-
 		ImGui::EndChild();
 	}
 
