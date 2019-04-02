@@ -15,7 +15,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		/**
-		 * No default constructor	
+		 * Default constructor	
 		 */
 		CoreExtension() = default;
 
