@@ -131,20 +131,21 @@ namespace nap
 		float getFramerate() const										{ return mFramerate; }
 
 		/**
-		* @return an already registered service of @type
-		* @param type the type of service to get
-		* @return the service if found, otherwise nullptr
-		*/
+		 * Find a service of a given type.
+		 * @param type the type of service to get
+		 * @return found service, nullptr if not found.
+		 */
 		Service* getService(const rtti::TypeInfo& type);
 
 		/**
-		 * Searches for a service based on type name, searches for an exact match.
+		 * Searches for a service based on given type name, names need to match exactly.
 		 * @return an already registered service based on its type name, nullptr if not found
 		 * @param type the type of the service as a string
 		 */
 		Service* getService(const std::string& type);
 
 		/**
+		 * Searches for a service of type T, returns a nullptr if not found.
 		 * @return a service of type T, returns nullptr if that service can't be found
 		 */
 		template <typename T>
