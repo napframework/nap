@@ -23,13 +23,15 @@ namespace napkin
 
 	static const QString DEFAULT_SETTINGS_FILE = "resources/settings.ini";
 
+	static const int MAX_RECENT_FILES = 10;
+
 	// Constants used by QSettings entries
 	namespace settingsKey
 	{
-		static const QString WIN_GEO		  = "windowGeometry";
-		static const QString WIN_STATE		  = "windowState";
-		static const QString LAST_THEME		  = "lastTheme";
-		static const QString LAST_OPENED_FILE = "lastOpenedFile";
+		static const QString WIN_GEO		   	= "windowGeometry";
+		static const QString WIN_STATE		   	= "windowState";
+		static const QString LAST_THEME		   	= "lastTheme";
+		static const QString RECENTLY_OPENED	= "recentlyOpened";
 	}
 
 	static const std::string PROP_CHILDREN   = "Children";

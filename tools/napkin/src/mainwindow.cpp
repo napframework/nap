@@ -39,29 +39,19 @@ void MainWindow::showEvent(QShowEvent* event)
 		QSettings settings;
 		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
 		AppContext::get().restoreUI();
+		rebuildRecentMenu();
 		mFirstShowEvent = false;
 	}
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-	if (AppContext::get().getDocument()->isDirty())
+	if (!confirmSaveCurrentFile())
 	{
-		auto result = QMessageBox::question(this, "Save before exit",
-											"The current document has unsaved changes.\n"
-													"Save the changes before exit?",
-											QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-		if (result == QMessageBox::Yes)
-		{
-			SaveFileAction action;
-			action.trigger();
-		}
-		else if (result == QMessageBox::Cancel)
-		{
-			event->ignore();
-			return;
-		}
+		event->ignore();
+		return;
 	}
+
 	unbindSignals();
 	BaseWindow::closeEvent(event);
 }
@@ -94,6 +84,8 @@ void MainWindow::addMenu()
 		auto openFileAction = new OpenFileAction();
 		addAction(openFileAction);
 		filemenu->addAction(openFileAction);
+
+		mRecentFilesMenu = filemenu->addMenu("Open Recent");
 
 		auto reloadFileAction = new ReloadFileAction();
 		addAction(reloadFileAction);
@@ -209,6 +201,7 @@ void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
 void MainWindow::onDocumentOpened(const QString filename)
 {
 	onDocumentChanged();
+	rebuildRecentMenu();
 }
 
 void MainWindow::onLog(nap::LogMessage msg)
@@ -224,3 +217,42 @@ void MainWindow::showError(nap::LogMessage msg)
 	mErrorDialog.addMessage(QString::fromStdString(msg.text()));
 	mErrorDialog.show();
 }
+
+bool MainWindow::confirmSaveCurrentFile()
+{
+	if (!AppContext::get().getDocument()->isDirty())
+		return true;
+
+	auto result = QMessageBox::question(this, "Confirm save unsaved change",
+									"The current document has unsaved changes.\n"
+									"Save the changes before exit?",
+									QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+	if (result == QMessageBox::Yes)
+	{
+		SaveFileAction action;
+		action.trigger();
+		return true;
+	}
+	return result == QMessageBox::No;
+}
+
+void MainWindow::rebuildRecentMenu()
+{
+	mRecentFilesMenu->clear();
+
+	auto recentFiles = AppContext::get().getRecentlyOpenedFiles();
+	for (const auto& filename : recentFiles)
+	{
+		auto action = mRecentFilesMenu->addAction(filename);
+		connect(action, &QAction::triggered, [this, filename]()
+		{
+			if (confirmSaveCurrentFile())
+				AppContext::get().loadDocument(filename);
+		});
+	}
+
+	mRecentFilesMenu->setEnabled(!mRecentFilesMenu->isEmpty());
+}
+
+
