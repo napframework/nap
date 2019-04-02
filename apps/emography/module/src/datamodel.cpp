@@ -111,11 +111,11 @@ namespace nap
 			if (!mInstance->init(mService.getDBSourceDir() + mDatabaseFile, mKeepRawReadings, error))
 				return false;
 
-			// Register types
-			// TODO: Should not happen here, but in a deferred class
+			// Register stress intensity
             if(!mInstance->registerType<StressIntensity>(&gAveragingSummary<StressIntensity>, error))
                 return false;
 		
+			// Register stress state
 			if (!mInstance->registerType(RTTI_OF(StressStateReading), RTTI_OF(StressStateReadingSummary), &stressStateCountingSummary, error))
 				return false;
 
