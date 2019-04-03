@@ -148,8 +148,8 @@ namespace nap
 			std::string jsonFile = "nap_modules/" + moduleName + "/module.json";
 
 			// Open the asset using Android's AssetManager
-			// TODO ANDROID Cleanup, harden and code re-use. I believe this also doesn't cater for files over 1MB.
-	        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), jsonFile.c_str(), AASSET_MODE_UNKNOWN);
+			// TODO ANDROID Cleanup, harden and code re-use
+	        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), jsonFile.c_str(), AASSET_MODE_BUFFER);
 	        if (asset == NULL) 
 	        {
     			errorState.fail("AssetManager couldn't load asset %s", jsonFile.c_str());

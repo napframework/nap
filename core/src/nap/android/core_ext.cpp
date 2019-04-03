@@ -30,7 +30,7 @@ namespace nap
 		const AndroidExtension& android_ext = getExtension<AndroidExtension>();
 
         // TODO ANDROID This is fairly temporary, use the AssetManager file list to determine if the file exists
-        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_UNKNOWN);
+        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_BUFFER);
         bool has_config = asset != NULL;
         if (asset != NULL)
             AAsset_close(asset);
@@ -44,8 +44,8 @@ namespace nap
 		const AndroidExtension& android_ext = getExtension<AndroidExtension>();
 
         // Open the asset using Android's AssetManager
-        // TODO ANDROID Cleanup, harden and code re-use. I believe this also doesn't cater for files over 1MB.
-        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_UNKNOWN);
+        // TODO ANDROID Cleanup, harden and code re-use
+        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_BUFFER);
         if (asset == NULL)
         {
             errorState.fail("AssetManager couldn't load %s", SERVICE_CONFIG_FILENAME);
