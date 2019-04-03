@@ -379,11 +379,11 @@ def package_for_android(package_basename, timestamp, git_revision, build_label, 
         if platform.startswith('linux'):
             # TODO I feel like any Android builds should go to zip, supporting easy extraction on any platform.
             #      Linux is currently creating a bz2 tarball.
-            package_path = archive_to_linux_tar_bz2(package_basename)
+            package_path = archive_framework_to_linux_tar_bz2(package_basename)
         elif platform == 'darwin':
-            package_path = archive_to_macos_zip(package_basename)
+            package_path = archive_framework_to_macos_zip(package_basename)
         else:
-            package_path = archive_to_win64_zip(package_basename)
+            package_path = archive_framework_to_win64_zip(package_basename)
     else:
         package_path = archive_to_timestamped_dir(package_basename)
     return package_path
