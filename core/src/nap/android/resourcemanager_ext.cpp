@@ -14,7 +14,6 @@ namespace nap
 
     bool ResourceManager::loadFileAndDeserialize(const std::string& filename, DeserializeResult& readResult, utility::ErrorState& errorState)
     {
-        // TODO ANDROID Cleanup, harden and code re-use. I believe this also doesn't cater for files over 1MB.
 		if (!errorState.check(mCore.hasExtension<AndroidExtension>(), "Core not setup with Android extension!"))
 			return false;
 
@@ -22,7 +21,8 @@ namespace nap
 		const AndroidExtension& android_ext = mCore.getExtension<AndroidExtension>();
 
         // Open the asset using Android's AssetManager
-        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), filename.c_str(), AASSET_MODE_UNKNOWN);
+        // TODO ANDROID Cleanup, harden and code re-use
+        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), filename.c_str(), AASSET_MODE_BUFFER);
         if (asset == NULL) 
         {
             Logger::error("AssetManager couldn't load asset %s", filename.c_str());

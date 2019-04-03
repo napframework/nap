@@ -11,13 +11,13 @@ namespace nap
         bool loaded = false;
 
         // TODO ANDROID Check if file exists before attempting to load, allowing us to report on missing project.json
-        // TODO ANDROID Temporary project info loading, likely won't handle files over 1MB, needs error handling, code re-use, etc
 		if (!errorState.check(core.hasExtension<AndroidExtension>(), "Core not setup with Android extension!"))
 			return false;
 		
 		// Get interface
 		const AndroidExtension& android_ext = core.getExtension<AndroidExtension>();
-        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), PROJECT_INFO_FILENAME, AASSET_MODE_UNKNOWN);
+        // TODO ANDROID Temporary project info loading, needs error handling, code re-use, etc
+        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), PROJECT_INFO_FILENAME, AASSET_MODE_BUFFER);
         if (asset != NULL) 
         {
             long size = AAsset_getLength(asset);
