@@ -1,14 +1,17 @@
-#include "parametergui.h"
-#include "parameter.h"
-#include "parameterservice.h"
-#include "imgui/imgui.h"
-#include "rtti/rttiutilities.h"
-#include "parameternumeric.h"
-#include "parametersimple.h"
-#include "parameterenum.h"
+#include <parametergui.h>
+#include <parameter.h>
+#include <parameterservice.h>
+#include <imgui/imgui.h>
+#include <rtti/rttiutilities.h>
+#include <parameternumeric.h>
+#include <parametersimple.h>
+#include <parameterenum.h>
 
 namespace nap
 {
+	/**
+	 * Helper function to display the UI for a float parameter (either float or double)
+	 */
 	template<class PARAMETERTYPE>
 	static void showFloatParameter(PARAMETERTYPE& parameter)
 	{
@@ -17,6 +20,10 @@ namespace nap
 			parameter.setValue(value);
 	}
 
+
+	/**
+	 * Helper function to display the UI for an integer parameter (i.e. all non-floating point types)
+	 */
 	template<class PARAMETERTYPE>
 	static void showIntParameter(PARAMETERTYPE& parameter)
 	{
@@ -24,6 +31,7 @@ namespace nap
 		if (ImGui::SliderInt(parameter.getDisplayName().c_str(), &value, parameter.mMinimum, parameter.mMaximum))
 			parameter.setValue(value);
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +42,7 @@ namespace nap
 		
 		registerDefaultParameterEditors();
 	}
+
 
 	void ParameterGUI::registerDefaultParameterEditors()
 	{
@@ -132,7 +141,8 @@ namespace nap
 		});
 	}
 
-	void ParameterGUI::handleLoadPopup()
+
+	void ParameterGUI::handleLoadPresetPopup()
 	{
 		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
@@ -167,7 +177,7 @@ namespace nap
 
 			if (ImGui::Button("Cancel"))
 			{
-				restorePresets();
+				restorePresetState();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -175,7 +185,8 @@ namespace nap
 		}
 	}
 
-	bool ParameterGUI::handleNewPopup(std::string& outNewFilename)
+
+	bool ParameterGUI::handleNewPresetPopup(std::string& outNewFilename)
 	{
 		bool result = false;
 
@@ -203,7 +214,8 @@ namespace nap
 		return result;
 	}
 
-	void ParameterGUI::handleSaveAsPopup()
+
+	void ParameterGUI::handleSaveAsPresetPopup()
 	{
 		if (ImGui::BeginPopupModal("Save As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
@@ -220,9 +232,8 @@ namespace nap
 				}
 			}
 
-
 			std::string newFilename;
-			if (handleNewPopup(newFilename))
+			if (handleNewPresetPopup(newFilename))
 			{
 				// Insert before the '<new...>' item
 				mPresets.insert(mPresets.end() - 1, newFilename);
@@ -273,7 +284,7 @@ namespace nap
 
 			if (ImGui::Button("Cancel"))
 			{
-				restorePresets();
+				restorePresetState();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -281,17 +292,20 @@ namespace nap
 		}
 	}
 
-	void ParameterGUI::savePresets()
+
+	void ParameterGUI::savePresetState()
 	{
 		mPrevSelectedPresetIndex = mSelectedPresetIndex;
 		mPrevPresets = mPresets;
 	}
 
-	void ParameterGUI::restorePresets()
+
+	void ParameterGUI::restorePresetState()
 	{
 		mSelectedPresetIndex = mPrevSelectedPresetIndex;
 		mPresets = mPrevPresets;
 	}
+
 
 	void ParameterGUI::showPresets()
 	{
@@ -337,7 +351,7 @@ namespace nap
 				else
 				{
 					ImGui::OpenPopup("Save As");
-					savePresets();
+					savePresetState();
 					mPresets.push_back("<New...>");
 				}
 			}
@@ -347,7 +361,7 @@ namespace nap
 			if (ImGui::Button("Save As"))
 			{
 				ImGui::OpenPopup("Save As");
-				savePresets();
+				savePresetState();
 				mPresets.push_back("<New...>");
 			}
 
@@ -356,13 +370,14 @@ namespace nap
 			if (ImGui::Button("Load"))
 			{
 				ImGui::OpenPopup("Load");
-				savePresets();
+				savePresetState();
 			}
 
-			handleLoadPopup();
-			handleSaveAsPopup();
+			handleLoadPresetPopup();
+			handleSaveAsPresetPopup();
 		}
 	}
+
 
 	void ParameterGUI::showParameters(ParameterContainer& parameterContainer, bool isRoot)
 	{
@@ -401,6 +416,7 @@ namespace nap
 
 		ImGui::End();
 	}
+
 
 	void ParameterGUI::registerParameterEditor(const rtti::TypeInfo& type, const CreateParameterEditor& createParameterEditorFunc)
 	{
