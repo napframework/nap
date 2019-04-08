@@ -18,19 +18,35 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	static void gatherParameterContainers(ParameterContainer& container, ParameterService::ParameterContainerList& parameterContainers)
+	{
+		parameterContainers.push_back(&container);
+		for (auto& dest_child : container.mChildren)
+			gatherParameterContainers(*dest_child, parameterContainers);
+	}
+
 	ParameterService::ParameterService(ServiceConfiguration* configuration) :
 		Service(configuration)
 	{
 	}
 
-
-	ParameterService::PresetFileList ParameterService::getPresets() const
+	ParameterService::ParameterContainerList ParameterService::getParameterContainers()
 	{
-		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
+		ParameterContainerList containers;
+
+		if (mRootContainer != nullptr)
+			gatherParameterContainers(*mRootContainer, containers);
+
+		return containers;
+	}
+
+	ParameterService::PresetFileList ParameterService::getPresets(const ParameterContainer& container) const
+	{
+		const std::string presetDir = getContainerPresetDirectory(container.mID);
 
 		// Find all files in the preset directory
 		std::vector<std::string> files_in_directory;
-		utility::listDir(configuration->mPresetsDirectory.c_str(), files_in_directory);
+		utility::listDir(presetDir.c_str(), files_in_directory);
 
 		PresetFileList presets;
 		for (const auto& filename : files_in_directory)
@@ -51,11 +67,9 @@ namespace nap
 	}
 
 
-	std::string ParameterService::getPresetPath(const std::string& filename) const
+	std::string ParameterService::getPresetPath(const std::string& containerID, const std::string& filename) const
 	{
-		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
-
-		std::string preset_path = configuration->mPresetsDirectory;
+		std::string preset_path = getContainerPresetDirectory(containerID);
 		if (preset_path.back() != '/' && preset_path.back() != '\\')
 			preset_path += "/";
 
@@ -64,12 +78,21 @@ namespace nap
 	}
 
 
-	bool ParameterService::loadPreset(const std::string& presetFile, utility::ErrorState& errorState)
+	std::string ParameterService::getContainerPresetDirectory(const std::string& containerID) const
 	{
-		std::string preset_path = getPresetPath(presetFile);
+		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
 
-		if (!errorState.check(mRootContainer != nullptr, "There is no root parameter container active in the project. Ensure the ParameterServiceConfiguration is correct"))
-			return false;
+		std::string container_directory = configuration->mPresetsDirectory;
+		if (container_directory.back() != '/' && container_directory.back() != '\\')
+			container_directory += "/";
+
+		container_directory += containerID;
+		return container_directory;
+	}
+
+	bool ParameterService::loadPreset(ParameterContainer& container, const std::string& presetFile, utility::ErrorState& errorState)
+	{
+		std::string preset_path = getPresetPath(container.mID, presetFile);
 
 		// Load the parameters from the preset
 		rtti::DeserializeResult deserialize_result;
@@ -84,9 +107,9 @@ namespace nap
 		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
 		for (auto& object : deserialize_result.mReadObjects)
 		{
-			if (object->get_type().is_derived_from<ParameterContainer>() && object->mID == configuration->mRootParameterContainer)
+			if (object->get_type().is_derived_from<ParameterContainer>() && object->mID == container.mID)
 			{
-				setParametersRecursive(*rtti_cast<ParameterContainer>(object.get()), *mRootContainer);
+				setParametersRecursive(*rtti_cast<ParameterContainer>(object.get()), container);
 				return true;
 			}
 		}
@@ -96,20 +119,16 @@ namespace nap
 	}
 
 
-	bool ParameterService::savePreset(const std::string& presetFile, utility::ErrorState& errorState)
+	bool ParameterService::savePreset(ParameterContainer& container, const std::string& presetFile, utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mRootContainer != nullptr, "There is no root parameter container active in the project. Ensure the ParameterServiceConfiguration is correct"))
-			return false;
-
 		// Ensure the presets directory exists
-		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
-		utility::makeDirs(utility::getAbsolutePath(configuration->mPresetsDirectory));
+		utility::makeDirs(utility::getAbsolutePath(getContainerPresetDirectory(container.mID)));
 
-		std::string preset_path = getPresetPath(presetFile);
+		std::string preset_path = getPresetPath(container.mID, presetFile);
 
 		// Serialize current set of parameters to json
 		rtti::JSONWriter writer;
-		if (!rtti::serializeObjects({ mRootContainer.get() }, writer, errorState))
+		if (!rtti::serializeObjects({ &container }, writer, errorState))
 			return false;
 
 		// Open output file

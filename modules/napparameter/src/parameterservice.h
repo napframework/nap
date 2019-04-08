@@ -17,14 +17,22 @@ namespace nap
 
 	public:
 		using PresetFileList = std::vector<std::string>;
+		using ParameterContainerList = std::vector<ResourcePtr<ParameterContainer>>;
 		ParameterService(ServiceConfiguration* configuration);
 
 		/**
-		 * Get a list of all available preset files
+		 * Get all parameter containers
+		 *
+		 * @return The list of all parameter containers
+		 */
+		ParameterContainerList getParameterContainers();
+
+		/**
+		 * Get a list of all available preset files for the specified container
 		 *
 		 * @return The list of presets
 		 */
-		PresetFileList getPresets() const;
+		PresetFileList getPresets(const ParameterContainer& container) const;
 
 		/**
 		 * Load a preset from the specified file. The parameters in the Preset will be automatically applied.
@@ -35,7 +43,7 @@ namespace nap
 		 *
 		 * @return Whether the load of the preset failed or succeeded
 		 */
-		bool loadPreset(const std::string& presetFile, utility::ErrorState& errorState);
+		bool loadPreset(ParameterContainer& container, const std::string& presetFile, utility::ErrorState& errorState);
 
 		/**
 		 * Save the current set of parameters/values to the specified file as a preset.
@@ -45,22 +53,8 @@ namespace nap
 		 *
 		 * @return Whether the save of the preset failed or succeeded
 		 */
-		bool savePreset(const std::string& presetFile, utility::ErrorState& errorState);
+		bool savePreset(ParameterContainer& container, const std::string& presetFile, utility::ErrorState& errorState);
 	
-		/**
-		 * Checks whether any parameters have been defined for the current project
-		 *
-		 * @return whether any parameters have been defined for the current project
-		 */
-		bool hasParameters() const { return mRootContainer != nullptr; }
-
-		/**
-		 * Get the parameters defined for this project.
-		 *
-		 * @return The parameters defined for this project.
-		 */
-		ParameterContainer& getParameters() { assert(hasParameters()); return *mRootContainer; }
-
 	protected:
 
 		/**
@@ -75,7 +69,16 @@ namespace nap
 		 *
 		 * @return Full path to the preset file
 		 */
-		std::string getPresetPath(const std::string& filename) const;
+		std::string getPresetPath(const std::string& containerID, const std::string& filename) const;
+
+		/**
+		 * Get the directory that presets for the specified container are stored in
+		 * 
+		 * @param containerID The container id
+		 *
+		 * @return The directory that presets for the specified container are stored in
+		 */
+		std::string getContainerPresetDirectory(const std::string& containerID) const;
 
 	private:
 
@@ -88,7 +91,9 @@ namespace nap
 		void setParametersRecursive(const ParameterContainer& sourceParameters, ParameterContainer& destinationParameters);
 
 	private:
-		ResourcePtr<ParameterContainer> mRootContainer;		///< The root parameter container containing the parameters for this project
+		using ParameterContainerList = std::vector<ResourcePtr<ParameterContainer>>;
+		ParameterContainerList mContainers;
+		ResourcePtr<ParameterContainer> mRootContainer;		///< The root parameter container containing the parameters for this project//
 	};
 
 
