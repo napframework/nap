@@ -86,6 +86,16 @@ namespace nap
 		APP& getApp();
 
 		/**
+		 * @return core	
+		 */
+		Core& getCore()										{ return mCore; }
+
+		/**
+		 * @return core	
+		 */
+		const Core& getCore() const							{ return mCore; }
+
+		/**
 		 * @return the app handler
 		 */
 		HANDLER& getHandler();
