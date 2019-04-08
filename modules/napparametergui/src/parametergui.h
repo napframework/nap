@@ -26,16 +26,19 @@ namespace nap
 		bool handleNewPopup(std::string& outNewFilename);
 		void savePresets();
 		void restorePresets();
-
 		void registerDefaultParameterEditors();
+		bool hasSelectedContainer() const { return mSelectedContainerIndex >= 0 && mSelectedContainerIndex < mParameterContainers.size(); }
+
 	private:
 		using ParameterEditorMap = std::unordered_map<rtti::TypeInfo, CreateParameterEditor>;
 
-		ParameterService&					mParameterService;
-		ParameterEditorMap					mParameterEditors;
-		ParameterService::PresetFileList	mPresets;
-		ParameterService::PresetFileList	mPrevPresets;
-		int									mSelectedPresetIndex = -1;
-		int									mPrevSelectedPresetIndex = -1;
+		ParameterService&							mParameterService;
+		ParameterEditorMap							mParameterEditors;
+		ParameterService::ParameterContainerList	mParameterContainers;
+		ParameterService::PresetFileList			mPresets;
+		ParameterService::PresetFileList			mPrevPresets;
+		int											mSelectedContainerIndex = -1;
+		int											mSelectedPresetIndex = -1;
+		int											mPrevSelectedPresetIndex = -1;
 	};
 }

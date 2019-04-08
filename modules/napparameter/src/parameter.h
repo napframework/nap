@@ -24,11 +24,20 @@ namespace nap
 		 * @param value The parameter to set the new value from
 		 */
 		virtual void setValue(const Parameter& value) = 0;
+
+		/**
+		 * Get the display name for this parameter. If this parameter has a name set, that name is used. Otherwise, the ID is used.
+		 *
+		 * @return The display name to use
+		 */
+		const std::string getDisplayName() const { return mName.empty() ? mID : mName; }
+
+		std::string mName;		///< Property 'Name': The name of this property. The name is separate from the ID and doesn't have to be unique.
 	};
 
 	/** 
 	 * A parameter container serves as a container for sets of parameters. It is used to group parameters together in logical groups.
-	 * A container can contain other contains, thus forming a tree structure
+	 * A container can contain other containers, thus forming a tree structure
 	 */
 	class NAPAPI ParameterContainer : public Resource
 	{
