@@ -443,6 +443,39 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                   ")
 endmacro()
 
+# macOS: Remove specified path and subpaths from a single specified object at install time
+# FILEPATH: The file to update
+# PATH_PREFIX: The path (and sub paths) to remove
+macro(macos_remove_rpaths_from_object_at_install_time FILEPATH PATH_PREFIX CONFIGURATION)
+    if(CMAKE_HOST_WIN32)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
+    elseif(CMAKE_HOST_APPLE)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
+    else()
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+    endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR \"Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?\")
+    endif()
+
+    # Change link to dylib
+    install(CODE "if(EXISTS ${FILEPATH})
+                      # Clear any system Python path settings
+                      unset(ENV{PYTHONHOME})
+                      unset(ENV{PYTHONPATH})
+
+                      # Change link to dylib
+                      execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/packaging/macos_rpath_stripper/strip_rpaths.py
+                                              ${FILEPATH}
+                                              ${PATH_PREFIX}
+                                      )
+                  endif()
+                  "
+            CONFIGURATIONS ${CONFIGURATION})
+endmacro()
+
+
+
 # Unix: Set the packaged RPATH of a module for its dependent modules.
 # DEPENDENT_NAP_MODULES: The modules to setup as dependencies
 # TARGET_NAME: The module name
