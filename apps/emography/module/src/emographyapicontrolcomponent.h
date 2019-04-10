@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "emographystressdataviewcomponent.h"
+#include "emographystressintensitycomponent.h"
 #include "emographyclearcachecomponent.h"
 #include "emographypopulatecachecomponent.h"
 #include "emographyaddstresscomponent.h"
@@ -34,7 +34,7 @@ namespace nap
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 			// Ptr to the component that can perform the query
-			ComponentPtr<StressDataViewComponent> mStressViewComponent;		///< Property: 'StressViewComponent'
+			ComponentPtr<StressIntensityComponent> mStressViewComponent;		///< Property: 'StressViewComponent'
 			ComponentPtr<ClearCacheComponent> mClearCacheComponent;			///< Property: 'ClearCacheComponent'
 			ComponentPtr<PopulateCacheComponent> mPopulateCacheComponent;	///< Property: 'PopulateCacheComponent'
 			ComponentPtr<AddStressSampleComponent> mAddStressComponent;		///< Property: 'AddStressComponent'
@@ -67,7 +67,7 @@ namespace nap
 			virtual void update(double deltaTime) override;
 
 			// Resolved runtime instance ptr to stress view component
-			ComponentInstancePtr<StressDataViewComponent> mStressViewComponent		= { this, &APIControlComponent::mStressViewComponent };
+			ComponentInstancePtr<StressIntensityComponent> mStressViewComponent		= { this, &APIControlComponent::mStressViewComponent };
 
 			// Can clear the database cache
 			ComponentInstancePtr<ClearCacheComponent> mClearCacheComponent			= { this, &APIControlComponent::mClearCacheComponent };

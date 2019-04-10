@@ -8,7 +8,7 @@
 #include <imgui/imgui.h>
 #include <inputrouter.h>
 #include <emographyreading.h>
-#include <emographystressdataviewcomponent.h>
+#include <emographystressintensitycomponent.h>
 #include <random>
 #include <database.h>
 #include <utility/fileutils.h>

@@ -83,14 +83,14 @@
                 {
                     "Type": "nap::emography::APIControlComponent",
                     "mID": "nap::emography::APIControlComponent",
-                    "StressViewComponent": "./nap::emography::StressDataViewComponent",
+                    "StressViewComponent": "./nap::emography::StressIntensityComponent",
                     "ClearCacheComponent": "./nap::emography::ClearCacheComponent",
                     "PopulateCacheComponent": "./nap::emography::PopulateCacheComponent",
                     "AddStressComponent": "./nap::emography::AddStressSampleComponent"
                 },
                 {
-                    "Type": "nap::emography::StressDataViewComponent",
-                    "mID": "nap::emography::StressDataViewComponent",
+                    "Type": "nap::emography::StressIntensityComponent",
+                    "mID": "nap::emography::StressIntensityComponent",
                     "Settings": {
                         "Samples": 1024,
                         "StartTime": {
@@ -104,7 +104,8 @@
                             "Year": 1970
                         }
                     },
-                    "DataModel": "DataModel"
+                    "DataModel": "DataModel",
+                    "ReplyName":"StressIntensityReply"
                 },
                 {
                     "Type": "nap::emography::ClearCacheComponent",

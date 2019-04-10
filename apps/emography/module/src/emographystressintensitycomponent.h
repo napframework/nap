@@ -10,15 +10,15 @@ namespace nap
 {
 	namespace emography 
 	{
-		class StressDataViewComponentInstance;
+		class StressIntensityComponentInstance;
 
 		/**
 		 * StressDataViewComponent
 		 */
-		class NAPAPI StressDataViewComponent : public RangeDataViewComponent
+		class NAPAPI StressIntensityComponent : public RangeDataViewComponent
 		{
 			RTTI_ENABLE(RangeDataViewComponent)
-			DECLARE_COMPONENT(StressDataViewComponent, StressDataViewComponentInstance)
+			DECLARE_COMPONENT(StressIntensityComponent, StressIntensityComponentInstance)
 		public:
 
 			/**
@@ -26,17 +26,19 @@ namespace nap
 			 * @param components the components this object depends on
 			 */
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
+
+			std::string mReplyName = "StressIntensityReply";	///< Property: 'ReplyName' name of the reply that is send as a message.
 		};
 
 
 		/**
 		 * StressDataViewComponentInstance
 		 */
-		class NAPAPI StressDataViewComponentInstance : public RangeDataviewComponentInstance
+		class NAPAPI StressIntensityComponentInstance : public RangeDataviewComponentInstance
 		{
 			RTTI_ENABLE(RangeDataviewComponentInstance)
 		public:
-			StressDataViewComponentInstance(EntityInstance& entity, Component& resource) :
+			StressIntensityComponentInstance(EntityInstance& entity, Component& resource) :
 				RangeDataviewComponentInstance(entity, resource) { }
 
 			/**
@@ -58,6 +60,9 @@ namespace nap
 			 * update container size, get records and push view	
 			 */
 			virtual void onQuery() override;
+
+		private:
+			std::string mReplyName = "StressIntensityReply";
 		};
 	}
 }
