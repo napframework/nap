@@ -1,3 +1,4 @@
+#include <rtti/object.h>
 #include "commands.h"
 
 #include "napkinglobals.h"
@@ -14,6 +15,7 @@ QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QStri
 		displayType = type;
 
 	QList<QStandardItem*> items;
+
 	if (type.is_array())
 	{
 		items << new ArrayPropertyItem(name, path, prop, value.create_array_view());
@@ -219,7 +221,7 @@ void napkin::EmbeddedPointerItem::populateChildren()
 												: value.get_value<nap::rtti::Object*>();
 	if (nullptr == pointee)
 	{
-		assert(false); // Embedded pointer always has a target?
+		nap::Logger::warn("Embedded pointer was null: %s", mPath.toString().c_str());
 		return;
 	}
 

@@ -1,4 +1,4 @@
-New Amsterdam Platform {#mainpage}
+New Amsterdam Platform
 =======================
 
 # Description
@@ -31,6 +31,7 @@ To generate a solution and compile the source code you need to have installed:
 
 - [QT5](http://download.qt.io/official_releases/qt/)
 - Latest version of [CMAKE](https://cmake.org/download/)
+- Latest version of [Git](https://git-scm.com/download/win)
 
 NAP depends on various third party libraries. A set of compatible libraries can be downloaded from our github page. Put the thirdparty library directory next to the NAP source directory:
 
