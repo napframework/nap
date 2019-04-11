@@ -6,6 +6,7 @@
 
 napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {
+	setEditable(false);
 }
 
 napkin::ObjectItem::ObjectItem(nap::rtti::Object* rttiObject) : mObject(rttiObject)
