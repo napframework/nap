@@ -62,7 +62,10 @@ namespace nap
 	}
 
 
-	DirectoryWatcher::~DirectoryWatcher() { mPImpl->fileWatcher.removeWatch(mPImpl->watchID); }
+	DirectoryWatcher::~DirectoryWatcher() 
+	{ 
+		mPImpl->fileWatcher.removeWatch(mPImpl->watchID); 
+	}
 
 
 	/**

@@ -3,7 +3,9 @@ project(mod_napetherdream)
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
-add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}")
+add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}" "${NATIVE_SOURCES}" "${ANDROID_SOURCES}")
+
+# set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY FALSE)
 
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
@@ -47,7 +49,11 @@ endif()
 package_module()
 
 # Package etherdreamlib into platform release
-install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin)
+if(ANDROID)
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin/${ANDROID_ABI})
+else()
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin)
+endif()
 # Package etherdreamlib headers
 install(DIRECTORY ${ETHERDREAM_INCLUDE_DIRS}/ DESTINATION thirdparty/etherdream/include)    
 if(WIN32)

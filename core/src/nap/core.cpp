@@ -6,9 +6,9 @@
 #include "objectgraph.h"
 #include "projectinfomanager.h"
 #include "rtti/jsonreader.h"
+#include "python.h"
 
 // External Includes
-#include <rtti/pythonmodule.h>
 #include <iostream>
 #include <utility/fileutils.h>
 #include <packaginginfo.h>
@@ -28,16 +28,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static const std::string sPossibleProjectParents[] =
-	{
-		"projects",		// User projects against packaged NAP
-		"examples",		// Example projects
-		"demos",		// Demo projects
-		"apps",			// Applications in NAP source
-		"test"			// Old test projects in NAP source
-	};
-
-
 	/**
 	@brief Constructor
 
@@ -48,6 +38,15 @@ namespace nap
 		// Initialize timer
 		mTimer.reset();
 		mTicks.fill(0);
+	}
+
+
+	Core::Core(std::unique_ptr<CoreExtension> coreExtension)
+	{
+		// Initialize default and move interface
+		mTimer.reset();
+		mTicks.fill(0);
+		mExtension = std::move(coreExtension);
 	}
 
 
@@ -64,17 +63,19 @@ namespace nap
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
-		// expected when apps are launched directly from Finder and probably other things too.
+		// expected when apps are launched directly from macOS Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
 		// Setup our Python environment
+#ifdef NAP_ENABLE_PYTHON
 		setupPythonEnvironment();
+#endif
 		
 		// Load our module names from the project info
 		ProjectInfo projectInfo;
 		if (!runningInNonProjectContext)
 		{
-			if (!loadProjectInfoFromJSON(*this, projectInfo, error))
+			if (!loadProjectInfoFromFile(*this, projectInfo, error))
 				return false;
 		}
 
@@ -85,8 +86,11 @@ namespace nap
 		// Create the resource manager
 		mResourceManager = std::make_unique<ResourceManager>(*this);
 
+		// Create the module manager
+		mModuleManager = std::make_unique<ModuleManager>(*this);
+
 		// Load modules
-		if (!mModuleManager.loadModules(projectInfo.mModules, error))
+		if (!mModuleManager->loadModules(projectInfo.mModules, error))
 			return false;
 		
 		// Create the various services based on their dependencies
@@ -99,6 +103,7 @@ namespace nap
 
 	bool Core::initializePython(utility::ErrorState& error)
 	{
+#ifdef NAP_ENABLE_PYTHON
 		// Here we register a callback that is called when the nap python module is imported.
 		// We register a 'core' attribute so that we can write nap.core.<function>() in python
 		// to access core functionality as a 'global'.
@@ -106,6 +111,7 @@ namespace nap
 		{
 			module.attr("core") = this;
 		});
+#endif
 		return true;
 	}
 
@@ -222,22 +228,25 @@ namespace nap
 
 		// If there is a config file, read the service configurations from it.
 		// Note that having a config file is optional, but if there *is* one, it should be valid
-		std::string config_file_path;
-		if (findProjectFilePath("config.json", config_file_path))
-		{
-			rtti::DeserializeResult deserialize_result;
-			if (!rtti::readJSONFile(config_file_path, rtti::EPropertyValidationMode::DisallowMissingProperties,  mResourceManager->getFactory(), deserialize_result, errorState))
-				return false;
+        rtti::DeserializeResult deserialize_result;
+        if (hasServiceConfiguration()) 
+        {
+            if (loadServiceConfiguration(deserialize_result, errorState))
+            {
+                for (auto& object : deserialize_result.mReadObjects)
+                {
+                    if (!errorState.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
+                        return false;
 
-			for (auto& object : deserialize_result.mReadObjects)
-			{
-				if (!errorState.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
-					return false;
-
-				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
-				configuration_by_type[config->getServiceType()] = std::move(config);
-			}
-		}
+                    std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+                    configuration_by_type[config->getServiceType()] = std::move(config);
+                }            
+            } 
+            else {
+                errorState.fail("Failed to load config.json");
+                return false;
+            }
+        }
 
 		// Gather all service configuration types
 		std::vector<rtti::TypeInfo> service_configuration_types;
@@ -266,7 +275,7 @@ namespace nap
 
 		// First create and add all the services (unsorted)
 		std::vector<Service*> services;
-		for (auto& module : mModuleManager.mModules)
+		for (auto& module : mModuleManager->mModules)
 		{
 			if (module.mService == rtti::TypeInfo::empty())
 				continue;
@@ -380,82 +389,6 @@ namespace nap
 	}
 
 	
-	bool Core::determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath)
-	{
-		// If we've been provided with an explicit data path let's use that
-		if (!forcedDataPath.empty())
-		{
-			// Verify path exists
-			if (!utility::dirExists(forcedDataPath))
-			{
-				errorState.fail("Specified data path '%s' does not exist", forcedDataPath.c_str());
-				return false;
-			}
-			else {
-				utility::changeDir(forcedDataPath);
-				return true;
-			}
-		}
-		
-		// Check if we have our data dir alongside our exe
-		std::string testDataPath = utility::getExecutableDir() + "/data";
-		if (utility::dirExists(testDataPath))
-		{
-			utility::changeDir(testDataPath);
-			return true;
-		}
-		
-		// Split up our executable path to scrape our project name
-		std::string exeDir = utility::getExecutableDir();
-		std::vector<std::string> dirParts;
-		utility::splitString(exeDir, '/', dirParts);
-		
-		// Find NAP root.  Looks cludgey but we have control of this, it doesn't change.
-		
-		std::string napRoot;
-		std::string projectName;
-#ifdef NAP_PACKAGED_BUILD
-		// We're running from a NAP release
-		if (dirParts.size() >= 3)
-		{
-			// Non-packaged apps against released framework
-			napRoot = utility::getAbsolutePath(exeDir + "/../../../../");
-			projectName = dirParts.end()[-3];
-		}
-		else {
-			errorState.fail("Unexpected path configuration found, could not locate project data");
-			return false;
-		}
-#else // NAP_PACKAGED_BUILD
-		// We're running from NAP source
-		napRoot = utility::getAbsolutePath(exeDir + "/../../");
-		projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
-#endif // NAP_PACKAGED_BUILD
-		
-		// Iterate possible project locations
-		std::string possibleProjectParents[] =
-		{
-			"projects", // User projects against packaged NAP
-			"examples", // Example projects
-			"demos", // Demo projects
-			"apps", // Applications in NAP source
-			"test" // Old test projects in NAP source
-		};
-		for (auto& parentPath : possibleProjectParents)
-		{
-			testDataPath = napRoot + "/" + parentPath + "/" + projectName + "/data";
-			if (utility::dirExists(testDataPath))
-			{
-				utility::changeDir(testDataPath);
-				return true;
-			}
-		}
-		
-		errorState.fail("Couldn't find data for project %s", projectName.c_str());
-		return false;
-	}
-
-	
 	void Core::setupPythonEnvironment()
 	{
 #ifdef _WIN32
@@ -487,6 +420,9 @@ namespace nap
 			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
+#elif ANDROID
+		// TODO ANDROID Need's to be implemented'
+		Logger::warn("Python environment not setup for Android");
 #else	
 		if (packagedBuild)
 		{
@@ -509,48 +445,5 @@ namespace nap
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
-	}
-	
-
-	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
-	{
-		const std::string exeDir = utility::getExecutableDir();
-		
-		// Check for the file in its normal location, beside the binary
-		const std::string alongsideBinaryPath = utility::getExecutableDir() + "/" + filename;
-		nap::Logger::debug("Looking for '%s'...", alongsideBinaryPath.c_str());
-		if (utility::fileExists(alongsideBinaryPath))
-		{
-			foundFilePath = alongsideBinaryPath;
-			return true;
-		}
-#ifndef NAP_PACKAGED_BUILD
-		// When working against NAP source find our file in the tree structure in the project source.
-		// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
-		// so that we avoid module DLL copying hell.
-
-		const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
-		const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
-
-		// Iterate possible project locations
-		for (auto& parentPath : sPossibleProjectParents)
-		{
-			std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
-			nap::Logger::debug("Looking for project.json in '%s'...", testDataPath.c_str());
-			if (!utility::dirExists(testDataPath))
-				continue;
-
-			// We found our project folder, now let's verify we have a our file in there
-			testDataPath += "/";
-			testDataPath += filename;
-			nap::Logger::debug("Looking for '%s'...", testDataPath.c_str());
-			if (utility::fileExists(testDataPath))
-			{
-				foundFilePath = testDataPath;
-				return true;
-			}
-		}
-#endif // NAP_PACKAGED_BUILD
-		return false;
 	}
 }

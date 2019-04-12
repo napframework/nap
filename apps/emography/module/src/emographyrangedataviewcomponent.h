@@ -1,7 +1,12 @@
 #pragma once
 
+// Local Includes
+#include "datamodel.h"
+
+// External Includes
 #include <component.h>
 #include <nap/datetime.h>
+#include <apiservice.h>
 
 namespace nap
 {
@@ -12,7 +17,7 @@ namespace nap
 		/**
 		 * Settings associated with every range data component that is serializable
 		 */
-		struct RangeDataSettings
+		struct NAPAPI RangeDataSettings
 		{
 			RangeDataSettings() = default;
 
@@ -30,19 +35,26 @@ namespace nap
 
 
 		/**
-		 * DataViewComponent
+		 * Data View Component Resource
+		 * Allows for getting emography data from the data-model.
 		 */
 		class NAPAPI RangeDataViewComponent : public Component
 		{
 			RTTI_ENABLE(Component)
 			DECLARE_COMPONENT(RangeDataViewComponent, RangeDataviewComponentInstance)
 		public:
-			RangeDataSettings mSettings;		///< Property: 'Settings' settings associated with this ranged data view
+			RangeDataSettings mSettings;					///< Property: 'Settings' settings associated with this ranged data view.
+			ResourcePtr<DataModel> mDataModel = nullptr;	///< Property: 'DataModel' the data-model that manages all emography related data.
 		};
 
 
+		//////////////////////////////////////////////////////////////////////////
+		// RangeDataviewComponentInstance
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
-		 * DataViewComponentInstance
+		 * Data View Component Instance, run-time version of the RangeDataViewComponent
+		 * Allows for getting emography data from the data-model.
 		 */
 		class NAPAPI RangeDataviewComponentInstance : public ComponentInstance
 		{
@@ -52,8 +64,7 @@ namespace nap
 				ComponentInstance(entity, resource) { }
 
 			/**
-			* Initialize emographydataviewcomponentInstance based on the resource
-			* @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
+			* Initialize RangeDataviewComponentInstance based on the resource
 			* @param errorState should hold the error message when initialization fails
 			* @return if the emographydataviewcomponentInstance is initialized successfully
 			*/
@@ -65,17 +76,15 @@ namespace nap
 			int getSampleCount() const						{ return mSampleCount; }
 
 			/**
-			 * Sets the number of samples to take, updates settings internally
+			 * Queries the database for a specific number of samples.
+			 * Derived classes should implement the onQuery() method to perform the query into the database.
+			 * @param startTime GMT start time
+			 * @param endTime GMT end time
+			 * @param samples number of samples to return
+			 * @param uuid the unique identifier associated with the query, part of the reply
 			 * @param count number of samples to take from start to end range
 			 */
-			void setSampleCount(int count);
-
-			/**
-			 * Sets a time range, which updates the settings internally
-			 * @param begin sample range start time
-			 * @param end sample range end time 
-			 */
-			void setTimeRange(const SystemTimeStamp& begin, const SystemTimeStamp& end);
+			void query(const TimeStamp& startTime, const TimeStamp& endTime, int samples, const std::string& uuid);
 
 		protected:
 
@@ -83,11 +92,14 @@ namespace nap
 			 * Needs to be implemented by derived classes.
 			 * Called when sample count changes, ie: resolution of the buffer containing records
 			 */
-			virtual void settingsChanged() = 0;
+			virtual void onQuery() = 0;
 
-			int mSampleCount = -1;					///< Total number of samples
-			SystemTimeStamp mStartTime;				///< Sample start time
-			SystemTimeStamp mEndTime;				///< Sample end time
+			int mSampleCount = -1;						///< Total number of samples
+			TimeStamp mStartTime;						///< Sample start time
+			TimeStamp mEndTime;							///< Sample end time
+			nap::APIService* mAPIService = nullptr;		///< The API Service
+			DataModelInstance* mDataModel = nullptr;	///< The data model that holds all the emography samples
+			std::string mUUID;
 		};
 	}
 }
