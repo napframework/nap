@@ -1,10 +1,20 @@
+include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
+
 if(NOT TARGET mpg123)
     find_package(mpg123 REQUIRED)
 endif()
-target_link_libraries(${PROJECT_NAME} mpg123)
+if(NOT TARGET libsndfile)
+    find_package(libsndfile REQUIRED)
+endif()
+if(NOT TARGET portaudio)
+    find_package(portaudio REQUIRED)
+endif()
+set(MODULE_NAME_EXTRA_LIB "mpg123;libsndfile;portaudio")
 
-find_package(moodycamel REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
+if(NOT TARGET moodycamel)
+    find_package(moodycamel REQUIRED)
+endif()
+add_include_to_interface_target(mod_napaudio ${MOODYCAMEL_INCLUDE_DIRS})
 
 if(WIN32)
     # Add post-build step to set copy mpg123 to bin on Win64
@@ -46,6 +56,11 @@ elseif(UNIX)
     file(GLOB SNDFILE_DYLIBS ${THIRDPARTY_DIR}/libsndfile/lib/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${SNDFILE_DYLIBS} DESTINATION lib)
 endif()
+
+if(APPLE)
+    # Add mpg123 RPATH to built app
+    macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/mpg123/lib)
+endif()  
 
 # Install thirdparty licenses into packaged project
 install(FILES ${THIRDPARTY_DIR}/portaudio/LICENSE.txt DESTINATION licenses/portaudio)

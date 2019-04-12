@@ -10,26 +10,25 @@ namespace nap
 		: mLevel(&lvl), mMessage(msg), mTimeStamp(getCurrentTime())
 	{}
 
-	std::string basicLogMessageFormatter(const LogMessage& msg)
-	{
-		return utility::stringFormat("[%s] %s", msg.level().name().c_str(), msg.text().c_str());
-	}
 
 	std::string timestampLogMessageFormatter(const LogMessage& msg)
 	{
 		return timeFormat(msg.getTimestamp()) + " " + basicLogMessageFormatter(msg);
 	}
 
+
 	LogHandler::LogHandler()
 		: mLevel(&Logger::fineLevel()), mFormatter(&basicLogMessageFormatter)
 	{
 	}
+
 
 	void LogHandler::setFormatter(LogMessageFormatter formatter)
 	{
 		assert(formatter != nullptr);
 		mFormatter = formatter;
 	}
+
 
 	std::string LogHandler::formatMessage(LogMessage& msg)
 	{
@@ -62,21 +61,6 @@ namespace nap
 			if (message.level() >= handler->getLogLevel())
 				handler->commit(message);
 		}
-	}
-
-
-	void ConsoleLogHandler::commit(LogMessage message)
-	{
-		bool isError = message.level() >= Logger::errorLevel();
-
-		mOutStreamMutex.lock();
-
-		if (isError)
-			std::cerr << formatMessage(message) << std::endl;
-		else
-			std::cout << formatMessage(message) << std::endl;
-
-		mOutStreamMutex.unlock();
 	}
 
 

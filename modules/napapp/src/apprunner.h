@@ -95,7 +95,7 @@ namespace nap
 		std::unique_ptr<APP>		mApp = nullptr;			// App this runner works with
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
 		bool						mStop = false;			// If the runner should stop
-		int							mExitCode = 0;			// Application exit code
+		int							mExitCode = 0;			// Application exit code* Call update() to force an update.
 		MicroSeconds				mWaitTime;				// Time to wait in milliseconds based on FPS
 	};
 
@@ -154,8 +154,10 @@ namespace nap
 			return false;
 		}
 
+#ifdef NAP_ENABLE_PYTHON
 		if (!mCore.initializePython(error))
 			return false;
+#endif
 
 		// Initialize application
 		if(!error.check(app.init(error), "unable to initialize application"))

@@ -18,6 +18,8 @@ namespace nap
 	using MicroSeconds = std::chrono::microseconds;							///< Microseconds type definition
 	using NanoSeconds = std::chrono::nanoseconds;							///< Nanoseconds type definition
 	using Seconds = std::chrono::seconds;									///< Seconds type definition
+	using Minutes = std::chrono::minutes;									///< Minutes type definition
+	using Hours = std::chrono::hours;										///< Hours type definition
 	using SystemTimeStamp = std::chrono::time_point<SystemClock>;			///< Point in time associated with the SystemClock
 	using HighResTimeStamp = std::chrono::time_point<HighResolutionClock>;	///< Point in time associated with the HighResolutionClock
 
@@ -331,9 +333,15 @@ namespace nap
 		TimeStamp() = default;
 
 		/**
-		* Constructor based on given system time. Converts system time to a long that can be serialized.
-		* @param systemTime system time stamp to convert to serializable time stamp.
-		*/
+		 * Default Constructor
+		 * @param timestamp time since epoch as long
+		 */
+		TimeStamp(int64_t timeStamp) : mTimeStamp(timeStamp)	{ }
+
+		/**
+		 * Constructor based on given system time. Converts system time to a long that can be serialized.
+		 * @param systemTime system time stamp to convert to serializable time stamp.
+		 */
 		TimeStamp(const SystemTimeStamp& systemTime);
 
 		/**
@@ -352,7 +360,7 @@ namespace nap
 		*/
 		inline bool isValid() const { return mTimeStamp >= 0; }
 
-		long long mTimeStamp = -1;		///< Property: 'Time' time since epoch stored as long
+		int64_t mTimeStamp = -1;		///< Property: 'Time' time since epoch stored as long
 	};
 }
 
