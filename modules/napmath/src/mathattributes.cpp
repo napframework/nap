@@ -5,61 +5,65 @@
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <pybind11/operators.h>
-#include <pybind11/pybind11.h>
 
-template<class PythonClassType>
-static void sRegisterFloatVectorOperators(pybind11::module& module, PythonClassType& cls)
-{
-	cls.def(pybind11::self + pybind11::self);
-	cls.def(pybind11::self += pybind11::self);
-	cls.def(pybind11::self - pybind11::self);
-	cls.def(pybind11::self -= pybind11::self);
-	cls.def(pybind11::self * pybind11::self);
-	cls.def(pybind11::self *= pybind11::self);
-	cls.def(pybind11::self / pybind11::self);
-	cls.def(pybind11::self /= pybind11::self);
+#ifdef NAP_ENABLE_PYTHON
+	#include <pybind11/operators.h>
+	#include <pybind11/pybind11.h>
 
-	cls.def(pybind11::self *= float());
-	cls.def(pybind11::self * float());
+	template<class PythonClassType>
+	static void sRegisterFloatVectorOperators(pybind11::module& module, PythonClassType& cls)
+	{
+		cls.def(pybind11::self + pybind11::self);
+		cls.def(pybind11::self += pybind11::self);
+		cls.def(pybind11::self - pybind11::self);
+		cls.def(pybind11::self -= pybind11::self);
+		cls.def(pybind11::self * pybind11::self);
+		cls.def(pybind11::self *= pybind11::self);
+		cls.def(pybind11::self / pybind11::self);
+		cls.def(pybind11::self /= pybind11::self);
 
-	cls.def(float() * pybind11::self);
-}
+		cls.def(pybind11::self *= float());
+		cls.def(pybind11::self * float());
 
-template<class PythonClassType>
-static void sRegisterIntVectorOperators(pybind11::module& module, PythonClassType& cls)
-{
-	cls.def(pybind11::self + pybind11::self);
-	cls.def(pybind11::self += pybind11::self);
-	cls.def(pybind11::self - pybind11::self);
-	cls.def(pybind11::self -= pybind11::self);
-	cls.def(pybind11::self * pybind11::self);
-	cls.def(pybind11::self *= pybind11::self);
-	cls.def(pybind11::self / pybind11::self);
-	cls.def(pybind11::self /= pybind11::self);
+		cls.def(float() * pybind11::self);
+	}
 
-	cls.def(pybind11::self *= int());
-	cls.def(pybind11::self * int());
+	template<class PythonClassType>
+	static void sRegisterIntVectorOperators(pybind11::module& module, PythonClassType& cls)
+	{
+		cls.def(pybind11::self + pybind11::self);
+		cls.def(pybind11::self += pybind11::self);
+		cls.def(pybind11::self - pybind11::self);
+		cls.def(pybind11::self -= pybind11::self);
+		cls.def(pybind11::self * pybind11::self);
+		cls.def(pybind11::self *= pybind11::self);
+		cls.def(pybind11::self / pybind11::self);
+		cls.def(pybind11::self /= pybind11::self);
 
-	cls.def(int() * pybind11::self);
-}
+		cls.def(pybind11::self *= int());
+		cls.def(pybind11::self * int());
 
-template<class PythonClassType>
-static void sRegisterQuatOperators(pybind11::module& module, PythonClassType& cls)
-{
-	cls.def(pybind11::self + pybind11::self);
-	cls.def(pybind11::self += pybind11::self);
-	cls.def(pybind11::self -= pybind11::self);
-	cls.def(pybind11::self * pybind11::self);
-	cls.def(pybind11::self *= pybind11::self);
+		cls.def(int() * pybind11::self);
+	}
 
-	cls.def(pybind11::self *= float());
-	cls.def(pybind11::self * float());
+	template<class PythonClassType>
+	static void sRegisterQuatOperators(pybind11::module& module, PythonClassType& cls)
+	{
+		cls.def(pybind11::self + pybind11::self);
+		cls.def(pybind11::self += pybind11::self);
+		cls.def(pybind11::self -= pybind11::self);
+		cls.def(pybind11::self * pybind11::self);
+		cls.def(pybind11::self *= pybind11::self);
 
-	cls.def(float() * pybind11::self);
+		cls.def(pybind11::self *= float());
+		cls.def(pybind11::self * float());
 
-	module.def("rotate", &glm::rotate<glm::quat::value_type, glm::highp>);
-}
+		cls.def(float() * pybind11::self);
+
+		module.def("rotate", &glm::rotate<glm::quat::value_type, glm::highp>);
+	}
+
+#endif // NAP_ENABLE_PYTHON
 
 RTTI_BEGIN_STRUCT(glm::vec2)
 	RTTI_VALUE_CONSTRUCTOR(float, float)

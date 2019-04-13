@@ -1,5 +1,6 @@
 # default moodycamel directory
 find_path(MOODYCAMEL_DIR
+          NO_CMAKE_FIND_ROOT_PATH
           NAMES concurrentqueue.h
           HINTS ${THIRDPARTY_DIR}/moodycamel
           )
