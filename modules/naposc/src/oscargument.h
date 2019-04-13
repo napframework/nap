@@ -18,7 +18,7 @@ namespace nap
 	 * For other / more complex OSC Value types you can ask for the value using the get<T> function.
 	 * Note that this argument owns the value.
 	 */
-	class NAPAPI OSCArgument
+	class NAPAPI OSCArgument final
 	{
 		RTTI_ENABLE()
 	public:
@@ -27,7 +27,7 @@ namespace nap
 		OSCArgument(OSCValuePtr value);
 
 		// Default Destructor
-		virtual ~OSCArgument() = default;
+		~OSCArgument() = default;
 
 		/**
 		 * @return the value as type T, nullptr if the type doesn't match
@@ -177,7 +177,8 @@ namespace nap
 	{
 		RTTI_ENABLE(OSCBaseValue)
 	public:
-		OSCValue(const T& value) : mValue(value)								{ }
+		OSCValue(const T& value)  : mValue(value)								{ }
+		OSCValue(const T&& value) : mValue(std::move(value))					{ }
 		T mValue;
         virtual std::string toString() const override;
 	protected:
@@ -194,6 +195,7 @@ namespace nap
 		RTTI_ENABLE(OSCBaseValue)
 	public:
 		OSCString(const std::string& string) : mString(string)						{ }
+		OSCString(const std::string&& string) : mString(std::move(string))			{ }
 		std::string mString;
         virtual std::string toString() const override;
 	protected:

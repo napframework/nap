@@ -1,3 +1,8 @@
+# Only include if Python enabled
+if(NOT NAP_ENABLE_PYTHON)
+    return()
+endif()
+
 project(mod_nappython)
 
 # add all cpp files to SOURCES

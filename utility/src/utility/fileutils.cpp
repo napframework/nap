@@ -228,6 +228,12 @@ namespace nap
 		}
 
 
+		bool deleteFile(const std::string& path)
+		{
+			return remove(path.c_str()) == 0;
+		}
+
+
 		void writeStringToFile(const std::string& filename, const std::string& contents) {
 			std::ofstream out(filename);
 			out << contents;

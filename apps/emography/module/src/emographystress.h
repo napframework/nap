@@ -1,8 +1,12 @@
 #pragma once
 
+// Local Includes
+#include "emographyreading.h"
+
 // External Includes
 #include <utility/dllexport.h>
 #include <rtti/rtti.h>
+#include "datamodel.h"
 
 namespace nap
 {
@@ -13,10 +17,12 @@ namespace nap
 		 */
 		enum class EStressState : int
 		{
-			Under	=  0,			///< Under stimulated
-			Normal	=  1,			///< Normally stimulated
-			Over	=  2,			///< Over stimulated
-			Unknown = -1,			///< Unknown stimulated state
+			Under = 0,			///< Under stimulated
+			Normal = 1,			///< Normally stimulated
+			Over = 2,			///< Over stimulated
+			Unknown = -1,		///< Unknown stimulated state
+
+			Count = 3
 		};
 
 
@@ -39,7 +45,7 @@ namespace nap
 			* Constructor
 			* @param intensity stress intensity value
 			*/
-			StressIntensity(float intensity);
+			StressIntensity(float intensity) : mValue(intensity)	{ }
 
 			/**
 			 * @return if this is a valid intensity reading, ie: intensity value is >= 0
@@ -47,41 +53,66 @@ namespace nap
 			inline bool isValid() const					{ return mValue >= 0.0f; }
 
 			float mValue = -1.0f;			///< Property: "Value" the stress related intensity value
-		};
+		};		
 
+		using StressStateReading = Reading<EStressState>;
+
+		using StressIntensityReading = Reading<StressIntensity>;
+		using StressIntensityReadingSummary = ReadingSummary<StressIntensity>;
 
 		/**
-		 * Represents a single emography stress reading.
-		 * This object combines both the stress intensity level and stress state into a single object.
-		 * Together these can be used as an argument for a snapshot. 
-		 * Because the object is relatively light weight it can be both copy and move constructed or assigned on the fly.
-		 */
-		class NAPAPI StressReading final
+		 * The StressStateReadingSummary can summarize EStressState readings by keeping track of the number of samples of each state that's summarized in the summary object
+	     */
+		class NAPAPI StressStateReadingSummary : public ReadingSummaryBase
 		{
-			RTTI_ENABLE()
+			RTTI_ENABLE(ReadingSummaryBase)
+
 		public:
 			/**
-			 * Default Constructor
+			 * Default constructor
+			 * Timestamp will be set to the time of creation
 			 */
-			StressReading() = default;
+			StressStateReadingSummary() = default;
 
 			/**
-			 * Construct a reading with a given intensity and state.
-			 * @param state stress related state
-			 * @param intensity intensity value
+			 * Constructor to convert a ReadingBase to a ReadingSummaryBase. The ReadingBase passed in must be of type Reading<T>.
+			 * This constructor is only here to be able to construct StressStateReadingSummary objects through RTTI
+			 * Timestamp will be set to the time of the ReadingBase
 			 */
-			StressReading(EStressState state, float intensity);
+			StressStateReadingSummary(const ReadingBase& readingBase);
 
 			/**
-			* @return if this snapshot is valid, ie: when intensity >= 0 and state != unknown
-			*/
-			inline bool isValid() const
-			{
-				return mIntensity.isValid() && mState != EStressState::Unknown;
-			}
+			 * Add a StressStateReadingSummary to this summary
+			 *
+			 * @param other The StressStateReadingSummary to add
+			 */
+			void add(const StressStateReadingSummary& other);
 
-			StressIntensity				mIntensity;							///< Property: 'Intensity' stress intensity value
-			EStressState				mState = EStressState::Unknown;		///< Property: 'State' stress related state
+			/**
+			 * Get the count of the specified state (i.e. how many times that particular state was summarized in this summary object)
+			 *
+			 * @param inState The state to get the count for
+			 * @return The count for the state
+			 */
+			int getCount(EStressState inState) const;
+
+			/**
+			 * Get the total count of all states in this summary
+			 *
+			 * @return The total count of all states in this summary
+			 */
+			int getTotalCount() const;
+
+		public:
+			int mUnderCount		= 0;	///< Property: "UnderCount" the number of samples of type EStressState::Under that have been summarized in this object
+			int mNormalCount	= 0;	///< Property: "NormalCount" the number of samples of type EStressState::Normal that have been summarized in this object
+			int mOverCount		= 0;	///< Property: "OverCount" the number of samples of type EStressState::Over that have been summarized in this object
 		};
+
+		/**
+		 * This summary function is intended to summarize StressState readings. It does this by maintaining a count (per StressState) of how many times
+		 * that StressState has been seen in the list of WeightedObjects
+		 */
+		std::unique_ptr<StressStateReadingSummary> stressStateCountingSummary(const std::vector<DataModelInstance::WeightedObject>& inObjects);
 	}
 }

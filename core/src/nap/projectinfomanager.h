@@ -41,7 +41,16 @@ namespace nap
 	 *
 	 * @return True if read and deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool NAPAPI loadProjectInfoFromJSON(const Core& core, ProjectInfo& result, utility::ErrorState& errorState);
+ 	bool NAPAPI loadProjectInfoFromFile(const Core &core, ProjectInfo &result, utility::ErrorState &errorState);
 
+    /**
+     * Read and deserialize and project information from JSON stream
+     *
+     * @param result The resulting project information
+     * @param errorState The error state of deserialization
+     * @param in The input stream to read from
+     * @return True if read and deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
+     */
+	bool NAPAPI loadProjectInfoFromStream(const Core& core, ProjectInfo& result, utility::ErrorState& err, std::istream& in);
 
 } //< End Namespace nap
