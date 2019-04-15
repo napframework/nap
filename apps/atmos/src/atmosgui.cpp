@@ -150,7 +150,7 @@ namespace nap
 		}
 
 		if (showPresetWindow)
-			mParameterGUI->show();
+			mParameterGUI->show(mParameterService.hasRootContainer() ? &mParameterService.getRootContainer() : nullptr);
 
 		if (showInfo)
 			showInfoWindow();

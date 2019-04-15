@@ -18,11 +18,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static void gatherParameterContainers(ParameterContainer& container, ParameterService::ParameterContainerList& parameterContainers)
+	static void gatherParameterContainers(ParameterContainer& container, ParameterService::ParameterContainerList& parameterContainers, int depth = 0)
 	{
-		parameterContainers.push_back(&container);
+		parameterContainers.push_back({ &container, depth });
 		for (auto& dest_child : container.mChildren)
-			gatherParameterContainers(*dest_child, parameterContainers);
+			gatherParameterContainers(*dest_child, parameterContainers, depth + 1);
 	}
 
 	ParameterService::ParameterService(ServiceConfiguration* configuration) :

@@ -16,8 +16,14 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
+		struct ParameterContainerInfo
+		{
+			ResourcePtr<ParameterContainer> mContainer;
+			int mDepth;
+		};
+
 		using PresetFileList = std::vector<std::string>;
-		using ParameterContainerList = std::vector<ResourcePtr<ParameterContainer>>;
+		using ParameterContainerList = std::vector<ParameterContainerInfo>;
 		ParameterService(ServiceConfiguration* configuration);
 
 		/**
@@ -55,8 +61,21 @@ namespace nap
 		 */
 		bool savePreset(ParameterContainer& container, const std::string& presetFile, utility::ErrorState& errorState);
 	
-	protected:
+		/**
+		 * Whether a RootContainer is available (i.e. whether any parameters have been defined for the current project)
+		 *
+		 * @return Whether a RootContainer is available
+		 */
+		bool hasRootContainer() const { return mRootContainer != nullptr; }
 
+		/**
+		 * Get the root container
+		 *
+		 * @return The root container
+		 */
+		ParameterContainer& getRootContainer() { assert(hasRootContainer()); return *mRootContainer; }
+
+	protected:
 		/**
 		 * Called when a json file has been (re)loaded. Used to re-apply the presets.
 		 */
@@ -90,10 +109,9 @@ namespace nap
 		 */
 		void setParametersRecursive(const ParameterContainer& sourceParameters, ParameterContainer& destinationParameters);
 
-	private:
-		using ParameterContainerList = std::vector<ResourcePtr<ParameterContainer>>;
+	private:	
 		ParameterContainerList mContainers;
-		ResourcePtr<ParameterContainer> mRootContainer;		///< The root parameter container containing the parameters for this project//
+		ResourcePtr<ParameterContainer> mRootContainer;		///< The root parameter container containing the parameters for this project
 	};
 
 
