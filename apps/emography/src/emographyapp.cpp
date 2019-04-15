@@ -8,7 +8,7 @@
 #include <imgui/imgui.h>
 #include <inputrouter.h>
 #include <emographyreading.h>
-#include <emographystressdataviewcomponent.h>
+#include <emographystressintensitycomponent.h>
 #include <random>
 #include <database.h>
 #include <utility/fileutils.h>
@@ -171,7 +171,6 @@ namespace nap
 			ImGui::SliderInt("Resolution", &mResolution, 10, 100);
 
 		ImGui::SliderInt("Graph Height", &mGraphYUnits, 1, 1000);
-
 		ImGui::EndChild();
 	}
 

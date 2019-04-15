@@ -62,7 +62,11 @@ namespace nap
 		std::vector<std::string>		mAddressFilter;			///< List of available osc addresses, when empty all osc events are forwarded
 		Signal<const OSCEvent&>			messageReceived;		///< Triggered when the component receives an osc message
         
-        Signal<const OSCEvent&>* getMessageReceived() { return &messageReceived; }
+		/**
+		 * Returns the signal that is called when an osc message is received.
+		 * @return the message received signal.
+		 */
+        Signal<const OSCEvent&>* getMessageReceived()			{ return &messageReceived; }
 
 	protected:
 		/**

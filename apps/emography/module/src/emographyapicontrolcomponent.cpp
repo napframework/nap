@@ -9,10 +9,11 @@
 
 // nap::apihandlecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::emography::APIControlComponent)
-	RTTI_PROPERTY("StressViewComponent",	&nap::emography::APIControlComponent::mStressViewComponent,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ClearCacheComponent",	&nap::emography::APIControlComponent::mClearCacheComponent,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PopulateCacheComponent", &nap::emography::APIControlComponent::mPopulateCacheComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("AddStressComponent",		&nap::emography::APIControlComponent::mAddStressComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("StressIntensityComponent",	&nap::emography::APIControlComponent::mStressIntensityComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("StressStateComponent",		&nap::emography::APIControlComponent::mStressStateComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ClearCacheComponent",		&nap::emography::APIControlComponent::mClearCacheComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PopulateCacheComponent",		&nap::emography::APIControlComponent::mPopulateCacheComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AddStressComponent",			&nap::emography::APIControlComponent::mAddStressComponent,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::apihandlecomponentInstance run time class definition 
@@ -40,10 +41,16 @@ namespace nap
 				return false;
 
 			// Update view (query)
-			const nap::APISignature* view_signature = mComponentInstance->findSignature("updateView");
-			if (!errorState.check(view_signature != nullptr, "%s: unable to find method with signature: %s", this->mID.c_str(), "updateView"))
+			const nap::APISignature* view_signature = mComponentInstance->findSignature("getStressIntensity");
+			if (!errorState.check(view_signature != nullptr, "%s: unable to find method with signature: %s", this->mID.c_str(), "getStressIntensity"))
 				return false;
-			mComponentInstance->registerCallback(*view_signature, mUpateViewSlot);
+			mComponentInstance->registerCallback(*view_signature, mGetStressIntensitySlot);
+
+			// Get stress state samples
+			const nap::APISignature* state_signature = mComponentInstance->findSignature("getStressState");
+			if (!errorState.check(state_signature != nullptr, "%s: unable to find method with signature: %s", this->mID.c_str(), "getStressState"))
+				return false;
+			mComponentInstance->registerCallback(*state_signature, mGetStressStateSlot);
 
 			// Clear database cache
 			const nap::APISignature* cache_signature = mComponentInstance->findSignature("clearCache");
@@ -70,7 +77,7 @@ namespace nap
 			mComponentInstance->registerCallback(*add_stress_sample_signature, mAddStressSlot);
 
 			return true;
-		}
+			}
 
 
 		void APIControlComponentInstance::update(double deltaTime)
@@ -79,14 +86,22 @@ namespace nap
 		}
 
 
-		void APIControlComponentInstance::updateView(const nap::APIEvent& apiEvent)
+		void APIControlComponentInstance::getStressIntensity(const nap::APIEvent& apiEvent)
 		{
 			TimeStamp start_time(apiEvent[0].asLong());
 			TimeStamp end_time(apiEvent[1].asLong());
 			int samples = apiEvent[2].asInt();
-			mStressViewComponent->query(start_time, end_time, samples, apiEvent.getID());
+			mStressIntensityComponent->query(start_time, end_time, samples, apiEvent.getID());
 		}
 
+
+		void APIControlComponentInstance::getStressState(const nap::APIEvent& apiEvent)
+		{
+			TimeStamp start_time(apiEvent[0].asLong());
+			TimeStamp end_time(apiEvent[1].asLong());
+			int samples = apiEvent[2].asInt();
+			mStressStateComponent->query(start_time, end_time, samples, apiEvent.getID());
+		}
 
 		void APIControlComponentInstance::clearCache(const nap::APIEvent& apiEvent)
 		{

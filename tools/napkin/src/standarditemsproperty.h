@@ -1,9 +1,10 @@
 #pragma once
 
-#include <QtGui/QStandardItem>
-#include <QtWidgets/QVBoxLayout>
+#include <QStandardItem>
+#include <QVBoxLayout>
 #include <rtti/object.h>
 #include <rtti/path.h>
+#include <panels/inspectorpanel.h>
 #include "propertypath.h"
 
 namespace napkin

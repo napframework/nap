@@ -51,8 +51,11 @@ endif()
 copy_module_json_to_bin()
 
 # Package into platform release
-if(UNIX)
-    set(UNIX_EXTRA_RPATH "../../../../thirdparty/libartnet/bin")
+if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/libartnet/bin)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/libartnet/bin)
 endif()
 package_module()
 

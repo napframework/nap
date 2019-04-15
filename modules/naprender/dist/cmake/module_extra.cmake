@@ -20,9 +20,7 @@ if(NOT TARGET FreeImage)
 endif()
 add_include_to_interface_target(mod_naprender ${FREEIMAGE_INCLUDE_DIRS})
 
-if(NOT TARGET nrender)
-    find_package(nrender REQUIRED)
-endif()
+find_package(nrender REQUIRED)
 set(MODULE_NAME_EXTRA_LIBS nrender)
 
 if(UNIX)

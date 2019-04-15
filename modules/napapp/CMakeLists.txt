@@ -2,9 +2,6 @@ project(mod_napapp)
 
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp src/*.h)
-if(ANDROID)
-    file(GLOB_RECURSE ANDROID_SOURCES src/android/*.cpp src/android/*.h)
-endif()
 
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()

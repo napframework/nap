@@ -1,5 +1,6 @@
 # default artnet directory
 find_path(ARTNET_DIR
+          NO_CMAKE_FIND_ROOT_PATH
           NAMES artnet/artnet.h
           HINTS ${THIRDPARTY_DIR}/libartnet
           )

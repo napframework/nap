@@ -103,16 +103,17 @@ add_subdirectory(qt)
 add_subdirectory(tools/fbxconverter)
 add_subdirectory(tools/napkin)
 
-# executable targets
+# START_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
+# executable targets 
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
 add_subdirectory(test/audiotest)
 
-# app targets
+# app targets 
 add_subdirectory(apps/kalvertoren)
 add_subdirectory(apps/kalvertoren/module)
 add_subdirectory(apps/artnetcolor)
-add_subdirectory(apps/skeleton)
+add_subdirectory(apps/example)
 add_subdirectory(apps/atmos)
 add_subdirectory(apps/atmos/module)
 add_subdirectory(apps/random)
@@ -121,6 +122,7 @@ add_subdirectory(apps/aura)
 add_subdirectory(apps/aura/module)
 add_subdirectory(apps/emography)
 add_subdirectory(apps/emography/module)
+# END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
 add_subdirectory(demos/helloworld)

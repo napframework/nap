@@ -92,17 +92,20 @@ elseif (UNIX)
     set(NRENDER_LIBS_DEBUG ${NRENDER_LIBS_DIR}/Debug/libnrender.a)
 endif()
 
-# Setup as interface library
-add_library(nrender INTERFACE)
-target_link_libraries(nrender INTERFACE optimized ${NRENDER_LIBS_RELEASE})
-target_link_libraries(nrender INTERFACE debug ${NRENDER_LIBS_DEBUG})
-target_link_libraries(nrender INTERFACE ${NRENDER_LIBRARIES})
-set_target_properties(nrender PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NRENDER_INCLUDES}")
+if (NOT NRENDER_LIBS_DIR)
+    message(FATAL_ERROR "Couldn't find NRender")
+endif()
 
-# Show headers in IDE
-file(GLOB nrender_headers ${CMAKE_CURRENT_LIST_DIR}/../include/nrender/*.h)
-target_sources(nrender INTERFACE ${nrender_headers})
-source_group(NAP\\NRender FILES ${nrender_headers})
+if(NOT TARGET nrender)
+    # Setup as interface library
+    add_library(nrender INTERFACE)
+    target_link_libraries(nrender INTERFACE optimized ${NRENDER_LIBS_RELEASE})
+    target_link_libraries(nrender INTERFACE debug ${NRENDER_LIBS_DEBUG})
+    target_link_libraries(nrender INTERFACE ${NRENDER_LIBRARIES})
+    set_target_properties(nrender PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NRENDER_INCLUDES}")
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(nrender REQUIRED_VARS NRENDER_LIBS_DIR)
+    # Show headers in IDE
+    file(GLOB nrender_headers ${CMAKE_CURRENT_LIST_DIR}/../include/nrender/*.h)
+    target_sources(nrender INTERFACE ${nrender_headers})
+    source_group(NAP\\NRender FILES ${nrender_headers})
+endif(NOT TARGET nrender)

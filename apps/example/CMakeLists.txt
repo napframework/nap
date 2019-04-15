@@ -5,7 +5,7 @@ if(ANDROID)
     return()
 endif()
 
-project(skeleton)
+project(example)
 
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
@@ -22,7 +22,7 @@ source_group("shaders" FILES ${SHADERS})
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Projects)
 
 add_dependencies(${PROJECT_NAME} fbxconverter)
 

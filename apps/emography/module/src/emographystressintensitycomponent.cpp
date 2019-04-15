@@ -1,4 +1,4 @@
-#include "emographystressdataviewcomponent.h"
+#include "emographystressintensitycomponent.h"
 #include "emographystress.h"
 
 // External Includes
@@ -7,12 +7,12 @@
 #include <nap/logger.h>
 
 // nap::emographystressdataviewcomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::emography::StressDataViewComponent)
-	//RTTI_PROPERTY("StressData", &nap::emography::StressDataViewComponent::mStressData, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::emography::StressIntensityComponent)
+	RTTI_PROPERTY("ReplyName", &nap::emography::StressIntensityComponent::mReplyName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::emographystressdataviewcomponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::emography::StressDataViewComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::emography::StressIntensityComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -23,27 +23,28 @@ namespace nap
 {
 	namespace emography
 	{
-		void StressDataViewComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+		void StressIntensityComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 		{
 
 		}
 
 
-		bool StressDataViewComponentInstance::init(utility::ErrorState& errorState)
+		bool StressIntensityComponentInstance::init(utility::ErrorState& errorState)
 		{
 			if (!RangeDataviewComponentInstance::init(errorState))
 				return false;
+			mReplyName = getComponent<StressIntensityComponent>()->mReplyName;
 			return true;
 		}
 
 
-		void StressDataViewComponentInstance::update(double deltaTime)
+		void StressIntensityComponentInstance::update(double deltaTime)
 		{
 
 		}
 
 
-		void StressDataViewComponentInstance::onQuery()
+		void StressIntensityComponentInstance::onQuery()
 		{
 			// Convert time-stamps
 			SystemTimeStamp sys_start = mStartTime.toSystemTime();
@@ -73,7 +74,7 @@ namespace nap
 			}
 
 			// Create reply
-			APIEventPtr reply = std::make_unique<APIEvent>("StressReply", mUUID);
+			APIEventPtr reply = std::make_unique<APIEvent>(mReplyName, mUUID);
 
 			// Populate event
 			reply->addArgument<APILong>("startTime", mStartTime.mTimeStamp);
