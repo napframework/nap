@@ -18,10 +18,6 @@
 	#include <stdlib.h>
 #endif
 
-#ifdef ANDROID
-	#include <android/asset_manager.h>
-#endif
-
 using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Core)
@@ -42,6 +38,15 @@ namespace nap
 		// Initialize timer
 		mTimer.reset();
 		mTicks.fill(0);
+	}
+
+
+	Core::Core(std::unique_ptr<CoreExtension> coreExtension)
+	{
+		// Initialize default and move interface
+		mTimer.reset();
+		mTicks.fill(0);
+		mExtension = std::move(coreExtension);
 	}
 
 
@@ -440,25 +445,5 @@ namespace nap
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
-	}	
-
-
-#ifdef ANDROID
-	void Core::setAndroidInitialisationVars(AAssetManager *assetManager, std::string nativeLibDir)
-	{
-		mAndroidAssetManager = assetManager;
-		mAndroidNativeLibDir = nativeLibDir;
 	}
-
-	AAssetManager* Core::getAndroidAssetManager() const
-	{
-		return mAndroidAssetManager;
-	}
-
-	std::string Core::getAndroidNativeLibDir() const
-	{
-		return mAndroidNativeLibDir;
-	}
-
-#endif
 }

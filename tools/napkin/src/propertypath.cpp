@@ -25,6 +25,11 @@ napkin::PropertyPath::PropertyPath(Object& obj, const std::string& path)
 {
 }
 
+const std::string napkin::PropertyPath::getName() const
+{
+	return getProperty().get_name().data();
+}
+
 rttr::variant napkin::PropertyPath::getValue() const
 {
 	return getProperty().get_value(mObject);

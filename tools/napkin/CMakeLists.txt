@@ -91,6 +91,16 @@ install(TARGETS ${PROJECT_NAME}
 install(TARGETS ${PROJECT_NAME}
         DESTINATION tools/platform/napkin/Debug
         CONFIGURATIONS Debug)
+if(APPLE)
+    # Remove thirdparty from framework release at install time
+    macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/Release/napkin
+                                                    ${THIRDPARTY_DIR}  
+                                                    Release)
+    macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/Debug/napkin
+                                                    ${THIRDPARTY_DIR}  
+                                                    Debug)
+endif()
+
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
         DESTINATION tools/platform/napkin/)
 

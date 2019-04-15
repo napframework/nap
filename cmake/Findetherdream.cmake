@@ -19,6 +19,7 @@ elseif(APPLE)
     set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS})
 elseif(ANDROID)
     find_path(ETHERDREAM_DIR
+              NO_CMAKE_FIND_ROOT_PATH
               NAMES android/include/etherdream.h
               HINTS ${THIRDPARTY_DIR}/etherdream
               )

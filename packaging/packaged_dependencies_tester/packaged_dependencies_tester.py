@@ -8,6 +8,7 @@ import datetime
 import json
 from multiprocessing import cpu_count
 import os
+import re
 from subprocess import call, Popen, PIPE
 import shutil
 import signal
@@ -26,6 +27,133 @@ PROJECT_BUILD_TYPE = 'Release'
 
 # Directory to iterate for testing
 DEFAULT_TESTING_PROJECTS_DIR = 'demos'
+
+# JSON report filename
+REPORT_FILENAME = 'report.json'
+
+# List of locations on a Ubuntu system where we're happy to find system libraries. Restricting
+# to these paths helps us identify libraries being source from strange locations, hand installed libs.
+# TODO Handle other architectures.. eventually
+LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/', '/lib/x86_64-linux-gnu']
+
+# List of libraries we accept being sourced from the system paths defined above. Notes:
+# - These currently support Ubuntu 18.04/18.10 and are likely to require minor tweaks for new versions
+# - If/when we support more distros and architectures we should either break these lists out by 
+#   architecture and distro+version or restrict dependencies testing to one distro
+# - Developed and tested against Nvidia open source and proprietary drivers plus Intel i965, other
+#   hardware may require additions
+# - Developed against x.org, Wayland will need additions
+# - Regular expressions supported
+# - This is somewhat a proof of concept and is by nature fairly brittle. Let's see how it goes.
+LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
+    'i965_dri',
+    r'ld-[0-9]+\.[0-9]+',
+    'libasound',
+    'libasound_module_pcm_pulse',
+    'libasyncns',
+    'libbsd',
+    r'libc-[0-9]+\.[0-9]+',
+    'libdbus-1',
+    r'libdl-[0-9]+\.[0-9]+',
+    'libdrm',
+    'libdrm_amdgpu',
+    'libdrm_intel',
+    'libdrm_nouveau',
+    'libdrm_radeon',
+    'libedit',
+    r'libelf-[0-9]+\.[0-9]+',
+    'libexpat',
+    'libffi',
+    'libFLAC',
+    'libgcc_s',
+    'libgcrypt',
+    'libGL',
+    'libglapi',
+    'libGLX',
+    'libGLX_mesa',
+    'libGLX_nvidia',
+    'libGLdispatch',
+    'libgpg-error',
+    'libjack',
+    r'libLLVM-[0-9]+',
+    'liblz4',
+    'liblzma',
+    r'libm-[0-9]+\.[0-9]+',
+    r'libnsl-[0-9]+\.[0-9]+',
+    r'libnss_compat-[0-9]+\.[0-9]+',
+    r'libnss_files-[0-9]+\.[0-9]+',
+    r'libnss_nis-[0-9]+\.[0-9]+',
+    'nouveau_dri',
+    'libnvidia-glcore',
+    'libnvidia-tls',
+    'libogg',
+    'libpciaccess',
+    r'libpthread-[0-9]+\.[0-9]+',
+    'libpulse',
+    r'libpulsecommon-[0-9]+\.[0-9]+',
+    r'libpython[0-9]+\.[0-9]+m',
+    r'libresolv-[0-9]+\.[0-9]+',
+    r'librt-[0-9]+\.[0-9]+',
+    'libsndfile',
+    'libsensors',
+    r'libstdc\+\+',
+    'libsystemd',
+    'libtinfo',
+    r'libutil-[0-9]+\.[0-9]+',
+    'libvorbis',
+    'libvorbisenc',
+    'libwrap',
+    'libX11',
+    'libX11-xcb',
+    'libXau',
+    'libxcb',
+    'libxcb-dri2',
+    'libxcb-dri3',
+    'libxcb-glx',
+    'libxcb-present',
+    'libxcb-sync',
+    'libXdamage',
+    'libXdmcp',
+    'libXext',
+    'libXfixes',
+    'libxshmfence',
+    'libXxf86vm',
+    'libz'
+]
+
+# Extra Linux system libs we accept being used, for Napkin only
+LINUX_NAPKIN_ACCEPTED_SYSTEM_LIBS = [
+    'libfontconfig',
+    'libfreetype',
+    r'libglib-[0-9]+\.[0-9]+',
+    r'libgthread-[0-9]+\.[0-9]+',
+    'libpcre',
+    'libpng16',
+    'libudev',
+    r'libusb-[0-9]+\.[0-9]+',
+    'libuuid',
+    'libX11-xcb',
+    'libXcursor',
+    'libXfixes',
+    'libXi',
+    'libXrender'
+]
+
+# List of locations on a macOS system where we're happy to find system libraries. As with Ubuntu, 
+# above, restricting to these paths helps us identify libraries being source from strange 
+# locations. However on macOS, unlike on Linux, we trust any libraries we find within these folders.
+# The logic here is that on macOS you're typically going to install custom locations via Brew or
+# MacPorts etc and are less likely to end up within these system paths. If that logic doesn't hold
+# up we'll need to define a list like above for Linux, or use another approach.
+MACOS_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/', 
+                                   '/System/Library/Frameworks/', 
+                                   '/System/Library/PrivateFrameworks/', 
+                                   '/System/Library/Extensions/', 
+                                   '/System/Library/Components/'
+                                   ]
+
+# Quicker iteration when debugging this script
+SCRIPT_DEBUG_ONE_PROJECT_ONLY = False
 
 def call_capturing_output(cmd, shell=True):
     """Run specified command, capturing output
@@ -92,7 +220,7 @@ def is_windows():
 
     return sys.platform.startswith('win')
 
-def run_process_then_stop(cmd, wait_time_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
+def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, wait_time_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
        still running before closing it
 
@@ -100,6 +228,12 @@ def run_process_then_stop(cmd, wait_time_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH
     ----------
     cmd : str
         Command to run
+    accepted_shared_libs_path : str
+        Absolute path to directory which we're happy to see any shared libraries source from. 
+        Typically NAP framework for build programs running from framework, or the packaged app for 
+        single apps.
+    testing_napkin : bool
+        Whether testing Napkin
     wait_time_seconds : str
         Number of seconds to wait before checking the process is still running and terminating it
 
@@ -114,10 +248,17 @@ def run_process_then_stop(cmd, wait_time_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH
     """
 
     # Launch the app
-    p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    my_env = os.environ.copy()
+    # For shared libraries tracking on macOS
+    if sys.platform == 'darwin':
+        my_env['DYLD_PRINT_LIBRARIES'] = '1'
+    p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=my_env)
 
     # Wait for the app to initialise
     time.sleep(wait_time_seconds)
+
+    if sys.platform.startswith('linux'):
+        unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path, testing_napkin)
 
     # Check and make sure the app's still running
     p.poll()
@@ -127,7 +268,12 @@ def run_process_then_stop(cmd, wait_time_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH
         if type(stdout) == bytes:
             stdout = stdout.decode('utf8')
             stderr = stderr.decode('utf8')
-        return (False, stdout, stderr)
+            
+        if sys.platform == 'darwin':
+            unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
+        elif sys.platform == 'win32':
+            unexpected_libraries = []            
+        return (False, stdout, stderr, unexpected_libraries)
 
     # Send SIGTERM and wait a moment to close
     p.terminate()
@@ -150,7 +296,213 @@ def run_process_then_stop(cmd, wait_time_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH
         stdout = stdout.decode('utf8')
         stderr = stderr.decode('utf8')    
 
-    return (True, stdout, stderr)
+    if sys.platform == 'darwin':
+        unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
+    elif sys.platform == 'win32':
+        unexpected_libraries = []
+
+    return (True, stdout, stderr, unexpected_libraries)
+
+def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path, testing_napkin):
+    """Check whether the specified NAP process is using unexpected libraries on Linux
+
+    Parameters
+    ----------
+    pid : str
+        Command to run
+    accepted_shared_libs_path : str
+        Absolute path to directory which we're happy to see any shared libraries source from. 
+        Typically NAP framework for build programs running from framework, or the packaged app for 
+        single apps.
+    testing_napkin : bool
+        Whether testing Napkin
+
+    Returns
+    -------
+    list
+        List of paths to unexpected libraries used
+    """
+
+    # Launch the app
+    p = Popen(['/usr/bin/lsof', '-X', '-p', str(pid)], stdout=PIPE, stderr=PIPE)
+
+    # Check and make sure the app's still running
+    (stdout, stderr) = p.communicate()
+    if type(stdout) == bytes:
+        stdout = stdout.decode('utf8')
+        stderr = stderr.decode('utf8')
+
+    unexpected_libs = []
+    for line in stdout.split('\n'):
+        chunks = line.split()
+        if len(chunks) < 5:
+            continue
+        if chunks[3] == 'mem' and chunks[4] == 'REG':
+            path = ' '.join(chunks[8:])
+            if linux_file_is_shared_lib(path):
+                if not shared_lib_accepted(path, accepted_shared_libs_path, testing_napkin):
+                    unexpected_libs.append(path)
+
+    return unexpected_libs
+
+def macos_check_for_unexpected_library_use(stdout, accepted_shared_libs_path, testing_napkin):
+    """Check whether the a NAP process has used unexpected libraries on macOS
+
+    Parameters
+    ----------
+    stdout : str
+        STDOUT from the process
+    accepted_shared_libs_path : str
+        Absolute path to directory which we're happy to see any shared libraries source from. 
+        Typically NAP framework for build programs running from framework, or the packaged app for 
+        single apps.
+    testing_napkin : bool
+        Whether testing Napkin
+
+    Returns
+    -------
+    list
+        List of paths to unexpected libraries used
+    """
+
+    unexpected_libs = []
+    # Iterate STDOUT lines for shared libraries loaded and logged via DYLD_PRINT_LIBRARIES env. var
+    for line in stdout.split('\n'):
+        if line.startswith('dyld: loaded:'):
+            # Parse library path
+            lib = ':'.join(line.split(':')[2:]).strip()
+
+            # Get absolute path
+            libs_abs_path = os.path.abspath(lib)
+
+            # Check if library is accepted
+            if not shared_lib_accepted(libs_abs_path, accepted_shared_libs_path, testing_napkin):
+                unexpected_libs.append(libs_abs_path) 
+
+    return unexpected_libs
+
+def linux_file_is_shared_lib(file_path):
+    """Check whether a file is a shared library on Linux
+
+    Parameters
+    ----------
+    file_path : str
+        Path to file
+
+    Returns
+    -------
+    bool
+        Whether a shared library
+    """
+
+    # Use file util to check file type
+    p = Popen(['/usr/bin/file', file_path], stdout=PIPE, stderr=PIPE)
+
+    # Get output
+    (stdout, stderr) = p.communicate()
+    if type(stdout) == bytes:
+        stdout = stdout.decode('utf8')
+        stderr = stderr.decode('utf8')
+
+    # Check if ELF binary
+    chunks = stdout.split(':')[1].split(',')
+    return chunks[0].strip().startswith('ELF ')
+
+def shared_lib_accepted(file_path, accepted_shared_libs_path, testing_napkin):
+    """Check whether a shared library is expected for the executed NAP process
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the shared library
+    accepted_shared_libs_path : str
+        Absolute path to directory which we're happy to see any shared libraries source from. 
+        Typically NAP framework for build programs running from framework, or the packaged app for 
+        single apps.
+    testing_napkin : bool
+        Whether testing Napkin
+
+    Returns
+    -------
+    bool
+        Whether the library is accepted
+    """
+
+    # If we're running something inside the framework path and it's using libs from within there 
+    # we're happy with that. Same goes for a packaged app and the app path.
+    if not accepted_shared_libs_path is None:
+        if file_path.startswith(accepted_shared_libs_path):
+            return True
+
+    filename = os.path.basename(file_path)
+    in_system_path = False
+    accepted = False    
+
+    # Check if it's within the system libs paths
+    if sys.platform.startswith('linux'):
+        for system_path in LINUX_ACCEPTED_SYSTEM_LIB_PATHS:
+            if file_path.startswith(system_path):
+                in_system_path = True
+
+                if not ".so" in filename:
+                    print("Error: Unhandled Linux library due to lacking .so: %s" % path)
+                    return False
+
+                # Get short library name used for verification
+                filename_parts = filename.split(".so")
+                short_lib_name = filename_parts[0]
+
+                # Verify against system library list
+                accepted = linux_system_library_accepted(short_lib_name, testing_napkin)
+                break
+    else:
+        for system_path in MACOS_ACCEPTED_SYSTEM_LIB_PATHS:
+            if file_path.startswith(system_path):
+                # on macOS if it's within one of our system paths accept the library. See notes 
+                # above with MACOS_ACCEPTED_SYSTEM_LIB_PATHS definition.
+                in_system_path = True
+                accepted = True
+                break
+
+    if in_system_path:
+        if accepted:
+            return True
+        else:
+            print("Error: unexpected system library encountered: %s" % file_path)
+            return False
+    else:
+        print("Error: library found outside of system path: %s" % file_path)
+        return False
+
+def linux_system_library_accepted(short_lib_name, testing_napkin):
+    """Check whether a single shared system library is expected for the executed NAP process on 
+       Linux
+
+    Parameters
+    ----------
+    short_lib_name : str
+        The library name (with .so and everything after stripped)
+    testing_napkin : bool
+        Whether testing Napkin
+
+    Returns
+    -------
+    bool
+        Whether the library is accepted
+    """
+
+    # Build list of accepted library names
+    all_accepted_libs = LINUX_BASE_ACCEPTED_SYSTEM_LIBS
+    if testing_napkin:
+        all_accepted_libs.extend(LINUX_NAPKIN_ACCEPTED_SYSTEM_LIBS)
+    
+    # Verify the library name against the list
+    for check_lib in all_accepted_libs:
+        expr = "^" + check_lib + "$"
+        if re.match(expr, short_lib_name):
+            return True
+
+    return False
 
 def regenerate_cwd_project():
     """Configure project in current working directory
@@ -278,13 +630,15 @@ def package_cwd_project_without_napkin(project_name, root_output_dir, timestamp)
 
     return (success, stdout, stderr)
 
-def run_cwd_project(project_name):
+def run_cwd_project(project_name, nap_framework_full_path):
     """Run project from normal build output
 
     Parameters
     ----------
     project_name : str
         Name of project
+    nap_framework_full_path : str
+        Absolute path to NAP framework (or None if not relevant for test)
 
     Returns
     -------
@@ -306,15 +660,16 @@ def run_cwd_project(project_name):
 
     # Build command and run            
     cmd = os.path.abspath(os.path.join(os.getcwd(), 'bin', build_path, project_name))
-    (success, stdout, stderr) = run_process_then_stop(cmd)
+    (success, stdout, stderr, unexpected_libs) = run_process_then_stop(cmd, nap_framework_full_path)
     if success:
         print("  Done.")
     else:
         print("  Error: Couldn't run from build dir")
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
+        print("  Unexpected libraries: %s" % repr(unexpected_libs))
 
-    return (success, stdout, stderr)
+    return (success, stdout, stderr, unexpected_libs)
 
 def run_packaged_project(root_output_dir, timestamp, project_name):
     """Run packaged project from output directory
@@ -338,20 +693,21 @@ def run_packaged_project(root_output_dir, timestamp, project_name):
         STDERR from process
     """
 
-    containing_dir = os.path.join(root_output_dir, '%s-%s-no_napkin' % (project_name, timestamp))
+    containing_dir = os.path.abspath(os.path.join(root_output_dir, '%s-%s-no_napkin' % (project_name, timestamp)))
     os.chdir(containing_dir)
     print("- Run from package...")
 
     # Run
-    (success, stdout, stderr) = run_process_then_stop('./%s' % project_name)
+    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./%s' % project_name, containing_dir)
     if success:
         print("  Done.")
     else:
-        print("  Error: Couldn't run from package, return code: %s" % returncode)
+        print("  Error: Couldn't run from package")
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
+        print("  Unexpected libraries: %s" % repr(unexpected_libs))
 
-    return (success, stdout, stderr)
+    return (success, stdout, stderr, unexpected_libs)
 
 def build_and_package(root_output_dir, timestamp, testing_projects_dir):
     """Configure, build and package all demos
@@ -420,6 +776,9 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir):
         demo_results[demo_name]['package']['success'] = success
         demo_results[demo_name]['package']['stdout'] = stdout
         demo_results[demo_name]['package']['stderr'] = stderr
+
+        if SCRIPT_DEBUG_ONE_PROJECT_ONLY:
+            break
 
     os.chdir(os.path.pardir)
     return demo_results
@@ -583,40 +942,44 @@ def run_build_directory_demos(demo_results):
             continue
 
         # Run
-        (success, stdout, stderr) = run_cwd_project(demo_name)
+        (success, stdout, stderr, unexpected_libs) = run_cwd_project(demo_name, os.path.abspath(os.path.join(demos_root_dir, os.pardir)))
         this_demo['runFromBuildOutput'] = {}
         this_demo['runFromBuildOutput']['success'] = success
         this_demo['runFromBuildOutput']['stdout'] = stdout
         this_demo['runFromBuildOutput']['stderr'] = stderr
+        this_demo['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
 
         print("----------------------------")
 
     os.chdir(demos_root_dir)
 
-def run_build_directory_template_project(template_results):
+def run_build_directory_template_project(template_results, nap_framework_full_path):
     """Run template project from the normal build output
 
     Parameters
     ----------
     template_results : dict
         Results for template project
+    nap_framework_full_path : str
+        Absolute path to NAP framework
     """
 
-    prev_cwd = os.getcwd()
+    projects_dir = os.getcwd()
 
     # Change to template project directory
     os.chdir(TEMPLATE_APP_NAME.lower())
 
     # Run
-    (success, stdout, stderr) = run_cwd_project(TEMPLATE_APP_NAME.lower())
+    (success, stdout, stderr, unexpected_libs) = run_cwd_project(TEMPLATE_APP_NAME.lower(), nap_framework_full_path)
     template_results['runFromBuildOutput'] = {}
     template_results['runFromBuildOutput']['success'] = success
     template_results['runFromBuildOutput']['stdout'] = stdout
     template_results['runFromBuildOutput']['stderr'] = stderr
+    template_results['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
 
-    os.chdir(prev_cwd)
+    os.chdir(projects_dir)
 
-def run_build_directory_napkin(demo_results, napkin_results):
+def run_build_directory_napkin(demo_results, napkin_results, nap_framework_full_path):
     """Run Napkin from the normal build output
 
     Parameters
@@ -625,6 +988,8 @@ def run_build_directory_napkin(demo_results, napkin_results):
         Results for demos
     napkin_results : dict
         Results for Napkin
+    nap_framework_full_path : str
+        Absolute path to NAP framework
     """
 
     napkin_results['runFromBuildOutput'] = {}    
@@ -655,10 +1020,11 @@ def run_build_directory_napkin(demo_results, napkin_results):
 
     # Change directory and run
     os.chdir(os.path.join('bin', build_path))
-    (success, stdout, stderr) = run_process_then_stop('./napkin')
+    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin', nap_framework_full_path, True)
     napkin_results['runFromBuildOutput']['success'] = success
     napkin_results['runFromBuildOutput']['stdout'] = stdout
     napkin_results['runFromBuildOutput']['stderr'] = stderr
+    napkin_results['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
 
     if success:
         print("  Done.")
@@ -666,6 +1032,7 @@ def run_build_directory_napkin(demo_results, napkin_results):
         print("  Error: Running Napkin from build directory failed")
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
+        print("  Unexpected libraries: %s" % repr(unexpected_libs))        
 
     os.chdir(os.path.join(cwd, os.path.pardir))
     print("----------------------------")
@@ -687,17 +1054,18 @@ def run_napkin_from_packaged_demo(napkin_results, root_output_dir, timestamp):
 
     # Get the name of the demo that Napkin was packaged with
     demo_name = napkin_results['demoPackagedWith']
-    containing_dir = os.path.join(root_output_dir, '%s-%s-napkin' % (demo_name, timestamp))
+    containing_dir = os.path.abspath(os.path.join(root_output_dir, '%s-%s-napkin' % (demo_name, timestamp)))
     os.chdir(containing_dir)
 
     # Run demo from packaged project
     print("- Run Napkin from package...")
-    (success, stdout, stderr) = run_process_then_stop('./napkin')
+    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin', containing_dir, True)
 
     napkin_results['runFromPackagedOutput'] = {}
     napkin_results['runFromPackagedOutput']['success'] = success
     napkin_results['runFromPackagedOutput']['stdout'] = stdout
     napkin_results['runFromPackagedOutput']['stderr'] = stderr
+    napkin_results['runFromPackagedOutput']['unexpectedLibraries'] = unexpected_libs
 
     os.chdir(cwd)
     if success:
@@ -706,6 +1074,7 @@ def run_napkin_from_packaged_demo(napkin_results, root_output_dir, timestamp):
         print("  Error: Napkin from package failed to run")
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
+        print("  Unexpected libraries: %s" % repr(unexpected_libs))        
 
 def run_packaged_demos(demo_results, root_output_dir, timestamp):
     """Run demos from packaged output
@@ -728,11 +1097,12 @@ def run_packaged_demos(demo_results, root_output_dir, timestamp):
         if 'package' in this_demo and this_demo['package']['success']:
             print("Demo: %s" % demo_name)
 
-            (success, stdout, stderr) = run_packaged_project(root_output_dir, timestamp, demo_name)
+            (success, stdout, stderr, unexpected_libs) = run_packaged_project(root_output_dir, timestamp, demo_name)
             this_demo['runFromPackagedOutput'] = {}
             this_demo['runFromPackagedOutput']['success'] = success
             this_demo['runFromPackagedOutput']['stdout'] = stdout
             this_demo['runFromPackagedOutput']['stderr'] = stderr
+            this_demo['runFromPackagedOutput']['unexpectedLibraries'] = unexpected_libs
 
             print("----------------------------")        
 
@@ -751,11 +1121,12 @@ def run_packaged_template_project(template_results, root_output_dir, timestamp):
         Timestamp of the test run     
     """
 
-    (success, stdout, stderr) = run_packaged_project(root_output_dir, timestamp, TEMPLATE_APP_NAME.lower())
+    (success, stdout, stderr, unexpected_libs) = run_packaged_project(root_output_dir, timestamp, TEMPLATE_APP_NAME.lower())
     template_results['runFromPackagedOutput'] = {}
     template_results['runFromPackagedOutput']['success'] = success
     template_results['runFromPackagedOutput']['stdout'] = stdout
     template_results['runFromPackagedOutput']['stderr'] = stderr
+    template_results['runFromPackagedOutput']['unexpectedLibraries'] = unexpected_libs
 
 def cleanup_packaged_apps(demo_results, template_results, napkin_results, root_output_dir, timestamp, warnings):
     """Delete packaged projects created during testing
@@ -800,6 +1171,7 @@ def cleanup_packaged_apps(demo_results, template_results, napkin_results, root_o
     # Remove packaged template project
     if 'package' in template_results and template_results['package']['success']:
         containing_dir = os.path.join(root_output_dir, '%s-%s-no_napkin' % (TEMPLATE_APP_NAME.lower(), timestamp))
+
         try:
             shutil.rmtree(containing_dir)
         except OSError:
@@ -833,9 +1205,13 @@ def determine_run_success(demo_results, template_results, napkin_results):
             return False
         if not 'package' in this_demo or not this_demo['package']['success']:
             return False
-        if not 'runFromBuildOutput' in this_demo or not this_demo['runFromBuildOutput']['success']:
+        if not 'runFromBuildOutput' in this_demo:
             return False
-        if not 'runFromPackagedOutput' in this_demo or not this_demo['runFromPackagedOutput']['success']:
+        elif not this_demo['runFromBuildOutput']['success'] or len(this_demo['runFromBuildOutput']['unexpectedLibraries']) > 0:
+            return False
+        if not 'runFromPackagedOutput' in this_demo:
+            return False
+        elif not this_demo['runFromPackagedOutput']['success'] or len(this_demo['runFromPackagedOutput']['unexpectedLibraries']) > 0:
             return False
 
     # Check template project for failure
@@ -847,17 +1223,25 @@ def determine_run_success(demo_results, template_results, napkin_results):
         return False
     if not 'package' in template_results or not template_results['package']['success']:
         return False
-    if not 'runFromBuildOutput' in template_results or not template_results['runFromBuildOutput']['success']:
+    if not 'runFromBuildOutput' in template_results:
         return False
-    if not 'runFromPackagedOutput' in template_results or not template_results['runFromPackagedOutput']['success']:
+    elif not template_results['runFromBuildOutput']['success'] or len(template_results['runFromBuildOutput']['unexpectedLibraries']) > 0:
+        return False
+    if not 'runFromPackagedOutput' in template_results:
+        return False
+    elif not template_results['runFromPackagedOutput']['success'] or len(template_results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
         return False
 
     # Check Napkin results for failure
     if not 'packageWithDemo' in napkin_results or not napkin_results['packageWithDemo']['success']:
         return False
-    if not 'runFromBuildOutput' in napkin_results or not napkin_results['runFromBuildOutput']['success']:
+    if not 'runFromBuildOutput' in napkin_results:
         return False
-    if not 'runFromPackagedOutput' in napkin_results or not napkin_results['runFromPackagedOutput']['success']:
+    elif not napkin_results['runFromBuildOutput']['success'] or len(napkin_results['runFromBuildOutput']['unexpectedLibraries']) > 0:
+        return False
+    if not 'runFromPackagedOutput' in napkin_results:
+        return False
+    elif not napkin_results['runFromPackagedOutput']['success'] or len(napkin_results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
         return False
 
     return True
@@ -882,6 +1266,26 @@ def dict_entry_to_success(dict_in, phase):
         return 'FAIL'
     return 'PASS' if dict_in[phase]['success'] else 'FAIL'
 
+def dict_entry_to_libs_success(dict_in, phase):
+    """Log of a summary of the test run based on having no unexpected library usage
+
+    Parameters
+    ----------
+    dict_in : dict
+        Results for single demo
+    phase : str
+        Test phase
+
+    Returns
+    -------
+    str
+        'PASS' or 'FAIL'
+    """
+
+    if not phase in dict_in or not 'unexpectedLibraries' in dict_in[phase]:
+        return 'FAIL'
+    return 'PASS' if len(dict_in[phase]['unexpectedLibraries']) == 0 else 'FAIL'
+
 def log_summary(demo_results, template_results, napkin_results):
     """Log of a summary of the test run
 
@@ -901,7 +1305,9 @@ def log_summary(demo_results, template_results, napkin_results):
         print("- Build: %s" % dict_entry_to_success(this_demo, 'build'))
         print("- Package: %s" % dict_entry_to_success(this_demo, 'package'))
         print("- Run from build output: %s" % dict_entry_to_success(this_demo, 'runFromBuildOutput'))
+        print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(this_demo, 'runFromBuildOutput'))
         print("- Run from packaged output: %s" % dict_entry_to_success(this_demo, 'runFromPackagedOutput'))
+        print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(this_demo, 'runFromPackagedOutput'))
         print("----------------------------")        
 
     print("Template project")
@@ -910,13 +1316,17 @@ def log_summary(demo_results, template_results, napkin_results):
     print("- Build: %s" % dict_entry_to_success(template_results, 'build'))
     print("- Package: %s" % dict_entry_to_success(template_results, 'package'))
     print("- Run from build output: %s" % dict_entry_to_success(template_results, 'runFromBuildOutput'))
+    print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(template_results, 'runFromBuildOutput'))
     print("- Run from packaged output: %s" % dict_entry_to_success(template_results, 'runFromPackagedOutput'))
+    print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(template_results, 'runFromPackagedOutput'))
     print("----------------------------")
 
     print("Napkin")
     print("- Package with demo: %s" % dict_entry_to_success(napkin_results, 'packageWithDemo'))
     print("- Run from build output: %s" % dict_entry_to_success(napkin_results, 'runFromBuildOutput'))
+    print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromBuildOutput'))
     print("- Run from packaged output: %s" % dict_entry_to_success(napkin_results, 'runFromPackagedOutput'))
+    print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromPackagedOutput'))
     if 'packaged' in napkin_results and napkin_results['packaged']['success']:
         print("  (was packaged with demo '%s')" % napkin_results['demoPackagedWith'])
     print("----------------------------")
@@ -931,7 +1341,7 @@ def dump_json_report(starting_dir,
                      napkin_results,
                      always_include_logs,
                      warnings):
-    """Create a JSON report for the test run, to report.json
+    """Create a JSON report for the test run, to REPORT_FILENAME
 
     Parameters
     ----------
@@ -1003,7 +1413,7 @@ def dump_json_report(starting_dir,
     report['napkin'] = napkin_results
 
     # Write report
-    with open(os.path.join(starting_dir, 'report.json'), 'w') as f:
+    with open(os.path.join(starting_dir, REPORT_FILENAME), 'w') as f:
         f.write(json.dumps(report, indent=4, sort_keys=True))
 
 
@@ -1038,6 +1448,7 @@ def rename_qt_dir(warnings):
         
         if found:
             try:
+                print("- Renaming Qt directory")
                 os.rename(qt_top_level_path, '%s-rename' % qt_top_level_path)
             except OSError as e:
                 print("Couldn't rename %s: %s" % (qt_top_level_path, e))
@@ -1050,15 +1461,13 @@ def rename_qt_dir(warnings):
     return qt_top_level_path
 
 
-def perform_test_run(nap_framework_path, launch_wait_seconds, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt):
+def perform_test_run(nap_framework_path, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt):
     """Main entry point to the testing
 
     Parameters
     ----------
     nap_framework_path : str
         Command line provided path to NAP framework to test
-    launch_wait_seconds : int
-        Number of seconds to wait before checking the process is still running and terminating it
     testing_projects_dir : str
         Directory to iterate for testing, by default 'demos'
     create_json_report : bool
@@ -1075,6 +1484,11 @@ def perform_test_run(nap_framework_path, launch_wait_seconds, testing_projects_d
     bool
         Success of entire run
     """
+
+    # Check to see if the specified path exists
+    if not os.path.exists(nap_framework_path):
+        print("Error: %s doesn't exist" % nap_framework_path)
+        return False
 
     starting_dir = os.getcwd()
     root_output_dir = os.path.abspath('.')
@@ -1126,27 +1540,29 @@ def perform_test_run(nap_framework_path, launch_wait_seconds, testing_projects_d
     print("============ Phase #5 - Running template project from build output directory ============")
     if 'build' in template_results and template_results['build']['success']:
         os.chdir(os.path.join(nap_framework_full_path, 'projects'))
-        run_build_directory_template_project(template_results)
+        run_build_directory_template_project(template_results, nap_framework_full_path)
         os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
     else:
         print("Skipping due to build failure")
-
-    # Run Napkin from normal build output
-    print("============ Phase #6 - Running Napkin from build output directory ============")
-    run_build_directory_napkin(demo_results, napkin_results)
-
-    os.chdir(starting_dir)
-
-    # Rename NAP framework (to avoid dependencies being sourced from there)
-    if rename_framework:
-        os.rename(nap_framework_full_path, '%s-rename' % nap_framework_full_path)
 
     # Rename Qt (to avoid dependencies being sourced from there)
     if rename_qt:
         qt_top_level_path = rename_qt_dir(warnings)
 
-    # Run Napkin from packaged project
+    # Run Napkin from normal build output
+    print("============ Phase #6 - Running Napkin from build output directory ============")
+    run_build_directory_napkin(demo_results, napkin_results, nap_framework_full_path)
+
+    os.chdir(starting_dir)
+
     print("============ Phase #7 - Running Napkin from packaged app ============")
+
+    # Rename NAP framework (to avoid dependencies being sourced from there)
+    if rename_framework:
+        print("- Renaming NAP framework")
+        os.rename(nap_framework_full_path, '%s-rename' % nap_framework_full_path)
+
+    # Run Napkin from packaged project
     if 'packageWithDemo' in napkin_results and napkin_results['packageWithDemo']['success']:
         run_napkin_from_packaged_demo(napkin_results, root_output_dir, timestamp)
     else:
@@ -1163,16 +1579,20 @@ def perform_test_run(nap_framework_path, launch_wait_seconds, testing_projects_d
     else:
         print("Skipping due to package failure")
 
-    # Cleanup
+    os.chdir(starting_dir)
+
+    # Cleanup   
     print("============ Phase #10 - Clean up ============")
     cleanup_packaged_apps(demo_results, template_results, napkin_results, root_output_dir, timestamp, warnings)
 
     # Revert NAP framework rename
     if rename_framework:
+        print("- Renaming NAP framework back")
         os.rename('%s-rename' % nap_framework_full_path, nap_framework_full_path)
 
     # Revert Qt rename
     if rename_qt and not qt_top_level_path is None:
+        print("- Renaming Qt directory back")        
         os.rename('%s-rename' % qt_top_level_path, qt_top_level_path)        
 
     # Determine run duration
@@ -1201,6 +1621,8 @@ def perform_test_run(nap_framework_path, launch_wait_seconds, testing_projects_d
     log_summary(demo_results, template_results, napkin_results)
 
     # Final success log
+    if create_json_report:
+        print("Report: %s" % REPORT_FILENAME)
     print("Duration: %s" % formatted_duration)
     if run_success and len(warnings) == 0:
         print("%s passed all tests" % nap_framework_path)
@@ -1219,16 +1641,12 @@ if __name__ == '__main__':
     parser.add_argument('NAP_FRAMEWORK_PATH', type=str,
                         help="The framework path to test against")
 
-    parser.add_argument('--launch-wait-seconds', type=int,
-                        default=WAIT_SECONDS_FOR_PROCESS_HEALTH,
-                        action='store', nargs='?',
-                        help="Seconds to wait for each process launch initialisation (default %s)" % WAIT_SECONDS_FOR_PROCESS_HEALTH)
     parser.add_argument('--testing-projects-dir', type=str,
                         default=DEFAULT_TESTING_PROJECTS_DIR,
                         action='store', nargs='?',
                         help="Directory to test on (default %s)" % DEFAULT_TESTING_PROJECTS_DIR)
     parser.add_argument('-nj', '--no-json-report', action='store_true',
-                        help="Don't create a JSON report to report.json")
+                        help="Don't create a JSON report to %s" % REPORT_FILENAME)
     parser.add_argument('-fl', '--force-log-reporting', action='store_true',
                         help="If reporting to JSON, include STDOUT and STDERR even if there has been no issue")
     if not is_windows():
@@ -1244,5 +1662,5 @@ if __name__ == '__main__':
         args.no_rename_framework = True
         args.no_rename_qt = True
 
-    success = perform_test_run(args.NAP_FRAMEWORK_PATH, args.launch_wait_seconds, args.testing_projects_dir, not args.no_json_report, args.force_log_reporting, not args.no_rename_framework, not args.no_rename_qt)
+    success = perform_test_run(args.NAP_FRAMEWORK_PATH, args.testing_projects_dir, not args.no_json_report, args.force_log_reporting, not args.no_rename_framework, not args.no_rename_qt)
     sys.exit(not success)

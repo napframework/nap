@@ -11,7 +11,13 @@ string(TOLOWER ${MODULE_NAME_PASCALCASE} MODULE_NAME_LOWERCASE)
 # Setup our paths
 set(TEMPLATE_ROOT ${CMAKE_CURRENT_LIST_DIR}/template)
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
-set(MODULE_DIR ${NAP_ROOT}/user_modules/mod_${MODULE_NAME_LOWERCASE})
+if(DEFINED PROJECT_MODULE)
+    set(MODULE_DIR ${PROJECT_MODULE_PROJECT_PATH}/module)
+    set(PATH_FROM_MODULE_TO_NAP_ROOT ../../..)
+else()
+    set(MODULE_DIR ${NAP_ROOT}/user_modules/mod_${MODULE_NAME_LOWERCASE})
+    set(PATH_FROM_MODULE_TO_NAP_ROOT ../..)
+endif()
 
 # Create our module files, with substitutions
 configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${MODULE_DIR}/CMakeLists.txt @ONLY)
@@ -21,8 +27,10 @@ configure_file(${TEMPLATE_ROOT}/src/templateservice.h ${MODULE_DIR}/src/${MODULE
 configure_file(${TEMPLATE_ROOT}/module.json ${MODULE_DIR}/module.json @ONLY)
 
 # Create our module directory regenerate shortcut
-if(UNIX)
-    configure_file(${NAP_ROOT}/tools/platform/module_dir_shortcuts/regenerate ${MODULE_DIR}/regenerate @ONLY)
-elseif(WIN32)
-    configure_file(${NAP_ROOT}/tools/platform/module_dir_shortcuts/regenerate.bat ${MODULE_DIR}/regenerate.bat @ONLY)    
+if(NOT DEFINED PROJECT_MODULE)
+    if(UNIX)
+        configure_file(${NAP_ROOT}/tools/platform/module_dir_shortcuts/regenerate ${MODULE_DIR}/regenerate @ONLY)
+    elseif(WIN32)
+        configure_file(${NAP_ROOT}/tools/platform/module_dir_shortcuts/regenerate.bat ${MODULE_DIR}/regenerate.bat @ONLY)    
+    endif()
 endif()

@@ -278,7 +278,7 @@ macro(module_json_in_directory_to_cmake DIRECTORY)
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}")
     endif()
 
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/module_info_parse_to_cmake.py ${DIRECTORY}
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/module_info_parse_to_cmake.py ${DIRECTORY} ${NAP_ROOT}
                     RESULT_VARIABLE EXIT_CODE
                     )
     if(NOT ${EXIT_CODE} EQUAL 0)
