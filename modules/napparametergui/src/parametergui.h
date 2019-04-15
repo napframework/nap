@@ -40,8 +40,10 @@ namespace nap
 
 		/**
 		 * Main function used to render the parameter GUI. Should be called each frame.
+		 * @param parameterContainer If parameterContainer is nullptr, a GUI is presented to select a container. If it is not nullptr,
+		 * the GUI will display only the contents of this container.
 		 */
-		void show();
+		void show(const ParameterContainer* parameterContainer);
 
 		/**
 		 * Register an editor creation function for the given type. The editor creation function is invoked whenever a parameter of the given type 
@@ -57,9 +59,9 @@ namespace nap
 
 	private:
 		/**
-		 * Render the preset selection/save/load UI
+		 * Render the preset selection/save/load UI. 
 		 */
-		void showPresets();
+		void showPresets(const ParameterContainer* parameterContainer);
 
 		/**
 		 * Render the parameter UI for a specific container

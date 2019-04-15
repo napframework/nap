@@ -156,7 +156,7 @@ namespace nap
 			if (ImGui::Button("OK"))
 			{
 				utility::ErrorState errorState;
-				if (mParameterService.loadPreset(*mParameterContainers[mSelectedContainerIndex], mPresets[mSelectedPresetIndex], errorState))
+				if (mParameterService.loadPreset(*mParameterContainers[mSelectedContainerIndex].mContainer, mPresets[mSelectedPresetIndex], errorState))
 					ImGui::CloseCurrentPopup();
 				else
 					ImGui::OpenPopup("Failed to load preset");
@@ -244,12 +244,12 @@ namespace nap
 			if (ImGui::Button("OK"))
 			{
 				utility::ErrorState errorState;
-				if (mParameterService.savePreset(*mParameterContainers[mSelectedContainerIndex], mPresets[mSelectedPresetIndex], errorState))
+				if (mParameterService.savePreset(*mParameterContainers[mSelectedContainerIndex].mContainer, mPresets[mSelectedPresetIndex], errorState))
 				{
 					ImGui::CloseCurrentPopup();
 					std::string previous_selection = mPresets[mSelectedPresetIndex];
 
-					mPresets = mParameterService.getPresets(*mParameterContainers[mSelectedContainerIndex]);
+					mPresets = mParameterService.getPresets(*mParameterContainers[mSelectedContainerIndex].mContainer);
 
 					// After we have retrieved the filenames from the service, the list may be in a different order,
 					// so we search for the item in the list to find the selected index.
@@ -307,14 +307,49 @@ namespace nap
 	}
 
 
-	void ParameterGUI::showPresets()
+	void ParameterGUI::showPresets(const ParameterContainer* parameterContainer)
 	{
-		ImGui::Combo("Containers", &mSelectedContainerIndex, [](void* data, int index, const char** out_text)
+		if (parameterContainer != nullptr)
 		{
-			ParameterService::ParameterContainerList* containers = (ParameterService::ParameterContainerList*)data;
-			*out_text = (*containers)[index]->mID.data();
-			return true;
-		}, &mParameterContainers, mParameterContainers.size());
+			mSelectedContainerIndex = -1;
+			for (int i = 0; i != mParameterContainers.size(); ++i)
+			{
+				if (parameterContainer == mParameterContainers[i].mContainer.get())
+				{
+					mSelectedContainerIndex = i;
+					break;
+				}
+			}
+
+			assert(mSelectedContainerIndex != -1);
+		}
+		else
+		{
+			struct ContainerState
+			{
+				ParameterService::ParameterContainerList& mParameterContainers;
+				std::string mContainerName;
+			};
+
+			ContainerState container_state{ mParameterContainers };
+
+			std::string container_name;
+			ImGui::Combo("Containers", &mSelectedContainerIndex, [](void* data, int index, const char** out_text)
+			{
+				ContainerState* state = (ContainerState*)data;
+
+				const ParameterService::ParameterContainerInfo& container_info = state->mParameterContainers[index];
+
+				state->mContainerName.clear();
+				for (int i = 0; i < container_info.mDepth; ++i)
+					state->mContainerName += "   ";
+
+				state->mContainerName += container_info.mContainer->mID;
+
+				*out_text = state->mContainerName.data();
+				return true;
+			}, &container_state, mParameterContainers.size());
+		}
 
 		if (hasSelectedContainer())
 		{
@@ -333,7 +368,7 @@ namespace nap
 				if (hasPreset)
 				{
 					utility::ErrorState errorState;
-					if (!mParameterService.savePreset(*mParameterContainers[mSelectedContainerIndex], mPresets[mSelectedPresetIndex], errorState))
+					if (!mParameterService.savePreset(*mParameterContainers[mSelectedContainerIndex].mContainer, mPresets[mSelectedPresetIndex], errorState))
 						ImGui::OpenPopup("Failed to save preset");
 
 					if (ImGui::BeginPopupModal("Failed to save preset"))
@@ -402,16 +437,16 @@ namespace nap
 	}
 
 
-	void ParameterGUI::show()
+	void ParameterGUI::show(const ParameterContainer* parameterContainer)
 	{
 		ImGui::Begin("Parameters");
 
-		showPresets();
+		showPresets(parameterContainer);
 
 		if (hasSelectedContainer())
 		{
 			ImGui::Separator();
-			showParameters(*mParameterContainers[mSelectedContainerIndex], true);
+			showParameters(*mParameterContainers[mSelectedContainerIndex].mContainer, true);
 		}
 
 		ImGui::End();
