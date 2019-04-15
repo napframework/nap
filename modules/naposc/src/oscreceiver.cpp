@@ -40,7 +40,15 @@ namespace nap
 		mService->registerReceiver(*this);
 
 		// Create the socket
-		mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort), mAllowPortReuse);
+		try
+		{
+			mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort), mAllowPortReuse);
+		}
+		catch (const std::runtime_error& exception)
+		{
+			errorState.fail("Failed to create OSCReceived: %s", exception.what());
+			return false;
+		}		
 
 		// Create and set the listener
 		mListener = std::make_unique<OSCPacketListener>(*this);
