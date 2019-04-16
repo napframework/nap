@@ -32,6 +32,9 @@ namespace nap
 						result += utility::stringFormat("/%d", element.ArrayElement.Index);
 					break;
 				}
+				default:
+					assert(false);
+					break;
 				}
 			}
 

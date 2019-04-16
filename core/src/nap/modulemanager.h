@@ -34,7 +34,7 @@ namespace nap
 
 
 		// Constructor
-		ModuleManager();
+		ModuleManager(Core& core);
 
 		// Destructor
 		~ModuleManager();
@@ -89,13 +89,22 @@ namespace nap
 		bool folderNameContainsBuildConfiguration(const std::string& folderName);
 		
 		/**
-		 * Load a list of NAP module dependencies from the specifed module JSON file
+		 * Load a list of NAP module dependencies from the specified module JSON string
+		 * @param json The module.json file contents to deserialize
+		 * @param outDependencies The loaded list of dependencies
+		 * @param error The error message when loading fails
+		 * @return If loading failed or succeeded
+		 */
+		bool deserializeModuleDependenciesFromJson(const std::string& json, std::vector<std::string>& dependencies, utility::ErrorState& errorState);
+
+		/**
+		 * Load a list of NAP module dependencies from the specified module JSON file
 		 * @param jsonFile The module.json file to load from
 		 * @param outDependencies The loaded list of dependencies
 		 * @param error The error message when loading fails
 		 * @return If loading failed or succeeded
 		 */
-		bool loadModuleDependenciesFromJSON(const std::string& jsonFile, std::vector<std::string>& dependencies, utility::ErrorState& error);
+		bool loadModuleDependenciesFromJsonFile(const std::string& jsonFile, std::vector<std::string>& dependencies, utility::ErrorState& error);
 		
 		/**
 		 * For the specified top level NAP modules load a list of all NAP module dependencies
@@ -115,8 +124,11 @@ namespace nap
 		 * @return If the process failed or succeeded
 		 */
 		bool fetchImmediateModuleDependencies(const std::vector<std::string>& searchModules, std::vector<std::string>& previouslyFoundModules, std::vector<std::string>& dependencies, utility::ErrorState& errorState);
+
 		
 		using ModuleList = std::vector<Module>;
 		ModuleList mModules;	// The loaded modules
+		Core& mCore;			// Core
+
 	};
 }
