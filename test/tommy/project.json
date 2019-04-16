@@ -4,6 +4,6 @@
     "modules": [
         "mod_napapp",
         "mod_napsandbox",
-        "mod_napimgui"
+        "mod_napimgui" 
     ]
 }

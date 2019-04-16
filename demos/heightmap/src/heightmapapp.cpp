@@ -73,7 +73,7 @@ namespace nap
 		
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
-		mInputService->processEvents(*mRenderWindow, input_router, entities);
+		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Update gui and check for gui changes
 		updateGui();
@@ -213,10 +213,9 @@ namespace nap
 	{
 		// Draw some gui elements
 		ImGui::Begin("Controls");
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBColorFloat clr = mTextHighlightColor.convert<RGBColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), 1.0f),
-			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		if (ImGui::CollapsingHeader("Blending"))

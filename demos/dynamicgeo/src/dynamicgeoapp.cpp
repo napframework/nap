@@ -6,7 +6,7 @@
 #include <perspcameracomponent.h>
 #include <scene.h>
 #include <imgui/imgui.h>
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DynamicGeoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -57,14 +57,13 @@ namespace nap
 			entities.push_back(mCameraEntity.get());
 
 			Window* window = mRenderWindow.get();
-			mInputService->processEvents(*window, input_router, entities);
+			mInputService->processWindowEvents(*window, input_router, entities);
 		}
 
 		ImGui::Begin("Controls");
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"wasd keys to move, mouse + left mouse button to look");
+		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}

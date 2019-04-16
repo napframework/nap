@@ -80,13 +80,15 @@ namespace nap
         {
             node.setSampleRate(mSampleRate);
             node.setBufferSize(mInternalBufferSize);
-            enqueueTask([&](){
+            auto oldSampleRate = mSampleRate;
+            auto oldBufferSize = mInternalBufferSize;
+            enqueueTask([&, oldSampleRate, oldBufferSize](){
                 // In the extremely rare case the buffersize or the samplerate of the node manager have been changed in between the enqueueing of the task and its execution on the audio thread, we set them again.
                 // However we prefer not to, in order to avoid memory allocation on the audio thread.
-                if (node.getSampleRate() != mSampleRate)
+                if (oldSampleRate != mSampleRate)
                     node.setSampleRate(mSampleRate);
-                if (node.getBufferSize() != mInternalBufferSize)
-                    node.setSampleRate(mInternalBufferSize);
+                if (oldBufferSize != mInternalBufferSize)
+                    node.setBufferSize(mInternalBufferSize);
                 mNodes.emplace(&node);
             });
         }

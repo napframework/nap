@@ -2,7 +2,9 @@
 
 #include <rttr/type>
 #include <rttr/registration>
-#include "rtti/pythonmodule.h"
+#ifdef NAP_ENABLE_PYTHON
+	#include "rtti/pythonmodule.h"
+#endif
 #include "utility/dllexport.h"
 
 /**
@@ -146,6 +148,7 @@ namespace nap
 			Required 	= 1,				///< Load will fail if the property isn't set
 			FileLink 	= 2,				///< Defines a relationship with an external file
 			Embedded 	= 4,				///< An embedded pointer
+			ReadOnly	= 8					///< A read only property in Python
 		};
 
 		/**
@@ -161,7 +164,8 @@ namespace nap
 			Mesh			= 5,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
 			Video			= 6,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
 			ImageSequence	= 7,	///< Points to a an image sequence, must be used with EPropertyMetaData::FileLink
-            Audio           = 8,    ///< Points to an audio file, must be used with EPropertyMetaData::FileLink
+            Audio           = 8,	///< Points to an audio file, must be used with EPropertyMetaData::FileLink
+			Font			= 9		///< Points to a true type font, must be used with EPropertyMetaData::FileLink
 		};
 
 		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)
@@ -320,13 +324,14 @@ namespace nap
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)
 
-/**
- * Defines the beginning of an RTTI enabled class of @Type
- * This macro will register the class of @Type with the RTTI system
- * It also enables the class to be available to python
- * @param Type the type to register
- */
-#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)															\
+ /**
+  * Defines the beginning of an RTTI enabled class of @Type
+  * This macro will register the class of @Type with the RTTI system
+  * It also enables the class to be available to python
+  * @param Type the type to register
+  */
+#ifdef NAP_ENABLE_PYTHON
+	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
 		RTTR_REGISTRATION																						\
@@ -337,20 +342,39 @@ namespace nap
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
 			PythonClassType python_class(#Type);
+#else // NAP_ENABLE_PYTHON
+	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)														\
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
+	{																											\
+		RTTR_REGISTRATION																						\
+		{																										\
+			using namespace rttr;																				\
+			std::string rtti_class_type_name = #Type;															\
+			registration::class_<Type> rtti_class_type(#Type);
+#endif // NAP_ENABLE_PYTHON
 
-/**
- * Registers a property of @name
- * Call this after starting your class definition
- * @param Name RTTI name of the property
- * @param Member reference to the member variable
- * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
- */
-#define RTTI_PROPERTY(Name, Member, Flags)																		\
-			rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
-			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
-			{																									\
-				cls.def_readwrite(Name, Member);																\
-			});		
+
+  /**
+   * Registers a property of @name that is readable and writable in C++ and Python
+   * Call this after starting your class definition
+   * @param Name RTTI name of the property
+   * @param Member reference to the member variable
+   * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
+   */
+#ifdef NAP_ENABLE_PYTHON
+	#define RTTI_PROPERTY(Name, Member, Flags)																\
+		rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
+		python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
+		{																									\
+			if(((uint8_t)(Flags) & (uint8_t)(nap::rtti::EPropertyMetaData::ReadOnly)) != 0)					\
+				cls.def_readonly(Name, Member);																\
+			else																							\
+				cls.def_readwrite(Name, Member);															\
+		});
+#else // NAP_ENABLE_PYTHON
+	#define RTTI_PROPERTY(Name, Member, Flags)																\
+        rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));				
+#endif // NAP_ENABLE_PYTHON
 
 /**
  * Registers a property of @name that will refer to a filename
@@ -362,7 +386,8 @@ namespace nap
  * 		  Note that EPropertyMetaData is added by default.
  * @param FileType Specify the type of file we're going to refer to (EPropertyFileType)
  */
-#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)													\
+#ifdef NAP_ENABLE_PYTHON
+	#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)												\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)));										\
@@ -370,6 +395,13 @@ namespace nap
 			{																									\
 				cls.def_readwrite(Name, Member);																\
 			});
+#else // NAP_ENABLE_PYTHON
+	#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)												\
+			rtti_class_type.property(Name, Member)( 															\
+								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
+								metadata("filetype", (uint8_t)(FileType)));
+#endif // NAP_ENABLE_PYTHON
+
 
 /**
 * Registers a function of @name
@@ -377,20 +409,30 @@ namespace nap
 * @param Name RTTI name of the function
 * @param Member reference to the member function
 */
+#ifdef NAP_ENABLE_PYTHON
 #define RTTI_FUNCTION(Name, Member)																				\
 			rtti_class_type.method(Name, Member);																\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
 				cls.def(Name, Member, nap::detail::isReturnTypeLValueReference(Member) ? py::return_value_policy::reference : py::return_value_policy::automatic_reference);	\
 			});		
+#else // NAP_ENABLE_PYTHON
+#define RTTI_FUNCTION(Name, Member)																				\
+			rtti_class_type.method(Name, Member);
+#endif // NAP_ENABLE_PYTHON
 
 /**
  * Registers a set of custom functions that are exposed to python
  * Call this after starting your class definition
  * @param Func the name of the function that registers a set of python bindings
  */
+#ifdef NAP_ENABLE_PYTHON
 #define RTTI_CUSTOM_REGISTRATION_FUNCTION(Func)																	\
 			python_class.registerFunction(std::bind(&Func<PythonClassType::PybindClass>, std::placeholders::_1, std::placeholders::_2));
+#else // NAP_ENABLE_PYTHON
+#define RTTI_CUSTOM_REGISTRATION_FUNCTION(Func)
+
+#endif // NAP_ENABLE_PYTHON
 
  /**
  * Registers a default constructor. This is exposed to the RTTI system and python
@@ -399,12 +441,17 @@ namespace nap
  * That means the object is created with a new-expression and its lifetime lasts until it is destroyed using a delete-expression.
  * Call this after starting your class definition
  */
-#define RTTI_CONSTRUCTOR(...)																					\
+#ifdef NAP_ENABLE_PYTHON		
+	#define RTTI_CONSTRUCTOR(...)																				\
 			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);								\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
 				cls.def(py::init<__VA_ARGS__>());																\
 			});
+#else // NAP_ENABLE_PYTHON
+	#define RTTI_CONSTRUCTOR(...)																				\
+			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);				
+#endif // NAP_ENABLE_PYTHON
 
  /**
  * Registers a value based constructor. This is exposed to the RTTI system and python
@@ -414,17 +461,23 @@ namespace nap
  * Objects with automatic storage duration are automatically destroyed when the variant is out of scope
  * Call this after starting your class definition
  */
+#ifdef NAP_ENABLE_PYTHON		
 #define RTTI_VALUE_CONSTRUCTOR(...)																				\
 			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_object);								\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
 				cls.def(py::init<__VA_ARGS__>());																\
 			});
+#else // NAP_ENABLE_PYTHON
+#define RTTI_VALUE_CONSTRUCTOR(...)																				\
+			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_object);
+#endif // NAP_ENABLE_PYTHON
 
  /**
  * Signals the end of the class definition
  * Define this after having defined the various constructors, properties, functions etc.
  */
+#ifdef NAP_ENABLE_PYTHON		
 #define RTTI_END_CLASS																							\
 			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");						\
 			python_module.registerTypeImportCallback(rtti_class_type_name,										\
@@ -438,6 +491,11 @@ namespace nap
 													 });														\
 		}																										\
 	}
+#else // NAP_ENABLE_PYTHON
+#define RTTI_END_CLASS																							\
+		}																										\
+	}
+#endif // NAP_ENABLE_PYTHON
 
  /**
  * Defines the beginning of an RTTI enabled class of @Type

@@ -9,4 +9,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
+
+	void RenderableComponentInstance::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	{
+		if (!isVisible())
+			return;
+		onDraw(viewMatrix, projectionMatrix);
+	}
 }

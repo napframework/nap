@@ -7,8 +7,8 @@
 #include <memory>
 #include <iostream>
 
-// Pybind11 includes
-#include "pybind11/pybind11.h"
+// Pybind includes
+#include "python.h"
 
 namespace nap
 {
@@ -62,10 +62,12 @@ namespace nap
          */
 		void connect(const Function& inFunction);
 
+#ifdef NAP_ENABLE_PYTHON
         /**
          * Connect a function from a pybind11 python module. Internally the python function is wrapped in a function object.
          */
         void connect(const pybind11::function pythonFunction);
+#endif // NAP_ENABLE_PYTHON
 
         /**
          * Convenience method to connect a member function with one argument.
@@ -306,7 +308,7 @@ namespace nap
 		mFunctionEffects->emplace_back(inFunction);
 	}
     
-    
+#ifdef NAP_ENABLE_PYTHON   
     template <typename... Args>
     void Signal<Args...>::connect(const pybind11::function pythonFunction)
     {
@@ -328,6 +330,7 @@ namespace nap
         };
         connect(func);
     }
+#endif // NAP_ENABLE_PYTHON
     
     
 	template <typename... Args>

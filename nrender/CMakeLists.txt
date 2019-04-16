@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
+
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(nrender)
 
 if(WIN32)
@@ -45,10 +51,12 @@ elseif(UNIX)
 endif()
 find_package(assimp REQUIRED)
 
+# find other 3rd party packages
 find_package(OpenGL)
 find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
 
+# get all nrender sources and headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 # compile shared lib as target
@@ -154,10 +162,6 @@ elseif(UNIX)
     file(GLOB FREEIMAGE_DYLIBS ${THIRDPARTY_DIR}/FreeImage/linux/install/lib/*.so*)
     install(FILES ${FREEIMAGE_DYLIBS} DESTINATION thirdparty/FreeImage/lib)
 endif()
-
-# GLM
-install(FILES ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION thirdparty/glm)
-install(DIRECTORY ${THIRDPARTY_DIR}/glm/glm/ DESTINATION thirdparty/glm)
 
 # GLEW
 if (WIN32)

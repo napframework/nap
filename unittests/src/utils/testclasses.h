@@ -21,6 +21,8 @@ struct TestPropertiesStruct
 	std::string 					mString = "Konnichiwa";
 	std::vector<std::string> 		mStrings;
 
+	std::string						mFilename;
+
 	int 							mInt = 10;
 	std::vector<int> 				mInts;
 	std::vector<std::vector<int>>	mInts2D;

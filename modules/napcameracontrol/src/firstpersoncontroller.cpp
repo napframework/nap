@@ -52,6 +52,10 @@ namespace nap
 		key_component->pressed.connect(std::bind(&FirstPersonControllerInstance::onKeyPress, this, std::placeholders::_1));
 		key_component->released.connect(std::bind(&FirstPersonControllerInstance::onKeyRelease, this, std::placeholders::_1));
 
+		// Copy properties
+		mMovementSpeed = getComponent<FirstPersonController>()->mMovementSpeed;
+		mRotateSpeed = getComponent<FirstPersonController>()->mRotateSpeed;
+
 		return true;
 	}
 
@@ -84,9 +88,7 @@ namespace nap
 		if (!mEnabled)
 			return;
 
-		FirstPersonController* resource = getComponent<FirstPersonController>();
-
-		float movement = resource->mMovementSpeed * deltaTime;
+		float movement = mMovementSpeed * deltaTime;
 
 		glm::vec3 side(1.0, 0.0, 0.0);
 		glm::vec3 up(0.0, 1.0, 0.0);
@@ -150,8 +152,8 @@ namespace nap
 		if (!mMoving)
 			return; 
 
-		float yaw = -(pointerMoveEvent.mRelX  * getComponent<FirstPersonController>()->mRotateSpeed);
-		float pitch = pointerMoveEvent.mRelY  * getComponent<FirstPersonController>()->mRotateSpeed;
+		float yaw = -(pointerMoveEvent.mRelX  * mRotateSpeed);
+		float pitch = pointerMoveEvent.mRelY  * mRotateSpeed;
 
 		glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 

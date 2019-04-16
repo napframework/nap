@@ -1,8 +1,13 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napsandbox)
 
 # add all cpp files to SOURCES
-file(GLOB SOURCES src/*.cpp)
-file(GLOB HEADERS src/*.h)
+file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE HEADERS src/*.h)
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 

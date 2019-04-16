@@ -7,14 +7,19 @@
 // External Includes
 #include <rtti/factory.h>
 #include <rtti/rtti.h>
+#include <rtti/deserializeresult.h>
 #include <unordered_set>
-#include <utility/datetimeutils.h>
+#include <utility/dllexport.h>
 
 // Core Includes
 #include "modulemanager.h"
 #include "resourcemanager.h"
 #include "service.h"
-#include "utility/dllexport.h"
+#include "timer.h"
+#include "coreextension.h"
+
+// Name of the file that contains all the settings for the NAP services.
+constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
 
 namespace nap
 {
@@ -38,9 +43,17 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		/**
-		 * Constructor
+		 * Default Constructor
 		 */
 		Core();
+
+		/**
+		 * Extension constructor.
+		 * Used to add additional information to Core.
+		 * This is the case on specific platforms, where additional information is required to correctly initialize Core.
+		 * @param coreExtension the extension to associated with this instance of core, owned by core after construction.
+		 */
+		Core(std::unique_ptr<CoreExtension> coreExtension);
 
 		/**
 		 * Destructor
@@ -54,7 +67,7 @@ namespace nap
 		 * @param runningInNonProjectContext indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath=std::string(), bool runningInNonProjectContext=false);
+		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath={}, bool runningInNonProjectContext=false);
 		
 		/**
 		* Initializes all registered services
@@ -111,7 +124,7 @@ namespace nap
 		/**
 		* @return start time point
 		*/
-		utility::HighResTimeStamp getStartTime() const;
+		HighResTimeStamp getStartTime() const;
 
 		/**
 		 * @return number of frames per second
@@ -119,24 +132,40 @@ namespace nap
 		float getFramerate() const										{ return mFramerate; }
 
 		/**
-		* @return an already registered service of @type
-		* @param type the type of service to get
-		* @return the service if found, otherwise nullptr
-		*/
-		Service* getService(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
+		 * Find a service of a given type.
+		 * @param type the type of service to get
+		 * @return found service, nullptr if not found.
+		 */
+		Service* getService(const rtti::TypeInfo& type);
 
 		/**
-		 * Searches for a service based on type name, searches for an exact match.
+		 * Searches for a service based on given type name, names need to match exactly.
 		 * @return an already registered service based on its type name, nullptr if not found
 		 * @param type the type of the service as a string
 		 */
 		Service* getService(const std::string& type);
 
 		/**
-		 *  @return a service of type T, returns nullptr if that service can't be found
+		 * Searches for a service of type T, returns a nullptr if not found.
+		 * @return a service of type T, returns nullptr if that service can't be found
 		 */
 		template <typename T>
-		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
+		T* getService();
+
+		/**
+		 * Returns the extension associated with this instance of core as T. 
+		 * Note that an extension is given explicitly to core on construction.
+		 * When using the default constructor core has no interface associated with it!
+		 * @return extension associated with core as type T
+		 */
+		template <typename T>
+		const T& getExtension() const;
+
+		/**
+		 * @return if core has an extension of type T	
+		 */
+		template <typename T>
+		bool hasExtension() const;
 
 		/**
 		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
@@ -166,6 +195,20 @@ namespace nap
 		* @return if the service was added successfully
 		*/
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
+
+		/**
+		 * If a service configuration file is provided which is used to initialize the various services
+		 * @return if a service configuration file is provided
+		 */
+		bool hasServiceConfiguration();
+
+		/**
+		 * Load the service configuration file
+		 * @param deserialize_result contains the result after reading the config file
+		 * @param errorState contains the error if deserialization fails
+		 * @return if service configuration reading succeeded or not
+		 */
+		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
@@ -198,7 +241,7 @@ namespace nap
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
 		// Manages all the loaded modules
-		ModuleManager mModuleManager;
+		std::unique_ptr<ModuleManager> mModuleManager;
 
 		// Manages all the objects in core
 		std::unique_ptr<ResourceManager> mResourceManager;
@@ -207,7 +250,7 @@ namespace nap
 		ServiceList mServices;
 
 		// Timer
-		utility::HighResolutionTimer mTimer;
+		HighResolutionTimer mTimer;
 
 		// Amount of milliseconds the app is running
 		uint32 mLastTimeStamp = 0;
@@ -216,9 +259,12 @@ namespace nap
 		float mFramerate = 0.0f;
 
 		// Used to calculate framerate over time
-		std::array<uint32, 100> mTicks;
+		std::array<uint32, 20> mTicks;
 		uint32 mTicksum = 0;
 		uint32 mTickIdx = 0;
+
+		// Interface associated with this instance of core.
+		std::unique_ptr<CoreExtension> mExtension = nullptr;
 
 		nap::Slot<const std::string&> mFileLoadedSlot = {
 			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
@@ -229,11 +275,34 @@ namespace nap
 // Template definitions
 //////////////////////////////////////////////////////////////////////////
 
-// Searches for a service of type T in the services and returns it,
-// returns nullptr if none found
+/**
+ * Searches for a service of type T in the services and returns it, returns nullptr if none found
+ */
 template <typename T>
-T* nap::Core::getService(rtti::ETypeCheck typeCheck)
+T* nap::Core::getService()
 {
-	Service* new_service = getService(RTTI_OF(T), typeCheck);
+	Service* new_service = getService(RTTI_OF(T));
 	return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
+}
+
+
+/**
+ * Returns the core extension as an extension of type T
+ */
+template <typename T>
+const T& nap::Core::getExtension() const
+{
+	T* core_ext = rtti_cast<T>(mExtension.get());
+	assert(core_ext != nullptr);
+	return *core_ext;
+}
+
+
+/**
+ * Returns if core has an extension of type T
+ */
+template <typename T>
+bool nap::Core::hasExtension() const
+{
+	return rtti_cast<T>(mExtension.get()) != nullptr;
 }

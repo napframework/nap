@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napcameracontrol)
 
 # add all cpp files to SOURCES
@@ -28,4 +33,9 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 copy_module_json_to_bin()
 
 # Package into platform release
+if(APPLE)
+    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+endif()
 package_module()

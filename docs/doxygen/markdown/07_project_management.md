@@ -4,24 +4,26 @@ Project Management {#project_management}
 *	[Overview](@ref proj_overview)
 *	[Windows](@ref proj_overview_win64)
 	*	[Create Project](@ref proj_creation_win64)
-	*	[Configure Project Modules](@ref module_config_win64)
-	*	[Create Module](@ref module_creation_win64)
+	*	[Configure Modules For Project](@ref module_config_win64)
+	*	[Create Shared Module](@ref module_creation_win64)
+    *   [Create Project Module](@ref project_module_creation_win64)
 	*	[Package Project For Release](@ref package_win64)
 *	[macOS](@ref proj_overview_macos)
 	*	[Create Project](@ref proj_creation_macos)
-	*	[Configure Project Modules](@ref module_config_macos)
-	*	[Create Module](@ref module_creation_macos)
+	*	[Configure Modules For Project](@ref module_config_macos)
+	*	[Create Shared Module](@ref module_creation_macos)
+    *   [Create Project Module](@ref project_module_creation_macos)
 	*	[Package Project For Release](@ref package_macos)
 *	[Linux](@ref proj_overview_linux)
 	*	[Create Project](@ref proj_creation_linux)
-	*	[Configure Project Modules](@ref module_config_linux)
-	*	[Create Module](@ref module_creation_linux)
+	*	[Configure Modules For Project](@ref module_config_linux)
+	*	[Create Shared Module](@ref module_creation_linux)
+    *   [Create Project Module](@ref project_module_creation_linux)
 	*	[Package Project For Release](@ref package_linux)
 *	[Custom CMake](@ref custom_cmake)
 	*	[Project](@ref custom_cmake_proj)
 	*	[Module](@ref custom_cmake_module)
 	*	[Third Party Dependencies](@ref custom_cmake_thirdparty)
-*   [Project Modules](@ref project_modules)
 
 # Overview {#proj_overview}
 
@@ -44,7 +46,7 @@ tools\create_project MyFirstProject
 ```
 4. The NAP project will the created and Visual Studio solution generated.  The Visual Studio solution will be shown in Explorer, located in `projects\myfirstproject`.
 
-## Configure Project Modules {#module_config_win64}
+## Configure Modules For Project {#module_config_win64}
 
 Within each project folder you'll find the `project.json` file which contains (among other things) the list of modules used by the project.
 
@@ -56,7 +58,8 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects\m
     "version": "0.1",
     "modules": [
         "mod_napapp",
-        "mod_napaudio"
+        "mod_napaudio",
+        "mod_napimgui"
     ]
 }
 ```
@@ -65,7 +68,7 @@ To update this list simply add and remove entries to the `modules` list in the J
 
 Once you've updated your `project.json` run regenerate.bat within the project folder to update the Visual Studio solution.
 
-## Create Module {#module_creation_win64}
+## Create Shared Module {#module_creation_win64}
 
 Follow the steps below to create a new module named MyFirstModule.
 1. Open a command prompt
@@ -77,6 +80,24 @@ tools\create_module MyFirstModule
 4. The module will the created in `user_modules\myfirstmodule` and a Visual Studio solution generated
 
 While it's possible to open the module Visual Studio solution directly, it's often easier to include the module in a project and work on the module from there as module DLLs are only updated into projects when the project using the module is built.
+
+## Create Project Module {#project_module_creation_win64}
+
+Unlike the shared module created in the previous section, a project module is specific to a single project. Working with a project module has the benefit of containing all code related to the project within the project's directory whilst retaining the ability to create components which can be worked on via Napkin and integrated into your project structure.
+
+Follow the steps below to add a module to project MyFirstProject.
+1. Open a command prompt
+2. Change into your NAP framework directory
+3. Create the module
+```
+tools\create_project_module MyFirstProject
+```
+4. The module will the created in `projects\myfirstproject\module`, added to your `project.json` and the Visual Studio solution for the project updated
+
+Alternatively a project module can included when the project is created by specifying the `--with-module` option into `create_project`
+```
+tools\create_project MyFirstProject --with-module
+```
 	
 ## Package Project For Release {#package_win64}
 
@@ -105,7 +126,7 @@ Note: You're required to provide the project name in PascalCase so that you get 
 ```
 4. The NAP project will the created and Xcode project generated.  The Xcode project will be shown in Finder, located in `projects/myfirstproject`.
 
-## Configure Project Modules {#module_config_macos}
+## Configure Modules For Project {#module_config_macos}
 
 Within each project folder you'll find the `project.json` file which contains (among other things) the list of modules used by the project.
 
@@ -117,7 +138,8 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
     "version": "0.1",
     "modules": [
         "mod_napapp",
-        "mod_napaudio"
+        "mod_napaudio",
+        "mod_napimgui"
     ]
 }
 ```
@@ -126,18 +148,36 @@ To update this list simply add and remove entries to the `modules` list in the J
 
 Once you've updated your `project.json` run regenerate within the project folder to update the Xcode project.
 
-## Create Module {#module_creation_macos}
+## Create Shared Module {#module_creation_macos}
 
 Follow the steps below to create a new module named MyFirstModule.
 1. Open a terminal
 2. Change into your NAP framework directory
 3. Create the module
 ```
-./tools/createModule MyFirstModule
+./tools/create_module MyFirstModule
 ```
 4. The module will the created in `user_modules/myfirstmodule` and an Xcode project generated
 
 While it's possible to open the module Xcode project directly, it's often easier to include the module in the project you initially intend to use it with and work on the module from there.
+
+## Create Project Module {#project_module_creation_macos}
+
+Unlike the shared module created in the previous section, a project module is specific to a single project. Working with a project module has the benefit of containing all code related to the project within the project's directory whilst retaining the ability to create components which can be worked on via Napkin and integrated into your project structure.
+
+Follow the steps below to add a module to project MyFirstProject.
+1. Open a command prompt
+2. Change into your NAP framework directory
+3. Create the module
+```
+./tools/create_project_module MyFirstProject
+```
+4. The module will the created in `projects/myfirstproject/module`, added to your `project.json` and the Xcode project for the project updated
+
+Alternatively a project module can included when the project is created by specifying the `--with-module` option into `create_project`
+```
+./tools/create_project MyFirstProject --with-module
+```
 
 ## Package Project For Release {#package_macos}
 
@@ -166,7 +206,7 @@ Note: You're required to provide the project name in PascalCase so that you get 
 ```
 4. The NAP project will the created and project Unix makefile system generated.  The project will be located in `projects/myfirstproject` and the build system is located in the `build` folder within
 
-## Configure Project Modules {#module_config_linux}
+## Configure Modules For Project {#module_config_linux}
 
 Within each project folder you'll find the `project.json` file which contains (among other things) the list of modules used by the project.
 
@@ -178,7 +218,8 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
     "version": "0.1",
     "modules": [
         "mod_napapp",
-        "mod_napaudio"
+        "mod_napaudio",
+        "mod_napimgui"
     ]
 }
 ```
@@ -187,7 +228,7 @@ To update this list simply add and remove entries to the `modules` list in the J
 
 Changes to your `project.json` will be automatically pulled in when you next build the project.
 
-## Create Module {#module_creation_linux}
+## Create Shared Module {#module_creation_linux}
 
 Follow the steps below to create a new module named MyFirstModule.
 1. Open a terminal
@@ -197,6 +238,24 @@ Follow the steps below to create a new module named MyFirstModule.
 ./tools/create_module MyFirstModule
 ```
 4. The module will the created in `user_modules/myfirstmodule` and a Unix makefile system generated
+
+## Create Project Module {#project_module_creation_linux}
+
+Unlike the shared module created in the previous section, a project module is specific to a single project. Working with a project module has the benefit of containing all code related to the project within the project's directory whilst retaining the ability to create components which can be worked on via Napkin and integrated into your project structure.
+
+Follow the steps below to add a module to project MyFirstProject.
+1. Open a command prompt
+2. Change into your NAP framework directory
+3. Create the module
+```
+./tools/create_project_module MyFirstProject
+```
+4. The module will the created in `projects/myfirstproject/module`, added to your `project.json` and the Unix makefile system for the project updated
+
+Alternatively a project module can included when the project is created by specifying the `--with-module` option into `create_project`
+```
+./tools/create_project MyFirstProject --with-module
+```
 
 ## Package Project For Release {#package_linux}
 
@@ -311,12 +370,15 @@ Now let's add libfoo into our user module.
 Create a file named `module_extra.cmake` in the root of your module directory containing the following:
 
 ```
-find_package(foo REQUIRED)
-target_link_libraries(${PROJECT_NAME} foo)
-target_include_directories(${PROJECT_NAME} PUBLIC ${FOO_INCLUDE_DIRECTORIES})
+if(NOT TARGET foo)
+    find_package(foo REQUIRED)
+endif()
+set(MODULE_NAME_EXTRA_LIBS foo)
+
+add_include_to_interface_target(mod_fooworker ${FOO_INCLUDE_DIRECTORIES})
 ```
 
-CMake's <a href="https://cmake.org/cmake/help/v3.6/command/find_package.html" target="_blank">find_package</a> has been used to locate the module, <a href="https://cmake.org/cmake/help/v3.6/command/target_link_libraries.html" target="_blank">target_link_libraries</a> links the library into the module and <a href="https://cmake.org/cmake/help/v3.6/command/target_include_directories.html">target_include_directories</a> adds the include directory.
+CMake's <a href="https://cmake.org/cmake/help/v3.6/command/find_package.html" target="_blank">find_package</a> has been used to locate the module, populating `MODULE_NAME_EXTRA_LIBS` will link libfoo to the module and `add_include_to_interface_target` adds the include directory. The first parameter to `add_include_to_interface_target` should be the name of your module.
 
 At this stage the library is now available to include and link on all platforms however if we attempt to run a project using the module on Windows the DLL won't be found.
 
@@ -347,9 +409,12 @@ endif()
 
 In the end with a minor simplification your `module_extra.cmake` should look like this:
 ```
-find_package(foo REQUIRED)
-target_link_libraries(${PROJECT_NAME} foo)
-target_include_directories(${PROJECT_NAME} PUBLIC ${FOO_INCLUDE_DIRECTORIES})
+if(NOT TARGET foo)
+    find_package(foo REQUIRED)
+endif()
+set(MODULE_NAME_EXTRA_LIBS foo)
+
+add_include_to_interface_target(mod_fooworker ${FOO_INCLUDE_DIRECTORIES})
 
 if(WIN32)
     # Add post-build step to copy libfoo to bin on Windows
@@ -367,9 +432,31 @@ endif()
 
 ```
 
-## Project Modules {#project_modules}
+### macOS RPATH Management {#macos_thirdparty_library_rpath}
 
-You may have noticed that a number of the demos included with NAP v$(NAP_VERSION_MAJOR) use modules located within the project.  This method of working with modules is a recent internal development and as such isn't a supported approach in the beta.  We recommend instead creating all modules within the user modules directory.
+One thing to keep an eye out for on macOS is the install name of the third party libraries that you're attempting to integrate.
 
-Watch this space for further developments regarding project modules in a future release.
+The install name of a shared library can be viewed in macOS using the command `otool -D`. See this example, showing mpg123:
+```
+$ otool -D lib/libmpg123.0.dylib
+lib/libmpg123.0.dylib:
+/Users/username/mpg123-1.25.6/install/osx/lib/libmpg123.0.dylib
+```
 
+If that install name were allowed to remain this way any library linked against libout123.0.dylib would look for it at the path shown above. What we want to end up with instead is having our library found in its relative position within the NAP framework directory.
+
+To achieve that let's update the library's install name, prefixing it with `@rpath`:
+```
+$ install_name_tool -id @rpath/libmpg123.0.dylib lib/libmpg123.0.dylib
+```
+
+We can then check the results by running `otool` again:
+```
+$ otool -D lib/libmpg123.0.dylib
+lib/libmpg123.0.dylib:
+@rpath/libmpg123.dylib
+```
+
+Anything using our library with the updated install name (in this case mpg123) would then need to be rebuilt to pull in the changed path.
+
+One risk with RPATH management and third party libraries is in the case where you're integrating a library that you also have installed on your system via eg. Homebrew or MacPorts. In this case it's possible to unknowningly be building and running against the system-level third party library. There are a number of ways to detect this, one of which is while running your project using `lsof` in a terminal and grepping the output to ensure that the correct instance of your library is being used. If this issue goes unresolved you're likely to run into problems when the project or module is used on a another system.

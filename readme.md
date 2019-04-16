@@ -1,4 +1,4 @@
-New Amsterdam Platform {#mainpage}
+New Amsterdam Platform
 =======================
 
 # Description
@@ -31,21 +31,34 @@ To generate a solution and compile the source code you need to have installed:
 
 - [QT5](http://download.qt.io/official_releases/qt/)
 - Latest version of [CMAKE](https://cmake.org/download/)
+- Latest version of [Git](https://git-scm.com/download/win)
 
 NAP depends on various third party libraries. A set of compatible libraries can be downloaded from our github page. Put the thirdparty library directory next to the NAP source directory:
 
 - ~/dev
-	- ~/nap
-	- ~/thirdparty
+	- nap
+	- thirdparty
 
-You can generate a Visual Studio solution by running generateVSSolution.bat and an Xcode project by running generateXCodeProject.sh
+NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable QT_DIR points to the directory that holds the libraries, ie: C:\mycomp\qt\5.12.2\msvc2015_64. You can generate a Visual Studio solution by running generateVSSolution.bat and an Xcode project by running generateXCodeProject.sh. 
 
-## Package
+## Package Desktop
 
 To package NAP for release run: package.bat or package.sh. The various options for packaging can be queried by adding the --help flag as an input argument to the script. Errors should be self-explanatory.
 
-Packaging NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable QT_DIR points to its location.
+After packaging a new zip or folder is created called: NAP-'X'-'Platform'-'Timestamp'. This package can be distributed and includes all demos, projects (if selected for packaging), modules and core components.
+
+## Package Android
+
+To package NAP for android you need to have installed:
+
+- The Android NDK 
+- [Ninja](https://github.com/ninja-build/ninja/releases)
+	- Added to system path
+- [Git](https://git-scm.com/download)
+	- Added to system path
+
+To package NAP for Android run: package.bat or package.sh together with the --android flag. To use the package in production combine the android flag with -nt (no timestamp) and -nz (no zip). You must point the ANDROID_NDK_ROOT environment variable to the install location of the Android NDK.   
 
 ## Want to know more?
 
-Take a look at our high level [documentation](https://www.napframework.com/doxygen/index.html) or [downoad](https://www.napframework.com) the latest version of NAP right now!	
+Take a look at our high level [documentation](https://www.napframework.com/doxygen/index.html) or [download](https://www.napframework.com) the latest version of NAP right now!	

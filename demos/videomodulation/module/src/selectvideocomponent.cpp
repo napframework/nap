@@ -25,7 +25,7 @@ namespace nap
 	void SelectVideoComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::RenderableMeshComponent));
-        components.emplace_back(RTTI_OF(nap::audio::VideoAudioComponent));
+		components.emplace_back(RTTI_OF(nap::audio::VideoAudioComponent));
 	}
 
 
@@ -43,9 +43,9 @@ namespace nap
 		// Get the render-able mesh that has the video material
 		// We know it's there because we added it as a dependency above
 		mVideoMesh = &getEntityInstance()->getComponent<RenderableMeshComponentInstance>();
-        
-        // Get the component that routs the video audio
-        mAudioComponent = &getEntityInstance()->getComponent<audio::VideoAudioComponentInstance>();
+
+		// Extract audio component
+		mAudioComponent = &getEntityInstance()->getComponent<audio::VideoAudioComponentInstance>();
 
 		// Select one
 		selectVideo(resource->mIndex);
@@ -75,7 +75,7 @@ namespace nap
 		mCurrentIndex = math::clamp<int>(index, 0, mVideos.size() - 1);
 		mCurrentVideo = mVideos[mCurrentIndex];
 		mCurrentVideo->mLoop = true;
-        mAudioComponent->setVideo(*mCurrentVideo);
+		mAudioComponent->setVideo(*mCurrentVideo);
 		mCurrentVideo->play();
 	}
 

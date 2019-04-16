@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "mod_napsvg",
+        "mod_naposc",
+        "mod_napetherdream",
+        "mod_napcameracontrol",
+        "mod_napscene"
+    ]
+}

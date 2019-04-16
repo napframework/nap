@@ -64,17 +64,15 @@ namespace nap
 		frameMaterial = resourceManager->findObject<nap::Material>("FrameMaterial");
 
 		// Set render states
-		nap::RenderState& render_state = renderService->getRenderState();
+		nap::RenderState render_state = renderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
+		renderService->setRenderState(render_state);
 
 		// Create gui
 		mGui = std::make_unique<KalvertorenGui>(*this);
 		mGui->init();
-
-		// Start logging to directory
-		nap::Logger::logToDirectory(utility::getExecutableDir());
 
 		return true;
 	}
@@ -86,7 +84,7 @@ namespace nap
 		// Update input for first window
 		std::vector<nap::EntityInstance*> entities;
 		entities.push_back(sceneCameraEntity.get());
-		inputService->processEvents(*renderWindow, input_router, entities);
+		inputService->processWindowEvents(*renderWindow, input_router, entities);
 
 		// Update our gui
 		mGui->update(deltaTime);

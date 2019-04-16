@@ -66,7 +66,7 @@ namespace nap
         // Log some information to the top of the display
 		ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_FirstUseEver);
         ImGui::Begin("Midi and OSC demo");
-        ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+        ImGui::Text(getCurrentDateTime().toString().c_str());
         ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		// Display midi input messages

@@ -6,7 +6,14 @@
 #include "transformcomponent.h"
 #include <entity.h>
 
+RTTI_BEGIN_ENUM(nap::EOrthoCameraMode)
+	RTTI_ENUM_VALUE(nap::EOrthoCameraMode::PixelSpace,			"PixelSpace"),
+	RTTI_ENUM_VALUE(nap::EOrthoCameraMode::CorrectAspectRatio,	"CorrectAspectRatio"),
+	RTTI_ENUM_VALUE(nap::EOrthoCameraMode::Custom,				"Custom")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::OrthoCameraProperties)
+	RTTI_PROPERTY("Mode",				&nap::OrthoCameraProperties::mMode,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LeftPlane",			&nap::OrthoCameraProperties::mLeftPlane,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RightPlane",			&nap::OrthoCameraProperties::mRightPlane,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TopPlane",			&nap::OrthoCameraProperties::mTopPlane,				nap::rtti::EPropertyMetaData::Default)
@@ -60,11 +67,11 @@ namespace nap
 	}
 
 
-	void OrthoCameraComponentInstance::setMode(EMode mode)
+	void OrthoCameraComponentInstance::setMode(EOrthoCameraMode mode)
 	{
-		if (mMode != mode)
+		if(mProperties.mMode != mode)
 		{
-			mMode = mode;
+			mProperties.mMode = mode;
 			setDirty();
 		}
 	}
@@ -76,16 +83,16 @@ namespace nap
 	{
 		if (mDirty)
 		{
-			switch (mMode)
+			switch (mProperties.mMode)
 			{
-				case EMode::PixelSpace:
+				case EOrthoCameraMode::PixelSpace:
 				{
 					// In this mode we use the rendertarget size to set the left/right/top/bottom planes.
 					glm::ivec2 render_target_size = getRenderTargetSize();
 					mProjectionMatrix = glm::ortho(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
-				case EMode::CorrectAspectRatio:
+				case EOrthoCameraMode::CorrectAspectRatio:
 				{
 					// In this mode, we scale the top and bottom planes based on the aspect ratio
 					glm::ivec2 renderTargetSize = getRenderTargetSize();
@@ -95,7 +102,7 @@ namespace nap
 					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
-				case EMode::Custom:
+				case EOrthoCameraMode::Custom:
 				{
 					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;

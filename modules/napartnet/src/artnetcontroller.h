@@ -3,16 +3,36 @@
 // External Includes
 #include <rtti/factory.h>
 #include <nap/device.h>
+#include <future>
+#include <nap/numeric.h>
+#include <condition_variable>
+#include <mutex>
+#include <nap/timer.h>
 
 namespace nap
 {
 	using ArtNetNode = void*;
-
+	
+	// Forward Declares
 	class ArtNetService;
 
 	/**
-	 * Creates an ArtNet address mapping so that data can be sent to it.
-	 *
+	 * Mode used by an artnet controller to send data.
+	 * When set to broadcast the message is broadcasted over the network.
+	 * When set to unicast the message is only send to compatible nodes.
+	 * Compatible nodes match the subnet and universe of the controller.
+	 */
+	enum class EArtnetMode : int
+	{
+		Broadcast	= 0,			///< Artnet data is broadcasted over the network
+		Unicast		= 1				///< Artnet data is sent only to compatible nodes that share the same universe and subnet
+	};
+
+
+	/**
+	 * Creates an ArtNet controller node. 
+	 * A controller node is used to convert dmx data into artnet data that is send over the network.
+	 * Every controller node has a subnet and universe associated with it.
 	 * See comments in ArtNetService on addressing on how data is eventually sent over the network.
 	 */
 	class NAPAPI ArtNetController : public Device
@@ -107,24 +127,66 @@ namespace nap
 		 */
 		static const int getMaxUpdateFrequency();
 
+		uint8_t				mSubnet = 0;									///< Property: 'Subnet' range from 0 - 15
+		uint8_t				mUniverse = 0;									///< Property: 'Universe' range from 0 - 15
+		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Property: 'Frequency' artnet refresh rate, the default is the maximum refresh rate
+		float				mWaitTime = 2.0f;								///< Property: 'WaitTime' number of seconds before the control data is send regardless of changes
+		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Property: 'Mode' artnet message mode, Broadcast or Unicast
+		int					mUnicastLimit = 10;								///< Property: 'UnicastLimit' allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
+		bool				mVerbose = false;								///< Property: 'Verbose' prints artnet network traffic information to the consolve
+		float				mReadTimeout = 2.0f;							///< Property: 'Timeout' poll network node read timeout, only used when mode is set to Unicast
+		std::string			mIpAddress = "";								///< Property: 'IPAddress' this controller's IP Address, when left empty the first available ethernet adapter is chosen.
+
 	private:
+
+		friend class ArtNetService;
 
 		/**
 		 * @return libArtNet node, used for sending data
 		 */
 		ArtNetNode getNode() const { return mNode; }
 
-	public:
-		uint8_t				mSubnet = 0;									///< Subnet, in range from 0x0..0xF
-		uint8_t				mUniverse = 0;									///< Universe, in range from 0x0..0xF
-		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Update artnet refresh rate, the default is the maximum refresh rate
-		float				mWaitTime = 2.0f;								///< Number of seconds before the control data is send regardless of changes
+		/**
+		 * Sends out a poll request and reads / interprets node information from the network
+		 * This runs deferred as a task when mode = Unicast
+		 * Ensures the list of available nodes to send data to remains up to date
+		 */
+		void exePollTask();
 
-	private:
-		friend class ArtNetService;
+		/**
+		 * Stops the background task from reading Artnet information of the network
+		 * Called automatically when stopping this device.
+		 */
+		void stopPolling();
 
-		ArtNetService*		mService = nullptr;		// ArtNetService
-		ArtNetNode			mNode = nullptr;		// libArtNet node for sending data
+		/**
+		 * Starts the background task of polling the network for available artnet node information
+		 * This happens at a fixed interval based on the TimeOut variable
+		 */
+		void startPolling();
+
+		/**
+		 *	Actually performs the poll request
+		 */
+		void doPoll();
+
+		/**
+		 * Update called by service on main thread
+		 */
+		void update(double deltaTime);
+
+		ArtNetService*				mService = nullptr;								///< ArtNetService
+		ArtNetNode					mNode = nullptr;								///< libArtNet node for sending data
+		int							mFoundNodes = 0;								///< Total number of artnet nodes found on the network
+		int							mSocketDescriptor = -1;							///< Artnet node socket descriptor
+
+		// Polling
+		std::future<void>			mReadTask;										///< Task that updates available nodes on the network
+		std::condition_variable		mConditionVar;									///< Used for telling the polling task to continue
+		std::mutex					mPollMutex;										///< Used for locking critical resources
+		nap::SystemTimer			mPollTimer;										///< Send out a poll request every 3 seconds (as dictated by the artnet standard)
+		bool						mPoll = true;									///< Perform a poll operation on separate thread
+		std::atomic<bool>			mExit = { false };								///< Cancel all running operations and exit task
 	};
 
 	using ArtNetNodeCreator = rtti::ObjectCreator<ArtNetController, ArtNetService>;

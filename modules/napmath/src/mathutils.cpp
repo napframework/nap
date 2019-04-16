@@ -7,6 +7,8 @@
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <ctime>
+#include <utility/stringutils.h>
 
 // Specialization of lerping
 namespace nap
@@ -26,6 +28,7 @@ namespace nap
 			{
 				std::random_device r;
 				generator = std::make_unique<std::mt19937>(r());
+				generator->seed(time(0));
 			}
 			return *generator;
 		}
@@ -199,6 +202,29 @@ namespace nap
 		}
 
 
+		glm::vec3 radians(float roll, float pitch, float yaw)
+		{
+			return
+			{
+				glm::radians(roll),
+				glm::radians(pitch),
+				glm::radians(yaw)
+			};
+		}
+
+
+		float radians(float degrees)
+		{
+			return glm::radians(degrees);
+		}
+
+
+		float degrees(float radians)
+		{
+			return glm::degrees(radians);
+		}
+
+
 		glm::vec3 extractPosition(const glm::mat4x4& matrix)
 		{
 			return{ matrix[3][0], matrix[3][1], matrix[3][2] };
@@ -214,6 +240,16 @@ namespace nap
 		glm::vec3 worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix)
 		{
 			return inverse(objectToWorldMatrix) * glm::vec4(point, 1.0f);
+		}
+
+		std::string generateUUID()
+		{
+			setRandomSeed(rand());
+			return utility::stringFormat("%06d-%06d-%06d-%06d",
+				math::random<int>(0, 100000),
+				math::random<int>(0, 100000),
+				math::random<int>(0, 100000),
+				math::random<int>(0, 100000));
 		}
 
 		template<>
@@ -299,6 +335,26 @@ namespace nap
 				randomInt(min.x, max.x),
 				randomInt(min.y, max.y)
 			};
+		}
+
+
+		void setRandomSeed(int value)
+		{
+			std::mt19937& generator = getGenerator();
+			generator.seed(value);
+		}
+
+		template<>
+		float abs(float value)
+		{
+			return std::fabs(value);
+		}
+
+
+		template<>
+		int abs(int value)
+		{
+			return std::abs(value);
 		}
 	}
 }
