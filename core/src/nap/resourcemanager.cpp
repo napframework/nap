@@ -2,12 +2,12 @@
 #include "objectgraph.h"
 #include "logger.h"
 #include "core.h"
+#include "python.h"
 #include "rttiobjectgraphitem.h"
 #include <utility/fileutils.h>
 #include <utility/stringutils.h>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
-#include <rtti/pythonmodule.h>
 #include <rtti/linkresolver.h>
 #include <nap/core.h>
 #include <nap/device.h>
@@ -219,8 +219,11 @@ namespace nap
 
 		// Read objects from disk
 		DeserializeResult read_result;
-		if (!readJSONFile(filename, EPropertyValidationMode::DisallowMissingProperties, getFactory(), read_result, errorState))
+		if (!loadFileAndDeserialize(filename, read_result, errorState))
+		{
+			errorState.fail("Failed to load and deserialize %s", filename.c_str());
 			return false;
+		}
 
 		// We first gather the objects that require an update. These are the new objects and the changed objects.
 		// Change detection is performed by comparing RTTI attributes. Very important to note is that, after reading
@@ -391,61 +394,7 @@ namespace nap
 		}
 		return EFileModified::No;
 	}
-
-	void ResourceManager::checkForFileChanges()
-	{
-		std::vector<std::string> modified_files;
-		if (mDirectoryWatcher->update(modified_files))
-		{
-			for (std::string& modified_file : modified_files)
-			{
-				// Multiple events for the same file may occur, and we do not want to reload for every event given.
-				// Instead we check the filetime and store that filetime in an internal map. If an event comes by that
-				// with a filetime that we already processed, we ignore it.
-				// It may also be possible that events are thrown for files that we do not have access to, or for files
-				// that have been removed in the meantime. For these cases, we ignore events where the filetime check
-				// fails.
-				EFileModified file_modified = isFileModified(modified_file);
-				if (file_modified == EFileModified::Error || file_modified == EFileModified::No)
-					continue;
-
-				modified_file = utility::toComparableFilename(modified_file);
-				std::set<std::string> files_to_reload;
-
-				// Is our modified file a json file that was loaded by the manager?
-				if (mFilesToWatch.find(modified_file) != mFilesToWatch.end())
-				{
-					files_to_reload.insert(modified_file);
-				}
-				else
-				{
-					// Non-json file. Find all the json sources of this file
-					FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
-					if (file_link != mFileLinkMap.end())
-						for (const std::string& source_file : file_link->second)
-							files_to_reload.insert(source_file);
-				}
-
-				if (!files_to_reload.empty())
-				{
-					nap::Logger::info("Detected change to %s. Files needing reload:", modified_file.c_str());
-					for (const std::string& source_file : files_to_reload)
-						nap::Logger::info("\t-> %s", source_file.c_str());
-
-					for (const std::string& source_file : files_to_reload)
-					{
-						utility::ErrorState errorState;
-						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, errorState))
-						{
-							nap::Logger::warn("Failed to reload %s (%s)", source_file.c_str(), errorState.toString().c_str());
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
+	
 
 	nap::rtti::Factory& ResourceManager::getFactory()
 	{

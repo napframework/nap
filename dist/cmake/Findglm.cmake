@@ -1,9 +1,15 @@
-find_path(
-        GLM_INCLUDE_DIRS
-        NAMES glm/glm.hpp
-        HINTS
-        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/
-)
+# Workaround for cached path when changing between NAP release versions on Win64/Ninja/Android
+if(GLM_INCLUDE_DIRS AND NOT EXISTS(GLM_INCLUDE_DIRS))
+    unset(GLM_INCLUDE_DIRS)
+    unset(GLM_INCLUDE_DIRS CACHE)
+endif()
+
+find_path(GLM_INCLUDE_DIRS
+          NAMES glm/glm.hpp
+          NO_CMAKE_FIND_ROOT_PATH        
+          HINTS
+          ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/
+          )
 
 mark_as_advanced(GLM_INCLUDE_DIRS)
 
@@ -26,3 +32,6 @@ elseif(GLM_FIND_REQUIRED)
 else()
     message(STATUS "Optional package glm was not found")
 endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(glm REQUIRED_VARS GLM_INCLUDE_DIRS)

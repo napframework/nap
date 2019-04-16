@@ -1,5 +1,9 @@
-find_package(artnet REQUIRED)
-target_link_libraries(${PROJECT_NAME} artnet)
+include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
+
+if(NOT TARGET artnet)
+    find_package(artnet REQUIRED)
+endif()
+set(MODULE_NAME_EXTRA_LIBS artnet)
 
 if(WIN32)
     # Add post-build step to set copy artnet to bin

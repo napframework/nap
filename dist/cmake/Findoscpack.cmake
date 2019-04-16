@@ -10,6 +10,9 @@ if(WIN32)
 elseif(APPLE)
     set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/lib/Debug/liboscpack.1.1.0.dylib)
     set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/lib/Release/liboscpack.1.1.0.dylib)
+elseif(ANDROID)
+    set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/lib/Debug/${ANDROID_ABI}/liboscpack.so)
+    set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/lib/Release/${ANDROID_ABI}/liboscpack.so)
 else()
     set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/lib/liboscpack.so)
     set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/lib/liboscpack.so)
@@ -24,7 +27,11 @@ mark_as_advanced(OSCPACK_INCLUDE_DIRS)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(oscpack REQUIRED_VARS OSCPACK_DIR OSCPACK_INCLUDE_DIRS OSCPACK_LIBS_DEBUG OSCPACK_LIBS_RELEASE)
 
-add_library(oscpack SHARED IMPORTED)
+if(WIN32)
+    add_library(oscpack STATIC IMPORTED)
+else()
+    add_library(oscpack SHARED IMPORTED)
+endif()
 set_target_properties(oscpack PROPERTIES
                       IMPORTED_CONFIGURATIONS "Debug;Release"
                       IMPORTED_LOCATION_RELEASE ${OSCPACK_LIBS_RELEASE}
