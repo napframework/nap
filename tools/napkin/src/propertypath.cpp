@@ -26,7 +26,7 @@ bool nameAndIndex(const std::string& nameIndex, std::string& name, int& index)
 		if (isNumber(i))
 		{
 			name.assign(n);
-			i = std::stoi(i);
+			index = std::stoi(i);
 			return true;
 		}
 	}
