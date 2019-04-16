@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 
-REQUIRED_UBUNTU_VERSION = '17.10'
+REQUIRED_UBUNTU_VERSION = '18.04'
 CMAKE_MIN_VERSION = (3, 5)
 
 

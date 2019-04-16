@@ -6,7 +6,11 @@
 // External Includes
 #include <unordered_set>
 #include <rtti/object.h>
-#include <pybind11/cast.h>
+#include <cassert>
+
+#ifdef NAP_ENABLE_PYTHON
+	#include <pybind11/cast.h>
+#endif
 
 namespace nap
 {
@@ -20,7 +24,18 @@ namespace nap
 		class NAPAPI ObjectPtrBase
 		{
 			RTTI_ENABLE()
-        
+
+		public:
+            virtual ~ObjectPtrBase() = default;
+            
+		    /**
+		     * @return the type of the object pointed to
+		     */
+			rttr::type getWrappedType() const
+			{
+				return mPtr->get_type();
+			}
+
 		private:
 			ObjectPtrBase() = default;
         
@@ -31,7 +46,7 @@ namespace nap
 			mPtr(ptr)
 			{
 			}
-        
+
 			/**
 			 * @return RTTIObject pointer.
 			 */
@@ -39,7 +54,7 @@ namespace nap
 			{
 				return mPtr;
 			}
-        
+
 			/**
 			 * @return RTTIObject pointer.
 			 */
@@ -47,7 +62,7 @@ namespace nap
 			{
 				return mPtr;
 			}
-        
+
 			/**
 			 * @param ptr new pointer to set.
 			 */
@@ -155,6 +170,12 @@ namespace nap
 		public:
 			ObjectPtr() = default;
 
+            // Dtor
+            virtual ~ObjectPtr() override
+            {
+                ObjectPtrManager::get().remove(*this);
+            }
+            
 			// Regular ptr Ctor
 			ObjectPtr(T* ptr) :
 				ObjectPtrBase(ptr)
@@ -189,12 +210,6 @@ namespace nap
 				Assign(other);
 				other.mPtr = nullptr;
 				return *this;
-			}
-
-			// Dtor
-			~ObjectPtr()
-			{
-				ObjectPtrManager::get().remove(*this);
 			}
 
 			//////////////////////////////////////////////////////////////////////////
@@ -401,6 +416,7 @@ namespace rttr
 *		   as a unique_ptr (as described above, through the class template type), causing it to be stored as a unique_ptr anyway.
 *		   Instead we pass nullptr to circumvent this behaviour.
 */
+#ifdef NAP_ENABLE_PYTHON
 namespace pybind11
 {
 	namespace detail
@@ -426,3 +442,4 @@ namespace pybind11
 		};
 	}
 }
+#endif // NAP_ENABLE_PYTHON

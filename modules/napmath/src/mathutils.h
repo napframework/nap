@@ -5,6 +5,7 @@
 #include <limits>
 #include <utility/dllexport.h>
 #include <algorithm>
+#include <string>
 
 namespace nap
 {
@@ -50,7 +51,8 @@ namespace nap
 		T max(T left, T right);
 
 		/**
-		 *	Rounds down a value
+		 * Rounds down a value
+		 * @return floored value of T
 		 */
 		template<typename T>
 		T floor(T value);
@@ -66,6 +68,12 @@ namespace nap
 		 */
 		template<typename T>
 		T power(T value, T exp);
+
+		/**
+		 * @return absolute value of T
+		 */
+		template<typename T>
+		T abs(T value);
 
 		/**
 		 * @return epsilon of T
@@ -107,6 +115,12 @@ namespace nap
 		 */
 		template<typename T>
 		T random(T min, T max);
+
+		/**
+		 * Sets the seed for all subsequent random calls.
+		 * @param value the new seed value
+		 */
+		void NAPAPI setRandomSeed(int value);
 
 		/**
 		 * Interpolates a value over time to a @target using a dampening model
@@ -168,6 +182,30 @@ namespace nap
 		glm::vec3 NAPAPI radians(const glm::vec3& eulerDegrees);
 
 		/**
+		 * Converts an euler rotation in degrees to radians
+		 * The arguments are interpreted as floats
+		 * @param roll the x axis rotation in degrees
+		 * @param pitch the y axis rotation in degrees
+		 * @param yaw the z axis rotation in degrees
+		 * @return the euler rotation in radians
+		 */
+		glm::vec3 NAPAPI radians(float roll, float pitch, float yaw);
+
+		/**
+		 * Converts degrees to radians
+		 * @param degrees angle in degrees
+		 * @return angle as radians
+		 */
+		float NAPAPI radians(float degrees);
+
+		/**
+		 * Converts radians to degrees
+		 * @param radians angle in radians
+		 * @return angle in degrees
+		 */
+		float NAPAPI degrees(float radians);
+
+		/**
 		 * Extracts the position component from a 4x4 matrix.
 		 * This call assumes the matrix is column major, ie: the outermost array dimension is a column
 		 * @param matrix column major matrix
@@ -192,6 +230,12 @@ namespace nap
 		 */
 		glm::vec3 NAPAPI worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix);
 
+		/**
+		 * Generates a unique identifier.
+		 * TODO: Implement proper UUID generation, this is temp solution based on a random number generator.
+		 * @return a uuid as string
+		 */
+		std::string NAPAPI generateUUID();
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
@@ -329,5 +373,11 @@ namespace nap
 
 		template<>
 		NAPAPI glm::ivec4 random(glm::ivec4 min, glm::ivec4 max);
+
+		template<>
+		NAPAPI float abs(float value);
+
+		template<>
+		NAPAPI int abs(int value);
 	}
 }

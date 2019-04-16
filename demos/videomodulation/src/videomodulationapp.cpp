@@ -70,7 +70,7 @@ namespace nap
 
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mPerspCameraEntity.get() };
-		mInputService->processEvents(*mRenderWindow, input_router, entities);
+		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Update gui components
 		updateGui();
@@ -82,15 +82,11 @@ namespace nap
 		MaterialInstance& background_material = mBackgroundEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
 		background_material.getOrCreateUniform<UniformVec3>("colorOne").setValue({ mBackgroundColorOne.getRed(), mBackgroundColorOne.getGreen(), mBackgroundColorOne.getBlue() });
 		background_material.getOrCreateUniform<UniformVec3>("colorTwo").setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
-        
-        auto level = mVideoEntity->getComponent<audio::LevelMeterComponentInstance>().getLevel();
-        // get smoothed level value
-        float smoothedLevel = mSoundLevelSmoother.update(level, deltaTime);
 
 		// Push displacement properties to material
 		MaterialInstance& displaceme_material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement + smoothedLevel * mSoundInfluence);
-		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness + smoothedLevel * mSoundInfluence);
+		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement);
+		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness);
 	}
 	
 	
@@ -205,7 +201,7 @@ namespace nap
 	void VideoModulationApp::updateGui()
 	{
 		ImGui::Begin("Controls");
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		
 		if (ImGui::CollapsingHeader("Select"))
@@ -225,7 +221,6 @@ namespace nap
 		{
 			ImGui::SliderFloat("Amount", &mDisplacement, 0.0f, 1.0f, "%.3f", 2.0f);
 			ImGui::SliderFloat("Random", &mRandomness, 0.0f, 1.0f, "%.3f", 2.25f);
-            ImGui::SliderFloat("Sound influence", &mSoundInfluence, 0.0f, 4.0f, "%.3f", 1.f);
 		}
 		if (ImGui::CollapsingHeader("Background Colors"))
 		{
@@ -249,8 +244,8 @@ namespace nap
 
 	void VideoModulationApp::positionBackground()
 	{
-		float window_width = static_cast<float>(mRenderWindow->getWidth());
-		float window_heigh = static_cast<float>(mRenderWindow->getHeight());
+		float window_width = static_cast<float>(mRenderWindow->getWidthPixels());
+		float window_heigh = static_cast<float>(mRenderWindow->getHeightPixels());
 
 		// Calculate ratio
 		SelectVideoComponentInstance& vsel = mVideoEntity->getComponent<SelectVideoComponentInstance>();	

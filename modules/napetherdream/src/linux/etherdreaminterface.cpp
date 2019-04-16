@@ -10,8 +10,7 @@
 
 namespace nap
 {
-	NAPAPI const int16_t etherMinValue = std::numeric_limits<int16_t>::min();
-	NAPAPI const int16_t etherMaxValue = std::numeric_limits<int16_t>::max();
+
 }
 
 // Helper method used for retrieving dac
@@ -165,4 +164,3 @@ bool nap::EtherDreamInterface::writeFrame(int number, const EtherDreamPoint* dat
     // Write frame
     return (etherdream_write(dac, point_data, static_cast<int>(npoints), static_cast<int>(pps), static_cast<int>(repeatCount)) == 0);
 }
-

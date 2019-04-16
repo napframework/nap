@@ -522,6 +522,10 @@
                     "ShaderAttributeID": "in_Position"
                 },
                 {
+                    "MeshAttributeID": "Tip",
+                    "ShaderAttributeID": "in_Tip"
+                },
+                {
                     "MeshAttributeID": "Color0",
                     "ShaderAttributeID": "in_Color0"
                 }

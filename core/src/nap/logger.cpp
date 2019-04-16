@@ -7,29 +7,28 @@ namespace nap
 {
 
 	LogMessage::LogMessage(const LogLevel& lvl, const std::string& msg)
-		: mLevel(&lvl), mMessage(msg), mTimeStamp(utility::getCurrentTime())
+		: mLevel(&lvl), mMessage(msg), mTimeStamp(getCurrentTime())
 	{}
 
-	std::string basicLogMessageFormatter(const LogMessage& msg)
-	{
-		return utility::stringFormat("[%s] %s", msg.level().name().c_str(), msg.text().c_str());
-	}
 
 	std::string timestampLogMessageFormatter(const LogMessage& msg)
 	{
-		return utility::timeFormat(msg.getTimestamp()) + " " + basicLogMessageFormatter(msg);
+		return timeFormat(msg.getTimestamp()) + " " + basicLogMessageFormatter(msg);
 	}
+
 
 	LogHandler::LogHandler()
 		: mLevel(&Logger::fineLevel()), mFormatter(&basicLogMessageFormatter)
 	{
 	}
 
+
 	void LogHandler::setFormatter(LogMessageFormatter formatter)
 	{
 		assert(formatter != nullptr);
 		mFormatter = formatter;
 	}
+
 
 	std::string LogHandler::formatMessage(LogMessage& msg)
 	{
@@ -65,21 +64,6 @@ namespace nap
 	}
 
 
-	void ConsoleLogHandler::commit(LogMessage message)
-	{
-		bool isError = message.level() >= Logger::errorLevel();
-
-		mOutStreamMutex.lock();
-
-		if (isError)
-			std::cerr << formatMessage(message) << std::endl;
-		else
-			std::cout << formatMessage(message) << std::endl;
-
-		mOutStreamMutex.unlock();
-	}
-
-
 	Logger& Logger::instance()
 	{
 		static Logger instance;
@@ -104,7 +88,7 @@ namespace nap
 	{
 		// filename-safe time format
 		std::string timeformat = "%Y-%m-%d_%H-%M-%S_%ms";
-		std::string timestamp = utility::timeFormat(utility::getCurrentTime(), timeformat);
+		std::string timestamp = timeFormat(getCurrentTime(), timeformat);
 		std::string filename = utility::stringFormat("%s/%s_%s.log",
 													 directory.c_str(),
 													 prefix.c_str(),

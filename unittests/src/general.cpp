@@ -4,9 +4,9 @@
 #include <material.h>
 #include <nap/logger.h>
 #include <audio/utility/safeptr.h>
-#include <generic/propertypath.h>
+#include <propertypath.h>
 #include <utility/fileutils.h>
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 #include <nap/logger.h>
 #include <nap/signalslot.h>
 
@@ -87,20 +87,20 @@ TEST_CASE("String utilities", "[stringutils]")
 
 TEST_CASE("DateTime Utilities", "[datetime]")
 {
-	auto currenttime = nap::utility::getCurrentTime();
+	auto currenttime = nap::getCurrentTime();
 	auto flc1_launch_str = "2006-03-24 22:30:01.123";
-	auto flc1_launch = nap::utility::createTimestamp(2006, 03, 24, 22, 30, 01, 123);
+	auto flc1_launch = nap::createTimestamp(2006, 03, 24, 22, 30, 01, 123);
 
-	nap::utility::DateTime flc1_launch_date(flc1_launch);
+	nap::DateTime flc1_launch_date(flc1_launch);
 	REQUIRE(flc1_launch_date.getYear() == 2006);
-	REQUIRE(flc1_launch_date.getMonth() == nap::utility::EMonth::March);
+	REQUIRE(flc1_launch_date.getMonth() == nap::EMonth::March);
 	REQUIRE(flc1_launch_date.getDayInTheMonth() == 24);
 	REQUIRE(flc1_launch_date.getHour() == 22);
 	REQUIRE(flc1_launch_date.getMinute() == 30);
 	REQUIRE(flc1_launch_date.getSecond() == 01);
 	REQUIRE(flc1_launch_date.getMilliSecond() == 123);
 
-	REQUIRE(nap::utility::timeFormat(flc1_launch) == flc1_launch_str);
+	REQUIRE(nap::timeFormat(flc1_launch) == flc1_launch_str);
 }
 
 TEST_CASE("Safe pointers", "[safepointer]")

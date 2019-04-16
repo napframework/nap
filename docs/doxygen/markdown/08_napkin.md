@@ -90,6 +90,31 @@ You can quickly start/stop your application here.<br>
 Use the file field to browse to your executable. When you run your application through Napkin, its log messages will be forwarded into the log view.<br>
 If your application logs object names in the proper format, you can double-click log messages with that link in the Log panel and it will highlight the appropriate object/property in the editor.  
  
+Curve {#napkin_curveeditor}
+-----------------------
+![](@ref content/napkin-panel-curve.png)
+When a FCurve resource is selected in the Resources panel, the Curve panel allows for visual editing of that function curve.
+
+Controls:
+- `LMB` on curve points or tangent handles to select them
+- `SHIFT + LMB` on curve points to add them to the selection
+- `CTRL + LMB` add a point on the curve at the clicked location
+- `LMB + drag` in the background to rubberband select point handles or tangent handles
+- `ALT + MMB` pan the view
+- `ALT + RMB` zoom the view horizontally
+- `SHIFT + RMB` zoom the view vertically
+- `SHIFT + ALT + RMB` zoom the view both vertically and horizontally  
+- `F` to frame the selected handles inside the view (if no handles are selected, frame all)
+- `A` to frame the entire curve inside the view
+
+Use the buttons in the toolbar or `RMB` in the curve view to change the interpolation of segments.
+
+Tangent handles can be "broken" for discontinuous curves or "aligned" for c2 continuous curves.
+
+Because of the one-dimensional evaluation nature of function curves, the editor will keep you from creating curves with "overhang" (ie. curves that have multiple solutions). 
+In order to do so, the effective distance of the tangent handles will be limited.   
+
+ 
 Inspector {#napkin_inspector}
 -----------------------
 

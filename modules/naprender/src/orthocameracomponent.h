@@ -12,18 +12,29 @@ namespace nap
 	class TransformComponentInstance;
 	class TransformComponent;
 
+	/**
+	*	Orthographic camera space operation mode
+	*/
+	enum EOrthoCameraMode
+	{
+		PixelSpace = 0,			///< left/right/top/bottom planes are scaled automatically to pixel coordinates. Near/far is retrieved from properties.
+		CorrectAspectRatio,		///< User provides all planes, but height is recalculated for correct aspect ratio
+		Custom					///< All planes are retrieved from properties
+	};
+
 	
 	/**
 	 * Properties for orthographic camera. Used in both resource and instance.
 	 */
 	struct NAPAPI OrthoCameraProperties
 	{
-		float mNearClippingPlane = 1.0f;				///< Property: 'NearClippingPlane'
-		float mFarClippingPlane = 1000.0f;				///< Property: 'FarClippingPlane'
-		float mLeftPlane = 0.0f;						///< Property: 'LeftPlane', used when mode is CorrectAspectRatio or custom
-		float mRightPlane = 100.0f;						///< Property: 'RightPlane', used when mode is CorrectAspectRatio or custom
-		float mTopPlane = 100.0f;						///< Property: 'TopPlane', used when mode is CorrectAspectRatio or custom 
-		float mBottomPlane = 0.0f;						///< Property: 'TopPlane', used when mode is CorrectAspectRatio or custom
+		EOrthoCameraMode mMode = PixelSpace;			///< Property: 'Mode' defaults to pixel space
+		float mNearClippingPlane = 1.0f;				///< Property: 'NearClippingPlane' camera near clipping plane
+		float mFarClippingPlane = 1000.0f;				///< Property: 'FarClippingPlane' camera far clipping plane
+		float mLeftPlane = 0.0f;						///< Property: 'LeftPlane' used when mode is CorrectAspectRatio or custom
+		float mRightPlane = 100.0f;						///< Property: 'RightPlane' used when mode is CorrectAspectRatio or custom
+		float mTopPlane = 100.0f;						///< Property: 'TopPlane' used when mode is CorrectAspectRatio or custom 
+		float mBottomPlane = 0.0f;						///< Property: 'TopPlane' used when mode is CorrectAspectRatio or custom
 	};
 	
 	/**
@@ -43,6 +54,11 @@ namespace nap
 		OrthoCameraProperties mProperties;		///< Property:'Properties' the camera settings
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// OrthoCameraComponentInstance
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * An orthographic camera. The space that the camera is operating depends on the mode that is set. 
 	 * By default this camera operates in pixel space. Use setMode to change the space that the camera is operating in.
@@ -52,16 +68,6 @@ namespace nap
 	{
 		RTTI_ENABLE(CameraComponentInstance)
 	public:
-
-		/**
-		 *	Orthographic camera space operation mode
-		 */
-		enum EMode
-		{
-			PixelSpace,				///< left/right/top/bottom planes are scaled automatically to pixel coordinates. Near/far is retrieved from properties.
-			CorrectAspectRatio,		///< User provides all planes, but height is recalculated for correct aspect ratio
-			Custom					///< All planes are retrieved from properties
-		};
 
 		// Default constructor
 		OrthoCameraComponentInstance(EntityInstance& entity, Component& resource);
@@ -108,7 +114,7 @@ namespace nap
 		* Sets the mode (the physical space) in which the orthographic camera is operating.
 		* @param mode The view mode to operate in.
 		*/
-		void setMode(EMode mode);
+		void setMode(EOrthoCameraMode mode);
 
 	private:
 
@@ -118,10 +124,9 @@ namespace nap
 		void setDirty() { mDirty = true; }
 
 	private:
-		EMode							mMode = EMode::PixelSpace;	// By default we map to pixel space
-		mutable glm::mat4x4				mProjectionMatrix;			// The composed projection matrix
-		mutable bool					mDirty = true;				// If the projection matrix needs to be recalculated
-		OrthoCameraProperties			mProperties;				// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
-		TransformComponentInstance*		mTransformComponent;		// Cached transform component
+		mutable glm::mat4x4				mProjectionMatrix;						// The composed projection matrix
+		mutable bool					mDirty = true;							// If the projection matrix needs to be recalculated
+		OrthoCameraProperties			mProperties;							// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
+		TransformComponentInstance*		mTransformComponent;					// Cached transform component
 	};
 }

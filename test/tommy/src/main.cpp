@@ -7,6 +7,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <apprunner.h>
+#include <guiappeventhandler.h>
 
 // Main loop
 int main(int argc, char *argv[])
@@ -15,7 +16,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::TommyApp, nap::AppEventHandler> app_runner(core);
+	nap::AppRunner<nap::TommyApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

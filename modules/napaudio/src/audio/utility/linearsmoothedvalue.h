@@ -20,7 +20,7 @@ namespace nap
         public:
 
         public:
-            LinearSmoothedValue(const T& initValue, int stepCount) : mValue(initValue)
+            LinearSmoothedValue(const T& initValue, int stepCount) : mNewDestination(initValue), mValue(initValue), mDestination(initValue)
             {
                 mStepCount.store(stepCount);
             }

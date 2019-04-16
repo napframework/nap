@@ -99,6 +99,13 @@ namespace nap
 		bool makeDirs(const std::string& directory);
 
 		/**
+		 * Delete the file at the specified path
+		 * @param path The path to the file to delete
+		 * @return true on success, false if it failed
+		 */
+		bool deleteFile(const std::string& path);
+
+		/**
 		 * Dump a string to a file.
 		 * @param filename The name of the file to write to.
 		 * @param contents The string to write

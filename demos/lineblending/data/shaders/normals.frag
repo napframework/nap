@@ -1,6 +1,7 @@
 #version 330
 
 // input  
+in float pass_Tip;
 in vec4 pass_Color;
 
 // output
@@ -11,6 +12,6 @@ uniform vec4 mColor;
 
 void main() 
 {
-	vec3 line_color = mColor.rgb * pass_Color.rgb;
-	out_Color = vec4(line_color, pass_Color.a * mColor.a);
+	vec3 line_color = mColor.rgb;
+	out_Color = vec4(line_color * pass_Color.rgb, pass_Tip * mColor.a);
 }

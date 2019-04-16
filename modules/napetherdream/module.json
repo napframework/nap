@@ -1,6 +1,5 @@
 {
     "dependencies": [
-        "mod_naprender",
         "mod_napmath",
         "mod_napscene"
     ]

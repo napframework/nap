@@ -12,9 +12,10 @@ namespace nap
 	class RendererSettings
 	{
 	public:
-		bool mDoubleBuffer = true;		///< Enables / Disabled double buffering
-		bool mEnableMultiSampling = 1;	///< Enables / Disables multi sampling.
-		int  mMultiSampleSamples = 4;	///< Number of samples per pixel when multi sampling is enabled
+		bool mDoubleBuffer = true;			///< Property: 'DoubleBuffer' Enables / Disabled double buffering
+		bool mEnableMultiSampling = true;	///< Property: 'EnableMultiSampling' Enables / Disables multi sampling.
+		int  mMultiSamples = 4;				///< Property: 'MultiSampleSamples' Number of samples per pixel when multi sampling is enabled
+		bool mEnableHighDPIMode = true;		///< Property: 'HighDPIMode' If high DPI render mode is enabled, on by default
 	};
 
 	/**
@@ -64,11 +65,17 @@ namespace nap
 		/**
 		 * Get the primary window (i.e. the window that was used to init against)
 		 */
-		GLWindow& getPrimaryWindow() { return *mPrimaryWindow; }
+		GLWindow& getPrimaryWindow()						{ return *mPrimaryWindow; }
+
+		/**
+		 *	@return the id (name) of the primary window
+		 */
+		const std::string& getPrimaryWindowID()	const		{ return mPrimaryWindowID; }
 
 	private:
 		std::shared_ptr<GLWindow>	mPrimaryWindow;			///< Primary Window. This always exists for as long as the Renderer exists.
 		std::string					mPrimaryWindowID;		///< When a RenderWindow is bound to the primary window, this contains the ID of the RenderWindow
+		RendererSettings			mSettings;				///< If high dpi render mode is enabled
 
 		/**
 		 * Creates the primary render window which is always available

@@ -65,7 +65,6 @@ namespace nap
 				case rapidjson::kTrueType:
 				{
 					return jsonValue.GetBool();
-					break;
 				}
 				case rapidjson::kNumberType:
 				{
@@ -81,6 +80,8 @@ namespace nap
 						return jsonValue.GetUint64();
 					break;
 				}
+				default:
+					break;
 			}
 
 			// Unknown type
@@ -272,7 +273,6 @@ namespace nap
 				if (is_file_link)
 				{
 					FileLink file_link;
-					file_link.mSourceObjectID = compound.try_convert<Object>()->mID;
 					file_link.mTargetFile = property.get_value(compound).get_value<std::string>();
 					readState.mResult.mFileLinks.push_back(file_link);
 				}

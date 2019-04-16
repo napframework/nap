@@ -1,8 +1,9 @@
 {
     "title": "OscMidi",
-    "version": "0.1",
+    "version": "0.2.3",
     "modules": [
         "mod_napapp",
-        "mod_oscmidi"
+        "mod_oscmidi",
+        "mod_napimgui"
     ]
 }

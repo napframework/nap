@@ -3,9 +3,6 @@
 // Mod nap render includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
-#include <sdlinput.h>
-#include <sdlwindow.h>
-
 
 // Nap includes
 #include <nap/resourcemanager.h>

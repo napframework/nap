@@ -24,7 +24,7 @@ Within your newly created project you will find the project definition file `pro
 ```
 {
     "title": "NewProject",
-    "version": "0.1",
+    "version": "0.2",
     "modules": [
         "mod_napapp",
         "mod_napaudio"

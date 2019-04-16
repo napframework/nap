@@ -9,11 +9,11 @@ namespace nap
 	* Default app event handler
 	* Forwards key presses and window events to the running application
 	*/
-	class AudioAppEventHandler : public BaseAppEventHandler
+	class AudioAppEventHandler : public AppEventHandler
 	{
-		RTTI_ENABLE(BaseAppEventHandler)
+		RTTI_ENABLE(AppEventHandler)
 	public:
-		AudioAppEventHandler(AudioTestApp& app) : BaseAppEventHandler(app) { }
+		AudioAppEventHandler(AudioTestApp& app) : AppEventHandler(app) { }
 
 		/**
 		* This call polls SDL for various messages, translates those messages

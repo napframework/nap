@@ -1,0 +1,7 @@
+{
+    "title": "@PROJECT_NAME_PASCALCASE@",
+    "version": "0.2.0",
+    "modules": [
+        @MODULE_LIST_SUB_JSON@
+    ]
+}

@@ -99,6 +99,192 @@ namespace nap
 	}
 
 
+	void MaterialInstance::bind()
+	{
+		getMaterial()->bind();
+	}
+
+
+	void MaterialInstance::unbind()
+	{
+		getMaterial()->unbind();
+	}
+
+
+	void MaterialInstance::pushUniforms()
+	{
+		// Keep track of which uniforms were set (i.e. overridden) by the material instance
+		std::unordered_set<std::string> instance_bindings;
+		int texture_unit = 0;
+
+		// Push all texture uniforms that are set (i.e. overridden) in the instance
+		const UniformTextureBindings& instance_texture_bindings = getTextureBindings();
+		for (auto& kvp : instance_texture_bindings)
+		{
+			nap::Uniform* uniform_tex = kvp.second.mUniform.get();
+			assert(uniform_tex->get_type().is_derived_from(RTTI_OF(nap::UniformTexture)));
+			static_cast<nap::UniformTexture*>(uniform_tex)->push(*kvp.second.mDeclaration, texture_unit++);
+			instance_bindings.insert(kvp.first);
+		}
+
+		// Push all value uniforms that are set (i.e. overridden) in the instance
+		const UniformValueBindings& instance_value_bindings = getValueBindings();
+		for (auto& kvp : instance_value_bindings)
+		{
+			nap::Uniform* uniform_val = kvp.second.mUniform.get();
+			assert(uniform_val->get_type().is_derived_from(RTTI_OF(nap::UniformValue)));
+			static_cast<nap::UniformValue*>(uniform_val)->push(*kvp.second.mDeclaration);
+			instance_bindings.insert(kvp.first);
+		}
+
+		// Push all uniform textures in the material that weren't overridden by the instance
+		// Note that the material contains mappings for all the possible uniforms in the shader
+		Material* material = getMaterial();
+		for (auto& kvp : material->getTextureBindings())
+		{
+			if (instance_bindings.find(kvp.first) == instance_bindings.end())
+			{
+				nap::Uniform* uniform_tex = kvp.second.mUniform.get();
+				assert(uniform_tex->get_type().is_derived_from(RTTI_OF(nap::UniformTexture)));
+				static_cast<nap::UniformTexture*>(uniform_tex)->push(*kvp.second.mDeclaration, texture_unit++);
+			}
+
+		}
+
+		// Push all uniform values in the material that weren't overridden by the instance
+		for (auto& kvp : material->getValueBindings())
+		{
+			if (instance_bindings.find(kvp.first) == instance_bindings.end())
+			{
+				nap::Uniform* uniform_val = kvp.second.mUniform.get();
+				assert(uniform_val->get_type().is_derived_from(RTTI_OF(nap::UniformValue)));
+				static_cast<nap::UniformValue*>(uniform_val)->push(*kvp.second.mDeclaration);
+			}
+		}
+
+		glActiveTexture(GL_TEXTURE0);
+	}
+
+
+	void MaterialInstance::pushBlendMode()
+	{
+		EDepthMode depth_mode = getDepthMode();
+		
+		// Global
+		glDepthFunc(GL_LEQUAL);
+		glBlendEquation(GL_FUNC_ADD);
+
+		// Switch based on blend mode
+		switch (getBlendMode())
+		{
+			case EBlendMode::Opaque:
+			{
+				glDisable(GL_BLEND);
+				if (depth_mode == EDepthMode::InheritFromBlendMode)
+				{
+					glEnable(GL_DEPTH_TEST);
+					glDepthMask(GL_TRUE);
+				}
+				break;
+			}
+			case EBlendMode::AlphaBlend:
+			{
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				if (depth_mode == EDepthMode::InheritFromBlendMode)
+				{
+					glEnable(GL_DEPTH_TEST);
+					glDepthMask(GL_FALSE);
+				}
+				break;
+			}
+			case EBlendMode::Additive:
+			{
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_ONE, GL_ONE);
+				if (depth_mode == EDepthMode::InheritFromBlendMode)
+				{
+					glEnable(GL_DEPTH_TEST);
+					glDepthMask(GL_FALSE);
+				}
+				break;
+			}
+		}
+
+		// If the depth mode is not inherited (based on blend mode) set it.
+		if (depth_mode != EDepthMode::InheritFromBlendMode)
+		{
+			switch (depth_mode)
+			{
+			case EDepthMode::ReadWrite:
+			{
+				glEnable(GL_DEPTH_TEST);
+				glDepthMask(GL_TRUE);
+				break;
+			}
+			case EDepthMode::ReadOnly:
+			{
+				glEnable(GL_DEPTH_TEST);
+				glDepthMask(GL_FALSE);
+				break;
+			}
+			case EDepthMode::WriteOnly:
+			{
+				glDisable(GL_DEPTH_TEST);
+				glDepthMask(GL_TRUE);
+				break;
+			}
+			case EDepthMode::NoReadWrite:
+			{
+				glDisable(GL_DEPTH_TEST);
+				glDepthMask(GL_FALSE);
+				break;
+			}
+			default:
+				assert(false);
+			}
+		}
+	}
+
+
+	int MaterialInstance::getTextureUnit(nap::UniformTexture& uniform)
+	{
+		int texture_unit = 0;
+		std::unordered_set<std::string> instance_bindings;
+
+		// Iterate over all material instance texture bindings
+		// If the texture uniform matches the requested uniform it is considered to be at that location
+		// If not the location is incremented until a match is found
+		const UniformTextureBindings& instance_texture_bindings = getTextureBindings();
+		for (auto& kvp : instance_texture_bindings)
+		{
+			nap::Uniform* uniform_tex = kvp.second.mUniform.get();
+			if (uniform_tex == &uniform)
+				return texture_unit;
+			texture_unit++;
+			instance_bindings.insert(kvp.first);
+		}
+
+		// Iterate over all source material bindings
+		// If the texture uniform matches the requested uniform it is considered to be at that location
+		// If not, there is no valid texture binding associated with the given uniform
+		Material* material = getMaterial();
+		for (auto& kvp : material->getTextureBindings())
+		{
+			if (instance_bindings.find(kvp.first) == instance_bindings.end())
+			{
+				nap::Uniform* uniform_tex = kvp.second.mUniform.get();
+				if (uniform_tex == &uniform)
+					return texture_unit;
+				texture_unit++;
+			}
+		}
+
+		// No texture binding associated with the given uniform
+		return -1;
+	}
+
+
 	Uniform& MaterialInstance::createUniform(const std::string& name)
 	{
 		const opengl::UniformDeclarations& uniform_declarations = mResource->mMaterial->getShader()->getShader().getUniformDeclarations();
@@ -149,6 +335,18 @@ namespace nap
 			return mResource->mBlendMode;
 
 		return mResource->mMaterial->getBlendMode();
+	}
+
+
+	void MaterialInstance::setBlendMode(EBlendMode blendMode)
+	{
+		mResource->mBlendMode = blendMode;
+	}
+
+	
+	void MaterialInstance::setDepthMode(EDepthMode depthMode)
+	{
+		mResource->mDepthMode = depthMode;
 	}
 
 

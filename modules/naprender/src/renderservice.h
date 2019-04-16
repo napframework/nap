@@ -2,10 +2,11 @@
 
 // External Includes
 #include <nap/service.h>
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 #include <nap/windowevent.h>
 #include <nopengl.h>
 #include <thread>
+#include <renderablemesh.h>
 
 // Local Includes
 #include "renderer.h"
@@ -33,16 +34,18 @@ namespace nap
 	public:
 		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
 
-		RendererSettings mSettings;
+		RendererSettings mSettings;		///< Property: 'Settings' All render settings
 	};
 
 	/**
-	 * Main interface for 3D rendering operations.
-	 * The main function of this service is to initialize the render back-end, create and manage vertex array objects and
-	 * provide an interface to render objects to a specific target (screen or back-buffer).
+	 * Main interface for 2D and 3D rendering operations.
+	 * This service initializes the render back-end, manages all vertex array buffers, can be used to create RenderableMesh objects and
+	 * provides an interface to render objects to a specific target (screen or back-buffer).
 	 * Vertex array object management is handled completely by this service. As a user you only work
 	 * with the render interface to render a set of render-able components to a target using a camera.
-	 * The service is shut down automatically on exit. Including the destruction of windows and left over resources.
+	 * The service is shut down automatically on exit, and deatroys all windows and left over resources.
+	 * When rendering geometry using (most) renderObjects() the service automatically sorts your selection based on the blend mode of the material.
+	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
 	 */
 	class NAPAPI RenderService : public Service
 	{
@@ -71,7 +74,7 @@ namespace nap
 		/**
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
-		 *
+		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
@@ -89,7 +92,7 @@ namespace nap
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects)
-		 *
+		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to @renderTarget
@@ -124,9 +127,31 @@ namespace nap
 		virtual void shutdown() override;
 
 		/**
-		* Returns global render state. Use the fields in this objects to modify the renderstate.
-		*/
-		RenderState& getRenderState()																{ return mRenderState; }
+		 * Changes the polygon draw mode for the next set of draw calls. Updates the render state internally.
+		 * @param mode the polygon mode to use for the next set of draw calls
+		 */
+		void setPolygonMode(opengl::EPolygonMode mode);
+
+		/**
+		 * Returns the global render state that is used for all OpenGL contexts.
+		 * Properties associated with this state (such as the fill mode, point size etc.) are set before rendering a set of objects.
+		 * @return the global render state.
+		 */
+		const RenderState& getRenderState() const																{ return mRenderState; }
+
+		/**
+		 * Sets the global render state. This state is used for all OpenGL contexts and settings are pushed before a render call.
+		 * You can change settings (such as point-size etc.) at runtime, before rendering objects. 
+		 * @param renderState the new state of the renderer to use when rendering objects. 
+		 */
+		void setRenderState(const RenderState& renderState)														{ mRenderState = renderState; }
+
+		/**
+		 * Pushes the global render state to the GPU.
+		 * Note that this is called automatically when rendering objects through the render service using RenderObjects().
+		 * Use this call when implementing your own draw call in a component.
+		 */
+		void pushRenderState();
 
 		/**
 		 * Batches an OpenGL resource that is dependent on GLContext for destruction, to avoid many GL context switches during destruction.
@@ -139,17 +164,6 @@ namespace nap
  		 * @param renderWindows: all render windows that are active, as they hold the GL contexts.
 		 */
 		void destroyGLContextResources(const std::vector<rtti::ObjectPtr<RenderWindow>>& renderWindows);
-
-		/**
-		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
-		* combinations, and it hands out reference counted handles to the VAOs that are stored internally. When the refcount of the handle reaches 
-		* zero, the VAO is removed from the RenderService's map and it will be queued for destruction.
-		* @param material: Material to acquire the VAO for.
-		* @param meshResource: mesh to acquire the VAO for.
-		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
-		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
-		*/
-		VAOHandle acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState);
 
 		/**
 		 * Add a new window for the specified resource
@@ -184,11 +198,28 @@ namespace nap
 		GLWindow& getPrimaryWindow();
 
 		/**
+		 * @return the id of the primary window
+		 */
+		const std::string& getPrimaryWindowID() const;
+
+		/**
 		 * Add a window event that is processed later, ownership is transferred here
 		 * The window number in the event is used to find the right render window to forward the event to
 		 * @param event the event to add
 		 */
 		void addEvent(WindowEventPtr windowEvent);
+
+		/**
+		* Creates a renderable mesh that represents the coupling between a mesh and material that can be rendered to screen.
+		* Internally the renderable mesh manages a vertex array object that is issued by the render service.
+		* This function should be called from on initialization of components that work with meshes and materials: ie: all types of RenderableComponent. 
+		* The result should be validated by calling RenderableMesh.isValid(). Invalid mesh / material representations can't be rendered together.
+		* @param mesh The mesh that is used in the mesh-material combination.
+		* @param materialInstance The material instance that is used in the mesh-material combination.
+		* @param errorState If this function returns an invalid renderable mesh, the error state contains error information.
+		* @return A RenderableMesh object that can be used in setMesh calls. Check isValid on the object to see if creation succeeded or failed.
+		*/
+		RenderableMesh createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
 	protected:
 		/**
@@ -244,8 +275,8 @@ namespace nap
 		std::unique_ptr<nap::Renderer> mRenderer = nullptr;
 
 		/**
-		* Updates the current context's render state by using the latest render state as set by the user.
-		*/
+		 * Updates the current context's render state by using the latest render state as set by the user.
+		 */
 		void updateRenderState();
 
 		/**
@@ -259,9 +290,20 @@ namespace nap
 		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
 
 		/**
-		* Processes all window related events for all available windows
-		*/
+		 * Processes all window related events for all available windows
+		 */
 		void processEvents();
+
+		/**
+		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
+		* combinations, and it hands out reference counted handles to the VAOs that are stored internally. When the refcount of the handle reaches
+		* zero, the VAO is removed from the RenderService's map and it will be queued for destruction.
+		* @param material: Material to acquire the VAO for.
+		* @param meshResource: mesh to acquire the VAO for.
+		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
+		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
+		*/
+		VAOHandle acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState);
 
 		/**
 		* Helper struct to refcount opengl VAOs.

@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napsdlinput)
 
 # add all cpp files to SOURCES
@@ -43,7 +48,12 @@ copy_module_json_to_bin()
 
 # Package into platform release
 if(UNIX)
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+    if(APPLE)
+        set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/SDL2/lib)
+        set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+    else()
+        set(LINUX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+    endif()
     # Workaround for module not having dependent modules but wanting to set extra RPATH
     set(DEPENDENT_NAP_MODULES mod_napsdlwindow) 
 endif()    

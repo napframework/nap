@@ -29,7 +29,7 @@ namespace nap
 	bool RotateComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Make sure we have a transform
-		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>(rtti::ETypeCheck::IS_DERIVED_FROM);
+		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransform != nullptr, "missing transform component"))
 			return false;
 		
