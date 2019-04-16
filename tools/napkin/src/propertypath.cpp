@@ -21,16 +21,16 @@ bool nameAndIndex(const std::string& nameIndex, std::string& name, int& index)
 	std::size_t found = nameIndex.find_last_of(':');
 	if (found == std::string::npos)
 	{
-		auto name = nameIndex.substr(0,found);
-		auto index = nameIndex.substr(found+1);
-		if (isNumber(index))
+		auto n = nameIndex.substr(0,found);
+		auto i = nameIndex.substr(found+1);
+		if (isNumber(i))
 		{
-			name = name;
-			index = std::stoi(index);
+			name.assign(n);
+			i = std::stoi(i);
 			return true;
 		}
 	}
-	name = nameIndex;
+	name.assign(nameIndex);
 	return false;
 }
 
