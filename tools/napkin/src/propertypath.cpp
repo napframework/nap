@@ -6,6 +6,7 @@
 #include <rtti/defaultlinkresolver.h>
 #include <appcontext.h>
 #include <stack>
+#include <cctype>
 
 using namespace nap::rtti;
 
