@@ -124,6 +124,7 @@ namespace nap
 	using ParameterVec2		= ParameterNumericVec<glm::vec2>;
 	using ParameterIVec2	= ParameterNumericVec<glm::ivec2>;
 	using ParameterVec3		= ParameterNumericVec<glm::vec3>;
+	using ParameterIVec3	= ParameterNumericVec<glm::ivec3>;
 
 	/**
 	 * Helper macro that can be used to define the RTTI for a numeric (vector) parameter type
