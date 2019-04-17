@@ -180,7 +180,8 @@ TEST_CASE("Core", "[core]")
 {
 	nap::Core core;
 
-	std::string dataFile = nap::utility::getAbsolutePath("unit_tests_data/entitystructure.json");
+    std::string dataFile = nap::utility::getExecutableDir() + "/unit_tests_data/entitystructure.json";
+	dataFile = nap::utility::getAbsolutePath(dataFile);
 
 	nap::utility::ErrorState err;
 	if (!core.initializeEngine(err, "resources", true))
