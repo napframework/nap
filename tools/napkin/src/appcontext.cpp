@@ -222,19 +222,37 @@ void AppContext::restoreUI()
 	});
 }
 
-void AppContext::connectDocumentSignals()
+void AppContext::connectDocumentSignals(bool enable)
 {
-	auto doc = getDocument();
+    
+	auto doc = mDocument.get();
+	if (!doc) 
+        return;
 
-	connect(doc, &Document::entityAdded, this, &AppContext::entityAdded);
-	connect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
-	connect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
-	connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
-	connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
-	connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
-	connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
-	connect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
-	connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
+    if (enable)
+	{
+		connect(doc, &Document::entityAdded, this, &AppContext::entityAdded);
+		connect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
+		connect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
+		connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
+		connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
+		connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
+		connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
+		connect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
+		connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
+	}
+	else
+	{
+		disconnect(doc, &Document::entityAdded, this, &AppContext::entityAdded);
+		disconnect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
+		disconnect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
+		disconnect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
+		disconnect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
+		disconnect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
+		disconnect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
+		disconnect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
+		disconnect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
+	}
 }
 
 QMainWindow* AppContext::getMainWindow() const
