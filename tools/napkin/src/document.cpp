@@ -833,7 +833,7 @@ QList<nap::RootEntity*> Document::getRootEntities(nap::Scene& scene, nap::rtti::
 
 Document::~Document()
 {
-	
+	mUndoStack.disconnect();
 }
 
 std::vector<nap::rtti::Object*> Document::getObjects(const nap::rtti::TypeInfo& type)
