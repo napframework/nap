@@ -39,14 +39,15 @@ namespace nap
 		// Register the receiver
 		mService->registerReceiver(*this);
 
-		// Create the socket
+		// Create the socket, catch end point creation exception
+		// We allow the try catch here because of the 3rd party lib throwing an exception.
 		try
 		{
 			mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort), mAllowPortReuse);
 		}
 		catch (const std::runtime_error& exception)
 		{
-			errorState.fail("Failed to create OSCReceived: %s", exception.what());
+			errorState.fail("Failed to create OSCReceiver: %s", exception.what());
 			return false;
 		}		
 
