@@ -118,6 +118,15 @@ namespace nap
 				vec3_parameter->setValue(value);
 		});
 
+		registerParameterEditor(RTTI_OF(ParameterIVec3), [](Parameter& parameter)
+		{
+			ParameterIVec3* vec3_parameter = rtti_cast<ParameterIVec3>(&parameter);
+
+			glm::ivec3 value = vec3_parameter->mValue;
+			if (ImGui::SliderInt3(vec3_parameter->getDisplayName().c_str(), &value[0], vec3_parameter->mMinimum, vec3_parameter->mMaximum))
+				vec3_parameter->setValue(value);
+		});
+
 		registerParameterEditor(RTTI_OF(ParameterEnumBase), [](Parameter& parameter)
 		{
 			ParameterEnumBase* enum_parameter = rtti_cast<ParameterEnumBase>(&parameter);
