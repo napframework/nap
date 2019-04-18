@@ -365,8 +365,7 @@ namespace nap
 			// we're linking directly to a specific component so we can just use that
 			if (path_components.size() == 1)
 			{
-				EntityCreationParameters::ComponentInstanceMap::const_iterator pos = componentInstances.find(
-						targetComponentResource);
+				auto pos = componentInstances.find(targetComponentResource);
 				if (!errorState.check(pos != componentInstances.end(),
 									  "Error resolving component path %s: taret component not found",
 									  targetComponentInstancePath.c_str()))
