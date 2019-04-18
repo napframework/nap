@@ -1641,7 +1641,7 @@
                     "Entity": "LaserControllerEntity",
                     "InstanceProperties": [
                         {
-                            "TargetComponent": "./LaserPrototypeEntity:0/LaserSplineEntity/LineBlender",
+                            "TargetComponent": "./LaserPrototypeEntity:0/LaserSplineEntity:0/LineBlender",
                             "TargetAttributes": [
                                 {
                                     "Path": "Target",

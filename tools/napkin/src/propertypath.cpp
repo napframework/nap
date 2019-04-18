@@ -10,30 +10,6 @@
 
 using namespace nap::rtti;
 
-bool isNumber(const std::string& s)
-{
-	return !s.empty() && std::find_if(s.begin(),
-									  s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
-}
-
-// True when name has an index, false when it's just a name
-bool nameAndIndex(const std::string& nameIndex, std::string& name, int& index)
-{
-	std::size_t found = nameIndex.find_last_of(':');
-	if (found == std::string::npos)
-	{
-		auto n = nameIndex.substr(0,found);
-		auto i = nameIndex.substr(found+1);
-		if (isNumber(i))
-		{
-			name.assign(n);
-			index = std::stoi(i);
-			return true;
-		}
-	}
-	name.assign(nameIndex);
-	return false;
-}
 
 napkin::NameIndex::NameIndex(const std::string& nameIndex)
 {
@@ -125,7 +101,10 @@ nap::ComponentInstanceProperties* napkin::PropertyPath::instanceProps() const
 	auto compInstPath = getComponentInstancePath();
 	for (nap::ComponentInstanceProperties& instProp : rootEntity->mInstanceProperties)
 	{
-		if (instProp.mTargetComponent.getInstancePath() == compInstPath)
+		if (napkin::isComponentInstancePathEqual(*rootEntity,
+												 *instProp.mTargetComponent.get(),
+												 instProp.mTargetComponent.getInstancePath(),
+												 compInstPath))
 			return &instProp;
 	}
 	return nullptr;

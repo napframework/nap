@@ -188,4 +188,38 @@ namespace napkin
 	 * @return
 	 */
 	std::string friendlyTypeName(rttr::type type);
+
+	/**
+	 * Compare two ComponentInstance paths and see if they represent the same component instance
+	 * WARNING: This only works with absolute paths, paths that start from the root entity
+	 *
+	 * @param rootEntity The root entity to start from
+	 * @param comp The component to compare
+	 * @param a First path to compare
+	 * @param b Second path to compare
+	 * @return true if the paths represent the same instance, false otherwise
+	 */
+	bool isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
+									  const std::string& a, const std::string& b);
+
+
+	/**
+	 * Check if every character in this string is a number
+	 * @return true if every character in this string is a number, false otherwise
+	 */
+	bool isNumber(const std::string& s);
+
+
+	/**
+	 * Split a "string:234" into its name "string" and index 234
+	 * @return true if both are found, false if there's only a string part
+	 */
+	bool nameAndIndex(const std::string& nameIndex, std::string& name, int& index);
+
+	/**
+	 * Find a child of an entity using its name and disambiguating index
+	 * @return The entity if found
+	 */
+	nap::Entity* findChild(nap::Entity& parent, const std::string& name, int index=-1);
+
 }
