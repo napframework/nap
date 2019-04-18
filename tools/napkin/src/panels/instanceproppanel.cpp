@@ -8,6 +8,7 @@ using namespace napkin;
 
 InstPropAttribItem::InstPropAttribItem(nap::TargetAttribute& attrib) : QStandardItem(), mAttrib(attrib)
 {
+	setEditable(false);
 	setText(QString::fromStdString(attrib.mPath));
 }
 
@@ -15,6 +16,7 @@ InstPropAttribItem::InstPropAttribItem(nap::TargetAttribute& attrib) : QStandard
 
 InstancePropsItem::InstancePropsItem(nap::ComponentInstanceProperties& props) : QStandardItem(), mProps(props)
 {
+	setEditable(false);
 	setText(QString::fromStdString(props.mTargetComponent.getInstancePath()));
 	for (auto& a : props.mTargetAttributes)
 		appendRow(new InstPropAttribItem(a));
@@ -35,6 +37,7 @@ QVariant InstancePropsItem::data(int role) const
 
 RootEntityPropItem::RootEntityPropItem(nap::RootEntity& rootEntity) : QStandardItem(), mRootEntity(rootEntity)
 {
+	setEditable(false);
 	setText(QString::fromStdString(rootEntity.mEntity->mID));
 	for (auto& p : rootEntity.mInstanceProperties)
 		appendRow(new InstancePropsItem(p));
@@ -55,6 +58,7 @@ QVariant RootEntityPropItem::data(int role) const
 
 InstPropSceneItem::InstPropSceneItem(nap::Scene& scene) : QStandardItem(), mScene(scene)
 {
+	setEditable(false);
 	setText(QString::fromStdString(scene.mID));
 	for (auto& e : scene.mEntities)
 		appendRow(new RootEntityPropItem(e));
