@@ -118,7 +118,7 @@ namespace napkin
     /**
      * This item allows for editing a pointer value
      */
-	class PointerValueItem : public QStandardItem
+	class PointerValueItem : public PropertyPathItem
 	{
 	public:
 		/**
@@ -138,8 +138,6 @@ namespace napkin
 		 */
 		void setData(const QVariant& value, int role) override;
 
-	private:
-		const PropertyPath mPath;		// The path to the property
 	};
 
 	/**

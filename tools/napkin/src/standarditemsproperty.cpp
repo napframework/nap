@@ -116,6 +116,8 @@ QVariant napkin::PointerValueItem::data(int role) const
 	{
 		return QVariant::fromValue(mPath);
 	}
+	if (mPath.isInstanceProperty() && mPath.isOverridden() && role == Qt::BackgroundRole)
+		return QStandardItem::data(role);
 	return QStandardItem::data(role);
 }
 
@@ -133,7 +135,7 @@ void napkin::PointerValueItem::setData(const QVariant& value, int role)
 }
 
 napkin::PointerValueItem::PointerValueItem(const PropertyPath& path)
-	: QStandardItem(), mPath(path)
+	: PropertyPathItem(path)
 {
 }
 
