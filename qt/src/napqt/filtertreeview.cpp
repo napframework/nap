@@ -131,7 +131,10 @@ void FilterTreeView::onExpandSelected()
 void FilterTreeView::onCollapseSelected()
 {
 	for (auto& idx : getSelectedIndexes())
-		expandChildren(mTreeView, idx, false);
+	{
+		auto index = mSortFilter.mapFromSource(idx);
+		expandChildren(mTreeView, index, false);
+	}
 }
 
 
