@@ -40,11 +40,6 @@ napkin::NameIndex::NameIndex(const std::string& nameIndex)
 	nameAndIndex(nameIndex, mID, mIndex);
 }
 
-napkin::NameIndex::NameIndex(const std::string& name, int index)
-		: mID(name), mIndex(index)
-{
-}
-
 std::string napkin::NameIndex::toString() const
 {
 	if (mIndex < 0)
@@ -124,12 +119,13 @@ nap::ComponentInstanceProperties* napkin::PropertyPath::instanceProps() const
 
 	// find instanceproperties
 	auto rootEntity = getRootEntity();
-	if (getRootEntity()->mInstanceProperties.empty())
+	if (rootEntity->mInstanceProperties.empty())
 		return nullptr;
 
-	for (nap::ComponentInstanceProperties& instProp : getRootEntity()->mInstanceProperties)
+	auto compInstPath = getComponentInstancePath();
+	for (nap::ComponentInstanceProperties& instProp : rootEntity->mInstanceProperties)
 	{
-		if (instProp.mTargetComponent.getInstancePath() == getComponentInstancePath())
+		if (instProp.mTargetComponent.getInstancePath() == compInstPath)
 			return &instProp;
 	}
 	return nullptr;
@@ -233,7 +229,6 @@ nap::TargetAttribute* napkin::PropertyPath::targetAttribute() const
 nap::TargetAttribute& napkin::PropertyPath::getOrCreateTargetAttribute()
 {
 	assert(isInstanceProperty());
-
 
 	auto targetAttr = targetAttribute();
 	if (targetAttr)

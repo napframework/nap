@@ -26,8 +26,6 @@ namespace napkin
 	{
 		NameIndex(const std::string& nameIndex);
 
-		NameIndex(const std::string& name, int index);
-
 		std::string toString() const;
 		operator std::string() const { return toString(); }
 		std::string mID;
@@ -234,7 +232,7 @@ namespace napkin
 		void iterateChildren(PropertyVisitor visitor, int flags = IterFlag::FollowEmbeddedPointers) const;
 
 		/**
-		 * Get this properties children if it has any.
+		 * Get this property's children if it has any.
 		 * @param flags Provide true to also get the children's children and so on
 		 * @return All children of this property
 		 */
@@ -264,8 +262,6 @@ namespace napkin
 		int getRealChildEntityIndex() const;
 
 	private:
-		nap::rtti::Path rttiPath() const;
-
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
