@@ -10,14 +10,13 @@
 #include "transformcomponent.h"
 
 RTTI_BEGIN_CLASS(nap::RootEntity)
-		RTTI_PROPERTY("Entity", &nap::RootEntity::mEntity, nap::rtti::EPropertyMetaData::Required)
-		RTTI_PROPERTY("InstanceProperties", &nap::RootEntity::mInstanceProperties,
-					  nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Entity",				&nap::RootEntity::mEntity,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("InstanceProperties", &nap::RootEntity::mInstanceProperties,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Scene)
-		RTTI_FUNCTION("findEntity", &nap::Scene::findEntity)
-		RTTI_PROPERTY("Entities", &nap::Scene::mEntities, nap::rtti::EPropertyMetaData::Required)
+	RTTI_FUNCTION("findEntity",			&nap::Scene::findEntity)
+	RTTI_PROPERTY("Entities",			&nap::Scene::mEntities,					nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -308,8 +307,7 @@ namespace nap
 			// If the path consists out of a single element, we're linking directly to a specific entity so we can just look that up
 			if (path_components.size() == 1)
 			{
-				EntityCreationParameters::EntityInstanceMap::const_iterator pos = entityInstances.find(
-						targetEntityResource);
+				auto pos = entityInstances.find(targetEntityResource);
 				if (!errorState.check(pos != entityInstances.end(),
 									  "Error resolving entity path %s: target entity not found",
 									  targetEntityInstancePath.c_str()))
@@ -326,7 +324,9 @@ namespace nap
 				return pos->second[0];
 			}
 
-			return sResolveEntityInstancePath(sourceComponentInstance, targetEntityInstancePath, rootEntityInstances,
+			return sResolveEntityInstancePath(sourceComponentInstance,
+											  targetEntityInstancePath,
+											  rootEntityInstances,
 											  errorState);
 		}
 
@@ -429,8 +429,8 @@ namespace nap
 		 * However, the instantiated object often needs to point to other instantiated objects.
 		 * In this function, we fill in the instance pointers in EntityInstancePtr and ComponentInstancePtr.
 		 */
-		static bool
-		sResolveInstancePointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+		static bool sResolveInstancePointers(EntityCreationParameters& entityCreationParams,
+											 utility::ErrorState& errorState)
 		{
 			RootEntityInstanceMap root_entity_instances;
 			for (auto& kvp : entityCreationParams.mEntityInstancesByID)
@@ -459,10 +459,14 @@ namespace nap
 						for (ComponentInstance::TargetComponentLink& target_component_link : link.second)
 						{
 							// Resolve the path to the target ComponentInstance
-							nap::ComponentInstance* target_component_instance = sResolveComponentInstancePath(
-									source_component_instance, target_component_link.mInstancePath,
-									target_component_resource, root_entity_instances,
-									entityCreationParams.mComponentInstanceMap, errorState);
+							nap::ComponentInstance* target_component_instance =
+									sResolveComponentInstancePath(source_component_instance,
+																  target_component_link.mInstancePath,
+																  target_component_resource,
+																  root_entity_instances,
+																  entityCreationParams.mComponentInstanceMap,
+																  errorState);
+
 							if (!errorState.check(target_component_instance != nullptr,
 												  "Unable to resolve component pointer to %s from %s; target not found",
 												  target_component_link.mInstancePath.c_str(),
@@ -485,9 +489,14 @@ namespace nap
 						for (ComponentInstance::TargetEntityLink& target_entity_link : link.second)
 						{
 							// Resolve the path to the target ComponentInstance
-							nap::EntityInstance* target_entity_instance = sResolveEntityInstancePath(
-									source_component_instance, target_entity_link.mInstancePath, target_entity_resource,
-									root_entity_instances, entityCreationParams.mEntityInstanceMap, errorState);
+							nap::EntityInstance* target_entity_instance =
+									sResolveEntityInstancePath(source_component_instance,
+															   target_entity_link.mInstancePath,
+															   target_entity_resource,
+															   root_entity_instances,
+															   entityCreationParams.mEntityInstanceMap,
+															   errorState);
+
 							if (!errorState.check(target_entity_instance != nullptr,
 												  "Unable to resolve entity pointer to %s from %s; target not found",
 												  target_entity_link.mInstancePath.c_str(),
@@ -557,7 +566,8 @@ namespace nap
 	}
 
 
-	EntityInstance* Scene::createChildEntityInstance(const nap::Entity& entity, int childIndex,
+	EntityInstance* Scene::createChildEntityInstance(const nap::Entity& entity,
+													 int childIndex,
 													 EntityCreationParameters& entityCreationParams,
 													 utility::ErrorState& errorState)
 	{
@@ -572,16 +582,15 @@ namespace nap
 	}
 
 
-	EntityInstance*
-	Scene::createEntityInstance(const nap::Entity& entity, EntityCreationParameters& entityCreationParams,
-								utility::ErrorState& errorState)
+	EntityInstance* Scene::createEntityInstance(const nap::Entity& entity,
+												EntityCreationParameters& entityCreationParams,
+												utility::ErrorState& errorState)
 	{
 		EntityInstance* entity_instance = new EntityInstance(*mCore, &entity);
 		entity_instance->mID = SceneInstantiation::sGenerateInstanceID(SceneInstantiation::sGetInstanceID(entity.mID),
 																	   entityCreationParams);
 
-		entityCreationParams.mEntityInstancesByID.emplace(
-				std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
+		entityCreationParams.mEntityInstancesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
 		entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
 		entityCreationParams.mEntityInstanceMap[const_cast<Entity*>(&entity)].push_back(entity_instance);
 
@@ -589,23 +598,23 @@ namespace nap
 		{
 			entityCreationParams.mCurrentEntityPath.pushComponent(original_component_resource->mID);
 
-			Component* cloned_component_resource = SceneInstantiation::sFindClonedComponent(
-					entityCreationParams.mCurrentEntityPath, entityCreationParams.mCurrentEntityClonedComponents);
+			Component* cloned_component_resource =
+					SceneInstantiation::sFindClonedComponent(entityCreationParams.mCurrentEntityPath,
+															 entityCreationParams.mCurrentEntityClonedComponents);
+
 			Component* component_resource = cloned_component_resource != nullptr ? cloned_component_resource
 																				 : original_component_resource.get();
 
 			const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
 			assert(instance_type.can_create_instance());
 
-			std::unique_ptr<ComponentInstance> component_instance(
-					instance_type.create<ComponentInstance>({*entity_instance, *component_resource}));
+			std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({*entity_instance, *component_resource}));
 			assert(component_instance);
 			component_instance->mID = SceneInstantiation::sGenerateInstanceID(
 					SceneInstantiation::sGetInstanceID(component_resource->mID), entityCreationParams);
 
 			entityCreationParams.mComponentInstanceMap[component_resource].push_back(component_instance.get());
-			entityCreationParams.mAllInstancesByID.insert(
-					std::make_pair(component_instance->mID, component_instance.get()));
+			entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
 			entity_instance->addComponent(std::move(component_instance));
 
 			entityCreationParams.mCurrentEntityPath.popComponent();
@@ -617,26 +626,33 @@ namespace nap
 		return entity_instance;
 	}
 
-	bool Scene::spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::Object*>& allObjects,
+	bool Scene::spawnInternal(const RootEntityList& rootEntities,
+							  const std::vector<rtti::Object*>& allObjects,
 							  bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances,
 							  utility::ErrorState& errorState)
 	{
 		EntityObjectGraph object_graph;
-		ObjectsByTypeMap objects_by_type;            // Used by EntityObjectGraphItem to find dependencies between types
-		ClonedResourceMap cloned_resource_map;        // Used by EntityObjectGraphItem to add edges to cloned resources
+		// Used by EntityObjectGraphItem to find dependencies between types
+		ObjectsByTypeMap objects_by_type;
+		// Used by EntityObjectGraphItem to add edges to cloned resources
+		ClonedResourceMap cloned_resource_map;
 
 		// Build map of objects per type, this is used for tracking type dependencies while building the graph
 		for (rtti::Object* object : allObjects)
 			SceneInstantiation::sRecursiveAddToObjectsByType(*object, object->get_type(), objects_by_type);
 
-		if (!object_graph.build(allObjects, [&objects_by_type, &cloned_resource_map](rtti::Object* object)
-		{
-			return EntityObjectGraphItem::create(object, objects_by_type, cloned_resource_map);
-		}, errorState))
+		if (!object_graph.build(allObjects,
+								[&objects_by_type, &cloned_resource_map](rtti::Object* object)
+								{
+									return EntityObjectGraphItem::create(object, objects_by_type, cloned_resource_map);
+								},
+								errorState))
 			return false;
 
-		ClonedComponentByEntityMap cloned_components_by_entity;    // Map owning the cloned component resource, is moved later to mClonedComponentsByEntity on success
-		std::unordered_set<std::string> cloned_component_ids;            // Set used to generate unique IDs for all cloned components
+		// Map owning the cloned component resource, is moved later to mClonedComponentsByEntity on success
+		ClonedComponentByEntityMap cloned_components_by_entity;
+		// Set used to generate unique IDs for all cloned components
+		std::unordered_set<std::string> cloned_component_ids;
 
 		EntityCreationParameters entityCreationParams(object_graph);
 
@@ -664,10 +680,9 @@ namespace nap
 				// Clone target component. The cloned resources are not going into the regular resource manager resource lists, 
 				// but into a special map of cloned resources that is thrown away whenever something changes
 				// Note: We have to generate a unique ID for it because the ObjectGraph expects IDs to be unique
-				std::unique_ptr<Component> cloned_target_component = rtti::cloneObject<Component>(
-						*instance_property.mTargetComponent, mCore->getResourceManager()->getFactory());
-				cloned_target_component->mID = SceneInstantiation::sGenerateUniqueID(
-						cloned_target_component->mID + "_instanceproperties", cloned_component_ids);
+				std::unique_ptr<Component> cloned_target_component =
+						rtti::cloneObject<Component>(*instance_property.mTargetComponent, mCore->getResourceManager()->getFactory());
+				cloned_target_component->mID = SceneInstantiation::sGenerateUniqueID(cloned_target_component->mID + "_instanceproperties", cloned_component_ids);
 				cloned_target_component->mOriginalComponent = instance_property.mTargetComponent.get();
 
 				// Update the objects by type and cloned resource maps, used by RTTIGraphObjectItem and required to rebuild the ObjectGraph later
@@ -688,11 +703,11 @@ namespace nap
 				// Apply instance properties to the cloned object
 				for (const TargetAttribute& attribute : instance_property.mTargetAttributes)
 					if (!errorState.check(attribute.apply(*cloned_target_component, errorState),
-										  "Failed to apply instance properties for entity %s", entity->mID.c_str()))
+										  "Failed to apply instance properties for entity %s",
+										  entity->mID.c_str()))
 						return false;
 
-				clonedComponents.emplace_back(
-						ClonedComponentResource(resolved_component_path, std::move(cloned_target_component)));
+				clonedComponents.emplace_back(ClonedComponentResource(resolved_component_path, std::move(cloned_target_component)));
 			}
 		}
 
@@ -711,7 +726,7 @@ namespace nap
 			entityCreationParams.mCurrentEntityPath = ComponentResourcePath(*root_entity_resource);
 
 			// Store the cloned components used for this entity
-			ClonedComponentByEntityMap::iterator clonedListPos = cloned_components_by_entity.find(root_entity_resource);
+			auto clonedListPos = cloned_components_by_entity.find(root_entity_resource);
 			entityCreationParams.mCurrentEntityClonedComponents =
 					clonedListPos != cloned_components_by_entity.end() ? &clonedListPos->second : nullptr;
 
@@ -822,7 +837,7 @@ namespace nap
 
 			if (type_info.is_derived_from<EntityInstance>())
 			{
-				EntityByIDMap::iterator entity_instance = mEntityInstancesByID.find(instance->mID);
+				auto entity_instance = mEntityInstancesByID.find(instance->mID);
 				assert(entity_instance != mEntityInstancesByID.end());
 				entity_instances_to_delete.emplace_back(std::move(entity_instance->second));
 
