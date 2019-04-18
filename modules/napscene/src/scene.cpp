@@ -307,7 +307,7 @@ namespace nap
 			// If the path consists out of a single element, we're linking directly to a specific entity so we can just look that up
 			if (path_components.size() == 1)
 			{
-				auto pos = entityInstances.find(targetEntityResource);
+				EntityCreationParameters::EntityInstanceMap::const_iterator pos = entityInstances.find(targetEntityResource);
 				if (!errorState.check(pos != entityInstances.end(),
 									  "Error resolving entity path %s: target entity not found",
 									  targetEntityInstancePath.c_str()))
@@ -365,7 +365,8 @@ namespace nap
 			// we're linking directly to a specific component so we can just use that
 			if (path_components.size() == 1)
 			{
-				auto pos = componentInstances.find(targetComponentResource);
+				EntityCreationParameters::ComponentInstanceMap::const_iterator pos =
+						componentInstances.find(targetComponentResource);
 				if (!errorState.check(pos != componentInstances.end(),
 									  "Error resolving component path %s: taret component not found",
 									  targetComponentInstancePath.c_str()))
@@ -725,7 +726,7 @@ namespace nap
 			entityCreationParams.mCurrentEntityPath = ComponentResourcePath(*root_entity_resource);
 
 			// Store the cloned components used for this entity
-			auto clonedListPos = cloned_components_by_entity.find(root_entity_resource);
+			ClonedComponentByEntityMap::iterator clonedListPos = cloned_components_by_entity.find(root_entity_resource);
 			entityCreationParams.mCurrentEntityClonedComponents =
 					clonedListPos != cloned_components_by_entity.end() ? &clonedListPos->second : nullptr;
 
