@@ -86,8 +86,6 @@ namespace nap
 			EModeState		mModeState = EModeState::Finished;
 			uint64_t		mDragStartLeftTime = 0;
 			uint64_t		mDragStartRightTime = 0;
-			uint64_t		mSelectedLeftTime = -1;
-			uint64_t		mSelectedRightTime = -1;
 			uint64_t		mCursorClickTimePos = 0;
 			uint64_t		mLastCursorTimePos = -1;
 			glm::vec2		mCursorClickPos;

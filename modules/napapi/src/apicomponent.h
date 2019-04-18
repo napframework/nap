@@ -147,11 +147,8 @@ namespace nap
 		* Creates a callback based on the given api signature
 		* @param signature the method signature to create a callback for
 		*/
-		APICallBack(const APISignature& signature) : mSignature(signature) { }
+		APICallBack(const APISignature& signature) { }
 
 		Signal<const APIEvent&> messageReceived;	///< called when this callback receives an API message
-
-	private:
-		const APISignature& mSignature;
 	};
 }

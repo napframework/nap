@@ -22,9 +22,9 @@ namespace nap
 		APIBaseValue() = default;
 
 		// Default constructor
-		APIBaseValue(const rtti::TypeInfo& type, const std::string& name) : 
-			mRepresentedType(type),
-			mName(name)	{ }
+		APIBaseValue(const rtti::TypeInfo& type, const std::string& name) :
+			mName(name),
+            mRepresentedType(type) { }
 
 		// Default destructor
 		virtual ~APIBaseValue() = default;
