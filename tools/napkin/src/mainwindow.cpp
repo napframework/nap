@@ -191,10 +191,6 @@ void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
 		// Don't edit scenes
 		if (!path.getType().is_derived_from<nap::Scene>())
 			mInspectorPanel.setPath(paths.first());
-
-		auto compInstPath = path.getComponentInstancePath();
-		if (!compInstPath.empty())
-			qInfo() << QString::fromStdString(compInstPath);
 	}
 }
 
