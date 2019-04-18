@@ -282,16 +282,18 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	}
 	else if (role == Qt::BackgroundRole)
 	{
-		bool isInstance = false;
-		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
-		if (valueItem && valueItem->getPath().isInstanceProperty())
-			isInstance = true;
+		if (auto valueItem = dynamic_cast<PropertyPathItem*>(itemFromIndex(index)))
+		{
+			bool isValueItem = dynamic_cast<PointerValueItem*>(valueItem) ||
+							   dynamic_cast<PropertyValueItem*>(valueItem);
+			if (isValueItem && valueItem->getPath().isInstanceProperty())
+			{
+				if (valueItem->getPath().isOverridden())
+					return QVariant::fromValue<QColor>(QColor(Qt::yellow).lighter());
 
-		if (isInstance && valueItem->getPath().isOverridden())
-			return QVariant::fromValue<QColor>(QColor(Qt::yellow).lighter());
-
-		if (isInstance)
-			return QVariant::fromValue<QColor>(QColor(Qt::gray).lighter());
+				return QVariant::fromValue<QColor>(QColor(Qt::gray).lighter());
+			}
+		}
 	}
 	return QStandardItemModel::data(index, role);
 }

@@ -232,11 +232,15 @@ nap::TargetAttribute& napkin::PropertyPath::getOrCreateTargetAttribute()
 
 rttr::variant napkin::PropertyPath::getValue() const
 {
-	auto targetAttr = targetAttribute();
-	if (targetAttr)
+	if (isInstanceProperty() && isOverridden())
 	{
-		if (getType() == rttr::type::get<float>())
-			return dynamic_cast<nap::TypedInstancePropertyValue<float>*>(targetAttr->mValue.get())->mValue;
+		auto targetAttr = targetAttribute();
+		if (targetAttr)
+		{
+			// TODO: Add all type here
+			if (getType() == rttr::type::get<float>())
+				return dynamic_cast<nap::TypedInstancePropertyValue<float>*>(targetAttr->mValue.get())->mValue;
+		}
 	}
 	return resolve().getValue();
 }
@@ -497,8 +501,7 @@ Object* napkin::PropertyPath::getPointee() const
 	if (!isPointer())
 		return nullptr;
 
-	ResolvedPath resolvedPath = resolve();
-	auto value = resolvedPath.getValue();
+	auto value = getValue();
 	auto value_type = value.get_type();
 	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 
