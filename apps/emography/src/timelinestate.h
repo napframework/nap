@@ -53,8 +53,10 @@ namespace nap
 			void OnMouseLeave(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown);
 
 			void OnMouseMove(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown);
+			
 			void OnMouseUp(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown);
-			double TimelineState::GetClampedRange(double inTimeRangeMs);
+			
+			double GetClampedRange(double inTimeRangeMs);
 
 			void ZoomAroundTime(uint64_t inClickTimePos, uint64_t inTimeLeft, uint64_t inTimeRight, float inDelta);
 
