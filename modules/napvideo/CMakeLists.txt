@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napvideo)
 
 # add all cpp files to SOURCES
@@ -28,13 +33,14 @@ endif()
 copy_module_json_to_bin()
 
 # Package into platform release
-if(UNIX)
-    set(UNIX_EXTRA_RPATH "../../../../thirdparty/FFmpeg/lib")
-endif()
 if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FFmpeg/lib)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/portaudio/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/libsndfile/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/FFmpeg/lib)
 endif()
 package_module()
 

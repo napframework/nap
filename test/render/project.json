@@ -4,6 +4,7 @@
     "modules": [
         "mod_napapp",
         "mod_nappython",
-        "mod_napcameracontrol"
+        "mod_napcameracontrol",
+        "mod_napimgui"
     ]
 }

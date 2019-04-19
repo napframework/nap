@@ -5,18 +5,19 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import find_project, validate_pascalcase_name
+from nap_shared import find_project, validate_pascalcase_name, add_module_to_project_json
 
 # Default modules if none are specified
-DEFAULT_MODULE_LIST = "mod_napapp,mod_napaudio"
+DEFAULT_MODULE_LIST = "mod_napapp,mod_napaudio,mod_napimgui"
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
 ERROR_EXISTING_PROJECT = 2
 ERROR_CMAKE_CREATION_FAILURE = 3
 ERROR_SOLUTION_GENERATION_FAILURE = 4
+ERROR_CMAKE_MODULE_CREATION_FAILURE = 5
 
-def create_project(project_name, module_list, generate_solution):
+def create_project(project_name, module_list, with_module, generate_solution, show_solution):
     print("Creating project %s" % project_name)
 
     # Set our paths
@@ -38,6 +39,23 @@ def create_project(project_name, module_list, generate_solution):
         print("Project creation failed")
         return ERROR_CMAKE_CREATION_FAILURE
 
+    # Add project module on request
+    if with_module:
+        # Create module from template
+        cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/module_creator'))
+        cmd = ['cmake', 
+               '-DMODULE_NAME_PASCALCASE=%s' % project_name, 
+               '-DPROJECT_MODULE=1', 
+               '-DPROJECT_MODULE_PROJECT_PATH=%s' % project_path,
+               '-P', 'module_creator.cmake'
+               ]
+        if call(cmd, cwd=cmake_template_dir) != 0:
+            print("Project module creation failed")
+            sys.exit(ERROR_CMAKE_MODULE_CREATION_FAILURE)
+
+        # Update project.json
+        add_module_to_project_json(project_name, 'mod_%s' % project_name.lower())
+
     # Solution generation
     if generate_solution:
         print("Project created")
@@ -50,6 +68,8 @@ def create_project(project_name, module_list, generate_solution):
             python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
                 
         cmd = [python, './tools/platform/regenerate_project_by_name.py', project_name]
+        if not show_solution and not sys.platform.startswith('linux'):
+            cmd.append('--no-show')        
         if call(cmd, cwd=nap_root) != 0:
             print("Solution generation failed")
             return ERROR_SOLUTION_GENERATION_FAILURE
@@ -62,8 +82,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PASCAL_CASE_PROJECT_NAME", type=str,
                         help="The project name, in pascal case (eg. MyProjectName)")
+    parser.add_argument("-m", "--with-module", action="store_true",
+                        help="Include a project module")
     parser.add_argument("-ng", "--no-generate", action="store_true",
                         help="Don't generate the solution for the created project")       
+    if not sys.platform.startswith('linux'):    
+        parser.add_argument("-ns", "--no-show", action="store_true",
+                            help="Don't show the generated solution")
     args = parser.parse_args()
 
     project_name = args.PASCAL_CASE_PROJECT_NAME
@@ -78,5 +103,6 @@ if __name__ == '__main__':
         print("Error: Please specify project name in PascalCase (ie. with an uppercase letter for each word, starting with the first word)")
         sys.exit(ERROR_INVALID_INPUT)
 
-    exit_code = create_project(project_name, DEFAULT_MODULE_LIST, not args.no_generate)
+    show_solution = not sys.platform.startswith('linux') and not args.no_show
+    exit_code = create_project(project_name, DEFAULT_MODULE_LIST, args.with_module, not args.no_generate, show_solution)
     sys.exit(exit_code)

@@ -12,22 +12,24 @@
 .color_blue3 { color: #8B8CA0; }
 .color_blue3a { color: #b0b2cb; }
 
+QMainWindow
+{
+    background-color: #3c3d4d;
+}
+
 QWidget
 {
     font-family: "Nunito Sans", sans-serif;
     font-size: 13px;
     color: #000;
-    background-color: #3c3d4d;
+
 
     selection-background-color:#8B8CA0;
     selection-color: #111426;
-    /*selection-color: #eff0f1;*/
-    /*background-clip: border;*/
-    /*border-image: none;*/
-    /*border: 0px transparent black;*/
-    /*outline: 0;*/
 
+    border: none;
 }
+
 QMenuBar {
     color: #8B8CA0;
 }

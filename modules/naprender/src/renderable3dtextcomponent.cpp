@@ -1,4 +1,5 @@
 #include "renderable3dtextcomponent.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <entity.h>

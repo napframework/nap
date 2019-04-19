@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(napkin)
 
 nap_qt_pre()
@@ -23,7 +28,7 @@ add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES
 
 # The NAP modules Napkin needs to link against
 # TODO this needs updating/verifying; can any of these move into NAP_MODULES_USAGE_DEPENDENCIES below? 
-set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio)
+set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio mod_napfont)
 
 # This is the superset of modules that we want to have available to Napkin to run against; just a handy
 # way to ensure they've built
@@ -86,10 +91,20 @@ install(TARGETS ${PROJECT_NAME}
 install(TARGETS ${PROJECT_NAME}
         DESTINATION tools/platform/napkin/Debug
         CONFIGURATIONS Debug)
+if(APPLE)
+    # Remove thirdparty from framework release at install time
+    macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/Release/napkin
+                                                    ${THIRDPARTY_DIR}  
+                                                    Release)
+    macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/Debug/napkin
+                                                    ${THIRDPARTY_DIR}  
+                                                    Debug)
+endif()
+
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
         DESTINATION tools/platform/napkin/)
 
-set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets)
+set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 
 set(PATH_TO_THIRDPARTY "../../../../thirdparty")
 if(APPLE)
@@ -105,6 +120,7 @@ if(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FreeImage/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/portaudio/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/libsndfile/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/freetype/lib)
 
     foreach(MODULECONFIG Release Debug)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
@@ -120,6 +136,8 @@ elseif(UNIX)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
     list(APPEND EXTRA_RPATH lib)
 
     set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_LINK_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")

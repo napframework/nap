@@ -1,0 +1,9 @@
+{
+    "title": "Aura",
+    "version": "0.2.3",
+    "modules": [
+        "mod_napimgui",
+        "mod_aura",
+        "mod_napcameracontrol"
+    ]
+}

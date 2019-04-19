@@ -9,7 +9,7 @@ namespace nap
 	/**
 	 * Enum describing a list of all possible keys that are supported
 	 */
-	enum class NAPAPI EKeyCode : int
+	enum class EKeyCode : int
 	{
 		KEY_UNKNOWN = -1,
 		KEY_RETURN,

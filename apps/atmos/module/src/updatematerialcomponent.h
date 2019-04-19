@@ -77,7 +77,7 @@ namespace nap
 		float			mPremultValue		= { 0.0f };
 		glm::vec2		mTextureSpeed		= { 0.0f, 0.0f };
 		glm::vec2		mVideoTexureSpeed	= { 0.0f, 0.0f };
-		float			mVideoMaskValue		= 1.0f;
+		float			mVideoMaskValue		= 0.0f;
 		float			mVideoContrastValue = 1.0f;
 		RGBColorFloat	mMaskColor			= { 0.0f, 0.0f, 0.0f };
 

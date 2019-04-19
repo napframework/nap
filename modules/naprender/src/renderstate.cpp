@@ -18,7 +18,6 @@ namespace nap
 
 
 	// Switches all render states as set in @targetRenderState. Only the renderStates that are different
-	// will actually cause openGL calls.
 	void RenderState::update(const RenderState& targetRenderState)
 	{
 		if (targetRenderState.mEnableMultiSampling != mEnableMultiSampling)

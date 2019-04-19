@@ -8,11 +8,6 @@
 namespace opengl
 {
 	/**
-	 *	Typedef for SDL_Event
-	 */
-	using Event = SDL_Event;
-
-	/**
 	 * Turn window v-sync on / off
 	 */
 	void enableVSync(bool value);
@@ -140,6 +135,13 @@ namespace opengl
 	 */
 	void setWindowSize(SDL_Window* window, const glm::ivec2& size);
 
+    /**
+     * Returns the actual size in pixels of a window, which can be different from the represented window size
+     * This is the case with High DPI screens on OSX
+     * @return the actual size in pixels of a window
+     */
+    glm::ivec2 getDrawableWindowSize(SDL_Window* window);
+    
 	/**
 	 * returns the OpenGL window position as pixel coordinates
 	 * @param window the window to get the position for
@@ -168,13 +170,6 @@ namespace opengl
 	 * Prints the last SDL error to screen
 	 */
 	void printSDLError();
-
-	/**
-	 * Polls SDL for an event
-	 * @param event the event that was generated
-	 * @return if an event has been generated
-	 */
-	bool pollEvent(opengl::Event& inputEvent);
 
 	/**
 	 * Returns an SDL window based on the given ID

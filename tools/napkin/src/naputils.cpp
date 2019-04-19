@@ -126,41 +126,31 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 
 nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const rttr::type& typeConstraint)
 {
-	FlatObjectModel model(typeConstraint);
-	nap::qt::FilterPopup dialog(parent, model);
+	const auto& objects = AppContext::get().getDocument()->getObjects();
+	QStringList ids;
+	for (auto& obj : objects)
+		if (obj->get_type().is_derived_from(typeConstraint))
+			ids << QString::fromStdString(obj->mID);
 
-	dialog.exec(QCursor::pos());
-	if (!dialog.wasAccepted())
+	auto selectedID = nap::qt::FilterPopup::show(parent, ids).toStdString();
+	if (selectedID.empty())
 		return nullptr;
 
-	auto item = dynamic_cast<ObjectItem*>(dialog.getSelectedItem());
-	if (item != nullptr)
-		return item->getObject();
+	auto it = std::find_if(objects.begin(), objects.end(), [selectedID](auto& a) { return a->mID == selectedID; });
+	if (it == objects.end())
+		return nullptr;
 
-	return nullptr;
+	return (*it).get();
 }
 
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
 {
-	QStandardItemModel model;
-
+	QStringList names;
 	for (const auto& t : getTypes(predicate))
-	{
-		auto typeName = QString::fromUtf8(t.get_name().data());
-		model.appendRow(new QStandardItem(typeName));
-	}
+		names << QString::fromStdString(std::string(t.get_name().data()));
 
-	nap::qt::FilterPopup dialog(parent, model);
-	dialog.exec(QCursor::pos());
-
-	if (!dialog.wasAccepted())
-		return rttr::type::empty();
-
-	auto selected_item = dialog.getSelectedItem();
-	if (selected_item == nullptr)
-		return rttr::type::empty();
-
-	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
+	auto selectedName = nap::qt::FilterPopup::show(parent, names).toStdString();
+	return nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
 }
 
 

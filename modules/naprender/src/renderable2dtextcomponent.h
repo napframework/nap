@@ -9,6 +9,7 @@
 namespace nap
 {
 	class Renderable2DTextComponentInstance;
+	class RenderService;
 
 	/**
 	 * Draws text to screen in screen space (pixel) coordinates.
@@ -59,7 +60,7 @@ namespace nap
 		* When using this function the orientation of the text is taken into account.
 		* @param target render target that defines the screen space bounds
 		*/
-		void draw(const opengl::BackbufferRenderTarget& target);
+		void draw(opengl::RenderTarget& target);
 
 		/**
 		 * @return current text draw orientation
@@ -133,6 +134,7 @@ namespace nap
 		 */
 		void computeTextModelMatrix(glm::mat4x4& outMatrix);
 
-		glm::ivec2 mLocation = { 0,0 };		///< Text location in pixel coordinates
+		glm::ivec2		mLocation = { 0,0 };		///< Text location in pixel coordinates
+		RenderService*	mService = nullptr;			///< Render service
 	};
 }
