@@ -7,7 +7,6 @@
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
 #include <sceneservice.h>
-#include <renderservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherDreamService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -57,7 +56,6 @@ namespace nap
 	void EtherDreamService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 		dependencies.emplace_back(RTTI_OF(SceneService));
-		dependencies.emplace_back(RTTI_OF(RenderService));
 	}
 
 

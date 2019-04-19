@@ -3,24 +3,27 @@
 #include <nap/logger.h>
 #include <chrono>
 #include <thread>
-#include <utility/datetimeutils.h>
+#include <nap/timer.h>
 
 RTTI_BEGIN_CLASS(nap::EtherDreamDac)
 	RTTI_PROPERTY("DacName",		&nap::EtherDreamDac::mDacName,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PointRate",		&nap::EtherDreamDac::mPointRate,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("AllowFailure",	&nap::EtherDreamDac::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowFailure",	&nap::EtherDreamDac::mAllowFailure,	    nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	EtherDreamDac::EtherDreamDac(EtherDreamService& service) : mService(&service)
+	EtherDreamDac::EtherDreamDac(EtherDreamService& service)
+		: mService(&service), mConnected(false), mStatus(EtherDreamInterface::EStatus::ERROR)
 	{
 	}
+
 
 	EtherDreamDac::~EtherDreamDac()
 	{
 		stop();
 	}
+
 
 	void EtherDreamDac::stop()
 	{
@@ -92,14 +95,14 @@ namespace nap
 		mIsRunning = true;
 
 		// Timer is used for checking heart-beat
-		utility::SystemTimer timer;
+		SystemTimer timer;
 		timer.start();
 
 		std::vector<EtherDreamPoint> mPointsToWrite;
 		while (!mStopWriting)
 		{
-			nap::EtherDreamInterface::EStatus write_status = getWriteStatus();
-			switch (write_status)
+			mStatus = getWriteStatus();
+			switch (mStatus)
 			{
 				case EtherDreamInterface::EStatus::ERROR:
 				{
@@ -168,6 +171,12 @@ namespace nap
 	bool EtherDreamDac::isConnected() const
 	{
 		return mConnected;
+	}
+
+
+	nap::EtherDreamInterface::EStatus EtherDreamDac::getStatus() const
+	{
+		return mStatus;
 	}
 
 

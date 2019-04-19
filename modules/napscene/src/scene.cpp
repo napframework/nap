@@ -200,8 +200,14 @@ namespace nap
 					// Find all child entities matching the ID
 					std::vector<EntityInstance*> matching_children;
 					for (EntityInstance* entity_instance : current_entity->getChildren())
+					{
+						// If there is no resource associated with the entity the entity is considered to be invalid
+						assert(entity_instance->getEntity() != nullptr);
+
+						// Otherwise check
 						if (entity_instance->getEntity()->mID == element_parts[0])
 							matching_children.push_back(entity_instance);
+					}
 
 					// There must be at least one match
 					if (!errorState.check(matching_children.size() != 0, "Error resolving entity path %s: child with ID '%s' not found in entity with ID '%s'", targetEntityInstancePath.c_str(), element_parts[0].c_str(), current_entity->getEntity()->mID.c_str()))
@@ -454,26 +460,29 @@ namespace nap
 		mCore(&core)
 	{
 		mCore->getService<SceneService>()->registerScene(*this);
-
-		mRootEntity = std::make_unique<EntityInstance>(*mCore, nullptr);
+		mRootEntityResource = std::make_unique<Entity>();
+		mRootEntityResource->mID = "RootEntity";
+		mRootEntityInstance = std::make_unique<EntityInstance>(*mCore, mRootEntityResource.get());
 	}
 
 
 	Scene::~Scene()
 	{
 		mCore->getService<SceneService>()->unregisterScene(*this);
+		mRootEntityInstance.reset(nullptr);
+		mRootEntityResource.reset(nullptr);
 	}
 
 
 	void Scene::update(double deltaTime)
 	{
-		mRootEntity->update(deltaTime);
+		mRootEntityInstance->update(deltaTime);
 	}
 
 
 	void Scene::updateTransforms(double deltaTime)
 	{
-		sUpdateTransformsRecursive(*mRootEntity, false, glm::mat4(1.0f));
+		sUpdateTransformsRecursive(*mRootEntityInstance, false, glm::mat4(1.0f));
 	}
 
 
@@ -611,25 +620,26 @@ namespace nap
 				return false;
 		}
 
+		// Start with an empty root and add all entities without a parent to the root
+		if (clearChildren)
+			mRootEntityInstance->clearChildren();
+
+		// Now set the root entity as the parent of all parent entities in the scene
+		for (auto& kvp : entityCreationParams.mEntityInstancesByID)
+		{
+			if (kvp.second->getParent() == nullptr)
+			{
+				spawnedRootEntityInstances.emplace_back(kvp.second.get());
+				mRootEntityInstance->addChild(*kvp.second);
+			}
+		}
+
 		// After all entity hierarchies and their components are created, the component & entity pointers are resolved and then initted in the correct order.
 		if (!errorState.check(SceneInstantiation::sResolveInstancePointers(entityCreationParams, errorState), "Unable to resolve pointers in components"))
 			return false;
 
 		if (!errorState.check(SceneInstantiation::sInitComponents(entityCreationParams, errorState), "Unable to init components!"))
 			return false;
-
-		// Start with an empty root and add all entities without a parent to the root
-		if (clearChildren)
-			mRootEntity->clearChildren();
-
-		for (auto& kvp : entityCreationParams.mEntityInstancesByID)
-		{
-			if (kvp.second->getParent() == nullptr)
-			{
-				spawnedRootEntityInstances.push_back(kvp.second.get());
-				mRootEntity->addChild(*kvp.second);
-			}
-		}
 
 		// In realtime editing scenarios, clients may have pointers to Entity & Component Instances that will have been respawned.
 		// We need to patch all ObjectPtrs to those instances here so that clients don't have to deal with it themselves.
@@ -693,7 +703,7 @@ namespace nap
 		sGetInstancesToDestroyRecursive(*entity, all_instances);
 
 		// First remove the entity from the root
-		mRootEntity->removeChild(*entity);
+		mRootEntityInstance->removeChild(*entity);
 
 		// Note: we simply move all entity instances that need to be deleted into this vector. 
 		// Since they're stored through unique_ptrs, the entities will be deleted once the vector goes out of scope.

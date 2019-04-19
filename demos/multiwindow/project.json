@@ -1,8 +1,9 @@
 {
     "title": "MultiWindow",
-    "version": "0.2.0",
+    "version": "0.2.3",
     "modules": [
         "mod_napapp",
-        "mod_napcameracontrol"
+        "mod_napcameracontrol",
+        "mod_napimgui"
     ]        
 }

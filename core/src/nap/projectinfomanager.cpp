@@ -8,7 +8,6 @@
 #include <fstream>
 #include <nap/core.h>
 
-
 namespace nap
 {	
 	int getLine(const std::string& json, size_t offset)
@@ -76,31 +75,24 @@ namespace nap
 		return true;
 	}
 	
-	bool loadProjectInfoFromJSON(const Core& core, ProjectInfo& result, utility::ErrorState& errorState)
-	{
-		std::string projectInfoToRead;
-		if (!errorState.check(core.findProjectFilePath(PROJECT_INFO_FILENAME, projectInfoToRead), "Couldn't find project.json beside binary or in project folder"))
-			return false;
-		
-		// Open the file
-		std::ifstream in(projectInfoToRead, std::ios::in | std::ios::binary);
-		if (!errorState.check(in.good(), "Unable to open file %s", PROJECT_INFO_FILENAME))
-			return false;
-		
-		// Create buffer of appropriate size
-		in.seekg(0, std::ios::end);
-		size_t len = in.tellg();
-		std::string buffer;
-		buffer.resize(len);
-		
-		// Read all data
-		in.seekg(0, std::ios::beg);
-		in.read(&buffer[0], len);
-		in.close();
-		
-		if (!deserializeProjectInfoJSON(buffer, result, errorState))
-			return false;
-		
-		return true;
-	}
+    bool loadProjectInfoFromStream(const Core &core, ProjectInfo &result, utility::ErrorState &errorState,
+                         		   std::istream &in) 
+    {
+
+        if (!errorState.check(in.good(), "Input in is not good"))
+            return false;
+
+        // Create buffer of appropriate size
+        in.seekg(0, std::ios::end);
+        size_t len = in.tellg();
+        std::string buffer;
+        buffer.resize(len);
+
+        // Read all data
+        in.seekg(0, std::ios::beg);
+        in.read(&buffer[0], len);
+
+        return deserializeProjectInfoJSON(buffer, result, errorState);
+
+    }
 }

@@ -39,6 +39,18 @@ namespace nap
 		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
 		return true;
 	}
+    
+    
+    int RenderWindow::getHeightPixels() const
+    {
+        return mWindow->getBackbuffer().getSize().y;
+    }
+    
+    
+    int RenderWindow::getWidthPixels() const
+    {
+        return mWindow->getBackbuffer().getSize().x;
+    }
 
 
 	void RenderWindow::show()

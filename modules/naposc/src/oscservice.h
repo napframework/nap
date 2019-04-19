@@ -5,7 +5,7 @@
 // External Includes
 #include <nap/service.h>
 #include <entity.h>
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 
 namespace nap
 {

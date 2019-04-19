@@ -325,6 +325,12 @@ namespace nap
 	}
 
 
+	void RenderService::pushRenderState()
+	{
+		updateRenderState();
+	}
+
+	
 	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource)
 	{ 
 		if (resource != nullptr)

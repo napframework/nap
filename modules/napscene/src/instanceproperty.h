@@ -169,4 +169,5 @@ namespace nap
 	using IVec2InstancePropertyValue	= TypedInstancePropertyValue<glm::ivec2>;
 	using IVec3InstancePropertyValue	= TypedInstancePropertyValue<glm::ivec3>;
 	using QuatInstancePropertyValue		= TypedInstancePropertyValue<glm::quat>;
+	using StringInstancePropertyValue	= TypedInstancePropertyValue<std::string>;
 }

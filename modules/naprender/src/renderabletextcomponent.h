@@ -3,8 +3,6 @@
 // Local Includes
 #include "rendercomponent.h"
 #include "material.h"
-#include "renderglobals.h"
-#include "transformcomponent.h"
 #include "renderableglyph.h"
 
 // External Includes
@@ -12,6 +10,7 @@
 #include <planemesh.h>
 #include <renderablemesh.h>
 #include <nbackbufferrendertarget.h>
+#include <transformcomponent.h>
 
 namespace nap
 {
@@ -29,7 +28,7 @@ namespace nap
 		ResourcePtr<Font> mFont;								///< Property: 'Font' that represents the style of the text
 		std::string mText;										///< Property: 'Text' to draw
 		MaterialInstanceResource mMaterialInstanceResource;		///< Property: 'MaterialInstance' the material used to shade the text
-		std::string mGlyphUniform = glyphUniform;				///< Property: 'GlyphUniform' name of the 2D texture character binding in the shader
+		std::string mGlyphUniform = "glyph";					///< Property: 'GlyphUniform' name of the 2D texture character binding in the shader, defaults to 'glyph'
 	};
 
 
@@ -117,7 +116,7 @@ namespace nap
 		std::string mText = "";											///< Text to render
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
-		std::string mGlyphUniform = glyphUniform;						///< Name of the 2D texture character binding in the shader
+		std::string mGlyphUniform = "glyph";							///< Name of the 2D texture character binding in the shader
 		TransformComponentInstance* mTransform = nullptr;				///< Transform used to position text
 		RenderableMesh mRenderableMesh;									///< Valid Plane / Material combination
 		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;			///< Handle to the plane vertices

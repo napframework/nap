@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <ctime>
+#include <utility/stringutils.h>
 
 // Specialization of lerping
 namespace nap
@@ -239,6 +240,16 @@ namespace nap
 		glm::vec3 worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix)
 		{
 			return inverse(objectToWorldMatrix) * glm::vec4(point, 1.0f);
+		}
+
+		std::string generateUUID()
+		{
+			setRandomSeed(rand());
+			return utility::stringFormat("%06d-%06d-%06d-%06d",
+				math::random<int>(0, 100000),
+				math::random<int>(0, 100000),
+				math::random<int>(0, 100000),
+				math::random<int>(0, 100000));
 		}
 
 		template<>

@@ -27,9 +27,4 @@ namespace nap
 	 * GLM Identity Matrix
 	 */
 	NAPAPI extern const glm::mat4x4 identityMatrix;
-
-	/**
-	 * GLSL uniform attribute name for a glyph texture
-	 */
-	NAPAPI extern const std::string glyphUniform;
 }

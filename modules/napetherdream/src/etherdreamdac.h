@@ -5,6 +5,7 @@
 #include <rtti/factory.h>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 // Local Includes
 #include "etherdreaminterface.h"
@@ -55,6 +56,16 @@ namespace nap
 		 */
 		void setPoints(std::vector<EtherDreamPoint>& points);
 		
+		/**
+		 * @return if the DAC is connected
+		 */
+		bool isConnected() const;
+
+		/**
+		 * @return last read / write status	
+		 */
+		EtherDreamInterface::EStatus getStatus() const;
+
 		std::string	mDacName;				///< Property: 'DacName' Unique name of the DAC, used for finding the device on the network
 		int	mPointRate = 30000;				///< Property: 'PointRate' The amount of points per second the connected laser is allowed to draw (property)
 		bool mAllowFailure = true;			///< Property: 'AllowFailure' Allows initialization to succeed when the DAC can't be found on the network or can't be connected to
@@ -71,7 +82,6 @@ namespace nap
 		std::thread						mWriteThread;
 		bool							mStopWriting = false;
 		std::vector<EtherDreamPoint>	mPoints;
-		bool							mConnected = false;
 
 		// Thread that writes frame to laser when available
 		void							writeThread();
@@ -89,19 +99,24 @@ namespace nap
 		bool writeFrame(EtherDreamPoint* data, uint npoints);
 
 		/**
-		*	@return if the DAC is connected
-		*/
-		bool isConnected() const;
-
-		/**
 		* @return current DAC read / write status
 		*/
 		EtherDreamInterface::EStatus getWriteStatus() const;
 
 		/**
-		 *	If the etherdream is running and pumping out frames
+		 * If the etherdream dac is connected	
+		 */
+		std::atomic<bool> mConnected;
+
+		/**
+		 * If the etherdream is running and pumping out frames
 		 */
 		bool mIsRunning = false;
+
+		/**
+		 * Last available DAC communication state	
+		 */
+		std::atomic<EtherDreamInterface::EStatus> mStatus;
 	};
 
 	using DacObjectCreator = rtti::ObjectCreator<EtherDreamDac, EtherDreamService>;

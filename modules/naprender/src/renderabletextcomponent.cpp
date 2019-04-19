@@ -1,5 +1,6 @@
 // Local Includes
 #include "renderabletextcomponent.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <entity.h>
@@ -177,9 +178,6 @@ namespace nap
 
 		// GPU mesh representation of plane
 		opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
-
-		// Get vertex position buffer handle on GPU
-		opengl::VertexAttributeBuffer& pos_gpu_buffer = gpu_mesh.getVertexAttributeBuffer(VertexAttributeIDs::getPositionName());
 
 		// Lines / Fill etc.
 		GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());

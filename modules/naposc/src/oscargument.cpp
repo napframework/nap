@@ -200,8 +200,21 @@ namespace nap
 	}
 
 
+	std::string OSCString::toString() const
+	{
+		return mString;
+	}
+
+
 	void OSCString::add(osc::OutboundPacketStream& outPacket) const
 	{
 		outPacket << mString.c_str();
 	}
+
+
+	std::size_t OSCString::size() const
+	{
+		return mString.size();
+	}
+
 }

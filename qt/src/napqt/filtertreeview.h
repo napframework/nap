@@ -19,6 +19,18 @@ namespace nap
 
 	namespace qt
 	{
+
+		/**
+		 * Overridden to expose hidden features.
+		 */
+		class FilterTree_ : public QTreeView
+		{
+		public:
+			FilterTree_(QWidget *parent = nullptr);
+			QRect visualRectFor(const QItemSelection& selection) const;
+
+		};
+
 		/**
 		 * A tree view composing a QTreeView and a filter text field that allows filtering of the tree.
 		 * This widget keeps an internal filter model, so beware when dealing with QModelIndex instances:
@@ -72,16 +84,15 @@ namespace nap
 			void selectAndReveal(QStandardItem* item);
 
 			/**
-			 * Setting this will change the following:
-			 * As long as there are items visible, the top item will be kept selected.
-			 * @param b True if this tree view should behave like a single-selection widget (like a selection dialog).
-			 */
-			void setIsItemSelector(bool b);
-
-			/**
 			 * Force the selection to the top item
 			 */
 			void setTopItemSelected();
+
+			/**
+			 * Set the current row + selection to the row of the specified index
+			 * @param index
+			 */
+			void setSelectedAndCurrent(QModelIndex index);
 
 			/**
 			 * @return The first currently selected item.

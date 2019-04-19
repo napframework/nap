@@ -50,7 +50,7 @@ namespace nap
 	 */
 	class NAPAPI RenderableCopyMeshComponentInstance : public RenderableComponentInstance
 	{
-		RTTI_ENABLE(ComponentInstance)
+		RTTI_ENABLE(RenderableComponentInstance)
 	public:
 		RenderableCopyMeshComponentInstance(EntityInstance& entity, Component& resource) :
 			RenderableComponentInstance(entity, resource)									{ }

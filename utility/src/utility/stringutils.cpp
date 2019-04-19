@@ -193,8 +193,6 @@ namespace nap
 			}
 			return outString;
 		}
-
-
 	}
 
 }

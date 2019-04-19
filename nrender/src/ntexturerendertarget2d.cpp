@@ -20,7 +20,6 @@ namespace opengl
 	bool TextureRenderTarget2D::init(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture, nap::utility::ErrorState& errorState)
 	{
 		assert (!isAllocated());
-		
 		mColorTexture = &colorTexture;
 		mDepthTexture = &depthTexture;
 
@@ -28,16 +27,49 @@ namespace opengl
 		glGenFramebuffers(1, &mFbo);
 		glAssert();
 
-		bind();
-
 		// Attach color texture
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mColorTexture->getTargetType(), mColorTexture->getTextureId(), 0);
-		glAssert();
+		if (!attachTexture(GL_COLOR_ATTACHMENT0, *mColorTexture, errorState))
+			return false;
 
 		// Attach depth texture
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, mDepthTexture->getTargetType(), mDepthTexture->getTextureId(), 0);
-		glAssert();
+		if (!attachTexture(GL_DEPTH_ATTACHMENT, *mDepthTexture, errorState))
+			return false;
 
+		return true;
+	}
+
+
+	const glm::ivec2 TextureRenderTarget2D::getSize() const
+	{
+		return glm::ivec2(mColorTexture->getSettings().mWidth, mColorTexture->getSettings().mHeight);
+	}
+
+
+	bool TextureRenderTarget2D::switchColorTexture(opengl::Texture2D& colorTexture, nap::utility::ErrorState& error)
+	{
+		if (attachTexture(GL_COLOR_ATTACHMENT0, colorTexture, error))
+		{
+			mColorTexture = &colorTexture;
+			return true;
+		}
+		return false;
+	}
+
+
+	bool TextureRenderTarget2D::switchDepthTexture(opengl::Texture2D& depthTexture, nap::utility::ErrorState& error)
+	{
+		if (attachTexture(GL_DEPTH_ATTACHMENT, depthTexture, error))
+		{
+			mDepthTexture = &depthTexture;
+			return true;
+		}
+		return false;
+	}
+
+
+	bool TextureRenderTarget2D::validate(nap::utility::ErrorState& errorState)
+	{
+		// Check status
 		bool valid = false;
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		switch (status)
@@ -73,21 +105,43 @@ namespace opengl
 			errorState.fail("Render target incomplete: unknown error");
 			break;
 		}
-
-		unbind();
-		
 		return valid;
 	}
 
 
-	const glm::ivec2 TextureRenderTarget2D::getSize() const
+	bool TextureRenderTarget2D::attachTexture(GLenum attachment, const opengl::Texture2D& texture, nap::utility::ErrorState& error)
 	{
-		return glm::ivec2(mColorTexture->getSettings().mWidth, mColorTexture->getSettings().mHeight);
+		// Attach and ensure all went well
+		if (!bindTarget())
+		{
+			error.fail("unable to bind render target");
+			return false;
+		}
+
+		// Bind attachment
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, texture.getTargetType(), texture.getTextureId(), 0);
+		glAssert();
+
+		// Unbind and validate
+		bool success = validate(error);
+		unbindTarget();
+		return success;
 	}
 
 
-	// Binds the render target so it can be used by subsequent render calls
-	bool TextureRenderTarget2D::bind()
+	bool TextureRenderTarget2D::unbindTarget()
+	{
+		if (!isAllocated())
+		{
+			printMessage(EGLSLMessageType::Error, "unable to unbind render target, buffer is not allocated");
+			return false;
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		return true;
+	}
+
+
+	bool TextureRenderTarget2D::bindTarget()
 	{
 		if (!isAllocated())
 		{
@@ -95,6 +149,18 @@ namespace opengl
 			return false;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+		return true;
+	}
+
+
+	// Binds the render target so it can be used by subsequent render calls
+	bool TextureRenderTarget2D::bind()
+	{
+		// bind render target
+		if (!bindTarget())
+			return false;
+
+		// Update viewport
 		glViewport(0, 0, mColorTexture->getSettings().mWidth, mColorTexture->getSettings().mHeight);
 		return true;
 	}
@@ -103,25 +169,15 @@ namespace opengl
 	// Unbinds the render target from subsequent render calls
 	bool TextureRenderTarget2D::unbind()
 	{
-		if (!isAllocated())
-		{
-			printMessage(EGLSLMessageType::Error, "unable to unbind render target, buffer is not allocated");
+		if (!unbindTarget())
 			return false;
-		}
-
-		// release and forward
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// Generate mipmaps if the texture filter is set up that way
 		if (isMipMap(mColorTexture->getParameters().minFilter))
-		{
 			mColorTexture->generateMipMaps();
-		}
 
 		if (isMipMap(mDepthTexture->getParameters().minFilter))
-		{
 			mDepthTexture->generateMipMaps();
-		}
 
 		return true;
 	}
