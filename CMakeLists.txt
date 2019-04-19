@@ -120,7 +120,7 @@ add_subdirectory(apps/random)
 add_subdirectory(apps/random/module)
 add_subdirectory(apps/aura)
 add_subdirectory(apps/aura/module)
-add_subdirectory(apps/emography)
+# add_subdirectory(apps/emography)
 add_subdirectory(apps/emography/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
@@ -147,7 +147,7 @@ add_subdirectory(demos/copystamp)
 add_subdirectory(demos/copystamp/module)
 
 # Unit tests
-add_subdirectory(unittests)
+# add_subdirectory(unittests)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
