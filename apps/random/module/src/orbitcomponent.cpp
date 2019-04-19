@@ -3,7 +3,7 @@
 // External Includes
 #include <entity.h>
 #include <mathutils.h>
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 
 // nap::OrbitComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::OrbitComponent)
@@ -90,19 +90,19 @@ namespace nap
 
 	float OrbitComponentInstance::getProgressByTime()
 	{
-		utility::DateTime currentDateTime = utility::getCurrentDateTime();
+		DateTime currentDateTime = getCurrentDateTime();
 		int currentYear = currentDateTime.getYear();
 		int currentMonth = static_cast<int>(currentDateTime.getMonth()) + 1;
 		int currentDay = currentDateTime.getDayInTheMonth();
-		utility::SystemTimeStamp currentTime = currentDateTime.getTimeStamp();
-		utility::SystemTimeStamp startTime = utility::createTimestamp(currentYear, currentMonth, currentDay, mStartHour, 0);
-		utility::SystemTimeStamp endTime = utility::createTimestamp(currentYear, currentMonth, currentDay, mEndHour, 0);
+		SystemTimeStamp currentTime = currentDateTime.getTimeStamp();
+		SystemTimeStamp startTime = createTimestamp(currentYear, currentMonth, currentDay, mStartHour, 0);
+		SystemTimeStamp endTime = createTimestamp(currentYear, currentMonth, currentDay, mEndHour, 0);
 		if (currentTime <= startTime)
 			return 0.0f;
 		if (currentTime >= endTime)
 			return 1.0f;
-		utility::Seconds progress = std::chrono::duration_cast<utility::Seconds>(currentTime - startTime);
-		utility::Seconds range = std::chrono::duration_cast<utility::Seconds>(endTime - startTime);
+		Seconds progress = std::chrono::duration_cast<Seconds>(currentTime - startTime);
+		Seconds range = std::chrono::duration_cast<Seconds>(endTime - startTime);
 		return static_cast<float>(progress.count()) / static_cast<float>(range.count());
 	}
 }

@@ -925,7 +925,7 @@
                     "mID": "PerspCameraComponent",
                     "Properties": {
                         "FieldOfView": 55.0,
-                        "NearClippingPlane": 0.10000000149011612,
+                        "NearClippingPlane": 1.0,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
                             "x": 1,
