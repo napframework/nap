@@ -105,9 +105,7 @@ QVariant napkin::PointerValueItem::data(int role) const
 {
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
-		nap::rtti::Object* pointee = mPath.getPointee();
-
-		if (nullptr != pointee)
+		if (auto pointee = mPath.getPointee())
 			return QString::fromStdString(pointee->mID);
 		else
 			return "NULL";
