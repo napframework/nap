@@ -6,6 +6,7 @@
 #include <napqt/filterpopup.h>
 #include <naputils.h>
 
+#include <QtDebug>
 
 /**
  * @return All currently loaded scenes
@@ -21,18 +22,34 @@ nap::SceneService::SceneSet getScenes()
 
 napkin::SceneModel::SceneModel() : QStandardItemModel()
 {
-    setHorizontalHeaderLabels({"Name"});
+	setHorizontalHeaderLabels({"Name"});
 
-    connect(&AppContext::get(), &AppContext::documentOpened, this, &SceneModel::onFileOpened);
-    connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &SceneModel::onNewFile);
+	connect(&AppContext::get(), &AppContext::documentOpened, this, &SceneModel::onFileOpened);
+	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &SceneModel::onNewFile);
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &SceneModel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectChanged, this, &SceneModel::onObjectChanged);
 }
 
+napkin::RootEntityItem* napkin::SceneModel::rootEntityItem(nap::RootEntity& rootEntity) const
+{
+	for (auto i = 0; i < rowCount(); i++)
+	{
+		auto sceneItem = item(i, 0);
+		for (auto j = 0; j < sceneItem->rowCount(); j++)
+		{
+			auto reItem = dynamic_cast<RootEntityItem*>(sceneItem->child(j, 0));
+			assert(reItem);
+			if (&reItem->rootEntity() == &rootEntity)
+				return reItem;
+		}
+	}
+	return nullptr;
+}
+
 void napkin::SceneModel::refresh()
 {
-    while (rowCount() > 0)
-        removeRow(0);
+	while (rowCount() > 0)
+		removeRow(0);
 
 	for (auto scene : getScenes())
 		appendRow(new SceneItem(*scene));
@@ -59,12 +76,12 @@ void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
 
 void napkin::SceneModel::onNewFile()
 {
-    refresh();
+	refresh();
 }
 
 void napkin::SceneModel::onFileOpened(const QString& filename)
 {
-    refresh();
+	refresh();
 }
 
 napkin::ScenePanel::ScenePanel() : QWidget()
@@ -72,12 +89,14 @@ napkin::ScenePanel::ScenePanel() : QWidget()
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	layout()->addWidget(&mFilterView);
-    mFilterView.setModel(&mModel);
+	mFilterView.setModel(&mModel);
 	mFilterView.setMenuHook(std::bind(&napkin::ScenePanel::menuHook, this, std::placeholders::_1));
 	mFilterView.getTreeView().expandAll();
 
-	connect(mFilterView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ScenePanel::onSelectionChanged);
-	connect(&mModel, &QAbstractItemModel::rowsInserted, [this](const QModelIndex &parent, int first, int last) {
+	connect(mFilterView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
+			&ScenePanel::onSelectionChanged);
+	connect(&mModel, &QAbstractItemModel::rowsInserted, [this](const QModelIndex& parent, int first, int last)
+	{
 		mFilterView.getTreeView().expandAll();
 	});
 
@@ -130,6 +149,17 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 	}
 }
 
+nap::qt::FilterTreeView& napkin::ScenePanel::treeView()
+{
+	return mFilterView;
+}
+
+void napkin::ScenePanel::select(nap::RootEntity* rootEntity, const QString& path)
+{
+	auto item = resolveItem(rootEntity, path);
+	mFilterView.selectAndReveal(item);
+}
+
 void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
 	// Grab selected nap objects
@@ -147,3 +177,57 @@ void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, cons
 
 	selectionChanged(selectedPaths);
 }
+
+napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* rootEntity, const QString& path)
+{
+	EntityInstanceItem* rootEntityItem = mModel.rootEntityItem(*rootEntity);
+	assert(rootEntityItem);
+
+	EntityInstanceItem* currentParent = rootEntityItem;
+
+	auto splitstring = nap::utility::splitString(path.toStdString(), '/');
+	for (int i = 0; i < splitstring.size(); i++)
+	{
+		// entity
+		auto part = splitstring[i];
+		if (part == ".")
+			continue;
+
+		if (i == splitstring.size() - 1)
+		{
+			// component
+			for (int row = 0; row < currentParent->rowCount(); row++)
+			{
+				auto child = dynamic_cast<ComponentInstanceItem*>(currentParent->child(row));
+				if (child->component().mID == part)
+					return child;
+			}
+		}
+		else
+		{
+			std::string name;
+			int index = 0;
+			if (!nameAndIndex(part, name, index))
+				index = 0;
+
+			int foundIndex = 0;
+			for (int row = 0; row < currentParent->rowCount(); row++)
+			{
+				auto child = dynamic_cast<EntityInstanceItem*>(currentParent->child(row));
+				if (!child)
+					continue;
+				if (child->entity().mID == name)
+				{
+					if (foundIndex == index)
+					{
+						currentParent = child;
+						break;
+					}
+					foundIndex++;
+				}
+			}
+		}
+	}
+	return nullptr;
+}
+

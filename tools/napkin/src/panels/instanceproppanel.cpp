@@ -4,12 +4,54 @@
 #include <rtti/object.h>
 #include "naputils.h"
 
+#include <typeconversion.h>
+
 using namespace napkin;
 
 InstPropAttribItem::InstPropAttribItem(nap::TargetAttribute& attrib) : QStandardItem(), mAttrib(attrib)
 {
 	setEditable(false);
-	setText(QString::fromStdString(attrib.mPath));
+
+}
+
+QVariant InstPropAttribItem::data(int role) const
+{
+	if (role == Qt::DisplayRole)
+	{
+		QString path = QString::fromStdString(mAttrib.mPath);
+
+		auto instPropsItem = dynamic_cast<InstancePropsItem*>(parent());
+		assert(instPropsItem);
+		auto compPath = instPropsItem->props().mTargetComponent.getInstancePath();
+
+		PropertyPath propPath(compPath, mAttrib.mPath);
+		QString val;
+		if (propPath.isPointer())
+		{
+			val = QString::fromStdString(propPath.getPointee()->mID);
+		}
+		else
+		{
+			bool ok;
+			val = QString::fromStdString(propPath.getValue().to_string(&ok));
+		}
+
+		return QString("%1 = %2").arg(path, val);
+	}
+
+	return QStandardItem::data(role);
+}
+
+nap::RootEntity* InstPropAttribItem::rootEntity() const
+{
+	auto parentItem = parent();
+	while (parentItem)
+	{
+		if (auto rootEntItem = dynamic_cast<RootEntityPropItem*>(parent()))
+			return &rootEntItem->rootEntity();
+		parentItem = parent();
+	}
+	return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,6 +96,11 @@ QVariant RootEntityPropItem::data(int role) const
 	return QStandardItem::data(role);
 }
 
+nap::RootEntity& RootEntityPropItem::rootEntity() const
+{
+	return mRootEntity;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 InstPropSceneItem::InstPropSceneItem(nap::Scene& scene) : QStandardItem(), mScene(scene)
@@ -85,7 +132,8 @@ InstancePropModel::InstancePropModel()
 void InstancePropModel::onDocumentChanged()
 {
 	auto doc = AppContext::get().getDocument();
-	connect(doc, &Document::objectChanged, [this](nap::rtti::Object* object) {
+	connect(doc, &Document::objectChanged, [this](nap::rtti::Object* object)
+	{
 		if (object->get_type().is_derived_from<nap::Scene>())
 			onSceneChanged();
 	});
@@ -113,11 +161,36 @@ InstancePropPanel::InstancePropPanel()
 	mTreeView.getTreeView().setHeaderHidden(true);
 
 	connect(&mModel, &InstancePropModel::sceneChanged, this, &InstancePropPanel::onModelChanged);
+
+	mTreeView.setMenuHook(std::bind(&InstancePropPanel::menuHook, this, std::placeholders::_1));
+}
+
+void InstancePropPanel::menuHook(QMenu& menu)
+{
+	auto instPropsItem = mTreeView.getSelectedItem<InstancePropsItem>();
+	if (instPropsItem)
+	{
+		menu.addAction("Select Component Instance", this, &InstancePropPanel::onSelectComponentInstance);
+	}
 }
 
 void InstancePropPanel::onModelChanged()
 {
 	mTreeView.getTreeView().expandAll();
 }
+
+void InstancePropPanel::onSelectComponentInstance()
+{
+	auto instPropsItem = mTreeView.getSelectedItem<InstancePropsItem>();
+	auto rootEntityPropItem = dynamic_cast<RootEntityPropItem*>(instPropsItem->parent());
+	assert(rootEntityPropItem);
+	const nap::ComponentInstanceProperties& props = instPropsItem->props();
+
+	auto rootEntity = &rootEntityPropItem->rootEntity();
+	auto path = QString::fromStdString(props.mTargetComponent.toString());
+
+	selectComponentRequested(rootEntity, path);
+}
+
 
 

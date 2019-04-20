@@ -261,6 +261,8 @@ namespace napkin
 		 */
 		int getRealChildEntityIndex() const;
 
+		PPath objectPath() const { return mObjectPath; }
+
 	private:
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
