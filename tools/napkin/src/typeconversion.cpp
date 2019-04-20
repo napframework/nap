@@ -167,6 +167,32 @@ namespace napkin
 		return propValue;
 	}
 
+	rttr::variant getInstancePropertyValue(rttr::type type, nap::InstancePropertyValue& instPropValue)
+	{
+		if (type == rttr::type::get<bool>()) 		return dynamic_cast<nap::TypedInstancePropertyValue<bool>&>(instPropValue).mValue;
+		if (type == rttr::type::get<char>()) 		return dynamic_cast<nap::TypedInstancePropertyValue<char>&>(instPropValue).mValue;
+		if (type == rttr::type::get<int8_t>()) 		return dynamic_cast<nap::TypedInstancePropertyValue<int8_t>&>(instPropValue).mValue;
+		if (type == rttr::type::get<int16_t>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<int16_t>&>(instPropValue).mValue;
+		if (type == rttr::type::get<int32_t>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<int32_t>&>(instPropValue).mValue;
+		if (type == rttr::type::get<int64_t>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<int64_t>&>(instPropValue).mValue;
+		if (type == rttr::type::get<uint8_t>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<uint8_t>&>(instPropValue).mValue;
+		if (type == rttr::type::get<uint16_t>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<uint16_t>&>(instPropValue).mValue;
+		if (type == rttr::type::get<uint32_t>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<uint32_t>&>(instPropValue).mValue;
+		if (type == rttr::type::get<uint64_t>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<uint64_t>&>(instPropValue).mValue;
+		if (type == rttr::type::get<float>()) 		return dynamic_cast<nap::TypedInstancePropertyValue<float>&>(instPropValue).mValue;
+		if (type == rttr::type::get<double>()) 		return dynamic_cast<nap::TypedInstancePropertyValue<double>&>(instPropValue).mValue;
+		if (type == rttr::type::get<glm::vec2>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<glm::vec2>&>(instPropValue).mValue;
+		if (type == rttr::type::get<glm::vec3>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<glm::vec3>&>(instPropValue).mValue;
+		if (type == rttr::type::get<glm::vec4>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<glm::vec4>&>(instPropValue).mValue;
+		if (type == rttr::type::get<glm::ivec2>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<glm::ivec2>&>(instPropValue).mValue;
+		if (type == rttr::type::get<glm::ivec3>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<glm::ivec3>&>(instPropValue).mValue;
+		if (type == rttr::type::get<glm::quat>()) 	return dynamic_cast<nap::TypedInstancePropertyValue<glm::quat>&>(instPropValue).mValue;
+		if (type == rttr::type::get<std::string>()) return dynamic_cast<nap::TypedInstancePropertyValue<std::string>&>(instPropValue).mValue;
+
+		return rttr::detail::get_invalid_type();
+	}
+
+
 	nap::InstancePropertyValue* createInstancePropertyValue(const rttr::type& type, const rttr::variant& value)
 	{
 		if (type == rttr::type::get<bool>()) 		return addInstProp<bool>(value);
