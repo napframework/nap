@@ -318,12 +318,7 @@ Object* PropertyPath::getPointee() const
 	if (!isPointer())
 		return nullptr;
 
-	rttr::variant value;
-	if (isInstanceProperty() && isOverridden())
-		value = getValue();
-	else
-		value = getValue();
-
+	auto value = getValue();
 	auto type = value.get_type();
 	auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : type;
 
@@ -335,22 +330,13 @@ Object* PropertyPath::getPointee() const
 
 void PropertyPath::setPointee(Object* pointee)
 {
-	if (isInstanceProperty())
-	{
-		// Not supported
-		return;
-	}
-	nap::rtti::ResolvedPath resolvedPath = resolve();
-	assert(resolvedPath.isValid());
-
 	// TODO: This is a hack to find ComponentPtr/ObjectPtr/EntityPtr method
 	// Someone just needs to add an 'assign' method in the wrong place and it will break.
 	// Also, ObjectPtr's assign method starts with uppercase A
-	rttr::method assignMethod = nap::rtti::findMethodRecursive(resolvedPath.getType(), "assign");
-	if (assignMethod.is_valid())
+	if (rttr::method assignMethod = nap::rtti::findMethodRecursive(getType(), "assign"))
 	{
 		// Assign the new value to the pointer (note that we're modifying a copy)
-		auto targetVal = resolvedPath.getValue();
+		auto targetVal = getValue();
 
 		auto doc = AppContext::get().getDocument(); // TODO: This needs to go, but we need it to get a relative path.
 		auto path = doc->relativeObjectPath(*getObject(), *pointee);
@@ -358,14 +344,11 @@ void PropertyPath::setPointee(Object* pointee)
 		assignMethod.invoke(targetVal, path, *pointee);
 
 		// Apply the modified value back to the source property
-		bool value_set = resolvedPath.setValue(targetVal);
-		assert(value_set);
+		setValue(targetVal);
 	}
 	else
 	{
-		bool value_set = resolvedPath.setValue(pointee);
-		if (pointee)
-			assert(value_set);
+		setValue(pointee);
 	}
 }
 
