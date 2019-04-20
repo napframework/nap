@@ -15,8 +15,10 @@ namespace napkin
 	{
 	public:
 		explicit InstPropAttribItem(nap::TargetAttribute& attrib);
-
+		QVariant data(int role) const override;
 	private:
+		nap::RootEntity* rootEntity() const;
+
 		nap::TargetAttribute& mAttrib;
 	};
 
@@ -42,7 +44,7 @@ namespace napkin
 	public :
 		explicit RootEntityPropItem(nap::RootEntity& rootEntity);
 		QVariant data(int role) const override;
-
+		nap::RootEntity& rootEntity() const;
 	private:
 		nap::RootEntity& mRootEntity;
 	};
@@ -82,10 +84,16 @@ namespace napkin
 	 */
 	class InstancePropPanel : public QWidget
 	{
+		Q_OBJECT
 	public:
 		InstancePropPanel();
 
+	Q_SIGNALS:
+		void selectComponentRequested(nap::RootEntity* rootEntity, const QString& path);
+
 	private:
+		void menuHook(QMenu& menu);
+		void onSelectComponentInstance();
 		void onModelChanged();
 
 		QVBoxLayout mLayout;

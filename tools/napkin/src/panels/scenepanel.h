@@ -5,11 +5,12 @@
 #include <napqt/filtertreeview.h>
 #include <scene.h>
 #include <propertypath.h>
+#include <standarditemsobject.h>
 
 
 namespace napkin
 {
-
+	class RootEntityItem;
 
     /**
 	 * Provides the view with scene data
@@ -19,6 +20,11 @@ namespace napkin
 		Q_OBJECT
 	public:
 		SceneModel();
+
+		/**
+		 * Find root entity item based on root entity
+		 */
+		RootEntityItem* rootEntityItem(nap::RootEntity& rootEntity) const;
 
 	private:
 		/**
@@ -53,8 +59,6 @@ namespace napkin
 		 * @param filename The name of the file that was opened
 		 */
 		void onFileOpened(const QString& filename);
-
-
 	};
 
 	/**
@@ -71,14 +75,15 @@ namespace napkin
 		 */
 		void menuHook(QMenu& menu);
 
-		nap::qt::FilterTreeView& treeView() { return mFilterView; }
+		nap::qt::FilterTreeView& treeView();
 
+		void select(nap::RootEntity* rootEntity, const QString& path);
 	Q_SIGNALS:
 		void selectionChanged(QList<PropertyPath> obj);
 
 	private:
 		void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
-
+		ComponentInstanceItem* resolveItem(nap::RootEntity* rootEntity, const QString& path);
 
 		QVBoxLayout mLayout;		// Layout
 		nap::qt::FilterTreeView mFilterView; // The tree view
