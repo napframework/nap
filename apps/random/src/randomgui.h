@@ -1,7 +1,5 @@
 #pragma once
 
-#include <color.h>
-
 namespace nap
 {
 	// Forward Declares
@@ -19,11 +17,6 @@ namespace nap
 		RandomGui(RandomApp& app);
 
 		/**
-		 *	Initialize all the gui components
-		 */
-		void init();
-
-		/**
 		 * Update gui components
 		 * @param deltaTime time in between calls in seconds
 		 */
@@ -35,28 +28,20 @@ namespace nap
 		void draw();
 
 	private:
-		/**
-		 *	Shows the controls window
-		 */
-		void showControlWindow();
+		// Show control windows
+		void showContentControls();
+		void showOutputControls();
+		void showSunControls();
+		void showVideoControls();
+		void showStaticControls();
+		void showPartyControls();
+		void showSoundControls();
 
-		/**
-		 *	Shows the information window
-		 */
-		void showInfoWindow();
-
-		// Initialized Variables
-		RGBAColor8	mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };
-		float		mTextureDisplaySize = 0.5f;
-		float		mNoiseSpeed = 0.1f;
-		float		mWindSpeed = 0.1f;
-		float		mWindDirection = 0.0f;
+		// Layout sizes
+		const float guiWindowWidth = 400.0f;
+		const float guiWindowPadding = 7.0f;
 
 		// The app used to extract information from
 		RandomApp&	mApp;
-
-		// Window visibility toggles
-		bool		mShowControls = false;		//< If gui controls are shown
-		bool		mShowInfo = false;			//< If gui info is shown
 	};
 }
