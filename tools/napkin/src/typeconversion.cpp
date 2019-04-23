@@ -161,7 +161,7 @@ namespace napkin
 	nap::TypedInstancePropertyValue<T>* addInstProp(const rttr::variant& value)
 	{
 		auto doc = napkin::AppContext::get().getDocument();
-		std::string name("instnceProp_" + std::string(value.get_type().get_name().data()));
+		std::string name("instanceProp_" + std::string(value.get_type().get_name().data()));
 		auto propValue = doc->addObject<nap::TypedInstancePropertyValue<T>>(nullptr, name, false);
 		propValue->mValue = value.get_value<T>();
 		return propValue;
