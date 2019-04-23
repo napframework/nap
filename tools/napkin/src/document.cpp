@@ -784,6 +784,9 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 			auto proppathstr = propPath.toString();
 			assert(propPath.isPointer());
 
+			if (excludeInstanceProperties && sourceObject->get_type().is_derived_from<nap::Scene>())
+				continue;
+
 			if (excludeArrays && propPath.isArray())
 				continue;
 
