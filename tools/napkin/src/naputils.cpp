@@ -12,6 +12,7 @@
 #include <standarditemsproperty.h>
 #include <standarditemsobject.h>
 #include <panels/finderpanel.h>
+#include <cctype>
 
 #include <napqt/filterpopup.h>
 
@@ -360,7 +361,7 @@ bool napkin::isNumber(const std::string& s)
 	return !s.empty() && std::find_if(s.begin(), s.end(),
 									  [](char c)
 									  {
-										  return !std::isdigit(c);
+										  return !std::isdigit(static_cast<unsigned char>(c));
 									  }) == s.end();
 }
 
