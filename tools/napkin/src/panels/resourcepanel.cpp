@@ -62,7 +62,6 @@ ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 
 	if (ob.get_type().is_derived_from<nap::Entity>())
 	{
-		nap::Logger::info("Entity: %s", ob.mID.c_str());
 		auto entityItem = new EntityItem(*rtti_cast<nap::Entity>(&ob));
 		mEntitiesItem.appendRow({entityItem, typeItem});
 
