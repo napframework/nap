@@ -102,9 +102,9 @@ nap::ComponentInstanceProperties* PropertyPath::instanceProps() const
 	for (nap::ComponentInstanceProperties& instProp : rootEntity->mInstanceProperties)
 	{
 		if (isComponentInstancePathEqual(*rootEntity,
-												 *instProp.mTargetComponent.get(),
-												 instProp.mTargetComponent.getInstancePath(),
-												 compInstPath))
+										 *instProp.mTargetComponent.get(),
+										 instProp.mTargetComponent.getInstancePath(),
+										 compInstPath))
 			return &instProp;
 	}
 	return nullptr;
@@ -239,9 +239,14 @@ rttr::variant PropertyPath::getValue() const
 		{
 			if (isPointer())
 			{
-				return dynamic_cast<nap::PointerInstancePropertyValue&>(*targetAttr->mValue.get()).mValue;
+				auto ptrInstPropValue = dynamic_cast<nap::PointerInstancePropertyValue*>(targetAttr->mValue.get());
+				if (ptrInstPropValue)
+					return ptrInstPropValue->mValue;
 			}
-			return getInstancePropertyValue(getType(), *targetAttr->mValue.get());
+			else
+			{
+				return getInstancePropertyValue(getType(), *targetAttr->mValue.get());
+			}
 		}
 	}
 	return resolve().getValue();
@@ -257,7 +262,7 @@ void PropertyPath::setValue(rttr::variant value)
 		if (targetAttr)
 		{
 			rttr::variant val = targetAttr->mValue.get();
-			
+
 			// discard instance property value if the provided value is the same as the original
 			if (resolve().getValue() == value)
 			{
@@ -269,7 +274,14 @@ void PropertyPath::setValue(rttr::variant value)
 				if (isPointer())
 				{
 					auto propValue = val.get_value<nap::PointerInstancePropertyValue*>();
+					if (!propValue)
+					{
+						std::string name("instanceProp_" + std::string(value.get_type().get_name().data()));
+						propValue = new nap::PointerInstancePropertyValue();
+						propValue->mID = name;
+					}
 					propValue->mValue = value.get_value<nap::rtti::Object*>();
+					targetAttr->mValue = propValue;
 				}
 				else
 				{
@@ -281,7 +293,18 @@ void PropertyPath::setValue(rttr::variant value)
 		else
 		{
 			targetAttr = &getOrCreateTargetAttribute();
-			targetAttr->mValue = createInstancePropertyValue(getType(), value);
+			if (isPointer())
+			{
+				std::string name("instanceProp_" + std::string(value.get_type().get_name().data()));
+				auto propValue = new nap::PointerInstancePropertyValue();
+				propValue->mID = name;
+				propValue->mValue = value.get_value<nap::rtti::Object*>();
+				targetAttr->mValue = propValue;
+			}
+			else
+			{
+				targetAttr->mValue = createInstancePropertyValue(getType(), value);
+			}
 		}
 		return;
 	}
@@ -299,15 +322,15 @@ void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, r
 
 	// remove attributes list if necessary
 	if (attrs.empty())
-				{
-					auto component = instProps->mTargetComponent.get();
-					auto flt = [&](const nap::ComponentInstanceProperties& instProp) { return &instProp == instProps; };
-					auto& rootInstProps = this->getRootEntity()->mInstanceProperties;
-					rootInstProps.erase(std::remove_if(rootInstProps.begin(), rootInstProps.end(), flt),
-										rootInstProps.end());
+	{
+		auto component = instProps->mTargetComponent.get();
+		auto flt = [&](const nap::ComponentInstanceProperties& instProp) { return &instProp == instProps; };
+		auto& rootInstProps = this->getRootEntity()->mInstanceProperties;
+		rootInstProps.erase(std::remove_if(rootInstProps.begin(), rootInstProps.end(), flt),
+							rootInstProps.end());
 
-					this->document()->objectChanged(component);
-				}
+		this->document()->objectChanged(component);
+	}
 
 	// Remove from object list
 	removeInstancePropertyValue(val, this->getType());
