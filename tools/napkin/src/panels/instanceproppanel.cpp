@@ -68,9 +68,8 @@ QVariant InstancePropsItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole)
 	{
-		auto bgcol = Qt::white;
-		auto fgcol = QStandardItem::data(role).value<QColor>();
-		return QVariant::fromValue<QColor>(nap::qt::lerpCol(bgcol, fgcol, 0.5));
+		auto& themeMgr = AppContext::get().getThemeManager();
+		return QVariant::fromValue<QColor>(themeMgr.getColor(sThemeCol_dimmedItem));
 	}
 	return QStandardItem::data(role);
 }
@@ -89,9 +88,8 @@ QVariant RootEntityPropItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole)
 	{
-		auto bgcol = Qt::white;
-		auto fgcol = QStandardItem::data(role).value<QColor>();
-		return QVariant::fromValue<QColor>(nap::qt::lerpCol(bgcol, fgcol, 0.5));
+		auto& themeMgr = AppContext::get().getThemeManager();
+		return QVariant::fromValue<QColor>(themeMgr.getColor(sThemeCol_dimmedItem));
 	}
 	return QStandardItem::data(role);
 }
@@ -115,9 +113,8 @@ QVariant InstPropSceneItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole)
 	{
-		auto bgcol = Qt::white;
-		auto fgcol = QStandardItem::data(role).value<QColor>();
-		return QVariant::fromValue<QColor>(nap::qt::lerpCol(bgcol, fgcol, 0.5));
+		auto& themeMgr = AppContext::get().getThemeManager();
+		return QVariant::fromValue<QColor>(themeMgr.getColor(sThemeCol_dimmedItem));
 	}
 	return QStandardItem::data(role);
 }

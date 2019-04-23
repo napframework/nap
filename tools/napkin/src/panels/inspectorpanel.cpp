@@ -288,10 +288,11 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 							   dynamic_cast<PropertyValueItem*>(valueItem);
 			if (isValueItem && valueItem->getPath().isInstanceProperty())
 			{
+				auto& themeManager = AppContext::get().getThemeManager();
 				if (valueItem->getPath().isOverridden())
-					return QVariant::fromValue<QColor>(QColor(Qt::yellow).lighter());
+					return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_overriddenInstanceProperty));
 
-				return QVariant::fromValue<QColor>(QColor(Qt::gray).lighter());
+				return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_instanceProperty));
 			}
 		}
 	}
