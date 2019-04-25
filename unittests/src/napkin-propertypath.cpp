@@ -17,7 +17,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 	res->mID = "MyResource";
 
 	// Add a pointer to array of pointers
-	doc->arrayAddExistingObject(PropertyPath(*res), resB);
+	doc->arrayAddExistingObject({res->mID, "ResPointers"}, resB);
 
 	SECTION("general")
 	{
@@ -26,7 +26,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 		REQUIRE(nameProp.getObject() == entity);
 		REQUIRE(nameProp.isValid());
 		std::string newName = "NewName";
-		nameProp.setValue(newName);
+		doc->setObjectName(*entity, newName);
 		REQUIRE(nameProp.getValue() == newName);
 		REQUIRE(entity->mID == newName);
 
@@ -248,7 +248,8 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 {
 	RUN_Q_APPLICATION
 
-	TestResourceB res;
+	auto& doc = *AppContext::get().getDocument();
+	auto& res = *doc.addObject<TestResourceB>();
 	res.mID = "TestResource";
 
 	{
@@ -262,12 +263,12 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 	}
 
 	{
-		TestResource subRes;
+		auto& subRes = *doc.addObject<TestResource>();
 		subRes.mID = "SubRes";
 		res.mResPointer = &subRes;
 		REQUIRE(res.mResPointer != nullptr);
 
-		TestResourceB embedRes;
+		auto& embedRes = *doc.addObject<TestResourceB>();
 		embedRes.mID = "EmbedRes";
 		res.mEmbedPointer = &embedRes;
 		REQUIRE(res.mEmbedPointer != nullptr);

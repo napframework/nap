@@ -73,6 +73,8 @@ namespace napkin
 		 */
 		PropertyPath(nap::rtti::Object& obj, rttr::property prop);
 
+		~PropertyPath();
+
 		/**
 		 * @return The last part of the property name (not including the path)
 		 */
@@ -261,7 +263,7 @@ namespace napkin
 		 */
 		int getRealChildEntityIndex() const;
 
-		PPath objectPath() const { return mObjectPath; }
+		void updateObjectName(const std::string& oldName, const std::string& newName);
 
 	private:
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;

@@ -77,6 +77,8 @@ TEST_CASE("Commands", "napkin-commands")
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity1->mID == "Loco");
 
+	assert(nameProp1.getObject());
+
 	// Name may not be empty, should have been reverted to previous value
 	ctx.executeCommand(new SetValueCommand(nameProp1, ""));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);

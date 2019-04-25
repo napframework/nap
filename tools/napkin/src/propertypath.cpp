@@ -28,6 +28,7 @@ std::string NameIndex::toString() const
 PropertyPath::PropertyPath(Object& obj)
 {
 	mObjectPath.emplace_back(obj.mID);
+	document()->registerPath(*this);
 }
 
 PropertyPath::PropertyPath(const std::string& abspath)
@@ -41,6 +42,7 @@ PropertyPath::PropertyPath(const std::string& abspath)
 		for (auto propElm : nap::utility::splitString(pathParts[1], '/'))
 			mPropertyPath.emplace_back(propElm);
 
+	document()->registerPath(*this);
 }
 
 PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppath)
@@ -51,17 +53,21 @@ PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppa
 
 	for (const auto& propElm : nap::utility::splitString(proppath, '/'))
 		mPropertyPath.emplace_back(propElm);
+
+	document()->registerPath(*this);
 }
 
 
 PropertyPath::PropertyPath(const PPath& abspath)
 		: mObjectPath(abspath)
 {
+	document()->registerPath(*this);
 }
 
 PropertyPath::PropertyPath(const PPath& absPath, const PPath& propPath)
 		: mObjectPath(absPath), mPropertyPath(propPath)
 {
+	document()->registerPath(*this);
 }
 
 
@@ -70,6 +76,8 @@ PropertyPath::PropertyPath(Object& obj, const Path& path)
 	auto id = obj.mID;
 	mObjectPath.emplace_back(NameIndex(id));
 	mPropertyPath.emplace_back(path.toString());
+
+	document()->registerPath(*this);
 }
 
 
@@ -77,6 +85,13 @@ PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
 {
 	mObjectPath.emplace_back(obj.mID);
 	mPropertyPath.emplace_back(std::string(prop.get_name().data()));
+
+	document()->registerPath(*this);
+}
+
+PropertyPath::~PropertyPath()
+{
+	document()->deregisterPath(*this);
 }
 
 const std::string PropertyPath::getName() const
@@ -249,6 +264,7 @@ rttr::variant PropertyPath::getValue() const
 			}
 		}
 	}
+
 	return resolve().getValue();
 }
 
@@ -361,7 +377,7 @@ void PropertyPath::setPointee(Object* pointee)
 		// Assign the new value to the pointer (note that we're modifying a copy)
 		auto targetVal = getValue();
 
-		auto doc = AppContext::get().getDocument(); // TODO: This needs to go, but we need it to get a relative path.
+		auto doc = document();
 		auto path = doc->relativeObjectPath(*getObject(), *pointee);
 
 		assignMethod.invoke(targetVal, path, *pointee);
@@ -484,7 +500,7 @@ nap::rtti::Object* PropertyPath::getObject() const
 	if (mObjectPath.empty())
 		return nullptr;
 
-	return AppContext::get().getDocument()->getObject(mObjectPath.back().mID);
+	return document()->getObject(mObjectPath.back().mID);
 }
 
 Path PropertyPath::getPath() const
@@ -778,5 +794,14 @@ std::string PropertyPath::propPathStr() const
 	for (const auto& elm : mPropertyPath)
 		elements.emplace_back(elm);
 	return nap::utility::joinString(elements, "/");
+}
+
+void PropertyPath::updateObjectName(const std::string& oldName, const std::string& newName)
+{
+	for (auto& nameIdx : mObjectPath)
+	{
+		if (nameIdx.mID == oldName)
+			nameIdx.mID = newName;
+	}
 }
 
