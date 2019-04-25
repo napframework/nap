@@ -5,6 +5,7 @@
 #include <limits>
 #include <utility/dllexport.h>
 #include <algorithm>
+#include <string>
 
 namespace nap
 {
@@ -229,6 +230,12 @@ namespace nap
 		 */
 		glm::vec3 NAPAPI worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix);
 
+		/**
+		 * Generates a unique identifier.
+		 * TODO: Implement proper UUID generation, this is temp solution based on a random number generator.
+		 * @return a uuid as string
+		 */
+		std::string NAPAPI generateUUID();
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions

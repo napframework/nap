@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napaudioadvanced)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.h)
@@ -36,7 +41,8 @@ copy_module_json_to_bin()
 # # Package into platform release
 #  if(APPLE)
 #     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
-#     list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
-#     list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
+#     set(MACOS_EXTRA_RPATH_RELEASE "../../../../thirdparty/portaudio/lib")
+#     list(APPEND MACOS_EXTRA_RPATH_RELEASE "../../../../thirdparty/libsndfile/lib")
+#     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 # endif()
 # package_module()

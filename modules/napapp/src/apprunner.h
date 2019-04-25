@@ -7,7 +7,7 @@
 // External Includes
 #include <rtti/typeinfo.h>
 #include <nap/core.h>
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 #include <thread>
 
 namespace nap
@@ -95,8 +95,8 @@ namespace nap
 		std::unique_ptr<APP>		mApp = nullptr;			// App this runner works with
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
 		bool						mStop = false;			// If the runner should stop
-		int							mExitCode = 0;			// Application exit code
-		utility::MicroSeconds		mWaitTime;				// Time to wait in milliseconds based on FPS
+		int							mExitCode = 0;			// Application exit code* Call update() to force an update.
+		MicroSeconds				mWaitTime;				// Time to wait in milliseconds based on FPS
 	};
 
 
@@ -130,7 +130,7 @@ namespace nap
 		// Create 'm
 		mApp = std::make_unique<APP>(core);
 		mHandler = std::make_unique<HANDLER>(*mApp);
-		mWaitTime = utility::MicroSeconds(0);
+		mWaitTime = MicroSeconds(0);
 	}
 
 
@@ -154,8 +154,10 @@ namespace nap
 			return false;
 		}
 
+#ifdef NAP_ENABLE_PYTHON
 		if (!mCore.initializePython(error))
 			return false;
+#endif
 
 		// Initialize application
 		if(!error.check(app.init(error), "unable to initialize application"))
@@ -171,9 +173,9 @@ namespace nap
 		mCore.start();
 
 		// Begin running
-		utility::HighResolutionTimer timer;
-		utility::MicroSeconds frame_time;
-		utility::MicroSeconds delay_time;
+		HighResolutionTimer timer;
+		MicroSeconds frame_time;
+		MicroSeconds delay_time;
 		while (!app.shouldQuit() && !mStop)
 		{
 			// Get time point for next frame
@@ -192,7 +194,7 @@ namespace nap
 			// The actual outcome of the sleep call can vary greatly from system to system
 			// And is more accurate with lower framerate limitations
 			delay_time = frame_time - timer.getMicros();
-			if(std::chrono::duration_cast<utility::Milliseconds>(delay_time).count() > 0)
+			if(std::chrono::duration_cast<Milliseconds>(delay_time).count() > 0)
 				std::this_thread::sleep_for(delay_time);
 		}
 
@@ -231,6 +233,6 @@ namespace nap
 	template<typename APP, typename HANDLER>
 	void nap::AppRunner<APP, HANDLER>::setFramerate(float fps)
 	{
-		mWaitTime = utility::MicroSeconds(static_cast<long>(1000000.0 / static_cast<double>(fps)));
+		mWaitTime = MicroSeconds(static_cast<long>(1000000.0 / static_cast<double>(fps)));
 	}
 }

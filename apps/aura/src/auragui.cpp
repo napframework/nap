@@ -54,7 +54,7 @@ namespace nap
 	{
 		// Draw some gui elements
 		ImGui::Begin("Info");
-		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", mApp.getCore().getFramerate()).c_str());

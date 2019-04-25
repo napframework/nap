@@ -18,9 +18,11 @@
 #include <inputrouter.h>
 #include <entity.h>
 #include <artnetcontroller.h>
-#include <utility/datetimeutils.h>
+#include <nap/datetime.h>
 #include <scene.h>
 #include <orthocameracomponent.h>
+#include <rendertexture2d.h>
+#include <controlgroups.h>
 
 namespace nap
 {
@@ -32,12 +34,12 @@ namespace nap
 		RandomApp(Core& core) : App(core)	{ }
 
 		/**
-		 *	Initialize the kalvertoren app and it's resources
+		 *	Initialize the random app and it's resources
 		 */
 		virtual bool init(utility::ErrorState& error) override;
 
 		/**
-		 *	Update the kalvertoren app's resources
+		 *	Update the random app's resources
 		 */
 		virtual void update(double deltaTime) override;
 
@@ -69,26 +71,52 @@ namespace nap
 		nap::InputService*									mInputService = nullptr;
 		nap::IMGuiService*									mGuiService = nullptr;
 
-		// Resources
+		// Rendering Objects
 		rtti::ObjectPtr<RenderWindow>						mRenderWindow = nullptr;
-		rtti::ObjectPtr<Scene>								mScene = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mSceneCamera = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mVideo = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mClouds = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mCombination = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
-		rtti::ObjectPtr<EntityInstance>						mOrthoCamera = nullptr;
-		rtti::ObjectPtr<RenderTarget>						mCloudRenderTarget = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mSunRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mVideoRenderTarget = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mStaticRenderTarget = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mPartyRenderTarget = nullptr;
+		rtti::ObjectPtr<RenderTarget>						mSoundRenderTarget = nullptr;
 		rtti::ObjectPtr<RenderTarget>						mCombineRenderTarget = nullptr;
 
-		// Gui related functionality
-		std::unique_ptr<RandomGui>	mGui = nullptr;
+		// Control Groups
+		rtti::ObjectPtr<ControlGroups>						mControlGroups = nullptr;
+
+		// Scene Objects
+		rtti::ObjectPtr<Scene>								mScene = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mSceneCamera = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrthoCamera = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mSunClouds = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mSunGlare = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mVideo = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mStatic = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mCombination = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mLightRig = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mController = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrbit = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrbitPath = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrbitStart = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrbitEnd = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mOrbitSun = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mParty = nullptr;
+		rtti::ObjectPtr<EntityInstance>						mSound = nullptr;
+
+		// Random GUI
+		std::unique_ptr<RandomGui>							mGui = nullptr;
+
+		// Store window properties
+		glm::ivec2 windowSize;
 
 		/**
-		 * Called when a window event is received
-		 */
+		* Called when a window event is received
+		*/
 		void handleWindowEvent(const WindowEvent& windowEvent);
+
+		/**
+		*	Renders the sun into it's back-buffer
+		*/
+		void renderSun(OrthoCameraComponentInstance& orthoCamera);
 
 		/**
 		 *	Renders the video into it's back-buffer
@@ -96,13 +124,23 @@ namespace nap
 		void renderVideo(OrthoCameraComponentInstance& orthoCamera);
 
 		/**
-		 *	Renders the combination of the video and clouds into it's own back-buffer
-		 */
-		void renderCombination(OrthoCameraComponentInstance& orthoCamera);
+		*	Renders the static into it's back-buffer
+		*/
+		void renderStatic(OrthoCameraComponentInstance& orthoCamera);
 
 		/**
-		 *	Renders the clouds into it's back-buffer
+		*	Renders the party into it's back-buffer
+		*/
+		void renderParty(OrthoCameraComponentInstance& orthoCamera);
+
+		/**
+		*	Renders the sound into it's back-buffer
+		*/
+		void renderSound(OrthoCameraComponentInstance& orthoCamera);
+
+		/**
+		 *	Renders the combination into it's back-buffer
 		 */
-		void renderClouds(OrthoCameraComponentInstance& orthoCamera);
+		void renderCombination(OrthoCameraComponentInstance& orthoCamera);
 	};                                                                               
 }

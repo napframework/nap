@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_videomodulation)
 
 # add all cpp files to SOURCES

@@ -42,7 +42,9 @@ namespace nap
 		virtual ~OSCSender() override;
 
 		std::string mIPAddress = "127.0.0.1";	///< Property: 'IpAddress' target machine ip address
-		int mPort = 8000;			            ///< Property: 'Port' target machine port1
+		int mPort = 8000;			            ///< Property: 'Port' target machine port
+		int mBufferScale = 2;					///< Property: 'Scale' scale factor applied to OSC message buffer.
+
 
 		/**
 		 * Constructs the host end point and communication socket.

@@ -7,10 +7,11 @@
 
 // nap::applycombinationcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyCombinationComponent)
-	RTTI_PROPERTY("Bitmap",		&nap::ApplyCombinationComponent::mBitmap,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Mesh",		&nap::ApplyCombinationComponent::mMesh,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Influence",	&nap::ApplyCombinationComponent::mInfluence,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Brightness", &nap::ApplyCombinationComponent::mBrightness,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Bitmap",			&nap::ApplyCombinationComponent::mBitmap,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mesh",			&nap::ApplyCombinationComponent::mMesh,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Influence",		&nap::ApplyCombinationComponent::mInfluence,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Brightness",		&nap::ApplyCombinationComponent::mBrightness,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ControlGroups",	&nap::ApplyCombinationComponent::mControlGroups,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::applycombinationcomponentInstance run time class definition 
@@ -40,6 +41,25 @@ namespace nap
 		// Copy default values
 		mBrightness = getComponent<ApplyCombinationComponent>()->mBrightness;
 		mInfluence  = getComponent<ApplyCombinationComponent>()->mInfluence;
+
+		// Copy over control groups
+		// TODO: Check that every index in every group corresponds to a index on the mesh
+		mControlGroups = getComponent<ApplyCombinationComponent>()->mControlGroups.get();
+
+		// Verify that every 
+		VertexAttribute<int>& index_data = mMesh->getIndexAttribute();
+		TriangleIterator triangle_iterator(mMesh->getMeshInstance());
+		while (!triangle_iterator.isDone())
+		{
+			Triangle triangle = triangle_iterator.next();
+			int triangle_index = triangle.getVertexData(index_data).first();
+			const ControlGroups::ControlGroup* found_group = mControlGroups->findGroup(triangle_index);
+			if (errorState.check(found_group == nullptr, "triangle index: %d maps to a non existing group", triangle.getTriangleIndex()))
+				return false;
+
+			// Cache for further use
+			mControlGroupCache[triangle.getTriangleIndex()] = found_group;
+		}
 
 		return true;
 	}
@@ -96,11 +116,15 @@ namespace nap
 			mBitmap->getPixel(x_pixel, y_pixel, *source_pixel);
 			BaseColor::convertColor(*source_pixel, rgb_colorf, converter);
 
+			// Get index
+			const ControlGroups::ControlGroup* found_group = mControlGroupCache[triangle.getTriangleIndex()];
+			assert(found_group != nullptr);
+
 			// Set the color data used to display the mesh in the viewport
 			glm::vec4 mesh_color = glm::vec4(
-				math::lerp(1.0f, rgb_colorf.getRed(),	mInfluence) * mBrightness,
-				math::lerp(1.0f, rgb_colorf.getGreen(), mInfluence) * mBrightness,
-				math::lerp(1.0f, rgb_colorf.getBlue(),	mInfluence) * mBrightness,
+				math::lerp(1.0f, rgb_colorf.getRed(),	mInfluence) * found_group->mBrightness * mBrightness,
+				math::lerp(1.0f, rgb_colorf.getGreen(), mInfluence) * found_group->mBrightness * mBrightness,
+				math::lerp(1.0f, rgb_colorf.getBlue(),	mInfluence) * found_group->mBrightness * mBrightness,
 				1.0f);
 
 			triangle.setVertexData(color_data, mesh_color);

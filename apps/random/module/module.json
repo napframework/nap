@@ -5,10 +5,9 @@
         "mod_napsdlinput",
         "mod_napcameracontrol",
         "mod_napartnet",
-        "mod_napyoctopuce",
-        "mod_napmidi",
+        "mod_napimgui",
         "mod_napvideo",
-        "mod_napscene"
+        "mod_naposc"
     ]
 }
 

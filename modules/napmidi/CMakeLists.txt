@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napmidi)
 
 find_package(rtmidi REQUIRED)
@@ -22,8 +27,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 copy_module_json_to_bin()
 
 # Package into platform release
-if(UNIX)
-    set(UNIX_EXTRA_RPATH "../../../../thirdparty/rtmidi/lib")
+if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/rtmidi/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/rtmidi/lib)
 endif()
 package_module()
 

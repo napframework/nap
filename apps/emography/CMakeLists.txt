@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
+
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(emography)
 
 #add all cpp files to SOURCES
@@ -22,4 +28,5 @@ target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # Package into release, export FBX, other shared source project fixes
-nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" TRUE)
+nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "projects" FALSE)
+	

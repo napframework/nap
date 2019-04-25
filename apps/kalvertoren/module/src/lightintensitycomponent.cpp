@@ -150,7 +150,7 @@ namespace nap
 	bool LightIntensityComponentInstance::isOpen() const
 	{
 		// Get opening times based on current date / time
-		utility::DateTime cdt = utility::getCurrentDateTime();
+		DateTime cdt = getCurrentDateTime();
 		OpeningTime current_opening;
 		OpeningTime current_closing;
 		getOpeningTimes(cdt, current_opening, current_closing);
@@ -164,36 +164,36 @@ namespace nap
 	}
 
 
-	void LightIntensityComponentInstance::getOpeningTimes(const utility::DateTime& dateTime, OpeningTime& outOpeningTime, OpeningTime& outClosingTime) const
+	void LightIntensityComponentInstance::getOpeningTimes(const DateTime& dateTime, OpeningTime& outOpeningTime, OpeningTime& outClosingTime) const
 	{
 		// Scale target value with opening hours
 		switch (dateTime.getDay())
 		{
-		case utility::EDay::Monday:
+		case EDay::Monday:
 			outOpeningTime = mOpeningHours->mMonday;
 			outClosingTime = mClosingHours->mMonday;
 			break;
-		case utility::EDay::Tuesday:
+		case EDay::Tuesday:
 			outOpeningTime = mOpeningHours->mTuesday;
 			outClosingTime = mClosingHours->mTuesday;
 			break;
-		case utility::EDay::Wednesday:
+		case EDay::Wednesday:
 			outOpeningTime = mOpeningHours->mWednesday;
 			outClosingTime = mClosingHours->mWednesday;
 			break;
-		case utility::EDay::Thursday:
+		case EDay::Thursday:
 			outOpeningTime = mOpeningHours->mThursday;
 			outClosingTime = mClosingHours->mThursday;
 			break;
-		case utility::EDay::Friday:
+		case EDay::Friday:
 			outOpeningTime = mOpeningHours->mFriday;
 			outClosingTime = mClosingHours->mFriday;
 			break;
-		case utility::EDay::Saturday:
+		case EDay::Saturday:
 			outOpeningTime = mOpeningHours->mSaturday;
 			outClosingTime = mClosingHours->mSaturday;
 			break;
-		case utility::EDay::Sunday:
+		case EDay::Sunday:
 			outOpeningTime = mOpeningHours->mSunday;
 			outClosingTime = mClosingHours->mSunday;
 			break;

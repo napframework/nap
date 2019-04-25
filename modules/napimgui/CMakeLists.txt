@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napimgui)
 
 # add all cpp files to SOURCES
@@ -29,12 +34,14 @@ target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})
 copy_module_json_to_bin()
 
 # Package into platform release
-if(UNIX)
-    set(UNIX_EXTRA_RPATH "../../../../thirdparty/glew/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
-endif()    
-if(APPLE)    
+if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/glew/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/SDL2/lib)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS. NAP-225.
-    list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
-endif()
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/glew/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+endif()    
 package_module()
