@@ -56,7 +56,6 @@ namespace nap
 		if (!errorState.check(resource->mMinValue <= math::max<uint8>() && resource->mMinValue >= 0, "Artnet value needs to be between 0 and 255"))
 			return false;
 		mMinValue = static_cast<uint8>(resource->mMinValue);
-
 		return true;
 	}
 

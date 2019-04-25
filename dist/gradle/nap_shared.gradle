@@ -78,7 +78,7 @@ ext.processNapDependencies = { napProjectName ->
 
     // If a project module exists, build the NAP module dependencies for the project module, for population
     // through to CMake
-    def modulePath = new File('app/src/main/cpp/module')
+    def modulePath = new File(project.name + '/src/main/cpp/module')
     if (modulePath.exists()) {
         def projectModuleFoundDependencies = []
         def projectModuleSearchModules = ['mod_' + napProjectName]

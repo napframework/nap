@@ -77,6 +77,11 @@ namespace nap
 		nap::VertexAttribute<int>& getSubnetAttribute()								{ return *mSubnetAttribute; }
 
 		/**
+		 *	@return index attribute
+		 */
+		nap::VertexAttribute<int>& getIndexAttribute()								{ return *mIndexAttribute; }
+
+		/**
 		 *	@return if an artnet address is associated with this mesh
 		 */
 		bool hasAddress(ArtNetController::Address address) const					{ return mAddresses.find(address) != mAddresses.end(); }
@@ -105,6 +110,7 @@ namespace nap
 		nap::VertexAttribute<int>*			mSubnetAttribute = nullptr;
 		nap::VertexAttribute<glm::vec3>*	mPositionAttribute = nullptr;
 		nap::VertexAttribute<glm::vec3>*	mUVAttribute = nullptr;
+		nap::VertexAttribute<int>*			mIndexAttribute = nullptr;
 
 		std::unordered_set<ArtNetController::Address> mAddresses;				///< Contains all the artnet addresses associated with this mesh;
 
