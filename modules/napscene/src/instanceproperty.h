@@ -51,7 +51,7 @@ namespace nap
 	/**
 	 * Instance property value for pointer type.
 	 */
-	class PointerInstancePropertyValue : public InstancePropertyValue
+	class NAPAPI PointerInstancePropertyValue : public InstancePropertyValue
 	{
 		RTTI_ENABLE(InstancePropertyValue)
 
@@ -72,7 +72,7 @@ namespace nap
 	 * Instance property value a ComponentPtr type. The value contains a path as if it was present on the original attribute. So, any
 	 * relative paths are relative to the original location of the property.
 	 */
-	class ComponentPtrInstancePropertyValue : public InstancePropertyValue
+	class NAPAPI ComponentPtrInstancePropertyValue : public InstancePropertyValue
 	{
 		RTTI_ENABLE(InstancePropertyValue)
 	public:
@@ -122,7 +122,7 @@ namespace nap
 	 * Represents both the path to an attribute as well as the value to override. Together with the target object that must be given 
 	 * in apply(), this can be used to override a property.
 	 */
-	class TargetAttribute
+	class NAPAPI TargetAttribute
 	{
 	public:
 		/**
@@ -140,7 +140,7 @@ namespace nap
 	/**
 	 * Represents all the properties that are overridden on a single component.
 	 */
-	class ComponentInstanceProperties
+	class NAPAPI ComponentInstanceProperties
 	{
 	public:
 		ComponentPtr<Component>			mTargetComponent = nullptr;		///< Component to override properties from
