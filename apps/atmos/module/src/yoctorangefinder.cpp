@@ -37,11 +37,14 @@ namespace nap
 	}
 
 
-	void YoctoRangeFinder::start()
+	bool YoctoRangeFinder::start(utility::ErrorState& errorState)
 	{
+		nap::Logger::info("STARTING RANGE FINDER");
+
 		// Fire off monitor thread. Automatically tries to reconnect to the sensor
 		// When connection fails it waits until it tries again
 		mMonitorTask = std::async(std::launch::async, std::bind(&YoctoRangeFinder::monitor, this));
+		return true;
 	}
 
 
@@ -60,12 +63,14 @@ namespace nap
 
 	void YoctoRangeFinder::stop()
 	{
+		nap::Logger::info("STOPPING RANGE FINDER");
+
 		// Stop all of our polling tasks
 		mStopReading = true;
 		mStopRunning = true;
 
 		// Wait for monitoring thead to exit
-		if (mMonitorTask.valid())
+		if(mMonitorTask.valid())
 			mMonitorTask.wait();
 	}
 
@@ -74,7 +79,7 @@ namespace nap
 	{
 		// Get the sensor
 		assert(sensor != nullptr);
-		YRangeFinder* curr_sensor = static_cast<YRangeFinder*>(sensor);
+		// YRangeFinder* curr_sensor = static_cast<YRangeFinder*>(sensor);
 
 		// Reset some state variables
 		mStopReading = false;
@@ -90,17 +95,7 @@ namespace nap
 		// Keep running until a 
 		while (!mStopReading)
 		{
-			// Sleep
-			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), error_msg);
-			if (sleep != YAPI_SUCCESS)
-			{
-				if (++retries > mRetries)
-				{
-					logMessage("has trouble sleeping");
-					break;
-				}
-				continue;
-			}
+			YRangeFinder* curr_sensor = yFindRangeFinder(mName.c_str());
 
 			// Check if the sensor is still online
 			if (!curr_sensor->isOnline())
@@ -135,6 +130,18 @@ namespace nap
 
 			// Reset retries
 			retries = 0;
+
+			// Sleep
+			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), error_msg);
+			if (sleep != YAPI_SUCCESS)
+			{
+				if (++retries > mRetries)
+				{
+					logMessage("has trouble sleeping");
+					break;
+				}
+				continue;
+			}
 		}
 
 		// When exiting this loop we're no longer reading any values

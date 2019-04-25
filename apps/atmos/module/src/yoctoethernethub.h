@@ -26,6 +26,7 @@ namespace nap
 
 		/**
 		 * Start the device. Will be called after init()
+		 *
 		 * @param errorState The error state
 		 * @return: true on success
 		 */

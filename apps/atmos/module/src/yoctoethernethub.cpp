@@ -37,6 +37,8 @@ namespace nap
 		if (!mEnabled)
 			return true;
 
+		nap::Logger::info("STARTING ethernet hub!");
+
 		// Register / connect to the ethernet hub
 		std::string error;
 		std::string hub_address = getUrl();
@@ -56,19 +58,13 @@ namespace nap
 		// Make sure connection could be established
 		if (!errorState.check(ret_code == YAPI_SUCCESS, "%s: unable to establish connection to hub: %s:%d, error: %s", mID.c_str(), mAddress.c_str(), mPort, error.c_str()))
 			return false;
-
-		// Now start reading from all the connected light sensors
-		for (auto& sensor : mSensors)
-			sensor->start();
 		return true;
 	}
 
 
 	void YoctoEthernetHub::stop()
 	{
-		// Stop reading
-		for (auto& sensor : mSensors)
-			sensor->stop();
+		nap::Logger::info("STOPPING ethernet hub!");
 
 		// Unregister previously connected hub
 		yUnregisterHub(getUrl());
