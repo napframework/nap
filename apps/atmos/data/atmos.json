@@ -1090,8 +1090,8 @@
         {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1920,
-            "Height": 1080,
+            "Width": 1280,
+            "Height": 720,
             "Borderless": false,
             "Resizable": true,
             "Title": "Window 1",
@@ -1217,6 +1217,28 @@
             "mID": "NormalsMesh",
             "ReferenceMesh": "MeteorietPoints",
             "Length": 0.009999999776482582
+        },
+        {
+            "Type": "nap::YoctoEthernetHub",
+            "mID": "YoctoEthernetHub",
+            "Address": "192.168.1.120",
+            "Username": "admin",
+            "Pass": "rokit247",
+            "Port": 80,
+            "Enabled": true,
+            "AllowFailure": true,
+            "Sensors": [
+                "YoctoRangeFinder"
+            ]
+        },
+        {
+            "Type": "nap::YoctoRangeFinder",
+            "mID": "YoctoRangeFinder",
+            "Name": "YRNGFND1-F1F51.rangeFinder1",
+            "Retries": 10,
+            "BufferSize": 30,
+            "DelayTime": 50,
+            "Log": true
         }
     ]
 }

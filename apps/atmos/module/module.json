@@ -5,6 +5,7 @@
         "mod_napsdlinput",
         "mod_napvideo",
         "mod_napscene",
-        "mod_napcameracontrol"
+        "mod_napcameracontrol",
+        "mod_napyoctopuce"
     ]
 }
