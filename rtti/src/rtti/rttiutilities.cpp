@@ -229,7 +229,7 @@ namespace nap
 					{
 						int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, unresolvedPointerRootObject, currentRTTIPath);
 						if (unresolved_pointer_index != -1)
-							target_a_id = unresolvedPointers[unresolved_pointer_index].mTargetID;
+							target_a_id = unresolvedPointers[unresolved_pointer_index].getResourceTargetID();
 					}
 					else
 					{

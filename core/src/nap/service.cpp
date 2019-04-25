@@ -1,5 +1,5 @@
 // Local Includes
-#include <rtti/pythonmodule.h>
+#include "python.h"
 #include "logger.h"
 #include "service.h"
 

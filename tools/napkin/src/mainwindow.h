@@ -99,7 +99,21 @@ namespace napkin
 		 */
 		void showError(nap::LogMessage msg);
 
+		/**
+		 * If the current file is dirty, offer to save the file.
+		 * @return False if the operation was cancelled,
+		 * 		   true if the file was saved or if the user declined saving
+		 */
+		bool confirmSaveCurrentFile();
+
+		/**
+		 * Reconstruct the "recent files" menu
+		 */
+		void rebuildRecentMenu();
+
 	private:
+		bool mFirstShowEvent = true;
+
 		ResourcePanel mResourcePanel;
 		HierarchyPanel mHierarchyPanel;
 		InspectorPanel mInspectorPanel;
@@ -109,6 +123,7 @@ namespace napkin
 		CurvePanel mCurvePanel;
 		ThemeSelectionMenu mThemeMenu;
 		ScenePanel mScenePanel;
+		QMenu* mRecentFilesMenu = nullptr;
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;

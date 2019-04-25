@@ -28,7 +28,7 @@ macro(nap_qt_pre)
               ~/Qt/5.8/clang_64
               )
 
-    if(DEFINED QT_DIR)
+    if(QT_DIR)
         if(APPLE AND DEFINED NAP_PACKAGED_BUILD)
               # Ensure we're not using Qt from homebrew as we don't know the legal situation with packaging homebrew's packages.
               # Plus Qt's own opensource packages should have wider macOS version support.
@@ -42,11 +42,12 @@ macro(nap_qt_pre)
 
         # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
-    elseif()
-        message(WARNING
-                "The QT5 Directory could not be found, "
-                "consider setting the QT_DIR environment variable "
-                "to something like: \"C:/dev/Qt/5.9.1/msvc2015_64\"")
+    else()
+        message(FATAL_ERROR
+                "Qt5 could not be found, please set the QT_DIR environment variable, eg.:"
+                "\n Win64 - \"C:/dev/Qt/5.9.1/msvc2015_64\""
+                "\n macOS - \"/Users/username/dev/Qt/Qt5.11.3/5.11.3/clang_64\""
+                "\n Linux - \"/home/username/dev/Qt/Qt5.11.3/5.11.3/gcc_64\"")
     endif()
 
 
@@ -54,24 +55,26 @@ macro(nap_qt_pre)
     find_package(Qt5Core REQUIRED)
     find_package(Qt5Widgets REQUIRED)
     find_package(Qt5Gui REQUIRED)
+    find_package(Qt5OpenGL REQUIRED)
 
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
     add_definitions(-DQT_NO_KEYWORDS)
 
-    set(QT_LIBS Qt5::Widgets Qt5::Core Qt5::Gui)
+    set(QT_LIBS Qt5::Widgets Qt5::Core Qt5::Gui Qt5::OpenGL)
 
 endmacro()
 
 
 macro(nap_qt_post PROJECTNAME)
-    qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)
+    qt5_use_modules(${PROJECT_NAME} Core Widgets Gui OpenGL)
 
     if(WIN32)
         add_custom_command(TARGET ${PROJECTNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
                            $<TARGET_FILE:Qt5::Widgets>
                            $<TARGET_FILE:Qt5::Core>
                            $<TARGET_FILE:Qt5::Gui>
+                           $<TARGET_FILE:Qt5::OpenGL>
                            $<TARGET_FILE_DIR:${PROJECTNAME}>
                            COMMENT "Copy Qt DLLs")
     endif()

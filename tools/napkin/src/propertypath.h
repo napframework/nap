@@ -36,6 +36,11 @@ namespace napkin
 		PropertyPath(nap::rtti::Object& obj, const std::string& path);
 
 		/**
+		 * @return The last part of the property name (not including the path)
+		 */
+		const std::string getName() const;
+
+		/**
 		 * @return The value of this property
 		 */
 		rttr::variant getValue() const;

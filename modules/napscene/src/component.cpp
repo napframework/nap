@@ -1,4 +1,4 @@
-#include <rtti/pythonmodule.h>
+#include <nap/python.h>
 #include "component.h"
 #include "entity.h"
 

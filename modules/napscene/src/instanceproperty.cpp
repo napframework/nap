@@ -35,6 +35,7 @@ RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::Vec3InstancePropertyValue)
 RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::IVec2InstancePropertyValue)
 RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::IVec3InstancePropertyValue)
 RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::QuatInstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::StringInstancePropertyValue)
 
 namespace nap
 {

@@ -52,6 +52,17 @@ napkin::InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 {
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);
+
+	auto font = mTitle.font();
+	font.setPointSize(14);
+	mTitle.setFont(font);
+
+	mSubTitle.setAlignment(Qt::AlignRight);
+
+	mHeaderLayout.addWidget(&mTitle);
+	mHeaderLayout.addWidget(&mSubTitle);
+	mLayout.addLayout(&mHeaderLayout);
+
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
 	mTreeView.getTreeView().setColumnWidth(0, 250);
@@ -180,9 +191,20 @@ void napkin::InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 }
 
 
-void napkin::InspectorPanel::setObject(Object* objects)
+void napkin::InspectorPanel::setObject(Object* object)
 {
-	mModel.setObject(objects);
+	if (object)
+	{
+		mTitle.setText(QString::fromStdString(object->mID));
+		mSubTitle.setText(QString::fromStdString(object->get_type().get_name().data()));
+	}
+	else
+	{
+		mTitle.setText("");
+		mSubTitle.setText("");
+	}
+
+	mModel.setObject(object);
 	mTreeView.getTreeView().expandAll();
 }
 
@@ -211,6 +233,12 @@ void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop
 	mTreeView.selectAndReveal(pathItem);
 }
 
+bool napkin::InspectorModel::isPropertyIgnored(const napkin::PropertyPath& prop) const
+{
+	if (prop.getName() == nap::rtti::sIDPropertyName)
+		return true;
+	return false;
+}
 
 void napkin::InspectorModel::populateItems()
 {
@@ -229,7 +257,10 @@ void napkin::InspectorModel::populateItems()
 		auto value = prop.get_value(mObject);
 		auto wrappedType = value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
 
-		appendRow(createPropertyItemRow(wrappedType, qName, {*mObject, path}, prop, value));
+		PropertyPath propPath(*mObject, path);
+
+		if (!isPropertyIgnored(propPath))
+			appendRow(createPropertyItemRow(wrappedType, qName, propPath, prop, value));
 	}
 }
 

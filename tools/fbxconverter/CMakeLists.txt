@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(fbxconverter)
 
 file(GLOB sources src/*.cpp src/*.h)
@@ -61,6 +66,16 @@ install(TARGETS ${PROJECT_NAME}
         DESTINATION ${FBXCONVERTER_INSTALL_LOCATION}
         CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
+if(UNIX)
+    # Extra RPATH building for Linux and macOS
+    set(PATH_TO_NAP_ROOT "../..")
+    set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/glew/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/freetype/lib)  
+endif()
+
 if (WIN32)   
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
     # TODO Update to find the libraries then install locating them via TARGET_FILE
@@ -73,12 +88,6 @@ if (WIN32)
                   ${PYTHON_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
 elseif(APPLE)
-    set(PATH_TO_NAP_ROOT "../..")
-    set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/glew/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/freetype/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
     set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 
@@ -87,7 +96,7 @@ elseif(APPLE)
                                                                             "../.."
                                                                             "${EXTRA_RPATH}")
 elseif(UNIX)
-    set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../..")
+    set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
 endif()
 
 # Add tclap license into release

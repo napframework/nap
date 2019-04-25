@@ -8,7 +8,7 @@ namespace nap
 	/**
 	 * The most common game-controller buttons
 	 */
-	enum class NAPAPI EControllerButton : int
+	enum class EControllerButton : int
 	{
 		UNKNOWN = -1,
 		A,
@@ -32,7 +32,7 @@ namespace nap
 	/**
 	 * List of axis available from a controller
 	 */
-	enum class NAPAPI EControllerAxis : int
+	enum class EControllerAxis : int
 	{
 		UNKNOWN	= -1,
 		LEFT_X,

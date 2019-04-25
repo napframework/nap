@@ -33,12 +33,12 @@ _Manual Dependency Installation_
 
 Alternatively you can follow the steps below to install the dependencies, however we still recommend running `check_build_environment.bat` afterwards to verify your build environment.
 
-1. Download and install <a href="https://go.microsoft.com/fwlink/?LinkId=615435&clcid=0x409" target="_blank">Visual Studio 2015</a>. This link points to the community edition which can be used for free. Make sure to select `Visual C++` under `programming languages` when installing Visual Studio.
+1. Download and install <a href="https://go.microsoft.com/fwlink/?LinkId=532606&clcid=0x409" target="_blank">Visual Studio 2015</a>. This link points to the community edition which can be used for free. Make sure to select `Visual C++` under `programming languages` when installing Visual Studio.
 2. Download and install <a href="http://cmake.org/download" target="_blank">CMake</a>
 
 ## macOS {#setup_build_env_macos}
 
-NAP $(NAP_VERSION_FULL) supports macOS High Sierra 10.13.  Although NAP is known to work on other macOS releases, High Sierra is the current supported version.
+NAP $(NAP_VERSION_FULL) supports macOS Mojave. Although NAP is known to work on other macOS releases, Mojave is the current supported version.
 
 Follow these steps for a guided installation:
 1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS.zip` in Finder
@@ -68,11 +68,11 @@ NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 18.04 on x86-64 machines using GCC
 Follow these steps for a guided installation:
 1. Extract the release:
 ```
-tar jxvf NAP-0.2.0-Linux.tar.bz2
+tar jxvf NAP-0.2.3-Linux.tar.bz2
 ```
 2. Run the `check_build_environment` script to guide you through installing prerequisites, following the instructions:
 ```
-cd NAP-0.2.0-Linux
+cd NAP-0.2.3-Linux
 ./tools/check_build_environment
 ```
 3. If any changes are required re-run `check_build_environment` after those changes have been made to verify the final environment
@@ -111,7 +111,7 @@ All demonstration projects can be found within the demos folder within the relea
 
 1. Navigate to the helloworld demo
 ```
-cd NAP-0.2.0-macOS/demos/helloworld
+cd NAP-0.2.3-macOS/demos/helloworld
 ```
 2. Generate the Unix makefiles
 ```
