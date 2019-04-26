@@ -1,4 +1,8 @@
-#include "parameter.h"
+#include <parameter.h>
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Parameter)
+	RTTI_PROPERTY("Name",		&nap::Parameter::mName, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ParameterContainer)
 	RTTI_PROPERTY("Parameters",	&nap::ParameterContainer::mParameters, nap::rtti::EPropertyMetaData::Embedded)

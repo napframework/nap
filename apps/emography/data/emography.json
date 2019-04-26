@@ -54,7 +54,7 @@
         },
         {
             "Type": "nap::APISignature",
-            "mID": "updateView",
+            "mID": "getStressIntensity",
             "Arguments": [
                 {
                     "Type": "nap::APILong",
@@ -77,20 +77,45 @@
             ]
         },
         {
+            "Type": "nap::APISignature",
+            "mID": "getStressState",
+            "Arguments": [
+                {
+                    "Type": "nap::APILong",
+                    "mID": "10",
+                    "Name":"startTime",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APILong",
+                    "mID": "11",
+                    "Name":"endTime",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::APIInt",
+                    "mID": "12",
+                    "Name":"samples",
+                    "Value": 200
+                }
+            ]
+        },
+        {
             "Type": "nap::Entity",
             "mID": "ControllerEntity",
             "Components": [
                 {
                     "Type": "nap::emography::APIControlComponent",
                     "mID": "nap::emography::APIControlComponent",
-                    "StressViewComponent": "./nap::emography::StressDataViewComponent",
+                    "StressIntensityComponent": "./nap::emography::StressIntensityComponent",
+                    "StressStateComponent": "./nap::emography::StressStateComponent",
                     "ClearCacheComponent": "./nap::emography::ClearCacheComponent",
                     "PopulateCacheComponent": "./nap::emography::PopulateCacheComponent",
                     "AddStressComponent": "./nap::emography::AddStressSampleComponent"
                 },
                 {
-                    "Type": "nap::emography::StressDataViewComponent",
-                    "mID": "nap::emography::StressDataViewComponent",
+                    "Type": "nap::emography::StressIntensityComponent",
+                    "mID": "nap::emography::StressIntensityComponent",
                     "Settings": {
                         "Samples": 1024,
                         "StartTime": {
@@ -104,7 +129,27 @@
                             "Year": 1970
                         }
                     },
-                    "DataModel": "DataModel"
+                    "DataModel": "DataModel",
+                    "ReplyName":"StressIntensityReply"
+                },
+                {
+                    "Type": "nap::emography::StressStateComponent",
+                    "mID": "nap::emography::StressStateComponent",
+                    "Settings": {
+                        "Samples": 1024,
+                        "StartTime": {
+                            "Month": "January",
+                            "Day": 1,
+                            "Year": 1970
+                        },
+                        "EndTime": {
+                            "Month": "January",
+                            "Day": 1,
+                            "Year": 1970
+                        }
+                    },
+                    "DataModel": "DataModel",
+                    "ReplyName":"StressStateReply"
                 },
                 {
                     "Type": "nap::emography::ClearCacheComponent",
@@ -115,7 +160,8 @@
                     "Type": "nap::APIComponent",
                     "mID": "nap::APIComponent",
                     "Methods": [
-                        "updateView",
+                        "getStressIntensity",
+                        "getStressState",
                         "clearCache",
                         "populateCacheParameterized",
                         "populateCache",

@@ -1,6 +1,10 @@
+from collections import OrderedDict
+import json
 import os
 from subprocess import Popen
 import sys
+
+PROJECT_INFO_FILENAME = 'project.json'
 
 # Run command, raising exception on failure
 def call_except_on_failure(cwd, cmd):
@@ -40,7 +44,7 @@ def find_module(module_name):
         return None
 
 # Locate project specified by name
-def find_project(project_name, silent_failure=False):
+def find_project(project_name, silent_failure=False, silent_success=False):
     script_path = os.path.realpath(__file__)
     script_to_nap_root = os.path.join(os.pardir, os.pardir)
     nap_root = os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))
@@ -50,7 +54,8 @@ def find_project(project_name, silent_failure=False):
     for project_type in ['projects', 'examples', 'demos']:
         project_search_path = os.path.join(nap_root, project_type, project_dir_name)
         if os.path.exists(project_search_path):
-            print("Found %s at %s" % (project_type[:-1], project_search_path))
+            if not silent_success:
+                print("Found %s at %s" % (project_type[:-1], project_search_path))
             return project_search_path
 
     if not silent_failure:
@@ -88,3 +93,47 @@ def read_console_char():
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
+# Get camelcase project name
+def get_camelcase_project_name(project_name):
+    project_path = find_project(project_name, True, True)
+    if project_path is None:
+        print("Error: couldn't find project '%s'" % project_name)
+        return None
+
+    project_name = ''
+    with open(os.path.join(project_path, PROJECT_INFO_FILENAME)) as json_file:
+        json_dict = json.load(json_file)
+        if not 'title' in json_dict:
+            print("Missing element 'title' in %s" % PROJECT_INFO_FILENAME)
+            return None
+
+        project_name = json_dict['title']
+    return project_name
+
+# Add module to project.json
+def add_module_to_project_json(project_name, full_module_name):
+    project_path = find_project(project_name, True, True)
+    if project_path is None:
+        print("Error: couldn't find project '%s'" % project_name)
+        return False
+
+    project_info_path = os.path.join(project_path, PROJECT_INFO_FILENAME)
+
+    with open(project_info_path) as json_file:
+        json_dict = json.load(json_file, object_pairs_hook=OrderedDict)
+
+        if not 'modules' in json_dict:
+            print("Missing element 'modules' in %s" % PROJECT_INFO_FILENAME)
+            return False
+
+        if not type(json_dict['modules']) is list:
+            print("Element 'modules' in %s is not an array" % PROJECT_INFO_FILENAME)
+            return False
+
+    if not full_module_name in json_dict['modules']:
+        json_dict['modules'].append(full_module_name)
+
+        with open(project_info_path, 'w') as json_file:
+            json.dump(json_dict, json_file, indent=4)
+
+    return True

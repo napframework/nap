@@ -16,15 +16,10 @@
 #include "resourcemanager.h"
 #include "service.h"
 #include "timer.h"
+#include "coreextension.h"
 
-// Android Includes
-// TODO ANDROID Move all this elsewhere?
-#ifdef ANDROID
-	#include <android/asset_manager.h>
-#endif
-
-#define SERVICE_CONFIG_FILENAME "config.json"
-
+// Name of the file that contains all the settings for the NAP services.
+constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
 
 namespace nap
 {
@@ -48,9 +43,17 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		/**
-		 * Constructor
+		 * Default Constructor
 		 */
 		Core();
+
+		/**
+		 * Extension constructor.
+		 * Used to add additional information to Core.
+		 * This is the case on specific platforms, where additional information is required to correctly initialize Core.
+		 * @param coreExtension the extension to associated with this instance of core, owned by core after construction.
+		 */
+		Core(std::unique_ptr<CoreExtension> coreExtension);
 
 		/**
 		 * Destructor
@@ -129,24 +132,40 @@ namespace nap
 		float getFramerate() const										{ return mFramerate; }
 
 		/**
-		* @return an already registered service of @type
-		* @param type the type of service to get
-		* @return the service if found, otherwise nullptr
-		*/
+		 * Find a service of a given type.
+		 * @param type the type of service to get
+		 * @return found service, nullptr if not found.
+		 */
 		Service* getService(const rtti::TypeInfo& type);
 
 		/**
-		 * Searches for a service based on type name, searches for an exact match.
+		 * Searches for a service based on given type name, names need to match exactly.
 		 * @return an already registered service based on its type name, nullptr if not found
 		 * @param type the type of the service as a string
 		 */
 		Service* getService(const std::string& type);
 
 		/**
-		 *  @return a service of type T, returns nullptr if that service can't be found
+		 * Searches for a service of type T, returns a nullptr if not found.
+		 * @return a service of type T, returns nullptr if that service can't be found
 		 */
 		template <typename T>
 		T* getService();
+
+		/**
+		 * Returns the extension associated with this instance of core as T. 
+		 * Note that an extension is given explicitly to core on construction.
+		 * When using the default constructor core has no interface associated with it!
+		 * @return extension associated with core as type T
+		 */
+		template <typename T>
+		const T& getExtension() const;
+
+		/**
+		 * @return if core has an extension of type T	
+		 */
+		template <typename T>
+		bool hasExtension() const;
 
 		/**
 		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
@@ -156,13 +175,6 @@ namespace nap
 		 * @return true if the file was found, otherwise false.
 		 */
 		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
-
-#ifdef ANDROID
-		void setAndroidInitialisationVars(AAssetManager *assetManager, std::string nativeLibDir);;
-
-		AAssetManager* getAndroidAssetManager() const;
-		std::string getAndroidNativeLibDir() const;
-#endif
 	
 	private:
 		/**
@@ -184,10 +196,18 @@ namespace nap
 		*/
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
 
-
+		/**
+		 * If a service configuration file is provided which is used to initialize the various services
+		 * @return if a service configuration file is provided
+		 */
 		bool hasServiceConfiguration();
 
-
+		/**
+		 * Load the service configuration file
+		 * @param deserialize_result contains the result after reading the config file
+		 * @param errorState contains the error if deserialization fails
+		 * @return if service configuration reading succeeded or not
+		 */
 		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
 
 		/**
@@ -239,26 +259,15 @@ namespace nap
 		float mFramerate = 0.0f;
 
 		// Used to calculate framerate over time
-		std::array<uint32, 100> mTicks;
+		std::array<uint32, 20> mTicks;
 		uint32 mTicksum = 0;
 		uint32 mTickIdx = 0;
 
+		// Interface associated with this instance of core.
+		std::unique_ptr<CoreExtension> mExtension = nullptr;
+
 		nap::Slot<const std::string&> mFileLoadedSlot = {
 			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
-
-#ifdef ANDROID
-		// TODO ANDROID Ideally temporary
-
-		// The AssetManager is used to load assets bundled included with the Android APK. Bundled assets with the app
-		// aren't files on disk and need to be accessed via this mechanism. Currently used by the ResourceManager to 
-		// load the project structure JSON and the ProjectInfoManager for the.. project info but may likely be useful 
-		// elsewhere later.
-		AAssetManager *mAndroidAssetManager;
-
-		// The location of the shared libraries for the Android app on disk. Used by the ModuleManager to load the 
-		// module shared libs.
-		std::string mAndroidNativeLibDir;
-#endif
 	};
 }
 
@@ -266,11 +275,34 @@ namespace nap
 // Template definitions
 //////////////////////////////////////////////////////////////////////////
 
-// Searches for a service of type T in the services and returns it,
-// returns nullptr if none found
+/**
+ * Searches for a service of type T in the services and returns it, returns nullptr if none found
+ */
 template <typename T>
 T* nap::Core::getService()
 {
 	Service* new_service = getService(RTTI_OF(T));
 	return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
+}
+
+
+/**
+ * Returns the core extension as an extension of type T
+ */
+template <typename T>
+const T& nap::Core::getExtension() const
+{
+	T* core_ext = rtti_cast<T>(mExtension.get());
+	assert(core_ext != nullptr);
+	return *core_ext;
+}
+
+
+/**
+ * Returns if core has an extension of type T
+ */
+template <typename T>
+bool nap::Core::hasExtension() const
+{
+	return rtti_cast<T>(mExtension.get()) != nullptr;
 }

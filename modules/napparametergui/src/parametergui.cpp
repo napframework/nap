@@ -1,40 +1,49 @@
-#include "parametergui.h"
-#include "parameter.h"
-#include "parameterservice.h"
-#include "imgui/imgui.h"
-#include "rtti/rttiutilities.h"
-#include "parameternumeric.h"
-#include "parametersimple.h"
-#include "parameterenum.h"
-#include "parametercolor.h"
+#include <parametergui.h>
+#include <parameter.h>
+#include <parameterservice.h>
+#include <imgui/imgui.h>
+#include <rtti/rttiutilities.h>
+#include <parameternumeric.h>
+#include <parametersimple.h>
+#include <parameterenum.h>
+#include <parametercolor.h>
 
 namespace nap
 {
+	/**
+	 * Helper function to display the UI for a float parameter (either float or double)
+	 */
 	template<class PARAMETERTYPE>
 	static void showFloatParameter(PARAMETERTYPE& parameter)
 	{
 		float value = parameter.mValue;
-		if (ImGui::SliderFloat(parameter.mID.c_str(), &value, parameter.mMinimum, parameter.mMaximum))
+		if (ImGui::SliderFloat(parameter.getDisplayName().c_str(), &value, parameter.mMinimum, parameter.mMaximum))
 			parameter.setValue(value);
 	}
 
+
+	/**
+	 * Helper function to display the UI for an integer parameter (i.e. all non-floating point types)
+	 */
 	template<class PARAMETERTYPE>
 	static void showIntParameter(PARAMETERTYPE& parameter)
 	{
 		int value = parameter.mValue;
-		if (ImGui::SliderInt(parameter.mID.c_str(), &value, parameter.mMinimum, parameter.mMaximum))
+		if (ImGui::SliderInt(parameter.getDisplayName().c_str(), &value, parameter.mMinimum, parameter.mMaximum))
 			parameter.setValue(value);
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 
 	ParameterGUI::ParameterGUI(ParameterService& parameterService) :
 		mParameterService(parameterService)
 	{
-		mPresets = mParameterService.getPresets();
+		mParameterContainers = mParameterService.getParameterContainers();
 		
 		registerDefaultParameterEditors();
 	}
+
 
 	void ParameterGUI::registerDefaultParameterEditors()
 	{
@@ -79,7 +88,7 @@ namespace nap
 			ParameterBool* bool_parameter = rtti_cast<ParameterBool>(&parameter);
 
 			bool value = bool_parameter->mValue;
-			if (ImGui::Checkbox(bool_parameter->mID.c_str(), &value))
+			if (ImGui::Checkbox(bool_parameter->getDisplayName().c_str(), &value))
 				bool_parameter->setValue(value);
 		});
 
@@ -88,7 +97,7 @@ namespace nap
 			ParameterRGBColorFloat* color_parameter = rtti_cast<ParameterRGBColorFloat>(&parameter);
 
 			RGBColorFloat value = color_parameter->mValue;
-			if (ImGui::ColorEdit3(color_parameter->mID.c_str(), value.getData()))
+			if (ImGui::ColorEdit3(color_parameter->getDisplayName().c_str(), value.getData()))
 				color_parameter->setValue(value);
 		});
 
@@ -97,7 +106,7 @@ namespace nap
 			ParameterVec2* vec2_parameter = rtti_cast<ParameterVec2>(&parameter);
 
 			glm::vec2 value = vec2_parameter->mValue;
-			if (ImGui::SliderFloat2(vec2_parameter->mID.c_str(), &(value[0]), vec2_parameter->mMinimum, vec2_parameter->mMaximum))
+			if (ImGui::SliderFloat2(vec2_parameter->getDisplayName().c_str(), &(value[0]), vec2_parameter->mMinimum, vec2_parameter->mMaximum))
 				vec2_parameter->setValue(value);
 		});
 
@@ -106,7 +115,16 @@ namespace nap
 			ParameterVec3* vec3_parameter = rtti_cast<ParameterVec3>(&parameter);
 
 			glm::vec3 value = vec3_parameter->mValue;
-			if (ImGui::SliderFloat3(vec3_parameter->mID.c_str(), &(value[0]), vec3_parameter->mMinimum, vec3_parameter->mMaximum))
+			if (ImGui::SliderFloat3(vec3_parameter->getDisplayName().c_str(), &(value[0]), vec3_parameter->mMinimum, vec3_parameter->mMaximum))
+				vec3_parameter->setValue(value);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterIVec3), [](Parameter& parameter)
+		{
+			ParameterIVec3* vec3_parameter = rtti_cast<ParameterIVec3>(&parameter);
+
+			glm::ivec3 value = vec3_parameter->mValue;
+			if (ImGui::SliderInt3(vec3_parameter->getDisplayName().c_str(), &value[0], vec3_parameter->mMinimum, vec3_parameter->mMaximum))
 				vec3_parameter->setValue(value);
 		});
 
@@ -121,7 +139,7 @@ namespace nap
 			std::vector<rttr::string_view> items(enum_instance.get_names().begin(), enum_instance.get_names().end());
 
 			int value = enum_parameter->getValue();
-			if (ImGui::Combo(parameter.mID.c_str(), &value, [](void* data, int index, const char** out_text)
+			if (ImGui::Combo(parameter.getDisplayName().c_str(), &value, [](void* data, int index, const char** out_text)
 			{
 				std::vector<rttr::string_view>* items = (std::vector<rttr::string_view>*)data;
 				*out_text = (*items)[index].data();
@@ -133,7 +151,8 @@ namespace nap
 		});
 	}
 
-	void ParameterGUI::handleLoadPopup()
+
+	void ParameterGUI::handleLoadPresetPopup()
 	{
 		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
@@ -147,7 +166,7 @@ namespace nap
 			if (ImGui::Button("OK"))
 			{
 				utility::ErrorState errorState;
-				if (mParameterService.loadPreset(mPresets[mSelectedPresetIndex], errorState))
+				if (mParameterService.loadPreset(*mParameterContainers[mSelectedContainerIndex].mContainer, mPresets[mSelectedPresetIndex], errorState))
 					ImGui::CloseCurrentPopup();
 				else
 					ImGui::OpenPopup("Failed to load preset");
@@ -168,7 +187,7 @@ namespace nap
 
 			if (ImGui::Button("Cancel"))
 			{
-				restorePresets();
+				restorePresetState();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -176,7 +195,8 @@ namespace nap
 		}
 	}
 
-	bool ParameterGUI::handleNewPopup(std::string& outNewFilename)
+
+	bool ParameterGUI::handleNewPresetPopup(std::string& outNewFilename)
 	{
 		bool result = false;
 
@@ -204,7 +224,8 @@ namespace nap
 		return result;
 	}
 
-	void ParameterGUI::handleSaveAsPopup()
+
+	void ParameterGUI::handleSaveAsPresetPopup()
 	{
 		if (ImGui::BeginPopupModal("Save As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
@@ -221,9 +242,8 @@ namespace nap
 				}
 			}
 
-
 			std::string newFilename;
-			if (handleNewPopup(newFilename))
+			if (handleNewPresetPopup(newFilename))
 			{
 				// Insert before the '<new...>' item
 				mPresets.insert(mPresets.end() - 1, newFilename);
@@ -234,12 +254,12 @@ namespace nap
 			if (ImGui::Button("OK"))
 			{
 				utility::ErrorState errorState;
-				if (mParameterService.savePreset(mPresets[mSelectedPresetIndex], errorState))
+				if (mParameterService.savePreset(*mParameterContainers[mSelectedContainerIndex].mContainer, mPresets[mSelectedPresetIndex], errorState))
 				{
 					ImGui::CloseCurrentPopup();
 					std::string previous_selection = mPresets[mSelectedPresetIndex];
 
-					mPresets = mParameterService.getPresets();
+					mPresets = mParameterService.getPresets(*mParameterContainers[mSelectedContainerIndex].mContainer);
 
 					// After we have retrieved the filenames from the service, the list may be in a different order,
 					// so we search for the item in the list to find the selected index.
@@ -274,7 +294,7 @@ namespace nap
 
 			if (ImGui::Button("Cancel"))
 			{
-				restorePresets();
+				restorePresetState();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -282,78 +302,127 @@ namespace nap
 		}
 	}
 
-	void ParameterGUI::savePresets()
+
+	void ParameterGUI::savePresetState()
 	{
 		mPrevSelectedPresetIndex = mSelectedPresetIndex;
 		mPrevPresets = mPresets;
 	}
 
-	void ParameterGUI::restorePresets()
+
+	void ParameterGUI::restorePresetState()
 	{
 		mSelectedPresetIndex = mPrevSelectedPresetIndex;
 		mPresets = mPrevPresets;
 	}
 
-	void ParameterGUI::showPresets()
+
+	void ParameterGUI::showPresets(const ParameterContainer* parameterContainer)
 	{
-		ImGui::Text("Current preset: ");
-		ImGui::SameLine();
-
-		bool hasPreset = mSelectedPresetIndex >= 0 && mSelectedPresetIndex < mPresets.size();
-
-		if (hasPreset)
-			ImGui::Text(mPresets[mSelectedPresetIndex].data());
-		else
-			ImGui::Text("<No preset>");
-
-		if (ImGui::Button("Save"))
+		if (parameterContainer != nullptr)
 		{
-			if (hasPreset)
+			mSelectedContainerIndex = -1;
+			for (int i = 0; i != mParameterContainers.size(); ++i)
 			{
-				utility::ErrorState errorState;
-				if (!mParameterService.savePreset(mPresets[mSelectedPresetIndex], errorState))
-					ImGui::OpenPopup("Failed to save preset");
-
-				if (ImGui::BeginPopupModal("Failed to save preset"))
+				if (parameterContainer == mParameterContainers[i].mContainer.get())
 				{
-					ImGui::Text(errorState.toString().c_str());
-					if (ImGui::Button("OK"))
+					mSelectedContainerIndex = i;
+					break;
+				}
+			}
+
+			assert(mSelectedContainerIndex != -1);
+		}
+		else
+		{
+			struct ContainerState
+			{
+				ParameterService::ParameterContainerList& mParameterContainers;
+				std::string mContainerName;
+			};
+
+			ContainerState container_state{ mParameterContainers };
+
+			std::string container_name;
+			ImGui::Combo("Containers", &mSelectedContainerIndex, [](void* data, int index, const char** out_text)
+			{
+				ContainerState* state = (ContainerState*)data;
+
+				const ParameterService::ParameterContainerInfo& container_info = state->mParameterContainers[index];
+
+				state->mContainerName.clear();
+				for (int i = 0; i < container_info.mDepth; ++i)
+					state->mContainerName += "   ";
+
+				state->mContainerName += container_info.mContainer->mID;
+
+				*out_text = state->mContainerName.data();
+				return true;
+			}, &container_state, mParameterContainers.size());
+		}
+
+		if (hasSelectedContainer())
+		{
+			ImGui::Text("Current preset: ");
+			ImGui::SameLine();
+
+			bool hasPreset = mSelectedPresetIndex >= 0 && mSelectedPresetIndex < mPresets.size();
+
+			if (hasPreset)
+				ImGui::Text(mPresets[mSelectedPresetIndex].data());
+			else
+				ImGui::Text("<No preset>");
+
+			if (ImGui::Button("Save"))
+			{
+				if (hasPreset)
+				{
+					utility::ErrorState errorState;
+					if (!mParameterService.savePreset(*mParameterContainers[mSelectedContainerIndex].mContainer, mPresets[mSelectedPresetIndex], errorState))
+						ImGui::OpenPopup("Failed to save preset");
+
+					if (ImGui::BeginPopupModal("Failed to save preset"))
 					{
-						ImGui::CloseCurrentPopup();
+						ImGui::Text(errorState.toString().c_str());
+						if (ImGui::Button("OK"))
+						{
+							ImGui::CloseCurrentPopup();
+						}
+
+						ImGui::EndPopup();
 					}
 
-					ImGui::EndPopup();
 				}
-
+				else
+				{
+					ImGui::OpenPopup("Save As");
+					savePresetState();
+					mPresets.push_back("<New...>");
+				}
 			}
-			else
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Save As"))
 			{
 				ImGui::OpenPopup("Save As");
-				savePresets();
+				savePresetState();
 				mPresets.push_back("<New...>");
 			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Load"))
+			{
+				ImGui::OpenPopup("Load");
+				savePresetState();
+			}
+
+			handleLoadPresetPopup();
+			handleSaveAsPresetPopup();
 		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("Save As"))
-		{
-			ImGui::OpenPopup("Save As");
-			savePresets();
-			mPresets.push_back("<New...>");
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("Load"))
-		{
-			ImGui::OpenPopup("Load");
-			savePresets();
-		}
-
-		handleLoadPopup();
-		handleSaveAsPopup();
 	}
+
 
 	void ParameterGUI::showParameters(ParameterContainer& parameterContainer, bool isRoot)
 	{
@@ -378,20 +447,21 @@ namespace nap
 	}
 
 
-	void ParameterGUI::show()
+	void ParameterGUI::show(const ParameterContainer* parameterContainer)
 	{
 		ImGui::Begin("Parameters");
 
-		showPresets();
+		showPresets(parameterContainer);
 
-		if (mParameterService.hasParameters())
+		if (hasSelectedContainer())
 		{
 			ImGui::Separator();
-			showParameters(mParameterService.getParameters(), true);
+			showParameters(*mParameterContainers[mSelectedContainerIndex].mContainer, true);
 		}
 
 		ImGui::End();
 	}
+
 
 	void ParameterGUI::registerParameterEditor(const rtti::TypeInfo& type, const CreateParameterEditor& createParameterEditorFunc)
 	{

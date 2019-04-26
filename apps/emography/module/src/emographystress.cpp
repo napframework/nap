@@ -42,31 +42,43 @@ namespace nap
 			const StressStateReading* reading = rtti_cast<const StressStateReading>(&readingBase);
 			assert(reading);
 
-			if (reading->mObject == EStressState::Under)
+			switch (reading->mObject)
+			{
+			case EStressState::Under:
 				mUnderCount = 1;
-			else if (reading->mObject == EStressState::Normal)
+				break;
+			case EStressState::Normal:
 				mNormalCount = 1;
-			else if (reading->mObject == EStressState::Over)
+				break;
+			case EStressState::Over:
 				mOverCount = 1;
+				break;
+			default:
+				assert(false);
+				break;
+			}
 		}
 
 
 		void StressStateReadingSummary::add(const StressStateReadingSummary& other)
 		{
-			mUnderCount += other.mUnderCount;
+			mUnderCount  += other.mUnderCount;
 			mNormalCount += other.mNormalCount;
-			mOverCount += other.mOverCount;
+			mOverCount	 += other.mOverCount;
 		}
 
 
 		int StressStateReadingSummary::getCount(EStressState inState) const
 		{
-			if (inState == EStressState::Normal)
+			switch (inState)
+			{
+			case EStressState::Normal:
 				return mNormalCount;
-			else if (inState == EStressState::Over)
+			case EStressState::Over:
 				return mOverCount;
-			else
+			default:
 				return mUnderCount;
+			}
 		}
 
 
@@ -84,7 +96,6 @@ namespace nap
 				rtti::Object* object = inObjects[index].mObject.get();
 				StressStateReadingSummary* reading_summary = rtti_cast<StressStateReadingSummary>(object);
 				assert(reading_summary != nullptr);
-
 				new_summary->add(*reading_summary);
 			}
 

@@ -1,10 +1,11 @@
 #pragma once
 
 // Local Includes
-#include "emographystressdataviewcomponent.h"
+#include "emographystressintensitycomponent.h"
 #include "emographyclearcachecomponent.h"
 #include "emographypopulatecachecomponent.h"
 #include "emographyaddstresscomponent.h"
+#include "emographystressstatecomponent.h"
 
 // External Includes
 #include <component.h>
@@ -34,10 +35,11 @@ namespace nap
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 			// Ptr to the component that can perform the query
-			ComponentPtr<StressDataViewComponent> mStressViewComponent;		///< Property: 'StressViewComponent'
-			ComponentPtr<ClearCacheComponent> mClearCacheComponent;			///< Property: 'ClearCacheComponent'
-			ComponentPtr<PopulateCacheComponent> mPopulateCacheComponent;	///< Property: 'PopulateCacheComponent'
-			ComponentPtr<AddStressSampleComponent> mAddStressComponent;		///< Property: 'AddStressComponent'
+			ComponentPtr<StressIntensityComponent> mStressIntensityComponent;	///< Property: 'StressViewComponent'
+			ComponentPtr<StressStateComponent> mStressStateComponent;			///< Property: 'StressStateComponent'
+			ComponentPtr<ClearCacheComponent> mClearCacheComponent;				///< Property: 'ClearCacheComponent'
+			ComponentPtr<PopulateCacheComponent> mPopulateCacheComponent;		///< Property: 'PopulateCacheComponent'
+			ComponentPtr<AddStressSampleComponent> mAddStressComponent;			///< Property: 'AddStressComponent'
 		};
 
 
@@ -67,23 +69,29 @@ namespace nap
 			virtual void update(double deltaTime) override;
 
 			// Resolved runtime instance ptr to stress view component
-			ComponentInstancePtr<StressDataViewComponent> mStressViewComponent		= { this, &APIControlComponent::mStressViewComponent };
+			ComponentInstancePtr<StressIntensityComponent> mStressIntensityComponent	= { this, &APIControlComponent::mStressIntensityComponent };
+
+			// Resolved runtime instance ptr to stress state component
+			ComponentInstancePtr<StressStateComponent> mStressStateComponent			= { this, &APIControlComponent::mStressStateComponent };
 
 			// Can clear the database cache
-			ComponentInstancePtr<ClearCacheComponent> mClearCacheComponent			= { this, &APIControlComponent::mClearCacheComponent };
+			ComponentInstancePtr<ClearCacheComponent> mClearCacheComponent				= { this, &APIControlComponent::mClearCacheComponent };
 
 			// Can populate the database cache
-			ComponentInstancePtr<PopulateCacheComponent> mPopulateCacheComponent	= { this, &APIControlComponent::mPopulateCacheComponent };
+			ComponentInstancePtr<PopulateCacheComponent> mPopulateCacheComponent		= { this, &APIControlComponent::mPopulateCacheComponent };
 
 			// Stores new stress samples in the database cache
-			ComponentInstancePtr<AddStressSampleComponent> mAddStressComponent		= { this, &APIControlComponent::mAddStressComponent };
+			ComponentInstancePtr<AddStressSampleComponent> mAddStressComponent			= { this, &APIControlComponent::mAddStressComponent };
 
 		private:
 			APIComponentInstance* mComponentInstance = nullptr;
 
 			// All callbacks
-			void updateView(const nap::APIEvent& apiEvent);
-			nap::Slot<const nap::APIEvent&> mUpateViewSlot = { this, &APIControlComponentInstance::updateView };
+			void getStressIntensity(const nap::APIEvent& apiEvent);
+			nap::Slot<const nap::APIEvent&> mGetStressIntensitySlot = { this, &APIControlComponentInstance::getStressIntensity };
+
+			void getStressState(const nap::APIEvent& apiEvent);
+			nap::Slot<const nap::APIEvent&> mGetStressStateSlot = { this, &APIControlComponentInstance::getStressState };
 
 			void clearCache(const nap::APIEvent& apiEvent);
 			nap::Slot<const nap::APIEvent&> mClearCacheSlot = { this, &APIControlComponentInstance::clearCache };
