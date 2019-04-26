@@ -93,7 +93,7 @@ namespace nap
 		class WidgetStorerBase
 		{
 		public:
-			~WidgetStorerBase() = default;
+			virtual ~WidgetStorerBase() = default;
 
 			virtual void storeWidget(const QWidget& widget, const QString& key, QSettings& s) const = 0;
 			virtual void restoreWidget(QWidget& widget, const QString& key, const QSettings& s) const = 0;

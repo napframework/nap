@@ -2,6 +2,7 @@
 
 #include <QStandardItemModel>
 #include <QMenu>
+#include <QLabel>
 
 #include <rtti/object.h>
 
@@ -83,6 +84,12 @@ namespace napkin
 
 	private:
 		/**
+		 * Check if a property is to be included in the inspector view
+		 * @param prop The property to omit (or not)
+		 * @return True when the property should not be displayed, false otherwise
+		 */
+		bool isPropertyIgnored(const PropertyPath& prop) const;
+		/**
 		 * Run through the object's properties and create items for them
 		 */
 		void populateItems();
@@ -135,5 +142,9 @@ namespace napkin
 		nap::qt::FilterTreeView mTreeView;	       // A tree view
 		QVBoxLayout mLayout;					   // The main layout
 		PropertyValueItemDelegate mWidgetDelegate; // Display a different editor based on the property type
+
+		QHBoxLayout mHeaderLayout;				   // Layout for top part (includes title and subtitle)
+		QLabel mTitle;							   // Title label
+		QLabel mSubTitle;                          // Subtitle label
 	};
 };

@@ -1,5 +1,6 @@
 # default oscpack directory
 find_path(OSCPACK_DIR
+          NO_CMAKE_FIND_ROOT_PATH
           NAMES osc/OscTypes.h
           HINTS ${THIRDPARTY_DIR}/oscpack
           )
