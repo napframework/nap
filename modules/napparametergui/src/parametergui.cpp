@@ -426,7 +426,7 @@ namespace nap
 
 	void ParameterGUI::showParameters(ParameterGroup& parameterGroup, bool isRoot)
 	{
-		if (isRoot || ImGui::TreeNode(parameterGroup.mID.c_str()))
+		if (isRoot || ImGui::CollapsingHeader(parameterGroup.mID.c_str()))
 		{
 			for (auto& parameter : parameterGroup.mParameters)
 			{
@@ -437,9 +437,6 @@ namespace nap
 
 				pos->second(*parameter);
 			}
-			
-			if (!isRoot)
-				ImGui::TreePop();
 
 			for (auto& child : parameterGroup.mChildren)
 				showParameters(*child, false);
