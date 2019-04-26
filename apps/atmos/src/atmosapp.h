@@ -13,6 +13,7 @@
 #include <app.h>
 #include <smoothdamp.h>
 #include <rendertarget.h>
+#include <yoctorangefinder.h>
 
 namespace nap
 {
@@ -76,6 +77,7 @@ namespace nap
 		ObjectPtr<EntityInstance>	mScanEntity			= nullptr;		//< Pointer to the scan entity (living under the world)
 		ObjectPtr<EntityInstance>	mVideoEntity		= nullptr;		///< Pointer to the video entity
 		ObjectPtr<EntityInstance>	mVideoCameraEntity	= nullptr;		///< Pointer to the camera that renders the video
+		ObjectPtr<YoctoRangeFinder>	mRangeFinder		= nullptr;
 
 		// Gui
 		std::unique_ptr<AtmosGui>	mGui = nullptr;

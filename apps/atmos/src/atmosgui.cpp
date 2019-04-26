@@ -41,6 +41,11 @@ namespace nap
 			nap::UpdateMaterialComponentInstance& up_mat_comp = mApp.mScanEntity->getComponent<UpdateMaterialComponentInstance>();
 			up_mat_comp.mFogColor = RGBColorFloat(mBackgroundColor.r, mBackgroundColor.g, mBackgroundColor.b);
 		}
+
+		mLedOn = mApp.mResourceManager->findObject<nap::ImageFromFile>("LedOnImage");
+		assert(mLedOn != nullptr);
+		mLedOff = mApp.mResourceManager->findObject<nap::ImageFromFile>("LedOffImage");
+		assert(mLedOff != nullptr);
 	}
 
 
@@ -280,6 +285,15 @@ namespace nap
 		ImGui::Text(mDateTime.toString().c_str());
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
+		if (ImGui::CollapsingHeader("Sensor Status"))
+		{
+			ImGui::Image(mApp.mRangeFinder->isOnline() ? *mLedOn : *mLedOff, { 32, 32 });
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("%s: %s", mApp.mRangeFinder->mID.c_str(), mApp.mRangeFinder->isOnline() ? "online" : "offline").c_str());
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("value: %f", mApp.mRangeFinder->getValue()).c_str());
+		}
+		
 		if (ImGui::CollapsingHeader("Texture Preview"))
 		{
 			float col_width = ImGui::GetContentRegionAvailWidth() * mTexPreviewDisplaySize;

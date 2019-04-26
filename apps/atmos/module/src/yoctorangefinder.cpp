@@ -73,13 +73,13 @@ namespace nap
 		mStopReading = false;
 		mReading = false;
 		int retries = 0;
-		uint64 lux_idx = 0;
+		uint64 idx = 0;
 		float accum_value = 0.0f;
 		bool first = true;
 		std::string error_msg;
 
 		// Create buffer that holds x amount of lux read-out values
-		std::vector<float> lux_buffer(mBufferSize, 0.0f);
+		std::vector<float> sensor_buffer(mBufferSize, 0.0f);
 
 		// Keep running until a 
 		while (!mStopReading)
@@ -120,19 +120,18 @@ namespace nap
 			float sensor_value = static_cast<float>(curr_sensor->get_currentValue());
 			logMessage(utility::stringFormat("%.2f range", sensor_value));
 
-
 			// Calculate accumulated value sensor vale
-			accum_value -= lux_buffer[lux_idx];
+			accum_value -= sensor_buffer[idx];
 			accum_value += sensor_value;
-			lux_buffer[lux_idx] = sensor_value;
-			if (++lux_idx == lux_buffer.size())
+			sensor_buffer[idx] = sensor_value;
+			if (++idx == sensor_buffer.size())
 			{
-				lux_idx = 0;
+				idx = 0;
 				first = false;
 			}
 
 			// Calculate average
-			mValue = first ? accum_value / static_cast<float>(lux_idx) : accum_value / static_cast<float>(lux_buffer.size());
+			mValue = first ? accum_value / static_cast<float>(idx) : accum_value / static_cast<float>(sensor_buffer.size());
 
 			// Note that we're online and have a valid value in stock
 			mReading = true;

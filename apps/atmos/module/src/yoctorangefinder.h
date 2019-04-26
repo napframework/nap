@@ -43,7 +43,7 @@ namespace nap
 		/**
 		 * @return the currently active value, when read-out fails this value is -1.0f
 		 */
-		float getValue()								{ return mValue; }
+		float getValue() const							{ return mValue; }
 
 		/**
 		 * Stops a possible thread from reading sensor values

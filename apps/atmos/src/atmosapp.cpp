@@ -54,6 +54,9 @@ namespace nap
 		mVideoEntity = scene->findEntity("VideoPlaneEntity");
 		mVideoCameraEntity = scene->findEntity("VideoCameraEntity");
 
+		// Get yocto range finder
+		mRangeFinder = mResourceManager->findObject("YoctoRangeFinder");
+		
 		// Create gui
 		mGui = std::make_unique<AtmosGui>(*this);
 		mGui->init();

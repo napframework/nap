@@ -4,6 +4,8 @@
 #include <nap/datetime.h>
 #include <color.h>
 #include <nglutils.h>
+#include <imagefromfile.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -64,6 +66,9 @@ namespace nap
 		float					mCamMaxMovSpeed = 0.0f;
 		bool					mLinkFogToBackground = true;
 		bool					mBackgroundColorDirty = true;
+
+		ResourcePtr<ImageFromFile> mLedOn = nullptr;				//< Signals established connection
+		ResourcePtr<ImageFromFile> mLedOff = nullptr;
 
 		/**
 		 * Shows the controls menu
