@@ -329,7 +329,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Mesh Light Direction",
                             "Value" : 0.0,
-                            "Minimum" : 1.0,
+                            "Minimum" : 0.0,
                             "Maximum" : 1.0
                         }
                     ]
