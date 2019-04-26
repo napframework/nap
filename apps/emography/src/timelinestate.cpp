@@ -28,6 +28,7 @@ namespace nap
 			mTimeRight = dayEndTime;
 		}
 
+
 		bool TimelineState::OnMouseDown(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown)
 		{
 			//  In case an active mode was set, it means it is a mode set by the UI buttons. We store it here
@@ -52,16 +53,19 @@ namespace nap
 			return true;
 		}
 
+
 		void TimelineState::OnMouseEnter(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown)
 		{
 
 		}
+
 
 		void TimelineState::OnMouseLeave(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown)
 		{
 			mLastCursorTimePos = -1;
 			SetModeState(EModeState::Finished);
 		}
+
 
 		void TimelineState::OnMouseMove(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown)
 		{
@@ -107,6 +111,7 @@ namespace nap
 			mLastCursorTimePos = PixelToAbsTime(inPosition.x);
 		}
 
+
 		void TimelineState::OnMouseUp(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown)
 		{
 			if (IsModeStarted())
@@ -121,10 +126,12 @@ namespace nap
 			mLastCursorTimePos = PixelToAbsTime(inPosition.x);
 		}
 
+
 		double TimelineState::GetClampedRange(double inTimeRangeMs)
 		{
 			return glm::clamp<double>(mMinTimeRangeMs, mMaxTimeRangeMs, inTimeRangeMs);
 		}
+
 
 		void TimelineState::ZoomAroundTime(uint64_t inClickTimePos, uint64_t inTimeLeft, uint64_t inTimeRight, float inDelta)
 		{
@@ -141,6 +148,7 @@ namespace nap
 			mTimeLeft = newTimeLeft;
 			mTimeRight = newTimeRight;
 		}
+
 
 		void TimelineState::MoveTo(uint64_t inStartPosition)
 		{

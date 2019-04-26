@@ -262,8 +262,8 @@ namespace nap
 					minor_marker_time += minor_step_size;
 				}
 
-				SystemTimeStamp major_marker_time(Seconds((uint64_t)major_marker_time));
-				DateTime major_marker_datetime(major_marker_time);
+				SystemTimeStamp major_marker_time_ts(Seconds(static_cast<uint64_t>(major_marker_time)));
+				DateTime major_marker_datetime(major_marker_time_ts);
 
 				std::string major_marker_text = major_marker_datetime.toString();
 				draw_list->AddText(ImVec2(top_left.x + x, height - text_timeline_height), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), major_marker_text.c_str());
@@ -313,8 +313,6 @@ namespace nap
 
 	void EmographyApp::renderStressStateGraph(float graphWidth, float graphHeight)
 	{
-		float y_units = mGraphYUnits;
-
 		int num_samples = mResolution;
  		float seconds_per_sample = (mTimelineState.mTimeRight - mTimelineState.mTimeLeft) / (float)num_samples;
  		if (seconds_per_sample < 1.0f)
