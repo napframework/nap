@@ -156,6 +156,10 @@ namespace nap
 	{
 		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
+			mPresets = mParameterService.getPresets(*mParameterGroups[mSelectedGroupIndex].mGroup);
+			if (!mPresets.empty() && mSelectedPresetIndex == -1)
+				mSelectedPresetIndex = 0;
+
 			ImGui::Combo("Presets", &mSelectedPresetIndex, [](void* data, int index, const char** out_text)
 			{
 				ParameterService::PresetFileList* preset_files = (ParameterService::PresetFileList*)data;
