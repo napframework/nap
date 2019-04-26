@@ -283,7 +283,6 @@ void PropertyPath::setValue(rttr::variant value)
 			if (resolve().getValue() == value)
 			{
 				removeInstanceValue(targetAttr, val);
-
 			}
 			else
 			{
@@ -330,26 +329,31 @@ void PropertyPath::setValue(rttr::variant value)
 }
 
 void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const
-{// remove from targetattributes list
+{
+	// remove from targetattributes list
 	auto instProps = this->instanceProps();
 	auto& attrs = instProps->mTargetAttributes;
 	auto filter = [&](const nap::TargetAttribute& attr) { return &attr == targetAttr; };
 	attrs.erase(std::remove_if(attrs.begin(), attrs.end(), filter), attrs.end());
 
+	auto component = instProps->mTargetComponent.get();
+
 	// remove attributes list if necessary
 	if (attrs.empty())
 	{
-		auto component = instProps->mTargetComponent.get();
 		auto flt = [&](const nap::ComponentInstanceProperties& instProp) { return &instProp == instProps; };
 		auto& rootInstProps = this->getRootEntity()->mInstanceProperties;
 		rootInstProps.erase(std::remove_if(rootInstProps.begin(), rootInstProps.end(), flt),
 							rootInstProps.end());
-
-		this->document()->objectChanged(component);
 	}
 
 	// Remove from object list
 	removeInstancePropertyValue(val, this->getType());
+
+	auto doc = document();
+	doc->objectChanged(component);
+	for (auto scene : doc->getObjects<nap::Scene>())
+		doc->objectChanged(scene);
 }
 
 Object* PropertyPath::getPointee() const
@@ -519,6 +523,15 @@ bool PropertyPath::isOverridden() const
 	if (!hasProperty())
 		return false;
 	return targetAttribute();
+}
+
+void PropertyPath::removeOverride()
+{
+	auto at = targetAttribute();
+	if (!at)
+		return;
+	rttr::variant val = at->mValue.get();
+	removeInstanceValue(at, val);
 }
 
 bool PropertyPath::hasOverriddenChildren() const

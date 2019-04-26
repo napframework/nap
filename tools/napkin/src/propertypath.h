@@ -175,6 +175,11 @@ namespace napkin
 		bool isOverridden() const;
 
 		/**
+		 * Remove overridden value
+		 */
+		void removeOverride();
+
+		/**
 		 * @return True if this path has any children with an override
 		 */
 		bool hasOverriddenChildren() const;

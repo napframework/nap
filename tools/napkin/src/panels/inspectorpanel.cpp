@@ -115,8 +115,9 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	auto path_item = dynamic_cast<PropertyPathItem*>(item);
 	if (path_item != nullptr)
 	{
-		const auto& type = path_item->getPath().getType();
-		const auto& prop = path_item->getPath().getProperty();
+		auto& path = path_item->getPath();
+		const auto& type = path.getType();
+		const auto& prop = path.getProperty();
 		if (type.is_derived_from<std::string>() && nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::FileLink))
 		{
 			bool ok;
@@ -133,6 +134,14 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 				});
 			}
 
+		}
+
+		if (path.isInstanceProperty() && path.isOverridden())
+		{
+			menu.addAction("Remove override", [path]() {
+				PropertyPath p = path;
+				p.removeOverride();
+			});
 		}
 	}
 
