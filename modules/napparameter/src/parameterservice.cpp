@@ -12,7 +12,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterService)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ParameterServiceConfiguration)
-	RTTI_PROPERTY("RootParameterGroup",		&nap::ParameterServiceConfiguration::mRootParameterGroup,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PresetsDirectory",		&nap::ParameterServiceConfiguration::mPresetsDirectory,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -74,6 +73,8 @@ namespace nap
 			preset_path += "/";
 
 		preset_path += filename;
+		std::transform(preset_path.begin(), preset_path.end(), preset_path.begin(), ::tolower);
+
 		return preset_path;
 	}
 
@@ -87,8 +88,11 @@ namespace nap
 			group_directory += "/";
 
 		group_directory += groupID;
+		std::transform(group_directory.begin(), group_directory.end(), group_directory.begin(), ::tolower);
+
 		return group_directory;
 	}
+
 
 	bool ParameterService::loadPreset(ParameterGroup& group, const std::string& presetFile, utility::ErrorState& errorState)
 	{
@@ -114,7 +118,7 @@ namespace nap
 			}
 		}
 
-		errorState.fail("The preset file %s does not contain a ParameterGroup with name %s", presetFile.c_str(), configuration->mRootParameterGroup.c_str());
+		errorState.fail("The preset file %s does not contain a ParameterGroup with name %s", presetFile.c_str(), group.mID.c_str());
 		return false;
 	}
 
@@ -148,8 +152,24 @@ namespace nap
 	{
 		// Whenever the main json is (re)loaded, update the root parameter group
 		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
-		ResourcePtr<ParameterGroup> root_params = getCore().getResourceManager()->findObject<ParameterGroup>(configuration->mRootParameterGroup);
-		mRootGroup = root_params;
+
+		// We search for the root parameter group by finding the group that has no parent
+		using ParentMap = std::unordered_map<const ParameterGroup*, const ParameterGroup*>;
+		ParentMap parent_map;
+		std::vector<rtti::ObjectPtr<ParameterGroup>> parameter_groups = getCore().getResourceManager()->getObjects<ParameterGroup>();
+		for (auto& parameter_group : parameter_groups)
+			for (auto& child_group : parameter_group->mChildren)
+				parent_map[child_group.get()] = parameter_group.get();
+
+		mRootGroup = nullptr;
+		for (auto& parameter_group : parameter_groups)
+		{
+			if (parent_map.find(parameter_group.get()) == parent_map.end())
+			{
+				mRootGroup = parameter_group.get();
+				break;
+			}
+		}
 	}
 
 

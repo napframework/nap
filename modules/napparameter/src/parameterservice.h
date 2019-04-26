@@ -136,7 +136,6 @@ namespace nap
 		}
 
 	public:
-		std::string mRootParameterGroup		= "Parameters";	///< Property: 'RootParameterGroup' The ID of the root parameter group
 		std::string mPresetsDirectory		= "Presets";	///< Property: 'PresetsDirectory' The directory where presets should be saved to/loaded from
 	};
 }
