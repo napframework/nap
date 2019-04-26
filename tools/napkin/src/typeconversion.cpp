@@ -258,7 +258,8 @@ namespace napkin
 		doc->removeObject(*propValue);
 	}
 
-	void removeInstancePropertyValue(rttr::variant& prop, const rttr::type& type) {
+	void removeInstancePropertyValue(rttr::variant& prop, const rttr::type& type)
+	{
 		if (type == rttr::type::get<bool>()) 				removeInstProp<bool>(prop);
 		else if (type == rttr::type::get<char>()) 			removeInstProp<char>(prop);
 		else if (type == rttr::type::get<int8_t>()) 		removeInstProp<int8_t>(prop);
