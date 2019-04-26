@@ -33,7 +33,7 @@ namespace nap
 		 * Stop the device. Will be called before the object is reloaded
 		 */
 		virtual void stop() override;
-
+		
 		std::string			mAddress;								///< Property:'Address' hub ip address or host name
 		std::string			mUsername;								///< Property:'Username' ethernet user name
 		std::string			mPass;									///< Property:'Pass' ethernet user password

@@ -41,8 +41,6 @@ namespace nap
 
 	bool YoctoRangeFinder::start(utility::ErrorState& errorState)
 	{
-		nap::Logger::info("STARTING RANGE FINDER");
-
 		// Fire off monitor thread. Automatically tries to reconnect to the sensor
 		// When connection fails it waits until it tries again
 		mMonitorTask = std::async(std::launch::async, std::bind(&YoctoRangeFinder::monitor, this));
@@ -53,20 +51,12 @@ namespace nap
 	void YoctoRangeFinder::monitor()
 	{
 		while (!mStopRunning)
-		{
-			// Find sensor and try to locate it
-			// Note that it's allowed for the sensor not to be found immediately
-			// The loop that reads the value will try to connect 10 times before bumming out
-			YRangeFinder* sensor = yFindRangeFinder(mName.c_str());
-			read(sensor);
-		}
+			read();
 	}
 
 
 	void YoctoRangeFinder::stop()
 	{
-		nap::Logger::info("STOPPING RANGE FINDER");
-
 		// Stop all of our polling tasks
 		mStopReading = true;
 		mStopRunning = true;
@@ -77,7 +67,7 @@ namespace nap
 	}
 
 
-	void YoctoRangeFinder::read(void* sensor)
+	void YoctoRangeFinder::read()
 	{
 		// Reset some state variables
 		mStopReading = false;
@@ -94,21 +84,29 @@ namespace nap
 		// Keep running until a 
 		while (!mStopReading)
 		{
-			// Sleep
-			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), error_msg);
-			if (sleep != YAPI_SUCCESS)
+			try
 			{
-				if (++retries > mRetries)
+				// Sleep
+				YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), error_msg);
+				if (sleep != YAPI_SUCCESS)
 				{
-					logMessage("has trouble sleeping");
-					break;
+					if (++retries > mRetries)
+					{
+						logMessage(error_msg.c_str());
+						break;
+					}
+					continue;
 				}
-				continue;
+			}
+			catch (const std::exception& exception)
+			{
+				nap::Logger::error(exception.what());
+				break;
 			}
 
 			// Get sensor and ensure it's online
 			YRangeFinder* curr_sensor = yFindRangeFinder(mName.c_str());
-			if (!curr_sensor->isOnline())
+			if (curr_sensor == nullptr || !curr_sensor->isOnline())
 			{
 				if (++retries > mRetries)
 				{
@@ -121,6 +119,7 @@ namespace nap
 			// Read current value
 			float sensor_value = static_cast<float>(curr_sensor->get_currentValue());
 			logMessage(utility::stringFormat("%.2f range", sensor_value));
+
 
 			// Calculate accumulated value sensor vale
 			accum_value -= lux_buffer[lux_idx];

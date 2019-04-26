@@ -63,7 +63,7 @@ namespace nap
 		bool							mLog = false;			///< Property: 'Log' If we want to log sensor data
 		ResourcePtr<YoctoEthernetHub>	mHub = nullptr;			///< Property: 'Hub' The hub this sensor is connected to
 	private:
-		float							mValue = -1.0f;			///< Current light value
+		std::atomic<float>				mValue = { -1.0f };		///< Current light value
 		bool							mStopReading = false;	///< Stops the thread from reading sensor values
 		bool							mStopRunning = false;	///< Stops the monitor thread
 		bool							mReading = false;		///< If the sensor is currently online
@@ -77,7 +77,7 @@ namespace nap
 		 * Starts reading values from the sensor, this function is started in
 		 * a separate thread when calling start()
 		 */
-		void read(void* sensor);
+		void read();
 
 		// The thread that monitor the read thread
 		std::future<void> mMonitorTask;

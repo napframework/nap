@@ -1101,9 +1101,9 @@
             "Type": "nap::YoctoRangeFinder",
             "mID": "YoctoRangeFinder",
             "Name": "YRNGFND1-F1F51.rangeFinder1",
-            "Retries": 20,
+            "Retries": 5,
             "BufferSize": 30,
-            "DelayTime": 200,
+            "DelayTime": 100,
             "Log": true,
             "Hub": "YoctoEthernetHub"
         }

@@ -1,8 +1,10 @@
 #include "yoctoethernethub.h"
+#include "yoctorangefinder.h"
 
 #include <utility/stringutils.h>
 #include <yocto_api.h>
 #include <nap/logger.h>
+
 
 // nap::yoctoethernethub run time class definition 
 RTTI_BEGIN_CLASS(nap::YoctoEthernetHub)
@@ -56,8 +58,6 @@ namespace nap
 
 	void YoctoEthernetHub::stop()
 	{
-		nap::Logger::info("STOPPING ethernet hub!");
-
 		// Unregister previously connected hub
 		yUnregisterHub(getUrl());
 	}
