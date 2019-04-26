@@ -12,17 +12,17 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterService)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ParameterServiceConfiguration)
-	RTTI_PROPERTY("RootParameterContainer",		&nap::ParameterServiceConfiguration::mRootParameterContainer,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PresetsDirectory",			&nap::ParameterServiceConfiguration::mPresetsDirectory,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RootParameterGroup",		&nap::ParameterServiceConfiguration::mRootParameterGroup,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PresetsDirectory",		&nap::ParameterServiceConfiguration::mPresetsDirectory,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	static void gatherParameterContainers(ParameterContainer& container, ParameterService::ParameterContainerList& parameterContainers, int depth = 0)
+	static void gatherParameterGroups(ParameterGroup& group, ParameterService::ParameterGroupList& parameterGroups, int depth = 0)
 	{
-		parameterContainers.push_back({ &container, depth });
-		for (auto& dest_child : container.mChildren)
-			gatherParameterContainers(*dest_child, parameterContainers, depth + 1);
+		parameterGroups.push_back({ &group, depth });
+		for (auto& dest_child : group.mChildren)
+			gatherParameterGroups(*dest_child, parameterGroups, depth + 1);
 	}
 
 	ParameterService::ParameterService(ServiceConfiguration* configuration) :
@@ -30,19 +30,19 @@ namespace nap
 	{
 	}
 
-	ParameterService::ParameterContainerList ParameterService::getParameterContainers()
+	ParameterService::ParameterGroupList ParameterService::getParameterGroups()
 	{
-		ParameterContainerList containers;
+		ParameterGroupList groups;
 
-		if (mRootContainer != nullptr)
-			gatherParameterContainers(*mRootContainer, containers);
+		if (mRootGroup != nullptr)
+			gatherParameterGroups(*mRootGroup, groups);
 
-		return containers;
+		return groups;
 	}
 
-	ParameterService::PresetFileList ParameterService::getPresets(const ParameterContainer& container) const
+	ParameterService::PresetFileList ParameterService::getPresets(const ParameterGroup& group) const
 	{
-		const std::string presetDir = getContainerPresetDirectory(container.mID);
+		const std::string presetDir = getGroupPresetDirectory(group.mID);
 
 		// Find all files in the preset directory
 		std::vector<std::string> files_in_directory;
@@ -67,9 +67,9 @@ namespace nap
 	}
 
 
-	std::string ParameterService::getPresetPath(const std::string& containerID, const std::string& filename) const
+	std::string ParameterService::getPresetPath(const std::string& groupID, const std::string& filename) const
 	{
-		std::string preset_path = getContainerPresetDirectory(containerID);
+		std::string preset_path = getGroupPresetDirectory(groupID);
 		if (preset_path.back() != '/' && preset_path.back() != '\\')
 			preset_path += "/";
 
@@ -78,21 +78,21 @@ namespace nap
 	}
 
 
-	std::string ParameterService::getContainerPresetDirectory(const std::string& containerID) const
+	std::string ParameterService::getGroupPresetDirectory(const std::string& groupID) const
 	{
 		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
 
-		std::string container_directory = configuration->mPresetsDirectory;
-		if (container_directory.back() != '/' && container_directory.back() != '\\')
-			container_directory += "/";
+		std::string group_directory = configuration->mPresetsDirectory;
+		if (group_directory.back() != '/' && group_directory.back() != '\\')
+			group_directory += "/";
 
-		container_directory += containerID;
-		return container_directory;
+		group_directory += groupID;
+		return group_directory;
 	}
 
-	bool ParameterService::loadPreset(ParameterContainer& container, const std::string& presetFile, utility::ErrorState& errorState)
+	bool ParameterService::loadPreset(ParameterGroup& group, const std::string& presetFile, utility::ErrorState& errorState)
 	{
-		std::string preset_path = getPresetPath(container.mID, presetFile);
+		std::string preset_path = getPresetPath(group.mID, presetFile);
 
 		// Load the parameters from the preset
 		rtti::DeserializeResult deserialize_result;
@@ -103,32 +103,32 @@ namespace nap
 		if (!rtti::DefaultLinkResolver::sResolveLinks(deserialize_result.mReadObjects, deserialize_result.mUnresolvedPointers, errorState))
 			return false;
 
-		// Find the root parameter container in the preset file and apply parameters
+		// Find the root parameter group in the preset file and apply parameters
 		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
 		for (auto& object : deserialize_result.mReadObjects)
 		{
-			if (object->get_type().is_derived_from<ParameterContainer>() && object->mID == container.mID)
+			if (object->get_type().is_derived_from<ParameterGroup>() && object->mID == group.mID)
 			{
-				setParametersRecursive(*rtti_cast<ParameterContainer>(object.get()), container);
+				setParametersRecursive(*rtti_cast<ParameterGroup>(object.get()), group);
 				return true;
 			}
 		}
 
-		errorState.fail("The preset file %s does not contain a ParameterContainer with name %s", presetFile.c_str(), configuration->mRootParameterContainer.c_str());
+		errorState.fail("The preset file %s does not contain a ParameterGroup with name %s", presetFile.c_str(), configuration->mRootParameterGroup.c_str());
 		return false;
 	}
 
 
-	bool ParameterService::savePreset(ParameterContainer& container, const std::string& presetFile, utility::ErrorState& errorState)
+	bool ParameterService::savePreset(ParameterGroup& group, const std::string& presetFile, utility::ErrorState& errorState)
 	{
 		// Ensure the presets directory exists
-		utility::makeDirs(utility::getAbsolutePath(getContainerPresetDirectory(container.mID)));
+		utility::makeDirs(utility::getAbsolutePath(getGroupPresetDirectory(group.mID)));
 
-		std::string preset_path = getPresetPath(container.mID, presetFile);
+		std::string preset_path = getPresetPath(group.mID, presetFile);
 
 		// Serialize current set of parameters to json
 		rtti::JSONWriter writer;
-		if (!rtti::serializeObjects({ &container }, writer, errorState))
+		if (!rtti::serializeObjects({ &group }, writer, errorState))
 			return false;
 
 		// Open output file
@@ -146,14 +146,14 @@ namespace nap
 
 	void ParameterService::resourcesLoaded()
 	{
-		// Whenever the main json is (re)loaded, update the root parameter container
+		// Whenever the main json is (re)loaded, update the root parameter group
 		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
-		ResourcePtr<ParameterContainer> root_params = getCore().getResourceManager()->findObject<ParameterContainer>(configuration->mRootParameterContainer);
-		mRootContainer = root_params;
+		ResourcePtr<ParameterGroup> root_params = getCore().getResourceManager()->findObject<ParameterGroup>(configuration->mRootParameterGroup);
+		mRootGroup = root_params;
 	}
 
 
-	void ParameterService::setParametersRecursive(const ParameterContainer& sourceParameters, ParameterContainer& destinationParameters)
+	void ParameterService::setParametersRecursive(const ParameterGroup& sourceParameters, ParameterGroup& destinationParameters)
 	{
 		// Apply all parameters in the source to the destination. 
 		// Note that it's not considered an error if a parameter is preset in the source, but not in the destination. 
@@ -165,10 +165,10 @@ namespace nap
 				param->setValue(*new_param);
 		}
 
-		// Recursively apply the parameters of all child containers
+		// Recursively apply the parameters of all child groups
 		for (auto& dest_child : destinationParameters.mChildren)
 		{
-			const ResourcePtr<ParameterContainer>& source_child = sourceParameters.findChild(dest_child->mID);
+			const ResourcePtr<ParameterGroup>& source_child = sourceParameters.findChild(dest_child->mID);
 			if (source_child != nullptr)
 				setParametersRecursive(*source_child, *dest_child);
 		}

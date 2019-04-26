@@ -6,7 +6,7 @@
 
 namespace nap
 {
-	class ParameterContainer;
+	class ParameterGroup;
 
 	/**
 	 * The ParameterService manages the Parameters for a project. It provides support for loading/saving presets of Parameters
@@ -16,29 +16,32 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
-		struct ParameterContainerInfo
+		/**
+		 * This struct holds additional info on top of a group, most importantly the depth of the group within the full tree
+		 */
+		struct ParameterGroupInfo
 		{
-			ResourcePtr<ParameterContainer> mContainer;
-			int mDepth;
+			ResourcePtr<ParameterGroup> mGroup;		///< The group we're storing info for
+			int							mDepth;		///< The depth of this group within the full group tree
 		};
 
 		using PresetFileList = std::vector<std::string>;
-		using ParameterContainerList = std::vector<ParameterContainerInfo>;
+		using ParameterGroupList = std::vector<ParameterGroupInfo>;
 		ParameterService(ServiceConfiguration* configuration);
 
 		/**
-		 * Get all parameter containers
+		 * Get all parameter groups
 		 *
-		 * @return The list of all parameter containers
+		 * @return The list of all parameter groups
 		 */
-		ParameterContainerList getParameterContainers();
+		ParameterGroupList getParameterGroups();
 
 		/**
-		 * Get a list of all available preset files for the specified container
+		 * Get a list of all available preset files for the specified group
 		 *
 		 * @return The list of presets
 		 */
-		PresetFileList getPresets(const ParameterContainer& container) const;
+		PresetFileList getPresets(const ParameterGroup& group) const;
 
 		/**
 		 * Load a preset from the specified file. The parameters in the Preset will be automatically applied.
@@ -49,7 +52,7 @@ namespace nap
 		 *
 		 * @return Whether the load of the preset failed or succeeded
 		 */
-		bool loadPreset(ParameterContainer& container, const std::string& presetFile, utility::ErrorState& errorState);
+		bool loadPreset(ParameterGroup& group, const std::string& presetFile, utility::ErrorState& errorState);
 
 		/**
 		 * Save the current set of parameters/values to the specified file as a preset.
@@ -59,21 +62,21 @@ namespace nap
 		 *
 		 * @return Whether the save of the preset failed or succeeded
 		 */
-		bool savePreset(ParameterContainer& container, const std::string& presetFile, utility::ErrorState& errorState);
+		bool savePreset(ParameterGroup& group, const std::string& presetFile, utility::ErrorState& errorState);
 	
 		/**
-		 * Whether a RootContainer is available (i.e. whether any parameters have been defined for the current project)
+		 * Whether a RootGroup is available (i.e. whether any parameters have been defined for the current project)
 		 *
-		 * @return Whether a RootContainer is available
+		 * @return Whether a RootGroup is available
 		 */
-		bool hasRootContainer() const { return mRootContainer != nullptr; }
+		bool hasRootGroup() const { return mRootGroup != nullptr; }
 
 		/**
-		 * Get the root container
+		 * Get the root group
 		 *
-		 * @return The root container
+		 * @return The root group
 		 */
-		ParameterContainer& getRootContainer() { assert(hasRootContainer()); return *mRootContainer; }
+		ParameterGroup& getRootGroup() { assert(hasRootGroup()); return *mRootGroup; }
 
 	protected:
 		/**
@@ -88,36 +91,36 @@ namespace nap
 		 *
 		 * @return Full path to the preset file
 		 */
-		std::string getPresetPath(const std::string& containerID, const std::string& filename) const;
+		std::string getPresetPath(const std::string& groupID, const std::string& filename) const;
 
 		/**
-		 * Get the directory that presets for the specified container are stored in
+		 * Get the directory that presets for the specified group are stored in
 		 * 
-		 * @param containerID The container id
+		 * @param groupID The group id
 		 *
-		 * @return The directory that presets for the specified container are stored in
+		 * @return The directory that presets for the specified group are stored in
 		 */
-		std::string getContainerPresetDirectory(const std::string& containerID) const;
+		std::string getGroupPresetDirectory(const std::string& groupID) const;
 
 	private:
 
 		/** 
 		 * Helper function to recursively apply parameters from a preset to the current active set of parameters
 		 *
-		 * @param sourceParameters The parameter container that contains the parameters which should be applied
-		 * @param destinationParameters The parameter container that contains the destination parameters which should be overwritten with data from the preset
+		 * @param sourceParameters The parameter group that contains the parameters which should be applied
+		 * @param destinationParameters The parameter group that contains the destination parameters which should be overwritten with data from the preset
 		 */
-		void setParametersRecursive(const ParameterContainer& sourceParameters, ParameterContainer& destinationParameters);
+		void setParametersRecursive(const ParameterGroup& sourceParameters, ParameterGroup& destinationParameters);
 
 	private:	
-		ParameterContainerList mContainers;
-		ResourcePtr<ParameterContainer> mRootContainer;		///< The root parameter container containing the parameters for this project
+		ParameterGroupList mGroups;
+		ResourcePtr<ParameterGroup> mRootGroup;		///< The root parameter group containing the parameters for this project
 	};
 
 
 	/**
 	 * The ParameterServiceConfiguration is used to configure the ParameterService. 
-	 * It allows the user to specify the id of the 'root' parameter container and the directory where presets should be saved to.
+	 * It allows the user to specify the id of the 'root' parameter group and the directory where presets should be saved to.
 	 */
 	class NAPAPI ParameterServiceConfiguration : public ServiceConfiguration
 	{
@@ -133,7 +136,7 @@ namespace nap
 		}
 
 	public:
-		std::string mRootParameterContainer = "Parameters";	///< Property: 'RootParameterContainer' The ID of the root parameter container
+		std::string mRootParameterGroup		= "Parameters";	///< Property: 'RootParameterGroup' The ID of the root parameter group
 		std::string mPresetsDirectory		= "Presets";	///< Property: 'PresetsDirectory' The directory where presets should be saved to/loaded from
 	};
 }

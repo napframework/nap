@@ -20,12 +20,7 @@ namespace nap
 		 *
 		 * @param value The parameter to set the value from
 		 */
-		virtual void setValue(const Parameter& value) override
-		{
-			const ParameterSimple<T>* derived_type = rtti_cast<const ParameterSimple<T>>(&value);
-			assert(derived_type != nullptr);
-			setValue(derived_type->mValue);
-		}
+		virtual void setValue(const Parameter& value) override;
 
 		/**
 		 * Set the value of this parameter. Will raise the valueChanged signal if the value actually changes.
@@ -47,6 +42,18 @@ namespace nap
 	};
 
 	using ParameterBool = ParameterSimple<bool>;
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	void ParameterSimple<T>::setValue(const Parameter& value)
+	{
+		const ParameterSimple<T>* derived_type = rtti_cast<const ParameterSimple<T>>(&value);
+		assert(derived_type != nullptr);
+		setValue(derived_type->mValue);
+	}
 }
 
 

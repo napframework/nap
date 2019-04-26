@@ -10,6 +10,7 @@
 #include "parameternumeric.h"
 #include "parametersimple.h"
 #include "parametercolor.h"
+#include "enumparameters.h"
 
 namespace nap
 {
@@ -17,9 +18,6 @@ namespace nap
 	class AtmosApp;
 	class ParameterGUI;
 	class ParameterService;
-
-	using ParameterControlMethod = ParameterEnum<EControlMethod>;
-	using ParameterPolygonMode = ParameterEnum<opengl::EPolygonMode>;
 
 	class AtmosGui final
 	{

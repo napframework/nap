@@ -1,7 +1,7 @@
 {
     "Objects": [
         {
-            "Type": "nap::ParameterContainer",
+            "Type": "nap::ParameterGroup",
 			"mID" : "Parameters",
             "Parameters" : [
                 {
@@ -42,7 +42,7 @@
             ],
             "Children" : [
                 {
-                    "Type": "nap::ParameterContainer",
+                    "Type": "nap::ParameterGroup",
                     "mID": "Camera",
                     "Parameters" :
                     [
@@ -75,28 +75,30 @@
                     ]                    
                 },
                 {
-                    "Type": "nap::ParameterContainer",
+                    "Type": "nap::ParameterGroup",
                     "mID": "Color Mixing",
                     "Parameters" :
                     [
                         {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "Diffuse Color",
-                            "Value" : 
-                            { 
-                                "Red" : 0.0, 
-                                "Green" : 0.0, 
-                                "Blue" : 0.0 
-                            }
+                            "Value": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            }                            
                         },
                         {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "Mask Color",
-                            "Value" : 
-                            { 
-                                "Red" : 0.0, 
-                                "Green" : 0.0, 
-                                "Blue" : 0.0 
+                            "Value": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
                             }
                         },
                         {
@@ -144,7 +146,7 @@
                     ]                    
                 },
                 {
-                    "Type": "nap::ParameterContainer",
+                    "Type": "nap::ParameterGroup",
                     "mID": "Texture Settings",
                     "Parameters" :
                     [
@@ -194,7 +196,7 @@
                     ]                    
                 },
                 {
-                    "Type": "nap::ParameterContainer",
+                    "Type": "nap::ParameterGroup",
                     "mID": "Lighting",
                     "Parameters" :
                     [
@@ -234,18 +236,19 @@
                     ]
                 },
                 {
-                    "Type": "nap::ParameterContainer",
+                    "Type": "nap::ParameterGroup",
                     "mID": "Hair",
                     "Parameters" :
                     [
                         {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "Hair Specular Color",
-                            "Value" : 
-                            { 
-                                "Red" : 1.0, 
-                                "Green" : 1.0, 
-                                "Blue" : 1.0 
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
                             }
                         },
                         {
@@ -293,18 +296,19 @@
                     ]
                 },
                 {
-                    "Type": "nap::ParameterContainer",
+                    "Type": "nap::ParameterGroup",
                     "mID": "Mesh",
                     "Parameters" :
                     [
                         {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "Mesh Specular Color",
-                            "Value" : 
-                            { 
-                                "Red" : 1.0, 
-                                "Green" : 1.0, 
-                                "Blue" : 1.0 
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
                             }
                         },
                         {
@@ -331,7 +335,7 @@
                     ]
                 },
                 {
-                    "Type": "nap::ParameterContainer",
+                    "Type": "nap::ParameterGroup",
                     "mID": "Wind",
                     "Parameters" :
                     [
@@ -366,7 +370,7 @@
                     ]
                 },
                 {
-                    "Type": "nap::ParameterContainer",
+                    "Type": "nap::ParameterGroup",
                     "mID": "Fog",
                     "Parameters" :
                     [
@@ -380,23 +384,23 @@
                         {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "Fog Color",
-                            "Value" : 
-                            { 
-                                "Red" : 0.0, 
-                                "Green" : 0.0, 
-                                "Blue" : 0.0 
-                            }
-                        },
+                            "Value": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            }                        },
                         {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "Background Color",
-                            "Value" : 
-                            { 
-                                "Red" : 1.0, 
-                                "Green" : 1.0, 
-                                "Blue" : 1.0 
-                            }
-                        },
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }                        },
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "Fog Min",
@@ -428,7 +432,7 @@
                     ]
                 },
                 {
-                    "Type": "nap::ParameterContainer",
+                    "Type": "nap::ParameterGroup",
                     "mID": "Rendering",
                     "Parameters" :
                     [

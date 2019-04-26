@@ -39,7 +39,7 @@ namespace nap
 	ParameterGUI::ParameterGUI(ParameterService& parameterService) :
 		mParameterService(parameterService)
 	{
-		mParameterContainers = mParameterService.getParameterContainers();
+		mParameterGroups = mParameterService.getParameterGroups();
 		
 		registerDefaultParameterEditors();
 	}
@@ -166,7 +166,7 @@ namespace nap
 			if (ImGui::Button("OK"))
 			{
 				utility::ErrorState errorState;
-				if (mParameterService.loadPreset(*mParameterContainers[mSelectedContainerIndex].mContainer, mPresets[mSelectedPresetIndex], errorState))
+				if (mParameterService.loadPreset(*mParameterGroups[mSelectedGroupIndex].mGroup, mPresets[mSelectedPresetIndex], errorState))
 					ImGui::CloseCurrentPopup();
 				else
 					ImGui::OpenPopup("Failed to load preset");
@@ -254,12 +254,12 @@ namespace nap
 			if (ImGui::Button("OK"))
 			{
 				utility::ErrorState errorState;
-				if (mParameterService.savePreset(*mParameterContainers[mSelectedContainerIndex].mContainer, mPresets[mSelectedPresetIndex], errorState))
+				if (mParameterService.savePreset(*mParameterGroups[mSelectedGroupIndex].mGroup, mPresets[mSelectedPresetIndex], errorState))
 				{
 					ImGui::CloseCurrentPopup();
 					std::string previous_selection = mPresets[mSelectedPresetIndex];
 
-					mPresets = mParameterService.getPresets(*mParameterContainers[mSelectedContainerIndex].mContainer);
+					mPresets = mParameterService.getPresets(*mParameterGroups[mSelectedGroupIndex].mGroup);
 
 					// After we have retrieved the filenames from the service, the list may be in a different order,
 					// so we search for the item in the list to find the selected index.
@@ -317,51 +317,51 @@ namespace nap
 	}
 
 
-	void ParameterGUI::showPresets(const ParameterContainer* parameterContainer)
+	void ParameterGUI::showPresets(const ParameterGroup* parameterGroup)
 	{
-		if (parameterContainer != nullptr)
+		if (parameterGroup != nullptr)
 		{
-			mSelectedContainerIndex = -1;
-			for (int i = 0; i != mParameterContainers.size(); ++i)
+			mSelectedGroupIndex = -1;
+			for (int i = 0; i != mParameterGroups.size(); ++i)
 			{
-				if (parameterContainer == mParameterContainers[i].mContainer.get())
+				if (parameterGroup == mParameterGroups[i].mGroup.get())
 				{
-					mSelectedContainerIndex = i;
+					mSelectedGroupIndex = i;
 					break;
 				}
 			}
 
-			assert(mSelectedContainerIndex != -1);
+			assert(mSelectedGroupIndex != -1);
 		}
 		else
 		{
-			struct ContainerState
+			struct GroupState
 			{
-				ParameterService::ParameterContainerList& mParameterContainers;
-				std::string mContainerName;
+				ParameterService::ParameterGroupList& mParameterGroups;
+				std::string mGroupName;
 			};
 
-			ContainerState container_state{ mParameterContainers };
+			GroupState group_state{ mParameterGroups };
 
-			std::string container_name;
-			ImGui::Combo("Containers", &mSelectedContainerIndex, [](void* data, int index, const char** out_text)
+			std::string group_name;
+			ImGui::Combo("Groups", &mSelectedGroupIndex, [](void* data, int index, const char** out_text)
 			{
-				ContainerState* state = (ContainerState*)data;
+				GroupState* state = (GroupState*)data;
 
-				const ParameterService::ParameterContainerInfo& container_info = state->mParameterContainers[index];
+				const ParameterService::ParameterGroupInfo& group_info = state->mParameterGroups[index];
 
-				state->mContainerName.clear();
-				for (int i = 0; i < container_info.mDepth; ++i)
-					state->mContainerName += "   ";
+				state->mGroupName.clear();
+				for (int i = 0; i < group_info.mDepth; ++i)
+					state->mGroupName += "   ";
 
-				state->mContainerName += container_info.mContainer->mID;
+				state->mGroupName += group_info.mGroup->mID;
 
-				*out_text = state->mContainerName.data();
+				*out_text = state->mGroupName.data();
 				return true;
-			}, &container_state, mParameterContainers.size());
+			}, &group_state, mParameterGroups.size());
 		}
 
-		if (hasSelectedContainer())
+		if (hasSelectedGroup())
 		{
 			ImGui::Text("Current preset: ");
 			ImGui::SameLine();
@@ -378,7 +378,7 @@ namespace nap
 				if (hasPreset)
 				{
 					utility::ErrorState errorState;
-					if (!mParameterService.savePreset(*mParameterContainers[mSelectedContainerIndex].mContainer, mPresets[mSelectedPresetIndex], errorState))
+					if (!mParameterService.savePreset(*mParameterGroups[mSelectedGroupIndex].mGroup, mPresets[mSelectedPresetIndex], errorState))
 						ImGui::OpenPopup("Failed to save preset");
 
 					if (ImGui::BeginPopupModal("Failed to save preset"))
@@ -424,11 +424,11 @@ namespace nap
 	}
 
 
-	void ParameterGUI::showParameters(ParameterContainer& parameterContainer, bool isRoot)
+	void ParameterGUI::showParameters(ParameterGroup& parameterGroup, bool isRoot)
 	{
-		if (isRoot || ImGui::TreeNode(parameterContainer.mID.c_str()))
+		if (isRoot || ImGui::TreeNode(parameterGroup.mID.c_str()))
 		{
-			for (auto& parameter : parameterContainer.mParameters)
+			for (auto& parameter : parameterGroup.mParameters)
 			{
 				const rtti::TypeInfo& type = parameter->get_type();
 
@@ -441,22 +441,22 @@ namespace nap
 			if (!isRoot)
 				ImGui::TreePop();
 
-			for (auto& child : parameterContainer.mChildren)
+			for (auto& child : parameterGroup.mChildren)
 				showParameters(*child, false);
 		}
 	}
 
 
-	void ParameterGUI::show(const ParameterContainer* parameterContainer)
+	void ParameterGUI::show(const ParameterGroup* parameterGroup)
 	{
 		ImGui::Begin("Parameters");
 
-		showPresets(parameterContainer);
+		showPresets(parameterGroup);
 
-		if (hasSelectedContainer())
+		if (hasSelectedGroup())
 		{
 			ImGui::Separator();
-			showParameters(*mParameterContainers[mSelectedContainerIndex].mContainer, true);
+			showParameters(*mParameterGroups[mSelectedGroupIndex].mGroup, true);
 		}
 
 		ImGui::End();

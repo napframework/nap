@@ -15,14 +15,6 @@
 #include "utility/fileutils.h"
 #include "parametergui.h"
 
-RTTI_BEGIN_CLASS(nap::ParameterControlMethod)
-	RTTI_PROPERTY("Value",		&nap::ParameterControlMethod::mValue,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ParameterPolygonMode)
-	RTTI_PROPERTY("Value",		&nap::ParameterPolygonMode::mValue,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
 namespace nap
 {
 	/**
@@ -150,7 +142,7 @@ namespace nap
 		}
 
 		if (showPresetWindow)
-			mParameterGUI->show(mParameterService.hasRootContainer() ? &mParameterService.getRootContainer() : nullptr);
+			mParameterGUI->show(mParameterService.hasRootGroup() ? &mParameterService.getRootGroup() : nullptr);
 
 		if (showInfo)
 			showInfoWindow();
