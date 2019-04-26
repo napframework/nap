@@ -10,9 +10,7 @@ RTTI_BEGIN_CLASS(nap::YoctoEthernetHub)
 	RTTI_PROPERTY("Username",		&nap::YoctoEthernetHub::mUsername,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Pass",			&nap::YoctoEthernetHub::mPass,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Port",			&nap::YoctoEthernetHub::mPort,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Enabled",		&nap::YoctoEthernetHub::mEnabled,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("AllowFailure",	&nap::YoctoEthernetHub::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sensors",		&nap::YoctoEthernetHub::mSensors,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -33,12 +31,6 @@ namespace nap
 	
 	bool YoctoEthernetHub::start(utility::ErrorState& errorState)
 	{
-		// Explicitly do not try to connect
-		if (!mEnabled)
-			return true;
-
-		nap::Logger::info("STARTING ethernet hub!");
-
 		// Register / connect to the ethernet hub
 		std::string error;
 		std::string hub_address = getUrl();

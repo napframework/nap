@@ -6,14 +6,16 @@
 #include <iostream>
 #include <nap/numeric.h>
 #include <future>
+#include <nap/timer.h>
 
 // nap::yoctoluxsensor run time class definition 
 RTTI_BEGIN_CLASS(nap::YoctoRangeFinder)
-	RTTI_PROPERTY("Name",		&nap::YoctoRangeFinder::mName,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Name",		&nap::YoctoRangeFinder::mName,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Retries",	&nap::YoctoRangeFinder::mRetries,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize", &nap::YoctoRangeFinder::mBufferSize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DelayTime",	&nap::YoctoRangeFinder::mDelayTime,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DelayTime",	&nap::YoctoRangeFinder::mDelayTime,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Log",		&nap::YoctoRangeFinder::mLog,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Hub",		&nap::YoctoRangeFinder::mHub,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,12 +79,9 @@ namespace nap
 
 	void YoctoRangeFinder::read(void* sensor)
 	{
-		// Get the sensor
-		assert(sensor != nullptr);
-		// YRangeFinder* curr_sensor = static_cast<YRangeFinder*>(sensor);
-
 		// Reset some state variables
 		mStopReading = false;
+		mReading = false;
 		int retries = 0;
 		uint64 lux_idx = 0;
 		float accum_value = 0.0f;
@@ -95,9 +94,20 @@ namespace nap
 		// Keep running until a 
 		while (!mStopReading)
 		{
-			YRangeFinder* curr_sensor = yFindRangeFinder(mName.c_str());
+			// Sleep
+			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), error_msg);
+			if (sleep != YAPI_SUCCESS)
+			{
+				if (++retries > mRetries)
+				{
+					logMessage("has trouble sleeping");
+					break;
+				}
+				continue;
+			}
 
-			// Check if the sensor is still online
+			// Get sensor and ensure it's online
+			YRangeFinder* curr_sensor = yFindRangeFinder(mName.c_str());
 			if (!curr_sensor->isOnline())
 			{
 				if (++retries > mRetries)
@@ -130,18 +140,6 @@ namespace nap
 
 			// Reset retries
 			retries = 0;
-
-			// Sleep
-			YRETCODE sleep = ySleep(static_cast<uint>(mDelayTime), error_msg);
-			if (sleep != YAPI_SUCCESS)
-			{
-				if (++retries > mRetries)
-				{
-					logMessage("has trouble sleeping");
-					break;
-				}
-				continue;
-			}
 		}
 
 		// When exiting this loop we're no longer reading any values

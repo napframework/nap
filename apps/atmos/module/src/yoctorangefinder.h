@@ -1,12 +1,16 @@
 #pragma once
 
+// Local Includes
+#include "yoctoethernethub.h"
+
 // External Includes
 #include <nap/device.h>
-#include <rtti/objectptr.h>
+#include <nap/resourceptr.h>
 #include <thread>
 #include <atomic>
 #include <nap/signalslot.h>
 #include <future>
+#include <atomic>
 
 namespace nap
 {
@@ -52,17 +56,17 @@ namespace nap
 		 */
 		virtual bool start(utility::ErrorState& errorState) override;
 
-
-		std::string					mName;					///< Property: 'Name' name of the lux sensor
-		int							mRetries = 10;			///< Number of times connection is retried before exiting the loop
-		int							mBufferSize = 30;		///< Size of the lux sensor read-out buffer
-		int							mDelayTime = 500;		///< Time in between sensor reads
-		bool						mLog = false;			///< If we want to log sensor data
+		std::string						mName;					///< Property: 'Name' name of the lux sensor
+		int								mRetries = 10;			///< Property: 'Retries' Number of times connection is retried before exiting the loop
+		int								mBufferSize = 30;		///< Property: 'BufferSize' of the lux sensor read-out buffer
+		int								mDelayTime = 500;		///< Property: 'DelayTime' Time in between sensor reads (ms)
+		bool							mLog = false;			///< Property: 'Log' If we want to log sensor data
+		ResourcePtr<YoctoEthernetHub>	mHub = nullptr;			///< Property: 'Hub' The hub this sensor is connected to
 	private:
-		float						mValue = -1.0f;			///< Current light value
-		bool						mStopReading = false;	///< Stops the thread from reading sensor values
-		bool						mStopRunning = false;	///< Stops the monitor thread
-		bool						mReading = false;		///< If the sensor is currently online
+		float							mValue = -1.0f;			///< Current light value
+		bool							mStopReading = false;	///< Stops the thread from reading sensor values
+		bool							mStopRunning = false;	///< Stops the monitor thread
+		bool							mReading = false;		///< If the sensor is currently online
 
 		/**
 		 *	Monitor

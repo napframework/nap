@@ -1,11 +1,8 @@
 #pragma once
 
-// Local Includes
-#include "yoctorangefinder.h"
-
 // External Includes
 #include <nap/device.h>
-#include <nap/resourceptr.h>
+#include <atomic>
 
 namespace nap
 {
@@ -37,13 +34,11 @@ namespace nap
 		 */
 		virtual void stop() override;
 
-		std::string		mAddress;								///< Property:'Address' hub ip address or host name
-		std::string		mUsername;								///< Property:'Username' ethernet user name
-		std::string		mPass;									///< Property:'Pass' ethernet user password
-		int				mPort = 80;								///< Property:'Port' ethernet port
-		bool			mEnabled = true;						///< Property:'Connect' if on initialization this object should connect to the ethernet hub
-		std::vector<ResourcePtr<YoctoRangeFinder>> mSensors;	///< Property:'Sensors' list of connected lux sensors;
-		bool			mAllowFailure = true;					///< Property:'Connection failure won't influence initialization'
+		std::string			mAddress;								///< Property:'Address' hub ip address or host name
+		std::string			mUsername;								///< Property:'Username' ethernet user name
+		std::string			mPass;									///< Property:'Pass' ethernet user password
+		int					mPort = 80;								///< Property:'Port' ethernet port
+		bool				mAllowFailure = true;					///< Property:'Connection failure won't influence initialization'
 
 	private:
 		/**

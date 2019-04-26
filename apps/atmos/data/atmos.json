@@ -152,17 +152,7 @@
                     "Type": "nap::SelectMeshComponent",
                     "mID": "SelectMeshComponent",
                     "Meshes": [
-                        "MeteorietPoints",
-                        "HiressteenPoints",
-                        "WitkoraalPoints",
-                        "ZeesterPoints",
-                        "PyrietPoints",
-                        "OliesteenPoints",
-                        "RozeSteenPoints",
-                        "SchorsPoints",
-                        "AlligatorPoints",
-                        "TransparantSteenPoints",
-                        "MandrilPoints"
+                        "MeteorietPoints"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -967,68 +957,8 @@
         },
         {
             "Type": "nap::MeshFromFile",
-            "mID": "AlligatorMesh",
-            "Path": "alligator.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "HiressteenMesh",
-            "Path": "heleenhiressteen.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "MandrilMesh",
-            "Path": "mandril.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
             "Path": "meteoriet.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "OliesteenMesh",
-            "Path": "oliesteen.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "PyrietMesh",
-            "Path": "pyriet.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "RozeSteenMesh",
-            "Path": "rozesteen.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "SchorsMesh",
-            "Path": "schorskoraal.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "TransparantSteenMesh",
-            "Path": "transparantesteen.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "WitkoraalMesh",
-            "Path": "witkoraal.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "ZeesterMesh",
-            "Path": "zeester.mesh",
             "Usage": "Static"
         },
         {
@@ -1105,68 +1035,8 @@
         },
         {
             "Type": "nap::ScatterPointsMesh",
-            "mID": "AlligatorPoints",
-            "ReferenceMesh": "AlligatorMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "HiressteenPoints",
-            "ReferenceMesh": "HiressteenMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "MandrilPoints",
-            "ReferenceMesh": "MandrilMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
             "mID": "MeteorietPoints",
             "ReferenceMesh": "MeteorietMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "OliesteenPoints",
-            "ReferenceMesh": "OliesteenMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "PyrietPoints",
-            "ReferenceMesh": "PyrietMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "RozeSteenPoints",
-            "ReferenceMesh": "RozeSteenMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "SchorsPoints",
-            "ReferenceMesh": "SchorsMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "TransparantSteenPoints",
-            "ReferenceMesh": "TransparantSteenMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "WitkoraalPoints",
-            "ReferenceMesh": "WitkoraalMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "ZeesterPoints",
-            "ReferenceMesh": "ZeesterMesh",
             "PointCount": 1000000
         },
         {
@@ -1225,20 +1095,17 @@
             "Username": "admin",
             "Pass": "rokit247",
             "Port": 80,
-            "Enabled": true,
-            "AllowFailure": true,
-            "Sensors": [
-                "YoctoRangeFinder"
-            ]
+            "AllowFailure": true
         },
         {
             "Type": "nap::YoctoRangeFinder",
             "mID": "YoctoRangeFinder",
             "Name": "YRNGFND1-F1F51.rangeFinder1",
-            "Retries": 10,
+            "Retries": 20,
             "BufferSize": 30,
-            "DelayTime": 50,
-            "Log": true
+            "DelayTime": 200,
+            "Log": true,
+            "Hub": "YoctoEthernetHub"
         }
     ]
 }
