@@ -21,40 +21,21 @@ namespace nap
 		 *
 		 * @param value The parameter to set the value from
 		 */
-		virtual void setValue(const Parameter& value) override
-		{
-			const ParameterNumeric<T>* derived_type = rtti_cast<const ParameterNumeric<T>>(&value);
-			assert(derived_type != nullptr);
-
-			// Update min & max
-			mMinimum = derived_type->mMinimum;
-			mMaximum = derived_type->mMaximum;
-
-			// Set value from the parameter
-			setValue(derived_type->mValue);
-		}
+		virtual void setValue(const Parameter& value) override;
 
 		/**
 		 * Set the value of this parameter. Will raise the valueChanged signal if the value actually changes.
 		 *
 		 * @param value The value to set
 		 */
-		void setValue(T value)
-		{
-			T oldValue = mValue;
-			mValue = math::clamp(value, mMinimum, mMaximum);
-			if (oldValue != mValue)
-			{
-				valueChanged(mValue);
-			}
-		}
+		void setValue(T value);
 
 	public:
-		T			mValue;											///< Property: 'Value' the value of this parameter
-		T			mMinimum = std::numeric_limits<T>::min();		///< Property: 'Minimum' the minimum value of this parameter
-		T			mMaximum = std::numeric_limits<T>::max();		///< Property: 'Maximum' the maximum value of this parameter
+		T			mValue;							///< Property: 'Value' the value of this parameter
+		T			mMinimum = math::min<T>();		///< Property: 'Minimum' the minimum value of this parameter
+		T			mMaximum = math::max<T>();		///< Property: 'Maximum' the maximum value of this parameter
 
-		Signal<T>	valueChanged;									///< Signal that's raised when the value of this parameter changes
+		Signal<T>	valueChanged;					///< Signal that's raised when the value of this parameter changes
 	};
 
 	/**
@@ -71,43 +52,78 @@ namespace nap
 		 *
 		 * @param value The parameter to set the value from
 		 */
-		virtual void setValue(const Parameter& value) override
-		{
-			const ParameterNumericVec<T>* derived_type = rtti_cast<const ParameterNumericVec<T>>(&value);
-			assert(derived_type != nullptr);
-
-			mMinimum = derived_type->mMinimum;
-			mMaximum = derived_type->mMaximum;
-
-			setValue(derived_type->mValue);
-		}
+		virtual void setValue(const Parameter& value) override;
 
 		/**
 		 * Set the value of this parameter. Will raise the valueChanged signal if the value actually changes.
 		 *
 		 * @param value The value to set
 		 */
-		void setValue(T value)
-		{
-			T oldValue = mValue;
-
-			// Clamp& set the components for each element individually
-			for (int i = 0; i != mValue.length(); ++i)
-				mValue[i] = math::clamp(value[i], mMinimum, mMaximum);
-
-			if (oldValue != mValue)
-			{
-				valueChanged(mValue);
-			}
-		}
+		void setValue(T value);
 
 	public:
-		T						mValue;															///< Property: 'Value' the value of this parameter
-		typename T::value_type	mMinimum = std::numeric_limits<typename T::value_type>::min();	///< Property: 'Minimum' the minimum value of this parameter
-		typename T::value_type	mMaximum = std::numeric_limits<typename T::value_type>::max();	///< Property: 'Maximum' the maximum value of this parameter
+		T						mValue;										///< Property: 'Value' the value of this parameter
+		typename T::value_type	mMinimum = math::min<T::value_type>();		///< Property: 'Minimum' the minimum value of this parameter
+		typename T::value_type	mMaximum = math::max<T::value_type>();		///< Property: 'Maximum' the maximum value of this parameter
 
-		Signal<T>				valueChanged;													///< Signal that's raised when the value changes
+		Signal<T>				valueChanged;								///< Signal that's raised when the value changes
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	void ParameterNumeric<T>::setValue(const Parameter& value)
+	{
+		const ParameterNumeric<T>* derived_type = rtti_cast<const ParameterNumeric<T>>(&value);
+		assert(derived_type != nullptr);
+
+		// Update min & max
+		mMinimum = derived_type->mMinimum;
+		mMaximum = derived_type->mMaximum;
+
+		// Set value from the parameter
+		setValue(derived_type->mValue);
+	}
+
+	template<typename T>
+	void ParameterNumeric<T>::setValue(T value)
+	{
+		T oldValue = mValue;
+		mValue = math::clamp(value, mMinimum, mMaximum);
+		if (oldValue != mValue)
+		{
+			valueChanged(mValue);
+		}
+	}
+
+	template<typename T>
+	void ParameterNumericVec<T>::setValue(const Parameter& value)
+	{
+		const ParameterNumericVec<T>* derived_type = rtti_cast<const ParameterNumericVec<T>>(&value);
+		assert(derived_type != nullptr);
+
+		mMinimum = derived_type->mMinimum;
+		mMaximum = derived_type->mMaximum;
+
+		setValue(derived_type->mValue);
+	}
+
+	template<typename T>
+	void ParameterNumericVec<T>::setValue(T value)
+	{
+		T oldValue = mValue;
+
+		// Clamp& set the components for each element individually
+		for (int i = 0; i != mValue.length(); ++i)
+			mValue[i] = math::clamp(value[i], mMinimum, mMaximum);
+
+		if (oldValue != mValue)
+		{
+			valueChanged(mValue);
+		}
+	}
 
 
 	//////////////////////////////////////////////////////////////////////////

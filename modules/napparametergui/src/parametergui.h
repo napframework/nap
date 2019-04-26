@@ -6,11 +6,11 @@
 
 namespace nap
 {
-	class ParameterContainer;
+	class ParameterGroup;
 
 	/**
 	 * The ParameterGUI class can be used to easily show an ImGUI window which can be used to edit/load/save parameter presets. The GUI maintains all needed state.
-	 * The GUI is built up by automatically (and recursively) traversing the parameters in a container and creating appropriate UI elements for each parameter.
+	 * The GUI is built up by automatically (and recursively) traversing the parameters in a group and creating appropriate UI elements for each parameter.
 	 *
 	 * The function that is used to create the UI element for a given parameter type can be customized, thus allowing for custom types to be displayed in the UI.
 	 * Default UI elements are provided for built-in types such as int, float, etc.
@@ -40,10 +40,10 @@ namespace nap
 
 		/**
 		 * Main function used to render the parameter GUI. Should be called each frame.
-		 * @param parameterContainer If parameterContainer is nullptr, a GUI is presented to select a container. If it is not nullptr,
-		 * the GUI will display only the contents of this container.
+		 * @param parameterGroup If parameterGroup is nullptr, a GUI is presented to select a group. If it is not nullptr,
+		 * the GUI will display only the contents of this group.
 		 */
-		void show(const ParameterContainer* parameterContainer);
+		void show(const ParameterGroup* parameterGroup);
 
 		/**
 		 * Register an editor creation function for the given type. The editor creation function is invoked whenever a parameter of the given type 
@@ -61,15 +61,15 @@ namespace nap
 		/**
 		 * Render the preset selection/save/load UI. 
 		 */
-		void showPresets(const ParameterContainer* parameterContainer);
+		void showPresets(const ParameterGroup* parameterGroup);
 
 		/**
-		 * Render the parameter UI for a specific container
+		 * Render the parameter UI for a specific group
 		 *
-		 * @param parameterContainer The container to draw the parameters fro
-		 * @param isRoot Whether this is the root parameter container or not
+		 * @param parameterGroup The group to draw the parameters fro
+		 * @param isRoot Whether this is the root parameter group or not
 		 */
-		void showParameters(ParameterContainer& parameterContainer, bool isRoot);
+		void showParameters(ParameterGroup& parameterGroup, bool isRoot);
 
 		/**
 		 * Show and handle the UI to load presets
@@ -102,19 +102,19 @@ namespace nap
 		void registerDefaultParameterEditors();
 
 		/**
-		 * Helper function to test whether the user has selected a container or not
+		 * Helper function to test whether the user has selected a group or not
 		 */ 
-		bool hasSelectedContainer() const { return mSelectedContainerIndex >= 0 && mSelectedContainerIndex < mParameterContainers.size(); }
+		bool hasSelectedGroup() const { return mSelectedGroupIndex >= 0 && mSelectedGroupIndex < mParameterGroups.size(); }
 
 	private:
 		using ParameterEditorMap = std::unordered_map<rtti::TypeInfo, CreateParameterEditor>;
 
 		ParameterService&							mParameterService;					///< The parameter service
 		ParameterEditorMap							mParameterEditors;					///< The editor function to use per parameter type
-		ParameterService::ParameterContainerList	mParameterContainers;				///< All available ParameterContainers
-		ParameterService::PresetFileList			mPresets;							///< The presets for the currently selected ParameterContainer
-		ParameterService::PresetFileList			mPrevPresets;						///< The previous list of presets for the currently selected ParameterContainer. Used to restore the state if the user cancels creation of a new preset.
-		int											mSelectedContainerIndex = -1;		///< The currently selected ParameterContainer's index
+		ParameterService::ParameterGroupList		mParameterGroups;					///< All available ParameterGroups
+		ParameterService::PresetFileList			mPresets;							///< The presets for the currently selected ParameterGroup
+		ParameterService::PresetFileList			mPrevPresets;						///< The previous list of presets for the currently selected ParameterGroup. Used to restore the state if the user cancels creation of a new preset.
+		int											mSelectedGroupIndex = -1;			///< The currently selected ParameterGroup's index
 		int											mSelectedPresetIndex = -1;			///< The currently selected preset's index
 		int											mPrevSelectedPresetIndex = -1;		///< The previously selected preset's index. Used to restore the state if the user cancels creation of a new preset.
 	};

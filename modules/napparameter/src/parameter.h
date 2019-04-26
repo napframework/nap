@@ -36,10 +36,10 @@ namespace nap
 	};
 
 	/** 
-	 * A parameter container serves as a container for sets of parameters. It is used to group parameters together in logical groups.
-	 * A container can contain other containers, thus forming a tree structure
+	 * A parameter group serves as a group for sets of parameters. It is used to group parameters together in logical groups.
+	 * A group can contain other groups, thus forming a tree structure
 	 */
-	class NAPAPI ParameterContainer : public Resource
+	class NAPAPI ParameterGroup : public Resource
 	{
 		RTTI_ENABLE(Resource)
 
@@ -47,7 +47,7 @@ namespace nap
 		friend class ParameterService;
 
 		/**
-		 * Find a parameter in the current container by name
+		 * Find a parameter in the current group by name
 		 *
 		 * @param name The name of the parameter to find
 		 * @return The parameter if found. Null otherwise.
@@ -55,15 +55,15 @@ namespace nap
 		ResourcePtr<Parameter> findParameter(const std::string& name) const;
 
 		/**
-		 * Find a child ParameterContainer with the specified name
+		 * Find a child ParameterGroup with the specified name
 		 *
-		 * @param name The name of the container to find
-		 * @return The container if found. Null otherwise.
+		 * @param name The name of the group to find
+		 * @return The group if found. Null otherwise.
 		 */
-		ResourcePtr<ParameterContainer> findChild(const std::string& name) const;
+		ResourcePtr<ParameterGroup> findChild(const std::string& name) const;
 
 	public:
-		std::vector<ResourcePtr<Parameter>>				mParameters;	///< Property: 'Parameters' the parameters defined in this container
-		std::vector<ResourcePtr<ParameterContainer>>	mChildren;		///< Property: 'Children' the child containers of this container
+		std::vector<ResourcePtr<Parameter>>			mParameters;	///< Property: 'Parameters' the parameters defined in this group
+		std::vector<ResourcePtr<ParameterGroup>>	mChildren;		///< Property: 'Children' the child groups of this group
 	};
 }

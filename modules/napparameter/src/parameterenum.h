@@ -42,8 +42,28 @@ namespace nap
 
 	/**
 	 * ParameterEnum provides the concrete implementation of ParameterEnumBase. 
-	 * It should be specialized for an enum type and the specialization should be registered in RTTI.
-	 * It is assumed that the enum being specialized for has also been registered in RTTI
+	 * Both the parameter type and the enum itself need to be registered in RTTI.
+	 *
+	 * Example:
+	 *
+	 * // SomeEnum.h
+	 * enum class ESomeEnum
+	 * {
+	 *		SomeValue1,
+	 *		SomeValue2
+	 * }
+	 *
+	 * using SomeEnumParameter = ParameterEnum<ESomeEnum>;
+	 *
+	 * // SomeEnum.cpp
+	 * // Regular RTTI definition for enum itself:
+	 * RTTI_BEGIN_ENUM(ESomeEnum)
+	 *		RTTI_ENUM_VALUE(ESomeEnum::SomeValue1,		"SomeValue1"),
+	 *		RTTI_ENUM_VALUE(ESomeEnum::SomeValue2,		"SomeValue2")
+	 * RTTI_END_ENUM
+	 * 
+	 * // RTTI definition for parameter:
+	 * DEFINE_ENUM_PARAMETER(SomeEnumParameter)
 	 */
 	template<class T>
 	class ParameterEnum : public ParameterEnumBase
@@ -75,31 +95,46 @@ namespace nap
 		 *
 		 * @param value The parameter to set the value from
 		 */
-		virtual void setValue(const Parameter& value) override
-		{
-			const ParameterEnum<T>* derived_type = rtti_cast<const ParameterEnum<T>>(&value);
-			assert(derived_type != nullptr);
-
-			setValue(derived_type->mValue);
-		}
+		virtual void setValue(const Parameter& value) override;
 
 		/**
 		 * Set the value of this enum. Will raise the valueChanged signal if the value actually changes.
 		 *
 		 * @param value The value to set
 		 */
-		void setValue(T value)
-		{
-			T oldValue = mValue;
-			mValue = value;
-			if (oldValue != mValue)
-			{
-				valueChanged(mValue);
-			}
-		}
+		void setValue(T value);
 
 	public:
 		T			mValue;			///< Property: 'Value' the current value of the parameter
 		Signal<T>	valueChanged;	///< Signal that's raised when the value of this parameter changes
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<class T>
+	void ParameterEnum<T>::setValue(const Parameter& value)
+	{
+		const ParameterEnum<T>* derived_type = rtti_cast<const ParameterEnum<T>>(&value);
+		assert(derived_type != nullptr);
+
+		setValue(derived_type->mValue);
+	}
+
+	template<class T>
+	void ParameterEnum<T>::setValue(T value)
+	{
+		T oldValue = mValue;
+		mValue = value;
+		if (oldValue != mValue)
+		{
+			valueChanged(mValue);
+		}
+	}
 }
+
+#define DEFINE_ENUM_PARAMETER(Type)																			\
+	RTTI_BEGIN_CLASS(Type)															\
+		RTTI_PROPERTY("Value", &Type::mValue, nap::rtti::EPropertyMetaData::Default)					\
+	RTTI_END_CLASS
