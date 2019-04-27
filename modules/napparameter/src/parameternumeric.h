@@ -62,11 +62,11 @@ namespace nap
 		void setValue(T value);
 
 	public:
-		T						mValue;										///< Property: 'Value' the value of this parameter
-		typename T::value_type	mMinimum = math::min<T::value_type>();		///< Property: 'Minimum' the minimum value of this parameter
-		typename T::value_type	mMaximum = math::max<T::value_type>();		///< Property: 'Maximum' the maximum value of this parameter
+		T						mValue;										        ///< Property: 'Value' the value of this parameter
+		typename T::value_type	mMinimum = math::min<typename T::value_type>();		///< Property: 'Minimum' the minimum value of this parameter
+		typename T::value_type	mMaximum = math::max<typename T::value_type>();		///< Property: 'Maximum' the maximum value of this parameter
 
-		Signal<T>				valueChanged;								///< Signal that's raised when the value changes
+		Signal<T>				valueChanged;								        ///< Signal that's raised when the value changes
 	};
 
 	//////////////////////////////////////////////////////////////////////////
