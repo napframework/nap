@@ -223,6 +223,7 @@
                     "AmbientIntensity": "Ambient Intensity",
                     "DiffuseIntensity": "Diffuse Intensity",
                     "NormalSpecColor": "Hair Specular Color",
+                    "NormalSpecColorBlend" : "Hair Specular Color Blend",
                     "NormalSpecIntens": "Hair Specular Intensity",
                     "NormalSpecShine": "Hair Shininess",
                     "NormalScale": "Hair Length",
@@ -1301,9 +1302,17 @@
                         },
                         {
                             "Type": "nap::ParameterFloat",
+                            "mID": "Hair Specular Color Blend",
+                            "Name": "",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
                             "mID": "Hair Specular Intensity",
                             "Name": "",
-                            "Value": 0.5,
+                            "Value": 1.0,
                             "Minimum": 0.000009999999747378752,
                             "Maximum": 1.0
                         },
@@ -1452,9 +1461,9 @@
                             "Name": "",
                             "Value": {
                                 "Values": [
-                                    1.0,
-                                    1.0,
-                                    1.0
+                                    0.0,
+                                    0.0,
+                                    0.0
                                 ]
                             }
                         },

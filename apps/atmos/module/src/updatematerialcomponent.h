@@ -54,6 +54,7 @@ namespace nap
 		ResourcePtr<ParameterFloat>				mAmbientIntensity;
 		ResourcePtr<ParameterFloat>				mDiffuseIntensity;
 		ResourcePtr<ParameterRGBColorFloat>		mNormalSpecColor;
+		ResourcePtr<ParameterFloat>				mNormalSpecColorBlend;
 		ResourcePtr<ParameterFloat>				mNormalSpecIntens;
 		ResourcePtr<ParameterFloat>				mNormalSpecShine;
 		ResourcePtr<ParameterFloat>				mNormalScale;
