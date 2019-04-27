@@ -73,6 +73,12 @@ namespace nap
 		const rtti::ObjectPtr<T> findObject(const std::string& id) { return rtti::ObjectPtr<T>(findObject(id)); }
 
 		/**
+		 * Get all objects of a particular type
+		 */
+		template<class T>
+		std::vector<rtti::ObjectPtr<T>> getObjects() const;
+
+		/**
 		* Creates an object and adds it to the manager.
 		*/
 		const rtti::ObjectPtr<rtti::Object> createObject(const rtti::TypeInfo& type);
@@ -161,4 +167,19 @@ namespace nap
 		 */
 		nap::Signal<const std::string&> mFileLoadedSignal;
 	};
+
+	template<class T>
+	std::vector<rtti::ObjectPtr<T>> ResourceManager::getObjects() const
+	{
+		rtti::TypeInfo type = RTTI_OF(T);
+		std::vector<rtti::ObjectPtr<T>> result;
+		for (auto& kvp : mObjects)
+		{
+			T* object = rtti_cast<T>(kvp.second.get());
+			if (object != nullptr)
+				result.push_back(object);
+		}
+
+		return result;
+	}
 }

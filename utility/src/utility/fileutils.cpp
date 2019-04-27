@@ -129,7 +129,7 @@ namespace nap
 			// to get the current dir running from command line on OSX.
 			replaceAllInstances(name, "/./", "/");
 
-			const size_t last_slash_idx = name.find_last_of('/');
+			const size_t last_slash_idx = name.find_last_of("\\/");
 			if (last_slash_idx != std::string::npos)
 				name = name.erase(last_slash_idx, name.size() - last_slash_idx);
 			return name;
