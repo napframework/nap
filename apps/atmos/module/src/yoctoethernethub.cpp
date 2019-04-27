@@ -1,5 +1,4 @@
 #include "yoctoethernethub.h"
-#include "yoctorangefinder.h"
 
 #include <utility/stringutils.h>
 #include <yocto_api.h>

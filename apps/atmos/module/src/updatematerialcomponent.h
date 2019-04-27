@@ -62,6 +62,7 @@ namespace nap
 		ResourcePtr<ParameterFloat>				mDiffuseSpecInfl;
 		ResourcePtr<ParameterFloat>				mNormalRotValue;
 		ResourcePtr<ParameterRGBColorFloat>		mScanSpecColor;
+		ResourcePtr<ParameterFloat>				mScanSpecColorBlend;
 		ResourcePtr<ParameterFloat>				mScanSpecIntens;
 		ResourcePtr<ParameterFloat>				mScanSpecShine;
 		ResourcePtr<ParameterFloat>				mScanRotValue;

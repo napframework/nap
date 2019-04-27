@@ -177,11 +177,15 @@ namespace nap
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
 		if (ImGui::CollapsingHeader("Sensor Status"))
 		{
-			ImGui::Image(mApp.mRangeFinder->isOnline() ? *mLedOn : *mLedOff, { 32, 32 });
+			ImGui::Image(mApp.mRangeSensor->isOnline() ? *mLedOn : *mLedOff, { 16, 16 });
 			ImGui::SameLine();
-			ImGui::Text(utility::stringFormat("%s: %s", mApp.mRangeFinder->mID.c_str(), mApp.mRangeFinder->isOnline() ? "online" : "offline").c_str());
+			ImGui::Text(utility::stringFormat("%s: %s", mApp.mRangeSensor->isOnline() ? "online" : "offline", mApp.mRangeSensor->mID.c_str()).c_str());
+			ImGui::Text(utility::stringFormat("value: %.2f", mApp.mRangeSensor->getValue()).c_str());
+
+			ImGui::Image(mApp.mProximitySensor->isOnline() ? *mLedOn : *mLedOff, { 16, 16 });
 			ImGui::SameLine();
-			ImGui::Text(utility::stringFormat("value: %f", mApp.mRangeFinder->getValue()).c_str());
+			ImGui::Text(utility::stringFormat("%s: %s", mApp.mRangeSensor->isOnline() ? "online" : "offline", mApp.mProximitySensor->mID.c_str()).c_str());
+			ImGui::Text(utility::stringFormat("value: %.2f", mApp.mProximitySensor->getValue()).c_str());
 		}
 		
 		if (ImGui::CollapsingHeader("Texture Preview"))

@@ -39,6 +39,7 @@ RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
 	RTTI_PROPERTY("DiffuseSpecInfl",				&nap::UpdateMaterialComponent::mDiffuseSpecInfl,				nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("NormalRotValue",					&nap::UpdateMaterialComponent::mNormalRotValue,					nap::rtti::EPropertyMetaData::Required);	
 	RTTI_PROPERTY("ScanSpecColor",					&nap::UpdateMaterialComponent::mScanSpecColor,					nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("ScanSpecColorBlend",				&nap::UpdateMaterialComponent::mScanSpecColorBlend,				nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("ScanSpecIntens",					&nap::UpdateMaterialComponent::mScanSpecIntens,					nap::rtti::EPropertyMetaData::Required);	
 	RTTI_PROPERTY("ScanSpecShine",					&nap::UpdateMaterialComponent::mScanSpecShine,					nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("ScanRotValue",					&nap::UpdateMaterialComponent::mScanRotValue,					nap::rtti::EPropertyMetaData::Required);	
@@ -236,6 +237,7 @@ namespace nap
 		
 		// Specular Color Blend (Hair)
 		nm.getOrCreateUniform<UniformFloat>(sSpecularColorBlend).setValue(mUpdateMaterialResource->mNormalSpecColorBlend->mValue);
+		sm.getOrCreateUniform<UniformFloat>(sSpecularColorBlend).setValue(mUpdateMaterialResource->mScanSpecColorBlend->mValue);
 
 		// Shininess Intensity
 		sm.getOrCreateUniform<UniformFloat>(sShininess).setValue(mUpdateMaterialResource->mScanSpecShine->mValue);

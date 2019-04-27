@@ -223,7 +223,7 @@
                     "AmbientIntensity": "Ambient Intensity",
                     "DiffuseIntensity": "Diffuse Intensity",
                     "NormalSpecColor": "Hair Specular Color",
-                    "NormalSpecColorBlend" : "Hair Specular Color Blend",
+                    "NormalSpecColorBlend": "Hair Specular Color Blend",
                     "NormalSpecIntens": "Hair Specular Intensity",
                     "NormalSpecShine": "Hair Shininess",
                     "NormalScale": "Hair Length",
@@ -231,6 +231,7 @@
                     "DiffuseSpecInfl": "Hair Diffuse Influence",
                     "NormalRotValue": "Hair Direction",
                     "ScanSpecColor": "Mesh Specular Color",
+                    "ScanSpecColorBlend": "Mesh Specular Color Blend",
                     "ScanSpecIntens": "Mesh Specular Intensity",
                     "ScanSpecShine": "Mesh Shininess",
                     "ScanRotValue": "Hair Direction",
@@ -1314,7 +1315,7 @@
                             "Name": "",
                             "Value": 1.0,
                             "Minimum": 0.000009999999747378752,
-                            "Maximum": 1.0
+                            "Maximum": 2.0
                         },
                         {
                             "Type": "nap::ParameterFloat",
@@ -1377,11 +1378,19 @@
                         },
                         {
                             "Type": "nap::ParameterFloat",
+                            "mID": "Mesh Specular Color Blend",
+                            "Name": "",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
                             "mID": "Mesh Specular Intensity",
                             "Name": "",
-                            "Value": 0.25,
+                            "Value": 1.0,
                             "Minimum": 0.000009999999747378752,
-                            "Maximum": 1.0
+                            "Maximum": 2.0
                         },
                         {
                             "Type": "nap::ParameterFloat",
@@ -1660,14 +1669,24 @@
             "AllowFailure": true
         },
         {
-            "Type": "nap::YoctoRangeFinder",
-            "mID": "YoctoRangeFinder",
-            "Name": "YRNGFND1-F1F51.rangeFinder1",
-            "Retries": 5,
-            "BufferSize": 20,
-            "DelayTime": 20,
+            "Type": "nap::YoctoProximitySensor",
+            "mID": "ProximitySensor",
+            "Name": "YPROXIM1-F8B6C.proximity1",
+            "Hub": "YoctoEthernetHub",
+            "DelayTime": 100,
+            "Retries": 20,
             "Log": false,
-            "Hub": "YoctoEthernetHub"
+            "BufferSize": 1
+        },
+        {
+            "Type": "nap::YoctoRangeSensor",
+            "mID": "RangeSensor",
+            "Name": "YRNGFND1-F1F51.rangeFinder1",
+            "Hub": "YoctoEthernetHub",
+            "DelayTime": 100,
+            "Retries": 20,
+            "Log": false,
+            "BufferSize": 10
         }
     ]
 }
