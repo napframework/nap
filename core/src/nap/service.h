@@ -132,6 +132,16 @@ namespace nap
 			return rtti_cast<SERVICE_CONFIG>(mConfiguration.get());
 		}
 
+		/**
+		* Retrieve the ServiceConfiguration for this service. Will be null if this service does not support configuration
+		* @return The ServiceConfiguration
+		*/
+		template<typename SERVICE_CONFIG>
+		const SERVICE_CONFIG* getConfiguration() const
+		{
+			return rtti_cast<SERVICE_CONFIG>(mConfiguration.get());
+		}
+
 	private:
 		// this variable will be set by the core when the service is added
 		Core*									mCore = nullptr;

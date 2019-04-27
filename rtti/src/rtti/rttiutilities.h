@@ -94,7 +94,7 @@ namespace nap
 		 * @param type The type to calculate the version number for
 		 * @return The version number
 		 */
-		std::size_t NAPAPI getRTTIVersion(const rtti::TypeInfo& type);
+		uint64_t NAPAPI getRTTIVersion(const rtti::TypeInfo& type);
 
 		/**
 		 * Recursively get all types derived from the specified type (including the base type itself)
