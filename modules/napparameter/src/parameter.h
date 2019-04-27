@@ -64,6 +64,6 @@ namespace nap
 
 	public:
 		std::vector<ResourcePtr<Parameter>>			mParameters;	///< Property: 'Parameters' the parameters defined in this group
-		std::vector<ResourcePtr<ParameterGroup>>	mChildren;		///< Property: 'Children' the child groups of this group
+		std::vector<ResourcePtr<ParameterGroup>>	mChildren;		///< Property: 'Groups' the child groups of this group
 	};
 }
