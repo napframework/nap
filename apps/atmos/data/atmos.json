@@ -40,7 +40,7 @@
                     "Maximum" : 0.1
                 }
             ],
-            "Children" : [
+            "Groups" : [
                 {
                     "Type": "nap::ParameterGroup",
                     "mID": "Camera",
