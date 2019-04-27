@@ -408,7 +408,7 @@ namespace nap
 		/**
 		 * Calculate the version number of the specified type
 		 */
-		std::size_t getRTTIVersion(const rtti::TypeInfo& type)
+		uint64_t getRTTIVersion(const rtti::TypeInfo& type)
 		{
 			// Build the version string first
 			std::string version_string;
@@ -416,7 +416,7 @@ namespace nap
 
 			// Hash
 			std::size_t hash = std::hash<std::string>()(version_string);
-			return hash;
+			return (uint64_t)hash;
 		}
 
 		

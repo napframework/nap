@@ -320,6 +320,7 @@ namespace nap
 
 		const ImVec4 IMGUI_NAPDARK(NAPDARK.getRed(), NAPDARK.getGreen(), NAPDARK.getBlue(), 1.0f);
 		const ImVec4 IMGUI_NAPBACK(NAPBACK.getRed(), NAPBACK.getGreen(), NAPBACK.getBlue(), 1.0f);
+		const ImVec4 IMGUI_NAPMODAL(NAPBACK.getRed(), NAPBACK.getGreen(), NAPBACK.getBlue(), 0.5f);
 		const ImVec4 IMGUI_NAPFRO1(NAPFRO1.getRed(), NAPFRO1.getGreen(), NAPFRO1.getBlue(), 1.0f);
 		const ImVec4 IMGUI_NAPFRO2(NAPFRO2.getRed(), NAPFRO2.getGreen(), NAPFRO2.getBlue(), 1.0f);
 		const ImVec4 IMGUI_NAPFRO3(NAPFRO3.getRed(), NAPFRO3.getGreen(), NAPFRO3.getBlue(), 1.0f);
@@ -382,7 +383,9 @@ namespace nap
 		style.Colors[ImGuiCol_PlotHistogram]			= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_PlotHistogramHovered]		= IMGUI_NAPHIGH;
 		style.Colors[ImGuiCol_TextSelectedBg]			= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ModalWindowDarkening]		= IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_ModalWindowDarkening]		= IMGUI_NAPMODAL;
+		style.Colors[ImGuiCol_Separator]				= IMGUI_NAPFRO3;
+		
 	}
 
 
