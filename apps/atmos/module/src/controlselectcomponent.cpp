@@ -54,7 +54,7 @@ namespace nap
 			break;
 		case EControlMethod::Orbit:
 			mFirstPersonController->disable();
-			mOrbitController->enable({ 0.0f,0.0f,0.0f });
+			mOrbitController->enable(mOrbitController->getLookAtPos());
 			break;
 		default:
 			assert(false);

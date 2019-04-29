@@ -78,6 +78,7 @@ namespace nap
 		ResourcePtr<ParameterBool>			mLinkFogToBackground;
 		ResourcePtr<ParameterRGBColorFloat>	mBackgroundColor;
 		ResourcePtr<ParameterRGBColorFloat>	mFogColor;
+		ResourcePtr<ParameterVec3>			mCameraPosition;
 		ResourcePtr<ParameterBool>			mUseTransparency;
 		ResourcePtr<ParameterPolygonMode>	mRenderMode;
 		ResourcePtr<ImageFromFile>			mLedOn = nullptr;				//< Signals established connection
