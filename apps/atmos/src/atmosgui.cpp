@@ -55,7 +55,6 @@ namespace nap
 		mBackgroundColor		= resourceManager->findObject<ParameterRGBColorFloat>("Background Color");
 		mUseTransparency		= resourceManager->findObject<ParameterBool>("Use Transparency");
 		mRenderMode				= resourceManager->findObject<ParameterPolygonMode>("Render Mode");
-		mCameraPosition			= resourceManager->findObject<ParameterVec3>("Camera Position");
 
 		mLinkFogToBackground->valueChanged.connect([this](bool)				{ UpdateFogColor(); });
 		mFogColor->valueChanged.connect([this](const RGBColorFloat&)		{ UpdateFogColor(); });
@@ -65,14 +64,6 @@ namespace nap
 		{
 			FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
 			fps_comp.setMovementSpeed(mCamMaxMovSpeed * newValue);
-		});
-
-		mCameraPosition->valueChanged.connect([this](glm::vec3 newValue)
-		{
-			TransformComponentInstance& xform_comp = mApp.mCameraEntity->getComponent<TransformComponentInstance>();
-			OrbitControllerInstance& orbit_comp = mApp.mCameraEntity->getComponent<OrbitControllerInstance>();
-			xform_comp.setTranslate(newValue);
-			orbit_comp.update();
 		});
 
 
@@ -185,18 +176,6 @@ namespace nap
 		ImGui::Text(mDateTime.toString().c_str());
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
-		if (ImGui::CollapsingHeader("Camera"))
-		{
-			TransformComponentInstance& xform_comp = mApp.mCameraEntity->getComponent<TransformComponentInstance>();
-
-			glm::vec3 current_xform = xform_comp.getTranslate();
-			ImGui::InputFloat3("Current Transform", &current_xform.r);
-			ImGui::SameLine();
-			if (ImGui::Button("Store Camera Position")) 
-			{
-				mCameraPosition->setValue(xform_comp.getTranslate());
-			}
-		}
 		if (ImGui::CollapsingHeader("Sensor Status"))
 		{
 			ImGui::Image(mApp.mRangeSensor->isOnline() ? *mLedOn : *mLedOff, { 16, 16 });
