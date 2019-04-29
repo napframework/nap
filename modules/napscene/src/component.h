@@ -20,6 +20,12 @@ namespace nap
 	class Component;
 	struct EntityCreationParameters;
 
+	template<class TargetComponentType>
+	class ComponentInstancePtr;
+
+	template<class ComponentType>
+	class ComponentPtr;
+
 	/**
 	 * Runtime version of a Component.
 	 * Adds behavior to an entity and allows for operations on a per frame basis.
@@ -78,6 +84,9 @@ namespace nap
         virtual bool init(utility::ErrorState& errorState);
 
 	private:
+		template<typename TargetComponentType, typename SourceComponentType>
+		friend std::vector<ComponentInstancePtr<TargetComponentType>> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType>>(SourceComponentType::*componentMemberPointer));
+
 		template<class TargetComponentType> friend class ComponentInstancePtr;
 		friend class EntityInstancePtr;
 		friend class SceneInstantiation;
