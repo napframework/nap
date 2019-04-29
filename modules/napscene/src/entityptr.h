@@ -121,13 +121,26 @@ namespace nap
 
 	private:
 		rtti::ObjectPtr<Entity>	mResource;		///< Pointer to the target resource
-		std::string			mPath;			///< Path in the entity hierarchy, either relative or absolute
+		std::string				mPath;			///< Path in the entity hierarchy, either relative or absolute
 	};
 
+
+	/**
+	* The EntityInstancePtrInitProxy is a proxy object that is only used to pass arguments to the correct constructor of EntityInstancePtr
+	* It's only here so that we can use initEntityInstancePtr to initialize both regular EntityInstancePtrs, as well as vectors of EntityInstancePtr.
+	*/
+	template<typename SourceComponentType>
+	struct EntityInstancePtrInitProxy
+	{
+		ComponentInstance*					mSourceComponentInstance;						///< The ComponentInstance that the EntityInstancePtr is located in
+		EntityPtr							SourceComponentType::*mEntityMemberPointer;		///< Member pointer to the EntityPtr located in the Component
+	};
 
 	class EntityInstancePtr
 	{
 	public:
+		EntityInstancePtr() = default;
+
 		template<class SourceComponentType>
 		EntityInstancePtr(ComponentInstance* sourceComponentInstance, EntityPtr(SourceComponentType::*entityMemberPointer))
 		{
@@ -135,6 +148,15 @@ namespace nap
 			EntityPtr& target_entity_resource = resource->*entityMemberPointer;
 
 			sourceComponentInstance->addToEntityLinkMap(target_entity_resource.get(), target_entity_resource.getInstancePath(), &mInstance);
+		}
+
+		/**
+		* Construct a EntityInstancePtr from a EntityInstancePtrInitProxy, which can be retrieved through initEntityInstancePtr.
+		*/
+		template<class SourceComponentType>
+		EntityInstancePtr(EntityInstancePtrInitProxy<SourceComponentType>& proxy) :
+			EntityInstancePtr(proxy.mSourceComponentInstance, proxy.mEntityMemberPointer)
+		{
 		}
 
 		const EntityInstance& operator*() const
@@ -212,8 +234,49 @@ namespace nap
 		}
 
 	private:
+		template<typename SourceComponentType>
+		friend std::vector<EntityInstancePtr> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<EntityPtr>(SourceComponentType::*entityMemberPointer));
+
 		EntityInstance* mInstance = nullptr;
 	};
+
+	/**
+	* Init a regular EntityInstancePtr. Returns a EntityInstancePtrInitProxy which is a simple wrapper around the function arguments.
+	* The return value is passed directly to the corresponding constructor on EntityInstancePtr, which does the actual initialization.
+	*
+	* @param sourceComponentInstance The ComponentInstance that the EntityInstancePtr being initialized is a member of
+	* @param entityMemberPointer Member pointer to the EntityPtr member of the Component
+	*
+	* @return A EntityInstancePtrInitProxy which can be passed to the EntityInstancePtr constructor
+	*/
+	template<typename SourceComponentType>
+	EntityInstancePtrInitProxy<SourceComponentType> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, EntityPtr(SourceComponentType::*entityMemberPointer))
+	{
+		return{ sourceComponentInstance, entityMemberPointer };
+	}
+
+	/**
+	* Init a std::vector of EntityInstancePtrs. Returns a std::vector which is then used to initialize the target std::vector of EntityInstancePtrs
+	*
+	* @param sourceComponentInstance The ComponentInstance that the EntityInstancePtr being initialized is a member of
+	* @param entityMemberPointer Member pointer to the EntityPtr member of the Component
+	*
+	* @return std::vector of initialized EntityInstancePtrs
+	*/
+	template<typename SourceComponentType>
+	std::vector<EntityInstancePtr> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<EntityPtr>(SourceComponentType::*entityMemberPointer))
+	{
+		SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
+		std::vector<EntityPtr>& target_entity_resource = resource->*entityMemberPointer;
+
+		std::vector<EntityInstancePtr> result;
+		result.resize(target_entity_resource.size());
+
+		for (int i = 0; i != result.size(); ++i)
+			sourceComponentInstance->addToEntityLinkMap(target_entity_resource[i].get(), target_entity_resource[i].getInstancePath(), &result[i].mInstance);
+
+		return result;
+	}
 }
 
 /**
