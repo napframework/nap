@@ -386,8 +386,8 @@ namespace nap
 		}
 
 	private:
-		template<typename TargetComponentType, typename SourceComponentType>
-		friend std::vector<ComponentInstancePtr<TargetComponentType>> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType>>(SourceComponentType::*componentMemberPointer));
+		template<typename TargetComponentType_, typename SourceComponentType_>
+		friend std::vector<ComponentInstancePtr<TargetComponentType_>> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType_>>(SourceComponentType_::*componentMemberPointer));
 
 	private:
 		TargetComponentInstanceType* mInstance = nullptr;

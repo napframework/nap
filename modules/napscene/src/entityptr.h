@@ -234,8 +234,8 @@ namespace nap
 		}
 
 	private:
-		template<typename SourceComponentType>
-		friend std::vector<EntityInstancePtr> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<EntityPtr>(SourceComponentType::*entityMemberPointer));
+		template<typename SourceComponentType_>
+		friend std::vector<EntityInstancePtr> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<EntityPtr>(SourceComponentType_::*entityMemberPointer));
 
 		EntityInstance* mInstance = nullptr;
 	};
