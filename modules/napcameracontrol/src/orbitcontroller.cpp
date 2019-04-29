@@ -52,19 +52,6 @@ namespace nap
 	}
 
 
-	void OrbitControllerInstance::update(const glm::vec3& lookAtPos)
-	{
-		disable();
-		enable(lookAtPos);
-	}
-
-
-	void OrbitControllerInstance::update()
-	{
-		update(getLookAtPos());
-	}
-
-
 	CameraComponentInstance& OrbitControllerInstance::getCameraComponent()
 	{
 		return *mPerspCameraComponent;
