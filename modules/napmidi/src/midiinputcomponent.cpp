@@ -43,7 +43,8 @@ namespace nap
     
     MidiInputComponentInstance::~MidiInputComponentInstance()
     {
-        mService->unregisterInputComponent(*this);
+		if (mService != nullptr)
+			mService->unregisterInputComponent(*this);
     }
 
 }

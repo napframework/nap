@@ -26,6 +26,9 @@ namespace nap
 	template<class ComponentType>
 	class ComponentPtr;
 
+	class EntityPtr;
+	class EntityInstancePtr;
+
 	/**
 	 * Runtime version of a Component.
 	 * Adds behavior to an entity and allows for operations on a per frame basis.
@@ -86,6 +89,9 @@ namespace nap
 	private:
 		template<typename TargetComponentType, typename SourceComponentType>
 		friend std::vector<ComponentInstancePtr<TargetComponentType>> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType>>(SourceComponentType::*componentMemberPointer));
+
+		template<typename SourceComponentType>
+		friend std::vector<EntityInstancePtr> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<EntityPtr>(SourceComponentType::*entityMemberPointer));
 
 		template<class TargetComponentType> friend class ComponentInstancePtr;
 		friend class EntityInstancePtr;

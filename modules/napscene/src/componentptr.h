@@ -51,7 +51,7 @@ namespace nap
 	 * which means the path points to a specific component located at that path.
 	 *
 	 * Paths consisting out of multiple elements can be either relative or absolute and come in three forms:
-	 * - /RootEntityID/ComponentID - An absolute path that starts in the root entity with the specified ID
+	 * - RootEntityID/ComponentID - An absolute path that starts in the root entity with the specified ID
 	 * - ./ChildEntityID/ComponentID - A relative path that starts in the entity that the ComponentPtr is in
 	 * - ../ChildEntityID/ComponentID - A relative path starting at the parent of the entity that the ComponentPtr is in
 	 *
@@ -219,13 +219,12 @@ namespace nap
 
 	/**
 	 * ComponentInstancePtr is used in ComponentInstance classes to point to other ComponentInstance objects directly.
-	 * ComponentInstances are spawned
-	 * from Components at runtime. The ComponentInstancePtr class makes sure that
-	 * the internal pointer is mapped to spawned ComponentInstance target object.
+	 * ComponentInstances are spawned from Components at runtime. The ComponentInstancePtr class makes sure that
+	 * the internal pointer is mapped to the spawned ComponentInstance target object.
 	 *
-	 * The Component of a ComponentInstance must hold a ComponentPtr to another Component.
-	 * When an ComponentInstancePtr is constructed, the user
-	 * should provide the mapping to the ComponentPtr in the Component, by providing the pointer to the member.
+	 * The Component of a ComponentInstance must hold a ComponentPtr to another Component. When an ComponentInstancePtr 
+	 * is constructed, the user should provide the mapping to the ComponentPtr in the Component, by providing the pointer 
+	 * to the member.
 	 *
 	 * Example:
 	 *
@@ -236,11 +235,27 @@ namespace nap
 	 *
 	 *		class SomeComponentInstance : public ComponentInstance
 	 *		{
-	 *			ComponentInstancePtr<OtherComponent> mOtherComponent{ this, &SomeComponent::mOtherComponent };
+	 *			ComponentInstancePtr<OtherComponent> mOtherComponent = initComponentInstancePtr(this, &SomeComponent::mOtherComponent);
 	 *		};
 	 *
-	 * In the example above, SomeComponentInstance::mOtherComponent will point the instance that
-	 * is being pointed to by SomeComponent::mOtherComponent.
+	 * In the example above, SomeComponentInstance::mOtherComponent will point the instance that corresponds to the Component in SomeComponent::mOtherComponent. 
+	 *
+	 * Vectors of ComponentsPtrs are supported in the same way:
+	 *
+	 * Example:
+	 *
+	 * 		class SomeComponent : public Component
+	 *		{
+	 *			std::vector<ComponentPtr<OtherComponent>> mOtherComponentList;
+	 *		};
+	 *
+	 *		class SomeComponentInstance : public ComponentInstance
+	 *		{
+	 *			std::vector<ComponentInstancePtr<OtherComponent>> mOtherComponentList = initComponentInstancePtr(this, &SomeComponent::mOtherComponent);
+	 *		};
+	 *
+	 * Here, each element in SomeComponentInstance::mOtherComponentList will point to each instance that corresponds to each element in 
+	 * the vector SomeComponent::mOtherComponentList;
 	 */
 	template<class TargetComponentType>
 	class ComponentInstancePtr
