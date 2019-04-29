@@ -132,12 +132,12 @@ namespace nap
 		/**
 		 * @return type casted sensor associated with this, nullptr if not located or found!
 		 */
-		const T* get() const					{ return static_cast<T*> mSensor; }
+		const T* get() const					{ return static_cast<T*>(mSensor); }
 
 		/**
 		 * @return type casted sensor associated with this, nullptr if not located or found!
 		 */
-		T* get()								{ return static_cast<T*> mSensor; }
+		T* get()								{ return static_cast<T*>(mSensor); }
 
 		int mBufferSize = 1;					///< Property: 'BufferSize' number of samples to average out
 	protected:
