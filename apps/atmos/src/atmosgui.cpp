@@ -72,7 +72,7 @@ namespace nap
 			TransformComponentInstance& xform_comp = mApp.mCameraEntity->getComponent<TransformComponentInstance>();
 			OrbitControllerInstance& orbit_comp = mApp.mCameraEntity->getComponent<OrbitControllerInstance>();
 			xform_comp.setTranslate(newValue);
-			orbit_comp.compute(orbit_comp.getLookAtPos());
+			orbit_comp.update();
 		});
 
 

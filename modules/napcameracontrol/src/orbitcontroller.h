@@ -76,7 +76,13 @@ namespace nap
 		 * Enforces an update based on the current location stored in the transform component
 		 * @param lookAtPos the position to look at based on the set camera position
 		 */
-		void compute(const glm::vec3& lookAtPos);
+		void update(const glm::vec3& lookAtPos);
+
+		/**
+		 * Enforces an update based on the current location stored in the transform component
+		 * and currently stored lookat position
+		 */
+		void update();
 
 		/**
 		 * @return the current position the camera controlled by the orbit controller looks at. 

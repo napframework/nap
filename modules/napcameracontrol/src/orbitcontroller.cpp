@@ -52,10 +52,16 @@ namespace nap
 	}
 
 
-	void OrbitControllerInstance::compute(const glm::vec3& lookAtPos)
+	void OrbitControllerInstance::update(const glm::vec3& lookAtPos)
 	{
 		disable();
 		enable(lookAtPos);
+	}
+
+
+	void OrbitControllerInstance::update()
+	{
+		update(getLookAtPos());
 	}
 
 
