@@ -4,7 +4,7 @@
 
 // External includes
 #include <glm/gtx/transform.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <mathutils.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,6 +61,22 @@ namespace nap
 		return mLocalMatrix;
 	}
 
+
+	void TransformComponentInstance::setLocalTransform(const glm::mat4x4& matrix)
+	{
+		// Decompose matrix so individual components are represented correctly
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(matrix, mScale, mRotate, mTranslate, skew, perspective);
+
+		// Store matrix
+		mLocalMatrix = matrix;
+		mLocalDirty = false;
+		mUniformScale = 1.0f;
+
+		// Recompute global matrix when asked
+		mWorldDirty = true;
+	}
 
 	// Return the global transform
 	const glm::mat4x4& TransformComponentInstance::getGlobalTransform() const
