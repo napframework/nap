@@ -80,7 +80,6 @@ namespace nap
 		{
 			mCamera->setFieldOfView(newValue);
 		});
-		mCameraFOV->setValue(mCamera->getFieldOfView());
 
 		// Update control method on param change
 		mCameraControlMethod->valueChanged.connect([this](EControlMethod newValue)

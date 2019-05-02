@@ -158,7 +158,18 @@
                     "Type": "nap::SelectMeshComponent",
                     "mID": "SelectMeshComponent",
                     "Meshes": [
-                        "MeteorietPoints"
+                        "MeteorietPoints",
+                        "SteenPoints",
+                        "OlieSteenPoints",
+                        "PyrietPoints",
+                        "RozeSteenPoints",
+                        "SchorsKoraalPoints",
+                        "SloveniePoints",
+                        "TransparantPoints",
+                        "WitkoraalPoints",
+                        "ZeesterPoints",
+                        "MandrilPoints",
+                        "BoomkoraalPoints"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -1029,8 +1040,74 @@
         },
         {
             "Type": "nap::MeshFromFile",
+            "mID": "BoomkoraalMesh",
+            "Path": "boomkoraal.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "MandrilMesh",
+            "Path": "mandril.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
             "Path": "meteoriet.mesh",
+            "Usage": "Static"
+        },
+                {
+            "Type": "nap::MeshFromFile",
+            "mID": "OlieSteenMesh",
+            "Path": "oliesteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "PyrietMesh",
+            "Path": "pyriet.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "RozeSteenMesh",
+            "Path": "rozesteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "SchorsKoraalMesh",
+            "Path": "schorskoraal.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "SlovenieSteen",
+            "Path": "steenslovenie.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "SteenMesh",
+            "Path": "heleenhiressteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "TransparantSteen",
+            "Path": "transparantesteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "WitkoraalMesh",
+            "Path": "witkoraal.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "ZeesterMesh",
+            "Path": "zeester.mesh",
             "Usage": "Static"
         },
         {
@@ -1635,8 +1712,74 @@
         },
         {
             "Type": "nap::ScatterPointsMesh",
+            "mID": "BoomkoraalPoints",
+            "ReferenceMesh": "BoomkoraalMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "MandrilPoints",
+            "ReferenceMesh": "MandrilMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
             "mID": "MeteorietPoints",
             "ReferenceMesh": "MeteorietMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "OlieSteenPoints",
+            "ReferenceMesh": "OlieSteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "PyrietPoints",
+            "ReferenceMesh": "PyrietMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "RozeSteenPoints",
+            "ReferenceMesh": "RozeSteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "SchorsKoraalPoints",
+            "ReferenceMesh": "SchorsKoraalMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "SloveniePoints",
+            "ReferenceMesh": "SlovenieSteen",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "SteenPoints",
+            "ReferenceMesh": "SteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "TransparantPoints",
+            "ReferenceMesh": "TransparantSteen",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "WitkoraalPoints",
+            "ReferenceMesh": "WitkoraalMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "ZeesterPoints",
+            "ReferenceMesh": "ZeesterMesh",
             "PointCount": 1000000
         },
         {
