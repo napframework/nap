@@ -3,6 +3,7 @@
 // External Includes
 #include <parameter.h>
 #include <nap/signalslot.h>
+#include <glm/gtc/quaternion.hpp>
 
 namespace nap
 {
@@ -41,7 +42,13 @@ namespace nap
 		Signal<T>	valueChanged;		///< Signal that's raised when the value of this parameter changes
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Simple Parameter Type Declarations
+	//////////////////////////////////////////////////////////////////////////
+
 	using ParameterBool = ParameterSimple<bool>;
+	using ParameterQuat = ParameterSimple<glm::quat>;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions

@@ -119,6 +119,15 @@ namespace nap
 				vec3_parameter->setValue(value);
 		});
 
+		registerParameterEditor(RTTI_OF(ParameterQuat), [](Parameter& parameter)
+		{
+			ParameterQuat* quat_parameter = rtti_cast<ParameterQuat>(&parameter);
+
+			glm::quat value = quat_parameter->mValue;
+			if (ImGui::InputFloat4(quat_parameter->getDisplayName().c_str(), &(value[0])))
+				quat_parameter->setValue(value);
+		});
+
 		registerParameterEditor(RTTI_OF(ParameterIVec3), [](Parameter& parameter)
 		{
 			ParameterIVec3* vec3_parameter = rtti_cast<ParameterIVec3>(&parameter);
