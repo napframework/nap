@@ -43,7 +43,7 @@ namespace nap
 	 * Describes a local transform that is used to compute 
 	 * the global transform of an object. When the transform is created
 	 * the global and local transform is invalid. You can always query the
-	 * current local matrix, the global matrix is updated on compute.
+	 * current local matrix, the global matrix is updated on update().
 	 */
 	class NAPAPI TransformComponentInstance : public ComponentInstance
 	{
@@ -72,10 +72,16 @@ namespace nap
 		const glm::mat4x4& getLocalTransform() const;
 
 		/**
+		 * Set the local transform based on the given matrix.
+		 * Note that the matrix is decomposed, result is stored in the individual elements:
+		 * Uniform scale is discarded, ie: the result will be 1.
+		 */
+		void setLocalTransform(const glm::mat4x4& matrix) ;
+
+		/**
 		 * Returns the global transform of this node
 		 * Note that the global transform can be out of sync as it's
-		 * recomputed on update. TODO: Resolve by walking up the tree
-		 * and down till we have the highest dirty node, from that 
+		 * recomputed on update.
 		 * point on resolve downwards
 		 */
 		const glm::mat4x4& getGlobalTransform() const;
