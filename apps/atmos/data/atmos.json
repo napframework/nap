@@ -75,7 +75,9 @@
                     "mID": "ControlSelector",
                     "OrbitController": "./nap::OrbitController",
                     "FirstPersonController": "./FirstPersonController",
-                    "ControlMethod": "Orbit"
+                    "ControlMethod": "Orbit",
+                    "CameraTranslation" : "Camera Translation",
+                    "CameraRotation" : "Camera Rotation"
                 }
             ],
             "Children": []
@@ -1106,6 +1108,29 @@
                             "Value": 90.0,
                             "Minimum": 25.0,
                             "Maximum": 150.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "Camera Translation",
+                            "Name": "",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "Minimum": -1000.0,
+                            "Maximum": 1000.0
+                        },
+                        {
+                            "Type": "nap::ParameterQuat",
+                            "mID": "Camera Rotation",
+                            "Name": "",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 1.0
+                            }
                         }
                     ],
                     "Groups": []

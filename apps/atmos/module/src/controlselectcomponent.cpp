@@ -13,6 +13,8 @@ RTTI_BEGIN_CLASS(nap::ControlSelectComponent)
 	RTTI_PROPERTY("OrbitController",		&nap::ControlSelectComponent::mOrbitController,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FirstPersonController",	&nap::ControlSelectComponent::mFirstPersonController,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ControlMethod",			&nap::ControlSelectComponent::mControlMethod,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CameraTranslation",		&nap::ControlSelectComponent::mCameraTranslation,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CameraRotation",			&nap::ControlSelectComponent::mCameraRotation,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::controlselectcomponentInstance run time class definition 
@@ -33,6 +35,27 @@ namespace nap
 
 	bool ControlSelectComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Get pointers to the camera parameters
+		mCameraTranslation = getComponent<ControlSelectComponent>()->mCameraTranslation.get();
+		mCameraRotation  = getComponent<ControlSelectComponent>()->mCameraRotation.get();
+
+		// Get transform that is manipulated using the controllers
+		mCameraTransformComponent = mOrbitController->getEntityInstance()->findComponent<nap::TransformComponentInstance>();
+		if (!errorState.check(mCameraTransformComponent != nullptr, "unable to locate camera transform component"))
+			return false;
+		
+		// Update position when camera location changes
+		mCameraTranslation->valueChanged.connect([this](glm::vec3 newValue)
+		{
+			mCameraTransformComponent->setTranslate(newValue);
+		});
+
+		// Update rotation when camera location changes
+		mCameraRotation->valueChanged.connect([this](glm::quat newValue)
+		{
+			mCameraTransformComponent->setRotate(newValue);
+		});
+
 		selectControlMethod(getComponent<ControlSelectComponent>()->mControlMethod);
 		return true;
 	}
@@ -40,7 +63,8 @@ namespace nap
 
 	void ControlSelectComponentInstance::update(double deltaTime)
 	{
-
+		mCameraTranslation->setValue(mCameraTransformComponent->getTranslate());
+		mCameraRotation->setValue(mCameraTransformComponent->getRotate());
 	}
 
 

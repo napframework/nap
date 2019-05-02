@@ -70,7 +70,6 @@ namespace nap
 		ResourcePtr<ParameterFloat>				mWindScale;
 		ResourcePtr<ParameterFloat>				mWindFreq;
 		ResourcePtr<ParameterFloat>				mWindRandom;
-
 		ResourcePtr<ParameterFloat>				mFogMin;
 		ResourcePtr<ParameterFloat>				mFogMax;
 		ResourcePtr<ParameterFloat>				mFogPower;

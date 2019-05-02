@@ -5,6 +5,9 @@
 #include <orbitcontroller.h>
 #include <firstpersoncontroller.h>
 #include <numeric>
+#include <parametersimple.h>
+#include <parameternumeric.h>
+#include <transformcomponent.h>
 
 namespace nap
 {
@@ -34,6 +37,8 @@ namespace nap
 		EControlMethod							mControlMethod = EControlMethod::Orbit;
 		ComponentPtr<OrbitController>			mOrbitController;							///< Property: "OrbitController"
 		ComponentPtr<FirstPersonController>		mFirstPersonController;						///< Property: "FirstPersonController"
+		ResourcePtr<ParameterQuat>				mCameraRotation;							///< Property: "CameraRotation"
+		ResourcePtr<ParameterVec3>				mCameraTranslation;							///< Property: "CameraTranslation"
 	};
 
 
@@ -71,8 +76,11 @@ namespace nap
 		 */
 		EControlMethod getCurrentControlMethod() const { return mControlMethod; }
 
-		ComponentInstancePtr<OrbitController>			mOrbitController =	{ this, &ControlSelectComponent::mOrbitController };
-		ComponentInstancePtr<FirstPersonController>		mFirstPersonController = { this, &ControlSelectComponent::mFirstPersonController };
+		ComponentInstancePtr<OrbitController> mOrbitController =	{ this, &ControlSelectComponent::mOrbitController };
+		ComponentInstancePtr<FirstPersonController>	mFirstPersonController = { this, &ControlSelectComponent::mFirstPersonController };
+		ParameterVec3* mCameraTranslation = nullptr;
+		ParameterQuat* mCameraRotation = nullptr;
 		EControlMethod mControlMethod = EControlMethod::Orbit;
+		TransformComponentInstance* mCameraTransformComponent = nullptr;
 	};
 }
