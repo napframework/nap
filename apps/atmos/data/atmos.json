@@ -72,12 +72,16 @@
                 },
                 {
                     "Type": "nap::ControlSelectComponent",
-                    "mID": "ControlSelector",
+                     "mID": "ControlSelector",
                     "OrbitController": "./nap::OrbitController",
                     "FirstPersonController": "./FirstPersonController",
-                    "ControlMethod": "Orbit",
+                    "PerspectiveCamera" : "./PerspCameraComponent",
                     "CameraTranslation" : "Camera Translation",
-                    "CameraRotation" : "Camera Rotation"
+                    "CameraRotation" : "Camera Rotation",
+                    "CameraFOV" : "Camera FOV",
+                    "CameraMoveSpeed" : "Camera Movement Speed",
+                    "CameraRotateSpeed" : "Camera Rotation Speed",
+                    "CameraControlMethod" : "Camera Mode"
                 }
             ],
             "Children": []
@@ -1089,17 +1093,17 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Camera Movement Speed",
                             "Name": "",
-                            "Value": 15.0,
+                            "Value": 0.1,
                             "Minimum": 0.0,
-                            "Maximum": 10.0
+                            "Maximum": 0.25
                         },
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "Camera Rotation Speed",
                             "Name": "",
-                            "Value": 0.0010000000474974514,
+                            "Value": 0.1,
                             "Minimum": 0.0,
-                            "Maximum": 10.0
+                            "Maximum": 1.0
                         },
                         {
                             "Type": "nap::ParameterFloat",

@@ -4,7 +4,6 @@
 #include "selectmeshcomponent.h"
 #include "selectimagecomponent.h"
 #include "updatematerialcomponent.h"
-#include "controlselectcomponent.h"
 #include "rotatecomponent.h"
 
 // External Includes
@@ -37,17 +36,8 @@ namespace nap
 
 	void AtmosGui::init()
 	{
-		// Store speed values
- 		FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
- 		mCamMaxMovSpeed = fps_comp.getMovementSpeed();
- 		mCamMaxRotSpeed = fps_comp.getRotationSpeed();
-
 		mParameterGUI = std::make_unique<ParameterGUI>(mParameterService);
-
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
-		mCameraMovSpeed			= resourceManager->findObject<ParameterFloat>("Camera Movement Speed");
-		mCameraRotSpeed			= resourceManager->findObject<ParameterFloat>("Camera Rotation Speed");
-		mCameraFOV				= resourceManager->findObject<ParameterFloat>("Camera FOV");
 		mCameraControlMethod	= resourceManager->findObject<ParameterControlMethod>("Camera Mode");
 		mRotateSpeed			= resourceManager->findObject<ParameterFloat>("Rotation Speed");
 		mLinkFogToBackground	= resourceManager->findObject<ParameterBool>("Link Fog To Background");
@@ -60,33 +50,16 @@ namespace nap
 		mFogColor->valueChanged.connect([this](const RGBColorFloat&)		{ UpdateFogColor(); });
 		mBackgroundColor->valueChanged.connect([this](const RGBColorFloat&)	{ UpdateFogColor(); });
 
-		mCameraMovSpeed->valueChanged.connect([this](float newValue) 
-		{
-			FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
-			fps_comp.setMovementSpeed(mCamMaxMovSpeed * newValue);
-		});
-
 
 		mLedOn = mApp.mResourceManager->findObject<nap::ImageFromFile>("LedOnImage");
 		assert(mLedOn != nullptr);
 		mLedOff = mApp.mResourceManager->findObject<nap::ImageFromFile>("LedOffImage");
 		assert(mLedOff != nullptr);
-		mCameraRotSpeed->valueChanged.connect([this](float newValue)
-		{
-			FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
-			fps_comp.setRotationSpeed(mCamMaxRotSpeed * newValue);
-		});
 
 		mRotateSpeed->valueChanged.connect([this](float newValue)
 		{
 			RotateComponentInstance& rot_comp = mApp.mWorldEntity->getComponent<RotateComponentInstance>();
 			rot_comp.mProperties.mSpeed = newValue;
-		});
-
-		mCameraFOV->valueChanged.connect([this](float newValue)
-		{
-			nap::PerspCameraComponentInstance& cam_comp = mApp.mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
-			cam_comp.setFieldOfView(newValue);
 		});
 
 		mUseTransparency->valueChanged.connect([this](bool newValue)
@@ -104,17 +77,8 @@ namespace nap
 			}
 		});
 
-		mCameraControlMethod->valueChanged.connect([this](EControlMethod newValue)
-		{
-			nap::ControlSelectComponentInstance& control_comp = mApp.mCameraEntity->getComponent<ControlSelectComponentInstance>();
-			control_comp.selectControlMethod(newValue);
-		});
-
-		mCameraFOV->setValue(mApp.mCameraEntity->getComponent<nap::PerspCameraComponentInstance>().getFieldOfView());
-
 		const glm::vec4& clear_color = mApp.mRenderWindow->getBackbuffer().getClearColor();
 		mBackgroundColor->setValue(RGBColorFloat(clear_color.r, clear_color.g, clear_color.b));
-
 		UpdateFogColor();
 	}
 

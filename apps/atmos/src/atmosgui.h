@@ -7,12 +7,10 @@
 #include <imagefromfile.h>
 #include <nap/resourceptr.h>
 #include <parameter.h>
-#include <controlselectcomponent.h>
-#include <parameterenum.h>
+#include <enumparameters.h>
 #include <parameternumeric.h>
 #include <parametersimple.h>
 #include <parametercolor.h>
-#include <enumparameters.h>
 
 namespace nap
 {
@@ -68,17 +66,11 @@ namespace nap
 		float								mTexPreviewDisplaySize = 1.0f;
 		float								mWraPreviewDisplaySize = 1.0f;
 		float								mVidPreviewDisplaySize = 1.0f;
-		ResourcePtr<ParameterFloat>			mCameraMovSpeed;
-		ResourcePtr<ParameterFloat>			mCameraRotSpeed;
 		ResourcePtr<ParameterFloat>			mRotateSpeed;
-		ResourcePtr<ParameterFloat>			mCameraFOV;
 		ResourcePtr<ParameterControlMethod>	mCameraControlMethod;
-		float								mCamMaxRotSpeed;
-		float								mCamMaxMovSpeed;
 		ResourcePtr<ParameterBool>			mLinkFogToBackground;
 		ResourcePtr<ParameterRGBColorFloat>	mBackgroundColor;
 		ResourcePtr<ParameterRGBColorFloat>	mFogColor;
-		ResourcePtr<ParameterVec3>			mCameraPosition;
 		ResourcePtr<ParameterBool>			mUseTransparency;
 		ResourcePtr<ParameterPolygonMode>	mRenderMode;
 		ResourcePtr<ImageFromFile>			mLedOn = nullptr;				//< Signals established connection

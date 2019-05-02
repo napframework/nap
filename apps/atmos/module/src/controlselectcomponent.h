@@ -1,5 +1,9 @@
 #pragma once
 
+// Local Includes
+#include "enumparameters.h"
+
+// External Includes
 #include <component.h>
 #include <componentptr.h>
 #include <orbitcontroller.h>
@@ -12,12 +16,6 @@
 namespace nap
 {
 	class ControlSelectComponentInstance;
-
-	enum class EControlMethod : uint8_t
-	{
-		Orbit = 0,
-		FirstPerson = 1
-	};
 
 	/**
 	 *	controlselectcomponent
@@ -34,11 +32,15 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		EControlMethod							mControlMethod = EControlMethod::Orbit;
 		ComponentPtr<OrbitController>			mOrbitController;							///< Property: "OrbitController"
 		ComponentPtr<FirstPersonController>		mFirstPersonController;						///< Property: "FirstPersonController"
+		ComponentPtr<PerspCameraComponent>		mCameraComponent;							///< Property: "PerspectiveCamera"
 		ResourcePtr<ParameterQuat>				mCameraRotation;							///< Property: "CameraRotation"
 		ResourcePtr<ParameterVec3>				mCameraTranslation;							///< Property: "CameraTranslation"
+		ResourcePtr<ParameterFloat>				mCameraMovSpeed = nullptr;
+		ResourcePtr<ParameterFloat>				mCameraRotSpeed = nullptr;
+		ResourcePtr<ParameterFloat>				mCameraFOV = nullptr;
+		ResourcePtr<ParameterControlMethod>		mCameraControlMethod = nullptr;
 	};
 
 
@@ -76,11 +78,26 @@ namespace nap
 		 */
 		EControlMethod getCurrentControlMethod() const { return mControlMethod; }
 
+		// Component links
 		ComponentInstancePtr<OrbitController> mOrbitController =	{ this, &ControlSelectComponent::mOrbitController };
 		ComponentInstancePtr<FirstPersonController>	mFirstPersonController = { this, &ControlSelectComponent::mFirstPersonController };
-		ParameterVec3* mCameraTranslation = nullptr;
-		ParameterQuat* mCameraRotation = nullptr;
-		EControlMethod mControlMethod = EControlMethod::Orbit;
+		ComponentInstancePtr<PerspCameraComponent>	mCamera = { this, &ControlSelectComponent::mCameraComponent };
+
+		// Found components
 		TransformComponentInstance* mCameraTransformComponent = nullptr;
+
+		// Current control method
+		EControlMethod mControlMethod = EControlMethod::Orbit;
+
+		// Pointers to parameters
+		ParameterVec3*				mCameraTranslation = nullptr;
+		ParameterQuat*				mCameraRotation = nullptr;
+		ParameterFloat*				mCameraMovSpeed = nullptr;
+		ParameterFloat*				mCameraRotSpeed = nullptr;
+		ParameterFloat*				mCameraFOV = nullptr;
+		ParameterControlMethod*		mCameraControlMethod = nullptr;
+
+		float						mCamMaxRotSpeed = 1.0f;
+		float						mCamMaxMovSpeed = 1.0f;
 	};
 }
