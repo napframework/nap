@@ -1,7 +1,9 @@
 #pragma once
 
+// Local Includes
+#include "parameter.h"
+
 // External Includes
-#include <parameter.h>
 #include <nap/signalslot.h>
 
 namespace nap
@@ -27,21 +29,20 @@ namespace nap
 		 *
 		 * @param value The value to set
 		 */
-		void setValue(const T& value)
-		{
-			if (value != mValue)
-			{
-				mValue = value;
-				valueChanged(mValue);
-			}
-		}
+		void setValue(const T& value);
 
 	public:
 		T			mValue;				///< Property: 'Value' the value of this parameter
 		Signal<T>	valueChanged;		///< Signal that's raised when the value of this parameter changes
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Simple Parameter Declarations
+	//////////////////////////////////////////////////////////////////////////
+
 	using ParameterBool = ParameterSimple<bool>;
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
@@ -54,9 +55,21 @@ namespace nap
 		assert(derived_type != nullptr);
 		setValue(derived_type->mValue);
 	}
+
+	template<typename T>
+	void nap::ParameterSimple<T>::setValue(const T& value)
+	{
+		if (value != mValue)
+		{
+			mValue = value;
+			valueChanged(mValue);
+		}
+	}
 }
 
-
+/**
+ * Helper macro that can be used to define the RTTI for a simple parameter type
+ */
 #define DEFINE_SIMPLE_PARAMETER(Type)																			\
 	RTTI_BEGIN_CLASS(Type)																						\
 		RTTI_PROPERTY("Value",		&Type::mValue,		nap::rtti::EPropertyMetaData::Default)					\
