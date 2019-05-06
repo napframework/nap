@@ -30,6 +30,15 @@ namespace nap
 		 */
 		void setValue(T value);
 
+		/**
+		 * Sets the min/max range of this parameter to the specified values. 
+		 * If the current value is outside of the specified range, it will be clamped.
+		 *
+		 * @param minimum The minimum value for this parameter
+		 * @param maximum The maximum value for this parameter
+		 */
+		void setRange(T minimum, T maximum);
+
 	public:
 		T			mValue;							///< Property: 'Value' the value of this parameter
 		T			mMinimum = math::min<T>();		///< Property: 'Minimum' the minimum value of this parameter
@@ -92,6 +101,14 @@ namespace nap
 		{
 			valueChanged(mValue);
 		}
+	}
+
+	template<typename T>
+	void ParameterNumeric<T>::setRange(T minimum, T maximum)
+	{
+		mMinimum = minimum;
+		mMaximum = maximum;
+		setValue(mValue);
 	}
 
 	template<typename T>

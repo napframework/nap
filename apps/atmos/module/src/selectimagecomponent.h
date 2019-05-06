@@ -18,14 +18,17 @@ namespace nap
 		DECLARE_COMPONENT(SelectImageComponent, SelectImageComponentInstance)
 	public:
 
-		std::vector<ResourcePtr<ImageFromFile>> mImages;	///< Property: 'Images' list of selectable images
-		ResourcePtr<ParameterInt> mIndex;					///< Property: 'Index' current selected image
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		* @param components the components this object depends on
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
+
+	public:
+		std::vector<ResourcePtr<ImageFromFile>> mImages;	///< Property: 'Images' list of selectable images
+		ResourcePtr<ParameterInt> mIndex;					///< Property: 'Index' current selected image
 	};
 
 
