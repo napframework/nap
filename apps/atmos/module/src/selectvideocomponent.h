@@ -24,6 +24,8 @@ namespace nap
 		DECLARE_COMPONENT(SelectVideoComponent, SelectVideoComponentInstance)
 	public:
 
+		virtual bool init(utility::ErrorState& errorState) override;
+
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		* @param components the components this object depends on

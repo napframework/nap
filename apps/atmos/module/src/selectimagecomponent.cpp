@@ -20,6 +20,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	bool SelectImageComponent::init(utility::ErrorState& errorState)
+	{
+		mIndex->setRange(0, mImages.size() - 1);
+		return true;
+	}
+
+
 	void SelectImageComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 
