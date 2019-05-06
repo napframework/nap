@@ -30,6 +30,15 @@ namespace nap
 		 */
 		void setValue(T value);
 
+		/**
+		 * Sets the min/max range of this parameter to the specified values. 
+		 * If the current value is outside of the specified range, it will be clamped.
+		 *
+		 * @param minimum The minimum value for this parameter
+		 * @param maximum The maximum value for this parameter
+		 */
+		void setRange(T minimum, T maximum);
+
 	public:
 		T			mValue;							///< Property: 'Value' the value of this parameter
 		T			mMinimum = math::min<T>();		///< Property: 'Minimum' the minimum value of this parameter
@@ -79,10 +88,6 @@ namespace nap
 		const ParameterNumeric<T>* derived_type = rtti_cast<const ParameterNumeric<T>>(&value);
 		assert(derived_type != nullptr);
 
-		// Update min & max
-		mMinimum = derived_type->mMinimum;
-		mMaximum = derived_type->mMaximum;
-
 		// Set value from the parameter
 		setValue(derived_type->mValue);
 	}
@@ -99,13 +104,18 @@ namespace nap
 	}
 
 	template<typename T>
+	void ParameterNumeric<T>::setRange(T minimum, T maximum)
+	{
+		mMinimum = minimum;
+		mMaximum = maximum;
+		setValue(mValue);
+	}
+
+	template<typename T>
 	void ParameterNumericVec<T>::setValue(const Parameter& value)
 	{
 		const ParameterNumericVec<T>* derived_type = rtti_cast<const ParameterNumericVec<T>>(&value);
 		assert(derived_type != nullptr);
-
-		mMinimum = derived_type->mMinimum;
-		mMaximum = derived_type->mMaximum;
 
 		setValue(derived_type->mValue);
 	}
