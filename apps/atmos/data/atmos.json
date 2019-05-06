@@ -7,30 +7,22 @@
                 {
                     "Type": "nap::ParameterInt",
                     "mID": "Selected Mesh",
-                    "Value" : 0,
-                    "Minimum" : 0,
-                    "Maximum" : 4
+                    "Value" : 5000
                 },
                 {
                     "Type": "nap::ParameterInt",
                     "mID": "Selected Tileable Image",
-                    "Value" : 0,
-                    "Minimum" : 0,
-                    "Maximum" : 20
+                    "Value" : 0
                 },
                 {
                     "Type": "nap::ParameterInt",
                     "mID": "Selected Stretch Image",
-                    "Value" : 0,
-                    "Minimum" : 0,
-                    "Maximum" : 3
+                    "Value" : 0
                 },
                 {
                     "Type": "nap::ParameterInt",
                     "mID": "Selected Video",
-                    "Value" : 0,
-                    "Minimum" : 0,
-                    "Maximum" : 0
+                    "Value" : 0
                 },
                 {
                     "Type": "nap::ParameterFloat",

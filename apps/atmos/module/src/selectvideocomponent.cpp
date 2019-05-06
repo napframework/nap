@@ -22,6 +22,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	bool SelectVideoComponent::init(utility::ErrorState& errorState)
+	{
+		mIndex->setRange(0, mVideoFiles.size() - 1);
+		return true;
+	}
+
+
 	void SelectVideoComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::RenderableMeshComponent));

@@ -24,6 +24,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	bool SelectMeshComponent::init(utility::ErrorState& errorState)
+	{
+		mIndex->setRange(0, mMeshes.size() - 1);
+		return true;
+	}
+
+
 	void SelectMeshComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::RenderableMeshComponent));
