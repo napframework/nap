@@ -35,6 +35,7 @@ namespace nap
 		std::string mName;		///< Property 'Name': The name of this property. The name is separate from the ID and doesn't have to be unique.
 	};
 
+
 	/** 
 	 * A parameter group serves as a group for sets of parameters. It is used to group parameters together in logical groups.
 	 * A group can contain other groups, thus forming a tree structure

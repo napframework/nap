@@ -1,3 +1,5 @@
 {
-    "dependencies": []
+    "dependencies": [
+		"mod_napparameter"
+    ]
 }

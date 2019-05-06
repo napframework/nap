@@ -4,6 +4,7 @@
 #include <imgui/imgui.h>
 #include <rtti/rttiutilities.h>
 #include <parameternumeric.h>
+#include <parametervec.h>
 #include <parametersimple.h>
 #include <parameterenum.h>
 #include <parametercolor.h>
@@ -101,31 +102,96 @@ namespace nap
 				color_parameter->setValue(value);
 		});
 
+		registerParameterEditor(RTTI_OF(ParameterRGBAColorFloat), [](Parameter& parameter)
+		{
+			ParameterRGBAColorFloat* color_parameter = rtti_cast<ParameterRGBAColorFloat>(&parameter);
+			
+			RGBAColorFloat value = color_parameter->mValue;
+			if (ImGui::ColorEdit4(color_parameter->getDisplayName().c_str(), value.getData()))
+				color_parameter->setValue(value);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterRGBColor8), [](Parameter& parameter)
+		{
+			ParameterRGBColor8* color_parameter = rtti_cast<ParameterRGBColor8>(&parameter);
+
+			RGBColorFloat value = color_parameter->mValue.convert<RGBColorFloat>();
+			if (ImGui::ColorEdit3(color_parameter->getDisplayName().c_str(), value.getData()))
+				color_parameter->setValue(value.convert<RGBColor8>());
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterRGBAColor8), [](Parameter& parameter)
+		{
+			ParameterRGBAColor8* color_parameter = rtti_cast<ParameterRGBAColor8>(&parameter);
+
+			RGBAColorFloat value = color_parameter->mValue.convert<RGBAColorFloat>();
+			if (ImGui::ColorEdit4(color_parameter->getDisplayName().c_str(), value.getData()))
+				color_parameter->setValue(value.convert<RGBAColor8>());
+		});
+
 		registerParameterEditor(RTTI_OF(ParameterVec2), [](Parameter& parameter)
 		{
 			ParameterVec2* vec2_parameter = rtti_cast<ParameterVec2>(&parameter);
 
 			glm::vec2 value = vec2_parameter->mValue;
-			if (ImGui::SliderFloat2(vec2_parameter->getDisplayName().c_str(), &(value[0]), vec2_parameter->mMinimum, vec2_parameter->mMaximum))
-				vec2_parameter->setValue(value);
+			if (vec2_parameter->mClamp)
+			{
+				if (ImGui::SliderFloat2(vec2_parameter->getDisplayName().c_str(), &(value[0]), vec2_parameter->mMinimum, vec2_parameter->mMaximum))
+					vec2_parameter->setValue(value);
+			}
+			else
+			{
+				if (ImGui::InputFloat2(vec2_parameter->getDisplayName().c_str(), &(value[0])))
+					vec2_parameter->setValue(value);
+			}
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterIVec2), [](Parameter& parameter)
+		{
+			ParameterIVec2* vec2_parameter = rtti_cast<ParameterIVec2>(&parameter);
+			glm::ivec2 value = vec2_parameter->mValue;
+			if (vec2_parameter->mClamp)
+			{
+				if (ImGui::SliderInt3(vec2_parameter->getDisplayName().c_str(), &value[0], vec2_parameter->mMinimum, vec2_parameter->mMaximum))
+					vec2_parameter->setValue(value);
+			}
+			else
+			{
+				if (ImGui::InputInt2(vec2_parameter->getDisplayName().c_str(), &value[0]))
+					vec2_parameter->setValue(value);
+			}
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterVec3), [](Parameter& parameter)
 		{
 			ParameterVec3* vec3_parameter = rtti_cast<ParameterVec3>(&parameter);
-
 			glm::vec3 value = vec3_parameter->mValue;
-			if (ImGui::SliderFloat3(vec3_parameter->getDisplayName().c_str(), &(value[0]), vec3_parameter->mMinimum, vec3_parameter->mMaximum))
-				vec3_parameter->setValue(value);
+			if (vec3_parameter->mClamp)
+			{
+				if (ImGui::SliderFloat3(vec3_parameter->getDisplayName().c_str(), &(value[0]), vec3_parameter->mMinimum, vec3_parameter->mMaximum))
+					vec3_parameter->setValue(value);
+			}
+			else
+			{
+				if (ImGui::InputFloat3(vec3_parameter->getDisplayName().c_str(), &(value[0])))
+					vec3_parameter->setValue(value);
+			}
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterIVec3), [](Parameter& parameter)
 		{
 			ParameterIVec3* vec3_parameter = rtti_cast<ParameterIVec3>(&parameter);
-
 			glm::ivec3 value = vec3_parameter->mValue;
-			if (ImGui::SliderInt3(vec3_parameter->getDisplayName().c_str(), &value[0], vec3_parameter->mMinimum, vec3_parameter->mMaximum))
-				vec3_parameter->setValue(value);
+			if (vec3_parameter->mClamp)
+			{
+				if (ImGui::SliderInt3(vec3_parameter->getDisplayName().c_str(), &value[0], vec3_parameter->mMinimum, vec3_parameter->mMaximum))
+					vec3_parameter->setValue(value);
+			}
+			else
+			{
+				if (ImGui::InputInt3(vec3_parameter->getDisplayName().c_str(), &value[0]))
+					vec3_parameter->setValue(value);
+			}
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterEnumBase), [](Parameter& parameter)
