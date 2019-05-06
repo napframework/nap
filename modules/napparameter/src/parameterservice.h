@@ -3,6 +3,7 @@
 // External Includes
 #include <nap/service.h>
 #include <nap/resourceptr.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -77,6 +78,11 @@ namespace nap
 		 * @return The root group
 		 */
 		ParameterGroup& getRootGroup() { assert(hasRootGroup()); return *mRootGroup; }
+
+		/**
+         * Signal that is emitted when a preset is loaded
+         */
+		nap::Signal<> presetLoaded;
 
 	protected:
 		/**
