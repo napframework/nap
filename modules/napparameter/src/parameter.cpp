@@ -11,20 +11,20 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	ResourcePtr<Parameter> ParameterGroup::findParameter(const std::string& name) const
+	ResourcePtr<Parameter> ParameterGroup::findParameter(const std::string& id) const
 	{
 		for (auto& param : mParameters)
-			if (param->mID == name)
+			if (param->mID == id)
 				return param;
 
 		return nullptr;
 	}
 
 
-	ResourcePtr<ParameterGroup> ParameterGroup::findChild(const std::string& name) const
+	ResourcePtr<ParameterGroup> ParameterGroup::findChild(const std::string& id) const
 	{
 		for (auto& param : mChildren)
-			if (param->mID == name)
+			if (param->mID == id)
 				return param;
 
 		return nullptr;
