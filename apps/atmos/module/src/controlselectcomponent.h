@@ -12,6 +12,8 @@
 #include <parametersimple.h>
 #include <parameternumeric.h>
 #include <transformcomponent.h>
+#include <parameterquat.h>
+#include <parametervec.h>
 
 namespace nap
 {

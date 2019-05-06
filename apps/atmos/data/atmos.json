@@ -1316,7 +1316,8 @@
                                 "y": 0.0
                             },
                             "Minimum": -1.0,
-                            "Maximum": 1.0
+                            "Maximum": 1.0,
+                            "Clamp": true
                         },
                         {
                             "Type": "nap::ParameterFloat",
@@ -1335,7 +1336,8 @@
                                 "y": 0.0
                             },
                             "Minimum": -1.0,
-                            "Maximum": 1.0
+                            "Maximum": 1.0,
+                            "Clamp": true
                         }
                     ],
                     "Groups": []
