@@ -79,10 +79,6 @@ namespace nap
 		const ParameterNumeric<T>* derived_type = rtti_cast<const ParameterNumeric<T>>(&value);
 		assert(derived_type != nullptr);
 
-		// Update min & max
-		mMinimum = derived_type->mMinimum;
-		mMaximum = derived_type->mMaximum;
-
 		// Set value from the parameter
 		setValue(derived_type->mValue);
 	}
@@ -103,9 +99,6 @@ namespace nap
 	{
 		const ParameterNumericVec<T>* derived_type = rtti_cast<const ParameterNumericVec<T>>(&value);
 		assert(derived_type != nullptr);
-
-		mMinimum = derived_type->mMinimum;
-		mMaximum = derived_type->mMaximum;
 
 		setValue(derived_type->mValue);
 	}
