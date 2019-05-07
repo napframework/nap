@@ -14,6 +14,7 @@ void MainWindow::bindSignals()
 	connect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
 }
@@ -25,6 +26,7 @@ void MainWindow::unbindSignals()
 	disconnect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	disconnect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
 }
@@ -191,11 +193,12 @@ void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
 		// Don't edit scenes
 		if (!path.getType().is_derived_from<nap::Scene>())
 			mInspectorPanel.setPath(paths.first());
-
-		auto compInstPath = path.getComponentInstancePath();
-		if (!compInstPath.empty())
-			qInfo() << QString::fromStdString(compInstPath);
 	}
+}
+
+void MainWindow::onSceneComponentSelectionRequested(nap::RootEntity* rootEntity, const QString& path)
+{
+	mScenePanel.select(rootEntity, path);
 }
 
 void MainWindow::onDocumentOpened(const QString filename)

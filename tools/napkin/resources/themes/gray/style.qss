@@ -1,7 +1,6 @@
 QWidget
 {
     color: #000;
-    /*background-color: #888;*/
 
     selection-background-color:#D84;
     /*selection-color: #eff0f1;*/
@@ -10,6 +9,11 @@ QWidget
     /*border: 0px transparent black;*/
     /*outline: 0;*/
 
+}
+
+QMainWindow
+{
+    background-color: #888;
 }
 
 QAbstractScrollArea {

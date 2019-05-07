@@ -105,9 +105,7 @@ QVariant napkin::PointerValueItem::data(int role) const
 {
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
-		nap::rtti::Object* pointee = mPath.getPointee();
-
-		if (nullptr != pointee)
+		if (auto pointee = mPath.getPointee())
 			return QString::fromStdString(pointee->mID);
 		else
 			return "NULL";
@@ -116,6 +114,8 @@ QVariant napkin::PointerValueItem::data(int role) const
 	{
 		return QVariant::fromValue(mPath);
 	}
+	if (mPath.isInstanceProperty() && mPath.isOverridden() && role == Qt::BackgroundRole)
+		return QStandardItem::data(role);
 	return QStandardItem::data(role);
 }
 
@@ -133,7 +133,7 @@ void napkin::PointerValueItem::setData(const QVariant& value, int role)
 }
 
 napkin::PointerValueItem::PointerValueItem(const PropertyPath& path)
-	: QStandardItem(), mPath(path)
+	: PropertyPathItem(path)
 {
 }
 

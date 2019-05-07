@@ -104,6 +104,15 @@ namespace nap
 			 */
 			QList<QStandardItem*> getSelectedItems() const;
 
+			template<typename T>
+			T* getSelectedItem() const
+			{
+				for (auto item : getSelectedItems())
+					if (auto m = dynamic_cast<T*>(item))
+						return m;
+				return nullptr;
+			}
+
 			/**
 			 * @return The selection model used by the tree view.
 			 */

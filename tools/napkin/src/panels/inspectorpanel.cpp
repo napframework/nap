@@ -115,8 +115,9 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	auto path_item = dynamic_cast<PropertyPathItem*>(item);
 	if (path_item != nullptr)
 	{
-		const auto& type = path_item->getPath().getType();
-		const auto& prop = path_item->getPath().getProperty();
+		auto& path = path_item->getPath();
+		const auto& type = path.getType();
+		const auto& prop = path.getProperty();
 		if (type.is_derived_from<std::string>() && nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::FileLink))
 		{
 			bool ok;
@@ -133,6 +134,14 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 				});
 			}
 
+		}
+
+		if (path.isInstanceProperty() && path.isOverridden())
+		{
+			menu.addAction("Remove override", [path]() {
+				PropertyPath p = path;
+				p.removeOverride();
+			});
 		}
 	}
 
@@ -282,16 +291,19 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	}
 	else if (role == Qt::BackgroundRole)
 	{
-		bool isInstance = false;
-		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
-		if (valueItem && valueItem->getPath().isInstanceProperty())
-			isInstance = true;
+		if (auto valueItem = dynamic_cast<PropertyPathItem*>(itemFromIndex(index)))
+		{
+			bool isValueItem = dynamic_cast<PointerValueItem*>(valueItem) ||
+							   dynamic_cast<PropertyValueItem*>(valueItem);
+			if (isValueItem && valueItem->getPath().isInstanceProperty())
+			{
+				auto& themeManager = AppContext::get().getThemeManager();
+				if (valueItem->getPath().isOverridden())
+					return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_overriddenInstanceProperty));
 
-		if (isInstance && valueItem->getPath().isOverridden())
-			return QVariant::fromValue<QColor>(QColor(Qt::yellow).lighter());
-
-		if (isInstance)
-			return QVariant::fromValue<QColor>(QColor(Qt::gray).lighter());
+				return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_instanceProperty));
+			}
+		}
 	}
 	return QStandardItemModel::data(index, role);
 }

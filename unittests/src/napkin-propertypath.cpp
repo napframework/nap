@@ -17,16 +17,16 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 	res->mID = "MyResource";
 
 	// Add a pointer to array of pointers
-	doc->arrayAddExistingObject({*res, "ResPointers"}, resB);
+	doc->arrayAddExistingObject({res->mID, "ResPointers"}, resB);
 
 	SECTION("general")
 	{
 		PropertyPath nameProp(entity->mID, nap::rtti::sIDPropertyName);
 		REQUIRE(nameProp.getType() == rttr::type::get<std::string>());
-		REQUIRE(&nameProp.getObject() == entity);
+		REQUIRE(nameProp.getObject() == entity);
 		REQUIRE(nameProp.isValid());
 		std::string newName = "NewName";
-		nameProp.setValue(newName);
+		doc->setObjectName(*entity, newName);
 		REQUIRE(nameProp.getValue() == newName);
 		REQUIRE(entity->mID == newName);
 
@@ -248,7 +248,8 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 {
 	RUN_Q_APPLICATION
 
-	TestResourceB res;
+	auto& doc = *AppContext::get().getDocument();
+	auto& res = *doc.addObject<TestResourceB>();
 	res.mID = "TestResource";
 
 	{
@@ -262,12 +263,12 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 	}
 
 	{
-		TestResource subRes;
+		auto& subRes = *doc.addObject<TestResource>();
 		subRes.mID = "SubRes";
 		res.mResPointer = &subRes;
 		REQUIRE(res.mResPointer != nullptr);
 
-		TestResourceB embedRes;
+		auto& embedRes = *doc.addObject<TestResourceB>();
 		embedRes.mID = "EmbedRes";
 		res.mEmbedPointer = &embedRes;
 		REQUIRE(res.mEmbedPointer != nullptr);
@@ -281,7 +282,7 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		for (auto p : props1)
 		{
 			// The embedded pointee cannot be in this result, only regular pointees
-			REQUIRE(&p.getObject() != &embedRes);
+			REQUIRE(p.getObject() != &embedRes);
 		}
 		REQUIRE(props1.size() == 38);
 
@@ -289,7 +290,7 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		for (auto p : props2)
 		{
 			// The regular pointee subRes cannot be in this result, only embedded pointees
-			REQUIRE(&p.getObject() != &subRes);
+			REQUIRE(p.getObject() != &subRes);
 		}
 		REQUIRE(props2.size() == 42);
 

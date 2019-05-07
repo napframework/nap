@@ -12,6 +12,12 @@ namespace napkin
 	static const QString sThemeFilename = "theme.json";
 	static const QString sThemeSubDirectory = "resources/themes";
 
+	static const QString sThemeCol_componentWidthOverrides = "componentWithOverrides";
+	static const QString sThemeCol_instanceProperty = "instanceProperty";
+	static const QString sThemeCol_overriddenInstanceProperty = "overriddenInstanceProperty";
+	static const QString sThemeCol_dimmedItem = "dimmedItem";
+
+
 	/**
 	 * Represents one theme
 	 */
@@ -27,6 +33,7 @@ namespace napkin
 		bool isValid() const;
 		const QString& getName() const { return mName; }
 		QColor getLogColor(const nap::LogLevel& lvl) const;
+		QColor getColor(const QString& key) const;
 	private:
 		bool loadTheme();
 
@@ -35,6 +42,7 @@ namespace napkin
 		const QString mFilename;
 		QString mName;
 		QMap<const nap::LogLevel*, QColor> mLogColors;
+		QMap<QString, QColor> mColors;
 	};
 
 	/**
@@ -84,6 +92,11 @@ namespace napkin
 		 * @return The color for the log level in the current theme
 		 */
 		QColor getLogColor(const nap::LogLevel& lvl) const;
+
+		/**
+		 * @return A color defined by the theme, by name.
+		 */
+		QColor getColor(const QString& key) const;
 
 		/**
 		 * Start watching the theme dir for changes and update when necessary.

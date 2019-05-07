@@ -97,6 +97,11 @@ namespace napkin
 		void onSceneSelectionChanged(QList<PropertyPath> paths);
 
 		/**
+		 * Handled when a scene component selection was requested
+		 * @param path
+		 */
+		void onSceneComponentSelectionRequested(nap::RootEntity* rootEntity, const QString& path);
+		/**
 		 * Receive messages from the logger
 		 * @param msg The log message being emitted
 		 */

@@ -12,6 +12,7 @@
 #include <standarditemsproperty.h>
 #include <standarditemsobject.h>
 #include <panels/finderpanel.h>
+#include <cctype>
 
 #include <napqt/filterpopup.h>
 
@@ -294,4 +295,98 @@ std::string napkin::friendlyTypeName(rttr::type type)
 	if (last_colon != std::string::npos)
 		base_name = base_name.substr(last_colon + 1);
 	return base_name;
+}
+
+bool napkin::isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
+								  const std::string& a, const std::string& b)
+{
+	{
+		auto partsA = nap::utility::splitString(a, '/');
+		auto partsB = nap::utility::splitString(b, '/');
+
+		assert(partsA[0] == ".");
+		assert(partsB[0] == ".");
+
+		std::string nameA;
+		std::string nameB;
+		int indexA;
+		int indexB;
+
+		for (size_t i = 1, len = partsA.size(); i < len; i++)
+		{
+			const auto& partA = partsA[i];
+			const auto& partB = partsB[i];
+
+			// continue finding child entities
+			bool hasIndexA = nameAndIndex(partA, nameA, indexA);
+			bool hasIndexB = nameAndIndex(partB, nameB, indexB);
+
+			// consider no index to be index 0
+			if (!hasIndexA)
+				indexA = 0;
+			if (!hasIndexB)
+				indexB = 0;
+
+			if (nameA != nameB)
+				return false;
+
+			if (indexA != indexB)
+				return false;
+
+		}
+		return true;
+	}
+}
+
+bool napkin::nameAndIndex(const std::string& nameIndex, std::string& name, int& index)
+{
+	std::size_t found = nameIndex.find_last_of(':');
+	if (found != std::string::npos)
+	{
+		auto n = nameIndex.substr(0, found);
+		auto i = nameIndex.substr(found + 1);
+		if (isNumber(i))
+		{
+			name.assign(n);
+			index = std::stoi(i);
+			return true;
+		}
+	}
+	name.assign(nameIndex);
+	return false;
+}
+
+bool napkin::isNumber(const std::string& s)
+{
+	return !s.empty() && std::find_if(s.begin(), s.end(),
+									  [](char c)
+									  {
+										  return !std::isdigit(static_cast<unsigned char>(c));
+									  }) == s.end();
+}
+
+nap::Entity* napkin::findChild(nap::Entity& parent, const std::string& name, int index)
+{
+	if (index < 0)
+	{
+		// Just find by name
+		for (auto e : parent.mChildren)
+			if (e->mID == name)
+				return e.get();
+	}
+	else
+	{
+		int nameFound = 0;
+		for (auto e : parent.mChildren)
+		{
+			if (e->mID != name)
+			continue;
+
+			if (nameFound == index)
+				return e.get();
+
+			++nameFound;
+		}
+	}
+	return nullptr;
 }
