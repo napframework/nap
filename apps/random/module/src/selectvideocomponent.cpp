@@ -9,7 +9,7 @@
 // nap::selectvideocomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SelectVideoComponent)
 	RTTI_PROPERTY("Videos", &nap::SelectVideoComponent::mVideoFiles,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",		&nap::SelectVideoComponent::mIndex,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Index",	&nap::SelectVideoComponent::mIndex,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::selectvideocomponentInstance run time class definition 
@@ -54,24 +54,51 @@ namespace nap
 		assert(mCurrentVideo != nullptr);
 		assert(mVideoMesh != nullptr);
 
+		// Do nothing if the current video is paused
+		if (!mCurrentVideo->isPlaying()) return;
+
 		// Set the texture on the material
 		MaterialInstance& video_material = mVideoMesh->getMaterialInstance();
 		video_material.getOrCreateUniform<UniformTexture2D>("yTexture").setTexture(mCurrentVideo->getYTexture());
 		video_material.getOrCreateUniform<UniformTexture2D>("uTexture").setTexture(mCurrentVideo->getUTexture());
 		video_material.getOrCreateUniform<UniformTexture2D>("vTexture").setTexture(mCurrentVideo->getVTexture());
+	}
 
+
+	void SelectVideoComponentInstance::playCurrentVideo()
+	{
+		assert(mCurrentVideo != nullptr);
+
+		if (!mCurrentVideo->isPlaying())
+			mCurrentVideo->play();
+	}
+
+
+	void SelectVideoComponentInstance::stopCurrentVideo()
+	{
+		assert(mCurrentVideo != nullptr);
+
+		if (mCurrentVideo->isPlaying())
+			mCurrentVideo->stop(true);
 	}
 
 
 	void SelectVideoComponentInstance::selectVideo(int index)
 	{
+		bool wasPlaying = false;
+
 		if (mCurrentVideo != nullptr)
+		{
+			wasPlaying = mCurrentVideo->isPlaying();
 			mCurrentVideo->stop(true);
+		}
         
 		mCurrentIndex = math::clamp<int>(index, 0, mVideos.size() - 1);
 		mCurrentVideo = mVideos[mCurrentIndex];
 		mCurrentVideo->mLoop = true;
-		mCurrentVideo->play();
+
+		if (wasPlaying)
+			mCurrentVideo->play();
 	}
 
 

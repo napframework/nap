@@ -268,6 +268,11 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         if type(stdout) == bytes:
             stdout = stdout.decode('utf8')
             stderr = stderr.decode('utf8')
+            
+        if sys.platform == 'darwin':
+            unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
+        elif sys.platform == 'win32':
+            unexpected_libraries = []            
         return (False, stdout, stderr, unexpected_libraries)
 
     # Send SIGTERM and wait a moment to close

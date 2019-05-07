@@ -3,6 +3,7 @@
 #include <component.h>
 #include <imagefromfile.h>
 #include <nap/resourceptr.h>
+#include <parameternumeric.h>
 
 namespace nap
 {
@@ -17,14 +18,17 @@ namespace nap
 		DECLARE_COMPONENT(SelectImageComponent, SelectImageComponentInstance)
 	public:
 
-		std::vector<ResourcePtr<ImageFromFile>> mImages;	///< Property: 'Images' list of selectable images
-		int mIndex = 0;										///< Property: 'Index' current selected image
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		* @param components the components this object depends on
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
+
+	public:
+		std::vector<ResourcePtr<ImageFromFile>> mImages;	///< Property: 'Images' list of selectable images
+		ResourcePtr<ParameterInt> mIndex;					///< Property: 'Index' current selected image
 	};
 
 
@@ -73,14 +77,9 @@ namespace nap
 		*/
 		int getCount() const				{ return mImages.size(); }
 
-		/**
-		* @return current mesh index
-		*/
-		int getIndex() const				{ return mCurrentIndex; }
-
 	private:
 		std::vector<ImageFromFile*> mImages;						//< All Images to select from
-		int mCurrentIndex = 0;										//< Current selection index
 		ImageFromFile* mCurrentImage = nullptr;						//< Current image
+		nap::Slot<int> mImageIndexChangedSlot = { this, &SelectImageComponentInstance::selectImage };
 	};
 }

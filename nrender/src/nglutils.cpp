@@ -1,9 +1,16 @@
 // Local Includes
+#include <rtti/typeinfo.h>
 #include "nglutils.h"
 
 // External Includes
 #include <unordered_set>
 #include <assert.h>
+
+RTTI_BEGIN_ENUM(opengl::EPolygonMode)
+	RTTI_ENUM_VALUE(opengl::EPolygonMode::Point, "Point"),
+	RTTI_ENUM_VALUE(opengl::EPolygonMode::Line, "Line"),
+	RTTI_ENUM_VALUE(opengl::EPolygonMode::Fill, "Fill")
+RTTI_END_ENUM
 
 namespace opengl
 {

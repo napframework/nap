@@ -8,6 +8,9 @@
 #include <renderablemeshcomponent.h>
 #include <transformcomponent.h>
 #include <color.h>
+#include <parametersimple.h>
+#include <parametercolor.h>
+#include <parametervec.h>
 
 namespace nap
 {
@@ -33,6 +36,44 @@ namespace nap
 		ComponentPtr<SelectImageComponent> mTileableImageSelectComponent = nullptr;		///< Property: "TileableImageSelectComponent'
 		ComponentPtr<SelectImageComponent> mSingleImageSelectComponent = nullptr;		///< Property: "SingleImageSelectComponent
 		ComponentPtr<TransformComponent> mCameraTransformComponent = nullptr;			///< Property: "CameraTransformComponent"
+
+		ResourcePtr<ParameterFloat>				mPremultValue;
+		ResourcePtr<ParameterFloat>				mColorTexMix;
+		ResourcePtr<ParameterFloat>				mDiffuseColorMix;
+		ResourcePtr<ParameterFloat>				mVideoMaskValue;
+		ResourcePtr<ParameterFloat>				mVideoContrastValue;
+		ResourcePtr<ParameterFloat>				mVideoTexMix;
+		ResourcePtr<ParameterRGBColorFloat>		mDiffuseColor;
+		ResourcePtr<ParameterRGBColorFloat>		mMaskColor;
+		ResourcePtr<ParameterFloat>				mColorTexScaleOne;
+		ResourcePtr<ParameterFloat>				mColorTexScaleTwo;
+		ResourcePtr<ParameterVec2>				mTextureSpeed;
+		ResourcePtr<ParameterFloat>				mVideoTexScaleOne;
+		ResourcePtr<ParameterVec2>				mVideoTextureSpeed;
+		ResourcePtr<ParameterVec3>				mLightPos;
+		ResourcePtr<ParameterFloat>				mLightIntensity;
+		ResourcePtr<ParameterFloat>				mAmbientIntensity;
+		ResourcePtr<ParameterFloat>				mDiffuseIntensity;
+		ResourcePtr<ParameterRGBColorFloat>		mNormalSpecColor;
+		ResourcePtr<ParameterFloat>				mNormalSpecIntens;
+		ResourcePtr<ParameterFloat>				mNormalSpecShine;
+		ResourcePtr<ParameterFloat>				mNormalScale;
+		ResourcePtr<ParameterFloat>				mNormalRandom;
+		ResourcePtr<ParameterFloat>				mDiffuseSpecInfl;
+		ResourcePtr<ParameterFloat>				mNormalRotValue;
+		ResourcePtr<ParameterRGBColorFloat>		mScanSpecColor;
+		ResourcePtr<ParameterFloat>				mScanSpecIntens;
+		ResourcePtr<ParameterFloat>				mScanSpecShine;
+		ResourcePtr<ParameterFloat>				mScanRotValue;
+		ResourcePtr<ParameterFloat>				mWindSpeed;
+		ResourcePtr<ParameterFloat>				mWindScale;
+		ResourcePtr<ParameterFloat>				mWindFreq;
+		ResourcePtr<ParameterFloat>				mWindRandom;
+
+		ResourcePtr<ParameterFloat>				mFogMin;
+		ResourcePtr<ParameterFloat>				mFogMax;
+		ResourcePtr<ParameterFloat>				mFogPower;
+		ResourcePtr<ParameterFloat>				mFogInfluence;
 	};
 
 
@@ -44,7 +85,10 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		UpdateMaterialComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)									{ }
+			ComponentInstance(entity, resource),
+			mUpdateMaterialResource(rtti_cast<UpdateMaterialComponent>(&resource))
+		{
+		}
 
 		/**
 		 * Initialize updatematerialcomponentInstance based on the updatematerialcomponent resource
@@ -66,53 +110,14 @@ namespace nap
 		ComponentInstancePtr<SelectImageComponent> mSingleImageSelectComponent =		{ this, &UpdateMaterialComponent::mSingleImageSelectComponent };
 		ComponentInstancePtr<TransformComponent> mCameraTransform =						{ this, &UpdateMaterialComponent::mCameraTransformComponent };
 
-		// Properties
-		float			mColorTexScaleOne	= 10.0f;
-		float			mColorTexScaleTwo	= 1.0f;
-		float			mVideoTexScaleOne	= 1.0f;
-		float			mColorTexMix		= 0.0f;
-		float			mVideoTexMix		= 0.0f;
-		float			mDiffuseColorMix	= 0.0f;
-		RGBColorFloat	mDiffuseColor		= { 0.0f, 0.0f, 0.0f };
-		float			mPremultValue		= { 0.0f };
-		glm::vec2		mTextureSpeed		= { 0.0f, 0.0f };
-		glm::vec2		mVideoTexureSpeed	= { 0.0f, 0.0f };
-		float			mVideoMaskValue		= 1.0f;
-		float			mVideoContrastValue = 1.0f;
-		RGBColorFloat	mMaskColor			= { 0.0f, 0.0f, 0.0f };
-
-		// Light
-		glm::vec3		mLightPos			= { 0, 100.0f, 100.0f };
-		float			mLightIntensity		= 1.0f;
-		float			mAmbientIntensity	= 0.5f;
-		float			mDiffuseIntensity	= 1.0f;
-
-		float			mNormalSpecIntens	= 0.5f;
-		float			mScanSpecIntens		= 0.25f;
-		RGBColorFloat	mNormalSpecColor	= { 1.0f, 1.0f, 1.0f };
-		RGBColorFloat	mScanSpecColor		= { 1.0f, 1.0f, 1.0f };
-		float			mNormalSpecShine	= { 20.0f };
-		float			mScanSpecShine		= { 10.0f };
-		float			mNormalRotValue		= { 0.0f };
-		float			mScanRotValue		= { 0.0f };
 		glm::vec3		mNormalRotAngle		= { 0.0f, 1.0f, 0.0f };
 		glm::vec3		mScanRotAngle		= { 0.0f, 1.0f, 0.0f };
 
-		float			mWindSpeed			= 0.25f;
-		float			mWindScale			= 0.6f;
-		float			mWindFreq			= 10.0f;
-		float			mWindRandom			= 0.15f;
-		float			mNormalRandom		= 0.5f;
-		float			mNormalScale		= 1.0f;
-		float			mDiffuseSpecInfl	= 0.0f;			//< Scales specular highlights based on diffuse information
-
-		float			mFogMin				= 0.75f;
-		float			mFogMax				= 1.0f;
-		float			mFogInfluence		= 0.0f;
 		RGBColorFloat	mFogColor			= { 0.0f, 0.0f, 0.0f };
-		float			mFogPower			= 2.0f;
 
 	private:
+		UpdateMaterialComponent* mUpdateMaterialResource;
+
 		double mWindTime = 0.0;
 		double mTexTimeU = 0.0;
 		double mTexTimeV = 0.0;

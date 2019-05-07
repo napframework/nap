@@ -11,6 +11,7 @@
 #include <renderablemeshcomponent.h>
 #include <visualizenormalsmesh.h>
 #include <scatterpointsmesh.h>
+#include <parameternumeric.h>
 
 namespace nap
 {
@@ -27,6 +28,8 @@ namespace nap
 		DECLARE_COMPONENT(SelectMeshComponent, SelectMeshComponentInstance)
 	public:
 
+		virtual bool init(utility::ErrorState& errorState) override;
+
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		* @param components the components this object depends on
@@ -36,7 +39,7 @@ namespace nap
 		std::vector<ResourcePtr<ScatterPointsMesh>>		mMeshes;					///< Property: "Meshes" link to videos
 		nap::ComponentPtr<RenderableMeshComponent>		mScanMeshComponent;			///< Property: "ScanMeshComponent" link to the component that renders the scanned mesh
 		nap::ComponentPtr<RenderableMeshComponent>		mNormalsMeshComponent;		///< Property: "NormalsMeshComponent" link to the component that renders the normals mesh
-		int mIndex = 0;																///< Property: "Index" current video index
+		ResourcePtr<ParameterInt>						mIndex = 0;					///< Property: Mesh index
 	};
 
 
@@ -78,22 +81,18 @@ namespace nap
 		int getCount() const											{ return mScanMeshes.size(); }
 
 		/**
-		 * @return current mesh index
-		 */
-		int getIndex() const											{ return mCurrentIndex; }
-
-		/**
 		 * @return the normals mesh, nullptr if not found
 		 */
 		VisualizeNormalsMesh* getNormalsMesh();
 
 	private:
-		std::vector<RenderableMesh> mScanMeshes;									//< All meshes to select from
+		std::vector<RenderableMesh>		mScanMeshes;							//< All meshes to select from
 		std::vector<ScatterPointsMesh*> mPointMeshes;							//< All original point scatter meshes
-		int mCurrentIndex = 0;													//< Current video index
 		RenderableMesh* mCurrentMesh = nullptr;									//< Current selected mesh
 		VisualizeNormalsMesh* mNormalsMesh = nullptr;							//< Mesh that visualizes the normals
 		ComponentInstancePtr<RenderableMeshComponent> mScanMeshComponent =		{ this, &SelectMeshComponent::mScanMeshComponent };
 		ComponentInstancePtr<RenderableMeshComponent> mNormalsMeshComponent =	{ this, &SelectMeshComponent::mNormalsMeshComponent };
+
+		nap::Slot<int> mMeshIndexChangedSlot = { this, &SelectMeshComponentInstance::selectMesh };
 	};
 }

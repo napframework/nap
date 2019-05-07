@@ -5,9 +5,49 @@
             "mID": "Universe0",
             "Subnet": 0,
             "Universe": 0,
+            "IPAddress": "",
             "WaitTime": 2.0,
-            "Frequency": 44,
-            "Mode": "Broadcast",
+            "Frequency": 30,
+            "Mode": "Unicast",
+            "UnicastLimit": 10,
+            "Verbose": false,
+            "Timeout": 2.0
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe1",
+            "Subnet": 0,
+            "Universe": 1,
+            "IPAddress": "",
+            "WaitTime": 2.0,
+            "Frequency": 30,
+            "Mode": "Unicast",
+            "UnicastLimit": 10,
+            "Verbose": false,
+            "Timeout": 2.0
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe2",
+            "Subnet": 0,
+            "Universe": 2,
+            "IPAddress": "",
+            "WaitTime": 2.0,
+            "Frequency": 30,
+            "Mode": "Unicast",
+            "UnicastLimit": 10,
+            "Verbose": false,
+            "Timeout": 2.0
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe3",
+            "Subnet": 0,
+            "Universe": 3,
+            "IPAddress": "",
+            "WaitTime": 2.0,
+            "Frequency": 30,
+            "Mode": "Unicast",
             "UnicastLimit": 10,
             "Verbose": false,
             "Timeout": 2.0
@@ -15,7 +55,7 @@
         {
             "Type": "nap::ArtnetMeshFromFile",
             "mID": "LightRigMesh",
-            "Path": "demo_rig.mesh",
+            "Path": "led_rig.mesh",
             "OverrideSubnet": false,
             "Subnet": 0,
             "ChannelOffset": 0
@@ -29,40 +69,57 @@
             "ColorType": "Byte"
         },
         {
-            "Type": "nap::Entity",
-            "mID": "Clouds",
-            "Components": [
+            "Type": "nap::Circle",
+            "mID": "OrbitCircle",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 0.0,
+                    "w": 1.0
+                }
+            },
+            "Radius": 1.0,
+            "Segments": 100
+        },
+        {
+            "Type": "nap::ControlGroups",
+            "mID": "ControlGroups",
+            "ControlGroups": [
                 {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent",
-                    "Mesh": "ProjectionMesh",
-                    "MaterialInstance": {
-                        "Material": "CloudMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformFloat",
-                                "mID": "uContrast",
-                                "Name": "uContrast",
-                                "Value": 1.0
-                            }
-                        ],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
+                    "Name": "Office front",
+                    "Brightness": 1.0,
+                    "ControlGroupIndexes": [
+                        0,
+                        1
+                    ]
                 },
                 {
+                    "Name": "Office middle",
+                    "Brightness": 1.0,
+                    "ControlGroupIndexes": [
+                        2,
+                        6
+                    ]
+                },
+                {
+                    "Name": "Office back",
+                    "Brightness": 1.0,
+                    "ControlGroupIndexes": [
+                        3,
+                        4,
+                        5
+                    ]
+                }
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Blueprint",
+            "Components": [
+                {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_9",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -80,6 +137,195 @@
                             "z": 1.0
                         },
                         "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "BlueprintOutline",
+                "BlueprintSquares",
+                "BlueprintGround"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BlueprintGround",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_12",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": -5.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_9",
+                    "Mesh": "BlueprintGroundMesh",
+                    "MaterialInstance": {
+                        "Material": "BlueprintSquaresMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec3",
+                                "mID": "UniformVec3_3",
+                                "Name": "color",
+                                "Value": {
+                                    "x": 0.0,
+                                    "y": 0.0,
+                                    "z": 0.0
+                                }
+                            }
+                        ],
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BlueprintOutline",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_10",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_7",
+                    "Mesh": "BlueprintOutlineMesh",
+                    "MaterialInstance": {
+                        "Material": "BlueprintSquaresMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec3",
+                                "mID": "UniformVec3_2",
+                                "Name": "color",
+                                "Value": {
+                                    "x": 0.5450000166893005,
+                                    "y": 0.5490000247955322,
+                                    "z": 0.6273999810218811
+                                }
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_2000",
+                                "Name": "ambientIntensity",
+                                "Value": 0.4000000059604645
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BlueprintSquares",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_11",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_8",
+                    "Mesh": "BlueprintSquaresMesh",
+                    "MaterialInstance": {
+                        "Material": "BlueprintSquaresMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_9",
+                                "Name": "shininess",
+                                "Value": 1.0
+                            }
+                        ],
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
                     }
                 }
             ],
@@ -113,18 +359,11 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent_2",
-                    "Mesh": "ProjectionMesh",
+                    "mID": "nap::CombinationMeshComponent",
+                    "Mesh": "GenericPlaneMesh1024",
                     "MaterialInstance": {
                         "Material": "CombineMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformFloat",
-                                "mID": "UniformFloat_2",
-                                "Name": "blendValue",
-                                "Value": 0.5
-                            }
-                        ],
+                        "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -147,6 +386,58 @@
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Controller",
+            "Components": [
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "nap::OSCInputComponent",
+                    "Addresses": []
+                },
+                {
+                    "Type": "nap::RandomOSCHandler",
+                    "mID": "nap::RandomOSCHandler",
+                    "LightingModeComponent": "./nap::LightingModeComponent",
+                    "CombinationComponent": "./LightRig/nap::ApplyCombinationComponent",
+                    "UpdateMaterialComponent": "./nap::UpdateMaterialComponent",
+                    "SelectVideoComponent": "./LightingModes/Video/nap::SelectVideoComponent",
+                    "ControlGroups": "ControlGroups"
+                },
+                {
+                    "Type": "nap::UpdateMaterialComponent",
+                    "mID": "nap::UpdateMaterialComponent",
+                    "CameraTransformComponent": "./SceneCamera/nap::SceneCameraTransformComponent",
+                    "CombinationMeshComponent": "./LightingModes/Combination/nap::CombinationMeshComponent",
+                    "SunCloudsMeshComponent": "./LightingModes/Sun/SunClouds/nap::SunCloudsMeshComponent",
+                    "SunGlareMeshComponent": "./LightingModes/Sun/SunGlare/nap::SunGlareMeshComponent",
+                    "StaticMeshComponent": "./LightingModes/Static/nap::StaticMeshComponent",
+                    "PartyMeshComponent": "./LightingModes/Party/nap::PartyMeshComponent",
+                    "SoundMeshComponent": "./LightingModes/Sound/nap::SoundMeshComponent",
+                    "OrbitComponent": "./Orbit/nap::OrbitComponent",
+                    "LightRigEntity": "LightRig"
+                },
+                {
+                    "Type": "nap::LightingModeComponent",
+                    "mID": "nap::LightingModeComponent",
+                    "UpdateMaterialComponent": "./nap::UpdateMaterialComponent",
+                    "SelectVideoComponent": "./LightingModes/Video/nap::SelectVideoComponent",
+                    "OffColorTexture": "OffColorTexture",
+                    "SunColorTexture": "SunColorTexture",
+                    "VideoColorTexture": "VideoColorTexture",
+                    "StaticColorTexture": "StaticColorTexture",
+                    "PartyColorTexture": "PartyColorTexture",
+                    "SoundColorTexture": "SoundColorTexture"
+                }
+            ],
+            "Children": [
+                "LightingModes",
+                "SceneCamera",
+                "ProjectionCamera",
+                "LightRig",
+                "Orbit"
+            ]
         },
         {
             "Type": "nap::Entity",
@@ -201,16 +492,384 @@
                     "Bitmap": "CombinationBitmap",
                     "Mesh": "LightRigMesh",
                     "Influence": 1.0,
-                    "Brightness": 1.0
+                    "Brightness": 0.20000000298023225,
+                    "ControlGroups": "ControlGroups"
                 },
                 {
                     "Type": "nap::MeshToArtnetComponent",
                     "mID": "nap::MeshToArtnetComponent",
                     "Mesh": "LightRigMesh",
                     "Controllers": [
-                        "Universe0"
+                        "Universe0",
+                        "Universe1",
+                        "Universe2",
+                        "Universe3"
                     ],
-                    "MinArtnetValue": 45
+                    "MinArtnetValue": 25
+                }
+            ],
+            "Children": [
+                "Truss",
+                "Blueprint"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "LightingModes",
+            "Components": [],
+            "Children": [
+                "Combination",
+                "Party",
+                "Static",
+                "Sun",
+                "Video",
+                "Sound"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Orbit",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::OrbitTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 5.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 90.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrbitComponent",
+                    "mID": "nap::OrbitComponent",
+                    "OrbitTransformComponent": "./nap::OrbitTransformComponent",
+                    "OrbitPathTransformComponent": "./OrbitPath/nap::OrbitPathTransformComponent",
+                    "OrbitStartTransformComponent": "./OrbitStart/nap::OrbitStartTransformComponent",
+                    "OrbitEndTransformComponent": "./OrbitEnd/nap::OrbitEndTransformComponent",
+                    "OrbitSunTransformComponent": "./OrbitSun/nap::OrbitSunTransformComponent"
+                }
+            ],
+            "Children": [
+                "OrbitSun",
+                "OrbitPath",
+                "OrbitStart",
+                "OrbitEnd"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OrbitEnd",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::OrbitEndTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_13",
+                    "Mesh": "OrbitLine",
+                    "MaterialInstance": {
+                        "Material": "OrbitMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OrbitPath",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::OrbitPathTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_10",
+                    "Mesh": "OrbitCircle",
+                    "MaterialInstance": {
+                        "Material": "OrbitMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OrbitStart",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::OrbitStartTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_12",
+                    "Mesh": "OrbitLine",
+                    "MaterialInstance": {
+                        "Material": "OrbitMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OrbitSun",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::OrbitSunTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 3.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_11",
+                    "Mesh": "OrbitCircle",
+                    "MaterialInstance": {
+                        "Material": "OrbitMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Party",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::PartyMeshComponent",
+                    "Mesh": "GenericPlaneMesh1024",
+                    "MaterialInstance": {
+                        "Material": "PartyMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformInt",
+                                "mID": "UniformInt_2",
+                                "Name": "uWaveCount",
+                                "Value": 4
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_18",
+                                "Name": "uWaveLength",
+                                "Value": 0.30000001192092898
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_22",
+                                "Name": "uWaveFalloffStart",
+                                "Value": 0.6000000238418579
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_23",
+                                "Name": "uWaveFalloffEnd",
+                                "Value": 0.8999999761581421
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_26",
+                                "Name": "uWaveNoiseScale",
+                                "Value": 0.5
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_28",
+                                "Name": "uWaveNoiseInfluence",
+                                "Value": 0.05000000074505806
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_30",
+                                "Name": "uWaveCenter",
+                                "Value": 0.5
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_32",
+                                "Name": "uWaveHighlightLength",
+                                "Value": 0.10000000149011612
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_44",
+                                "Name": "uWaveHighlightIntensity",
+                                "Value": 0.0
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
                 }
             ],
             "Children": []
@@ -265,8 +924,8 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "PerspCameraComponent",
                     "Properties": {
-                        "FieldOfView": 45.0,
-                        "NearClippingPlane": 0.10000000149011612,
+                        "FieldOfView": 55.0,
+                        "NearClippingPlane": 1.0,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
                             "x": 1,
@@ -280,12 +939,12 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_2",
+                    "mID": "nap::SceneCameraTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.0,
-                            "z": 4.0
+                            "y": 100.0,
+                            "z": 100.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -311,7 +970,7 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.032999999821186069,
+                    "MovementSpeed": 0.10000000149011612,
                     "RotateSpeed": 0.0032999999821186067,
                     "PerspCameraComponent": "PerspCameraComponent",
                     "LookAtPosition": {
@@ -323,6 +982,376 @@
                 {
                     "Type": "nap::ControllerInputComponent",
                     "mID": "nap::ControllerInputComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Sound",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_13",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::SoundMeshComponent",
+                    "Mesh": "GenericPlaneMesh1024",
+                    "MaterialInstance": {
+                        "Material": "SoundMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_46",
+                                "Name": "uTemperature",
+                                "Value": 0.0
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_49",
+                                "Name": "uSourceWidth",
+                                "Value": 0.07500000298023224
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Static",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_18",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::StaticMeshComponent",
+                    "Mesh": "GenericPlaneMesh1024",
+                    "MaterialInstance": {
+                        "Material": "StaticMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_16",
+                                "Name": "uTemperature",
+                                "Value": 0.5
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Sun",
+            "Components": [],
+            "Children": [
+                "SunClouds",
+                "SunGlare"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SunClouds",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::SunCloudsMeshComponent",
+                    "Mesh": "GenericPlaneMesh1024",
+                    "MaterialInstance": {
+                        "Material": "SunCloudsMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "uContrast",
+                                "Name": "uContrast",
+                                "Value": 0.8500000238418579
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "uScale",
+                                "Name": "uScale",
+                                "Value": 0.5
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "uRotation",
+                                "Name": "uRotation",
+                                "Value": 165.0
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_36",
+                                "Name": "uTemperature",
+                                "Value": 0.44999998807907107
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_40",
+                                "Name": "uCloudRatio",
+                                "Value": 0.44999998807907107
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_41",
+                                "Name": "uCloudFill",
+                                "Value": 0.44999998807907107
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_42",
+                                "Name": "uLightFill",
+                                "Value": 0.44999998807907107
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SunGlare",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_7",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::SunGlareMeshComponent",
+                    "Mesh": "GenericPlaneMesh1024",
+                    "MaterialInstance": {
+                        "Material": "SunGlareMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_5",
+                                "Name": "uOuterSize",
+                                "Value": 0.07500000298023224
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_6",
+                                "Name": "uInnerSize",
+                                "Value": 0.25
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_11",
+                                "Name": "uStretch",
+                                "Value": 5.0
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_35",
+                                "Name": "uTemperature",
+                                "Value": 1.0
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Truss",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_8",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_6",
+                    "Mesh": "LightTrussMesh",
+                    "MaterialInstance": {
+                        "Material": "BlueprintSquaresMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_12",
+                                "Name": "ambientIntensity",
+                                "Value": 0.4000000059604645
+                            },
+                            {
+                                "Type": "nap::UniformVec3",
+                                "mID": "UniformVec3_4",
+                                "Name": "color",
+                                "Value": {
+                                    "x": 0.5450000166893005,
+                                    "y": 0.5490000247955322,
+                                    "z": 0.6273999810218811
+                                }
+                            },
+                            {
+                                "Type": "nap::UniformFloat",
+                                "mID": "UniformFloat_13",
+                                "Name": "shininess",
+                                "Value": 5.0
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
                 }
             ],
             "Children": []
@@ -343,7 +1372,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_3",
-                    "Mesh": "VideoMesh",
+                    "Mesh": "GenericPlaneMesh1024",
                     "MaterialInstance": {
                         "Material": "VideoMaterial",
                         "Uniforms": [],
@@ -387,37 +1416,70 @@
             "Children": []
         },
         {
+            "Type": "nap::Line",
+            "mID": "OrbitLine",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 0.0,
+                    "w": 1.0
+                }
+            },
+            "Start": {
+                "x": -6.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "End": {
+                "x": 6.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Closed": false,
+            "Vertices": 2
+        },
+        {
             "Type": "nap::Material",
-            "mID": "CloudMaterial",
+            "mID": "BlueprintSquaresMaterial",
             "Uniforms": [
                 {
                     "Type": "nap::UniformFloat",
-                    "mID": "UniformContrast",
-                    "Name": "uContrast",
-                    "Value": 0.0
+                    "mID": "UniformFloat_7",
+                    "Name": "shininess",
+                    "Value": 3.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_8",
+                    "Name": "specularIntensity",
+                    "Value": 0.5
                 },
                 {
                     "Type": "nap::UniformVec3",
-                    "mID": "UniformOffset",
-                    "Name": "uOffset",
+                    "mID": "UniformVec3",
+                    "Name": "color",
                     "Value": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
                     }
-                }
-            ],
-            "Shader": "CloudShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
                 },
                 {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformAlpha",
+                    "Name": "alpha",
+                    "Value": 0.5
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_2001",
+                    "Name": "ambientIntensity",
+                    "Value": 1.0
                 }
             ],
+            "Shader": "BlueprintSquaresShader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -428,20 +1490,20 @@
                 {
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D",
-                    "Name": "cloudTexture",
-                    "Texture": "CloudColorTexture"
+                    "Name": "uTextureOne",
+                    "Texture": "OffColorTexture"
                 },
                 {
                     "Type": "nap::UniformTexture2D",
                     "mID": "UniformTexture2D_2",
-                    "Name": "videoTexture",
-                    "Texture": "VideoColorTexture"
+                    "Name": "uTextureTwo",
+                    "Texture": "OffColorTexture"
                 },
                 {
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat",
-                    "Name": "blendValue",
-                    "Value": 0.5
+                    "Name": "uBlendValue",
+                    "Value": 0.0
                 }
             ],
             "Shader": "CombineShader",
@@ -477,6 +1539,333 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "OrbitMaterial",
+            "Uniforms": [],
+            "Shader": "OrbitShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "PartyMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_5",
+                    "Name": "uCenter",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_20",
+                    "Name": "uBeat",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformInt",
+                    "mID": "UniformInt",
+                    "Name": "uWaveCount",
+                    "Value": 0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_17",
+                    "Name": "uWaveLength",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_19",
+                    "Name": "uWaveFalloffStart",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_21",
+                    "Name": "uWaveFalloffEnd",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_24",
+                    "Name": "uWaveNoiseZ",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_25",
+                    "Name": "uWaveNoiseScale",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_27",
+                    "Name": "uWaveNoiseInfluence",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_29",
+                    "Name": "uWaveCenter",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_31",
+                    "Name": "uWaveHighlightLength",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_43",
+                    "Name": "uWaveHighlightIntensity",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_47",
+                    "Name": "uGlitchSize",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_7",
+                    "Name": "uGlitchPosition",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Shader": "PartyShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "SoundMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_45",
+                    "Name": "uTemperature",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_8",
+                    "Name": "uSourcePosition",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_48",
+                    "Name": "uSourceWidth",
+                    "Value": 0.0
+                }
+            ],
+            "Shader": "SoundShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "StaticMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_2",
+                    "Name": "uTemperature",
+                    "Value": 0.0
+                }
+            ],
+            "Shader": "StaticShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "SunCloudsMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformContrast",
+                    "Name": "uContrast",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformOffset",
+                    "Name": "uOffset",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformScale",
+                    "Name": "uScale",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformRotation",
+                    "Name": "uRotation",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_33",
+                    "Name": "uTemperature",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_37",
+                    "Name": "uCloudRatio",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_38",
+                    "Name": "uCloudFill",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_39",
+                    "Name": "uLightFill",
+                    "Value": 0.0
+                }
+            ],
+            "Shader": "SunCloudsShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "SunGlareMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_3",
+                    "Name": "uOuterSize",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_4",
+                    "Name": "uInnerSize",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_10",
+                    "Name": "uStretch",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_6",
+                    "Name": "uOrbitCenter",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_14",
+                    "Name": "uOrbitRadius",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_15",
+                    "Name": "uOrbitAngle",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "UniformFloat_34",
+                    "Name": "uTemperature",
+                    "Value": 0.0
+                }
+            ],
+            "Shader": "SunGlareShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "VideoMaterial",
             "Uniforms": [],
             "Shader": "VideoShader",
@@ -485,8 +1874,39 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::MeshFromFile",
+            "mID": "BlueprintGroundMesh",
+            "Path": "blueprint_ground.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "BlueprintOutlineMesh",
+            "Path": "blueprint_outline.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "BlueprintSquaresMesh",
+            "Path": "blueprint_squares.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "LightTrussMesh",
+            "Path": "led_truss.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::OSCReceiver",
+            "mID": "OSCReceiver",
+            "Port": 7000,
+            "EnableDebugOutput": true,
+            "AllowPortReuse": false
+        },
+        {
             "Type": "nap::PlaneMesh",
-            "mID": "ProjectionMesh",
+            "mID": "GenericPlaneMesh1024",
             "Size": {
                 "x": 1024.0,
                 "y": 1024.0
@@ -499,40 +1919,62 @@
             "Columns": 1
         },
         {
-            "Type": "nap::PlaneMesh",
-            "mID": "VideoMesh",
-            "Size": {
-                "x": 1920.0,
-                "y": 1080.0
-            },
-            "Position": {
-                "x": 960.0,
-                "y": 540.0
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
             "Type": "nap::RenderTarget",
-            "mID": "CloudRenderTarget",
-            "mColorTexture": "CloudColorTexture",
-            "mDepthTexture": "CloudDepthTexture",
+            "mID": "CombineRenderTarget",
+            "mColorTexture": "CombineColorTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
             "mClearColor": {
                 "x": 0.0,
-                "y": 1.0,
+                "y": 0.0,
                 "z": 0.0,
                 "w": 0.0
             }
         },
         {
             "Type": "nap::RenderTarget",
-            "mID": "CombineRenderTarget",
-            "mColorTexture": "CombineColorTexture",
-            "mDepthTexture": "CombineDepthTexture",
+            "mID": "PartyRenderTarget",
+            "mColorTexture": "PartyColorTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
             "mClearColor": {
                 "x": 0.0,
                 "y": 0.0,
-                "z": 1.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "SoundRenderTarget",
+            "mColorTexture": "SoundColorTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "StaticRenderTarget",
+            "mColorTexture": "StaticColorTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "SunRenderTarget",
+            "mColorTexture": "SunColorTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
+            "mClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
                 "w": 0.0
             }
         },
@@ -540,49 +1982,19 @@
             "Type": "nap::RenderTarget",
             "mID": "VideoRenderTarget",
             "mColorTexture": "VideoColorTexture",
-            "mDepthTexture": "VideoDepthTexture",
+            "mDepthTexture": "GenericDepthTexture1024",
             "mClearColor": {
                 "x": 0.0,
                 "y": 0.0,
-                "z": 1.0,
+                "z": 0.0,
                 "w": 0.0
             }
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "CloudColorTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 0
-            },
-            "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "RGB8"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CloudDepthTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 0
-            },
-            "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "Depth"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
             "mID": "CombineColorTexture",
             "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
+                "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
@@ -595,13 +2007,13 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "CombineDepthTexture",
+            "mID": "GenericDepthTexture1024",
             "Parameters": {
                 "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
+                "MaxLodLevel": 0
             },
             "Usage": "Static",
             "Width": 1024,
@@ -610,22 +2022,7 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "VideoColorTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 0
-            },
-            "Usage": "Static",
-            "Width": 1920,
-            "Height": 1080,
-            "Format": "RGB8"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "VideoDepthTexture",
+            "mID": "OffColorTexture",
             "Parameters": {
                 "MinFilter": "Linear",
                 "MaxFilter": "Linear",
@@ -634,9 +2031,84 @@
                 "MaxLodLevel": 0
             },
             "Usage": "Static",
-            "Width": 1920,
-            "Height": 1080,
-            "Format": "Depth"
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "PartyColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "SoundColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "StaticColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "SunColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoColorTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 0
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
         },
         {
             "Type": "nap::RenderWindow",
@@ -648,9 +2120,9 @@
             "Title": "Random",
             "Sync": false,
             "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
                 "w": 1.0
             }
         },
@@ -659,36 +2131,16 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "SceneCamera",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "Clouds",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "ProjectionCamera",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "Combination",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "Video",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "LightRig",
+                    "Entity": "Controller",
                     "InstanceProperties": []
                 }
             ]
         },
         {
             "Type": "nap::Shader",
-            "mID": "CloudShader",
-            "mVertShader": "shaders/clouds.vert",
-            "mFragShader": "shaders/clouds.frag"
+            "mID": "BlueprintSquaresShader",
+            "mVertShader": "shaders/blueprint_squares.vert",
+            "mFragShader": "shaders/blueprint_squares.frag"
         },
         {
             "Type": "nap::Shader",
@@ -701,6 +2153,42 @@
             "mID": "LightRigShader",
             "mVertShader": "shaders/light_rig.vert",
             "mFragShader": "shaders/light_rig.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "OrbitShader",
+            "mVertShader": "shaders/orbit.vert",
+            "mFragShader": "shaders/orbit.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "PartyShader",
+            "mVertShader": "shaders/party.vert",
+            "mFragShader": "shaders/party.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "SoundShader",
+            "mVertShader": "shaders/sound.vert",
+            "mFragShader": "shaders/sound.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "StaticShader",
+            "mVertShader": "shaders/static.vert",
+            "mFragShader": "shaders/static.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "SunCloudsShader",
+            "mVertShader": "shaders/sun-clouds.vert",
+            "mFragShader": "shaders/sun-clouds.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "SunGlareShader",
+            "mVertShader": "shaders/sun-glare.vert",
+            "mFragShader": "shaders/sun-glare.frag"
         },
         {
             "Type": "nap::Shader",

@@ -53,8 +53,10 @@ namespace nap
 			void OnMouseLeave(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown);
 
 			void OnMouseMove(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown);
+			
 			void OnMouseUp(const glm::vec2& inPosition, bool inCtrlDown, bool inAltDown);
-			double TimelineState::GetClampedRange(double inTimeRangeMs);
+			
+			double GetClampedRange(double inTimeRangeMs);
 
 			void ZoomAroundTime(uint64_t inClickTimePos, uint64_t inTimeLeft, uint64_t inTimeRight, float inDelta);
 
@@ -84,8 +86,6 @@ namespace nap
 			EModeState		mModeState = EModeState::Finished;
 			uint64_t		mDragStartLeftTime = 0;
 			uint64_t		mDragStartRightTime = 0;
-			uint64_t		mSelectedLeftTime = -1;
-			uint64_t		mSelectedRightTime = -1;
 			uint64_t		mCursorClickTimePos = 0;
 			uint64_t		mLastCursorTimePos = -1;
 			glm::vec2		mCursorClickPos;

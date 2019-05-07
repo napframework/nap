@@ -22,6 +22,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	bool SelectVideoComponent::init(utility::ErrorState& errorState)
+	{
+		mIndex->setRange(0, mVideoFiles.size() - 1);
+		return true;
+	}
+
+
 	void SelectVideoComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::RenderableMeshComponent));
@@ -43,8 +50,10 @@ namespace nap
 		// We know it's there because we added it as a dependency above
 		mVideoMesh = &getEntityInstance()->getComponent<RenderableMeshComponentInstance>();
 
+		resource->mIndex->valueChanged.connect(mVideoIndexChangedSlot);
+
 		// Select one
-		selectVideo(resource->mIndex);
+		selectVideo(resource->mIndex->mValue);
 		return true;
 	}
 
@@ -68,8 +77,7 @@ namespace nap
 		if (mCurrentVideo != nullptr)
 			mCurrentVideo->stop(true);
         
-		mCurrentIndex = math::clamp<int>(index, 0, mVideos.size() - 1);
-		mCurrentVideo = mVideos[mCurrentIndex];
+		mCurrentVideo = mVideos[index];
 		mCurrentVideo->mLoop = true;
 		mCurrentVideo->play();
 	}

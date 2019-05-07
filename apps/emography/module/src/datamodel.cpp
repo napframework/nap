@@ -28,14 +28,14 @@ namespace nap
 			 */
 			ReadingProcessorState() = default;
 
-			ReadingProcessorState(size_t rttiVersion) :
+			ReadingProcessorState(uint64_t rttiVersion) :
 				mRTTIVersion(rttiVersion)
 			{
 			}
 
 		public:
 			TimeStamp	mLastReadingTime;
-			size_t		mRTTIVersion = -1;
+			uint64_t		mRTTIVersion = -1;
 		};
 
 		/**
@@ -50,14 +50,14 @@ namespace nap
 			 */
 			ReadingProcessorLODState() = default;
 
-			ReadingProcessorLODState(size_t rttiVersion) :
+			ReadingProcessorLODState(uint64_t rttiVersion) :
 				mRTTIVersion(rttiVersion)
 			{
 			}
 
 		public:
 			uint64_t	mCurrentChunkIndex = -1;
-			size_t		mRTTIVersion = -1;
+			uint64_t		mRTTIVersion = -1;
 		};
 	}
 }
@@ -258,7 +258,7 @@ namespace nap
 						return false;
 
 					// If the object does not exist, create a default one. Otherwise, use the one from the table
-					size_t rtti_version = rtti::getRTTIVersion(mReadingType);
+					uint64_t rtti_version = rtti::getRTTIVersion(mReadingType);
 					if (state_object.empty())
 						mState = std::make_unique<ReadingProcessorState>(rtti_version);
 					else
@@ -671,7 +671,7 @@ namespace nap
 					if (!errorState.check(state_object.size() <= 1, "Found invalid number of state objects"))
 						return false;
 
-					size_t rtti_version = rtti::getRTTIVersion(mSummaryType);
+					uint64_t rtti_version = rtti::getRTTIVersion(mSummaryType);
 					if (state_object.empty())
 						lod.mState = std::make_unique<ReadingProcessorLODState>(rtti_version);
 					else

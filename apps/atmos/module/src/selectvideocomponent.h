@@ -6,6 +6,7 @@
 #include <component.h>
 #include <vector>
 #include <renderablemeshcomponent.h>
+#include <parameternumeric.h>
 
 
 namespace nap
@@ -23,6 +24,8 @@ namespace nap
 		DECLARE_COMPONENT(SelectVideoComponent, SelectVideoComponentInstance)
 	public:
 
+		virtual bool init(utility::ErrorState& errorState) override;
+
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		* @param components the components this object depends on
@@ -30,7 +33,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		std::vector<rtti::ObjectPtr<Video>> mVideoFiles;		///< Property: "Videos" link to videos
-		int mIndex = 0;									///< Property: "Index" current video index
+		ResourcePtr<ParameterInt> mIndex;						///< Property: "Index" current video index
 	};
 
 
@@ -79,15 +82,10 @@ namespace nap
 		 */
 		int getCount() const									{ return mVideos.size(); }
 
-		/**
-		* @return current mesh index
-		*/
-		int getIndex() const									{ return mCurrentIndex; }
-
 	private:
 		std::vector<Video*> mVideos;							//< All video files from loaded resource
-		int mCurrentIndex = 0;									//< Current video index
 		Video* mCurrentVideo = nullptr;							//< Current playing video
 		RenderableMeshComponentInstance* mVideoMesh = nullptr;	//< Videoplane
+		nap::Slot<int> mVideoIndexChangedSlot = { this, &SelectVideoComponentInstance::selectVideo };
 	};
 }
