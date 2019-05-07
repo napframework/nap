@@ -1,6 +1,6 @@
 /// local includes
 #include <sandboxservice.h>
-#include "nap/windowresource.h"
+#include <window.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SandboxService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)

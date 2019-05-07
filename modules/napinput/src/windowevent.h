@@ -1,7 +1,10 @@
 #pragma once
 
-#include "event.h"
+// Local Includes
 #include "utility/dllexport.h"
+
+// External Includes
+#include <nap/event.h>
 
 namespace nap
 {
