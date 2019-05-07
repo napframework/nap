@@ -2,6 +2,7 @@
     "dependencies": [
         "mod_napscene",
         "mod_napfont",
-        "mod_napinput"
+        "mod_napinput",
+        "mod_napparameter"
     ]
 }
