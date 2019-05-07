@@ -17,7 +17,7 @@ namespace nap
 
 	public:
         virtual ~ComponentPtrBase() = default;
-        
+
 		/**
 		 * Convert the full target ID as specified to an ID that can be resolved to an object
 		 *
@@ -42,7 +42,7 @@ namespace nap
 	};
 
 	/**
-	 * Typed version of ComponentPtrBase. ComponentPtr stores the path and the pointer to the target resource. 
+	 * Typed version of ComponentPtrBase. ComponentPtr stores the path and the pointer to the target resource.
 	 *
 	 * When pointing to other other components through ComponentPtrs,
 	 * you can do so using a 'path' to the target component. This path can be of two forms:
@@ -51,7 +51,7 @@ namespace nap
 	 * which means the path points to a specific component located at that path.
 	 *
 	 * Paths consisting out of multiple elements can be either relative or absolute and come in three forms:
-	 * - /RootEntityID/ComponentID - An absolute path that starts in the root entity with the specified ID
+	 * - RootEntityID/ComponentID - An absolute path that starts in the root entity with the specified ID
 	 * - ./ChildEntityID/ComponentID - A relative path that starts in the entity that the ComponentPtr is in
 	 * - ../ChildEntityID/ComponentID - A relative path starting at the parent of the entity that the ComponentPtr is in
 	 *
@@ -203,19 +203,28 @@ namespace nap
 
 	private:
 		rtti::ObjectPtr<ComponentType>	mResource;		///< Pointer to the target resource
-		std::string					mPath;			///< Path in the entity hierarchy, either relative or absolute
+		std::string						mPath;			///< Path in the entity hierarchy, either relative or absolute
 	};
 
+	/**
+	 * The ComponentInstancePtrInitProxy is a proxy object that is only used to pass arguments to the correct constructor of ComponentInstancePtr
+	 * It's only here so that we can use initComponentInstancePtr to initialize both regular ComponentInstancePtrs, as well as vectors of ComponentInstancePtr.
+	 */
+	template<typename TargetComponentType, typename SourceComponentType>
+	struct ComponentInstancePtrInitProxy
+	{
+		ComponentInstance*					mSourceComponentInstance;						///< The ComponentInstance that the ComponentInstancePtr is located in
+		ComponentPtr<TargetComponentType>	SourceComponentType::*mComponentMemberPointer;	///< Member pointer to the ComponentPtr located in the Component
+	};
 
 	/**
 	 * ComponentInstancePtr is used in ComponentInstance classes to point to other ComponentInstance objects directly.
-	 * ComponentInstances are spawned
-	 * from Components at runtime. The ComponentInstancePtr class makes sure that
-	 * the internal pointer is mapped to spawned ComponentInstance target object.
+	 * ComponentInstances are spawned from Components at runtime. The ComponentInstancePtr class makes sure that
+	 * the internal pointer is mapped to the spawned ComponentInstance target object.
 	 *
-	 * The Component of a ComponentInstance must hold a ComponentPtr to another Component.
-	 * When an ComponentInstancePtr is constructed, the user
-	 * should provide the mapping to the ComponentPtr in the Component, by providing the pointer to the member.
+	 * The Component of a ComponentInstance must hold a ComponentPtr to another Component. When an ComponentInstancePtr
+	 * is constructed, the user should provide the mapping to the ComponentPtr in the Component, by providing the pointer
+	 * to the member.
 	 *
 	 * Example:
 	 *
@@ -226,11 +235,27 @@ namespace nap
 	 *
 	 *		class SomeComponentInstance : public ComponentInstance
 	 *		{
-	 *			ComponentInstancePtr<OtherComponent> mOtherComponent{ this, &SomeComponent::mOtherComponent };
+	 *			ComponentInstancePtr<OtherComponent> mOtherComponent = initComponentInstancePtr(this, &SomeComponent::mOtherComponent);
 	 *		};
 	 *
-	 * In the example above, SomeComponentInstance::mOtherComponent will point the instance that
-	 * is being pointed to by SomeComponent::mOtherComponent.
+	 * In the example above, SomeComponentInstance::mOtherComponent will point the instance that corresponds to the Component in SomeComponent::mOtherComponent.
+	 *
+	 * Vectors of ComponentsPtrs are supported in the same way:
+	 *
+	 * Example:
+	 *
+	 * 		class SomeComponent : public Component
+	 *		{
+	 *			std::vector<ComponentPtr<OtherComponent>> mOtherComponentList;
+	 *		};
+	 *
+	 *		class SomeComponentInstance : public ComponentInstance
+	 *		{
+	 *			std::vector<ComponentInstancePtr<OtherComponent>> mOtherComponentList = initComponentInstancePtr(this, &SomeComponent::mOtherComponent);
+	 *		};
+	 *
+	 * Here, each element in SomeComponentInstance::mOtherComponentList will point to each instance that corresponds to each element in
+	 * the vector SomeComponent::mOtherComponentList;
 	 */
 	template<class TargetComponentType>
 	class ComponentInstancePtr
@@ -238,6 +263,12 @@ namespace nap
 	public:
 		using TargetComponentInstanceType = typename TargetComponentType::InstanceType;
 
+		ComponentInstancePtr() = default;
+
+		/**
+		 * Construct a ComponentInstancePtr from a ComponentInstance and member pointer to the ComponentPtr containing the target we're pointing at.
+		 * This constructor is deprecated and should not be used anymore; use initComponentInstancePtr instead. It is provided for backwards compatibility only.
+		 */
 		template<class SourceComponentType>
 		ComponentInstancePtr(ComponentInstance* sourceComponentInstance, ComponentPtr<TargetComponentType>(SourceComponentType::*componentMemberPointer))
 		{
@@ -245,6 +276,15 @@ namespace nap
 			ComponentPtr<TargetComponentType>& target_component_resource = resource->*componentMemberPointer;
 
 			sourceComponentInstance->addToComponentLinkMap(target_component_resource.get(), target_component_resource.getInstancePath(), (ComponentInstance**)&mInstance);
+		}
+
+		/**
+		* Construct a ComponentInstancePtr from a ComponentInstancePtrInitProxy, which can be retrieved through initComponentInstancePtr.
+		*/
+		template<class SourceComponentType>
+		ComponentInstancePtr(ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>& proxy) :
+			ComponentInstancePtr(proxy.mSourceComponentInstance, proxy.mComponentMemberPointer)
+		{
 		}
 
 		const TargetComponentInstanceType& operator*() const
@@ -346,8 +386,50 @@ namespace nap
 		}
 
 	private:
+		template<typename TargetComponentType_, typename SourceComponentType_>
+		friend std::vector<ComponentInstancePtr<TargetComponentType_>> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType_>>(SourceComponentType_::*componentMemberPointer));
+
+	private:
 		TargetComponentInstanceType* mInstance = nullptr;
 	};
+
+	/**
+	 * Init a regular ComponentInstancePtr. Returns a ComponentInstancePtrInitProxy which is a simple wrapper around the function arguments.
+	 * The return value is passed directly to the corresponding constructor on ComponentInstancePtr, which does the actual initialization.
+	 *
+	 * @param sourceComponentInstance The ComponentInstance that the ComponentInstancePtr being initialized is a member of
+	 * @param componentMemberPointer Member pointer to the ComponentPtr member of the Component
+	 *
+	 * @return A ComponentInstancePtrInitProxy which can be passed to the ComponentInstancePtr constructor
+	 */
+	template<typename TargetComponentType, typename SourceComponentType>
+	ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, ComponentPtr<TargetComponentType>(SourceComponentType::*componentMemberPointer))
+	{
+		return{ sourceComponentInstance, componentMemberPointer };
+	}
+
+	/**
+	 * Init a std::vector of ComponentInstancePtrs. Returns a std::vector which is then used to initialize the target std::vector of ComponentInstancePtrs
+	 *
+	 * @param sourceComponentInstance The ComponentInstance that the ComponentInstancePtr being initialized is a member of
+	 * @param componentMemberPointer Member pointer to the ComponentPtr member of the Component
+	 *
+	 * @return std::vector of initialized ComponentInstancePtrs
+	 */
+	template<typename TargetComponentType, typename SourceComponentType>
+	std::vector<ComponentInstancePtr<TargetComponentType>> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType>>(SourceComponentType::*componentMemberPointer))
+	{
+		SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
+		std::vector<ComponentPtr<TargetComponentType>>& target_component_resource = resource->*componentMemberPointer;
+
+		std::vector<ComponentInstancePtr<TargetComponentType>> result;
+		result.resize(target_component_resource.size());
+
+		for (int i = 0; i != result.size(); ++i)
+			sourceComponentInstance->addToComponentLinkMap(target_component_resource[i].get(), target_component_resource[i].getInstancePath(), (ComponentInstance**)&result[i].mInstance);
+
+		return result;
+	}
 }
 
 /**
