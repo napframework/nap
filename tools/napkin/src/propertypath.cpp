@@ -721,7 +721,7 @@ void PropertyPath::iterateArrayElements(PropertyVisitor visitor, int flags) cons
 	for (int i = 0; i < array.get_size(); i++)
 	{
 		PPath p = mPropertyPath;
-		p.emplace_back(NameIndex(std::to_string(i), -1));
+		p.emplace_back(std::to_string(i));
 		PropertyPath childPath(mObjectPath, p);
 
 		if (!visitor(childPath))
