@@ -114,7 +114,7 @@ namespace nap
 		/**
 		 * @return the ModuleManager for this core
 		 */
-		const ModuleManager& getModuleManager() const { return mModuleManager; }
+		const ModuleManager& getModuleManager() const { return *mModuleManager; }
 
 		/**
 		 * @return number of elapsed time in milliseconds after invoking start
