@@ -682,7 +682,7 @@ void napkin::PropertyPath::iterateArrayElements(napkin::PropertyVisitor visitor,
 	for (int i = 0; i < array.get_size(); i++)
 	{
 		PPath p = mPropertyPath;
-		p.emplace_back(std::to_string(i));
+		p.emplace_back(NameIndex(std::to_string(i), -1));
 		PropertyPath childPath(mObjectPath, p);
 
 		if (!visitor(childPath))
