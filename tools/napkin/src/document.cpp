@@ -87,10 +87,20 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	if (name.empty())
 		return object.mID;
 
-	object.mID = getUniqueName(name, object);
+	auto newName = getUniqueName(name, object);
+	if (newName == object.mID)
+		return object.mID;
+
+	auto oldName = object.mID;
+	object.mID = newName;
+
+	for (auto& p : mPropertyPaths)
+		p->updateObjectName(oldName, newName);
+
 	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName));
 	assert(path.isValid());
 	propertyValueChanged(path);
+
 	return object.mID;
 }
 
@@ -762,6 +772,17 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
+void Document::registerPath(PropertyPath& p)
+{
+	mPropertyPaths.emplace_back(&p);
+}
+
+void Document::deregisterPath(PropertyPath& p)
+{
+	mPropertyPaths.erase(std::remove(mPropertyPaths.begin(), mPropertyPaths.end(), &p), mPropertyPaths.end());
+}
+
+
 QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject,
 		bool excludeArrays,
 		bool excludeParent,
@@ -783,6 +804,9 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 			PropertyPath propPath(*sourceObject, link.mSourcePath);
 			auto proppathstr = propPath.toString();
 			assert(propPath.isPointer());
+
+			if (excludeInstanceProperties && sourceObject->get_type().is_derived_from<nap::Scene>())
+				continue;
 
 			if (excludeArrays && propPath.isArray())
 				continue;
@@ -833,7 +857,7 @@ QList<nap::RootEntity*> Document::getRootEntities(nap::Scene& scene, nap::rtti::
 
 Document::~Document()
 {
-	
+	mUndoStack.disconnect();
 }
 
 std::vector<nap::rtti::Object*> Document::getObjects(const nap::rtti::TypeInfo& type)

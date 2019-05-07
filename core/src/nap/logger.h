@@ -235,6 +235,7 @@ namespace nap
 					&debugLevel(),
 					&infoLevel(),
 					&warnLevel(),
+					&errorLevel(),
 					&fatalLevel()
 			};
 			return lvls;

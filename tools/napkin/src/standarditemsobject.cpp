@@ -456,6 +456,7 @@ ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEnti
 		: ObjectItem(&comp, false), mRootEntity(rootEntity)
 {
 	assert(&mRootEntity);
+	mOverrideColor = AppContext::get().getThemeManager().getColor(sThemeCol_componentWidthOverrides);
 }
 
 const PropertyPath ComponentInstanceItem::propertyPath() const
@@ -478,10 +479,7 @@ QVariant ComponentInstanceItem::data(int role) const
 	if (role == Qt::BackgroundRole)
 	{
 		if (instanceProperties())
-			return QVariant::fromValue<QColor>(QColor(Qt::green).lighter());
-
-		if (propertyPath().hasOverriddenChildren())
-			return QVariant::fromValue<QColor>(QColor(Qt::yellow).lighter());
+			return mOverrideColor;
 	}
 	return ObjectItem::data(role);
 }
@@ -495,10 +493,12 @@ nap::ComponentInstanceProperties* ComponentInstanceItem::instanceProperties() co
 	{
 		if (instprops.mTargetComponent.get() != &component())
 			continue;
-		if (instprops.mTargetComponent.toString() != componentPath())
+		if (!isComponentInstancePathEqual(mRootEntity, *instprops.mTargetComponent.get(),
+										  instprops.mTargetComponent.toString(), componentPath()))
 			continue;
 
 		mInstanceProperties = instprops;
+		break;
 	}
 
 	mInstancePropertiesResolved = true;

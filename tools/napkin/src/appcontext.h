@@ -308,7 +308,7 @@ namespace napkin
 		/**
 		 * Whenever a new document is created/loaded, register its signals for listeners
 		 */
-		void connectDocumentSignals();
+		void connectDocumentSignals(bool connect = true);
 
 		/**
 		 * When a new document has been set

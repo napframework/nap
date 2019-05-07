@@ -234,6 +234,8 @@ namespace napkin
 
 		// This is a copy of the instanceproperties on the root entity
 		mutable nap::ComponentInstanceProperties mInstanceProperties;
+
+		QColor mOverrideColor;
 	};
 
 } // namespace napkin

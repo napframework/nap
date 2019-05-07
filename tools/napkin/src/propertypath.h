@@ -26,8 +26,6 @@ namespace napkin
 	{
 		NameIndex(const std::string& nameIndex);
 
-		NameIndex(const std::string& name, int index);
-
 		std::string toString() const;
 		operator std::string() const { return toString(); }
 		std::string mID;
@@ -75,6 +73,8 @@ namespace napkin
 		 */
 		PropertyPath(nap::rtti::Object& obj, rttr::property prop);
 
+		~PropertyPath();
+
 		/**
 		 * @return The last part of the property name (not including the path)
 		 */
@@ -89,6 +89,18 @@ namespace napkin
 		 * Set the value of this property
 		 */
 		void setValue(rttr::variant value);
+
+		/**
+		 * If this path refers to a pointer, get the Object it's pointing to.
+		 * @return The object this property is pointing to or nullptr if this path does not represent a pointer.
+		 */
+		nap::rtti::Object* getPointee() const;
+
+		/**
+		 * If this path refers to a pointer, set the Object it's pointing to
+		 * @param pointee The Object this property will be pointing to.
+		 */
+		void setPointee(nap::rtti::Object* pointee);
 
 		/**
 		 * Get the parent of this path
@@ -163,6 +175,11 @@ namespace napkin
 		bool isOverridden() const;
 
 		/**
+		 * Remove overridden value
+		 */
+		void removeOverride();
+
+		/**
 		 * @return True if this path has any children with an override
 		 */
 		bool hasOverriddenChildren() const;
@@ -203,18 +220,6 @@ namespace napkin
 		bool isArray() const;
 
 		/**
-		 * If this path refers to a pointer, get the Object it's pointing to.
-		 * @return The object this property is pointing to or nullptr if this path does not represent a pointer.
-		 */
-		nap::rtti::Object* getPointee() const;
-
-		/**
-		 * If this path refers to a pointer, set the Object it's pointing to
-		 * @param pointee The Object this property will be pointing to.
-		 */
-		void setPointee(nap::rtti::Object* pointee);
-
-		/**
 		 * @param other The property to compare to
 		 * @return true if the both property paths point to the same property
 		 */
@@ -234,7 +239,7 @@ namespace napkin
 		void iterateChildren(PropertyVisitor visitor, int flags = IterFlag::FollowEmbeddedPointers) const;
 
 		/**
-		 * Get this properties children if it has any.
+		 * Get this property's children if it has any.
 		 * @param flags Provide true to also get the children's children and so on
 		 * @return All children of this property
 		 */
@@ -263,9 +268,9 @@ namespace napkin
 		 */
 		int getRealChildEntityIndex() const;
 
-	private:
-		nap::rtti::Path rttiPath() const;
+		void updateObjectName(const std::string& oldName, const std::string& newName);
 
+	private:
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
@@ -273,7 +278,7 @@ namespace napkin
 
 		nap::ComponentInstanceProperties* instanceProps() const;
 		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
-
+		void removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const;
 		/**
 		 * This PropertyPath is most likely pointing to a Component, retrieve it here.
 		 * @return The component this PropertyPath is pointing to.
