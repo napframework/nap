@@ -22,9 +22,9 @@ namespace nap
 		APIBaseValue() = default;
 
 		// Default constructor
-		APIBaseValue(const rtti::TypeInfo& type, const std::string& name) : 
-			mRepresentedType(type),
-			mName(name)	{ }
+		APIBaseValue(const rtti::TypeInfo& type, const std::string& name) :
+			mName(name),
+            mRepresentedType(type) { }
 
 		// Default destructor
 		virtual ~APIBaseValue() = default;
@@ -54,7 +54,7 @@ namespace nap
 	{
 		RTTI_ENABLE(APIBaseValue)
 	public:
-		APIValue();
+		NAPAPI APIValue();
 
 		/**
 		* Copy Constructor
@@ -86,7 +86,7 @@ namespace nap
 		/**
 		* Copy assignment operator
 		*/
-		APIValue<T>& operator=(APIValue<T>& other);
+		APIValue<T>& operator=(const APIValue<T>& other);
 
 		T mValue;				///< managed value
 	};
@@ -151,17 +151,26 @@ namespace nap
 	template<typename T>
 	nap::APIValue<T>& nap::APIValue<T>::operator=(APIValue<T>&& other)
 	{
-		mValue = std::move(other.mValue);
-		mID = std::move(other.mID);
-		mName = std::move(other.mName);
+		if (this != &other)
+		{
+			mValue = std::move(other.mValue);
+			mID = std::move(other.mID);
+			mName = std::move(other.mName);
+		}
+
+		return *this;
 	}
 
 
 	template<typename T>
-	nap::APIValue<T>& nap::APIValue<T>::operator=(APIValue<T>& other)
+	nap::APIValue<T>& nap::APIValue<T>::operator=(const APIValue<T>& other)
 	{
-		mValue = other.mValue;
-		mID = other.mID;
-		mName = other.mName;
+		if (this != &other)
+		{
+			mValue = other.mValue;
+			mID = other.mID;
+			mName = other.mName;
+		}
+		return *this;
 	}
 }

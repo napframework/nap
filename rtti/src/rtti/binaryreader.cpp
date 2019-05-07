@@ -74,7 +74,7 @@ namespace nap
 				stream.readString(type_name);
 
 				// Read saved version
-				size_t version = stream.read<size_t>();
+				uint64_t version = stream.read<uint64_t>();
 
 				// Find type; if it's not found, the type has been removed and we can't deserialize this file
 				rtti::TypeInfo type = rtti::TypeInfo::get_by_name(type_name);
@@ -387,7 +387,7 @@ namespace nap
 					return false;
 
 				// Check version
-				std::size_t version = stream.read<std::size_t>();
+				uint64_t version = stream.read<uint64_t>();
 				if (!errorState.check(version == rtti::getRTTIVersion(type_info), "Type %s found that does not match the expected version (perhaps the type has changed?). Re-export the binary to fix this issue.", object_type.c_str()))
 					return false;
 

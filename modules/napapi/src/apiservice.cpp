@@ -135,7 +135,7 @@ namespace nap
 		for (auto& message : messages)
 		{
 			// Forward, keep track of result
-			if (!forward(std::move(message->toAPIEvent()), *error))
+			if (!forward(message->toAPIEvent(), *error))
 				succeeded = false;
 		}
 
@@ -191,7 +191,7 @@ namespace nap
 		std::vector<std::string> values;
 		values.reserve(length);
 		for(int i=0; i<length; i++)
-			values.emplace_back(std::move(std::string(array[i])));
+			values.emplace_back(std::string(array[i]));
 
 		// Move construct argument and send.
 		APIEventPtr ptr = std::make_unique<APIEvent>(id);
