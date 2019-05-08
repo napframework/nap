@@ -21,7 +21,7 @@ TEST_CASE("File Extensions", "napkin-general")
 		auto imageExtString = "Image Extensions: " + imageExtensions.join(", ");
 		REQUIRE(!imageExtString.isEmpty());
 
-		nap::Logger::debug(imageExtString.toStdString());
+//		nap::Logger::debug(imageExtString.toStdString());
 	}
 	{
 		QStringList videoExtensions;
@@ -32,7 +32,7 @@ TEST_CASE("File Extensions", "napkin-general")
 		auto videoExtString = "Video Extensions: " + videoExtensions.join(", ");
 		REQUIRE(!videoExtString.isEmpty());
 
-		nap::Logger::debug(videoExtString.toStdString());
+//		nap::Logger::debug(videoExtString.toStdString());
 	}
 }
 

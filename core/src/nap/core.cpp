@@ -65,12 +65,12 @@ namespace nap
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from macOS Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
-		
+
 		// Setup our Python environment
 #ifdef NAP_ENABLE_PYTHON
 		setupPythonEnvironment();
 #endif
-		
+
 		// Load our module names from the project info
 		ProjectInfo projectInfo;
 		if (!runningInNonProjectContext)
@@ -92,7 +92,7 @@ namespace nap
 		// Load modules
 		if (!mModuleManager->loadModules(projectInfo.mModules, error))
 			return false;
-		
+
 		// Create the various services based on their dependencies
 		if (!createServices(error))
 			return false;
@@ -148,7 +148,7 @@ namespace nap
 	{
 		mTicksum -= mTicks[mTickIdx];		// subtract value falling off
 		mTicksum += tick;					// add new value
-		mTicks[mTickIdx] = tick;			// save new value so it can be subtracted later */		
+		mTicks[mTickIdx] = tick;			// save new value so it can be subtracted later */
 		if (++mTickIdx == mTicks.size())    // inc buffer index
 		{
 			mTickIdx = 0;
@@ -167,13 +167,13 @@ namespace nap
 	{
 		// Get current time in milliseconds
 		uint32 new_tick_time = mTimer.getTicks();
-		
+
 		// Calculate amount of milliseconds since last time stamp
 		uint32 delta_ticks = new_tick_time - mLastTimeStamp;
 
 		// Store time stamp
 		mLastTimeStamp = new_tick_time;
-		
+
 		// Update framerate
 		calculateFramerate(delta_ticks);
 
@@ -229,7 +229,7 @@ namespace nap
 		// If there is a config file, read the service configurations from it.
 		// Note that having a config file is optional, but if there *is* one, it should be valid
         rtti::DeserializeResult deserialize_result;
-        if (hasServiceConfiguration()) 
+        if (hasServiceConfiguration())
         {
             if (loadServiceConfiguration(deserialize_result, errorState))
             {
@@ -240,8 +240,8 @@ namespace nap
 
                     std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
                     configuration_by_type[config->getServiceType()] = std::move(config);
-                }            
-            } 
+                }
+            }
             else {
                 errorState.fail("Failed to load config.json");
                 return false;
@@ -307,16 +307,16 @@ namespace nap
 		// Add services in right order
 		for (auto& node : graph.getSortedNodes())
 		{
-            // Add the service to core
+			// Add the service to core
 			nap::Service* service = node->mItem.mObject;
-            mServices.emplace_back(std::unique_ptr<nap::Service>(service));
-            
-            // This happens within this loop so services are able to query their dependencies while registering object creators
-            service->registerObjectCreators(mResourceManager->getFactory());
-            
-            // Notify the service that is has been created and its core pointer is available
-            // We put this call here so the service's dependencies are present and can already be queried if necessary
-            service->created();
+			mServices.emplace_back(std::unique_ptr<nap::Service>(service));
+
+			// This happens within this loop so services are able to query their dependencies while registering object creators
+			service->registerObjectCreators(mResourceManager->getFactory());
+
+			// Notify the service that is has been created and its core pointer is available
+			// We put this call here so the service's dependencies are present and can already be queried if necessary
+			service->created();
 		}
 		return true;
 	}
@@ -363,7 +363,7 @@ namespace nap
 		Service* service = type.create<Service>({ configuration });
 		service->mCore = this;
 		outServices.emplace_back(service);
-        
+
 		return true;
 	}
 
@@ -388,7 +388,7 @@ namespace nap
 		return mTimer.getStartTime();
 	}
 
-	
+
 	void Core::setupPythonEnvironment()
 	{
 #ifdef _WIN32
@@ -423,7 +423,7 @@ namespace nap
 #elif ANDROID
 		// TODO ANDROID Need's to be implemented'
 		Logger::warn("Python environment not setup for Android");
-#else	
+#else
 		if (packagedBuild)
 		{
 			// Check for packaged app modules dir
@@ -437,7 +437,7 @@ namespace nap
 				const std::string pythonHome = napRoot + "/thirdparty/python/";
 				setenv("PYTHONHOME", pythonHome.c_str(), 1);
 			}
-		} 
+		}
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
 			const std::string napRoot = exeDir + "/../../";

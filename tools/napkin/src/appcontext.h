@@ -43,19 +43,19 @@ namespace napkin
 		 */
 		static AppContext& get();
 
-        /**
-         * Construct the singleton
-         * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
-         */
-        static void create();
-        
-        /**
-         * Destruct the singleton
-         * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
-         */
-        static void destroy();
-        
-        AppContext(); // Alas, this has to be public to be able to support the singleton unique_ptr construction
+		/**
+		 * Construct the singleton
+		 * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
+		 */
+		static void create();
+
+		/**
+		 * Destruct the singleton
+		 * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
+		 */
+		static void destroy();
+
+		AppContext(); // Alas, this has to be public to be able to support the singleton unique_ptr construction
 
 		AppContext(AppContext const&) = delete;
 
@@ -87,6 +87,11 @@ namespace napkin
 		Document* loadDocument(const QString& filename);
 
 		/**
+		 * Reload the current document from disk
+		 */
+		void reloadDocument();
+
+		/**
 		 * Load a json string as document
 		 * @param data The json data to load.
 		 * @return A Document instance if loading succeeded, nullptr otherwise
@@ -99,14 +104,14 @@ namespace napkin
 		 * The filename can be set by invoking saveFileAs(const QString& filename) before calling this method.
 		 * Any failures will be reported through nap::Logger, recovery should be handled prior to calling this method.
 		 */
-		void saveDocument();
+        bool saveDocument();
 
 		/**
 		 * Save the current data to disk.
 		 * Any failures will be reported through nap::Logger
 		 * @param filename The file to save the data to.
 		 */
-		void saveDocumentAs(const QString& filename);
+        bool saveDocumentAs(const QString& filename);
 
 		/**
 		 * Serialize the current document to a string
@@ -183,6 +188,12 @@ namespace napkin
 		void handleURI(const QString& uri);
 
 	Q_SIGNALS:
+		/**
+		 * Qt Signal
+		 * Fired when nap::Core has been initialized
+		 */
+		void coreInitialized();
+
 		/**
 		 * Qt Signal
 		 * Fired when the global selection has changed.
@@ -297,7 +308,7 @@ namespace napkin
 		/**
 		 * Whenever a new document is created/loaded, register its signals for listeners
 		 */
-		void connectDocumentSignals();
+		void connectDocumentSignals(bool connect = true);
 
 		/**
 		 * When a new document has been set
@@ -307,10 +318,11 @@ namespace napkin
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		nap::Core mCore;						// The nap::Core
-		bool mCoreInitialized = false;			// Keep track of core initialization state
-		ThemeManager mThemeManager;			 	// The theme manager
-		ResourceFactory mResourceFactory;		// Le resource factory
+		nap::Core mCore;										// The nap::Core
+		bool mCoreInitialized = false;							// Keep track of core initialization state
+		ThemeManager mThemeManager;			 					// The theme manager
+		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
+		QString mCurrentFilename;								// The currently opened file
 	};
 };

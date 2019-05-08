@@ -12,13 +12,6 @@ namespace napkin
 	{
 	public:
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
-		/**
 		 * Constructor
 		 */
 		EmptyItem();
@@ -30,13 +23,6 @@ namespace napkin
 	class InvalidItem : public QStandardItem
 	{
 	public:
-		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
 		/**
 		 * @param name Text to be displayed
 		 */
