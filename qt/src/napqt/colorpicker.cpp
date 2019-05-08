@@ -333,7 +333,7 @@ ChannelSlider::ChannelSlider() : QWidget()
 	mSpinBox.setSingleStep(0.01);
 
 	connect(&mSlider, &GradientSlider::valueChanged, this, &ChannelSlider::onSliderChanged);
-	connect(&mSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &ChannelSlider::onSpinboxChanged);
+	connect(&mSpinBox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ChannelSlider::onSpinboxChanged);
 }
 
 qreal ChannelSlider::value() const
