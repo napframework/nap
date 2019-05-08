@@ -4,7 +4,7 @@
 #include "renderservice.h"
 
 // External Includes
-#include <nap/windowresource.h>
+#include <window.h>
 #include <utility/dllexport.h>
 #include <rect.h>
 

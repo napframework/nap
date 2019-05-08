@@ -1,16 +1,14 @@
 #pragma once
 
+// Local Includes
+#include "windowevent.h"
+
 // External Includes
 #include <nap/numeric.h>
 #include <nap/signalslot.h>
 #include <utility/uniqueptrvectoriterator.h>
-
-// Local Includes
-#include "windowevent.h"
-#include "event.h"
-#include "resource.h"
-
-// External Includes
+#include <nap/event.h>
+#include <nap/resource.h>
 #include <utility/dllexport.h>
 
 namespace nap

@@ -3,7 +3,7 @@
 // External Includes
 #include <nap/service.h>
 #include <nap/datetime.h>
-#include <nap/windowevent.h>
+#include <windowevent.h>
 #include <nopengl.h>
 #include <thread>
 #include <renderablemesh.h>
