@@ -154,6 +154,8 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 				menu.addAction(new RemovePathAction(entityItem->propertyPath()));
 
 		}
+
+		menu.addAction(new DeleteObjectAction(*objItem->getObject()));
 	}
 	else if (objItem)
 	{
