@@ -56,15 +56,24 @@ namespace nap
 
 			void setColor(const QColor& col);
 			QColor color() const;
+            void mousePressEvent(QMouseEvent* event) override;
+            void mouseMoveEvent(QMouseEvent* event) override;
+
+        Q_SIGNALS:
+		    void valueChanged(QColor color);
 
 		protected:
 			void paintEvent(QPaintEvent* event) override;
 
 		private:
+		    void updateFromPos(const QPoint& p);
 			QRect fitSquare(const QRect& rec) const;
+			QPointF toSquarePoint(const QPoint& p, int margin);
+			QRect circleRect() const;
 
 			int margin = 20;
-			int mHandleRadius = 8;
+			int mHandleRadius = 6;
+			bool mClickedInnerCircle = false;
 			QColor mColor;
 		};
 

@@ -5,6 +5,11 @@
 
 using namespace nap::qt;
 
+qreal pointLength(const QPointF& p)
+{
+	return qSqrt(p.x() * p.x() + p.y() * p.y());
+}
+
 Color::Color() : QObject() {}
 
 void Color::setColor(const QColor& col)
@@ -100,13 +105,41 @@ void ColorCircle::setColor(const QColor& col)
 {
 	if (mColor == col)
 		return;
+	blockSignals(true);
 	mColor = col;
 	update();
+	blockSignals(false);
 }
 
 QColor ColorCircle::color() const
 {
 	return mColor;
+}
+
+void ColorCircle::mousePressEvent(QMouseEvent* event)
+{
+	if (event->buttons() == Qt::LeftButton)
+	{
+		auto p = toSquarePoint(event->pos(), margin);
+		auto len = pointLength(p);
+		mClickedInnerCircle = len <= 1.0;
+
+		updateFromPos(event->pos());
+		event->accept();
+		return;
+	}
+	QWidget::mousePressEvent(event);
+}
+
+void ColorCircle::mouseMoveEvent(QMouseEvent* event)
+{
+	if (event->buttons() == Qt::LeftButton)
+	{
+		updateFromPos(event->pos());
+		event->accept();
+		return;
+	}
+	QWidget::mousePressEvent(event);
 }
 
 void ColorCircle::paintEvent(QPaintEvent* event)
@@ -120,7 +153,7 @@ void ColorCircle::paintEvent(QPaintEvent* event)
 
 	ptr.setPen(Qt::NoPen);
 
-	const auto rec = rect().adjusted(0, 0, -1, -1);
+	const auto rec = circleRect();
 
 	QRect cRec = fitSquare(rec);
 	qreal cRadius = cRec.height() / 2.0;
@@ -175,8 +208,10 @@ void ColorCircle::paintEvent(QPaintEvent* event)
 		qreal px = cRec.center().x() + qCos(a) * r;
 		qreal py = cRec.center().y() + qSin(a) * r;
 		QRectF hRec(px - mHandleRadius, py - mHandleRadius, mHandleRadius * 2, mHandleRadius * 2);
-		ptr.setBrush(Qt::white);
-		ptr.setPen(Qt::black);
+		ptr.setBrush(Qt::NoBrush);
+		ptr.setPen(QPen(Qt::black, 4));
+		ptr.drawEllipse(hRec);
+		ptr.setPen(QPen(Qt::white, 2));
 		ptr.drawEllipse(hRec);
 	}
 
@@ -187,18 +222,35 @@ void ColorCircle::paintEvent(QPaintEvent* event)
 		qreal px = cRec.center().x() + qCos(a) * r;
 		qreal py = cRec.center().y() + qSin(a) * r;
 		QRectF hRec(px - mHandleRadius, py - mHandleRadius, mHandleRadius * 2, mHandleRadius * 2);
-		ptr.setBrush(Qt::white);
-		ptr.setPen(Qt::black);
+		ptr.setBrush(Qt::NoBrush);
+		ptr.setPen(QPen(Qt::black, 4));
+		ptr.drawEllipse(hRec);
+		ptr.setPen(QPen(Qt::white, 2));
 		ptr.drawEllipse(hRec);
 	}
 
 	ptr.end();
 }
 
+void ColorCircle::updateFromPos(const QPoint& point)
+{
+	auto p = toSquarePoint(point, margin + (mHandleRadius* 2));
+	qreal angle = -qAtan2(p.y(), p.x()) + M_PI * 2.0;
+	qreal hue = fmod(angle / M_PI / 2.0, 1.0);
+	qreal sat = pointLength(p);
+
+	QColor col;
+	if (mClickedInnerCircle)
+		col.setHsvF(qBound(0.0, hue, 1.0), qBound(0.0, sat, 1.0), mColor.valueF());
+	else
+		col.setHsvF(qBound(0.0, hue, 1.0), mColor.saturationF(), mColor.valueF());
+
+	valueChanged(col);
+}
 
 QRect ColorCircle::fitSquare(const QRect& rec) const
 {
-	qreal ratio = (qreal) rec.width() / (qreal) rec.height();
+	const qreal ratio = (qreal) rec.width() / (qreal) rec.height();
 	auto cRec = rec;
 	if (ratio > 1)
 	{
@@ -212,6 +264,36 @@ QRect ColorCircle::fitSquare(const QRect& rec) const
 	};
 	return cRec;
 }
+
+QPointF ColorCircle::toSquarePoint(const QPoint& p, int margin)
+{
+	auto rec = circleRect();
+	const qreal ratio = (qreal) rec.width() / (qreal) rec.height();
+	qreal leftMargin = 0;
+	qreal topMargin = 0;
+	qreal side;
+	if (ratio > 1)
+	{
+		side = rec.height();
+		leftMargin = (rec.width() - side) / 2.0;
+	}
+	else
+	{
+		side = rec.width();
+		topMargin = (rec.height() - side) / 2.0;
+	}
+	qreal halfSide = side / 2.0;
+	qreal x = p.x() - halfSide - leftMargin;
+	qreal y = p.y() - halfSide - topMargin;
+	qreal hsm = halfSide - margin;
+	return {x / hsm, y / hsm};
+}
+
+QRect ColorCircle::circleRect() const
+{
+	return rect().adjusted(0, 0, -1, -1);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -454,6 +536,7 @@ ColorPicker::ColorPicker() : QWidget()
 
 	connect(&mColor, &Color::changed, this, &ColorPicker::onColorChanged);
 
+	connect(&mColorCircle, &ColorCircle::valueChanged, &mColor, &Color::setColor);
 	connect(&mSliderRed, &ChannelSlider::changed, &mColor, &Color::setRed);
 	connect(&mSliderGreen, &ChannelSlider::changed, &mColor, &Color::setGreen);
 	connect(&mSliderBlue, &ChannelSlider::changed, &mColor, &Color::setBlue);
