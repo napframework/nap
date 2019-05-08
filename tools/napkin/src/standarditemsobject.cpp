@@ -355,7 +355,8 @@ EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEnti
 	for (auto comp : e.mComponents)
 		onComponentAdded(comp.get(), &entity());
 	for (auto childEntity : e.mChildren)
-		onEntityAdded(childEntity.get(), &entity());
+		if (childEntity.get())
+			onEntityAdded(childEntity.get(), &entity());
 
 	auto ctx = &AppContext::get();
 	connect(ctx, &AppContext::componentAdded, this, &EntityInstanceItem::onComponentAdded);
