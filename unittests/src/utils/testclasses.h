@@ -86,6 +86,13 @@ public:
 class TestComponentInstance : public nap::ComponentInstance
 {
 	RTTI_ENABLE(nap::ComponentInstance)
+public:
+	TestComponentInstance(nap::EntityInstance& entity, nap::Component& resource)
+			: nap::ComponentInstance(entity, resource)
+	{
+	}
+
+
 };
 
 /**

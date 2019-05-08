@@ -156,13 +156,23 @@ namespace nap
 	// Render all objects in scene graph using specified camera
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
 	{
-		// Get all render components
+		// Get all render-able components
+		// Only gather renderable components that can be rendered using the given caera
 		std::vector<nap::RenderableComponentInstance*> render_comps;
-
-		SceneService* scene_service = getCore().getService<SceneService>();
-		for (Scene* scene : scene_service->getScenes())
+		std::vector<nap::RenderableComponentInstance*> entity_render_comps;
+		for (Scene* scene : mSceneService->getScenes())
+		{
 			for (EntityInstance* entity : scene->getEntities())
-				entity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
+			{
+				entity_render_comps.clear();
+				entity->getComponentsOfType<nap::RenderableComponentInstance>(entity_render_comps);
+				for (const auto& comp : entity_render_comps) 
+				{
+					if (comp->isSupported(camera))
+						render_comps.emplace_back(comp);
+				}
+			}
+		}
 
 		// Render these objects
 		renderObjects(renderTarget, camera, render_comps, sortFunction);
@@ -291,12 +301,15 @@ namespace nap
 	// Set the currently active renderer
 	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{
+		// Get handle to scene service
+		mSceneService = getCore().getService<SceneService>();
+		assert(mSceneService != nullptr);
+
+		// Create the renderer and initialize
 		std::unique_ptr<Renderer> renderer = std::make_unique<nap::Renderer>();
 		if (!renderer->init(getConfiguration<RenderServiceConfiguration>()->mSettings, errorState))
 			return false;
-
 		mRenderer = std::move(renderer);
-
 		return true;
 	}
 	

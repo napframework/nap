@@ -8,7 +8,7 @@
 #include <keyboard.h>
 #include <SDL_events.h>
 #include <inputevent.h>
-#include <nap/windowevent.h>
+#include <windowevent.h>
 
 namespace nap
 {

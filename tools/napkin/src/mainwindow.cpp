@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <fcurve.h>
+#include <QtDebug>
 #include <utility/fileutils.h>
 
 using namespace napkin;
@@ -12,6 +13,8 @@ void MainWindow::bindSignals()
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
 	connect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
+	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
 }
@@ -22,6 +25,8 @@ void MainWindow::unbindSignals()
 	disconnect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
 	disconnect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
+	disconnect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
 }
@@ -57,6 +62,7 @@ void MainWindow::addDocks()
 {
 //	addDock("Available Types", &mHierarchyPanel);
 //	addDock("History", &mHistoryPanel);
+//	addDock("Path Browser", &mPathBrowser);
 
 	addDock("Resources", &mResourcePanel);
 	addDock("Inspector", &mInspectorPanel);
@@ -64,6 +70,8 @@ void MainWindow::addDocks()
 	addDock("AppRunner", &mAppRunnerPanel);
     addDock("Scene", &mScenePanel);
 	addDock("Curve", &mCurvePanel);
+	addDock("Modules", &mModulePanel);
+	addDock("Instance Properties", &mInstPropPanel);
 }
 
 
@@ -80,6 +88,10 @@ void MainWindow::addMenu()
 		filemenu->addAction(openFileAction);
 
 		mRecentFilesMenu = filemenu->addMenu("Open Recent");
+
+		auto reloadFileAction = new ReloadFileAction();
+		addAction(reloadFileAction);
+		filemenu->addAction(reloadFileAction);
 
 		auto saveFileAction = new SaveFileAction();
 		addAction(saveFileAction);
@@ -139,19 +151,54 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
+void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 {
-	mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
+	auto sceneTreeSelection = mScenePanel.treeView().getTreeView().selectionModel();
+	sceneTreeSelection->blockSignals(true);
+	sceneTreeSelection->clearSelection();
+	sceneTreeSelection->blockSignals(false);
 
-	mCurvePanel.editCurve(nullptr);
-
-	if (!objects.isEmpty()) {
-		auto ob = dynamic_cast<nap::math::FloatFCurve*>(objects.at(0));
-		if (ob) {
-			mCurvePanel.editCurve(ob);
-		}
+	mInspectorPanel.clear();
+	if (!paths.isEmpty())
+	{
+		auto path = paths.first();
+		// Don't edit scenes
+		if (!path.getType().is_derived_from<nap::Scene>())
+			mInspectorPanel.setPath(paths.first());
 	}
 
+	// Edit curve?
+	mCurvePanel.editCurve(nullptr);
+	if (!paths.isEmpty())
+	{
+		auto ob = dynamic_cast<nap::math::FloatFCurve*>(paths.first().getObject());
+		if (ob)
+			mCurvePanel.editCurve(ob);
+	}
+
+}
+
+void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
+{
+	auto resTreeSelection = mResourcePanel.treeView().getTreeView().selectionModel();
+	resTreeSelection->blockSignals(true);
+	resTreeSelection->clearSelection();
+	resTreeSelection->blockSignals(false);
+
+	mInspectorPanel.clear();
+	if (!paths.isEmpty())
+	{
+		auto path = paths.first();
+
+		// Don't edit scenes
+		if (!path.getType().is_derived_from<nap::Scene>())
+			mInspectorPanel.setPath(paths.first());
+	}
+}
+
+void MainWindow::onSceneComponentSelectionRequested(nap::RootEntity* rootEntity, const QString& path)
+{
+	mScenePanel.select(rootEntity, path);
 }
 
 void MainWindow::onDocumentOpened(const QString filename)

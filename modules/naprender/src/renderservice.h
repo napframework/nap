@@ -3,7 +3,7 @@
 // External Includes
 #include <nap/service.h>
 #include <nap/datetime.h>
-#include <nap/windowevent.h>
+#include <windowevent.h>
 #include <nopengl.h>
 #include <thread>
 #include <renderablemesh.h>
@@ -26,6 +26,7 @@ namespace nap
 	class RenderableComponentInstance;
 	class RenderWindow;
 	class RenderService;
+	class SceneService;
 
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
@@ -75,6 +76,7 @@ namespace nap
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
 		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
+		 * Components that can't be rendered with the given camera are omitted. 
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
@@ -82,7 +84,7 @@ namespace nap
 
 		/**
 		* Renders all available RenderableComponents in the scene to a specific renderTarget.
-		*
+		* Components that can't be rendered with the given camera are omitted.
 		* @param renderTarget the target to render to
 		* @param camera the camera used for rendering all the available components
 		* @param sortFunction The function used to sort the components to render
@@ -322,7 +324,8 @@ namespace nap
 		ContextSpecificStateMap mContextSpecificState;											//< The per-context render state
 		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;	//< Array of per-context GL resources scheduled for destruction
 		VAOMap mVAOMap;																			//< Map from material-mesh combination to opengl VAO
-		WindowList mWindows;
+		WindowList mWindows;																	//< All available windows
+		SceneService* mSceneService = nullptr;													//< Service that manages all the scenes
 	};
 } // nap
 

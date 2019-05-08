@@ -43,24 +43,30 @@ namespace nap
 		const std::string& getAddress() const								{ return mAddress; }
 
 		/**
-		 * Adds an OSCArgument to this event
-		 * @args the template arguments used for constructing the argument
+		 * Adds an OSCArgument to this event. The template type must be of type OSCBaseValue.
+		 * The arguments are used to construct the OSCValue, ie: addArgument<OSCFloat>(1.0f) or addArgument<OSCString>("ola!")
+		 * @args the arguments that are used for constructing the specified OSCValue. 
 		 * @return the newly created and added argument
 		 */
 		template<typename T, typename... Args>
 		OSCArgument* addArgument(Args&&... args);
 
 		/**
-		 * Adds an OSCArgument that that is constructed with an OSCValue<T> as input argument
-		 * This is a utility function that wraps addArgument based OSC value type
-		 * Note that only registered OSC value types are considered valid
+		 * Adds an OSCArgument to this event. The argument wraps an OSCValue of type T, ie:
+		 * addValue<float>(1.0f) adds an OSCValue<float> and addValue<int>(1) creates an OSCValue<int>.
+		 * This is a utility function that wraps addArgument based on the given OSC value type.
+		 * Note that only registered OSC value types are considered valid.
+		 * @param args the value that is used to construct the OSCValue.
+		 * @return the newly created and added argument.
 		 */
 		template<typename T, typename... Args>
 		OSCArgument* addValue(Args&&... args);
 
 		/**
-		 * Adds an OSCArgument that holds a string
+		 * Adds an OSCArgument that holds a string. 
 		 * This is a utility function that wraps addArgument
+		 * @param string the string to give to the argument
+		 * @return the newly created and added argument.
 		 */
 		OSCArgument* addString(const std::string& string);
 

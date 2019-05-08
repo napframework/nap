@@ -19,7 +19,7 @@
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
 #include <perspcameracomponent.h>
-#include <nap/windowresource.h>
+#include <window.h>
 #include <inputrouter.h>
 #include <entity.h>
 #include <artnetcontroller.h>
