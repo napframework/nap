@@ -1,7 +1,9 @@
 #pragma once
 
+// Local Includes
+#include "parametersimple.h"
+
 // External Includes
-#include <parametersimple.h>
 #include <glm/gtc/quaternion.hpp>
 
 namespace nap
