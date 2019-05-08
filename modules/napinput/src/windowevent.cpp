@@ -1,4 +1,3 @@
-#include "python.h"
 #include "windowevent.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WindowEvent)
