@@ -63,16 +63,23 @@ TEST_CASE("Commands", "napkin-commands")
 	REQUIRE(e2 != nullptr);
 	REQUIRE(doc->getParent(*e2) == e1);
 
-	PropertyPath nameProp1(*entity1, nap::rtti::sIDPropertyName);
+	PropertyPath nameProp1(entity1->mID, nap::rtti::sIDPropertyName);
+	std::string namepropType(nameProp1.getType().get_name().data());
+	REQUIRE(nameProp1.getType().is_derived_from<std::string>());
 	REQUIRE(nameProp1.isValid());
-	PropertyPath nameProp2(*entity2, nap::rtti::sIDPropertyName);
+	PropertyPath nameProp2(entity2->mID, nap::rtti::sIDPropertyName);
 	REQUIRE(nameProp2.isValid());
+	REQUIRE(nameProp2.getType().is_derived_from<std::string>());
+
+	auto nameproppath = nameProp1.toString();
 
 	ctx.executeCommand(new SetValueCommand(nameProp1, "Loco"));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity1->mID == "Loco");
 
-	// Name may not be empty
+	assert(nameProp1.getObject());
+
+	// Name may not be empty, should have been reverted to previous value
 	ctx.executeCommand(new SetValueCommand(nameProp1, ""));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity1->mID == "Loco");
@@ -98,7 +105,7 @@ TEST_CASE("Commands", "napkin-commands")
 	REQUIRE(doc->getObjects().size() == 0);
 
 	// Add a component (crashes OSX?)
-	auto& entity = doc->addEntity();
+	auto& entity = doc->addEntity(nullptr);
 	ctx.executeCommand(new AddComponentCommand(entity, RTTI_OF(TestComponent)));
 	REQUIRE(entity.hasComponent<TestComponent>());
 	auto component = doc->getComponent(entity, RTTI_OF(TestComponent));

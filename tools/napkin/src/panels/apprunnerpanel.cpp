@@ -71,7 +71,7 @@ void napkin::AppRunnerPanel::onStartApp()
 
 void napkin::AppRunnerPanel::onStopApp()
 {
-	mProcess.close();
+	mProcess.terminate();
 }
 
 void napkin::AppRunnerPanel::onReadOut()

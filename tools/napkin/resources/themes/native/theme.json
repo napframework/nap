@@ -7,5 +7,10 @@
     "warn": "#F80",
     "error": "#F00",
     "fatal": "#F0F"
+  },
+  "colors": {
+    "componentWithOverrides": "#FDF",
+    "instanceProperty": "#EEE",
+    "overriddenInstanceProperty": "#FBF"
   }
 }

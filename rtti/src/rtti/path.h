@@ -16,11 +16,11 @@ namespace nap
         class ResolvedPath;
 
 		/**
-		 * Represents an element on an RTTIPath. Each element is of a specific type and has different data, depending on the type of the element.
+		 * Represents an element on a Path. Each element is of a specific type and has different data, depending on the type of the element.
 		 * In order to be able to have an array (without dynamic allocs) of these elements, it makes use of an anonymous union to store the data.
 		 * Then, depending on the type of the element, you can access the data through Element.Attribute or Element.ArrayElement.
 		 *
-		 * Note: this class should be used through RTTIPath, not directly
+		 * Note: this class should be used through Path, not directly
 		 */
 		class NAPAPI PathElement
 		{
@@ -89,7 +89,7 @@ namespace nap
 
 			/**
 			 * Constructor for the attribute type. 
-			 * Note: The attribute name string is expected to have a lifetime of at least as long as this RTTIPath. The string is not copied.
+			 * Note: The attribute name string is expected to have a lifetime of at least as long as this Path. The string is not copied.
 			 *
 			 * @param attributeName The name of the attribute represented by this element. 
 			 */
@@ -102,7 +102,7 @@ namespace nap
 			/**
 			 * Constructor for the attribute type. 
 			 * Note: The specified name is copied to internal storage (the element takes ownership). 
-			 *       If you know that your string has a longer lifetime than the RTTIPath, use the const char* constructor, which is more efficient.
+			 *       If you know that your string has a longer lifetime than the Path, use the const char* constructor, which is more efficient.
 			 *
 			 * @param attributeName The name of the attribute represented by this element. 
 			 */
@@ -176,7 +176,7 @@ namespace nap
 		};
 
 		/**
-		 * This is the analogue to RTTIPathElement; it is used to represent an element on a ResolvedRTTIPath. See RTTIPathElement for more documentation.
+		 * This is the analogue to PathElement; it is used to represent an element on a ResolvedPath. See PathElement for more documentation.
 		 */
 		class NAPAPI ResolvedRTTIPathElement
 		{
@@ -351,9 +351,9 @@ namespace nap
 		};
 
 		/**
-		 * An RTTIPath represents a path to a specific property/value through a RTTI hierarchy. It's useful to be able to store a 'reference' to a property in a data structure, without actually having to have a reference.
-		 * By itself, RTTIPath just stores a path and can't be used for any operations. In order to do that, the RTITPath must be 'resolved' against a root object.
-		 * The resolve of an RTTIPath results in a ResolvedRTTIPath, which can then be used to get/set the value of the property represented by the RTTIPath.
+		 * A Path represents a path to a specific property/value through a RTTI hierarchy. It's useful to be able to store a 'reference' to a property in a data structure, without actually having to have a reference.
+		 * By itself, Path just stores a path and can't be used for any operations. In order to do that, the RTITPath must be 'resolved' against a root object.
+		 * The resolve of a Path results in a ResolvedPath, which can then be used to get/set the value of the property represented by the Path.
 		 *
 		 * As a simple example, consider the following RTTI types (assume they're registered in RTTI):
 		 *
@@ -374,20 +374,20 @@ namespace nap
 		 *			std::vector<rtti::RTTIObject*>	mArrayOfPointers;
 		 *		};
 		 *
-		 * Now, let's suppose we want to store a reference to the 'PointerProperty' of the 'DataStruct' embedded in the first element of the 'ArrayOfCompounds' property in 'SomeRTTIClass'.
+		 * Suppose we want to store a reference to the 'PointerProperty' of the 'DataStruct' embedded in the first element of the 'ArrayOfCompounds' property in 'SomeRTTIClass'.
 		 * We could do this as follows:
 		 *
-		 *		RTTIPath path;
+		 *		Path path;
 		 *		path.PushAttribute("ArrayOfCompounds");		// Push name of the RTTI property on SomeRTTIClass
 		 *		path.PushArrayElement(0);					// Push index into the array 'ArrayOfCompounds' on SomeRTTIClass
 		 *		path.PushAttribute("PointerProperty");		// Push name of the RTTI property on the compound contained in ArrayOfCompounds, namely 'DataStruct'
 		 *
 		 * So we now have a 'path' to the pointer property, which we can store wherever we want.
 		 *
-		 * At some later point in time, let's suppose we now want to get or set the value that this RTTIPath points to. In order to do this, we first need to resolve the path:
+		 * At some later point in time, let's suppose we now want to get or set the value that this Path points to. In order to do this, we first need to resolve the path:
 		 *
 		 *		SomeRTTIClass* object = ... // Assume we have a pointer to an instance of SomeRTTIClass that we can resolve against
-		 *		ResolvedRTTIPath resolved_path = path.resolve(object);
+		 *		ResolvedPath resolved_path = path.resolve(object);
 		 *		if (!resolved_path.isValid())
 		 *			return; // Failed to resolve the path; either it's incorrect or does not match with the provided instance of SomeRTTIClass
 		 *
@@ -407,7 +407,7 @@ namespace nap
 		public:
 			/**
 			 * Push an attribute on the path.
-			 * The specified attribute name string is expected to have a lifetime longer than that of the RTTIPath.
+			 * The specified attribute name string is expected to have a lifetime longer than that of the Path.
 			 *
 			 * @param attributeName The name of the attribute to push
 			 */
@@ -420,7 +420,7 @@ namespace nap
 			/**
 			 * Push an attribute on the path. 
 			 * The specified attribute name string is copied locally; use the const char* overload for better performance,
-			 * if you know that the lifetime of your string is longer than that of the RTTIPath.
+			 * if you know that the lifetime of your string is longer than that of the Path.
 			 *
 			 * @param attributeName The name of the attribute to push
 			 */
@@ -496,21 +496,21 @@ namespace nap
 			}
 
 			/**
-			 * Convert this RTTIPath to a string representation of the format "Attribute:ArrayIndex:Attribute"
+			 * Convert this Path to a string representation of the format "Attribute/ArrayIndex/Attribute"
 			 *
-			 * @return The string representation of this RTTIPath
+			 * @return The string representation of this Path
 			 */
 			const std::string toString() const;
 
 			/**
-			 * Convert a string representation of an RTTIPath in the format "Attribute:ArrayIndex:Attribute" to an actual RTTIPath
+			 * Convert a string representation of a Path in the format "Attribute/ArrayIndex/Attribute" to an actual Path
 			 *
-			 * @return The RTTIPath
+			 * @return The Path
 			 */
 			static const Path fromString(const std::string& path);
 
 			/**
-			 * Resolve an RTTIPath against an Object
+			 * Resolve a Path against an Object
 			 *
 			 * @param object The object to resolve against
 			 * @param path The resolved RTTI path
@@ -518,15 +518,18 @@ namespace nap
 			 */
 			bool resolve(const rtti::Object* object, ResolvedPath& resolvedPath) const;
 
+
+			int length() const { return mLength; }
+
 		private:
-			static const int	RTTIPATH_MAX_LENGTH = 16;			// Maximum number of elements on an RTTIPath
-			PathElement		mElements[RTTIPATH_MAX_LENGTH];		// The elements on the path
+			static const int	RTTIPATH_MAX_LENGTH = 16;			// Maximum number of elements on a Path
+			PathElement			mElements[RTTIPATH_MAX_LENGTH];		// The elements on the path
 			int					mLength = 0;						// Current length of the path
 		};
 
 		/**
-		 * ResolvedRTTIPath is the 'resolved' version of an RTTIPath and can be used to get/set the value of the property being pointed to
-		 * See RTTIPath for further documentation
+		 * ResolvedPath is the 'resolved' version of a Path and can be used to get/set the value of the property being pointed to
+		 * See Path for further documentation
 		 */
 		class NAPAPI ResolvedPath
 		{
@@ -609,7 +612,7 @@ namespace nap
 			}
 
 		private:
-			static const int		RTTIPATH_MAX_LENGTH = 16;			// Maximum number of elements on an RTTIPath
+			static const int		RTTIPATH_MAX_LENGTH = 16;			// Maximum number of elements on a Path
 			ResolvedRTTIPathElement	mElements[RTTIPATH_MAX_LENGTH];		// The elements on the path
 			int						mLength = 0;						// Current length of the path
 		};

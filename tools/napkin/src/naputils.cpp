@@ -12,6 +12,7 @@
 #include <standarditemsproperty.h>
 #include <standarditemsobject.h>
 #include <panels/finderpanel.h>
+#include <cctype>
 
 #include <napqt/filterpopup.h>
 
@@ -32,14 +33,11 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
 	refresh();
 }
 
-napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType(baseType)
+napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)
 {
-	for (auto& object : AppContext::get().getDocument()->getObjects())
+	for (auto object : objects)
 	{
-		if (!object.get()->get_type().is_derived_from(baseType))
-			continue;
-
-		auto item = new ObjectItem(object.get());
+		auto item = new ObjectItem(object, false);
 		item->setEditable(false);
 		appendRow(item);
 	}
@@ -112,25 +110,14 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 			topLevelObjects.push_back(object);
 	}
 
-    // Probably no need to sort
-//	// Pass 3: sort objects on type & ID to ensure files remain consistent after saving (for diffing and such)
-//	std::sort(topLevelObjects.begin(), topLevelObjects.end(), [](RTTIObject* a, RTTIObject* b) {
-//		if (a->get_type() == b->get_type())
-//			return a->mID < b->mID;
-//		else
-//			return a->get_type().get_name().compare(b->get_type().get_name()) < 0;
-//	});
     return topLevelObjects;
 }
 
-
-nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const rttr::type& typeConstraint)
+nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects)
 {
-	const auto& objects = AppContext::get().getDocument()->getObjects();
 	QStringList ids;
 	for (auto& obj : objects)
-		if (obj->get_type().is_derived_from(typeConstraint))
-			ids << QString::fromStdString(obj->mID);
+		ids << QString::fromStdString(obj->mID);
 
 	auto selectedID = nap::qt::FilterPopup::show(parent, ids).toStdString();
 	if (selectedID.empty())
@@ -140,7 +127,7 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const rttr::type&
 	if (it == objects.end())
 		return nullptr;
 
-	return (*it).get();
+	return *it;
 }
 
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
@@ -261,6 +248,8 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 
 	FinderPanel finder;
 	nap::qt::FilterTreeView* tree = &finder.getTreeView();
+	tree->getTreeView().setHeaderHidden(true);
+	tree->getTreeView().setRootIsDecorated(false);
 
 	// On item double-click, close the dialog and reveal the property
 	finder.connect(&tree->getTreeView(), &QAbstractItemView::doubleClicked,
@@ -296,4 +285,108 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 	dialog.exec();
 
 	return yesclicked;
+}
+
+std::string napkin::friendlyTypeName(rttr::type type)
+{
+	// Strip off namespace prefixes when creating new objects
+	std::string base_name = type.get_name().data();
+	size_t last_colon = base_name.find_last_of(':');
+	if (last_colon != std::string::npos)
+		base_name = base_name.substr(last_colon + 1);
+	return base_name;
+}
+
+bool napkin::isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
+								  const std::string& a, const std::string& b)
+{
+	{
+		auto partsA = nap::utility::splitString(a, '/');
+		auto partsB = nap::utility::splitString(b, '/');
+
+		assert(partsA[0] == ".");
+		assert(partsB[0] == ".");
+
+		std::string nameA;
+		std::string nameB;
+		int indexA;
+		int indexB;
+
+		for (size_t i = 1, len = partsA.size(); i < len; i++)
+		{
+			const auto& partA = partsA[i];
+			const auto& partB = partsB[i];
+
+			// continue finding child entities
+			bool hasIndexA = nameAndIndex(partA, nameA, indexA);
+			bool hasIndexB = nameAndIndex(partB, nameB, indexB);
+
+			// consider no index to be index 0
+			if (!hasIndexA)
+				indexA = 0;
+			if (!hasIndexB)
+				indexB = 0;
+
+			if (nameA != nameB)
+				return false;
+
+			if (indexA != indexB)
+				return false;
+
+		}
+		return true;
+	}
+}
+
+bool napkin::nameAndIndex(const std::string& nameIndex, std::string& name, int& index)
+{
+	std::size_t found = nameIndex.find_last_of(':');
+	if (found != std::string::npos)
+	{
+		auto n = nameIndex.substr(0, found);
+		auto i = nameIndex.substr(found + 1);
+		if (isNumber(i))
+		{
+			name.assign(n);
+			index = std::stoi(i);
+			return true;
+		}
+	}
+	name.assign(nameIndex);
+	return false;
+}
+
+bool napkin::isNumber(const std::string& s)
+{
+	return !s.empty() && std::find_if(s.begin(), s.end(),
+									  [](char c)
+									  {
+										  return !std::isdigit(static_cast<unsigned char>(c));
+									  }) == s.end();
+}
+
+nap::Entity* napkin::findChild(nap::Entity& parent, const std::string& name, int index)
+{
+	if (index < 0)
+	{
+		// Just find by name
+		for (auto e : parent.mChildren)
+			if (e->mID == name)
+				return e.get();
+	}
+	else
+	{
+		int nameFound = 0;
+		for (auto e : parent.mChildren)
+		{
+			if (e->mID != name)
+			continue;
+
+			if (nameFound == index)
+				return e.get();
+
+			++nameFound;
+		}
+	}
+	return nullptr;
 }

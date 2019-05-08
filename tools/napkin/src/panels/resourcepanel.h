@@ -68,8 +68,13 @@ namespace napkin
 		 */
 		void selectObjects(const QList<nap::rtti::Object*>& selection);
 
+		/**
+		 * @return The tree view held by this panel
+		 */
+		nap::qt::FilterTreeView& treeView() { return mTreeView; }
+
 	Q_SIGNALS:
-		void selectionChanged(QList<nap::rtti::Object*> obj);
+		void selectionChanged(QList<PropertyPath> obj);
 
 	private:
 		/**

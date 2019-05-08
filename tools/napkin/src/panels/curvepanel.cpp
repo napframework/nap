@@ -21,7 +21,7 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 		if (!mListenForPropertyChanges)
 			return;
 
-		if (&path.getObject() != &mCurveModel->curve().sourceCurve())
+		if (path.getObject() != &mCurveModel->curve().sourceCurve())
 			return;
 
 		QList < int > indices;
@@ -40,7 +40,7 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 		if (!mListenForPropertyChanges)
 			return;
 
-		if (&path.getObject() != &mCurveModel->curve().sourceCurve())
+		if (path.getObject() != &mCurveModel->curve().sourceCurve())
 			return;
 
 		mListenForCurveChanges = false;
@@ -56,7 +56,7 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 		if (!mListenForPropertyChanges)
 			return;
 
-		if (&path.getObject() != &mCurveModel->curve().sourceCurve())
+		if (path.getObject() != &mCurveModel->curve().sourceCurve())
 			return;
 
 		mListenForCurveChanges = false;

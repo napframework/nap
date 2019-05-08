@@ -5,6 +5,7 @@
 
 #include <napqt/basewindow.h>
 #include <napqt/errordialog.h>
+#include <panels/pathbrowserpanel.h>
 
 #include "actions.h"
 #include "appcontext.h"
@@ -18,6 +19,8 @@
 #include "panels/resourcepanel.h"
 #include "panels/scenepanel.h"
 #include "panels/curvepanel.h"
+#include "panels/modulepanel.h"
+#include "panels/instanceproppanel.h"
 
 namespace napkin
 {
@@ -83,10 +86,21 @@ namespace napkin
 
 		/**
 		 * Called when the selection changes
-		 * @param objects The newly selected objects
+		 * @param paths The newly selected objects
 		 */
-		void onResourceSelectionChanged(QList<nap::rtti::Object*> objects);
+		void onResourceSelectionChanged(QList<PropertyPath> paths);
 
+		/**
+		 * Handled when the scenepanel's selection changes
+		 * @param paths The paths that have been selected
+		 */
+		void onSceneSelectionChanged(QList<PropertyPath> paths);
+
+		/**
+		 * Handled when a scene component selection was requested
+		 * @param path
+		 */
+		void onSceneComponentSelectionRequested(nap::RootEntity* rootEntity, const QString& path);
 		/**
 		 * Receive messages from the logger
 		 * @param msg The log message being emitted
@@ -116,8 +130,11 @@ namespace napkin
 
 		ResourcePanel mResourcePanel;
 		HierarchyPanel mHierarchyPanel;
+//		PathBrowserPanel mPathBrowser;
 		InspectorPanel mInspectorPanel;
 		HistoryPanel mHistoryPanel;
+		ModulePanel mModulePanel;
+		InstancePropPanel mInstPropPanel;
 		LogPanel mLogPanel;
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;

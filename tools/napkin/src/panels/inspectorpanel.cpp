@@ -14,41 +14,43 @@
 #include "naputils.h"
 
 using namespace nap::rtti;
+using namespace napkin;
 
-void napkin::InspectorModel::setObject(Object* object)
+void InspectorModel::setPath(const PropertyPath& path)
 {
-	mObject = object;
-
+	mPath = path;
 	rebuild();
 }
 
-
-void napkin::InspectorModel::rebuild()
+void InspectorModel::removeItems()
 {
 	while (rowCount() > 0)
 		removeRow(0);
-
-	if (mObject != nullptr)
-		populateItems();
 }
 
-napkin::InspectorModel::InspectorModel() : QStandardItemModel()
+void InspectorModel::rebuild()
+{
+	removeItems();
+	populateItems();
+}
+
+InspectorModel::InspectorModel() : QStandardItemModel()
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_VALUE, TXT_LABEL_TYPE});
 }
 
-Qt::DropActions napkin::InspectorModel::supportedDragActions() const
+Qt::DropActions InspectorModel::supportedDragActions() const
 {
 	return Qt::MoveAction;
 }
 
-Qt::DropActions napkin::InspectorModel::supportedDropActions() const
+Qt::DropActions InspectorModel::supportedDropActions() const
 {
 	return Qt::MoveAction;
 }
 
 
-napkin::InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
+InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 {
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);
@@ -63,6 +65,13 @@ napkin::InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 	mHeaderLayout.addWidget(&mSubTitle);
 	mLayout.addLayout(&mHeaderLayout);
 
+	mPathLabel.setText("Path:");
+	mSubHeaderLayout.addWidget(&mPathLabel);
+	mPathField.setReadOnly(true);
+	mSubHeaderLayout.addWidget(&mPathField);
+
+	mLayout.addLayout(&mSubHeaderLayout);
+
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
 	mTreeView.getTreeView().setColumnWidth(0, 250);
@@ -70,7 +79,7 @@ napkin::InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 	mTreeView.getTreeView().setItemDelegateForColumn(1, &mWidgetDelegate);
 	mTreeView.getTreeView().setDragEnabled(true);
 
-	mTreeView.setMenuHook(std::bind(&napkin::InspectorPanel::onItemContextMenu, this, std::placeholders::_1));
+	mTreeView.setMenuHook(std::bind(&InspectorPanel::onItemContextMenu, this, std::placeholders::_1));
 
 	// TODO: Move this back to the model and let it update its state whenever properties change
 	connect(&AppContext::get(), &AppContext::propertyValueChanged,
@@ -81,7 +90,7 @@ napkin::InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 
 }
 
-void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
+void InspectorPanel::onItemContextMenu(QMenu& menu)
 {
 	QStandardItem* item = mTreeView.getSelectedItem();
 	if (item == nullptr)
@@ -106,8 +115,9 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 	auto path_item = dynamic_cast<PropertyPathItem*>(item);
 	if (path_item != nullptr)
 	{
-		const auto& type = path_item->getPath().getType();
-		const auto& prop = path_item->getPath().getProperty();
+		auto& path = path_item->getPath();
+		const auto& type = path.getType();
+		const auto& prop = path.getProperty();
 		if (type.is_derived_from<std::string>() && nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::FileLink))
 		{
 			bool ok;
@@ -118,12 +128,20 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 				{
 					nap::qt::revealInFileBrowser(QString::fromStdString(filename));
 				});
-                menu.addAction("Open in external editor" , [filename]()
-                {
+				menu.addAction("Open in external editor", [filename]()
+				{
 					nap::qt::openInExternalEditor(QString::fromStdString(filename));
-                });
+				});
 			}
 
+		}
+
+		if (path.isInstanceProperty() && path.isOverridden())
+		{
+			menu.addAction("Remove override", [path]() {
+				PropertyPath p = path;
+				p.removeOverride();
+			});
 		}
 	}
 
@@ -151,8 +169,8 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
 			menu.addAction("Add...", [this, array_path]()
 			{
-				nap::rtti::Object* selected_object = napkin::showObjectSelector(this,
-																					 array_path.getArrayElementType());
+				auto objects = AppContext::get().getDocument()->getObjects(array_path.getArrayElementType());
+				nap::rtti::Object* selected_object = showObjectSelector(this, objects);
 				if (selected_object != nullptr)
 					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 			});
@@ -166,7 +184,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 
 				TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
 
-				rttr::type elementType = napkin::showTypeSelector(this, predicate);
+				rttr::type elementType = showTypeSelector(this, predicate);
 
 				if (!elementType.empty())
 					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
@@ -185,42 +203,53 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 	}
 }
 
-void napkin::InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
+void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
 	rebuild();
 }
 
-
-void napkin::InspectorPanel::setObject(Object* object)
+void InspectorPanel::setPath(const PropertyPath& path)
 {
-	if (object)
+	if (path.isValid())
 	{
-		mTitle.setText(QString::fromStdString(object->mID));
-		mSubTitle.setText(QString::fromStdString(object->get_type().get_name().data()));
+		mTitle.setText(QString::fromStdString(path.getName()));
+		mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
+
+		auto p = path.toString();
+		if (p.at(0) == '.')
+			p = path.getRootEntity()->mEntity->mID + p.substr(1, p.size()-1);
+
 	}
 	else
 	{
+//		mPathField.setText("");
 		mTitle.setText("");
 		mSubTitle.setText("");
 	}
+	mPathField.setText(QString::fromStdString(path.toString()));
 
-	mModel.setObject(object);
+	mModel.setPath(path);
 	mTreeView.getTreeView().expandAll();
 }
 
+void InspectorPanel::clear()
+{
+	mModel.removeItems();
+	mPathField.setText("");
+	mTitle.setText("");
+	mSubTitle.setText("");
+}
 
-void napkin::InspectorPanel::rebuild()
+void InspectorPanel::rebuild()
 {
 	mModel.rebuild();
 	mTreeView.getTreeView().expandAll();
 }
 
-void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
+void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
-	QList<nap::rtti::Object*> objects = {&prop.getObject()};
+	QList<nap::rtti::Object*> objects = {prop.getObject()};
 	AppContext::get().selectionChanged(objects);
-
-
 
 	auto pathItem = nap::qt::findItemInModel(mModel, [prop](QStandardItem* item)
 	{
@@ -233,38 +262,24 @@ void napkin::InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop
 	mTreeView.selectAndReveal(pathItem);
 }
 
-bool napkin::InspectorModel::isPropertyIgnored(const napkin::PropertyPath& prop) const
+bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const
 {
-	if (prop.getName() == nap::rtti::sIDPropertyName)
-		return true;
-	return false;
+	return prop.getName() == nap::rtti::sIDPropertyName;
 }
 
-void napkin::InspectorModel::populateItems()
+void InspectorModel::populateItems()
 {
-	for (auto prop : mObject->get_type().get_properties())
+	if (dynamic_cast<nap::Entity*>(mPath.getObject()))
+		return;
+
+	for (const auto& propPath : mPath.getChildren())
 	{
-		if (!prop.is_valid() || prop.is_static() || prop.get_name() == PROP_CHILDREN ||
-			prop.get_name() == PROP_COMPONENTS)
-			continue;
-
-		std::string name = prop.get_name().data();
-		QString qName = QString::fromStdString(name);
-
-		nap::rtti::Path path;
-		path.pushAttribute(name);
-
-		auto value = prop.get_value(mObject);
-		auto wrappedType = value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
-
-		PropertyPath propPath(*mObject, path);
-
 		if (!isPropertyIgnored(propPath))
-			appendRow(createPropertyItemRow(wrappedType, qName, propPath, prop, value));
+			appendRow(createPropertyItemRow(propPath));
 	}
 }
 
-QVariant napkin::InspectorModel::data(const QModelIndex& index, int role) const
+QVariant InspectorModel::data(const QModelIndex& index, int role) const
 {
 	if (role == Qt::UserRole)
 	{
@@ -274,20 +289,36 @@ QVariant napkin::InspectorModel::data(const QModelIndex& index, int role) const
 			return QVariant::fromValue(valueItem->getPath());
 		}
 	}
+	else if (role == Qt::BackgroundRole)
+	{
+		if (auto valueItem = dynamic_cast<PropertyPathItem*>(itemFromIndex(index)))
+		{
+			bool isValueItem = dynamic_cast<PointerValueItem*>(valueItem) ||
+							   dynamic_cast<PropertyValueItem*>(valueItem);
+			if (isValueItem && valueItem->getPath().isInstanceProperty())
+			{
+				auto& themeManager = AppContext::get().getThemeManager();
+				if (valueItem->getPath().isOverridden())
+					return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_overriddenInstanceProperty));
+
+				return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_instanceProperty));
+			}
+		}
+	}
 	return QStandardItemModel::data(index, role);
 }
 
-bool napkin::InspectorModel::setData(const QModelIndex& index, const QVariant& value, int role)
+bool InspectorModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	return QStandardItemModel::setData(index, value, role);
 }
 
-nap::rtti::Object* napkin::InspectorModel::getObject()
+nap::rtti::Object* InspectorModel::getObject()
 {
-	return mObject;
+	return mPath.getObject();
 }
 
-Qt::ItemFlags napkin::InspectorModel::flags(const QModelIndex& index) const
+Qt::ItemFlags InspectorModel::flags(const QModelIndex& index) const
 {
 	auto flags = QStandardItemModel::flags(index);
 
@@ -316,7 +347,7 @@ Qt::ItemFlags napkin::InspectorModel::flags(const QModelIndex& index) const
 	return flags;
 }
 
-QMimeData* napkin::InspectorModel::mimeData(const QModelIndexList& indexes) const
+QMimeData* InspectorModel::mimeData(const QModelIndexList& indexes) const
 {
 	if (indexes.empty())
 		return nullptr;
@@ -341,7 +372,7 @@ QMimeData* napkin::InspectorModel::mimeData(const QModelIndexList& indexes) cons
 	return mime_data;
 }
 
-QStringList napkin::InspectorModel::mimeTypes() const
+QStringList InspectorModel::mimeTypes() const
 {
 	QStringList types;
 	types << sNapkinMimeData;

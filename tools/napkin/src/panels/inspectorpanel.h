@@ -32,10 +32,10 @@ namespace napkin
 		InspectorModel();
 
 		/**
-		 * Set the
-		 * @param object
+		 * Set the path to edit
+		 * @param path The object or property to edit
 		 */
-		void setObject(nap::rtti::Object* object);
+		void setPath(const PropertyPath& path);
 
 		/**
 		 * @return The object currently displayed/edited by this model
@@ -61,6 +61,11 @@ namespace napkin
 		 * Override, specifies which kinds of data will be provided to drag operations
 		 */
 		QStringList mimeTypes() const override;
+
+		/**
+		 * Clear the model of its items. Unlike clear(), it leaves the headers etc.
+		 */
+		void removeItems();
 
 		/**
 		 * Rebuild the model
@@ -94,7 +99,7 @@ namespace napkin
 		 */
 		void populateItems();
 
-		nap::rtti::Object* mObject = nullptr; // The object currently used by this model
+		PropertyPath mPath; // the path currently being edited by the property editor
 	};
 
 	/**
@@ -110,10 +115,15 @@ namespace napkin
 		InspectorPanel();
 
 		/**
-		 * Show this object in the inspector.
+		 * Show this path in the inspector.
 		 * @param object The object shown in the inspector.
 		 */
-		void setObject(nap::rtti::Object* object);
+		void setPath(const PropertyPath& path);
+
+		/**
+		 * Clear out the properties from this panel
+		 */
+		void clear();
 
 	private:
 		/**
@@ -138,13 +148,16 @@ namespace napkin
 		void rebuild();
 
 	private:
-		InspectorModel mModel;					   // The model for the view
-		nap::qt::FilterTreeView mTreeView;	       // A tree view
-		QVBoxLayout mLayout;					   // The main layout
-		PropertyValueItemDelegate mWidgetDelegate; // Display a different editor based on the property type
+		InspectorModel mModel;						// The model for the view
+		nap::qt::FilterTreeView mTreeView;			// A tree view
+		QVBoxLayout mLayout;						// The main layout
+		PropertyValueItemDelegate mWidgetDelegate;	// Display a different editor based on the property type
 
-		QHBoxLayout mHeaderLayout;				   // Layout for top part (includes title and subtitle)
-		QLabel mTitle;							   // Title label
-		QLabel mSubTitle;                          // Subtitle label
+		QHBoxLayout mHeaderLayout;					// Layout for top part (includes title and subtitle)
+		QHBoxLayout mSubHeaderLayout;				// Just below the header
+		QLabel mTitle;								// Title label
+		QLabel mSubTitle;							// Subtitle label
+		QLabel mPathLabel;							// label before path
+		QLineEdit mPathField;						// Display path to object
 	};
 };
