@@ -127,10 +127,7 @@ QVariant ObjectItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole && isPointer())
 	{
-//		auto bgcol = QStandardItem::data(Qt::Window).value<QColor>();
-		auto bgcol = Qt::white;
-		auto fgcol = QStandardItem::data(role).value<QColor>();
-		return QVariant::fromValue<QColor>(nap::qt::lerpCol(bgcol, fgcol, 0.5));
+		return AppContext::get().getThemeManager().getColor(sThemeCol_dimmedItem);
 	}
 	return QStandardItem::data(role);
 }
