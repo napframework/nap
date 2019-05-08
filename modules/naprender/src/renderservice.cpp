@@ -159,11 +159,12 @@ namespace nap
 		// Get all render-able components
 		// Only gather renderable components that can be rendered using the given caera
 		std::vector<nap::RenderableComponentInstance*> render_comps;
+		std::vector<nap::RenderableComponentInstance*> entity_render_comps;
 		for (Scene* scene : mSceneService->getScenes())
 		{
 			for (EntityInstance* entity : scene->getEntities())
 			{
-				std::vector<nap::RenderableComponentInstance*> entity_render_comps;
+				entity_render_comps.clear();
 				entity->getComponentsOfType<nap::RenderableComponentInstance>(entity_render_comps);
 				for (const auto& comp : entity_render_comps) 
 				{
