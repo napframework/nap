@@ -69,6 +69,8 @@ Document* AppContext::newDocument()
 
 Document* AppContext::loadDocument(const QString& filename)
 {
+	mCurrentFilename = filename;
+
 	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
 
 	addRecentlyOpenedFile(filename);
@@ -83,6 +85,11 @@ Document* AppContext::loadDocument(const QString& filename)
 	}
 
 	return loadDocumentFromString(buffer, filename);
+}
+
+void AppContext::reloadDocument()
+{
+	loadDocument(mCurrentFilename);
 }
 
 Document* AppContext::loadDocumentFromString(const std::string& data, const QString& filename)
@@ -113,22 +120,22 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 }
 
 
-void AppContext::saveDocument()
+bool AppContext::saveDocument()
 {
 	if (getDocument()->getCurrentFilename().isEmpty())
 	{
 		nap::Logger::fatal("Cannot save file, no filename has been set.");
-		return;
+		return false;
 	}
-	saveDocumentAs(getDocument()->getCurrentFilename());
+	return saveDocumentAs(getDocument()->getCurrentFilename());
 }
 
-void AppContext::saveDocumentAs(const QString& filename)
+bool AppContext::saveDocumentAs(const QString& filename)
 {
 
 	std::string serialized_document = documentToString();
 	if (serialized_document.empty())
-		return;
+		return false;
 
 	std::ofstream out(filename.toStdString());
 	out << serialized_document;
@@ -143,13 +150,19 @@ void AppContext::saveDocumentAs(const QString& filename)
 	documentSaved(filename);
 	getUndoStack().setClean();
 	documentChanged(mDocument.get());
+
+	return true;
 }
 
 std::string AppContext::documentToString() const
 {
 	ObjectList objects;
 	for (auto& ob : getDocument()->getObjects())
+	{
+		if (ob->get_type().is_derived_from<nap::InstancePropertyValue>())
+			continue;
 		objects.emplace_back(ob.get());
+	}
 
 	JSONWriter writer;
 	ErrorState err;
@@ -209,19 +222,37 @@ void AppContext::restoreUI()
 	});
 }
 
-void AppContext::connectDocumentSignals()
+void AppContext::connectDocumentSignals(bool enable)
 {
-	auto doc = getDocument();
+    
+	auto doc = mDocument.get();
+	if (!doc) 
+        return;
 
-	connect(doc, &Document::entityAdded, this, &AppContext::entityAdded);
-	connect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
-	connect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
-	connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
-	connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
-	connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
-	connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
-	connect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
-	connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
+    if (enable)
+	{
+		connect(doc, &Document::entityAdded, this, &AppContext::entityAdded);
+		connect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
+		connect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
+		connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
+		connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
+		connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
+		connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
+		connect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
+		connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
+	}
+	else
+	{
+		disconnect(doc, &Document::entityAdded, this, &AppContext::entityAdded);
+		disconnect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
+		disconnect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
+		disconnect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
+		disconnect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
+		disconnect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
+		disconnect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
+		disconnect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
+		disconnect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
+	}
 }
 
 QMainWindow* AppContext::getMainWindow() const
@@ -255,7 +286,7 @@ void AppContext::handleURI(const QString& uri)
 		if (match.hasMatch())
 		{
 			auto proppath = match.captured(2);
-			PropertyPath path(*obj, proppath.toStdString());
+			PropertyPath path(*obj, nap::rtti::Path::fromString(proppath.toStdString()));
 			propertySelectionChanged(path);
 		}
 		return;
@@ -279,6 +310,7 @@ nap::Core& AppContext::getCore()
 			nap::Logger::fatal("Failed to initialize engine");
 		}
 		mCoreInitialized = true;
+		coreInitialized();
 	}
 	return mCore;
 }

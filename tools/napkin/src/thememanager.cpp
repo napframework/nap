@@ -50,8 +50,7 @@ bool Theme::loadTheme()
 		return false;
 	}
 
-	// Read properties
-
+	// get stylesheet
 	mName = QString::fromStdString(doc["name"].GetString());
 
 	if (doc.HasMember("stylesheet"))
@@ -60,13 +59,37 @@ bool Theme::loadTheme()
 		mStylesheetFilename = QFileInfo(mFilename).absolutePath() + "/" + doc["stylesheet"].GetString();
 	}
 
+	// load log colors
 	mLogColors.clear();
-	auto logColors = doc["logColors"].GetObject();
+	auto itLogCols = doc.FindMember("logColors");
+	if (itLogCols == doc.MemberEnd())
+	{
+		nap::Logger::error("Missing 'logColors' element in '%s'", mFilename.toStdString().c_str());
+		return false;
+	}
+	auto logColors = itLogCols->value.GetObject();
 	for (const auto logLevel : nap::Logger::getLevels())
 	{
-		std::string colname = logColors[logLevel->name().c_str()].GetString();
+		const auto& levelName = logLevel->name();
+		auto colname = logColors[levelName.c_str()].GetString();
 		QColor col(QString::fromStdString(colname));
 		mLogColors.insert(logLevel, col);
+	}
+
+	// load custom colors
+	mColors.clear();
+	auto itCols = doc.FindMember("colors");
+	if (itCols == doc.MemberEnd())
+	{
+		nap::Logger::error("Missing 'colors' element in '%s'", mFilename.toStdString().c_str());
+		return false;
+	}
+	auto colors = itCols->value.GetObject();
+	for (const auto& colpair : colors)
+	{
+		auto key = QString::fromStdString(colpair.name.GetString());
+		QColor col(QString::fromStdString(colpair.value.GetString()));
+		mColors.insert(key, col);
 	}
 
 	return true;
@@ -76,9 +99,19 @@ QColor Theme::getLogColor(const nap::LogLevel& lvl) const
 {
 	if (mLogColors.contains(&lvl))
 		return mLogColors[&lvl];
-	return QColor();
+
+	nap::Logger::error("Color for log level not found: %s", lvl.name().c_str());
+	return {};
 }
 
+QColor Theme::getColor(const QString& key) const
+{
+	if (mColors.contains(key))
+		return mColors[key];
+
+	nap::Logger::error("Color not found: %s", key.toStdString().c_str());
+	return {};
+}
 
 ThemeManager::ThemeManager()
 {
@@ -246,9 +279,15 @@ void ThemeManager::loadThemes()
 
 QColor ThemeManager::getLogColor(const nap::LogLevel& lvl) const
 {
-	if (mCurrentTheme == nullptr)
-		return {};
+	if (mCurrentTheme)
+		return mCurrentTheme->getLogColor(lvl);
+	return {};
+}
 
-	return mCurrentTheme->getLogColor(lvl);
+QColor ThemeManager::getColor(const QString& key) const
+{
+	if (mCurrentTheme)
+		return mCurrentTheme->getColor(key);
+	return {};
 }
 

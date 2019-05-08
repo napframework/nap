@@ -48,20 +48,20 @@ namespace nap
 		friend class ParameterService;
 
 		/**
-		 * Find a parameter in the current group by name
+		 * Find a parameter in the current group by id
 		 *
-		 * @param name The name of the parameter to find
+		 * @param name The unique id of the parameter to find
 		 * @return The parameter if found. Null otherwise.
 		 */
-		ResourcePtr<Parameter> findParameter(const std::string& name) const;
+		ResourcePtr<Parameter> findParameter(const std::string& id) const;
 
 		/**
-		 * Find a child ParameterGroup with the specified name
+		 * Find a child ParameterGroup with the specified id
 		 *
-		 * @param name The name of the group to find
+		 * @param name The unique id of the group to find
 		 * @return The group if found. Null otherwise.
 		 */
-		ResourcePtr<ParameterGroup> findChild(const std::string& name) const;
+		ResourcePtr<ParameterGroup> findChild(const std::string& id) const;
 
 	public:
 		std::vector<ResourcePtr<Parameter>>			mParameters;	///< Property: 'Parameters' the parameters defined in this group

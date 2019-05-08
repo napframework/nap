@@ -39,31 +39,4 @@ namespace napkin
 
 	static const std::string NAP_URI_PREFIX	 = "nap";
 
-    /**
-     * Needed for Qt style QStandardItem casting
-     */
-	enum StandardItemTypeID
-	{
-        // Generic items
-        EmptyID             = QStandardItem::UserType + 0,
-        InvalidID           = QStandardItem::UserType + 1,
-
-		// Object items
-		GroupItemID		    = QStandardItem::UserType + 20,
-		ObjectItemID	    = QStandardItem::UserType + 21,
-		EntityItemID	    = QStandardItem::UserType + 22,
-		ComponentItemID	    = QStandardItem::UserType + 23,
-        SceneItemID         = QStandardItem::UserType + 24,
-        EntityInstanceID    = QStandardItem::UserType + 25,
-
-        // RTTIPath items
-		RTTIPathID		    = QStandardItem::UserType + 50,
-		PropertyID		    = QStandardItem::UserType + 51,
-		PropertyValueID	    = QStandardItem::UserType + 52,
-		EmbeddedPointerID   = QStandardItem::UserType + 53,
-		CompoundPropertyID  = QStandardItem::UserType + 54,
-		ArrayPropertyID	    = QStandardItem::UserType + 55,
-		PointerID		    = QStandardItem::UserType + 56,
-		PointerValueID	    = QStandardItem::UserType + 57,
-	};
 }

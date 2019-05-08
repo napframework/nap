@@ -1,5 +1,5 @@
-#include "python.h"
-#include "windowresource.h"
+// Local Includes
+#include "window.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Window)
 RTTI_END_CLASS

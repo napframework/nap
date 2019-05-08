@@ -13,7 +13,7 @@ TEST_CASE("Component to Component pointer", "napkin-pointers")
 
 	auto doc = ctx.newDocument();
 
-	nap::Entity& entity = doc->addEntity();
+	nap::Entity& entity = doc->addEntity(nullptr);
 	doc->setObjectName(entity, ENTITY_NAME);
 	REQUIRE(entity.mID == ENTITY_NAME);
 
@@ -27,7 +27,7 @@ TEST_CASE("Component to Component pointer", "napkin-pointers")
 	REQUIRE(comp != nullptr);
 	REQUIRE(!compB->mID.empty());
 
-	napkin::PropertyPath pointerPath(*compB, "CompPointer");
+	napkin::PropertyPath pointerPath(compB->mID, "CompPointer");
 	REQUIRE(pointerPath.isValid());
 
 	pointerPath.setPointee(comp);
@@ -36,7 +36,7 @@ TEST_CASE("Component to Component pointer", "napkin-pointers")
 	REQUIRE(pointee == comp);
 
 	serializedData = ctx.documentToString();
-	nap::Logger::info(serializedData);
+//	nap::Logger::info(serializedData);
 	REQUIRE(!serializedData.empty());
 
 	auto loadedDoc = ctx.loadDocumentFromString(serializedData);
