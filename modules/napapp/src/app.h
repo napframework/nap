@@ -5,7 +5,7 @@
 #include <inputevent.h>
 #include <utility/errorstate.h>
 #include <nap/core.h>
-#include <nap/windowevent.h>
+#include <windowevent.h>
 
 namespace nap
 {

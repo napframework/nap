@@ -1,7 +1,9 @@
 // local includes
-#include <inputrouter.h>
 #include "inputevent.h"
 #include "inputcomponent.h"
+
+// External includes
+#include <inputrouter.h>
 #include <entity.h>
 
 RTTI_BEGIN_CLASS(nap::DefaultInputRouterComponent)

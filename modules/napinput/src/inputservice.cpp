@@ -2,8 +2,8 @@
 #include "inputservice.h"
 #include "inputevent.h"
 #include "inputrouter.h"
+#include "window.h"
 
-#include <nap/windowresource.h>
 #include <nap/resource.h>
 #include <nap/logger.h>
 
