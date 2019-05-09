@@ -7,6 +7,7 @@
 #include <appcontext.h>
 #include <stack>
 #include <cctype>
+#include <mathutils.h>
 
 using namespace nap::rtti;
 using namespace napkin;
@@ -291,7 +292,8 @@ void PropertyPath::setValue(rttr::variant value)
 					auto propValue = val.get_value<nap::PointerInstancePropertyValue*>();
 					if (!propValue)
 					{
-						std::string name("instanceProp_" + std::string(value.get_type().get_name().data()));
+						std::string name("instanceProp_" + std::string(value.get_type().get_name().data())
+										 + "_" + nap::math::generateUUID());
 						propValue = new nap::PointerInstancePropertyValue();
 						propValue->mID = name;
 					}
@@ -310,7 +312,8 @@ void PropertyPath::setValue(rttr::variant value)
 			targetAttr = &getOrCreateTargetAttribute();
 			if (isPointer())
 			{
-				std::string name("instanceProp_" + std::string(value.get_type().get_name().data()));
+				std::string name("instanceProp_" + std::string(value.get_type().get_name().data())
+								 + "_" + nap::math::generateUUID());
 				auto propValue = new nap::PointerInstancePropertyValue();
 				propValue->mID = name;
 				propValue->mValue = value.get_value<nap::rtti::Object*>();
