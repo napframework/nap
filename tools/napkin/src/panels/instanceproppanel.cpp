@@ -28,7 +28,8 @@ QVariant InstPropAttribItem::data(int role) const
 		QString val;
 		if (propPath.isPointer())
 		{
-			val = QString::fromStdString(propPath.getPointee()->mID);
+			auto pointee = propPath.getPointee();
+			val = pointee ? QString::fromStdString(pointee->mID) : "NULL";
 		}
 		else
 		{
