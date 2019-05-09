@@ -45,7 +45,7 @@ bool Theme::loadTheme()
 	rapidjson::ParseResult ok = doc.Parse(data.c_str());
 	if (!ok)
 	{
-		nap::Logger::error("JSON Parse error in %s: %s, offset: %s", mFilename.toStdString().c_str(),
+		nap::Logger::error("JSON Parse error in %s: %s, offset: %d", mFilename.toStdString().c_str(),
 						   rapidjson::GetParseError_En(ok.Code()), ok.Offset());
 		return false;
 	}
@@ -135,7 +135,14 @@ void ThemeManager::setTheme(const Theme* theme)
 
 void ThemeManager::setTheme(const QString& name)
 {
-	nap::Logger::fine("Setting theme: %s", name.toStdString().c_str());
+	if (name.isEmpty())
+	{
+		nap::Logger::error("No theme set");
+	}
+	else
+	{
+		nap::Logger::fine("Setting theme: %s", name.toStdString().c_str());
+	}
 	setTheme(getTheme(name));
 }
 
