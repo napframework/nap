@@ -44,6 +44,7 @@ uniform vec3		maskColor;
 // Unshared uniforms		
 uniform float 		specularIntensity;		
 uniform vec3  		specularColor;
+uniform float       specularColorBlend;
 uniform float 		shininess;
 uniform float		diffuseSpecularInfluence;
 uniform float		textureTimeU;
@@ -115,7 +116,8 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 
 	// Compute specularf
     float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-alt_normal, normal)), surfaceToCamera)), shininess);
-    vec3 specular = specularCoefficient * specularColor * lightIntensity * spec_intensity;
+    vec3 mix_spec_color = mix(specularColor, color, specularColorBlend);
+    vec3 specular = specularCoefficient * mix_spec_color * lightIntensity * spec_intensity;
 
     // Compensate using tip
     specular = specular * pow((1.0-passTip),1.0) * mix(1.0, pow(diffuseCoefficient,0.75), diffuseSpecularInfluence);

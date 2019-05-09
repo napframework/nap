@@ -41,7 +41,8 @@ uniform float		videoMaskValue;
 uniform vec3		maskColor;
 
 // Unshared uniforms					
-uniform float 		specularIntensity;				
+uniform float 		specularIntensity;			
+uniform float       specularColorBlend;	
 uniform vec3  		specularColor;
 uniform float 		shininess; 
 
@@ -94,8 +95,9 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 	float spec_intensity = specularIntensity;
 
 	// Compute specularf
+	vec3 mix_spec_color = mix(specularColor, color, specularColorBlend);
     float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-surfaceToLight, ws_normal)), surfaceToCamera)), shininess);
-    vec3 specular = specularCoefficient * specularColor * lightIntensity * spec_intensity;
+    vec3 specular = specularCoefficient * mix_spec_color * lightIntensity * spec_intensity;
 
 	//linear color (color before gamma correction)
     return diffuse + specular + ambient;

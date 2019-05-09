@@ -73,6 +73,11 @@ namespace nap
 		void disable() { mEnabled = false; }
 
 		/**
+		 * @return the current position the camera controlled by the orbit controller looks at. 
+		 */
+		const glm::vec3 getLookAtPos() const				{ return mLookAtPos; }
+
+		/**
 		 * @return The perspective camera component that we are controlling.
 		 */
 		CameraComponentInstance& getCameraComponent();

@@ -105,6 +105,7 @@ RTTI_BEGIN_STRUCT(glm::ivec3)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(glm::quat)
+	RTTI_VALUE_CONSTRUCTOR(float, float, float, float)
 	RTTI_PROPERTY("x", &glm::quat::x, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("y", &glm::quat::y, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("z", &glm::quat::z, nap::rtti::EPropertyMetaData::Default)

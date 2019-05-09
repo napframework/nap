@@ -31,6 +31,7 @@ RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
 	RTTI_PROPERTY("AmbientIntensity",				&nap::UpdateMaterialComponent::mAmbientIntensity,				nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("DiffuseIntensity",				&nap::UpdateMaterialComponent::mDiffuseIntensity,				nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("NormalSpecColor",				&nap::UpdateMaterialComponent::mNormalSpecColor,				nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("NormalSpecColorBlend",			&nap::UpdateMaterialComponent::mNormalSpecColorBlend,			nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("NormalSpecIntens",				&nap::UpdateMaterialComponent::mNormalSpecIntens,				nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("NormalSpecShine",				&nap::UpdateMaterialComponent::mNormalSpecShine,				nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("NormalScale",					&nap::UpdateMaterialComponent::mNormalScale,					nap::rtti::EPropertyMetaData::Required);
@@ -38,6 +39,7 @@ RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
 	RTTI_PROPERTY("DiffuseSpecInfl",				&nap::UpdateMaterialComponent::mDiffuseSpecInfl,				nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("NormalRotValue",					&nap::UpdateMaterialComponent::mNormalRotValue,					nap::rtti::EPropertyMetaData::Required);	
 	RTTI_PROPERTY("ScanSpecColor",					&nap::UpdateMaterialComponent::mScanSpecColor,					nap::rtti::EPropertyMetaData::Required);
+	RTTI_PROPERTY("ScanSpecColorBlend",				&nap::UpdateMaterialComponent::mScanSpecColorBlend,				nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("ScanSpecIntens",					&nap::UpdateMaterialComponent::mScanSpecIntens,					nap::rtti::EPropertyMetaData::Required);	
 	RTTI_PROPERTY("ScanSpecShine",					&nap::UpdateMaterialComponent::mScanSpecShine,					nap::rtti::EPropertyMetaData::Required);
 	RTTI_PROPERTY("ScanRotValue",					&nap::UpdateMaterialComponent::mScanRotValue,					nap::rtti::EPropertyMetaData::Required);	
@@ -69,6 +71,7 @@ static const std::string sLightIntensity	= "lightIntensity";
 static const std::string sAmbientIntensity	= "ambientIntensity";
 static const std::string sSpecularIntensity = "specularIntensity";
 static const std::string sSpecularColor		= "specularColor";
+static const std::string sSpecularColorBlend = "specularColorBlend";
 static const std::string sShininess			= "shininess";
 static const std::string sTime				= "time";
 static const std::string sWindSpeed			= "noiseSpeed";
@@ -231,7 +234,11 @@ namespace nap
 		// Specular Color
 		sm.getOrCreateUniform<UniformVec3>(sSpecularColor).setValue(mUpdateMaterialResource->mScanSpecColor->mValue.toVec3());
 		nm.getOrCreateUniform<UniformVec3>(sSpecularColor).setValue(mUpdateMaterialResource->mNormalSpecColor->mValue.toVec3());
-			
+		
+		// Specular Color Blend (Hair)
+		nm.getOrCreateUniform<UniformFloat>(sSpecularColorBlend).setValue(mUpdateMaterialResource->mNormalSpecColorBlend->mValue);
+		sm.getOrCreateUniform<UniformFloat>(sSpecularColorBlend).setValue(mUpdateMaterialResource->mScanSpecColorBlend->mValue);
+
 		// Shininess Intensity
 		sm.getOrCreateUniform<UniformFloat>(sShininess).setValue(mUpdateMaterialResource->mScanSpecShine->mValue);
 		nm.getOrCreateUniform<UniformFloat>(sShininess).setValue(mUpdateMaterialResource->mNormalSpecShine->mValue);

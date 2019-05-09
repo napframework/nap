@@ -55,6 +55,7 @@ namespace nap
 		ResourcePtr<ParameterFloat>				mAmbientIntensity;
 		ResourcePtr<ParameterFloat>				mDiffuseIntensity;
 		ResourcePtr<ParameterRGBColorFloat>		mNormalSpecColor;
+		ResourcePtr<ParameterFloat>				mNormalSpecColorBlend;
 		ResourcePtr<ParameterFloat>				mNormalSpecIntens;
 		ResourcePtr<ParameterFloat>				mNormalSpecShine;
 		ResourcePtr<ParameterFloat>				mNormalScale;
@@ -62,6 +63,7 @@ namespace nap
 		ResourcePtr<ParameterFloat>				mDiffuseSpecInfl;
 		ResourcePtr<ParameterFloat>				mNormalRotValue;
 		ResourcePtr<ParameterRGBColorFloat>		mScanSpecColor;
+		ResourcePtr<ParameterFloat>				mScanSpecColorBlend;
 		ResourcePtr<ParameterFloat>				mScanSpecIntens;
 		ResourcePtr<ParameterFloat>				mScanSpecShine;
 		ResourcePtr<ParameterFloat>				mScanRotValue;
@@ -69,7 +71,6 @@ namespace nap
 		ResourcePtr<ParameterFloat>				mWindScale;
 		ResourcePtr<ParameterFloat>				mWindFreq;
 		ResourcePtr<ParameterFloat>				mWindRandom;
-
 		ResourcePtr<ParameterFloat>				mFogMin;
 		ResourcePtr<ParameterFloat>				mFogMax;
 		ResourcePtr<ParameterFloat>				mFogPower;

@@ -4,7 +4,6 @@
 #include "selectmeshcomponent.h"
 #include "selectimagecomponent.h"
 #include "updatematerialcomponent.h"
-#include "controlselectcomponent.h"
 #include "rotatecomponent.h"
 
 // External Includes
@@ -12,8 +11,8 @@
 #include <imguiutils.h>
 #include <nap/core.h>
 #include <selectvideocomponent.h>
-#include "utility/fileutils.h"
-#include "parametergui.h"
+#include <utility/fileutils.h>
+#include <parametergui.h>
 
 namespace nap
 {
@@ -37,17 +36,8 @@ namespace nap
 
 	void AtmosGui::init()
 	{
-		// Store speed values
- 		FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
- 		mCamMaxMovSpeed = fps_comp.getMovementSpeed();
- 		mCamMaxRotSpeed = fps_comp.getRotationSpeed();
-
 		mParameterGUI = std::make_unique<ParameterGUI>(mParameterService);
-
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
-		mCameraMovSpeed			= resourceManager->findObject<ParameterFloat>("Camera Movement Speed");
-		mCameraRotSpeed			= resourceManager->findObject<ParameterFloat>("Camera Rotation Speed");
-		mCameraFOV				= resourceManager->findObject<ParameterFloat>("Camera FOV");
 		mCameraControlMethod	= resourceManager->findObject<ParameterControlMethod>("Camera Mode");
 		mRotateSpeed			= resourceManager->findObject<ParameterFloat>("Rotation Speed");
 		mLinkFogToBackground	= resourceManager->findObject<ParameterBool>("Link Fog To Background");
@@ -56,32 +46,20 @@ namespace nap
 		mUseTransparency		= resourceManager->findObject<ParameterBool>("Use Transparency");
 		mRenderMode				= resourceManager->findObject<ParameterPolygonMode>("Render Mode");
 
-		mLinkFogToBackground->valueChanged.connect([this](bool) { UpdateFogColor(); });
-		mFogColor->valueChanged.connect([this](const RGBColorFloat&){ UpdateFogColor(); });
-		mBackgroundColor->valueChanged.connect([this](const RGBColorFloat&){ UpdateFogColor(); });
+		mLinkFogToBackground->valueChanged.connect([this](bool)				{ UpdateFogColor(); });
+		mFogColor->valueChanged.connect([this](const RGBColorFloat&)		{ UpdateFogColor(); });
+		mBackgroundColor->valueChanged.connect([this](const RGBColorFloat&)	{ UpdateFogColor(); });
 
-		mCameraMovSpeed->valueChanged.connect([this](float newValue) 
-		{
-			FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
-			fps_comp.setMovementSpeed(mCamMaxMovSpeed * newValue);
-		});
 
-		mCameraRotSpeed->valueChanged.connect([this](float newValue)
-		{
-			FirstPersonControllerInstance& fps_comp = mApp.mCameraEntity->getComponent<FirstPersonControllerInstance>();
-			fps_comp.setRotationSpeed(mCamMaxRotSpeed * newValue);
-		});
+		mLedOn = mApp.mResourceManager->findObject<nap::ImageFromFile>("LedOnImage");
+		assert(mLedOn != nullptr);
+		mLedOff = mApp.mResourceManager->findObject<nap::ImageFromFile>("LedOffImage");
+		assert(mLedOff != nullptr);
 
 		mRotateSpeed->valueChanged.connect([this](float newValue)
 		{
 			RotateComponentInstance& rot_comp = mApp.mWorldEntity->getComponent<RotateComponentInstance>();
 			rot_comp.mProperties.mSpeed = newValue;
-		});
-
-		mCameraFOV->valueChanged.connect([this](float newValue)
-		{
-			nap::PerspCameraComponentInstance& cam_comp = mApp.mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
-			cam_comp.setFieldOfView(newValue);
 		});
 
 		mUseTransparency->valueChanged.connect([this](bool newValue)
@@ -99,17 +77,8 @@ namespace nap
 			}
 		});
 
-		mCameraControlMethod->valueChanged.connect([this](EControlMethod newValue)
-		{
-			nap::ControlSelectComponentInstance& control_comp = mApp.mCameraEntity->getComponent<ControlSelectComponentInstance>();
-			control_comp.selectControlMethod(newValue);
-		});
-
-		mCameraFOV->setValue(mApp.mCameraEntity->getComponent<nap::PerspCameraComponentInstance>().getFieldOfView());
-
 		const glm::vec4& clear_color = mApp.mRenderWindow->getBackbuffer().getClearColor();
 		mBackgroundColor->setValue(RGBColorFloat(clear_color.r, clear_color.g, clear_color.b));
-
 		UpdateFogColor();
 	}
 
@@ -171,6 +140,19 @@ namespace nap
 		ImGui::Text(mDateTime.toString().c_str());
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
+		if (ImGui::CollapsingHeader("Sensor Status"))
+		{
+			ImGui::Image(mApp.mRangeSensor->isOnline() ? *mLedOn : *mLedOff, { 16, 16 });
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("%s: %s", mApp.mRangeSensor->isOnline() ? "online" : "offline", mApp.mRangeSensor->mID.c_str()).c_str());
+			ImGui::Text(utility::stringFormat("value: %.2f", mApp.mRangeSensor->getValue()).c_str());
+
+			ImGui::Image(mApp.mProximitySensor->isOnline() ? *mLedOn : *mLedOff, { 16, 16 });
+			ImGui::SameLine();
+			ImGui::Text(utility::stringFormat("%s: %s", mApp.mRangeSensor->isOnline() ? "online" : "offline", mApp.mProximitySensor->mID.c_str()).c_str());
+			ImGui::Text(utility::stringFormat("value: %.2f", mApp.mProximitySensor->getValue()).c_str());
+		}
+		
 		if (ImGui::CollapsingHeader("Texture Preview"))
 		{
 			float col_width = ImGui::GetContentRegionAvailWidth() * mTexPreviewDisplaySize;
