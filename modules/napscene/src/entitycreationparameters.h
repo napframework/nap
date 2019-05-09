@@ -33,8 +33,6 @@ namespace nap
 		std::unique_ptr<Component>	mResource;		///< The cloned component resource
 	};
 	using ClonedComponentResourceList = std::vector<ClonedComponentResource>;
-	using ClonedComponentByEntityMap = std::unordered_map<const Entity*, ClonedComponentResourceList>;
-
 
 	/**
 	 * Structure used to hold data necessary to create new instances during init
