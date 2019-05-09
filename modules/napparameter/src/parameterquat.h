@@ -1,0 +1,16 @@
+#pragma once
+
+// Local Includes
+#include "parametersimple.h"
+
+// External Includes
+#include <glm/gtc/quaternion.hpp>
+
+namespace nap
+{
+	//////////////////////////////////////////////////////////////////////////
+	// Quaternion Parameter Type Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	using ParameterQuat = ParameterSimple<glm::quat>;
+}

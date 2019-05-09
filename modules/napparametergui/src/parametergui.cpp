@@ -8,6 +8,7 @@
 #include <parametersimple.h>
 #include <parameterenum.h>
 #include <parametercolor.h>
+#include <parameterquat.h>
 
 namespace nap
 {
@@ -176,6 +177,15 @@ namespace nap
 				if (ImGui::InputFloat3(vec3_parameter->getDisplayName().c_str(), &(value[0])))
 					vec3_parameter->setValue(value);
 			}
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterQuat), [](Parameter& parameter)
+		{
+			ParameterQuat* quat_parameter = rtti_cast<ParameterQuat>(&parameter);
+
+			glm::quat value = quat_parameter->mValue;
+			if (ImGui::InputFloat4(quat_parameter->getDisplayName().c_str(), &(value[0])))
+				quat_parameter->setValue(value);
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterIVec3), [](Parameter& parameter)
