@@ -130,7 +130,7 @@ namespace nap
 		std::unique_ptr<Entity>				mRootEntityResource;			///< Root entity resource, owned and created by this scene
 		EntityByIDMap						mEntityInstancesByID;			///< Holds all spawned entities
 		InstanceByIDMap						mInstancesByID;					///< Holds all spawned entities & components
-		ClonedComponentByEntityMap			mClonedComponentsByEntity;		///< All cloned components, stored by entity. This map owns the cloned resources.
+		ClonedComponentResourceList			mAllClonedComponents;			///< All cloned components for this entity
 	};
 
 	using SceneCreator = rtti::ObjectCreator<Scene, Core>;
