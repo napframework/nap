@@ -558,6 +558,7 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 
 	const TypeInfo element_type = array_view.get_rank_type(1);
 	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
+	nap::Logger::error("Cannot create instance of type '%s'", wrapped_type.get_name().data());
 	assert(wrapped_type.can_create_instance());
 
 	// HACK: In the case of a vector<string>, rttr::type::create() gives us a shared_ptr to a string,
