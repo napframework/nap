@@ -11,6 +11,7 @@
   "colors": {
     "componentWithOverrides": "#FDF",
     "instanceProperty": "#EEE",
-    "overriddenInstanceProperty": "#FBF"
+    "overriddenInstanceProperty": "#FBF",
+    "dimmedItem": "#888"
   }
 }
