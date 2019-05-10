@@ -12,5 +12,7 @@ napkin::HistoryPanel::HistoryPanel() : QWidget()
 
 void napkin::HistoryPanel::updateUndoStack()
 {
-	mUndoView.setStack(&AppContext::get().getUndoStack());
+//	auto doc = AppContext::get().getDocument();
+//	auto& undostack = doc->getUndoStack();
+//	mUndoView.setStack(&undostack);
 }
