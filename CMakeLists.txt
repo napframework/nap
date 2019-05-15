@@ -123,6 +123,8 @@ add_subdirectory(apps/aura)
 add_subdirectory(apps/aura/module)
 add_subdirectory(apps/emography)
 add_subdirectory(apps/emography/module)
+add_subdirectory(apps/flexblock)
+add_subdirectory(apps/flexblock/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
