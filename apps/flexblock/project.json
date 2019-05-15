@@ -1,0 +1,9 @@
+{
+    "title": "Atmos",
+    "version": "0.2.3",
+    "modules": [
+        "mod_flexblock",
+        "mod_napapp",
+		"mod_napparametergui"
+    ]
+}
