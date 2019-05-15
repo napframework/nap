@@ -1,6 +1,70 @@
 {
     "Objects": [
         {
+            "Type": "nap::BoxMesh",
+            "mID": "BoxMesh",
+            "Size": {
+                "x": 2.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BlockEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "BlockTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "BlockRenderMesh",
+                    "Mesh": "BoxMesh",
+                    "MaterialInstance": {
+                        "Material": "BlockMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Entity",
             "mID": "CameraEntity",
             "Components": [
@@ -11,7 +75,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 0.0
+                            "z": 10.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -54,8 +118,8 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "CameraOrbitController",
-                    "MovementSpeed": 0.5,
-                    "RotateSpeed": 0.004999999888241291,
+                    "MovementSpeed": 0.05,
+                    "RotateSpeed": 0.003999999888241291,
                     "PerspCameraComponent": "./PerspectiveCamera",
                     "LookAtPosition": {
                         "x": 0.0,
@@ -65,6 +129,83 @@
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "WorldEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "WorldTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "BlockEntity"
+            ]
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "BlockMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "inColor",
+                    "Value": {
+                        "x": 0.5,
+                        "y": 0.5,
+                        "z": 0.5
+                    }
+                }
+            ],
+            "Shader": "BlockShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normal"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "PlaneMaterial",
+            "Uniforms": [],
+            "Shader": "PlaneShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::RenderWindow",
@@ -89,8 +230,24 @@
                 {
                     "Entity": "CameraEntity",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "WorldEntity",
+                    "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "BlockShader",
+            "mVertShader": "shaders/block.vert",
+            "mFragShader": "shaders/block.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "PlaneShader",
+            "mVertShader": "shaders/plane.vert",
+            "mFragShader": "shaders/plane.frag"
         }
     ]
 }

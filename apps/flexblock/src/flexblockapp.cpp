@@ -9,6 +9,7 @@
 #include <mathutils.h>
 #include <scene.h>
 #include <perspcameracomponent.h>
+#include <transformcomponent.h>
 #include <inputrouter.h>
 #include <imgui/imgui.h>
 #include <imguiutils.h>
@@ -40,9 +41,11 @@ namespace nap
 		// Get the render window
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window0");
 
-		// Find the world and camera entities
+		// Find the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mCameraEntity = scene->findEntity("CameraEntity");
+		mWorldEntity = scene->findEntity("WorldEntity");
+		mBlockEntity = scene->findEntity("BlockEntity");
 
 		// Create gui
 		mGui = std::make_unique<FlexblockGui>(*this);
@@ -85,6 +88,13 @@ namespace nap
 
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+
+		// Update camera position
+		setCameraPosition();
+
+		// Get the perspective camera
+		PerspCameraComponentInstance& persp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_cam);
 
 		// Render gui to window
 		mGuiService->draw();
@@ -140,4 +150,17 @@ namespace nap
 		mGui.reset();
 		return 0;
 	}
+
+
+	void FlexblockApp::setCameraPosition()
+	{
+		// Get the perspective camera xform
+		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
+
+		// Set the camera position in the shaders
+		RenderableMeshComponentInstance& block_render_comp = mBlockEntity->getComponent<RenderableMeshComponentInstance>();
+		UniformVec3& cam_input = block_render_comp.getMaterialInstance().getOrCreateUniform<UniformVec3>("inCameraPosition");
+		cam_input.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
+	}
+
 }

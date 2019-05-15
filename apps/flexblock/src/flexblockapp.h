@@ -66,9 +66,18 @@ namespace nap
 
 		// Entities
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance> mBlockEntity = nullptr;				//< Pointer to the entity that holds the block
+		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the world
+
+		// Resources
 		ObjectPtr<RenderWindow>	mRenderWindow = nullptr;				//< Pointer to the render window
 
 		// Gui
-		std::unique_ptr<FlexblockGui>	mGui = nullptr;
+		std::unique_ptr<FlexblockGui> mGui = nullptr;
+
+		/**
+		 * Sets the camera position in the materials 
+		 */
+		void setCameraPosition();
 	};
 }
