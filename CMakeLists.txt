@@ -108,6 +108,7 @@ add_subdirectory(tools/napkin)
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
 add_subdirectory(test/audiotest)
+add_subdirectory(test/solarsystem)
 
 # app targets
 add_subdirectory(apps/kalvertoren)
@@ -122,7 +123,6 @@ add_subdirectory(apps/aura)
 add_subdirectory(apps/aura/module)
 add_subdirectory(apps/emography)
 add_subdirectory(apps/emography/module)
-add_subdirectory(apps/solarsystem)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
