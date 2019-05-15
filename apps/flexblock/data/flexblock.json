@@ -24,7 +24,7 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.0,
+                            "y": 1.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -73,9 +73,9 @@
                     "mID": "CameraTransform",
                     "Properties": {
                         "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 10.0
+                            "x": 4.0,
+                            "y": 6.0,
+                            "z": 6.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -118,13 +118,63 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "CameraOrbitController",
-                    "MovementSpeed": 0.05,
-                    "RotateSpeed": 0.003999999888241291,
+                    "MovementSpeed": 0.05000000074505806,
+                    "RotateSpeed": 0.003999999724328518,
                     "PerspCameraComponent": "./PerspectiveCamera",
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PlaneEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "PlaneTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 90.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "PlaneRenderMesh",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Material": "PlaneMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
                     }
                 }
             ],
@@ -158,7 +208,8 @@
                 }
             ],
             "Children": [
-                "BlockEntity"
+                "BlockEntity",
+                "PlaneEntity"
             ]
         },
         {
@@ -167,12 +218,12 @@
             "Uniforms": [
                 {
                     "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3",
+                    "mID": "UniformVec3BlockColor",
                     "Name": "inColor",
                     "Value": {
-                        "x": 0.5,
-                        "y": 0.5,
-                        "z": 0.5
+                        "x": 0.784,
+                        "y": 0.411,
+                        "z": 0.411
                     }
                 }
             ],
@@ -201,11 +252,53 @@
         {
             "Type": "nap::Material",
             "mID": "PlaneMaterial",
-            "Uniforms": [],
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3PlaneColor",
+                    "Name": "inColor",
+                    "Value": {
+                        "x": 0.321,
+                        "y": 0.329,
+                        "z": 0.415
+                    }
+                }
+            ],
             "Shader": "PlaneShader",
-            "VertexAttributeBindings": [],
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normal"
+                }
+            ],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "PlaneMesh",
+            "Size": {
+                "x": 10.0,
+                "y": 10.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Rows": 1,
+            "Columns": 1
         },
         {
             "Type": "nap::RenderWindow",

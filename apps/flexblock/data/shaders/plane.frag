@@ -1,46 +1,62 @@
 #version 330
 
-// vertex shader input  
+// vertex shader input
 in vec3 passUVs;						//< frag Uv's
-in vec3 passPosition;					//< frag world space position 
+in vec3 passNormal;						//< frag normal in object space
+in vec3 passPosition;					//< frag position in object space
+in mat4 passModelMatrix;				//< modelMatrix
+
+// uniform inputs
+uniform vec3 	inCameraPosition;		//< Camera World Space Position
+uniform vec3 	inColor;				//< Color Of Block
 
 // output
 out vec4 out_Color;
 
-// constants
-const vec3  colorOne  = vec3( 0.545, 0.549, 0.627);
-const vec3  colorTwo  = vec3(0.176,0.180,0.258);
-const float maxOffset = 0.5; 
+const vec3		lightPos = vec3(0.0, 15.0, 5.0);
+const float 	lightIntensity = 1.0;
+const float 	specularIntensity = 0.4;
+const vec3  	specularColor = vec3(1.0, 1.0, 1.0);
+const float 	shininess = 3;
+const float 	ambientIntensity = 0.5f;
 
-// Uniforms
-uniform float animationValue;
-
-// Maps a value from min, max to outmin and outmax
-float fit(float value, float min, float max, float outMin, float outMax)
+// Shades a color based on a light, incoming normal and position should be in object space
+vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 {
-  float v = clamp(value, min, max);
-  float m = max - min;
-  if(m==0.0)
-    m = 0.00000001;
-  return (v - min) / (m) * (outMax - outMin) + outMin;
+	// Calculate normal to world
+	mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
+	vec3 ws_normal = normalize(normal * normal_matrix);
+
+	// Calculate frag to world
+	vec3 ws_position = vec3(passModelMatrix * vec4(position, 1.0));
+
+	//calculate the vector from this pixels surface to the light source
+	vec3 surfaceToLight = normalize(lightPos - ws_position);
+
+	// calculate vector that defines the distance from camera to the surface
+	vec3 surfaceToCamera = normalize(inCameraPosition - ws_position);
+
+	// Ambient color
+	vec3 ambient = color * ambientIntensity;
+
+	// diffuse
+    float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
+	vec3 diffuse = diffuseCoefficient * color * lightIntensity;
+
+	// Scale specular based on vert color (greyscale)
+	float spec_intensity = specularIntensity;
+
+	// Compute specularf
+    float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-surfaceToLight, ws_normal)), surfaceToCamera)), shininess);
+    vec3 specular = specularCoefficient * specularColor * lightIntensity * spec_intensity;
+
+	//linear color (color before gamma correction)
+    return diffuse + specular + ambient;
 }
 
-void main() 
+void main()
 {
-	// Find fragment distance to center based on uv coordinates
-	vec2 center = vec2(0.5,0.5);
-	float dist = length(passUVs.xy - center);
-
-	// Find color mix value based on curve (animator) value
-	float mix_value = mix(0.1,maxOffset-0.075,animationValue);
-
-	// Now mix the two colors based on that
-	float color_mix = fit(dist, mix_value,mix_value+0.005, 0.0,1.0);
-	vec3 fcolor = mix(colorOne, colorTwo, color_mix);
-
-	// Construct alpha value based on distance to center, creates a nice circle
-	float alpha = fit(dist, maxOffset-0.005,maxOffset, 1.0,0.0);
-
-	// Set fragment color output to be texture color
-	out_Color =  vec4(fcolor,alpha);
+	vec2 uvs = vec2(passUVs.x, passUVs.y);
+	vec3 output_color = applyLight(inColor, passNormal, passPosition);
+	out_Color =  vec4(output_color.rgb, 1.0);
 }

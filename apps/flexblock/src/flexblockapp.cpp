@@ -46,6 +46,7 @@ namespace nap
 		mCameraEntity = scene->findEntity("CameraEntity");
 		mWorldEntity = scene->findEntity("WorldEntity");
 		mBlockEntity = scene->findEntity("BlockEntity");
+		mPlaneEntity = scene->findEntity("PlaneEntity");
 
 		// Create gui
 		mGui = std::make_unique<FlexblockGui>(*this);
@@ -157,10 +158,14 @@ namespace nap
 		// Get the perspective camera xform
 		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
 
-		// Set the camera position in the shaders
+		// Set the camera position in block shader
 		RenderableMeshComponentInstance& block_render_comp = mBlockEntity->getComponent<RenderableMeshComponentInstance>();
-		UniformVec3& cam_input = block_render_comp.getMaterialInstance().getOrCreateUniform<UniformVec3>("inCameraPosition");
-		cam_input.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
-	}
+		UniformVec3& block_cam_input = block_render_comp.getMaterialInstance().getOrCreateUniform<UniformVec3>("inCameraPosition");
+		block_cam_input.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
 
+		// Set the camera position in the plane shader
+		RenderableMeshComponentInstance& plane_render_comp = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
+		UniformVec3& plane_cam_input = plane_render_comp.getMaterialInstance().getOrCreateUniform<UniformVec3>("inCameraPosition");
+		plane_cam_input.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
+	}
 }

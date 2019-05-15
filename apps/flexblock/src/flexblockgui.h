@@ -46,7 +46,7 @@ namespace nap
 		void toggleVisibility();
 
 	private:
-		FlexblockApp&							mApp;				///< The actual atmos application we build the gui for
+		FlexblockApp&						mApp;				///< The actual atmos application we build the gui for
 		ParameterService&					mParameterService;
 		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;

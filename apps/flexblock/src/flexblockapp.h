@@ -68,6 +68,7 @@ namespace nap
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance> mBlockEntity = nullptr;				//< Pointer to the entity that holds the block
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the world
+		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;				//< Pointer to the entity that holds the plane
 
 		// Resources
 		ObjectPtr<RenderWindow>	mRenderWindow = nullptr;				//< Pointer to the render window

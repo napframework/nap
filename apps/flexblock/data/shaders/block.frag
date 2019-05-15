@@ -13,7 +13,7 @@ uniform vec3 	inColor;				//< Color Of Block
 // output
 out vec4 out_Color;
 
-const vec3		lightPos = vec3(0.0, 15.0, 20.0);
+const vec3		lightPos = vec3(0.0, 15.0, 5.0);
 const float 	lightIntensity = 1.0;
 const float 	specularIntensity = 0.5;
 const vec3  	specularColor = vec3(1.0, 1.0, 1.0);
