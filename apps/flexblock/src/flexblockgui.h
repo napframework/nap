@@ -59,6 +59,7 @@ namespace nap
 
 		RenderableMeshComponentInstance&	mBlockMeshInstance;
 		Vec3VertexAttribute&				mVertexAttribute;
+		Vec3VertexAttribute&				mNormalAttribute;
 		/**
 		 * Shows the information window
 		 */

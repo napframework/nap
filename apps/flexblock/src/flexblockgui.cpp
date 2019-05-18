@@ -8,6 +8,7 @@
 #include <nap/core.h>
 #include <utility/fileutils.h>
 #include <parametergui.h>
+#include <meshutils.h>
 
 namespace nap
 {
@@ -21,7 +22,8 @@ namespace nap
 		mApp(app),
 		mParameterService(*app.getCore().getService<ParameterService>()),
 		mBlockMeshInstance(app.GetBlockEntity()->getComponent<RenderableMeshComponentInstance>()),
-		mVertexAttribute(mBlockMeshInstance.getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()))
+		mVertexAttribute(mBlockMeshInstance.getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName())),
+		mNormalAttribute(mBlockMeshInstance.getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()))
 	{
 	}
 
@@ -54,17 +56,23 @@ namespace nap
 				ImGui::MenuItem("Parameters", NULL, &showPresetWindow);
 				ImGui::MenuItem("Information", NULL, &showInfo);
 
-				auto data = mVertexAttribute.getData();
+				std::vector<glm::vec3> data = mVertexAttribute.getData();
 				float vertPos[3] = { data[0].x, data[0].y, data[0].z };
 
-				if (ImGui::DragFloat3("Box Size", vertPos)) 
+				if (ImGui::DragFloat3("Vertex Position", vertPos)) 
 				{
 					data[0].x = vertPos[0];
 					data[0].y = vertPos[1];
 					data[0].z = vertPos[2];
+
+					data[13] = data[0];
+					data[16] = data[0];
+
 					mVertexAttribute.setData(data);
 
-					nap::utility::ErrorState error;
+					utility::computeNormals(mBlockMeshInstance.getMeshInstance(), mVertexAttribute, mNormalAttribute);
+					
+					utility::ErrorState error;
 					mBlockMeshInstance.getMeshInstance().update(error);
 				}
 
