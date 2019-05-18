@@ -56,6 +56,8 @@ namespace nap
 		 */
 		int shutdown() override;
 
+		const ObjectPtr<EntityInstance> GetBlockEntity() { return mBlockEntity; }
+
 	private:
 		// Nap Services
 		RenderService*		mRenderService = nullptr;					//< Render Service that handles render calls

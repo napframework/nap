@@ -19,7 +19,9 @@ namespace nap
 
 	FlexblockGui::FlexblockGui(FlexblockApp& app) : 
 		mApp(app),
-		mParameterService(*app.getCore().getService<ParameterService>())
+		mParameterService(*app.getCore().getService<ParameterService>()),
+		mBlockMeshInstance(app.GetBlockEntity()->getComponent<RenderableMeshComponentInstance>()),
+		mVertexAttribute(mBlockMeshInstance.getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()))
 	{
 	}
 
@@ -51,6 +53,21 @@ namespace nap
 			{
 				ImGui::MenuItem("Parameters", NULL, &showPresetWindow);
 				ImGui::MenuItem("Information", NULL, &showInfo);
+
+				auto data = mVertexAttribute.getData();
+				float vertPos[3] = { data[0].x, data[0].y, data[0].z };
+
+				if (ImGui::DragFloat3("Box Size", vertPos)) 
+				{
+					data[0].x = vertPos[0];
+					data[0].y = vertPos[1];
+					data[0].z = vertPos[2];
+					mVertexAttribute.setData(data);
+
+					nap::utility::ErrorState error;
+					mBlockMeshInstance.getMeshInstance().update(error);
+				}
+
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();

@@ -10,6 +10,7 @@
 #include <parameternumeric.h>
 #include <parametersimple.h>
 #include <parametercolor.h>
+#include <renderablemeshcomponent.h>
 
 namespace nap
 {
@@ -56,6 +57,8 @@ namespace nap
 		float								mWraPreviewDisplaySize = 1.0f;
 		float								mVidPreviewDisplaySize = 1.0f;
 
+		RenderableMeshComponentInstance&	mBlockMeshInstance;
+		Vec3VertexAttribute&				mVertexAttribute;
 		/**
 		 * Shows the information window
 		 */
