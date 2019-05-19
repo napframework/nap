@@ -1,18 +1,8 @@
 {
     "Objects": [
         {
-            "Type": "nap::BoxMesh",
-            "mID": "BoxMesh",
-            "Size": {
-                "x": 2.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            }
+            "Type": "nap::FlexBlockMesh",
+            "mID": "BoxMesh"
         },
         {
             "Type": "nap::Entity",
