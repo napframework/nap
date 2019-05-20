@@ -149,7 +149,7 @@ namespace nap
 		static EntityInstance* sResolveEntityInstancePath(ComponentInstance* sourceComponentInstance,
 														  const std::string& targetEntityInstancePath,
 														  const RootEntityInstanceMap& rootEntityInstances,
-														  utility::ErrorState& errorState)
+			utility::ErrorState& errorState)
 		{
 			// Split the path into its components
 			std::vector<std::string> path_components;
@@ -537,7 +537,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	Scene::Scene(Core& core) :
-			mCore(&core)
+		mCore(&core)
 	{
 		mCore->getService<SceneService>()->registerScene(*this);
 		mRootEntityResource = std::make_unique<Entity>();
@@ -649,32 +649,33 @@ namespace nap
 								errorState))
 			return false;
 
-		// Map owning the cloned component resource, is moved later to mClonedComponentsByEntity on success
-		ClonedComponentByEntityMap cloned_components_by_entity;
-		// Set used to generate unique IDs for all cloned components
-		std::unordered_set<std::string> cloned_component_ids;
+		using ClonedComponentByEntityMap = std::unordered_map<int, ClonedComponentResourceList>;	// Map from root entity index to cloned components. We need a key by index because multiple root entities may share the same Entity*
+		ClonedComponentByEntityMap		cloned_components_by_entity;								// Map owning the cloned component resource, is moved later to mAllClonedComponents on success
+		std::unordered_set<std::string>	cloned_component_ids;										// Set used to generate unique IDs for all cloned components
 
 		EntityCreationParameters entityCreationParams(object_graph);
-
-		// Fill EntityCreationParams.mAllInstancesByID with all existing entities and components in the Scene.
-		// When we spawn entities at runtime after initialization we need this information in order to generate unique mID values.
-		for (auto& entityPair : mEntityInstancesByID)
-		{
-			entityCreationParams.mAllInstancesByID[entityPair.first] = entityPair.second.get();
-			for (auto component : entityPair.second->getComponents())
-				entityCreationParams.mAllInstancesByID[component->mID] = component;
-		}
+        
+        // Fill EntityCreationParams.mAllInstancesByID with all existing entities and components in the Scene.
+        // When we spawn entities at runtime after initialization we need this information in order to generate unique mID values.
+        for (auto& entityPair : mEntityInstancesByID)
+        {
+            entityCreationParams.mAllInstancesByID[entityPair.first] = entityPair.second.get();
+            for (auto component : entityPair.second->getComponents())
+                entityCreationParams.mAllInstancesByID[component->mID] = component;
+        }
 
 		// Create clones of all Components in all entities that have InstanceProperties set for them.
 		// Note that while InstanceProperties can only be set on the root Entity, they can still target Components in child entities
-		for (const RootEntity& root_entity : rootEntities)
+		for (int root_entity_index = 0; root_entity_index != rootEntities.size(); ++root_entity_index)
 		{
+			const RootEntity& root_entity = rootEntities[root_entity_index];
+
 			if (root_entity.mInstanceProperties.empty())
 				continue;
 
 			const Entity* entity = root_entity.mEntity.get();
 
-			ClonedComponentResourceList& clonedComponents = cloned_components_by_entity[entity];
+			ClonedComponentResourceList& clonedComponents = cloned_components_by_entity[root_entity_index];
 			for (const ComponentInstanceProperties& instance_property : root_entity.mInstanceProperties)
 			{
 				// Clone target component. The cloned resources are not going into the regular resource manager resource lists, 
@@ -718,15 +719,16 @@ namespace nap
 			return false;
 
 		// Create all entity instances and component instances
-		for (const RootEntity& root_entity : rootEntities)
+		for (int root_entity_index = 0; root_entity_index != rootEntities.size(); ++root_entity_index)
 		{
+			const RootEntity& root_entity = rootEntities[root_entity_index];
 			const Entity* root_entity_resource = root_entity.mEntity.get();
 
 			// Here we spawn a single entity hierarchy. Set up the path for this entity
 			entityCreationParams.mCurrentEntityPath = ComponentResourcePath(*root_entity_resource);
 
 			// Store the cloned components used for this entity
-			ClonedComponentByEntityMap::iterator clonedListPos = cloned_components_by_entity.find(root_entity_resource);
+			ClonedComponentByEntityMap::iterator clonedListPos = cloned_components_by_entity.find(root_entity_index);
 			entityCreationParams.mCurrentEntityClonedComponents =
 					clonedListPos != cloned_components_by_entity.end() ? &clonedListPos->second : nullptr;
 
@@ -773,14 +775,10 @@ namespace nap
 		for (auto& kvp : entityCreationParams.mAllInstancesByID)
 			mInstancesByID[kvp.first] = kvp.second;
 
+		// Move ownership of all newly cloned components to a member
 		for (auto& kvp : cloned_components_by_entity)
-		{
-			ClonedComponentResourceList& clonedComponents = mClonedComponentsByEntity[kvp.first];
-			ClonedComponentResourceList& newClonedComponents = kvp.second;
-
-			for (auto& clonedComponent : newClonedComponents)
-				clonedComponents.emplace_back(std::move(clonedComponent));
-		}
+			for (auto& clonedComponent : kvp.second)
+				mAllClonedComponents.emplace_back(std::move(clonedComponent));
 
 		return true;
 	}
@@ -837,7 +835,7 @@ namespace nap
 
 			if (type_info.is_derived_from<EntityInstance>())
 			{
-				auto entity_instance = mEntityInstancesByID.find(instance->mID);
+				EntityByIDMap::iterator entity_instance = mEntityInstancesByID.find(instance->mID);
 				assert(entity_instance != mEntityInstancesByID.end());
 				entity_instances_to_delete.emplace_back(std::move(entity_instance->second));
 
