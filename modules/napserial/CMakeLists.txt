@@ -41,7 +41,7 @@ copy_module_json_to_bin()
 package_module()
 
 # Package oscpack into platform release
-install(FILES ${THIRDPARTY_DIR}/serial/README DESTINATION thirdparty/serial)
+install(FILES ${THIRDPARTY_DIR}/serial/README.md DESTINATION thirdparty/serial)
 install(DIRECTORY ${THIRDPARTY_DIR}/serial/include 
         DESTINATION thirdparty/serial
         PATTERN "*.cpp" EXCLUDE)
