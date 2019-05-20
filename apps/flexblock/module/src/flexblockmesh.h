@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mesh.h"
+#include <mesh.h>
 #include <rect.h>
 
 namespace nap
@@ -31,6 +31,6 @@ namespace nap
 		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 	private:
-		std::unique_ptr<MeshInstance> mMeshInstance;
+		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;
 	};
 }
