@@ -182,6 +182,7 @@ add_subdirectory(modules/napdatabase)
 add_subdirectory(modules/napapi)
 add_subdirectory(modules/napparameter)
 add_subdirectory(modules/napparametergui)
+add_subdirectory(modules/napserial)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)

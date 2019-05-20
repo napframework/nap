@@ -14,7 +14,7 @@ set(NANOSVG_INCLUDE_DIRS ${NANOSVG_DIR}/src)
 mark_as_advanced(NANOSVG_INCLUDE_DIRS)
 
 if(NANOSVG_FOUND)
-    message(STATUS "Found nanosvg header files in ${NANOSVG_INCLUDE_DIRS}")
+    message(STATUS "Found nanosvg: ${NANOSVG_DIR}")
 endif()
 
 
