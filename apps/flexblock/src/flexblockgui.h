@@ -11,6 +11,7 @@
 #include <parametersimple.h>
 #include <parametercolor.h>
 #include <renderablemeshcomponent.h>
+#include <parametervec.h>
 
 namespace nap
 {
@@ -57,9 +58,8 @@ namespace nap
 		float								mWraPreviewDisplaySize = 1.0f;
 		float								mVidPreviewDisplaySize = 1.0f;
 
-		RenderableMeshComponentInstance&	mBlockMeshInstance;
-		Vec3VertexAttribute&				mVertexAttribute;
-		Vec3VertexAttribute&				mNormalAttribute;
+		ResourcePtr<ParameterVec3>			mControlPointOne;
+
 		/**
 		 * Shows the information window
 		 */

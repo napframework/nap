@@ -56,7 +56,7 @@ namespace nap
 		 */
 		int shutdown() override;
 
-		const ObjectPtr<EntityInstance> GetBlockEntity() { return mBlockEntity; }
+		ObjectPtr<EntityInstance> GetBlockEntity() { return mBlockEntity; }
 
 	private:
 		// Nap Services

@@ -1,6 +1,7 @@
 // Local Includes
 #include "flexblockgui.h"
 #include "flexblockapp.h"
+#include "flexblockcomponent.h"
 
 // External Includes
 #include <imgui/imgui.h>
@@ -20,10 +21,7 @@ namespace nap
 
 	FlexblockGui::FlexblockGui(FlexblockApp& app) : 
 		mApp(app),
-		mParameterService(*app.getCore().getService<ParameterService>()),
-		mBlockMeshInstance(app.GetBlockEntity()->getComponent<RenderableMeshComponentInstance>()),
-		mVertexAttribute(mBlockMeshInstance.getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName())),
-		mNormalAttribute(mBlockMeshInstance.getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()))
+		mParameterService(*app.getCore().getService<ParameterService>())
 	{
 	}
 
@@ -40,6 +38,14 @@ namespace nap
 
 		// Fetch resource manager to get access to all loaded resources
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
+
+		mControlPointOne = resourceManager->findObject<ParameterVec3>("ControlPointOnePositionParameter");
+		mControlPointOne->valueChanged.connect([this](glm::vec3 newValue)
+		{
+			auto blockEntity = mApp.GetBlockEntity();
+			FlexBlockComponentInstance& flexblockComponent = blockEntity->getComponent<FlexBlockComponentInstance>();
+			flexblockComponent.SetControlPointOne(newValue);
+		});
 	}
 
 
@@ -55,26 +61,6 @@ namespace nap
 			{
 				ImGui::MenuItem("Parameters", NULL, &showPresetWindow);
 				ImGui::MenuItem("Information", NULL, &showInfo);
-
-				std::vector<glm::vec3> data = mVertexAttribute.getData();
-				float vertPos[3] = { data[0].x, data[0].y, data[0].z };
-
-				if (ImGui::DragFloat3("Vertex Position", vertPos)) 
-				{
-					data[0].x = vertPos[0];
-					data[0].y = vertPos[1];
-					data[0].z = vertPos[2];
-
-					data[13] = data[0];
-					data[16] = data[0];
-
-					mVertexAttribute.setData(data);
-
-					utility::computeNormals(mBlockMeshInstance.getMeshInstance(), mVertexAttribute, mNormalAttribute);
-					
-					utility::ErrorState error;
-					mBlockMeshInstance.getMeshInstance().update(error);
-				}
 
 				ImGui::EndMenu();
 			}

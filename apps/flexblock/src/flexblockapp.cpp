@@ -45,7 +45,7 @@ namespace nap
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mCameraEntity = scene->findEntity("CameraEntity");
 		mWorldEntity = scene->findEntity("WorldEntity");
-		mBlockEntity = scene->findEntity("BlockEntity");
+		mBlockEntity = scene->findEntity("FlexBlockEntity");
 		mPlaneEntity = scene->findEntity("PlaneEntity");
 
 		// Create gui
@@ -92,6 +92,9 @@ namespace nap
 
 		// Update camera position
 		setCameraPosition();
+
+		// Wireframe
+		//mRenderService->setPolygonMode(opengl::EPolygonMode::Line);
 
 		// Get the perspective camera
 		PerspCameraComponentInstance& persp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
@@ -159,6 +162,7 @@ namespace nap
 		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
 
 		// Set the camera position in block shader
+		/*
 		RenderableMeshComponentInstance& block_render_comp = mBlockEntity->getComponent<RenderableMeshComponentInstance>();
 		UniformVec3& block_cam_input = block_render_comp.getMaterialInstance().getOrCreateUniform<UniformVec3>("inCameraPosition");
 		block_cam_input.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
@@ -167,5 +171,6 @@ namespace nap
 		RenderableMeshComponentInstance& plane_render_comp = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
 		UniformVec3& plane_cam_input = plane_render_comp.getMaterialInstance().getOrCreateUniform<UniformVec3>("inCameraPosition");
 		plane_cam_input.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
+		*/
 	}
 }
