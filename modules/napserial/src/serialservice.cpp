@@ -23,9 +23,9 @@ namespace nap
 
 	bool SerialService::init(utility::ErrorState& error)
 	{
-		serial::Serial test("COM1");
-		test.open();
-		return true;
+		//serial::Serial test("COM2");
+		//test.write("Ola");
+		//return true;
 	}
 
 
