@@ -51,6 +51,13 @@ RTTI_END_CLASS
 namespace nap
 {
 
+	static void clearError(SerialPort::Error& error)
+	{
+		error.mStatus = SerialPort::EStatus::NoError;
+		error.mMessage.clear();
+	}
+
+
 	SerialPort::SerialPort()
 	{
 		// Create port
@@ -130,141 +137,187 @@ namespace nap
 	}
 
 
-	nap::uint32 SerialPort::read(std::vector<uint8>& buffer, uint32 count /*= 1*/)
+	nap::uint32 SerialPort::read(uint8* buffer, uint32 count, SerialPort::Error& error)
 	{
 		try
 		{
+			error.clear();
 			return static_cast<uint32>(mSerialPort->read(buffer, static_cast<size_t>(count)));
 		}
-		catch (const std::exception& exception)
+		catch (const serial::PortNotOpenedException& exception)
 		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
+			error.mMessage = exception.what();
+			error.mStatus = EStatus::PortError;
+			return 0;
+		}
+		catch (const serial::SerialException& exception)
+		{
+			error.mMessage = exception.what();
+			error.mStatus = SerialPort::EStatus::SerialError;
 			return 0;
 		}
 	}
 
 
-	nap::uint32 SerialPort::read(uint8* buffer, uint32 count)
+	nap::uint32 SerialPort::read(std::vector<uint8>& buffer, uint32 count, SerialPort::Error& error)
+	{
+		// Ensure buffer is big enough
+		buffer.resize(count, 0);
+		return read(buffer.data(), count, error);
+	}
+
+
+	nap::uint32 SerialPort::read(std::vector<uint8>& buffer, SerialPort::Error& error)
+	{
+		return read(buffer.data(), buffer.size(), error);
+	}
+
+
+	nap::uint32 SerialPort::read(std::string& buffer, uint32 count, SerialPort::Error& error)
 	{
 		try
 		{
+			error.clear();
 			return static_cast<uint32>(mSerialPort->read(buffer, static_cast<size_t>(count)));
 		}
-		catch (const std::exception& exception)
+		catch (const serial::PortNotOpenedException& exception)
 		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
+			error.mMessage = exception.what();
+			error.mStatus = EStatus::PortError;
+			return 0;
+		}
+		catch (const serial::SerialException& exception)
+		{
+			error.mMessage = exception.what();
+			error.mStatus = SerialPort::EStatus::SerialError;
 			return 0;
 		}
 	}
 
 
-	nap::uint32 SerialPort::read(std::string& buffer, uint32 count /*= 1*/)
+	std::string SerialPort::read(uint32 count, SerialPort::Error& error)
 	{
-		try
-		{
-			return static_cast<uint32>(mSerialPort->read(buffer, static_cast<size_t>(count)));
-		}
-		catch (const std::exception& exception)
-		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
-			return 0;
-		}
+		std::string rvalue;
+		read(rvalue, count, error);
+		return rvalue;
 	}
 
 
-	std::string SerialPort::read(uint32 count)
+	nap::uint32 SerialPort::readLine(std::string& buffer, uint32 length, const std::string& eol, SerialPort::Error& error)
 	{
 		try
 		{
-			return mSerialPort->read(static_cast<size_t>(count));
-		}
-		catch (const std::exception& exception)
-		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
-			return "";
-		}
-	}
-
-
-	std::string SerialPort::readLine(uint32 length /*= 65536*/, const std::string& eol /*= "\n"*/)
-	{
-		try
-		{
-			return mSerialPort->readline(length, eol);
-		}
-		catch (const std::exception& exception)
-		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
-			return "";
-		}
-	}
-
-
-	nap::uint32 SerialPort::readLine(std::string& buffer, uint32 length /*= 65536*/, const std::string& eol /*= "\n"*/)
-	{
-		try
-		{
+			error.clear();
 			return mSerialPort->readline(buffer, length, eol);
 		}
-		catch (const std::exception& exception)
+		catch (const serial::PortNotOpenedException& exception)
 		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
+			error.mMessage = exception.what();
+			error.mStatus = EStatus::PortError;
+			return 0;
+		}
+		catch (const serial::SerialException& exception)
+		{
+			error.mMessage = exception.what();
+			error.mStatus = SerialPort::EStatus::SerialError;
 			return 0;
 		}
 	}
 
 
-	std::vector<std::string> SerialPort::readLines(uint32 length /*= 65536*/, std::string eol /*= "\n"*/)
+	std::string SerialPort::readLine(uint32 length, const std::string& eol, SerialPort::Error& error)
+	{
+		std::string rvalue;
+		readLine(rvalue, length, eol, error);
+		return rvalue;
+	}
+
+
+	std::vector<std::string> SerialPort::readLines(uint32 length, const std::string& eol, SerialPort::Error& error)
 	{
 		try
 		{
+			error.clear();
 			return mSerialPort->readlines(length, eol);
 		}
-		catch (const std::exception& exception)
+		catch (const serial::PortNotOpenedException& exception)
 		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
+			error.mMessage = exception.what();
+			error.mStatus = EStatus::PortError;
+			return {};
+		}
+		catch (const serial::SerialException& exception)
+		{
+			error.mMessage = exception.what();
+			error.mStatus = SerialPort::EStatus::SerialError;
+			return {};
+		}
+		catch (const serial::IOException& exception)
+		{
+			error.mMessage = exception.what();
+			error.mStatus = SerialPort::EStatus::IOError;
 			return {};
 		}
 	}
 
 
-	nap::uint32 SerialPort::write(uint8* data, uint32 count)
+	nap::uint32 SerialPort::write(const uint8* data, uint32 count, SerialPort::Error& error)
 	{
 		try
 		{
+			error.clear();
 			return mSerialPort->write(data, count);
 		}
-		catch (const std::exception& exception)
+		catch (const serial::PortNotOpenedException& exception)
 		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
+			error.mMessage = exception.what();
+			error.mStatus = EStatus::PortError;
+			return 0;
+		}
+		catch (const serial::SerialException& exception)
+		{
+			error.mMessage = exception.what();
+			error.mStatus = SerialPort::EStatus::SerialError;
+			return 0;
+		}
+		catch (const serial::IOException& exception)
+		{
+			error.mMessage = exception.what();
+			error.mStatus = SerialPort::EStatus::IOError;
 			return 0;
 		}
 	}
 
 
-	nap::uint32 SerialPort::write(const std::vector<uint8>& data)
+	nap::uint32 SerialPort::write(const std::vector<uint8>& data, SerialPort::Error& error)
 	{
-		try
-		{
-			return mSerialPort->write(data);
-		}
-		catch (const std::exception& exception)
-		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
-			return 0;
-		}
+		return SerialPort::write(data.data(), data.size(), error);
 	}
 
 
-	nap::uint32 SerialPort::write(const std::string& data)
+	nap::uint32 SerialPort::write(const std::string& data, SerialPort::Error& error)
 	{
 		try
 		{
+			error.clear();
 			return mSerialPort->write(data);
 		}
-		catch (const std::exception& exception)
+		catch (const serial::PortNotOpenedException& exception)
 		{
-			nap::Logger::error("%s: exception occurred: %s", this->mID.c_str(), exception.what());
+			error.mMessage = exception.what();
+			error.mStatus = EStatus::PortError;
+			return 0;
+		}
+		catch (const serial::SerialException& exception)
+		{
+			error.mMessage = exception.what();
+			error.mStatus = SerialPort::EStatus::SerialError;
+			return 0;
+		}
+		catch (const serial::IOException& exception)
+		{
+			error.mMessage = exception.what();
+			error.mStatus = SerialPort::EStatus::IOError;
 			return 0;
 		}
 	}
@@ -308,19 +361,19 @@ namespace nap
 	}
 
 
-	void SerialPort::setBreak(bool level /*= true*/)
+	void SerialPort::setBreak(bool level)
 	{
 		mSerialPort->setBreak(level);
 	}
 
 
-	void SerialPort::setRTS(bool level /*= true*/)
+	void SerialPort::setRTS(bool level)
 	{
 		mSerialPort->setRTS(level);
 	}
 
 
-	void SerialPort::setDTR(bool level /*= true*/)
+	void SerialPort::setDTR(bool level)
 	{
 		mSerialPort->setDTR(level);
 	}
@@ -365,6 +418,13 @@ namespace nap
 	void SerialPort::waitByteTimes(uint32 count)
 	{
 		mSerialPort->waitByteTimes(count);
+	}
+
+
+	void SerialPort::Error::clear()
+	{
+		mStatus = SerialPort::EStatus::NoError;
+		mMessage.clear();
 	}
 
 }

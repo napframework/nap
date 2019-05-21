@@ -70,6 +70,49 @@ namespace nap
 	public:
 
 		/**
+		 * Desribes current serial port status
+		 */
+		enum class EStatus : int
+		{
+			NoError		= 0,
+			IOError		= 1,
+			SerialError	= 2,
+			PortError	= 3,
+			Unknown		= 4
+		};
+
+
+		/**
+		 * Contains the error message when a serial operation fails.
+		 */
+		struct Error
+		{
+			/**
+			 * @return if the previous operation failed
+			 */
+			bool failed()							{ return mStatus != EStatus::NoError; }
+
+			/**
+			 * @return the message associated with this error
+			 */
+			const std::string& getMessage()			{ return mMessage; }
+
+			/**
+			 * @return the status of this error
+			 */
+			EStatus getStatus()						{ return mStatus; }
+
+			/**
+			 * Clears the error message, automatically called by all serial operations.
+			 */
+			void clear();
+
+			EStatus mStatus = EStatus::NoError;		///< Status associated with this error
+			std::string mMessage = "";				///< Message associated with this error
+		};
+
+
+		/**
 		 * Default constructor
 		 */
 		SerialPort();
@@ -105,11 +148,23 @@ namespace nap
 		 * The read function will return when the number of requested bytes was read or when a timeout occurs.
 		 * A timeout occurs when the inter-byte timeout or when the read timeout has expired.
 		 * An error is generated when an exception is thrown.
+		 * The buffer is automatically resized to hold the requested number of bytes.
 		 * @param buffer the buffer that will hold the read values.
-		 * @param count number of bytes to read.
+		 * @param count number of bytes to read. Buffer is resized to fit this number of bytes.
 		 * @return the total number of bytes read.
 		 */
-		uint32 read(std::vector<uint8>& buffer, uint32 count = 1);
+		uint32 read(std::vector<uint8>& buffer, uint32 count, SerialPort::Error& error);
+
+		/**
+		 * Read a given amount of bytes from the serial port into the given buffer.
+		 * The read function will return when the number of requested bytes was read or when a timeout occurs.
+		 * A timeout occurs when the inter-byte timeout or when the read timeout has expired.
+		 * An error is generated when an exception is thrown.
+		 * The size of the buffer is used to determine the number of bytes to read.
+		 * @param buffer the buffer that will hold the read values.
+		 * @return the total number of bytes read.
+		 */
+		uint32 read(std::vector<uint8>& buffer, SerialPort::Error& error);
 
 		/**
 		 * Read a given amount of bytes from the serial port into the given buffer.
@@ -120,34 +175,34 @@ namespace nap
 		 * @param count number of bytes to read.
 		 * @return the total number of bytes read.
 		 */
-		uint32 read(uint8* buffer, uint32 count);
+		uint32 read(uint8* buffer, uint32 count, SerialPort::Error& error);
 
 		/**
 		 * Read a given amount of bytes from the serial port into the given buffer.
 		 * The read function will return when the number of requested bytes was read or when a timeout occurs.
 		 * A timeout occurs when the inter-byte timeout or when the read timeout has expired.
 		 * An error is generated when an exception is thrown.
-		 * @param buffer the buffer that will hold the read values, must be of size count.
+		 * @param empty string to hold the read values.
 		 * @param count number of bytes to read.
 		 * @return the total number of bytes read.
 		 */
-		uint32 read(std:: string& buffer, uint32 count = 1);
+		uint32 read(std:: string& buffer, uint32 count, SerialPort::Error& error);
 
 		/**
 		 * Read a given amount of bytes from the serial port and return a string containing the data.
 		 * @param count the total number of bytes to read.
 		 * @return a string that contains the data read from the port.
 		 */
-		std::string read(uint32 count);
+		std::string read(uint32 count, SerialPort::Error& error);
 
 		/**
 		 * Reads in a line or until a given delimiter has been processed.
-		 * @param buffer string reference used to store the data.
-		 * @param length maximum character length of the line.
+		 * @param buffer empty string that will contain the read data.
+		 * @param length maximum character length of the line
 		 * @param eol end of line delimiter.
 		 * @return number of bytes read.
 		 */
-		uint32 readLine(std::string& buffer, uint32 length = 65536, const std::string& eol = "\n");
+		uint32 readLine(std::string& buffer, uint32 length, const std::string& eol, SerialPort::Error& error);
 
 		/**
 		 * Reads in a line or until a given delimiter has been processed.
@@ -155,16 +210,16 @@ namespace nap
 		 * @param eol end of line delimiter.
 		 * @return string that contains the line.
 		 */
-		std::string readLine(uint32 length = 65536, const std::string& eol = "\n");
+		std::string readLine(uint32 length, const std::string& eol, SerialPort::Error& error);
 
 		/**
 		 * Reads multiple lines until the serial port times out.
 		 * This requires a timeout > 0 before it can be run. It will read until a timeout occurs and return a list of strings.
-		 * @param length maximum length of combined  lines.
+		 * @param length maximum character length of all lines combined.
 		 * @param eol end of line delimiter that is used to separate individual strings.
 		 * @return list of strings.
 		 */
-		std::vector<std::string> readLines(uint32 length = 65536, std::string eol = "\n");
+		std::vector<std::string> readLines(uint32 length, const std::string& eol, SerialPort::Error& error);
 
 		/**
 		 * Write a buffer to the serial port.
@@ -172,21 +227,21 @@ namespace nap
 		 * @param count number of bytes to write
 		 * @return number of bytes actually written
 		 */
-		uint32 write(uint8* data, uint32 count);
+		uint32 write(const uint8* data, uint32 count, SerialPort::Error& error);
 
 		/**
 		 * Write a buffer to the serial port.
 		 * @param buffer data that is written
 		 * @return number of bytes actually written
 		 */
-		uint32 write(const std::vector<uint8>& data);
+		uint32 write(const std::vector<uint8>& data, SerialPort::Error& error);
 
 		/**
 		 * Write a string to the serial port.
 		 * @param string string that is written
 		 * @return number of bytes actually written
 		 */
-		uint32 write(const std::string& data);
+		uint32 write(const std::string& data, SerialPort::Error& error);
 
 		/**
 		 * @return the number of characters in the buffer
