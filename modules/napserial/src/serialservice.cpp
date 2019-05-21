@@ -25,7 +25,7 @@ namespace nap
 	{
 		//serial::Serial test("COM2");
 		//test.write("Ola");
-		//return true;
+		return true;
 	}
 
 
