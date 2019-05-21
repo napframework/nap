@@ -70,45 +70,43 @@ namespace nap
 	public:
 
 		/**
-		 * Desribes current serial port status
-		 */
-		enum class EStatus : int
-		{
-			NoError		= 0,
-			IOError		= 1,
-			SerialError	= 2,
-			PortError	= 3,
-			Unknown		= 4
-		};
-
-
-		/**
 		 * Contains the error message when a serial operation fails.
 		 */
 		struct Error
 		{
 			/**
-			 * @return if the previous operation failed
+			 * All the serial error types
 			 */
-			bool failed()							{ return mStatus != EStatus::NoError; }
+			enum class EType : int
+			{
+				NoError = 0,				///< No serial error
+				IOError = 1,				///< Serial IO (read / write) error
+				SerialError = 2,			///< Generic serial error
+				PortError = 3				///< Port isn't open
+			};
+
+			/**
+			 * @return true if the previous operation failed and generated an error
+			 */
+			bool failed()								{ return mType != EType::NoError; }
 
 			/**
 			 * @return the message associated with this error
 			 */
-			const std::string& getMessage()			{ return mMessage; }
+			const std::string& getMessage()				{ return mMessage; }
 
 			/**
 			 * @return the status of this error
 			 */
-			EStatus getStatus()						{ return mStatus; }
+			EType getType()								{ return mType; }
 
 			/**
 			 * Clears the error message, automatically called by all serial operations.
 			 */
 			void clear();
 
-			EStatus mStatus = EStatus::NoError;		///< Status associated with this error
-			std::string mMessage = "";				///< Message associated with this error
+			EType mType = EType::NoError;				///< Status associated with this error
+			std::string mMessage = "";					///< Message associated with this error
 		};
 
 
@@ -139,6 +137,8 @@ namespace nap
 		virtual void stop() override;
 
 		/**
+		 * Returns if the port has been opened successfully and is ready to be communicated with.
+		 * The port won't be open when startup failed and 'AllowFailure' is turned on.
 		 * @return if the port is open and ready to communicate with.
 		 */
 		bool isOpen() const;
@@ -349,6 +349,7 @@ namespace nap
 		int mReadTimeout  = 0;											///< Property: "ReadTimeout" the time in ms until a timeout occurs after a call to read is made. 0 = non blocking mode
 		int mWriteTimeout = 0;											///< Property: "WriteTimeout" the time in ms until a timeout occurs after a call to write is made. 0 = non blocking mode
 		int mInterByteTimeout = 0;										///< Property: "InterByteTimeout" the max amount of time in ms between receiving bytes that can pass before a timeout occurs. Setting this to 0 will prevent inter byte timeouts.
+		bool mAllowFailure = false;										///< Property: "AllowFailure" when set to true opening the port is allowed to fail on startup.
 
 	private:
 		std::unique_ptr<serial::Serial> mSerialPort = nullptr;
