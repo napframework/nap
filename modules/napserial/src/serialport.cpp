@@ -43,6 +43,7 @@ RTTI_BEGIN_CLASS(nap::SerialPort)
 	RTTI_PROPERTY("ReadTimeout",		&nap::SerialPort::mReadTimeout,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("WriteTimeout",		&nap::SerialPort::mWriteTimeout,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("InterByteTimeout",	&nap::SerialPort::mInterByteTimeout,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowFailure",		&nap::SerialPort::mAllowFailure,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -53,7 +54,7 @@ namespace nap
 
 	static void clearError(SerialPort::Error& error)
 	{
-		error.mStatus = SerialPort::EStatus::NoError;
+		error.mType = SerialPort::Error::EType::NoError;
 		error.mMessage.clear();
 	}
 
@@ -112,14 +113,19 @@ namespace nap
 	bool SerialPort::start(utility::ErrorState& errorState)
 	{
 		// Open serial port based on previously initialized settings
+		// If an exception is thrown and allowing failure is turned on the startup is considered valid
 		try
 		{
 			mSerialPort->open();
 		}
 		catch (const std::exception& exception)
 		{
-			errorState.fail("Failed to open SerialPort: %s", exception.what());
-			return false;
+			if (!mAllowFailure)
+			{
+				errorState.fail("Failed to open SerialPort: %s", exception.what());
+				return false;
+			}
+			nap::Logger::error("Failed to open SerialPort: %s", exception.what());
 		}
 		return true;
 	}
@@ -147,13 +153,13 @@ namespace nap
 		catch (const serial::PortNotOpenedException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = EStatus::PortError;
+			error.mType = SerialPort::Error::EType::PortError;
 			return 0;
 		}
 		catch (const serial::SerialException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = SerialPort::EStatus::SerialError;
+			error.mType = SerialPort::Error::EType::SerialError;
 			return 0;
 		}
 	}
@@ -183,13 +189,13 @@ namespace nap
 		catch (const serial::PortNotOpenedException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = EStatus::PortError;
+			error.mType = SerialPort::Error::EType::PortError;
 			return 0;
 		}
 		catch (const serial::SerialException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = SerialPort::EStatus::SerialError;
+			error.mType = SerialPort::Error::EType::SerialError;
 			return 0;
 		}
 	}
@@ -213,13 +219,13 @@ namespace nap
 		catch (const serial::PortNotOpenedException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = EStatus::PortError;
+			error.mType = SerialPort::Error::EType::PortError;
 			return 0;
 		}
 		catch (const serial::SerialException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = SerialPort::EStatus::SerialError;
+			error.mType = SerialPort::Error::EType::SerialError;
 			return 0;
 		}
 	}
@@ -243,19 +249,19 @@ namespace nap
 		catch (const serial::PortNotOpenedException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = EStatus::PortError;
+			error.mType = SerialPort::Error::EType::PortError;
 			return {};
 		}
 		catch (const serial::SerialException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = SerialPort::EStatus::SerialError;
+			error.mType = SerialPort::Error::EType::SerialError;
 			return {};
 		}
 		catch (const serial::IOException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = SerialPort::EStatus::IOError;
+			error.mType = SerialPort::Error::EType::IOError;
 			return {};
 		}
 	}
@@ -271,19 +277,19 @@ namespace nap
 		catch (const serial::PortNotOpenedException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = EStatus::PortError;
+			error.mType = SerialPort::Error::EType::PortError;
 			return 0;
 		}
 		catch (const serial::SerialException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = SerialPort::EStatus::SerialError;
+			error.mType = SerialPort::Error::EType::SerialError;
 			return 0;
 		}
 		catch (const serial::IOException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = SerialPort::EStatus::IOError;
+			error.mType = SerialPort::Error::EType::IOError;
 			return 0;
 		}
 	}
@@ -305,19 +311,19 @@ namespace nap
 		catch (const serial::PortNotOpenedException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = EStatus::PortError;
+			error.mType = SerialPort::Error::EType::PortError;
 			return 0;
 		}
 		catch (const serial::SerialException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = SerialPort::EStatus::SerialError;
+			error.mType = SerialPort::Error::EType::SerialError;
 			return 0;
 		}
 		catch (const serial::IOException& exception)
 		{
 			error.mMessage = exception.what();
-			error.mStatus = SerialPort::EStatus::IOError;
+			error.mType = SerialPort::Error::EType::IOError;
 			return 0;
 		}
 	}
@@ -423,8 +429,7 @@ namespace nap
 
 	void SerialPort::Error::clear()
 	{
-		mStatus = SerialPort::EStatus::NoError;
+		mType = SerialPort::Error::EType::NoError;
 		mMessage.clear();
 	}
-
 }
