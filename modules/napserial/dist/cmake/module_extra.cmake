@@ -5,7 +5,7 @@ if(NOT TARGET serial)
 endif()
 set(MODULE_NAME_EXTRA_LIBS serial)
 
-add_include_to_interface_target(mod_serial ${SERIAL_INCLUDE_DIRS})
+add_include_to_interface_target(mod_napserial ${SERIAL_INCLUDE_DIRS})
 
 # Install oscpack shared lib into packaged project for Unix
 if(APPLE)
