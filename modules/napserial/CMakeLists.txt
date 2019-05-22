@@ -46,9 +46,9 @@ install(DIRECTORY ${THIRDPARTY_DIR}/serial/include
         DESTINATION thirdparty/serial
         PATTERN "*.cpp" EXCLUDE)
 if(MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/serial/msvc/x64 DESTINATION thirdparty/serial/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/serial/msvc/x64/ DESTINATION thirdparty/serial/lib)
 elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/serial/osx DESTINATION thirdparty/serial/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/serial/osx/ DESTINATION thirdparty/serial/lib)
 else()
     #install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/linux/install/lib/ DESTINATION thirdparty/oscpack/lib)
 endif()
