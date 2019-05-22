@@ -318,7 +318,6 @@
                 {
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "nap::RenderToTextureComponent",
-                    "InputTexture": "VideoColorTexture",
                     "OutputTexture": "OutputTexture",
                     "MaterialInstance": {
                         "Material": "FXMaterial",
@@ -328,12 +327,17 @@
                                 "mID": "intensityUniform",
                                 "Name": "intensity",
                                 "Value": 1.0
+                            },
+                            {
+                                "Type": "nap::UniformTexture2D",
+                                "mID": "input_tex_uniform",
+                                "Name": "inputTexture",
+                                "Texture": "VideoColorTexture"
                             }
                         ],
                         "BlendMode": "Opaque",
                         "DepthMode": "NoReadWrite"
                     },
-                    "TextureUniform": "inputTexture",
                     "ClearColor": {
                         "Values": [
                             255,

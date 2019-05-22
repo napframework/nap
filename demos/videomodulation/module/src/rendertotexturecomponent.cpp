@@ -9,7 +9,6 @@
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
-	RTTI_PROPERTY("InputTexture",		&nap::RenderToTextureComponent::mInputTexture,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OutputTexture",		&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("TextureUniform",		&nap::RenderToTextureComponent::mTexUniform,				nap::rtti::EPropertyMetaData::Default)
@@ -49,9 +48,6 @@ namespace nap
 		// Get resource
 		RenderToTextureComponent* resource = getComponent<RenderToTextureComponent>();
 
-		// Store textures
-		mInputTexture  = resource->mInputTexture.get();
-
 		// Create settings for depth 2D texture
 		mDepthTexture.mFormat = RenderTexture2D::EFormat::Depth;
 		mDepthTexture.mWidth  = resource->mOutputTexture->getWidth();
@@ -86,12 +82,7 @@ namespace nap
 		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
 			return false;
 
-		// Ensure the uniform to set the input texture is available on the source material
-		mTexUniform = resource->mTexUniform;
-		if (!ensureUniform(mTexUniform, errorState))
-			return false;
-
-		// Same applies for the matrices
+		// Ensure the matrices are present on the material
 		if (!ensureUniform(sProjectionUniform, errorState))
 			return false;
 
@@ -133,12 +124,6 @@ namespace nap
 		if (mTarget.switchColorTexture(texture, error))
 			return true;
 		return false;
-	}
-
-
-	void RenderToTextureComponentInstance::switchInputTexture(Texture2D& texture)
-	{
-		mInputTexture = &texture;
 	}
 
 
@@ -193,10 +178,6 @@ namespace nap
 		computeModelMatrix();
 		UniformMat4& modelUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(sModelUniform);
 		modelUniform.setValue(mModelMatrix);
-
-		// Set input texture
-		UniformTexture2D& input_tex_uniform = mMaterialInstance.getOrCreateUniform<UniformTexture2D>(mTexUniform);
-		input_tex_uniform.setTexture(*mInputTexture);
 
 		// Prepare blending
 		mMaterialInstance.pushBlendMode();
