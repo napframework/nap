@@ -326,20 +326,6 @@ namespace nap
 		 */
 		bool getCD();
 
-		/**
-		 * Returns a handle to the underlying serial object.
-		 * Careful: direct communication with the serial device is not recommended.
-		 * @return the underlying Serial object.
-		 */
-		const serial::Serial& getSerial() const					{ return *mSerialPort; }
-
-		/**
-		 * Returns a handle to the underlying serial object.
-		 * Careful: direct communication with the serial device is not recommended.
-		 * @return the underlying Serial object.
-		 */
-		serial::Serial& getSerial()								{ return *mSerialPort; }
-
 		std::string mPortName = "COM1";									///< Property: "PortName" the serial port to open and communicate with. Something like 'COM1' on windows and '/dev/ttyS0' on linux.
 		int mBaudRate = 9600;											///< Property: "BaudRate" the baud rate of the serial port.
 		ESerialByteSize mByteSize = ESerialByteSize::Eight;				///< Property: "ByteSize" size of each byte in the serial transmission of data.
