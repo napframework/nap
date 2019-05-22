@@ -9,10 +9,11 @@
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
-	RTTI_PROPERTY("OutputTexture",		&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaterialInstance",	&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("TextureUniform",		&nap::RenderToTextureComponent::mTexUniform,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",			&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OutputTexture",				&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ProjectionMatrixUniform",	&nap::RenderToTextureComponent::mProjectMatrixUniform,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ModelMatrixUniform",			&nap::RenderToTextureComponent::mModelMatrixUniform,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::rendertotexturecomponentInstance run time class definition 
@@ -26,8 +27,6 @@ RTTI_END_CLASS
 namespace nap
 {
 	// Some statics used by this component
-	static const std::string sProjectionUniform = "projectionMatrix";
-	static const std::string sModelUniform = "modelMatrix";
 	static const glm::mat4x4 sIdentityMatrix = glm::mat4x4();
 
 
@@ -83,10 +82,12 @@ namespace nap
 			return false;
 
 		// Ensure the matrices are present on the material
-		if (!ensureUniform(sProjectionUniform, errorState))
+		mProjectMatrixUniform = resource->mProjectMatrixUniform;
+		if (!ensureUniform(mProjectMatrixUniform, errorState))
 			return false;
 
-		if (!ensureUniform(sModelUniform, errorState))
+		mModelMatrixUniform = resource->mModelMatrixUniform;
+		if (!ensureUniform(mModelMatrixUniform, errorState))
 			return false;
 
 		// Create the renderable mesh, which represents a valid mesh / material combination
@@ -172,11 +173,11 @@ namespace nap
 		Material* comp_mat = mMaterialInstance.getMaterial();
 
 		// Push matrices
-		UniformMat4& projectionUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(sProjectionUniform);
+		UniformMat4& projectionUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(mProjectMatrixUniform);
 		projectionUniform.setValue(projectionMatrix);
 
 		computeModelMatrix();
-		UniformMat4& modelUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(sModelUniform);
+		UniformMat4& modelUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(mModelMatrixUniform);
 		modelUniform.setValue(mModelMatrix);
 
 		// Prepare blending
