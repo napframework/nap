@@ -51,14 +51,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-
-	static void clearError(SerialPort::Error& error)
-	{
-		error.mType = SerialPort::Error::EType::NoError;
-		error.mMessage.clear();
-	}
-
-
 	SerialPort::SerialPort()
 	{
 		// Create port
