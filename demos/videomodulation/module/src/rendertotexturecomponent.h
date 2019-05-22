@@ -13,7 +13,10 @@ namespace nap
 	class RenderToTextureComponentInstance;
 
 	/**
-	 * Renders directly into a texture without having to define a render target or mesh.
+	 * Renders an effect directly into a texture without having to define a render target or mesh.
+	 * Use this component as a post process render step.
+	 * This component manages its own render target and plane to render to.
+	 * The plane is automatically scaled to fit the bounds of the output texture.
 	 * Resource part of the component.
 	 */
 	class NAPAPI RenderToTextureComponent : public RenderableComponent
@@ -28,16 +31,19 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;			///< Property: 'OutputTexture' the target of the render step
-		MaterialInstanceResource		mMaterialInstanceResource;			///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
-		RGBColor8						mClearColor = { 255, 255, 255 };	///< Property: 'ClearColor' the color that is used to clear the render target
-		std::string						mTexUniform = "inputTexture";		///< Property: 'TexUniform' name of input uniform texture binding in shader
+		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;					///< Property: 'OutputTexture' the target of the render step
+		MaterialInstanceResource		mMaterialInstanceResource;					///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
+		RGBColor8						mClearColor = { 255, 255, 255 };			///< Property: 'ClearColor' the color that is used to clear the render target
+		std::string						mProjectMatrixUniform = "projectionMatrix";	///< Property: 'ProjectionMatrixUniform' name of the projection matrix uniform in the shader.
+		std::string						mModelMatrixUniform = "modelMatrix";		///< Property: 'ModelMatrixUniform' name of the model matrix uniform in the shader.
 	};
 
 
 	/**
-	 * Renders directly into a texture without having to define a render target or mesh.
+	 * Renders an effect directly into a texture without having to define a render target or mesh.
+	 * Use this component as a post process render step.
 	 * This component manages its own render target and plane to render to.
+	 * The plane is automatically scaled to fit the bounds of the output texture.
 	 * Simply declare the component in json and call draw() in the render part of your application.
 	 * It is still possible to render this component through the render service, although only orthographic cameras are supported.
 	 */
@@ -113,6 +119,8 @@ namespace nap
 		RenderService*		mService = nullptr;								///< Render service
 		glm::mat4x4			mModelMatrix;									///< Plane model matrix
 		bool				mDirty = true;									///< If the model matrix needs to be recomputed
+		std::string			mModelMatrixUniform;							///< Name of the model matrix uniform in the shader
+		std::string			mProjectMatrixUniform;							///< Name of the projection matrix uniform in the shader
 	
 		/**
 		 * Checks if the uniform is available on the source material
