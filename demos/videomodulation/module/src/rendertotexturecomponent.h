@@ -28,7 +28,6 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ResourcePtr<Texture2D>			mInputTexture = nullptr;			///< Property: 'InputTexture' the texture that serves as the input
 		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;			///< Property: 'OutputTexture' the target of the render step
 		MaterialInstanceResource		mMaterialInstanceResource;			///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		RGBColor8						mClearColor = { 255, 255, 255 };	///< Property: 'ClearColor' the color that is used to clear the render target
@@ -82,12 +81,6 @@ namespace nap
 		bool switchOutputTexture(nap::Texture2D& texture, utility::ErrorState& error);
 
 		/**
-		 * Switch the input texture	
-		 * @param input texture to bind to the material when rendering
-		 */
-		void switchInputTexture(Texture2D& texture);
-
-		/**
 		 * Directly executes the render step without having to go through the render service.
 		 * Call this in your app render() call. 
 		 * The render target associated with this component is automatically cleared and bound.
@@ -117,9 +110,6 @@ namespace nap
 		RenderTexture2D		mDepthTexture;									///< Depth texture which is required by the render target
 		MaterialInstance	mMaterialInstance;								///< The MaterialInstance as created from the resource.
 		RenderableMesh		mRenderableMesh;								///< Valid Plane / Material combination
-
-		Texture2D*			mInputTexture  = nullptr;						///< Texture that serves as the input
-		std::string			mTexUniform = "inputTexture";					///< Name of the texture uniform in the shader
 		RenderService*		mService = nullptr;								///< Render service
 		glm::mat4x4			mModelMatrix;									///< Plane model matrix
 		bool				mDirty = true;									///< If the model matrix needs to be recomputed
