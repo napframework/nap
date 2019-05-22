@@ -17,8 +17,8 @@ elseif(APPLE)
     set(SERIAL_LIBS_DEBUG ${SERIAL_DIR}/lib/Debug/libserial.a)
     set(SERIAL_LIBS_RELEASE ${SERIAL_DIR}/lib/Release/libserial.a)
 else()
-    #set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/lib/liboscpack.so)
-    #set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/lib/liboscpack.so)
+    set(SERIAL_LIBS_DEBUG ${SERIAL_DIR}/lib/Debug/libserial.a)
+    set(SERIAL_LIBS_RELEASE ${SERIAL_DIR}/lib/Release/libserial.a)
 endif()
 
 # include directory is universal
@@ -34,13 +34,8 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(serial REQUIRED_VARS SERIAL_DIR SERIAL_INCLUDE_DIRS SERIAL_LIBS_DEBUG SERIAL_LIBS_RELEASE)
 
-if(WIN32)
-    add_library(serial STATIC IMPORTED)
-elseif(APPLE)
-    add_library(serial STATIC IMPORTED)
-else()
-    add_library(serial SHARED IMPORTED)
-endif()
+# serial is always linked static
+add_library(serial STATIC IMPORTED)
 set_target_properties(serial PROPERTIES
                       IMPORTED_CONFIGURATIONS "Debug;Release"
                       IMPORTED_LOCATION_RELEASE ${SERIAL_LIBS_RELEASE}

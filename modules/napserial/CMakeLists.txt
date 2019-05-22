@@ -32,12 +32,6 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${S
 copy_module_json_to_bin()
 
 # Package into platform release
-#if(APPLE)
-#    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/oscpack/lib/Release)
-#    set(MACOS_EXTRA_RPATH_DEBUG ../../../../thirdparty/oscpack/lib/Debug)
-#elseif(UNIX)
-#    set(LINUX_EXTRA_RPATH ../../../../thirdparty/oscpack/lib)
-#endif()
 package_module()
 
 # Package oscpack into platform release
@@ -50,5 +44,5 @@ if(MSVC)
 elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/serial/osx/ DESTINATION thirdparty/serial/lib)
 else()
-    #install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/linux/install/lib/ DESTINATION thirdparty/oscpack/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/serial/linux/ DESTINATION thirdparty/serial/lib)
 endif()
