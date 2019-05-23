@@ -1,7 +1,9 @@
 #pragma once
 
-#include <component.h>
+#include "controlpointsmesh.h"
+#include "framemesh.h"
 
+#include <component.h>
 #include <boxmesh.h>
 #include <renderablemeshcomponent.h>
 #include <componentptr.h>
@@ -21,7 +23,9 @@ namespace nap
 		//
 		ComponentPtr<RenderableMeshComponent> mBoxRenderer;
 
-		ComponentPtr<TransformComponent> mControlPoint1;
+		//
+		ResourcePtr<ControlPointsMesh> mControlPointsMesh;
+		ResourcePtr<FrameMesh> mFrameMesh;
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -55,21 +59,24 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 		
-		void SetControlPointOne(glm::vec3 position);
-
+		void SetControlPoint(int index, glm::vec3 position);
+		glm::vec3 GetControlPoint(int index);
 	protected:
-		void UpdateBox(glm::vec3 position);
+		void updateBox();
 
 		ComponentInstancePtr<RenderableMeshComponent> mBoxRendererInstance 
 			= initComponentInstancePtr(this, &FlexBlockComponent::mBoxRenderer);
-
-		ComponentInstancePtr<TransformComponent> mControlPoint1Instance
-			= initComponentInstancePtr(this, &FlexBlockComponent::mControlPoint1);
 
 		// Position Attribute data
 		VertexAttribute<glm::vec3>* mVertexAttribute = nullptr;
 
 		// Normal Attribute data
 		VertexAttribute<glm::vec3>* mNormalAttribute = nullptr;
+
+		//
+		std::vector<glm::vec3> mControlPoints;
+
+		ResourcePtr<ControlPointsMesh> mControlPointsMesh;
+		ResourcePtr<FrameMesh> mFrameMesh;
 	};
 }

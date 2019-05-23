@@ -39,15 +39,22 @@ namespace nap
 		// Fetch resource manager to get access to all loaded resources
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
 
-		mControlPointOne = resourceManager->findObject<ParameterVec3>("ControlPointOnePositionParameter");
-		mControlPointOne->valueChanged.connect([this](glm::vec3 newValue)
+		//
+		auto& flexblockComponent = mApp.GetBlockEntity()->getComponent<FlexBlockComponentInstance>();
+		for (int i = 0; i < 8; i++) 
 		{
-			auto blockEntity = mApp.GetBlockEntity();
-			FlexBlockComponentInstance& flexblockComponent = blockEntity->getComponent<FlexBlockComponentInstance>();
-			flexblockComponent.SetControlPointOne(newValue);
-		});
+			std::string id = "Control Point " + std::to_string(i+1);
+			auto parameter = resourceManager->findObject<ParameterVec3>(id);
+			auto value = flexblockComponent.GetControlPoint(i);
+			parameter->setValue(value);
+			parameter->valueChanged.connect([this, i](glm::vec3 newValue)
+			{
+				auto blockEntity = mApp.GetBlockEntity();
+				FlexBlockComponentInstance& flexblockComponent = blockEntity->getComponent<FlexBlockComponentInstance>();
+				flexblockComponent.SetControlPoint(i, newValue);
+			});
+		}
 	}
-
 
 	void FlexblockGui::update()
 	{

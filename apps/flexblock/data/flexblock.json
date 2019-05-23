@@ -4,7 +4,7 @@
             "Type": "nap::BoxMesh",
             "mID": "BoxMesh",
             "Size": {
-                "x": 1.0,
+                "x": 2.0,
                 "y": 1.0,
                 "z": 1.0
             },
@@ -13,6 +13,11 @@
                 "y": 0.0,
                 "z": 0.0
             }
+        },
+        {
+            "Type": "nap::ControlPointsMesh",
+            "mID": "ControlPointsMesh",
+            "ReferenceMesh": "BoxMesh"
         },
         {
             "Type": "nap::Entity",
@@ -42,7 +47,7 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "BlockRenderMesh",
+                    "mID": "BoxRenderer",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Material": "BlockMaterial",
@@ -94,7 +99,7 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "PerspectiveCamera",
                     "Properties": {
-                        "FieldOfView": 50.0,
+                        "FieldOfView": 30.0,
                         "NearClippingPlane": 1.0,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
@@ -132,61 +137,11 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "ControlPointOneEntity",
+            "mID": "ControlPointsEntity",
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "ControlPointOneTransform",
-                    "Properties": {
-                        "Translate": {
-                            "x": -0.5,
-                            "y": 0.0,
-                            "z": 1.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "ControlPointOneMeshRenderer",
-                    "Mesh": "ControlPointMesh",
-                    "MaterialInstance": {
-                        "Material": "ControlPointMaterial",
-                        "Uniforms": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "ControlPointTwoEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "ControlPointTwoTransform",
+                    "mID": "ControlPointsTransform",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -208,8 +163,8 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "ControlPointTwoMeshRenderer",
-                    "Mesh": "ControlPointMesh",
+                    "mID": "ControlPointsMeshRenderer",
+                    "Mesh": "ControlPointsMesh",
                     "MaterialInstance": {
                         "Material": "ControlPointMaterial",
                         "Uniforms": [],
@@ -240,7 +195,7 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 1.0,
+                            "y": 0.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -259,23 +214,24 @@
                 {
                     "Type": "nap::FlexBlockComponent",
                     "mID": "FlexBlockComponent",
-                    "mBoxRenderer": "BlockRenderMesh",
-                    "mControlPoint1": "./ControlPointOneEntity/ControlPointOneTransform"
+                    "BoxRenderer": "./BlockEntity/BoxRenderer",
+                    "ControlPointsMesh": "ControlPointsMesh",
+                    "FrameMesh": "FrameMesh"
                 }
             ],
             "Children": [
                 "BlockEntity",
-                "ControlPointOneEntity",
-                "ControlPointTwoEntity"
+                "ControlPointsEntity",
+                "FrameEntity"
             ]
         },
         {
             "Type": "nap::Entity",
-            "mID": "PlaneEntity",
+            "mID": "FrameEntity",
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "PlaneTransform",
+                    "mID": "nap::TransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -283,7 +239,7 @@
                             "z": 0.0
                         },
                         "Rotate": {
-                            "x": 90.0,
+                            "x": 0.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -297,10 +253,10 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "PlaneRenderMesh",
-                    "Mesh": "PlaneMesh",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "FrameMesh",
                     "MaterialInstance": {
-                        "Material": "PlaneMaterial",
+                        "Material": "FrameMaterial",
                         "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -347,9 +303,13 @@
                 }
             ],
             "Children": [
-                "FlexBlockEntity",
-                "PlaneEntity"
+                "FlexBlockEntity"
             ]
+        },
+        {
+            "Type": "nap::FrameMesh",
+            "mID": "FrameMesh",
+            "ReferenceMesh": "BoxMesh"
         },
         {
             "Type": "nap::Material",
@@ -427,6 +387,43 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "FrameMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3FrameColor",
+                    "Name": "inColor",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 1.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Shader": "ControlPointShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normal"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "PlaneMaterial",
             "Uniforms": [
                 {
@@ -461,6 +458,117 @@
             ],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "Parameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Control Point 1",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Control Point 2",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Control Point 3",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Control Point 4",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Control Point 5",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Control Point 6",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Control Point 7",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Control Point 8",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
+            "Groups": []
         },
         {
             "Type": "nap::PlaneMesh",
@@ -530,16 +638,6 @@
             "Radius": 0.05000000074505806,
             "Rings": 50.0,
             "Sectors": 50.0
-        },
-		{
-			"Type": "nap::ParameterGroup",
-			"mID": "Parameters",
-			"Parameters": [
-				{
-					"Type": "nap::ParameterVec3",
-					"mID": "ControlPointOnePositionParameter"
-				}
-			]
-		}
+        }
     ]
 }
