@@ -17,7 +17,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene mod_napfont mod_napinput mod_napparameter)
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
 if(APPLE)
@@ -89,6 +89,8 @@ if (WIN32)
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
 elseif(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
+    # Add extra modules for RPATH building on macOS, likely related to NAP-225
+    list(APPEND DEPENDENT_NAP_MODULES mod_napfont mod_napinput mod_napparameter)
 
     set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 
                                                                             "${DEPENDENT_NAP_MODULES}" 
