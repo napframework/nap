@@ -1,5 +1,6 @@
 #include <napqt/qtutils.h>
 #include "fcurvemodel.h"
+#include "appcontext.h"
 
 using namespace napkin;
 
@@ -125,7 +126,8 @@ void FCurveAdapter::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 const PropertyPath FCurveAdapter::pointPath(int pointIndex)
 {
 	std::string pointPath = QString("Points/%1").arg(pointIndex).toStdString();
-	return {sourceCurve(), nap::rtti::Path::fromString(pointPath)};
+	assert(AppContext::isAvailable());
+	return {sourceCurve(), nap::rtti::Path::fromString(pointPath), *AppContext::get().getDocument()};
 }
 
 const QColor FCurveAdapter::color() const

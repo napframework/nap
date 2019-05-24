@@ -97,7 +97,7 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	for (auto& p : mPropertyPaths)
 		p->updateObjectName(oldName, newName);
 
-	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName));
+	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);
 	assert(path.isValid());
 	propertyValueChanged(path);
 
@@ -466,7 +466,7 @@ void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 	parent.mChildren.erase(parent.mChildren.begin() + childIndex);
 	objectChanged(&parent);
 
-	PropertyPath childrenProp(parent, nap::rtti::Path::fromString("Children"));
+	PropertyPath childrenProp(parent, nap::rtti::Path::fromString("Children"), *this);
 	assert(childrenProp.isValid());
 	propertyValueChanged(childrenProp);
 }
@@ -802,7 +802,7 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 			if (link.mTarget != &targetObject)
 				continue;
 
-			PropertyPath propPath(*sourceObject, link.mSourcePath);
+			PropertyPath propPath(*sourceObject, link.mSourcePath, *this);
 			auto proppathstr = propPath.toString();
 			assert(propPath.isPointer());
 
