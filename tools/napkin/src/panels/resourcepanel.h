@@ -138,6 +138,8 @@ namespace napkin
 		 */
 		void menuHook(QMenu& menu);
 
+		void onDocumentOpened(Document* doc);
+
 	private:
 		QVBoxLayout mLayout;	  // Layout
 		ResourceModel mModel;	 // Model
