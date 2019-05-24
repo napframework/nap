@@ -423,43 +423,6 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
-            "Type": "nap::Material",
-            "mID": "PlaneMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3PlaneColor",
-                    "Name": "inColor",
-                    "Value": {
-                        "x": 0.32100000977516177,
-                        "y": 0.32899999618530276,
-                        "z": 0.41499999165534975
-                    }
-                }
-            ],
-            "Shader": "PlaneShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Color0",
-                    "ShaderAttributeID": "in_Color0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
             "Type": "nap::ParameterGroup",
             "mID": "Parameters",
             "Parameters": [
@@ -571,20 +534,6 @@
             "Groups": []
         },
         {
-            "Type": "nap::PlaneMesh",
-            "mID": "PlaneMesh",
-            "Size": {
-                "x": 10.0,
-                "y": 10.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Width": 1280,
@@ -627,17 +576,21 @@
             "mFragShader": "shaders/control_point.frag"
         },
         {
-            "Type": "nap::Shader",
-            "mID": "PlaneShader",
-            "mVertShader": "shaders/plane.vert",
-            "mFragShader": "shaders/plane.frag"
-        },
-        {
             "Type": "nap::SphereMesh",
             "mID": "ControlPointMesh",
             "Radius": 0.05000000074505806,
             "Rings": 50.0,
             "Sectors": 50.0
+        },
+        {
+            "Type": "nap::UniformVec3",
+            "mID": "UniformVec3PlaneColor",
+            "Name": "inColor",
+            "Value": {
+                "x": 0.32100000977516177,
+                "y": 0.32899999618530276,
+                "z": 0.41499999165534975
+            }
         }
     ]
 }

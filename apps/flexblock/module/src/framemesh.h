@@ -22,6 +22,8 @@ namespace nap
 
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 		ResourcePtr<FlexBlockMesh> mFlexBlockMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
+		
+		const math::Box& getBox() const { return mBox; }
 	public:
 		glm::vec3 mSize = { 1.0f, 1.0f, 1.0f };			///< Property: 'Dimensions' of the frame
 	protected:
@@ -45,5 +47,7 @@ namespace nap
 
 		// Color attribute data
 		std::vector<nap::Vec4VertexAttribute*> mColorAttrs;
+
+		math::Box mBox = { 1.0f, 1.0f, 1.0f };
 	};
 }

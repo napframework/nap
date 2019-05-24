@@ -128,7 +128,7 @@ namespace nap
 		vertices[10] = { max.x, max.y, min.z }; //< Back Top left
 		vertices[11] = { min.x, max.y, min.z };	//< Back Top right
 
-												// Fill normals side C
+		// Fill normals side C
 		for (int v = 2 * planeVertCount; v < planeVertCount * 3; v++)
 			normals[v] = { 0.0f, 0.0f, -1.0f };
 

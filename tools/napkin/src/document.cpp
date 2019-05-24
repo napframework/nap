@@ -307,8 +307,14 @@ void Document::removeInstanceProperties(nap::rtti::Object& object)
 
 void Document::removeInstanceProperties(nap::Scene& scene, nap::rtti::Object& object)
 {
+	// Get components based on object
 	auto allComponents = getComponentsRecursive(object);
 
+	// If there's nothing to compare against return
+	if (allComponents.isEmpty())
+		return;
+
+	// Otherwise iterate over all entities in the scene and see if it contains the given component
 	for (auto& rootEntity : scene.mEntities)
 	{
 		auto& props = rootEntity.mInstanceProperties;
@@ -401,19 +407,21 @@ void Document::removeInstanceProperties(PropertyPath path)
 
 QList<nap::Component*> Document::getComponentsRecursive(nap::rtti::Object& object)
 {
+	// List of components to return
 	QList<nap::Component*> components;
 
-	auto component = dynamic_cast<nap::Component*>(&object);
-	if (object.get_type().is_derived_from<nap::Component>())
+	// Check if the incoming object is a component
+	nap::Component* component = rtti_cast<nap::Component>(&object);
+	if (component != nullptr)
 	{
 		components.append(component);
 		return components;
 	}
 
-	auto entity = dynamic_cast<nap::Entity*>(&object);
-	if (entity)
+	nap::Entity* entity = rtti_cast<nap::Entity>(&object);
+	if (entity != nullptr)
 	{
-		recurseChildren(*dynamic_cast<nap::Entity*>(&object), [&components](nap::Entity& child)
+		recurseChildren(*entity, [&components](nap::Entity& child)
 		{
 			for (auto comp : child.mComponents)
 				components << comp.get();
@@ -421,7 +429,7 @@ QList<nap::Component*> Document::getComponentsRecursive(nap::rtti::Object& objec
 		return components;
 	}
 
-	assert(false);
+	// No component or entity
 	return components;
 }
 
@@ -858,7 +866,6 @@ QList<nap::RootEntity*> Document::getRootEntities(nap::Scene& scene, nap::rtti::
 
 Document::~Document()
 {
-	mPropertyPaths.clear();
 	mUndoStack.disconnect();
 }
 
