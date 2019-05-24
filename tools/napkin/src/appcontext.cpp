@@ -37,10 +37,8 @@ AppContext::~AppContext()
 
 AppContext& AppContext::get()
 {
-	if (appContextInstance == nullptr)
-		create();
-
-    return *appContextInstance;
+	assert(appContextInstance != nullptr);
+	return *appContextInstance;
 }
 
 
@@ -337,5 +335,10 @@ void AppContext::onUndoIndexChanged()
 	documentChanged(mDocument.get());
 }
 
+
+bool napkin::AppContext::isAvailable()
+{
+	return appContextInstance != nullptr;
+}
 
 
