@@ -92,14 +92,6 @@ PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop, Document
 	mDocument->registerPath(*this);
 }
 
-
-
-napkin::PropertyPath::PropertyPath()
-{
-
-}
-
-
 PropertyPath::~PropertyPath()
 {
 	if(mDocument != nullptr)

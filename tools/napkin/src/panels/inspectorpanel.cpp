@@ -24,8 +24,7 @@ void InspectorModel::setPath(const PropertyPath& path)
 
 void InspectorModel::removeItems()
 {
-	while (rowCount() > 0)
-		removeRow(0);
+	removeRows(0, rowCount());
 }
 
 void InspectorModel::rebuild()

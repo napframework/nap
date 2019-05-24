@@ -44,7 +44,7 @@ namespace napkin
 		/**
 		 * Creates an invalid path
 		 */
-		PropertyPath();
+		PropertyPath() = default;
 
 		/**
 		 * Create a PropertyPath to an object
