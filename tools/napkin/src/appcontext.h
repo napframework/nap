@@ -55,6 +55,11 @@ namespace napkin
 		 */
 		static void destroy();
 
+		/**
+		 * @return if the app context is available
+		 */ 
+		static bool isAvailable();
+
 		AppContext(); // Alas, this has to be public to be able to support the singleton unique_ptr construction
 
 		AppContext(AppContext const&) = delete;

@@ -42,13 +42,10 @@ bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 
 void napkin::ResourceModel::refresh()
 {
-	while (mEntitiesItem.rowCount() > 0)
-		mEntitiesItem.removeRow(0);
-	while (mObjectsItem.rowCount() > 0)
-		mObjectsItem.removeRow(0);
+	mEntitiesItem.removeRows(0, mEntitiesItem.rowCount());
+	mObjectsItem.removeRows(0, mObjectsItem.rowCount());
 
 	auto doc = AppContext::get().getDocument();
-
 	if (doc == nullptr)
 		return;
 
@@ -133,6 +130,8 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
 }
 
+
+
 void napkin::ResourcePanel::menuHook(QMenu& menu)
 {
 	auto selectedItem = mTreeView.getSelectedItem();
@@ -176,6 +175,7 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		}
 	}
 }
+
 
 void napkin::ResourcePanel::onNewFile()
 {
