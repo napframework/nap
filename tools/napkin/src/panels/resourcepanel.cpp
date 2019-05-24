@@ -46,7 +46,6 @@ void napkin::ResourceModel::refresh()
 	mObjectsItem.removeRows(0, mObjectsItem.rowCount());
 
 	auto doc = AppContext::get().getDocument();
-
 	if (doc == nullptr)
 		return;
 
@@ -131,6 +130,8 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
 }
 
+
+
 void napkin::ResourcePanel::menuHook(QMenu& menu)
 {
 	auto selectedItem = mTreeView.getSelectedItem();
@@ -174,6 +175,7 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		}
 	}
 }
+
 
 void napkin::ResourcePanel::onNewFile()
 {
