@@ -26,13 +26,15 @@ std::string NameIndex::toString() const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-PropertyPath::PropertyPath(Object& obj)
+PropertyPath::PropertyPath(Object& obj, Document& doc) 
+	: mDocument(&doc)
 {
 	mObjectPath.emplace_back(obj.mID);
-	document()->registerPath(*this);
+	mDocument->registerPath(*this);
 }
 
-PropertyPath::PropertyPath(const std::string& abspath)
+PropertyPath::PropertyPath(const std::string& abspath, Document& doc) 
+	: mDocument(&doc)
 {
 	auto pathParts = nap::utility::splitString(abspath, '@');
 	for (auto pathElm : nap::utility::splitString(pathParts[0], '/'))
@@ -43,10 +45,11 @@ PropertyPath::PropertyPath(const std::string& abspath)
 		for (auto propElm : nap::utility::splitString(pathParts[1], '/'))
 			mPropertyPath.emplace_back(propElm);
 
-	document()->registerPath(*this);
+	mDocument->registerPath(*this);
 }
 
-PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppath)
+PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppath, Document& doc) 
+	: mDocument(&doc)
 {
 	for (const auto& pathElm : nap::utility::splitString(abspath, '/'))
 		if (!pathElm.empty())
@@ -55,46 +58,44 @@ PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppa
 	for (const auto& propElm : nap::utility::splitString(proppath, '/'))
 		mPropertyPath.emplace_back(propElm);
 
-	document()->registerPath(*this);
+	mDocument->registerPath(*this);
 }
 
 
-PropertyPath::PropertyPath(const PPath& abspath)
-		: mObjectPath(abspath)
+PropertyPath::PropertyPath(const PPath& abspath, Document& doc)
+		: mObjectPath(abspath), mDocument(&doc)
 {
-	document()->registerPath(*this);
+	mDocument->registerPath(*this);
 }
 
-PropertyPath::PropertyPath(const PPath& absPath, const PPath& propPath)
-		: mObjectPath(absPath), mPropertyPath(propPath)
+PropertyPath::PropertyPath(const PPath& absPath, const PPath& propPath, Document& doc)
+		: mObjectPath(absPath), mPropertyPath(propPath), mDocument(&doc)
 {
-	document()->registerPath(*this);
+	mDocument->registerPath(*this);
 }
 
 
-PropertyPath::PropertyPath(Object& obj, const Path& path)
+PropertyPath::PropertyPath(Object& obj, const Path& path, Document& doc) : mDocument(&doc)
 {
 	auto id = obj.mID;
 	mObjectPath.emplace_back(NameIndex(id));
 	mPropertyPath.emplace_back(path.toString());
 
-	document()->registerPath(*this);
+	mDocument->registerPath(*this);
 }
 
 
-PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
+PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop, Document& doc) : mDocument(&doc)
 {
 	mObjectPath.emplace_back(obj.mID);
 	mPropertyPath.emplace_back(std::string(prop.get_name().data()));
-
-	document()->registerPath(*this);
+	mDocument->registerPath(*this);
 }
 
 PropertyPath::~PropertyPath()
 {
-	Document* doc = document();
-	if(doc != nullptr)
-		document()->deregisterPath(*this);
+	if(mDocument != nullptr)
+		mDocument->deregisterPath(*this);
 }
 
 const std::string PropertyPath::getName() const
@@ -152,15 +153,13 @@ std::string PropertyPath::getComponentInstancePath() const
 	if (mObjectPath.size() < 3)
 		return {};
 
-	auto doc = document();
-
 	// First object must be Scene
-	auto leadObject = doc->getObject(mObjectPath[0].mID);
+	auto leadObject = mDocument->getObject(mObjectPath[0].mID);
 	if (!leadObject || !leadObject->get_type().is_derived_from<nap::Scene>())
 		return {};
 
 	// Second Object must be RootEntity
-	auto secondObject = doc->getObject(mObjectPath[1].mID);
+	auto secondObject = mDocument->getObject(mObjectPath[1].mID);
 	if (!secondObject || !secondObject->get_type().is_derived_from<nap::Entity>())
 		return {};
 
@@ -178,13 +177,11 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 	if (mObjectPath.size() < 2)
 		return nullptr;
 
-	auto doc = document();
-
-	auto scene = dynamic_cast<nap::Scene*>(doc->getObject(mObjectPath[0].mID));
+	auto scene = dynamic_cast<nap::Scene*>(mDocument->getObject(mObjectPath[0].mID));
 	if (!scene)
 		return nullptr;
 
-	auto entity = dynamic_cast<nap::Entity*>(doc->getObject(mObjectPath[1].mID));
+	auto entity = dynamic_cast<nap::Entity*>(mDocument->getObject(mObjectPath[1].mID));
 	if (!entity)
 		return nullptr;
 
@@ -354,11 +351,9 @@ void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, r
 
 	// Remove from object list
 	removeInstancePropertyValue(val, this->getType());
-
-	auto doc = document();
-	doc->objectChanged(component);
-	for (auto scene : doc->getObjects<nap::Scene>())
-		doc->objectChanged(scene);
+	mDocument->objectChanged(component);
+	for (auto scene : mDocument->getObjects<nap::Scene>())
+		mDocument->objectChanged(scene);
 }
 
 Object* PropertyPath::getPointee() const
@@ -385,9 +380,7 @@ void PropertyPath::setPointee(Object* pointee)
 	{
 		// Assign the new value to the pointer (note that we're modifying a copy)
 		auto targetVal = getValue();
-
-		auto doc = document();
-		auto path = doc->relativeObjectPath(*getObject(), *pointee);
+		auto path = mDocument->relativeObjectPath(*getObject(), *pointee);
 
 		assignMethod.invoke(targetVal, path, *pointee);
 
@@ -403,19 +396,22 @@ void PropertyPath::setPointee(Object* pointee)
 
 PropertyPath PropertyPath::getParent() const
 {
+	assert(mDocument != nullptr);
 	if (hasProperty())
 	{
+		assert(mDocument != nullptr);
 		if (mPropertyPath.size() > 1)
-			return {mObjectPath, PPath(mPropertyPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1)};
+			return { mObjectPath, PPath(mPropertyPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1), *mDocument };
 
 		if (mPropertyPath.size() == 1)
-			return {mObjectPath};
+			return { mObjectPath, *mDocument };
 	}
 
 	if (mObjectPath.size() >= 2)
-		return {PPath(mObjectPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1)};
+		return { PPath(mObjectPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1), *mDocument };
 
-	return {};
+	// Invalid parent
+	return { };
 }
 
 rttr::property PropertyPath::getProperty() const
@@ -483,7 +479,8 @@ PropertyPath PropertyPath::getArrayElement(size_t index) const
 
 	PPath p = mPropertyPath;
 	p.emplace_back(std::to_string(index));
-	return {mObjectPath, p};
+	assert(mDocument != nullptr);
+	return { mObjectPath, p, *mDocument };
 }
 
 
@@ -501,7 +498,7 @@ bool PropertyPath::isInstanceProperty() const
 
 PropertyPath PropertyPath::getChild(const std::string& name) const
 {
-	return {objectPathStr(), propPathStr() + "/" + name};
+	return {objectPathStr(), propPathStr() + "/" + name, *mDocument};
 }
 
 nap::rtti::Object* PropertyPath::getObject() const
@@ -509,7 +506,7 @@ nap::rtti::Object* PropertyPath::getObject() const
 	if (mObjectPath.empty())
 		return nullptr;
 
-	return document()->getObject(mObjectPath.back().mID);
+	return mDocument->getObject(mObjectPath.back().mID);
 }
 
 Path PropertyPath::getPath() const
@@ -661,7 +658,8 @@ void PropertyPath::iterateProperties(PropertyVisitor visitor, int flags) const
 	{
 		PPath propPath;
 		propPath.emplace_back(std::string(prop.get_name().data()));
-		PropertyPath path(mObjectPath, propPath);
+		assert(mDocument != nullptr);
+		PropertyPath path(mObjectPath, propPath, *mDocument);
 
 		if (!visitor(path))
 			return;
@@ -727,7 +725,8 @@ void PropertyPath::iterateArrayElements(PropertyVisitor visitor, int flags) cons
 	{
 		PPath p = mPropertyPath;
 		p.emplace_back(std::to_string(i));
-		PropertyPath childPath(mObjectPath, p);
+		assert(mDocument != nullptr);
+		PropertyPath childPath(mObjectPath, p, *mDocument);
 
 		if (!visitor(childPath))
 			return;
@@ -743,7 +742,8 @@ void PropertyPath::iterateChildrenProperties(PropertyVisitor visitor, int flags)
 	{
 		PPath p = mPropertyPath;
 		p.emplace_back(std::string(childProp.get_name().data()));
-		PropertyPath childPath(mObjectPath, p);
+		assert(mDocument != nullptr);
+		PropertyPath childPath(mObjectPath, p, *mDocument);
 
 		if (!visitor(childPath))
 			return;
@@ -785,19 +785,13 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 		p.emplace_back(name);
 
 		// This path points to the pointee
-		PropertyPath childPath(op, p);
+		assert(mDocument != nullptr);
+		PropertyPath childPath(op, p, *mDocument);
 
 		if (!visitor(childPath))
 			return;
 	}
 
-}
-
-Document* PropertyPath::document() const
-{
-	if(AppContext::isAvailable())
-		return AppContext::get().getDocument();
-	return nullptr;
 }
 
 std::string PropertyPath::objectPathStr() const

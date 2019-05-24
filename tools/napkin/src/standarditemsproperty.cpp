@@ -167,7 +167,7 @@ void napkin::EmbeddedPointerItem::populateChildren()
 		nap::rtti::Path path;
 		path.pushAttribute(name);
 
-		appendRow(createPropertyItemRow({*object, path}));
+		appendRow(createPropertyItemRow({ *object, path, *(AppContext::get().getDocument())}));
 	}
 }
 

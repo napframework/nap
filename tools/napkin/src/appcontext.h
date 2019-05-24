@@ -221,6 +221,13 @@ namespace napkin
 		void documentOpened(QString filename);
 
 		/**
+		* Qt Signal
+		* Fired after a file has been closed and its objects are destructed
+		* @param filename Name of the file that was opened
+		*/
+		void documentClosing(QString doc);
+
+		/**
 		 * Qt Signal
 		 * Fires after a document has finished saving.
 		 * @param filename The file the data was saved to.
@@ -319,6 +326,11 @@ namespace napkin
 		 * When a new document has been set
 		 */
 		void onUndoIndexChanged();
+
+		/**
+		 * Closes currently active document if there is one
+		 */
+		void closeDocument();
 
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };

@@ -25,6 +25,7 @@ napkin::SceneModel::SceneModel() : QStandardItemModel()
 	setHorizontalHeaderLabels({"Name"});
 
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &SceneModel::onFileOpened);
+	connect(&AppContext::get(), &AppContext::documentClosing, this, &SceneModel::onFileClosed);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &SceneModel::onNewFile);
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &SceneModel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectChanged, this, &SceneModel::onObjectChanged);
@@ -46,15 +47,21 @@ napkin::RootEntityItem* napkin::SceneModel::rootEntityItem(nap::RootEntity& root
 	return nullptr;
 }
 
+
 void napkin::SceneModel::refresh()
 {
-	while (rowCount() > 0)
-		removeRow(0);
-
+	clear();
 	for (auto scene : getScenes())
 		appendRow(new SceneItem(*scene));
 
 }
+
+
+void napkin::SceneModel::clear()
+{
+	removeRows(0, rowCount());
+}
+
 
 void napkin::SceneModel::onObjectAdded(nap::rtti::Object* obj)
 {
@@ -83,6 +90,12 @@ void napkin::SceneModel::onFileOpened(const QString& filename)
 {
 	refresh();
 }
+
+void napkin::SceneModel::onFileClosed(const QString& filename)
+{
+	clear();
+}
+
 
 napkin::ScenePanel::ScenePanel() : QWidget()
 {
