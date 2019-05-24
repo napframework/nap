@@ -50,11 +50,12 @@ namespace nap
 		mFlexBlockMesh = resource->mFlexBlockMesh;
 		mFrameMesh = resource->mFrameMesh;
 
-
 		// Read & parse json files
 		// TODO : handle errors...
 		readShapes();
 		readSizes();
+
+		motor_input = std::vector<float>(8);
 
 		// TODO : define this somewhere else
 		frequency = 200;
@@ -146,6 +147,7 @@ namespace nap
 		// calc input
 		calcInput();
 
+		/*
 		// init control points
 		auto box = mFlexBlockMesh->getBox();
 		auto min = box.getMin();
@@ -163,6 +165,7 @@ namespace nap
 		points_object[6] = { max.x, max.y, min.z };	//< Back Top left
 		points_object[7] = { min.x, max.y, min.z };	//< Back Top right
 
+
 		// init frame points
 		auto frame = mFrameMesh->getBox();
 		min = frame.getMin();
@@ -179,6 +182,29 @@ namespace nap
 		points_frame[5] = { min.x, min.y, min.z };	//< Back lower right
 		points_frame[6] = { max.x, max.y, min.z };	//< Back Top left
 		points_frame[7] = { min.x, max.y, min.z };	//< Back Top right
+		*/
+
+		// 0 = 7 //< Back Top right
+		// 1 = 6 //< Back Top left
+		// 2 = 4 //< Back Lower left
+		// 3 = 5 //< Back lower right
+
+		// 4 = 2 //< Front Top left
+		// 5 = 3 //< Front Top right
+		// 6 = 1 //< Front Lower right
+		// 7 = 0 //< Front Lower left
+		std::vector<glm::vec3> frame = std::vector<glm::vec3>
+		{
+			points_frame[7],
+			points_frame[6],
+			points_frame[4],
+			points_frame[5],
+			points_frame[2],
+			points_frame[3],
+			points_frame[1],
+			points_frame[0]
+		};
+		mFrameMesh->setFramePoints(frame);
 
 		return true;
 	}
@@ -352,19 +378,10 @@ namespace nap
 		}
 	}
 
-	void FlexBlockComponentInstance::SetControlPoint(int index, glm::vec3 position)
+	void FlexBlockComponentInstance::SetMotorInput(int index, float value)
 	{
-		//
-		points_object[index] = position;
-
-		// update the control points mesh
-		mControlPointsMesh->setControlPoints(points_object);
-
-		// update ropes of frame
-		mFrameMesh->setControlPoints(points_object);
-
-		// update the box
-		mFlexBlockMesh->setControlPoints(points_object);
+		motor_input[index] = value;
+		setInput(motor_input);
 	}
 
 	glm::vec3 FlexBlockComponentInstance::GetControlPoint(int index)
@@ -392,7 +409,7 @@ namespace nap
 			
 			for (int j = 0; j < suspension_element_ids.size(); j++)
 			{
-				point_force += get_suspension_force_on_point_of_element(suspension_element_ids[i], i);
+				point_force += get_suspension_force_on_point_of_element(suspension_element_ids[j], i);
 			}
 		
 			// Internal forces + suspension forces on the other side of connected elements
@@ -420,10 +437,95 @@ namespace nap
 			for (int j = 0; j < object_element_ids_0.size(); j++)
 			{
 				point_force += get_projected_suspension_forces_on_opposite_point_of_element(object_element_ids_0[j], 1);
+				point_force_corr += get_object_element_force_of_element(object_element_ids_0[j], 1);
 			}
 
-			// stayed at run function line 176
+			for (int j = 0; j < object_element_ids_1.size(); j++)
+			{
+				point_force += get_projected_suspension_forces_on_opposite_point_of_element(object_element_ids_1[j], 0);
+				point_force_corr += get_object_element_force_of_element(object_element_ids_1[j], -1);
+			}
+
+			// add change to change
+			point_change[i] = point_force;
+			point_change_corr[i] = point_change_corr[i] + point_force_corr * 0.2f;
 		}
+
+		// add damping
+		for (int j = 0; j < point_change_corr.size(); j++)
+		{
+			point_change_corr[j] *= 0.95f;
+		}
+
+		// update position
+		for (int j = 0; j < points_object.size(); j++)
+		{
+			points_object[j] += point_change[j] * 0.01f + point_change_corr[j] * 0.2f;
+
+			//printf("[%f.2, %f.2, %f.2]", points_object[j].x, points_object[j].y, points_object[j].z);
+
+		}
+
+		//printf("\n");
+
+		concatPoints();
+		calcElements();
+
+		//
+		// 0 = 7 //< Back Top right
+		// 1 = 6 //< Back Top left
+		// 2 = 4 //< Back Lower left
+		// 3 = 5 //< Back lower right
+
+		// 4 = 2 //< Front Top left
+		// 5 = 3 //< Front Top right
+		// 6 = 1 //< Front Lower right
+		// 7 = 0 //< Front Lower left
+
+		std::vector<glm::vec3> points = std::vector<glm::vec3>
+		{
+			points_object[7],
+			points_object[6],
+			points_object[4],
+			points_object[5],
+			points_object[2],
+			points_object[3],
+			points_object[1],
+			points_object[0],
+		};
+
+		//inputs[index] = value;
+		//
+		//points_object[index] = position;
+
+		// update the control points mesh
+		mControlPointsMesh->setControlPoints(points);
+
+		// update ropes of frame
+		mFrameMesh->setControlPoints(points);
+		
+		// update the box
+		mFlexBlockMesh->setControlPoints(points);
+	}
+
+	void FlexBlockComponentInstance::setInput(std::vector<float> inputs)
+	{
+		float tot = 0.0f;
+		for (int i = 0; i < inputs.size(); i++)
+		{
+			inputs[i] += 0.2f; // why ??
+			tot += inputs[i];
+		}
+
+		for (int i = 0; i < inputs.size(); i++)
+		{
+			elements_input[i] = inputs[i] * force_object2frame;
+		}
+	}
+
+	glm::vec3 FlexBlockComponentInstance::get_object_element_force_of_element(int elidx, int direction)
+	{
+		return elements_length_delta[elidx] * force_object * (float)direction * elements_vector[elidx];
 	}
 
 	glm::vec3 FlexBlockComponentInstance::get_projected_suspension_forces_on_opposite_point_of_element(int object_element_id, int opposite_column)
@@ -434,13 +536,21 @@ namespace nap
 
 		int suspension_element_id = suspension_element_ids[0];
 
-		// stopped here...
-
-		//get_projected_suspension_force_on_opposite_point_of_element(object_element_id, suspension_element_id, opposite_point)
-		return{ 0.0f, 0.0f, 0.0f };
+		auto tot = get_projected_suspension_force_on_opposite_point_of_element(object_element_id, suspension_element_id, opposite_point);
+	
+		return tot;
 	}
 
-	//glm::vec3 FlexBlockComponentInstance::get_projected_suspension_force_on_opposite_point_of_element
+	glm::vec3 FlexBlockComponentInstance::get_projected_suspension_force_on_opposite_point_of_element(int object_element_id, int suspension_element_id, int opposite_point)
+	{
+		auto v1 = elements_vector[object_element_id];
+		auto v2 = get_suspension_force_on_point_of_element(suspension_element_id, opposite_point);
+		
+		auto d = glm::dot(v1, v2);
+		auto r = d * elements_vector[object_element_id];
+
+		return r;
+	}
 
 	glm::vec3 FlexBlockComponentInstance::get_suspension_force_on_point_of_element(int elidx, int point)
 	{
@@ -449,15 +559,14 @@ namespace nap
 
 	std::vector<int> FlexBlockComponentInstance::get_ids_of_suspension_elements_on_point(int point_id)
 	{
+		// Find the INDEX of the point_id in the array of elements_object2frame
+		// Add the length of the elements_object array(because the arrays are concatenated)
 		std::vector<int> returnVector;
 		for (int i = 0; i < elements_object2frame.size(); i++)
 		{
-			for (int j = 0; j < elements_object2frame[i].size(); j++)
+			if (elements_object2frame[i][0] == point_id)
 			{
-				if (elements_object2frame[i][j] == point_id)
-				{
-					returnVector.push_back(j + elements_object.size());
-				}
+				returnVector.push_back(i + elements_object.size());
 			}
 		}
 		

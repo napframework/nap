@@ -69,6 +69,123 @@ namespace nap
 		mMeshInstance->update(error);
 	}
 
+	void FrameMesh::setFramePoints(std::vector<glm::vec3> frame)
+	{
+		auto box = mFlexBlockMesh->getBox();
+
+		const glm::vec3& minBox = box.getMin();
+		const glm::vec3& maxBox = box.getMax();
+		glm::vec3 minFrame(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+		glm::vec3 maxFrame(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+
+		for (int i = 0; i < frame.size(); i++)
+		{
+			if (frame[i].x < minFrame.x)
+			{
+				minFrame.x = frame[i].x;
+			}
+			if (frame[i].y < minFrame.y)
+			{
+				minFrame.y = frame[i].y;
+			}
+			if (frame[i].z < minFrame.z)
+			{
+				minFrame.z = frame[i].z;
+			}
+
+			if (frame[i].x > maxFrame.x)
+			{
+				maxFrame.x = frame[i].x;
+			}
+			if (frame[i].y > maxFrame.y)
+			{
+				maxFrame.y = frame[i].y;
+			}
+			if (frame[i].z > maxFrame.z)
+			{
+				maxFrame.z = frame[i].z;
+			}
+		}
+
+		auto & verts = mPositionAttr->getData();
+		verts.clear();
+
+		// control point 1
+		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
+		verts.push_back(glm::vec3(minBox.x, minBox.y, maxBox.z));
+
+		// control point 2
+		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
+		verts.push_back(glm::vec3(maxBox.x, minBox.y, maxBox.z));
+
+		// control point 3
+		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
+		verts.push_back(glm::vec3(minBox.x, maxBox.y, maxBox.z));
+
+		// control point 4
+		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
+		verts.push_back(glm::vec3(maxBox.x, maxBox.y, maxBox.z));
+
+		// control point 5
+		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(maxBox.x, minBox.y, minBox.z));
+
+		// control point 6
+		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(minBox.x, minBox.y, minBox.z));
+
+		// control point 7
+		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(maxBox.x, maxBox.y, minBox.z));
+
+		// control point 8
+		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(minBox.x, maxBox.y, minBox.z));
+
+		// construct frame
+		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
+
+		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
+
+		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
+
+		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
+
+		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
+		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
+
+		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
+		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
+
+		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
+
+		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
+
+		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
+
+		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
+		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
+
+		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
+		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
+
+		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
+		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
+
+		int vertCount = verts.size();
+		mPositionAttr->setData(verts);
+
+		utility::ErrorState error;
+		mMeshInstance->update(error);
+	}
+
 	bool FrameMesh::setup(nap::utility::ErrorState& error)
 	{
 		assert(mMeshInstance != nullptr);
@@ -79,6 +196,7 @@ namespace nap
 
 		// Create initial position data
 		auto verts = std::vector<glm::vec3>();
+		verts.clear();
 
 		const glm::vec3& minBox = box.getMin();
 		const glm::vec3& maxBox = box.getMax();

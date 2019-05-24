@@ -43,15 +43,14 @@ namespace nap
 		auto& flexblockComponent = mApp.GetBlockEntity()->getComponent<FlexBlockComponentInstance>();
 		for (int i = 0; i < 8; i++) 
 		{
-			std::string id = "Control Point " + std::to_string(i+1);
-			auto parameter = resourceManager->findObject<ParameterVec3>(id);
-			auto value = flexblockComponent.GetControlPoint(i);
-			parameter->setValue(value);
-			parameter->valueChanged.connect([this, i](glm::vec3 newValue)
+			std::string id = "Input " + std::to_string(i+1);
+			auto parameter = resourceManager->findObject<ParameterFloat>(id);
+			parameter->setValue(0.0f);
+			parameter->valueChanged.connect([this, i](float newValue)
 			{
 				auto blockEntity = mApp.GetBlockEntity();
 				FlexBlockComponentInstance& flexblockComponent = blockEntity->getComponent<FlexBlockComponentInstance>();
-				flexblockComponent.SetControlPoint(i, newValue);
+				flexblockComponent.SetMotorInput(i, newValue);
 			});
 		}
 	}

@@ -85,7 +85,7 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "PerspectiveCamera",
                     "Properties": {
-                        "FieldOfView": 30.0,
+                        "FieldOfView": 60.0,
                         "NearClippingPlane": 1.0,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
@@ -427,106 +427,66 @@
             "mID": "Parameters",
             "Parameters": [
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 1",
-                    "Name": "",
-                    "Value": {
-                        "x": 2.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 1",
+                    "Name": "Input 1",
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 2",
-                    "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 2",
+                    "Name": "Input 2",
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 3",
-                    "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 3",
+                    "Name": "Input 3",
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 4",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 4",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 5",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 5",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 6",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 6",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 7",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 7",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 8",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 8",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 }

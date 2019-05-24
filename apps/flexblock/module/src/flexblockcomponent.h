@@ -58,7 +58,11 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		glm::vec3 get_object_element_force_of_element(int elidx, int direction);
+
 		glm::vec3 get_projected_suspension_forces_on_opposite_point_of_element(int object_element_id, int opposite_column);
+
+		glm::vec3 get_projected_suspension_force_on_opposite_point_of_element(int object_element_id, int suspension_element_id, int opposite_point);
 
 		glm::vec3 get_suspension_force_on_point_of_element(int elidx, int point);
 
@@ -72,8 +76,10 @@ namespace nap
 		
 		void concatPoints();
 
-		void SetControlPoint(int index, glm::vec3 position);
+		void SetMotorInput(int index, float value);
 		glm::vec3 GetControlPoint(int index);
+
+		void setInput(std::vector<float> inputs);
 	protected:
 		void readShapes();
 		void readSizes();
@@ -134,5 +140,6 @@ namespace nap
 		std::vector<float> elements_length_delta;
 
 		double starttime = 0.0;
+		std::vector<float> motor_input;
 	};
 }
