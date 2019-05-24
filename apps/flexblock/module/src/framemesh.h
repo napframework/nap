@@ -6,7 +6,7 @@
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
-#include <boxmesh.h>
+#include <flexblockmesh.h>
 
 namespace nap
 {
@@ -16,13 +16,14 @@ namespace nap
 	public:
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		void setControlPoints(std::vector<glm::vec3> controlPoints);
+
 		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
 
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
-		ResourcePtr<BoxMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
-	
-		void setControlPoints(std::vector<glm::vec3> controlPoints);
-		std::vector<glm::vec3> getControlPoints();
+		ResourcePtr<FlexBlockMesh> mFlexBlockMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
+	public:
+		glm::vec3 mSize = { 1.0f, 1.0f, 1.0f };			///< Property: 'Dimensions' of the frame
 	protected:
 		// Creates the mesh and shape
 		bool createMeshInstance(nap::utility::ErrorState& error);
@@ -44,9 +45,5 @@ namespace nap
 
 		// Color attribute data
 		std::vector<nap::Vec4VertexAttribute*> mColorAttrs;
-
-		std::vector<glm::vec3> mControlPoints;
-
-		void update();
 	};
 }

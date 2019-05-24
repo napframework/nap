@@ -2,6 +2,7 @@
 
 #include "controlpointsmesh.h"
 #include "framemesh.h"
+#include "flexblockmesh.h"
 
 #include <component.h>
 #include <boxmesh.h>
@@ -21,11 +22,9 @@ namespace nap
 		DECLARE_COMPONENT(FlexBlockComponent, FlexBlockComponentInstance)
 	public:
 		//
-		ComponentPtr<RenderableMeshComponent> mBoxRenderer;
-
-		//
 		ResourcePtr<ControlPointsMesh> mControlPointsMesh;
 		ResourcePtr<FrameMesh> mFrameMesh;
+		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -42,9 +41,8 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		FlexBlockComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)									{ }
-
+		FlexBlockComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource) { }
+		
 		/**
 		 * Initialize FlexBlockComponentInstance based on the FlexBlockComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -62,21 +60,10 @@ namespace nap
 		void SetControlPoint(int index, glm::vec3 position);
 		glm::vec3 GetControlPoint(int index);
 	protected:
-		void updateBox();
-
-		ComponentInstancePtr<RenderableMeshComponent> mBoxRendererInstance 
-			= initComponentInstancePtr(this, &FlexBlockComponent::mBoxRenderer);
-
-		// Position Attribute data
-		VertexAttribute<glm::vec3>* mVertexAttribute = nullptr;
-
-		// Normal Attribute data
-		VertexAttribute<glm::vec3>* mNormalAttribute = nullptr;
-
-		//
 		std::vector<glm::vec3> mControlPoints;
 
 		ResourcePtr<ControlPointsMesh> mControlPointsMesh;
 		ResourcePtr<FrameMesh> mFrameMesh;
+		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
 	};
 }

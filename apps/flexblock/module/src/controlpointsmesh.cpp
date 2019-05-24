@@ -52,18 +52,7 @@ namespace nap
 
 	void ControlPointsMesh::setControlPoints(std::vector<glm::vec3> controlPoints)
 	{
-		mControlPoints = controlPoints;
-		update();
-	}
-
-	std::vector<glm::vec3> ControlPointsMesh::getControlPoints()
-	{
-		return mControlPoints;
-	}
-
-	void ControlPointsMesh::update()
-	{
-		mPositionAttr->setData(mControlPoints);
+		mPositionAttr->setData(controlPoints);
 
 		utility::ErrorState error;
 		mMeshInstance->update(error);
@@ -113,22 +102,22 @@ namespace nap
 		auto box = mReferenceMesh->getBox();
 
 		// Create initial position data
-		mControlPoints = std::vector<glm::vec3>(8, { 0.0f, 0.0f, 0.0f });
+		auto verts = std::vector<glm::vec3>(8, { 0.0f, 0.0f, 0.0f });
 
 		const glm::vec3& min = box.getMin();
 		const glm::vec3& max = box.getMax();
 
-		mControlPoints[0] = { min.x, min.y, max.z };	//< Front Lower left
-		mControlPoints[1] = { max.x, min.y, max.z };	//< Front Lower right
-		mControlPoints[2] = { min.x, max.y, max.z };	//< Front Top left
-		mControlPoints[3] = { max.x, max.y, max.z };	//< Front Top right
+		verts[0] = { min.x, min.y, max.z };	//< Front Lower left
+		verts[1] = { max.x, min.y, max.z };	//< Front Lower right
+		verts[2] = { min.x, max.y, max.z };	//< Front Top left
+		verts[3] = { max.x, max.y, max.z };	//< Front Top right
 
-		mControlPoints[4] = { max.x, min.y, min.z };	//< Back Lower left
-		mControlPoints[5] = { min.x, min.y, min.z };	//< Back lower right
-		mControlPoints[6] = { max.x, max.y, min.z }; //< Back Top left
-		mControlPoints[7] = { min.x, max.y, min.z };	//< Back Top right
+		verts[4] = { max.x, min.y, min.z };	//< Back Lower left
+		verts[5] = { min.x, min.y, min.z };	//< Back lower right
+		verts[6] = { max.x, max.y, min.z }; //< Back Top left
+		verts[7] = { min.x, max.y, min.z };	//< Back Top right
 
-		mPositionAttr->setData(mControlPoints);
+		mPositionAttr->setData(verts);
 
 		// Create initial normal data
 		std::vector<glm::vec3> normals(8, { 0.0f, 1.0f,0.0f });

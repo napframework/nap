@@ -6,7 +6,8 @@
 #include <glm/geometric.hpp>
 
 RTTI_BEGIN_CLASS(nap::FrameMesh)
-	RTTI_PROPERTY("ReferenceMesh", &nap::FrameMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Size", &nap::FrameMesh::mSize, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ReferenceMesh", &nap::FrameMesh::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -18,9 +19,9 @@ namespace nap
 	{
 		// Make sure the reference mesh contains triangles
 		bool contains_triangles = false;
-		for (int i = 0; i < mReferenceMesh->getMeshInstance().getNumShapes(); i++)
+		for (int i = 0; i < mFlexBlockMesh->getMeshInstance().getNumShapes(); i++)
 		{
-			if (utility::isTriangleMesh(mReferenceMesh->getMeshInstance().getShape(i)))
+			if (utility::isTriangleMesh(mFlexBlockMesh->getMeshInstance().getShape(i)))
 				contains_triangles = true;
 		}
 
@@ -53,27 +54,15 @@ namespace nap
 
 	void FrameMesh::setControlPoints(std::vector<glm::vec3> controlPoints)
 	{
-		mControlPoints = controlPoints;
-
-		update();
-	}
-
-	std::vector<glm::vec3> FrameMesh::getControlPoints()
-	{
-		return mControlPoints;
-	}
-
-	void FrameMesh::update()
-	{
 		auto verts = mPositionAttr->getData();
-		verts[1] = mControlPoints[0];
-		verts[3] = mControlPoints[1];
-		verts[5] = mControlPoints[2];
-		verts[7] = mControlPoints[3];
-		verts[9] = mControlPoints[4];
-		verts[11] = mControlPoints[5];
-		verts[13] = mControlPoints[6];
-		verts[15] = mControlPoints[7];
+		verts[1] = controlPoints[0];
+		verts[3] = controlPoints[1];
+		verts[5] = controlPoints[2];
+		verts[7] = controlPoints[3];
+		verts[9] = controlPoints[4];
+		verts[11] = controlPoints[5];
+		verts[13] = controlPoints[6];
+		verts[15] = controlPoints[7];
 		mPositionAttr->setData(verts);
 
 		utility::ErrorState error;
@@ -84,15 +73,16 @@ namespace nap
 	{
 		assert(mMeshInstance != nullptr);
 		
-		auto box = mReferenceMesh->getBox();
+		auto box = mFlexBlockMesh->getBox();
+		auto frame = math::Box(mSize.x, mSize.y, mSize.z, glm::vec3(0,0,0));
 
 		// Create initial position data
 		auto verts = std::vector<glm::vec3>();
 
 		const glm::vec3& minBox = box.getMin();
 		const glm::vec3& maxBox = box.getMax();
-		const glm::vec3& minFrame = box.getMin() * 2.0f;
-		const glm::vec3& maxFrame = box.getMax() * 2.0f;
+		const glm::vec3& minFrame = frame.getMin();
+		const glm::vec3& maxFrame = frame.getMax();
 
 		// control point 1
 		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z ));

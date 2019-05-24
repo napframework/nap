@@ -1,12 +1,13 @@
 #pragma once
 #include "mesh.h"
-
+#include "flexblockmesh.h"
 #include "triangleiterator.h"
 
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <boxmesh.h>
+
 
 namespace nap
 {
@@ -19,10 +20,9 @@ namespace nap
 		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
 
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
-		ResourcePtr<BoxMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
+		ResourcePtr<FlexBlockMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
 	
 		void setControlPoints(std::vector<glm::vec3> controlPoints);
-		std::vector<glm::vec3> getControlPoints();
 	protected:
 		// Creates the mesh and shape
 		bool createMeshInstance(nap::utility::ErrorState& error);
@@ -44,9 +44,5 @@ namespace nap
 
 		// Color attribute data
 		std::vector<nap::Vec4VertexAttribute*> mColorAttrs;
-
-		std::vector<glm::vec3> mControlPoints;
-
-		void update();
 	};
 }
