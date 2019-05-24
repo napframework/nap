@@ -33,6 +33,11 @@ namespace napkin
 		void refresh();
 
 		/**
+		 * Clears all items from the model
+		 */
+		void clear();
+
+		/**
 		 * Add an item (row) to represent an Object
 		 * @param object the object to represent
 		 */
@@ -119,6 +124,12 @@ namespace napkin
 		 * @param filename The name of the file that was opened
 		 */
 		void onFileOpened(const QString& filename);
+
+		/**
+		 * Called just after a file has been closed
+		 * @param filename The name of the file that was just closed
+		 */
+		void onFileClosed(const QString& filename);
 
 		/**
 		 * Called when the global selection was changed
