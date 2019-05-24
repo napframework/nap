@@ -75,6 +75,7 @@ namespace nap
 		
 		auto box = mFlexBlockMesh->getBox();
 		auto frame = math::Box(mSize.x, mSize.y, mSize.z, glm::vec3(0,0,0));
+		mBox = frame;
 
 		// Create initial position data
 		auto verts = std::vector<glm::vec3>();

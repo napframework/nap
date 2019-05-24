@@ -3,6 +3,7 @@
 #include "controlpointsmesh.h"
 #include "framemesh.h"
 #include "flexblockmesh.h"
+#include "FlexblockData.h"
 
 #include <component.h>
 #include <boxmesh.h>
@@ -56,14 +57,82 @@ namespace nap
 		 * @param deltaTime time in between frames in seconds
 		 */
 		virtual void update(double deltaTime) override;
+
+		glm::vec3 get_projected_suspension_forces_on_opposite_point_of_element(int object_element_id, int opposite_column);
+
+		glm::vec3 get_suspension_force_on_point_of_element(int elidx, int point);
+
+		std::vector<int> get_ids_of_suspension_elements_on_point(int id);
+
+		void calcInput();
+
+		void calcElements();
+
+		void concatElements();
 		
+		void concatPoints();
+
 		void SetControlPoint(int index, glm::vec3 position);
 		glm::vec3 GetControlPoint(int index);
 	protected:
-		std::vector<glm::vec3> mControlPoints;
-
+		void readShapes();
+		void readSizes();
+	protected:
 		ResourcePtr<ControlPointsMesh> mControlPointsMesh;
 		ResourcePtr<FrameMesh> mFrameMesh;
 		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
+
+		//
+		float force_object = 10.0f;
+		float force_object_spring = 0.02f;
+		float force_object2frame = 2.0f;
+		float change_speed = 1.0f;
+
+		float maxacc;
+		float maxspeed;
+
+		float lengtherror = 0;
+
+		float frequency;
+
+		FlexblockShape objshape;
+		FlexblockSize objsize;
+		int inputs;
+		int countInputs;
+
+		std::vector<glm::vec3> points_object;
+		std::vector<glm::vec3> points_frame;
+
+		std::vector<std::vector<int>> elements_object;
+		std::vector<std::vector<int>> elements_object2frame;
+		std::vector<std::vector<int>> elements_frame;
+
+		std::vector<FlexblockShape> shapes;
+		std::vector<FlexblockSize> sizes;
+
+		float endtime = 0.0f;
+		std::vector<glm::vec3> points;
+		std::vector<std::vector<int>> elements;
+		std::vector<std::vector<int>> elements_all;
+		std::vector<glm::vec3> elements_vector;
+		std::vector<float> elements_length;
+		std::vector<float> elements_length_ref;
+		std::vector<float> elements_object_length;
+		std::vector<float> elements_input;
+		std::vector<glm::vec3> point_change;
+		std::vector<glm::vec3> point_change_corr;
+		glm::vec3 point_force;
+		glm::vec3 point_force_corr;
+		std::vector<int> element_indices;
+
+		std::vector<float> override;
+		float slack = 0.0f;
+
+		float motorspd = 0.0f;
+		float motoracc = 0.0f;
+
+		std::vector<float> elements_length_delta;
+
+		double starttime = 0.0;
 	};
 }
