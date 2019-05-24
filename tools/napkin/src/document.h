@@ -231,6 +231,7 @@ namespace napkin
 
 		/**
 		 * Get all components recursively starting from the given object
+		 * If the given object is not a component or entity the list is empty
 		 */
 		QList<nap::Component*> getComponentsRecursive(nap::rtti::Object& object);
 
