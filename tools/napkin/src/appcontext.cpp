@@ -287,7 +287,7 @@ void AppContext::handleURI(const QString& uri)
 		if (match.hasMatch())
 		{
 			auto proppath = match.captured(2);
-			PropertyPath path(*obj, nap::rtti::Path::fromString(proppath.toStdString()));
+			PropertyPath path(*obj, nap::rtti::Path::fromString(proppath.toStdString()), *mDocument);
 			propertySelectionChanged(path);
 		}
 		return;
