@@ -33,6 +33,11 @@ namespace napkin
 		void refresh();
 
 		/**
+		 * Clears the list
+		 */
+		void clear();
+
+		/**
 		 * Called when an object has been added
 		 * @param obj The object that was added
 		 */
@@ -59,6 +64,11 @@ namespace napkin
 		 * @param filename The name of the file that was opened
 		 */
 		void onFileOpened(const QString& filename);
+
+		/**
+		 * Called just after a file has been closed
+		 */
+		void onFileClosed(const QString& filename);
 	};
 
 	/**

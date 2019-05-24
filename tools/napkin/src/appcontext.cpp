@@ -32,7 +32,9 @@ AppContext::AppContext()
 
 
 AppContext::~AppContext()
-{}
+{
+	closeDocument();
+}
 
 
 AppContext& AppContext::get()
@@ -54,16 +56,6 @@ void AppContext::destroy()
     appContextInstance = nullptr;
 }
 
-
-Document* AppContext::newDocument()
-{
-	mDocument = std::make_unique<Document>(getCore());
-	connectDocumentSignals();
-	newDocumentCreated();
-
-	documentChanged(mDocument.get());
-	return mDocument.get();
-}
 
 Document* AppContext::loadDocument(const QString& filename)
 {
@@ -90,6 +82,19 @@ void AppContext::reloadDocument()
 	loadDocument(mCurrentFilename);
 }
 
+Document* AppContext::newDocument()
+{
+	// Create new document
+	closeDocument();
+	mDocument = std::make_unique<Document>(getCore());
+	connectDocumentSignals();
+
+	// Notify listeners
+	newDocumentCreated();
+	documentChanged(mDocument.get());
+	return mDocument.get();
+}
+
 Document* AppContext::loadDocumentFromString(const std::string& data, const QString& filename)
 {
 	ErrorState err;
@@ -108,8 +113,11 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 		return nullptr;
 	}
 
+	// Create new document
+	closeDocument();
 	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
 
+	// Notify listeners
 	connectDocumentSignals();
 	documentOpened(filename);
 	Document* doc = mDocument.get();
@@ -341,4 +349,14 @@ bool napkin::AppContext::isAvailable()
 	return appContextInstance != nullptr;
 }
 
+
+void napkin::AppContext::closeDocument()
+{
+	if (mDocument == nullptr)
+		return;
+
+	QString prev_doc_name = mDocument->getCurrentFilename();
+	documentClosing(prev_doc_name);
+	mDocument.reset(nullptr);
+}
 
