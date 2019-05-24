@@ -42,36 +42,37 @@ namespace napkin
 	{
 	public:
 		/**
-		 * Create an invalid path.
+		 * Creates an invalid path
 		 */
-		PropertyPath() = default;
+		PropertyPath();
 
 		/**
 		 * Create a PropertyPath to an object
 		 * @param obj The object to create the path to.
 		 */
-		PropertyPath(nap::rtti::Object& obj);
+		PropertyPath(nap::rtti::Object& obj, Document& doc);
 
-		PropertyPath(const std::string& abspath);
+		PropertyPath(const std::string& abspath, Document& doc);
 
-		PropertyPath(const std::string& abspath, const std::string& proppath);
+		PropertyPath(const std::string& abspath, const std::string& proppath, Document& doc);
 
-		PropertyPath(const PPath& abspath);
-		PropertyPath(const PPath& absPath, const PPath& propPath);
+		PropertyPath(const PPath& abspath, Document& doc);
+		
+		PropertyPath(const PPath& absPath, const PPath& propPath, Document& doc);
 
 		/**
 		 * Create a PropertyPath using an Object and a nap::rtti::Path
 		 * @param obj The object this property is on
 		 * @param path The path to the property
 		 */
-		PropertyPath(nap::rtti::Object& obj, const nap::rtti::Path& path);
+		PropertyPath(nap::rtti::Object& obj, const nap::rtti::Path& path, Document& doc);
 
 		/**
 		 * Create a PropertyPath using an Object and a property
 		 * @param obj
 		 * @param prop
 		 */
-		PropertyPath(nap::rtti::Object& obj, rttr::property prop);
+		PropertyPath(nap::rtti::Object& obj, rttr::property prop, Document& doc);
 
 		~PropertyPath();
 
@@ -274,7 +275,6 @@ namespace napkin
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
-		Document* document() const;
 
 		nap::ComponentInstanceProperties* instanceProps() const;
 		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
@@ -290,6 +290,7 @@ namespace napkin
 		std::string objectPathStr() const;
 		std::string propPathStr() const;
 
+		Document* mDocument = nullptr;
 		PPath mObjectPath;
 		PPath mPropertyPath;
 	};

@@ -24,7 +24,7 @@ QVariant InstPropAttribItem::data(int role) const
 		assert(instPropsItem);
 		auto compPath = instPropsItem->props().mTargetComponent.getInstancePath();
 
-		PropertyPath propPath(compPath, mAttrib.mPath);
+		PropertyPath propPath(compPath, mAttrib.mPath, *AppContext::get().getDocument());
 		QString val;
 		if (propPath.isPointer())
 		{
