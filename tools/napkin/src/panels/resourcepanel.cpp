@@ -42,9 +42,7 @@ bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 
 void napkin::ResourceModel::refresh()
 {
-	mEntitiesItem.removeRows(0, mEntitiesItem.rowCount());
-	mObjectsItem.removeRows(0, mObjectsItem.rowCount());
-
+	clear();
 	auto doc = AppContext::get().getDocument();
 	if (doc == nullptr)
 		return;
@@ -52,6 +50,14 @@ void napkin::ResourceModel::refresh()
 	for (nap::rtti::Object* ob : topLevelObjects(doc->getObjectPointers()))
 		addObjectItem(*ob);
 }
+
+
+void napkin::ResourceModel::clear()
+{
+	mEntitiesItem.removeRows(0, mEntitiesItem.rowCount());
+	mObjectsItem.removeRows(0, mObjectsItem.rowCount());
+}
+
 
 ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 {
@@ -116,6 +122,7 @@ napkin::ResourcePanel::ResourcePanel()
 	mTreeView.getTreeView().setSortingEnabled(false);
 
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
+	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosed);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
 
 	connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
@@ -188,6 +195,13 @@ void napkin::ResourcePanel::onFileOpened(const QString& filename)
 	mTreeView.getTreeView().selectionModel()->clear();
 	refresh();
 }
+
+
+void napkin::ResourcePanel::onFileClosed(const QString& filename)
+{
+	mModel.clear();
+}
+
 
 void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {

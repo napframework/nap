@@ -26,11 +26,14 @@ int main(int argc, char* argv[])
 	QApplication app(argc, argv);
 	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));
 
-	MainWindow w;
-	w.show();
-
+	// Create main window and run
+	std::unique_ptr<MainWindow> w = std::make_unique<MainWindow>();
+	w->show();
 	int re = app.exec();
 	QFontDatabase::removeAllApplicationFonts();
+
+	// Explicitly delete main window because of dangling references
+	w.reset(nullptr);
 
     // Destruct the app context singleton
     AppContext::destroy();
