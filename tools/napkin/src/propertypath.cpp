@@ -92,7 +92,9 @@ PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop)
 
 PropertyPath::~PropertyPath()
 {
-	document()->deregisterPath(*this);
+	Document* doc = document();
+	if(doc != nullptr)
+		document()->deregisterPath(*this);
 }
 
 const std::string PropertyPath::getName() const
@@ -793,7 +795,9 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 
 Document* PropertyPath::document() const
 {
-	return AppContext::get().getDocument();
+	if(AppContext::isAvailable())
+		return AppContext::get().getDocument();
+	return nullptr;
 }
 
 std::string PropertyPath::objectPathStr() const

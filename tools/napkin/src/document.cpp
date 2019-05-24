@@ -858,6 +858,7 @@ QList<nap::RootEntity*> Document::getRootEntities(nap::Scene& scene, nap::rtti::
 
 Document::~Document()
 {
+	mPropertyPaths.clear();
 	mUndoStack.disconnect();
 }
 
