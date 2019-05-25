@@ -149,6 +149,8 @@ namespace napkin
 
 		/**
 		 * Rebuilds view and model and applies path as selection
+		 * This is a temp work-around to ensure selection remains valid
+		 * @param selection the property path that should be selected after rebuilding the model
 		 */
 		void rebuild(PropertyPath selection);
 
