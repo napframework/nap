@@ -198,6 +198,7 @@ void napkin::ResourcePanel::onFileOpened(const QString& filename)
 
 void napkin::ResourcePanel::onFileClosed(const QString& filename)
 {
+	mTreeView.getTreeView().selectionModel()->clear();
 	mModel.clear();
 }
 
