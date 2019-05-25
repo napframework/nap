@@ -248,13 +248,11 @@ void InspectorPanel::rebuild()
 
 void napkin::InspectorPanel::rebuild(PropertyPath selection)
 {
-	mModel.rebuild();
-	mTreeView.getTreeView().expandAll();
-
-	QList<nap::rtti::Object*> objects = { selection.getObject() };
-	AppContext::get().selectionChanged(objects);
+	// Rebuild model
+	rebuild();
 
 	// Find item based on path name
+	QList<nap::rtti::Object*> objects = { selection.getObject() };
 	auto pathItem = nap::qt::findItemInModel(mModel, [selection](QStandardItem* item)
 	{
 		auto pitem = dynamic_cast<PropertyPathItem*>(item);
