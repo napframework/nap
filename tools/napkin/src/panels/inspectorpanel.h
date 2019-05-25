@@ -147,6 +147,11 @@ namespace napkin
 		 */
 		void rebuild();
 
+		/**
+		 * Rebuilds view and model and applies path as selection
+		 */
+		void rebuild(PropertyPath selection);
+
 	private:
 		InspectorModel mModel;						// The model for the view
 		nap::qt::FilterTreeView mTreeView;			// A tree view
