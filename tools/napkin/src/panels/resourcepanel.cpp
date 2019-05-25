@@ -42,10 +42,8 @@ bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 
 void napkin::ResourceModel::refresh()
 {
-	while (mEntitiesItem.rowCount() > 0)
-		mEntitiesItem.removeRow(0);
-	while (mObjectsItem.rowCount() > 0)
-		mObjectsItem.removeRow(0);
+	mEntitiesItem.removeRows(0, mEntitiesItem.rowCount());
+	mObjectsItem.removeRows(0, mObjectsItem.rowCount());
 
 	auto doc = AppContext::get().getDocument();
 
@@ -185,6 +183,7 @@ void napkin::ResourcePanel::onNewFile()
 
 void napkin::ResourcePanel::onFileOpened(const QString& filename)
 {
+	mTreeView.getTreeView().selectionModel()->clear();
 	refresh();
 }
 
