@@ -204,7 +204,8 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
-	rebuild();
+	// Rebuild
+	rebuild(path);
 }
 
 void InspectorPanel::setPath(const PropertyPath& path)
@@ -243,6 +244,33 @@ void InspectorPanel::rebuild()
 {
 	mModel.rebuild();
 	mTreeView.getTreeView().expandAll();
+}
+
+void napkin::InspectorPanel::rebuild(PropertyPath selection)
+{
+	mModel.rebuild();
+	mTreeView.getTreeView().expandAll();
+
+	QList<nap::rtti::Object*> objects = { selection.getObject() };
+	AppContext::get().selectionChanged(objects);
+
+	// Find item based on path name
+	auto pathItem = nap::qt::findItemInModel(mModel, [selection](QStandardItem* item)
+	{
+		auto pitem = dynamic_cast<PropertyPathItem*>(item);
+		if (pitem == nullptr)
+			return false;
+
+		if (pitem->getPath().toString() == selection.toString())
+		{
+			nap::Logger::info(pitem->getPath().toString());
+			return true;
+		}
+		return false;
+	});
+
+	if (pathItem != nullptr)
+		mTreeView.selectAndReveal(pathItem);
 }
 
 void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
