@@ -240,20 +240,15 @@ void InspectorPanel::clear()
 	mSubTitle.setText("");
 }
 
-void InspectorPanel::rebuild()
-{
-	clear();
-	mModel.populateItems();
-	mTreeView.getTreeView().expandAll();
-}
-
 void napkin::InspectorPanel::rebuild(PropertyPath selection)
 {
-	// Get verical scroll pos
+	// Get vertical scroll pos so we can restore it later
 	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
 
 	// Rebuild model
-	rebuild();
+	clear();
+	mModel.populateItems();
+	mTreeView.getTreeView().expandAll();
 
 	// Find item based on path name
 	QList<nap::rtti::Object*> objects = { selection.getObject() };

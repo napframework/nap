@@ -116,12 +116,12 @@ namespace napkin
 		 */
 		void setPath(const PropertyPath& path);
 
+	private:
 		/**
 		 * Clear out the properties from this panel
 		 */
 		void clear();
 
-	private:
 		/**
 		 * Called when the context menu for an item should be shown
 		 * @param menu The menu that actions should be added to (initially empty)
@@ -137,11 +137,6 @@ namespace napkin
 		 * Called when another property needs to be selected
 		 */
 		void onPropertySelectionChanged(const PropertyPath& prop);
-
-		/**
-		 * Rebuild view and model
-		 */
-		void rebuild();
 
 		/**
 		 * Rebuilds view and model and applies path as selection
