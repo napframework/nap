@@ -51,15 +51,20 @@ napkin::RootEntityItem* napkin::SceneModel::rootEntityItem(nap::RootEntity& root
 void napkin::SceneModel::refresh()
 {
 	clear();
-	for (auto scene : getScenes())
-		appendRow(new SceneItem(*scene));
-
+	populate();
 }
 
 
 void napkin::SceneModel::clear()
 {
 	removeRows(0, rowCount());
+}
+
+
+void napkin::SceneModel::populate()
+{
+	for (auto scene : getScenes())
+		appendRow(new SceneItem(*scene));
 }
 
 
@@ -83,12 +88,12 @@ void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
 
 void napkin::SceneModel::onNewFile()
 {
-	refresh();
+	populate();
 }
 
 void napkin::SceneModel::onFileOpened(const QString& filename)
 {
-	refresh();
+	populate();
 }
 
 void napkin::SceneModel::onFileClosed(const QString& filename)
