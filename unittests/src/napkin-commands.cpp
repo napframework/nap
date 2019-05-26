@@ -64,55 +64,57 @@ TEST_CASE("Commands", "napkin-commands")
 	REQUIRE(e2 != nullptr);
 	REQUIRE(doc->getParent(*e2) == e1);
 
-	PropertyPath nameProp1(entity1->mID, nap::rtti::sIDPropertyName, *doc);
-	std::string namepropType(nameProp1.getType().get_name().data());
-	REQUIRE(nameProp1.getType().is_derived_from<std::string>());
-	REQUIRE(nameProp1.isValid());
-	PropertyPath nameProp2(entity2->mID, nap::rtti::sIDPropertyName, *doc);
-	REQUIRE(nameProp2.isValid());
-	REQUIRE(nameProp2.getType().is_derived_from<std::string>());
+	{
+		PropertyPath nameProp1(entity1->mID, nap::rtti::sIDPropertyName, *doc);
+		std::string namepropType(nameProp1.getType().get_name().data());
+		REQUIRE(nameProp1.getType().is_derived_from<std::string>());
+		REQUIRE(nameProp1.isValid());
+		PropertyPath nameProp2(entity2->mID, nap::rtti::sIDPropertyName, *doc);
+		REQUIRE(nameProp2.isValid());
+		REQUIRE(nameProp2.getType().is_derived_from<std::string>());
 
-	auto nameproppath = nameProp1.toString();
+		auto nameproppath = nameProp1.toString();
 
-	ctx.executeCommand(new SetValueCommand(nameProp1, "Loco"));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(entity1->mID == "Loco");
+		ctx.executeCommand(new SetValueCommand(nameProp1, "Loco"));
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+		REQUIRE(entity1->mID == "Loco");
 
-	assert(nameProp1.getObject());
+		assert(nameProp1.getObject());
 
-	// Name may not be empty, should have been reverted to previous value
-	ctx.executeCommand(new SetValueCommand(nameProp1, ""));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(entity1->mID == "Loco");
+		// Name may not be empty, should have been reverted to previous value
+		ctx.executeCommand(new SetValueCommand(nameProp1, ""));
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+		REQUIRE(entity1->mID == "Loco");
 
-	// No duplicate names
-	ctx.executeCommand(new SetValueCommand(nameProp2, "Loco"));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(entity2->mID != "Loco");
+		// No duplicate names
+		ctx.executeCommand(new SetValueCommand(nameProp2, "Loco"));
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+		REQUIRE(entity2->mID != "Loco");
 
-	// Setting a unique name should succeed
-	ctx.executeCommand(new SetValueCommand(nameProp2, "Motion"));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(entity2->mID == "Motion");
+		// Setting a unique name should succeed
+		ctx.executeCommand(new SetValueCommand(nameProp2, "Motion"));
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+		REQUIRE(entity2->mID == "Motion");
 
-	// Remove object and verify
-	ctx.executeCommand(new DeleteObjectCommand(*entity1));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(doc->getObjects().size() == 1);
+		// Remove object and verify
+		ctx.executeCommand(new DeleteObjectCommand(*entity1));
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+		REQUIRE(doc->getObjects().size() == 1);
 
-	// Remove next and verify
-	ctx.executeCommand(new DeleteObjectCommand(*entity2));
-	REQUIRE(sigDocChanged.count() == ++sigDocCount);
-	REQUIRE(doc->getObjects().size() == 0);
+		// Remove next and verify
+		ctx.executeCommand(new DeleteObjectCommand(*entity2));
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+		REQUIRE(doc->getObjects().size() == 0);
 
-	// Add a component (crashes OSX?)
-	auto& entity = doc->addEntity(nullptr);
-	ctx.executeCommand(new AddComponentCommand(entity, RTTI_OF(TestComponent)));
-	REQUIRE(entity.hasComponent<TestComponent>());
-	auto component = doc->getComponent(entity, RTTI_OF(TestComponent));
-	REQUIRE(component != nullptr);
-	ctx.executeCommand(new RemoveComponentCommand(*component));
-	REQUIRE(!entity.hasComponent<TestComponent>());
-	
+		// Add a component (crashes OSX?)
+		auto& entity = doc->addEntity(nullptr);
+		ctx.executeCommand(new AddComponentCommand(entity, RTTI_OF(TestComponent)));
+		REQUIRE(entity.hasComponent<TestComponent>());
+		auto component = doc->getComponent(entity, RTTI_OF(TestComponent));
+		REQUIRE(component != nullptr);
+		ctx.executeCommand(new RemoveComponentCommand(*component));
+		REQUIRE(!entity.hasComponent<TestComponent>());
+
+	}
 	napkin::AppContext::destroy();
 }

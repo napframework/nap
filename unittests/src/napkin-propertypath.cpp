@@ -128,42 +128,43 @@ TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 	QString tempFilename = "__TEMP_NAPKIN_PROP_PATH_TEST.json";
 	napkin::AppContext::create();
 	RUN_Q_APPLICATION
+	{
+		auto& ctx = AppContext::get();
+		auto doc = ctx.newDocument();
+		auto entity = doc->addObject<nap::Entity>();
+		auto comp = doc->addComponent<TestComponent>(*entity);
+		auto scene = doc->addObject<nap::Scene>();
+		REQUIRE(scene);
+		doc->addEntityToScene(*scene, *entity);
 
-	auto& ctx = AppContext::get();
-	auto doc = ctx.newDocument();
-	auto entity = doc->addObject<nap::Entity>();
-	auto comp = doc->addComponent<TestComponent>(*entity);
-	auto scene = doc->addObject<nap::Scene>();
-	REQUIRE(scene);
-	doc->addEntityToScene(*scene, *entity);
+		REQUIRE(doc->getRootEntities(*scene, *entity).size() > 0);
 
-	REQUIRE(doc->getRootEntities(*scene, *entity).size() > 0);
+		PropertyPath regularPath(comp->mID, "Float", *doc);
+		REQUIRE(!regularPath.isInstanceProperty());
+		REQUIRE(regularPath.isValid());
 
-	PropertyPath regularPath(comp->mID, "Float", *doc);
-	REQUIRE(!regularPath.isInstanceProperty());
-	REQUIRE(regularPath.isValid());
-
-//	// The path is an instance path if a root entity is provided
-//	PropertyPath instancePath(*rootEntity, *comp, "Float");
-//	REQUIRE(instancePath.isInstanceProperty());
-//	REQUIRE(instancePath.isValid());
-//
-//	float val1 = 123.456;
-//	regularPath.setValue(val1);
-//	REQUIRE(regularPath.getValue() == val1);
-//	REQUIRE(instancePath.getValue() == val1);
-//
-//	float val2 = 678.90;
-//	instancePath.setValue(val2);
-//	REQUIRE(instancePath.getValue() == val2);
-//	REQUIRE(regularPath.getValue() != val2);
-//
-//	PropertyPath instancePath2(*rootEntity, *comp, "Float");
-//	REQUIRE(instancePath2.getValue() == val2);
-//
-//	doc->setFilename(tempFilename);
-//	nap::Logger::info(nap::utility::getAbsolutePath(doc->getCurrentFilename().toStdString()));
-//	REQUIRE(ctx.saveDocument());
+		//	// The path is an instance path if a root entity is provided
+		//	PropertyPath instancePath(*rootEntity, *comp, "Float");
+		//	REQUIRE(instancePath.isInstanceProperty());
+		//	REQUIRE(instancePath.isValid());
+		//
+		//	float val1 = 123.456;
+		//	regularPath.setValue(val1);
+		//	REQUIRE(regularPath.getValue() == val1);
+		//	REQUIRE(instancePath.getValue() == val1);
+		//
+		//	float val2 = 678.90;
+		//	instancePath.setValue(val2);
+		//	REQUIRE(instancePath.getValue() == val2);
+		//	REQUIRE(regularPath.getValue() != val2);
+		//
+		//	PropertyPath instancePath2(*rootEntity, *comp, "Float");
+		//	REQUIRE(instancePath2.getValue() == val2);
+		//
+		//	doc->setFilename(tempFilename);
+		//	nap::Logger::info(nap::utility::getAbsolutePath(doc->getCurrentFilename().toStdString()));
+		//	REQUIRE(ctx.saveDocument());
+	}
 
 	AppContext::destroy();
 }

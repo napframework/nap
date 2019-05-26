@@ -8,42 +8,46 @@ TEST_CASE("Component to Component pointer", "napkin-pointers")
 {
 	napkin::AppContext::create();
 	RUN_Q_APPLICATION
-	auto& ctx = napkin::AppContext::get();
-	std::string serializedData;
+	
+	{
+		auto& ctx = napkin::AppContext::get();
+		std::string serializedData;
 
-	auto doc = ctx.newDocument();
+		auto doc = ctx.newDocument();
 
-	nap::Entity& entity = doc->addEntity(nullptr);
-	doc->setObjectName(entity, ENTITY_NAME);
-	REQUIRE(entity.mID == ENTITY_NAME);
+		nap::Entity& entity = doc->addEntity(nullptr);
+		doc->setObjectName(entity, ENTITY_NAME);
+		REQUIRE(entity.mID == ENTITY_NAME);
 
-	// Holds the pointer
-	auto compB = doc->addComponent<TestComponentB>(entity);
-	REQUIRE(compB != nullptr);
-	REQUIRE(!compB->mID.empty());
+		// Holds the pointer
+		auto compB = doc->addComponent<TestComponentB>(entity);
+		REQUIRE(compB != nullptr);
+		REQUIRE(!compB->mID.empty());
 
-	// Pointee
-	auto comp = doc->addComponent<TestComponent>(entity);
-	REQUIRE(comp != nullptr);
-	REQUIRE(!compB->mID.empty());
+		// Pointee
+		auto comp = doc->addComponent<TestComponent>(entity);
+		REQUIRE(comp != nullptr);
+		REQUIRE(!compB->mID.empty());
 
-	napkin::PropertyPath pointerPath(compB->mID, "CompPointer", *doc);
-	REQUIRE(pointerPath.isValid());
+		std::unique_ptr<napkin::PropertyPath> pointerPath = std::make_unique<napkin::PropertyPath>(compB->mID, "CompPointer", *doc);
+		REQUIRE(pointerPath->isValid());
 
-	pointerPath.setPointee(comp);
+		pointerPath->setPointee(comp);
+		auto pointee = pointerPath->getPointee();
+		REQUIRE(pointee == comp);
 
-	auto pointee = pointerPath.getPointee();
-	REQUIRE(pointee == comp);
+		serializedData = ctx.documentToString();
+		REQUIRE(!serializedData.empty());
 
-	serializedData = ctx.documentToString();
-//	nap::Logger::info(serializedData);
-	REQUIRE(!serializedData.empty());
+		// Explicitly delete property path here, new doc is loaded
+		pointerPath.reset(nullptr);
 
-	auto loadedDoc = ctx.loadDocumentFromString(serializedData);
-	REQUIRE(loadedDoc != nullptr);
+		auto loadedDoc = ctx.loadDocumentFromString(serializedData);
+		REQUIRE(loadedDoc != nullptr);
 
-	auto loadedEntity = loadedDoc->getObject(ENTITY_NAME);
-	REQUIRE(loadedEntity != nullptr);
+		auto loadedEntity = loadedDoc->getObject(ENTITY_NAME);
+		REQUIRE(loadedEntity != nullptr);
+	}
 
 	napkin::AppContext::destroy();
 }
