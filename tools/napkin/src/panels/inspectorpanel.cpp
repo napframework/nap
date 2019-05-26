@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QMimeData>
+#include <QScrollBar>
 
 #include <utility/fileutils.h>
 #include <napkinfiltertree.h>
@@ -248,6 +249,9 @@ void InspectorPanel::rebuild()
 
 void napkin::InspectorPanel::rebuild(PropertyPath selection)
 {
+	// Get verical scroll pos
+	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
+
 	// Rebuild model
 	rebuild();
 
@@ -269,6 +273,9 @@ void napkin::InspectorPanel::rebuild(PropertyPath selection)
 
 	if (pathItem != nullptr)
 		mTreeView.selectAndReveal(pathItem);
+
+	// Set scroll pos
+	mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
 }
 
 void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
