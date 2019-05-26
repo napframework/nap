@@ -8,6 +8,7 @@ using namespace napkin;
 
 TEST_CASE("PropertyPath", "napkin-propertypath")
 {
+	napkin::AppContext::create();
     RUN_Q_APPLICATION
 
 	auto doc = AppContext::get().newDocument();
@@ -119,12 +120,13 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 		REQUIRE(!path.isNonEmbeddedPointer());
 		REQUIRE(!path.isEnum());
 	}
-
+	napkin::AppContext::destroy();
 }
 
 TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 {
 	QString tempFilename = "__TEMP_NAPKIN_PROP_PATH_TEST.json";
+	napkin::AppContext::create();
 	RUN_Q_APPLICATION
 
 	auto& ctx = AppContext::get();
@@ -175,6 +177,7 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 	std::string parentEntityCompName = "ParentEntityComponent";
 	std::string childEntityCompName = "ChildEntityComponent";
 	{
+		napkin::AppContext::create();
 		RUN_Q_APPLICATION
 
 		/**
@@ -227,7 +230,6 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 
 		doc->setFilename(QString::fromStdString(tempFilename));
 		REQUIRE(ctx.saveDocument());
-
 		AppContext::destroy();
 	}
 
@@ -246,6 +248,7 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 
 TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 {
+	napkin::AppContext::create();
 	RUN_Q_APPLICATION
 
 	auto& doc = *AppContext::get().getDocument();
@@ -297,4 +300,5 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		res.mResPointer = nullptr;
 
 	}
+	napkin::AppContext::destroy();
 }

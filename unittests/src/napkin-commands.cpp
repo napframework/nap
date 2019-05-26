@@ -8,6 +8,7 @@ using namespace napkin;
 
 TEST_CASE("Commands", "napkin-commands")
 {
+	napkin::AppContext::create();
 	RUN_Q_APPLICATION
 
 	auto& ctx = AppContext::get();
@@ -112,4 +113,6 @@ TEST_CASE("Commands", "napkin-commands")
 	REQUIRE(component != nullptr);
 	ctx.executeCommand(new RemoveComponentCommand(*component));
 	REQUIRE(!entity.hasComponent<TestComponent>());
+	
+	napkin::AppContext::destroy();
 }
