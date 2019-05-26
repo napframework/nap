@@ -65,12 +65,12 @@ namespace napkin
 		/**
 		 * Clear the model of its items. Unlike clear(), it leaves the headers etc.
 		 */
-		void removeItems();
+		void clearItems();
 
 		/**
-		 * Rebuild the model
+	 	 * Run through the object's properties and create items for them
 		 */
-		void rebuild();
+		void populateItems();
 
 		/**
 		 * Overriden to support drag & drop
@@ -94,10 +94,6 @@ namespace napkin
 		 * @return True when the property should not be displayed, false otherwise
 		 */
 		bool isPropertyIgnored(const PropertyPath& prop) const;
-		/**
-		 * Run through the object's properties and create items for them
-		 */
-		void populateItems();
 
 		PropertyPath mPath; // the path currently being edited by the property editor
 	};
