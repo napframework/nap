@@ -15,7 +15,7 @@ namespace napkin
 	/**
 	 * The MIME type of a nap propertypath
 	 */
-	static const char* sNapkinMimeData = "application/napkin-path";
+	static constexpr char* sNapkinMimeData = "application/napkin-path";
 
 	class ArrayPropertyItem;
 
@@ -151,6 +151,7 @@ namespace napkin
 		 * Rebuilds view and model and applies path as selection
 		 * This is a temp work-around to ensure selection remains valid
 		 * @param selection the property path that should be selected after rebuilding the model
+		 * @param verticalScrollPos the vertical scroll position of the widget before being refreshed
 		 */
 		void rebuild(PropertyPath selection);
 
