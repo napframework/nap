@@ -63,11 +63,11 @@ TEST_CASE("Commands", "napkin-commands")
 	REQUIRE(e2 != nullptr);
 	REQUIRE(doc->getParent(*e2) == e1);
 
-	PropertyPath nameProp1(entity1->mID, nap::rtti::sIDPropertyName);
+	PropertyPath nameProp1(entity1->mID, nap::rtti::sIDPropertyName, *doc);
 	std::string namepropType(nameProp1.getType().get_name().data());
 	REQUIRE(nameProp1.getType().is_derived_from<std::string>());
 	REQUIRE(nameProp1.isValid());
-	PropertyPath nameProp2(entity2->mID, nap::rtti::sIDPropertyName);
+	PropertyPath nameProp2(entity2->mID, nap::rtti::sIDPropertyName, *doc);
 	REQUIRE(nameProp2.isValid());
 	REQUIRE(nameProp2.getType().is_derived_from<std::string>());
 
