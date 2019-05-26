@@ -7,6 +7,7 @@ using namespace napkin;
 
 TEST_CASE("Arrays", "napkin-arrays")
 {
+	napkin::AppContext::create();
 	RUN_Q_APPLICATION
 
 	SECTION("Array Value Elements")
@@ -60,6 +61,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 			doc->arrayRemoveElement(ints2D, 0);
 			REQUIRE(ints2D.getArrayLength() == 0);
 		}
+		napkin::AppContext::destroy();
 	}
 
 	SECTION("Array add string")
@@ -220,4 +222,5 @@ TEST_CASE("Arrays", "napkin-arrays")
 		REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer0);
 
 	}
+	napkin::AppContext::destroy();
 }

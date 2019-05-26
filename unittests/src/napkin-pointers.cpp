@@ -6,8 +6,8 @@ using namespace napkin;
 
 TEST_CASE("Component to Component pointer", "napkin-pointers")
 {
-    RUN_Q_APPLICATION
-
+	napkin::AppContext::create();
+	RUN_Q_APPLICATION
 	auto& ctx = napkin::AppContext::get();
 	std::string serializedData;
 
@@ -44,10 +44,13 @@ TEST_CASE("Component to Component pointer", "napkin-pointers")
 
 	auto loadedEntity = loadedDoc->getObject(ENTITY_NAME);
 	REQUIRE(loadedEntity != nullptr);
+
+	napkin::AppContext::destroy();
 }
 
 TEST_CASE("Pointer 'paths' 2", "napkin-pointers")
 {
+	napkin::AppContext::create();
     RUN_Q_APPLICATION
 
 	auto doc = napkin::AppContext::get().loadDocument("unit_tests_data/entitystructure.json");
@@ -93,4 +96,5 @@ TEST_CASE("Pointer 'paths' 2", "napkin-pointers")
 		REQUIRE(doc->relativeObjectPath(*cPointerInput, *cOrthoCam) == "./Bell/OrthoCam");
 		REQUIRE(doc->relativeObjectPath(*cOrthoCam,     *cRotate)   == "../../../Life/Fauna/Cats/Rotate");
 	}
+	napkin::AppContext::destroy();
 }
