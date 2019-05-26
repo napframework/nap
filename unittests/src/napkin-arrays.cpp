@@ -61,7 +61,6 @@ TEST_CASE("Arrays", "napkin-arrays")
 			doc->arrayRemoveElement(ints2D, 0);
 			REQUIRE(ints2D.getArrayLength() == 0);
 		}
-		napkin::AppContext::destroy();
 	}
 
 	SECTION("Array add string")
