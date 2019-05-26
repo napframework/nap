@@ -154,6 +154,12 @@ namespace napkin
 		 * @param verticalScrollPos the vertical scroll position of the widget before being refreshed
 		 */
 		void rebuild(PropertyPath selection);
+		
+		/**
+		 * Called just after a file has been closed
+		 * @param filename The name of the file that was just closed
+		 */
+		void onFileClosed(const QString& filename);
 
 	private:
 		InspectorModel mModel;						// The model for the view
