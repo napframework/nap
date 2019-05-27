@@ -37,9 +37,6 @@ namespace nap
 		// Initialize asio
 		mEndpoint->init_asio();
 
-		websocketpp::connection_hdl hdl;
-		ServerEndpoint::message_ptr ptr;
-
 		mEndpoint->set_message_handler(std::bind(
 			&WebsocketServer::messageHandler, this,
 			std::placeholders::_1, std::placeholders::_2
@@ -52,7 +49,7 @@ namespace nap
 		mEndpoint->start_accept();
 
 		// Start the Asio io_service run loop
-		// mEndpoint->run();
+		mEndpoint->run();
 
 		return true;
 	}
@@ -67,6 +64,8 @@ namespace nap
 
 	void WebsocketServer::messageHandler(websocketpp::connection_hdl hdl, ServerEndpoint::message_ptr msg)
 	{
+		nap::Logger::info("Message Received!");
 		nap::Logger::info(msg->get_payload());
+		mEndpoint->send(hdl, msg->get_payload(), msg->get_opcode());
 	}
 }
