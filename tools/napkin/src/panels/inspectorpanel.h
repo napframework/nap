@@ -147,10 +147,10 @@ namespace napkin
 		void rebuild(PropertyPath selection);
 		
 		/**
-		 * Called just after a file has been closed
-		 * @param filename The name of the file that was just closed
+		 * Called just before the current document is closed
+		 * @param filename The name of the document
 		 */
-		void onFileClosed(const QString& filename);
+		void onFileClosing(const QString& filename);
 
 	private:
 		InspectorModel mModel;						// The model for the view

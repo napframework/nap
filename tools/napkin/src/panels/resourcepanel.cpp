@@ -119,7 +119,7 @@ napkin::ResourcePanel::ResourcePanel()
 	mTreeView.getTreeView().setSortingEnabled(false);
 
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
-	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosed);
+	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
 
 	connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
@@ -193,7 +193,7 @@ void napkin::ResourcePanel::onFileOpened(const QString& filename)
 }
 
 
-void napkin::ResourcePanel::onFileClosed(const QString& filename)
+void napkin::ResourcePanel::onFileClosing(const QString& filename)
 {
 	clear();
 }
