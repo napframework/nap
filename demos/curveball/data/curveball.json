@@ -232,6 +232,11 @@
             "Columns": 1
         },
         {
+            "Type": "nap::WebsocketServer",
+            "mID": "Server",
+            "Port": 9000
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Width": 1280,

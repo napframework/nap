@@ -18,5 +18,4 @@ namespace nap
         // Initialization
         bool init(nap::utility::ErrorState& errorState) override;
     };
-        
 }
