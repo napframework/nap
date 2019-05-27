@@ -58,7 +58,7 @@ namespace nap
 		 */
 		virtual void stop() override;
 
-		int mPort = 9000;	///< Property: "Port" port to open
+		int mPort = 9002;	///< Property: "Port" port to open
 
 	private:
 		std::unique_ptr<ServerEndpoint> mEndpoint = nullptr;		///< Server endpoint
