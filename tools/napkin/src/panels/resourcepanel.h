@@ -28,9 +28,9 @@ namespace napkin
 		ResourceModel();
 
 		/**
-		 * Clear all the items from the model and rebuild
+		 * Populates the entire model
 		 */
-		void refresh();
+		void populate();
 
 		/**
 		 * Clears all items from the model
@@ -83,9 +83,20 @@ namespace napkin
 
 	private:
 		/**
-		 * Reconstruct the list
+		 * Reconstruct the list, present items are destroyed before being rebuild.
+		 * Internally the model is cleared and populated.
 		 */
 		void refresh();
+
+		/**
+		 * Clears the current model and enforces selection to be removed
+		 */
+		void clear();
+
+		/**
+		 * Populates the current model
+		 */
+		void populate();
 
 		/**
 		 * Called when an entity has been added
@@ -148,8 +159,6 @@ namespace napkin
 		 * @param menu The menu to append items to.
 		 */
 		void menuHook(QMenu& menu);
-
-		void onDocumentOpened(Document* doc);
 
 	private:
 		QVBoxLayout mLayout;	  // Layout

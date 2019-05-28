@@ -40,13 +40,10 @@ bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 }
 
 
-void napkin::ResourceModel::refresh()
+void napkin::ResourceModel::populate()
 {
-	clear();
 	auto doc = AppContext::get().getDocument();
-	if (doc == nullptr)
-		return;
-
+	assert(doc != nullptr);
 	for (nap::rtti::Object* ob : topLevelObjects(doc->getObjectPointers()))
 		addObjectItem(*ob);
 }
@@ -186,19 +183,19 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 
 void napkin::ResourcePanel::onNewFile()
 {
-	refresh();
+	populate();
 }
 
 
 void napkin::ResourcePanel::onFileOpened(const QString& filename)
 {
-	refresh();
+	populate();
 }
 
 
 void napkin::ResourcePanel::onFileClosed(const QString& filename)
 {
-	mModel.clear();
+	clear();
 }
 
 
@@ -217,25 +214,39 @@ void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, c
 	selectionChanged(selectedPaths);
 }
 
+
 void napkin::ResourcePanel::refresh()
 {
-	mModel.refresh();
+	clear();
+	populate();
+}
+
+
+void napkin::ResourcePanel::clear()
+{
+	mTreeView.getTreeView().selectionModel()->clear();
+	mModel.clear();
+}
+
+
+void napkin::ResourcePanel::populate()
+{
+	mModel.populate();
 	mTreeView.getTreeView().expandAll();
 }
+
 
 void napkin::ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
 {
 	// TODO: Don't refresh the whole mModel
-	mModel.refresh();
-	mTreeView.getTreeView().expandAll();
+	refresh();
 	mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *entity));
 }
 
 void napkin::ResourcePanel::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 {
 	// TODO: Don't refresh the whole mModel
-	mModel.refresh();
-	mTreeView.getTreeView().expandAll();
+	refresh();
 	mTreeView.selectAndReveal(findItemInModel<ObjectItem>(mModel, *comp));
 }
 
