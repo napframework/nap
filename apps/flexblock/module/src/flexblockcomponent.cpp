@@ -73,17 +73,10 @@ namespace nap
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
-		// calculate points
-		// this is where the magic happens
-
 		mFlexLogic->update(deltaTime);
 
 		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
 		std::vector<glm::vec3> points = toNapPoints(objectPoints);
-
-		//inputs[index] = value;
-		//
-		//points_object[index] = position;
 
 		// update the control points mesh
 		mControlPointsMesh->setControlPoints(points);

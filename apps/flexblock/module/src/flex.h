@@ -4,6 +4,8 @@
 #include <vector>
 #include <stddef.h>
 #include <glm/glm.hpp>
+#include <thread>
+#include <mutex>
 
 #include "flexblockdata.h"
 
@@ -16,16 +18,16 @@ namespace nap
 	
 		void setMotorInput(int index, float value);
 
-		void update(double deltaTime);
-
-		const std::vector<glm::vec3>& getObjectPoints() const 
+		const std::vector<glm::vec3> getObjectPoints() const
 		{
-			return mPointsObject;
+			return mPoints;
 		}
 		const std::vector<glm::vec3>& getFramePoints() const
 		{
 			return mPointsFrame;
 		}
+
+		void update(double deltaTime);
 	protected:
 		glm::vec3 getObjectElementForceOfElement(int elidx, int direction);
 		
@@ -47,17 +49,20 @@ namespace nap
 
 		void setInput(std::vector<float> inputs);
 	protected:
+		std::thread updateThread;
+		std::mutex updatedPointsMutex;
+		std::vector<glm::vec3> updatedPoints;
+
 		float mForceObject = 10.0f;
 		float mForceObjectSpring = 0.02f;
 		float mForceObject2Frame = 2.0f;
-		float mChangeSpeed = 1.0f;
 
 		float mMaxAcc;
 		float mMaxSpeed;
 
 		float mLengthError = 0;
 
-		float mFrequency;
+		long mFrequency;
 
 		std::shared_ptr<FlexblockShape> mObjShape;
 		std::shared_ptr<FlexblockSize> mObjSize;
@@ -96,8 +101,6 @@ namespace nap
 		float mMotorAcc = 0.0f;
 
 		std::vector<float> mElementsLengthDelta;
-
-		double mStartTime = 0.0;
 		std::vector<float> mMotorInput;
 	};
 }

@@ -3,6 +3,8 @@
 #include <mathutils.h>
 #include <glm/geometric.hpp>
 
+#define REF_FREQ 200.0f
+
 namespace nap
 {
 	Flex::Flex(std::shared_ptr<FlexblockShape> flexblockShape, std::shared_ptr<FlexblockSize> flexblockSize)
@@ -27,7 +29,6 @@ namespace nap
 		mForceObject = 10;
 		mForceObjectSpring = 0.02;
 		mForceObject2Frame = 2;
-		mChangeSpeed = 1;
 
 		mMaxAcc = 2.0 / mFrequency;
 		mMaxSpeed = 5.0 / mFrequency;
@@ -119,12 +120,26 @@ namespace nap
 		// calculate points
 		// this is where the magic happens
 
-		mStartTime += deltaTime;
-
 		mFrequency = (int)(1.0 / deltaTime);
+
+		printf("%i\n", mFrequency);
 
 		mMaxAcc = 2.0 / mFrequency;
 		mMaxSpeed = 5.0 / mFrequency;
+
+		mForceObject = (10 * REF_FREQ) / mFrequency;
+		mForceObjectSpring = (0.02f * REF_FREQ) / mFrequency;
+		mForceObject2Frame = (2.0f * REF_FREQ) / mFrequency;
+
+		/*
+		mForceObject = 10;
+		mForceObjectSpring = 0.02;
+		mForceObject2Frame = 2;
+		mChangeSpeed = 1;
+
+		mMaxAcc = 2.0 / mFrequency;
+		mMaxSpeed = 5.0 / mFrequency;
+		*/
 
 		calcInput();
 
@@ -178,19 +193,20 @@ namespace nap
 
 			// add change to change
 			mPointChange[i] = mPointForce;
-			mPointChangeCorr[i] = mPointChangeCorr[i] + mPointForceCorr * 0.2f;
+			mPointChangeCorr[i] = mPointChangeCorr[i] + mPointForceCorr * ( (0.2f * REF_FREQ ) / mFrequency );
 		}
 
 		// add damping
 		for (int j = 0; j < mPointChangeCorr.size(); j++)
 		{
-			mPointChangeCorr[j] *= 0.95f;
+			mPointChangeCorr[j] *= ( 0.95f * REF_FREQ ) / mFrequency;
 		}
 
 		// update position
 		for (int j = 0; j < mPointsObject.size(); j++)
 		{
-			mPointsObject[j] += mPointChange[j] * 0.01f + mPointChangeCorr[j] * 0.2f;
+			mPointsObject[j] += mPointChange[j] * ( ( 0.01f * REF_FREQ ) / mFrequency ) 
+				+ mPointChangeCorr[j] * ( ( 0.2f * REF_FREQ ) / mFrequency );
 		}
 
 		concatPoints();
