@@ -20,12 +20,6 @@ namespace nap
 	}
 
 
-	bool WebsocketServer::init(utility::ErrorState& errorState)
-	{
-		return true;
-	}
-
-
 	bool WebsocketServer::start(utility::ErrorState& errorState)
 	{
 
@@ -33,12 +27,14 @@ namespace nap
 		uint32 log_level = computeWebSocketLogLevel(EWebSocketLogLevel::Error);
 		mEndpoint = std::make_unique<WebSocketServerEndPoint>(mPort,  log_level, true);
 
-		mEndpoint->setHandler(std::bind(
+		mEndpoint->setMessageHandler(std::bind(
 			&WebsocketServer::messageHandler, this,
 			std::placeholders::_1, std::placeholders::_2
 		));
 
-		mEndpoint->open();
+		// Open port
+		if (!mEndpoint->open(errorState))
+			return false;
 
 		return true;
 	}
