@@ -144,16 +144,15 @@ namespace nap
 	}
 
 
-	void Core::calculateFramerate(uint32 tick)
+	void Core::calculateFramerate(double deltaTime)
 	{
-		mTicksum -= mTicks[mTickIdx];		// subtract value falling off
-		mTicksum += tick;					// add new value
-		mTicks[mTickIdx] = tick;			// save new value so it can be subtracted later */
-		if (++mTickIdx == mTicks.size())    // inc buffer index
-		{
+		mTicksum -= mTicks[mTickIdx];			// subtract value falling off
+		mTicksum += deltaTime;					// add new value
+		mTicks[mTickIdx] = deltaTime;			// save new value so it can be subtracted later */
+		if (++mTickIdx == mTicks.size())		// inc buffer index
 			mTickIdx = 0;
-		}
-		mFramerate = 1000.0f / (static_cast<float>(mTicksum) / static_cast<float>(mTicks.size()));
+
+		mFramerate = static_cast<double>(mTicks.size()) / mTicksum;
 	}
 
 
@@ -166,19 +165,16 @@ namespace nap
 	double Core::update(std::function<void(double)>& updateFunction)
 	{
 		// Get current time in milliseconds
-		uint32 new_tick_time = mTimer.getTicks();
+		double new_elapsed_time = mTimer.getElapsedTime();
 
 		// Calculate amount of milliseconds since last time stamp
-		uint32 delta_ticks = new_tick_time - mLastTimeStamp;
+		double delta_time = new_elapsed_time - mLastTimeStamp;
 
 		// Store time stamp
-		mLastTimeStamp = new_tick_time;
+		mLastTimeStamp = new_elapsed_time;
 
 		// Update framerate
-		calculateFramerate(delta_ticks);
-
-		// Get delta time in seconds
-		double delta_time = static_cast<double>(delta_ticks) / 1000.0;
+		calculateFramerate(delta_time);
 
 		// Perform update call before we check for file changes
 		for (auto& service : mServices)
