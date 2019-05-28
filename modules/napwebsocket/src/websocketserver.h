@@ -40,8 +40,9 @@ namespace nap
 		 */
 		virtual void stop() override;
 
-		int mPort = 80;							///< Property: "Port" to open and listen to for messages.
-		bool mLogConnectionStatus = false;		///< Property: "LogConnectionStatus" if client / server connection information is logged to the console.
+		int mPort = 80;														///< Property: "Port" to open and listen to for messages.
+		bool mLogConnectionUpdates = true;									///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
+		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;	///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
 
 	private:
 		std::unique_ptr<WebSocketServerEndPoint> mEndpoint = nullptr;		///< Server endpoint

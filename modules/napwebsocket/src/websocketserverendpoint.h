@@ -75,7 +75,7 @@ namespace nap
 	private:
 		PPServerEndPoint mEndPoint;				///< The websocketpp server end-point
 		uint32 mLogLevel = 0;					///< Library log level
-		uint32 mLogAccessLevel = 0;				///< Log client / server connection data
+		uint32 mAccessLogLevel = 0;				///< Log client / server connection data
 		int mPort = 80;							///< Port to listen for incoming messages
 		std::future<void> mServerTask;			///< The background server thread
 		bool mOpen = false;						///< If connection is open
