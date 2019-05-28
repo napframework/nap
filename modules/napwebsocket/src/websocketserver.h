@@ -1,25 +1,11 @@
 #pragma once
 
+// Local Includes
+#include "websocketserverendpoint.h"
+
 // External Includes
 #include <nap/device.h>
 #include <memory>
-
-// Forward declare websocketpp server type
-/*
-namespace websocketpp
-{
-	template<typename T>
-	class server;
-
-	namespace config
-	{
-		struct asio;
-	}
-
-	template<typename T>
-	class connection;
-}
-*/
 
 // External Includes
 #include <websocketpp/server.hpp>
@@ -27,7 +13,7 @@ namespace websocketpp
 
 namespace nap
 {
-	using ServerEndpoint = websocketpp::server<websocketpp::config::asio>;
+	class WebSocketServerEndPoint;
 
 	/**
 	 * Allows for receiving and responding to messages over a websocket
@@ -61,9 +47,9 @@ namespace nap
 		int mPort = 80;					///< Property: "Port" to listen on
 
 	private:
-		std::unique_ptr<ServerEndpoint> mEndpoint = nullptr;		///< Server endpoint
+		std::unique_ptr<WebSocketServerEndPoint> mEndpoint = nullptr;		///< Server endpoint
 
 		// Receives incoming messages
-		void messageHandler(websocketpp::connection_hdl hdl, ServerEndpoint::message_ptr msg);
+		void messageHandler(websocketpp::connection_hdl hdl, WebSocketServerEndPoint::PPServerEndPoint::message_ptr msg);
 	};
 }
