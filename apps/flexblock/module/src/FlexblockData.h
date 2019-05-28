@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace nap
 {
@@ -34,7 +35,10 @@ namespace nap
 		std::vector<std::vector<int>> frame;
 	};
 
-	struct FlexblockShape
+	class FlexblockShape;
+	typedef std::shared_ptr<FlexblockShape> FlexblockShapePtr;
+
+	class FlexblockShape
 	{
 	public:
 		std::string						name;
@@ -52,8 +56,11 @@ namespace nap
 		glm::vec3 frame;
 	};
 
+	class FlexblockSize;
+	typedef std::shared_ptr<FlexblockSize> FlexblockSizePtr;
+
 	//
-	struct FlexblockSize
+	class FlexblockSize
 	{
 	public:
 		std::string			name;

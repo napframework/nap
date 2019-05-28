@@ -6,38 +6,75 @@
 #include <glm/glm.hpp>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 #include "flexblockdata.h"
 
 namespace nap
 {
+	class Flex;
+	typedef std::shared_ptr<Flex> FlexPtr;
+
 	class Flex
 	{
 	public:
-		Flex(std::shared_ptr<FlexblockShape> flexblockShape, std::shared_ptr<FlexblockSize> flexblockSize);
-	
+		Flex(FlexblockShapePtr flexblockShape, FlexblockSizePtr flexblockSize);
+		~Flex();
+
+		/**
+		* Update motor speed [0..8]
+		* @param index index of motor [0..8]
+		* @param value motor input 0-1
+		*/
 		void setMotorInput(int index, float value);
 
-		const std::vector<glm::vec3> getObjectPoints() const
+		/**
+		* Starts the logic thread
+		*/
+		void start();
+
+		/**
+		* Stops the logic thread
+		*/
+		void stop();
+
+		/**
+		* Returns true if logic thread is running
+		*/
+		bool getIsRunning()
 		{
+			return mIsRunning;
+		}
+
+		std::vector<float> getRopeLengths();
+
+		/**
+		* Returns copy of latest calculate object points
+		*/
+		std::vector<glm::vec3> getObjectPoints()
+		{
+			std::lock_guard<std::mutex> l(mMutex);
 			return mPoints;
 		}
-		const std::vector<glm::vec3>& getFramePoints() const
+
+		/**
+		* Returns copy of frame points
+		*/
+		std::vector<glm::vec3> getFramePoints()
 		{
+			std::lock_guard<std::mutex> l(mMutex);
 			return mPointsFrame;
 		}
-
-		void update(double deltaTime);
 	protected:
-		glm::vec3 getObjectElementForceOfElement(int elidx, int direction);
+		void getObjectElementForceOfElement(int elidx, int direction, glm::vec3& outVec);
 		
-		glm::vec3 getProjectedSuspensionForcesOnOppositePointOfElement(int object_element_id, int opposite_column);
+		void getProjectedSuspensionForcesOnOppositePointOfElement(int object_element_id, int opposite_column, glm::vec3& outVec);
 		
-		glm::vec3 getProjectedSuspensionForceOnOppositePointOfElement(int object_element_id, int suspension_element_id, int opposite_point);
+		void getProjectedSuspensionForceOnOppositePointOfElement(int object_element_id, int suspension_element_id, int opposite_point, glm::vec3& outVec);
 
-		glm::vec3 getSuspensionForceOnPointOfElement(int elidx, int point);
+		void getSuspensionForceOnPointOfElement(int elidx, int point, glm::vec3& outVec);
 
-		std::vector<int> getIdsOfSuspensionElementsOnPoint(int id);
+		void getIdsOfSuspensionElementsOnPoint(int id, std::vector<int> &outIDs);
 
 		void calcInput();
 
@@ -48,17 +85,16 @@ namespace nap
 		void concatPoints();
 
 		void setInput(std::vector<float> inputs);
+
+		void update();
 	protected:
-		std::thread updateThread;
-		std::mutex updatedPointsMutex;
-		std::vector<glm::vec3> updatedPoints;
+		std::atomic_bool mIsRunning = false;
+		std::thread mUpdateThread;
+		std::mutex mMutex;
 
 		float mForceObject = 10.0f;
 		float mForceObjectSpring = 0.02f;
 		float mForceObject2Frame = 2.0f;
-
-		float mMaxAcc;
-		float mMaxSpeed;
 
 		float mLengthError = 0;
 

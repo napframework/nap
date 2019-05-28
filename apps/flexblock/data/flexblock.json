@@ -1,11 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::ControlPointsMesh",
-            "mID": "ControlPointsMesh",
-            "ReferenceMesh": "BoxMesh"
-        },
-        {
             "Type": "nap::Entity",
             "mID": "BlockEntity",
             "Components": [
@@ -37,6 +32,27 @@
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Material": "BlockMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "VisualiseNormalsMesh",
+                    "Mesh": "VisualizeNormalsMesh",
+                    "MaterialInstance": {
+                        "Material": "VisualizeNormasMaterial",
                         "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -123,56 +139,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "ControlPointsEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "ControlPointsTransform",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "ControlPointsMeshRenderer",
-                    "Mesh": "ControlPointsMesh",
-                    "MaterialInstance": {
-                        "Material": "ControlPointMaterial",
-                        "Uniforms": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "FlexBlockEntity",
             "Components": [
                 {
@@ -200,14 +166,14 @@
                 {
                     "Type": "nap::FlexBlockComponent",
                     "mID": "FlexBlockComponent",
-                    "ControlPointsMesh": "ControlPointsMesh",
                     "FrameMesh": "FrameMesh",
-                    "FlexBlockMesh": "BoxMesh"
+                    "FlexBlockMesh": "BoxMesh",
+                    "NormalsMesh": "VisualizeNormalsMesh",
+                    "SerialPort": "SerialPort"
                 }
             ],
             "Children": [
                 "BlockEntity",
-                "ControlPointsEntity",
                 "FrameEntity"
             ]
         },
@@ -350,15 +316,15 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "ControlPointMaterial",
+            "mID": "FrameMaterial",
             "Uniforms": [
                 {
                     "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3ControlPointColor",
+                    "mID": "UniformVec3FrameColor",
                     "Name": "inColor",
                     "Value": {
                         "x": 1.0,
-                        "y": 0.0,
+                        "y": 1.0,
                         "z": 0.0
                     }
                 }
@@ -387,15 +353,15 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "FrameMaterial",
+            "mID": "VisualizeNormasMaterial",
             "Uniforms": [
                 {
                     "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3FrameColor",
+                    "mID": "UniformVec3ControlPointColor",
                     "Name": "inColor",
                     "Value": {
                         "x": 1.0,
-                        "y": 1.0,
+                        "y": 0.0,
                         "z": 0.0
                     }
                 }
@@ -524,6 +490,20 @@
             ]
         },
         {
+            "Type": "nap::SerialPort",
+            "mID": "SerialPort",
+            "PortName": "COM4",
+            "BaudRate": 9600,
+            "ByteSize": "Eight",
+            "Parity": "None",
+            "StopBits": "One",
+            "FlowControl": "None",
+            "ReadTimeout": 0,
+            "WriteTimeout": 0,
+            "InterByteTimeout": 0,
+            "AllowFailure": false
+        },
+        {
             "Type": "nap::Shader",
             "mID": "BlockShader",
             "mVertShader": "shaders/block.vert",
@@ -536,13 +516,6 @@
             "mFragShader": "shaders/control_point.frag"
         },
         {
-            "Type": "nap::SphereMesh",
-            "mID": "ControlPointMesh",
-            "Radius": 0.05000000074505806,
-            "Rings": 50.0,
-            "Sectors": 50.0
-        },
-        {
             "Type": "nap::UniformVec3",
             "mID": "UniformVec3PlaneColor",
             "Name": "inColor",
@@ -551,6 +524,12 @@
                 "y": 0.32899999618530276,
                 "z": 0.41499999165534975
             }
+        },
+        {
+            "Type": "nap::VisualizeNormalsMesh",
+            "mID": "VisualizeNormalsMesh",
+            "ReferenceMesh": "BoxMesh",
+            "Length": 1.0
         }
     ]
 }

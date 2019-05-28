@@ -20,9 +20,10 @@
 
 // nap::FlexBlockComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
-	RTTI_PROPERTY("ControlPointsMesh", &nap::FlexBlockComponent::mControlPointsMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FrameMesh", &nap::FlexBlockComponent::mFrameMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("NormalsMesh", &nap::FlexBlockComponent::mNormalsMesh, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SerialPort", &nap::FlexBlockComponent::mSerialPort, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -46,21 +47,27 @@ namespace nap
 	{
 		FlexBlockComponent* resource = getComponent<FlexBlockComponent>();
 
-		// assign meshes
-		mControlPointsMesh = resource->mControlPointsMesh;
+		// assign resources
 		mFlexBlockMesh = resource->mFlexBlockMesh;
 		mFrameMesh = resource->mFrameMesh;
+		mNormalsMesh = resource->mNormalsMesh;
+		mSerialPort = resource->mSerialPort;
 
 		// Read & parse json files
-		// TODO : handle errors...
-		auto sizes = flexreader::readSizes("sizes.json", errorState);
-		auto shapes = flexreader::readShapes("shapes.json", errorState);
+		std::vector<FlexblockSizePtr> sizes = flexreader::readSizes("sizes.json", errorState);
+		std::vector<FlexblockShapePtr> shapes = flexreader::readShapes("shapes.json", errorState);
 
+		// create flex logic
 		mFlexLogic = std::make_shared<Flex>( shapes[0], sizes[0] );
+		
+		// start flex logic thread
+		mFlexLogic->start();
 
+		// calculate new frame
 		const std::vector<glm::vec3>& framePoints = mFlexLogic->getFramePoints();
 		std::vector<glm::vec3> frame = toNapPoints(framePoints);
 
+		// set points
 		mFrameMesh->setFramePoints(frame);
 
 		return true;
@@ -73,19 +80,32 @@ namespace nap
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
-		mFlexLogic->update(deltaTime);
-
 		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
-		std::vector<glm::vec3> points = toNapPoints(objectPoints);
-
-		// update the control points mesh
-		mControlPointsMesh->setControlPoints(points);
+		std::vector<glm::vec3>& points = toNapPoints(objectPoints);
 
 		// update ropes of frame
 		mFrameMesh->setControlPoints(points);
 		
 		// update the box
 		mFlexBlockMesh->setControlPoints(points);
+
+		// update normals mesh
+		utility::ErrorState errorState;
+		mNormalsMesh->calculateNormals(errorState, true);
+
+		// do serial stuff
+		std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
+		mWriteBuffer = "<";
+		for (const float& ropeLength : ropeLengths)
+		{
+			int l = (int)ropeLength;
+			mWriteBuffer.append(std::to_string(l));
+			mWriteBuffer.append("|");
+		}
+		mWriteBuffer.append(">");
+
+		SerialPort::Error error;
+		//mSerialPort->write(mWriteBuffer, error);
 	}
 
 	std::vector<glm::vec3> FlexBlockComponentInstance::toNapPoints(const std::vector<glm::vec3>& points)

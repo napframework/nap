@@ -3,23 +3,18 @@
 #include <mathutils.h>
 #include <glm/geometric.hpp>
 
-#define REF_FREQ 200.0f
+#define MOTORSTEPS 12.73239
 
 namespace nap
 {
-	Flex::Flex(std::shared_ptr<FlexblockShape> flexblockShape, std::shared_ptr<FlexblockSize> flexblockSize)
+	Flex::Flex(FlexblockShapePtr flexblockShape, FlexblockSizePtr flexblockSize)
 	{
-		// Read & parse json files
-		// TODO : handle errors...
-		//readShapes();
-		//readSizes();
-
 		mObjShape = flexblockShape;
 		mObjSize = flexblockSize;
 
 		mMotorInput = std::vector<float>(8);
 
-		// TODO : define this somewhere else
+		// 
 		mFrequency = 200;
 		mObjShape = flexblockShape;
 		mObjSize = flexblockSize;
@@ -29,9 +24,6 @@ namespace nap
 		mForceObject = 10;
 		mForceObjectSpring = 0.02;
 		mForceObject2Frame = 2;
-
-		mMaxAcc = 2.0 / mFrequency;
-		mMaxSpeed = 5.0 / mFrequency;
 
 		mLengthError = 0;
 
@@ -109,117 +101,132 @@ namespace nap
 		calcInput();
 	}
 
-	void Flex::setMotorInput(int index, float value)
+	Flex::~Flex()
 	{
-		mMotorInput[index] = value;
-		setInput(mMotorInput);
+		stop();
 	}
 
-	void Flex::update(double deltaTime)
+	void Flex::start()
 	{
-		// calculate points
-		// this is where the magic happens
-
-		mFrequency = (int)(1.0 / deltaTime);
-
-		printf("%i\n", mFrequency);
-
-		mMaxAcc = 2.0 / mFrequency;
-		mMaxSpeed = 5.0 / mFrequency;
-
-		mForceObject = (10 * REF_FREQ) / mFrequency;
-		mForceObjectSpring = (0.02f * REF_FREQ) / mFrequency;
-		mForceObject2Frame = (2.0f * REF_FREQ) / mFrequency;
-
-		/*
-		mForceObject = 10;
-		mForceObjectSpring = 0.02;
-		mForceObject2Frame = 2;
-		mChangeSpeed = 1;
-
-		mMaxAcc = 2.0 / mFrequency;
-		mMaxSpeed = 5.0 / mFrequency;
-		*/
-
-		calcInput();
-
-		for (int i = 0; i < mPointsObject.size(); i++)
+		if (!mIsRunning)
 		{
-			// init
-			mPointForce = glm::vec3(0, 0, 0);
-			mPointForceCorr = glm::vec3(0, 0, 0);
+			mIsRunning = true;
+			mUpdateThread = std::thread(&Flex::update, this);
+		}
+	}
 
-			// external forces
-			std::vector<int> suspensionElementIds = getIdsOfSuspensionElementsOnPoint(i);
+	void Flex::stop()
+	{
+		if (mIsRunning)
+		{
+			mIsRunning = false;
+			mUpdateThread.join();
+		}
+	}
 
-			for (int j = 0; j < suspensionElementIds.size(); j++)
+	void Flex::setMotorInput(int index, float value)
+	{
+		std::lock_guard<std::mutex> l(mMutex);
+		mMotorInput[index] = value;
+	}
+
+	void Flex::update()
+	{
+		while (mIsRunning)
+		{
+			setInput(mMotorInput);
+
+			calcInput();
+
+			for (int i = 0; i < mPointsObject.size(); i++)
 			{
-				mPointForce += getSuspensionForceOnPointOfElement(suspensionElementIds[j], i);
-			}
+				// init
+				mPointForce = glm::vec3(0, 0, 0);
+				mPointForceCorr = glm::vec3(0, 0, 0);
 
-			// Internal forces + suspension forces on the other side of connected elements
-			// Get the connected elements(both directions) :
+				// external forces
+				std::vector<int> suspensionElementIds;
+				getIdsOfSuspensionElementsOnPoint(i, suspensionElementIds);
 
-			std::vector<int> objectElementIds0;
-			for (int j = 0; j < mElementsObject.size(); j++)
-			{
-				if (mElementsObject[j][0] == i)
+				for (int j = 0; j < suspensionElementIds.size(); j++)
 				{
-					objectElementIds0.push_back(j);
+					glm::vec3 force;
+					getSuspensionForceOnPointOfElement(suspensionElementIds[j], i, force);
+					mPointForce += force;
 				}
-			}
 
-			std::vector<int> objectElementIds1;
-			for (int j = 0; j < mElementsObject.size(); j++)
-			{
-				if (mElementsObject[j][1] == i)
+				// Internal forces + suspension forces on the other side of connected elements
+				// Get the connected elements(both directions) :
+
+				std::vector<int> objectElementIds0;
+				for (int j = 0; j < mElementsObject.size(); j++)
 				{
-					objectElementIds1.push_back(j);
+					if (mElementsObject[j][0] == i)
+					{
+						objectElementIds0.push_back(j);
+					}
 				}
+
+				std::vector<int> objectElementIds1;
+				for (int j = 0; j < mElementsObject.size(); j++)
+				{
+					if (mElementsObject[j][1] == i)
+					{
+						objectElementIds1.push_back(j);
+					}
+				}
+
+				// Forces due to external force on other points
+				for (int j = 0; j < objectElementIds0.size(); j++)
+				{
+					glm::vec3 force;
+					getProjectedSuspensionForcesOnOppositePointOfElement(objectElementIds0[j], 1, force);
+					mPointForce += force;
+
+					getObjectElementForceOfElement(objectElementIds0[j], 1, force);
+					mPointForceCorr += force;
+				}
+
+				for (int j = 0; j < objectElementIds1.size(); j++)
+				{
+					glm::vec3 force;
+					
+					getProjectedSuspensionForcesOnOppositePointOfElement(objectElementIds1[j], 0, force);
+					mPointForce += force;
+					
+					getObjectElementForceOfElement(objectElementIds1[j], -1, force);
+					mPointForceCorr += force;
+				}
+
+				// add change to change
+				mPointChange[i] = mPointForce;
+				mPointChangeCorr[i] = mPointChangeCorr[i] + mPointForceCorr * 0.2f;
 			}
 
-			// Forces due to external force on other points
-			for (int j = 0; j < objectElementIds0.size(); j++)
+			// add damping
+			for (int j = 0; j < mPointChangeCorr.size(); j++)
 			{
-				mPointForce += getProjectedSuspensionForcesOnOppositePointOfElement(objectElementIds0[j], 1);
-				mPointForceCorr += getObjectElementForceOfElement(objectElementIds0[j], 1);
+				mPointChangeCorr[j] *= 0.95f;
 			}
 
-			for (int j = 0; j < objectElementIds1.size(); j++)
+			// update position
+			for (int j = 0; j < mPointsObject.size(); j++)
 			{
-				mPointForce += getProjectedSuspensionForcesOnOppositePointOfElement(objectElementIds1[j], 0);
-				mPointForceCorr += getObjectElementForceOfElement(objectElementIds1[j], -1);
+				mPointsObject[j] += mPointChange[j] * 0.01f + mPointChangeCorr[j] * 0.2f ;
 			}
 
-			// add change to change
-			mPointChange[i] = mPointForce;
-			mPointChangeCorr[i] = mPointChangeCorr[i] + mPointForceCorr * ( (0.2f * REF_FREQ ) / mFrequency );
-		}
+			concatPoints();
+			calcElements();
 
-		// add damping
-		for (int j = 0; j < mPointChangeCorr.size(); j++)
-		{
-			mPointChangeCorr[j] *= ( 0.95f * REF_FREQ ) / mFrequency;
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000 / mFrequency));
 		}
-
-		// update position
-		for (int j = 0; j < mPointsObject.size(); j++)
-		{
-			mPointsObject[j] += mPointChange[j] * ( ( 0.01f * REF_FREQ ) / mFrequency ) 
-				+ mPointChangeCorr[j] * ( ( 0.2f * REF_FREQ ) / mFrequency );
-		}
-
-		concatPoints();
-		calcElements();
 	}
 
 	void Flex::setInput(std::vector<float> inputs)
 	{
-		float tot = 0.0f;
 		for (int i = 0; i < inputs.size(); i++)
 		{
 			inputs[i] += 0.2f; // why ??
-			tot += inputs[i];
 		}
 
 		for (int i = 0; i < inputs.size(); i++)
@@ -228,54 +235,51 @@ namespace nap
 		}
 	}
 
-	glm::vec3 Flex::getObjectElementForceOfElement(int elidx, int direction)
+	void Flex::getObjectElementForceOfElement(int elidx, int direction, glm::vec3& outVec)
 	{
-		return mElementsLengthDelta[elidx] * mForceObject * (float)direction * mElementsVector[elidx];
+		outVec = mElementsLengthDelta[elidx] * mForceObject * (float)direction * mElementsVector[elidx];
 	}
 
-	glm::vec3 Flex::getProjectedSuspensionForcesOnOppositePointOfElement(int object_element_id, int opposite_column)
+	void Flex::getProjectedSuspensionForcesOnOppositePointOfElement(int objectElementId, int oppositeColumn, glm::vec3& outVec)
 	{
 		// Predicted force due to force on other point
-		int oppositePoint = mElementsObject[object_element_id][opposite_column];
-		auto suspensionElementIds = getIdsOfSuspensionElementsOnPoint(oppositePoint);
+		int oppositePoint = mElementsObject[objectElementId][oppositeColumn];
+		
+		std::vector<int> suspensionElementIds;
+		getIdsOfSuspensionElementsOnPoint(oppositePoint, suspensionElementIds);
 
 		int suspensionElementId = suspensionElementIds[0];
-
-		auto tot = getProjectedSuspensionForceOnOppositePointOfElement(object_element_id, suspensionElementId, oppositePoint);
-
-		return tot;
+		getProjectedSuspensionForceOnOppositePointOfElement(objectElementId, suspensionElementId, oppositePoint, outVec);
 	}
 
-	glm::vec3 Flex::getProjectedSuspensionForceOnOppositePointOfElement(int object_element_id, int suspension_element_id, int opposite_point)
+	void Flex::getProjectedSuspensionForceOnOppositePointOfElement(int objectElementId, int suspensionElementId, int opposite_point, glm::vec3& outVec)
 	{
-		auto v1 = mElementsVector[object_element_id];
-		auto v2 = getSuspensionForceOnPointOfElement(suspension_element_id, opposite_point);
+		glm::vec3 v1 = mElementsVector[objectElementId];
+		glm::vec3 v2;
+		getSuspensionForceOnPointOfElement(suspensionElementId, opposite_point, v2);
 
-		auto d = glm::dot(v1, v2);
-		auto r = d * mElementsVector[object_element_id];
-
-		return r;
+		float d = glm::dot(v1, v2);
+		outVec = d * mElementsVector[objectElementId];
 	}
 
-	glm::vec3 Flex::getSuspensionForceOnPointOfElement(int elidx, int point)
+	void Flex::getSuspensionForceOnPointOfElement(int elidx, int point, glm::vec3& outVec)
 	{
-		return mElementsLength[elidx] * mElementsVector[elidx] * mElementsInput[point];
+		outVec = mElementsLength[elidx] * mElementsVector[elidx] * mElementsInput[point];
 	}
 
-	std::vector<int> Flex::getIdsOfSuspensionElementsOnPoint(int point_id)
+	void Flex::getIdsOfSuspensionElementsOnPoint(int pointId, std::vector<int> &outIDs)
 	{
+		outIDs.clear();
+
 		// Find the INDEX of the point_id in the array of elements_object2frame
 		// Add the length of the elements_object array(because the arrays are concatenated)
-		std::vector<int> returnVector;
 		for (int i = 0; i < mElementsObject2Frame.size(); i++)
 		{
-			if (mElementsObject2Frame[i][0] == point_id)
+			if (mElementsObject2Frame[i][0] == pointId)
 			{
-				returnVector.push_back(i + mElementsObject.size());
+				outIDs.push_back(i + mElementsObject.size());
 			}
 		}
-
-		return returnVector;
 	}
 
 	void Flex::calcInput()
@@ -296,25 +300,25 @@ namespace nap
 		}
 
 		float sum = 0.0f;
-		std::vector<float> n_elements_length(mElementsLength.size());
+		std::vector<float> elementsLength(mElementsLength.size());
 		for (int i = 0; i < mElementsVector.size(); i++)
 		{
-			n_elements_length[i] = glm::length(mElementsVector[i]);
+			elementsLength[i] = glm::length(mElementsVector[i]);
 		}
 
-		float n_motorspd = 0.0f;
+		float motorSpd = 0.0f;
 		float a = 0.0f;
 		for (int i = 12; i < 19; i++)
 		{
-			float n_a = math::abs(mElementsLength[i] - n_elements_length[i]);
+			float n_a = math::abs(mElementsLength[i] - elementsLength[i]);
 			if (n_a > a)
 				a = n_a;
 		}
-		n_motorspd = a * mFrequency;
+		motorSpd = a * mFrequency;
 
-		mMotorAcc = (mMotorSpd - n_motorspd) * mFrequency;
+		mMotorAcc = (mMotorSpd - motorSpd) * mFrequency;
 
-		mElementsLength = n_elements_length;
+		mElementsLength = elementsLength;
 		for (int i = 0; i < mElementsVector.size(); i++)
 		{
 			mElementsVector[i] /= mElementsLength[i];
@@ -369,5 +373,23 @@ namespace nap
 		}
 
 		mPoints = newPoints;
+	}
+
+	std::vector<float> Flex::getRopeLengths()
+	{
+		std::lock_guard<std::mutex> l(mMutex);
+
+		std::vector<float> ropes;
+		for (int i = 12; i < 20; i++)
+		{
+			ropes.push_back(mElementsLength[i]);
+		}
+
+		for (float& ropeLength : ropes)
+		{
+			ropeLength *= 1000.0f * MOTORSTEPS - 7542.0f;
+		}
+		
+		return ropes;
 	}
 }

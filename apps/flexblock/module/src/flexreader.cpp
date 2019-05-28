@@ -15,9 +15,9 @@
 
 namespace nap
 {
-	std::vector<std::shared_ptr<FlexblockSize>> flexreader::readSizes(std::string filename, utility::ErrorState& errorState)
+	std::vector<FlexblockSizePtr> flexreader::readSizes(std::string filename, utility::ErrorState& errorState)
 	{
-		std::vector<std::shared_ptr<FlexblockSize>> sizes;
+		std::vector<FlexblockSizePtr> sizes;
 
 		std::string path = filename;
 		std::string buffer;
@@ -61,9 +61,9 @@ namespace nap
 		return sizes;
 	}
 
-	std::vector<std::shared_ptr<FlexblockShape>> flexreader::readShapes(std::string filename, utility::ErrorState& errorState)
+	std::vector<FlexblockShapePtr> flexreader::readShapes(std::string filename, utility::ErrorState& errorState)
 	{
-		std::vector<std::shared_ptr<FlexblockShape>> shapes;
+		std::vector<FlexblockShapePtr> shapes;
 
 		std::string path = filename;
 		std::string buffer;

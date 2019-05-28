@@ -5,6 +5,8 @@
 #include "flexblockmesh.h"
 #include "flexblockdata.h"
 #include "flex.h"
+#include "visualizenormalsmesh.h"
+#include "serialport.h"
 
 #include <component.h>
 #include <boxmesh.h>
@@ -24,9 +26,10 @@ namespace nap
 		DECLARE_COMPONENT(FlexBlockComponent, FlexBlockComponentInstance)
 	public:
 		//
-		ResourcePtr<ControlPointsMesh> mControlPointsMesh;
 		ResourcePtr<FrameMesh> mFrameMesh;
 		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
+		ResourcePtr<VisualizeNormalsMesh> mNormalsMesh;
+		ResourcePtr<SerialPort> mSerialPort;
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -59,13 +62,20 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		/**
+		* Update motor speed [0..8]
+		* @param index index of motor [0..8]
+		* @param value motor input 0-1
+		*/
 		void SetMotorInput(int index, float value);
 	protected:
-		ResourcePtr<ControlPointsMesh> mControlPointsMesh;
 		ResourcePtr<FrameMesh> mFrameMesh;
 		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
+		ResourcePtr<VisualizeNormalsMesh> mNormalsMesh;
+		ResourcePtr<SerialPort> mSerialPort;
 
-		std::shared_ptr<Flex> mFlexLogic;
+		FlexPtr mFlexLogic;
+		std::string mWriteBuffer;
 
 		std::vector<glm::vec3> toNapPoints(const std::vector<glm::vec3>& points);
 	};
