@@ -4,7 +4,7 @@
 namespace nap
 {
 	WebSocketServerEndPoint::WebSocketServerEndPoint(int port, uint32 logLevel, uint32 accessLevel) :
-		mPort(port), mLogLevel(logLevel), mAccessLogLevel(logConnectionAccess)
+		mPort(port), mLogLevel(logLevel), mAccessLogLevel(accessLevel)
 	{
 		// Initialize asio
 		mEndPoint.init_asio();
