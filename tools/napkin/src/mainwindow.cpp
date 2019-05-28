@@ -157,8 +157,6 @@ void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 	sceneTreeSelection->blockSignals(true);
 	sceneTreeSelection->clearSelection();
 	sceneTreeSelection->blockSignals(false);
-
-	mInspectorPanel.clear();
 	if (!paths.isEmpty())
 	{
 		auto path = paths.first();
@@ -184,8 +182,6 @@ void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
 	resTreeSelection->blockSignals(true);
 	resTreeSelection->clearSelection();
 	resTreeSelection->blockSignals(false);
-
-	mInspectorPanel.clear();
 	if (!paths.isEmpty())
 	{
 		auto path = paths.first();

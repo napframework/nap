@@ -28,14 +28,19 @@ namespace napkin
 
 	private:
 		/**
-		 * Reconstruct the list
-		 */
-		void refresh();
-
-		/**
 		 * Clears the list
 		 */
 		void clear();
+
+		/**
+		 * Populates the list
+		 */
+		void populate();
+
+		/**
+		 * Reconstruct the list. The model is cleared and populated.
+		 */
+		void refresh();
 
 		/**
 		 * Called when an object has been added
