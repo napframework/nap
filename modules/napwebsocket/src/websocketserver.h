@@ -16,7 +16,7 @@ namespace nap
 	class WebSocketServerEndPoint;
 
 	/**
-	 * Allows for receiving and responding to messages over a websocket
+	 * Allows for receiving and responding to messages over a web socket.
 	 */
 	class NAPAPI WebsocketServer : public Device
 	{
@@ -25,12 +25,6 @@ namespace nap
 
 		// Stops the device
 		virtual ~WebsocketServer() override;
-
-		/**
-		* Initialize this server
-		* @param errorState contains the error message when initialization fails
-		*/
-		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Starts the server
@@ -44,7 +38,7 @@ namespace nap
 		 */
 		virtual void stop() override;
 
-		int mPort = 80;					///< Property: "Port" to listen on
+		int mPort = 80;					///< Property: "Port" to open and listen to
 
 	private:
 		std::unique_ptr<WebSocketServerEndPoint> mEndpoint = nullptr;		///< Server endpoint
