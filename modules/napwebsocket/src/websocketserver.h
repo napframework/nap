@@ -17,6 +17,8 @@ namespace nap
 
 	/**
 	 * Allows for receiving and responding to messages over a web socket.
+	 * On start the server end point is opened and ready to accept client messages.
+	 * On stop all active connections are closed and the end point stops listening.
 	 */
 	class NAPAPI WebsocketServer : public Device
 	{
@@ -34,11 +36,12 @@ namespace nap
 		virtual bool start(utility::ErrorState& errorState) override;
 
 		/**
-		 * Stops the server
+		 * Stops the server and therefore server end point. All connections are closed.
 		 */
 		virtual void stop() override;
 
-		int mPort = 80;					///< Property: "Port" to open and listen to
+		int mPort = 80;							///< Property: "Port" to open and listen to for messages.
+		bool mLogConnectionStatus = false;		///< Property: "LogConnectionStatus" if client / server connection information is logged to the console.
 
 	private:
 		std::unique_ptr<WebSocketServerEndPoint> mEndpoint = nullptr;		///< Server endpoint
