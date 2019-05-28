@@ -7,7 +7,8 @@
 
 // nap::websocketserver run time class definition 
 RTTI_BEGIN_CLASS(nap::WebsocketServer)
-	RTTI_PROPERTY("Port", &nap::WebsocketServer::mPort, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Port",					&nap::WebsocketServer::mPort,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LogConnectionStatus",	&nap::WebsocketServer::mLogConnectionStatus,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -22,17 +23,21 @@ namespace nap
 
 	bool WebsocketServer::start(utility::ErrorState& errorState)
 	{
+		// Extract correct log levels
+		uint32 log_level = computeWebSocketLogLevel(EWebSocketLogLevel::Error);
+		uint32 alog_level = mLogConnectionStatus ? websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload
+			: websocketpp::log::alevel::fail;
 
 		// Create the end point
-		uint32 log_level = computeWebSocketLogLevel(EWebSocketLogLevel::Error);
-		mEndpoint = std::make_unique<WebSocketServerEndPoint>(mPort,  log_level, true);
+		mEndpoint = std::make_unique<WebSocketServerEndPoint>(mPort,  log_level, alog_level);
 
+		// Install handler
 		mEndpoint->setMessageHandler(std::bind(
 			&WebsocketServer::messageHandler, this,
 			std::placeholders::_1, std::placeholders::_2
 		));
 
-		// Open port
+		// Open and start listening
 		if (!mEndpoint->open(errorState))
 			return false;
 
@@ -52,8 +57,6 @@ namespace nap
 
 	void WebsocketServer::messageHandler(websocketpp::connection_hdl hdl, WebSocketServerEndPoint::PPServerEndPoint::message_ptr msg)
 	{
-		nap::Logger::info("Message Received!");
-		nap::Logger::info(msg->get_payload());
-		mEndpoint->send(msg->get_payload(), hdl, msg);
+		mEndpoint->send("who's your daddy now??", hdl, msg);
 	}
 }

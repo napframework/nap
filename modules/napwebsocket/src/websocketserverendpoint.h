@@ -27,13 +27,14 @@ namespace nap
 		WebSocketServerEndPoint() = delete;
 
 		/**
-		 * Construct a server endpoint using the given port and log level
-		 * Note that all log levels equal to and above the given level are logged
+		 * Construct a server endpoint using the given port and log levels.
+		 * Note that all levels equal to and above the given level are logged.
 		 * @param port the port to listen to incoming messages
 		 * @param logLevel requested library log level
+		 * @param accessLevel requested access / client connection log level.
 		 * @param logConnection if server / client connection data is logged
 		 */
-		WebSocketServerEndPoint(int port, uint32 logLevel, bool logConnectionAccess);
+		WebSocketServerEndPoint(int port, uint32 logLevel, uint32 accessLevel);
 
 		/**
 		 * Stops the end point from running
@@ -74,8 +75,8 @@ namespace nap
 	private:
 		PPServerEndPoint mEndPoint;				///< The websocketpp server end-point
 		uint32 mLogLevel = 0;					///< Library log level
+		uint32 mLogAccessLevel = 0;				///< Log client / server connection data
 		int mPort = 80;							///< Port to listen for incoming messages
-		bool mLogConnectionAccess = true;		///< Log client / server connection data
 		std::future<void> mServerTask;			///< The background server thread
 		bool mOpen = false;						///< If connection is open
 

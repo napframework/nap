@@ -3,8 +3,8 @@
 
 namespace nap
 {
-	WebSocketServerEndPoint::WebSocketServerEndPoint(int port, uint32 logLevel, bool logConnectionAccess) :
-		mPort(port), mLogLevel(logLevel), mLogConnectionAccess(logConnectionAccess)
+	WebSocketServerEndPoint::WebSocketServerEndPoint(int port, uint32 logLevel, uint32 accessLevel) :
+		mPort(port), mLogLevel(logLevel), mAccessLogLevel(logConnectionAccess)
 	{
 		// Initialize asio
 		mEndPoint.init_asio();
@@ -22,9 +22,7 @@ namespace nap
 		mEndPoint.set_error_channels(mLogLevel);
 
 		mEndPoint.clear_access_channels(websocketpp::log::alevel::all);
-		uint32 alog_level = mLogConnectionAccess ? websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload
-			: websocketpp::log::alevel::fail;
-		mEndPoint.set_access_channels(alog_level);
+		mEndPoint.set_access_channels(mAccessLogLevel);
 
 		// Listen to messages on this specific port
 		std::error_code stdec;
