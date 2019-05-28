@@ -226,7 +226,7 @@ namespace nap
 		/**
 		 *	Calculates the framerate over time
 		 */
-		void calculateFramerate(uint32 ticks);
+		void calculateFramerate(double deltaTime);
 		
 		/**
 		 * Determine and set our working directory based on where our project data is
@@ -258,14 +258,14 @@ namespace nap
 		HighResolutionTimer mTimer;
 
 		// Amount of milliseconds the app is running
-		uint32 mLastTimeStamp = 0;
+		double mLastTimeStamp = 0;
 
 		// Current framerate
 		float mFramerate = 0.0f;
 
 		// Used to calculate framerate over time
-		std::array<uint32, 20> mTicks;
-		uint32 mTicksum = 0;
+		std::array<double, 20> mTicks;
+		double mTicksum = 0;
 		uint32 mTickIdx = 0;
 
 		// Interface associated with this instance of core.
