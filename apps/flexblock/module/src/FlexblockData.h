@@ -17,8 +17,8 @@ namespace nap
 	struct FlexblockShapeSize
 	{
 	public:
-		std::string name;
-		FlexblockShapeSizeValues values;
+		std::string					name;
+		FlexblockShapeSizeValues	values;
 	};
 
 	struct FlexblockShapePoints
@@ -37,11 +37,11 @@ namespace nap
 	struct FlexblockShape
 	{
 	public:
-		std::string name;
-		int inputs;
+		std::string						name;
+		int								inputs;
 		std::vector<FlexblockShapeSize> sizes;
-		FlexblockElements elements;
-		FlexblockShapePoints points;
+		FlexblockElements				elements;
+		FlexblockShapePoints			points;
 	};
 
 	//
@@ -56,7 +56,7 @@ namespace nap
 	struct FlexblockSize
 	{
 	public:
-		std::string name;
+		std::string			name;
 		FlexblockSizeValues values;
 	};
 }
