@@ -50,6 +50,8 @@ namespace nap
 	public:
 		FlexBlockComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource) { }
 		
+		virtual ~FlexBlockComponentInstance();
+
 		/**
 		 * Initialize FlexBlockComponentInstance based on the FlexBlockComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -79,8 +81,8 @@ namespace nap
 		ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance
 			= initComponentInstancePtr(this, &FlexBlockComponent::mFlexBlockSerialComponent);
 
-		//
-		FlexPtr mFlexLogic;
+		// Initialize flexblock unique ptr to null
+		std::unique_ptr<Flex> mFlexLogic = nullptr;
 
 		//
 		double mUpdateSerialTime = 0.0;

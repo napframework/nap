@@ -12,9 +12,6 @@
 
 namespace nap
 {
-	class Flex;
-	typedef std::shared_ptr<Flex> FlexPtr;
-
 	class Flex
 	{
 	public:

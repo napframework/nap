@@ -41,6 +41,18 @@ namespace nap
 	{
 	}
 
+
+	FlexBlockComponentInstance::~FlexBlockComponentInstance()
+	{
+		assert(mFlexLogic != nullptr);
+		if (mFlexLogic != nullptr)
+		{
+			mFlexLogic->stop();
+			mFlexLogic.reset(nullptr);
+		}
+	}
+
+
 	bool FlexBlockComponentInstance::init(utility::ErrorState& errorState)
 	{
 		FlexBlockComponent* resource = getComponent<FlexBlockComponent>();
@@ -55,7 +67,7 @@ namespace nap
 		std::vector<FlexblockShapePtr> shapes = flexreader::readShapes("shapes.json", errorState);
 
 		// create flex logic
-		mFlexLogic = std::make_shared<Flex>( shapes[0], sizes[0] );
+		mFlexLogic = std::make_unique<Flex>( shapes[0], sizes[0] );
 		
 		// start flex logic thread
 		mFlexLogic->start();
