@@ -15,7 +15,7 @@ namespace napkin
 	/**
 	 * The MIME type of a nap propertypath
 	 */
-	static const char* sNapkinMimeData = "application/napkin-path";
+	static constexpr char* sNapkinMimeData = "application/napkin-path";
 
 	class ArrayPropertyItem;
 
@@ -65,12 +65,12 @@ namespace napkin
 		/**
 		 * Clear the model of its items. Unlike clear(), it leaves the headers etc.
 		 */
-		void removeItems();
+		void clearItems();
 
 		/**
-		 * Rebuild the model
+	 	 * Run through the object's properties and create items for them
 		 */
-		void rebuild();
+		void populateItems();
 
 		/**
 		 * Overriden to support drag & drop
@@ -94,10 +94,6 @@ namespace napkin
 		 * @return True when the property should not be displayed, false otherwise
 		 */
 		bool isPropertyIgnored(const PropertyPath& prop) const;
-		/**
-		 * Run through the object's properties and create items for them
-		 */
-		void populateItems();
 
 		PropertyPath mPath; // the path currently being edited by the property editor
 	};
@@ -120,12 +116,12 @@ namespace napkin
 		 */
 		void setPath(const PropertyPath& path);
 
+	private:
 		/**
 		 * Clear out the properties from this panel
 		 */
 		void clear();
 
-	private:
 		/**
 		 * Called when the context menu for an item should be shown
 		 * @param menu The menu that actions should be added to (initially empty)
@@ -143,9 +139,18 @@ namespace napkin
 		void onPropertySelectionChanged(const PropertyPath& prop);
 
 		/**
-		 * Rebuild view and model
+		 * Rebuilds view and model and applies path as selection
+		 * This is a temp work-around to ensure selection remains valid
+		 * @param selection the property path that should be selected after rebuilding the model
+		 * @param verticalScrollPos the vertical scroll position of the widget before being refreshed
 		 */
-		void rebuild();
+		void rebuild(PropertyPath selection);
+		
+		/**
+		 * Called just before the current document is closed
+		 * @param filename The name of the document
+		 */
+		void onFileClosing(const QString& filename);
 
 	private:
 		InspectorModel mModel;						// The model for the view

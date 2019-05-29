@@ -28,7 +28,17 @@ namespace napkin
 
 	private:
 		/**
-		 * Reconstruct the list
+		 * Clears the list
+		 */
+		void clear();
+
+		/**
+		 * Populates the list
+		 */
+		void populate();
+
+		/**
+		 * Reconstruct the list. The model is cleared and populated.
 		 */
 		void refresh();
 
@@ -59,6 +69,12 @@ namespace napkin
 		 * @param filename The name of the file that was opened
 		 */
 		void onFileOpened(const QString& filename);
+
+		/**
+		 * Called just before the current document is closed
+		 * @param filename The name of the document
+		 */
+		void onFileClosing(const QString& filename);
 	};
 
 	/**
