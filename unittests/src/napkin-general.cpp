@@ -9,6 +9,7 @@ using namespace napkin;
 
 TEST_CASE("File Extensions", "napkin-general")
 {
+	napkin::AppContext::create();
 	RUN_Q_APPLICATION
 
 	ResourceFactory fact = AppContext::get().getResourceFactory();
@@ -34,10 +35,12 @@ TEST_CASE("File Extensions", "napkin-general")
 
 //		nap::Logger::debug(videoExtString.toStdString());
 	}
+	napkin::AppContext::destroy();
 }
 
 TEST_CASE("Resource Management", "napkin-general")
 {
+	napkin::AppContext::create();
     RUN_Q_APPLICATION
 
 	// Assume this test file's directory as the base path
@@ -83,6 +86,7 @@ TEST_CASE("Resource Management", "napkin-general")
 	REQUIRE(nap::qt::directoryContains(resourcedir + "/shaders", absShaderPath));
 	// or not
 	REQUIRE(!nap::qt::directoryContains(absShaderPath, resourcedir));
-
+	
+	napkin::AppContext::destroy();
 }
 
