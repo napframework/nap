@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QMimeData>
+#include <QScrollBar>
 
 #include <utility/fileutils.h>
 #include <napkinfiltertree.h>
@@ -19,19 +20,13 @@ using namespace napkin;
 void InspectorModel::setPath(const PropertyPath& path)
 {
 	mPath = path;
-	rebuild();
-}
-
-void InspectorModel::removeItems()
-{
-	while (rowCount() > 0)
-		removeRow(0);
-}
-
-void InspectorModel::rebuild()
-{
-	removeItems();
+	clearItems();
 	populateItems();
+}
+
+void InspectorModel::clearItems()
+{
+	removeRows(0, rowCount());
 }
 
 InspectorModel::InspectorModel() : QStandardItemModel()
@@ -87,6 +82,9 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 
 	connect(&AppContext::get(), &AppContext::propertySelectionChanged,
 			this, &InspectorPanel::onPropertySelectionChanged);
+
+	connect(&AppContext::get(), &AppContext::documentClosing, 
+		this, &InspectorPanel::onFileClosing);
 
 }
 
@@ -205,7 +203,8 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
-	rebuild();
+	// Rebuild
+	rebuild(path);
 }
 
 void InspectorPanel::setPath(const PropertyPath& path)
@@ -234,16 +233,49 @@ void InspectorPanel::setPath(const PropertyPath& path)
 
 void InspectorPanel::clear()
 {
-	mModel.removeItems();
+	mTreeView.getSelectedItems().clear();
+	mModel.clearItems();
 	mPathField.setText("");
 	mTitle.setText("");
 	mSubTitle.setText("");
 }
 
-void InspectorPanel::rebuild()
+void napkin::InspectorPanel::rebuild(PropertyPath selection)
 {
-	mModel.rebuild();
+	// Get vertical scroll pos so we can restore it later
+	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
+
+	// Rebuild model
+	clear();
+	mModel.populateItems();
 	mTreeView.getTreeView().expandAll();
+
+	// Find item based on path name
+	QList<nap::rtti::Object*> objects = { selection.getObject() };
+	auto pathItem = nap::qt::findItemInModel(mModel, [selection](QStandardItem* item)
+	{
+		auto pitem = dynamic_cast<PropertyPathItem*>(item);
+		if (pitem == nullptr)
+			return false;
+
+		if (pitem->getPath().toString() == selection.toString())
+		{
+			nap::Logger::info(pitem->getPath().toString());
+			return true;
+		}
+		return false;
+	});
+
+	if (pathItem != nullptr)
+		mTreeView.selectAndReveal(pathItem);
+
+	// Set scroll pos
+	mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
+}
+
+void napkin::InspectorPanel::onFileClosing(const QString& filename)
+{
+	clear();
 }
 
 void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)

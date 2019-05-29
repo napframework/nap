@@ -32,15 +32,15 @@ AppContext::AppContext()
 
 
 AppContext::~AppContext()
-{}
+{
+	closeDocument();
+}
 
 
 AppContext& AppContext::get()
 {
-	if (appContextInstance == nullptr)
-		create();
-
-    return *appContextInstance;
+	assert(appContextInstance != nullptr);
+	return *appContextInstance;
 }
 
 
@@ -56,16 +56,6 @@ void AppContext::destroy()
     appContextInstance = nullptr;
 }
 
-
-Document* AppContext::newDocument()
-{
-	mDocument = std::make_unique<Document>(getCore());
-	connectDocumentSignals();
-	newDocumentCreated();
-
-	documentChanged(mDocument.get());
-	return mDocument.get();
-}
 
 Document* AppContext::loadDocument(const QString& filename)
 {
@@ -92,6 +82,19 @@ void AppContext::reloadDocument()
 	loadDocument(mCurrentFilename);
 }
 
+Document* AppContext::newDocument()
+{
+	// Create new document
+	closeDocument();
+	mDocument = std::make_unique<Document>(getCore());
+	connectDocumentSignals();
+
+	// Notify listeners
+	newDocumentCreated();
+	documentChanged(mDocument.get());
+	return mDocument.get();
+}
+
 Document* AppContext::loadDocumentFromString(const std::string& data, const QString& filename)
 {
 	ErrorState err;
@@ -110,8 +113,11 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 		return nullptr;
 	}
 
+	// Create new document
+	closeDocument();
 	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
 
+	// Notify listeners
 	connectDocumentSignals();
 	documentOpened(filename);
 	Document* doc = mDocument.get();
@@ -289,7 +295,7 @@ void AppContext::handleURI(const QString& uri)
 		if (match.hasMatch())
 		{
 			auto proppath = match.captured(2);
-			PropertyPath path(*obj, nap::rtti::Path::fromString(proppath.toStdString()));
+			PropertyPath path(*obj, nap::rtti::Path::fromString(proppath.toStdString()), *mDocument);
 			propertySelectionChanged(path);
 		}
 		return;
@@ -338,4 +344,19 @@ void AppContext::onUndoIndexChanged()
 }
 
 
+bool napkin::AppContext::isAvailable()
+{
+	return appContextInstance != nullptr;
+}
+
+
+void napkin::AppContext::closeDocument()
+{
+	if (mDocument == nullptr)
+		return;
+
+	QString prev_doc_name = mDocument->getCurrentFilename();
+	documentClosing(prev_doc_name);
+	mDocument.reset(nullptr);
+}
 

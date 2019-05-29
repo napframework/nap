@@ -40,19 +40,21 @@ bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 }
 
 
-void napkin::ResourceModel::refresh()
+void napkin::ResourceModel::populate()
 {
-	mEntitiesItem.removeRows(0, mEntitiesItem.rowCount());
-	mObjectsItem.removeRows(0, mObjectsItem.rowCount());
-
 	auto doc = AppContext::get().getDocument();
-
-	if (doc == nullptr)
-		return;
-
+	assert(doc != nullptr);
 	for (nap::rtti::Object* ob : topLevelObjects(doc->getObjectPointers()))
 		addObjectItem(*ob);
 }
+
+
+void napkin::ResourceModel::clear()
+{
+	mEntitiesItem.removeRows(0, mEntitiesItem.rowCount());
+	mObjectsItem.removeRows(0, mObjectsItem.rowCount());
+}
+
 
 ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 {
@@ -117,6 +119,7 @@ napkin::ResourcePanel::ResourcePanel()
 	mTreeView.getTreeView().setSortingEnabled(false);
 
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
+	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
 
 	connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
@@ -130,6 +133,8 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
 }
+
+
 
 void napkin::ResourcePanel::menuHook(QMenu& menu)
 {
@@ -175,17 +180,24 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	}
 }
 
+
 void napkin::ResourcePanel::onNewFile()
 {
-	refresh();
+	populate();
 }
 
 
 void napkin::ResourcePanel::onFileOpened(const QString& filename)
 {
-	mTreeView.getTreeView().selectionModel()->clear();
-	refresh();
+	populate();
 }
+
+
+void napkin::ResourcePanel::onFileClosing(const QString& filename)
+{
+	clear();
+}
+
 
 void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
@@ -202,25 +214,39 @@ void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, c
 	selectionChanged(selectedPaths);
 }
 
+
 void napkin::ResourcePanel::refresh()
 {
-	mModel.refresh();
+	clear();
+	populate();
+}
+
+
+void napkin::ResourcePanel::clear()
+{
+	mTreeView.getTreeView().selectionModel()->clear();
+	mModel.clear();
+}
+
+
+void napkin::ResourcePanel::populate()
+{
+	mModel.populate();
 	mTreeView.getTreeView().expandAll();
 }
+
 
 void napkin::ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
 {
 	// TODO: Don't refresh the whole mModel
-	mModel.refresh();
-	mTreeView.getTreeView().expandAll();
+	refresh();
 	mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *entity));
 }
 
 void napkin::ResourcePanel::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 {
 	// TODO: Don't refresh the whole mModel
-	mModel.refresh();
-	mTreeView.getTreeView().expandAll();
+	refresh();
 	mTreeView.selectAndReveal(findItemInModel<ObjectItem>(mModel, *comp));
 }
 
