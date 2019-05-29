@@ -48,6 +48,6 @@ namespace nap
 		std::unique_ptr<WebSocketServerEndPoint> mEndpoint = nullptr;		///< Server endpoint
 
 		// Receives incoming messages
-		void messageHandler(websocketpp::connection_hdl hdl, WebSocketServerEndPoint::PPServerEndPoint::message_ptr msg);
+		void messageHandler(wspp::Connection con, wspp::MessagePtr msg);
 	};
 }

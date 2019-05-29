@@ -56,8 +56,8 @@ namespace nap
 	}
 
 
-	void WebsocketServer::messageHandler(websocketpp::connection_hdl hdl, WebSocketServerEndPoint::PPServerEndPoint::message_ptr msg)
+	void WebsocketServer::messageHandler(wspp::Connection con, wspp::MessagePtr msg)
 	{
-		mEndpoint->send("who's your daddy now??", hdl, msg);
+		mEndpoint->send("who's your daddy now??", con, msg->get_opcode());
 	}
 }
