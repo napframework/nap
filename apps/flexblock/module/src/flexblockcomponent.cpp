@@ -58,9 +58,9 @@ namespace nap
 		FlexBlockComponent* resource = getComponent<FlexBlockComponent>();
 
 		// assign resources
-		mFlexBlockMesh = resource->mFlexBlockMesh;
-		mFrameMesh = resource->mFrameMesh;
-		mNormalsMesh = resource->mNormalsMesh;
+		mFlexBlockMesh = resource->mFlexBlockMesh.get();
+		mFrameMesh = resource->mFrameMesh.get();
+		mNormalsMesh = resource->mNormalsMesh.get();
 
 		// Read & parse json files
 		std::vector<FlexblockSizePtr> sizes = flexreader::readSizes("sizes.json", errorState);
