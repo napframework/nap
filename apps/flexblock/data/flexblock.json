@@ -273,6 +273,56 @@
             }
         },
         {
+            "Type": "nap::FlexBlockSequenceElement",
+            "mID": "SequenceElement 1",
+            "Type": "Stance",
+            "Stance": "FlexBlockStance 1",
+            "NextStance": "FlexBlockStance 2",
+            "Duration": 2.0
+        },
+        {
+            "Type": "nap::FlexBlockStance",
+            "mID": "FlexBlockStance 1",
+            "Inputs": [
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                1.0,
+                0.0
+            ]
+        },
+        {
+            "Type": "nap::FlexBlockStance",
+            "mID": "FlexBlockStance 2",
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "Type": "nap::FlexBlockStance",
+            "mID": "FlexBlockStance 3",
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
             "Type": "nap::FrameMesh",
             "mID": "FrameMesh",
             "Size": {
