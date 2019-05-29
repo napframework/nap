@@ -169,6 +169,11 @@
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
                     "NormalsMesh": "VisualizeNormalsMesh",
+                    "SerialComponent": "./FlexBlockSerialComponent"
+                },
+                {
+                    "Type": "nap::FlexBlockSerialComponent",
+                    "mID": "FlexBlockSerialComponent",
                     "SerialPort": "SerialPort"
                 }
             ],
@@ -492,7 +497,7 @@
         {
             "Type": "nap::SerialPort",
             "mID": "SerialPort",
-            "PortName": "COM4",
+            "PortName": "COM9",
             "BaudRate": 9600,
             "ByteSize": "Eight",
             "Parity": "None",

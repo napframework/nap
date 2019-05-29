@@ -53,7 +53,6 @@ namespace nap
 		*/
 		std::vector<glm::vec3> getObjectPoints()
 		{
-			std::lock_guard<std::mutex> l(mMutex);
 			return mPoints;
 		}
 
@@ -62,7 +61,6 @@ namespace nap
 		*/
 		std::vector<glm::vec3> getFramePoints()
 		{
-			std::lock_guard<std::mutex> l(mMutex);
 			return mPointsFrame;
 		}
 	protected:
@@ -90,7 +88,7 @@ namespace nap
 	protected:
 		std::atomic_bool mIsRunning = false;
 		std::thread mUpdateThread;
-		std::mutex mMutex;
+		std::mutex mMotorInputMutex;
 
 		float mForceObject = 10.0f;
 		float mForceObjectSpring = 0.02f;

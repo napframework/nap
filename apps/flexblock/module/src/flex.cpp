@@ -126,7 +126,7 @@ namespace nap
 
 	void Flex::setMotorInput(int index, float value)
 	{
-		std::lock_guard<std::mutex> l(mMutex);
+		std::lock_guard<std::mutex> l(mMotorInputMutex);
 		mMotorInput[index] = value;
 	}
 
@@ -134,7 +134,10 @@ namespace nap
 	{
 		while (mIsRunning)
 		{
-			setInput(mMotorInput);
+			{
+				std::lock_guard<std::mutex> l(mMotorInputMutex);
+				setInput(mMotorInput);
+			}
 
 			calcInput();
 
@@ -377,8 +380,6 @@ namespace nap
 
 	std::vector<float> Flex::getRopeLengths()
 	{
-		std::lock_guard<std::mutex> l(mMutex);
-
 		std::vector<float> ropes;
 		for (int i = 12; i < 20; i++)
 		{

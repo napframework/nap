@@ -6,7 +6,7 @@
 #include "flexblockdata.h"
 #include "flex.h"
 #include "visualizenormalsmesh.h"
-#include "serialport.h"
+#include "flexblockserialcomponent.h"
 
 #include <component.h>
 #include <boxmesh.h>
@@ -29,7 +29,9 @@ namespace nap
 		ResourcePtr<FrameMesh> mFrameMesh;
 		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
 		ResourcePtr<VisualizeNormalsMesh> mNormalsMesh;
-		ResourcePtr<SerialPort> mSerialPort;
+		
+		//
+		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent;
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -72,11 +74,18 @@ namespace nap
 		ResourcePtr<FrameMesh> mFrameMesh;
 		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
 		ResourcePtr<VisualizeNormalsMesh> mNormalsMesh;
-		ResourcePtr<SerialPort> mSerialPort;
 
+		//
+		ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance
+			= initComponentInstancePtr(this, &FlexBlockComponent::mFlexBlockSerialComponent);
+
+		//
 		FlexPtr mFlexLogic;
-		std::string mWriteBuffer;
 
+		//
+		double mUpdateSerialTime = 0.0;
+
+		//
 		std::vector<glm::vec3> toNapPoints(const std::vector<glm::vec3>& points);
 	};
 }

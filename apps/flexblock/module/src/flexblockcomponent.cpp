@@ -23,7 +23,7 @@ RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
 	RTTI_PROPERTY("FrameMesh", &nap::FlexBlockComponent::mFrameMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("NormalsMesh", &nap::FlexBlockComponent::mNormalsMesh, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SerialPort", &nap::FlexBlockComponent::mSerialPort, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SerialComponent", &nap::FlexBlockComponent::mFlexBlockSerialComponent, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -39,9 +39,7 @@ namespace nap
 {
 	void FlexBlockComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
-
 	}
-
 
 	bool FlexBlockComponentInstance::init(utility::ErrorState& errorState)
 	{
@@ -51,7 +49,6 @@ namespace nap
 		mFlexBlockMesh = resource->mFlexBlockMesh;
 		mFrameMesh = resource->mFrameMesh;
 		mNormalsMesh = resource->mNormalsMesh;
-		mSerialPort = resource->mSerialPort;
 
 		// Read & parse json files
 		std::vector<FlexblockSizePtr> sizes = flexreader::readSizes("sizes.json", errorState);
@@ -70,11 +67,15 @@ namespace nap
 		// set points
 		mFrameMesh->setFramePoints(frame);
 
+		//
+		mFlexBlockSerialComponentInstance->start(errorState);
+
 		return true;
 	}
 
 	void FlexBlockComponentInstance::SetMotorInput(int index, float value)
 	{
+		//
 		mFlexLogic->setMotorInput(index, value);
 	}
 
@@ -93,19 +94,24 @@ namespace nap
 		utility::ErrorState errorState;
 		mNormalsMesh->calculateNormals(errorState, true);
 
-		// do serial stuff
-		std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
-		mWriteBuffer = "<";
-		for (const float& ropeLength : ropeLengths)
+		//
+		mUpdateSerialTime += deltaTime;
+		if (mUpdateSerialTime > (double)mFlexBlockSerialComponentInstance->getUpdateIntervalMs() / 1000.0)
 		{
-			int l = (int)ropeLength;
-			mWriteBuffer.append(std::to_string(l));
-			mWriteBuffer.append("|");
-		}
-		mWriteBuffer.append(">");
+			mUpdateSerialTime = 0.0;
 
-		SerialPort::Error error;
-		//mSerialPort->write(mWriteBuffer, error);
+			std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
+			std::string data = "<";
+			for (float l : ropeLengths)
+			{
+				long c = (long)l;
+				data.append(std::to_string(c));
+				data.append("|");
+			}
+			data.append(">\n");
+
+			mFlexBlockSerialComponentInstance->write(data);
+		}
 	}
 
 	std::vector<glm::vec3> FlexBlockComponentInstance::toNapPoints(const std::vector<glm::vec3>& points)

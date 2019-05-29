@@ -13,6 +13,7 @@
 #include <inputrouter.h>
 #include <imgui/imgui.h>
 #include <imguiutils.h>
+#include <serialservice.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
