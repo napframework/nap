@@ -125,7 +125,10 @@ namespace nap
 
 	void SerialPort::stop()
 	{
-		mSerialPort->close();
+		if (mSerialPort->isOpen())
+		{
+			mSerialPort->close();
+		}
 	}
 
 
