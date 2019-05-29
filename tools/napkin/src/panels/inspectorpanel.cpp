@@ -84,7 +84,7 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 			this, &InspectorPanel::onPropertySelectionChanged);
 
 	connect(&AppContext::get(), &AppContext::documentClosing, 
-		this, &InspectorPanel::onFileClosed);
+		this, &InspectorPanel::onFileClosing);
 
 }
 
@@ -273,7 +273,7 @@ void napkin::InspectorPanel::rebuild(PropertyPath selection)
 	mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
 }
 
-void napkin::InspectorPanel::onFileClosed(const QString& filename)
+void napkin::InspectorPanel::onFileClosing(const QString& filename)
 {
 	clear();
 }

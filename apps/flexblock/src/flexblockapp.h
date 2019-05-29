@@ -56,7 +56,7 @@ namespace nap
 		 */
 		int shutdown() override;
 
-		ObjectPtr<EntityInstance> GetBlockEntity() { return mBlockEntity; }
+		ObjectPtr<EntityInstance> GetBlockEntity() { return mFlexBlockEntity; }
 
 	private:
 		// Nap Services
@@ -68,9 +68,9 @@ namespace nap
 
 		// Entities
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mBlockEntity = nullptr;				//< Pointer to the entity that holds the block
+		ObjectPtr<EntityInstance> mFlexBlockEntity = nullptr;			//< Pointer to the entity that holds the block
+		ObjectPtr<EntityInstance> mBlockEntity = nullptr;				//< Pointer to the block mesh that can be rendered
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the world
-		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;				//< Pointer to the entity that holds the plane
 
 		// Resources
 		ObjectPtr<RenderWindow>	mRenderWindow = nullptr;				//< Pointer to the render window
