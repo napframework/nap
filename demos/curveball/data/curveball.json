@@ -234,7 +234,8 @@
         {
             "Type": "nap::WebsocketServer",
             "mID": "Server",
-            "Port": 9000
+            "Port": 9000,
+            "LogConnectionUpdates":true
         },
         {
             "Type": "nap::RenderWindow",
