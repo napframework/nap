@@ -51,7 +51,10 @@ namespace nap
 		mNormalsMesh = resource->mNormalsMesh;
 
 		// Read & parse json files
-		std::vector<FlexblockSizePtr> sizes = flexreader::readSizes("sizes.json", errorState);
+		std::vector<FlexblockSizePtr> sizes;
+		if (!flexreader::readSizes("sizes.json", sizes, errorState))
+			return false;
+
 		std::vector<FlexblockShapePtr> shapes = flexreader::readShapes("shapes.json", errorState);
 
 		// create flex logic
@@ -108,7 +111,7 @@ namespace nap
 				data.append(std::to_string(c));
 				data.append("|");
 			}
-			data.append(">\n");
+			data.append(">");
 
 			mFlexBlockSerialComponentInstance->write(data);
 		}

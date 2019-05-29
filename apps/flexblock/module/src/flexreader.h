@@ -11,7 +11,7 @@ namespace nap
 	namespace flexreader
 	{
 		std::vector<FlexblockShapePtr> readShapes(std::string filename, utility::ErrorState& errorState);
-		std::vector<FlexblockSizePtr> readSizes(std::string filename, utility::ErrorState& errorState);
+		bool readSizes(std::string filename, std::vector<FlexblockSizePtr>& outSizes, utility::ErrorState& errorState);
 	}
 }
 	

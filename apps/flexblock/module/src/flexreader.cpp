@@ -15,9 +15,64 @@
 
 namespace nap
 {
-	std::vector<FlexblockSizePtr> flexreader::readSizes(std::string filename, utility::ErrorState& errorState)
+	bool validateSizes(utility::ErrorState& errorState, std::string filename, rapidjson::Document &document)
 	{
-		std::vector<FlexblockSizePtr> sizes;
+		if (!errorState.check(document.IsArray(), (filename + " is not an array").c_str()))
+			return false;
+
+		for (rapidjson::SizeType i = 0; i < document.Size(); i++)
+		{
+			if (!errorState.check(document[i].HasMember("name") && document[i]["name"].IsString(),
+				("Element " + std::to_string(i) + " does not have a member called name").c_str()))
+			{
+				return false;
+			}
+
+			if (!errorState.check(document[i].HasMember("values"),
+				("Element " + std::to_string(i) + " does not have a member called values").c_str()))
+			{
+				return false;
+			}
+
+			if (!errorState.check(document[i].HasMember("values"),
+				("Element " + std::to_string(i) + " does not have a member called values").c_str()))
+			{
+				return false;
+			}
+
+			if (!errorState.check(document[i]["values"].HasMember("object"),
+				("Element [" + std::to_string(i) + "[values] does not have a member called object").c_str()))
+			{
+				return false;
+			}
+
+			/*
+			size->values.object = glm::vec3(
+				document[i]["values"]["object"]["x"].GetFloat(),
+				document[i]["values"]["object"]["y"].GetFloat(),
+				document[i]["values"]["object"]["z"].GetFloat()
+			);*/
+
+			if (!errorState.check(document[i]["values"].HasMember("frame"),
+				("Element [" + std::to_string(i) + "[values] does not have a member called frame").c_str()))
+			{
+				return false;
+			}
+
+			/*
+			size->values.frame = glm::vec3(
+				document[i]["values"]["frame"]["x"].GetFloat(),
+				document[i]["values"]["frame"]["y"].GetFloat(),
+				document[i]["values"]["frame"]["z"].GetFloat()
+			);*/
+		}
+
+		return true;
+	}
+
+	bool flexreader::readSizes(std::string filename, std::vector<FlexblockSizePtr>& outSizes, utility::ErrorState& errorState)
+	{
+		outSizes.clear();
 
 		std::string path = filename;
 		std::string buffer;
@@ -25,40 +80,34 @@ namespace nap
 
 		rapidjson::Document document;
 		rapidjson::ParseResult parseResult = document.Parse(buffer.c_str());
-		if (!parseResult)
-		{
-			// TODO: handle parse result
-			printf("Error reading json\n");
-		}
 
-		assert(document.IsArray());
+		if (!errorState.check(parseResult, ("Error parsing " + filename).c_str()))
+			return false;
+
+		if (!validateSizes(errorState, filename, document))
+			return false;
+
 		for (rapidjson::SizeType i = 0; i < document.Size(); i++)
 		{
 			std::shared_ptr<FlexblockSize> size = std::make_shared<FlexblockSize>();
 
-			assert(document[i].HasMember("name") && document[i]["name"].IsString());
 			size->name = document[i]["name"].GetString();
-
-			assert(document[i].HasMember("values"));
-			assert(document[i]["values"].HasMember("object"));
-
 			size->values.object = glm::vec3(
 				document[i]["values"]["object"]["x"].GetFloat(),
 				document[i]["values"]["object"]["y"].GetFloat(),
 				document[i]["values"]["object"]["z"].GetFloat()
 			);
 
-			assert(document[i]["values"].HasMember("frame"));
 			size->values.frame = glm::vec3(
 				document[i]["values"]["frame"]["x"].GetFloat(),
 				document[i]["values"]["frame"]["y"].GetFloat(),
 				document[i]["values"]["frame"]["z"].GetFloat()
 			);
 
-			sizes.push_back(size);
+			outSizes.push_back(size);
 		}
 
-		return sizes;
+		return true;
 	}
 
 	std::vector<FlexblockShapePtr> flexreader::readShapes(std::string filename, utility::ErrorState& errorState)
