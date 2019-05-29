@@ -12,6 +12,8 @@
 #include <selectvideocomponent.h>
 #include <selectvideomeshcomponent.h>
 #include <audio/component/levelmetercomponent.h>
+#include <rendertotexturecomponent.h>
+#include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoModulationApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -94,7 +96,8 @@ namespace nap
 	 * We first render the video to it's off screen texture target. The texture it renders to
 	 * is linked by both the background and displacement material in JSON.
 	 * We don't have to manually bind the rendered texture to a shader input.
-	 * After rendering the off screen pass, the background is rendered using an orthographic camera
+	 * Next we apply a grey-scale effect to the rendered video texture using a RenderToTextureComponent.
+	 * After rendering these passes the background is rendered using an orthographic camera.
 	 * The mesh is rendered on top of the background using a perspective camera.
 	 * As a last step we render the GUI
 	 */
@@ -121,7 +124,13 @@ namespace nap
 			mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, render_objects);
 		}
 
-		// Screen
+		// Apply video effect to rendered video texture
+		{
+			RenderToTextureComponentInstance& to_tex_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
+			to_tex_comp.draw();
+		}
+
+		// Render everything to screen
 		{
 			// Clear target
 			opengl::RenderTarget& render_target = mRenderWindow->getBackbuffer();
@@ -236,6 +245,21 @@ namespace nap
 			if (ImGui::SliderFloat("Current Time", &currentTime, 0.0f, current_video->getDuration(), "%.3fs", 1.0f))
 				current_video->seek(currentTime);
 			ImGui::Text("Total time: %fs", current_video->getDuration());
+		}
+		if (ImGui::CollapsingHeader("Video Texture"))		///< The rendered video texture
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			nap::Texture2D& video_tex = mVideoRenderTarget->getColorTexture();
+			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
+			ImGui::Image(video_tex, { col_width, col_width / ratio_video });
+		}
+		if (ImGui::CollapsingHeader("FX Texture"))			///< The post process effect applied to the video texture
+		{
+			RenderToTextureComponentInstance& fx_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance> ();
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			nap::Texture2D& output_tex = fx_comp.getOutputTexture();
+			float ratio_video = static_cast<float>(output_tex.getWidth()) / static_cast<float>(output_tex.getHeight());
+			ImGui::Image(output_tex, { col_width, col_width / ratio_video });
 		}
 		
 		ImGui::End();
