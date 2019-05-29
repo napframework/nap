@@ -261,8 +261,14 @@ namespace nap
 						{
 							// Basic JSON type, read value and copy to target
 							rtti::Variant extracted_value = readBasicType(json_value);
-							if (!errorState.check(extracted_value.convert(wrapped_type), "Failed to extract primitive type"))
+							if (!errorState.check(extracted_value.convert(wrapped_type),
+								"Failed to extract primitive type: %s, object: %s", readState.mCurrentRTTIPath.toString().c_str(),
+								rootObject->mID.c_str()))
+							{
+								if (readState.mCurrentRTTIPath.toString() == "Type")
+									errorState.fail("Type is a reserved keyword");
 								return false;
+							}
 
 							property.set_value(compound, extracted_value);
 						}
@@ -389,8 +395,15 @@ namespace nap
 					{
 						// Array of basic types; read basic type
 						rtti::Variant extracted_value = readBasicType(json_element);
-						if (!errorState.check(extracted_value.convert(wrapped_type), "Failed to extract primitive type"))
+						if (!errorState.check(extracted_value.convert(wrapped_type),
+							"Failed to extract primitive type: %s, object: %s", readState.mCurrentRTTIPath.toString().c_str(),
+							rootObject->mID.c_str()))
+						{
+							if (readState.mCurrentRTTIPath.toString() == "Type")
+								errorState.fail("Type is a reserved keyword");
 							return false;
+						}
+							
 						
 						array.set_value(index, extracted_value);
 					}
