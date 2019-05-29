@@ -10,6 +10,18 @@
 
 namespace nap
 {
+	// Wrapping often used web-socket library types
+	namespace wspp
+	{
+		using Config			= websocketpp::config::asio;						///< web-socket low level config
+		using Connection		= websocketpp::connection_hdl;						///< server / client connection
+		using MessagePtr		= Config::message_type::ptr;						///< internal message format
+		using OpCode			= websocketpp::frame::opcode::value;				///< web-socket op codes
+		using ConnectionHandler = std::function<void(Connection)>;					///< connection established / disconnect handle function
+		using MessageHandler	= std::function<void(Connection, MessagePtr)>;		///< message received handle function
+		using ServerEndPoint	= websocketpp::server<Config>;						///< server end-point
+	}
+
 	/**
 	 * Server endpoint role.
 	 * Creates and manages a connection with the server web socket endpoint.
@@ -21,7 +33,6 @@ namespace nap
 	class WebSocketServerEndPoint final
 	{
 	public:
-		using PPServerEndPoint = websocketpp::server<websocketpp::config::asio>;
 
 		// No default constructor
 		WebSocketServerEndPoint() = delete;
@@ -64,22 +75,40 @@ namespace nap
 		 * @param connection client to send message to
 		 * @param message the original client message
 		 */
-		void send(const std::string& message, websocketpp::connection_hdl connection, PPServerEndPoint::message_ptr originalMessage);
+		void send(const std::string& message, wspp::Connection connection, wspp::OpCode opCode);
 
 		/**
-		 * Function that is called when the this end point receives a new message
+		 * Function that is called when this end point receives a new message
 		 * @param handler the message handler to install
 		 */
-		void setMessageHandler(std::function<void(websocketpp::connection_hdl, PPServerEndPoint::message_ptr)> handler);
+		void setMessageHandler(wspp::MessageHandler handler);
 
 	private:
-		PPServerEndPoint mEndPoint;				///< The websocketpp server end-point
+		wspp::ServerEndPoint mEndPoint;			///< The websocketpp server end-point
 		uint32 mLogLevel = 0;					///< Library log level
 		uint32 mAccessLogLevel = 0;				///< Log client / server connection data
 		int mPort = 80;							///< Port to listen for incoming messages
 		std::future<void> mServerTask;			///< The background server thread
 		bool mOpen = false;						///< If connection is open
 
+		/**
+		 * Runs the end point in a background thread until stopped.
+		 */
 		void run();
+
+		/**
+		 * Called when a new connection is made
+		 */
+		void connectionOpened(wspp::Connection connection);
+
+		/**
+		 * Called when a collection is closed
+		 */
+		void connectionClosed(wspp::Connection connection);
+
+		/**
+		 * Called when a failed connection attempt is made
+		 */
+		void connectionFailed(wspp::Connection connection);
 	};
 }

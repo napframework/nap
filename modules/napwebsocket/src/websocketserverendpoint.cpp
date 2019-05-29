@@ -1,6 +1,9 @@
 // Local Includes
 #include "websocketserverendpoint.h"
 
+// External Includes
+#include <nap/logger.h>
+
 namespace nap
 {
 	WebSocketServerEndPoint::WebSocketServerEndPoint(int port, uint32 logLevel, uint32 accessLevel) :
@@ -23,6 +26,11 @@ namespace nap
 
 		mEndPoint.clear_access_channels(websocketpp::log::alevel::all);
 		mEndPoint.set_access_channels(mAccessLogLevel);
+
+		// Install connection open / closed handlers
+		mEndPoint.set_open_handler(std::bind(&WebSocketServerEndPoint::connectionOpened,  this, std::placeholders::_1));
+		mEndPoint.set_close_handler(std::bind(&WebSocketServerEndPoint::connectionClosed, this, std::placeholders::_1));
+		mEndPoint.set_fail_handler(std::bind(&WebSocketServerEndPoint::connectionFailed,  this, std::placeholders::_1));
 
 		// Listen to messages on this specific port
 		std::error_code stdec;
@@ -49,9 +57,9 @@ namespace nap
 	}
 
 
-	void WebSocketServerEndPoint::send(const std::string& message, websocketpp::connection_hdl connection, PPServerEndPoint::message_ptr originalMessage)
+	void WebSocketServerEndPoint::send(const std::string& message, wspp::Connection connection, wspp::OpCode opCode)
 	{
-		mEndPoint.send(connection, message, originalMessage->get_opcode());
+		mEndPoint.send(connection, message, opCode);
 	}
 
 
@@ -80,8 +88,27 @@ namespace nap
 	}
 
 
-	void WebSocketServerEndPoint::setMessageHandler(std::function<void(websocketpp::connection_hdl, PPServerEndPoint::message_ptr)> message_handler)
+	void WebSocketServerEndPoint::setMessageHandler(wspp::MessageHandler message_handler)
 	{
 		mEndPoint.set_message_handler(message_handler);
 	}
+	
+
+	void WebSocketServerEndPoint::connectionOpened(wspp::Connection connection)
+	{
+		nap::Logger::info("Connection opened!");
+	}
+
+
+	void WebSocketServerEndPoint::connectionClosed(wspp::Connection connection)
+	{
+		nap::Logger::info("Connection closed!");
+	}
+
+
+	void WebSocketServerEndPoint::connectionFailed(wspp::Connection connection)
+	{
+		nap::Logger::info("Connection failed!");
+	}
+
 }
