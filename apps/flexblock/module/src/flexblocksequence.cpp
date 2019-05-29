@@ -16,7 +16,7 @@ namespace nap
 
 	bool FlexBlockSequence::init(utility::ErrorState& errorState)
 	{
-		if (errorState.check(mElements.size() > 0,
+		if (!errorState.check(mElements.size() > 0,
 			"need at least 1 element %s", this->mID.c_str()))
 			return false;
 

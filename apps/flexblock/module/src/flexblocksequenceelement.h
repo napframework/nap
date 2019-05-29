@@ -11,10 +11,10 @@ namespace nap
 	/**
 	* 
 	*/
-	enum class FlexBlockSequenceElementType : int
+	enum class FlexBlockSequenceElementType 
 	{
-		Stance = 0,
-		Transition = 1
+		Stance,
+		Transition
 	};
 
 	/**

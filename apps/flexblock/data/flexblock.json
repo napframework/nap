@@ -175,6 +175,12 @@
                     "Type": "nap::FlexBlockSerialComponent",
                     "mID": "FlexBlockSerialComponent",
                     "SerialPort": "SerialPort"
+                },
+                {
+                    "Type": "nap::FlexBlockSequencePlayerComponent",
+                    "mID": "FlexBlockSequencePlayerComponent",
+                    "FlexBlockComponent": "./FlexBlockComponent",
+                    "FlexBlockSequence": "FlexBlockSequence"
                 }
             ],
             "Children": [
@@ -273,11 +279,45 @@
             }
         },
         {
+            "Type": "nap::FlexBlockSequence",
+            "mID": "FlexBlockSequence",
+            "Elements": [
+                "SequenceElement 1",
+                "SequenceElement 2",
+                "SequenceElement 3",
+                "SequenceElement 4"
+            ]
+        },
+        {
             "Type": "nap::FlexBlockSequenceElement",
             "mID": "SequenceElement 1",
-            "Type": "Stance",
+            "SequenceType": "Stance",
             "Stance": "FlexBlockStance 1",
             "NextStance": "FlexBlockStance 2",
+            "Duration": 2.0
+        },
+        {
+            "Type": "nap::FlexBlockSequenceElement",
+            "mID": "SequenceElement 2",
+            "SequenceType": "Transition",
+            "Stance": "FlexBlockStance 1",
+            "NextStance": "FlexBlockStance 2",
+            "Duration": 0.0
+        },
+        {
+            "Type": "nap::FlexBlockSequenceElement",
+            "mID": "SequenceElement 3",
+            "SequenceType": "Transition",
+            "Stance": "FlexBlockStance 2",
+            "NextStance": "FlexBlockStance 3",
+            "Duration": 5.0
+        },
+        {
+            "Type": "nap::FlexBlockSequenceElement",
+            "mID": "SequenceElement 4",
+            "SequenceType": "Stance",
+            "Stance": "FlexBlockStance 3",
+            "NextStance": "",
             "Duration": 2.0
         },
         {
