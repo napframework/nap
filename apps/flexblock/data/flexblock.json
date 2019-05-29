@@ -294,7 +294,7 @@
             "SequenceType": "Stance",
             "Stance": "FlexBlockStance 1",
             "NextStance": "FlexBlockStance 2",
-            "Duration": 2.0
+            "Duration": 5.0
         },
         {
             "Type": "nap::FlexBlockSequenceElement",
@@ -302,7 +302,7 @@
             "SequenceType": "Transition",
             "Stance": "FlexBlockStance 1",
             "NextStance": "FlexBlockStance 2",
-            "Duration": 0.0
+            "Duration": 3.0
         },
         {
             "Type": "nap::FlexBlockSequenceElement",
@@ -324,13 +324,13 @@
             "Type": "nap::FlexBlockStance",
             "mID": "FlexBlockStance 1",
             "Inputs": [
-                0.0,
+                1.0,
                 1.0,
                 0.0,
                 0.0,
-                1.0,
                 0.0,
-                1.0,
+                0.0,
+                0.0,
                 0.0
             ]
         },
@@ -344,22 +344,22 @@
                 0.0,
                 0.0,
                 0.0,
-                0.0,
-                0.0
+                1.0,
+                1.0
             ]
         },
         {
             "Type": "nap::FlexBlockStance",
             "mID": "FlexBlockStance 3",
             "Inputs": [
+                1.0,
+                1.0,
                 0.0,
                 0.0,
                 0.0,
                 0.0,
                 0.0,
-                0.0,
-                0.0,
-                1.0
+                0.0
             ]
         },
         {
@@ -596,7 +596,7 @@
             "ReadTimeout": 0,
             "WriteTimeout": 0,
             "InterByteTimeout": 0,
-            "AllowFailure": false
+            "AllowFailure": true
         },
         {
             "Type": "nap::Shader",

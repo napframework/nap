@@ -62,9 +62,11 @@ namespace nap
 			= initComponentInstancePtr(this, &FlexBlockSequencePlayerComponent::mFlexBlockComponent);
 
 		FlexBlockSequence* mSequence = nullptr;
-		FlexBlockSequenceElement* mCurrentSequenceElement = nullptr;
 
 		double mTime = 0.0;
 		bool mIsPlaying = false;
+		int mCurrentSequenceIndex = 0;
+
+		float lerp(float a, float b, float t);
 	};
 }

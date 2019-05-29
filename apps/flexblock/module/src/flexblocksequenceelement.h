@@ -31,6 +31,10 @@ namespace nap
 		* @param errorState contains the error message when initialization fails
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		const FlexBlockSequenceElementType getSequenceType() { return mType; }
+		const ResourcePtr<FlexBlockStance> getStance() { return mStance; }
+		const ResourcePtr<FlexBlockStance> getNextStance() { return mNextStance; }
 	public:
 		// properties
 		float mDuration = 0.0f;
