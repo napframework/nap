@@ -28,9 +28,14 @@ namespace napkin
 		ResourceModel();
 
 		/**
-		 * Clear all the items from the model and rebuild
+		 * Populates the entire model
 		 */
-		void refresh();
+		void populate();
+
+		/**
+		 * Clears all items from the model
+		 */
+		void clear();
 
 		/**
 		 * Add an item (row) to represent an Object
@@ -78,9 +83,20 @@ namespace napkin
 
 	private:
 		/**
-		 * Reconstruct the list
+		 * Reconstruct the list, present items are destroyed before being rebuild.
+		 * Internally the model is cleared and populated.
 		 */
 		void refresh();
+
+		/**
+		 * Clears the current model and enforces selection to be removed
+		 */
+		void clear();
+
+		/**
+		 * Populates the current model
+		 */
+		void populate();
 
 		/**
 		 * Called when an entity has been added
@@ -119,6 +135,12 @@ namespace napkin
 		 * @param filename The name of the file that was opened
 		 */
 		void onFileOpened(const QString& filename);
+
+		/**
+		* Called just before the current document is closed
+		 * @param filename the name of the document
+		 */
+		void onFileClosing(const QString& filename);
 
 		/**
 		 * Called when the global selection was changed
