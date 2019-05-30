@@ -67,6 +67,8 @@ namespace nap
 		bool mIsPlaying = false;
 		int mCurrentSequenceIndex = 0;
 
-		float lerp(float a, float b, float t);
+		std::vector<float> mInputs = std::vector<float>{
+			0.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f };
 	};
 }

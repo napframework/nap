@@ -270,62 +270,11 @@
             ]
         },
         {
-            "Type": "nap::FlexBlockMesh",
-            "mID": "BoxMesh",
-            "Size": {
-                "x": 2.0,
-                "y": 1.0,
-                "z": 1.0
-            }
-        },
-        {
-            "Type": "nap::FlexBlockSequence",
-            "mID": "FlexBlockSequence",
-            "Elements": [
-                "SequenceElement 1",
-                "SequenceElement 2",
-                "SequenceElement 3",
-                "SequenceElement 4"
-            ]
-        },
-        {
-            "Type": "nap::FlexBlockSequenceElement",
-            "mID": "SequenceElement 1",
-            "SequenceType": "Stance",
-            "Stance": "FlexBlockStance 1",
-            "NextStance": "FlexBlockStance 2",
-            "Duration": 5.0
-        },
-        {
-            "Type": "nap::FlexBlockSequenceElement",
-            "mID": "SequenceElement 2",
-            "SequenceType": "Transition",
-            "Stance": "FlexBlockStance 1",
-            "NextStance": "FlexBlockStance 2",
-            "Duration": 3.0
-        },
-        {
-            "Type": "nap::FlexBlockSequenceElement",
-            "mID": "SequenceElement 3",
-            "SequenceType": "Transition",
-            "Stance": "FlexBlockStance 2",
-            "NextStance": "FlexBlockStance 3",
-            "Duration": 5.0
-        },
-        {
-            "Type": "nap::FlexBlockSequenceElement",
-            "mID": "SequenceElement 4",
-            "SequenceType": "Stance",
-            "Stance": "FlexBlockStance 3",
-            "NextStance": "",
-            "Duration": 2.0
-        },
-        {
-            "Type": "nap::FlexBlockStance",
-            "mID": "FlexBlockStance 1",
+            "Type": "nap::FlexBlockKeyFrame",
+            "mID": "FlexBlockKeyFrame 1",
             "Inputs": [
-                1.0,
-                1.0,
+                0.0,
+                0.0,
                 0.0,
                 0.0,
                 0.0,
@@ -335,8 +284,8 @@
             ]
         },
         {
-            "Type": "nap::FlexBlockStance",
-            "mID": "FlexBlockStance 2",
+            "Type": "nap::FlexBlockKeyFrame",
+            "mID": "FlexBlockKeyFrame 2",
             "Inputs": [
                 0.0,
                 0.0,
@@ -349,8 +298,8 @@
             ]
         },
         {
-            "Type": "nap::FlexBlockStance",
-            "mID": "FlexBlockStance 3",
+            "Type": "nap::FlexBlockKeyFrame",
+            "mID": "FlexBlockKeyFrame 3",
             "Inputs": [
                 1.0,
                 1.0,
@@ -361,6 +310,46 @@
                 0.0,
                 0.0
             ]
+        },
+        {
+            "Type": "nap::FlexBlockMesh",
+            "mID": "BoxMesh",
+            "Size": {
+                "x": 2.0,
+                "y": 1.0,
+                "z": 1.0
+            }
+        },
+        {
+            "Type": "nap::FlexBlockSequence",
+            "mID": "FlexBlockSequence",
+            "Elements": [
+                "FlexBlockSequenceStance",
+                "FlexBlockSequenceTransition",
+                "FlexBlockSequenceTransition_2"
+            ]
+        },
+        {
+            "Type": "nap::FlexBlockSequenceStance",
+            "mID": "FlexBlockSequenceStance",
+            "Duration": 3.0,
+            "KeyFrame": "FlexBlockKeyFrame 1"
+        },
+        {
+            "Type": "nap::FlexBlockSequenceTransition",
+            "mID": "FlexBlockSequenceTransition",
+            "KeyFrame": "FlexBlockKeyFrame 1",
+            "Duration": 3.0,
+            "NextKeyFrame": "FlexBlockKeyFrame 2",
+            "Curve": "SinCurve"
+        },
+        {
+            "Type": "nap::FlexBlockSequenceTransition",
+            "mID": "FlexBlockSequenceTransition_2",
+            "KeyFrame": "FlexBlockKeyFrame 2",
+            "Duration": 5.0,
+            "NextKeyFrame": "FlexBlockKeyFrame 3",
+            "Curve": "SinnerCurve"
         },
         {
             "Type": "nap::FrameMesh",
@@ -625,6 +614,248 @@
             "mID": "VisualizeNormalsMesh",
             "ReferenceMesh": "BoxMesh",
             "Length": 1.0
+        },
+        {
+            "Type": "nap::math::FloatFCurve",
+            "mID": "AlmostLinearCurve",
+            "Points": [
+                {
+                    "Position": {
+                        "Time": 0.0,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 1.0,
+                        "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                }
+            ]
+        },
+        {
+            "Type": "nap::math::FloatFCurve",
+            "mID": "SinCurve",
+            "Points": [
+                {
+                    "Position": {
+                        "Time": 0.0,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 1.0,
+                        "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.2973976135253906,
+                        "Value": 1.0158722400665284
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.7453538775444031,
+                        "Value": -0.0052907816134393219
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                }
+            ]
+        },
+        {
+            "Type": "nap::math::FloatFCurve",
+            "mID": "SinnerCurve",
+            "Points": [
+                {
+                    "Position": {
+                        "Time": 0.0,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 1.0,
+                        "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.14498130977153779,
+                        "Value": 1.002645492553711
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.2973974049091339,
+                        "Value": -0.0026455032639205457
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.45167267322540285,
+                        "Value": 0.9973545074462891
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.600372314453125,
+                        "Value": -3.8569812232935877e-8
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.7472118735313416,
+                        "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.8847581148147583,
+                        "Value": 2.2482324890660267e-9
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": -0.003644400043413043
+                    },
+                    "OutTangent": {
+                        "Time": 0.07259070128202439,
+                        "Value": -7.064993035044154e-9
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                }
+            ]
         }
     ]
 }

@@ -20,6 +20,13 @@ namespace nap
 			"need at least 1 element %s", this->mID.c_str()))
 			return false;
 
+		double time = 0.0;
+		for (int i = 0; i < mElements.size(); i++)
+		{
+			mElements[i]->setStartTime(time);
+			time += mElements[i]->mDuration;
+		}
+
 		return true;
 	}
 }

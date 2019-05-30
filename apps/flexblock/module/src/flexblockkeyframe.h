@@ -6,13 +6,13 @@
 namespace nap
 {
 	/**
-	 * flexblockstance
+	 * FlexBlockKeyFrame
 	 */
-	class NAPAPI FlexBlockStance : public Resource
+	class NAPAPI FlexBlockKeyFrame : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		virtual ~FlexBlockStance();
+		virtual ~FlexBlockKeyFrame();
 
 		/**
 		* Initialize this object after de-serialization

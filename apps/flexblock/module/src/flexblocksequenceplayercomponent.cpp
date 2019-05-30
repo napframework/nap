@@ -41,62 +41,22 @@ namespace nap
 	{
 		if (mIsPlaying)
 		{
-			if (mCurrentSequenceIndex < mSequence->mElements.size())
+			mTime += deltaTime;
+
+			while (!mSequence->mElements[mCurrentSequenceIndex]->process(mTime, mInputs) )
 			{
-				mTime += deltaTime;
+				mCurrentSequenceIndex++;
 
-				auto currentSequence = mSequence->mElements[mCurrentSequenceIndex];
-
-				if (mTime < currentSequence->mDuration)
+				if (mCurrentSequenceIndex >= mSequence->mElements.size())
 				{
-					if (currentSequence->getSequenceType() == FlexBlockSequenceElementType::Stance)
-					{
-						auto stance = currentSequence->getStance();
-
-						for (int i = 0; i < stance->mInputs.size(); i++)
-						{
-							mFlexBlockComponentInstance->SetMotorInput(i, stance->mInputs[i]);
-						}
-					}
-					else if (currentSequence->getSequenceType() == FlexBlockSequenceElementType::Transition)
-					{
-						auto stance = currentSequence->getStance();
-						auto nextStance = currentSequence->getNextStance();
-
-						for (int i = 0; i < stance->mInputs.size(); i++)
-						{
-							float a = lerp(stance->mInputs[i], nextStance->mInputs[i], (float)mTime / currentSequence->mDuration);
-							mFlexBlockComponentInstance->SetMotorInput(i, a);
-						}
-					}
+					mIsPlaying = false;
+					break;
 				}
-				else
-				{
-					mTime -= currentSequence->mDuration;
+			}
 
-					mCurrentSequenceIndex++;
-
-					if (currentSequence->getSequenceType() == FlexBlockSequenceElementType::Stance)
-					{
-						auto stance = currentSequence->getStance();
-
-						for (int i = 0; i < stance->mInputs.size(); i++)
-						{
-							mFlexBlockComponentInstance->SetMotorInput(i, stance->mInputs[i]);
-						}
-					}
-					else if (currentSequence->getSequenceType() == FlexBlockSequenceElementType::Transition)
-					{
-						auto stance = currentSequence->getStance();
-						auto nextStance = currentSequence->getNextStance();
-
-						for (int i = 0; i < stance->mInputs.size(); i++)
-						{
-							float a = lerp(stance->mInputs[i], nextStance->mInputs[i], (float)mTime / currentSequence->mDuration);
-							mFlexBlockComponentInstance->SetMotorInput(i, a);
-						}
-					}
-				}
+			for (int i = 0; i < mInputs.size(); i++)
+			{
+				mFlexBlockComponentInstance->SetMotorInput(i, mInputs[i]);
 			}
 		}
 	}
@@ -106,10 +66,5 @@ namespace nap
 		mCurrentSequenceIndex = 0;
 		mIsPlaying = true;
 		mTime = 0.0;
-	}
-
-	float FlexBlockSequencePlayerComponentInstance::lerp(float a, float b, float t)
-	{
-		return a + (b - a) * t;
 	}
 }
