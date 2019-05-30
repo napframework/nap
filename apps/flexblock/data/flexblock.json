@@ -304,6 +304,34 @@
                 1.0,
                 1.0,
                 0.0,
+                1.0,
+                1.0,
+                0.0,
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "Type": "nap::FlexBlockKeyFrame",
+            "mID": "FlexBlockKeyFrame 4",
+            "Inputs": [
+                0.0,
+                1.0,
+                0.0,
+                1.0,
+                0.0,
+                1.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "Type": "nap::FlexBlockKeyFrame",
+            "mID": "NeutralFrame",
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
                 0.0,
                 0.0,
                 0.0,
@@ -325,8 +353,10 @@
             "mID": "FlexBlockSequence",
             "Elements": [
                 "FlexBlockSequenceStance",
-                "FlexBlockSequenceTransition",
-                "FlexBlockSequenceTransition_2"
+                "FlexBlockSequenceTransition 1",
+                "FlexBlockSequenceTransition 2",
+                "FlexBlockSequenceTransition 3",
+                "FlexBlockSequenceTransition 4"
             ]
         },
         {
@@ -337,7 +367,7 @@
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
-            "mID": "FlexBlockSequenceTransition",
+            "mID": "FlexBlockSequenceTransition 1",
             "KeyFrame": "FlexBlockKeyFrame 1",
             "Duration": 3.0,
             "NextKeyFrame": "FlexBlockKeyFrame 2",
@@ -345,11 +375,27 @@
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
-            "mID": "FlexBlockSequenceTransition_2",
+            "mID": "FlexBlockSequenceTransition 2",
             "KeyFrame": "FlexBlockKeyFrame 2",
             "Duration": 5.0,
             "NextKeyFrame": "FlexBlockKeyFrame 3",
             "Curve": "SinnerCurve"
+        },
+        {
+            "Type": "nap::FlexBlockSequenceTransition",
+            "mID": "FlexBlockSequenceTransition 3",
+            "KeyFrame": "FlexBlockKeyFrame 3",
+            "Duration": 2.0,
+            "NextKeyFrame": "FlexBlockKeyFrame 4",
+            "Curve": "SinCurve"
+        },
+        {
+            "Type": "nap::FlexBlockSequenceTransition",
+            "mID": "FlexBlockSequenceTransition 4",
+            "KeyFrame": "FlexBlockKeyFrame 4",
+            "Duration": 5.0,
+            "NextKeyFrame": "NeutralFrame",
+            "Curve": "Bezier Curve"
         },
         {
             "Type": "nap::FrameMesh",
@@ -647,6 +693,60 @@
                     "OutTangent": {
                         "Time": 0.10000000149011612,
                         "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                }
+            ]
+        },
+        {
+            "Type": "nap::math::FloatFCurve",
+            "mID": "Bezier Curve",
+            "Points": [
+                {
+                    "Position": {
+                        "Time": 0.0,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 1.0,
+                        "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.5018587112426758,
+                        "Value": 0.5026454925537109
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": -0.5051373839378357
+                    },
+                    "OutTangent": {
+                        "Time": 0.08513012528419495,
+                        "Value": 0.420634925365448
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
