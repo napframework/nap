@@ -179,8 +179,7 @@
                 {
                     "Type": "nap::FlexBlockSequencePlayerComponent",
                     "mID": "FlexBlockSequencePlayerComponent",
-                    "FlexBlockParameters": "Parameters",
-                    "FlexBlockSequence": "FlexBlockSequence"
+                    "FlexBlockParameters": "Parameters"
                 }
             ],
             "Children": [
@@ -287,7 +286,7 @@
             "Type": "nap::FlexBlockKeyFrame",
             "mID": "FlexBlockKeyFrame 2",
             "Inputs": [
-                0.0,
+                1.0,
                 0.0,
                 0.0,
                 0.0,
@@ -350,7 +349,7 @@
         },
         {
             "Type": "nap::FlexBlockSequence",
-            "mID": "FlexBlockSequence",
+            "mID": "Test ",
             "Elements": [
                 "FlexBlockSequenceStance",
                 "FlexBlockSequenceTransition 1",

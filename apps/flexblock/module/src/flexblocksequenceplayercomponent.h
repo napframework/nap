@@ -26,8 +26,7 @@ namespace nap
 		* @param components the components this object depends on
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-	
-		ResourcePtr<FlexBlockSequence> mSequence;
+
 		ResourcePtr<ParameterGroup> mParameterGroup;
 	};
 
@@ -55,15 +54,47 @@ namespace nap
 		 * @param deltaTime time in between frames in seconds
 		 */
 		virtual void update(double deltaTime) override;
+		
+		void load(FlexBlockSequence* sequence);
 
 		void play();
+		
+		void stop();
+
+		void pause();
+
+		const bool getIsLoaded() { return mSequence != nullptr; }
+
+		const bool getIsPlaying() { return mIsPlaying; }
+
+		const bool getIsPaused() { return mIsPaused; };
+
+		const bool getIsFinished() { return mIsFinished; }
+
+		const FlexBlockSequence* getCurrentSequence() { return mSequence; };
+	
+		const FlexBlockSequenceElement* getCurrentElement() 
+		{ 
+			return mSequence->mElements[mCurrentSequenceIndex].get(); 
+		};
+
+		void setTime(double time);
+
+		const double getCurrentTime() { return mTime; }
+
+		const double getDuration() { return mDuration; }
+
+		const std::vector<FlexBlockSequenceElement*> getElements();
 	protected:
 		//
 		FlexBlockSequence* mSequence = nullptr;
 
 		double mTime = 0.0;
 		bool mIsPlaying = false;
+		bool mIsPaused = false;
+		bool mIsFinished = false;
 		int mCurrentSequenceIndex = 0;
+		double mDuration = 0.0;
 
 		std::vector<ParameterFloat*> mInputs = std::vector<ParameterFloat*>();
 	};

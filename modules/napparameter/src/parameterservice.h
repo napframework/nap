@@ -84,6 +84,12 @@ namespace nap
          */
 		nap::Signal<> presetLoaded;
 
+
+		/**
+		* Signal that is emitted when a file reload occurs
+		*/
+		nap::Signal<> fileLoaded;
+
 	protected:
 		/**
 		 * Called when a json file has been (re)loaded. Used to re-apply the presets.

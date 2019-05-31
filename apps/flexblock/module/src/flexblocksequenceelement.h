@@ -36,6 +36,8 @@ namespace nap
 		 * This is called by the sequence to set the start time of this element
 		 */
 		void setStartTime(double startTime);
+
+		const double getStartTime() { return mStartTime; }
 	public:
 		// properties
 		float mDuration = 0.0f;

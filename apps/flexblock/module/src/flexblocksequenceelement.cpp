@@ -36,6 +36,6 @@ namespace nap
 
 	bool FlexBlockSequenceElement::process(double time, std::vector<ParameterFloat*>& outInputs)
 	{
-		return (time > mStartTime && time < mStartTime + mDuration);
+		return (time >= mStartTime && time < mStartTime + mDuration);
 	}
 }

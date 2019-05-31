@@ -41,7 +41,6 @@ namespace nap
 	{
 	}
 
-
 	FlexBlockComponentInstance::~FlexBlockComponentInstance()
 	{
 		//assert(mFlexLogic != nullptr);

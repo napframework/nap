@@ -57,6 +57,7 @@ namespace nap
 		float								mTexPreviewDisplaySize = 1.0f;
 		float								mWraPreviewDisplaySize = 1.0f;
 		float								mVidPreviewDisplaySize = 1.0f;
+		float								mScrub = 0.0f;
 
 		ResourcePtr<ParameterVec3>			mControlPointOne;
 
@@ -64,5 +65,10 @@ namespace nap
 		 * Shows the information window
 		 */
 		void showInfoWindow();
+
+		void showSequencesWindow();
+
+		void initParameters();
+		void updateInput(int index, float value);
 	};
 }

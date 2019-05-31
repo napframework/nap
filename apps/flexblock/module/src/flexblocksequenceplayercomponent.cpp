@@ -7,7 +7,6 @@
 RTTI_BEGIN_CLASS(nap::FlexBlockSequencePlayerComponent)
 // Put additional properties here
 RTTI_PROPERTY("FlexBlockParameters", &nap::FlexBlockSequencePlayerComponent::mParameterGroup, nap::rtti::EPropertyMetaData::Required)
-RTTI_PROPERTY("FlexBlockSequence", &nap::FlexBlockSequencePlayerComponent::mSequence, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::flexblocksequenceplayerInstance run time class definition 
@@ -29,14 +28,12 @@ namespace nap
 	{
 		FlexBlockSequencePlayerComponent* resource = getComponent<FlexBlockSequencePlayerComponent>();
 
-		mSequence = resource->mSequence.get();
-
 		auto parameterGroup = resource->mParameterGroup;
 		if (!errorState.check(parameterGroup->mParameters.size() == 8,
 			"parameter group must have 8 parameters %s", this->mID.c_str()))
 			return false;
 		
-		for (auto parameter : parameterGroup->mParameters)
+		for (const auto& parameter : parameterGroup->mParameters)
 		{
 			ParameterFloat *parameterFloat = dynamic_cast<ParameterFloat*>(parameter.get());
 			
@@ -47,18 +44,32 @@ namespace nap
 			mInputs.emplace_back(parameterFloat);
 		}
 
-
-		play();
-
 		return true;
 	}
 
+	const std::vector<FlexBlockSequenceElement*> FlexBlockSequencePlayerComponentInstance::getElements()
+	{
+		std::vector<FlexBlockSequenceElement*> elements;
+		
+		if (mSequence != nullptr)
+		{
+			for (const auto& element : mSequence->mElements)
+			{
+				elements.emplace_back(element.get());
+			}
+		}
+
+		return elements;
+	}
 
 	void FlexBlockSequencePlayerComponentInstance::update(double deltaTime)
 	{
 		if (mIsPlaying)
 		{
-			mTime += deltaTime;
+			if (!mIsPaused)
+			{
+				mTime += deltaTime;
+			}
 
 			while (!mSequence->mElements[mCurrentSequenceIndex]->process(mTime, mInputs) )
 			{
@@ -66,7 +77,14 @@ namespace nap
 
 				if (mCurrentSequenceIndex >= mSequence->mElements.size())
 				{
-					mIsPlaying = false;
+					if (!mIsPaused)
+					{
+						mIsPlaying = false;
+						mIsFinished = true;
+					}
+
+					mCurrentSequenceIndex -= 1;
+
 					break;
 				}
 			}
@@ -75,8 +93,50 @@ namespace nap
 
 	void FlexBlockSequencePlayerComponentInstance::play()
 	{
+		if (mIsPlaying)
+		{
+			mIsPaused = false;
+		}
+		else
+		{
+			mCurrentSequenceIndex = 0;
+			mIsPlaying = true;
+			mIsFinished = false;
+			mTime = 0.0;
+		}
+	}
+
+	void FlexBlockSequencePlayerComponentInstance::setTime(double time)
+	{
+		mTime = time;
 		mCurrentSequenceIndex = 0;
-		mIsPlaying = true;
-		mTime = 0.0;
+	}
+
+	void FlexBlockSequencePlayerComponentInstance::pause()
+	{
+		mIsPaused = true;
+	}
+
+	void FlexBlockSequencePlayerComponentInstance::load(FlexBlockSequence* sequence)
+	{
+		if (mSequence != sequence)
+		{
+			stop();
+
+			mSequence = sequence;
+
+			mDuration = 0.0;
+			for (auto& element : mSequence->mElements)
+			{
+				mDuration += element->mDuration;
+			}
+		}
+	}
+
+	void FlexBlockSequencePlayerComponentInstance::stop()
+	{
+		mIsPlaying = false;
+		mIsPaused = false;
+		mIsFinished = false;
 	}
 }
