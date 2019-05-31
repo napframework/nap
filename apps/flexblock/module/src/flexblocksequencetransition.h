@@ -5,6 +5,7 @@
 #include <nap/resourceptr.h>
 #include <fcurve.h>
 #include <math.h>
+#include <parameternumeric.h>
 
 #include "flexblocksequenceelement.h"
 
@@ -23,12 +24,11 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		virtual bool process(double time, std::vector<float>& outInputs) override;
+		virtual bool process(double time, std::vector<ParameterFloat*>& outInputs) override;
 	public:
 		ResourcePtr<FlexBlockKeyFrame> mNextKeyFrame = nullptr;
 		ResourcePtr<math::FloatFCurve> mCurve = nullptr;
 
 	protected:
-		float lerp(float a, float b, float t);
 	};
 }

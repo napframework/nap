@@ -21,12 +21,15 @@ namespace nap
 		return true;
 	}
 
-	bool FlexBlockSequenceStance::process(double time, std::vector<float>& outInputs)
+	bool FlexBlockSequenceStance::process(double time, std::vector<ParameterFloat*>& outInputs)
 	{
 		if (!FlexBlockSequenceElement::process(time, outInputs))
 			return false;
 
-		outInputs = mKeyFrame->mInputs;
+		for (int i = 0 ; i < 8; i++)
+		{
+			outInputs[i]->setValue(mKeyFrame->mInputs[i]);
+		}
 
 		return true;
 	}

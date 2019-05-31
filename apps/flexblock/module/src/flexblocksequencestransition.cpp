@@ -27,7 +27,7 @@ namespace nap
 		return true;
 	}
 
-	bool FlexBlockSequenceTransition::process(double time, std::vector<float>& outInputs)
+	bool FlexBlockSequenceTransition::process(double time, std::vector<ParameterFloat*>& outInputs)
 	{
 		if (!FlexBlockSequenceElement::process(time, outInputs))
 			return false;
@@ -36,14 +36,9 @@ namespace nap
 
 		for (int i = 0; i < outInputs.size(); i++)
 		{
-			outInputs[i] = lerp(mKeyFrame->mInputs[i], mNextKeyFrame->mInputs[i], mCurve->evaluate(progress));
+			outInputs[i]->setValue(math::lerp<float>(mKeyFrame->mInputs[i], mNextKeyFrame->mInputs[i], mCurve->evaluate(progress)));
 		}
 
 		return true;
-	}
-
-	float FlexBlockSequenceTransition::lerp(float a, float b, float t)
-	{
-		return a + (b - a) * t;
 	}
 }

@@ -3,6 +3,7 @@
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
+#include <parameternumeric.h>
 
 #include "flexblockkeyframe.h"
 
@@ -29,7 +30,7 @@ namespace nap
 		* @param outInputs a reference to the inputs that need to be set
 		* @return returns true if this element has done something
 		*/
-		virtual bool process(double time, std::vector<float>& outInputs);
+		virtual bool process(double time, std::vector<ParameterFloat*>& outInputs);
 
 		/**
 		 * This is called by the sequence to set the start time of this element

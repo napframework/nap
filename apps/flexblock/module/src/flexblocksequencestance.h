@@ -5,7 +5,7 @@
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
-
+#include <parameternumeric.h>
 #include "flexblocksequenceelement.h"
 
 namespace nap
@@ -23,7 +23,7 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		virtual bool process(double time, std::vector<float> &outInputs) override;
+		virtual bool process(double time, std::vector<ParameterFloat*> &outInputs) override;
 	public:
 	};
 }

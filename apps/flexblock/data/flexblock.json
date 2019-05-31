@@ -179,7 +179,7 @@
                 {
                     "Type": "nap::FlexBlockSequencePlayerComponent",
                     "mID": "FlexBlockSequencePlayerComponent",
-                    "FlexBlockComponent": "./FlexBlockComponent",
+                    "FlexBlockParameters": "Parameters",
                     "FlexBlockSequence": "FlexBlockSequence"
                 }
             ],

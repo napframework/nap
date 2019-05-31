@@ -2,7 +2,8 @@
 
 #include <component.h>
 #include <nap/resourceptr.h>
-#include <componentptr.h>
+#include <parameter.h>
+#include <parameternumeric.h>
 
 #include "flexblockcomponent.h"
 #include "flexblocksequence.h"
@@ -12,7 +13,7 @@ namespace nap
 	class FlexBlockSequencePlayerComponentInstance;
 
 	/**
-	 *	flexblocksequenceplayer
+	 *	FlexBlockSequencePlayerComponent
 	 */
 	class NAPAPI FlexBlockSequencePlayerComponent : public Component
 	{
@@ -27,7 +28,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	
 		ResourcePtr<FlexBlockSequence> mSequence;
-		ComponentPtr<FlexBlockComponent> mFlexBlockComponent;
+		ResourcePtr<ParameterGroup> mParameterGroup;
 	};
 
 
@@ -58,17 +59,12 @@ namespace nap
 		void play();
 	protected:
 		//
-		ComponentInstancePtr<FlexBlockComponent> mFlexBlockComponentInstance
-			= initComponentInstancePtr(this, &FlexBlockSequencePlayerComponent::mFlexBlockComponent);
-
 		FlexBlockSequence* mSequence = nullptr;
 
 		double mTime = 0.0;
 		bool mIsPlaying = false;
 		int mCurrentSequenceIndex = 0;
 
-		std::vector<float> mInputs = std::vector<float>{
-			0.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 0.0f };
+		std::vector<ParameterFloat*> mInputs = std::vector<ParameterFloat*>();
 	};
 }

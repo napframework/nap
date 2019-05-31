@@ -6,7 +6,7 @@
 // nap::flexblocksequenceplayer run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockSequencePlayerComponent)
 // Put additional properties here
-RTTI_PROPERTY("FlexBlockComponent", &nap::FlexBlockSequencePlayerComponent::mFlexBlockComponent, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("FlexBlockParameters", &nap::FlexBlockSequencePlayerComponent::mParameterGroup, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("FlexBlockSequence", &nap::FlexBlockSequencePlayerComponent::mSequence, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -31,6 +31,23 @@ namespace nap
 
 		mSequence = resource->mSequence.get();
 
+		auto parameterGroup = resource->mParameterGroup;
+		if (!errorState.check(parameterGroup->mParameters.size() == 8,
+			"parameter group must have 8 parameters %s", this->mID.c_str()))
+			return false;
+		
+		for (auto parameter : parameterGroup->mParameters)
+		{
+			ParameterFloat *parameterFloat = dynamic_cast<ParameterFloat*>(parameter.get());
+			
+			if (!errorState.check(parameterFloat != nullptr,
+				"parameter must be of type parameterfloat %s", parameter->mID.c_str()))
+				return false;
+			
+			mInputs.emplace_back(parameterFloat);
+		}
+
+
 		play();
 
 		return true;
@@ -52,11 +69,6 @@ namespace nap
 					mIsPlaying = false;
 					break;
 				}
-			}
-
-			for (int i = 0; i < mInputs.size(); i++)
-			{
-				mFlexBlockComponentInstance->SetMotorInput(i, mInputs[i]);
 			}
 		}
 	}
