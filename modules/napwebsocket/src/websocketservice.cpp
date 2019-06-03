@@ -57,6 +57,7 @@ namespace nap
 		{
 			return it == &server;
 		});
+		
 		assert(found_it != mServers.end());
 		mServers.erase(found_it);
 	}

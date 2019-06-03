@@ -6,9 +6,7 @@
 // External Includes
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketServer)
-	RTTI_PROPERTY("EndPoint", &nap::IWebSocketServer::mEndPoint, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
+RTTI_DEFINE_BASE(nap::IWebSocketServer)
 
 // nap::websocketserver run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketServer)
@@ -22,7 +20,7 @@ namespace nap
 
 	WebSocketServer::WebSocketServer(WebSocketService& service) : mService(&service)
 	{
-
+		mService->registerServer(*this);
 	}
 
 
@@ -38,8 +36,7 @@ namespace nap
 		if (!IWebSocketServer::init(errorState))
 			return false;
 
-		// Register the server
-		mService->registerServer(*this);
+		// Register the server with our service
 		return true;
 	}
 
@@ -71,13 +68,6 @@ namespace nap
 
 	IWebSocketServer::~IWebSocketServer()
 	{
-		mEndPoint->removeListener(*this);
-	}
 
-
-	bool IWebSocketServer::init(utility::ErrorState& errorState)
-	{
-		mEndPoint->registerListener(*this);
-		return true;
 	}
 }

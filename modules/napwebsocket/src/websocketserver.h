@@ -1,12 +1,12 @@
 #pragma once
 
 // Local Includes
-#include "websocketserverendpoint.h"
+#include "websocketevents.h"
 
 // External Includes
-#include <nap/resourceptr.h>
 #include <queue>
 #include <rtti/factory.h>
+#include <nap/resource.h>
 
 namespace nap
 {
@@ -15,21 +15,14 @@ namespace nap
 	/**
 	 * Interface for a web-socket server that listens to incoming web-socket events.
 	 * Override the onEventReceived() method to provide a handler for newly received web socket events.
-	 * Every web socket server interface is automatically registered with the WebSocketServerEndPoint and called by the WebSocketServerEndPoint.
+	 * The WebSocketServerEndPoint can have one or multiple links to an IWebSocketServer
 	 */
 	class NAPAPI IWebSocketServer : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		// Stops the device
+		// Destructor
 		virtual ~IWebSocketServer() override;
-
-		/**
-		 * Initializes the interface.
-		 * @param errorState contains the error if the server can't be started
-		 * @return if the server started
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * If this server accepts the given web socket event. By default all web socket events are accepted.
@@ -43,8 +36,6 @@ namespace nap
 		 * @param event the event to add, note that this receiver will take ownership of the event
 		 */
 		void addEvent(WebSocketEventPtr newEvent);
-
-		nap::ResourcePtr<WebSocketServerEndPoint> mEndPoint = nullptr;		///< Property: 'EndPoint' link to the web-socket server end point
 
 	protected:
 		/**
@@ -63,7 +54,7 @@ namespace nap
 	/**
 	 * Allows for receiving and responding to messages over a web socket. Implements the IWebSocketServer interface.
 	 * The server receives web socket events that can be interpreted by the running application.
-	 * Events are received on a separate thread and consumed by the main thread.
+	 * Events are received on a separate thread and consumed on the main thread by the WebSocketService.
 	 */
 	class NAPAPI WebSocketServer : public IWebSocketServer
 	{
