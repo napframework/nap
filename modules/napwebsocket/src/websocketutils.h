@@ -12,14 +12,34 @@ namespace nap
 	 */
 	enum class EWebSocketLogLevel : uint32
 	{
-		None		= 0x0,				///< Log nothing
-		Debug		= 0x1,				///< Low level debugging information
-		Library		= 0x2,				///< Usual system states or small internal library problems
-		Info		= 0x4,				///< Minor configuration problems or additional warning information
-		Warning		= 0x8,				///< Information about important problems not severe enough to close connection.
-		Error		= 0x10,				///< Recoverable error. Solution might be closing the connection with an appropiate error code
-		Fatal		= 0x20,				///< Unrecoverable error. Will cause endpoint to be terminated unclean.
-		All			= 0xffffffff		///< Log all levels
+		None			= 0x0,				///< Log nothing
+		Debug			= 0x1,				///< Low level debugging information
+		Library			= 0x2,				///< Usual system states or small internal library problems
+		Info			= 0x4,				///< Minor configuration problems or additional warning information
+		Warning			= 0x8,				///< Information about important problems not severe enough to close connection.
+		Error			= 0x10,				///< Recoverable error. Solution might be closing the connection with an appropiate error code
+		Fatal			= 0x20,				///< Unrecoverable error. Will cause endpoint to be terminated unclean.
+		All				= 0xffffffff		///< Log all levels
+	};
+
+	enum class EWebSocketOPCode : uint32
+	{
+		Continuation	= 0x0,
+		Text			= 0x1,
+		Binary			= 0x2,
+		RSV3			= 0x3,
+		RSV4			= 0x4,
+		RSV5			= 0x5,
+		RSV6			= 0x6,
+		RSV7			= 0x7,
+		Close			= 0x8,
+		Ping			= 0x9,
+		Pong			= 0xA,
+		ControlRSVB		= 0xB,
+		ControlRSVC		= 0xC,
+		ControlRSVD		= 0xD,
+		ControlRSVE		= 0xE,
+		ControlRSVF		= 0xF
 	};
 
 	/**

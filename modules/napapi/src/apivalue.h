@@ -57,12 +57,12 @@ namespace nap
 		NAPAPI APIValue();
 
 		/**
-		* Copy Constructor
+		* Move Constructor
 		*/
 		APIValue(APIValue&& other);
 
 		/**
-		* Move assignment constructor
+		* Copy constructor
 		*/
 		APIValue(const APIValue& other);
 

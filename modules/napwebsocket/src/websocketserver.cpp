@@ -6,58 +6,63 @@
 #include <nap/logger.h>
 
 // nap::websocketserver run time class definition 
-RTTI_BEGIN_CLASS(nap::WebsocketServer)
-	RTTI_PROPERTY("Port",					&nap::WebsocketServer::mPort,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebsocketServer::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebsocketServer::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::WebSocketServer)
+	RTTI_PROPERTY("EndPoint",				&nap::WebSocketServer::mEndPoint,					nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
-	WebsocketServer::~WebsocketServer()			
+	WebSocketServer::~WebSocketServer()			
 	{
-		stop();
+
 	}
 
 
-	bool WebsocketServer::start(utility::ErrorState& errorState)
+	bool WebSocketServer::init(utility::ErrorState& errorState)
 	{
-		// Extract correct log levels
-		uint32 log_level = computeWebSocketLogLevel(mLibraryLogLevel);
-		uint32 alog_level = mLogConnectionUpdates ? websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload
-			: websocketpp::log::alevel::fail;
-
-		// Create the end point
-		mEndpoint = std::make_unique<WebSocketServerEndPoint>(mPort,  log_level, alog_level);
-
-		// Install handler
-		mEndpoint->setMessageHandler(std::bind(
-			&WebsocketServer::messageHandler, this,
-			std::placeholders::_1, std::placeholders::_2
-		));
-
-		// Open and start listening
-		if (!mEndpoint->open(errorState))
-			return false;
+		mEndPoint->connectionClosed.connect(mConnectionClosedSlot);
+		mEndPoint->connectionOpened.connect(mConnectionOpenedSlot);
+		mEndPoint->messageReceived.connect(mMessageReceivedSlot);
+		mEndPoint->connectionFailed.connect(mConnectionFailedSlot);
 
 		return true;
 	}
 
 
-	void WebsocketServer::stop()
+	void WebSocketServer::onMessageReceived(WebSocketMessage message)
 	{
-		if (mEndpoint != nullptr)
-		{
-			mEndpoint->close();
-			mEndpoint.reset(nullptr);
-		}
+		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(message));
 	}
 
 
-	void WebsocketServer::messageHandler(wspp::Connection con, wspp::MessagePtr msg)
+	void WebSocketServer::onConnectionClosed(WebSocketConnection connection)
 	{
-		mEndpoint->send("who's your daddy now??", con, msg->get_opcode());
+		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection));
+	}
+
+
+	void WebSocketServer::onConnectionOpened(WebSocketConnection connection)
+	{
+		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(connection));
+	}
+
+
+	void WebSocketServer::onConnectionFailed(WebSocketConnection connection)
+	{
+		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection));
+	}
+
+
+	void WebSocketServer::consumeEvents(std::queue<WebSocketEventPtr>& outEvents)
+	{
+	}
+
+
+	void WebSocketServer::addEvent(WebSocketEventPtr newEvent)
+	{
+		std::lock_guard<std::mutex> lock(mEventMutex);
+		mEvents.emplace(std::move(newEvent));
 	}
 }
