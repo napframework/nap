@@ -6,6 +6,7 @@ RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
 	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Listeners",				&nap::WebSocketServerEndPoint::mListeners,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -164,25 +165,7 @@ namespace nap
 				listener->addEvent(std::make_unique<WebSocketMessageReceivedEvent>(WebSocketConnection(con), WebSocketMessage(msg)));
 			}
 		}
+
 		send("who's your daddy now??", con, msg->get_opcode());
-	}
-
-
-	void WebSocketServerEndPoint::registerListener(IWebSocketServer& listener)
-	{
-		mListeners.emplace_back(&listener);
-	}
-
-
-	void WebSocketServerEndPoint::removeListener(IWebSocketServer& listener)
-	{
-		auto found_it = std::find_if(mListeners.begin(), mListeners.end(), [&](auto& it)
-		{
-			return it == &listener;
-		});
-
-		if (found_it == mListeners.end())
-			return;
-		mListeners.erase(found_it);
 	}
 }

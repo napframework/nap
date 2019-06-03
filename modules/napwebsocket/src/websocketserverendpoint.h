@@ -3,6 +3,7 @@
 // Local Includes
 #include "websocketutils.h"
 #include "websocketevents.h"
+#include "websocketserver.h"
 
 // External Includes
 #include <memory.h>
@@ -11,6 +12,7 @@
 #include <nap/device.h>
 #include <nap/signalslot.h>
 #include <nap/numeric.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -18,11 +20,10 @@ namespace nap
 	class IWebSocketServer;
 
 	/**
-	 * Server endpoint role.
-	 * Creates and manages a connection with the server web socket endpoint.
-	 * On start the web-socket end point starts listening to and accepting messages.
+	 * Server endpoint role. Creates and manages a connection with the server web socket endpoint.
+	 * On start the web-socket endpoint starts listening to and accepting messages.
 	 * On stop the end point stops listening and all active connections are closed. A call to open is non blocking.
-	 * All objects that implement the IWebSocketServer interface automatically receive messages.
+	 * Messages are forwarded as events to all associated listeners, ie: objects that implement the IWebSocketServer interface.
 	 */
 	class WebSocketServerEndPoint : public Device
 	{
@@ -67,15 +68,16 @@ namespace nap
 		 */
 		void send(const std::string& message, wspp::ConnectionHandle connection, wspp::OpCode opCode);
 
-		int mPort = 80;														///< Property: "Port" to open and listen to for messages.
-		bool mLogConnectionUpdates = true;									///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
-		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;	///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
+		int mPort = 80;															///< Property: "Port" to open and listen to for messages.
+		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
+		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
+		std::vector<nap::ResourcePtr<IWebSocketServer>> mListeners;				///< Property: 'Listeners' link to the web-socket server that receives incoming web-socket events
 
 	private:
-		std::unique_ptr<wspp::ServerEndPoint> mEndPoint = nullptr;			///< The websocketpp server end-point
-		uint32 mLogLevel = 0;												///< Converted library log level
-		uint32 mAccessLogLevel = 0;											///< Log client / server connection data
-		std::future<void> mServerTask;										///< The background server thread
+		std::unique_ptr<wspp::ServerEndPoint> mEndPoint = nullptr;				///< The websocketpp server end-point
+		uint32 mLogLevel = 0;													///< Converted library log level
+		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
+		std::future<void> mServerTask;											///< The background server thread
 
 		/**
 		 * Runs the end point in a background thread until stopped.
@@ -101,19 +103,5 @@ namespace nap
 		 * Called when a new message is received
 		 */
 		void onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg);
-
-		/**
-		 * Register a listener
-		 * @param listener the listener to register
-		 */
-		void registerListener(IWebSocketServer& listener);
-
-		/**
-		 * De-register a listener
-		 * @param listener the listener to remove
-		 */
-		void removeListener(IWebSocketServer& listener);
-
-		std::vector<IWebSocketServer*> mListeners;							///< All web socket server interfaces to relay messages to
 	};
 }
