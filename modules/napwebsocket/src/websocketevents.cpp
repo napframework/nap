@@ -16,7 +16,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketConnectionFailedEvent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketMessageReceivedEvent)
-	RTTI_CONSTRUCTOR(nap::WebSocketMessage)
+	RTTI_CONSTRUCTOR(nap::WebSocketConnection, nap::WebSocketMessage)
 RTTI_END_CLASS
 
 namespace nap
