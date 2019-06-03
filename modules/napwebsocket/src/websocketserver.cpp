@@ -5,53 +5,28 @@
 // External Includes
 #include <nap/logger.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketServer)
+	RTTI_PROPERTY("EndPoint", &nap::IWebSocketServer::mEndPoint, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 // nap::websocketserver run time class definition 
 RTTI_BEGIN_CLASS(nap::WebSocketServer)
-	RTTI_PROPERTY("EndPoint",				&nap::WebSocketServer::mEndPoint,					nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
-	WebSocketServer::~WebSocketServer()			
-	{
-
-	}
-
-
 	bool WebSocketServer::init(utility::ErrorState& errorState)
 	{
-		mEndPoint->connectionClosed.connect(mConnectionClosedSlot);
-		mEndPoint->connectionOpened.connect(mConnectionOpenedSlot);
-		mEndPoint->messageReceived.connect(mMessageReceivedSlot);
-		mEndPoint->connectionFailed.connect(mConnectionFailedSlot);
-
-		return true;
+		return IWebSocketServer::init(errorState);
 	}
 
 
-	void WebSocketServer::onMessageReceived(WebSocketMessage message)
+	void WebSocketServer::onEventReceived(WebSocketEventPtr newEvent)
 	{
-		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(message));
-	}
-
-
-	void WebSocketServer::onConnectionClosed(WebSocketConnection connection)
-	{
-		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection));
-	}
-
-
-	void WebSocketServer::onConnectionOpened(WebSocketConnection connection)
-	{
-		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(connection));
-	}
-
-
-	void WebSocketServer::onConnectionFailed(WebSocketConnection connection)
-	{
-		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection));
+		std::lock_guard<std::mutex> lock(mEventMutex);
+		mEvents.emplace(std::move(newEvent));
 	}
 
 
@@ -60,9 +35,22 @@ namespace nap
 	}
 
 
-	void WebSocketServer::addEvent(WebSocketEventPtr newEvent)
+	void IWebSocketServer::eventReceived(WebSocketEventPtr newEvent)
 	{
-		std::lock_guard<std::mutex> lock(mEventMutex);
-		mEvents.emplace(std::move(newEvent));
+		onEventReceived(std::move(newEvent));
+	}
+
+
+	IWebSocketServer::~IWebSocketServer()
+	{
+		nap::Logger::info("destructing!!");
+		mEndPoint->removeListener(*this);
+	}
+
+
+	bool IWebSocketServer::init(utility::ErrorState& errorState)
+	{
+		mEndPoint->registerListener(*this);
+		return true;
 	}
 }

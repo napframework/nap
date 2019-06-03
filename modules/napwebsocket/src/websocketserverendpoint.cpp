@@ -1,5 +1,6 @@
 // Local Includes
 #include "websocketserverendpoint.h"
+#include "websocketserver.h"
 
 RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
 	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,					nap::rtti::EPropertyMetaData::Required)
@@ -114,26 +115,54 @@ namespace nap
 
 	void WebSocketServerEndPoint::onConnectionOpened(wspp::ConnectionHandle connection)
 	{
-		wspp::ConnectionPtr connection_ptr = mEndPoint.get_con_from_hdl(connection);
-		connectionOpened(WebSocketConnection(connection));
+		for (auto& listener : mListeners)
+		{
+			listener->eventReceived(std::make_unique<WebSocketConnectionOpenedEvent>(WebSocketConnection(connection)));
+		}
 	}
 
 
 	void WebSocketServerEndPoint::onConnectionClosed(wspp::ConnectionHandle connection)
 	{
-		connectionClosed(WebSocketConnection(connection));
+		for (auto& listener : mListeners)
+		{
+			listener->eventReceived(std::make_unique<WebSocketConnectionClosedEvent>(WebSocketConnection(connection)));
+		}
 	}
 
 
 	void WebSocketServerEndPoint::onConnectionFailed(wspp::ConnectionHandle connection)
 	{
-		connectionFailed(WebSocketConnection(connection));
+		for (auto& listener : mListeners)
+		{
+			listener->eventReceived(std::make_unique<WebSocketConnectionFailedEvent>(WebSocketConnection(connection)));
+		}
 	}
 
 
 	void WebSocketServerEndPoint::onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg)
 	{
-		messageReceived(WebSocketMessage(WebSocketConnection(con), msg));
+		for (auto& listener : mListeners)
+		{
+			listener->eventReceived(std::make_unique<WebSocketMessageReceivedEvent>(WebSocketMessage(WebSocketConnection(con), msg)));
+		}
 		send("who's your daddy now??", con, msg->get_opcode());
+	}
+
+
+	void WebSocketServerEndPoint::registerListener(IWebSocketServer& listener)
+	{
+		mListeners.emplace_back(&listener);
+	}
+
+
+	void WebSocketServerEndPoint::removeListener(IWebSocketServer& listener)
+	{
+		auto found_it = std::find_if(mListeners.begin(), mListeners.end(), [&](const auto& it)
+		{
+			return it == &listener;
+		});
+		assert(found_it != mListeners.end());
+		mListeners .erase(found_it);
 	}
 }

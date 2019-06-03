@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "websocketutils.h"
-#include "websocketmessage.h"
+#include "websocketevents.h"
 
 // External Includes
 #include <memory.h>
@@ -14,23 +14,25 @@
 
 namespace nap
 {
+	// Forward Declares
+	class IWebSocketServer;
+
 	/**
 	 * Server endpoint role.
 	 * Creates and manages a connection with the server web socket endpoint.
-	 * Call 'start' to start listening and accepting messages.
-	 * Call 'stop' to close all active connections and stop listening. A call to open is non blocking.
-	 * Install handlers to receive messages at run-time. Note that the messages are received on a different thread!
+	 * On start the web-socket end point starts listening to and accepting messages.
+	 * On stop the end point stops listening and all active connections are closed. A call to open is non blocking.
+	 * All objects that implement the IWebSocketServer interface automatically receive messages.
 	 */
 	class WebSocketServerEndPoint : public Device
 	{
+		friend class IWebSocketServer;
 		RTTI_ENABLE(Device)
 	public:
 		// default constructor
 		WebSocketServerEndPoint();
 
-		/**
-		 * Stops the end point from running
-		 */
+		// destructor
 		~WebSocketServerEndPoint();
 
 		/**
@@ -69,11 +71,6 @@ namespace nap
 		bool mLogConnectionUpdates = true;									///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;	///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
 
-		nap::Signal<WebSocketMessage> messageReceived;						///< Signal emitted when a new message is received
-		nap::Signal<WebSocketConnection> connectionOpened;					///< Signal emitted when a new connection with a client is opened
-		nap::Signal<WebSocketConnection> connectionClosed;					///< Signal emitted when a connection with a client is closed
-		nap::Signal<WebSocketConnection> connectionFailed;					///< Signal emitted when a connection with a client failed to establish
-
 	private:
 		wspp::ServerEndPoint mEndPoint;										///< The websocketpp server end-point
 		uint32 mLogLevel = 0;												///< Converted library log level
@@ -105,5 +102,19 @@ namespace nap
 		 * Called when a new message is received
 		 */
 		void onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg);
+
+		/**
+		 * Register a listener
+		 * @param listener the listener to register
+		 */
+		void registerListener(IWebSocketServer& listener);
+
+		/**
+		 * De-register a listener
+		 * @param listener the listener to remove
+		 */
+		void removeListener(IWebSocketServer& listener);
+
+		std::vector<IWebSocketServer*> mListeners;							///< All web socket server interfaces to relay messages to
 	};
 }
