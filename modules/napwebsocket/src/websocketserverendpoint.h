@@ -103,5 +103,15 @@ namespace nap
 		 * Called when a new message is received
 		 */
 		void onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg);
+
+		/**
+		 * Called when an http request is made
+		 */
+		void onHTTP(wspp::ConnectionHandle con);
+
+		/**
+		 * Validates the incoming connection
+		 */
+		bool onValidate(wspp::ConnectionHandle con);
 	};
 }

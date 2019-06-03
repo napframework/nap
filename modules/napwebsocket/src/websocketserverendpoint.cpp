@@ -39,10 +39,12 @@ namespace nap
 		}
 
 		// Install connection open / closed handlers
+		mEndPoint->set_http_handler(std::bind(&WebSocketServerEndPoint::onHTTP, this, std::placeholders::_1));
 		mEndPoint->set_open_handler(std::bind(&WebSocketServerEndPoint::onConnectionOpened,	this, std::placeholders::_1));
 		mEndPoint->set_close_handler(std::bind(&WebSocketServerEndPoint::onConnectionClosed,	this, std::placeholders::_1));
 		mEndPoint->set_fail_handler(std::bind(&WebSocketServerEndPoint::onConnectionFailed,	this, std::placeholders::_1));
-		
+		mEndPoint->set_validate_handler(std::bind(&WebSocketServerEndPoint::onValidate, this, std::placeholders::_1));
+
 		// Install message handler
 		mEndPoint->set_message_handler(std::bind(
 			&WebSocketServerEndPoint::onMessageReceived, this,
@@ -124,7 +126,7 @@ namespace nap
 	{
 		for (auto& listener : mListeners)
 		{
-			if (listener->accepts(RTTI_OF(WebSocketConnectionOpenedEvent)))
+			if (listener->acceptsEvent(RTTI_OF(WebSocketConnectionOpenedEvent)))
 			{
 				listener->addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(WebSocketConnection(connection)));
 			}
@@ -134,11 +136,15 @@ namespace nap
 
 	void WebSocketServerEndPoint::onConnectionClosed(wspp::ConnectionHandle connection)
 	{
+		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection);
 		for (auto& listener : mListeners)
 		{
-			if (listener->accepts(RTTI_OF(WebSocketConnectionClosedEvent)))
+			if (listener->acceptsEvent(RTTI_OF(WebSocketConnectionClosedEvent)))
 			{
-				listener->addEvent(std::make_unique<WebSocketConnectionClosedEvent>(WebSocketConnection(connection)));
+				listener->addEvent(std::make_unique<WebSocketConnectionClosedEvent>(
+					WebSocketConnection(connection),
+					cptr->get_ec().value(),
+					cptr->get_ec().message()));
 			}
 		}
 	}
@@ -146,11 +152,15 @@ namespace nap
 
 	void WebSocketServerEndPoint::onConnectionFailed(wspp::ConnectionHandle connection)
 	{
+		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection);
 		for (auto& listener : mListeners)
 		{
-			if (listener->accepts(RTTI_OF(WebSocketConnectionFailedEvent)))
+			if (listener->acceptsEvent(RTTI_OF(WebSocketConnectionFailedEvent)))
 			{
-				listener->addEvent(std::make_unique<WebSocketConnectionFailedEvent>(WebSocketConnection(connection)));
+				listener->addEvent(std::make_unique<WebSocketConnectionFailedEvent>(
+					WebSocketConnection(connection),
+					cptr->get_ec().value(),
+					cptr->get_ec().message()));
 			}
 		}
 	}
@@ -160,12 +170,31 @@ namespace nap
 	{
 		for (auto& listener : mListeners)
 		{
-			if (listener->accepts(RTTI_OF(WebSocketMessageReceivedEvent)))
+			if (listener->acceptsEvent(RTTI_OF(WebSocketMessageReceivedEvent)))
 			{
 				listener->addEvent(std::make_unique<WebSocketMessageReceivedEvent>(WebSocketConnection(con), WebSocketMessage(msg)));
 			}
 		}
 
 		send("who's your daddy now??", con, msg->get_opcode());
+	}
+
+
+	void WebSocketServerEndPoint::onHTTP(wspp::ConnectionHandle con)
+	{
+		wspp::ConnectionPtr conp = mEndPoint->get_con_from_hdl(con);
+		std::string res = conp->get_request_body();
+		std::stringstream ss;
+		ss << "got HTTP request with " << res.size() << " bytes of body data.";
+		conp->set_body(ss.str());
+		conp->set_status(websocketpp::http::status_code::ok);
+	}
+
+
+	bool WebSocketServerEndPoint::onValidate(wspp::ConnectionHandle con)
+	{
+		//wspp::ConnectionPtr conp = mEndPoint->get_con_from_hdl(con);
+		//std::string lala = conp->get_request_header("Host");
+		return true;
 	}
 }
