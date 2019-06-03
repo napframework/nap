@@ -39,8 +39,11 @@ namespace nap
 	{
 		RTTI_ENABLE(WebSocketConnectionEvent)
 	public:
-		WebSocketConnectionClosedEvent(WebSocketConnection connection) :
-			WebSocketConnectionEvent(connection) { }
+		WebSocketConnectionClosedEvent(WebSocketConnection connection, int errorCode, const std::string& reason) :
+			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(reason)	{ }
+
+		int mErrorCode = -1;		///< Error code associated with reason for closing connection
+		std::string mReason;		///< Reason for closing connection
 	};
 
 
@@ -63,8 +66,11 @@ namespace nap
 	{
 		RTTI_ENABLE(WebSocketConnectionEvent)
 	public:
-		WebSocketConnectionFailedEvent(WebSocketConnection connection) :
-			WebSocketConnectionEvent(connection) { }
+		WebSocketConnectionFailedEvent(WebSocketConnection connection, int errorCode, const std::string& reason) :
+			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(reason)	{ }
+
+		int mErrorCode = -1;	///< Error code associated with reason for failing to establish connection
+		std::string mReason;	///< Reason for failing to establish connection
 	};
 
 
