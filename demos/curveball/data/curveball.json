@@ -232,8 +232,13 @@
             "Columns": 1
         },
         {
-            "Type": "nap::WebsocketServer",
+            "Type": "nap::WebSocketServer",
             "mID": "Server",
+            "EndPoint": "ServerEndPoint"
+        },
+        {
+            "Type": "nap::WebSocketServerEndPoint",
+            "mID": "ServerEndPoint",
             "Port": 9000,
             "LogConnectionUpdates":true
         },

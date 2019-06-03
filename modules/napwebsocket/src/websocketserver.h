@@ -2,14 +2,11 @@
 
 // Local Includes
 #include "websocketserverendpoint.h"
+#include "websocketevents.h"
 
 // External Includes
-#include <nap/device.h>
-#include <memory>
-
-// External Includes
-#include <websocketpp/server.hpp>
-#include <websocketpp/config/asio_no_tls.hpp>
+#include <nap/resourceptr.h>
+#include <queue>
 
 namespace nap
 {
@@ -17,37 +14,60 @@ namespace nap
 
 	/**
 	 * Allows for receiving and responding to messages over a web socket.
-	 * On start the server end point is opened and ready to accept client messages.
-	 * On stop all active connections are closed and the end point stops listening.
+	 * The server converts low-level web-socket messages into events that can be interpreted by the running application.
+	 * Messages are received on a separate thread and consumed by the main thread.
 	 */
-	class NAPAPI WebsocketServer : public Device
+	class NAPAPI WebSocketServer : public Resource
 	{
-		RTTI_ENABLE(Device)
+		RTTI_ENABLE(Resource)
 	public:
 
 		// Stops the device
-		virtual ~WebsocketServer() override;
+		virtual ~WebSocketServer() override;
 
 		/**
-		 * Starts the server
-		 * @param errorState contains the error if the device can't be started
-		 * @return if the device started
+		 * Initializes the server
+		 * @param errorState contains the error if the server can't be started
+		 * @return if the server started
 		 */
-		virtual bool start(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * Stops the server and therefore server end point. All connections are closed.
-		 */
-		virtual void stop() override;
-
-		int mPort = 80;														///< Property: "Port" to open and listen to for messages.
-		bool mLogConnectionUpdates = true;									///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
-		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;	///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
+		nap::ResourcePtr<WebSocketServerEndPoint> mEndPoint = nullptr;		///< Property: 'EndPoint' link to the web-socket server end point
 
 	private:
-		std::unique_ptr<WebSocketServerEndPoint> mEndpoint = nullptr;		///< Server endpoint
+		/**
+		 * Called when the end point receives a message
+		 * Converts the message into a WebSocketMessageEvent
+		 */
+		void onMessageReceived(WebSocketMessage message);
+		nap::Slot<WebSocketMessage>	mMessageReceivedSlot						= { this, &WebSocketServer::onMessageReceived };
 
-		// Receives incoming messages
-		void messageHandler(wspp::Connection con, wspp::MessagePtr msg);
+		void onConnectionClosed(WebSocketConnection connection);
+		nap::Slot<WebSocketConnection> mConnectionClosedSlot					= { this, &WebSocketServer::onConnectionClosed};
+
+		void onConnectionOpened(WebSocketConnection connection);
+		nap::Slot<WebSocketConnection> mConnectionOpenedSlot					= { this, &WebSocketServer::onConnectionOpened };
+
+		void onConnectionFailed(WebSocketConnection connection);
+		nap::Slot<WebSocketConnection> mConnectionFailedSlot					= { this, &WebSocketServer::onConnectionFailed };
+
+		// Queue that holds all the consumed events
+		std::queue<WebSocketEventPtr> mEvents;
+
+		// Mutex associated with setting / getting events
+		std::mutex	mEventMutex;
+
+		/**
+		 * Consumes all received OSC events and moves them to outEvents
+		 * Calling this will clear the internal queue and transfers ownership of the events to the caller
+		 * @param outEvents will hold the transferred osc events
+		 */
+		void consumeEvents(std::queue<WebSocketEventPtr>& outEvents);
+
+		/**
+		 * Adds an event to the queue
+		 * @param event the event to add, note that this receiver will take ownership of the event
+		 */
+		void addEvent(WebSocketEventPtr newEvent);
 	};
 }

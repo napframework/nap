@@ -1,21 +1,20 @@
 // Local Includes
 #include "websocketserverendpoint.h"
 
-// External Includes
-#include <nap/logger.h>
+RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
+	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
 namespace nap
 {
-	WebSocketServerEndPoint::WebSocketServerEndPoint(int port, uint32 logLevel, uint32 accessLevel) :
-		mPort(port), mLogLevel(logLevel), mAccessLogLevel(accessLevel)
+	WebSocketServerEndPoint::WebSocketServerEndPoint()
 	{
-		// Initialize asio
-		mEndPoint.init_asio();
+
 	}
 
-
-
-	bool WebSocketServerEndPoint::open(nap::utility::ErrorState& error)
+	bool WebSocketServerEndPoint::start(nap::utility::ErrorState& error)
 	{
 		// Run until stopped
 		assert(!mOpen);
@@ -28,9 +27,15 @@ namespace nap
 		mEndPoint.set_access_channels(mAccessLogLevel);
 
 		// Install connection open / closed handlers
-		mEndPoint.set_open_handler(std::bind(&WebSocketServerEndPoint::connectionOpened,  this, std::placeholders::_1));
-		mEndPoint.set_close_handler(std::bind(&WebSocketServerEndPoint::connectionClosed, this, std::placeholders::_1));
-		mEndPoint.set_fail_handler(std::bind(&WebSocketServerEndPoint::connectionFailed,  this, std::placeholders::_1));
+		mEndPoint.set_open_handler(std::bind(&WebSocketServerEndPoint::onConnectionOpened,	this, std::placeholders::_1));
+		mEndPoint.set_close_handler(std::bind(&WebSocketServerEndPoint::onConnectionClosed,	this, std::placeholders::_1));
+		mEndPoint.set_fail_handler(std::bind(&WebSocketServerEndPoint::onConnectionFailed,	this, std::placeholders::_1));
+		
+		// Install message handler
+		mEndPoint.set_message_handler(std::bind(
+			&WebSocketServerEndPoint::onMessageReceived, this,
+			std::placeholders::_1, std::placeholders::_2
+		));
 
 		// Listen to messages on this specific port
 		std::error_code stdec;
@@ -57,7 +62,7 @@ namespace nap
 	}
 
 
-	void WebSocketServerEndPoint::send(const std::string& message, wspp::Connection connection, wspp::OpCode opCode)
+	void WebSocketServerEndPoint::send(const std::string& message, wspp::ConnectionHandle connection, wspp::OpCode opCode)
 	{
 		mEndPoint.send(connection, message, opCode);
 	}
@@ -70,7 +75,7 @@ namespace nap
 	}
 
 
-	void WebSocketServerEndPoint::close()
+	void WebSocketServerEndPoint::stop()
 	{
 		if (mOpen)
 		{
@@ -84,31 +89,51 @@ namespace nap
 
 	WebSocketServerEndPoint::~WebSocketServerEndPoint()
 	{
-		close();
+		stop();
 	}
 
 
-	void WebSocketServerEndPoint::setMessageHandler(wspp::MessageHandler message_handler)
+	bool WebSocketServerEndPoint::init(utility::ErrorState& errorState)
 	{
-		mEndPoint.set_message_handler(message_handler);
+		// Convert log levels
+		mLogLevel = computeWebSocketLogLevel(mLibraryLogLevel);
+		mAccessLogLevel = mLogConnectionUpdates ? websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload
+			: websocketpp::log::alevel::fail;
+
+		// Init asio
+		std::error_code stdec;
+		mEndPoint.init_asio(stdec);
+		if (stdec)
+		{
+			errorState.fail(stdec.message());
+			return false;
+		}
+		return true;
 	}
 	
 
-	void WebSocketServerEndPoint::connectionOpened(wspp::Connection connection)
+	void WebSocketServerEndPoint::onConnectionOpened(wspp::ConnectionHandle connection)
 	{
-		nap::Logger::info("Connection opened!");
+		wspp::ConnectionPtr connection_ptr = mEndPoint.get_con_from_hdl(connection);
+		connectionOpened(WebSocketConnection(connection));
 	}
 
 
-	void WebSocketServerEndPoint::connectionClosed(wspp::Connection connection)
+	void WebSocketServerEndPoint::onConnectionClosed(wspp::ConnectionHandle connection)
 	{
-		nap::Logger::info("Connection closed!");
+		connectionClosed(WebSocketConnection(connection));
 	}
 
 
-	void WebSocketServerEndPoint::connectionFailed(wspp::Connection connection)
+	void WebSocketServerEndPoint::onConnectionFailed(wspp::ConnectionHandle connection)
 	{
-		nap::Logger::info("Connection failed!");
+		connectionFailed(WebSocketConnection(connection));
 	}
 
+
+	void WebSocketServerEndPoint::onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg)
+	{
+		messageReceived(WebSocketMessage(WebSocketConnection(con), msg));
+		send("who's your daddy now??", con, msg->get_opcode());
+	}
 }
