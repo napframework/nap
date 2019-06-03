@@ -61,29 +61,95 @@ namespace nap
 		switch (declaration.mGLSLType)
 		{
 		case opengl::EGLSLType::Int:
-			result = std::make_unique<UniformInt>();
-			break;
+			{
+				if (declaration.isArray())
+					result = std::make_unique<UniformIntArray>();
+				else
+					result = std::make_unique<UniformInt>();
+				
+				break;
+			}
 		case opengl::EGLSLType::Float:
-			result = std::make_unique<UniformFloat>();
-			break;
+			{
+				if (declaration.isArray())
+					result = std::make_unique<UniformFloatArray>();
+				else
+					result = std::make_unique<UniformFloat>();
+
+				break;
+			}
 		case opengl::EGLSLType::Vec4:
-			result = std::make_unique<UniformVec4>();
-			break;
+			{
+				if (declaration.isArray())
+					result = std::make_unique<UniformVec4Array>();
+				else
+					result = std::make_unique<UniformVec4>();
+
+				break;
+			}
 		case opengl::EGLSLType::Mat4:
-			result = std::make_unique<UniformMat4>();
-			break;
+			{
+				if (declaration.isArray())
+					result = std::make_unique<UniformMat4Array>();
+				else
+					result = std::make_unique<UniformMat4>();
+
+				break;
+			}
 		case opengl::EGLSLType::Tex2D:
-			result = std::make_unique<UniformTexture2D>();
-			break;
+			{
+				if (declaration.isArray())
+					result = std::make_unique<UniformTexture2DArray>();
+				else
+					result = std::make_unique<UniformTexture2D>();
+
+				break;
+			}
 		case opengl::EGLSLType::Vec3:
-			result = std::make_unique<UniformVec3>();
-			break;
+			{
+				if (declaration.isArray())
+					result = std::make_unique<UniformVec3Array>();
+				else
+					result = std::make_unique<UniformVec3>();
+
+				break;
+			}
 		}
 		assert(result);
 		result->mName = declaration.mName;
 		return result;
 	}
 
+	static int getNumArrayElements(const Uniform& uniform)
+	{
+		const UniformValueArray* value_array = rtti_cast<const UniformValueArray>(&uniform);
+		if (value_array != nullptr)
+			return value_array->getNumElements();
+
+		const UniformTextureArray* texture_array = rtti_cast<const UniformTextureArray>(&uniform);
+		if (texture_array != nullptr)
+			return texture_array->getNumElements();
+
+		return -1;
+	}
+
+	static bool verifyUniform(const Uniform& uniform, const opengl::UniformDeclaration& uniformDeclaration, const std::string& shaderID, utility::ErrorState& errorState)
+	{
+		if (uniformDeclaration.isArray())
+		{
+			int numElements = getNumArrayElements(uniform);
+			if (!errorState.check(numElements != -1, "Uniform %s is not an array uniform but the variable type in shader %s is.", uniform.mName.c_str(), shaderID.c_str()))
+				return false;
+
+			if (!errorState.check(numElements == uniformDeclaration.mSize, "Amount of elements (%d) in uniform %s does not match the amount of elements (%d) declared in shader %s.", numElements, uniform.mName.c_str(), uniformDeclaration.mSize, shaderID.c_str()))
+				return false;
+		}
+
+		if (!errorState.check(uniform.getGLSLType() == uniformDeclaration.mGLSLType, "Uniform %s does not match the variable type in the shader %s", uniform.mName.c_str(), shaderID.c_str()))
+			return false;
+
+		return true;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// MaterialInstance
@@ -121,9 +187,9 @@ namespace nap
 		const UniformTextureBindings& instance_texture_bindings = getTextureBindings();
 		for (auto& kvp : instance_texture_bindings)
 		{
-			nap::Uniform* uniform_tex = kvp.second.mUniform.get();
-			assert(uniform_tex->get_type().is_derived_from(RTTI_OF(nap::UniformTexture)));
-			static_cast<nap::UniformTexture*>(uniform_tex)->push(*kvp.second.mDeclaration, texture_unit++);
+			nap::UniformTexture* uniform_tex = rtti_cast<nap::UniformTexture>(kvp.second.mUniform.get());
+			assert(uniform_tex != nullptr);
+			texture_unit += uniform_tex->push(*kvp.second.mDeclaration, texture_unit);
 			instance_bindings.insert(kvp.first);
 		}
 
@@ -144,11 +210,10 @@ namespace nap
 		{
 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
 			{
-				nap::Uniform* uniform_tex = kvp.second.mUniform.get();
-				assert(uniform_tex->get_type().is_derived_from(RTTI_OF(nap::UniformTexture)));
-				static_cast<nap::UniformTexture*>(uniform_tex)->push(*kvp.second.mDeclaration, texture_unit++);
+				nap::UniformTexture* uniform_tex = rtti_cast<nap::UniformTexture>(kvp.second.mUniform.get());
+				assert(uniform_tex != nullptr);
+				texture_unit += uniform_tex->push(*kvp.second.mDeclaration, texture_unit);
 			}
-
 		}
 
 		// Push all uniform values in the material that weren't overridden by the instance
@@ -297,7 +362,6 @@ namespace nap
 		return AddUniform(std::move(uniform), *declaration);
 	}
 
-
 	bool MaterialInstance::init(MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
@@ -310,7 +374,7 @@ namespace nap
 			if (declaration == uniform_declarations.end())
 				continue;
 
-			if (!errorState.check(uniform->getGLSLType() == declaration->second->mGLSLType, "Uniform %s does not match the variable type in the shader %s", uniform->mName.c_str(), resource.mMaterial->getShader()->mID.c_str()))
+			if (!verifyUniform(*uniform, *declaration->second, resource.mMaterial->getShader()->mID, errorState))
 				return false;
 
 			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(*declaration->second);
@@ -404,7 +468,7 @@ namespace nap
 			// If there is a match, see if the types match and copy the attributes from the input object
 			if (matching_uniform != nullptr)
 			{
-				if (!errorState.check(matching_uniform->getGLSLType() == declaration.mGLSLType, "Uniform %s does not match the variable type in the shader %s", matching_uniform->mName.c_str(), mShader->mID.c_str()))
+				if (!verifyUniform(*matching_uniform, declaration, mShader->mID, errorState))
 					return false;
 
 				nap::rtti::copyObject(*matching_uniform, *new_uniform.get());
