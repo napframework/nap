@@ -1,7 +1,10 @@
 #pragma once
 
 // Local Includes
-#include "websocketconnection.h"
+#include "wspp.h"
+
+// External Includes
+#include <utility/dllexport.h>
 
 namespace nap
 {
@@ -9,7 +12,7 @@ namespace nap
 	class WebSocketServerEndPoint;
 
 	/**
-	 * Utility class that combines a message and connection into a single object.
+	 * Utility class that wraps a websocketpp message.
 	 * Can only be constructed by the web socket server endpoint.
 	 * This message can be copied and moved freely.
 	 */
@@ -29,9 +32,7 @@ namespace nap
 		WebSocketMessage& operator=(const WebSocketMessage& other) = default;
 
 	private:
-		WebSocketMessage(WebSocketConnection connection, wspp::MessagePtr message);
+		WebSocketMessage(wspp::MessagePtr message);
 		wspp::MessagePtr mMessage = nullptr;							///< Shared pointer to the message
-		WebSocketConnection mConnection;								///< Connection
 	};
-
 }

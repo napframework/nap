@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "websocketmessage.h"
+#include "websocketconnection.h"
 
 // External Includes
 #include <nap/event.h>
@@ -74,9 +75,11 @@ namespace nap
 	{
 		RTTI_ENABLE(WebSocketEvent)
 	public:
-		WebSocketMessageReceivedEvent(WebSocketMessage message) : mMessage(message) { }
+		WebSocketMessageReceivedEvent(WebSocketConnection connection, WebSocketMessage message) : 
+			mConnection(connection), mMessage(message)	{ }
 	private:
 		WebSocketMessage mMessage;
+		WebSocketConnection mConnection;
 	};
 
 	using WebSocketEventPtr = std::unique_ptr<nap::WebSocketEvent>;

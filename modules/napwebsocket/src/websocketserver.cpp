@@ -1,6 +1,7 @@
 // Local Includes
 #include "websocketserver.h"
 #include "websocketutils.h"
+#include "websocketservice.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -10,13 +11,21 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketServer)
 RTTI_END_CLASS
 
 // nap::websocketserver run time class definition 
-RTTI_BEGIN_CLASS(nap::WebSocketServer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketServer)
+	RTTI_CONSTRUCTOR(nap::WebSocketService&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
+
+	WebSocketServer::WebSocketServer(WebSocketService& service) : mService(&service)
+	{
+
+	}
+
+
 	bool WebSocketServer::init(utility::ErrorState& errorState)
 	{
 		return IWebSocketServer::init(errorState);
@@ -35,7 +44,7 @@ namespace nap
 	}
 
 
-	void IWebSocketServer::eventReceived(WebSocketEventPtr newEvent)
+	void IWebSocketServer::addEvent(WebSocketEventPtr newEvent)
 	{
 		onEventReceived(std::move(newEvent));
 	}
@@ -43,7 +52,6 @@ namespace nap
 
 	IWebSocketServer::~IWebSocketServer()
 	{
-		nap::Logger::info("destructing!!");
 		mEndPoint->removeListener(*this);
 	}
 

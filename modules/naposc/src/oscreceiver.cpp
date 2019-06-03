@@ -10,7 +10,7 @@
 #include <nap/logger.h>
 #include <iostream>
 
-RTTI_BEGIN_CLASS(nap::OSCReceiver)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCReceiver)
 	RTTI_PROPERTY("Port",				&nap::OSCReceiver::mPort,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("EnableDebugOutput",	&nap::OSCReceiver::mDebugOutput,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AllowPortReuse",		&nap::OSCReceiver::mAllowPortReuse,	nap::rtti::EPropertyMetaData::Default)

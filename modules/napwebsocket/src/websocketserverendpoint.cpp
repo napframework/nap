@@ -117,7 +117,10 @@ namespace nap
 	{
 		for (auto& listener : mListeners)
 		{
-			listener->eventReceived(std::make_unique<WebSocketConnectionOpenedEvent>(WebSocketConnection(connection)));
+			if (listener->accepts(RTTI_OF(WebSocketConnectionOpenedEvent)))
+			{
+				listener->addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(WebSocketConnection(connection)));
+			}
 		}
 	}
 
@@ -126,7 +129,10 @@ namespace nap
 	{
 		for (auto& listener : mListeners)
 		{
-			listener->eventReceived(std::make_unique<WebSocketConnectionClosedEvent>(WebSocketConnection(connection)));
+			if (listener->accepts(RTTI_OF(WebSocketConnectionClosedEvent)))
+			{
+				listener->addEvent(std::make_unique<WebSocketConnectionClosedEvent>(WebSocketConnection(connection)));
+			}
 		}
 	}
 
@@ -135,7 +141,10 @@ namespace nap
 	{
 		for (auto& listener : mListeners)
 		{
-			listener->eventReceived(std::make_unique<WebSocketConnectionFailedEvent>(WebSocketConnection(connection)));
+			if (listener->accepts(RTTI_OF(WebSocketConnectionFailedEvent)))
+			{
+				listener->addEvent(std::make_unique<WebSocketConnectionFailedEvent>(WebSocketConnection(connection)));
+			}
 		}
 	}
 
@@ -144,7 +153,10 @@ namespace nap
 	{
 		for (auto& listener : mListeners)
 		{
-			listener->eventReceived(std::make_unique<WebSocketMessageReceivedEvent>(WebSocketMessage(WebSocketConnection(con), msg)));
+			if (listener->accepts(RTTI_OF(WebSocketMessageReceivedEvent)))
+			{
+				listener->addEvent(std::make_unique<WebSocketMessageReceivedEvent>(WebSocketConnection(con), WebSocketMessage(msg)));
+			}
 		}
 		send("who's your daddy now??", con, msg->get_opcode());
 	}
