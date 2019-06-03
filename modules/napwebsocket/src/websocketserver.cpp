@@ -26,9 +26,21 @@ namespace nap
 	}
 
 
+	WebSocketServer::~WebSocketServer()
+	{
+		mService->removeServer(*this);
+	}
+
+
 	bool WebSocketServer::init(utility::ErrorState& errorState)
 	{
-		return IWebSocketServer::init(errorState);
+		// Initialize base class
+		if (!IWebSocketServer::init(errorState))
+			return false;
+
+		// Register the server
+		mService->registerServer(*this);
+		return true;
 	}
 
 
@@ -41,6 +53,13 @@ namespace nap
 
 	void WebSocketServer::consumeEvents(std::queue<WebSocketEventPtr>& outEvents)
 	{
+		// Swap events
+		std::lock_guard<std::mutex> lock(mEventMutex);
+		outEvents.swap(mEvents);
+
+		// Clear current queue
+		std::queue<WebSocketEventPtr> empty_queue;;
+		mEvents.swap(empty_queue);
 	}
 
 

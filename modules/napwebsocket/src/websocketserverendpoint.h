@@ -52,7 +52,7 @@ namespace nap
 		/**
 		 * @return if the current end point is open and running
 		 */
-		bool isOpen() const													{ return mOpen; }
+		bool isOpen() const;
 
 		/**
 		 * Stops the end-point from running, all active connections are closed.
@@ -72,11 +72,10 @@ namespace nap
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;	///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
 
 	private:
-		wspp::ServerEndPoint mEndPoint;										///< The websocketpp server end-point
+		std::unique_ptr<wspp::ServerEndPoint> mEndPoint = nullptr;			///< The websocketpp server end-point
 		uint32 mLogLevel = 0;												///< Converted library log level
 		uint32 mAccessLogLevel = 0;											///< Log client / server connection data
 		std::future<void> mServerTask;										///< The background server thread
-		bool mOpen = false;													///< If connection is open
 
 		/**
 		 * Runs the end point in a background thread until stopped.

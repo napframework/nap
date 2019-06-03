@@ -5,14 +5,17 @@
 
 namespace nap 
 {   
+	class WebSocketServer;
+
     /**
-     * Ensures that all web socket events are correctly dispatched onto the main thread.
+     * Main interface for processing web socket events in NAP.
      */
     class NAPAPI WebSocketService : public nap::Service
     {
+		friend class WebSocketServer;
         RTTI_ENABLE(nap::Service)
-
     public:
+		// Constructor
 		WebSocketService(ServiceConfiguration* configuration);
         
         // Initialization
@@ -24,5 +27,27 @@ namespace nap
 		 * @param factory the factory to register the object creators with
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		 * Processes all received web-socket events from all registered web socket servers
+		 * The events are forwarded to all the the registered websocket components
+		 * This function is called automatically by the application loop
+		 * @param deltaTime time in between calls in seconds
+		 */
+		virtual void update(double deltaTime) override;
+
+	private:
+		/**
+		 * Registers a web socket server with the service
+		 */
+		void registerServer(WebSocketServer& server);
+
+		/**
+		 * Removes a web socket server with the service
+		 */
+		void removeServer(WebSocketServer& server);
+
+		// All the web socket servers currently registered in the system
+		std::vector<WebSocketServer*> mServers;
     };
 }

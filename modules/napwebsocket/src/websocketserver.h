@@ -19,7 +19,6 @@ namespace nap
 	 */
 	class NAPAPI IWebSocketServer : public Resource
 	{
-		friend class WebSocketServerEndPoint;
 		RTTI_ENABLE(Resource)
 	public:
 		// Stops the device
@@ -39,6 +38,12 @@ namespace nap
 		 */
 		virtual bool accepts(rtti::TypeInfo eventType)						{ return true; }
 
+		/**
+		 * Called by the web socket server end point. Calls onEventReceived().
+		 * @param event the event to add, note that this receiver will take ownership of the event
+		 */
+		void addEvent(WebSocketEventPtr newEvent);
+
 		nap::ResourcePtr<WebSocketServerEndPoint> mEndPoint = nullptr;		///< Property: 'EndPoint' link to the web-socket server end point
 
 	protected:
@@ -48,13 +53,6 @@ namespace nap
 		 * @param newEvent the event that is received
 		 */
 		virtual void onEventReceived(WebSocketEventPtr newEvent) = 0;
-
-	private:
-		/**
-		 * Called by the web socket server end point. Calls onEventReceived().
-		 * @param event the event to add, note that this receiver will take ownership of the event
-		 */
-		void addEvent(WebSocketEventPtr newEvent);
 	};
 
 
@@ -75,6 +73,9 @@ namespace nap
 
 		// Constructor used by factory
 		WebSocketServer(WebSocketService& service);
+
+		// Destructor
+		virtual ~WebSocketServer();
 
 		/**
 		 * Initializes the server.

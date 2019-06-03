@@ -18,29 +18,38 @@ namespace nap
 	bool WebSocketServerEndPoint::start(nap::utility::ErrorState& error)
 	{
 		// Run until stopped
-		assert(!mOpen);
-		
-		// Initiate logging
-		mEndPoint.clear_error_channels(websocketpp::log::elevel::all);
-		mEndPoint.set_error_channels(mLogLevel);
+		assert(mEndPoint == nullptr);
+		mEndPoint = std::make_unique<wspp::ServerEndPoint>();
 
-		mEndPoint.clear_access_channels(websocketpp::log::alevel::all);
-		mEndPoint.set_access_channels(mAccessLogLevel);
+		// Initiate logging
+		mEndPoint->clear_error_channels(websocketpp::log::elevel::all);
+		mEndPoint->set_error_channels(mLogLevel);
+
+		mEndPoint->clear_access_channels(websocketpp::log::alevel::all);
+		mEndPoint->set_access_channels(mAccessLogLevel);
+
+		// Init asio
+		std::error_code stdec;
+		mEndPoint->init_asio(stdec);
+		if (stdec)
+		{
+			error.fail(stdec.message());
+			return false;
+		}
 
 		// Install connection open / closed handlers
-		mEndPoint.set_open_handler(std::bind(&WebSocketServerEndPoint::onConnectionOpened,	this, std::placeholders::_1));
-		mEndPoint.set_close_handler(std::bind(&WebSocketServerEndPoint::onConnectionClosed,	this, std::placeholders::_1));
-		mEndPoint.set_fail_handler(std::bind(&WebSocketServerEndPoint::onConnectionFailed,	this, std::placeholders::_1));
+		mEndPoint->set_open_handler(std::bind(&WebSocketServerEndPoint::onConnectionOpened,	this, std::placeholders::_1));
+		mEndPoint->set_close_handler(std::bind(&WebSocketServerEndPoint::onConnectionClosed,	this, std::placeholders::_1));
+		mEndPoint->set_fail_handler(std::bind(&WebSocketServerEndPoint::onConnectionFailed,	this, std::placeholders::_1));
 		
 		// Install message handler
-		mEndPoint.set_message_handler(std::bind(
+		mEndPoint->set_message_handler(std::bind(
 			&WebSocketServerEndPoint::onMessageReceived, this,
 			std::placeholders::_1, std::placeholders::_2
 		));
 
 		// Listen to messages on this specific port
-		std::error_code stdec;
-		mEndPoint.listen(static_cast<uint16>(mPort), stdec);
+		mEndPoint->listen(static_cast<uint16>(mPort), stdec);
 		if (stdec)
 		{
 			error.fail(stdec.message());
@@ -48,7 +57,7 @@ namespace nap
 		}
 
 		// Queues a connection accept operation 
-		mEndPoint.start_accept(stdec);
+		mEndPoint->start_accept(stdec);
 		if (stdec)
 		{
 			error.fail(stdec.message());
@@ -56,34 +65,39 @@ namespace nap
 		}
 
 		// Run until stopped
-		mOpen = true;
 		mServerTask = std::async(std::launch::async, std::bind(&WebSocketServerEndPoint::run, this));
 
 		return true;
 	}
 
 
+	bool WebSocketServerEndPoint::isOpen() const
+	{
+		return mEndPoint != nullptr;
+	}
+
+
 	void WebSocketServerEndPoint::send(const std::string& message, wspp::ConnectionHandle connection, wspp::OpCode opCode)
 	{
-		mEndPoint.send(connection, message, opCode);
+		mEndPoint->send(connection, message, opCode);
 	}
 
 
 	void WebSocketServerEndPoint::run()
 	{
 		// Start running until stopped
-		mEndPoint.run();
+		mEndPoint->run();
 	}
 
 
 	void WebSocketServerEndPoint::stop()
 	{
-		if (mOpen)
+		if (mEndPoint != nullptr)
 		{
 			assert(mServerTask.valid());
-			mEndPoint.stop();
+			mEndPoint->stop();
 			mServerTask.wait();
-			mOpen = false;
+			mEndPoint.reset(nullptr);
 		}
 	}
 
@@ -101,14 +115,6 @@ namespace nap
 		mAccessLogLevel = mLogConnectionUpdates ? websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload
 			: websocketpp::log::alevel::fail;
 
-		// Init asio
-		std::error_code stdec;
-		mEndPoint.init_asio(stdec);
-		if (stdec)
-		{
-			errorState.fail(stdec.message());
-			return false;
-		}
 		return true;
 	}
 	
@@ -170,11 +176,13 @@ namespace nap
 
 	void WebSocketServerEndPoint::removeListener(IWebSocketServer& listener)
 	{
-		auto found_it = std::find_if(mListeners.begin(), mListeners.end(), [&](const auto& it)
+		auto found_it = std::find_if(mListeners.begin(), mListeners.end(), [&](auto& it)
 		{
 			return it == &listener;
 		});
-		assert(found_it != mListeners.end());
-		mListeners .erase(found_it);
+
+		if (found_it == mListeners.end())
+			return;
+		mListeners.erase(found_it);
 	}
 }
