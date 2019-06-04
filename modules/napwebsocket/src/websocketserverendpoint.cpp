@@ -46,6 +46,7 @@ namespace nap
 		mEndPoint->set_close_handler(std::bind(&WebSocketServerEndPoint::onConnectionClosed,	this, std::placeholders::_1));
 		mEndPoint->set_fail_handler(std::bind(&WebSocketServerEndPoint::onConnectionFailed,	this, std::placeholders::_1));
 		mEndPoint->set_validate_handler(std::bind(&WebSocketServerEndPoint::onValidate, this, std::placeholders::_1));
+		mEndPoint->set_ping_handler(std::bind(&WebSocketServerEndPoint::onPing, this, std::placeholders::_1, std::placeholders::_2));
 
 		// Install message handler
 		mEndPoint->set_message_handler(std::bind(
@@ -203,4 +204,11 @@ namespace nap
 		// TODO: Validate incoming connection here, ie: accept or reject.
 		return true;
 	}
+
+
+	bool WebSocketServerEndPoint::onPing(wspp::ConnectionHandle con, std::string msg)
+	{
+		return true;
+	}
+
 }

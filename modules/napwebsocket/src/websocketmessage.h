@@ -54,7 +54,7 @@ namespace nap
 		/**
 		 * @return if this message should be or is compressed
 		 */
-		bool isCompressed() const;
+		bool getCompressed() const;
 
 	private:
 		WebSocketMessage(wspp::MessagePtr message);
