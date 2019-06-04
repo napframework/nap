@@ -233,16 +233,14 @@
         },
         {
             "Type": "nap::WebSocketServer",
-            "mID": "Server"
+            "mID": "Server",
+            "EndPoint" : "ServerEndPoint"
         },
         {
             "Type": "nap::WebSocketServerEndPoint",
             "mID": "ServerEndPoint",
             "Port": 9000,
-            "LogConnectionUpdates": false,
-            "Listeners": [
-                "Server"
-            ]
+            "LogConnectionUpdates": trueee
         },
         {
             "Type": "nap::RenderWindow",

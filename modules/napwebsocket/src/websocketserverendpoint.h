@@ -3,7 +3,6 @@
 // Local Includes
 #include "websocketutils.h"
 #include "websocketevents.h"
-#include "websocketserver.h"
 
 // External Includes
 #include <memory.h>
@@ -12,11 +11,9 @@
 #include <nap/device.h>
 #include <nap/signalslot.h>
 #include <nap/numeric.h>
-#include <nap/resourceptr.h>
 
 namespace nap
 {
-	// Forward Declares
 	class IWebSocketServer;
 
 	/**
@@ -71,7 +68,6 @@ namespace nap
 		int mPort = 80;															///< Property: "Port" to open and listen to for messages.
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
-		std::vector<nap::ResourcePtr<IWebSocketServer>> mListeners;				///< Property: 'Listeners' link to the web-socket server that receives incoming web-socket events
 
 	private:
 		std::unique_ptr<wspp::ServerEndPoint> mEndPoint = nullptr;				///< The websocketpp server end-point
@@ -113,5 +109,17 @@ namespace nap
 		 * Validates the incoming connection
 		 */
 		bool onValidate(wspp::ConnectionHandle con);
+
+		/**
+		 * Registers a server
+		 */
+		void registerServer(IWebSocketServer& server);
+
+		/**
+		 * Removes a server
+		 */
+		void removeServer(IWebSocketServer& server);
+
+		std::vector<IWebSocketServer*> mServers;								///< All the servers interested in websocket information
 	};
 }
