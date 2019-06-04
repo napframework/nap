@@ -6,6 +6,7 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <queue>
 
 namespace nap
 {
@@ -65,13 +66,14 @@ namespace nap
 		}
 	protected:
 		void writeThreadFunc();
+		void consumeBuffer(std::deque<std::string>& outBuffer);
 	protected:
 		
-		ResourcePtr<SerialPort>		mSerialPort;
+		ResourcePtr<SerialPort>					mSerialPort;
 
 		std::atomic_bool						mIsRunning = false;
 		std::thread								mWriteThread;
-		std::vector<std::string>				mWriteBuffer;
+		std::deque<std::string>					mWriteBuffer;
 		std::mutex								mWriteBufferMutex;
 		std::atomic_long						mThreadUpdateIntervalMs = 10;
 	};

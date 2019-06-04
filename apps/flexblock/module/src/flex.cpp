@@ -7,16 +7,15 @@
 
 namespace nap
 {
-	Flex::Flex(FlexblockShapePtr flexblockShape )
+	Flex::Flex(FlexBlockShape* flexblockShape)
 	{
 		mObjShape = flexblockShape;
-		mMotorInput = std::vector<float>(8);
+		mMotorInput = std::deque<float>(8);
 
 		// 
 		mFrequency = 200;
 		mObjShape = flexblockShape;
-		mObjSize = flexblockShape->sizes[0];
-		mCountInputs = mObjShape->inputs;
+		mCountInputs = mObjShape->mInputs;
 
 		//
 		mForceObject = 10;
@@ -26,13 +25,13 @@ namespace nap
 		mLengthError = 0;
 
 		// points
-		mPointsObject = mObjShape->points.object;
-		mPointsFrame = mObjShape->points.frame;
+		mPointsObject = mObjShape->mPoints->mObject;
+		mPointsFrame = mObjShape->mPoints->mFrame;
 
 		// elements
-		mElementsObject = mObjShape->elements.object;
-		mElementsObject2Frame = mObjShape->elements.object2frame;
-		mElementsFrame = mObjShape->elements.frame;
+		mElementsObject = mObjShape->mElements->mObject;
+		mElementsObject2Frame = mObjShape->mElements->mObject2Frame;
+		mElementsFrame = mObjShape->mElements->mFrame;
 
 		// convert zero indexed elements
 		for (int i = 0; i < mElementsObject2Frame.size(); i++)
@@ -48,15 +47,15 @@ namespace nap
 		// convert unit points to real size
 		for (int i = 0; i < mPointsObject.size(); i++)
 		{
-			mPointsObject[i].x *= mObjSize.values.object.x * 0.5f;
-			mPointsObject[i].y *= mObjSize.values.object.y * 0.5f;
-			mPointsObject[i].z *= mObjSize.values.object.z * 0.5f;
+			mPointsObject[i].x *= mObjShape->mSizes[0]->mValues->mObject.x * 0.5f;
+			mPointsObject[i].y *= mObjShape->mSizes[0]->mValues->mObject.y * 0.5f;
+			mPointsObject[i].z *= mObjShape->mSizes[0]->mValues->mObject.z * 0.5f;
 		}
 		for (int i = 0; i < mPointsFrame.size(); i++)
 		{
-			mPointsFrame[i].x *= mObjSize.values.frame.x * 0.5f;
-			mPointsFrame[i].y *= mObjSize.values.frame.y * 0.5f;
-			mPointsFrame[i].z *= mObjSize.values.frame.z * 0.5f;
+			mPointsFrame[i].x *= mObjShape->mSizes[0]->mValues->mFrame.x * 0.5f;
+			mPointsFrame[i].y *= mObjShape->mSizes[0]->mValues->mFrame.y * 0.5f;
+			mPointsFrame[i].z *= mObjShape->mSizes[0]->mValues->mFrame.z * 0.5f;
 		}
 
 		// init
@@ -125,17 +124,25 @@ namespace nap
 	void Flex::setMotorInput(int index, float value)
 	{
 		std::lock_guard<std::mutex> l(mMotorInputMutex);
+
 		mMotorInput[index] = value;
+	} 
+
+	void Flex::copyMotorInput(std::deque<float>& outInputs)
+	{
+		std::lock_guard<std::mutex> l(mMotorInputMutex);
+
+		outInputs = mMotorInput;
 	}
 
 	void Flex::update()
 	{
 		while (mIsRunning)
 		{
-			{
-				std::lock_guard<std::mutex> l(mMotorInputMutex);
-				setInput(mMotorInput);
-			}
+			std::deque<float> inputs(8);
+			copyMotorInput(inputs);
+
+			setInput(inputs);
 
 			calcInput();
 
@@ -231,7 +238,7 @@ namespace nap
 		}
 	}
 
-	void Flex::setInput(std::vector<float> inputs)
+	void Flex::setInput(std::deque<float>& inputs)
 	{
 		for (int i = 0; i < inputs.size(); i++)
 		{

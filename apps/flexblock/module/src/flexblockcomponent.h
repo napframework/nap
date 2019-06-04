@@ -11,7 +11,9 @@
 #include <component.h>
 #include <boxmesh.h>
 #include <renderablemeshcomponent.h>
+#include <renderable2dtextcomponent.h>
 #include <componentptr.h>
+#include <perspcameracomponent.h>
 
 namespace nap
 {
@@ -28,9 +30,11 @@ namespace nap
 		//
 		ResourcePtr<FrameMesh> mFrameMesh;
 		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
+		ResourcePtr<FlexBlockShape> mFlexBlockShape;
 		
 		//
 		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent;
+	
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -72,7 +76,13 @@ namespace nap
 		*/
 		void SetMotorInput(int index, float value);
 
-		void SetInput(int index, int value);
+		/*
+		*/
+		const std::vector<glm::vec3>& getObjectPoints() { return mObjectPoints; }
+		const std::vector<glm::vec3>& getFramePoints() { return mFramePoints; }
+
+		void toNapPoints(const std::vector<glm::vec3>& points, std::vector<glm::vec3>& outPoints);
+		const int remapMotorInput(const int index);
 	protected:
 		FrameMesh* mFrameMesh = nullptr;
 		FlexBlockMesh* mFlexBlockMesh = nullptr;
@@ -86,8 +96,9 @@ namespace nap
 
 		//
 		double mUpdateSerialTime = 0.0;
+		
+		std::vector<glm::vec3> mObjectPoints = std::vector<glm::vec3>(8);
 
-		//
-		std::vector<glm::vec3> toNapPoints(const std::vector<glm::vec3>& points);
+		std::vector<glm::vec3> mFramePoints = std::vector<glm::vec3>(8);
 	};
 }

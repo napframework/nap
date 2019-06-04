@@ -147,8 +147,8 @@
                     "mID": "FlexBlockComponent",
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
-                    "NormalsMesh": "",
-                    "SerialComponent": "./FlexBlockSerialComponent"
+                    "SerialComponent": "./FlexBlockSerialComponent",
+                    "FlexBlockShape": "FlexBlockShape"
                 },
                 {
                     "Type": "nap::FlexBlockSerialComponent",
@@ -218,6 +218,157 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "TextEntity",
+            "Components": [
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 1",
+                    "Text": "1",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Center"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 2",
+                    "Text": "2",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 3",
+                    "Text": "3",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 4",
+                    "Text": "4",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 5",
+                    "Text": "5",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 6",
+                    "Text": "6",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 7",
+                    "Text": "7",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 8",
+                    "Text": "8",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "WorldEntity",
             "Components": [
                 {
@@ -245,6 +396,144 @@
             ],
             "Children": [
                 "FlexBlockEntity"
+            ]
+        },
+        {
+            "Type": "nap::FlexBlockElements",
+            "mID": "ProtoElements",
+            "Object": [
+                [
+                    0,
+                    1
+                ],
+                [
+                    1,
+                    2
+                ],
+                [
+                    2,
+                    3
+                ],
+                [
+                    3,
+                    0
+                ],
+                [
+                    4,
+                    5
+                ],
+                [
+                    5,
+                    6
+                ],
+                [
+                    6,
+                    7
+                ],
+                [
+                    7,
+                    4
+                ],
+                [
+                    0,
+                    4
+                ],
+                [
+                    1,
+                    5
+                ],
+                [
+                    2,
+                    6
+                ],
+                [
+                    3,
+                    7
+                ]
+            ],
+            "Object2Frame": [
+                [
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    1
+                ],
+                [
+                    2,
+                    2
+                ],
+                [
+                    3,
+                    3
+                ],
+                [
+                    4,
+                    4
+                ],
+                [
+                    5,
+                    5
+                ],
+                [
+                    6,
+                    6
+                ],
+                [
+                    7,
+                    7
+                ]
+            ],
+            "Frame": [
+                [
+                    0,
+                    1
+                ],
+                [
+                    1,
+                    2
+                ],
+                [
+                    2,
+                    3
+                ],
+                [
+                    3,
+                    0
+                ],
+                [
+                    4,
+                    5
+                ],
+                [
+                    5,
+                    6
+                ],
+                [
+                    6,
+                    7
+                ],
+                [
+                    7,
+                    4
+                ],
+                [
+                    0,
+                    4
+                ],
+                [
+                    1,
+                    5
+                ],
+                [
+                    2,
+                    6
+                ],
+                [
+                    3,
+                    7
+                ]
             ]
         },
         {
@@ -383,6 +672,134 @@
             "Curve": "AlmostLinearCurve"
         },
         {
+            "Type": "nap::FlexBlockShape",
+            "mID": "FlexBlockShape",
+            "Name": "block",
+            "Inputs": 8,
+            "Sizes": [
+                "FlexBlockShapeSize"
+            ],
+            "Elements": "ProtoElements",
+            "Points": "ProtoShapePoints"
+        },
+        {
+            "Type": "nap::FlexBlockShapePoints",
+            "mID": "ProtoShapePoints",
+            "Object": [
+                {
+                    "x": -1.0,
+                    "y": 1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": -1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": -1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": -1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": -1.0,
+                    "z": 1.0
+                }
+            ],
+            "Frame": [
+                {
+                    "x": -1.0,
+                    "y": 1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": -1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": -1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": -1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": -1.0,
+                    "z": 1.0
+                }
+            ]
+        },
+        {
+            "Type": "nap::FlexBlockShapeSize",
+            "mID": "FlexBlockShapeSize",
+            "Name": "proto",
+            "Values": "ProtoShapeSizeValues"
+        },
+        {
+            "Type": "nap::FlexBlockShapeSizeValues",
+            "mID": "ProtoShapeSizeValues",
+            "Object": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "Frame": {
+                "x": 2.0480000972747804,
+                "y": 1.4249999523162842,
+                "z": 1.3530000448226929
+            }
+        },
+        {
+            "Type": "nap::Font",
+            "mID": "Font",
+            "Properties": {
+                "Size": 24,
+                "DPI": 96
+            },
+            "Font": "fonts/Montserrat-Light.otf"
+        },
+        {
             "Type": "nap::FrameMesh",
             "mID": "FrameMesh",
             "Size": {
@@ -431,6 +848,26 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "FontMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "textColor",
+                    "Value": {
+                        "x": 0.800000011920929,
+                        "y": 0.800000011920929,
+                        "z": 0.800000011920929
+                    }
+                }
+            ],
+            "Shader": "FontShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "FrameMaterial",
             "Uniforms": [
                 {
@@ -463,6 +900,15 @@
                     "ShaderAttributeID": "in_Normal"
                 }
             ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "Material",
+            "Uniforms": [],
+            "Shader": "FontShader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -575,70 +1021,6 @@
             "Groups": []
         },
         {
-            "Type": "nap::ParameterInt",
-            "mID": "Motor 1",
-            "Name": "",
-            "Value": 0,
-            "Minimum": -1000,
-            "Maximum": 1000
-        },
-        {
-            "Type": "nap::ParameterInt",
-            "mID": "Motor 2",
-            "Name": "",
-            "Value": 0,
-            "Minimum": -1000,
-            "Maximum": 1000
-        },
-        {
-            "Type": "nap::ParameterInt",
-            "mID": "Motor 3",
-            "Name": "",
-            "Value": 0,
-            "Minimum": -1000,
-            "Maximum": 1000
-        },
-        {
-            "Type": "nap::ParameterInt",
-            "mID": "Motor 4",
-            "Name": "",
-            "Value": 0,
-            "Minimum": -1000,
-            "Maximum": 1000
-        },
-        {
-            "Type": "nap::ParameterInt",
-            "mID": "Motor 5",
-            "Name": "",
-            "Value": 0,
-            "Minimum": -1000,
-            "Maximum": 1000
-        },
-        {
-            "Type": "nap::ParameterInt",
-            "mID": "Motor 6",
-            "Name": "",
-            "Value": 0,
-            "Minimum": -1000,
-            "Maximum": 1000
-        },
-        {
-            "Type": "nap::ParameterInt",
-            "mID": "Motor 7",
-            "Name": "",
-            "Value": 0,
-            "Minimum": -1000,
-            "Maximum": 1000
-        },
-        {
-            "Type": "nap::ParameterInt",
-            "mID": "Motor 8",
-            "Name": "",
-            "Value": 0,
-            "Minimum": -1000,
-            "Maximum": 1000
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Width": 1280,
@@ -664,6 +1046,10 @@
                 },
                 {
                     "Entity": "WorldEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "TextEntity",
                     "InstanceProperties": []
                 }
             ]
@@ -693,6 +1079,12 @@
             "mID": "ControlPointShader",
             "mVertShader": "shaders/control_point.vert",
             "mFragShader": "shaders/control_point.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "FontShader",
+            "mVertShader": "shaders/font.vert",
+            "mFragShader": "shaders/font.frag"
         },
         {
             "Type": "nap::UniformVec3",
@@ -728,6 +1120,38 @@
                     "Position": {
                         "Time": 1.0,
                         "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.22773315012454987,
+                        "Value": 0.003977081272751093
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.41306179761886599,
+                        "Value": 1.0004608631134034
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,

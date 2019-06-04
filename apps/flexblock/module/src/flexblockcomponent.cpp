@@ -1,6 +1,5 @@
 #include "FlexBlockComponent.h"
 #include "rtti/jsonreader.h"
-#include "flexreader.h"
 
 // External Includes
 #include <entity.h>
@@ -23,6 +22,7 @@ RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
 	RTTI_PROPERTY("FrameMesh", &nap::FlexBlockComponent::mFrameMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SerialComponent", &nap::FlexBlockComponent::mFlexBlockSerialComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FlexBlockShape", &nap::FlexBlockComponent::mFlexBlockShape, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -59,21 +59,18 @@ namespace nap
 		mFlexBlockMesh = resource->mFlexBlockMesh.get();
 		mFrameMesh = resource->mFrameMesh.get();
 
-		// Read & parse json files
-		std::vector<FlexblockShapePtr> shapes = flexreader::readShapes("shapes.json", errorState);
-
 		// create flex logic
-		mFlexLogic = std::make_unique<Flex>( shapes[0] );
+		mFlexLogic = std::make_unique<Flex>( resource->mFlexBlockShape.get() );
 		
 		// start flex logic thread
 		mFlexLogic->start();
 
 		// calculate new frame
 		const std::vector<glm::vec3>& framePoints = mFlexLogic->getFramePoints();
-		std::vector<glm::vec3> frame = toNapPoints(framePoints);
+		toNapPoints(framePoints, mFramePoints);
 
 		// set points
-		mFrameMesh->setFramePoints(frame);
+		mFrameMesh->setFramePoints(mFramePoints);
 
 		//
 		mFlexBlockSerialComponentInstance->start(errorState);
@@ -84,38 +81,19 @@ namespace nap
 	void FlexBlockComponentInstance::SetMotorInput(int index, float value)
 	{
 		//
-		mFlexLogic->setMotorInput(index, value);
-	}
-
-	void FlexBlockComponentInstance::SetInput(int index, int value)
-	{
-		static std::vector<int> inputs = { 0,0,0,0,0,0,0,0 };
-
-		inputs[index] = value;
-		
-		std::string data = "<";
-		for (int i : inputs)
-		{
-			data.append(std::to_string(i));
-			data.append("|");
-		}
-		data.append(">");
-
-		//printf(data.c_str());
-		//printf("\n");
-		//mFlexBlockSerialComponentInstance->write(data);
+		mFlexLogic->setMotorInput(remapMotorInput(index), value);
 	}
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
 		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
-		std::vector<glm::vec3>& points = toNapPoints(objectPoints);
+		toNapPoints(objectPoints, mObjectPoints);
 
 		// update ropes of frame
-		mFrameMesh->setControlPoints(points);
+		mFrameMesh->setControlPoints(mObjectPoints);
 		
 		// update the box
-		mFlexBlockMesh->setControlPoints(points);
+		mFlexBlockMesh->setControlPoints(mObjectPoints);
 
 		//
 		mUpdateSerialTime += deltaTime;
@@ -129,7 +107,7 @@ namespace nap
 			{
 				long c = (long)ropeLengths[i];
 				data.append(std::to_string(c));
-				if( i + 1 < ropeLengths.size())
+				if (i + 1 < ropeLengths.size())
 					data.append("|");
 			}
 			data.append(">");
@@ -140,18 +118,34 @@ namespace nap
 		}
 	}
 
-	std::vector<glm::vec3> FlexBlockComponentInstance::toNapPoints(const std::vector<glm::vec3>& points)
+
+	void FlexBlockComponentInstance::toNapPoints(const std::vector<glm::vec3>& inPoints, std::vector<glm::vec3>& outPoints )
 	{
-		return std::vector<glm::vec3>
+		outPoints[0] = inPoints[7];
+		outPoints[1] = inPoints[6];
+		outPoints[2] = inPoints[4];
+		outPoints[3] = inPoints[5];
+
+		outPoints[4] = inPoints[2];
+		outPoints[5] = inPoints[3];
+		outPoints[6] = inPoints[1];
+		outPoints[7] = inPoints[0];
+	}
+
+	const int FlexBlockComponentInstance::remapMotorInput(const int index)
+	{
+		static std::vector<int> map =
 		{
-			points[7],
-			points[6],
-			points[4],
-			points[5],
-			points[2],
-			points[3],
-			points[1],
-			points[0]
+			7,
+			6,
+			2,
+			3,
+			4,
+			5,
+			1,
+			0
 		};
+
+		return map[index];
 	}
 }

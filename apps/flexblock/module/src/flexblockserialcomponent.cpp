@@ -69,7 +69,15 @@ namespace nap
 	void FlexBlockSerialComponentInstance::write(std::string data)
 	{
 		std::lock_guard<std::mutex> l(mWriteBufferMutex);
+
 		mWriteBuffer.emplace_back(data);
+	}
+
+	void FlexBlockSerialComponentInstance::consumeBuffer(std::deque<std::string>& outBuffer)
+	{
+		std::lock_guard<std::mutex> l(mWriteBufferMutex);
+
+		outBuffer.swap(mWriteBuffer);
 	}
 
 	void FlexBlockSerialComponentInstance::writeThreadFunc()
@@ -78,15 +86,14 @@ namespace nap
 
 		while (mIsRunning)
 		{
-			{ // stack push for lock
-				std::lock_guard<std::mutex> l(mWriteBufferMutex);
+			std::deque<std::string> writeBuffer;
+			consumeBuffer(writeBuffer);
 
-				for (std::string& data : mWriteBuffer)
-				{
-					mSerialPort->write(data, error);
-				}
-				mWriteBuffer.clear();
+			for (auto it = writeBuffer.begin(); it != writeBuffer.end(); ++it)
+			{
+				mSerialPort->write( *it, error );
 			}
+
 			std::this_thread::sleep_for(std::chrono::milliseconds(mThreadUpdateIntervalMs));
 		}
 	}

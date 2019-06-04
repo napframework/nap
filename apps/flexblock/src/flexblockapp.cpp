@@ -1,10 +1,12 @@
 // Local Includes
 #include "flexblockapp.h"
+#include "flexblockcomponent.h"
 
 // External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
+#include <renderable2dtextcomponent.h>
 #include <orthocameracomponent.h>
 #include <mathutils.h>
 #include <scene.h>
@@ -14,6 +16,7 @@
 #include <imgui/imgui.h>
 #include <imguiutils.h>
 #include <serialservice.h>
+
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -48,6 +51,7 @@ namespace nap
 		mWorldEntity = scene->findEntity("WorldEntity");
 		mFlexBlockEntity = scene->findEntity("FlexBlockEntity");
 		mBlockEntity = mFlexBlockEntity->getChildren()[0];
+		mTextEntity = scene->findEntity("TextEntity");
 
 		// Create gui
 		mGui = std::make_unique<FlexblockGui>(*this);
@@ -100,6 +104,23 @@ namespace nap
 		// Get the perspective camera
 		PerspCameraComponentInstance& persp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_cam);
+
+		// draw point labels
+		FlexBlockComponentInstance& flex_block = mFlexBlockEntity->getComponent<FlexBlockComponentInstance>();
+		
+		//
+		const std::vector<glm::vec3>& points = flex_block.getFramePoints();
+		std::vector<glm::vec3> framePoints(8);
+		flex_block.toNapPoints(points, framePoints);
+
+		//
+		TransformComponentInstance& cam_xform = mWorldEntity->getComponent<TransformComponentInstance>();
+		for (int i = 0; i < points.size(); i++)
+		{
+			Renderable2DTextComponentInstance* motor_label = mTextEntity->findComponentByID<Renderable2DTextComponentInstance>("MotorLabel " + std::to_string(i+1));
+			motor_label->setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mRenderWindow->getRect()) + glm::vec3(0, 10, 0));
+			motor_label->draw(mRenderWindow->getBackbuffer());
+		}
 
 		// Render gui to window
 		mGuiService->draw();
@@ -160,7 +181,7 @@ namespace nap
 	void FlexblockApp::setCameraPosition()
 	{
 		// Get the perspective camera xform
-		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
+		TransformComponentInstance& cam_xform = mWorldEntity->getComponent<TransformComponentInstance>();
 
 		// Set the camera position in block shader
 		RenderableMeshComponentInstance& block_render_comp = mBlockEntity->getComponent<RenderableMeshComponentInstance>();

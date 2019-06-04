@@ -1,5 +1,8 @@
 #pragma once
 
+// External Includes
+#include <nap/resource.h>
+#include <nap/resourceptr.h>
 #include <glm/glm.hpp>
 #include <stddef.h>
 #include <string>
@@ -8,62 +11,67 @@
 
 namespace nap
 {
-	struct FlexblockShapeSizeValues
+	class NAPAPI FlexBlockShapeSizeValues : public Resource
 	{
+		RTTI_ENABLE(Resource)
 	public:
-		glm::vec3 object;
-		glm::vec3 frame;
+		virtual ~FlexBlockShapeSizeValues();
+
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		glm::vec3 mObject;
+		glm::vec3 mFrame;
 	};
 
-	struct FlexblockShapeSize
+	class NAPAPI FlexBlockShapeSize : public Resource
 	{
+		RTTI_ENABLE(Resource)
 	public:
-		std::string					name;
-		FlexblockShapeSizeValues	values;
+		virtual ~FlexBlockShapeSize();
+
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		std::string								mName;
+		ResourcePtr<FlexBlockShapeSizeValues>	mValues;
 	};
 
-	struct FlexblockShapePoints
+	class NAPAPI FlexBlockShapePoints : public Resource
 	{
-		std::vector<glm::vec3> object;
-		std::vector<glm::vec3> frame;
-	};
-
-	struct FlexblockElements
-	{
-		std::vector<std::vector<int>> object;
-		std::vector<std::vector<int>> object2frame;
-		std::vector<std::vector<int>> frame;
-	};
-
-	class FlexblockShape;
-	typedef std::shared_ptr<FlexblockShape> FlexblockShapePtr;
-
-	class FlexblockShape
-	{
+		RTTI_ENABLE(Resource)
 	public:
-		std::string						name;
-		int								inputs;
-		std::vector<FlexblockShapeSize> sizes;
-		FlexblockElements				elements;
-		FlexblockShapePoints			points;
+		virtual ~FlexBlockShapePoints();
+
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		std::vector<glm::vec3> mObject;
+		std::vector<glm::vec3> mFrame;
 	};
 
-	//
-	struct FlexblockSizeValues
+	class NAPAPI FlexBlockElements : public Resource
 	{
+		RTTI_ENABLE(Resource)
 	public:
-		glm::vec3 object;
-		glm::vec3 frame;
+		virtual ~FlexBlockElements();
+
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		std::vector<std::vector<int>> mObject;
+		std::vector<std::vector<int>> mObject2Frame;
+		std::vector<std::vector<int>> mFrame;
 	};
 
-	class FlexblockSize;
-	typedef std::shared_ptr<FlexblockSize> FlexblockSizePtr;
-
-	//
-	class FlexblockSize
+	class NAPAPI FlexBlockShape : public Resource
 	{
+		RTTI_ENABLE(Resource)
 	public:
-		std::string			name;
-		FlexblockSizeValues values;
+		virtual ~FlexBlockShape();
+
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		std::string										mName;
+		int												mInputs;
+		std::vector<ResourcePtr<FlexBlockShapeSize>>	mSizes;
+		ResourcePtr<FlexBlockElements>					mElements;
+		ResourcePtr<FlexBlockShapePoints>				mPoints;
 	};
 }

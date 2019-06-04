@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <glm/glm.hpp>
 #include <thread>
+#include <queue>
 #include <mutex>
 #include <atomic>
 
@@ -15,7 +16,7 @@ namespace nap
 	class Flex
 	{
 	public:
-		Flex(FlexblockShapePtr flexblockShape);
+		Flex(FlexBlockShape* flexblockShape);
 		~Flex();
 
 		/**
@@ -48,7 +49,7 @@ namespace nap
 		/**
 		* Returns copy of latest calculate object points
 		*/
-		std::vector<glm::vec3> getObjectPoints()
+		const std::vector<glm::vec3>& getObjectPoints()
 		{
 			return mPoints;
 		}
@@ -56,7 +57,7 @@ namespace nap
 		/**
 		* Returns copy of frame points
 		*/
-		std::vector<glm::vec3> getFramePoints()
+		const std::vector<glm::vec3>& getFramePoints()
 		{
 			return mPointsFrame;
 		}
@@ -79,10 +80,13 @@ namespace nap
 
 		void concatPoints();
 
-		void setInput(std::vector<float> inputs);
+		void setInput(std::deque<float>& inputs);
 
 		void update();
+
+		void copyMotorInput(std::deque<float>& outInputs);
 	protected:
+
 		std::atomic_bool mIsRunning = false;
 		std::thread mUpdateThread;
 		std::mutex mMotorInputMutex;
@@ -95,8 +99,7 @@ namespace nap
 
 		long mFrequency;
 
-		std::shared_ptr<FlexblockShape> mObjShape;
-		FlexblockShapeSize mObjSize;
+		FlexBlockShape* mObjShape;
 		int mInputs;
 		int mCountInputs;
 
@@ -106,9 +109,6 @@ namespace nap
 		std::vector<std::vector<int>> mElementsObject;
 		std::vector<std::vector<int>> mElementsObject2Frame;
 		std::vector<std::vector<int>> mElementsFrame;
-
-		std::vector<FlexblockShape> mShapes;
-		std::vector<FlexblockSize> mSizes;
 
 		float mEndTime = 0.0f;
 		std::vector<glm::vec3> mPoints;
@@ -132,6 +132,6 @@ namespace nap
 		float mMotorAcc = 0.0f;
 
 		std::vector<float> mElementsLengthDelta;
-		std::vector<float> mMotorInput;
+		std::deque<float> mMotorInput;
 	};
 }
