@@ -27,7 +27,7 @@ namespace nap
 		// Default move assignment operator
 		WebSocketConnection& operator=(WebSocketConnection&& other) = default;
 		// Default copy constructor
-		WebSocketConnection(WebSocketConnection& other) = default;
+		WebSocketConnection(const WebSocketConnection& other) = default;
 		// Default copy assignment operator
 		WebSocketConnection& operator=(const WebSocketConnection& other) = default;
 

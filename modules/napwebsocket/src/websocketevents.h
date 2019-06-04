@@ -27,7 +27,7 @@ namespace nap
 	public:
 		WebSocketConnectionEvent(WebSocketConnection connection) :
 			mConnection(connection) { }
-	private:
+
 		WebSocketConnection mConnection;
 	};
 
@@ -83,7 +83,7 @@ namespace nap
 	public:
 		WebSocketMessageReceivedEvent(WebSocketConnection connection, WebSocketMessage message) : 
 			mConnection(connection), mMessage(message)	{ }
-	private:
+
 		WebSocketMessage mMessage;
 		WebSocketConnection mConnection;
 	};
