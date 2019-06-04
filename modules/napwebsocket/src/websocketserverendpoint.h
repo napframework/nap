@@ -128,5 +128,11 @@ namespace nap
 		 * Validates the incoming connection
 		 */
 		bool onValidate(wspp::ConnectionHandle con);
+
+		/**
+		 * Called when the server receives a ping message.
+		 * Automatically pongs back.
+		 */
+		bool onPing(wspp::ConnectionHandle con, std::string msg);
 	};
 }
