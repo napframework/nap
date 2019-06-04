@@ -2,6 +2,9 @@
 #include "websocketserverendpoint.h"
 #include "websocketserver.h"
 
+// External Includes
+#include <nap/logger.h>
+
 RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
 	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
@@ -79,9 +82,29 @@ namespace nap
 	}
 
 
-	void WebSocketServerEndPoint::send(const std::string& message, wspp::ConnectionHandle connection, wspp::OpCode opCode)
+	bool WebSocketServerEndPoint::send(WebSocketConnection connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
-		mEndPoint->send(connection, message, opCode);
+		std::error_code stdec;
+		mEndPoint->send(connection.mConnection, message, static_cast<wspp::OpCode>(code), stdec);
+		if (stdec)
+		{
+			error.fail(stdec.message());
+			return false;
+		}
+		return true;
+	}
+
+
+	bool WebSocketServerEndPoint::send(WebSocketConnection connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	{
+		std::error_code stdec;
+		mEndPoint->send(connection.mConnection, payload, length, static_cast<wspp::OpCode>(code), stdec);
+		if (stdec)
+		{
+			error.fail(stdec.message());
+			return false;
+		}
+		return true;
 	}
 
 
@@ -129,7 +152,14 @@ namespace nap
 
 	void WebSocketServerEndPoint::onConnectionClosed(wspp::ConnectionHandle connection)
 	{
-		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection);
+		std::error_code stdec;
+		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection, stdec);
+		if (stdec)
+		{
+			nap::Logger::error(stdec.message());
+			return;
+		}
+
 		connectionClosed(WebSocketConnection(connection),
 			cptr->get_ec().value(), 
 			cptr->get_ec().message());
@@ -138,7 +168,13 @@ namespace nap
 
 	void WebSocketServerEndPoint::onConnectionFailed(wspp::ConnectionHandle connection)
 	{
-		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection);
+		std::error_code stdec;
+		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection, stdec);
+		if (stdec)
+		{
+			nap::Logger::error(stdec.message());
+			return;
+		}
 		connectionFailed(WebSocketConnection(connection),
 			cptr->get_ec().value(),
 			cptr->get_ec().message());
@@ -148,7 +184,6 @@ namespace nap
 	void WebSocketServerEndPoint::onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg)
 	{
 		messageReceived(WebSocketConnection(con), WebSocketMessage(msg));
-		send("who's your daddy now??", con, msg->get_opcode());
 	}
 
 

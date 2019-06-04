@@ -6,4 +6,29 @@ namespace nap
 	{
 
 	}
+
+
+	const std::string& WebSocketMessage::getPayload() const
+	{
+		return mMessage->get_payload();
+	}
+
+
+	nap::EWebSocketOPCode WebSocketMessage::getOPCode() const
+	{
+		return static_cast<EWebSocketOPCode>(mMessage->get_opcode());
+	}
+
+
+	bool WebSocketMessage::getFin() const
+	{
+		return mMessage->get_fin();
+	}
+
+
+	bool WebSocketMessage::isCompressed() const
+	{
+		return mMessage->get_compressed();
+	}
+
 }

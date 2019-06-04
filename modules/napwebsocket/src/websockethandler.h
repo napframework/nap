@@ -51,13 +51,13 @@ namespace nap
 	private:
 		WebSocketComponentInstance* mWSComponent = nullptr;
 
-		void onConnectionOpened(const WebSocketConnectionOpenedEvent&);
+		void onConnectionOpened(const WebSocketConnectionOpenedEvent& wsEvent);
 		nap::Slot<const WebSocketConnectionOpenedEvent&> mConnectionOpened = { this, &WebSocketHandlerInstance::onConnectionOpened};
 
-		void onConnectionClosed(const WebSocketConnectionClosedEvent&);
+		void onConnectionClosed(const WebSocketConnectionClosedEvent& wsEvent);
 		nap::Slot<const WebSocketConnectionClosedEvent&> mConnectionClosed = { this, &WebSocketHandlerInstance::onConnectionClosed };
 
-		void onMessageReceived(const WebSocketMessageReceivedEvent&);
+		void onMessageReceived(const WebSocketMessageReceivedEvent& wsEvent);
 		nap::Slot<const WebSocketMessageReceivedEvent&> mMessageReceived = { this, &WebSocketHandlerInstance::onMessageReceived };
 	};
 }

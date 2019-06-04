@@ -2,6 +2,7 @@
 
 // External Includes
 #include <entity.h>
+#include <nap/logger.h>
 
 // nap::websockethandler run time class definition 
 RTTI_BEGIN_CLASS(nap::WebSocketHandler)
@@ -43,21 +44,23 @@ namespace nap
 	}
 
 
-	void WebSocketHandlerInstance::onConnectionOpened(const WebSocketConnectionOpenedEvent&)
+	void WebSocketHandlerInstance::onConnectionOpened(const WebSocketConnectionOpenedEvent& wsEvent)
 	{
 		std::cout << "Connection Opened" << "\n";
 	}
 
 
-	void WebSocketHandlerInstance::onConnectionClosed(const WebSocketConnectionClosedEvent&)
+	void WebSocketHandlerInstance::onConnectionClosed(const WebSocketConnectionClosedEvent& wsEvent)
 	{
-		std::cout << "Connection Closed" << "\n";
+		nap::Logger::info("Connection Closed: %d, %s", wsEvent.mErrorCode, wsEvent.mReason.c_str());
 	}
 
 
-	void WebSocketHandlerInstance::onMessageReceived(const WebSocketMessageReceivedEvent&)
+	void WebSocketHandlerInstance::onMessageReceived(const WebSocketMessageReceivedEvent& wsEvent)
 	{
-		std::cout << "Message Received" << "\n";
+		nap::Logger::info("Message Received: %s", wsEvent.mMessage.getPayload().c_str());
+		WebSocketServer& wsserver =  mWSComponent->getServer();
+		nap::utility::ErrorState error;
+		wsserver.mEndPoint->send(wsEvent.mConnection, "ola baby!", wsEvent.mMessage.getOPCode(), error);
 	}
-
 }

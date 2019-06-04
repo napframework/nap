@@ -60,11 +60,24 @@ namespace nap
 
 		/**
 		 * Sends a message to the incoming connection
+		 * @param connection the client connection
 		 * @param message the message to send
-		 * @param connection client to send message to
-		 * @param message the original client message
+		 * @param code message type
+		 * @param error contains the error if sending fails
+		 * @return if message was send successfully
 		 */
-		void send(const std::string& message, wspp::ConnectionHandle connection, wspp::OpCode opCode);
+		bool send(WebSocketConnection connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error);
+
+		/**
+		 * Sends a message using the given payload and opcode
+		 * @param connection the client connection
+		 * @param payload the message buffer
+		 * @param length total number of bytes
+		 * @param code message type
+		 * @param error contains the error if sending fails
+		 * @return if message was send successfully
+		 */
+		bool send(WebSocketConnection connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
 		int mPort = 80;															///< Property: "Port" to open and listen to for messages.
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
