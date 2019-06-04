@@ -1,17 +1,16 @@
 #pragma once
 
 // Local Includes
-#include "websocketevents.h"
+#include "websocketserverendpoint.h"
 
 // External Includes
 #include <queue>
 #include <rtti/factory.h>
-#include <nap/resource.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
 	class WebSocketService;
-	class WebSocketServerEndPoint;
 
 	/**
 	 * Interface for a web-socket server that listens to incoming web-socket events.
@@ -20,7 +19,6 @@ namespace nap
 	 */
 	class NAPAPI IWebSocketServer : public Resource
 	{
-		friend class WebSocketServerEndPoint;
 		RTTI_ENABLE(Resource)
 	public:
 
@@ -28,11 +26,26 @@ namespace nap
 		virtual ~IWebSocketServer() override;
 
 		/**
+		 * Registers the server with the end point.
+		 * @param errorState contains the error if initialization fails.
+		 * @return if initialization succeeded.
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
 		 * If this server accepts the given web socket event. By default all web socket events are accepted.
 		 * @param eventType the web socket event type
 		 * @return if this server accepts the given web socket event
 		 */
 		virtual bool acceptsEvent(rtti::TypeInfo eventType)						{ return true; }
+
+		/**
+		 * Called by the web socket server end point. Calls onEventReceived().
+		 * @param event the event to add, note that this receiver will take ownership of the event
+		 */
+		void addEvent(WebSocketEventPtr newEvent);
+
+		ResourcePtr<WebSocketServerEndPoint> mEndPoint;	///< Property: 'EndPoint' the server end point that manages the connections
 
 	protected:
 		/**
@@ -43,11 +56,7 @@ namespace nap
 		virtual void onEventReceived(WebSocketEventPtr newEvent) = 0;
 
 	private:
-		/**
-		 * Called by the web socket server end point. Calls onEventReceived().
-		 * @param event the event to add, note that this receiver will take ownership of the event
-		 */
-		void addEvent(WebSocketEventPtr newEvent);
+		bool mInitialized = false;
 	};
 
 
@@ -105,6 +114,6 @@ namespace nap
 		WebSocketService* mService = nullptr;
 	};
 
-	// Object creator used for constructing the the OSC receiver
+	// Object creator used for constructing the the websocket server
 	using WebSocketServerObjectCreator = rtti::ObjectCreator<WebSocketServer, WebSocketService>;
 }
