@@ -21,10 +21,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-
-		// Destructor
-		virtual ~IWebSocketServer() override;
-
 		/**
 		 * Registers the server with the end point.
 		 * @param errorState contains the error if initialization fails.
@@ -32,28 +28,7 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * If this server accepts the given web socket event. By default all web socket events are accepted.
-		 * @param eventType the web socket event type
-		 * @return if this server accepts the given web socket event
-		 */
-		virtual bool acceptsEvent(rtti::TypeInfo eventType)						{ return true; }
-
-		/**
-		 * Called by the web socket server end point. Calls onEventReceived().
-		 * @param event the event to add, note that this receiver will take ownership of the event
-		 */
-		void addEvent(WebSocketEventPtr newEvent);
-
 		ResourcePtr<WebSocketServerEndPoint> mEndPoint;	///< Property: 'EndPoint' the server end point that manages the connections
-
-	protected:
-		/**
-		 * Called by the web socket server end point when a new event is received and the event is accepted by this server.
-		 * Override this method to react to specific web socket events.
-		 * @param newEvent the event that is received
-		 */
-		virtual void onEventReceived(WebSocketEventPtr newEvent) = 0;
 	};
 
 
@@ -85,14 +60,6 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-	protected:
-		/**
-		 * Called when the end point receives a new event.
-		 * Adds the event to the list of events to be processed on the main thread.
-		 * @param newEvent the web-socket event.
-		 */
-		virtual void onEventReceived(WebSocketEventPtr newEvent) override;
-
 	private:
 		// Queue that holds all the consumed events
 		std::queue<WebSocketEventPtr> mEvents;
@@ -109,6 +76,25 @@ namespace nap
 
 		// Handle to the web socket service
 		WebSocketService* mService = nullptr;
+
+		void onConnectionOpened(WebSocketConnection connection);
+		nap::Slot<WebSocketConnection> mConnectionOpened;
+
+		void onConnectionClosed(WebSocketConnection connection, int code, const std::string& reason);
+		nap::Slot<WebSocketConnection, int, const std::string&> mConnectionClosed;
+
+		void onConnectionFailed(WebSocketConnection connection, int code, const std::string& reason);
+		nap::Slot<WebSocketConnection, int, const std::string&> mConnectionFailed;
+
+		void onMessageReceived(WebSocketConnection connection, WebSocketMessage message);
+		nap::Slot<WebSocketConnection, WebSocketMessage> mMessageReceived;
+
+		/**
+		 * Called when the end point receives a new event.
+		 * Adds the event to the list of events to be processed on the main thread.
+		 * @param newEvent the web-socket event.
+		 */
+		void addEvent(WebSocketEventPtr newEvent);
 	};
 
 	// Object creator used for constructing the the websocket server

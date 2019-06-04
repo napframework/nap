@@ -172,6 +172,18 @@
             "Children": []
         },
         {
+            "Type": "nap::Entity",
+            "mID": "WebSocketEntity",
+            "Components": [
+                {
+                    "Type": "nap::WebSocketComponent",
+                    "mID": "nap::WebSocketComponent",
+                    "Server": "Server"
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Material",
             "mID": "BallMaterial",
             "Uniforms": [
@@ -232,17 +244,6 @@
             "Columns": 1
         },
         {
-            "Type": "nap::WebSocketServer",
-            "mID": "Server",
-            "EndPoint" : "ServerEndPoint"
-        },
-        {
-            "Type": "nap::WebSocketServerEndPoint",
-            "mID": "ServerEndPoint",
-            "Port": 9000,
-            "LogConnectionUpdates": false
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Width": 1280,
@@ -294,6 +295,18 @@
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0
+        },
+        {
+            "Type": "nap::WebSocketServer",
+            "mID": "Server",
+            "EndPoint": "ServerEndPoint"
+        },
+        {
+            "Type": "nap::WebSocketServerEndPoint",
+            "mID": "ServerEndPoint",
+            "Port": 9000,
+            "LogConnectionUpdates": false,
+            "LibraryLogLevel": "Warning"
         },
         {
             "Type": "nap::math::FloatFCurve",

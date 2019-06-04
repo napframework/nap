@@ -69,6 +69,11 @@ namespace nap
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
 
+		nap::Signal<WebSocketConnection> connectionOpened;
+		nap::Signal<WebSocketConnection, int, const std::string&> connectionClosed;
+		nap::Signal<WebSocketConnection, int, const std::string&> connectionFailed;
+		nap::Signal<WebSocketConnection, WebSocketMessage> messageReceived;
+
 	private:
 		std::unique_ptr<wspp::ServerEndPoint> mEndPoint = nullptr;				///< The websocketpp server end-point
 		uint32 mLogLevel = 0;													///< Converted library log level
@@ -109,17 +114,5 @@ namespace nap
 		 * Validates the incoming connection
 		 */
 		bool onValidate(wspp::ConnectionHandle con);
-
-		/**
-		 * Registers a server
-		 */
-		void registerServer(IWebSocketServer& server);
-
-		/**
-		 * Removes a server
-		 */
-		void removeServer(IWebSocketServer& server);
-
-		std::vector<IWebSocketServer*> mServers;								///< All the servers interested in websocket information
 	};
 }
