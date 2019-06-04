@@ -179,6 +179,10 @@
                     "Type": "nap::WebSocketComponent",
                     "mID": "nap::WebSocketComponent",
                     "Server": "Server"
+                },
+                {
+                    "Type": "nap::WebSocketHandler",
+                    "mID": "Handler"
                 }
             ],
             "Children": []
@@ -273,6 +277,10 @@
                 },
                 {
                     "Entity": "Plane",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "WebSocketEntity",
                     "InstanceProperties": []
                 }
             ]

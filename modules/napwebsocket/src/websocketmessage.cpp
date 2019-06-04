@@ -14,7 +14,7 @@ namespace nap
 	}
 
 
-	nap::EWebSocketOPCode WebSocketMessage::getOPCode() const
+	nap::EWebSocketOPCode WebSocketMessage::getCode() const
 	{
 		return static_cast<EWebSocketOPCode>(mMessage->get_opcode());
 	}
@@ -26,7 +26,7 @@ namespace nap
 	}
 
 
-	bool WebSocketMessage::isCompressed() const
+	bool WebSocketMessage::getCompressed() const
 	{
 		return mMessage->get_compressed();
 	}
