@@ -40,6 +40,8 @@ namespace nap
 		WebSocketComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
+		virtual ~WebSocketComponentInstance();
+
 		/**
 		 * Initialize websocketcomponentInstance based on the websocketcomponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -52,7 +54,13 @@ namespace nap
 
 		WebSocketServer& getServer()								{ return *mServer; }
 
+		nap::Signal<const WebSocketConnectionOpenedEvent&> connectionOpened;
+		nap::Signal<const WebSocketConnectionClosedEvent&> connectionClosed;
+		nap::Signal<const WebSocketConnectionFailedEvent&> connectionFailed;
+		nap::Signal<const WebSocketMessageReceivedEvent&> messageReceived;
+
 	private:
-		WebSocketServer* mServer = nullptr;
+		WebSocketServer*  mServer  = nullptr;
+		WebSocketService* mService = nullptr;
 	};
 }

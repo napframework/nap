@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "websocketserverendpoint.h"
+#include "websocketevents.h"
 
 // External Includes
 #include <queue>
