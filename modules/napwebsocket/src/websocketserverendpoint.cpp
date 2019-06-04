@@ -211,9 +211,8 @@ namespace nap
 		});
 
 		if (found_it != mServers.end())
+		{
 			mServers.erase(found_it);
-
-		//assert(found_it != mServers.end());
-		//mServers.erase(found_it);
+		}
 	}
 }

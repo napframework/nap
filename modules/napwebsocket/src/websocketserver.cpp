@@ -70,15 +70,13 @@ namespace nap
 
 	IWebSocketServer::~IWebSocketServer()
 	{
-		if (mInitialized)
-			mEndPoint->removeServer(*this);
+		mEndPoint->removeServer(*this);
 	}
 
 
 	bool IWebSocketServer::init(utility::ErrorState& errorState)
 	{
 		mEndPoint->registerServer(*this);
-		mInitialized = true;
 		return true;
 	}
 }

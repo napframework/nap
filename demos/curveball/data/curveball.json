@@ -240,7 +240,7 @@
             "Type": "nap::WebSocketServerEndPoint",
             "mID": "ServerEndPoint",
             "Port": 9000,
-            "LogConnectionUpdates": trueee
+            "LogConnectionUpdates": false
         },
         {
             "Type": "nap::RenderWindow",
