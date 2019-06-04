@@ -38,15 +38,51 @@ namespace nap
 		if (!IWebSocketServer::init(errorState))
 			return false;
 
+		mConnectionClosed.setFunction(std::bind(&WebSocketServer::onConnectionClosed, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		mEndPoint->connectionClosed.connect(mConnectionClosed);
+		
+		mConnectionFailed.setFunction(std::bind(&WebSocketServer::onConnectionFailed, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		mEndPoint->connectionFailed.connect(mConnectionFailed);
+
+		mConnectionOpened.setFunction(std::bind(&WebSocketServer::onConnectionOpened, this, std::placeholders::_1));
+		mEndPoint->connectionOpened.connect(mConnectionOpened);
+
+		mMessageReceived.setFunction(std::bind(&WebSocketServer::onMessageReceived, this, std::placeholders::_1, std::placeholders::_2));
+		mEndPoint->messageReceived.connect(mMessageReceived);
+
 		// Register the server with our service
 		return true;
 	}
 
 
-	void WebSocketServer::onEventReceived(WebSocketEventPtr newEvent)
+	void WebSocketServer::addEvent(WebSocketEventPtr newEvent)
 	{
 		std::lock_guard<std::mutex> lock(mEventMutex);
 		mEvents.emplace(std::move(newEvent));
+	}
+
+
+	void WebSocketServer::onConnectionOpened(WebSocketConnection connection)
+	{
+		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(connection));
+	}
+
+
+	void WebSocketServer::onConnectionClosed(WebSocketConnection connection, int code, const std::string& reason)
+	{
+		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection, code, reason));
+	}
+
+
+	void WebSocketServer::onConnectionFailed(WebSocketConnection connection, int code, const std::string& reason)
+	{
+		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection, code, reason));
+	}
+
+
+	void WebSocketServer::onMessageReceived(WebSocketConnection connection, WebSocketMessage message)
+	{
+		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
 	}
 
 
@@ -62,21 +98,8 @@ namespace nap
 	}
 
 
-	void IWebSocketServer::addEvent(WebSocketEventPtr newEvent)
-	{
-		onEventReceived(std::move(newEvent));
-	}
-
-
-	IWebSocketServer::~IWebSocketServer()
-	{
-		mEndPoint->removeServer(*this);
-	}
-
-
 	bool IWebSocketServer::init(utility::ErrorState& errorState)
 	{
-		mEndPoint->registerServer(*this);
 		return true;
 	}
 }

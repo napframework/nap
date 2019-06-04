@@ -123,58 +123,31 @@ namespace nap
 
 	void WebSocketServerEndPoint::onConnectionOpened(wspp::ConnectionHandle connection)
 	{
-		for (auto& server : mServers)
-		{
-			if (server->acceptsEvent(RTTI_OF(WebSocketConnectionOpenedEvent)))
-			{
-				server->addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(WebSocketConnection(connection)));
-			}
-		}
+		connectionOpened(WebSocketConnection(connection));
 	}
 
 
 	void WebSocketServerEndPoint::onConnectionClosed(wspp::ConnectionHandle connection)
 	{
 		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection);
-		for (auto& server : mServers)
-		{
-			if (server->acceptsEvent(RTTI_OF(WebSocketConnectionClosedEvent)))
-			{
-				server->addEvent(std::make_unique<WebSocketConnectionClosedEvent>(
-					WebSocketConnection(connection),
-					cptr->get_ec().value(),
-					cptr->get_ec().message()));
-			}
-		}
+		connectionClosed(WebSocketConnection(connection),
+			cptr->get_ec().value(), 
+			cptr->get_ec().message());
 	}
 
 
 	void WebSocketServerEndPoint::onConnectionFailed(wspp::ConnectionHandle connection)
 	{
 		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection);
-		for (auto& server : mServers)
-		{
-			if (server->acceptsEvent(RTTI_OF(WebSocketConnectionFailedEvent)))
-			{
-				server->addEvent(std::make_unique<WebSocketConnectionFailedEvent>(
-					WebSocketConnection(connection),
-					cptr->get_ec().value(),
-					cptr->get_ec().message()));
-			}
-		}
+		connectionFailed(WebSocketConnection(connection),
+			cptr->get_ec().value(),
+			cptr->get_ec().message());
 	}
 
 
 	void WebSocketServerEndPoint::onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg)
 	{
-		for (auto& server : mServers)
-		{
-			if (server->acceptsEvent(RTTI_OF(WebSocketMessageReceivedEvent)))
-			{
-				server->addEvent(std::make_unique<WebSocketMessageReceivedEvent>(WebSocketConnection(con), WebSocketMessage(msg)));
-			}
-		}
-
+		messageReceived(WebSocketConnection(con), WebSocketMessage(msg));
 		send("who's your daddy now??", con, msg->get_opcode());
 	}
 
@@ -194,25 +167,5 @@ namespace nap
 	{
 		// TODO: Validate incoming connection here, ie: accept or reject.
 		return true;
-	}
-
-
-	void WebSocketServerEndPoint::registerServer(IWebSocketServer& server)
-	{
-		mServers.emplace_back(&server);
-	}
-
-
-	void WebSocketServerEndPoint::removeServer(IWebSocketServer& server)
-	{
-		auto found_it = std::find_if(mServers.begin(), mServers.end(), [&](const auto& it)
-		{
-			return it == &server;
-		});
-
-		if (found_it != mServers.end())
-		{
-			mServers.erase(found_it);
-		}
 	}
 }
