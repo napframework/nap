@@ -15,7 +15,7 @@ namespace nap
 	class Flex
 	{
 	public:
-		Flex(FlexblockShapePtr flexblockShape, FlexblockSizePtr flexblockSize);
+		Flex(FlexblockShapePtr flexblockShape);
 		~Flex();
 
 		/**
@@ -96,7 +96,7 @@ namespace nap
 		long mFrequency;
 
 		std::shared_ptr<FlexblockShape> mObjShape;
-		std::shared_ptr<FlexblockSize> mObjSize;
+		FlexblockShapeSize mObjSize;
 		int mInputs;
 		int mCountInputs;
 

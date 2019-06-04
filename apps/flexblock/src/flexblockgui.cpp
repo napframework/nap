@@ -160,6 +160,14 @@ namespace nap
 			}
 		}
 
+		ImGui::SameLine();
+
+		bool isLooping = sequencePlayer.getIsLooping();
+		if (ImGui::Checkbox("Loop", &isLooping))
+		{
+			sequencePlayer.setIsLooping(isLooping);
+		}
+
 		ImGui::Spacing();
 
 		if (ImGui::TreeNode("Sequences"))

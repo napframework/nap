@@ -28,7 +28,6 @@ namespace nap
 		//
 		ResourcePtr<FrameMesh> mFrameMesh;
 		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
-		ResourcePtr<VisualizeNormalsMesh> mNormalsMesh;
 		
 		//
 		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent;
@@ -72,10 +71,11 @@ namespace nap
 		* @param value motor input 0-1
 		*/
 		void SetMotorInput(int index, float value);
+
+		void SetInput(int index, int value);
 	protected:
 		FrameMesh* mFrameMesh = nullptr;
 		FlexBlockMesh* mFlexBlockMesh = nullptr;
-		VisualizeNormalsMesh* mNormalsMesh = nullptr;
 
 		//
 		ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance

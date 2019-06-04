@@ -69,7 +69,7 @@ namespace nap
 	void FlexBlockSerialComponentInstance::write(std::string data)
 	{
 		std::lock_guard<std::mutex> l(mWriteBufferMutex);
-		mWriteBuffer.push_back(data);
+		mWriteBuffer.emplace_back(data);
 	}
 
 	void FlexBlockSerialComponentInstance::writeThreadFunc()

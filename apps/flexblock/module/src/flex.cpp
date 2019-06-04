@@ -3,21 +3,19 @@
 #include <mathutils.h>
 #include <glm/geometric.hpp>
 
-#define MOTORSTEPS 12.73239
+#define MOTORSTEPS 12.73239f
 
 namespace nap
 {
-	Flex::Flex(FlexblockShapePtr flexblockShape, FlexblockSizePtr flexblockSize)
+	Flex::Flex(FlexblockShapePtr flexblockShape )
 	{
 		mObjShape = flexblockShape;
-		mObjSize = flexblockSize;
-
 		mMotorInput = std::vector<float>(8);
 
 		// 
 		mFrequency = 200;
 		mObjShape = flexblockShape;
-		mObjSize = flexblockSize;
+		mObjSize = flexblockShape->sizes[0];
 		mCountInputs = mObjShape->inputs;
 
 		//
@@ -50,15 +48,15 @@ namespace nap
 		// convert unit points to real size
 		for (int i = 0; i < mPointsObject.size(); i++)
 		{
-			mPointsObject[i].x *= mObjSize->values.object.x * 0.5f;
-			mPointsObject[i].y *= mObjSize->values.object.y * 0.5f;
-			mPointsObject[i].z *= mObjSize->values.object.z * 0.5f;
+			mPointsObject[i].x *= mObjSize.values.object.x * 0.5f;
+			mPointsObject[i].y *= mObjSize.values.object.y * 0.5f;
+			mPointsObject[i].z *= mObjSize.values.object.z * 0.5f;
 		}
 		for (int i = 0; i < mPointsFrame.size(); i++)
 		{
-			mPointsFrame[i].x *= mObjSize->values.frame.x * 0.5f;
-			mPointsFrame[i].y *= mObjSize->values.frame.y * 0.5f;
-			mPointsFrame[i].z *= mObjSize->values.frame.z * 0.5f;
+			mPointsFrame[i].x *= mObjSize.values.frame.x * 0.5f;
+			mPointsFrame[i].y *= mObjSize.values.frame.y * 0.5f;
+			mPointsFrame[i].z *= mObjSize.values.frame.z * 0.5f;
 		}
 
 		// init
@@ -220,6 +218,14 @@ namespace nap
 
 			concatPoints();
 			calcElements();
+
+			/*
+			float error = 0.0f;
+			for (int i = 0; i < mCountInputs - 1; i++)
+			{
+				error += mElementsLengthDelta[i] * 1000.0f;
+			}
+			*/
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000 / mFrequency));
 		}
@@ -386,10 +392,18 @@ namespace nap
 			ropes.push_back(mElementsLength[i]);
 		}
 
+		for (int i = 0; i < ropes.size(); i++)
+		{
+			float a = ropes[i] * 1000.0f;
+			a *= MOTORSTEPS;
+			a -= 7542;
+			ropes[i] = a;
+		}
+		/*
 		for (float& ropeLength : ropes)
 		{
 			ropeLength *= 1000.0f * MOTORSTEPS - 7542.0f;
-		}
+		}*/
 		
 		return ropes;
 	}

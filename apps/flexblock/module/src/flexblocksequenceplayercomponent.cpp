@@ -79,8 +79,17 @@ namespace nap
 				{
 					if (!mIsPaused)
 					{
-						mIsPlaying = false;
-						mIsFinished = true;
+						if (mIsLooping)
+						{
+							mTime = 0.0;
+							mCurrentSequenceIndex = 0;
+							break;
+						}
+						else
+						{
+							mIsPlaying = false;
+							mIsFinished = true;
+						}
 					}
 
 					mCurrentSequenceIndex -= 1;

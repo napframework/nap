@@ -63,6 +63,8 @@ namespace nap
 
 		void pause();
 
+		void setIsLooping(bool value) { mIsLooping = value; }
+
 		const bool getIsLoaded() { return mSequence != nullptr; }
 
 		const bool getIsPlaying() { return mIsPlaying; }
@@ -84,6 +86,8 @@ namespace nap
 
 		const double getDuration() { return mDuration; }
 
+		const bool getIsLooping() { return mIsLooping; }
+
 		const std::vector<FlexBlockSequenceElement*> getElements();
 	protected:
 		//
@@ -93,6 +97,7 @@ namespace nap
 		bool mIsPlaying = false;
 		bool mIsPaused = false;
 		bool mIsFinished = false;
+		bool mIsLooping = false;
 		int mCurrentSequenceIndex = 0;
 		double mDuration = 0.0;
 

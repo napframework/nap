@@ -46,27 +46,6 @@
                             "y": 0.0
                         }
                     }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "VisualiseNormalsMesh",
-                    "Mesh": "VisualizeNormalsMesh",
-                    "MaterialInstance": {
-                        "Material": "VisualizeNormasMaterial",
-                        "Uniforms": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
                 }
             ],
             "Children": []
@@ -168,7 +147,7 @@
                     "mID": "FlexBlockComponent",
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
-                    "NormalsMesh": "VisualizeNormalsMesh",
+                    "NormalsMesh": "",
                     "SerialComponent": "./FlexBlockSerialComponent"
                 },
                 {
@@ -179,7 +158,7 @@
                 {
                     "Type": "nap::FlexBlockSequencePlayerComponent",
                     "mID": "FlexBlockSequencePlayerComponent",
-                    "FlexBlockParameters": "Parameters"
+                    "FlexBlockParameters": "Inputs"
                 }
             ],
             "Children": [
@@ -270,30 +249,16 @@
         },
         {
             "Type": "nap::FlexBlockKeyFrame",
-            "mID": "FlexBlockKeyFrame 1",
-            "Inputs": [
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ]
-        },
-        {
-            "Type": "nap::FlexBlockKeyFrame",
             "mID": "FlexBlockKeyFrame 2",
             "Inputs": [
+                0.0,
+                1.0,
                 1.0,
                 0.0,
                 0.0,
-                0.0,
-                0.0,
-                0.0,
                 1.0,
-                1.0
+                1.0,
+                0.0
             ]
         },
         {
@@ -301,12 +266,12 @@
             "mID": "FlexBlockKeyFrame 3",
             "Inputs": [
                 1.0,
-                1.0,
+                0.0,
                 0.0,
                 1.0,
                 1.0,
                 0.0,
-                1.0,
+                0.0,
                 1.0
             ]
         },
@@ -316,10 +281,24 @@
             "Inputs": [
                 0.0,
                 1.0,
-                0.0,
                 1.0,
                 0.0,
                 1.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "Type": "nap::FlexBlockKeyFrame",
+            "mID": "FlexBlockKeyFrame 5",
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
                 0.0,
                 1.0
             ]
@@ -355,6 +334,7 @@
                 "FlexBlockSequenceTransition 1",
                 "FlexBlockSequenceTransition 2",
                 "FlexBlockSequenceTransition 3",
+                "FlexBlockSequenceStance 5",
                 "FlexBlockSequenceTransition 4"
             ]
         },
@@ -362,39 +342,45 @@
             "Type": "nap::FlexBlockSequenceStance",
             "mID": "FlexBlockSequenceStance",
             "Duration": 3.0,
-            "KeyFrame": "FlexBlockKeyFrame 1"
+            "KeyFrame": "NeutralFrame"
+        },
+        {
+            "Type": "nap::FlexBlockSequenceStance",
+            "mID": "FlexBlockSequenceStance 5",
+            "Duration": 5.0,
+            "KeyFrame": "FlexBlockKeyFrame 4"
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 1",
-            "KeyFrame": "FlexBlockKeyFrame 1",
-            "Duration": 3.0,
+            "KeyFrame": "NeutralFrame",
+            "Duration": 1.25,
             "NextKeyFrame": "FlexBlockKeyFrame 2",
-            "Curve": "SinCurve"
+            "Curve": "AlmostLinearCurve"
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 2",
             "KeyFrame": "FlexBlockKeyFrame 2",
-            "Duration": 5.0,
+            "Duration": 2.5,
             "NextKeyFrame": "FlexBlockKeyFrame 3",
-            "Curve": "SinnerCurve"
+            "Curve": "AlmostLinearCurve"
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 3",
             "KeyFrame": "FlexBlockKeyFrame 3",
-            "Duration": 2.0,
+            "Duration": 2.5,
             "NextKeyFrame": "FlexBlockKeyFrame 4",
-            "Curve": "SinCurve"
+            "Curve": "AlmostLinearCurve"
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 4",
             "KeyFrame": "FlexBlockKeyFrame 4",
-            "Duration": 5.0,
+            "Duration": 1.5,
             "NextKeyFrame": "NeutralFrame",
-            "Curve": "Bezier Curve"
+            "Curve": "AlmostLinearCurve"
         },
         {
             "Type": "nap::FrameMesh",
@@ -519,7 +505,7 @@
         },
         {
             "Type": "nap::ParameterGroup",
-            "mID": "Parameters",
+            "mID": "Inputs",
             "Parameters": [
                 {
                     "Type": "nap::ParameterFloat",
@@ -589,6 +575,70 @@
             "Groups": []
         },
         {
+            "Type": "nap::ParameterInt",
+            "mID": "Motor 1",
+            "Name": "",
+            "Value": 0,
+            "Minimum": -1000,
+            "Maximum": 1000
+        },
+        {
+            "Type": "nap::ParameterInt",
+            "mID": "Motor 2",
+            "Name": "",
+            "Value": 0,
+            "Minimum": -1000,
+            "Maximum": 1000
+        },
+        {
+            "Type": "nap::ParameterInt",
+            "mID": "Motor 3",
+            "Name": "",
+            "Value": 0,
+            "Minimum": -1000,
+            "Maximum": 1000
+        },
+        {
+            "Type": "nap::ParameterInt",
+            "mID": "Motor 4",
+            "Name": "",
+            "Value": 0,
+            "Minimum": -1000,
+            "Maximum": 1000
+        },
+        {
+            "Type": "nap::ParameterInt",
+            "mID": "Motor 5",
+            "Name": "",
+            "Value": 0,
+            "Minimum": -1000,
+            "Maximum": 1000
+        },
+        {
+            "Type": "nap::ParameterInt",
+            "mID": "Motor 6",
+            "Name": "",
+            "Value": 0,
+            "Minimum": -1000,
+            "Maximum": 1000
+        },
+        {
+            "Type": "nap::ParameterInt",
+            "mID": "Motor 7",
+            "Name": "",
+            "Value": 0,
+            "Minimum": -1000,
+            "Maximum": 1000
+        },
+        {
+            "Type": "nap::ParameterInt",
+            "mID": "Motor 8",
+            "Name": "",
+            "Value": 0,
+            "Minimum": -1000,
+            "Maximum": 1000
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Width": 1280,
@@ -621,7 +671,7 @@
         {
             "Type": "nap::SerialPort",
             "mID": "SerialPort",
-            "PortName": "COM9",
+            "PortName": "COM19",
             "BaudRate": 9600,
             "ByteSize": "Eight",
             "Parity": "None",
@@ -653,12 +703,6 @@
                 "y": 0.32899999618530276,
                 "z": 0.41499999165534975
             }
-        },
-        {
-            "Type": "nap::VisualizeNormalsMesh",
-            "mID": "VisualizeNormalsMesh",
-            "ReferenceMesh": "BoxMesh",
-            "Length": 1.0
         },
         {
             "Type": "nap::math::FloatFCurve",
@@ -790,8 +834,8 @@
                 },
                 {
                     "Position": {
-                        "Time": 0.2973976135253906,
-                        "Value": 1.0158722400665284
+                        "Time": 0.3334338963031769,
+                        "Value": 0.8803212642669678
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -808,6 +852,38 @@
                     "Position": {
                         "Time": 0.7453538775444031,
                         "Value": -0.0052907816134393219
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.3384159207344055,
+                        "Value": 0.8868913054466248
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.5134488940238953,
+                        "Value": 0.8172839283943176
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,

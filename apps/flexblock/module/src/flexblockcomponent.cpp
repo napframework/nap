@@ -22,7 +22,6 @@
 RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
 	RTTI_PROPERTY("FrameMesh", &nap::FlexBlockComponent::mFrameMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("NormalsMesh", &nap::FlexBlockComponent::mNormalsMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SerialComponent", &nap::FlexBlockComponent::mFlexBlockSerialComponent, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -59,17 +58,12 @@ namespace nap
 		// assign resources
 		mFlexBlockMesh = resource->mFlexBlockMesh.get();
 		mFrameMesh = resource->mFrameMesh.get();
-		mNormalsMesh = resource->mNormalsMesh.get();
 
 		// Read & parse json files
-		std::vector<FlexblockSizePtr> sizes;
-		if (!flexreader::readSizes("sizes.json", sizes, errorState))
-			return false;
-
 		std::vector<FlexblockShapePtr> shapes = flexreader::readShapes("shapes.json", errorState);
 
 		// create flex logic
-		mFlexLogic = std::make_unique<Flex>( shapes[0], sizes[0] );
+		mFlexLogic = std::make_unique<Flex>( shapes[0] );
 		
 		// start flex logic thread
 		mFlexLogic->start();
@@ -93,6 +87,25 @@ namespace nap
 		mFlexLogic->setMotorInput(index, value);
 	}
 
+	void FlexBlockComponentInstance::SetInput(int index, int value)
+	{
+		static std::vector<int> inputs = { 0,0,0,0,0,0,0,0 };
+
+		inputs[index] = value;
+		
+		std::string data = "<";
+		for (int i : inputs)
+		{
+			data.append(std::to_string(i));
+			data.append("|");
+		}
+		data.append(">");
+
+		//printf(data.c_str());
+		//printf("\n");
+		//mFlexBlockSerialComponentInstance->write(data);
+	}
+
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
 		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
@@ -104,10 +117,6 @@ namespace nap
 		// update the box
 		mFlexBlockMesh->setControlPoints(points);
 
-		// update normals mesh
-		utility::ErrorState errorState;
-		mNormalsMesh->calculateNormals(errorState, true);
-
 		//
 		mUpdateSerialTime += deltaTime;
 		if (mUpdateSerialTime > (double)mFlexBlockSerialComponentInstance->getUpdateIntervalMs() / 1000.0)
@@ -116,14 +125,17 @@ namespace nap
 
 			std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
 			std::string data = "<";
-			for (float l : ropeLengths)
+			for (int i = 0; i < ropeLengths.size(); i++)
 			{
-				long c = (long)l;
+				long c = (long)ropeLengths[i];
 				data.append(std::to_string(c));
-				data.append("|");
+				if( i + 1 < ropeLengths.size())
+					data.append("|");
 			}
 			data.append(">");
 
+			//printf(data.c_str());
+			//printf("\n");
 			mFlexBlockSerialComponentInstance->write(data);
 		}
 	}
@@ -139,7 +151,7 @@ namespace nap
 			points[2],
 			points[3],
 			points[1],
-			points[0],
+			points[0]
 		};
 	}
 }
