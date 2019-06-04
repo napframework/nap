@@ -54,9 +54,6 @@ namespace nap
 		 * @param newEvent the event that is received
 		 */
 		virtual void onEventReceived(WebSocketEventPtr newEvent) = 0;
-
-	private:
-		bool mInitialized = false;
 	};
 
 
