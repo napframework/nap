@@ -55,6 +55,18 @@ namespace nap
 	}
 
 
+	bool WebSocketServer::send(WebSocketConnection connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	{
+		return mEndPoint->send(connection, payload, length, code, error);
+	}
+
+
+	bool WebSocketServer::send(WebSocketConnection connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	{
+		return mEndPoint->send(connection, message, code, error);
+	}
+
+
 	void WebSocketServer::addEvent(WebSocketEventPtr newEvent)
 	{
 		std::lock_guard<std::mutex> lock(mEventMutex);

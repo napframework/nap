@@ -61,6 +61,6 @@ namespace nap
 		nap::Logger::info("Message Received: %s", wsEvent.mMessage.getPayload().c_str());
 		WebSocketServer& wsserver =  mWSComponent->getServer();
 		nap::utility::ErrorState error;
-		wsserver.mEndPoint->send(wsEvent.mConnection, "ola baby!", wsEvent.mMessage.getOPCode(), error);
+		wsserver.send(wsEvent.mConnection, "ola baby!", wsEvent.mMessage.getCode(), error);
 	}
 }

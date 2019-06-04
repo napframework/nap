@@ -61,6 +61,27 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * Sends a message to the incoming connection
+		 * @param connection the client connection
+		 * @param message the message to send
+		 * @param code message type
+		 * @param error contains the error if sending fails
+		 * @return if message was send successfully
+		 */
+		bool send(WebSocketConnection connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error);
+
+		/**
+		 * Sends a message using the given payload and opcode
+		 * @param connection the client connection
+		 * @param payload the message buffer
+		 * @param length total number of bytes
+		 * @param code message type
+		 * @param error contains the error if sending fails
+		 * @return if message was send successfully
+		 */
+		bool send(WebSocketConnection connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
+
 	private:
 		// Queue that holds all the consumed events
 		std::queue<WebSocketEventPtr> mEvents;

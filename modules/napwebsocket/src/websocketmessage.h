@@ -41,7 +41,7 @@ namespace nap
 		/**
 		 * @return the message opcode
 		 */
-		EWebSocketOPCode getOPCode() const;
+		EWebSocketOPCode getCode() const;
 
 		/**
 		 * A message with the fin bit set will be sent as the last message of its
