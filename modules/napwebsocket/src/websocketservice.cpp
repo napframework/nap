@@ -1,6 +1,7 @@
 // Local Includes
 #include "websocketservice.h"
 #include "websocketserver.h"
+#include "websocketcomponent.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -37,8 +38,43 @@ namespace nap
 			server->consumeEvents(events);
 			while (!(events.empty()))
 			{
-				WebSocketEvent& websocket_event = *(events.front());
-				nap::Logger::info("processing: %s", websocket_event.get_type().get_name().to_string().c_str());
+				WebSocketEvent* websocket_event = events.front().get();
+				for (auto& component : mComponents)
+				{
+					if(&component->getServer() != server)	
+						continue;
+
+					WebSocketMessageReceivedEvent* msg_received = rtti_cast<WebSocketMessageReceivedEvent>(websocket_event);
+					if (msg_received != nullptr)
+					{
+						component->messageReceived(*msg_received);
+						continue;
+					}
+
+					WebSocketConnectionOpenedEvent* con_opened = rtti_cast<WebSocketConnectionOpenedEvent>(websocket_event);
+					if (con_opened != nullptr)
+					{
+						component->connectionOpened(*con_opened);
+						continue;
+					}
+
+					WebSocketConnectionClosedEvent* con_closed = rtti_cast<WebSocketConnectionClosedEvent>(websocket_event);
+					if (con_closed != nullptr)
+					{
+						component->connectionClosed(*con_closed);
+						continue;
+					}
+
+					WebSocketConnectionFailedEvent* con_failed = rtti_cast<WebSocketConnectionFailedEvent>(websocket_event);
+					if (con_failed != nullptr)
+					{
+						component->connectionFailed(*con_failed);
+						continue;
+					}
+
+					// Unknown message web-socket event type
+					assert(false);
+				}				
 				events.pop();
 			}
 		}
@@ -61,4 +97,23 @@ namespace nap
 		assert(found_it != mServers.end());
 		mServers.erase(found_it);
 	}
+
+
+	void WebSocketService::registerComponent(WebSocketComponentInstance& component)
+	{
+		mComponents.emplace_back(&component);
+	}
+
+
+	void WebSocketService::removeComponent(WebSocketComponentInstance& component)
+	{
+		auto found_it = std::find_if(mComponents.begin(), mComponents.end(), [&](const auto& it)
+		{
+			return it == &component;
+		});
+
+		assert(found_it != mComponents.end());
+		mComponents.erase(found_it);
+	}
+
 }

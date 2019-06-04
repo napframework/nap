@@ -1,7 +1,10 @@
+// Local Includes
 #include "websocketcomponent.h"
+#include "websocketservice.h"
 
 // External Includes
 #include <entity.h>
+#include <nap/core.h>
 
 // nap::websocketcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::WebSocketComponent)
@@ -24,10 +27,22 @@ namespace nap
 	}
 
 
+	WebSocketComponentInstance::~WebSocketComponentInstance()
+	{
+		if (mService != nullptr)
+			mService->removeComponent(*this);
+	}
+
+
 	bool WebSocketComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Extract the server
 		mServer = getComponent<WebSocketComponent>()->mServer.get();
+
+		mService = getEntityInstance()->getCore()->getService<nap::WebSocketService>();
+		assert(mService != nullptr);
+		mService->registerComponent(*this);
+
 		return true;
 	}
 }

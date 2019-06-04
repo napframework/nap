@@ -2,7 +2,8 @@
 
 // Local Includes
 #include "websocketutils.h"
-#include "websocketevents.h"
+#include "websocketconnection.h"
+#include "websocketmessage.h"
 
 // External Includes
 #include <memory.h>
