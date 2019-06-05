@@ -23,7 +23,7 @@ namespace nap
 	 * On stop the end point stops listening and all active connections are closed. A call to open is non blocking.
 	 * Messages are forwarded as events to all associated listeners, ie: objects that implement the IWebSocketServer interface.
 	 */
-	class WebSocketServerEndPoint : public Device
+	class NAPAPI WebSocketServerEndPoint : public Device
 	{
 		friend class IWebSocketServer;
 		RTTI_ENABLE(Device)
