@@ -58,9 +58,9 @@ namespace nap
 
 	void WebSocketHandlerInstance::onMessageReceived(const WebSocketMessageReceivedEvent& wsEvent)
 	{
-		nap::Logger::info("Message Received: %s", wsEvent.mMessage.getPayload().c_str());
+		//nap::Logger::info("Message Received: %s", wsEvent.mMessage.getPayload().c_str());
 		WebSocketServer& wsserver =  mWSComponent->getServer();
 		nap::utility::ErrorState error;
-		wsserver.send(wsEvent.mConnection, WebSocketMessage("ola baby!", wsEvent.mMessage.getCode()), error);
+		//wsserver.send(wsEvent.mConnection, WebSocketMessage("ola baby!", wsEvent.mMessage.getCode()), error);
 	}
 }

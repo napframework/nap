@@ -4,8 +4,8 @@
 
 // External Includes
 #include <nap/logger.h>
+#include <nap/core.h>
 #include <websocketservice.h>
-#include <apiservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -21,8 +21,24 @@ namespace nap
 
     bool APIWebSocketService::init(nap::utility::ErrorState& errorState)
     {
+		mAPIService = getCore().getService<APIService>();
+		assert(mAPIService != nullptr);
 		return true;
     }    
+
+
+	nap::APIService& APIWebSocketService::getAPIService()
+	{
+		assert(mAPIService != nullptr);
+		return *mAPIService;
+	}
+
+
+	const nap::APIService& APIWebSocketService::getAPIService() const
+	{
+		assert(mAPIService != nullptr);
+		return *mAPIService;
+	}
 
 
 	void APIWebSocketService::registerObjectCreators(rtti::Factory& factory)

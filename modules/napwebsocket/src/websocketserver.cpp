@@ -79,27 +79,27 @@ namespace nap
 	}
 
 
-	void WebSocketServer::onConnectionOpened(WebSocketConnection connection)
+	void WebSocketServer::onConnectionOpened(const WebSocketConnection& connection)
 	{
 		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(connection));
 	}
 
 
-	void WebSocketServer::onConnectionClosed(WebSocketConnection connection, int code, std::string reason)
+	void WebSocketServer::onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason)
 	{
-		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection, code, std::move(reason)));
+		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection, code, reason));
 	}
 
 
-	void WebSocketServer::onConnectionFailed(WebSocketConnection connection, int code, std::string reason)
+	void WebSocketServer::onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason)
 	{
-		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection, code, std::move(reason)));
+		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection, code, reason));
 	}
 
 
-	void WebSocketServer::onMessageReceived(WebSocketConnection connection, WebSocketMessage message)
+	void WebSocketServer::onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message)
 	{
-		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, std::move(message)));
+		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
 	}
 
 

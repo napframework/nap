@@ -1,10 +1,16 @@
+// Local Includes
 #include "apiwebsocketserver.h"
 #include "apiwebsocketservice.h"
+
+// External Includes
 #include <nap/logger.h>
+#include <apiutils.h>
+#include <nap/core.h>
 
 // nap::websocketapiserver run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketServer)
-	RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
+RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
+	RTTI_PROPERTY("Verbose", &nap::APIWebSocketServer::mVerbose, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -12,7 +18,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	APIWebSocketServer::~APIWebSocketServer()			{ }
+
+	const std::string APIWebSocketServer::apiMessageHeaderName("NAP:MESSAGE");
+
+
+	APIWebSocketServer::~APIWebSocketServer() { }
 
 
 	APIWebSocketServer::APIWebSocketServer(APIWebSocketService& service) : mService(&service)
@@ -36,17 +46,58 @@ namespace nap
 	}
 
 
-	void APIWebSocketServer::onMessageReceived(WebSocketConnection connection, WebSocketMessage message)
+	void APIWebSocketServer::sendErrorReply(const WebSocketConnection& connection, nap::utility::ErrorState& error)
+	{
+		nap::utility::ErrorState snd_error;
+		if (mVerbose)
+			nap::Logger::warn("%s: %s", this->mID.c_str(), error.toString().c_str());
+
+		if (!mEndPoint->send(connection, utility::stringFormat("ERROR: %s", error.toString().c_str()), EWebSocketOPCode::Text, snd_error))
+			nap::Logger::error("%s: %s", this->mID.c_str(), snd_error.toString().c_str());
+	}
+
+
+	void APIWebSocketServer::onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message)
 	{
 		// Ensure it's a finalized message
 		nap::utility::ErrorState error;
-		if (!message.getFin())
+		if (!error.check(message.getFin(), "only finalized messages are accepted"))
 		{
-			if (!mEndPoint->send(connection, "ERROR: only finalized messages are accepted for now!", EWebSocketOPCode::Text, error))
-			{
-				nap::Logger::error(error.toString());
-			}
+			if (mVerbose)
+				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
+			return;
 		}
+
+		// Ensure the message start with a substring
+		// TODO: maybe include this in the header?
+		if (!utility::startsWith(message.getPayload(), apiMessageHeaderName))
+		{
+			if (mVerbose)
+				nap::Logger::warn("%s: received message without request header: %s", mID.c_str(), apiMessageHeaderName.c_str());
+			return;
+		}
+
+		// Erase first part
+		std::string json(message.getPayload());
+		json.erase(0, apiMessageHeaderName.length());
+
+		// Members necessary to extract messages
+		auto& factory = mService->getCore().getResourceManager()->getFactory();
+		nap::rtti::DeserializeResult result;
+		std::vector<APIMessage*> messages;
+
+		// Perform extraction
+		if (!extractMessages(json, result, factory, messages, error))
+		{
+			sendErrorReply(connection, error);
+			return;
+		}
+
+		// TODO: create unique event and dispatch to api service
+		// TODO: create special dispatch handler for api service, ensures that events that api events that are dispatched are send to the client
+
+		WebSocketMessageReceivedEvent* lala = RTTI_OF(WebSocketMessageReceivedEvent).create<WebSocketMessageReceivedEvent>({ connection, message });
+		//std::cout << lala->get_type().get_name().to_string().c_str() << "\n";
 		std::cout << "Hey there from the api server!" << "\n";
 	}
 }

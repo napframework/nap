@@ -1,4 +1,4 @@
-#include "websocketevents.h"
+#include "websocketevent.h"
 
 RTTI_DEFINE_BASE(nap::WebSocketEvent)
 RTTI_DEFINE_BASE(nap::WebSocketConnectionEvent)
