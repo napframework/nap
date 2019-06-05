@@ -59,17 +59,17 @@ namespace nap
 		virtual void stop() override;
 
 		/**
-		 * Sends a message to the incoming connection
+		 * Sends a message to the specified connection
 		 * @param connection the client connection
 		 * @param message the message to send
 		 * @param code message type
 		 * @param error contains the error if sending fails
 		 * @return if message was send successfully
 		 */
-		bool send(WebSocketConnection connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error);
+		bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
 		/**
-		 * Sends a message using the given payload and opcode
+		 * Sends a message using the given payload and opcode to the specified connection
 		 * @param connection the client connection
 		 * @param payload the message buffer
 		 * @param length total number of bytes
@@ -77,7 +77,7 @@ namespace nap
 		 * @param error contains the error if sending fails
 		 * @return if message was send successfully
 		 */
-		bool send(WebSocketConnection connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
+		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
 		int mPort = 80;															///< Property: "Port" to open and listen to for messages.
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.

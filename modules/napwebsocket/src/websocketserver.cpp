@@ -55,17 +55,22 @@ namespace nap
 	}
 
 
-	bool WebSocketServer::send(WebSocketConnection connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	bool WebSocketServer::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
 		return mEndPoint->send(connection, payload, length, code, error);
 	}
 
 
-	bool WebSocketServer::send(WebSocketConnection connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	bool WebSocketServer::send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
 		return mEndPoint->send(connection, message, code, error);
 	}
 
+
+	bool WebSocketServer::send(const WebSocketConnection& connection, const WebSocketMessage& message, nap::utility::ErrorState& error)
+	{
+		return mEndPoint->send(connection, message.getPayload(), message.getCode(), error);
+	}
 
 	void WebSocketServer::addEvent(WebSocketEventPtr newEvent)
 	{
