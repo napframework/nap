@@ -47,6 +47,10 @@ namespace nap
 		float mDuration = 0.0f;
 
 		std::vector<float> mInputs = std::vector<float>(8);
+
+		std::string mPreset;
+
+		bool mUsePreset = false;;
 	protected:
 		double mStartTime = 0.0;
 

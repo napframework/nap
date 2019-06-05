@@ -134,7 +134,9 @@ namespace nap
 
 			mSequence = sequence;
 
+			mTime = 0.0;
 			mDuration = 0.0;
+
 			for (auto& element : mSequence->mElements)
 			{
 				mDuration += element->mDuration;

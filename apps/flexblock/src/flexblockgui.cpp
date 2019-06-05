@@ -176,9 +176,7 @@ namespace nap
 
 			for (auto& sequence : sequences)
 			{
-				ImGui::Text(sequence->mID.c_str());
-				ImGui::SameLine();
-				if (ImGui::SmallButton("load"))
+				if (ImGui::SmallButton(sequence->mID.c_str()))
 				{
 					sequencePlayer.load(sequence.get());
 					sequencePlayer.play();

@@ -547,12 +547,21 @@
         },
         {
             "Type": "nap::FlexBlockSequence",
-            "mID": "FlexBlockSequence",
+            "mID": "Sequence 1",
             "Elements": [
+                {
+                    "Type": "nap::FlexBlockSequencePause",
+                    "mID": "FlexBlockSequencePause_2",
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Duration": 3.0
+                },
                 {
                     "Type": "nap::FlexBlockSequenceTransition",
                     "mID": "FlexBlockSequenceTransition",
-                    "Duration": 2.0,
+                    "Preset File": "preset 1.json",
+                    "Use Preset": true,
+                    "Duration": 5.0,
                     "Curve": "AlmostLinearCurve",
                     "Inputs": [
                         0.0,
@@ -568,7 +577,9 @@
                 {
                     "Type": "nap::FlexBlockSequenceTransition",
                     "mID": "FlexBlockSequenceTransition_2",
-                    "Duration": 2.0,
+                    "Preset File": "preset 2.json",
+                    "Use Preset": true,
+                    "Duration": 5.0,
                     "Curve": "AlmostLinearCurve",
                     "Inputs": [
                         1.0,
@@ -584,12 +595,16 @@
                 {
                     "Type": "nap::FlexBlockSequencePause",
                     "mID": "FlexBlockSequencePause",
-                    "Duration": 2.0
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Duration": 5.0
                 },
                 {
                     "Type": "nap::FlexBlockSequenceTransition",
                     "mID": "FlexBlockSequenceTransition_3",
-                    "Duration": 2.0,
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Duration": 5.0,
                     "Curve": "SinCurve",
                     "Inputs": [
                         0.0,
@@ -605,6 +620,8 @@
                 {
                     "Type": "nap::FlexBlockSequenceTransition",
                     "mID": "FlexBlockSequenceTransition_4",
+                    "Preset File": "",
+                    "Use Preset": false,
                     "Duration": 5.0,
                     "Curve": "",
                     "Inputs": [
@@ -631,8 +648,141 @@
             ]
         },
         {
+            "Type": "nap::FlexBlockSequence",
+            "mID": "Sequence 2",
+            "Elements": [
+                {
+                    "Type": "nap::FlexBlockSequencePause",
+                    "mID": "FlexBlockSequencePause_3",
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Duration": 0.0
+                },
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition_5",
+                    "Preset File": "middle_left.json",
+                    "Use Preset": true,
+                    "Duration": 1.0,
+                    "Curve": "Bezier Curve",
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition_6",
+                    "Preset File": "middle_bottom.json",
+                    "Use Preset": true,
+                    "Duration": 1.0,
+                    "Curve": "Bezier Curve",
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition_7",
+                    "Preset File": "middle_right.json",
+                    "Use Preset": true,
+                    "Duration": 1.0,
+                    "Curve": "Bezier Curve",
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition_8",
+                    "Preset File": "middle_top.json",
+                    "Use Preset": true,
+                    "Duration": 1.0,
+                    "Curve": "Bezier Curve",
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition_9",
+                    "Preset File": "middle_left.json",
+                    "Use Preset": true,
+                    "Duration": 1.0,
+                    "Curve": "Bezier Curve",
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition_10",
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Duration": 1.0,
+                    "Curve": "Bezier Curve",
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            ],
+            "StartInputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 1",
+            "Preset File": "",
+            "Use Preset": false,
             "Duration": 1.25,
             "Curve": "AlmostLinearCurve",
             "Inputs": [
@@ -649,6 +799,8 @@
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 2",
+            "Preset File": "",
+            "Use Preset": false,
             "Duration": 2.5,
             "Curve": "AlmostLinearCurve",
             "Inputs": [
@@ -665,6 +817,8 @@
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 3",
+            "Preset File": "",
+            "Use Preset": false,
             "Duration": 2.5,
             "Curve": "AlmostLinearCurve",
             "Inputs": [
@@ -681,6 +835,8 @@
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 4",
+            "Preset File": "",
+            "Use Preset": false,
             "Duration": 1.5,
             "Curve": "AlmostLinearCurve",
             "Inputs": [
@@ -1143,38 +1299,6 @@
                     "Position": {
                         "Time": 1.0,
                         "Value": 1.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.22773315012454987,
-                        "Value": 0.003977081272751093
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.41306179761886599,
-                        "Value": 1.0004608631134034
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
