@@ -2,12 +2,9 @@
 #include "apiservice.h"
 #include "apievent.h"
 #include "apicomponent.h"
-#include "apimessage.h"
+#include "apiutils.h"
 
 // External Includes
-#include <rtti/jsonreader.h>
-#include <rtti/jsonwriter.h>
-#include <rtti/defaultlinkresolver.h>
 #include <nap/core.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIService)
@@ -99,34 +96,12 @@ namespace nap
 	bool APIService::sendMessage(const char* json, utility::ErrorState* error)
 	{
 		// Get factory
-		nap::rtti::DeserializeResult result;
 		auto& factory = getCore().getResourceManager()->getFactory();
 
-		// De-serialize json cmd
-		if (!rtti::deserializeJSON(json, rtti::EPropertyValidationMode::DisallowMissingProperties, factory, result, *error))
-			return false;
-
-		// Resolve links
-		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, *error))
-			return false;
-
-		// Fetch all api messages
+		// Extract messages
+		nap::rtti::DeserializeResult result;
 		std::vector<nap::APIMessage*> messages;
-		for (const auto& object : result.mReadObjects)
-		{
-			// Check if it's a message
-			if (!object->get_type().is_derived_from(RTTI_OF(nap::APIMessage)))
-				continue;
-
-			// Cast to message and add as possible event
-			nap::APIMessage* message = rtti_cast<nap::APIMessage>(object.get());
-			assert(message != nullptr);
-			if (message != nullptr)
-				messages.emplace_back(message);
-		}
-
-		// Error when json doesn't contain any messages
-		if (!error->check(!messages.empty(), "JSON doesn't contain any nap::APIMessage objects"))
+		if (!extractMessages(json, result, factory, messages, *error))
 			return false;
 
 		// Iterate over every message, extract arguments (APIFloat etc.) and send as new event.
