@@ -4,6 +4,6 @@
         "mod_napmath",
         "mod_napscene",
         "mod_napmath",
-        "mod_napwebsocket"
+        "mod_napapiwebsocket"
     ]
 }

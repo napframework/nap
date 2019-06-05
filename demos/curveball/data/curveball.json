@@ -310,6 +310,11 @@
             "EndPoint": "ServerEndPoint"
         },
         {
+            "Type": "nap::APIWebSocketServer",
+            "mID": "APIServer",
+            "EndPoint": "ServerEndPoint"
+        },
+        {
             "Type": "nap::WebSocketServerEndPoint",
             "mID": "ServerEndPoint",
             "Port": 9000,

@@ -181,6 +181,7 @@ add_subdirectory(modules/napapi)
 add_subdirectory(modules/napparameter)
 add_subdirectory(modules/napparametergui)
 add_subdirectory(modules/napwebsocket)
+add_subdirectory(modules/napapiwebsocket)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
