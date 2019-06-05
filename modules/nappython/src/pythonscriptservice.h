@@ -15,8 +15,10 @@ namespace nap
 	public:
 		PythonScriptService(ServiceConfiguration* configuration);
 
-		bool TryLoad(const std::string& modulePath, pybind11::module& module, utility::ErrorState& errorState);
+        void registerObjectCreators(rtti::Factory& factory) override;
 
+		bool TryLoad(const std::string& modulePath, pybind11::module& module, utility::ErrorState& errorState);
+        
 	private:
 		using ModuleMap = std::unordered_map<std::string, pybind11::module>;
 		using SystemPathSet = std::unordered_set<std::string>;
