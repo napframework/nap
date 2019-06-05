@@ -26,9 +26,11 @@ namespace nap
 
 		virtual bool process(double time, std::vector<ParameterFloat*>& outInputs) override;
 	public:
-		ResourcePtr<FlexBlockKeyFrame> mNextKeyFrame = nullptr;
 		ResourcePtr<math::FloatFCurve> mCurve = nullptr;
-
 	protected:
+		bool (FlexBlockSequenceTransition::*mProcessFunc)(double time, std::vector<ParameterFloat*>& outInputs) = nullptr;
+
+		bool processWithCurve(double time, std::vector<ParameterFloat*>& outInputs);
+		bool processLinear(double time, std::vector<ParameterFloat*>& outInputs);
 	};
 }

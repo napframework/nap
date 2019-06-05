@@ -3,7 +3,8 @@
 // nap::flexblockstancesequence run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockSequence)
 	// Put additional properties here
-	RTTI_PROPERTY("Elements", &nap::FlexBlockSequence::mElements, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Elements", &nap::FlexBlockSequence::mElements, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("StartInputs", &nap::FlexBlockSequence::mStartInputs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -24,6 +25,16 @@ namespace nap
 		for (int i = 0; i < mElements.size(); i++)
 		{
 			mElements[i]->setStartTime(time);
+
+			if (i > 0)
+			{
+				mElements[i]->setStartInputs(mElements[i - 1]->mInputs);
+			}
+			else
+			{
+				mElements[i]->setStartInputs(mStartInputs);
+			}
+
 			time += mElements[i]->mDuration;
 		}
 

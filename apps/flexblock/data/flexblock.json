@@ -537,76 +537,6 @@
             ]
         },
         {
-            "Type": "nap::FlexBlockKeyFrame",
-            "mID": "FlexBlockKeyFrame 2",
-            "Inputs": [
-                0.0,
-                1.0,
-                1.0,
-                0.0,
-                0.0,
-                1.0,
-                1.0,
-                0.0
-            ]
-        },
-        {
-            "Type": "nap::FlexBlockKeyFrame",
-            "mID": "FlexBlockKeyFrame 3",
-            "Inputs": [
-                1.0,
-                0.0,
-                0.0,
-                1.0,
-                1.0,
-                0.0,
-                0.0,
-                1.0
-            ]
-        },
-        {
-            "Type": "nap::FlexBlockKeyFrame",
-            "mID": "FlexBlockKeyFrame 4",
-            "Inputs": [
-                0.0,
-                1.0,
-                1.0,
-                0.0,
-                1.0,
-                0.0,
-                0.0,
-                1.0
-            ]
-        },
-        {
-            "Type": "nap::FlexBlockKeyFrame",
-            "mID": "FlexBlockKeyFrame 5",
-            "Inputs": [
-                0.0,
-                0.0,
-                0.0,
-                1.0,
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ]
-        },
-        {
-            "Type": "nap::FlexBlockKeyFrame",
-            "mID": "NeutralFrame",
-            "Inputs": [
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ]
-        },
-        {
             "Type": "nap::FlexBlockMesh",
             "mID": "BoxMesh",
             "Size": {
@@ -617,59 +547,152 @@
         },
         {
             "Type": "nap::FlexBlockSequence",
-            "mID": "Test ",
+            "mID": "FlexBlockSequence",
             "Elements": [
-                "FlexBlockSequenceStance",
-                "FlexBlockSequenceTransition 1",
-                "FlexBlockSequenceTransition 2",
-                "FlexBlockSequenceTransition 3",
-                "FlexBlockSequenceStance 5",
-                "FlexBlockSequenceTransition 4"
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition",
+                    "Duration": 2.0,
+                    "Curve": "AlmostLinearCurve",
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition_2",
+                    "Duration": 2.0,
+                    "Curve": "AlmostLinearCurve",
+                    "Inputs": [
+                        1.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "Type": "nap::FlexBlockSequencePause",
+                    "mID": "FlexBlockSequencePause",
+                    "Duration": 2.0
+                },
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition_3",
+                    "Duration": 2.0,
+                    "Curve": "SinCurve",
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "Type": "nap::FlexBlockSequenceTransition",
+                    "mID": "FlexBlockSequenceTransition_4",
+                    "Duration": 5.0,
+                    "Curve": "",
+                    "Inputs": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "StartInputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
             ]
-        },
-        {
-            "Type": "nap::FlexBlockSequenceStance",
-            "mID": "FlexBlockSequenceStance",
-            "Duration": 3.0,
-            "KeyFrame": "NeutralFrame"
-        },
-        {
-            "Type": "nap::FlexBlockSequenceStance",
-            "mID": "FlexBlockSequenceStance 5",
-            "Duration": 5.0,
-            "KeyFrame": "FlexBlockKeyFrame 4"
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 1",
-            "KeyFrame": "NeutralFrame",
             "Duration": 1.25,
-            "NextKeyFrame": "FlexBlockKeyFrame 2",
-            "Curve": "AlmostLinearCurve"
+            "Curve": "AlmostLinearCurve",
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 2",
-            "KeyFrame": "FlexBlockKeyFrame 2",
             "Duration": 2.5,
-            "NextKeyFrame": "FlexBlockKeyFrame 3",
-            "Curve": "AlmostLinearCurve"
+            "Curve": "AlmostLinearCurve",
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 3",
-            "KeyFrame": "FlexBlockKeyFrame 3",
             "Duration": 2.5,
-            "NextKeyFrame": "FlexBlockKeyFrame 4",
-            "Curve": "AlmostLinearCurve"
+            "Curve": "AlmostLinearCurve",
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
         },
         {
             "Type": "nap::FlexBlockSequenceTransition",
             "mID": "FlexBlockSequenceTransition 4",
-            "KeyFrame": "FlexBlockKeyFrame 4",
             "Duration": 1.5,
-            "NextKeyFrame": "NeutralFrame",
-            "Curve": "AlmostLinearCurve"
+            "Curve": "AlmostLinearCurve",
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
         },
         {
             "Type": "nap::FlexBlockShape",
@@ -1258,8 +1281,8 @@
                 },
                 {
                     "Position": {
-                        "Time": 0.3334338963031769,
-                        "Value": 0.8803212642669678
+                        "Time": 0.3074115216732025,
+                        "Value": 0.9967230558395386
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -1276,38 +1299,6 @@
                     "Position": {
                         "Time": 0.7453538775444031,
                         "Value": -0.0052907816134393219
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.3384159207344055,
-                        "Value": 0.8868913054466248
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.5134488940238953,
-                        "Value": 0.8172839283943176
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,

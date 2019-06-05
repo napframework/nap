@@ -5,8 +5,6 @@
 #include <nap/resourceptr.h>
 #include <parameternumeric.h>
 
-#include "flexblockkeyframe.h"
-
 namespace nap
 {
 	/**
@@ -37,12 +35,21 @@ namespace nap
 		 */
 		void setStartTime(double startTime);
 
+
+		/**
+		* This is called by the sequence to set the start inputs of this element
+		*/
+		void setStartInputs(const std::vector<float>& inputs);
+
 		const double getStartTime() { return mStartTime; }
 	public:
 		// properties
 		float mDuration = 0.0f;
-		ResourcePtr<FlexBlockKeyFrame> mKeyFrame = nullptr;
+
+		std::vector<float> mInputs = std::vector<float>(8);
 	protected:
 		double mStartTime = 0.0;
+
+		std::vector<float> mStartInputs;
 	};
 }

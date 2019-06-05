@@ -13,7 +13,7 @@ namespace nap
 	/**
 	* FlexBlockSequenceElement
 	*/
-	class NAPAPI FlexBlockSequenceStance : public FlexBlockSequenceElement
+	class NAPAPI FlexBlockSequencePause : public FlexBlockSequenceElement
 	{
 		RTTI_ENABLE(FlexBlockSequenceElement)
 	public:
