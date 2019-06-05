@@ -146,6 +146,7 @@ add_subdirectory(demos/curveball)
 add_subdirectory(demos/curveball/module)
 add_subdirectory(demos/copystamp)
 add_subdirectory(demos/copystamp/module)
+add_subdirectory(demos/python)
 
 # Unit tests
 add_subdirectory(unittests)
