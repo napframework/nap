@@ -42,6 +42,9 @@ namespace nap
 		WebSocketConnectionClosedEvent(WebSocketConnection connection, int errorCode, const std::string& reason) :
 			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(reason)	{ }
 
+		WebSocketConnectionClosedEvent(WebSocketConnection connection, int errorCode, std::string&& reason) :
+			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(std::move(reason)) { }
+
 		int mErrorCode = -1;		///< Error code associated with reason for closing connection
 		std::string mReason;		///< Reason for closing connection
 	};
@@ -69,6 +72,9 @@ namespace nap
 		WebSocketConnectionFailedEvent(WebSocketConnection connection, int errorCode, const std::string& reason) :
 			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(reason)	{ }
 
+		WebSocketConnectionFailedEvent(WebSocketConnection connection, int errorCode, std::string&& reason) :
+			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(reason) { }
+
 		int mErrorCode = -1;	///< Error code associated with reason for failing to establish connection
 		std::string mReason;	///< Reason for failing to establish connection
 	};
@@ -81,8 +87,12 @@ namespace nap
 	{
 		RTTI_ENABLE(WebSocketEvent)
 	public:
-		WebSocketMessageReceivedEvent(WebSocketConnection connection, WebSocketMessage message) : 
+		WebSocketMessageReceivedEvent(WebSocketConnection connection, const WebSocketMessage& message) : 
 			mConnection(connection), mMessage(message)	{ }
+
+		WebSocketMessageReceivedEvent(WebSocketConnection connection, WebSocketMessage&& message) :
+			mConnection(connection),
+			mMessage(std::move(message))	{ }
 
 		WebSocketMessage mMessage;
 		WebSocketConnection mConnection;

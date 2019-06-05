@@ -102,11 +102,11 @@ namespace nap
 		void onConnectionOpened(WebSocketConnection connection);
 		nap::Slot<WebSocketConnection> mConnectionOpened;
 
-		void onConnectionClosed(WebSocketConnection connection, int code, const std::string& reason);
-		nap::Slot<WebSocketConnection, int, const std::string&> mConnectionClosed;
+		void onConnectionClosed(WebSocketConnection connection, int code, std::string reason);
+		nap::Slot<WebSocketConnection, int, std::string> mConnectionClosed;
 
-		void onConnectionFailed(WebSocketConnection connection, int code, const std::string& reason);
-		nap::Slot<WebSocketConnection, int, const std::string&> mConnectionFailed;
+		void onConnectionFailed(WebSocketConnection connection, int code, std::string reason);
+		nap::Slot<WebSocketConnection, int, std::string> mConnectionFailed;
 
 		void onMessageReceived(WebSocketConnection connection, WebSocketMessage message);
 		nap::Slot<WebSocketConnection, WebSocketMessage> mMessageReceived;

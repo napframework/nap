@@ -11,35 +11,54 @@ namespace nap
 {
 	// Forward Declares
 	class WebSocketServerEndPoint;
-	class WebSocketServer;
 
 	/**
-	 * Utility class that wraps a websocketpp message.
-	 * Can only be constructed by a web-socket endpoint.
-	 * This message can be copied and moved freely.
+	 * A web-socket message that is received by an end-point or sent to an end-point.
 	 */
 	class NAPAPI WebSocketMessage final
 	{
 		friend class WebSocketServerEndPoint;
 	public:
-		// Default constructor
+		/**
+		 * Construct a new web socket message using the given payload, opcode and finalize bit flag.
+		 * @param message the payload associated with this message.
+		 * @param code the op code that describes the intent of this message
+		 * @param fin if this is the final message
+		 */
+		WebSocketMessage(const std::string& message, EWebSocketOPCode code, bool fin = true);
+
+		/**
+		 * Construct a new web socket message using the given payload, opcode and finalize bit flag.
+		 * @param message the payload associated with this message.
+		 * @param code the op code that describes the intent of this message
+		 * @param fin if this is the final message
+		 */
+		WebSocketMessage(std::string&& message, EWebSocketOPCode code, bool fin = true);
+
+		// no default constructor
 		WebSocketMessage() = delete;
-		// Default move constructor
-		WebSocketMessage(WebSocketMessage&& other) = default;
-		// Default move assignment operator
-		WebSocketMessage& operator=(WebSocketMessage&& other) = default;
+		// Move constructor
+		WebSocketMessage(WebSocketMessage&& other);
+		// Move assignment operator
+		WebSocketMessage& operator=(WebSocketMessage&& other);
 		// Default copy constructor
-		WebSocketMessage(WebSocketMessage& other) = default;
+		WebSocketMessage(const WebSocketMessage& other) = default;
 		// Default copy assignment operator
 		WebSocketMessage& operator=(const WebSocketMessage& other) = default;
 
 		/**
-		 * @return a const reference to the message's payload string
+		 * @return a reference to the message's payload string
 		 */
 		const std::string& getPayload() const;
 
 		/**
-		 * @return the message opcode
+		 * Adds an extra set of characters to the already existing message.
+		 * @param payload the string to append.
+		 */
+		void appendPayload(const std::string& payload);
+
+		/**
+		 * @return the message opcode that describes the purpose of this message.
 		 */
 		EWebSocketOPCode getCode() const;
 
@@ -51,13 +70,15 @@ namespace nap
 		 */
 		bool getFin() const;
 
-		/**
-		 * @return if this message should be or is compressed
-		 */
-		bool getCompressed() const;
-
 	private:
+		/**
+		 * Constructs this message based on the a received websocketpp message
+		 * @param message the websocketpp message
+		 */
 		WebSocketMessage(wspp::MessagePtr message);
-		wspp::MessagePtr mMessage = nullptr;							///< Shared pointer to the message
+
+		std::string mMessage;							///< The received or to be sent message.
+		EWebSocketOPCode mCode;							///< OP code of the message.
+		bool mFin = true;								///< If the message fin bit is or should be set.
 	};
 }

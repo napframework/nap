@@ -80,21 +80,21 @@ namespace nap
 	}
 
 
-	void WebSocketServer::onConnectionClosed(WebSocketConnection connection, int code, const std::string& reason)
+	void WebSocketServer::onConnectionClosed(WebSocketConnection connection, int code, std::string reason)
 	{
-		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection, code, reason));
+		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection, code, std::move(reason)));
 	}
 
 
-	void WebSocketServer::onConnectionFailed(WebSocketConnection connection, int code, const std::string& reason)
+	void WebSocketServer::onConnectionFailed(WebSocketConnection connection, int code, std::string reason)
 	{
-		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection, code, reason));
+		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection, code, std::move(reason)));
 	}
 
 
 	void WebSocketServer::onMessageReceived(WebSocketConnection connection, WebSocketMessage message)
 	{
-		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
+		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, std::move(message)));
 	}
 
 

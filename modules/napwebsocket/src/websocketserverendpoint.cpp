@@ -176,6 +176,7 @@ namespace nap
 			nap::Logger::error(stdec.message());
 			return;
 		}
+
 		connectionFailed(WebSocketConnection(connection),
 			cptr->get_ec().value(),
 			cptr->get_ec().message());
@@ -184,6 +185,7 @@ namespace nap
 
 	void WebSocketServerEndPoint::onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg)
 	{
+		// Note that constructing the message in place forces a move operation
 		messageReceived(WebSocketConnection(con), WebSocketMessage(msg));
 	}
 
