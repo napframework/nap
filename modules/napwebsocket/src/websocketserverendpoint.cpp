@@ -83,7 +83,7 @@ namespace nap
 	}
 
 
-	bool WebSocketServerEndPoint::send(WebSocketConnection connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	bool WebSocketServerEndPoint::send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
 		std::error_code stdec;
 		mEndPoint->send(connection.mConnection, message, static_cast<wspp::OpCode>(code), stdec);
@@ -96,7 +96,7 @@ namespace nap
 	}
 
 
-	bool WebSocketServerEndPoint::send(WebSocketConnection connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	bool WebSocketServerEndPoint::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
 		std::error_code stdec;
 		mEndPoint->send(connection.mConnection, payload, length, static_cast<wspp::OpCode>(code), stdec);

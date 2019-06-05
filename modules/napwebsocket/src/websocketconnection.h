@@ -11,9 +11,9 @@ namespace nap
 	class WebSocketServerEndPoint;
 
 	/**
-	 * Utility class that wraps a websocket connection handle.
-	 * Can only be constructed by the web socket server end point.
-	 * This connection can be copied and moved freely.
+	 * Utility class that wraps a web-socket connection handle.
+	 * Can only be constructed web socket server end points.
+	 * The object is light and can be copied and or moved around freely.
 	 */
 	class NAPAPI WebSocketConnection final
 	{

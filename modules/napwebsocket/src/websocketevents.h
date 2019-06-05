@@ -19,13 +19,13 @@ namespace nap
 
 
 	/**
-	 *  Base class for all web-socket connection related events
+	 *  Base class for all web-socket connection related events.
 	 */
 	class NAPAPI WebSocketConnectionEvent : public WebSocketEvent
 	{
 		RTTI_ENABLE(WebSocketEvent)
 	public:
-		WebSocketConnectionEvent(WebSocketConnection connection) :
+		WebSocketConnectionEvent(const WebSocketConnection& connection) :
 			mConnection(connection) { }
 
 		WebSocketConnection mConnection;
@@ -33,16 +33,16 @@ namespace nap
 
 
 	/**
-	 * Occurs when a connection is closed
+	 * Occurs when a connection is closed. Contains the reason and exit code.
 	 */
 	class NAPAPI WebSocketConnectionClosedEvent : public WebSocketConnectionEvent
 	{
 		RTTI_ENABLE(WebSocketConnectionEvent)
 	public:
-		WebSocketConnectionClosedEvent(WebSocketConnection connection, int errorCode, const std::string& reason) :
+		WebSocketConnectionClosedEvent(const WebSocketConnection& connection, int errorCode, const std::string& reason) :
 			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(reason)	{ }
 
-		WebSocketConnectionClosedEvent(WebSocketConnection connection, int errorCode, std::string&& reason) :
+		WebSocketConnectionClosedEvent(const WebSocketConnection& connection, int errorCode, std::string&& reason) :
 			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(std::move(reason)) { }
 
 		int mErrorCode = -1;		///< Error code associated with reason for closing connection
@@ -63,16 +63,16 @@ namespace nap
 
 
 	/**
-	 * Occurs when a connection failed to open
+	 * Occurs when a connection failed to open. Contains the error code and reason for failure.
 	 */
 	class NAPAPI WebSocketConnectionFailedEvent : public WebSocketConnectionEvent
 	{
 		RTTI_ENABLE(WebSocketConnectionEvent)
 	public:
-		WebSocketConnectionFailedEvent(WebSocketConnection connection, int errorCode, const std::string& reason) :
+		WebSocketConnectionFailedEvent(const WebSocketConnection& connection, int errorCode, const std::string& reason) :
 			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(reason)	{ }
 
-		WebSocketConnectionFailedEvent(WebSocketConnection connection, int errorCode, std::string&& reason) :
+		WebSocketConnectionFailedEvent(const WebSocketConnection& connection, int errorCode, std::string&& reason) :
 			WebSocketConnectionEvent(connection), mErrorCode(errorCode), mReason(reason) { }
 
 		int mErrorCode = -1;	///< Error code associated with reason for failing to establish connection
@@ -81,16 +81,17 @@ namespace nap
 
 
 	/**
-	 * A received web-socket message
+	 * Occurs when a message is received. 
+	 * Contains the message and handle to the connection that made the request.
 	 */
 	class NAPAPI WebSocketMessageReceivedEvent : public WebSocketEvent
 	{
 		RTTI_ENABLE(WebSocketEvent)
 	public:
-		WebSocketMessageReceivedEvent(WebSocketConnection connection, const WebSocketMessage& message) : 
+		WebSocketMessageReceivedEvent(const WebSocketConnection& connection, const WebSocketMessage& message) : 
 			mConnection(connection), mMessage(message)	{ }
 
-		WebSocketMessageReceivedEvent(WebSocketConnection connection, WebSocketMessage&& message) :
+		WebSocketMessageReceivedEvent(const WebSocketConnection& connection, WebSocketMessage&& message) :
 			mConnection(connection),
 			mMessage(std::move(message))	{ }
 
