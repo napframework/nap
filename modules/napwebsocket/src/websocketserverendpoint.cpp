@@ -21,6 +21,7 @@ namespace nap
 	bool WebSocketServerEndPoint::start(nap::utility::ErrorState& error)
 	{
 		// Run until stopped
+		assert(!mRunning);
 		assert(mEndPoint == nullptr);
 		mEndPoint = std::make_unique<wspp::ServerEndPoint>();
 
@@ -71,7 +72,8 @@ namespace nap
 		}
 
 		// Run until stopped
-		mServerTask = std::async(std::launch::async, std::bind(&WebSocketServerEndPoint::run, this));
+		mServerTask  = std::async(std::launch::async, std::bind(&WebSocketServerEndPoint::run, this));
+		mRunning = true;
 
 		return true;
 	}
@@ -118,12 +120,14 @@ namespace nap
 
 	void WebSocketServerEndPoint::stop()
 	{
-		if (mEndPoint != nullptr)
+		if (mRunning)
 		{
+			assert(mEndPoint != nullptr);
 			assert(mServerTask.valid());
 			mEndPoint->stop();
 			mServerTask.wait();
 			mEndPoint.reset(nullptr);
+			mRunning = false;
 		}
 	}
 

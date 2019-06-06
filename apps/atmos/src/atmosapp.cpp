@@ -92,7 +92,7 @@ namespace nap
 	void AtmosApp::render()
 	{
 		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow });
+		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
 
 		// Activate current window for drawing
 		mRenderWindow->makeActive();

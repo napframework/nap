@@ -142,7 +142,7 @@ namespace nap
 	// Called when the window is going to render
 	void ArtnetColorApp::render()
 	{
-		mRenderService->destroyGLContextResources({mRenderWindow});
+		mRenderService->destroyGLContextResources({mRenderWindow.get()});
 		
 		// Activate current window for drawing
 		mRenderWindow->makeActive();

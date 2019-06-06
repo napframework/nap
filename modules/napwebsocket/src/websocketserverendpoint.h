@@ -134,5 +134,7 @@ namespace nap
 		 * Automatically pongs back.
 		 */
 		bool onPing(wspp::ConnectionHandle con, std::string msg);
+
+		bool mRunning = false;
 	};
 }
