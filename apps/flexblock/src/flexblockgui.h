@@ -47,11 +47,14 @@ namespace nap
 		 */
 		void toggleVisibility();
 
+		void showTimeLine();
+
 	private:
 		FlexblockApp&						mApp;				///< The actual atmos application we build the gui for
 		ParameterService&					mParameterService;
 		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;
+		bool								mShowTimeLine = false;
 		DateTime							mDateTime;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
 		float								mTexPreviewDisplaySize = 1.0f;
@@ -66,7 +69,7 @@ namespace nap
 		 */
 		void showInfoWindow();
 
-		void showSequencesWindow();
+		void showSequencesWindow(bool &showTimeLine);
 
 		void initParameters();
 		void updateInput(int index, float value);

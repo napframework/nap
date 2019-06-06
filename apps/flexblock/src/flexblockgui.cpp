@@ -105,7 +105,13 @@ namespace nap
 			showInfoWindow();
 
 		if (showSequences)
-			showSequencesWindow();
+		{
+			showSequencesWindow(mShowTimeLine);
+
+			if (mShowTimeLine)
+				showTimeLine();
+		}
+			
 	}
 	
 
@@ -120,7 +126,45 @@ namespace nap
 		mHide = !mHide;
 	}
 
-	void FlexblockGui::showSequencesWindow()
+	void FlexblockGui::showTimeLine()
+	{
+		// Fetch resource manager to get access to all loaded resources
+		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
+
+		ImGui::Begin("Sequence Timeline");
+
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		glm::vec2 top_left = glm::vec2(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
+		const auto max = ImGui::GetWindowContentRegionMax();
+		const auto min = ImGui::GetWindowContentRegionMin();
+
+		const auto size = ImVec2(max.x - min.x, max.y - min.y);
+
+		FlexBlockSequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<FlexBlockSequencePlayerComponentInstance>();
+
+		const auto & elements = sequencePlayer.getElements();
+		for (int i = 0; i < elements.size(); i++)
+		{
+			float width = size.x * (elements[i]->mDuration / sequencePlayer.getDuration());
+			float start_x = size.x * (elements[i]->getStartTime() / sequencePlayer.getDuration());
+
+			draw_list->AddLine(ImVec2(top_left.x + start_x, top_left.y), ImVec2(top_left.x + start_x, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+			draw_list->AddLine(ImVec2(top_left.x + start_x, top_left.y + size.y), ImVec2(top_left.x + start_x + width, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+
+			//draw_list->AddText(ImVec2(top_left.x + start_x, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)), elements[i]->mID.c_str());
+		}
+
+		//
+		draw_list->AddLine(ImVec2(top_left.x + size.x, top_left.y), ImVec2(top_left.x + size.x, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+
+		float pos = ( sequencePlayer.getCurrentTime() / sequencePlayer.getDuration() ) * size.x;
+		draw_list->AddLine(ImVec2(top_left.x + pos, top_left.y), ImVec2(top_left.x + pos, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)));
+
+
+		ImGui::End();
+	}
+
+	void FlexblockGui::showSequencesWindow(bool &showTimeLine)
 	{
 		// Fetch resource manager to get access to all loaded resources
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
@@ -208,6 +252,11 @@ namespace nap
 			auto progressBarSize = ImGui::GetItemRectSize();
 
 			ImGui::NewLine();
+			
+			if (ImGui::Checkbox("Show Timeline", &mShowTimeLine))
+			{
+
+			}
 
 			/*
 			ImGui::Text("Elements");

@@ -51,6 +51,7 @@ namespace nap
 		std::string mPreset;
 
 		bool mUsePreset = false;
+
 	protected:
 		double mStartTime = 0.0;
 
