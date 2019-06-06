@@ -57,7 +57,7 @@ namespace nap
 	{
 		RTTI_ENABLE(WebSocketConnectionEvent)
 	public:
-		WebSocketConnectionOpenedEvent(WebSocketConnection connection) :
+		WebSocketConnectionOpenedEvent(const WebSocketConnection& connection) :
 			WebSocketConnectionEvent(connection) { }
 	};
 

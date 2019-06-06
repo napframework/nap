@@ -3,9 +3,11 @@
 #include "apievent.h"
 #include "apicomponent.h"
 #include "apiutils.h"
+#include "apidispatcher.h"
 
 // External Includes
 #include <nap/core.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -177,7 +179,12 @@ namespace nap
 
 	void APIService::dispatchEvent(nap::APIEventPtr apiEvent)
 	{
-		eventDispatched.trigger(*apiEvent);
+		for (auto& dispatcher : mDispatchers)
+		{
+			nap::utility::ErrorState error;
+			if (!dispatcher->dispatch(*apiEvent, error))
+				nap::Logger::warn(error.toString());
+		}
 	}
 
 	
@@ -221,6 +228,23 @@ namespace nap
 		});
 		assert(found_it != mAPIComponents.end());
 		mAPIComponents.erase(found_it);
+	}
+
+
+	void APIService::registerAPIDispatcher(IAPIDispatcher& dispatcher)
+	{
+		mDispatchers.emplace_back(&dispatcher);
+	}
+
+
+	void APIService::deregisterAPIDispatcher(IAPIDispatcher& dispatcher)
+	{
+		auto found_it = std::find_if(mDispatchers.begin(), mDispatchers.end(), [&](const auto& it)
+		{
+			return it == &dispatcher;
+		});
+		assert(found_it != mDispatchers.end());
+		mDispatchers.erase(found_it);
 	}
 
 
@@ -278,4 +302,11 @@ namespace nap
 	{
 		processEvents();
 	}
+
+
+	void APIService::registerObjectCreators(rtti::Factory& factory)
+	{
+		factory.addObjectCreator(std::make_unique<APIDispatcherObjectCreator>(*this));
+	}
+
 }

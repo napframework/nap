@@ -128,6 +128,6 @@ namespace nap
 		void addEvent(WebSocketEventPtr newEvent);
 	};
 
-	// Object creator used for constructing the the websocket server
+	// Object creator used for constructing the websocket server
 	using WebSocketServerObjectCreator = rtti::ObjectCreator<WebSocketServer, WebSocketService>;
 }
