@@ -13,6 +13,7 @@ namespace nap
 {
 	// Forward Declares
 	class APIComponentInstance;
+	class IAPIDispatcher;
 
 	/**
 	 * Offers a C-Style interface that can be used to send and receive data from a running NAP application.
@@ -43,6 +44,8 @@ namespace nap
 	class NAPAPI APIService : public Service
 	{
 		friend class APIComponentInstance;
+		friend class IAPIDispatcher;
+
 		RTTI_ENABLE(Service)
 	public:
 		/**
@@ -265,9 +268,14 @@ namespace nap
 		virtual void shutdown() override;
 
 		/**
-		 * Consumes and pushes all api events	
+		 * Consumes and pushes all api events to registered api components
 		 */
 		virtual void update(double deltaTime) override;
+
+		/**
+		 * Register objects that need to be constructed using this service as input argument.
+		 */
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 	private:
 		/**
@@ -283,6 +291,18 @@ namespace nap
 		void removeAPIComponent(APIComponentInstance& apicomponent);
 
 		/**
+		 * Called by the api dispatcher to register itself with the service
+		 * @param dispatcher the dispatcher that wants to register itself
+		 */
+		void registerAPIDispatcher(IAPIDispatcher& dispatcher);
+
+		/**
+		 * Called by the api dispatcher to de-register itself with the service.
+		 * @param dispatcher the dispatcher to de-register
+		 */
+		void deregisterAPIDispatcher(IAPIDispatcher& dispatcher);
+
+		/**
 		 * Forwards a new call event to registered API components	
 		 * @param apiEvent api call to forward.
 		 * @param error contains the error if the call fails.
@@ -295,8 +315,11 @@ namespace nap
 		 */
 		void consumeEvents(std::queue<APIEventPtr>& outEvents);
 
-		// All the osc components currently available to the system
+		// All the api components currently available to the system
 		std::vector<APIComponentInstance*> mAPIComponents;
+
+		// All apidispatchers currently registered
+		std::vector<IAPIDispatcher*> mDispatchers;
 
 		// All the api events to process
 		std::queue<APIEventPtr> mAPIEvents;

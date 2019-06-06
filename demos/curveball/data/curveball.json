@@ -1,6 +1,16 @@
 {
     "Objects": [
         {
+            "Type": "nap::APIDispatcher",
+            "mID": "APIDispatcher"
+        },
+        {
+            "Type": "nap::APIWebSocketServer",
+            "mID": "APIServer",
+            "EndPoint": "ServerEndPoint",
+            "Verbose": true
+        },
+        {
             "Type": "nap::Entity",
             "mID": "Camera",
             "Components": [
@@ -307,11 +317,6 @@
         {
             "Type": "nap::WebSocketServer",
             "mID": "Server",
-            "EndPoint": "ServerEndPoint"
-        },
-        {
-            "Type": "nap::APIWebSocketServer",
-            "mID": "APIServer",
             "EndPoint": "ServerEndPoint"
         },
         {
