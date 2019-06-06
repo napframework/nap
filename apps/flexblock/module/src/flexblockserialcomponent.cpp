@@ -70,24 +70,19 @@ namespace nap
 	{
 		std::lock_guard<std::mutex> l(mWriteBufferMutex);
 
-		mWriteBuffer.push_back(data);
-		if (mWriteBuffer.size() > 4)
+		mWriteBuffer.emplace_back(data);
+
+		if (mWriteBuffer.size() > mMaxWriteBufferSize)
 		{
-			mWriteBuffer.erase(mWriteBuffer.begin()+4, mWriteBuffer.end());
+			mWriteBuffer.erase(mWriteBuffer.begin()+ mMaxWriteBufferSize, mWriteBuffer.end());
 		}
-		
 	}
 
-	void FlexBlockSerialComponentInstance::consumeBuffer(std::vector<std::string>& outBuffer)
+	void FlexBlockSerialComponentInstance::consumeBuffer(std::deque<std::string>& outBuffer)
 	{
 		std::lock_guard<std::mutex> l(mWriteBufferMutex);
 
-		outBuffer.clear();
-		for (int i = 0; i < mWriteBuffer.size(); i++)
-		{
-			outBuffer.push_back(mWriteBuffer[i]);
-		}
-		mWriteBuffer.clear();
+		outBuffer.swap(mWriteBuffer);
 	}
 
 	void FlexBlockSerialComponentInstance::writeThreadFunc()
@@ -96,14 +91,17 @@ namespace nap
 
 		while (mIsRunning)
 		{
-			std::vector<std::string> writeBuffer;
+			std::deque<std::string> writeBuffer;
 			consumeBuffer(writeBuffer);
-			printf("%i\n", writeBuffer.size());
-			for (int i = 0; i < writeBuffer.size(); i++)
+
+			if (mSerialPort->isOpen())
 			{
-				mSerialPort->write(writeBuffer[i], error);
+				for (int i = 0; i < writeBuffer.size(); i++)
+				{
+					mSerialPort->write(writeBuffer[i], error);
+				}
 			}
-			
+
 			std::this_thread::sleep_for(std::chrono::milliseconds(mThreadUpdateIntervalMs));
 		}
 	}

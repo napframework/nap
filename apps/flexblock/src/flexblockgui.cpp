@@ -216,9 +216,9 @@ namespace nap
 
 		if (ImGui::TreeNode("Sequences"))
 		{
-			auto& sequences = resourceManager->getObjects<FlexBlockSequence>();
+			const auto& sequences = resourceManager->getObjects<FlexBlockSequence>();
 
-			for (auto& sequence : sequences)
+			for (const auto& sequence : sequences)
 			{
 				if (ImGui::SmallButton(sequence->mID.c_str()))
 				{
