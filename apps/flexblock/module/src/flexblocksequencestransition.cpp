@@ -6,6 +6,8 @@ RTTI_BEGIN_CLASS(nap::FlexBlockSequenceTransition)
 RTTI_PROPERTY("Duration", &nap::FlexBlockSequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Curve", &nap::FlexBlockSequenceTransition::mCurve, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Inputs", &nap::FlexBlockSequenceTransition::mInputs, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_PROPERTY("Preset File", &nap::FlexBlockSequenceTransition::mPreset, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Use Preset", &nap::FlexBlockSequenceTransition::mUsePreset, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

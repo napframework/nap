@@ -13,8 +13,7 @@ RTTI_DEFINE_BASE(nap::FlexBlockSequenceElement)
 
 RTTI_BEGIN_CLASS(nap::FlexBlockSequenceElement)
 // Put additional properties here
-RTTI_PROPERTY("Preset File", &nap::FlexBlockSequenceElement::mPreset, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Use Preset", &nap::FlexBlockSequenceElement::mUsePreset, nap::rtti::EPropertyMetaData::Default)
+
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

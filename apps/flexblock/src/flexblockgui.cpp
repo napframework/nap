@@ -209,17 +209,20 @@ namespace nap
 
 			ImGui::NewLine();
 
+			/*
 			ImGui::Text("Elements");
 			for (const auto& element : sequencePlayer.getElements())
 			{
-				if (ImGui::Button(element->mID.c_str(), ImVec2(progressBarSize.x * element->mDuration / sequencePlayer.getDuration(), progressBarSize.y)))
+				if (ImGui::Button(element->mID.c_str(), ImVec2(progressBarSize.x * ( element->mDuration / sequencePlayer.getDuration() ), progressBarSize.y)))
 				{
 					sequencePlayer.setTime(element->getStartTime());
 				}
 				ImGui::SameLine();
 			}
-
 			ImGui::NewLine();
+			*/
+
+
 			ImGui::Spacing();
 			ImGui::Text("Scrub");
 			if (ImGui::SliderFloat("", &mScrub, 0.0f, 1.0f))
