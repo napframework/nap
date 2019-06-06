@@ -105,7 +105,7 @@ namespace nap
 			std::string data = "<";
 			for (int i = 0; i < ropeLengths.size(); i++)
 			{
-				long c = (long)ropeLengths[i];
+				long c = (long)ropeLengths[remapMotorInput(i)];
 				data.append(std::to_string(c));
 				if (i + 1 < ropeLengths.size())
 					data.append("|");

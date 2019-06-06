@@ -66,14 +66,14 @@ namespace nap
 		}
 	protected:
 		void writeThreadFunc();
-		void consumeBuffer(std::deque<std::string>& outBuffer);
+		void consumeBuffer(std::vector<std::string>& outBuffer);
 	protected:
 		
 		ResourcePtr<SerialPort>					mSerialPort;
 
 		std::atomic_bool						mIsRunning = false;
 		std::thread								mWriteThread;
-		std::deque<std::string>					mWriteBuffer;
+		std::vector<std::string>					mWriteBuffer;
 		std::mutex								mWriteBufferMutex;
 		std::atomic_long						mThreadUpdateIntervalMs = 10;
 	};
