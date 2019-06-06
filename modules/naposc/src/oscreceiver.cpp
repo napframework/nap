@@ -48,6 +48,7 @@ namespace nap
 		catch (const std::runtime_error& exception)
 		{
 			errorState.fail("Failed to create OSCReceiver: %s", exception.what());
+			mSocket = nullptr;
 			return false;
 		}		
 

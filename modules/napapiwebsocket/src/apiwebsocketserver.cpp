@@ -94,6 +94,10 @@ namespace nap
 			return;
 		}
 
+		APIWebSocketEventPtr rptr = std::make_unique<APIWebSocketEvent>("motorSpeed", messages[0]->mID, connection);
+		rptr->addArgument<APIFloat>("speed", 0.2f);
+		mService->getAPIService().dispatchEvent(std::move(rptr), error);
+
 		// Create unique events and hand off to api service
 		for (auto& apimsg : messages)
 		{
