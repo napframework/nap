@@ -112,7 +112,7 @@ namespace nap
 		for (auto& message : messages)
 		{
 			// Forward, keep track of result
-			if (!forward(message->toAPIEvent(), *error))
+			if (!forward(message->toEvent<APIEvent>(), *error))
 				succeeded = false;
 		}
 
@@ -177,14 +177,21 @@ namespace nap
 	}
 
 
-	void APIService::dispatchEvent(nap::APIEventPtr apiEvent)
+	bool APIService::dispatchEvent(nap::APIEventPtr apiEvent, utility::ErrorState& error)
 	{
+		if (!error.check(!mDispatchers.empty(), "%s: No event dispatcher installed, declare at least one to forward the event to an external environment"))
+			return false;
+
+		bool success(true);
 		for (auto& dispatcher : mDispatchers)
 		{
-			nap::utility::ErrorState error;
+			if(!apiEvent->get_type().is_derived_from(dispatcher->getEventType()))
+				continue;
+
 			if (!dispatcher->dispatch(*apiEvent, error))
-				nap::Logger::warn(error.toString());
+				success = false;
 		}
+		return success;
 	}
 
 	

@@ -18,5 +18,5 @@ namespace nap
 	 * @param error contains the error if extraction fails
 	 * @return if extraction succeeded or not.
 	 */
-	NAPAPI bool extractMessages(const std::string& json, rtti::DeserializeResult& result, rtti::Factory& factory, std::vector<APIMessage*> outMessages, utility::ErrorState& error);
+	NAPAPI bool extractMessages(const std::string& json, rtti::DeserializeResult& result, rtti::Factory& factory, std::vector<APIMessage*>& outMessages, utility::ErrorState& error);
 }

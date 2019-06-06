@@ -57,9 +57,19 @@ namespace nap
 	}
 
 
-	nap::APIEventPtr APIMessage::toAPIEvent()
+	bool APIMessage::toJSON(std::string& outString, utility::ErrorState& error)
 	{
-		APIEventPtr ptr = std::make_unique<APIEvent>(mName, mID);
+		rtti::JSONWriter writer;
+		rtti::ObjectList list = { this };
+		if (!serializeObjects(list, writer, error))
+			return false;
+		outString = writer.GetJSON();
+		return true;
+	}
+
+
+	void APIMessage::copyArguments(APIEvent& apiEvent)
+	{
 		for (const auto& arg : mArguments)
 		{
 			// Create copy using RTTR
@@ -73,19 +83,7 @@ namespace nap
 			rtti::copyObject(*arg, *copy);
 
 			// Add API value as argument
-			ptr->addArgument(std::move(copy));
+			apiEvent.addArgument(std::move(copy));
 		}
-		return ptr;
-	}
-
-
-	bool APIMessage::toJSON(std::string& outString, utility::ErrorState& error)
-	{
-		rtti::JSONWriter writer;
-		rtti::ObjectList list = { this };
-		if (!serializeObjects(list, writer, error))
-			return false;
-		outString = writer.GetJSON();
-		return true;
 	}
 }

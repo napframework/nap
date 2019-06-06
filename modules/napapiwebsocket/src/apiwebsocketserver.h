@@ -11,7 +11,7 @@ namespace nap
 	class APIWebSocketService;
 
 	/**
-	 * Allows for receiving and responding to nap API events over a web-socket. Implements the IWebSocketServer interface.
+	 * Allows for receiving and responding to nap API messages over a web-socket. Implements the IWebSocketServer interface.
 	 */
 	class NAPAPI APIWebSocketServer : public IWebSocketServer
 	{

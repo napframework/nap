@@ -24,13 +24,12 @@ namespace nap
 
 	IAPIDispatcher::IAPIDispatcher(APIService& service) : mService(&service)
 	{
-
+		mService->registerAPIDispatcher(*this);
 	}
 
 
 	bool IAPIDispatcher::init(utility::ErrorState& errorState)
 	{
-		mService->registerAPIDispatcher(*this);
 		return true;
 	}
 

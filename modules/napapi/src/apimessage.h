@@ -18,7 +18,8 @@ namespace nap
 	 *
 	 * Note that the 'mID' of the message needs to be unique 
 	 * when sending multiple messages as a bundle from an external environment.
-	 * The 'Name' of the message is used to find a matching method to call inside the running application.
+	 * The 'Name' of the message is used to find a matching callback with the same name inside the running application.
+	 * When the name of the message matches the signature of the callback that callback is invoked.
 	 */
 	class NAPAPI APIMessage : public Resource
 	{
@@ -44,11 +45,13 @@ namespace nap
 		APIMessage(const std::string& name);
 
 		/**
-		 * Converts this message, including all of it's arguments into an api event.
+		 * Converts this message, including all of it's arguments into an api event of type T.
 		 * This event is the runtime version of an api message.
-		 * @return the newly created api event.
+		 * @param args extra input arguments given on construction to api-event of type T.
+		 * @return the newly created api event of type T.
 		 */
-		APIEventPtr toAPIEvent();
+		template<typename T, typename... Args>
+		std::unique_ptr<T> toEvent(Args&&... args);
 
 		/**
 		 * Converts this message into a JSON readable string
@@ -64,5 +67,24 @@ namespace nap
 		// When constructing this message from an api event the values are owned by this object.
 		// This ensures that when the message is destructed the arguments are deleted.
 		std::vector<std::unique_ptr<APIBaseValue>> mOwningArguments;
+
+		/**
+		 * Copies all arguments present in this message to the given api event.
+		 */
+		void copyArguments(APIEvent& apiEvent);
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T, typename... Args>
+	std::unique_ptr<T> nap::APIMessage::toEvent(Args&&... args)
+	{
+		assert(RTTI_OF(T).is_derived_from(RTTI_OF(APIEvent)));
+		std::unique_ptr<T> ptr = std::make_unique<T>(mName, mID, std::forward<Args>(args)...);
+		copyArguments(*ptr);
+		return ptr;
+	}
 }
