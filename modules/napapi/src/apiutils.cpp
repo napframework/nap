@@ -7,7 +7,7 @@
 
 namespace nap
 {
-	bool extractMessages(const std::string& json, rtti::DeserializeResult& result, rtti::Factory& factory, std::vector<APIMessage*> outMessages, utility::ErrorState& error)
+	bool extractMessages(const std::string& json, rtti::DeserializeResult& result, rtti::Factory& factory, std::vector<APIMessage*>& outMessages, utility::ErrorState& error)
 	{
 		// De-serialize json cmd
 		if (!rtti::deserializeJSON(json, rtti::EPropertyValidationMode::DisallowMissingProperties, factory, result, error))
@@ -18,7 +18,6 @@ namespace nap
 			return false;
 
 		// Fetch all api messages
-		std::vector<nap::APIMessage*> messages;
 		for (const auto& object : result.mReadObjects)
 		{
 			// Check if it's a message
@@ -29,11 +28,11 @@ namespace nap
 			nap::APIMessage* message = rtti_cast<nap::APIMessage>(object.get());
 			assert(message != nullptr);
 			if (message != nullptr)
-				messages.emplace_back(message);
+				outMessages.emplace_back(message);
 		}
 
 		// Error when json doesn't contain any messages
-		if (!error.check(!messages.empty(), "JSON doesn't contain any nap::APIMessage objects"))
+		if (!error.check(!outMessages.empty(), "JSON doesn't contain any nap::APIMessage objects"))
 			return false;
 
 		return true;

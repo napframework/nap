@@ -1,6 +1,7 @@
 // Local Includes
 #include "apiwebsocketserver.h"
 #include "apiwebsocketservice.h"
+#include "apiwebsocketevent.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -93,11 +94,12 @@ namespace nap
 			return;
 		}
 
-		// TODO: create unique event and dispatch to api service
-		// TODO: create special dispatch handler for api service, ensures that events that api events that are dispatched are send to the client
-
-		WebSocketMessageReceivedEvent* lala = RTTI_OF(WebSocketMessageReceivedEvent).create<WebSocketMessageReceivedEvent>({ connection, message });
-		//std::cout << lala->get_type().get_name().to_string().c_str() << "\n";
-		std::cout << "Hey there from the api server!" << "\n";
+		// Create unique events and hand off to api service
+		for (auto& apimsg : messages)
+		{
+			APIWebSocketEventPtr msg_event = apimsg->toEvent<APIWebSocketEvent>(connection);
+			if (!mService->getAPIService().sendEvent(std::move(msg_event), &error))
+				sendErrorReply(connection, error);
+		}
 	}
 }

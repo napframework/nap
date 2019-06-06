@@ -1,8 +1,9 @@
 {
     "Objects": [
         {
-            "Type": "nap::APIDispatcher",
-            "mID": "APIDispatcher"
+            "Type": "nap::APIWebSocketDispatcher",
+            "mID": "APIWebSocketDispatcher",
+            "Server": "APIServer"
         },
         {
             "Type": "nap::APIWebSocketServer",

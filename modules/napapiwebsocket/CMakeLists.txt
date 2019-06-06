@@ -17,6 +17,9 @@ module_json_to_cmake()
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
+# add include dirs
+target_include_directories(${PROJECT_NAME} PUBLIC src)
+
 # preprocessor
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
@@ -29,4 +32,6 @@ target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
 
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
+
+# Package module into platform release
 package_module()

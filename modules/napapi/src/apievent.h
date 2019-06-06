@@ -36,37 +36,30 @@ namespace nap
 		using ArgumentConstIterator = utility::UniquePtrConstVectorWrapper<APIArgumentList, APIArgument*>;
 
 		/**
-		 * Default constructor
-		 */
-		APIEvent();
-
-		/**
-		 * Every API call needs to be associated with an action
+		 * Construct a new api event with the given name. A unique id is generated.
 		 * @param name name of this call
 		 */
 		APIEvent(const std::string& name);
 
 		/**
-		 * Move constructor
-		 * Every API call needs to be associated with an action
+		 * Construct a new api event with the given name. A unique id is generated.
 		 * @param name name of this call
 		 */
-		APIEvent(const std::string&& name);
+		APIEvent(std::string&& name);
 
 		/**
-		 * Every API call needs to be associated with an action
+		 * Construct a new api event with the given name and unique id.
 		 * @param name name of this call
 		 * @param id unique identifier of this call
 		 */
 		APIEvent(const std::string& name, const std::string& id);
 
 		/**
-		 * Move constructor
-		 * Every API call needs to be associated with an action
+		 * Construct a new api event with the given name and unique id.
 		 * @param name identifier of this call
 		 * @param id unique identifier of this call
 		 */
-		APIEvent(const std::string&& name, const std::string&& id);
+		APIEvent(std::string&& name, std::string&& id);
 
 		/**
 		 * @return name (action) of this call	
@@ -86,7 +79,7 @@ namespace nap
 		 * @return the newly created and added argument
 		 */
 		template<typename T, typename... Args>
-		APIArgument* addArgument(const std::string&& name, Args&&... args);
+		APIArgument* addArgument(const std::string& name, Args&&... args);
 
 		/**
 		 * Adds an api argument to this event based on the given api value.
@@ -150,7 +143,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T, typename... Args>
-	APIArgument* nap::APIEvent::addArgument(const std::string&& name, Args&&... args)
+	APIArgument* nap::APIEvent::addArgument(const std::string& name, Args&&... args)
 	{
 		assert(RTTI_OF(T).is_derived_from(RTTI_OF(nap::APIBaseValue)));
 

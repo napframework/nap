@@ -242,11 +242,14 @@ namespace nap
 		 * Dispatches an event to an external environment.
 		 * NAP applications often dispatch events as a reply to a previously received message, after processing.
 		 * Events are dispatched immediately, there is no dispatch queue.
-		 * In order for an external environment to receive this message it needs to listen to the messageDispatched signal.
+		 * In order for an external environment to receive this message at least one 
+		 * type of EventDispatcher needs to be declared in json.
 		 * The given event is destroyed after calling this function.
 		 * @param apiEvent the event to send to the external environment.
+		 * @error contains the error if the dispatch operation failed
+		 * @return if the dispatch operation succeeded.
 		 */
-		void dispatchEvent(nap::APIEventPtr apiEvent);
+		bool dispatchEvent(nap::APIEventPtr apiEvent, utility::ErrorState& error);
 
 		/**
 		 * Listen to this signal in your external environment to receive outgoing NAP api events.

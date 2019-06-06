@@ -12,7 +12,13 @@ namespace nap
 	class APIService;
 
 	/**
-	 * Interface for all api dispatcher types.
+	 * Interface for all api dispatcher types. Allows for customizing api event dispatch behavior.
+	 * An api dispatcher forwards an api event to an external environment.
+	 * Every dispatcher is automatically registered with the api service. When an event is dispatched
+	 * (through the api service) every registered dispatcher is invoked if it accepts the api event. 
+	 * The event that is dispatched must be derived from APIEvent. Override the getEventType() method
+	 * to specify which type of event the dispatcher accepts and onDispatch() to forward the  
+	 * event to an external application environment.
 	 */
 	class NAPAPI IAPIDispatcher : public Resource
 	{
@@ -38,7 +44,6 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-	protected:
 		/**
 		 * Should be implemented by all api dispatcher types.
 		 * Only api events derived from the returned type will be forwarded to the dispatcher.
@@ -46,6 +51,7 @@ namespace nap
 		 */
 		virtual rtti::TypeInfo getEventType() const = 0;
 
+	protected:
 		/**
 		 * Called by the api service after receiving a new event to dispatch.
 		 * Needs to be implemented by derived classes.
@@ -73,7 +79,7 @@ namespace nap
 	 * Default API dispatcher. When this dispatcher receives an api event it triggers 
 	 * the 'eventDispatched' signal of the api service. All api events are accepted by this dispatcher.
 	 * When declared in JSON, an external environment that listens
-	 * to the 'eventDispatched' signal, automatically receives all dispatched api events.
+	 * to the 'eventDispatched' signal, automatically receives the dispatched api events.
 	 */
 	class NAPAPI APIDispatcher : public IAPIDispatcher
 	{
