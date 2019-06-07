@@ -206,6 +206,13 @@
             "Radius": 1.0,
             "Rings": 15.0,
             "Sectors": 15.0
+        },
+        {
+            "Type": "nap::WebSocketClientEndPoint",
+            "mID": "ClientEndPoint",
+            "URI": "ws://192.168.0.42:9000",
+            "LogConnectionUpdates": true,
+            "LibraryLogLevel": "Warning"
         }
     ]
 }

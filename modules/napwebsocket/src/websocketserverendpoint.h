@@ -12,6 +12,7 @@
 #include <nap/device.h>
 #include <nap/signalslot.h>
 #include <nap/numeric.h>
+#include <mutex>
 
 namespace nap
 {
@@ -79,6 +80,7 @@ namespace nap
 		 */
 		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
+
 		int mPort = 80;															///< Property: "Port" to open and listen to for messages.
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
@@ -89,10 +91,11 @@ namespace nap
 		nap::Signal<const WebSocketConnection&, const WebSocketMessage&> messageReceived;
 
 	private:
-		std::unique_ptr<wspp::ServerEndPoint> mEndPoint = nullptr;				///< The websocketpp server end-point
+		wspp::ServerEndPoint mEndPoint;											///< The websocketpp server end-point
 		uint32 mLogLevel = 0;													///< Converted library log level
 		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
 		std::future<void> mServerTask;											///< The background server thread
+		std::vector<wspp::ConnectionPtr> mConnections;							///< List of all active connections
 
 		/**
 		 * Runs the end point in a background thread until stopped.
@@ -135,6 +138,12 @@ namespace nap
 		 */
 		bool onPing(wspp::ConnectionHandle con, std::string msg);
 
+		/**
+		 * Closes all active client connections
+		 */
+		bool disconnect(nap::utility::ErrorState& error);
+
 		bool mRunning = false;
+		std::mutex mConnectionMutex;
 	};
 }

@@ -1,15 +1,22 @@
 {
     "Objects": [
         {
-            "Type": "nap::APIWebSocketDispatcher",
-            "mID": "APIWebSocketDispatcher",
-            "Server": "APIServer"
+            "Type": "nap::WebSocketServerEndPoint",
+            "mID": "ServerEndPoint",
+            "Port": 9000,
+            "LogConnectionUpdates": false,
+            "LibraryLogLevel": "Warning"
         },
         {
             "Type": "nap::APIWebSocketServer",
             "mID": "APIServer",
             "EndPoint": "ServerEndPoint",
             "Verbose": true
+        },
+        {
+            "Type": "nap::APIWebSocketDispatcher",
+            "mID": "APIWebSocketDispatcher",
+            "Server": "APIServer"
         },
         {
             "Type": "nap::Entity",
@@ -319,13 +326,6 @@
             "Type": "nap::WebSocketServer",
             "mID": "Server",
             "EndPoint": "ServerEndPoint"
-        },
-        {
-            "Type": "nap::WebSocketServerEndPoint",
-            "mID": "ServerEndPoint",
-            "Port": 9000,
-            "LogConnectionUpdates": false,
-            "LibraryLogLevel": "Warning"
         },
         {
             "Type": "nap::math::FloatFCurve",
