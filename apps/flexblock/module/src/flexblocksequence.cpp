@@ -4,7 +4,7 @@
 RTTI_BEGIN_CLASS(nap::FlexBlockSequence)
 	// Put additional properties here
 	RTTI_PROPERTY("Elements", &nap::FlexBlockSequence::mElements, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("StartInputs", &nap::FlexBlockSequence::mStartInputs, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("StartInputs", &nap::FlexBlockSequence::mStartParameters, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -21,20 +21,30 @@ namespace nap
 			"need at least 1 element %s", this->mID.c_str()))
 			return false;
 
+		std::vector<ResourcePtr<Parameter>>& startParameters = mStartParameters;
 		double time = 0.0;
 		for (int i = 0; i < mElements.size(); i++)
 		{
+			if (!errorState.check(
+				mElements[i]->getParameters().size() ==
+				startParameters.size(),
+				"Parameters are different %s ", mID.c_str()))
+				return false;
+
+			for (int j = 0; j < startParameters.size(); j++)
+			{
+				if (!errorState.check(startParameters[j]->get_type() ==
+					mElements[i]->getParameters()[j]->get_type(),
+					"Parameter types are different type %s and %s do not match in sequence %s ",
+					startParameters[j]->mID.c_str(),
+					mElements[i]->getParameters()[j]->mID.c_str(),
+					mID.c_str()))
+					return false;
+			}
+
 			mElements[i]->setStartTime(time);
-
-			if (i > 0)
-			{
-				mElements[i]->setStartInputs(mElements[i - 1]->mInputs);
-			}
-			else
-			{
-				mElements[i]->setStartInputs(mStartInputs);
-			}
-
+			mElements[i]->setStartParameters(startParameters);
+			startParameters = mElements[i]->getParameters();
 			time += mElements[i]->mDuration;
 		}
 

@@ -222,8 +222,15 @@ namespace nap
 			{
 				if (ImGui::SmallButton(sequence->mID.c_str()))
 				{
-					sequencePlayer.load(sequence.get());
-					sequencePlayer.play();
+					utility::ErrorState error;
+					if (!sequencePlayer.load(sequence, error))
+					{
+						printf(error.toString().c_str());
+					}
+					else
+					{
+						sequencePlayer.play();
+					}
 				}
 			}
 			ImGui::TreePop();

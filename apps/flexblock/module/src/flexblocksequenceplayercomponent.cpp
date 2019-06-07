@@ -28,38 +28,19 @@ namespace nap
 	{
 		FlexBlockSequencePlayerComponent* resource = getComponent<FlexBlockSequencePlayerComponent>();
 
-		auto parameterGroup = resource->mParameterGroup;
-		if (!errorState.check(parameterGroup->mParameters.size() == 8,
-			"parameter group must have 8 parameters %s", this->mID.c_str()))
-			return false;
-		
+		const auto& parameterGroup = resource->mParameterGroup;
 		for (const auto& parameter : parameterGroup->mParameters)
 		{
-			ParameterFloat *parameterFloat = dynamic_cast<ParameterFloat*>(parameter.get());
-			
-			if (!errorState.check(parameterFloat != nullptr,
-				"parameter must be of type parameterfloat %s", parameter->mID.c_str()))
-				return false;
-			
-			mInputs.emplace_back(parameterFloat);
+			mParameters.emplace_back(parameter.get());
 		}
 
 		return true;
 	}
 
-	const std::vector<FlexBlockSequenceElement*> FlexBlockSequencePlayerComponentInstance::getElements()
+	const std::vector<ResourcePtr<FlexBlockSequenceElement>>& FlexBlockSequencePlayerComponentInstance::getElements()
 	{
-		std::vector<FlexBlockSequenceElement*> elements;
-		
-		if (mSequence != nullptr)
-		{
-			for (const auto& element : mSequence->mElements)
-			{
-				elements.emplace_back(element.get());
-			}
-		}
-
-		return elements;
+		assert(mSequence != nullptr);
+		return mSequence->mElements;
 	}
 
 	void FlexBlockSequencePlayerComponentInstance::update(double deltaTime)
@@ -71,7 +52,7 @@ namespace nap
 				mTime += deltaTime;
 			}
 
-			while (!mSequence->mElements[mCurrentSequenceIndex]->process(mTime, mInputs) )
+			while (!mSequence->mElements[mCurrentSequenceIndex]->process(mTime, mParameters) )
 			{
 				mCurrentSequenceIndex++;
 
@@ -126,22 +107,46 @@ namespace nap
 		mIsPaused = true;
 	}
 
-	void FlexBlockSequencePlayerComponentInstance::load(FlexBlockSequence* sequence)
+	bool FlexBlockSequencePlayerComponentInstance::load(ResourcePtr<FlexBlockSequence> sequence, utility::ErrorState& error)
 	{
-		if (mSequence != sequence)
+		if (!error.check(sequence != nullptr,
+			"Sequence is null %s", mID.c_str()))
+			return false;
+
+		if (!error.check(
+			mParameters.size() ==
+			sequence->mStartParameters.size(),
+			"Parameters are different %s ", mID.c_str()))
+			return false;
+
+
+		for (int i = 0; i < mParameters.size(); i++)
 		{
-			stop();
-
-			mSequence = sequence;
-
-			mTime = 0.0;
-			mDuration = 0.0;
-
-			for (auto& element : mSequence->mElements)
+			for (int j = 0; j < sequence->mStartParameters.size(); j++)
 			{
-				mDuration += element->mDuration;
+				if (!error.check(mParameters[j]->get_type() ==
+					sequence->mStartParameters[j]->get_type(),
+					"Parameter types are different type %s and %s do not match in sequence %s ",
+					mParameters[j]->mID.c_str(),
+					sequence->mStartParameters[j]->mID.c_str(),
+					mID.c_str()))
+					return false;
 			}
 		}
+
+		stop();
+
+		mSequence = sequence.get();
+
+		mTime = 0.0;
+		mDuration = 0.0;
+
+		for (const auto& element : mSequence->mElements)
+		{
+			mDuration += element->mDuration;
+		}
+
+		return true;
 	}
 
 	void FlexBlockSequencePlayerComponentInstance::stop()

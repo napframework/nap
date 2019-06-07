@@ -59,38 +59,26 @@ namespace nap
 			// get group
 			ParameterGroup* group = rtti_cast<ParameterGroup>(object.get());
 
-			mInputs.clear();
+			mParameters.clear();
 			for (int i = 0; i < group->mParameters.size(); i++)
 			{
-				if (!errorState.check(group->mParameters[i]->get_type().is_derived_from<ParameterFloat>(),
-					"object must be derived from ParameterFloat %s", this->mID.c_str()))
-					return false;
-
-				ParameterFloat* value = rtti_cast<ParameterFloat>(group->mParameters[i].get());
-				mInputs.push_back(value->mValue);
+				mParameters.push_back(group->mParameters[i]);
 			}
-			
+		}
+		else
+		{
 		}
 
 		return true;
 	}
 
-	void FlexBlockSequenceElement::setStartInputs(const std::vector<float>& inputs)
-	{
-		mStartInputs = std::vector<float>(inputs.size());
-		for (int i = 0; i < inputs.size(); i++)
-		{
-			mStartInputs[i] = inputs[i];
-		}
-	}
-
-	void FlexBlockSequenceElement::setStartTime(double startTime)
-	{
-		mStartTime = startTime;
-	}
-
-	bool FlexBlockSequenceElement::process(double time, std::vector<ParameterFloat*>& outInputs)
+	bool FlexBlockSequenceElement::process(double time, std::vector<Parameter*>& outParameters)
 	{
 		return (time >= mStartTime && time < mStartTime + mDuration);
+	}
+
+	void FlexBlockSequenceElement::setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters)
+	{
+		mStartParameters = startParameters;
 	}
 }

@@ -20,14 +20,14 @@ namespace nap
 		return true;
 	}
 
-	bool FlexBlockSequencePause::process(double time, std::vector<ParameterFloat*>& outInputs)
+	bool FlexBlockSequencePause::process(double time, std::vector<Parameter*>& outParameters)
 	{
-		if (!FlexBlockSequenceElement::process(time, outInputs))
+		if (!FlexBlockSequenceElement::process(time, outParameters))
 			return false;
 
-		for (int i = 0; i < mStartInputs.size(); i++)
+		for (int i = 0; i < mStartParameters.size(); i++)
 		{
-			outInputs[i]->setValue(mStartInputs[i]);
+			outParameters[i]->setValue(*mStartParameters[i].get());
 		}
 
 		return true;

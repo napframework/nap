@@ -7,6 +7,8 @@
 
 namespace nap
 {
+	class FlexBlockSequenceElementValueContainer;
+
 	/**
 	 * FlexBlockSequenceElement
 	 */
@@ -25,36 +27,33 @@ namespace nap
 		/**
 		* Initialize this object after de-serialization
 		* @param time the elapsed time
-		* @param outInputs a reference to the inputs that need to be set
-		* @return returns true if this element has done something
+		* @param endValues a reference to the parameters that need to be set
+		* @return returns true if this element has to do something
 		*/
-		virtual bool process(double time, std::vector<ParameterFloat*>& outInputs);
+		virtual bool process(double time, std::vector<Parameter*>& endParameters);
+
+		void setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters);
+
+		const std::vector<ResourcePtr<Parameter>>& getParameters() { return mParameters; }
 
 		/**
 		 * This is called by the sequence to set the start time of this element
 		 */
-		void setStartTime(double startTime);
-
+		void setStartTime(double startTime) { mStartTime = startTime; }
 
 		/**
-		* This is called by the sequence to set the start inputs of this element
-		*/
-		void setStartInputs(const std::vector<float>& inputs);
-
+		 * @return returns start time of this element in sequence
+		 */
 		const double getStartTime() { return mStartTime; }
 	public:
 		// properties
 		float mDuration = 0.0f;
-
-		std::vector<float> mInputs = std::vector<float>(8);
-
 		std::string mPreset;
-
 		bool mUsePreset = false;
-
+		std::vector<ResourcePtr<Parameter>> mParameters;
 	protected:
 		double mStartTime = 0.0;
 
-		std::vector<float> mStartInputs;
+		std::vector<ResourcePtr<Parameter>> mStartParameters;
 	};
 }
