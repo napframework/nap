@@ -38,6 +38,6 @@ namespace nap
 		WebSocketConnection mConnection;								///< Websocket connection
 
 	private:
-		nap::Signal<const WebSocketConnection&> destroyed;
+		nap::Signal<const WebSocketConnection&> disconnect;
 	};
 }
