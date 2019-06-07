@@ -1,11 +1,11 @@
 #include "websocketclientendpoint.h"
+#include "websocketclient.h"
 
 // External Includes
 #include <nap/logger.h>
 
 // nap::websocketclientendpoint run time class definition 
 RTTI_BEGIN_CLASS(nap::WebSocketClientEndPoint)
-	RTTI_PROPERTY("URI",					&nap::WebSocketClientEndPoint::mURI,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketClientEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketClientEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -61,7 +61,7 @@ namespace nap
 
 			// Notify server we're disconnecting, connection is closed if ever established
 			utility::ErrorState napec;
-			if (!disconnect(napec))
+			if (!close(napec))
 			{
 				//assert(false);
 				nap::Logger::error("%s: %s", this->mID.c_str(), napec.toString().c_str());
@@ -81,29 +81,11 @@ namespace nap
 		// Ensure connection exists when server disconnects
 		mEndPoint.start_perpetual();
 
-		// Get shared pointer to connection
-		std::error_code stdec;
-		mConnection = mEndPoint.get_connection(mURI, stdec);
-		if (stdec)
-		{
-			error.fail(stdec.message());
-			return false;
-		}
-
 		// Run client in background
 		mClientTask = std::async(std::launch::async, std::bind(&WebSocketClientEndPoint::run, this));
 
-		// Connect
-		connect();
-
 		mRunning = true;
 
-		return true;
-	}
-
-
-	bool WebSocketClientEndPoint::reconnect(utility::ErrorState& error)
-	{
 		return true;
 	}
 
@@ -115,25 +97,96 @@ namespace nap
 	}
 
 
-	void WebSocketClientEndPoint::connect()
+	bool WebSocketClientEndPoint::connect(IWebSocketClient& client, utility::ErrorState& error)
 	{
 		assert(mEndPoint != nullptr);
-		assert(mConnection != nullptr);
-		mEndPoint.connect(mConnection);
-	}
 
-
-	bool WebSocketClientEndPoint::disconnect(nap::utility::ErrorState& error)
-	{
-		// TODO: Check client / server connection status
+		// Get shared pointer to connection
 		std::error_code stdec;
-		mEndPoint.close(mConnection->get_handle(), websocketpp::close::status::going_away, "disconnected", stdec);
+		wspp::ConnectionPtr client_connection = mEndPoint.get_connection(client.mURI, stdec);
+		
+		// If an error occured return an invalid web-socket connection
 		if (stdec)
 		{
 			error.fail(stdec.message());
+			client.mConnection = WebSocketConnection();
 			return false;
 		}
+		
+		// Add it as a valid connection
+		{
+			std::lock_guard<std::mutex> guard(mConnectionMutex);
+			mConnections.emplace_back(client_connection);
+		}
+		
+		// Try to connect
+		mEndPoint.connect(client_connection);
+
+		// Set the handle
+		client.mConnection = WebSocketConnection(client_connection->get_handle());
+
+		// Connect to destruction slot
+		client.destroyed.connect(mClientDestroyed);
+
 		return true;
 	}
 
+
+	bool WebSocketClientEndPoint::close(utility::ErrorState& error)
+	{
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		bool success = true;
+		for (auto& connection : mConnections)
+		{
+			std::error_code stdec;
+			mEndPoint.close(connection, websocketpp::close::status::going_away, "disconnected", stdec);
+			if (stdec)
+			{
+				error.fail(stdec.message());
+				success = false;
+			}
+		}
+		mConnections.clear();
+		return success;
+	}
+
+
+	void WebSocketClientEndPoint::onClientDestroyed(const WebSocketConnection& connection)
+	{
+		// Remove from internal list of connections
+		std::error_code stdec;
+		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection.mConnection, stdec);
+		if (stdec)
+		{
+			assert(false);
+			nap::Logger::error(stdec.message());
+			return;
+		}
+
+		{
+			std::lock_guard<std::mutex> lock(mConnectionMutex);
+			auto found_it = std::find_if(mConnections.begin(), mConnections.end(), [&](const auto& it)
+			{
+				return it == cptr;
+			});
+
+			if (found_it == mConnections.end())
+			{
+				assert(false);
+				return;
+			}
+			mConnections.erase(found_it);
+		}
+
+		// Close it if it is open
+		if (cptr->get_state() == websocketpp::session::state::open)
+		{
+			mEndPoint.close(connection.mConnection, websocketpp::close::status::going_away, "disconnected", stdec);
+			if (stdec)
+			{
+				assert(false);
+				nap::Logger::error("%s: %s", this->mID.c_str(), stdec.message().c_str());
+			}
+		}
+	}
 }

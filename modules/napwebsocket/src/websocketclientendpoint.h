@@ -10,14 +10,18 @@
 #include <memory.h>
 #include <future>
 #include <nap/signalslot.h>
+#include <mutex>
 
 namespace nap
 {
+	class IWebSocketClient;
+
 	/**
 	 * Web-socket client endpoint.
 	 */
 	class NAPAPI WebSocketClientEndPoint : public Device
 	{
+		friend class IWebSocketClient;
 		RTTI_ENABLE(Device)
 	public:
 		virtual ~WebSocketClientEndPoint();
@@ -32,13 +36,6 @@ namespace nap
 
 		virtual bool start(nap::utility::ErrorState& error) override;
 
-		/**
-		 * Closes connection if already opened and tries to reconnect
-		 * @param error contains the error if reconnecting failed
-		 * @return if connection was established
-		 */
-		bool reconnect(utility::ErrorState& error);
-
 		bool mAllowFailure = true;			///< Property: 'AllowFailure' if the client connection to the server is allowed to fail on start
 
 		nap::Signal<const WebSocketConnection&> connectionOpened;
@@ -46,7 +43,6 @@ namespace nap
 		nap::Signal<const WebSocketConnection&, int, const std::string&> connectionFailed;
 		nap::Signal<const WebSocketConnection&, const WebSocketMessage&> messageReceived;
 
-		std::string mURI;														///< Property: "UIR" Server URI to open connection to.
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
 
@@ -55,16 +51,28 @@ namespace nap
 		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
 		bool mRunning = false;													///< If the client connection to the server is open						
 		wspp::ClientEndPoint mEndPoint;											///< Websocketpp client end point
-		wspp::ConnectionPtr mConnection = nullptr;								///< Websocketpp client connection
+		std::vector<wspp::ConnectionPtr> mConnections;							///< Websocketpp client connections
 		std::future<void> mClientTask;											///< The client server thread
+		std::mutex mConnectionMutex;											///< Ensures connectivity thread safety
 
 		/**
 		 * Runs the end point in a background thread until stopped.
 		 */
 		void run();
 
-		void connect();
+		/**
+		 * Connects a client to a server. The connection is managed by this endpoint.
+		 * @param uri server uri.
+		 * @return the newly created web-socket connection
+		 */
+		bool connect(IWebSocketClient& client , utility::ErrorState& error);
 
-		bool disconnect(nap::utility::ErrorState& error);
+		/**
+		 * Closes all active connections
+		 */
+		bool close(utility::ErrorState& error);
+
+		void onClientDestroyed(const WebSocketConnection& connection);
+		nap::Slot<const WebSocketConnection&> mClientDestroyed = { this, &WebSocketClientEndPoint::onClientDestroyed };
 	};
 }
