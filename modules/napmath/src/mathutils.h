@@ -321,9 +321,6 @@ namespace nap
 		NAPAPI double lerp<double>(const double& start, const double& end, float percent);
 
 		template<>
-		NAPAPI int lerp<int>(const int& start, const int& end, float percent);
-
-		template<>
 		NAPAPI glm::vec2 lerp<glm::vec2>(const glm::vec2& start, const glm::vec2& end, float percent);
 
 		template<>
@@ -331,15 +328,6 @@ namespace nap
 
 		template<>
 		NAPAPI glm::vec4 lerp<glm::vec4>(const glm::vec4& start, const glm::vec4& end, float percent);
-
-		template<>
-		NAPAPI glm::ivec4 lerp<glm::ivec4>(const glm::ivec4& start, const glm::ivec4& end, float percent);
-
-		template<>
-		NAPAPI glm::ivec3 lerp<glm::ivec3>(const glm::ivec3& start, const glm::ivec3& end, float percent);
-
-		template<>
-		NAPAPI glm::ivec2 lerp<glm::ivec2>(const glm::ivec2& start, const glm::ivec2& end, float percent);
 
 		template<>
 		NAPAPI float power<float>(float value, float exp);

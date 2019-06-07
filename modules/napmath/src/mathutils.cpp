@@ -88,40 +88,6 @@ namespace nap
 		}
 
 
-		template<>
-		glm::ivec4 lerp<glm::ivec4>(const glm::ivec4& start, const glm::ivec4& end, float percent)
-		{
-			glm::ivec4 return_v;
-			return_v.x = lerp<int>(start.x, end.x, percent);
-			return_v.y = lerp<int>(start.y, end.y, percent);
-			return_v.z = lerp<int>(start.z, end.z, percent);
-			return_v.w = lerp<int>(start.w, end.w, percent);
-			return return_v;
-		}
-
-
-
-		template<>
-		glm::ivec3 lerp<glm::ivec3>(const glm::ivec3& start, const glm::ivec3& end, float percent)
-		{
-			glm::ivec3 return_v;
-			return_v.x = lerp<int>(start.x, end.x, percent);
-			return_v.y = lerp<int>(start.y, end.y, percent);
-			return_v.z = lerp<int>(start.z, end.z, percent);
-			return return_v;
-		}
-
-
-
-		template<>
-		glm::ivec2 lerp<glm::ivec2>(const glm::ivec2& start, const glm::ivec2& end, float percent)
-		{
-			glm::ivec2 return_v;
-			return_v.x = lerp<int>(start.x, end.x, percent);
-			return_v.y = lerp<int>(start.y, end.y, percent);
-			return return_v;
-		}
-
 
 		template<>
 		double lerp<double>(const double& start, const double& end, float percent)
@@ -129,13 +95,6 @@ namespace nap
 			return glm::mix<double>(start, end, percent);
 		}
 
-
-
-		template<>
-		int lerp<int>(const int& start, const int& end, float percent)
-		{
-			return glm::mix<int>(start, end, percent);
-		}
 
 
 		template<>
