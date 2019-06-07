@@ -4,6 +4,7 @@
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <parameternumeric.h>
+#include <rtti/deserializeresult.h>
 
 namespace nap
 {
@@ -32,9 +33,9 @@ namespace nap
 		*/
 		virtual bool process(double time, std::vector<Parameter*>& endParameters);
 
-		void setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters);
+		virtual void setStartParameters(const std::vector<Parameter*>& startParameters);
 
-		const std::vector<ResourcePtr<Parameter>>& getParameters() { return mParameters; }
+		const std::vector<Parameter*>& getParameters() { return mParameters; }
 
 		/**
 		 * This is called by the sequence to set the start time of this element
@@ -50,10 +51,11 @@ namespace nap
 		float mDuration = 0.0f;
 		std::string mPreset;
 		bool mUsePreset = false;
-		std::vector<ResourcePtr<Parameter>> mParameters;
+		std::vector<Parameter*> mParameters;
 	protected:
 		double mStartTime = 0.0;
 
-		std::vector<ResourcePtr<Parameter>> mStartParameters;
+		std::vector<Parameter*> mStartParameters;
+		rtti::DeserializeResult mReadPresetResult;
 	};
 }

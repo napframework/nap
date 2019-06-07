@@ -21,10 +21,15 @@ namespace nap
 			"need at least 1 element %s", this->mID.c_str()))
 			return false;
 
-		std::vector<ResourcePtr<Parameter>>& startParameters = mStartParameters;
+		std::vector<Parameter*>& startParameters = mStartParameters;
 		double time = 0.0;
 		for (int i = 0; i < mElements.size(); i++)
 		{
+			mElements[i]->setStartTime(time);
+			mElements[i]->setStartParameters(startParameters);
+			startParameters = mElements[i]->getParameters();
+			time += mElements[i]->mDuration;
+
 			if (!errorState.check(
 				mElements[i]->getParameters().size() ==
 				startParameters.size(),
@@ -41,11 +46,6 @@ namespace nap
 					mID.c_str()))
 					return false;
 			}
-
-			mElements[i]->setStartTime(time);
-			mElements[i]->setStartParameters(startParameters);
-			startParameters = mElements[i]->getParameters();
-			time += mElements[i]->mDuration;
 		}
 
 		return true;

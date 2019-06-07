@@ -26,6 +26,6 @@ namespace nap
 		std::vector<ResourcePtr<FlexBlockSequenceElement>> mElements;
 
 		//
-		std::vector<ResourcePtr<Parameter>> mStartParameters;
+		std::vector<Parameter*> mStartParameters;
 	};
 }

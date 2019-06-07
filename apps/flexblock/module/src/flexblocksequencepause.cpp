@@ -27,9 +27,14 @@ namespace nap
 
 		for (int i = 0; i < mStartParameters.size(); i++)
 		{
-			outParameters[i]->setValue(*mStartParameters[i].get());
+			outParameters[i]->setValue(*mStartParameters[i]);
 		}
 
 		return true;
+	}
+
+	void FlexBlockSequencePause::setStartParameters(const std::vector<Parameter*>& startParameters) 
+	{
+		mParameters = startParameters;
 	}
 }

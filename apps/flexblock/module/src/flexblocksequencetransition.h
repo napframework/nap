@@ -8,6 +8,7 @@
 #include <parameternumeric.h>
 #include <parametersimple.h>
 #include <parametervec.h>
+#include <color.h>
 
 #include "flexblocksequenceelement.h"
 
@@ -32,23 +33,19 @@ namespace nap
 
 
 	protected:
-		std::vector<void(FlexBlockSequenceTransition::*)(float progress, Parameter * in, Parameter * out)> mFunctions;
+		std::vector<void(FlexBlockSequenceTransition::*)(float progress, Parameter * inA, Parameter * inB, Parameter * out)> mFunctions;
 		float (FlexBlockSequenceTransition::*mEvaluateFunction)(float t);
 
 		template<typename T1, class T2 >
-		void process(float progress, Parameter* in, Parameter* out);
+		void process(float progress, Parameter* inA, Parameter* inB, Parameter * out);
 
 		float evaluateLinear(float progress);
 		float evaluateCurve(float progress);
 	};
 
-	/*
-	template<typename T1, typename T2>
-	inline void FlexBlockSequenceTransition::processTemp(float progress, Parameter * in, Parameter * out)
+	namespace math
 	{
-		T1<T2>* a = static_cast<T1<T2>*>(in);
-		T1<T2>* b = static_cast<T1<T2>*>(out);
-
-		b->setValue(math::lerp<T2>(a->mValue, b->mValue, (this->*mEvaluateFunction)(progress)));
-	}*/
+		template<>
+		NAPAPI nap::RGBColorFloat lerp<nap::RGBColorFloat>(const nap::RGBColorFloat& start, const nap::RGBColorFloat& end, float percent);
+	}
 }
