@@ -12,9 +12,9 @@
 namespace nap
 {
 	/**
-	* FlexBlockSequenceElement
+	* TimelineSequencePause
 	*/
-	class NAPAPI FlexBlockSequencePause : public TimelineSequenceElement
+	class NAPAPI TimelineSequencePause : public TimelineSequenceElement
 	{
 		RTTI_ENABLE(TimelineSequenceElement)
 	public:

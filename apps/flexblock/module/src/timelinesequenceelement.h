@@ -8,10 +8,8 @@
 
 namespace nap
 {
-	class FlexBlockSequenceElementValueContainer;
-
 	/**
-	 * FlexBlockSequenceElement
+	 * TimelineSequenceElement
 	 */
 	class NAPAPI TimelineSequenceElement : public Resource
 	{
