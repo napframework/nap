@@ -1,6 +1,7 @@
 #pragma once
 
 #include <websocketpp/server.hpp>
+#include <websocketpp/client.hpp>
 #include <websocketpp/config/asio_no_tls.hpp>
 
 namespace nap
@@ -15,7 +16,8 @@ namespace nap
 		using ConnectionHandler = std::function<void(ConnectionHandle)>;			///< connection established / disconnect handle function
 		using MessageHandler = std::function<void(ConnectionHandle, MessagePtr)>;	///< message received handle function
 		using EndPoint = websocketpp::endpoint<websocketpp::connection<wspp::Config>, wspp::Config>;
-		using ServerEndPoint = websocketpp::server<Config>;							///< Web socket server end point specialization
+		using ServerEndPoint = websocketpp::server<Config>;							///< Web socket server end point 
+		using ClientEndPoint = websocketpp::client<Config>;							///< Web socket client end point 
 		using ConnectionPtr = EndPoint::connection_ptr;								///< Shared connection pointer
 	}
 }

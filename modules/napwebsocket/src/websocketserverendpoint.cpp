@@ -22,41 +22,10 @@ namespace nap
 	{
 		// Run until stopped
 		assert(!mRunning);
-		assert(mEndPoint == nullptr);
-		mEndPoint = std::make_unique<wspp::ServerEndPoint>();
-
-		// Initiate logging
-		mEndPoint->clear_error_channels(websocketpp::log::elevel::all);
-		mEndPoint->set_error_channels(mLogLevel);
-
-		mEndPoint->clear_access_channels(websocketpp::log::alevel::all);
-		mEndPoint->set_access_channels(mAccessLogLevel);
-
-		// Init asio
-		std::error_code stdec;
-		mEndPoint->init_asio(stdec);
-		if (stdec)
-		{
-			error.fail(stdec.message());
-			return false;
-		}
-
-		// Install connection open / closed handlers
-		mEndPoint->set_http_handler(std::bind(&WebSocketServerEndPoint::onHTTP, this, std::placeholders::_1));
-		mEndPoint->set_open_handler(std::bind(&WebSocketServerEndPoint::onConnectionOpened,	this, std::placeholders::_1));
-		mEndPoint->set_close_handler(std::bind(&WebSocketServerEndPoint::onConnectionClosed,	this, std::placeholders::_1));
-		mEndPoint->set_fail_handler(std::bind(&WebSocketServerEndPoint::onConnectionFailed,	this, std::placeholders::_1));
-		mEndPoint->set_validate_handler(std::bind(&WebSocketServerEndPoint::onValidate, this, std::placeholders::_1));
-		mEndPoint->set_ping_handler(std::bind(&WebSocketServerEndPoint::onPing, this, std::placeholders::_1, std::placeholders::_2));
-
-		// Install message handler
-		mEndPoint->set_message_handler(std::bind(
-			&WebSocketServerEndPoint::onMessageReceived, this,
-			std::placeholders::_1, std::placeholders::_2
-		));
 
 		// Listen to messages on this specific port
-		mEndPoint->listen(static_cast<uint16>(mPort), stdec);
+		std::error_code stdec;
+		mEndPoint.listen(static_cast<uint16>(mPort), stdec);
 		if (stdec)
 		{
 			error.fail(stdec.message());
@@ -64,7 +33,7 @@ namespace nap
 		}
 
 		// Queues a connection accept operation 
-		mEndPoint->start_accept(stdec);
+		mEndPoint.start_accept(stdec);
 		if (stdec)
 		{
 			error.fail(stdec.message());
@@ -81,14 +50,14 @@ namespace nap
 
 	bool WebSocketServerEndPoint::isOpen() const
 	{
-		return mEndPoint != nullptr;
+		return mRunning;
 	}
 
 
 	bool WebSocketServerEndPoint::send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
 		std::error_code stdec;
-		mEndPoint->send(connection.mConnection, message, static_cast<wspp::OpCode>(code), stdec);
+		mEndPoint.send(connection.mConnection, message, static_cast<wspp::OpCode>(code), stdec);
 		if (stdec)
 		{
 			error.fail(stdec.message());
@@ -101,7 +70,7 @@ namespace nap
 	bool WebSocketServerEndPoint::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
 		std::error_code stdec;
-		mEndPoint->send(connection.mConnection, payload, length, static_cast<wspp::OpCode>(code), stdec);
+		mEndPoint.send(connection.mConnection, payload, length, static_cast<wspp::OpCode>(code), stdec);
 		if (stdec)
 		{
 			error.fail(stdec.message());
@@ -114,7 +83,7 @@ namespace nap
 	void WebSocketServerEndPoint::run()
 	{
 		// Start running until stopped
-		mEndPoint->run();
+		mEndPoint.run();
 	}
 
 
@@ -122,11 +91,29 @@ namespace nap
 	{
 		if (mRunning)
 		{
-			assert(mEndPoint != nullptr);
+			// Stop listening for new connections
+			std::error_code stdec;
+			mEndPoint.stop_listening(stdec);
+			if (stdec)
+			{
+				assert(false);
+				nap::Logger::error("%s: %s", mID.c_str(), stdec.message().c_str());
+			}
+
+			// Close all client connections
+			utility::ErrorState napec;
+			if (!disconnect(napec))
+			{
+				assert(false);
+				nap::Logger::error("%s: %s", mID.c_str(), napec.toString().c_str());
+			}
+
+			// Explicitly stop
+			mEndPoint.stop();
+
+			// Wait for thread to finish
 			assert(mServerTask.valid());
-			mEndPoint->stop();
 			mServerTask.wait();
-			mEndPoint.reset(nullptr);
 			mRunning = false;
 		}
 	}
@@ -145,12 +132,56 @@ namespace nap
 		mAccessLogLevel = mLogConnectionUpdates ? websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload
 			: websocketpp::log::alevel::fail;
 
+		// Initiate logging
+		mEndPoint.clear_error_channels(websocketpp::log::elevel::all);
+		mEndPoint.set_error_channels(mLogLevel);
+
+		mEndPoint.clear_access_channels(websocketpp::log::alevel::all);
+		mEndPoint.set_access_channels(mAccessLogLevel);
+
+		// Init asio
+		std::error_code stdec;
+		mEndPoint.init_asio(stdec);
+		if (stdec)
+		{
+			errorState.fail(stdec.message());
+			return false;
+		}
+		
+		// Install connection open / closed handlers
+		mEndPoint.set_http_handler(std::bind(&WebSocketServerEndPoint::onHTTP, this, std::placeholders::_1));
+		mEndPoint.set_open_handler(std::bind(&WebSocketServerEndPoint::onConnectionOpened, this, std::placeholders::_1));
+		mEndPoint.set_close_handler(std::bind(&WebSocketServerEndPoint::onConnectionClosed, this, std::placeholders::_1));
+		mEndPoint.set_fail_handler(std::bind(&WebSocketServerEndPoint::onConnectionFailed, this, std::placeholders::_1));
+		mEndPoint.set_validate_handler(std::bind(&WebSocketServerEndPoint::onValidate, this, std::placeholders::_1));
+		mEndPoint.set_ping_handler(std::bind(&WebSocketServerEndPoint::onPing, this, std::placeholders::_1, std::placeholders::_2));
+
+		// Install message handler
+		mEndPoint.set_message_handler(std::bind(
+			&WebSocketServerEndPoint::onMessageReceived, this,
+			std::placeholders::_1, std::placeholders::_2
+		));
+		
 		return true;
 	}
 	
 
 	void WebSocketServerEndPoint::onConnectionOpened(wspp::ConnectionHandle connection)
 	{
+		std::error_code stdec;
+		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
+		if (stdec)
+		{
+			nap::Logger::error(stdec.message());
+			return;
+		}
+
+		// Add to list of actively managed connections
+		{
+			std::lock_guard<std::mutex> lock(mConnectionMutex);
+			mConnections.emplace_back(cptr);
+		}
+
 		connectionOpened(WebSocketConnection(connection));
 	}
 
@@ -158,23 +189,40 @@ namespace nap
 	void WebSocketServerEndPoint::onConnectionClosed(wspp::ConnectionHandle connection)
 	{
 		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection, stdec);
+		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
 		if (stdec)
 		{
 			nap::Logger::error(stdec.message());
 			return;
 		}
 
+		// Signal that it closed
 		connectionClosed(WebSocketConnection(connection),
 			cptr->get_ec().value(), 
 			cptr->get_ec().message());
+
+		// Remove from internal list of connections
+		{
+			std::lock_guard<std::mutex> lock(mConnectionMutex);
+			auto found_it = std::find_if(mConnections.begin(), mConnections.end(), [&](const auto& it)
+			{
+				return it == cptr;
+			});
+
+			if (found_it == mConnections.end())
+			{
+				assert(false);
+				return;
+			}
+			mConnections.erase(found_it);
+		}
 	}
 
 
 	void WebSocketServerEndPoint::onConnectionFailed(wspp::ConnectionHandle connection)
 	{
 		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection, stdec);
+		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
 		if (stdec)
 		{
 			nap::Logger::error(stdec.message());
@@ -195,7 +243,7 @@ namespace nap
 
 	void WebSocketServerEndPoint::onHTTP(wspp::ConnectionHandle con)
 	{
-		wspp::ConnectionPtr conp = mEndPoint->get_con_from_hdl(con);
+		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con);
 		std::string res = conp->get_request_body();
 		std::stringstream ss;
 		ss << "got HTTP request with " << res.size() << " bytes of body data.";
@@ -216,4 +264,22 @@ namespace nap
 		return true;
 	}
 
+
+	bool WebSocketServerEndPoint::disconnect(nap::utility::ErrorState& error)
+	{
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		bool success = true;
+		for (auto& connection : mConnections)
+		{
+			std::error_code stdec;
+			mEndPoint.close(connection, websocketpp::close::status::going_away, "disconnected", stdec);
+			if (stdec)
+			{
+				error.fail(stdec.message());
+				success = false;
+			}
+		}
+		mConnections.clear();
+		return success;
+	}
 }
