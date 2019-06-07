@@ -2,8 +2,8 @@
 #include "flexblockgui.h"
 #include "flexblockapp.h"
 #include "flexblockcomponent.h"
-#include "flexblocksequence.h"
-#include "flexblocksequenceplayercomponent.h"
+#include "timelinesequence.h"
+#include "timelinesequenceplayercomponent.h"
 
 // External Includes
 #include <imgui/imgui.h>
@@ -140,7 +140,7 @@ namespace nap
 
 		const auto size = ImVec2(max.x - min.x, max.y - min.y);
 
-		FlexBlockSequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<FlexBlockSequencePlayerComponentInstance>();
+		TimelineSequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<TimelineSequencePlayerComponentInstance>();
 
 		const auto & elements = sequencePlayer.getElements();
 		for (int i = 0; i < elements.size(); i++)
@@ -172,7 +172,7 @@ namespace nap
 		ImGui::Begin("Sequence player");
 		ImGui::Spacing();
 
-		FlexBlockSequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<FlexBlockSequencePlayerComponentInstance>();
+		TimelineSequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<TimelineSequencePlayerComponentInstance>();
 		if (ImGui::Button("Stop"))
 		{
 			sequencePlayer.stop();
@@ -216,7 +216,7 @@ namespace nap
 
 		if (ImGui::TreeNode("Sequences"))
 		{
-			const auto& sequences = resourceManager->getObjects<FlexBlockSequence>();
+			const auto& sequences = resourceManager->getObjects<TimelineSequence>();
 
 			for (const auto& sequence : sequences)
 			{

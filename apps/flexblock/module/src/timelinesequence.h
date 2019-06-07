@@ -3,18 +3,18 @@
 // External Includes
 #include <nap/resource.h>
 
-#include "flexblocksequenceelement.h"
+#include "timelinesequenceelement.h"
 
 namespace nap
 {
 	/**
-	 * flexblockstancesequence
+	 * TimelineSequence
 	 */
-	class NAPAPI FlexBlockSequence : public Resource
+	class NAPAPI TimelineSequence : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		virtual ~FlexBlockSequence();
+		virtual ~TimelineSequence();
 
 		/**
 		* Initialize this object after de-serialization
@@ -23,7 +23,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 	public:
 		// properties
-		std::vector<ResourcePtr<FlexBlockSequenceElement>> mElements;
+		std::vector<ResourcePtr<TimelineSequenceElement>> mElements;
 
 		//
 		std::vector<Parameter*> mStartParameters;

@@ -6,16 +6,17 @@
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <parameternumeric.h>
-#include "flexblocksequenceelement.h"
+
+#include "timelinesequenceelement.h"
 
 namespace nap
 {
 	/**
 	* FlexBlockSequenceElement
 	*/
-	class NAPAPI FlexBlockSequencePause : public FlexBlockSequenceElement
+	class NAPAPI FlexBlockSequencePause : public TimelineSequenceElement
 	{
-		RTTI_ENABLE(FlexBlockSequenceElement)
+		RTTI_ENABLE(TimelineSequenceElement)
 	public:
 		/**
 		* Initialize this object after de-serialization

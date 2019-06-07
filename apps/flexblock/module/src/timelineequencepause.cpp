@@ -1,9 +1,9 @@
-#include "FlexBlockSequencePause.h"
+#include "timelinesequencepause.h"
 
 // nap::FlexBlockSequenceElement run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockSequencePause)
 // Put additional properties here
-RTTI_PROPERTY("Duration", &nap::FlexBlockSequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Duration", &nap::TimelineSequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@ namespace nap
 
 	bool FlexBlockSequencePause::init(utility::ErrorState& errorState)
 	{
-		if (!FlexBlockSequenceElement::init(errorState))
+		if (!TimelineSequenceElement::init(errorState))
 			return false;
 
 		return true;
@@ -22,7 +22,7 @@ namespace nap
 
 	bool FlexBlockSequencePause::process(double time, std::vector<Parameter*>& outParameters)
 	{
-		if (!FlexBlockSequenceElement::process(time, outParameters))
+		if (!TimelineSequenceElement::process(time, outParameters))
 			return false;
 
 		for (int i = 0; i < mStartParameters.size(); i++)

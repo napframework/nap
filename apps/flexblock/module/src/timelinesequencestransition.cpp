@@ -1,15 +1,15 @@
-#include "flexblocksequencetransition.h"
+#include "timelinesequencetransition.h"
 
 #include <parametercolor.h>
 
 // nap::FlexBlockSequenceElement run time class definition 
-RTTI_BEGIN_CLASS(nap::FlexBlockSequenceTransition)
+RTTI_BEGIN_CLASS(nap::TimelineSequenceTransition)
 // Put additional properties here
-RTTI_PROPERTY("Duration", &nap::FlexBlockSequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Curve", &nap::FlexBlockSequenceTransition::mCurve, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Parameters", &nap::FlexBlockSequenceTransition::mParameters, nap::rtti::EPropertyMetaData::Embedded)
-RTTI_PROPERTY("Preset File", &nap::FlexBlockSequenceTransition::mPreset, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Use Preset", &nap::FlexBlockSequenceTransition::mUsePreset, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Duration", &nap::TimelineSequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Curve", &nap::TimelineSequenceTransition::mCurve, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Parameters", &nap::TimelineSequenceTransition::mParameters, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_PROPERTY("Preset File", &nap::TimelineSequenceTransition::mPreset, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Use Preset", &nap::TimelineSequenceTransition::mUsePreset, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -18,9 +18,9 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	bool FlexBlockSequenceTransition::init(utility::ErrorState& errorState)
+	bool TimelineSequenceTransition::init(utility::ErrorState& errorState)
 	{
-		if (!FlexBlockSequenceElement::init(errorState))
+		if (!TimelineSequenceElement::init(errorState))
 			return false;
 
 		if (!errorState.check(mParameters.size() > 0,
@@ -31,43 +31,43 @@ namespace nap
 		{
 			if (mParameters[i]->get_type().is_derived_from<ParameterFloat>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterFloat, float>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterFloat, float>);
 			}
 			else if (mParameters[i]->get_type().is_derived_from<ParameterInt>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterInt, int>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterInt, int>);
 			}
 			else if (mParameters[i]->get_type().is_derived_from<ParameterVec2>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterVec2, glm::vec2>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterVec2, glm::vec2>);
 			}
 			else if (mParameters[i]->get_type().is_derived_from<ParameterVec3>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterVec3, glm::vec3>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterVec3, glm::vec3>);
 			}
 			else if (mParameters[i]->get_type().is_derived_from<ParameterIVec2>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterIVec2, glm::ivec2>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterIVec2, glm::ivec2>);
 			}
 			else if (mParameters[i]->get_type().is_derived_from<ParameterIVec3>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterIVec3, glm::ivec3>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterIVec3, glm::ivec3>);
 			}
 			else if (mParameters[i]->get_type().is_derived_from<ParameterRGBColorFloat>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterRGBColorFloat, RGBColorFloat>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterRGBColorFloat, RGBColorFloat>);
 			}
 			else if (mParameters[i]->get_type().is_derived_from<ParameterRGBAColorFloat>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterRGBAColorFloat, RGBAColorFloat>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterRGBAColorFloat, RGBAColorFloat>);
 			}
 			else if (mParameters[i]->get_type().is_derived_from<ParameterRGBColor8>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterRGBColor8, RGBColor8>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterRGBColor8, RGBColor8>);
 			}
 			else if (mParameters[i]->get_type().is_derived_from<ParameterRGBAColor8>())
 			{
-				mFunctions.push_back(&FlexBlockSequenceTransition::process<ParameterRGBAColor8, RGBAColor8>);
+				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterRGBAColor8, RGBAColor8>);
 			}
 			else
 			{
@@ -79,16 +79,16 @@ namespace nap
 		}
 
 		if (mCurve != nullptr)
-			mEvaluateFunction = &FlexBlockSequenceTransition::evaluateCurve;
+			mEvaluateFunction = &TimelineSequenceTransition::evaluateCurve;
 		else
-			mEvaluateFunction = &FlexBlockSequenceTransition::evaluateLinear;
+			mEvaluateFunction = &TimelineSequenceTransition::evaluateLinear;
 
 		return true;
 	}
 
-	bool FlexBlockSequenceTransition::process(double time, std::vector<Parameter*>& outParameters)
+	bool TimelineSequenceTransition::process(double time, std::vector<Parameter*>& outParameters)
 	{
-		if (!FlexBlockSequenceElement::process(time, outParameters))
+		if (!TimelineSequenceElement::process(time, outParameters))
 			return false;
 
 		float progress = (time - mStartTime) / mDuration;
@@ -101,32 +101,68 @@ namespace nap
 		return true;
 	}
 
-	float FlexBlockSequenceTransition::evaluateCurve(float progress)
+	const float TimelineSequenceTransition::evaluateCurve(float progress)
 	{
 		return mCurve->evaluate(progress);
 	}
 
 
-	float FlexBlockSequenceTransition::evaluateLinear(float progress)
+	const float TimelineSequenceTransition::evaluateLinear(float progress)
 	{
 		return progress;
 	}
 
-	template<typename T1, class T2>
-	void FlexBlockSequenceTransition::process(float progress, 
-		Parameter * inA,
-		Parameter * inB,
+	template<typename T1, typename T2>
+	void TimelineSequenceTransition::process(float progress, 
+		const Parameter * inA,
+		const Parameter * inB,
 		Parameter * out)
 	{
 		static_cast<T1*>(out)->setValue(
 			math::lerp<T2>(
-				static_cast<T1*>(inA)->mValue,
-				static_cast<T1*>(inB)->mValue,
+				static_cast<const T1*>(inA)->mValue,
+				static_cast<const T1*>(inB)->mValue,
 				(this->*mEvaluateFunction)(progress)));
 	}
 
 	namespace math
 	{
+		template<>
+		glm::ivec4 lerp<glm::ivec4>(const glm::ivec4& start, const glm::ivec4& end, float percent)
+		{
+			glm::ivec4 return_v;
+			return_v.x = lerp<int>(start.x, end.x, percent);
+			return_v.y = lerp<int>(start.y, end.y, percent);
+			return_v.z = lerp<int>(start.z, end.z, percent);
+			return_v.w = lerp<int>(start.w, end.w, percent);
+			return return_v;
+		}
+
+		template<>
+		glm::ivec3 lerp<glm::ivec3>(const glm::ivec3& start, const glm::ivec3& end, float percent)
+		{
+			glm::ivec3 return_v;
+			return_v.x = lerp<int>(start.x, end.x, percent);
+			return_v.y = lerp<int>(start.y, end.y, percent);
+			return_v.z = lerp<int>(start.z, end.z, percent);
+			return return_v;
+		}
+
+		template<>
+		glm::ivec2 lerp<glm::ivec2>(const glm::ivec2& start, const glm::ivec2& end, float percent)
+		{
+			glm::ivec2 return_v;
+			return_v.x = lerp<int>(start.x, end.x, percent);
+			return_v.y = lerp<int>(start.y, end.y, percent);
+			return return_v;
+		}
+
+		template<>
+		int lerp<int>(const int& start, const int& end, float percent)
+		{
+			return glm::mix<int>(start, end, percent);
+		}
+
 		template<>
 		nap::RGBColorFloat lerp<RGBColorFloat>(const nap::RGBColorFloat& start, const nap::RGBColorFloat& end, float percent)
 		{

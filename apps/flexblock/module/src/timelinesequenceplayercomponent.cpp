@@ -1,16 +1,16 @@
-#include "flexblocksequenceplayercomponent.h"
+#include "timelinesequenceplayercomponent.h"
 
 // External Includes
 #include <entity.h>
 
 // nap::flexblocksequenceplayer run time class definition 
-RTTI_BEGIN_CLASS(nap::FlexBlockSequencePlayerComponent)
+RTTI_BEGIN_CLASS(nap::TimelineSequencePlayerComponent)
 // Put additional properties here
-RTTI_PROPERTY("FlexBlockParameters", &nap::FlexBlockSequencePlayerComponent::mParameterGroup, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("TimelineParameters", &nap::TimelineSequencePlayerComponent::mParameterGroup, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::flexblocksequenceplayerInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FlexBlockSequencePlayerComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TimelineSequencePlayerComponentInstance)
 RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -18,15 +18,15 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void FlexBlockSequencePlayerComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	void TimelineSequencePlayerComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 
 	}
 
 
-	bool FlexBlockSequencePlayerComponentInstance::init(utility::ErrorState& errorState)
+	bool TimelineSequencePlayerComponentInstance::init(utility::ErrorState& errorState)
 	{
-		FlexBlockSequencePlayerComponent* resource = getComponent<FlexBlockSequencePlayerComponent>();
+		TimelineSequencePlayerComponent* resource = getComponent<TimelineSequencePlayerComponent>();
 
 		const auto& parameterGroup = resource->mParameterGroup;
 		for (const auto& parameter : parameterGroup->mParameters)
@@ -37,13 +37,13 @@ namespace nap
 		return true;
 	}
 
-	const std::vector<ResourcePtr<FlexBlockSequenceElement>>& FlexBlockSequencePlayerComponentInstance::getElements()
+	const std::vector<ResourcePtr<TimelineSequenceElement>>& TimelineSequencePlayerComponentInstance::getElements()
 	{
 		assert(mSequence != nullptr);
 		return mSequence->mElements;
 	}
 
-	void FlexBlockSequencePlayerComponentInstance::update(double deltaTime)
+	void TimelineSequencePlayerComponentInstance::update(double deltaTime)
 	{
 		if (mIsPlaying)
 		{
@@ -81,7 +81,7 @@ namespace nap
 		}
 	}
 
-	void FlexBlockSequencePlayerComponentInstance::play()
+	void TimelineSequencePlayerComponentInstance::play()
 	{
 		if (mIsPlaying)
 		{
@@ -96,18 +96,18 @@ namespace nap
 		}
 	}
 
-	void FlexBlockSequencePlayerComponentInstance::setTime(double time)
+	void TimelineSequencePlayerComponentInstance::setTime(double time)
 	{
 		mTime = time;
 		mCurrentSequenceIndex = 0;
 	}
 
-	void FlexBlockSequencePlayerComponentInstance::pause()
+	void TimelineSequencePlayerComponentInstance::pause()
 	{
 		mIsPaused = true;
 	}
 
-	bool FlexBlockSequencePlayerComponentInstance::load(ResourcePtr<FlexBlockSequence> sequence, utility::ErrorState& error)
+	bool TimelineSequencePlayerComponentInstance::load(ResourcePtr<TimelineSequence> sequence, utility::ErrorState& error)
 	{
 		if (!error.check(sequence != nullptr,
 			"Sequence is null %s", mID.c_str()))
@@ -149,7 +149,7 @@ namespace nap
 		return true;
 	}
 
-	void FlexBlockSequencePlayerComponentInstance::stop()
+	void TimelineSequencePlayerComponentInstance::stop()
 	{
 		mIsPlaying = false;
 		mIsPaused = false;

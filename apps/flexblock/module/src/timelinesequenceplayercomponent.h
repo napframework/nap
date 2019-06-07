@@ -5,20 +5,19 @@
 #include <parameter.h>
 #include <parameternumeric.h>
 
-#include "flexblockcomponent.h"
-#include "flexblocksequence.h"
+#include "timelinesequence.h"
 
 namespace nap
 {
-	class FlexBlockSequencePlayerComponentInstance;
+	class TimelineSequencePlayerComponentInstance;
 
 	/**
-	 *	FlexBlockSequencePlayerComponent
+	 *	TimelineSequencePlayerComponent
 	 */
-	class NAPAPI FlexBlockSequencePlayerComponent : public Component
+	class NAPAPI TimelineSequencePlayerComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(FlexBlockSequencePlayerComponent, FlexBlockSequencePlayerComponentInstance)
+		DECLARE_COMPONENT(TimelineSequencePlayerComponent, TimelineSequencePlayerComponentInstance)
 	public:
 
 		/**
@@ -32,17 +31,17 @@ namespace nap
 
 
 	/**
-	 * flexblocksequenceplayerInstance	
+	 * TimelineSequencePlayerComponentInstance	
 	 */
-	class NAPAPI FlexBlockSequencePlayerComponentInstance : public ComponentInstance
+	class NAPAPI TimelineSequencePlayerComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		FlexBlockSequencePlayerComponentInstance(EntityInstance& entity, Component& resource) :
+		TimelineSequencePlayerComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
 		/**
-		 * Initialize flexblocksequenceplayerInstance based on the flexblocksequenceplayer resource
+		 * Initialize TimelineSequencePlayerComponentInstance based on the TimelineSequencePlayerComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the flexblocksequenceplayerInstance is initialized successfully
@@ -61,7 +60,7 @@ namespace nap
 		* @param error
 		* @return returns true if succesfully loaded
 		*/
-		bool load(ResourcePtr<FlexBlockSequence> sequence, utility::ErrorState& error);
+		bool load(ResourcePtr<TimelineSequence> sequence, utility::ErrorState& error);
 
 		/**
 		 * play a sequence
@@ -113,12 +112,12 @@ namespace nap
 		/**
 		* @return pointer to current sequence
 		*/
-		const FlexBlockSequence* getCurrentSequence() { return mSequence; };
+		const TimelineSequence* getCurrentSequence() { return mSequence; };
 	
 		/**
 		* @return pointer to current element in sequence being played, nullptr if not available
 		*/
-		const FlexBlockSequenceElement* getCurrentElement() 
+		const TimelineSequenceElement* getCurrentElement() 
 		{ 
 			if(mSequence->mElements.size() > 0 )
 				return mSequence->mElements[mCurrentSequenceIndex].get(); 
@@ -144,10 +143,10 @@ namespace nap
 		/**
 		* @return vector of pointers to sequence elements
 		*/
-		const std::vector<ResourcePtr<FlexBlockSequenceElement>>& getElements();
+		const std::vector<ResourcePtr<TimelineSequenceElement>>& getElements();
 	protected:
 		//
-		FlexBlockSequence* mSequence			= nullptr;
+		TimelineSequence* mSequence				= nullptr;
 
 		double mTime							= 0.0;
 		bool mIsPlaying							= false;

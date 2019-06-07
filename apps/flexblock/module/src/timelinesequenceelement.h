@@ -13,11 +13,11 @@ namespace nap
 	/**
 	 * FlexBlockSequenceElement
 	 */
-	class NAPAPI FlexBlockSequenceElement : public Resource
+	class NAPAPI TimelineSequenceElement : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		virtual ~FlexBlockSequenceElement();
+		virtual ~TimelineSequenceElement();
 
 		/**
 		* Initialize this object after de-serialization

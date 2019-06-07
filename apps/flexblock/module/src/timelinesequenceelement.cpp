@@ -1,4 +1,4 @@
-#include "flexblocksequenceelement.h"
+#include "timelinesequenceelement.h"
 
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
@@ -9,9 +9,9 @@
 #include <fstream>
 
 
-RTTI_DEFINE_BASE(nap::FlexBlockSequenceElement)
+RTTI_DEFINE_BASE(nap::TimelineSequenceElement)
 
-RTTI_BEGIN_CLASS(nap::FlexBlockSequenceElement)
+RTTI_BEGIN_CLASS(nap::TimelineSequenceElement)
 // Put additional properties here
 
 RTTI_END_CLASS
@@ -20,10 +20,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	FlexBlockSequenceElement::~FlexBlockSequenceElement()			{ }
+	TimelineSequenceElement::~TimelineSequenceElement()			{ }
 
 
-	bool FlexBlockSequenceElement::init(utility::ErrorState& errorState)
+	bool TimelineSequenceElement::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mDuration >= 0.0f,
 			"duration must be bigger or equal then 0 %s", this->mID.c_str()))
@@ -71,12 +71,12 @@ namespace nap
 		return true;
 	}
 
-	bool FlexBlockSequenceElement::process(double time, std::vector<Parameter*>& outParameters)
+	bool TimelineSequenceElement::process(double time, std::vector<Parameter*>& outParameters)
 	{
 		return (time >= mStartTime && time < mStartTime + mDuration);
 	}
 
-	void FlexBlockSequenceElement::setStartParameters(const std::vector<Parameter*>& startParameters)
+	void TimelineSequenceElement::setStartParameters(const std::vector<Parameter*>& startParameters)
 	{
 		mStartParameters = startParameters;
 	}

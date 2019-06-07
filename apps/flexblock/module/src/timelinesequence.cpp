@@ -1,10 +1,10 @@
-#include "flexblocksequence.h"
+#include "timelinesequence.h"
 
 // nap::flexblockstancesequence run time class definition 
-RTTI_BEGIN_CLASS(nap::FlexBlockSequence)
+RTTI_BEGIN_CLASS(nap::TimelineSequence)
 	// Put additional properties here
-	RTTI_PROPERTY("Elements", &nap::FlexBlockSequence::mElements, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("StartInputs", &nap::FlexBlockSequence::mStartParameters, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Elements", &nap::TimelineSequence::mElements, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("StartInputs", &nap::TimelineSequence::mStartParameters, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -12,10 +12,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	FlexBlockSequence::~FlexBlockSequence()			{ }
+	TimelineSequence::~TimelineSequence()			{ }
 
 
-	bool FlexBlockSequence::init(utility::ErrorState& errorState)
+	bool TimelineSequence::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mElements.size() > 0,
 			"need at least 1 element %s", this->mID.c_str()))
