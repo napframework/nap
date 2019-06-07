@@ -72,7 +72,8 @@ namespace nap
 		 */
 		bool close(utility::ErrorState& error);
 
-		void onClientDestroyed(const WebSocketConnection& connection);
-		nap::Slot<const WebSocketConnection&> mClientDestroyed = { this, &WebSocketClientEndPoint::onClientDestroyed };
+		// THIS IS AN INIT WORKAROUND: TODO: FIX ORDER OF DESTRUCTION
+		void onDisconnect(const WebSocketConnection& connection);
+		nap::Slot<const WebSocketConnection&> mClientDisconnected = { this, &WebSocketClientEndPoint::onDisconnect };
 	};
 }

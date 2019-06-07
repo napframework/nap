@@ -125,8 +125,8 @@ namespace nap
 		// Set the handle
 		client.mConnection = WebSocketConnection(client_connection->get_handle());
 
-		// Connect to destruction slot
-		client.destroyed.connect(mClientDestroyed);
+		// Connect to client disconnect slot
+		client.disconnect.connect(mClientDisconnected);
 
 		return true;
 	}
@@ -138,6 +138,9 @@ namespace nap
 		bool success = true;
 		for (auto& connection : mConnections)
 		{
+			if(connection->get_state() != websocketpp::session::state::open)
+				continue;
+
 			std::error_code stdec;
 			mEndPoint.close(connection, websocketpp::close::status::going_away, "disconnected", stdec);
 			if (stdec)
@@ -151,17 +154,12 @@ namespace nap
 	}
 
 
-	void WebSocketClientEndPoint::onClientDestroyed(const WebSocketConnection& connection)
+	void WebSocketClientEndPoint::onDisconnect(const WebSocketConnection& connection)
 	{
 		// Remove from internal list of connections
 		std::error_code stdec;
 		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection.mConnection, stdec);
-		if (stdec)
-		{
-			assert(false);
-			nap::Logger::error(stdec.message());
-			return;
-		}
+		assert(!stdec);
 
 		{
 			std::lock_guard<std::mutex> lock(mConnectionMutex);
@@ -179,14 +177,10 @@ namespace nap
 		}
 
 		// Close it if it is open
-		if (cptr->get_state() == websocketpp::session::state::open)
-		{
-			mEndPoint.close(connection.mConnection, websocketpp::close::status::going_away, "disconnected", stdec);
-			if (stdec)
-			{
-				assert(false);
-				nap::Logger::error("%s: %s", this->mID.c_str(), stdec.message().c_str());
-			}
-		}
+		if (cptr->get_state() != websocketpp::session::state::open)
+			return;
+
+		mEndPoint.close(connection.mConnection, websocketpp::close::status::going_away, "disconnected", stdec);
+			nap::Logger::error("%s: %s", this->mID.c_str(), stdec.message().c_str());
 	}
 }
