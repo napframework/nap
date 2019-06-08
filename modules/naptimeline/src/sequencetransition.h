@@ -10,44 +10,47 @@
 #include <parametervec.h>
 #include <color.h>
 
-#include "timelinesequenceelement.h"
+#include "sequenceelement.h"
 
 namespace nap
 {
-	/**
-	* TimelineSequenceTransition
-	*/
-	class NAPAPI TimelineSequenceTransition : public TimelineSequenceElement
+	namespace timeline
 	{
-		RTTI_ENABLE(TimelineSequenceElement)
-	public:
 		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails
+		* TimelineSequenceTransition
 		*/
-		virtual bool init(utility::ErrorState& errorState) override;
+		class NAPAPI SequenceTransition : public SequenceElement
+		{
+			RTTI_ENABLE(SequenceElement)
+		public:
+			/**
+			* Initialize this object after de-serialization
+			* @param errorState contains the error message when initialization fails
+			*/
+			virtual bool init(utility::ErrorState& errorState) override;
 
-		virtual bool process(double time, std::vector<Parameter*>& outInputs) override;
-	public:
-		ResourcePtr<math::FloatFCurve> mCurve = nullptr;
+			virtual bool process(double time, std::vector<Parameter*>& outInputs) override;
+		public:
+			ResourcePtr<math::FloatFCurve> mCurve = nullptr;
 
 
-	protected:
-		std::vector<void(TimelineSequenceTransition::*)(float progress, const Parameter * inA, const Parameter * inB, Parameter * out)> mFunctions;
-		const float (TimelineSequenceTransition::*mEvaluateFunction)(float t);
+		protected:
+			std::vector<void(SequenceTransition::*)(float progress, const Parameter * inA, const Parameter * inB, Parameter * out)> mFunctions;
+			const float (SequenceTransition::*mEvaluateFunction)(float t);
 
-		template<typename T1, typename T2>
-		void process(float progress, const Parameter* inA, const Parameter* inB, Parameter * out);
+			template<typename T1, typename T2>
+			void process(float progress, const Parameter* inA, const Parameter* inB, Parameter * out);
 
-		const float evaluateLinear(float progress);
-		const float evaluateCurve(float progress);
-	};
+			const float evaluateLinear(float progress);
+			const float evaluateCurve(float progress);
+		};
+	}
 
 	namespace math
 	{
 		template<>
 		NAPAPI nap::RGBColorFloat lerp<nap::RGBColorFloat>(const nap::RGBColorFloat& start, const nap::RGBColorFloat& end, float percent);
-	
+
 		template<>
 		NAPAPI nap::RGBAColorFloat lerp<RGBAColorFloat>(const nap::RGBAColorFloat& start, const nap::RGBAColorFloat& end, float percent);
 
