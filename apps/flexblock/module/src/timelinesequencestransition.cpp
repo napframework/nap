@@ -7,7 +7,7 @@ RTTI_BEGIN_CLASS(nap::TimelineSequenceTransition)
 // Put additional properties here
 RTTI_PROPERTY("Duration", &nap::TimelineSequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Curve", &nap::TimelineSequenceTransition::mCurve, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Parameters", &nap::TimelineSequenceTransition::mParameters, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_PROPERTY("Parameters", &nap::TimelineSequenceTransition::mEndParameters, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Preset File", &nap::TimelineSequenceTransition::mPreset, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Use Preset", &nap::TimelineSequenceTransition::mUsePreset, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -23,56 +23,56 @@ namespace nap
 		if (!TimelineSequenceElement::init(errorState))
 			return false;
 
-		if (!errorState.check(mParameters.size() > 0,
+		if (!errorState.check(mEndParameters.size() > 0,
 			"parameters must be at least larger then zero %s", this->mID.c_str()))
 			return false;
 
-		for (int i = 0; i < mParameters.size(); i++)
+		for (int i = 0; i < mEndParameters.size(); i++)
 		{
-			if (mParameters[i]->get_type().is_derived_from<ParameterFloat>())
+			if (mEndParameters[i]->get_type().is_derived_from<ParameterFloat>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterFloat, float>);
 			}
-			else if (mParameters[i]->get_type().is_derived_from<ParameterInt>())
+			else if (mEndParameters[i]->get_type().is_derived_from<ParameterInt>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterInt, int>);
 			}
-			else if (mParameters[i]->get_type().is_derived_from<ParameterVec2>())
+			else if (mEndParameters[i]->get_type().is_derived_from<ParameterVec2>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterVec2, glm::vec2>);
 			}
-			else if (mParameters[i]->get_type().is_derived_from<ParameterVec3>())
+			else if (mEndParameters[i]->get_type().is_derived_from<ParameterVec3>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterVec3, glm::vec3>);
 			}
-			else if (mParameters[i]->get_type().is_derived_from<ParameterIVec2>())
+			else if (mEndParameters[i]->get_type().is_derived_from<ParameterIVec2>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterIVec2, glm::ivec2>);
 			}
-			else if (mParameters[i]->get_type().is_derived_from<ParameterIVec3>())
+			else if (mEndParameters[i]->get_type().is_derived_from<ParameterIVec3>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterIVec3, glm::ivec3>);
 			}
-			else if (mParameters[i]->get_type().is_derived_from<ParameterRGBColorFloat>())
+			else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBColorFloat>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterRGBColorFloat, RGBColorFloat>);
 			}
-			else if (mParameters[i]->get_type().is_derived_from<ParameterRGBAColorFloat>())
+			else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBAColorFloat>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterRGBAColorFloat, RGBAColorFloat>);
 			}
-			else if (mParameters[i]->get_type().is_derived_from<ParameterRGBColor8>())
+			else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBColor8>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterRGBColor8, RGBColor8>);
 			}
-			else if (mParameters[i]->get_type().is_derived_from<ParameterRGBAColor8>())
+			else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBAColor8>())
 			{
 				mFunctions.push_back(&TimelineSequenceTransition::process<ParameterRGBAColor8, RGBAColor8>);
 			}
 			else
 			{
 				errorState.check(false, "No process function for type %s in %s",
-					mParameters[i]->get_type().get_name(), mID.c_str());
+					mEndParameters[i]->get_type().get_name(), mID.c_str());
 
 				return false;
 			}
@@ -95,7 +95,7 @@ namespace nap
 
 		for (int i = 0; i < outParameters.size(); i++)
 		{
-			(this->*mFunctions[i])(progress, mStartParameters[i], mParameters[i], outParameters[i]);
+			(this->*mFunctions[i])(progress, mStartParameters[i], mEndParameters[i], outParameters[i]);
 		}
 
 		return true;

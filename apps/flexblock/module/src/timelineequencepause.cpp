@@ -32,9 +32,4 @@ namespace nap
 
 		return true;
 	}
-
-	void TimelineSequencePause::setStartParameters(const std::vector<Parameter*>& startParameters)
-	{
-		mParameters = startParameters;
-	}
 }

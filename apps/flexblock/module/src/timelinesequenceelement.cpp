@@ -58,10 +58,10 @@ namespace nap
 			// get group
 			ParameterGroup* group = rtti_cast<ParameterGroup>(object.get());
 
-			mParameters.clear();
+			mEndParameters.clear();
 			for (int i = 0; i < group->mParameters.size(); i++)
 			{
-				mParameters.push_back(group->mParameters[i].get());
+				mEndParameters.push_back(group->mParameters[i].get());
 			}
 		}
 		else

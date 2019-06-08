@@ -31,9 +31,11 @@ namespace nap
 		*/
 		virtual bool process(double time, std::vector<Parameter*>& endParameters);
 
-		virtual void setStartParameters(const std::vector<Parameter*>& startParameters);
+		void setStartParameters(const std::vector<Parameter*>& startParameters);
 
-		const std::vector<Parameter*>& getParameters() { return mParameters; }
+		const std::vector<Parameter*>& getEndParameters() { return mEndParameters; }
+
+		const std::vector<Parameter*>& getStartParameters() { return mStartParameters; }
 
 		/**
 		 * This is called by the sequence to set the start time of this element
@@ -49,7 +51,7 @@ namespace nap
 		float mDuration = 0.0f;
 		std::string mPreset;
 		bool mUsePreset = false;
-		std::vector<Parameter*> mParameters;
+		std::vector<Parameter*> mEndParameters;
 	protected:
 		double mStartTime = 0.0;
 

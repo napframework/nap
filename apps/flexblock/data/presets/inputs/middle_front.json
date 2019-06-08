@@ -67,7 +67,20 @@
                     "Value": 0.0003305673599243164,
                     "Minimum": 0.0,
                     "Maximum": 1.0
-                }
+                },
+				{
+					"Type": "nap::ParameterRGBAColorFloat",
+					"mID": "ParameterRGBAColorFloat_2",
+					"Name": "",
+					"Value": {
+						"Values": [
+							0.0,
+							0.0,
+							1.0,
+							1.0
+						]
+					}
+				}
             ],
             "Groups": []
         }

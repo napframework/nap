@@ -15,7 +15,7 @@
 namespace nap
 {
 	/**
-	* FlexBlockSequenceElement
+	* TimelineSequenceTransition
 	*/
 	class NAPAPI TimelineSequenceTransition : public TimelineSequenceElement
 	{
