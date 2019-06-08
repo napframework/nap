@@ -1,8 +1,9 @@
 {
     "dependencies": [
-        "mod_napscene",
+	    "mod_napscene",
         "mod_napmath",
         "mod_napinput",
-		"mod_napparameter"
+		"mod_napparameter",
+		"mod_naprender"
     ]
 }
