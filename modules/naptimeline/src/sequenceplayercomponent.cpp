@@ -118,7 +118,7 @@ namespace nap
 			if (!error.check(
 				mParameters.size() ==
 				sequence->mStartParameters.size(),
-				"Parameters are different %s ", mID.c_str()))
+				"Parameters are different %s \n", mID.c_str()))
 				return false;
 
 

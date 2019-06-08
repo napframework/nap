@@ -154,6 +154,11 @@
                     "Type": "nap::FlexBlockSerialComponent",
                     "mID": "FlexBlockSerialComponent",
                     "SerialPort": "SerialPort"
+                },
+                {
+                    "Type": "nap::timeline::SequencePlayerComponent",
+                    "mID": "nap::timeline::SequencePlayerComponent",
+                    "TimelineParameters": "Inputs"
                 }
             ],
             "Children": [
@@ -885,19 +890,6 @@
                     "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterRGBAColorFloat",
-                    "mID": "ParameterRGBAColorFloat_2",
-                    "Name": "",
-                    "Value": {
-                        "Values": [
-                            1.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    }
                 }
             ],
             "Groups": []
@@ -1325,6 +1317,87 @@
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
+                }
+            ]
+        },
+        {
+            "Type": "nap::timeline::Sequence",
+            "mID": "Sequence",
+            "Elements": [
+                {
+                    "Type": "nap::timeline::SequenceTransition",
+                    "mID": "SequenceTransition",
+                    "Duration": 10.0,
+                    "Curve": "Bezier Curve",
+                    "Parameters": [],
+                    "Preset File": "middle_left.json",
+                    "Use Preset": true
+                }
+            ],
+            "StartParameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ParameterFloat",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ParameterFloat_2",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ParameterFloat_3",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ParameterFloat_4",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ParameterFloat_5",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ParameterFloat_6",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ParameterFloat_7",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ParameterFloat_8",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
                 }
             ]
         }
