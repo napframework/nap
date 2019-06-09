@@ -194,8 +194,8 @@
             "mID": "WebSocketEntity",
             "Components": [
                 {
-                    "Type": "nap::WebSocketComponent",
-                    "mID": "nap::WebSocketComponent",
+                    "Type": "nap::WebSocketServerComponent",
+                    "mID": "nap::WebSocketServerComponent",
                     "Server": "Server"
                 },
                 {

@@ -1,7 +1,7 @@
 // Local Includes
 #include "websocketservice.h"
 #include "websocketserver.h"
-#include "websocketcomponent.h"
+#include "websocketservercomponent.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -99,13 +99,13 @@ namespace nap
 	}
 
 
-	void WebSocketService::registerComponent(WebSocketComponentInstance& component)
+	void WebSocketService::registerComponent(WebSocketServerComponentInstance& component)
 	{
 		mComponents.emplace_back(&component);
 	}
 
 
-	void WebSocketService::removeComponent(WebSocketComponentInstance& component)
+	void WebSocketService::removeComponent(WebSocketServerComponentInstance& component)
 	{
 		auto found_it = std::find_if(mComponents.begin(), mComponents.end(), [&](const auto& it)
 		{

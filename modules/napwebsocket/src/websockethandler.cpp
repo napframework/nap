@@ -21,13 +21,13 @@ namespace nap
 {
 	void WebSocketHandler::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
-		components.emplace_back(RTTI_OF(nap::WebSocketComponent));
+		components.emplace_back(RTTI_OF(nap::WebSocketServerComponent));
 	}
 
 
 	bool WebSocketHandlerInstance::init(utility::ErrorState& errorState)
 	{
-		mWSComponent = getEntityInstance()->findComponent<nap::WebSocketComponentInstance>();
+		mWSComponent = getEntityInstance()->findComponent<nap::WebSocketServerComponentInstance>();
 		assert(mWSComponent != nullptr);
 
 		mWSComponent->connectionOpened.connect(mConnectionOpened);
