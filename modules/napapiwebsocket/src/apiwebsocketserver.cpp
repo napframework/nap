@@ -59,6 +59,12 @@ namespace nap
 	}
 
 
+	bool APIWebSocketServer::send(nap::APIWebSocketEventPtr apiEvent, utility::ErrorState& error)
+	{
+		return mService->getAPIService().dispatchEvent(std::move(apiEvent), error);
+	}
+
+
 	void APIWebSocketServer::sendErrorReply(const WebSocketConnection& connection, nap::utility::ErrorState& error)
 	{
 		nap::utility::ErrorState snd_error;

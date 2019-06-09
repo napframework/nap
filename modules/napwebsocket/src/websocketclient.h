@@ -38,6 +38,11 @@ namespace nap
 		 */
 		bool isOpen() const;
 
+		/**
+		 * @return connection handle to the server
+		 */
+		const WebSocketConnection& getConnection() const				{ return mConnection; }
+
 		ResourcePtr<WebSocketClientEndPoint> mEndPoint;					///< Property: 'EndPoint' the client endpoint that manages all connections.
 		std::string mURI;												///< Property: "UIR" Server URI to open connection to.
 
