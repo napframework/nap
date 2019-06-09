@@ -9,15 +9,15 @@
 
 namespace nap
 {
-	class WebSocketComponentInstance;
+	class WebSocketServerComponentInstance;
 
 	/**
 	 *	websocketcomponent
 	 */
-	class NAPAPI WebSocketComponent : public Component
+	class NAPAPI WebSocketServerComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(WebSocketComponent, WebSocketComponentInstance)
+		DECLARE_COMPONENT(WebSocketServerComponent, WebSocketServerComponentInstance)
 	public:
 
 		/**
@@ -33,14 +33,14 @@ namespace nap
 	/**
 	 * websocketcomponentInstance	
 	 */
-	class NAPAPI WebSocketComponentInstance : public ComponentInstance
+	class NAPAPI WebSocketServerComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		WebSocketComponentInstance(EntityInstance& entity, Component& resource) :
+		WebSocketServerComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
-		virtual ~WebSocketComponentInstance();
+		virtual ~WebSocketServerComponentInstance();
 
 		/**
 		 * Initialize websocketcomponentInstance based on the websocketcomponent resource

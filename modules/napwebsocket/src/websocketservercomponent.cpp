@@ -1,5 +1,5 @@
 // Local Includes
-#include "websocketcomponent.h"
+#include "websocketservercomponent.h"
 #include "websocketservice.h"
 
 // External Includes
@@ -7,12 +7,12 @@
 #include <nap/core.h>
 
 // nap::websocketcomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::WebSocketComponent)
-	RTTI_PROPERTY("Server", &nap::WebSocketComponent::mServer, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::WebSocketServerComponent)
+	RTTI_PROPERTY("Server", &nap::WebSocketServerComponent::mServer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::websocketcomponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketServerComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -21,23 +21,23 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void WebSocketComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	void WebSocketServerComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 
 	}
 
 
-	WebSocketComponentInstance::~WebSocketComponentInstance()
+	WebSocketServerComponentInstance::~WebSocketServerComponentInstance()
 	{
 		if (mService != nullptr)
 			mService->removeComponent(*this);
 	}
 
 
-	bool WebSocketComponentInstance::init(utility::ErrorState& errorState)
+	bool WebSocketServerComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Extract the server
-		mServer = getComponent<WebSocketComponent>()->mServer.get();
+		mServer = getComponent<WebSocketServerComponent>()->mServer.get();
 
 		mService = getEntityInstance()->getCore()->getService<nap::WebSocketService>();
 		assert(mService != nullptr);
