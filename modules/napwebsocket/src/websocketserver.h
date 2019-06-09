@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "websocketserverendpoint.h"
-#include "websocketevent.h"
+#include "websocketinterface.h"
 
 // External Includes
 #include <queue>
@@ -11,17 +11,17 @@
 
 namespace nap
 {
-	class WebSocketService;
-
 	/**
 	 * Interface for a web-socket server that listens to incoming web-socket events.
 	 * Override the onEventReceived() method to provide a handler for newly received web socket events.
 	 * The WebSocketServerEndPoint can have one or multiple links to an IWebSocketServer
 	 */
-	class NAPAPI IWebSocketServer : public Resource
+	class NAPAPI IWebSocketServer : public WebSocketInterface
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(WebSocketInterface)
 	public:
+		IWebSocketServer(WebSocketService& service);
+
 		/**
 		 * Registers the server with the end point.
 		 * @param errorState contains the error if initialization fails.
@@ -103,29 +103,6 @@ namespace nap
 
 		void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message);
 		nap::Slot<const WebSocketConnection&, const WebSocketMessage&> mMessageReceived;
-
-		/**
-		 * Called when the end point receives a new event.
-		 * Adds the event to the list of events to be processed on the main thread.
-		 * @param newEvent the web-socket event.
-		 */
-		void addEvent(WebSocketEventPtr newEvent);
-
-		/**
-		 * Consumes all received web-socket events and moves them to outEvents
-		 * Calling this will clear the internal queue and transfers ownership of the events to the caller
-		 * @param outEvents will hold the transferred web-socket events
-		 */
-		void consumeEvents(std::queue<WebSocketEventPtr>& outEvents);
-
-		// Queue that holds all the consumed events
-		std::queue<WebSocketEventPtr> mEvents;
-
-		// Mutex associated with setting / getting events
-		std::mutex	mEventMutex;
-
-		// Handle to the web socket service
-		WebSocketService* mService = nullptr;
 	};
 
 	// Object creator used for constructing the websocket server

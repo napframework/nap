@@ -5,8 +5,7 @@
 
 namespace nap 
 {   
-	class WebSocketServer;
-	class WebSocketClient;
+	class WebSocketInterface;
 	class WebSocketServerComponentInstance;
 	class WebSocketClientComponentInstance;
 
@@ -15,8 +14,6 @@ namespace nap
      */
     class NAPAPI WebSocketService : public nap::Service
     {
-		friend class WebSocketServer;
-		friend class WebSocketClient;
 		friend class WebSocketServerComponentInstance;
 		friend class WebSocketClientComponentInstance;
         RTTI_ENABLE(nap::Service)
@@ -44,24 +41,14 @@ namespace nap
 
 	private:
 		/**
-		 * Registers a web socket server with the service
+		 * Registers a web socket interface with the service
 		 */
-		void registerServer(WebSocketServer& server);
+		void registerInterface(WebSocketInterface& wsInterface);
 
 		/**
-		 * Removes a web socket server with the service
+		 * Removes a web socket interface from the service
 		 */
-		void removeServer(WebSocketServer& server);
-
-		/**
-		 * Registers a web socket server with the service
-		 */
-		void registerClient(WebSocketClient& client);
-
-		/**
-		 * Removes a web socket server with the service
-		 */
-		void removeClient(WebSocketClient& client);
+		void removeInterface(WebSocketInterface& wsInterface);
 
 		/**
 		 * Registers a web-socket component with the service
@@ -83,21 +70,8 @@ namespace nap
 		 */
 		void removeClientComponent(WebSocketClientComponentInstance& component);
 
-		/**
-		 * Forwards all server events to the right component
-		 */
-		void forwardServerEvents();
-
-		/**
-		 * Forwards all client events to the right component
-		 */
-		void forwardClientEvents();
-
 		// All the web socket servers currently registered in the system
-		std::vector<WebSocketServer*> mServers;
-
-		// All the web socket clients currently registered in the system
-		std::vector<WebSocketClient*> mClients;
+		std::vector<WebSocketInterface*> mInterfaces;
 
 		// All the web socket server components currently registered in the system
 		std::vector<WebSocketServerComponentInstance*> mServerComponents;

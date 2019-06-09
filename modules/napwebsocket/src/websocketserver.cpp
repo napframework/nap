@@ -20,15 +20,13 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	WebSocketServer::WebSocketServer(WebSocketService& service) : mService(&service)
+	WebSocketServer::WebSocketServer(WebSocketService& service) : IWebSocketServer(service)
 	{
-		mService->registerServer(*this);
 	}
 
 
 	WebSocketServer::~WebSocketServer()
 	{
-		mService->removeServer(*this);
 	}
 
 
@@ -72,12 +70,6 @@ namespace nap
 		return mEndPoint->send(connection, message.getPayload(), message.getCode(), error);
 	}
 
-	void WebSocketServer::addEvent(WebSocketEventPtr newEvent)
-	{
-		std::lock_guard<std::mutex> lock(mEventMutex);
-		mEvents.emplace(std::move(newEvent));
-	}
-
 
 	void WebSocketServer::onConnectionOpened(const WebSocketConnection& connection)
 	{
@@ -103,20 +95,13 @@ namespace nap
 	}
 
 
-	void WebSocketServer::consumeEvents(std::queue<WebSocketEventPtr>& outEvents)
+	IWebSocketServer::IWebSocketServer(WebSocketService& service) : WebSocketInterface(service)
 	{
-		// Swap events
-		std::lock_guard<std::mutex> lock(mEventMutex);
-		outEvents.swap(mEvents);
 
-		// Clear current queue
-		std::queue<WebSocketEventPtr> empty_queue;;
-		mEvents.swap(empty_queue);
 	}
-
 
 	bool IWebSocketServer::init(utility::ErrorState& errorState)
 	{
-		return true;
+		return WebSocketInterface::init(errorState);
 	}
 }

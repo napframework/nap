@@ -1,7 +1,6 @@
 // Local Includes
 #include "websocketservice.h"
-#include "websocketserver.h"
-#include "websocketclient.h"
+#include "websocketinterface.h"
 #include "websocketservercomponent.h"
 #include "websocketclientcomponent.h"
 
@@ -35,44 +34,70 @@ namespace nap
 
 	void WebSocketService::update(double deltaTime)
 	{
-		forwardClientEvents();
-		forwardServerEvents();
-	}
-
-
-	void WebSocketService::registerServer(WebSocketServer& server)
-	{
-		mServers.emplace_back(&server);
-	}
-
-
-	void WebSocketService::removeServer(WebSocketServer& server)
-	{
-		auto found_it = std::find_if(mServers.begin(), mServers.end(), [&](const auto& it)
+		std::queue<WebSocketEventPtr> events;
+		for (auto& ws_interface : mInterfaces)
 		{
-			return it == &server;
+			ws_interface->consumeEvents(events);
+			while (!(events.empty()))
+			{
+				WebSocketEvent* websocket_event = events.front().get();
+				for (auto& component : mServerComponents)
+				{
+					if (&component->getServer() != ws_interface)
+						continue;
+
+					WebSocketMessageReceivedEvent* msg_received = rtti_cast<WebSocketMessageReceivedEvent>(websocket_event);
+					if (msg_received != nullptr)
+					{
+						component->messageReceived(*msg_received);
+						continue;
+					}
+
+					WebSocketConnectionOpenedEvent* con_opened = rtti_cast<WebSocketConnectionOpenedEvent>(websocket_event);
+					if (con_opened != nullptr)
+					{
+						component->connectionOpened(*con_opened);
+						continue;
+					}
+
+					WebSocketConnectionClosedEvent* con_closed = rtti_cast<WebSocketConnectionClosedEvent>(websocket_event);
+					if (con_closed != nullptr)
+					{
+						component->connectionClosed(*con_closed);
+						continue;
+					}
+
+					WebSocketConnectionFailedEvent* con_failed = rtti_cast<WebSocketConnectionFailedEvent>(websocket_event);
+					if (con_failed != nullptr)
+					{
+						component->connectionFailed(*con_failed);
+						continue;
+					}
+
+					// Unknown message web-socket event type
+					assert(false);
+				}
+				events.pop();
+			}
+		}
+	}
+
+
+	void WebSocketService::registerInterface(WebSocketInterface& wsInterface)
+	{
+		mInterfaces.emplace_back(&wsInterface);
+	}
+
+
+	void WebSocketService::removeInterface(WebSocketInterface& wsInterface)
+	{
+		auto found_it = std::find_if(mInterfaces.begin(), mInterfaces.end(), [&](const auto& it)
+		{
+			return it == &wsInterface;
 		});
 		
-		assert(found_it != mServers.end());
-		mServers.erase(found_it);
-	}
-
-
-	void WebSocketService::registerClient(WebSocketClient& client)
-	{
-		mClients.emplace_back(&client);
-	}
-
-
-	void WebSocketService::removeClient(WebSocketClient& client)
-	{
-		auto found_it = std::find_if(mClients.begin(), mClients.end(), [&](const auto& it)
-		{
-			return it == &client;
-		});
-
-		assert(found_it != mClients.end());
-		mClients.erase(found_it);
+		assert(found_it != mInterfaces.end());
+		mInterfaces.erase(found_it);
 	}
 
 
@@ -109,107 +134,5 @@ namespace nap
 
 		assert(found_it != mClientComponents.end());
 		mClientComponents.erase(found_it);
-	}
-
-	
-	void WebSocketService::forwardServerEvents()
-	{
-		std::queue<WebSocketEventPtr> events;
-		for (auto& server : mServers)
-		{
-			server->consumeEvents(events);
-			while (!(events.empty()))
-			{
-				WebSocketEvent* websocket_event = events.front().get();
-				for (auto& component : mServerComponents)
-				{
-					if (&component->getServer() != server)
-						continue;
-
-					WebSocketMessageReceivedEvent* msg_received = rtti_cast<WebSocketMessageReceivedEvent>(websocket_event);
-					if (msg_received != nullptr)
-					{
-						component->messageReceived(*msg_received);
-						continue;
-					}
-
-					WebSocketConnectionOpenedEvent* con_opened = rtti_cast<WebSocketConnectionOpenedEvent>(websocket_event);
-					if (con_opened != nullptr)
-					{
-						component->connectionOpened(*con_opened);
-						continue;
-					}
-
-					WebSocketConnectionClosedEvent* con_closed = rtti_cast<WebSocketConnectionClosedEvent>(websocket_event);
-					if (con_closed != nullptr)
-					{
-						component->connectionClosed(*con_closed);
-						continue;
-					}
-
-					WebSocketConnectionFailedEvent* con_failed = rtti_cast<WebSocketConnectionFailedEvent>(websocket_event);
-					if (con_failed != nullptr)
-					{
-						component->connectionFailed(*con_failed);
-						continue;
-					}
-
-					// Unknown message web-socket event type
-					assert(false);
-				}
-				events.pop();
-			}
-		}
-	}
-
-
-	void WebSocketService::forwardClientEvents()
-	{
-		std::queue<WebSocketEventPtr> events;
-		for (auto& client : mClients)
-		{
-			client->consumeEvents(events);
-			while (!(events.empty()))
-			{
-				WebSocketEvent* websocket_event = events.front().get();
-				for (auto& component : mClientComponents)
-				{
-					if (&component->getClient() != client)
-						continue;
-
-					WebSocketMessageReceivedEvent* msg_received = rtti_cast<WebSocketMessageReceivedEvent>(websocket_event);
-					if (msg_received != nullptr)
-					{
-						component->messageReceived(*msg_received);
-						continue;
-					}
-
-					WebSocketConnectionOpenedEvent* con_opened = rtti_cast<WebSocketConnectionOpenedEvent>(websocket_event);
-					if (con_opened != nullptr)
-					{
-						component->connectionOpened(*con_opened);
-						continue;
-					}
-
-					WebSocketConnectionClosedEvent* con_closed = rtti_cast<WebSocketConnectionClosedEvent>(websocket_event);
-					if (con_closed != nullptr)
-					{
-						component->connectionClosed(*con_closed);
-						continue;
-					}
-
-					WebSocketConnectionFailedEvent* con_failed = rtti_cast<WebSocketConnectionFailedEvent>(websocket_event);
-					if (con_failed != nullptr)
-					{
-						component->connectionFailed(*con_failed);
-						continue;
-					}
-
-					// Unknown message web-socket event type
-					assert(false);
-				}
-				events.pop();
-			}
-		}
 	}
 }
