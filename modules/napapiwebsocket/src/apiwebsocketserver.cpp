@@ -13,7 +13,6 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketServer)
 RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
 	RTTI_PROPERTY("Verbose",			&nap::APIWebSocketServer::mVerbose, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ForwardMessage",		&nap::APIWebSocketServer::mForward, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,15 +85,22 @@ namespace nap
 
 	void APIWebSocketServer::onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message)
 	{
-		// Add as regular websocket event
-		if(mForward)
-			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
+		// Add as regular web-socket event
+		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
 
 		// Ensure it's a finalized message
 		nap::utility::ErrorState error;
 		if (!error.check(message.getFin(), "only finalized messages are accepted"))
 		{
 			if (mVerbose)
+				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
+			return;
+		}
+
+		// Make sure we're dealing with text
+		if (!error.check(message.getCode() == EWebSocketOPCode::Text, "not a text message"))
+		{
+			if(mVerbose)
 				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
 			return;
 		}
@@ -124,16 +130,14 @@ namespace nap
 			return;
 		}
 
-		// Small test
-		APIWebSocketEventPtr rptr = std::make_unique<APIWebSocketEvent>("motorSpeed", messages[0]->mID, connection);
-		send(std::move(rptr), error);
-
 		// Create unique events and hand off to api service
 		for (auto& apimsg : messages)
 		{
 			APIWebSocketEventPtr msg_event = apimsg->toEvent<APIWebSocketEvent>(connection);
 			if (!mService->getAPIService().sendEvent(std::move(msg_event), &error))
+			{
 				sendErrorReply(connection, error);
+			}
 		}
 	}
 

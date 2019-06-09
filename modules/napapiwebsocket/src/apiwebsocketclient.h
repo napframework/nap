@@ -34,14 +34,14 @@ namespace nap
 		bool send(APIEventPtr apiEvent, utility::ErrorState& error);
 
 		/**
-		 * Converts a JSON string that contains 1 or multiple nap messages into individual nap api events.
-		 * The json is often the result of a previous query to the server.
-		 * @param json the json string that contains the received nap messages
+		 * Tries to converts a web-socket (text) message into one or multiple individual nap api events.
+		 * The message should be the result of a previous query to a NAP server.
+		 * @param message the received web-socket (text) message that contains individual nap::APIMessage objects.
 		 * @param outEvents the result of the extraction process.
 		 * @error contains the error if conversion fails
 		 * @return if conversion succeeded.
 		 */
-		bool convert(const std::string& json, std::vector<APIEventPtr>& outEvents, utility::ErrorState& error);
+		bool convert(const WebSocketMessage& message, std::vector<APIEventPtr>& outEvents, utility::ErrorState& error);
 
 	protected:
 		virtual void onConnectionOpened() override;

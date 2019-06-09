@@ -46,7 +46,6 @@ namespace nap
 		bool send(nap::APIWebSocketEventPtr apiEvent, utility::ErrorState& error);
 
 		bool mVerbose = true;				///< Property: 'Verbose' log message extraction failure information
-		bool mForward = true;				///< Property: 'ForwardMessage' if a message is forwarded to a web-socket component, next to the API service.
 
 	private:
 		APIWebSocketService* mService = nullptr;

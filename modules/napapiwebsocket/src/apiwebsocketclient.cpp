@@ -49,15 +49,19 @@ namespace nap
 	}
 
 
-	bool APIWebSocketClient::convert(const std::string& json, std::vector<APIEventPtr>& outEvents, utility::ErrorState& error)
+	bool APIWebSocketClient::convert(const WebSocketMessage& message, std::vector<APIEventPtr>& outEvents, utility::ErrorState& error)
 	{
+		// Make sure we're dealing with text
+		if (!error.check(message.getCode() == EWebSocketOPCode::Text, "not a text message"))
+			return false;
+		
 		// Members necessary to extract messages
 		auto& factory = mService->getCore().getResourceManager()->getFactory();
 		nap::rtti::DeserializeResult result;
 		std::vector<APIMessage*> messages;
 
 		// Perform extraction
-		if (!extractMessages(json, result, factory, messages, error))
+		if (!extractMessages(message.getPayload(), result, factory, messages, error))
 			return false;
 
 		// Convert to events
