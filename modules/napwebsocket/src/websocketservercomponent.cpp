@@ -30,7 +30,7 @@ namespace nap
 	WebSocketServerComponentInstance::~WebSocketServerComponentInstance()
 	{
 		if (mService != nullptr)
-			mService->removeComponent(*this);
+			mService->removeServerComponent(*this);
 	}
 
 
@@ -41,7 +41,7 @@ namespace nap
 
 		mService = getEntityInstance()->getCore()->getService<nap::WebSocketService>();
 		assert(mService != nullptr);
-		mService->registerComponent(*this);
+		mService->registerServerComponent(*this);
 
 		return true;
 	}

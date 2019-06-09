@@ -1,5 +1,6 @@
 #include "websocketclientendpoint.h"
 #include "websocketclient.h"
+#include "websocketmessage.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -195,8 +196,14 @@ namespace nap
 
 		// Find matching connection
 		IWebSocketClient* found_client = findClient(cptr);
-		assert(found_client != nullptr);
-		found_client->connectionOpened();
+		
+		// The client can be null when close() has been called or the client has been destructed already
+		// The mutex ensures that order of removal / addition is secure.
+		if (found_client != nullptr)
+		{
+			found_client->connectionOpened();
+		}
+
 	}
 
 
@@ -238,9 +245,19 @@ namespace nap
 	}
 
 
-	void WebSocketClientEndPoint::onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg)
+	void WebSocketClientEndPoint::onMessageReceived(wspp::ConnectionHandle connection, wspp::MessagePtr msg)
 	{
+		// Extract actual connection, must be valid at this point
+		std::error_code stdec;
+		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
+		assert(!stdec);
 
+		// Find matching connection
+		IWebSocketClient* found_client = findClient(cptr);
+		if (found_client != nullptr)
+		{
+			found_client->messageReceived(WebSocketMessage(msg));
+		}
 	}
 
 

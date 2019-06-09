@@ -106,7 +106,7 @@ namespace nap
 		/**
 		 * Called when a new message is received
 		 */
-		void onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg);
+		void onMessageReceived(wspp::ConnectionHandle connection, wspp::MessagePtr msg);
 
 		// THIS IS AN INIT WORKAROUND: TODO: FIX ORDER OF DESTRUCTION
 		void onClientDestroyed(const IWebSocketClient& client);

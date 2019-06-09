@@ -18,6 +18,7 @@ namespace nap
 	class NAPAPI WebSocketMessage final
 	{
 		friend class WebSocketServerEndPoint;
+		friend class WebSocketClientEndPoint;
 	public:
 		/**
 		 * Construct a new web socket message using the given payload, opcode and finalize bit flag.

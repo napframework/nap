@@ -6,7 +6,9 @@
 namespace nap 
 {   
 	class WebSocketServer;
+	class WebSocketClient;
 	class WebSocketServerComponentInstance;
+	class WebSocketClientComponentInstance;
 
     /**
      * Main interface for processing web socket events in NAP.
@@ -14,7 +16,9 @@ namespace nap
     class NAPAPI WebSocketService : public nap::Service
     {
 		friend class WebSocketServer;
+		friend class WebSocketClient;
 		friend class WebSocketServerComponentInstance;
+		friend class WebSocketClientComponentInstance;
         RTTI_ENABLE(nap::Service)
     public:
 		// Constructor
@@ -50,19 +54,55 @@ namespace nap
 		void removeServer(WebSocketServer& server);
 
 		/**
+		 * Registers a web socket server with the service
+		 */
+		void registerClient(WebSocketClient& client);
+
+		/**
+		 * Removes a web socket server with the service
+		 */
+		void removeClient(WebSocketClient& client);
+
+		/**
 		 * Registers a web-socket component with the service
 		 */
-		void registerComponent(WebSocketServerComponentInstance& component);
+		void registerServerComponent(WebSocketServerComponentInstance& component);
 
 		/**
 		 * Removes a web-socket component from the service
 		 */
-		void removeComponent(WebSocketServerComponentInstance& component);
+		void removeServerComponent(WebSocketServerComponentInstance& component);
+
+		/**
+		 * Registers a web-socket component with the service
+		 */
+		void registerClientComponent(WebSocketClientComponentInstance& component);
+
+		/**
+		 * Removes a web-socket component from the service
+		 */
+		void removeClientComponent(WebSocketClientComponentInstance& component);
+
+		/**
+		 * Forwards all server events to the right component
+		 */
+		void forwardServerEvents();
+
+		/**
+		 * Forwards all client events to the right component
+		 */
+		void forwardClientEvents();
 
 		// All the web socket servers currently registered in the system
 		std::vector<WebSocketServer*> mServers;
 
-		// All the web socket component currently registered in the system
-		std::vector<WebSocketServerComponentInstance*> mComponents;
+		// All the web socket clients currently registered in the system
+		std::vector<WebSocketClient*> mClients;
+
+		// All the web socket server components currently registered in the system
+		std::vector<WebSocketServerComponentInstance*> mServerComponents;
+
+		// All the web socket clients components currently registered in the system
+		std::vector<WebSocketClientComponentInstance*> mClientComponents;
     };
 }
