@@ -6,16 +6,14 @@
 namespace nap 
 {   
 	class WebSocketInterface;
-	class WebSocketServerComponentInstance;
-	class WebSocketClientComponentInstance;
+	class WebSocketComponentInstance;
 
     /**
      * Main interface for processing web socket events in NAP.
      */
     class NAPAPI WebSocketService : public nap::Service
     {
-		friend class WebSocketServerComponentInstance;
-		friend class WebSocketClientComponentInstance;
+		friend class WebSocketComponentInstance;
         RTTI_ENABLE(nap::Service)
     public:
 		// Constructor
@@ -53,30 +51,17 @@ namespace nap
 		/**
 		 * Registers a web-socket component with the service
 		 */
-		void registerServerComponent(WebSocketServerComponentInstance& component);
+		void registerComponent(WebSocketComponentInstance& component);
 
 		/**
 		 * Removes a web-socket component from the service
 		 */
-		void removeServerComponent(WebSocketServerComponentInstance& component);
-
-		/**
-		 * Registers a web-socket component with the service
-		 */
-		void registerClientComponent(WebSocketClientComponentInstance& component);
-
-		/**
-		 * Removes a web-socket component from the service
-		 */
-		void removeClientComponent(WebSocketClientComponentInstance& component);
+		void removeComponent(WebSocketComponentInstance& component);
 
 		// All the web socket servers currently registered in the system
 		std::vector<WebSocketInterface*> mInterfaces;
 
 		// All the web socket server components currently registered in the system
-		std::vector<WebSocketServerComponentInstance*> mServerComponents;
-
-		// All the web socket clients components currently registered in the system
-		std::vector<WebSocketClientComponentInstance*> mClientComponents;
+		std::vector<WebSocketComponentInstance*> mComponents;
     };
 }

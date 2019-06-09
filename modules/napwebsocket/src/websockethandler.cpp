@@ -21,13 +21,13 @@ namespace nap
 {
 	void WebSocketHandler::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
-		components.emplace_back(RTTI_OF(nap::WebSocketServerComponent));
+		components.emplace_back(RTTI_OF(nap::WebSocketComponent));
 	}
 
 
 	bool WebSocketHandlerInstance::init(utility::ErrorState& errorState)
 	{
-		mWSComponent = getEntityInstance()->findComponent<nap::WebSocketServerComponentInstance>();
+		mWSComponent = getEntityInstance()->findComponent<nap::WebSocketComponentInstance>();
 		assert(mWSComponent != nullptr);
 
 		mWSComponent->connectionOpened.connect(mConnectionOpened);
@@ -59,7 +59,7 @@ namespace nap
 	void WebSocketHandlerInstance::onMessageReceived(const WebSocketMessageReceivedEvent& wsEvent)
 	{
 		//nap::Logger::info("Message Received: %s", wsEvent.mMessage.getPayload().c_str());
-		WebSocketServer& wsserver =  mWSComponent->getServer();
+		WebSocketInterface& wsserver =  mWSComponent->getInterface();
 		nap::utility::ErrorState error;
 		//wsserver.send(wsEvent.mConnection, WebSocketMessage("ola baby!", wsEvent.mMessage.getCode()), error);
 	}

@@ -1,46 +1,41 @@
 #pragma once
 
 // Local Includes
-#include "websocketserver.h"
+#include "websocketinterface.h"
 
 // External Includes
 #include <component.h>
 #include <nap/signalslot.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
-	class WebSocketServerComponentInstance;
+	class WebSocketComponentInstance;
 
 	/**
 	 *	websocketcomponent
 	 */
-	class NAPAPI WebSocketServerComponent : public Component
+	class NAPAPI WebSocketComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(WebSocketServerComponent, WebSocketServerComponentInstance)
+		DECLARE_COMPONENT(WebSocketComponent, WebSocketComponentInstance)
 	public:
 
-		/**
-		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
-		* @param components the components this object depends on
-		*/
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
-		nap::ResourcePtr<WebSocketServer> mServer;			///< Property: "Server" the web-socket server this component listens to for events.
+		nap::ResourcePtr<WebSocketInterface> mInterface;			///< Property: "Server" the web-socket server this component listens to for events.
 	};
 
 
 	/**
 	 * websocketcomponentInstance	
 	 */
-	class NAPAPI WebSocketServerComponentInstance : public ComponentInstance
+	class NAPAPI WebSocketComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		WebSocketServerComponentInstance(EntityInstance& entity, Component& resource) :
+		WebSocketComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
-		virtual ~WebSocketServerComponentInstance();
+		virtual ~WebSocketComponentInstance();
 
 		/**
 		 * Initialize websocketcomponentInstance based on the websocketcomponent resource
@@ -50,9 +45,9 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		const WebSocketServer& getServer() const					{ return *mServer; }
+		const WebSocketInterface& getInterface() const					{ return *mInterface; }
 
-		WebSocketServer& getServer()								{ return *mServer; }
+		WebSocketInterface& getInterface()								{ return *mInterface; }
 
 		nap::Signal<const WebSocketConnectionOpenedEvent&> connectionOpened;
 		nap::Signal<const WebSocketConnectionClosedEvent&> connectionClosed;
@@ -60,7 +55,7 @@ namespace nap
 		nap::Signal<const WebSocketMessageReceivedEvent&> messageReceived;
 
 	private:
-		WebSocketServer*  mServer  = nullptr;
+		WebSocketInterface* mInterface  = nullptr;
 		WebSocketService* mService = nullptr;
 	};
 }
