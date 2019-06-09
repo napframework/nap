@@ -47,7 +47,6 @@ namespace nap
 		friend class WebSocketService;
 		RTTI_ENABLE(IWebSocketServer)
 	public:
-
 		// Constructor used by factory
 		WebSocketServer(WebSocketService& service);
 

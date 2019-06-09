@@ -12,7 +12,8 @@
 // nap::websocketapiserver run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketServer)
 RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
-	RTTI_PROPERTY("Verbose", &nap::APIWebSocketServer::mVerbose, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Verbose",			&nap::APIWebSocketServer::mVerbose, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ForwardMessage",		&nap::APIWebSocketServer::mForward, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -41,10 +42,17 @@ namespace nap
 		if (!IWebSocketServer::init(errorState))
 			return false;
 
-		// Set function for when message slot is called
+		// Connect to all received signals
+		mConnectionClosed.setFunction(std::bind(&APIWebSocketServer::onConnectionClosed, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		mEndPoint->connectionClosed.connect(mConnectionClosed);
+
+		mConnectionFailed.setFunction(std::bind(&APIWebSocketServer::onConnectionFailed, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		mEndPoint->connectionFailed.connect(mConnectionFailed);
+
+		mConnectionOpened.setFunction(std::bind(&APIWebSocketServer::onConnectionOpened, this, std::placeholders::_1));
+		mEndPoint->connectionOpened.connect(mConnectionOpened);
+
 		mMessageReceived.setFunction(std::bind(&APIWebSocketServer::onMessageReceived, this, std::placeholders::_1, std::placeholders::_2));
-		
-		// Bind
 		mEndPoint->messageReceived.connect(mMessageReceived);
 		
 		return true;
@@ -64,6 +72,10 @@ namespace nap
 
 	void APIWebSocketServer::onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message)
 	{
+		// Add as regular websocket event
+		if(mForward)
+			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
+
 		// Ensure it's a finalized message
 		nap::utility::ErrorState error;
 		if (!error.check(message.getFin(), "only finalized messages are accepted"))
@@ -110,4 +122,23 @@ namespace nap
 				sendErrorReply(connection, error);
 		}
 	}
+
+
+	void APIWebSocketServer::onConnectionOpened(const WebSocketConnection& connection)
+	{
+		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(connection));
+	}
+
+
+	void APIWebSocketServer::onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason)
+	{
+		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection, code, reason));
+	}
+
+
+	void APIWebSocketServer::onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason)
+	{
+		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection, code, reason));
+	}
+
 }

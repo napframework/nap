@@ -13,6 +13,7 @@ namespace nap
      */
     class NAPAPI WebSocketService : public nap::Service
     {
+		friend class WebSocketInterface;
 		friend class WebSocketComponentInstance;
         RTTI_ENABLE(nap::Service)
     public:

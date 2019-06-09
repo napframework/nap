@@ -21,10 +21,8 @@ namespace nap
 		// 'NAP:MESSAGE': The string every API web-socket request should be prefixed with
 		static const std::string apiMessageHeaderName;
 
+		// Destructor
 		virtual ~APIWebSocketServer();
-
-		// No default constructor
-		APIWebSocketServer() = delete;
 
 		/**
 		 * Constructor.
@@ -39,6 +37,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		bool mVerbose = true;				///< Property: 'Verbose' log message extraction failure information
+		bool mForward = true;				///< Property: 'ForwardMessage' if a message is forwarded to a web-socket component, next to the API service.
 
 	private:
 		APIWebSocketService* mService = nullptr;
@@ -54,6 +53,15 @@ namespace nap
 		// Called when the api server receives a new message
 		void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message);
 		nap::Slot<const WebSocketConnection&, const WebSocketMessage&> mMessageReceived;
+
+		void onConnectionOpened(const WebSocketConnection& connection);
+		nap::Slot<const WebSocketConnection&> mConnectionOpened;
+
+		void onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason);
+		nap::Slot<const WebSocketConnection&, int, const std::string&> mConnectionClosed;
+
+		void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason);
+		nap::Slot<const WebSocketConnection&, int, const std::string&> mConnectionFailed;
 	};
 
 	// Object creator used for constructing the the api web-socket server

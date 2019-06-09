@@ -196,7 +196,7 @@
                 {
                     "Type": "nap::WebSocketComponent",
                     "mID": "nap::WebSocketComponent",
-                    "Interface": "Server"
+                    "Interface": "APIServer"
                 },
                 {
                     "Type": "nap::WebSocketHandler",
@@ -321,11 +321,6 @@
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0
-        },
-        {
-            "Type": "nap::WebSocketServer",
-            "mID": "Server",
-            "EndPoint": "ServerEndPoint"
         },
         {
             "Type": "nap::math::FloatFCurve",
