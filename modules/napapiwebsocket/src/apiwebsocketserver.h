@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "websocketserver.h"
+#include "apiwebsocketevent.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -35,6 +36,15 @@ namespace nap
 		* @param errorState contains the error message when initialization fails
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Dispatches an api event to potential listeners, in this case a client connection.
+		 * Internally calls APIService::dispatch().
+		 * @param apiEvent the api event to dispatch
+		 * @param error contains the error if sending fails.
+		 * @return if sending the event succeeded.
+		 */
+		bool send(nap::APIWebSocketEventPtr apiEvent, utility::ErrorState& error);
 
 		bool mVerbose = true;				///< Property: 'Verbose' log message extraction failure information
 		bool mForward = true;				///< Property: 'ForwardMessage' if a message is forwarded to a web-socket component, next to the API service.

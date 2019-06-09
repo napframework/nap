@@ -135,6 +135,7 @@ namespace nap
 		return true;
 	}
 
+
 	void WebSocketClient::onConnectionOpened()
 	{
 		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(mConnection));
