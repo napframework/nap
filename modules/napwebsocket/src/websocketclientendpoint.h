@@ -36,13 +36,29 @@ namespace nap
 
 		virtual bool start(nap::utility::ErrorState& error) override;
 
-		bool mAllowFailure = true;			///< Property: 'AllowFailure' if the client connection to the server is allowed to fail on start
+		/**
+		 * Sends a message to the specified connection
+		 * @param connection the server connection
+		 * @param message the message to send
+		 * @param code message type
+		 * @param error contains the error if sending fails
+		 * @return if message was send successfully
+		 */
+		bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
-		nap::Signal<const WebSocketConnection&> connectionOpened;
-		nap::Signal<const WebSocketConnection&, int, const std::string&> connectionClosed;
-		nap::Signal<const WebSocketConnection&, int, const std::string&> connectionFailed;
-		nap::Signal<const WebSocketConnection&, const WebSocketMessage&> messageReceived;
+		/**
+		 * Sends a message using the given payload and opcode to the specified connection
+		 * @param connection the server connection
+		 * @param payload the message buffer
+		 * @param length total number of bytes
+		 * @param code message type
+		 * @param error contains the error if sending fails
+		 * @return if message was send successfully
+		 */
+		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
+
+		bool mAllowFailure = true;												///< Property: 'AllowFailure' if the client connection to the server is allowed to fail on start
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
 
@@ -51,7 +67,7 @@ namespace nap
 		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
 		bool mRunning = false;													///< If the client connection to the server is open						
 		wspp::ClientEndPoint mEndPoint;											///< Websocketpp client end point
-		std::vector<wspp::ConnectionPtr> mConnections;							///< Websocketpp client connections
+		std::vector<IWebSocketClient*> mClients;								///< Websocketpp client connections
 		std::future<void> mClientTask;											///< The client server thread
 		std::mutex mConnectionMutex;											///< Ensures connectivity thread safety
 
@@ -65,15 +81,38 @@ namespace nap
 		 * @param uri server uri.
 		 * @return the newly created web-socket connection
 		 */
-		bool connect(IWebSocketClient& client , utility::ErrorState& error);
+		bool registerClient(IWebSocketClient& client , utility::ErrorState& error);
 
 		/**
 		 * Closes all active connections
 		 */
-		bool close(utility::ErrorState& error);
+		bool closeAll(utility::ErrorState& error);
+
+		/**
+		 * Called when a new connection is made
+		 */
+		void onConnectionOpened(wspp::ConnectionHandle connection);
+
+		/**
+		 * Called when a collection is closed
+		 */
+		void onConnectionClosed(wspp::ConnectionHandle connection);
+
+		/**
+		 * Called when a failed connection attempt is made
+		 */
+		void onConnectionFailed(wspp::ConnectionHandle connection);
+
+		/**
+		 * Called when a new message is received
+		 */
+		void onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg);
 
 		// THIS IS AN INIT WORKAROUND: TODO: FIX ORDER OF DESTRUCTION
-		void onDisconnect(const WebSocketConnection& connection);
-		nap::Slot<const WebSocketConnection&> mClientDisconnected = { this, &WebSocketClientEndPoint::onDisconnect };
+		void onClientDestroyed(const IWebSocketClient& client);
+		nap::Slot<const IWebSocketClient&> mClientDestroyed = { this, &WebSocketClientEndPoint::onClientDestroyed };
+
+		IWebSocketClient* findClient(wspp::ConnectionPtr connection);
+		void removeClient(const IWebSocketClient& client);
 	};
 }

@@ -214,7 +214,7 @@
             "LibraryLogLevel": "Warning"
         },
         {
-            "Type": "nap::IWebSocketClient",
+            "Type": "nap::WebSocketClient",
             "mID": "Client",
             "URI": "ws://192.168.0.42:9000",
             "EndPoint" : "ClientEndPoint"
