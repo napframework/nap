@@ -19,6 +19,8 @@ namespace nap
 	class NAPAPI IWebSocketClient : public WebSocketInterface
 	{
 		friend class WebSocketClientEndPoint;
+		friend class WebSocketMetaClient;
+
 		RTTI_ENABLE(WebSocketInterface)
 	public:
 		IWebSocketClient(WebSocketService& service);
