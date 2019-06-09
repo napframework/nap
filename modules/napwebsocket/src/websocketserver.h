@@ -92,22 +92,6 @@ namespace nap
 		bool send(const WebSocketConnection& connection, const WebSocketMessage& message, nap::utility::ErrorState& error);
 
 	private:
-		// Queue that holds all the consumed events
-		std::queue<WebSocketEventPtr> mEvents;
-
-		// Mutex associated with setting / getting events
-		std::mutex	mEventMutex;
-
-		/**
-		 * Consumes all received web-socket events and moves them to outEvents
-		 * Calling this will clear the internal queue and transfers ownership of the events to the caller
-		 * @param outEvents will hold the transferred web-socket events
-		 */
-		void consumeEvents(std::queue<WebSocketEventPtr>& outEvents);
-
-		// Handle to the web socket service
-		WebSocketService* mService = nullptr;
-
 		void onConnectionOpened(const WebSocketConnection& connection);
 		nap::Slot<const WebSocketConnection&> mConnectionOpened;
 
@@ -126,6 +110,22 @@ namespace nap
 		 * @param newEvent the web-socket event.
 		 */
 		void addEvent(WebSocketEventPtr newEvent);
+
+		/**
+		 * Consumes all received web-socket events and moves them to outEvents
+		 * Calling this will clear the internal queue and transfers ownership of the events to the caller
+		 * @param outEvents will hold the transferred web-socket events
+		 */
+		void consumeEvents(std::queue<WebSocketEventPtr>& outEvents);
+
+		// Queue that holds all the consumed events
+		std::queue<WebSocketEventPtr> mEvents;
+
+		// Mutex associated with setting / getting events
+		std::mutex	mEventMutex;
+
+		// Handle to the web socket service
+		WebSocketService* mService = nullptr;
 	};
 
 	// Object creator used for constructing the websocket server

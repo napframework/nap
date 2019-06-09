@@ -1,4 +1,6 @@
 #include "websocketclient.h"
+#include "websocketservice.h"
+
 #include <nap/logger.h>
 
 // nap::websocketclient run time class definition 
@@ -7,7 +9,8 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketClient)
 	RTTI_PROPERTY("URI",		&nap::IWebSocketClient::mURI,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::WebSocketClient)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketClient)
+	RTTI_CONSTRUCTOR(nap::WebSocketService&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -35,6 +38,12 @@ namespace nap
 	}
 
 
+	void IWebSocketClient::onMessageReceived(const WebSocketMessage& msg)
+	{
+
+	}
+
+
 	void IWebSocketClient::connectionOpened()
 	{
 		mOpen = true;
@@ -53,6 +62,24 @@ namespace nap
 	{
 		mOpen = false;
 		onConnectionFailed(code, reason);
+	}
+
+
+	void IWebSocketClient::messageReceived(const WebSocketMessage& msg)
+	{
+		onMessageReceived(msg);
+	}
+
+
+	WebSocketClient::WebSocketClient(WebSocketService& service) : mService(&service)
+	{
+		mService->registerClient(*this);
+	}
+
+
+	WebSocketClient::~WebSocketClient()
+	{
+		mService->removeClient(*this);
 	}
 
 
@@ -101,6 +128,8 @@ namespace nap
 
 	void WebSocketClient::onConnectionOpened()
 	{
+		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(mConnection));
+
 		nap::utility::ErrorState error;
 		if (!send("hi there!", EWebSocketOPCode::Text, error))
 			assert(false);
@@ -109,13 +138,38 @@ namespace nap
 
 	void WebSocketClient::onConnectionClosed(int code, const std::string& reason)
 	{
-
+		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(mConnection, code, reason));
 	}
 
 
 	void WebSocketClient::onConnectionFailed(int code, const std::string& reason)
 	{
+		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(mConnection, code, reason));
+	}
 
+
+	void WebSocketClient::onMessageReceived(const WebSocketMessage& msg)
+	{
+		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(mConnection, msg));
+	}
+
+
+	void WebSocketClient::consumeEvents(std::queue<WebSocketEventPtr>& outEvents)
+	{
+		// Swap events
+		std::lock_guard<std::mutex> lock(mEventMutex);
+		outEvents.swap(mEvents);
+
+		// Clear current queue
+		std::queue<WebSocketEventPtr> empty_queue;;
+		mEvents.swap(empty_queue);
+	}
+
+
+	void WebSocketClient::addEvent(WebSocketEventPtr newEvent)
+	{
+		std::lock_guard<std::mutex> lock(mEventMutex);
+		mEvents.emplace(std::move(newEvent));
 	}
 
 }
