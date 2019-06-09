@@ -3,7 +3,6 @@
 #include "apievent.h"
 #include "apicomponent.h"
 #include "apiutils.h"
-#include "apidispatcher.h"
 
 // External Includes
 #include <nap/core.h>
@@ -179,19 +178,8 @@ namespace nap
 
 	bool APIService::dispatchEvent(nap::APIEventPtr apiEvent, utility::ErrorState& error)
 	{
-		if (!error.check(!mDispatchers.empty(), "%s: No event dispatcher installed, declare at least one to forward the event to an external environment"))
-			return false;
-
-		bool success(true);
-		for (auto& dispatcher : mDispatchers)
-		{
-			if(!apiEvent->get_type().is_derived_from(dispatcher->getEventType()))
-				continue;
-
-			if (!dispatcher->dispatch(*apiEvent, error))
-				success = false;
-		}
-		return success;
+		eventDispatched.trigger(*apiEvent);
+		return true;
 	}
 
 	
@@ -235,23 +223,6 @@ namespace nap
 		});
 		assert(found_it != mAPIComponents.end());
 		mAPIComponents.erase(found_it);
-	}
-
-
-	void APIService::registerAPIDispatcher(IAPIDispatcher& dispatcher)
-	{
-		mDispatchers.emplace_back(&dispatcher);
-	}
-
-
-	void APIService::deregisterAPIDispatcher(IAPIDispatcher& dispatcher)
-	{
-		auto found_it = std::find_if(mDispatchers.begin(), mDispatchers.end(), [&](const auto& it)
-		{
-			return it == &dispatcher;
-		});
-		assert(found_it != mDispatchers.end());
-		mDispatchers.erase(found_it);
 	}
 
 
@@ -309,11 +280,4 @@ namespace nap
 	{
 		processEvents();
 	}
-
-
-	void APIService::registerObjectCreators(rtti::Factory& factory)
-	{
-		factory.addObjectCreator(std::make_unique<APIDispatcherObjectCreator>(*this));
-	}
-
 }

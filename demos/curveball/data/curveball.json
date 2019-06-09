@@ -11,12 +11,8 @@
             "Type": "nap::APIWebSocketServer",
             "mID": "APIServer",
             "EndPoint": "ServerEndPoint",
-            "Verbose": true
-        },
-        {
-            "Type": "nap::APIWebSocketDispatcher",
-            "mID": "APIWebSocketDispatcher",
-            "Server": "APIServer"
+            "Verbose": true,
+            "Forward": true
         },
         {
             "Type": "nap::Entity",
