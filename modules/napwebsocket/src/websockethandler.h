@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "websocketservercomponent.h"
+#include "websocketcomponent.h"
 
 namespace nap
 {
@@ -49,7 +49,7 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 	private:
-		WebSocketServerComponentInstance* mWSComponent = nullptr;
+		WebSocketComponentInstance* mWSComponent = nullptr;
 
 		void onConnectionOpened(const WebSocketConnectionOpenedEvent& wsEvent);
 		nap::Slot<const WebSocketConnectionOpenedEvent&> mConnectionOpened = { this, &WebSocketHandlerInstance::onConnectionOpened};

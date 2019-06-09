@@ -1,8 +1,8 @@
 // Local Includes
 #include "websocketservice.h"
-#include "websocketinterface.h"
-#include "websocketservercomponent.h"
-#include "websocketclientcomponent.h"
+#include "websocketcomponent.h"
+#include "websocketclient.h"
+#include "websocketserver.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -41,9 +41,9 @@ namespace nap
 			while (!(events.empty()))
 			{
 				WebSocketEvent* websocket_event = events.front().get();
-				for (auto& component : mServerComponents)
+				for (auto& component : mComponents)
 				{
-					if (&component->getServer() != ws_interface)
+					if (&component->getInterface() != ws_interface)
 						continue;
 
 					WebSocketMessageReceivedEvent* msg_received = rtti_cast<WebSocketMessageReceivedEvent>(websocket_event);
@@ -101,38 +101,20 @@ namespace nap
 	}
 
 
-	void WebSocketService::registerServerComponent(WebSocketServerComponentInstance& component)
+	void WebSocketService::registerComponent(WebSocketComponentInstance& component)
 	{
-		mServerComponents.emplace_back(&component);
+		mComponents.emplace_back(&component);
 	}
 
 
-	void WebSocketService::removeServerComponent(WebSocketServerComponentInstance& component)
+	void WebSocketService::removeComponent(WebSocketComponentInstance& component)
 	{
-		auto found_it = std::find_if(mServerComponents.begin(), mServerComponents.end(), [&](const auto& it)
+		auto found_it = std::find_if(mComponents.begin(), mComponents.end(), [&](const auto& it)
 		{
 			return it == &component;
 		});
 
-		assert(found_it != mServerComponents.end());
-		mServerComponents.erase(found_it);
-	}
-
-
-	void WebSocketService::registerClientComponent(WebSocketClientComponentInstance& component)
-	{
-		mClientComponents.emplace_back(&component);
-	}
-	
-
-	void WebSocketService::removeClientComponent(WebSocketClientComponentInstance& component)
-	{
-		auto found_it = std::find_if(mClientComponents.begin(), mClientComponents.end(), [&](const auto& it)
-		{
-			return it == &component;
-		});
-
-		assert(found_it != mClientComponents.end());
-		mClientComponents.erase(found_it);
+		assert(found_it != mComponents.end());
+		mComponents.erase(found_it);
 	}
 }
