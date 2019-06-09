@@ -7,6 +7,7 @@
 #include <nap/logger.h>
 #include <apiutils.h>
 #include <nap/core.h>
+#include <websocketservice.h>
 
 // nap::websocketapiserver run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketServer)
@@ -26,7 +27,10 @@ namespace nap
 	APIWebSocketServer::~APIWebSocketServer() { }
 
 
-	APIWebSocketServer::APIWebSocketServer(APIWebSocketService& service) : mService(&service)
+
+	APIWebSocketServer::APIWebSocketServer(APIWebSocketService& service) : 
+		IWebSocketServer(service.getWebSocketService()), 
+		mService(&service)
 	{
 
 	}

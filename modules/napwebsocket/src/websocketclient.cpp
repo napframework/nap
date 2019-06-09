@@ -18,7 +18,14 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	IWebSocketClient::~IWebSocketClient()			
+
+	IWebSocketClient::IWebSocketClient(WebSocketService& service) : WebSocketInterface(service)
+	{
+
+	}
+
+
+	IWebSocketClient::~IWebSocketClient()
 	{
 		destroyed(*this);
 	}
@@ -26,6 +33,9 @@ namespace nap
 
 	bool IWebSocketClient::init(utility::ErrorState& errorState)
 	{
+		if (!WebSocketInterface::init(errorState))
+			return false;
+
 		if (!mEndPoint->registerClient(*this, errorState))
 			return false;
 		return true;
@@ -71,15 +81,14 @@ namespace nap
 	}
 
 
-	WebSocketClient::WebSocketClient(WebSocketService& service) : mService(&service)
+	WebSocketClient::WebSocketClient(WebSocketService& service) : IWebSocketClient(service)
 	{
-		mService->registerClient(*this);
 	}
 
 
 	WebSocketClient::~WebSocketClient()
 	{
-		mService->removeClient(*this);
+
 	}
 
 
@@ -152,24 +161,4 @@ namespace nap
 	{
 		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(mConnection, msg));
 	}
-
-
-	void WebSocketClient::consumeEvents(std::queue<WebSocketEventPtr>& outEvents)
-	{
-		// Swap events
-		std::lock_guard<std::mutex> lock(mEventMutex);
-		outEvents.swap(mEvents);
-
-		// Clear current queue
-		std::queue<WebSocketEventPtr> empty_queue;;
-		mEvents.swap(empty_queue);
-	}
-
-
-	void WebSocketClient::addEvent(WebSocketEventPtr newEvent)
-	{
-		std::lock_guard<std::mutex> lock(mEventMutex);
-		mEvents.emplace(std::move(newEvent));
-	}
-
 }

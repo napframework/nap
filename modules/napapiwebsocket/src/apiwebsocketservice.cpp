@@ -24,6 +24,10 @@ namespace nap
     {
 		mAPIService = getCore().getService<APIService>();
 		assert(mAPIService != nullptr);
+
+		mWebSocketService = getCore().getService<WebSocketService>();
+		assert(mWebSocketService != nullptr);
+
 		return true;
     }    
 
@@ -39,6 +43,20 @@ namespace nap
 	{
 		assert(mAPIService != nullptr);
 		return *mAPIService;
+	}
+
+
+	nap::WebSocketService& APIWebSocketService::getWebSocketService()
+	{
+		assert(mWebSocketService != nullptr);
+		return *mWebSocketService;
+	}
+
+
+	const nap::WebSocketService& APIWebSocketService::getWebSocketService() const
+	{
+		assert(mWebSocketService != nullptr);
+		return *mWebSocketService;
 	}
 
 

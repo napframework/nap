@@ -3,6 +3,7 @@
 // Nap includes
 #include <nap/service.h>
 #include <apiservice.h>
+#include <websocketservice.h>
 
 namespace nap 
 {   
@@ -29,6 +30,16 @@ namespace nap
 		 */
 		const APIService& getAPIService() const;
 
+		/**
+		 * @return the api service
+		 */
+		WebSocketService& getWebSocketService();
+
+		/**
+		 * @return const ref to the api service
+		 */
+		const WebSocketService& getWebSocketService() const;
+
 	protected:
 		/**
 		 * Registers all objects that need a specific way of construction.
@@ -43,5 +54,6 @@ namespace nap
 
 	private:
 		APIService* mAPIService = nullptr;
+		WebSocketService* mWebSocketService = nullptr;
     };
 }
