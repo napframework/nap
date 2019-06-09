@@ -38,8 +38,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Dispatches an api event to potential listeners, in this case a client connection.
-		 * Internally calls APIService::dispatch().
+		 * Sends a message to the client associated with the given api event.
 		 * @param apiEvent the api event to dispatch
 		 * @param error contains the error if sending fails.
 		 * @return if sending the event succeeded.

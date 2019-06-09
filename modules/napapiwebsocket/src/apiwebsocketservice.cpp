@@ -1,7 +1,6 @@
 // Local Includes
 #include "apiwebsocketservice.h"
 #include "apiwebsocketserver.h"
-#include "apiwebsocketdispatcher.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -63,7 +62,6 @@ namespace nap
 	void APIWebSocketService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<APIWebSocketServerObjectCreator>(*this));
-		factory.addObjectCreator(std::make_unique<APIWebSocketDispatcherObjectCreator>(*this));
 	}
 
 

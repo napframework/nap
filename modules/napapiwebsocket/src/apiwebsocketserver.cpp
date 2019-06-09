@@ -61,7 +61,15 @@ namespace nap
 
 	bool APIWebSocketServer::send(nap::APIWebSocketEventPtr apiEvent, utility::ErrorState& error)
 	{
-		return mService->getAPIService().dispatchEvent(std::move(apiEvent), error);
+		APIMessage msg(*apiEvent);
+		std::string json;
+		if (!msg.toJSON(json, error))
+			return false;
+
+		// Send msg
+		if (!mEndPoint->send(apiEvent->getConnection(), json, EWebSocketOPCode::Text, error))
+			return false;
+		return true;
 	}
 
 
@@ -116,9 +124,9 @@ namespace nap
 			return;
 		}
 
+		// Small test
 		APIWebSocketEventPtr rptr = std::make_unique<APIWebSocketEvent>("motorSpeed", messages[0]->mID, connection);
-		rptr->addArgument<APIFloat>("speed", 0.2f);
-		mService->getAPIService().dispatchEvent(std::move(rptr), error);
+		send(std::move(rptr), error);
 
 		// Create unique events and hand off to api service
 		for (auto& apimsg : messages)
