@@ -139,10 +139,6 @@ namespace nap
 	void WebSocketClient::onConnectionOpened()
 	{
 		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(mConnection));
-
-		nap::utility::ErrorState error;
-		if (!send("hi there!", EWebSocketOPCode::Text, error))
-			assert(false);
 	}
 
 
