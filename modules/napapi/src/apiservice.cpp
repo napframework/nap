@@ -176,10 +176,9 @@ namespace nap
 	}
 
 
-	bool APIService::dispatchEvent(nap::APIEventPtr apiEvent, utility::ErrorState& error)
+	void APIService::dispatchEvent(nap::APIEventPtr apiEvent)
 	{
 		eventDispatched.trigger(*apiEvent);
-		return true;
 	}
 
 	

@@ -79,7 +79,7 @@ namespace nap
 
 	bool WebSocketClientEndPoint::start(utility::ErrorState& error)
 	{		
-		// Run until stopped
+		// Ensure state
 		assert(!mRunning);
 
 		// Ensure connection exists when server disconnects
@@ -132,30 +132,27 @@ namespace nap
 		// Get shared pointer to connection
 		std::error_code stdec;
 		wspp::ConnectionPtr client_connection = mEndPoint.get_connection(client.mURI, stdec);
-		
-		// If an error occured return an invalid web-socket connection
 		if (stdec)
 		{
 			error.fail(stdec.message());
-			client.mConnection = WebSocketConnection();
 			return false;
 		}
 
-		// Try to connect
-		mEndPoint.connect(client_connection);
-		 
-		// Set the handle in the resource
-		client.mConnection = WebSocketConnection(client_connection->get_handle());
-		
 		// Create meta client
 		std::unique_ptr<WebSocketClientWrapper> meta_client(new WebSocketClientWrapper(client,
 			mEndPoint,
 			client_connection));
 		mClients.emplace_back(std::move(meta_client));
 
+		// Store connection handle in client
+		client.mConnection = WebSocketConnection(client_connection->get_handle());
+
 		// Connect to client disconnect slot
 		client.destroyed.connect(mClientDestroyed);
 
+		// Try to connect
+		mEndPoint.connect(client_connection);
+	
 		return true;
 	}
 
@@ -207,6 +204,8 @@ namespace nap
 
 	WebSocketClientWrapper::~WebSocketClientWrapper()
 	{
+		// Not disconnected by server or client
+		assert(!mOpen);
 		mResource = nullptr;
 		mEndPoint = nullptr;
 	}
@@ -279,6 +278,7 @@ namespace nap
 			{
 				nap::Logger::error(stdec.message());
 			}
+			mOpen = false;
 		}
 		return true;
 	}
