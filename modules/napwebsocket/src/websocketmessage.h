@@ -19,7 +19,7 @@ namespace nap
 	{
 		friend class WebSocketServerEndPoint;
 		friend class WebSocketClientEndPoint;
-		friend class WebSocketMetaClient;
+		friend class WebSocketClientWrapper;
 	public:
 		/**
 		 * Construct a new web socket message using the given payload, opcode and finalize bit flag.

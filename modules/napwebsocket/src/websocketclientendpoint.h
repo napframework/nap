@@ -16,57 +16,7 @@
 namespace nap
 {
 	class IWebSocketClient;
-
-	//////////////////////////////////////////////////////////////////////////
-	// Meta Client
-	//////////////////////////////////////////////////////////////////////////
-
-	class NAPAPI WebSocketMetaClient final
-	{
-		friend class WebSocketClientEndPoint;
-	public:
-
-		/**
-		* Only client end point is able to construct this object.
-		*/
-		WebSocketMetaClient(IWebSocketClient& client, wspp::ClientEndPoint& endPoint, wspp::ConnectionPtr connection);
-
-
-		~WebSocketMetaClient();
-
-		/**
-		* Called when a new connection is made
-		*/
-		void onConnectionOpened(wspp::ConnectionHandle connection);
-
-		/**
-		* Called when a collection is closed
-		*/
-		void onConnectionClosed(wspp::ConnectionHandle connection);
-
-		/**
-		* Called when a failed connection attempt is made
-		*/
-		void onConnectionFailed(wspp::ConnectionHandle connection);
-
-		/**
-		* Called when a new message is received
-		*/
-		void onMessageReceived(wspp::ConnectionHandle connection, wspp::MessagePtr msg);
-
-	private:
-		/**
-		 * Clears client
-		 */
-		void clearResource();
-
-		std::mutex mConnectionMutex;
-		IWebSocketClient* mResource = nullptr;
-		wspp::ClientEndPoint* mEndPoint = nullptr;
-		wspp::ConnectionHandle mHandle;
-
-		std::atomic<bool> mOpen = { false };
-	};
+	class WebSocketClientWrapper;
 
 	/**
 	 * Web-socket client endpoint.
@@ -120,8 +70,7 @@ namespace nap
 		bool mRunning = false;													///< If the client connection to the server is open						
 		wspp::ClientEndPoint mEndPoint;											///< Websocketpp client end point
 		std::future<void> mClientTask;											///< The client server thread
-		std::mutex mConnectionMutex;											///< Ensures connectivity thread safety
-		std::vector<std::unique_ptr<WebSocketMetaClient>> mClients;				///< All unique client connections
+		std::vector<std::unique_ptr<WebSocketClientWrapper>> mClients;			///< All unique client connections
 
 		/**
 		 * Runs the end point in a background thread until stopped.
@@ -140,5 +89,56 @@ namespace nap
 		nap::Slot<const IWebSocketClient&> mClientDestroyed = { this, &WebSocketClientEndPoint::onClientDestroyed };
 
 		void removeClient(const IWebSocketClient& client);
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Meta Client
+	//////////////////////////////////////////////////////////////////////////
+
+	class NAPAPI WebSocketClientWrapper final
+	{
+		friend class WebSocketClientEndPoint;
+	public:
+
+		~WebSocketClientWrapper();
+
+	private:
+
+		/**
+		 * Called when a new connection is made
+		 */
+		void onConnectionOpened(wspp::ConnectionHandle connection);
+
+		/**
+		 * Called when a collection is closed
+		 */
+		void onConnectionClosed(wspp::ConnectionHandle connection);
+
+		/**
+		 * Called when a failed connection attempt is made
+		 */
+		void onConnectionFailed(wspp::ConnectionHandle connection);
+
+		/**
+		 * Called when a new message is received
+		 */
+		void onMessageReceived(wspp::ConnectionHandle connection, wspp::MessagePtr msg);
+
+		/**
+		 * Only client end point is able to construct this object.
+		 */
+		WebSocketClientWrapper(IWebSocketClient& client, wspp::ClientEndPoint& endPoint, wspp::ConnectionPtr connection);
+
+		/**
+		 * Disconnects
+		 */
+		bool disconnect(nap::utility::ErrorState& error);
+
+		IWebSocketClient* mResource = nullptr;
+		wspp::ClientEndPoint* mEndPoint = nullptr;
+		wspp::ConnectionHandle mHandle;
+
+		std::atomic<bool> mOpen = { false };
 	};
 }
