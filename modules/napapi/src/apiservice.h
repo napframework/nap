@@ -243,10 +243,8 @@ namespace nap
 		 * type of EventDispatcher needs to be declared in json.
 		 * The given event is destroyed after calling this function.
 		 * @param apiEvent the event to send to the external environment.
-		 * @error contains the error if the dispatch operation failed
-		 * @return if the dispatch operation succeeded.
 		 */
-		bool dispatchEvent(nap::APIEventPtr apiEvent, utility::ErrorState& error);
+		void dispatchEvent(nap::APIEventPtr apiEvent);
 
 		/**
 		 * Listen to this signal in your external environment to receive outgoing NAP api events.
