@@ -141,8 +141,10 @@ namespace nap
 			return;
 		}
 		case EWebSocketForwardMode::Both:
+		{
 			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(mConnection, msg));
 			break;
+		}
 		default:
 			break;
 		}

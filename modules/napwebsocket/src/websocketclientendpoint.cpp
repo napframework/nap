@@ -79,7 +79,7 @@ namespace nap
 
 	bool WebSocketClientEndPoint::start(utility::ErrorState& error)
 	{		
-		// Run until stopped
+		// Ensure state
 		assert(!mRunning);
 
 		// Ensure connection exists when server disconnects
