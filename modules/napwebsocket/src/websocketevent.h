@@ -19,7 +19,7 @@ namespace nap
 
 
 	/**
-	 *  Base class for all web-socket connection related events.
+	 *  Base class of all web-socket connection related events.
 	 */
 	class NAPAPI WebSocketConnectionEvent : public WebSocketEvent
 	{
@@ -34,6 +34,7 @@ namespace nap
 
 	/**
 	 * Occurs when a connection is closed. Contains the reason and exit code.
+	 * Note that the connection itself is invalided when this event is received.
 	 */
 	class NAPAPI WebSocketConnectionClosedEvent : public WebSocketConnectionEvent
 	{
@@ -51,7 +52,8 @@ namespace nap
 
 
 	/**
-	 * Occurs when a connection is opened
+	 * Occurs when a new connection to a client or server is opened.
+	 * The connection will be valid when this event is received.
 	 */
 	class NAPAPI WebSocketConnectionOpenedEvent : public WebSocketConnectionEvent
 	{
@@ -64,6 +66,7 @@ namespace nap
 
 	/**
 	 * Occurs when a connection failed to open. Contains the error code and reason for failure.
+	 * Note that the connection itself is invalided when this event is received.
 	 */
 	class NAPAPI WebSocketConnectionFailedEvent : public WebSocketConnectionEvent
 	{
@@ -83,6 +86,7 @@ namespace nap
 	/**
 	 * Occurs when a message is received. 
 	 * Contains the message and handle to the connection that made the request.
+	 * The connection will be valid when this event is received.
 	 */
 	class NAPAPI WebSocketMessageReceivedEvent : public WebSocketEvent
 	{
@@ -95,8 +99,8 @@ namespace nap
 			mConnection(connection),
 			mMessage(std::move(message))	{ }
 
-		WebSocketMessage mMessage;
-		WebSocketConnection mConnection;
+		WebSocketMessage mMessage;			///< Message received from a client or server.
+		WebSocketConnection mConnection;	///< Handle to the client or server connection.
 	};
 
 	using WebSocketEventPtr = std::unique_ptr<nap::WebSocketEvent>;

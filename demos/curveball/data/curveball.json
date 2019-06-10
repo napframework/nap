@@ -192,10 +192,6 @@
                     "Type": "nap::WebSocketComponent",
                     "mID": "nap::WebSocketComponent",
                     "Interface": "APIServer"
-                },
-                {
-                    "Type": "nap::WebSocketHandler",
-                    "mID": "Handler"
                 }
             ],
             "Children": []

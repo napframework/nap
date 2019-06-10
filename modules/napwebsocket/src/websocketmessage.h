@@ -11,15 +11,20 @@ namespace nap
 {
 	// Forward Declares
 	class WebSocketServerEndPoint;
+	class WebSocketClientEndPoint;
+	class WebSocketClientWrapper;
 
 	/**
 	 * A web-socket message that is received by an end-point or sent to an end-point.
+	 * Use the various constructors to construct your own message. The message
+	 * can be sent using a nap::WebSocketClient or nap::WebSocketServer. 
 	 */
 	class NAPAPI WebSocketMessage final
 	{
 		friend class WebSocketServerEndPoint;
 		friend class WebSocketClientEndPoint;
 		friend class WebSocketClientWrapper;
+
 	public:
 		/**
 		 * Construct a new web socket message using the given payload, opcode and finalize bit flag.
@@ -55,7 +60,7 @@ namespace nap
 
 		/**
 		 * Adds an extra set of characters to the already existing message.
-		 * @param payload the string to append.
+		 * @param payload the data to append.
 		 */
 		void appendPayload(const std::string& payload);
 
@@ -74,7 +79,8 @@ namespace nap
 
 	private:
 		/**
-		 * Constructs this message based on the a received websocketpp message
+		 * Constructs this message based on the a received websocketpp message.
+		 * Only available to web-socket endpoints.
 		 * @param message the websocketpp message
 		 */
 		WebSocketMessage(wspp::MessagePtr message);
