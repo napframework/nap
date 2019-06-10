@@ -93,18 +93,22 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Meta Client
+	// WebSocketClientWrapper
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Used internally by the web-socket client end-point to wrap a client resource and a connection.
+	 * Connection information and messages are received from various threads. This objects
+	 * ensures that new information is forwarded to the right client without locking any resources.
+	 */
 	class NAPAPI WebSocketClientWrapper final
 	{
 		friend class WebSocketClientEndPoint;
 	public:
-
+		// Destructor
 		~WebSocketClientWrapper();
 
 	private:
-
 		/**
 		 * Called when a new connection is made
 		 */
@@ -131,7 +135,10 @@ namespace nap
 		WebSocketClientWrapper(IWebSocketClient& client, wspp::ClientEndPoint& endPoint, wspp::ConnectionPtr connection);
 
 		/**
-		 * Disconnects
+		 * Disconnects the web-socket client, ensuring no callbacks are triggered when
+		 * the connection is closed.
+		 * @param error contains the error if the operation fails.
+		 * @return if the client disconnected correct.y.
 		 */
 		bool disconnect(nap::utility::ErrorState& error);
 
