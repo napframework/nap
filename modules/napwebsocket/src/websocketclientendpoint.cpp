@@ -204,6 +204,8 @@ namespace nap
 
 	WebSocketClientWrapper::~WebSocketClientWrapper()
 	{
+		// Not disconnected by server or client
+		assert(!mOpen);
 		mResource = nullptr;
 		mEndPoint = nullptr;
 	}
@@ -276,6 +278,7 @@ namespace nap
 			{
 				nap::Logger::error(stdec.message());
 			}
+			mOpen = false;
 		}
 		return true;
 	}
