@@ -3,6 +3,7 @@
 // Local Includes
 #include "websocketserver.h"
 #include "apiwebsocketevent.h"
+#include "apiwebsocketutils.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -10,6 +11,7 @@
 namespace nap
 {
 	class APIWebSocketService;
+	class APIService;
 
 	/**
 	 * Allows for receiving and responding to nap API messages over a web-socket. Implements the IWebSocketServer interface.
@@ -18,9 +20,6 @@ namespace nap
 	{
 		RTTI_ENABLE(IWebSocketServer)
 	public:
-
-		// 'NAP:MESSAGE': The string every API web-socket request should be prefixed with
-		static const std::string apiMessageHeaderName;
 
 		// Destructor
 		virtual ~APIWebSocketServer();
@@ -45,10 +44,11 @@ namespace nap
 		 */
 		bool send(nap::APIWebSocketEventPtr apiEvent, utility::ErrorState& error);
 
-		bool mVerbose = true;				///< Property: 'Verbose' log message extraction failure information
+		bool mVerbose = true;											///< Property: 'Verbose' log message extraction failure information
+		EWebSocketForwardMode mMode = EWebSocketForwardMode::APIEvent;	///< Property: 'Mode' web-socket event translation and forward mode
 
 	private:
-		APIWebSocketService* mService = nullptr;
+		APIService* mAPIService = nullptr;
 
 		/**
 		 * Sends an error reply to the specified connection. When verbose is turned on a warning is generated.

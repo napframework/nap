@@ -2,18 +2,22 @@
 
 // Local Includes
 #include "apiwebsocketevent.h"
+#include "apiwebsocketutils.h"
 
 // External Includes
 #include <websocketclient.h>
 
 namespace nap
 {
+	class APIWebSocketService;
+	class APIService;
+
 	class NAPAPI APIWebSocketClient : public IWebSocketClient
 	{
 		RTTI_ENABLE(IWebSocketClient)
 	public:
 		// Constructor used by factory
-		APIWebSocketClient(WebSocketService& service);
+		APIWebSocketClient(APIWebSocketService& service);
 
 		// Destructor
 		virtual ~APIWebSocketClient();
@@ -43,13 +47,19 @@ namespace nap
 		 */
 		bool convert(const WebSocketMessage& message, std::vector<APIEventPtr>& outEvents, utility::ErrorState& error);
 
+		EWebSocketForwardMode mMode = EWebSocketForwardMode::WebSocketEvent;	///< Property: 'Mode' web-socket event translation and forward mode
+		bool mVerbose = true;													///< Property: 'Verbose' log message extraction failure information
+
 	protected:
 		virtual void onConnectionOpened() override;
 		virtual void onConnectionClosed(int code, const std::string& reason) override;
 		virtual void onConnectionFailed(int code, const std::string& reason) override;
 		virtual void onMessageReceived(const WebSocketMessage& msg) override;
+
+	private:
+		APIService* mAPIService = nullptr;
 	};
 
-	// Object creator used for constructing the websocket client
-	using WebSocketClientObjectCreator = rtti::ObjectCreator<WebSocketClient, WebSocketService>;
+	// Object creator used for constructing the api web-socket client
+	using APIWebSocketClientObjectCreator = rtti::ObjectCreator<APIWebSocketClient, APIWebSocketService>;
 }
