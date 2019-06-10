@@ -12,17 +12,18 @@
 
 namespace nap
 {
+	// Forward Declares
 	class IWebSocketClient;
 	class WebSocketClientWrapper;
 
 	/**
-	 * Manages a list of client connections and acts as the main portal for the client to the server.
+	 * Manages a list of client-server connections and acts as the main portal for the client to the server.
 	 * Every web-socket client receives connection updates and messages from an endpoint.
 	 * The endpoint is a device that can be started and stopped. When stopped all
 	 * active client-server connections are closed. This occurs when file changes are detected
 	 * and the content of the application is hot-reloaded. Typically an application
 	 * has only one endpoint. Multiple clients can reference the same endpoint.
-	 * Every connection update and message is forwarded to the client from a different thread.
+	 * Every connection update and message is forwarded to the client from a background thread.
 	 * To receive connection updates and messages a client must be dervied from nap::IWebSocketClient.
 	 */
 	class NAPAPI WebSocketClientEndPoint : public Device
@@ -46,7 +47,7 @@ namespace nap
 
 		/**
 		 * Starts the endpoint. This is a non-blocking call.
-		 * New connections are accepted. Connection updates and messages are received in a separate thread.
+		 * New connections are accepted. Connection updates and messages are received in a background thread.
 		 * @param error contains the error if the endpoint can't be started.
 		 * @return if the endpoint started.
 		 */
@@ -99,7 +100,8 @@ namespace nap
 
 		/**
 		 * Occurs when a client (resource) is about to be destroyed. 
-		 * Closes the connection and removes all listeners.
+		 * Closes the connection, removes all listeners and removes the client from 
+		 * the list of actively managed connections.
 		 * @param client that is destroyed.
 		 */
 		void onClientDestroyed(const IWebSocketClient& client);
@@ -133,26 +135,34 @@ namespace nap
 	private:
 		/**
 		 * Called when a new connection is made
+		 * @param connection handle to the connection with the server
 		 */
 		void onConnectionOpened(wspp::ConnectionHandle connection);
 
 		/**
 		 * Called when a collection is closed
+		 * @param connection handle to the connection with the server
 		 */
 		void onConnectionClosed(wspp::ConnectionHandle connection);
 
 		/**
 		 * Called when a failed connection attempt is made
+		 * @param connection handle to the connection with the server
 		 */
 		void onConnectionFailed(wspp::ConnectionHandle connection);
 
 		/**
 		 * Called when a new message is received
+		 * @param connection handle to the connection with the server
+		 * @param msg pointer to the message
 		 */
 		void onMessageReceived(wspp::ConnectionHandle connection, wspp::MessagePtr msg);
 
 		/**
 		 * Only client end point is able to construct this object.
+		 * @param client web-socket client resource
+		 * @param endPoint websocketpp end point.
+		 * @param connection websocketpp pointer to connection.
 		 */
 		WebSocketClientWrapper(IWebSocketClient& client, wspp::ClientEndPoint& endPoint, wspp::ConnectionPtr connection);
 
