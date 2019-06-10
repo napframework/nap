@@ -8,6 +8,7 @@
 // External Includes
 #include <nap/device.h>
 #include <atomic>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -119,7 +120,7 @@ namespace nap
 
 	/**
 	 * Used internally by the nap::WebSocketClientEndPoint. Binds a client (resource) to a server connection.
-	 * Connection information and messages are received from various threads. This objects
+	 * Connections and messages are received from various threads. This objects
 	 * ensures that new information is forwarded to the right client without locking any resources.
 	 */
 	class NAPAPI WebSocketClientWrapper final
@@ -166,7 +167,6 @@ namespace nap
 		IWebSocketClient* mResource = nullptr;
 		wspp::ClientEndPoint* mEndPoint = nullptr;
 		wspp::ConnectionHandle mHandle;
-
 		std::atomic<bool> mOpen = { false };
 	};
 }
