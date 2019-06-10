@@ -133,7 +133,7 @@ namespace nap
 		// Create unique events and hand off to api service
 		for (auto& apimsg : messages)
 		{
-			APIWebSocketEventPtr msg_event = apimsg->toEvent<APIWebSocketEvent>(connection);
+			APIWebSocketEventPtr msg_event = apimsg->toEvent<APIWebSocketEvent>(connection, *this);
 			if (!mService->getAPIService().sendEvent(std::move(msg_event), &error))
 			{
 				sendErrorReply(connection, error);
