@@ -30,6 +30,24 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * Returns the interface as an interface of type T.
+		 * The interface is either a server or client, for example: as<nap::WebSocketServer>();
+		 * Asserts if the interface isn't of type T.
+		 * @return The web-socket interface associated with this event.
+		 */
+		template<typename T>
+		T& as();
+
+		/**
+		 * Returns the interface as an interface of type T.
+		 * The interface is either a server or client, for example: as<nap::WebSocketServer>();
+		 * Asserts if the interface isn't of type T.
+		 * @return The web-socket interface associated with this event.
+		 */
+		template<typename T>
+		const T& as();
+
 	protected:
 		/**
 		 * Called when the end point receives a new event.
@@ -55,4 +73,27 @@ namespace nap
 		 */
 		void consumeEvents(std::queue<WebSocketEventPtr>& outEvents);
 	};
+
+	
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	const T& nap::WebSocketInterface::as()
+	{
+		T* cast_interface = rtti_cast<T>(this);
+		assert(cast_interface != nullptr);
+		return *cast_interface;
+	}
+
+
+	template<typename T>
+	T& nap::WebSocketInterface::as()
+	{
+		T* cast_interface = rtti_cast<T>(this);
+		assert(cast_interface != nullptr);
+		return *cast_interface;
+	}
+
 }

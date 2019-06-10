@@ -3,6 +3,7 @@
 // External Includes
 #include <apievent.h>
 #include <websocketconnection.h>
+#include <websocketinterface.h>
 
 namespace nap
 {
@@ -23,7 +24,8 @@ namespace nap
 		 * @param name the name of this call
 		 * @param connection the web-socket endpoint connection.
 		 */
-		APIWebSocketEvent(const std::string& name, const WebSocketConnection& connection);
+		APIWebSocketEvent(const std::string& name, const WebSocketConnection& connection, 
+			WebSocketInterface& wsInterface);
 
 		/**
 		 * Constructs a new web socket event with the given name and web-socket connection.
@@ -31,7 +33,8 @@ namespace nap
 		 * @param name the name of this call
 		 * @param connection the web-socket endpoint connection.
 		 */
-		APIWebSocketEvent(std::string&& name, const WebSocketConnection& connection);
+		APIWebSocketEvent(std::string&& name, const WebSocketConnection& connection, 
+			WebSocketInterface& wsInterface);
 
 		/**
 		 * Constructs a new web socket event with the given name, unique id and web-socket connection.
@@ -39,7 +42,8 @@ namespace nap
 		 * @param id unique identifier of this call
 		 * @param connection the web-socket endpoint connection.
 		 */
-		APIWebSocketEvent(const std::string& name, const std::string& id, const WebSocketConnection& connection);
+		APIWebSocketEvent(const std::string& name, const std::string& id, const WebSocketConnection& connection, 
+			WebSocketInterface& wsInterface);
 
 		/**
 		 * Constructs a new web socket event with the given name, unique id and web-socket connection.
@@ -47,15 +51,31 @@ namespace nap
 		 * @param id unique identifier of this call
 		 * @param connection the web-socket endpoint connection.
 		 */
-		APIWebSocketEvent(std::string&& name, std::string&& id, const WebSocketConnection& connection);
+		APIWebSocketEvent(std::string&& name, std::string&& id, const WebSocketConnection& connection, 
+			WebSocketInterface& wsInterface);
 
 		/**
 		 * @return The web-socket connection associated with this event
 		 */
 		const WebSocketConnection& getConnection() const			{ return mConnection; }
 
+		/**
+		 * Returns the interface that created this web-socket event.
+		 * The interface is either an api server or client of type: APIWebSocketClient or APIWebSocketServer.
+		 * @return The web-socket interface associated with this event.
+		 */
+		WebSocketInterface& getInterface();
+
+		/**
+		 * Returns the interface that created this web-socket event.
+		 * The interface is either an api server or client of type: APIWebSocketClient or APIWebSocketServer.
+		 * @return The web-socket interface associated with this event.
+		 */
+		const WebSocketInterface& getInterface() const;
+
 	private:
 		WebSocketConnection mConnection;
+		WebSocketInterface* mInterface = nullptr;
 	};
 
 	using APIWebSocketEventPtr = std::unique_ptr<APIWebSocketEvent>;
