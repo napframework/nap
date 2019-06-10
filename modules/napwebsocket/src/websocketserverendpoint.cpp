@@ -243,18 +243,21 @@ namespace nap
 
 	void WebSocketServerEndPoint::onHTTP(wspp::ConnectionHandle con)
 	{
+		/* TODO: Use this information for authentication.
 		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con);
 		std::string res = conp->get_request_body();
 		std::stringstream ss;
 		ss << "got HTTP request with " << res.size() << " bytes of body data.";
 		conp->set_body(ss.str());
 		conp->set_status(websocketpp::http::status_code::ok);
+		*/
 	}
 
 
 	bool WebSocketServerEndPoint::onValidate(wspp::ConnectionHandle con)
 	{
 		// TODO: Validate incoming connection here, ie: accept or reject.
+		// Right now simply accept all incoming connections.
 		return true;
 	}
 

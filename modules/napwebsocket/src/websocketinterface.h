@@ -13,15 +13,26 @@ namespace nap
 	class WebSocketService;
 
 	/**
-	 * websocketinterface
+	 * Base class of all web-socket clients and servers.
+	 * Don't derive from this directly but from nap::IWebSocketClient and
+	 * nap::IWebSocketServer instead. Every web-socket interface is registered 
+	 * with the nap::WebSocketService. This allows a client or server to receive
+	 * web-socket messages and connection updates on a different thread than the 
+	 * application thread. By itself this object does not interface with an endpoint.
+	 * Use the nap::WebSocketClient and nap::WebSocketServer instead.
 	 */
 	class NAPAPI WebSocketInterface : public Resource
 	{
 		friend class WebSocketService;
 		RTTI_ENABLE(Resource)
 	public:
+		/**
+		 * Constructor
+		 * @param service the web-socket service that forwards events to the application.
+		 */
 		WebSocketInterface(WebSocketService& service);
 
+		// Destructor
 		virtual ~WebSocketInterface();
 
 		/**
@@ -32,7 +43,7 @@ namespace nap
 
 		/**
 		 * Returns the interface as an interface of type T.
-		 * The interface is either a server or client, for example: as<nap::WebSocketServer>();
+		 * The interface is either a server or client, for example: this->as<nap::WebSocketServer>();
 		 * Asserts if the interface isn't of type T.
 		 * @return The web-socket interface associated with this event.
 		 */
@@ -41,7 +52,7 @@ namespace nap
 
 		/**
 		 * Returns the interface as an interface of type T.
-		 * The interface is either a server or client, for example: as<nap::WebSocketServer>();
+		 * The interface is either a server or client, for example: this->as<nap::WebSocketServer>();
 		 * Asserts if the interface isn't of type T.
 		 * @return The web-socket interface associated with this event.
 		 */
@@ -51,7 +62,7 @@ namespace nap
 	protected:
 		/**
 		 * Called when the end point receives a new event.
-		 * Adds the event to the list of events to be processed on the main thread.
+		 * Adds the event to the list of events to be processed on the application thread.
 		 * @param newEvent the web-socket event.
 		 */
 		void addEvent(WebSocketEventPtr newEvent);

@@ -7,7 +7,7 @@
 namespace nap
 {
 	/**
-	 * Enum describing the levels for logging web-socket errors.
+	 * Enum that describes the web-socket log level. 
 	 * The levels can be bit-masked together.
 	 */
 	enum class EWebSocketLogLevel : uint32

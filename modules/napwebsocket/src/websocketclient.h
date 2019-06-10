@@ -186,8 +186,7 @@ namespace nap
 		/**
 		 * Called by web-socket client endpoint when a new message is received.
 		 * Generates and forwards a nap::WebSocketMessageReceivedEvent to the running application on the main thread.
-		 * @param code the closing code
-		 * @param reason the reason why connecting failed.
+		 * @param msg the message received from the server.
 		 */
 		virtual void onMessageReceived(const WebSocketMessage& msg) override;
 	};

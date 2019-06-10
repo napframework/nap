@@ -3,7 +3,6 @@
 
 // nap::websocketinterface run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketInterface)
-	// Put additional properties here
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

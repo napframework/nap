@@ -8,10 +8,4 @@ namespace nap
 	{
 	}
 
-
-	bool WebSocketConnection::expired() const
-	{
-		return mConnection.expired();
-	}
-
 }
