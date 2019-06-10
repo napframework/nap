@@ -11,8 +11,9 @@
 
 // nap::websocketapiserver run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketServer)
-RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
-	RTTI_PROPERTY("Verbose",			&nap::APIWebSocketServer::mVerbose, nap::rtti::EPropertyMetaData::Default)
+	RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
+	RTTI_PROPERTY("Mode",		&nap::APIWebSocketServer::mMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Verbose",	&nap::APIWebSocketServer::mVerbose, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -20,17 +21,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
-
-	const std::string APIWebSocketServer::apiMessageHeaderName("NAP:MESSAGE");
-
-
 	APIWebSocketServer::~APIWebSocketServer() { }
-
 
 
 	APIWebSocketServer::APIWebSocketServer(APIWebSocketService& service) : 
 		IWebSocketServer(service.getWebSocketService()), 
-		mService(&service)
+		mAPIService(&(service.getAPIService()))
 	{
 
 	}
@@ -85,8 +81,20 @@ namespace nap
 
 	void APIWebSocketServer::onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message)
 	{
-		// Add as regular web-socket event
-		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
+		// Add web-socket event
+		switch(mMode)
+		{
+		case EWebSocketForwardMode::WebSocketEvent:
+		{
+			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
+			return;
+		}
+		case EWebSocketForwardMode::Both:
+			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
+			break;
+		default:
+			break;
+		}
 
 		// Ensure it's a finalized message
 		nap::utility::ErrorState error;
@@ -105,26 +113,11 @@ namespace nap
 			return;
 		}
 
-		// Ensure the message start with a substring
-		// TODO: maybe include this in the header?
-		if (!utility::startsWith(message.getPayload(), apiMessageHeaderName))
-		{
-			if (mVerbose)
-				nap::Logger::warn("%s: received message without request header: %s", mID.c_str(), apiMessageHeaderName.c_str());
-			return;
-		}
-
-		// Erase first part
-		std::string json(message.getPayload());
-		json.erase(0, apiMessageHeaderName.length());
-
-		// Members necessary to extract messages
+		// Perform extraction
 		auto& factory = mService->getCore().getResourceManager()->getFactory();
 		nap::rtti::DeserializeResult result;
 		std::vector<APIMessage*> messages;
-
-		// Perform extraction
-		if (!extractMessages(json, result, factory, messages, error))
+		if (!extractMessages(message.getPayload(), result, factory, messages, error))
 		{
 			sendErrorReply(connection, error);
 			return;
@@ -134,7 +127,7 @@ namespace nap
 		for (auto& apimsg : messages)
 		{
 			APIWebSocketEventPtr msg_event = apimsg->toEvent<APIWebSocketEvent>(connection, *this);
-			if (!mService->getAPIService().sendEvent(std::move(msg_event), &error))
+			if (!mAPIService->sendEvent(std::move(msg_event), &error))
 			{
 				sendErrorReply(connection, error);
 			}
@@ -144,19 +137,52 @@ namespace nap
 
 	void APIWebSocketServer::onConnectionOpened(const WebSocketConnection& connection)
 	{
-		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(connection));
+		// Add web-socket event
+		switch (mMode)
+		{
+		case EWebSocketForwardMode::Both:
+		case EWebSocketForwardMode::WebSocketEvent:
+		{
+			addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(connection));
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 
 	void APIWebSocketServer::onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason)
 	{
-		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection, code, reason));
+		// Add web-socket event
+		switch (mMode)
+		{
+		case EWebSocketForwardMode::Both:
+		case EWebSocketForwardMode::WebSocketEvent:
+		{
+			addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection, code, reason));
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 
 	void APIWebSocketServer::onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason)
 	{
-		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection, code, reason));
+		// Add web-socket event
+		switch (mMode)
+		{
+		case EWebSocketForwardMode::Both:
+		case EWebSocketForwardMode::WebSocketEvent:
+		{
+			addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection, code, reason));
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 }
