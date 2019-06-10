@@ -59,14 +59,8 @@ namespace nap
 			// Make sure the end point doesn't restart
 			mEndPoint.stop_perpetual();
 
-			// Notify server we're disconnecting, connection is closed if ever established
-			utility::ErrorState napec;
-			if (!closeAll(napec))
-			{
-				//assert(false);
-				nap::Logger::error("%s: %s", this->mID.c_str(), napec.toString().c_str());
-			}
-
+			// Wait until all clients exited clean
+			mClients.clear();
 			mClientTask.wait();
 			mRunning = false;
 		}
@@ -125,12 +119,6 @@ namespace nap
 
 	bool WebSocketClientEndPoint::registerClient(IWebSocketClient& client, utility::ErrorState& error)
 	{
-		// Add it as a valid connection
-		{
-			std::lock_guard<std::mutex> guard(mConnectionMutex);
-			mClients.emplace_back(&client);
-		}
-
 		// Get shared pointer to connection
 		std::error_code stdec;
 		wspp::ConnectionPtr client_connection = mEndPoint.get_connection(client.mURI, stdec);
@@ -143,20 +131,27 @@ namespace nap
 			return false;
 		}
 
-		client_connection->set_open_handler(std::bind(&WebSocketClientEndPoint::onConnectionOpened, this, std::placeholders::_1));
-		client_connection->set_close_handler(std::bind(&WebSocketClientEndPoint::onConnectionClosed, this, std::placeholders::_1));
-		client_connection->set_fail_handler(std::bind(&WebSocketClientEndPoint::onConnectionFailed, this, std::placeholders::_1));
+		// Create meta client
+		std::unique_ptr<WebSocketMetaClient> meta_client = std::make_unique<WebSocketMetaClient>(client, 
+			mEndPoint, 
+			client_connection->get_handle());
+
+		// Connect callbacks (occur on different thread)
+		client_connection->set_open_handler(std::bind(&WebSocketMetaClient::onConnectionOpened, meta_client.get(), std::placeholders::_1));
+		client_connection->set_close_handler(std::bind(&WebSocketMetaClient::onConnectionClosed, meta_client.get(), std::placeholders::_1));
+		client_connection->set_fail_handler(std::bind(&WebSocketMetaClient::onConnectionFailed, meta_client.get(), std::placeholders::_1));
 
 		// Install message handler
 		client_connection->set_message_handler(std::bind(
-			&WebSocketClientEndPoint::onMessageReceived, this,
+			&WebSocketMetaClient::onMessageReceived, meta_client.get(),
 			std::placeholders::_1, std::placeholders::_2));
 
 		// Try to connect
 		mEndPoint.connect(client_connection);
-
-		// Set the handle
+		 
+		// Set the handle in the resource
 		client.mConnection = WebSocketConnection(client_connection->get_handle());
+		mClients.emplace_back(std::move(meta_client));
 
 		// Connect to client disconnect slot
 		client.destroyed.connect(mClientDestroyed);
@@ -165,134 +160,10 @@ namespace nap
 	}
 
 
-	bool WebSocketClientEndPoint::closeAll(utility::ErrorState& error)
-	{
-		std::lock_guard<std::mutex> lock(mConnectionMutex);
-		bool success = true;
-		for (auto& client : mClients)
-		{
-			if(!client->isOpen())
-				continue;
-
-			std::error_code stdec;
-			mEndPoint.close(client->mConnection.mConnection, websocketpp::close::status::going_away, "disconnected", stdec);
-			if (stdec)
-			{
-				error.fail(stdec.message());
-				success = false;
-			}
-		}
-		mClients.clear();
-		return success;
-	}
-
-
-	void WebSocketClientEndPoint::onConnectionOpened(wspp::ConnectionHandle connection)
-	{
-		// Extract actual connection, must be valid at this point
-		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
-		assert(!stdec);
-
-		// Find matching connection
-		IWebSocketClient* found_client = findClient(cptr);
-		
-		// The client can be null when close() has been called or the client has been destructed already
-		// The mutex ensures that order of removal / addition is secure.
-		if (found_client != nullptr)
-		{
-			found_client->connectionOpened();
-		}
-
-	}
-
-
-	void WebSocketClientEndPoint::onConnectionClosed(wspp::ConnectionHandle connection)
-	{
-		// Extract actual connection, must be valid at this point
-		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
-		assert(!stdec);
-
-		// Find matching connection
-		IWebSocketClient* found_client = findClient(cptr);
-
-		// The client can be null when close() has been called or the client has been destructed already
-		// The mutex ensures that order of removal / addition is secure.
-		if (found_client != nullptr)
-		{
-			found_client->connectionClosed(cptr->get_ec().value(), cptr->get_ec().message());
-		}
-	}
-
-
-	void WebSocketClientEndPoint::onConnectionFailed(wspp::ConnectionHandle connection)
-	{
-		// Extract actual connection, must be valid at this point
-		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
-		assert(!stdec);
-
-		// Find matching connection
-		IWebSocketClient* found_client = findClient(cptr);
-		
-		// The client can be null when close() has been called or the client has been destructed already
-		// The mutex ensures that order of removal / addition is secure.
-		if (found_client != nullptr)
-		{
-			found_client->connectionFailed(cptr->get_ec().value(), cptr->get_ec().message());
-		}
-	}
-
-
-	void WebSocketClientEndPoint::onMessageReceived(wspp::ConnectionHandle connection, wspp::MessagePtr msg)
-	{
-		// Extract actual connection, must be valid at this point
-		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
-		assert(!stdec);
-
-		// Find matching connection
-		IWebSocketClient* found_client = findClient(cptr);
-		if (found_client != nullptr)
-		{
-			found_client->messageReceived(WebSocketMessage(msg));
-		}
-	}
-
-
 	void WebSocketClientEndPoint::onClientDestroyed(const IWebSocketClient& client)
 	{
 		// Remove client from internally managed list
 		removeClient(client);
-
-		// Disconnect if current connection is open
-		std::error_code stdec;
-		if (client.isOpen())
-		{
-			mEndPoint.close(client.mConnection.mConnection, websocketpp::close::status::going_away, "disconnected", stdec);
-			nap::Logger::error("%s: %s", this->mID.c_str(), stdec.message().c_str());
-		}
-	}
-
-
-	nap::IWebSocketClient* WebSocketClientEndPoint::findClient(wspp::ConnectionPtr connection)
-	{
-		assert(connection != nullptr);
-		std::error_code stdec;
-		std::lock_guard<std::mutex> lock(mConnectionMutex);
-		for (auto client : mClients)
-		{
-			if (client->mConnection.expired())
-				continue;
-
-			wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(client->mConnection.mConnection, stdec);
-			assert(!stdec);
-
-			if (cptr == connection)
-				return client;
-		}
-		return nullptr;
 	}
 
 
@@ -301,7 +172,7 @@ namespace nap
 		std::lock_guard<std::mutex> lock(mConnectionMutex);
 		auto found_it = std::find_if(mClients.begin(), mClients.end(), [&](const auto& it)
 		{
-			return it == &client;
+			return it->mResource == &client;
 		});
 
 		if (found_it == mClients.end())
@@ -310,6 +181,104 @@ namespace nap
 			return;
 		}
 		mClients.erase(found_it);
+	}
+
+
+	WebSocketMetaClient::WebSocketMetaClient(IWebSocketClient& client, wspp::ClientEndPoint& endPoint, wspp::ConnectionPtr connection) :
+		mResource(&client), mEndPoint(&endPoint), mHandle(connection->get_handle())
+	{
+		// Connect callbacks (occur on different thread)
+		connection->set_open_handler(std::bind(&WebSocketMetaClient::onConnectionOpened, this, std::placeholders::_1));
+		connection->set_close_handler(std::bind(&WebSocketMetaClient::onConnectionClosed, this, std::placeholders::_1));
+		connection->set_fail_handler(std::bind(&WebSocketMetaClient::onConnectionFailed, this, std::placeholders::_1));
+
+		// Install message handler
+		connection->set_message_handler(std::bind(
+			&WebSocketMetaClient::onMessageReceived, this,
+			std::placeholders::_1, std::placeholders::_2));
+	}
+
+
+	WebSocketMetaClient::~WebSocketMetaClient()
+	{
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		if (mOpen)
+		{
+			// Get actual connetion from handle
+			// Should be valid because the connection is flagged to be open
+			std::error_code stdec;
+			wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(mHandle, stdec);
+			assert(!stdec);
+			
+			// Remove callbacks!
+			cptr->set_open_handler(nullptr);
+			cptr->set_close_handler(nullptr);
+			cptr->set_fail_handler(nullptr);
+			cptr->set_message_handler(nullptr);
+			
+			// Now close
+			mEndPoint->close(mHandle, websocketpp::close::status::going_away, "disconnected", stdec);
+			if (stdec)
+			{
+				nap::Logger::error(stdec.message());
+			}
+		}
+		mResource = nullptr;
+		mEndPoint = nullptr;
+	}
+
+
+	void WebSocketMetaClient::onConnectionOpened(wspp::ConnectionHandle connection)
+	{
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		if (mResource != nullptr)
+			mResource->connectionOpened();
+		mOpen = true;
+	}
+
+
+	void WebSocketMetaClient::onConnectionClosed(wspp::ConnectionHandle connection)
+	{
+		// Extract actual connection, must be valid at this point
+		std::error_code stdec;
+		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection, stdec);
+		assert(!stdec);
+
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		if (mResource != nullptr)
+			mResource->connectionClosed(stdec.value(), stdec.message());
+		mOpen = false;
+	}
+
+
+	void WebSocketMetaClient::onConnectionFailed(wspp::ConnectionHandle connection)
+	{
+		// Extract actual connection, must be valid at this point
+		std::error_code stdec;
+		wspp::ConnectionPtr cptr = mEndPoint->get_con_from_hdl(connection, stdec);
+		assert(!stdec);
+
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		if (mResource != nullptr)
+			mResource->connectionFailed(stdec.value(), stdec.message());
+		mOpen = false;
+	}
+
+
+	void WebSocketMetaClient::onMessageReceived(wspp::ConnectionHandle connection, wspp::MessagePtr msg)
+	{
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		if(mResource != nullptr)
+		{
+			mResource->messageReceived(WebSocketMessage(msg));
+		}
+	}
+
+
+	void WebSocketMetaClient::clearResource()
+	{
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		mResource = nullptr;
 	}
 
 }
