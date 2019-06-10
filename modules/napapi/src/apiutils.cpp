@@ -10,7 +10,7 @@ namespace nap
 	bool extractMessages(const std::string& json, rtti::DeserializeResult& result, rtti::Factory& factory, std::vector<APIMessage*>& outMessages, utility::ErrorState& error)
 	{
 		// De-serialize json cmd
-		if (!rtti::deserializeJSON(json, rtti::EPropertyValidationMode::DisallowMissingProperties, factory, result, error))
+		if (!rtti::deserializeJSON(json, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::OnlyRawPointers, factory, result, error))
 			return false;
 
 		// Resolve links

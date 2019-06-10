@@ -39,7 +39,7 @@ namespace nap
 			rtti::copyObject(arg->getValue(), *copy_ptr);
 
 			// Store
-			mArguments.emplace_back(ResourcePtr<APIBaseValue>(copy_ptr));
+			mArguments.emplace_back(copy_ptr);
 			mOwningArguments.emplace_back(std::unique_ptr<APIBaseValue>(copy_ptr));
 		}
 	}

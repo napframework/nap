@@ -33,7 +33,7 @@ namespace nap
 		 *
 		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 		 */
-		bool NAPAPI deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
+		bool NAPAPI deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
 
 		/**
 		 * Read and deserialize a set of objects and their data from the specified JSON file
@@ -45,7 +45,8 @@ namespace nap
 		 *
 		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 		 */
-		bool NAPAPI readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
+		bool NAPAPI readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
+
 	} //< End Namespace nap
 
 }

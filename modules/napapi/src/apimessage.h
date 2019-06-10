@@ -60,8 +60,8 @@ namespace nap
 		 */
 		bool toJSON(std::string& outString, utility::ErrorState& error);
 
-		std::vector<ResourcePtr<APIBaseValue>> mArguments;	///< Property: 'Arguments': All input arguments associated with this message
-		std::string mName;									///< Property: 'Name': action associated with the message
+		std::vector<APIBaseValue*> mArguments;		///< Property: 'Arguments': All input arguments associated with this message
+		std::string mName;							///< Property: 'Name': action associated with the message
 
 	private:
 		// When constructing this message from an api event the values are owned by this object.

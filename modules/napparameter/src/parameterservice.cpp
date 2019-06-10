@@ -100,7 +100,7 @@ namespace nap
 
 		// Load the parameters from the preset
 		rtti::DeserializeResult deserialize_result;
-		if (!rtti::readJSONFile(preset_path, rtti::EPropertyValidationMode::DisallowMissingProperties, getCore().getResourceManager()->getFactory(), deserialize_result, errorState))
+		if (!rtti::readJSONFile(preset_path, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, getCore().getResourceManager()->getFactory(), deserialize_result, errorState))
 			return false;
 
 		// Resolve links
