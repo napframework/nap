@@ -9,6 +9,7 @@
 namespace nap
 {
 	class WebSocketServerEndPoint;
+	class WebSocketClientEndPoint;
 
 	/**
 	 * Utility class that wraps a web-socket connection handle. By default the connection is invalid.
@@ -46,6 +47,6 @@ namespace nap
 		 */
 		WebSocketConnection(wspp::ConnectionHandle connection);
 
-		wspp::ConnectionHandle mConnection;		///< Weak pointer to the underlying websocketpp connection
+		wspp::ConnectionHandle mConnection;		///< Weak pointer to the underlying websocketpp connection, invalid by default.
 	};
 }
