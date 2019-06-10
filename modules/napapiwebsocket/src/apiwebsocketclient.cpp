@@ -1,13 +1,18 @@
+// Local Includes
 #include "apiwebsocketclient.h"
+#include "apiwebsocketservice.h"
 #include "websocketservice.h"
 
+// External Includes
 #include <nap/logger.h>
 #include <nap/core.h>
 #include <apimessage.h>
 #include <apiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketClient)
-	RTTI_CONSTRUCTOR(nap::WebSocketService&)
+	RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
+	RTTI_PROPERTY("Mode",		&nap::APIWebSocketClient::mMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Verbose",	&nap::APIWebSocketClient::mVerbose, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -15,7 +20,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	APIWebSocketClient::APIWebSocketClient(WebSocketService& service) : IWebSocketClient(service)
+	APIWebSocketClient::APIWebSocketClient(APIWebSocketService& service) : 
+		IWebSocketClient(service.getWebSocketService()),
+		mAPIService(&(service.getAPIService()))
 	{
 	}
 
@@ -74,24 +81,110 @@ namespace nap
 
 	void APIWebSocketClient::onConnectionOpened()
 	{
-		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(mConnection));
+		// Add web-socket event
+		switch (mMode)
+		{
+		case EWebSocketForwardMode::Both:
+		case EWebSocketForwardMode::WebSocketEvent:
+		{
+			addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(mConnection));
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 
 	void APIWebSocketClient::onConnectionClosed(int code, const std::string& reason)
 	{
-		addEvent(std::make_unique<WebSocketConnectionClosedEvent>(mConnection, code, reason));
+		// Add web-socket event
+		switch (mMode)
+		{
+		case EWebSocketForwardMode::Both:
+		case EWebSocketForwardMode::WebSocketEvent:
+		{
+			addEvent(std::make_unique<WebSocketConnectionClosedEvent>(mConnection, code, reason));
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 
 	void APIWebSocketClient::onConnectionFailed(int code, const std::string& reason)
 	{
-		addEvent(std::make_unique<WebSocketConnectionFailedEvent>(mConnection, code, reason));
+		// Add web-socket event
+		switch (mMode)
+		{
+		case EWebSocketForwardMode::Both:
+		case EWebSocketForwardMode::WebSocketEvent:
+		{
+			addEvent(std::make_unique<WebSocketConnectionFailedEvent>(mConnection, code, reason));
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 
 	void APIWebSocketClient::onMessageReceived(const WebSocketMessage& msg)
 	{
-		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(mConnection, msg));
+		// Add web-socket event
+		switch (mMode)
+		{
+		case EWebSocketForwardMode::WebSocketEvent:
+		{
+			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(mConnection, msg));
+			return;
+		}
+		case EWebSocketForwardMode::Both:
+			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(mConnection, msg));
+			break;
+		default:
+			break;
+		}
+
+		// Ensure it's a finalized message
+		nap::utility::ErrorState error;
+		if (!error.check(msg.getFin(), "only finalized messages are accepted"))
+		{
+			if (mVerbose)
+				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
+			return;
+		}
+
+		// Make sure we're dealing with text
+		if (!error.check(msg.getCode() == EWebSocketOPCode::Text, "not a text message"))
+		{
+			if (mVerbose)
+				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
+			return;
+		}
+
+		// Perform extraction
+		auto& factory = mService->getCore().getResourceManager()->getFactory();
+		nap::rtti::DeserializeResult result;
+		std::vector<APIMessage*> messages;
+		if (!extractMessages(msg.getPayload(), result, factory, messages, error))
+		{
+			if(mVerbose)
+				nap::Logger::warn("%s: %s", this->mID.c_str(), error.toString().c_str());
+			return;
+		}
+
+		// Create unique events and hand off to api service
+		for (auto& apimsg : messages)
+		{
+			APIWebSocketEventPtr msg_event = apimsg->toEvent<APIWebSocketEvent>(mConnection, *this);
+			if (!mAPIService->sendEvent(std::move(msg_event), &error))
+			{
+				if (mVerbose)
+					nap::Logger::warn("%s: %s", this->mID.c_str(), error.toString().c_str());
+				return;
+			}
+		}
 	}
 }
