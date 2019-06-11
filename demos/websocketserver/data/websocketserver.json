@@ -1,0 +1,171 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::APISignature",
+            "mID": "ChangeText",
+            "Arguments": [
+                {
+                    "Type": "nap::APIString",
+                    "mID": "Argument01",
+                    "Name": "Text",
+                    "Value": ""
+                }
+            ]
+        },
+        {
+            "Type": "nap::APISignature",
+            "mID": "ChangeTextColor",
+            "Arguments": [
+                {
+                    "Type": "nap::APIFloat",
+                    "mID": "APIFloat",
+                    "Name": "Red",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::APIFloat",
+                    "mID": "APIFloat_2",
+                    "Name": "Green",
+                    "Value": 0.0
+                },
+                {
+                    "Type": "nap::APIFloat",
+                    "mID": "APIFloat_3",
+                    "Name": "Blue",
+                    "Value": 0.0
+                }
+            ]
+        },
+        {
+            "Type": "nap::APIWebSocketServer",
+            "mID": "WebSocketServer",
+            "EndPoint": "WebSocketServerEndPoint",
+            "Mode": "Both",
+            "Verbose": true
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TextEntity",
+            "Components": [
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "Render2DTextComponent",
+                    "Text": "waiting for a websocket client to change this text",
+                    "Font": "Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Center"
+                },
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "APIComponent",
+                    "Methods": [
+                        "ChangeText",
+                        "ChangeTextColor"
+                    ]
+                },
+                {
+                    "Type": "nap::APIWebSocketHandlerComponent",
+                    "mID": "APIHandler",
+                    "APIComponent": "./APIComponent",
+                    "TextComponent" : "./Render2DTextComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "WebSocketEntity",
+            "Components": [
+                {
+                    "Type": "nap::WebSocketComponent",
+                    "mID": "WebSocketComponent",
+                    "Interface": "WebSocketServer"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Font",
+            "mID": "Font",
+            "Properties": {
+                "Size": 32,
+                "DPI": 96
+            },
+            "Font": "fonts/Montserrat-Light.otf"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "FontMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "textColor",
+                    "Value": {
+                        "x": 0.8587999939918518,
+                        "y": 0.8587999939918518,
+                        "z": 0.8587999939918518
+                    }
+                }
+            ],
+            "Shader": "Shader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "WebSocketServer",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "TextEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "WebSocketEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "Shader",
+            "mVertShader": "shaders/font.vert",
+            "mFragShader": "shaders/font.frag"
+        },
+        {
+            "Type": "nap::WebSocketServerEndPoint",
+            "mID": "WebSocketServerEndPoint",
+            "AllowPortReuse": true,
+            "LogConnectionUpdates": true,
+            "Port": 80,
+            "LibraryLogLevel": "Warning"
+        }
+    ]
+}
