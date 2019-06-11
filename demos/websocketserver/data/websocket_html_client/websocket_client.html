@@ -1,0 +1,157 @@
+  <!DOCTYPE html>
+  <meta charset="utf-8" />
+  <title>WebSocket Test</title>
+
+  <script language="javascript" type="text/javascript">
+
+  // Websocket url
+  var ws_uri = "ws://192.168.0.38:80";
+  
+  // JSON formatted message to change text in NAP
+  var nap_msg = `
+  {
+     "Objects": 
+      [
+          {
+              "Type": "nap::APIMessage",
+              "mID": "01",
+              "Name": "ChangeText",
+              "Arguments": 
+              [
+                  {
+                      "Type": "nap::APIString",
+                      "Name": "text",
+                      "mID": "02",
+                      "Value": "I'm so excited!"
+                  }
+              ]
+          }
+      ]
+  }`
+
+  // Some global document vars.
+  var api_msg;
+  var textbox;
+  var request_p;
+  var connected = false;
+  var status_header;
+
+  // On load
+  function init()
+  {
+    textbox = document.getElementById("textbox");
+    request_p = document.getElementById("request_p");
+    input = document.getElementById("input_field");
+    status_header = document.getElementById("status_header");
+    api_msg = JSON.parse(nap_msg);
+    testWebSocket();
+  }
+
+  // Run simple websocket
+  function testWebSocket()
+  {
+    status_header.innerHTML = "connecting";
+    status_header.style.color = "blue";
+
+    websocket = new WebSocket(ws_uri);
+    writeToBox("connecting to: " + ws_uri);
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+  }
+
+  // Called when the connection opened successfully
+  function onOpen(evt)
+  {
+    writeToBox("connected");
+    updateStatus(true);
+  }
+
+  // Called when the connection is closed
+  function onClose(evt)
+  {
+    writeToBox("disconnected");
+    updateStatus(false);
+  }
+
+  // Called when a new message is received
+  function onMessage(evt)
+  {
+    writeToBox(evt.data);
+  }
+
+  // Called when connection failed to establish
+  function onError(evt)
+  {
+    writeToBox("connection failed");
+    updateStatus(false);
+  }
+
+  // Called when text input field changes.
+  // Constructs a nap api request to change the text
+  // And sends it to the server.
+  function doSend()
+  {
+    // Set the text to change in the json api messae object
+    var text = input.value;
+    api_msg.Objects[0].Arguments[0].Value = text;
+
+    // Convert to nice looking string
+    var api_msg_string = JSON.stringify(api_msg, undefined, 4);
+    writeToScreen(api_msg_string);
+
+    // Return if we're not connected
+    if(!connected)
+    {
+      writeToBox("unable to send request, not connected");
+      return;
+    }
+    
+    // Send api message as string to nap
+    writeToBox("sent: " + text);
+    websocket.send(api_msg_string);
+  }
+
+  // Called when a websocket connection event occurs
+  function updateStatus(established)
+  {
+    connected = established;
+    if(connected)
+    {
+      status_header.innerHTML = "connected";
+      status_header.style.color = "green";
+      return;
+    }
+    status_header.innerHTML = "disconnected";
+    status_header.style.color = "red";
+  }
+
+  function writeToBox(message)
+  {
+    textbox.value += (message + "\n");
+    textbox.scrollTop = textbox.scrollHeight;
+  }
+
+  function writeToScreen(message)
+  {
+    request_p.innerHTML = message;
+  }
+
+  // Call init on load
+  window.addEventListener("load", init, false);
+
+  </script>
+
+  <body>
+    <h2>NAP WebSocket Client Demo</h2>
+    <h3 id="status_header"></h3  >
+    <label for="name">Send:</label>
+    <input type="text" id="input_field" name="name" size="30" oninput="doSend()">
+    <div id="output">
+      <br>
+      <textarea name="message" id="textbox" rows="20" cols="100"></textarea>
+    </div>
+    <h3>API Request</h2>
+    <pre id="request_p" style="color: blue;"></pre>
+   </body
