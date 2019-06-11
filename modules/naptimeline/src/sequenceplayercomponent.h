@@ -113,15 +113,15 @@ namespace nap
 			/**
 			* @return pointer to current sequence
 			*/
-			const Sequence* getCurrentSequence() { return mSequence; };
+			const ResourcePtr<Sequence>& getCurrentSequence() { return mSequence; };
 
 			/**
 			* @return pointer to current element in sequence being played, nullptr if not available
 			*/
-			const SequenceElement* getCurrentElement()
+			const ResourcePtr<SequenceElement>& getCurrentElement()
 			{
 				if (mSequence->mElements.size() > 0)
-					return mSequence->mElements[mCurrentSequenceIndex].get();
+					return mSequence->mElements[mCurrentSequenceIndex];
 
 				return nullptr;
 			};
@@ -147,7 +147,7 @@ namespace nap
 			const std::vector<ResourcePtr<SequenceElement>>& getElements();
 		protected:
 			//
-			Sequence* mSequence = nullptr;
+			ResourcePtr<Sequence> mSequence = nullptr;
 
 			double mTime = 0.0;
 			bool mIsPlaying = false;
@@ -157,7 +157,7 @@ namespace nap
 			int mCurrentSequenceIndex = 0;
 			double mDuration = 0.0;
 
-			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
+			std::vector<ResourcePtr<Parameter>> mParameters = std::vector<ResourcePtr<Parameter>>();
 		};
 	}
 }

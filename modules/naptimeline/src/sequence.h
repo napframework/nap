@@ -28,7 +28,7 @@ namespace nap
 			std::vector<ResourcePtr<SequenceElement>> mElements;
 
 			//
-			std::vector<Parameter*> mStartParameters;
+			std::vector<ResourcePtr<Parameter>> mStartParameters;
 		};
 	}
 }
