@@ -971,6 +971,25 @@
             }
         },
         {
+            "Type": "nap::flexblock::FlexblockSequenceTransition",
+            "mID": "FlexblockSequenceTransition",
+            "Duration": 0.0,
+            "Curve": "",
+            "Parameters": [],
+            "Preset File": "",
+            "Use Preset": false,
+            "Inputs": [
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
             "Type": "nap::math::FloatFCurve",
             "mID": "AlmostLinearCurve",
             "Points": [
@@ -1325,13 +1344,23 @@
             "mID": "Sequence",
             "Elements": [
                 {
-                    "Type": "nap::timeline::SequenceTransition",
-                    "mID": "SequenceTransition",
+                    "Type": "nap::flexblock::FlexblockSequenceTransition",
+                    "mID": "FlexblockSequenceTransition_2",
                     "Duration": 10.0,
                     "Curve": "Bezier Curve",
                     "Parameters": [],
-                    "Preset File": "middle_left.json",
-                    "Use Preset": true
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Inputs": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
                 }
             ],
             "StartParameters": [
