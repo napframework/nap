@@ -96,23 +96,25 @@ namespace nap
 		 * @param error contains the error is registration fails.
 		 * @return the newly created web-socket connection
 		 */
-		bool registerClient(IWebSocketClient& client, utility::ErrorState& error);
-
-		/**
-		 * Occurs when a client (resource) is about to be destroyed. 
-		 * Closes the connection, removes all listeners and removes the client from 
-		 * the list of actively managed connections.
-		 * @param client that is destroyed.
-		 */
-		void onClientDestroyed(const IWebSocketClient& client);
-		nap::Slot<const IWebSocketClient&> mClientDestroyed = { this, &WebSocketClientEndPoint::onClientDestroyed };
+		bool connectClient(IWebSocketClient& client, utility::ErrorState& error);
 
 		/**
 		 * Removes a client (resource) from the list of actively managed connection.
+		 * If the client connection is currently open it will be closed.
 		 * Asserts if the client isn't part of the system or can't be removed.
 		 * @param client the client to remove.
 		 */
-		void removeClient(const IWebSocketClient& client);
+		void disconnectClient(const IWebSocketClient& client);
+
+		/**
+		 * Occurs when a client (resource) is about to be destroyed.
+		 * Closes the connection, removes all listeners and removes the client from
+		 * the list of actively managed connections.
+		 * @param client that is destroyed.
+		 */
+		void onClientDisconnected(const IWebSocketClient& client);
+		nap::Slot<const IWebSocketClient&> mClientDisconnected = { this, &WebSocketClientEndPoint::onClientDisconnected };
+
 	};
 
 
