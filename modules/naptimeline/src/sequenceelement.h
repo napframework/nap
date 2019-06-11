@@ -31,13 +31,13 @@ namespace nap
 			* @param endValues a reference to the parameters that need to be set
 			* @return returns true if this element has to do something
 			*/
-			virtual bool process(double time, std::vector<Parameter*>& endParameters);
+			virtual bool process(double time, std::vector<ResourcePtr<Parameter>>& endParameters);
 
-			void setStartParameters(const std::vector<Parameter*>& startParameters);
+			void setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters);
 
-			const std::vector<Parameter*>& getEndParameters() { return mEndParameters; }
+			const std::vector<ResourcePtr<Parameter>>& getEndParameters() { return mEndParameters; }
 
-			const std::vector<Parameter*>& getStartParameters() { return mStartParameters; }
+			const std::vector<ResourcePtr<Parameter>>& getStartParameters() { return mStartParameters; }
 
 			/**
 			* This is called by the sequence to set the start time of this element
@@ -53,12 +53,12 @@ namespace nap
 			float mDuration = 0.0f;
 			std::string mPreset;
 			bool mUsePreset = false;
-			std::vector<Parameter*> mEndParameters;
+			std::vector<ResourcePtr<Parameter>> mEndParameters;
 		protected:
 			double mStartTime = 0.0;
 
-			std::vector<Parameter*> mStartParameters;
-			rtti::DeserializeResult mReadPresetResult;
+			std::vector<ResourcePtr<Parameter>> mStartParameters;
+			std::unique_ptr<rtti::Object> mObject;
 		};
 	}
 }

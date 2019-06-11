@@ -26,7 +26,7 @@ namespace nap
 			*/
 			virtual bool init(utility::ErrorState& errorState) override;
 
-			virtual bool process(double time, std::vector<Parameter*> &outParameters) override;
+			virtual bool process(double time, std::vector<ResourcePtr<Parameter>> &outParameters) override;
 		public:
 		};
 	}

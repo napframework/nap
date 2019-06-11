@@ -87,7 +87,7 @@ namespace nap
 			return true;
 		}
 
-		bool SequenceTransition::process(double time, std::vector<Parameter*>& outParameters)
+		bool SequenceTransition::process(double time, std::vector<ResourcePtr<Parameter>>& outParameters)
 		{
 			if (!SequenceElement::process(time, outParameters))
 				return false;
@@ -96,7 +96,7 @@ namespace nap
 
 			for (int i = 0; i < outParameters.size(); i++)
 			{
-				(this->*mFunctions[i])(progress, mStartParameters[i], mEndParameters[i], outParameters[i]);
+				(this->*mFunctions[i])(progress, mStartParameters[i].get(), mEndParameters[i].get(), outParameters[i].get());
 			}
 
 			return true;

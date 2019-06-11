@@ -34,23 +34,24 @@ namespace nap
 			if (mUsePreset)
 			{
 				rtti::Factory factory;
+				rtti::DeserializeResult result;
 
-				bool success = rtti::readJSONFile("presets/inputs/" + std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, factory, mReadPresetResult, errorState);
+				bool success = rtti::readJSONFile("presets/inputs/" + std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, factory, result, errorState);
 				if (!errorState.check(success,
 					"error loading preset %s", this->mID.c_str()))
 					return false;
 
 				// Resolve links
-				if (!rtti::DefaultLinkResolver::sResolveLinks(mReadPresetResult.mReadObjects, mReadPresetResult.mUnresolvedPointers, errorState))
+				if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
 					return false;
 
 				//
-				if (!errorState.check(mReadPresetResult.mReadObjects.size() > 0,
+				if (!errorState.check(result.mReadObjects.size() > 0,
 					"empty preset %s", this->mID.c_str()))
 					return false;
 
 				// first object must be parametergroup
-				std::unique_ptr<rtti::Object>& object = mReadPresetResult.mReadObjects[0];
+				std::unique_ptr<rtti::Object>& object = result.mReadObjects[0];
 
 				// 
 				if (!errorState.check(object->get_type().is_derived_from<ParameterGroup>(),
@@ -59,11 +60,12 @@ namespace nap
 
 				// get group
 				ParameterGroup* group = rtti_cast<ParameterGroup>(object.get());
+				mObject = std::move(object);
 
 				mEndParameters.clear();
 				for (int i = 0; i < group->mParameters.size(); i++)
 				{
-					mEndParameters.push_back(group->mParameters[i].get());
+					mEndParameters.push_back(std::move(group->mParameters[i]));
 				}
 			}
 			else
@@ -73,12 +75,12 @@ namespace nap
 			return true;
 		}
 
-		bool SequenceElement::process(double time, std::vector<Parameter*>& outParameters)
+		bool SequenceElement::process(double time, std::vector<ResourcePtr<Parameter>>& outParameters)
 		{
 			return (time >= mStartTime && time < mStartTime + mDuration);
 		}
 
-		void SequenceElement::setStartParameters(const std::vector<Parameter*>& startParameters)
+		void SequenceElement::setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters)
 		{
 			mStartParameters = startParameters;
 		}
