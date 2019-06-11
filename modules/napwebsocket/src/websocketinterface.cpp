@@ -13,18 +13,24 @@ namespace nap
 
 	WebSocketInterface::WebSocketInterface(WebSocketService& service) : mService(&service)
 	{
-		mService->registerInterface(*this);
+
 	}
 
 
 	WebSocketInterface::~WebSocketInterface() 
 	{
-		mService->removeInterface(*this);
+		if (mRegistered)
+		{
+			mService->removeInterface(*this);
+			mRegistered = false;
+		}
 	}
 
 
 	bool WebSocketInterface::init(utility::ErrorState& errorState)
 	{
+		mService->registerInterface(*this);
+		mRegistered = true;
 		return true;
 	}
 

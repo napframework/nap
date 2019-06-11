@@ -83,6 +83,9 @@ namespace nap
 		 * @param outEvents will hold the transferred web-socket events
 		 */
 		void consumeEvents(std::queue<WebSocketEventPtr>& outEvents);
+
+		// If the interface registered on init
+		bool mRegistered = false;
 	};
 
 	
