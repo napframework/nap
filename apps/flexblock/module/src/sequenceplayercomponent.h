@@ -118,7 +118,7 @@ namespace nap
 			/**
 			* @return pointer to current element in sequence being played, nullptr if not available
 			*/
-			const ResourcePtr<SequenceElement>& getCurrentElement()
+			const ResourcePtr<SequenceElement> getCurrentElement()
 			{
 				if (mSequence->mElements.size() > 0)
 					return mSequence->mElements[mCurrentSequenceIndex];

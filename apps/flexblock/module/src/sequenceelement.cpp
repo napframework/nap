@@ -34,24 +34,23 @@ namespace nap
 			if (mUsePreset)
 			{
 				rtti::Factory factory;
-				rtti::DeserializeResult result;
 
-				bool success = rtti::readJSONFile("presets/inputs/" + std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, factory, result, errorState);
+				bool success = rtti::readJSONFile("presets/inputs/" + std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, factory, mPresetReadResult, errorState);
 				if (!errorState.check(success,
 					"error loading preset %s", this->mID.c_str()))
 					return false;
 
 				// Resolve links
-				if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
+				if (!rtti::DefaultLinkResolver::sResolveLinks(mPresetReadResult.mReadObjects, mPresetReadResult.mUnresolvedPointers, errorState))
 					return false;
 
 				//
-				if (!errorState.check(result.mReadObjects.size() > 0,
+				if (!errorState.check(mPresetReadResult.mReadObjects.size() > 0,
 					"empty preset %s", this->mID.c_str()))
 					return false;
 
 				// first object must be parametergroup
-				std::unique_ptr<rtti::Object>& object = result.mReadObjects[0];
+				std::unique_ptr<rtti::Object>& object = mPresetReadResult.mReadObjects[0];
 
 				// 
 				if (!errorState.check(object->get_type().is_derived_from<ParameterGroup>(),
@@ -60,16 +59,12 @@ namespace nap
 
 				// get group
 				ParameterGroup* group = rtti_cast<ParameterGroup>(object.get());
-				mObject = std::move(object);
 
 				mEndParameters.clear();
 				for (int i = 0; i < group->mParameters.size(); i++)
 				{
-					mEndParameters.push_back(std::move(group->mParameters[i]));
+					mEndParameters.push_back(group->mParameters[i]);
 				}
-			}
-			else
-			{
 			}
 
 			return true;

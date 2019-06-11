@@ -58,7 +58,7 @@ namespace nap
 			double mStartTime = 0.0;
 
 			std::vector<ResourcePtr<Parameter>> mStartParameters;
-			std::unique_ptr<rtti::Object> mObject;
+			rtti::DeserializeResult mPresetReadResult;
 		};
 	}
 }

@@ -4,7 +4,6 @@
     "modules": [
         "mod_flexblock",
         "mod_napapp",
-		"mod_napparametergui",
-		"mod_naptimeline"
+		"mod_napparametergui"
     ]
 }
