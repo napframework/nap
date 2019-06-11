@@ -9,6 +9,7 @@ namespace nap
 {   
     /**
      * Main interface for processing api web socket events in NAP.
+	 * The service depends on both the nap::APIService and nap::WebSocketService.
      */
     class NAPAPI APIWebSocketService : public nap::Service
     {

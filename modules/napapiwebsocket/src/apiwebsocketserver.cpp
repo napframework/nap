@@ -54,7 +54,7 @@ namespace nap
 	}
 
 
-	bool APIWebSocketServer::send(nap::APIWebSocketEventPtr apiEvent, utility::ErrorState& error)
+	bool APIWebSocketServer::send(nap::APIEventPtr apiEvent, const WebSocketConnection& connection, utility::ErrorState& error)
 	{
 		APIMessage msg(*apiEvent);
 		std::string json;
@@ -62,7 +62,7 @@ namespace nap
 			return false;
 
 		// Send msg
-		if (!mEndPoint->send(apiEvent->getConnection(), json, EWebSocketOPCode::Text, error))
+		if (!mEndPoint->send(connection, json, EWebSocketOPCode::Text, error))
 			return false;
 		return true;
 	}

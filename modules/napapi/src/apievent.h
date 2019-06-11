@@ -20,14 +20,15 @@ namespace nap
 	 * To dispatch an event to an external environment call APIService::dispatchEvent after construction of this event. 
 	 *
 	 * Example: 	
-	 * // Create the event
-	 * APIEventPtr progress_event = std::make_unique<APIEvent>("CacheProgress");
-	 *
-	 * // Add an argument
-	 * progress_event->addArgument<APIInt>("Percentage", ++curr_pro);
 	 * 
-	 * // Dispatch to possible listeners
-	 * mAPIService->dispatchEvent(std::move(progress_event));
+	 *		// Create the event
+	 *		APIEventPtr progress_event = std::make_unique<APIEvent>("CacheProgress");
+	 *
+	 *		// Add an argument
+	 *		progress_event->addArgument<APIInt>("Percentage", ++curr_pro);
+	 * 
+	 *		// Dispatch to possible listeners
+	 *		mAPIService->dispatchEvent(std::move(progress_event));
 	 */
 	class NAPAPI APIEvent : public Event
 	{
@@ -49,6 +50,8 @@ namespace nap
 
 		/**
 		 * Construct a new api event with the given name and unique id.
+		 * Use this constructor to form a reply based on a previously received client request.
+		 * The uuid should match the uuid of the request. This allows the client to match call id's.
 		 * @param name name of this call
 		 * @param id unique identifier of this call
 		 */
@@ -56,6 +59,8 @@ namespace nap
 
 		/**
 		 * Construct a new api event with the given name and unique id.
+		 * Use this constructor to form a reply based on a previously received client request.
+		 * The uuid should match the uuid of the request. This allows the client to match call id's.
 		 * @param name identifier of this call
 		 * @param id unique identifier of this call
 		 */

@@ -3,12 +3,12 @@
 namespace nap
 {
 	/**
-	 * Enum that describes how an api client and api server forward web-socket messages.
+	 * Enum that describes how a nap::APIWebSocketClient and nap::APIWebSocketServer forward web-socket messages.
 	 */
 	enum class EWebSocketForwardMode : int
 	{
-		WebSocketEvent	= 0,		///< Forward as web socket event only	
-		APIEvent		= 1,		///< Forward as api event only
-		Both			= 2			///< Forward both as web-socket and api event
+		WebSocketEvent	= 0,		///< Create and forward web socket events only	
+		APIEvent		= 1,		///< Create and forward api events only
+		Both			= 2			///< Create and forward both web-socket and api events
 	};
 }

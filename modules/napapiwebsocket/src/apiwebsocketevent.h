@@ -7,12 +7,12 @@
 
 namespace nap
 {
-	/**
-	 * Input / Output message associated with a specific web-socket (client / server) connection. 
-	 * This class adds web-socket functionality to a default APIEvent.
-	 * To dispatch this event to an external environment call APIService::dispatchEvent after construction of this event.
-	 * The APIWebSocketDispatcher dispatches this type of event to an external environment using it's linked endpoint.
-	 * It is important that the connection (stored in this object) is managed by the endpoint linked to by the dispatcher.
+	/*
+	 * Adds web-socket functionality to a default nap::APIEvent. Use getConnection() 
+	 * to access the webs-socket connection handle to the client or server. Note 
+	 * that the handle could be invalid when a client or server disconnected or the connection
+	 * failed to establish. Use getInterface() to access the client or server associated with event. Most
+	 * likely the interface is a nap::APIWebSocketClient or nap::APIWebSocketServer.
 	 */
 	class NAPAPI APIWebSocketEvent : public APIEvent
 	{
@@ -38,6 +38,8 @@ namespace nap
 
 		/**
 		 * Constructs a new web socket event with the given name, unique id and web-socket connection.
+		 * Use this constructor to form a reply based on a previously received client request. 
+		 * The uuid should match the uuid of the request. This allows the client to match call id's.
 		 * @param name the name of this call
 		 * @param id unique identifier of this call
 		 * @param connection the web-socket endpoint connection.
@@ -47,6 +49,8 @@ namespace nap
 
 		/**
 		 * Constructs a new web socket event with the given name, unique id and web-socket connection.
+		 * Use this constructor to form a reply based on a previously received client request. 
+		 * The uuid should match the uuid of the request. This allows the client to match call id's.
 		 * @param name the name of this call
 		 * @param id unique identifier of this call
 		 * @param connection the web-socket endpoint connection.
