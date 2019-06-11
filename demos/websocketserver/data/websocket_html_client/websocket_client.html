@@ -1,6 +1,6 @@
   <!DOCTYPE html>
   <meta charset="utf-8" />
-  <title>WebSocket Test</title>
+  <title>NAP WebSocket Client Demo</title>
 
   <script language="javascript" type="text/javascript">
 
@@ -44,11 +44,11 @@
     input = document.getElementById("input_field");
     status_header = document.getElementById("status_header");
     api_msg = JSON.parse(nap_msg);
-    testWebSocket();
+    startWebSocket();
   }
 
   // Run simple websocket
-  function testWebSocket()
+  function startWebSocket()
   {
     status_header.innerHTML = "connecting";
     status_header.style.color = "blue";
