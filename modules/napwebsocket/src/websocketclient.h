@@ -19,7 +19,10 @@ namespace nap
 	 * Override the various virtual functions to receive web-socket client updates.
 	 * The virtual functions are called from a different thread than the main thread.
 	 * It is your responsibility to ensure thread-safety.
-	 * On initialization the client registers itself with a nap::WebSocketClientEndPoint.
+	 * On initialization the client registers itself with a nap::WebSocketClientEndPoint and
+	 * tries to connect to the server. When a connection is established the onConnectionOpened
+	 * function is called. If the connection failed to establish the onConnectionFailed function
+	 * is called. Call reconnect() to establish a new connection at run-time.
 	 */
 	class NAPAPI IWebSocketClient : public WebSocketInterface
 	{
@@ -45,9 +48,20 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return if the client is connected
+		 * @return if the client is connected to the server.
 		 */
-		bool isOpen() const;
+		bool isConnected() const;
+
+		/**
+		 * Tries to reconnect this client to the server.
+		 * The return value does not mean the connection is established!
+		 * It only tells you that the reconnect operation succeeded.
+		 * When the connection is established the onConnectionOpened function is called.
+		 * Failure to establish the connection results in the onConnectionFailed function to be called.
+		 * @param error contains the error if the reconnect operation failed.
+		 * @return if the reconnect operation succeeded.
+		 */
+		bool reconnect(utility::ErrorState& error);
 
 		/**
 		 * @return server connection handle.
@@ -96,7 +110,7 @@ namespace nap
 		void messageReceived(const WebSocketMessage& msg);
 
 		std::atomic<bool> mOpen = { false };				///< If this client is currently connected
-		nap::Signal<const IWebSocketClient&> destroyed;		///< Called when the client is destroyed
+		nap::Signal<const IWebSocketClient&> disconnect;	///< Called when the client wants to disconnect
 	};
 
 
@@ -110,6 +124,8 @@ namespace nap
 	 * These events are consumed by the nap::WebSocketService on the main application thread.
 	 * On update all events in the queue are forwarded to a nap::WebSocketComponent.
 	 * Use a nap::WebSocketComponent to receive and react to web-socket events in your application.
+	 * On initialization the client registers itself with a nap::WebSocketClientEndPoint and
+	 * tries to connect to the server. Call reconnect() to establish a new connection at run-time.
 	 */
 	class NAPAPI WebSocketClient : public IWebSocketClient
 	{

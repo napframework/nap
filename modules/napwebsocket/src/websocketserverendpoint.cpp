@@ -6,8 +6,9 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
-	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -138,6 +139,9 @@ namespace nap
 
 		mEndPoint.clear_access_channels(websocketpp::log::alevel::all);
 		mEndPoint.set_access_channels(mAccessLogLevel);
+		
+		// If the endpoint can be re-used by other processes
+		mEndPoint.set_reuse_addr(mAllowPortReuse);
 
 		// Init asio
 		std::error_code stdec;

@@ -127,7 +127,7 @@ namespace nap
 	}
 
 
-	bool WebSocketClientEndPoint::registerClient(IWebSocketClient& client, utility::ErrorState& error)
+	bool WebSocketClientEndPoint::connectClient(IWebSocketClient& client, utility::ErrorState& error)
 	{
 		// Get shared pointer to connection
 		std::error_code stdec;
@@ -148,7 +148,7 @@ namespace nap
 		client.mConnection = WebSocketConnection(client_connection->get_handle());
 
 		// Connect to client disconnect slot
-		client.destroyed.connect(mClientDestroyed);
+		client.disconnect.connect(mClientDisconnected);
 
 		// Try to connect
 		mEndPoint.connect(client_connection);
@@ -157,14 +157,14 @@ namespace nap
 	}
 
 
-	void WebSocketClientEndPoint::onClientDestroyed(const IWebSocketClient& client)
+	void WebSocketClientEndPoint::onClientDisconnected(const IWebSocketClient& client)
 	{
 		// Remove client from internally managed list
-		removeClient(client);
+		disconnectClient(client);
 	}
 
 
-	void WebSocketClientEndPoint::removeClient(const IWebSocketClient& client)
+	void WebSocketClientEndPoint::disconnectClient(const IWebSocketClient& client)
 	{
 		auto found_it = std::find_if(mClients.begin(), mClients.end(), [&](const auto& it)
 		{

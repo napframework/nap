@@ -27,7 +27,7 @@ namespace nap
 
 	IWebSocketClient::~IWebSocketClient()
 	{
-		destroyed(*this);
+		disconnect(*this);
 	}
 
 
@@ -36,15 +36,27 @@ namespace nap
 		if (!WebSocketInterface::init(errorState))
 			return false;
 
-		if (!mEndPoint->registerClient(*this, errorState))
+		if (!mEndPoint->connectClient(*this, errorState))
 			return false;
 		return true;
 	}
 
 
-	bool IWebSocketClient::isOpen() const
+	bool IWebSocketClient::isConnected() const
 	{
 		return mOpen;
+	}
+
+
+	bool IWebSocketClient::reconnect(utility::ErrorState& error)
+	{
+		// First disconnect
+		disconnect(*this);
+
+		// Now connect again
+		if (!mEndPoint->connectClient(*this, error))
+			return false;
+		return true;
 	}
 
 
@@ -102,7 +114,7 @@ namespace nap
 
 	bool WebSocketClient::send(const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
-		if (!error.check(isOpen(), "%s: client not connected to: %s", mID.c_str(), mURI.c_str()))
+		if (!error.check(isConnected(), "%s: client not connected to: %s", mID.c_str(), mURI.c_str()))
 			return false;
 
 		if (!mEndPoint->send(mConnection, message, code, error))
@@ -114,7 +126,7 @@ namespace nap
 
 	bool WebSocketClient::send(void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
-		if (!error.check(isOpen(), "%s: client not connected to: %s", mID.c_str(), mURI.c_str()))
+		if (!error.check(isConnected(), "%s: client not connected to: %s", mID.c_str(), mURI.c_str()))
 			return false;
 
 		if (!mEndPoint->send(mConnection, payload, length, code, error))
@@ -126,7 +138,7 @@ namespace nap
 
 	bool WebSocketClient::send(const WebSocketMessage& message, nap::utility::ErrorState& error)
 	{
-		if (!error.check(isOpen(), "%s: client not connected to: %s", mID.c_str(), mURI.c_str()))
+		if (!error.check(isConnected(), "%s: client not connected to: %s", mID.c_str(), mURI.c_str()))
 			return false;
 
 		if (!mEndPoint->send(mConnection, message.getPayload(), message.getCode(), error))

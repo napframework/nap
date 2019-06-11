@@ -89,6 +89,7 @@ namespace nap
 
 		int mPort = 80;															///< Property: "Port" to open and listen to for client requests.
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connect information is logged to the console.
+		bool mAllowPortReuse = false;											///< Property: "AllowPortReuse" if the server connection can be re-used by other processes.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library messages equal to or higher than requested are logged.
 
 		// Triggered when a new client connection is opened. Including client web-socket connection.

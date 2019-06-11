@@ -5,7 +5,8 @@
             "mID": "ServerEndPoint",
             "Port": 9000,
             "LogConnectionUpdates": false,
-            "LibraryLogLevel": "Warning"
+            "LibraryLogLevel": "Warning",
+            "AllowPortReuse" : true
         },
         {
             "Type": "nap::APIWebSocketServer",
