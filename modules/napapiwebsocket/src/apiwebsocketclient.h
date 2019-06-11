@@ -14,8 +14,8 @@ namespace nap
 	class APIService;
 
 	/**
-	 * With this client you can send NAP API events to a server. When the server issues
-	 * a reply the message can be interpreted as a NAP API event and is, when accepted, forwarded to the API service.
+	 * With this client you can send nap api events in the form of a JSON formatted text message to a server. When the server issues
+	 * a reply the message can be interpreted as a nap api event and is, when accepted, forwarded to the API service.
 	 * This allows you to use the NAP API system to send and respond to server requests.
 	 * 
 	 * A reply is accepted when your application exposes a signature (method) that matches the signature of
@@ -33,16 +33,17 @@ namespace nap
 	 *
 	 *		// Send
 	 *		nap::utility::ErrorState error;
-	 *		if (!this->send(std::move(server_request), error))
+	 *		if (!client->send(std::move(server_request), error))
 	 *		{
 	 *			nap::Logger::error(error.toString());
 	 *		}
 	 *
 	 * You can control what the client does when it a receives a connection update or message from the server.
-	 * By default messages are NOT converted into API events, only into web-socket events. 
-	 * By changing the 'Mode' to 'APIEvent' or 'Both' received messages are converted into API events 
-	 * and forwarded to your application (if the system accepts it). When only 'APIEvent' is selected 
-	 * no web-socket events are created, when 'Both' is selected the client will create both api and web-socket events.
+	 * By default messages are NOT converted into api events, only into web-socket events. 
+	 * By changing the 'Mode' to 'APIEvent' or 'Both' the client will try to convert every message from the server into an API event. 
+	 * The api event is forwarded to your application (if the system accepts it). When only 'APIEvent' is selected, 
+	 * no web-socket events are created. When 'Both' is selected, the client will create both api and web-socket events.
+	 * If the message can't be converted into an api event only the web-socket event is forwarded.
 	 * To catch api-events use a nap::APIComponentInstance, to catch web-socket events use a nap::WebSocketComponent.
 	 * 
 	 * NOTE: When the 'Mode' is set to 'APIEvent' NO connection updates (open, close and failed) are created.
@@ -71,6 +72,7 @@ namespace nap
 
 		/**
 		 * Sends a message in the form of an API event to the server.
+		 * 
 		 * For example:
 		 *
 		 *		// Create request
@@ -81,7 +83,7 @@ namespace nap
 		 *
 		 *		// Send
 		 *		nap::utility::ErrorState error;
-		 *		if (!this->send(std::move(server_request), error))
+		 *		if (client->send(std::move(server_request), error))
 		 *		{
 		 *			nap::Logger::error(error.toString());
 		 *		}
