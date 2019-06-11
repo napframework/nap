@@ -53,13 +53,13 @@ namespace nap
 	 * 
 	 * Example of a server reply in response to the client request:
 	 * 
-	 *		// Create response, copy over query id and client connection handle
+	 *		// Create response, copy over client query uuid.
 	 *		APIWebSocketEventPtr reply = std::make_unique<APIEvent>("motorSpeed", client_request->getID());
 	 *
-	 *		// Add current motor speed value
+	 *		// Add current motor speed value.
 	 *		reply->addArgument<APIFloat>("speed", mMotorSpeed);
 	 *
-	 *		// Send response to client
+	 *		// Send response to client.
 	 *		if (!server->send(std::move(reply), client_connection, error))
 	 *		{
 	 *			nap::Logger::error(error.toString());
@@ -108,13 +108,13 @@ namespace nap
 		 * 
 		 * For example:
 		 *
-		 *		// Create response, copy over query id and client connection handle
+		 *		// Create response, copy over client query uuid.
 		 *		APIWebSocketEventPtr reply = std::make_unique<APIEvent>("motorSpeed", client_request->getID());
 		 *
-		 *		// Add current motor speed value
+		 *		// Add current motor speed value.
 		 *		reply->addArgument<APIFloat>("speed", mMotorSpeed);
 		 *
-		 *		// Send response to client
+		 *		// Send response to client.
 		 *		if (!server->send(std::move(reply), client_connection, error))
 		 *		{
 		 *			nap::Logger::error(error.toString());
