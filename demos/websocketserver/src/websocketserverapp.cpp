@@ -34,30 +34,28 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
+		mServerEndPoint = mResourceManager->findObject<nap::WebSocketServerEndPoint>("WebSocketServerEndPoint");
 
 		// Extract the only scene
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
 		// Find the entities we're interested in
-		mWebSocketEntity = scene->findEntity("WebSocketEntity");
 		mTextEntity = scene->findEntity("TextEntity");
 		return true;
 	}
 	
 	
 	/**
-	* Forward all the received input messages to the camera input components.
-	* The input router is used to filter the input events and to forward them
-	* to the input components of a set of entities, in this case our camera.
-	* After that we setup the gui.
-	*/
+	 * Updates the imgui information window
+	 */
 	void WebSocketServerApp::update(double deltaTime)
 	{
 		// Setup some gui elements to be drawn later
 		ImGui::Begin("Information");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "use a web-socket client to change the text on screen");
+		ImGui::TextColored(clr, "Connect a websocket client to change the text on screen");
+		ImGui::TextColored(clr, utility::stringFormat("Server Port: %d", mServerEndPoint->mPort).c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}
@@ -65,8 +63,7 @@ namespace nap
 	
 	/**
 	 * Render loop is rather straight forward. 
-	 * All the objects in the scene are rendered at once including the sphere and plane.
-	 * This demo doesn't require special render steps.
+	 * Render the text at the center of the screen.
 	 */
 	void WebSocketServerApp::render()
 	{
@@ -79,9 +76,13 @@ namespace nap
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
-		// Get renderable text component
+		// Get render-able text component
 		Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
+		
+		// Center
 		text_comp.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
+		
+		// Draw
 		text_comp.draw(mRenderWindow->getBackbuffer());
 
 		// Draw gui to screen
