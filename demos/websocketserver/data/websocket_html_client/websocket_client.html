@@ -1,13 +1,13 @@
   <!DOCTYPE html>
   <meta charset="utf-8" />
   <title>NAP WebSocket Client Demo</title>
-
   <script language="javascript" type="text/javascript">
 
-  // Websocket url
-  var ws_uri = "ws://192.168.0.38:80";
+  // Websocket url, change to server web-socket address!
+  var ws_uri = "ws://localhost:80";
   
-  // JSON formatted message to change text in NAP
+  // JSON formatted api message.
+  // Acts as a template for a request to the server to change text.
   var nap_msg = `
   {
      "Objects": 
@@ -51,7 +51,7 @@
   function startWebSocket()
   {
     status_header.innerHTML = "connecting";
-    status_header.style.color = "blue";
+    status_header.style.color = "#5D5E73";
 
     websocket = new WebSocket(ws_uri);
     writeToBox("connecting to: " + ws_uri);
@@ -120,11 +120,11 @@
     if(connected)
     {
       status_header.innerHTML = "connected";
-      status_header.style.color = "green";
+      status_header.style.color = "#C86969";
       return;
     }
     status_header.innerHTML = "disconnected";
-    status_header.style.color = "red";
+    status_header.style.color = "#5D5E73";
   }
 
   function writeToBox(message)
@@ -140,18 +140,78 @@
 
   // Call init on load
   window.addEventListener("load", init, false);
-
   </script>
 
-  <body>
-    <h2>NAP WebSocket Client Demo</h2>
-    <h3 id="status_header"></h3  >
-    <label for="name">Send:</label>
-    <input type="text" id="input_field" name="name" size="30" oninput="doSend()">
-    <div id="output">
-      <br>
-      <textarea name="message" id="textbox" rows="20" cols="100"></textarea>
-    </div>
-    <h3>API Request</h2>
-    <pre id="request_p" style="color: blue;"></pre>
-   </body
+  <html>
+    <head>
+      <link href="https://fonts.googleapis.com/css?family=Montserrat:400" rel="stylesheet">
+      <style>
+        ::selection {
+          color: #8B8CA0;
+          background: #8B8CA0;
+          }
+
+        body {
+          background-color: #2D2E42;
+
+        }
+        h1, h2, h3, h4, h5, label, p{
+          color: #8B8CA0;
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 400;
+        }
+
+        textarea {
+          background-color: #111426;
+          color: #8B8CA0;
+          border: 0.125em solid #8B8CA0;
+        }
+        input {
+          background-color: #111426;
+          border: 0.125em solid #8B8CA0;
+          color: #8B8CA0;
+        }
+        input:focus {
+          outline:none;
+        }
+        textarea:focus {
+          outline:none;
+        }
+
+        .header img {
+          float: left;          
+          height: 5em;
+          width: 5em; 
+        }
+
+        .header h1 {
+          position: relative;
+          top: 0.5em;
+          left: 0.5em;
+        }
+
+        .header h3 {
+            left: 1.0em;
+            position: relative;
+        }
+
+      <title></title>
+      </style>
+    </head>
+
+    <body>
+        <div class="header">
+          <img src="logo.png", id="nap_logo">
+          <h1>WebSocket Client Demo</h2>
+          <h3 id="status_header"></h3  >
+        </div>
+        <label for="name">Send:</label>
+        <input type="text" id="input_field" name="name" size="30" oninput="doSend()">
+        <h5>Refresh page to reconnect</h5>
+        <div id="output">
+          <textarea name="message" id="textbox" rows="20" cols="100"></textarea>
+        </div>
+      <h3>API Request:</h2>
+      <pre id="request_p" style="color: #8B8CA0;"></pre>
+    </body>
+  </html>
