@@ -25,6 +25,12 @@ namespace nap
 {
 	bool APIWebSocketHandlerComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Find the 'ChangeText' signature. A signature describes the interface of a message, ie:
+		// The intent of the message and additional arguments. In this case we expect to find a 
+		// signature called 'ChangeText' that has one additional argument. This argument is a string.
+		// When the callback is triggered you can safely extract the argument, the system
+		// already validated and converted the message from you from json. The argument
+		// contains the text we should use to update the 2D text component.
 		const nap::APISignature* change_text_signature = mAPIComponent->findSignature("ChangeText");
 		if (!errorState.check(change_text_signature != nullptr, "%s: unable to find 'ChangeText' signature", this->mID.c_str()))
 		{
@@ -32,30 +38,27 @@ namespace nap
 			return false;
 		}
 
-		// Register callback
+		// Register callback, the slot calls onChangeText.
 		mAPIComponent->registerCallback(*change_text_signature, mChangeTextSlot);
 
-		// Store handle to server
+		// Store handle to server.
+		// This handle is used to send back a reply.
 		mServer = getComponent<APIWebSocketHandlerComponent>()->mServer.get();
 		return true;
 	}
 
 
-	void APIWebSocketHandlerComponentInstance::update(double deltaTime)
-	{
-
-	}
-
-
 	void APIWebSocketHandlerComponentInstance::onChangeText(const nap::APIEvent& apiEvent)
 	{
+		// Extract and update text
+		std::string new_text = apiEvent[0].asString();
 		nap::utility::ErrorState error;
-		if (!mTextComponent->setText(apiEvent[0].asString(), error))
+		if (!mTextComponent->setText(new_text, error))
 		{
 			nap::Logger::warn("unable to update text: %s", error.toString().c_str());
 		}
 
-		// Cast to api web-socket event
+		// Cast to api web-socket event. Asserts if the event is not an APIWebSocketEvent.
 		const APIWebSocketEvent& ws_event = apiEvent.to<APIWebSocketEvent>();
 		
 		// Ensure that the interface (client / server) that created 
@@ -68,7 +71,7 @@ namespace nap
 		// Add as an argument the updated text.
 		text_changed_event->addArgument<APIString>("newText", mTextComponent->getText());
 
-		// Send to client using server
+		// Send reply to server
 		if (!mServer->send(std::move(text_changed_event), ws_event.getConnection(), error))
 		{
 			nap::Logger::warn("unable to send reply: %s", error.toString().c_str());
