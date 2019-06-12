@@ -4,13 +4,13 @@
 #include <componentptr.h>
 #include <apicomponent.h>
 #include <apievent.h>
-#include <nap/signalslot.h>
 #include <nap/resourceptr.h>
 #include <renderable2dtextcomponent.h>
 #include <apiwebsocketserver.h>
 
 namespace nap
 {
+	// Forward Declares
 	class APIWebSocketHandlerComponentInstance;
 
 	/**
