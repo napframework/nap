@@ -45,7 +45,7 @@ namespace nap
 		 * Returns the interface as an interface of type T.
 		 * The interface is either a server or client, for example: this->as<nap::WebSocketServer>();
 		 * Asserts if the interface isn't of type T.
-		 * @return The web-socket interface associated with this event.
+		 * @return The web-socket interface as T.
 		 */
 		template<typename T>
 		T& as();
@@ -54,10 +54,10 @@ namespace nap
 		 * Returns the interface as an interface of type T.
 		 * The interface is either a server or client, for example: this->as<nap::WebSocketServer>();
 		 * Asserts if the interface isn't of type T.
-		 * @return The web-socket interface associated with this event.
+		 * @return The web-socket interface as T.
 		 */
 		template<typename T>
-		const T& as();
+		const T& as() const;
 
 	protected:
 		/**
@@ -94,11 +94,13 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	const T& nap::WebSocketInterface::as()
+	const T& nap::WebSocketInterface::as() const
 	{
-		T* cast_interface = rtti_cast<T>(this);
-		assert(cast_interface != nullptr);
-		return *cast_interface;
+		const T* return_p = nullptr;
+		if (this->get_type().is_derived_from<T>())
+			return_p = reinterpret_cast<const T*>(this);
+		assert(return_p != nullptr);
+		return *return_p;
 	}
 
 

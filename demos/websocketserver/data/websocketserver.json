@@ -77,7 +77,8 @@
                     "Type": "nap::APIWebSocketHandlerComponent",
                     "mID": "APIHandler",
                     "APIComponent": "./APIComponent",
-                    "TextComponent" : "./Render2DTextComponent"
+                    "TextComponent" : "./Render2DTextComponent",
+                    "Server" : "WebSocketServer"
                 }
             ],
             "Children": []
