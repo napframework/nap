@@ -1,6 +1,5 @@
 #pragma once
 
-#include "controlpointsmesh.h"
 #include "framemesh.h"
 #include "flexblockmesh.h"
 #include "flexblockdata.h"
@@ -100,5 +99,7 @@ namespace nap
 		std::vector<glm::vec3> mObjectPoints = std::vector<glm::vec3>(8);
 
 		std::vector<glm::vec3> mFramePoints = std::vector<glm::vec3>(8);
+
+		std::vector<float> mMotorInputs = std::vector<float>(8);
 	};
 }

@@ -13,7 +13,7 @@ namespace nap
 		class SequencePlayerComponentInstance;
 
 		/**
-		*	TimelineSequencePlayerComponent
+		*	SequencePlayerComponent
 		*/
 		class NAPAPI SequencePlayerComponent : public Component
 		{
@@ -32,7 +32,7 @@ namespace nap
 
 
 		/**
-		* TimelineSequencePlayerComponentInstance
+		* SequencePlayerComponentInstance
 		*/
 		class NAPAPI SequencePlayerComponentInstance : public ComponentInstance
 		{
@@ -42,50 +42,50 @@ namespace nap
 				ComponentInstance(entity, resource) { }
 
 			/**
-			* Initialize TimelineSequencePlayerComponentInstance based on the TimelineSequencePlayerComponent resource
+			* Initialize SequencePlayerComponentInstance based on theSequencePlayerComponent resource
 			* @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
 			* @param errorState should hold the error message when initialization fails
-			* @return if the flexblocksequenceplayerInstance is initialized successfully
+			* @return if the SequencePlayerComponentInstance is initialized successfully
 			*/
 			virtual bool init(utility::ErrorState& errorState) override;
 
 			/**
-			* update flexblocksequenceplayerInstance. This is called by NAP core automatically
+			* update SequencePlayerComponentInstance. This is called by NAP core automatically
 			* @param deltaTime time in between frames in seconds
 			*/
 			virtual void update(double deltaTime) override;
 
 			/**
-			* load a sequence
-			* @param sequence, pointer to a sequence
+			* Load a sequence
+			* @param sequence, pointer to a sequence resource
 			* @param error
-			* @return returns true if succesfully loaded
+			* @return returns true if successfully loaded
 			*/
 			bool load(ResourcePtr<Sequence> sequence, utility::ErrorState& error);
 
 			/**
-			* play a sequence
+			* Play a sequence
 			*/
 			void play();
 
 			/**
-			* stop a sequence, unloads the sequence
+			* Stop the current sequence, unloads the sequence
 			*/
 			void stop();
 
 			/**
-			* pause the sequence
+			* Pause the sequence
 			*/
 			void pause();
 
 			/**
-			* plays sequence from beginning when finished
+			* Plays sequence from beginning when finished
 			* @param value, true or false
 			*/
 			void setIsLooping(bool isLooping) { mIsLooping = isLooping; }
 
 			/**
-			* sets the current time of the sequence
+			* Sets the current time of the sequence
 			* @param time, time to set sequence to
 			*/
 			void setTime(double time);

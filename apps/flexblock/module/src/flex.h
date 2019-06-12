@@ -24,7 +24,7 @@ namespace nap
 		* @param index index of motor [0..8]
 		* @param value motor input 0-1
 		*/
-		void setMotorInput(int index, float value);
+		void setMotorInput(const std::vector<float>& inputs);
 
 		/**
 		* Starts the logic thread
@@ -44,10 +44,13 @@ namespace nap
 			return mIsRunning;
 		}
 
-		std::vector<float> getRopeLengths();
+		/**
+		* Returns a vector containing calculated rope lengths
+		*/
+		const std::vector<float> getRopeLengths();
 
 		/**
-		* Returns copy of latest calculate object points
+		* Returns reference to to latest calculate object points
 		*/
 		const std::vector<glm::vec3>& getObjectPoints()
 		{
@@ -55,7 +58,7 @@ namespace nap
 		}
 
 		/**
-		* Returns copy of frame points
+		* Returns reference to of frame points
 		*/
 		const std::vector<glm::vec3>& getFramePoints()
 		{
@@ -80,11 +83,11 @@ namespace nap
 
 		void concatPoints();
 
-		void setInput(std::deque<float>& inputs);
+		void setInput(std::vector<float>& inputs);
 
 		void update();
 
-		void copyMotorInput(std::deque<float>& outInputs);
+		void copyMotorInput(std::vector<float>& outputs);
 	protected:
 
 		std::atomic_bool mIsRunning = false;
@@ -132,6 +135,6 @@ namespace nap
 		float mMotorAcc = 0.0f;
 
 		std::vector<float> mElementsLengthDelta;
-		std::deque<float> mMotorInput;
+		std::vector<float> mMotorInput;
 	};
 }

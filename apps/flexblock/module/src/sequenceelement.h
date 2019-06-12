@@ -11,7 +11,7 @@ namespace nap
 	namespace timeline
 	{
 		/**
-		* TimelineSequenceElement
+		* SequenceElement
 		*/
 		class NAPAPI SequenceElement : public Resource
 		{
@@ -26,17 +26,28 @@ namespace nap
 			virtual bool init(utility::ErrorState& errorState) override;
 
 			/**
-			* Initialize this object after de-serialization
+			* Sets the parameter according to the values they are assigned to in this timeslot
 			* @param time the elapsed time
 			* @param endValues a reference to the parameters that need to be set
-			* @return returns true if this element has to do something
+			* @return returns true if this element has to do something ( element falls in this timeframe )
 			*/
 			virtual bool process(double time, std::vector<ResourcePtr<Parameter>>& endParameters);
 
+			/**
+			* Set the start parameters of this time slot, this is set by the sequence and usually reference the parameters
+			* of the sequence before this one
+			* @param startParameters the start parameters
+			*/
 			virtual void setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters);
 
+			/**
+			* @return returns a reference to the end parameters of this sequence
+			*/
 			const std::vector<ResourcePtr<Parameter>>& getEndParameters() { return mEndParameters; }
 
+			/**
+			* @return returns a reference to the start parameters of this sequence
+			*/
 			const std::vector<ResourcePtr<Parameter>>& getStartParameters() { return mStartParameters; }
 
 			/**
@@ -50,9 +61,9 @@ namespace nap
 			const double getStartTime() { return mStartTime; }
 		public:
 			// properties
-			float mDuration = 0.0f;
+			float mDuration					= 0.0f;
+			bool mUsePreset					= false;
 			std::string mPreset;
-			bool mUsePreset = false;
 			std::vector<ResourcePtr<Parameter>> mEndParameters;
 		protected:
 			double mStartTime = 0.0;

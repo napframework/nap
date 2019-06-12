@@ -28,16 +28,16 @@ namespace nap
 		bool SequenceElement::init(utility::ErrorState& errorState)
 		{
 			if (!errorState.check(mDuration >= 0.0f,
-				"duration must be bigger or equal then 0 %s", this->mID.c_str()))
+				"Duration must be bigger or equal then 0 %s", this->mID.c_str()))
 				return false;
 
 			if (mUsePreset)
 			{
 				rtti::Factory factory;
 
-				bool success = rtti::readJSONFile("presets/inputs/" + std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, factory, mPresetReadResult, errorState);
+				bool success = rtti::readJSONFile(std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, factory, mPresetReadResult, errorState);
 				if (!errorState.check(success,
-					"error loading preset %s", this->mID.c_str()))
+					"Error loading preset %s", this->mID.c_str()))
 					return false;
 
 				// Resolve links
@@ -46,7 +46,7 @@ namespace nap
 
 				//
 				if (!errorState.check(mPresetReadResult.mReadObjects.size() > 0,
-					"empty preset %s", this->mID.c_str()))
+					"Empty preset %s", this->mID.c_str()))
 					return false;
 
 				// first object must be parametergroup
@@ -54,7 +54,7 @@ namespace nap
 
 				// 
 				if (!errorState.check(object->get_type().is_derived_from<ParameterGroup>(),
-					"object must be derived from ParameterGroup %s", this->mID.c_str()))
+					"Object must be derived from ParameterGroup %s", this->mID.c_str()))
 					return false;
 
 				// get group

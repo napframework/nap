@@ -7,6 +7,7 @@
 #include <atomic>
 #include <mutex>
 #include <queue>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -67,8 +68,10 @@ namespace nap
 	protected:
 		void writeThreadFunc();
 		void consumeBuffer(std::deque<std::string>& outBuffer);
+		void onDestroy(SerialPort port);
 	protected:
-		
+		Slot<SerialPort>						mCloseSlot;
+
 		ResourcePtr<SerialPort>					mSerialPort;
 
 		std::atomic_bool						mIsRunning = false;

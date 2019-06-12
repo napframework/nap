@@ -100,7 +100,7 @@ namespace nap
 
 		void SequencePlayerComponentInstance::setTime(double time)
 		{
-			mTime = time;
+			mTime = math::clamp<double>(time, 0.0, mDuration);
 			mCurrentSequenceIndex = 0;
 		}
 
@@ -118,9 +118,8 @@ namespace nap
 			if (!error.check(
 				mParameters.size() ==
 				sequence->mStartParameters.size(),
-				"Parameters are different %s \n", mID.c_str()))
+				"Timeline Parameters sizes are different then those of sequence %s \n", mID.c_str()))
 				return false;
-
 
 			for (int i = 0; i < mParameters.size(); i++)
 			{
@@ -156,6 +155,7 @@ namespace nap
 			mIsPlaying = false;
 			mIsPaused = false;
 			mIsFinished = false;
+			mSequence = nullptr;
 		}
 	}
 }

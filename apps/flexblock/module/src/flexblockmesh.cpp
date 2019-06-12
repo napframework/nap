@@ -41,7 +41,7 @@ namespace nap
 		constructBox(mBox, *mMeshInstance);
 	}
 
-	void FlexBlockMesh::setControlPoints(std::vector<glm::vec3> controlPoints)
+	void FlexBlockMesh::setControlPoints(const std::vector<glm::vec3>& controlPoints)
 	{
 		auto verts = mNormalsAttr->getData();
 

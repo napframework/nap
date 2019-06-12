@@ -4,6 +4,7 @@
 #include <nap/device.h>
 #include <string.h>
 #include <nap/numeric.h>
+#include <nap/signalslot.h>
 
 // Forward declares
 namespace serial
@@ -326,6 +327,8 @@ namespace nap
 		 */
 		bool getCD();
 
+		Signal<> isBeingDeconstructed;
+
 		std::string mPortName = "COM1";									///< Property: "PortName" the serial port to open and communicate with. Something like 'COM1' on windows and '/dev/ttyS0' on linux.
 		int mBaudRate = 9600;											///< Property: "BaudRate" the baud rate of the serial port.
 		ESerialByteSize mByteSize = ESerialByteSize::Eight;				///< Property: "ByteSize" size of each byte in the serial transmission of data.
@@ -336,8 +339,8 @@ namespace nap
 		int mWriteTimeout = 0;											///< Property: "WriteTimeout" the time in ms until a timeout occurs after a call to write is made. 0 = non blocking mode
 		int mInterByteTimeout = 0;										///< Property: "InterByteTimeout" the max amount of time in ms between receiving bytes that can pass before a timeout occurs. Setting this to 0 will prevent inter byte timeouts.
 		bool mAllowFailure = false;										///< Property: "AllowFailure" when set to true opening the port is allowed to fail on startup.
-
 	private:
 		std::unique_ptr<serial::Serial> mSerialPort = nullptr;
+		
 	};
 }

@@ -33,7 +33,11 @@ namespace nap
 		*/
 		void setup();
 
-		void setControlPoints(std::vector<glm::vec3> controlPoints);
+		/**
+		* Sets control points of this mesh
+		* @param controlPoints, a reference to the location of each control point ( corner of the cube )
+		*/
+		void setControlPoints(const std::vector<glm::vec3>& controlPoints);
 
 		/**
 		* @return the mesh instance that can be rendered to screen

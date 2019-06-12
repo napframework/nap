@@ -8,7 +8,7 @@ RTTI_BEGIN_CLASS(nap::timeline::SequenceTransition)
 RTTI_PROPERTY("Duration", &nap::timeline::SequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Curve", &nap::timeline::SequenceTransition::mCurve, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Parameters", &nap::timeline::SequenceTransition::mEndParameters, nap::rtti::EPropertyMetaData::Embedded)
-RTTI_PROPERTY("Preset File", &nap::timeline::SequenceTransition::mPreset, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Preset File", &nap::timeline::SequenceTransition::mPreset, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Use Preset", &nap::timeline::SequenceTransition::mUsePreset, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -105,12 +105,6 @@ namespace nap
 		const float SequenceTransition::evaluateCurve(float progress)
 		{
 			return mCurve->evaluate(progress);
-		}
-
-
-		const float SequenceTransition::evaluateLinear(float progress)
-		{
-			return progress;
 		}
 
 		template<typename T1, typename T2>

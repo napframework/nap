@@ -37,8 +37,17 @@ namespace nap
 		FlexBlockSerialComponent* resource = getComponent<FlexBlockSerialComponent>();
 
 		mSerialPort = resource->mSerialPort;
+		mSerialPort->isBeingDeconstructed.connect([&]()
+		{
+			stop();
+		});
 
 		return true;
+	}
+
+	void FlexBlockSerialComponentInstance::onDestroy(SerialPort port)
+	{
+
 	}
 
 	void FlexBlockSerialComponentInstance::start(utility::ErrorState& error)

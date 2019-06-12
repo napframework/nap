@@ -17,7 +17,7 @@ namespace nap
 	namespace timeline
 	{
 		/**
-		* TimelineSequenceTransition
+		* SequenceTransition
 		*/
 		class NAPAPI SequenceTransition : public SequenceElement
 		{
@@ -29,19 +29,54 @@ namespace nap
 			*/
 			virtual bool init(utility::ErrorState& errorState) override;
 
+			/**
+			* Sets the parameter according to the values they are assigned to in this sequence time slot
+			* @param time the elapsed time
+			* @param endValues a reference to the parameters that need to be set
+			* @return returns true if this element has to do something ( element falls in this sequence time slot )
+			*/
 			virtual bool process(double time, std::vector<ResourcePtr<Parameter>>& outParameters) override;
 		public:
+			// properties
+
+			/**
+			 * Curve can be nullptr, in which case the transition will use linear interpolation
+			 */
 			ResourcePtr<math::FloatFCurve> mCurve = nullptr;
-
-
 		protected:
-			std::vector<void(SequenceTransition::*)(float progress, const Parameter * inA, const Parameter * inB, Parameter * out)> mFunctions;
+			/**
+			* A vector containing function pointers to the different functions needed to interpolate 
+			* between the different parameters
+			*/
+			std::vector<void(SequenceTransition::*)(
+				float progress, 
+				const Parameter * inA, 
+				const Parameter * inB, 
+				Parameter * out)> mFunctions;
+
+			/**
+			* The pointer to the evaluation function
+			*/
 			const float (SequenceTransition::*mEvaluateFunction)(float t);
 
+			/**
+			* The internal process function template
+			* @param progress the progression, value between 0-1
+			* @param inA a pointer to the start parameter
+			* @param inB a pointer to the end parameter
+			* @param out a pointer to the parameter that will be changed
+			*/
 			template<typename T1, typename T2>
 			void process(float progress, const Parameter* inA, const Parameter* inB, Parameter * out);
 
-			const float evaluateLinear(float progress);
+			/**
+			* Linear interpolation function
+			*/
+			const float evaluateLinear(float progress) { return progress; }
+
+			/**
+			* Use the curve to interpolate
+			*/
 			const float evaluateCurve(float progress);
 		};
 	}

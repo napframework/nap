@@ -50,6 +50,10 @@ namespace nap
 
 	bool FlexBlockShapeSize::init(utility::ErrorState& errorState)
 	{
+		if (!errorState.check(mValues != nullptr,
+			"Value is not assigned! %s", this->mID.c_str()))
+			return false;
+
 		return true;
 	}
 
@@ -60,6 +64,14 @@ namespace nap
 
 	bool FlexBlockShapePoints::init(utility::ErrorState& errorState)
 	{
+		if (!errorState.check(mObject.size() > 0,
+			"No object points given %s", this->mID.c_str()))
+			return false;
+
+		if (!errorState.check(mFrame.size() > 0,
+			"No frame points given %s", this->mID.c_str()))
+			return false;
+
 		return true;
 	}
 
@@ -70,6 +82,18 @@ namespace nap
 
 	bool FlexBlockElements::init(utility::ErrorState& errorState)
 	{
+		if (!errorState.check(mObject.size() > 0,
+			"No object elements given %s", this->mID.c_str()))
+			return false;
+
+		if (!errorState.check(mFrame.size() > 0,
+			"No frame elements given %s", this->mID.c_str()))
+			return false;
+
+		if (!errorState.check(mFrame.size() > 0,
+			"No object to frame elements given %s", this->mID.c_str()))
+			return false;
+
 		return true;
 	}
 
@@ -80,6 +104,25 @@ namespace nap
 
 	bool FlexBlockShape::init(utility::ErrorState& errorState)
 	{
+		if (!errorState.check(mSizes.size() > 0,
+			"No flexblockshapesizes assigned %s", this->mID.c_str()))
+			return false;
+
+		for (const auto& shapeSize : mSizes)
+		{
+			if (!errorState.check(shapeSize != nullptr,
+				"ShapeSize not assigned %s", this->mID.c_str()))
+				return false;
+		}
+
+		if (!errorState.check(mElements != nullptr,
+			"Elements not assigned %s", this->mID.c_str()))
+			return false;
+
+		if (!errorState.check(mPoints != nullptr,
+			"Points not assigned %s", this->mID.c_str()))
+			return false;
+
 		return true;
 	}
 }

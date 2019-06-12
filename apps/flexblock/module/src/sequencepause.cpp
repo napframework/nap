@@ -15,10 +15,7 @@ namespace nap
 	{
 		bool SequencePause::init(utility::ErrorState& errorState)
 		{
-			if (!SequenceElement::init(errorState))
-				return false;
-
-			return true;
+			return SequenceElement::init(errorState);
 		}
 
 		bool SequencePause::process(double time, std::vector<ResourcePtr<Parameter>>& outParameters)

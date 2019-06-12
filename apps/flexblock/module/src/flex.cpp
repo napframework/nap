@@ -10,7 +10,7 @@ namespace nap
 	Flex::Flex(FlexBlockShape* flexblockShape)
 	{
 		mObjShape = flexblockShape;
-		mMotorInput = std::deque<float>(8);
+		mMotorInput = std::vector<float>(8);
 
 		// 
 		mFrequency = 200;
@@ -121,25 +121,25 @@ namespace nap
 		}
 	}
 
-	void Flex::setMotorInput(int index, float value)
+	void Flex::setMotorInput(const std::vector<float>& inputs)
 	{
 		std::lock_guard<std::mutex> l(mMotorInputMutex);
 
-		mMotorInput[index] = value;
+		mMotorInput = inputs;
 	} 
 
-	void Flex::copyMotorInput(std::deque<float>& outInputs)
+	void Flex::copyMotorInput(std::vector<float>& outputs)
 	{
 		std::lock_guard<std::mutex> l(mMotorInputMutex);
 
-		outInputs = mMotorInput;
+		outputs = mMotorInput;
 	}
 
 	void Flex::update()
 	{
 		while (mIsRunning)
 		{
-			std::deque<float> inputs(8);
+			std::vector<float> inputs(8);
 			copyMotorInput(inputs);
 
 			setInput(inputs);
@@ -238,7 +238,7 @@ namespace nap
 		}
 	}
 
-	void Flex::setInput(std::deque<float>& inputs)
+	void Flex::setInput(std::vector<float>& inputs)
 	{
 		for (int i = 0; i < inputs.size(); i++)
 		{
@@ -391,7 +391,7 @@ namespace nap
 		mPoints = newPoints;
 	}
 
-	std::vector<float> Flex::getRopeLengths()
+	const std::vector<float> Flex::getRopeLengths()
 	{
 		std::vector<float> ropes;
 		for (int i = 12; i < 20; i++)

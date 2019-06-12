@@ -11,6 +11,10 @@
 
 namespace nap
 {
+	/**
+	* FlexBlockShapeSizeValues
+	* Contains information about the size of this shape and its frame
+	*/
 	class NAPAPI FlexBlockShapeSizeValues : public Resource
 	{
 		RTTI_ENABLE(Resource)
@@ -23,6 +27,10 @@ namespace nap
 		glm::vec3 mFrame;
 	};
 
+	/**
+	* FlexBlockShapePoints
+	* A description of the size of the shape ( will be multiplied with FlexBlockShapePoints in flex algorithm )
+	*/
 	class NAPAPI FlexBlockShapeSize : public Resource
 	{
 		RTTI_ENABLE(Resource)
@@ -35,6 +43,10 @@ namespace nap
 		ResourcePtr<FlexBlockShapeSizeValues>	mValues;
 	};
 
+	/**
+	* FlexBlockShapePoints
+	* A description of how the shape is constructed
+	*/
 	class NAPAPI FlexBlockShapePoints : public Resource
 	{
 		RTTI_ENABLE(Resource)
@@ -47,6 +59,10 @@ namespace nap
 		std::vector<glm::vec3> mFrame;
 	};
 
+	/**
+	* FlexBlockElements
+	* Contains lists of indices, indicating how corners of the frame, object are connected with themselves and eachother
+	*/
 	class NAPAPI FlexBlockElements : public Resource
 	{
 		RTTI_ENABLE(Resource)
@@ -60,6 +76,10 @@ namespace nap
 		std::vector<std::vector<int>> mFrame;
 	};
 
+	/**
+	 * FlexBlockShape
+	 * Contains the information needed to create and render a flexblock shape and execute the flex algorithm
+	 */
 	class NAPAPI FlexBlockShape : public Resource
 	{
 		RTTI_ENABLE(Resource)

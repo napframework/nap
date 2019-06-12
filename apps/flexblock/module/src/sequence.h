@@ -10,7 +10,7 @@ namespace nap
 	namespace timeline
 	{
 		/**
-		* TimelineSequence
+		* Sequence
 		*/
 		class NAPAPI Sequence : public Resource
 		{

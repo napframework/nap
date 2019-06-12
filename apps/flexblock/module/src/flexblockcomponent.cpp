@@ -72,7 +72,7 @@ namespace nap
 		// set points
 		mFrameMesh->setFramePoints(mFramePoints);
 
-		//
+		// start serial
 		mFlexBlockSerialComponentInstance->start(errorState);
 
 		return true;
@@ -80,12 +80,13 @@ namespace nap
 
 	void FlexBlockComponentInstance::SetMotorInput(int index, float value)
 	{
-		//
-		mFlexLogic->setMotorInput(remapMotorInput(index), value);
+		// 
+		mMotorInputs[remapMotorInput(index)] = value;
 	}
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
+		// convert flex points to nap points
 		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
 		toNapPoints(objectPoints, mObjectPoints);
 
@@ -94,6 +95,9 @@ namespace nap
 		
 		// update the box
 		mFlexBlockMesh->setControlPoints(mObjectPoints);
+
+		// update motors of flex algorithm
+		mFlexLogic->setMotorInput(mMotorInputs);
 
 		//
 		mUpdateSerialTime += deltaTime;

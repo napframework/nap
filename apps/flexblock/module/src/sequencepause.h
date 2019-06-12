@@ -14,7 +14,7 @@ namespace nap
 	namespace timeline
 	{
 		/**
-		* TimelineSequencePause
+		* SequencePause
 		*/
 		class NAPAPI SequencePause : public SequenceElement
 		{
@@ -26,8 +26,19 @@ namespace nap
 			*/
 			virtual bool init(utility::ErrorState& errorState) override;
 
+			/**
+			* Sets the parameter according to the values they are assigned to in this timeslot
+			* @param time the elapsed time
+			* @param endValues a reference to the parameters that need to be set
+			* @return returns true if this element has to do something ( element falls in this timeframe )
+			*/
 			virtual bool process(double time, std::vector<ResourcePtr<Parameter>> &outParameters) override;
 		
+			/**
+			* Set the start parameters of this time slot, this is set by the sequence and usually reference the parameters
+			* of the sequence before this one
+			* @param startParameters the start parameters
+			*/
 			virtual void setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters) override;
 		public:
 		};
