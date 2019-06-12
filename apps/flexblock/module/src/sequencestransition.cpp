@@ -32,43 +32,43 @@ namespace nap
 			{
 				if (mEndParameters[i]->get_type().is_derived_from<ParameterFloat>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterFloat, float>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterFloat, float>);
 				}
 				else if (mEndParameters[i]->get_type().is_derived_from<ParameterInt>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterInt, int>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterInt, int>);
 				}
 				else if (mEndParameters[i]->get_type().is_derived_from<ParameterVec2>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterVec2, glm::vec2>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterVec2, glm::vec2>);
 				}
 				else if (mEndParameters[i]->get_type().is_derived_from<ParameterVec3>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterVec3, glm::vec3>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterVec3, glm::vec3>);
 				}
 				else if (mEndParameters[i]->get_type().is_derived_from<ParameterIVec2>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterIVec2, glm::ivec2>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterIVec2, glm::ivec2>);
 				}
 				else if (mEndParameters[i]->get_type().is_derived_from<ParameterIVec3>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterIVec3, glm::ivec3>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterIVec3, glm::ivec3>);
 				}
 				else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBColorFloat>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterRGBColorFloat, RGBColorFloat>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterRGBColorFloat, RGBColorFloat>);
 				}
 				else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBAColorFloat>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterRGBAColorFloat, RGBAColorFloat>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterRGBAColorFloat, RGBAColorFloat>);
 				}
 				else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBColor8>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterRGBColor8, RGBColor8>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterRGBColor8, RGBColor8>);
 				}
 				else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBAColor8>())
 				{
-					mFunctions.push_back(&SequenceTransition::process<ParameterRGBAColor8, RGBAColor8>);
+					mFunctions.emplace_back(&SequenceTransition::process<ParameterRGBAColor8, RGBAColor8>);
 				}
 				else
 				{

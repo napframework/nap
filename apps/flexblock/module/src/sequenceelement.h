@@ -33,7 +33,7 @@ namespace nap
 			*/
 			virtual bool process(double time, std::vector<ResourcePtr<Parameter>>& endParameters);
 
-			void setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters);
+			virtual void setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters);
 
 			const std::vector<ResourcePtr<Parameter>>& getEndParameters() { return mEndParameters; }
 

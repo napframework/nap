@@ -23,7 +23,7 @@ namespace nap
 				"need at least 1 element %s", this->mID.c_str()))
 				return false;
 
-			std::vector<ResourcePtr<Parameter>>& startParameters = mStartParameters;
+			std::vector<ResourcePtr<Parameter>> startParameters = mStartParameters;
 			double time = 0.0;
 			for (int i = 0; i < mElements.size(); i++)
 			{

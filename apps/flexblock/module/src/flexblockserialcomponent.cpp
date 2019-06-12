@@ -96,9 +96,9 @@ namespace nap
 
 			if (mSerialPort->isOpen())
 			{
-				for (int i = 0; i < writeBuffer.size(); i++)
+				for (const auto& message : writeBuffer)
 				{
-					mSerialPort->write(writeBuffer[i], error);
+					mSerialPort->write(message, error);
 				}
 			}
 

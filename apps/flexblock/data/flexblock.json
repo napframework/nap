@@ -824,6 +824,70 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::ParameterFloat",
+            "mID": "ParameterFloat",
+            "Name": "",
+            "Value": 0.0,
+            "Minimum": 0.0,
+            "Maximum": 1.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "ParameterFloat_2",
+            "Name": "",
+            "Value": 0.0,
+            "Minimum": 0.0,
+            "Maximum": 1.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "ParameterFloat_3",
+            "Name": "",
+            "Value": 0.0,
+            "Minimum": 0.0,
+            "Maximum": 1.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "ParameterFloat_4",
+            "Name": "",
+            "Value": 0.0,
+            "Minimum": 0.0,
+            "Maximum": 1.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "ParameterFloat_5",
+            "Name": "",
+            "Value": 0.0,
+            "Minimum": 0.0,
+            "Maximum": 1.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "ParameterFloat_6",
+            "Name": "",
+            "Value": 0.0,
+            "Minimum": 0.0,
+            "Maximum": 1.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "ParameterFloat_7",
+            "Name": "",
+            "Value": 0.0,
+            "Minimum": 0.0,
+            "Maximum": 1.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "ParameterFloat_8",
+            "Name": "",
+            "Value": 0.0,
+            "Minimum": 0.0,
+            "Maximum": 1.0
+        },
+        {
             "Type": "nap::ParameterGroup",
             "mID": "Inputs",
             "Parameters": [
@@ -971,6 +1035,66 @@
             }
         },
         {
+            "Type": "nap::flexblock::FlexblockSequence",
+            "mID": "FlexblockSequence",
+            "Elements": [
+                {
+                    "Type": "nap::flexblock::FlexblockSequenceTransition",
+                    "mID": "FlexblockSequenceTransition_3",
+                    "Duration": 3.0,
+                    "Curve": "Bezier Curve",
+                    "Parameters": [],
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Inputs": [
+                        1.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "Type": "nap::timeline::SequencePause",
+                    "mID": "SequencePause",
+                    "Duration": 3.0
+                },
+                {
+                    "Type": "nap::flexblock::FlexblockSequenceTransition",
+                    "mID": "FlexblockSequenceTransition_4",
+                    "Duration": 3.0,
+                    "Curve": "Bezier Curve",
+                    "Parameters": [],
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            ],
+            "StartParameters": [],
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
             "Type": "nap::flexblock::FlexblockSequenceTransition",
             "mID": "FlexblockSequenceTransition",
             "Duration": 0.0,
@@ -983,6 +1107,25 @@
                 1.0,
                 0.0,
                 0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "Type": "nap::flexblock::FlexblockSequenceTransition",
+            "mID": "FlexblockSequenceTransition_2",
+            "Duration": 10.0,
+            "Curve": "Bezier Curve",
+            "Parameters": [],
+            "Preset File": "",
+            "Use Preset": false,
+            "Inputs": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
                 0.0,
                 0.0,
                 0.0,
@@ -1336,97 +1479,6 @@
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::timeline::Sequence",
-            "mID": "Sequence",
-            "Elements": [
-                {
-                    "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "FlexblockSequenceTransition_2",
-                    "Duration": 10.0,
-                    "Curve": "Bezier Curve",
-                    "Parameters": [],
-                    "Preset File": "",
-                    "Use Preset": false,
-                    "Inputs": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
-            ],
-            "StartParameters": [
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ParameterFloat",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ParameterFloat_2",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ParameterFloat_3",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ParameterFloat_4",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ParameterFloat_5",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ParameterFloat_6",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ParameterFloat_7",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ParameterFloat_8",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
                 }
             ]
         }

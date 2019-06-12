@@ -33,5 +33,11 @@ namespace nap
 
 			return true;
 		}
+
+		void SequencePause::setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters)
+		{
+			mStartParameters = startParameters;
+			mEndParameters = startParameters;
+		}
 	}
 }
