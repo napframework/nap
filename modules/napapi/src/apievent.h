@@ -123,6 +123,26 @@ namespace nap
 		bool matches(const nap::APISignature& signature) const;
 
 		/**
+		 * Returns this event as an event of type T.
+		 * Example: ws_event = api_event.to<APIWebSocketEvent>();
+		 * For this to work this event must be an event of type T.
+		 * Asserts if the event isn't of type T.
+		 * @return This event as T.
+		 */
+		template<typename T>
+		const T& to() const;
+
+		/**
+		 * Returns this event as an event of type T.
+		 * Example: ws_event = api_event.to<APIWebSocketEvent>();
+		 * For this to work this event must be an event of type T.
+		 * Asserts if the event isn't of type T.
+		 * @return This event as T.
+		 */
+		template<typename T>
+		T& to();
+
+		/**
 		 * Array [] subscript operator
 		 * @return the osc argument at index
 		 */
@@ -164,4 +184,25 @@ namespace nap
 		mArguments.emplace_back(std::move(argument));
 		return mArguments.back().get();
 	}
+
+
+	template<typename T>
+	const T& nap::APIEvent::to() const
+	{
+		const T* return_p = nullptr;
+		if (this->get_type().is_derived_from<T>())
+			return_p = reinterpret_cast<const T*>(this);
+		assert(return_p != nullptr);
+		return *return_p;
+	}
+
+
+	template<typename T>
+	T& nap::APIEvent::to()
+	{
+		T* cast_event = rtti_cast<T>(this);
+		assert(cast_event != nullptr);
+		return *cast_event;
+	}
+
 }

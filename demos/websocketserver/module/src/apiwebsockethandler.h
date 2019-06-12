@@ -7,13 +7,14 @@
 #include <nap/signalslot.h>
 #include <nap/resourceptr.h>
 #include <renderable2dtextcomponent.h>
+#include <apiwebsocketserver.h>
 
 namespace nap
 {
 	class APIWebSocketHandlerComponentInstance;
 
 	/**
-	 *	apiwebsockethandler
+	 * 
 	 */
 	class NAPAPI APIWebSocketHandlerComponent : public Component
 	{
@@ -23,6 +24,7 @@ namespace nap
 		 
 		ComponentPtr<APIComponent> mAPIComponent;					///< Property: "APIComponent" Link to the api component that receives api events
 		ComponentPtr<Renderable2DTextComponent> mTextComponent;		///< Property: "TextComponent" Link to the component that renders text
+		ResourcePtr<APIWebSocketServer> mServer;					///< Property: "Server" Link to server, used to issue a reply.
 	};
 
 
@@ -60,5 +62,6 @@ namespace nap
 		// Called when text needs to change
 		void onChangeText(const nap::APIEvent& apiEvent);
 		nap::Slot<const nap::APIEvent&> mChangeTextSlot = { this, &APIWebSocketHandlerComponentInstance::onChangeText };
+		APIWebSocketServer* mServer = nullptr;
 	};
 }
