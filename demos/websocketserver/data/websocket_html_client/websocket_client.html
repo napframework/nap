@@ -21,7 +21,7 @@
                   {
                       "Type": "nap::APIString",
                       "Name": "text",
-                      "mID": "02",
+                      "mID": "text_id",
                       "Value": "I'm so excited!"
                   }
               ]
@@ -98,6 +98,9 @@
     // Set the text to change in the json api messae object
     var text = input.value;
     api_msg.Objects[0].Arguments[0].Value = text;
+
+    // Generate a random id
+    api_msg.Objects[0].mID = Math.floor(Math.random() * 100); 
 
     // Convert to nice looking string
     var api_msg_string = JSON.stringify(api_msg, undefined, 4);
