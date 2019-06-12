@@ -35,6 +35,7 @@
   var request_p;
   var response_p;
   var connected = false;
+  var box_char_count = 0;
   var status_header;
 
   // On load
@@ -46,6 +47,8 @@
     input = document.getElementById("input_field");
     status_header = document.getElementById("status_header");
     api_msg = JSON.parse(nap_msg);
+    box_char_count = 0;
+    connected = false;
     startWebSocket();
   }
 
@@ -134,8 +137,16 @@
 
   function writeToBox(message)
   {
+    // Clear box if char count exceeds number
+    if(box_char_count > 2000)
+    {
+      textbox.value = "";
+      box_char_count = 0;
+    }
+    
     textbox.value += (message + "\n");
     textbox.scrollTop = textbox.scrollHeight;
+    box_char_count += message.length;
   }
 
   function updateRequest(message)
@@ -163,8 +174,10 @@
 
         body {
           background-color: #2D2E42;
+          max-width: 40em;
 
         }
+        
         h1, h2, h3, h4, h5, label, p{
           color: #8B8CA0;
           font-family: 'Montserrat', sans-serif;
@@ -175,15 +188,20 @@
           background-color: #111426;
           color: #8B8CA0;
           border: 0.125em solid #8B8CA0;
+          width: 100%;
+          display:inline-block;
         }
+        
         input {
           background-color: #111426;
           border: 0.125em solid #8B8CA0;
           color: #8B8CA0;
         }
+        
         input:focus {
           outline:none;
         }
+
         textarea:focus {
           outline:none;
         }
@@ -219,7 +237,7 @@
         <input type="text" id="input_field" name="name" size="30" oninput="doSend()">
         <h5>Refresh page to reconnect</h5>
         <div id="output">
-          <textarea name="message" id="textbox" rows="20" cols="100"></textarea>
+          <textarea name="message" id="textbox" rows="20"></textarea>
         </div>
       <h3>Server Request:</h2>
       <pre id="request_p" style="color: #8B8CA0;"></pre>
