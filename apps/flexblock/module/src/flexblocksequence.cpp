@@ -25,7 +25,7 @@ namespace nap
 				mOwnedParameters.back()->setValue(input);
 
 				ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
-				mStartParameters.emplace_back(parameterFloatPtr);
+				mStartParameters.emplace_back(parameterFloatPtr.get());
 			}
 
 			if (!timeline::Sequence::init(errorState))

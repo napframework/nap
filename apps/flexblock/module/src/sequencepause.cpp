@@ -18,20 +18,20 @@ namespace nap
 			return SequenceElement::init(errorState);
 		}
 
-		bool SequencePause::process(double time, std::vector<ResourcePtr<Parameter>>& outParameters)
+		bool SequencePause::process(double time, std::vector<Parameter*>& outParameters)
 		{
 			if (!SequenceElement::process(time, outParameters))
 				return false;
 
 			for (int i = 0; i < mStartParameters.size(); i++)
 			{
-				outParameters[i]->setValue(*mStartParameters[i].get());
+				outParameters[i]->setValue(*mStartParameters[i]);
 			}
 
 			return true;
 		}
 
-		void SequencePause::setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters)
+		void SequencePause::setStartParameters(const std::vector<Parameter*>& startParameters)
 		{
 			mStartParameters = startParameters;
 			mEndParameters = startParameters;

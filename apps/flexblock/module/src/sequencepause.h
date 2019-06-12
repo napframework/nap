@@ -32,14 +32,14 @@ namespace nap
 			* @param endValues a reference to the parameters that need to be set
 			* @return returns true if this element has to do something ( element falls in this timeframe )
 			*/
-			virtual bool process(double time, std::vector<ResourcePtr<Parameter>> &outParameters) override;
+			virtual bool process(double time, std::vector<Parameter*>& outParameters) override;
 		
 			/**
 			* Set the start parameters of this time slot, this is set by the sequence and usually reference the parameters
 			* of the sequence before this one
 			* @param startParameters the start parameters
 			*/
-			virtual void setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters) override;
+			virtual void setStartParameters(const std::vector<Parameter*>& startParameters) override;
 		public:
 		};
 	}

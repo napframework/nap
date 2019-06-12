@@ -63,19 +63,19 @@ namespace nap
 				mEndParameters.clear();
 				for (int i = 0; i < group->mParameters.size(); i++)
 				{
-					mEndParameters.push_back(group->mParameters[i]);
+					mEndParameters.push_back(group->mParameters[i].get());
 				}
 			}
 
 			return true;
 		}
 
-		bool SequenceElement::process(double time, std::vector<ResourcePtr<Parameter>>& outParameters)
+		bool SequenceElement::process(double time, std::vector<Parameter*>& outParameters)
 		{
 			return (time >= mStartTime && time < mStartTime + mDuration);
 		}
 
-		void SequenceElement::setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters)
+		void SequenceElement::setStartParameters(const std::vector<Parameter*>& startParameters)
 		{
 			mStartParameters = startParameters;
 		}

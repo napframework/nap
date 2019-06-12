@@ -158,7 +158,8 @@
                 {
                     "Type": "nap::timeline::SequencePlayerComponent",
                     "mID": "nap::timeline::SequencePlayerComponent",
-                    "TimelineParameters": "Inputs"
+                    "TimelineParameters": "Inputs",
+                    "SequenceContainer": "SequenceContainer"
                 }
             ],
             "Children": [
@@ -1040,25 +1041,109 @@
             "Elements": [
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "FlexblockSequenceTransition_8",
+                    "mID": "FlexblockSequenceTransition_3",
                     "Duration": 2.0,
-                    "Curve": "",
+                    "Curve": "Bezier Curve",
                     "Parameters": [],
-                    "Preset File": "presets/inputs/null.json",
-                    "Use Preset": true,
+                    "Preset File": "",
+                    "Use Preset": false,
                     "Inputs": [
                         0.0,
                         0.0,
+                        1.0,
                         0.0,
                         0.0,
-                        0.0,
-                        0.0,
+                        1.0,
                         0.0,
                         0.0
                     ]
+                },
+                {
+                    "Type": "nap::timeline::SequencePause",
+                    "mID": "SequencePause_5",
+                    "Duration": 5.0
                 }
             ],
             "StartParameters": [],
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "Type": "nap::flexblock::FlexblockSequence",
+            "mID": "FlexblockSequence_2",
+            "Elements": [
+                {
+                    "Type": "nap::flexblock::FlexblockSequenceTransition",
+                    "mID": "FlexblockSequenceTransition_2",
+                    "Duration": 2.0,
+                    "Curve": "Bezier Curve",
+                    "Parameters": [],
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Inputs": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                },
+                {
+                    "Type": "nap::timeline::SequencePause",
+                    "mID": "SequencePause_4",
+                    "Duration": 5.0
+                }
+            ],
+            "StartParameters": [],
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "Type": "nap::flexblock::FlexblockSequenceTransition",
+            "mID": "FlexblockSequenceTransition",
+            "Duration": 2.0,
+            "Curve": "",
+            "Parameters": [],
+            "Preset File": "",
+            "Use Preset": false,
+            "Inputs": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "Type": "nap::flexblock::FlexblockSequenceTransition",
+            "mID": "FlexblockSequenceTransition_8",
+            "Duration": 2.0,
+            "Curve": "",
+            "Parameters": [],
+            "Preset File": "presets/inputs/null.json",
+            "Use Preset": true,
             "Inputs": [
                 0.0,
                 0.0,
@@ -1421,9 +1506,27 @@
             ]
         },
         {
+            "Type": "nap::timeline::SequenceContainer",
+            "mID": "SequenceContainer",
+            "Sequences": [
+                "FlexblockSequence",
+                "FlexblockSequence_2"
+            ]
+        },
+        {
             "Type": "nap::timeline::SequencePause",
             "mID": "SequencePause",
             "Duration": 3.0
+        },
+        {
+            "Type": "nap::timeline::SequencePause",
+            "mID": "SequencePause_2",
+            "Duration": 2.0
+        },
+        {
+            "Type": "nap::timeline::SequencePause",
+            "mID": "SequencePause_3",
+            "Duration": 2.0
         }
     ]
 }

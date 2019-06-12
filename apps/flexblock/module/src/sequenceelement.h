@@ -31,24 +31,24 @@ namespace nap
 			* @param endValues a reference to the parameters that need to be set
 			* @return returns true if this element has to do something ( element falls in this timeframe )
 			*/
-			virtual bool process(double time, std::vector<ResourcePtr<Parameter>>& endParameters);
+			virtual bool process(double time, std::vector<Parameter*>& outParameters);
 
 			/**
 			* Set the start parameters of this time slot, this is set by the sequence and usually reference the parameters
 			* of the sequence before this one
 			* @param startParameters the start parameters
 			*/
-			virtual void setStartParameters(const std::vector<ResourcePtr<Parameter>>& startParameters);
+			virtual void setStartParameters(const std::vector<Parameter*>& startParameters);
 
 			/**
 			* @return returns a reference to the end parameters of this sequence
 			*/
-			const std::vector<ResourcePtr<Parameter>>& getEndParameters() { return mEndParameters; }
+			const std::vector<Parameter*>& getEndParameters() { return mEndParameters; }
 
 			/**
 			* @return returns a reference to the start parameters of this sequence
 			*/
-			const std::vector<ResourcePtr<Parameter>>& getStartParameters() { return mStartParameters; }
+			const std::vector<Parameter*>& getStartParameters() { return mStartParameters; }
 
 			/**
 			* This is called by the sequence to set the start time of this element
@@ -61,14 +61,14 @@ namespace nap
 			const double getStartTime() { return mStartTime; }
 		public:
 			// properties
-			float mDuration					= 0.0f;
+			float mDuration = 0.0f;
 			bool mUsePreset					= false;
 			std::string mPreset;
-			std::vector<ResourcePtr<Parameter>> mEndParameters;
+			std::vector<Parameter*> mEndParameters;
 		protected:
 			double mStartTime = 0.0;
-
-			std::vector<ResourcePtr<Parameter>> mStartParameters;
+			
+			std::vector<Parameter*> mStartParameters;
 			rtti::DeserializeResult mPresetReadResult;
 		};
 	}

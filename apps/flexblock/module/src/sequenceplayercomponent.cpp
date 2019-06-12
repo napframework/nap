@@ -7,6 +7,7 @@
 RTTI_BEGIN_CLASS(nap::timeline::SequencePlayerComponent)
 // Put additional properties here
 RTTI_PROPERTY("TimelineParameters", &nap::timeline::SequencePlayerComponent::mParameterGroup, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("SequenceContainer", &nap::timeline::SequencePlayerComponent::mSequenceContainer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::flexblocksequenceplayerInstance run time class definition 
@@ -25,6 +26,20 @@ namespace nap
 
 		}
 
+		void SequencePlayerComponentInstance::skipToSequence(Sequence * sequence)
+		{
+			for (const auto* sequence_ : mSequenceContainer->mSequences)
+			{
+				if (sequence_ == sequence)
+				{
+					mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
+					mTime = sequence->getStartTime();
+					mCurrentSequenceIndex = 0;
+					mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
+					break;
+				}
+			}
+		}
 
 		bool SequencePlayerComponentInstance::init(utility::ErrorState& errorState)
 		{
@@ -36,13 +51,22 @@ namespace nap
 				mParameters.emplace_back(parameter.get());
 			}
 
+			mSequenceContainer = resource->mSequenceContainer.get();
+
+			double time = 0.0;
+			for (const auto& sequence : mSequenceContainer->mSequences)
+			{
+				sequence->setStartTime(time);
+				time += sequence->getDuration();
+			}
+			mDuration = time;
+
 			return true;
 		}
 
-		const std::vector<ResourcePtr<SequenceElement>>& SequencePlayerComponentInstance::getElements()
+		const std::vector<Sequence*>& SequencePlayerComponentInstance::getSequences()
 		{
-			assert(mSequence != nullptr);
-			return mSequence->mElements;
+			return mSequenceContainer->mSequences;
 		}
 
 		void SequencePlayerComponentInstance::update(double deltaTime)
@@ -54,11 +78,12 @@ namespace nap
 					mTime += deltaTime;
 				}
 
-				while (!mSequence->mElements[mCurrentSequenceIndex]->process(mTime, mParameters))
+				while (!mSequenceContainer->mSequences[mCurrentSequenceIndex]->process(mTime, mParameters))
 				{
+					mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
 					mCurrentSequenceIndex++;
 
-					if (mCurrentSequenceIndex >= mSequence->mElements.size())
+					if (mCurrentSequenceIndex >= mSequenceContainer->mSequences.size())
 					{
 						if (!mIsPaused)
 						{
@@ -76,6 +101,7 @@ namespace nap
 						}
 
 						mCurrentSequenceIndex -= 1;
+						mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
 
 						break;
 					}
@@ -109,53 +135,13 @@ namespace nap
 			mIsPaused = true;
 		}
 
-		bool SequencePlayerComponentInstance::load(ResourcePtr<Sequence> sequence, utility::ErrorState& error)
-		{
-			if (!error.check(sequence != nullptr,
-				"Sequence is null %s", mID.c_str()))
-				return false;
-
-			if (!error.check(
-				mParameters.size() ==
-				sequence->mStartParameters.size(),
-				"Timeline Parameters sizes are different then those of sequence %s \n", mID.c_str()))
-				return false;
-
-			for (int i = 0; i < mParameters.size(); i++)
-			{
-				for (int j = 0; j < sequence->mStartParameters.size(); j++)
-				{
-					if (!error.check(mParameters[j]->get_type() ==
-						sequence->mStartParameters[j]->get_type(),
-						"Parameter types are different type %s and %s do not match in sequence %s ",
-						mParameters[j]->mID.c_str(),
-						sequence->mStartParameters[j]->mID.c_str(),
-						mID.c_str()))
-						return false;
-				}
-			}
-
-			stop();
-
-			mSequence = sequence.get();
-
-			mTime = 0.0;
-			mDuration = 0.0;
-
-			for (const auto& element : mSequence->mElements)
-			{
-				mDuration += element->mDuration;
-			}
-
-			return true;
-		}
-
 		void SequencePlayerComponentInstance::stop()
 		{
 			mIsPlaying = false;
 			mIsPaused = false;
 			mIsFinished = false;
-			mSequence = nullptr;
+			mCurrentSequenceIndex = 0;
+			mTime = 0.0;
 		}
 	}
 }

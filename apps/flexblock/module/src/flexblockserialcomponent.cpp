@@ -37,7 +37,7 @@ namespace nap
 		FlexBlockSerialComponent* resource = getComponent<FlexBlockSerialComponent>();
 
 		mSerialPort = resource->mSerialPort;
-		mSerialPort->isBeingDeconstructed.connect([&]()
+		mSerialPort->mIsBeingDeconstructed.connect([&]()
 		{
 			stop();
 		});

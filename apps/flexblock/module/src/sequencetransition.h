@@ -35,7 +35,7 @@ namespace nap
 			* @param endValues a reference to the parameters that need to be set
 			* @return returns true if this element has to do something ( element falls in this sequence time slot )
 			*/
-			virtual bool process(double time, std::vector<ResourcePtr<Parameter>>& outParameters) override;
+			virtual bool process(double time, std::vector<Parameter*>& outParameters) override;
 		public:
 			// properties
 

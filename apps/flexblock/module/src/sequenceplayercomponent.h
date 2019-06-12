@@ -4,7 +4,7 @@
 #include <component.h>
 #include <parameternumeric.h>
 
-#include "sequence.h"
+#include "sequencecontainer.h"
 
 namespace nap
 {
@@ -28,6 +28,7 @@ namespace nap
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 			ResourcePtr<ParameterGroup> mParameterGroup;
+			ResourcePtr<SequenceContainer> mSequenceContainer;
 		};
 
 
@@ -56,20 +57,12 @@ namespace nap
 			virtual void update(double deltaTime) override;
 
 			/**
-			* Load a sequence
-			* @param sequence, pointer to a sequence resource
-			* @param error
-			* @return returns true if successfully loaded
-			*/
-			bool load(ResourcePtr<Sequence> sequence, utility::ErrorState& error);
-
-			/**
 			* Play a sequence
 			*/
 			void play();
 
 			/**
-			* Stop the current sequence, unloads the sequence
+			* Stops playing, resets time
 			*/
 			void stop();
 
@@ -90,10 +83,12 @@ namespace nap
 			*/
 			void setTime(double time);
 
+			void skipToSequence(Sequence * sequence);
+
 			/**
 			* @return true if loaded sequence
 			*/
-			const bool getIsLoaded() { return mSequence != nullptr; }
+			const bool getIsLoaded() { return mSequenceContainer != nullptr; }
 
 			/**
 			* @return true if playing
@@ -111,20 +106,12 @@ namespace nap
 			const bool getIsFinished() { return mIsFinished; }
 
 			/**
-			* @return pointer to current sequence
+			* @return pointer to current sequence, nullptr if not available
 			*/
-			const ResourcePtr<Sequence>& getCurrentSequence() { return mSequence; };
-
-			/**
-			* @return pointer to current element in sequence being played, nullptr if not available
-			*/
-			const ResourcePtr<SequenceElement> getCurrentElement()
-			{
-				if (mSequence->mElements.size() > 0)
-					return mSequence->mElements[mCurrentSequenceIndex];
-
-				return nullptr;
-			};
+			const Sequence* getCurrentSequence() const
+			{ 
+				return mSequenceContainer->mSequences[mCurrentSequenceIndex];
+			}
 
 			/**
 			* @return current time in sequence
@@ -142,12 +129,12 @@ namespace nap
 			const bool getIsLooping() { return mIsLooping; }
 
 			/**
-			* @return vector of pointers to sequence elements
+			* @return vector of pointers to sequences
 			*/
-			const std::vector<ResourcePtr<SequenceElement>>& getElements();
+			const std::vector<Sequence*>& getSequences();
 		protected:
 			//
-			ResourcePtr<Sequence> mSequence = nullptr;
+			SequenceContainer* mSequenceContainer = nullptr;
 
 			double mTime = 0.0;
 			bool mIsPlaying = false;
@@ -155,9 +142,10 @@ namespace nap
 			bool mIsFinished = false;
 			bool mIsLooping = false;
 			int mCurrentSequenceIndex = 0;
+
 			double mDuration = 0.0;
 
-			std::vector<ResourcePtr<Parameter>> mParameters = std::vector<ResourcePtr<Parameter>>();
+			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
 		};
 	}
 }

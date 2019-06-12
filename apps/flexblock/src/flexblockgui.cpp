@@ -134,6 +134,7 @@ namespace nap
 
 		ImGui::Begin("Sequence Timeline");
 
+		/*
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 		glm::vec2 top_left = glm::vec2(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
 		const auto max = ImGui::GetWindowContentRegionMax();
@@ -161,7 +162,7 @@ namespace nap
 		float pos = ( sequencePlayer.getCurrentTime() / sequencePlayer.getDuration() ) * size.x;
 		draw_list->AddLine(ImVec2(top_left.x + pos, top_left.y), ImVec2(top_left.x + pos, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)));
 
-
+		*/
 		ImGui::End();
 	}
 
@@ -217,22 +218,23 @@ namespace nap
 
 		if (ImGui::TreeNode("Sequences"))
 		{
-			const auto& sequences = resourceManager->getObjects<timeline::Sequence>();
+			const auto& sequences = sequencePlayer.getSequences();
 
 			for (const auto& sequence : sequences)
 			{
-				if (ImGui::SmallButton(sequence->mID.c_str()))
+				ImVec4 color = ImVec4(1, 1, 1, 1);
+
+				if (sequencePlayer.getCurrentSequence() == sequence)
 				{
-					utility::ErrorState error;
-					if (!sequencePlayer.load(sequence, error))
-					{
-						printf(error.toString().c_str());
-					}
-					else
-					{
-						sequencePlayer.play();
-					}
+					color = ImVec4(1, 0, 0, 1);
 				}
+
+				ImGui::PushStyleColor(1, color);
+				if(ImGui::Button(sequence->mID.c_str()))
+				{
+					sequencePlayer.skipToSequence(sequence);
+				}
+				ImGui::PopStyleColor();
 			}
 			ImGui::TreePop();
 		}
@@ -251,7 +253,8 @@ namespace nap
 			ImGui::TextColored(text_color, "%.2f seconds", sequencePlayer.getCurrentTime() );
 		
 			ImGui::Spacing();
-			ImGui::Text(("Current Element = " + sequencePlayer.getCurrentElement()->mID).c_str());
+
+			ImGui::Text(std::string("Current Sequence Element = " + sequencePlayer.getCurrentSequence()->getCurrentElement()->mID).c_str());
 			ImGui::Spacing();
 			ImGui::Text("Progress");
 
@@ -260,26 +263,7 @@ namespace nap
 			auto progressBarSize = ImGui::GetItemRectSize();
 
 			ImGui::NewLine();
-			
-			if (ImGui::Checkbox("Show Timeline", &mShowTimeLine))
-			{
-
-			}
-
-			/*
-			ImGui::Text("Elements");
-			for (const auto& element : sequencePlayer.getElements())
-			{
-				if (ImGui::Button(element->mID.c_str(), ImVec2(progressBarSize.x * ( element->mDuration / sequencePlayer.getDuration() ), progressBarSize.y)))
-				{
-					sequencePlayer.setTime(element->getStartTime());
-				}
-				ImGui::SameLine();
-			}
-			ImGui::NewLine();
-			*/
-
-
+		
 			ImGui::Spacing();
 			ImGui::Text("Scrub");
 			if (ImGui::SliderFloat("", &mScrub, 0.0f, 1.0f))
