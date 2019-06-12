@@ -3,7 +3,6 @@
         "mod_naprender", 
         "mod_napmath",
         "mod_napscene",
-        "mod_napmath",
-        "mod_napapiwebsocket"
+        "mod_napmath"
     ]
 }

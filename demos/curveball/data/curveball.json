@@ -1,20 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::WebSocketServerEndPoint",
-            "mID": "ServerEndPoint",
-            "Port": 9000,
-            "LogConnectionUpdates": false,
-            "LibraryLogLevel": "Warning",
-            "AllowPortReuse" : true
-        },
-        {
-            "Type": "nap::APIWebSocketServer",
-            "mID": "APIServer",
-            "EndPoint": "ServerEndPoint",
-            "Verbose": true
-        },
-        {
             "Type": "nap::Entity",
             "mID": "Camera",
             "Components": [
@@ -186,18 +172,6 @@
             "Children": []
         },
         {
-            "Type": "nap::Entity",
-            "mID": "WebSocketEntity",
-            "Components": [
-                {
-                    "Type": "nap::WebSocketComponent",
-                    "mID": "nap::WebSocketComponent",
-                    "Interface": "APIServer"
-                }
-            ],
-            "Children": []
-        },
-        {
             "Type": "nap::Material",
             "mID": "BallMaterial",
             "Uniforms": [
@@ -287,10 +261,6 @@
                 },
                 {
                     "Entity": "Plane",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "WebSocketEntity",
                     "InstanceProperties": []
                 }
             ]
